@@ -67,6 +67,7 @@ import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.search.ServiceNotAvailableException;
 import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.model.ResultDocument;
+import org.olat.search.service.QuickSearchEvent;
 import org.olat.search.service.searcher.SearchClient;
 
 /**
@@ -270,6 +271,7 @@ public class SearchInputController extends FormBasicController implements Generi
 
 	@Override
 	public void formOK(UserRequest ureq) {
+	fireEvent(ureq, QuickSearchEvent.QUICKSEARCH_EVENT);
 		doSearch(ureq);
 	}
 	
@@ -281,6 +283,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	@Override
 	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == searchButton) {
+			fireEvent(ureq, QuickSearchEvent.QUICKSEARCH_EVENT);
 			doSearch(ureq);
 		} else if (didYouMeanLinks != null && didYouMeanLinks.contains(source)) {
 			String didYouMeanWord = (String)source.getUserObject();

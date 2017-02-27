@@ -90,7 +90,7 @@ public class CourseOptionsController extends FormBasicController {
 	private static final String[] onKeys = new String[] {"xx"};
 	private static final String[] onValues = new String[] {""};
 
-	private SelectionElement menuEl, toolbarEl, calendarEl, chatEl;
+	private SelectionElement menuEl, toolbarEl, calendarEl, searchEl, chatEl;
 	private FormLink addGlossaryCommand, removeGlossaryCommand;
 	private StaticTextElement glossaryNameEl;
 	private FormLink saveButton;
@@ -209,7 +209,11 @@ public class CourseOptionsController extends FormBasicController {
 			if(managedCal && calendarEnabled) {
 				canHideToolbar &= false;
 			}
-		}
+		}		
+		//searchbar
+		searchEl = uifactory.addCheckboxesHorizontal("searchIsOn", "chkbx.search.onoff", menuCont, onKeys, onValues);
+		searchEl.select(onKeys[0], courseConfig.isCourseSearchEnabled());
+		searchEl.addActionListener(FormEvent.ONCHANGE);
 		
 		//chat
 		chatCont = FormLayoutContainer.createDefaultFormLayout("chat", getTranslator());
@@ -456,6 +460,9 @@ public class CourseOptionsController extends FormBasicController {
 		boolean enableChat = chatEl.isSelected(0);
 		boolean updateChat = courseConfig.isChatEnabled() != enableChat;
 		courseConfig.setChatIsEnabled(enableChat && toolbarEnabled);
+		
+		boolean enableSearch = searchEl.isSelected(0);
+		courseConfig.setCourseSearchEnabled(enableSearch && toolbarEnabled);
 		
 		boolean enableCalendar = calendarEl == null ? false : calendarEl.isSelected(0);
 		boolean updateCalendar = courseConfig.isCalendarEnabled() != enableCalendar && calendarModule.isEnableCourseToolCalendar();

@@ -54,6 +54,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.VetoableCloseController;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.dtabs.DTab;
@@ -133,6 +134,10 @@ import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryLifeCycleChangeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.resource.OLATResource;
+import org.olat.search.SearchServiceUIFactory;
+import org.olat.search.SearchServiceUIFactory.DisplayOption;
+import org.olat.search.service.QuickSearchEvent;
+import org.olat.search.ui.SearchInputController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -159,7 +164,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		layoutLink, optionsLink, certificatesOptionsLink, reminderLink,
 		assessmentModeLink, lifeCycleChangeLink,
 		//my course
-		efficiencyStatementsLink, calendarLink, noteLink, chatLink, leaveLink,
+		efficiencyStatementsLink, calendarLink, noteLink, chatLink, leaveLink, searchLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink;
 	private Link currentUserCountLink;
@@ -167,10 +172,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	private CloseableModalController cmc;
 	private CourseAreasController areasCtrl;
+	
 	private ConfirmLeaveController leaveDialogBox;
 	private ArchiverMainController archiverCtrl;
 	private CustomDBMainController databasesCtrl;
 	private FolderRunController courseFolderCtrl;
+	private SearchInputController searchController;
 	private StatisticMainController statisticsCtrl;
 	private CourseOptionsController optionsToolCtr;
 	private CourseRemindersController remindersCtrl;
@@ -180,6 +187,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private AssessmentModeListController assessmentModeCtrl;
 	private CourseLayoutGeneratorController courseLayoutCtrl;
 	private CertificatesOptionsController certificatesOptionsCtrl;
+	private CloseableCalloutWindowController courseSearchCalloutCtr;
 	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
 
 	private int currentUserCount;
@@ -769,6 +777,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			chatLink.setVisible(imModule.isCourseEnabled() && cc.isChatEnabled());
 			toolbarPanel.addTool(chatLink);
 		}
+		
+		// add course search to toolbox 
+		if (!assessmentLock && cc.isCourseSearchEnabled() && !isGuestOnly) {
+			searchLink = LinkFactory.createToolLink("coursesearch", translate("command.coursesearch"), this, "o_icon_search");
+			searchLink.setVisible(imModule.isCourseEnabled() && cc.isChatEnabled());
+			toolbarPanel.addTool(searchLink);
+		}
+		
 	}
 
 	@Override
@@ -858,6 +874,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			launchCalendar(ureq);
 		} else if(chatLink == source) {
 			launchChat(ureq);
+		} else if(searchLink == source) {
+			launchCourseSearch(ureq);
 		} else if(efficiencyStatementsLink == source) {
 			doEfficiencyStatements(ureq);
 		} else if(noteLink == source) {
@@ -920,6 +938,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doLeave(ureq);
 			}else{
 				cmc.deactivate();
+			}
+		} else if (source == searchController) {
+			if (QuickSearchEvent.QUICKSEARCH.equals(event.getCommand())) {
+				doDeactivateQuickSearch();
 			}
 		}
 		
@@ -1206,6 +1228,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 
 		doClose(ureq);
+	}
+	
+	private void doDeactivateQuickSearch() {
+		courseSearchCalloutCtr.deactivate();
 	}
 	
 	private void doLifeCycleChange(UserRequest ureq) {
@@ -1532,6 +1558,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 		OpenInstantMessageEvent event = new OpenInstantMessageEvent(ureq, course, course.getCourseTitle(), vip);
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(event, InstantMessagingService.TOWER_EVENT_ORES);
+	}
+	
+	private void launchCourseSearch(UserRequest ureq) {
+		// do not dispose SearchInputController after search to remain able to listen to its events 
+		removeAsListenerAndDispose(courseSearchCalloutCtr);
+		courseSearchCalloutCtr = null;
+		removeAsListenerAndDispose(searchController);
+		searchController = null;
+		SearchServiceUIFactory searchServiceUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
+		searchController = searchServiceUIFactory.createInputController(ureq, getWindowControl(), DisplayOption.STANDARD, null);
+		listenTo(searchController);		
+		courseSearchCalloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				searchController.getInitialComponent(), searchLink.getDispatchID(), null, true, null);
+		courseSearchCalloutCtr.addDisposableChildController(searchController);
+		courseSearchCalloutCtr.activate();
+		listenTo(courseSearchCalloutCtr);
 	}
 	
 	private void launchCalendar(UserRequest ureq) {
