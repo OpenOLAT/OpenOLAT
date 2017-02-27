@@ -51,6 +51,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.id.Identity;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.highscore.manager.HighScoreManager;
+import org.olat.course.highscore.model.HighScoreDataModel;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -78,6 +79,7 @@ public class HighScoreRunController extends FormBasicController{
 	private CloseableCalloutWindowController calloutCtr;
 	private Float lowerBorder, upperBorder;
 	
+	private HighScoreDataModel highscoreDataModel;
 	private String nodeID;
 	
 	@Autowired
@@ -166,8 +168,10 @@ public class HighScoreRunController extends FormBasicController{
 		upperBorder = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		
 		// compute ranking and order
-		allScores = highScoreManager.sortRankByScore(assessEntries, allMembers, ownIdMembers,
+		highscoreDataModel = highScoreManager.sortRankByScore(assessEntries, allMembers, ownIdMembers,
 				 allPodium, ownIdIndices, tableSize, ownIdentity, userManager);
+		
+		allScores = highscoreDataModel.getScores();
 
 		// init showConfig from user Prefs
 		doLoadShowConfig(ureq);
@@ -210,14 +214,16 @@ public class HighScoreRunController extends FormBasicController{
 		if (viewHistogram) {
 			VelocityContainer scoreHistogramVC = createVelocityContainer("histogram_score");
 			//transfer all scores to velocity container as base data for histogram
-			allScores = highScoreManager.processHistogramData(allScores, lowerBorder, upperBorder);
+			HighScoreDataModel modifiedData = highScoreManager.processHistogramData(allScores, lowerBorder, upperBorder);
+			allScores = modifiedData.getModifiedScores();
 			scoreHistogramVC.contextPut("datas", BarSeries.datasToString(allScores));
 			//histogram marker for own position
-			scoreHistogramVC.contextPut("cutValue", ownIdIndices.size() > 0
-					? highScoreManager.calculateHistogramCutvalue(allMembers.get(ownIdIndices.get(0)).getScore())
-					: -1000);
+			scoreHistogramVC.contextPut("cutValue",
+					ownIdIndices.size() > 0 ? highScoreManager.calculateHistogramCutvalue(
+							allMembers.get(ownIdIndices.get(0)).getScore(), modifiedData.getClasswidth(),
+							modifiedData.getMin()) : -1000);
 			//classwidth to correctly display the histogram
-			long classwidth = highScoreManager.getClasswidth();
+			long classwidth = modifiedData.getClasswidth();
 			scoreHistogramVC.contextPut("step", classwidth);
 			//find path for ownID image to display in histogram
 			UserAvatarMapper mapper = new UserAvatarMapper(false);
@@ -322,7 +328,7 @@ public class HighScoreRunController extends FormBasicController{
 		}			
 		if (viewPosition && ownIdIndices.size() > 0) {
 			mainVC.contextPut("position", translate("highscore.position.info",
-					new String[] { String.valueOf(highScoreManager.getOwnTableEntry().getRank()),
+					new String[] { String.valueOf(highscoreDataModel.getOwnTableEntry().getRank()),
 							String.valueOf(allScores.length - ownIdIndices.get(0))}));
 		}
 

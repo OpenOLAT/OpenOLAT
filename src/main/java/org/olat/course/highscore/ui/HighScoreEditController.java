@@ -176,16 +176,16 @@ public class HighScoreEditController extends FormBasicController {
 	
 	private void setFromConfig() {
 		config = msNode.getModuleConfiguration();
-		boolean allowhighscore = config.getBooleanSafe(CONFIG_KEY_HIGHSCORE);
+		boolean allowhighscore = config.getBooleanSafe(CONFIG_KEY_HIGHSCORE,false);
 		allowHighScore.select("xx", allowhighscore);
-		showPosition.select("xx", config.getBooleanSafe(CONFIG_KEY_POSITION));
-		showPodium.select("xx", config.getBooleanSafe(CONFIG_KEY_PODIUM));
-		showHistogram.select("xx", config.getBooleanSafe(CONFIG_KEY_HISTOGRAM));
-		displayAnonymous.select("xx", config.getBooleanSafe(CONFIG_KEY_ANONYMIZE));
+		showPosition.select("xx", config.getBooleanSafe(CONFIG_KEY_POSITION,false));
+		showPodium.select("xx", config.getBooleanSafe(CONFIG_KEY_PODIUM,false));
+		showHistogram.select("xx", config.getBooleanSafe(CONFIG_KEY_HISTOGRAM,false));
+		displayAnonymous.select("xx", config.getBooleanSafe(CONFIG_KEY_ANONYMIZE,false));
 		Date start = config.getBooleanEntry(CONFIG_KEY_DATESTART) != null ? 
 				(Date) config.get(CONFIG_KEY_DATESTART) : null;
 		dateStart.setDate(start);
-		boolean listing = config.getBooleanSafe(CONFIG_KEY_LISTING);
+		boolean listing = config.getBooleanSafe(CONFIG_KEY_LISTING,false);
 		showListing.select("xx", listing);
 		int showAll = config.getBooleanEntry(CONFIG_KEY_BESTONLY) != null ? 
 				(int) config.get(CONFIG_KEY_BESTONLY) : 0;
@@ -199,6 +199,8 @@ public class HighScoreEditController extends FormBasicController {
 		numTableRows.setIntValue(numuser);
 		activateForm(true);
 	}
+	
+	
 	
 	private void activateForm (boolean init){
 		boolean formactive = allowHighScore.isSelected(0);

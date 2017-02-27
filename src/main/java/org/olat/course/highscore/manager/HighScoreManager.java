@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.course.highscore.model.HighScoreDataModel;
 import org.olat.course.highscore.ui.HighScoreTableEntry;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.user.UserManager;
@@ -43,30 +44,17 @@ public class HighScoreManager {
 
 	private static final OLog log = Tracing.createLoggerFor(HighScoreManager.class);
 	
-	private long classwidth;
-	private double min;
-	private HighScoreTableEntry ownTableEntry;
-	
-	
 	/**
 	 * Sort rank by score, then by id and last alphabetically, 
 	 * determine rank of each member dependent on score,
 	 * decide whether there is a second table or not
-	 *
-	 * @param assessEntries all assessable entries for this item
-	 * @param allMembers of the assessable item
-	 * @param ownIdMembers the own id members
-	 * @param allPodium all members of the podium
-	 * @param ownIdIndices to display the rank of each member 
-	 * @param tableSize the number of members to display in the listing
-	 * @param ownIdentity of the current user
-	 * @param userManager the user manager
-	 * @return the double[]
 	 */
-	public double[] sortRankByScore (List<AssessmentEntry>  assessEntries,
+	public HighScoreDataModel sortRankByScore (List<AssessmentEntry>  assessEntries,
 			List<HighScoreTableEntry> allMembers, List<HighScoreTableEntry> ownIdMembers,
 			List<List<HighScoreTableEntry>> allPodium, List<Integer> ownIdIndices,	
 			int tableSize, Identity ownIdentity, UserManager userManager){
+		
+		HighScoreTableEntry ownTableEntry = null;
 
 		for (AssessmentEntry assessmentEntry : assessEntries) {
 			float score = assessmentEntry.getScore() == null ? 0f : assessmentEntry.getScore().floatValue();
@@ -114,26 +102,24 @@ public class HighScoreManager {
 			log.audit("2nd Highscore Table established");
 		}
 		
-		return allScores;
+		return new HighScoreDataModel(allScores, ownTableEntry);
 	}
 	
 	/**
 	 * Process histogram data.
 	 *
-	 * @param Array of scores
-	 * @return the double[]
 	 */
-	public double[] processHistogramData(double[] scores, Float lowerBorder, Float upperBorder) {
+	public HighScoreDataModel processHistogramData(double[] scores, Float lowerBorder, Float upperBorder) {
 		try {
+			long classwidth;
 			// determine natural min, max and thus range
 			double max = Math.ceil(Arrays.stream(scores).max().getAsDouble());
 			double min = Math.floor(Arrays.stream(scores).min().getAsDouble());
-			this.min = min;
 			double range = max - min;
 			// use original scores if range is too small else convert results to fit histogram
 			if (range <= 20) {
-				this.classwidth = 1;
-				return scores;
+				classwidth = 1;
+				return new HighScoreDataModel(scores, classwidth, min);
 			} else {
 				long numberofclasses = 10;
 				// primeRange increments range until a natural factor is found or upper/lower boundary is met
@@ -167,8 +153,7 @@ public class HighScoreManager {
 					primeRange = upperBorder - lowerBorder > 0;
 				}
 				// steps can only be natural numbers 
-				long classwidth = Math.round(range / numberofclasses);
-				this.classwidth = classwidth;
+				classwidth = Math.round(range / numberofclasses);
 				// modified scores are calculated and saved
 				double[] allScores = new double[scores.length];
 				for (int i = 0; i < scores.length; i++) {
@@ -178,22 +163,14 @@ public class HighScoreManager {
 					double newscore = min + (n * classwidth);
 					allScores[i] = newscore;
 				}
-				return allScores;
+				return new HighScoreDataModel(allScores, classwidth, min);
 			}
 		} catch (Exception e) {
 			log.error("",e);
-			classwidth = 1;
-			return new double[] {0,1,2,3};
+			return new HighScoreDataModel(new double[] {0,1,2,3}, 1L, 0D);
 		}
 	}
-	
-	public HighScoreTableEntry getOwnTableEntry() {
-		return ownTableEntry;
-	}
 
-	public long getClasswidth() {
-		return classwidth;
-	}
 	
 	/**
 	 * Calculate histogram cutvalue using results from the method (processHistogramData(double[]))
@@ -201,7 +178,7 @@ public class HighScoreManager {
 	 * @param score the score
 	 * @return the double
 	 */
-	public double calculateHistogramCutvalue(double score) {
+	public double calculateHistogramCutvalue(double score, long classwidth, double min) {
 		if (classwidth != 0) {
 			// determine n-th class to fit the current score result
 			double n = Math.ceil((score - min) / classwidth);
