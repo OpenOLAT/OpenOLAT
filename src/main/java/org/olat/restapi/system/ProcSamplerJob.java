@@ -80,7 +80,6 @@ public class ProcSamplerJob extends QuartzJobBean {
 			double millis = random.nextDouble() * 6000.0d;
 			long wait = Math.round(millis);
 			Thread.sleep(wait);
-			System.out.println(wait + " " + new Date());
 		} catch (InterruptedException e) {
 			log.error("", e);
 		}
