@@ -161,6 +161,7 @@ public class QTI21EditForm extends FormBasicController {
 		};
 		assessmentResultsOnFinishEl = uifactory.addCheckboxesVertical("typeResultOnFinish", "qti.form.summary", formLayout, resultsOptionsKeys, resultsOptionsValues, 1);
 		assessmentResultsOnFinishEl.setEnabled(!configRef);
+		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
 
 		if(!resultsOptions.none()) {
 			showResultsOnFinishEl.select(onKeys[0], true);
