@@ -39,7 +39,6 @@ public class ExecutorJob extends JobWithDB {
 	@Override
 	public void executeWithDB(JobExecutionContext context) {
 		try {
-			log.info("Starting checking task to do");
 			CoreSpringFactory.getImpl(TaskExecutorManagerImpl.class).processTaskToDo();
 		} catch (Exception e) {
 			// ups, something went completely wrong! We log this but continue next time

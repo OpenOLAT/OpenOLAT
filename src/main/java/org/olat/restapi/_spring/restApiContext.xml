@@ -74,6 +74,17 @@
 	  <property name="jobClass" value="org.olat.restapi.system.SamplerJob" />
 	</bean>
 	
+	<bean id="procSamplerTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	    <property name="jobDetail" ref="procSamplerJob" />
+	    <property name="cronExpression" value="5 3,8,13,18,23,28,33,38,43,48,53,58 * * * ?" />
+	    <property name="startDelay" value="30000" />
+	</bean>
+	
+	<bean id="procSamplerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+	  <property name="jobClass" value="org.olat.restapi.system.ProcSamplerJob" />
+	</bean>
+	
+	
 	<!-- Deadline Job -->
 	<bean id="restTokenTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="restTokenJob.${cluster.singleton.services}" />
