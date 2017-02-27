@@ -80,11 +80,12 @@
 #end
 
 #foreach($itemResult in $itemResults)
-	#if($itemResult.metadataVisible)
+	#if($itemResult.metadataVisible || ${itemResult.hasInteractions()})
 	<div class="panel panel-default o_personal">
 	  	<div class="panel-heading">
 	 		<h5 class="panel-title"><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)</h5>
 	 	</div>
+	 	#if($itemResult.metadataVisible)
 		<table class="table"><tbody>
 			<tr>
 				<th>$r.translate("results.entry.time")</th>
@@ -132,6 +133,7 @@
 			</tr>
 			#end
 		</tbody></table>
+		#end
 	</div>
 	#end
 	#foreach($itemInteraction in $itemResult.interactionResults)
