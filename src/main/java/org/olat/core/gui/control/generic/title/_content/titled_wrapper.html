@@ -16,6 +16,11 @@
 #if($r.available("description"))
 	$r.render("description")
 #end
+#if($r.available("courseSearch"))
+    <div id="o_forum_fulltextsearch" class="o_forum_fulltextsearch">
+	$r.render("courseSearch")
+	</div>
+#end
 #if($separator)
 	<hr />
 #end

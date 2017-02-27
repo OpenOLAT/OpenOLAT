@@ -358,6 +358,47 @@ $o-portfolio-lead-border-color						: darken($o-portfolio-lead-background-color,
 $o-portfolio-lead-border-radius						: $border-radius-small !default;
 $o-portfolio-page-summary-font-size					: $font-size-large !default;
 
+/* QTI2 eAssessment */
+$o-qti-status-notPresented-color					: lighten($text-muted,40%) !default;
+$o-qti-status-notAnswered-color						: $brand-warning !default;
+$o-qti-status-answered-color						: $brand-success !default;
+$o-qti-status-ended-color							: $brand-info !default;
+$o-qti-status-invalid-color							: $brand-danger !default;
+$o-qti-status-review-color							: $brand-info !default;
+$o-qti-attempts-color								: $text-muted !default;
+$o-qti-attempts-limited-color						: $brand-warning !default;
+$o-qti-attempts-nomore-color						: $brand-danger !default;
+$o-qti-menu-link-color								: $o-tree-link-color !default;
+$o-qti-menu-link-hover-color						: $o-tree-link-hover-color !default;
+$o-qti-menu-link-active-color						: $o-tree-link-active-color !default;
+$o-qti-menu-link-active-hover-color					: $o-tree-link-active-hover-color !default;
+$o-qti-menu-link-active-hover-bg					: $o-tree-link-active-hover-bg !default;
+$o-qti-menu-link-active-font-weight					: $o-tree-link-active-font-weight !default;
+$o-qti-menu-bg										: $o-toolbar-bg-color !default;
+$o-qti-menu-border-color							: $o-toolbar-border-color !default;
+$o-qti-menu-border-radius							: $border-radius-base !default;
+$o-qti-item-title-bg								: $o-qti-menu-bg !default;
+$o-qti-item-title-border-color						: $o-qti-menu-border-color !default;
+$o-qti-item-title-border-radius						: $o-qti-menu-border-radius !default;
+$o-qti-item-min-height								: 200px !default;
+$o-qti-item-border-color							: $o-qti-menu-border-color !default;
+$o-qti-item-controls-bg								: $o-qti-menu-bg !default;
+$o-qti-item-controls-border-color					: $o-qti-menu-border-color !default;
+$o-qti-item-controls-border-radius					: $o-qti-menu-border-radius !default;
+$o-qti-run-infos-bg									: $o-qti-menu-bg !default;
+$o-qti-run-infos-border-color						: $o-qti-menu-border-color !default;
+$o-qti-run-infos-border-radius						: $o-qti-menu-border-radius !default;
+$o-qti-run-infos-progress-bg						: #eee !default;
+$o-qti-badResponse-color							: $brand-danger !default;
+$o-qti-highlight-color								: $brand-danger !default;
+$o-qti-bar-green									: $brand-success !default;
+$o-qti-bar-red										: $brand-danger !default;
+$o-qti-success										: $brand-success !default;
+$o-qti-failure										: $brand-warning !default;
+$o-qti-error										: $brand-danger !default;
+$o-qti-box-bg										: #eee !default;
+$o-qti-box-color									: #666 !default;
+$o-qti-choice-tablelayout-bg						: #e7e7e7 !default;
 
 
 /* Chat and other floating window */

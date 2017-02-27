@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This file was created using: Onyx Editor, Version 3.8 (Full, licensed 
+	version), (c)2012 BPS Bildungsportal Sachsen GmbH -->
+<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 imsqti_v2p1.xsd"
+	identifier="NZ2001518GBSlg_2140650746" title="shya model 2017/01"
+	adaptive="false" timeDependent="false">
+	<responseDeclaration identifier="RESPONSE_1"
+		cardinality="single" baseType="string">
+		<correctResponse>
+			<value>ACR 30. 8. 2017, 6 Oc 234/88h</value>
+		</correctResponse>
+		<mapping defaultValue="0">
+			<mapEntry mapKey="ACR 30. 8. 2017, 6 Oc 234/88h"
+				mappedValue="2.0" />
+			<mapEntry mapKey="ACR 30.08.2017, 6 Oc 234/88h" mappedValue="2.0" />
+		</mapping>
+	</responseDeclaration>
+	<outcomeDeclaration identifier="SCORE" cardinality="single"
+		baseType="float">
+		<defaultValue>
+			<value>0</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="MAXSCORE"
+		cardinality="single" baseType="float">
+		<defaultValue>
+			<value>2</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="FEEDBACKBASIC"
+		cardinality="single" baseType="identifier" view="testConstructor">
+		<defaultValue>
+			<value>empty</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<itemBody>
+		<p xmlns="">
+			<font size="3" face="@arial unicode ms">
+				Give the name of the following symbols:
+				<font color="#ff0000">shya model 2017/01</font>
+			</font>
+		</p>
+		The correct designation of the model iss :
+		<textEntryInteraction responseIdentifier="RESPONSE_1"
+			expectedLength="100" />
+		.
+		<br xmlns="" />
+	</itemBody>
+	<responseProcessing>
+		<responseCondition>
+			<responseIf>
+				<not>
+					<isNull>
+						<variable identifier="RESPONSE_1" />
+					</isNull>
+				</not>
+				<setOutcomeValue identifier="SCORE">
+					<sum>
+						<variable identifier="SCORE" />
+						<mapTolResponse
+							xmlns="http://bps-system.de/xsd/imsqti_ext_maptolresponse"
+							identifier="RESPONSE_1" tolerance="2.0" toleranceMode="absolute" />
+					</sum>
+				</setOutcomeValue>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">incorrect</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<and>
+					<not>
+						<match>
+							<variable identifier="FEEDBACKBASIC" />
+							<baseValue baseType="identifier">empty</baseValue>
+						</match>
+					</not>
+					<equal toleranceMode="exact">
+						<variable identifier="SCORE" />
+						<variable identifier="MAXSCORE" />
+					</equal>
+				</and>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">correct</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+	</responseProcessing>
+</assessmentItem>

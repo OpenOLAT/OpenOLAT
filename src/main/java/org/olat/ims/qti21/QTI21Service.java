@@ -29,6 +29,7 @@ import java.util.Map;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.id.Identity;
+import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
@@ -133,6 +134,13 @@ public interface QTI21Service {
 	 */
 	public boolean deleteAuthorAssessmentTestSession(RepositoryEntryRef testEntry);
 	
+	/**
+	 * Delete a specific test session.
+	 * 
+	 * @param testSession
+	 * @return
+	 */
+	public boolean deleteAssessmentTestSession(AssessmentTestSession testSession);
 	
 	/**
 	 * Set some extra options for the QTI package.
@@ -190,7 +198,7 @@ public interface QTI21Service {
 	public AssessmentSessionAuditLogger getAssessmentSessionAuditLogger(AssessmentTestSession session, boolean authorMode);
 	
 	public AssessmentTestSession getResumableAssessmentTestSession(Identity identity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
+			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, boolean authorMode);
 
 	public AssessmentTestSession reloadAssessmentTestSession(AssessmentTestSession session);
 	
@@ -229,6 +237,17 @@ public interface QTI21Service {
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
 	
 	/**
+	 * Retrieve the last finished test session.
+	 * 
+	 * @param courseEntry
+	 * @param subIdent
+	 * @param testEntry
+	 * @param identity
+	 * @return
+	 */
+	public AssessmentTestSession getLastAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, IdentityRef identity);
+	
+	/**
 	 * Retrieve the sessions for a test.
 	 * 
 	 * @param courseEntry
@@ -257,9 +276,31 @@ public interface QTI21Service {
 	public AssessmentTestSession recordTestAssessmentResult(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResult,
 			AssessmentSessionAuditLogger auditLogger);
 	
-	public AssessmentTestSession finishTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResul, Date timestamp);
+	/**
+	 * Finish the test session. The assessment result is for the last time and would not updated anymore.
+	 * 
+	 * @param candidateSession
+	 * @param testSessionState
+	 * @param assessmentResul
+	 * @param timestamp
+	 * @param digitalSignature
+	 * @param bundle
+	 * @return
+	 */
+	public AssessmentTestSession finishTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState, AssessmentResult assessmentResul,
+			Date timestamp, DigitalSignatureOptions signatureOptions, Identity assessedIdentity);
 	
 	public void cancelTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState);
+	
+	/**
+	 * Sign the assessment result. Be careful, the file must not be changed
+	 * after that!
+	 * 
+	 * @param candidateSession
+	 * @param sendMail
+	 * @param mail
+	 */
+	public void signAssessmentResult(AssessmentTestSession candidateSession, DigitalSignatureOptions signatureOptions, Identity assessedIdentity);
 	
 	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
 			CandidateTestEventType textEventType, TestSessionState testSessionState, NotificationRecorder notificationRecorder);
@@ -268,8 +309,29 @@ public interface QTI21Service {
 			CandidateTestEventType textEventType, CandidateItemEventType itemEventType,
 			TestPlanNodeKey itemKey, TestSessionState testSessionState, NotificationRecorder notificationRecorder);
 	
-	
+	/**
+	 * Return the assessment result for the specified test session.
+	 * 
+	 * @param candidateSession
+	 * @return The assessment result
+	 */
 	public AssessmentResult getAssessmentResult(AssessmentTestSession candidateSession);
+	
+	/**
+	 * Return the file where the XML Digital Signature of the assessment result
+	 * is saved or null if it not exists.
+	 * 
+	 * @return The file
+	 */
+	public File getAssessmentResultSignature(AssessmentTestSession candidateSession);
+	
+	/**
+	 * Return the issue date saved in the XML Digital Signature
+	 * 
+	 * @param candidateSession
+	 * @return
+	 */
+	public Date getAssessmentResultSignatureIssueDate(AssessmentTestSession candidateSession);
 	
 
 	public AssessmentTestSession finishItemSession(AssessmentTestSession candidateSession, AssessmentResult assessmentResul, Date timestamp);

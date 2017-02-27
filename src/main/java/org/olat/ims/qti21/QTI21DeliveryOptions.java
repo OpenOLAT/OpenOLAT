@@ -40,15 +40,21 @@ public class QTI21DeliveryOptions {
 	private boolean showMenu;
 	private boolean showTitles;
 	private boolean personalNotes;
+	private boolean hideLms;
 	
 	private boolean blockAfterSuccess;
 	private int maxAttempts;
 	
 	private boolean allowAnonym;
 	
+	private boolean digitalSignature;
+	private boolean digitalSignatureMail;
+	
 	private Integer templateProcessingLimit;
 	
+	private TestType testType;
 	private ShowResultsOnFinish showResultsOnFinish;
+	private QTI21AssessmentResultsOptions assessmentResultsOptions;
 
 	public boolean isEnableCancel() {
 		return enableCancel;
@@ -98,6 +104,14 @@ public class QTI21DeliveryOptions {
 		this.showMenu = showMenu;
 	}
 
+	public boolean isHideLms() {
+		return hideLms;
+	}
+
+	public void setHideLms(boolean hideLms) {
+		this.hideLms = hideLms;
+	}
+
 	public boolean isPersonalNotes() {
 		return personalNotes;
 	}
@@ -130,6 +144,22 @@ public class QTI21DeliveryOptions {
 		this.maxAttempts = maxAttempts;
 	}
 
+	public boolean isDigitalSignature() {
+		return digitalSignature;
+	}
+
+	public void setDigitalSignature(boolean digitalSignature) {
+		this.digitalSignature = digitalSignature;
+	}
+
+	public boolean isDigitalSignatureMail() {
+		return digitalSignatureMail;
+	}
+
+	public void setDigitalSignatureMail(boolean digitalSignatureMail) {
+		this.digitalSignatureMail = digitalSignatureMail;
+	}
+
 	public ShowResultsOnFinish getShowResultsOnFinish() {
 		return showResultsOnFinish;
 	}
@@ -137,7 +167,18 @@ public class QTI21DeliveryOptions {
 	public void setShowResultsOnFinish(ShowResultsOnFinish showResultsOnFinish) {
 		this.showResultsOnFinish = showResultsOnFinish;
 	}
-	
+
+	public QTI21AssessmentResultsOptions getAssessmentResultsOptions() {
+		if(assessmentResultsOptions == null) {
+			assessmentResultsOptions = QTI21AssessmentResultsOptions.convert(showResultsOnFinish);
+		}
+		return assessmentResultsOptions;
+	}
+
+	public void setAssessmentResultsOptions(QTI21AssessmentResultsOptions assessmentResultsOptions) {
+		this.assessmentResultsOptions = assessmentResultsOptions;
+	}
+
 	public Integer getTemplateProcessingLimit() {
 		return templateProcessingLimit;
 	}
@@ -146,19 +187,70 @@ public class QTI21DeliveryOptions {
 		this.templateProcessingLimit = templateProcessingLimit;
 	}
 
+	public TestType getTestType() {
+		return testType;
+	}
+
+	public void setTestType(TestType testType) {
+		this.testType = testType;
+	}
+
 	public static final QTI21DeliveryOptions defaultSettings() {
 		QTI21DeliveryOptions defaultSettings = new QTI21DeliveryOptions();
 		defaultSettings.enableCancel = false;
 		defaultSettings.enableSuspend = false;
 		defaultSettings.displayScoreProgress = false;
 		defaultSettings.displayQuestionProgress = false;
+		defaultSettings.hideLms = false;
 		defaultSettings.showMenu = true;
 		defaultSettings.showTitles = true;
 		defaultSettings.personalNotes = false;
 		defaultSettings.allowAnonym = false;
 		defaultSettings.blockAfterSuccess = false;
 		defaultSettings.maxAttempts = 0;
-		defaultSettings.showResultsOnFinish = ShowResultsOnFinish.none;
+		defaultSettings.digitalSignature = false;
+		defaultSettings.digitalSignatureMail = false;
+		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.noOptions();
+		return defaultSettings;
+	}
+	
+	public static final QTI21DeliveryOptions formativeSettings() {
+		QTI21DeliveryOptions defaultSettings = new QTI21DeliveryOptions();
+		defaultSettings.enableCancel = true;
+		defaultSettings.enableSuspend = true;
+		defaultSettings.displayScoreProgress = true;
+		defaultSettings.displayQuestionProgress = true;
+		defaultSettings.hideLms = true;
+		defaultSettings.showMenu = true;
+		defaultSettings.showTitles = true;
+		defaultSettings.personalNotes = false;
+		defaultSettings.allowAnonym = false;
+		defaultSettings.blockAfterSuccess = false;
+		defaultSettings.maxAttempts = 0;
+		defaultSettings.digitalSignature = false;
+		defaultSettings.digitalSignatureMail = false;
+		defaultSettings.testType = TestType.formative;
+		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.allOptions();
+		return defaultSettings;
+	}
+	
+	public static final QTI21DeliveryOptions summativeSettings() {
+		QTI21DeliveryOptions defaultSettings = new QTI21DeliveryOptions();
+		defaultSettings.enableCancel = false;
+		defaultSettings.enableSuspend = false;
+		defaultSettings.displayScoreProgress = false;
+		defaultSettings.displayQuestionProgress = true;
+		defaultSettings.hideLms = true;
+		defaultSettings.showMenu = true;
+		defaultSettings.showTitles = true;
+		defaultSettings.personalNotes = false;
+		defaultSettings.allowAnonym = false;
+		defaultSettings.blockAfterSuccess = false;
+		defaultSettings.maxAttempts = 1;
+		defaultSettings.digitalSignature = false;
+		defaultSettings.digitalSignatureMail = false;
+		defaultSettings.testType = TestType.summative;
+		defaultSettings.assessmentResultsOptions = QTI21AssessmentResultsOptions.noOptions();
 		return defaultSettings;
 	}
 
@@ -169,14 +261,23 @@ public class QTI21DeliveryOptions {
 		clone.enableSuspend = enableSuspend;
 		clone.displayScoreProgress = displayScoreProgress;
 		clone.displayQuestionProgress = displayQuestionProgress;
+		clone.hideLms = hideLms;
 		clone.showMenu = showMenu;
 		clone.showTitles = showTitles;
 		clone.personalNotes = personalNotes;
 		clone.allowAnonym = allowAnonym;
 		clone.blockAfterSuccess = blockAfterSuccess;
 		clone.maxAttempts = maxAttempts;
-		clone.showResultsOnFinish = showResultsOnFinish;
+		clone.digitalSignature = digitalSignature;
+		clone.digitalSignatureMail = digitalSignatureMail;
+		clone.assessmentResultsOptions = getAssessmentResultsOptions().clone();
+		clone.testType = testType;
 		return clone;
+	}
+	
+	public enum TestType {
+		summative,
+		formative
 	}
 	
 	public enum ShowResultsOnFinish {

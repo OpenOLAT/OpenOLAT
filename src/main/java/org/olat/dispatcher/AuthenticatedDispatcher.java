@@ -328,6 +328,13 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				Window w = windowBackOffice.getWindow();
 				w.dispatchRequest(ureq, true); // renderOnly
 			} catch (Exception e) {
+				// try to render something
+				try {
+					Window w = windowBackOffice.getWindow();
+					w.dispatchRequest(ureq, true); // renderOnly
+				} catch (Exception e1) {
+					redirectToDefaultDispatcher(ureq.getHttpReq(), ureq.getHttpResp());
+				}
 				log.error("", e);
 			}
 		}

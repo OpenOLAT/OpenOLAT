@@ -2,26 +2,29 @@
 	<div id="o_qti_run_title" class="o_header_with_buttons">
 		<h3>$r.escapeHtml($title)</h3>
 		<div class="o_button_group o_button_group_right">
-		#if(${qtiWorksStatus.mayCloseTest()} && $r.available("closeTest") && $r.visible("closeTest"))
-			$r.render("closeTest")
-		#elseif(${qtiWorksStatus.mayEndCurrentTestPart()} && $r.available("endTest") && $r.visible("endTest"))
-			$r.render("endTest")
-		#end
-
-		#if(${qtiWorksStatus.mayCancelTest()} && $r.available("cancelTest") && $r.visible("cancelTest"))
+		#set( $showClose = ${qtiWorksStatus.mayCloseTest()} && $r.available("closeTest") && $r.visible("closeTest") )
+		
+		#if(${qtiWorksStatus.mayCancelTest()} && $r.available("cancelTest") && $r.visible("cancelTest") && !$showClose)
 			$r.render("cancelTest")
 		#end
-		#if(${qtiWorksStatus.maySuspendTest()} && $r.available("suspendTest") && $r.visible("suspendTest"))
+		#if(${qtiWorksStatus.maySuspendTest()} && $r.available("suspendTest") && $r.visible("suspendTest") && !$showClose)
 			$r.render("suspendTest")
 		#end
 		#if($r.available("closeResults") && $r.visible("closeResults"))
 			$r.render("closeResults")
 		#end
+		
+		#if($showClose)
+			$r.render("closeTest")
+		#elseif(${qtiWorksStatus.mayEndCurrentTestPart()} && $r.available("endTest") && $r.visible("endTest"))
+			$r.render("endTest")
+		#end
+		
 		</div>
 	</div>
 
 	#if (!$qtiWorksStatus.isSurvey() && (($displayScoreProgress && $qtiWorksStatus.hasScore()) || $displayQuestionProgress))
-	<div id="o_qti_run_infos" class="panel panel-default"><div class="panel-body">
+	<div id="o_qti_run_infos" class="clearfix">
 		#if (!$qtiWorksStatus.isSurvey() && $displayScoreProgress && $qtiWorksStatus.score)
 		<div id="o_qti_scoreinfo">
 			<div id="o_qti_run_scoreinfo" class="col-md-2 col-sm-3">
@@ -47,7 +50,7 @@
 			<div id="o_qti_run_questionprogress" class="col-md-4 col-sm-3">$r.render("questionProgress", "nl")</div>
 		</div>
 		#end
-	</div></div>
+	</div>
 	#end
 	
 	#if($r.visible("qtiResults"))

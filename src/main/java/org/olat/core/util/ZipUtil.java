@@ -751,6 +751,17 @@ public class ZipUtil {
 		}
 	}
 	
+	public static void addFileToZip(String path, Path file, ZipOutputStream exportStream) {
+		try(InputStream source = Files.newInputStream(file)) {
+			exportStream.putNextEntry(new ZipEntry(path));
+			FileUtils.copy(source, exportStream);
+			exportStream.closeEntry();
+		} catch(IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	
 	/**
 	 * Zip all files under a certain root directory. (with compression)
 	 * 

@@ -877,7 +877,7 @@ public class VideoManagerImpl implements VideoManager {
 	public boolean hasVideoFile(OLATResource videoResource) {
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		LocalFileImpl videoFile = (LocalFileImpl) masterContainer.resolve(FILENAME_VIDEO_MP4);	
-		return videoFile != null & videoFile.exists();
+		return videoFile != null && videoFile.exists();
 	}
 
 }

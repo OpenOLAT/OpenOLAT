@@ -83,6 +83,8 @@ public class SmsPhoneSendController extends FormBasicController {
 		String i18nLabel = handler.i18nFormElementLabelKey();
 		newPhoneEl = uifactory.addTextElement("sms.new.phone", i18nLabel, 32, "", formLayout);
 		newPhoneEl.setPlaceholderKey("sms.change.number.hint", null);
+		newPhoneEl.setExampleKey("sms.phone.number.example", null);
+		newPhoneEl.setFocus(true);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

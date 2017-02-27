@@ -91,6 +91,20 @@ public abstract class Container extends AbstractComponent implements ComponentCo
 			setDirty(true);
 		}
 	}
+	
+	/**
+	 * Remove a component from the container.
+	 * 
+	 * @param componentName the name of the component to remove
+	 * @return The removed component or null if nothing was removed.
+	 */
+	public Component remove(String componentName) {
+		Component removedComponent = components.remove(componentName);
+		if(removedComponent != null) {
+			setDirty(true);
+		}
+		return removedComponent;
+	}
 
 	/**
 	 * use only rarely!

@@ -79,7 +79,6 @@ public class ResourcesMapper implements Mapper {
 			if(file.exists()) {
 				resource = new FileMediaResource(file);
 			} else {
-				
 				String submissionName = null;
 				File storage = null;
 				if(filename.startsWith("submissions/")) {

@@ -44,12 +44,16 @@ import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
  */
 public abstract class ItemSessionControlController extends FormBasicController {
 
-	private static final String[] yesnoKeys = new String[] { "y", "n" };
-	private static final String[] attemtpsKeys = new String[] { "y", "n", "inherit" };
+	private static final String YES = "y";
+	private static final String NO = "n";
+	private static final String INHERIT = "inherit";
+	private static final String[] yesnoKeys = new String[] { YES, NO };
+	private static final String[] yesNoInheritKeys = new String[] { YES, NO, INHERIT };
 
 	private TextElement maxAttemptsEl /*, maxTimeEl */;
 	protected SingleSelection limitAttemptsEl, allowSkippingEl, allowCommentEl, allowReviewEl, showSolutionEl;
 	
+	private final boolean allowInherit;
 	protected final boolean editable;
 	protected final boolean restrictedEdit;
 	private final AbstractPart part;
@@ -58,12 +62,19 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			AbstractPart part, boolean restrictedEdit, boolean editable) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.part = part;
+		allowInherit = !(part instanceof TestPart);
 		this.editable = editable;
 		this.restrictedEdit = restrictedEdit;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String[] yesNoValues = new String[] { translate("yes"), translate("no") };
+		String[] yesNoInheritValues = new String[] { translate("yes"), translate("no"), translate("inherit") };
+		// inherit is allowed?
+		String[] aKeys = allowInherit ?  yesNoInheritKeys : yesnoKeys;
+		String[] aValues = allowInherit ? yesNoInheritValues : yesNoValues;
+		
 		/*
 		TimeLimits timeLimits = part.getTimeLimits();
 		String timeMax = "";
@@ -81,71 +92,73 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		if(itemSessionControl != null) {
 			maxAttempts = itemSessionControl.getMaxAttempts();
 		}
-		String[] aKeys = part instanceof TestPart ? yesnoKeys : attemtpsKeys;
-		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
-		String[] attemptsValues = new String[] { translate("yes"), translate("no"), translate("inherit") };
-		String[] aValues = part instanceof TestPart ? yesnoValues : attemptsValues;
 		limitAttemptsEl = uifactory.addRadiosHorizontal("form.imd.limittries", formLayout, aKeys, aValues);
 		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
-
 		String maxAttemptsStr = maxAttempts == null ? "" : maxAttempts.toString();
 		maxAttemptsEl = uifactory.addTextElement("attempts", "item.session.control.attempts", 4, maxAttemptsStr, formLayout);
 		if(maxAttempts == null) {
 			if(aKeys.length == 2) {
-				limitAttemptsEl.select(attemtpsKeys[0], true);
+				limitAttemptsEl.select(YES, true);
 				maxAttemptsEl.setValue("1");
 			} else {
-				limitAttemptsEl.select(attemtpsKeys[2], true);
+				limitAttemptsEl.select(INHERIT, true);
 			}
 		} else if(maxAttempts.intValue() == 0) {
-			limitAttemptsEl.select(attemtpsKeys[1], true);
+			limitAttemptsEl.select(NO, true);
 		} else {
-			limitAttemptsEl.select(attemtpsKeys[0], true);
+			limitAttemptsEl.select(YES, true);
 		}
 		limitAttemptsEl.setEnabled(!restrictedEdit && editable);
 		maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
 		maxAttemptsEl.setEnabled(!restrictedEdit && editable);
 		
-		allowSkippingEl = uifactory.addRadiosHorizontal("item.session.control.allow.skipping", formLayout, yesnoKeys, yesnoValues);
+		allowSkippingEl = uifactory.addRadiosHorizontal("item.session.control.allow.skipping", formLayout, aKeys, aValues);
 		allowSkippingEl.addActionListener(FormEvent.ONCHANGE);
 		allowSkippingEl.setEnabled(!restrictedEdit && editable);
 		allowSkippingEl.setHelpText(translate("item.session.control.allow.skipping.hint"));
-		
 		// the default value is allowSkipping=true
-		if(itemSessionControl != null && itemSessionControl.getAllowSkipping() != null && !itemSessionControl.getAllowSkipping().booleanValue()) {
-			allowSkippingEl.select(yesnoKeys[1], true);
+		if(itemSessionControl != null && itemSessionControl.getAllowSkipping() != null) {
+			String key = itemSessionControl.getAllowSkipping().booleanValue() ? YES : NO;
+			allowSkippingEl.select(key, true);
 		} else {
-			allowSkippingEl.select(yesnoKeys[0], true);
+			String key = allowInherit ? INHERIT : YES;
+			allowSkippingEl.select(key, true);
 		}
 		
-		allowCommentEl = uifactory.addRadiosHorizontal("item.session.control.allow.comment", formLayout, yesnoKeys, yesnoValues);
+		allowCommentEl = uifactory.addRadiosHorizontal("item.session.control.allow.comment", formLayout, aKeys, aValues);
 		allowCommentEl.addActionListener(FormEvent.ONCHANGE);
 		allowCommentEl.setEnabled(!restrictedEdit && editable);
 		allowCommentEl.setHelpText(translate("item.session.control.allow.comment.hint"));
-		if(itemSessionControl != null && itemSessionControl.getAllowComment() != null && itemSessionControl.getAllowComment().booleanValue()) {
-			allowCommentEl.select(yesnoKeys[0], true);
+		if(itemSessionControl != null && itemSessionControl.getAllowComment() != null) {
+			String key = itemSessionControl.getAllowComment().booleanValue() ? YES : NO;
+			allowCommentEl.select(key, true);
 		} else {
-			allowCommentEl.select(yesnoKeys[1], false);
+			String key = allowInherit ? INHERIT : YES;
+			allowCommentEl.select(key, true);
 		}
 		
-		allowReviewEl = uifactory.addRadiosHorizontal("item.session.control.allow.review", formLayout, yesnoKeys, yesnoValues);
+		allowReviewEl = uifactory.addRadiosHorizontal("item.session.control.allow.review", formLayout, aKeys, aValues);
 		allowReviewEl.addActionListener(FormEvent.ONCHANGE);
 		allowReviewEl.setEnabled(!restrictedEdit && editable);
 		allowReviewEl.setHelpText(translate("item.session.control.allow.review.hint"));
-		if(itemSessionControl != null && itemSessionControl.getAllowReview() != null && itemSessionControl.getAllowReview().booleanValue()) {
-			allowReviewEl.select(yesnoKeys[0], true);
+		if(itemSessionControl != null && itemSessionControl.getAllowReview() != null) {
+			String key = itemSessionControl.getAllowReview().booleanValue() ? YES : NO;
+			allowReviewEl.select(key, true);
 		} else {
-			allowReviewEl.select(yesnoKeys[1], false);
+			String key = allowInherit ? INHERIT : NO;
+			allowReviewEl.select(key, true);
 		}
 	
-		showSolutionEl = uifactory.addRadiosHorizontal("item.session.control.show.solution", formLayout, yesnoKeys, yesnoValues);
+		showSolutionEl = uifactory.addRadiosHorizontal("item.session.control.show.solution", formLayout, aKeys, aValues);
 		showSolutionEl.addActionListener(FormEvent.ONCHANGE);
 		showSolutionEl.setEnabled(!restrictedEdit && editable);
 		showSolutionEl.setHelpText(translate("item.session.control.show.solution.hint"));
-		if(itemSessionControl != null && itemSessionControl.getShowSolution() != null && itemSessionControl.getShowSolution().booleanValue()) {
-			showSolutionEl.select(yesnoKeys[0], true);
+		if(itemSessionControl != null && itemSessionControl.getShowSolution() != null) {
+			String key = itemSessionControl.getShowSolution().booleanValue() ? YES : NO;
+			showSolutionEl.select(key, true);
 		} else {
-			showSolutionEl.select(yesnoKeys[1], false);
+			String key = allowInherit ? INHERIT : NO;
+			showSolutionEl.select(key, false);
 		}
 	}
 
@@ -158,24 +171,11 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		allowCommentEl.clearError();
-		if(!allowCommentEl.isOneSelected()) {
-			allowCommentEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
-		allowReviewEl.clearError();
-		if(!allowReviewEl.isOneSelected()) {
-			allowReviewEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
-		showSolutionEl.clearError();
-		if(!showSolutionEl.isOneSelected()) {
-			showSolutionEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
+		allOk &= validateSingleSelection(allowCommentEl);
+		allOk &= validateSingleSelection(allowReviewEl);
+		allOk &= validateSingleSelection(showSolutionEl);
+		allOk &= validateSingleSelection(allowSkippingEl);
+
 		maxAttemptsEl.clearError();
 		if(limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0) &&
 				StringHelper.containsNonWhitespace(maxAttemptsEl.getValue())) {
@@ -210,6 +210,16 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		return allOk & super.validateFormLogic(ureq);
 	}
 	
+	private boolean validateSingleSelection(SingleSelection selectionEl) {
+		boolean allOk = true;
+		selectionEl.clearError();
+		if(!selectionEl.isOneSelected()) {
+			selectionEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		return allOk;
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == limitAttemptsEl) {
@@ -223,28 +233,44 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();//can be null
 		
 		// need to be first! 
-		if(allowSkippingEl.isOneSelected() && allowSkippingEl.isSelected(0)) {
-			checkNotNull(itemSessionControl).setAllowSkipping(Boolean.TRUE);
-		} else if(itemSessionControl != null) {
-			itemSessionControl.setAllowSkipping(Boolean.FALSE);
+		if(allowSkippingEl.isOneSelected()) {
+			if(allowSkippingEl.isSelected(0)) {//yes
+				checkNotNull(itemSessionControl).setAllowSkipping(Boolean.TRUE);
+			} else if(allowSkippingEl.isSelected(1)) {//no
+				checkNotNull(itemSessionControl).setAllowSkipping(Boolean.FALSE);
+			} else if(itemSessionControl != null) {//inherit
+				itemSessionControl.setAllowSkipping(null);
+			}
 		}
 		
-		if(allowCommentEl.isOneSelected() && allowCommentEl.isSelected(0)) {
-			checkNotNull(itemSessionControl).setAllowComment(Boolean.TRUE);
-		} else if(itemSessionControl != null) {
-			itemSessionControl.setAllowComment(Boolean.FALSE);
+		if(allowCommentEl.isOneSelected()) {
+			if(allowCommentEl.isSelected(0)) {
+				checkNotNull(itemSessionControl).setAllowComment(Boolean.TRUE);
+			} else if(allowCommentEl.isSelected(1)) {
+				checkNotNull(itemSessionControl).setAllowComment(Boolean.FALSE);
+			} else if(itemSessionControl != null) {
+				itemSessionControl.setAllowComment(null);
+			}
 		}
 		
-		if(allowReviewEl.isOneSelected() && allowReviewEl.isSelected(0)) {
-			checkNotNull(itemSessionControl).setAllowReview(Boolean.TRUE);
-		} else if(itemSessionControl != null) {
-			itemSessionControl.setAllowReview(Boolean.FALSE);
+		if(allowReviewEl.isOneSelected()) {
+			if(allowReviewEl.isSelected(0)) {
+				checkNotNull(itemSessionControl).setAllowReview(Boolean.TRUE);
+			} else if(allowReviewEl.isSelected(1)) {
+				checkNotNull(itemSessionControl).setAllowReview(Boolean.FALSE);
+			} else if(itemSessionControl != null) {
+				itemSessionControl.setAllowReview(null);
+			}
 		}
 		
-		if(showSolutionEl.isOneSelected() && showSolutionEl.isSelected(0)) {
-			checkNotNull(itemSessionControl).setShowSolution(Boolean.TRUE);
-		} else if(itemSessionControl != null) {
-			itemSessionControl.setShowSolution(Boolean.FALSE);
+		if(showSolutionEl.isOneSelected()) {
+			if(showSolutionEl.isSelected(0)) {
+				checkNotNull(itemSessionControl).setShowSolution(Boolean.TRUE);
+			} else if(showSolutionEl.isSelected(1)) {
+				checkNotNull(itemSessionControl).setShowSolution(Boolean.FALSE);
+			} else if(itemSessionControl != null) {
+				itemSessionControl.setShowSolution(null);
+			}
 		}
 		
 		if(limitAttemptsEl.isSelected(0) && maxAttemptsEl != null && maxAttemptsEl.isVisible()

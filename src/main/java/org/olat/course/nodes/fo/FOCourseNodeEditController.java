@@ -56,6 +56,8 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private static final String[] paneKeys = { PANE_TAB_ACCESSIBILITY, PANE_TAB_SETTINGS };
 	
 	public static final String PSEUDONYM_POST_ALLOWED = "pseudonym.post.allowed";
+	/* Pseudonym is proposed as default */
+	public static final String PSEUDONYM_POST_DEFAULT = "pseudonym.post.default";
 	public static final String GUEST_POST_ALLOWED = "guest.post.allowed";
 	
 	private final FOCourseNode foNode;
@@ -143,6 +145,8 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 			if (event == Event.CHANGED_EVENT) {
 				String pseudoAllowed = settingsCtrl.isPseudonymPostAllowed() ? "true" : "false";
 				foNode.getModuleConfiguration().setStringValue(PSEUDONYM_POST_ALLOWED, pseudoAllowed);
+				String defaultPseudo = settingsCtrl.isDefaultPseudonym() ? "true" : "false";
+				foNode.getModuleConfiguration().setStringValue(PSEUDONYM_POST_DEFAULT, defaultPseudo);
 				String guestAllowed = settingsCtrl.isGuestPostAllowed() ? "true" : "false";
 				foNode.getModuleConfiguration().setStringValue(GUEST_POST_ALLOWED, guestAllowed);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);

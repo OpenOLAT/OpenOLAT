@@ -73,9 +73,10 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
+import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.ResponseFormater;
+import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestMarks;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.ResponseLegality;
@@ -98,11 +99,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
-import uk.ac.ed.ph.jqtiplus.node.result.AbstractResult;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
+import uk.ac.ed.ph.jqtiplus.node.result.TestResult;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.SubmissionMode;
@@ -148,7 +149,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 public class AssessmentTestDisplayController extends BasicController implements CandidateSessionContext, GenericEventListener {
 	
 	private final File fUnzippedDirRoot;
-	private final String mapperUri;
+	private String mapperUri;
 	private final QTI21DeliveryOptions deliveryOptions;
 	
 	private VelocityContainer mainVC;
@@ -179,6 +180,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private OutcomesListener outcomesListener;
 	private AssessmentSessionAuditLogger candidateAuditLogger;
 
+	@Autowired
+	private QTI21Module qtiModule;
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
@@ -229,26 +232,34 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
-		
-		currentRequestTimestamp = ureq.getRequestTimestamp();
-		
-		initMarks();
-		initOrResumeAssessmentTestSession(ureq, authorMode);
-		
-		URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
-		File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
-		mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(),
-				new ResourcesMapper(assessmentObjectUri, submissionDir));
-
-		/* Handle immediate end of test session */
-        if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
-        	AssessmentResult assessmentResult = null;
-            qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult, currentRequestTimestamp);
-        	mainVC = createVelocityContainer("end");
-        } else {
-        	mainVC = createVelocityContainer("run");
-        	initQtiWorks(ureq);
-        }
+		if(resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful() == null) {
+        	mainVC = createVelocityContainer("error");
+		} else {
+			currentRequestTimestamp = ureq.getRequestTimestamp();
+			
+			initMarks();
+			initOrResumeAssessmentTestSession(ureq, authorMode);
+			
+			URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
+			File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
+			mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(),
+					new ResourcesMapper(assessmentObjectUri, submissionDir));
+	
+			/* Handle immediate end of test session */
+	        if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
+	        	AssessmentResult assessmentResult = null;
+	        	qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult,
+	             		currentRequestTimestamp, getDigitalSignatureOptions(), getIdentity());
+	         	mainVC = createVelocityContainer("end");
+	        } else {
+	        	mainVC = createVelocityContainer("run");
+	        	initQtiWorks(ureq);
+	        }
+	        
+	        OLATResourceable sessionOres = OresHelper
+	        		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
+	        CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), sessionOres);
+		}
         
         mainPanel = putInitialPanel(mainVC);
         
@@ -287,7 +298,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		AssessmentTestSession lastSession = null;
 		if(deliveryOptions.isEnableSuspend()) {
-			lastSession = qtiService.getResumableAssessmentTestSession(assessedIdentity, anonymousIdentifier, entry, subIdent, testEntry);
+			lastSession = qtiService.getResumableAssessmentTestSession(assessedIdentity, anonymousIdentifier, entry, subIdent, testEntry, authorMode);
 		}
 		if(lastSession == null) {
 			candidateSession = qtiService.createAssessmentTestSession(assessedIdentity, anonymousIdentifier, assessmentEntry, entry, subIdent, testEntry, authorMode);
@@ -489,6 +500,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				break;
 			case response:
 				handleResponse(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
+				nextItemIfAllowed(ureq);
 				break;
 			case endTestPart:
 				confirmEndTestPart(ureq);
@@ -561,6 +573,33 @@ public class AssessmentTestDisplayController extends BasicController implements 
         CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
         		CandidateTestEventType.SELECT_MENU, null, selectedNodeKey, testSessionState, notificationRecorder);
         candidateAuditLogger.logCandidateEvent(candidateEvent);
+	}
+	
+	/**
+	 * Try to go to the next item. It will check fi the current
+	 * item want to show some feedback (modal or element), has some
+	 * bad or invalid responses, state of the test session... or if
+	 * the item is an adaptive one.
+	 * 
+	 * @param ureq
+	 */
+	private void nextItemIfAllowed(UserRequest ureq) {
+        if(testSessionController.hasFollowingNonLinearItem()
+        		&& testSessionController.getTestSessionState() != null
+        		&& !testSessionController.getTestSessionState().isEnded()
+        		&& !testSessionController.getTestSessionState().isExited()) {
+            
+        	TestSessionState testSessionState = testSessionController.getTestSessionState();
+            TestPlanNodeKey itemNodeKey = testSessionState.getCurrentItemKey();
+            if(itemNodeKey != null) {
+				TestPlanNode currentItemNode = testSessionState.getTestPlan().getNode(itemNodeKey);
+	        	boolean hasFeedbacks = qtiWorksCtrl.willShowSomeFeedbacks(currentItemNode);
+	        	//allow skipping
+	        	if(!hasFeedbacks) {
+	        		processNextItem(ureq);
+	        	}
+            }
+        }
 	}
 	
 	private void processNextItem(UserRequest ureq) {
@@ -680,7 +719,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 	    /* If we ended the testPart and there are now no more available testParts, then finish the session now */
 	    if (nextItemNode==null && testSessionController.findNextEnterableTestPart()==null) {
-	    	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, requestTimestamp);
+	    	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
+	    			requestTimestamp, getDigitalSignatureOptions(), getIdentity());
 	    }
 
 	    // Record and log event 
@@ -892,7 +932,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
         // Record current result state
 	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, nextTestPart == null);
         if(nextTestPart == null) {
-        	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, requestTimestamp);
+        	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
+        			requestTimestamp, getDigitalSignatureOptions(), getIdentity());
         }
 	}
 	
@@ -956,8 +997,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
                 testSessionController.exitTest(currentTimestamp);
                 candidateSession.setTerminationTime(currentTimestamp);
                 candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
-            }
-            else {
+            } else {
                 eventType = CandidateTestEventType.ADVANCE_TEST_PART;
             }
         }
@@ -1083,7 +1123,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
         /* Handle immediate end of test session */
         if (ended) {
-            qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult, timestamp);
+            qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
+            		timestamp, getDigitalSignatureOptions(), getIdentity());
         } else {
         	TestPart currentTestPart = testSessionController.getCurrentTestPart();
         	if(currentTestPart != null && currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR) {
@@ -1095,6 +1136,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
         
         return testSessionController;
+	}
+	
+	private DigitalSignatureOptions getDigitalSignatureOptions() {
+		boolean sendMail = deliveryOptions.isDigitalSignatureMail();
+		boolean digitalSignature = deliveryOptions.isDigitalSignature() && qtiModule.isDigitalSignatureEnabled();
+		DigitalSignatureOptions options = new DigitalSignatureOptions(digitalSignature, sendMail, entry, testEntry);
+		if(digitalSignature) {
+			outcomesListener.decorateConfirmation(candidateSession, options, getLocale());
+		}
+		return options;
 	}
 	
 	private TestSessionController createNewTestSessionStateAndController(NotificationRecorder notificationRecorder) {
@@ -1175,7 +1226,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		return assessmentResult;
 	}
 	
-	private void processOutcomeVariables(AbstractResult resultNode, boolean submit) {
+	private void processOutcomeVariables(TestResult resultNode, boolean submit) {
 		Float score = null;
 		Boolean pass = null;
 		
@@ -1196,14 +1247,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
             	}
             }
         }
-        
-        if(score != null || pass != null) {
-        	if(submit) {
-        		outcomesListener.submit(score, pass, candidateSession.getKey());
-        	} else {
-        		outcomesListener.updateOutcomes(score, pass);
-        	}
-        }
+
+    	if(submit) {
+    		outcomesListener.submit(score, pass, candidateSession.getKey());
+    	} else {
+    		outcomesListener.updateOutcomes(score, pass);
+    	}
     }
 	
     private AssessmentResult computeTestAssessmentResult(UserRequest ureq, final AssessmentTestSession testSession) {
@@ -1302,17 +1351,29 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					? "assessment.test.end.testPart" : "assessment.test.end.test";
 			endTestPartButton = uifactory.addFormLink("endTest", endName, null, formLayout, Link.BUTTON);
 			endTestPartButton.setElementCssClass("o_sel_end_testpart");
+			endTestPartButton.setPrimary(true);
+			endTestPartButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_end_testpart");
+			
 			closeTestButton = uifactory.addFormLink("closeTest", "assessment.test.close.test", null, formLayout, Link.BUTTON);
 			closeTestButton.setElementCssClass("o_sel_close_test");
+			closeTestButton.setPrimary(true);
+			closeTestButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_close_test");
+			
 			if(deliveryOptions.isEnableCancel()) {
 				cancelTestButton = uifactory.addFormLink("cancelTest", "cancel.test", null, formLayout, Link.BUTTON);
+				cancelTestButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_cancel");
+
 			}
 			if(deliveryOptions.isEnableSuspend()) {
 				suspendTestButton = uifactory.addFormLink("suspendTest", "suspend.test", null, formLayout, Link.BUTTON);
+				suspendTestButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_suspend");
+
 			}
 			
 			closeResultsButton = uifactory.addFormLink("closeResults", "assessment.test.close.results", null, formLayout, Link.BUTTON);
 			closeResultsButton.setElementCssClass("o_sel_close_results");
+			closeResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_close_results");
+			closeResultsButton.setPrimary(true);
 			closeResultsButton.setVisible(false);
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
@@ -1363,6 +1424,16 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				flc.contextPut("menuWidth", menuWidth);
 			}
 			updateStatusAndResults(ureq);
+		}
+		
+		public boolean willShowSomeFeedbacks(TestPlanNode itemNode) {
+			if(itemNode == null || testSessionController == null
+					|| testSessionController.getTestSessionState().isExited()
+					|| testSessionController.getTestSessionState().isEnded()) {
+				return true;
+			}
+			
+			return qtiEl.getComponent().willShowFeedbacks(itemNode);
 		}
 
 		@Override
@@ -1486,14 +1557,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			fireEvent(ureq, new Event("suspend"));
 		}
 		
-		private void doSaveMenuWidth(UserRequest ureq, String menuWidth) {
-			this.menuWidth = menuWidth;
-			if(StringHelper.containsNonWhitespace(menuWidth)) {
-				flc.contextPut("menuWidth", menuWidth);
+		private void doSaveMenuWidth(UserRequest ureq, String newMenuWidth) {
+			this.menuWidth = newMenuWidth;
+			if(StringHelper.containsNonWhitespace(newMenuWidth)) {
+				flc.contextPut("menuWidth", newMenuWidth);
 				if(testEntry != null) {
 					UserSession usess = ureq.getUserSession();
 					if (usess.isAuthenticated() && !usess.getRoles().isGuestOnly()) {
-						usess.getGuiPreferences().putAndSave(this.getClass(), getMenuPrefsKey(), menuWidth);
+						usess.getGuiPreferences().putAndSave(this.getClass(), getMenuPrefsKey(), newMenuWidth);
 					}
 				}
 			}
@@ -1518,12 +1589,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			//updateButtons();
 			resultsVisible = false;
 			if(testSessionController.getTestSessionState().isEnded()
-					&& deliveryOptions.getShowResultsOnFinish() != null
-					&& !ShowResultsOnFinish.none.equals(deliveryOptions.getShowResultsOnFinish())) {
+					&& deliveryOptions.getAssessmentResultsOptions() != null
+					&& !deliveryOptions.getAssessmentResultsOptions().none()) {
 				removeAsListenerAndDispose(resultCtrl);
 				resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, anonym,
 						AssessmentTestDisplayController.this.getCandidateSession(),
-						deliveryOptions.getShowResultsOnFinish(), fUnzippedDirRoot, mapperUri, false, true);
+						fUnzippedDirRoot, mapperUri, deliveryOptions.getAssessmentResultsOptions(),  false, true);
 				listenTo(resultCtrl);
 				flc.add("qtiResults", resultCtrl.getInitialFormItem());
 				resultsVisible = true;

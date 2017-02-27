@@ -22,6 +22,7 @@ package org.olat.user.propertyhandlers.ui;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -55,10 +56,27 @@ public class SmsPhoneComponentRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("'>").append(phoneNumber).append("</p>");
 		
+		sb.append("<div class='o_form_example help-block'>").append(smsFte.getTranslator().translate("sms.phone.hint")).append("</div>");
+		
+		if(smsFte.getAndResetFormDirty()) {
+			FormJSHelper.setFlexiFormDirtyOnLoad(sb, smsFte.getRootForm());
+		}
+
+		sb.append("<div class='form-inline'>");
 		FormLink editLink = smsFte.getEditLink();
 		if(editLink != null && editLink.isVisible()) {
 			Component cmp = editLink.getComponent();
 			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
 		}
+
+		if(StringHelper.containsNonWhitespace(phoneNumber)) {
+			sb.append("&nbsp;");
+			FormLink removeLink = smsFte.getRemoveLink();
+			if(removeLink != null && removeLink.isVisible()) {
+				Component cmp = removeLink.getComponent();
+				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+			}
+		}
+		sb.append("</div>");
 	}
 }

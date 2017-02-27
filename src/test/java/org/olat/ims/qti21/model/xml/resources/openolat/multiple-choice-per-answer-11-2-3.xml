@@ -1,0 +1,152 @@
+<assessmentItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
+                identifier="mcbe900fffcb49f08698b349e7b832e0"
+                title="Multiple choice per answer"
+                adaptive="false"
+                timeDependent="false"
+                toolName="OpenOLAT"
+                toolVersion="11.2.2"
+                xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd">
+  <responseDeclaration identifier="RESPONSE_1" cardinality="multiple" baseType="identifier">
+    <correctResponse>
+      <value>mc80677ac3f4449ebc689cf60c230a3d</value>
+      <value>mc7e5667abeb415fa05a8c7d8fd3d6bb</value>
+    </correctResponse>
+    <mapping defaultValue="0.0">
+      <mapEntry mapKey="mc7e5667abeb415fa05a8c7d8fd3d6bb" mappedValue="1.0"/>
+      <mapEntry mapKey="mc80677ac3f4449ebc689cf60c230a3d" mappedValue="1.0"/>
+      <mapEntry mapKey="mcaacc51e0ca4027b3adb3107cda4e30" mappedValue="0.0"/>
+      <mapEntry mapKey="mc1b7b8257e2419b880936ea11bff1f1" mappedValue="0.0"/>
+    </mapping>
+  </responseDeclaration>
+  <outcomeDeclaration identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"
+                      view="testConstructor">
+    <defaultValue>
+      <value>none</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <outcomeDeclaration identifier="FEEDBACKMODAL" cardinality="multiple" baseType="identifier"
+                      view="testConstructor"/>
+  <outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float">
+    <defaultValue>
+      <value>0.0</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <outcomeDeclaration identifier="MINSCORE" cardinality="single" baseType="float"
+                      view="testConstructor">
+    <defaultValue>
+      <value>0.0</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float">
+    <defaultValue>
+      <value>1.0</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <itemBody>
+    <p>A question</p>
+    <choiceInteraction responseIdentifier="RESPONSE_1" shuffle="true" maxChoices="0"
+                       orientation="vertical">
+      <simpleChoice identifier="mc80677ac3f4449ebc689cf60c230a3d">
+        <p>Correct answer</p>
+      </simpleChoice>
+      <simpleChoice identifier="mc1b7b8257e2419b880936ea11bff1f1">
+        <p>Wrong answer</p>
+      </simpleChoice>
+      <simpleChoice identifier="mcaacc51e0ca4027b3adb3107cda4e30">
+        <p>Missed answer</p>
+      </simpleChoice>
+      <simpleChoice identifier="mc7e5667abeb415fa05a8c7d8fd3d6bb">
+        <p>Right answer</p>
+      </simpleChoice>
+    </choiceInteraction>
+  </itemBody>
+  <responseProcessing>
+    <responseCondition>
+      <responseIf>
+        <match>
+          <variable identifier="RESPONSE_1"/>
+          <correct identifier="RESPONSE_1"/>
+        </match>
+        <setOutcomeValue identifier="SCORE">
+          <sum>
+            <variable identifier="SCORE"/>
+            <mapResponse identifier="RESPONSE_1"/>
+          </sum>
+        </setOutcomeValue>
+        <setOutcomeValue identifier="FEEDBACKBASIC">
+          <baseValue baseType="identifier">correct</baseValue>
+        </setOutcomeValue>
+      </responseIf>
+      <responseElse>
+        <setOutcomeValue identifier="FEEDBACKBASIC">
+          <baseValue baseType="identifier">incorrect</baseValue>
+        </setOutcomeValue>
+      </responseElse>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <and>
+          <match>
+            <baseValue baseType="identifier">correct</baseValue>
+            <variable identifier="FEEDBACKBASIC"/>
+          </match>
+        </and>
+        <setOutcomeValue identifier="FEEDBACKMODAL">
+          <multiple>
+            <variable identifier="FEEDBACKMODAL"/>
+            <baseValue baseType="identifier">Feedback95207895187660</baseValue>
+          </multiple>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <and>
+          <match>
+            <baseValue baseType="identifier">incorrect</baseValue>
+            <variable identifier="FEEDBACKBASIC"/>
+          </match>
+        </and>
+        <setOutcomeValue identifier="FEEDBACKMODAL">
+          <multiple>
+            <variable identifier="FEEDBACKMODAL"/>
+            <baseValue baseType="identifier">Feedback95207895187661</baseValue>
+          </multiple>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <lt>
+          <variable identifier="SCORE"/>
+          <variable identifier="MINSCORE"/>
+        </lt>
+        <setOutcomeValue identifier="SCORE">
+          <variable identifier="MINSCORE"/>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <gt>
+          <variable identifier="SCORE"/>
+          <variable identifier="MAXSCORE"/>
+        </gt>
+        <setOutcomeValue identifier="SCORE">
+          <variable identifier="MAXSCORE"/>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+  </responseProcessing>
+  <modalFeedback showHide="show" outcomeIdentifier="FEEDBACKMODAL"
+                 identifier="Feedback95207895187660"
+                 title="Correct">
+    <p>All answers correct</p>
+  </modalFeedback>
+  <modalFeedback showHide="show" outcomeIdentifier="FEEDBACKMODAL"
+                 identifier="Feedback95207895187661"
+                 title="Wrong">
+    <p>Some choices are wrong</p>
+  </modalFeedback>
+</assessmentItem>

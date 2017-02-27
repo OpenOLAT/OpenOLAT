@@ -72,7 +72,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	transient private final static int CURRENTVERSION = 11;
+	transient private final static int CURRENTVERSION = 12;
 	/**
 	 * Log levels
 	 */
@@ -108,7 +108,10 @@ public class CourseConfig implements Serializable, Cloneable {
 	 * The toolbar is enabled by default
 	 */
 	transient public static final String TOOLBAR_ENABLED = "TOOLBAR_ENABLED";
-	
+	/**
+	 * The course search is enabled by default
+	 */
+	transient public static final String COURSESEARCH_ENABLED = "COURSESEARCH_ENABLED";
 	/**
 	 * course calendar
 	 */
@@ -181,6 +184,8 @@ public class CourseConfig implements Serializable, Cloneable {
 
 		configuration.put(MENU_ENABLED, Boolean.TRUE);
 		configuration.put(TOOLBAR_ENABLED, Boolean.TRUE);
+		
+		configuration.put(COURSESEARCH_ENABLED, Boolean.TRUE);
 
 		this.version = CURRENTVERSION;
 	}
@@ -263,6 +268,11 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(MENU_ENABLED)) configuration.put(MENU_ENABLED, Boolean.TRUE);
 				if (!configuration.containsKey(TOOLBAR_ENABLED)) configuration.put(TOOLBAR_ENABLED, Boolean.TRUE);
 				this.version = 11;
+			}
+			
+			if (version == 11) {
+				if (!configuration.containsKey(COURSESEARCH_ENABLED)) configuration.put(COURSESEARCH_ENABLED, Boolean.TRUE);
+				this.version = 12;
 			}
 			
 			/*
@@ -527,6 +537,15 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(MENU_ENABLED, new Boolean(b));
 	}
 	
+	public boolean isCourseSearchEnabled() {
+		Boolean bool = (Boolean) configuration.get(COURSESEARCH_ENABLED);
+		return bool.booleanValue();
+	}
+	
+	public void setCourseSearchEnabled(boolean b) {
+		configuration.put(COURSESEARCH_ENABLED, new Boolean(b));
+	}
+	
 	public boolean isToolbarEnabled() {
 		Boolean bool = (Boolean) configuration.get(TOOLBAR_ENABLED);
 		return bool.booleanValue();
@@ -559,6 +578,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setRecertificationTimelapseUnit(getRecertificationTimelapseUnit());
 		clone.setMenuEnabled(isMenuEnabled());
 		clone.setToolbarEnabled(isToolbarEnabled());
+		clone.setCourseSearchEnabled(isCourseSearchEnabled());
 		return clone;
 	}
 

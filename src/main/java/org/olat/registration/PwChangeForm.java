@@ -93,7 +93,7 @@ public class PwChangeForm extends FormBasicController {
 		// validate that both passwords are the same
 		boolean newDoesMatch = newpass1.getValue().equals(newpass2.getValue());
 		if (!newDoesMatch) {
-				newpass2.setErrorKey("form.password.error.nomatch", null);
+			newpass2.setErrorKey("form.password.error.nomatch", null);
 		}
 		return newIsValid && newDoesMatch;
 	}

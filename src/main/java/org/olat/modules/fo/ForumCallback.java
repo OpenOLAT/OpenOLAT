@@ -36,6 +36,14 @@ public interface ForumCallback {
 	 * @return if allowed to post in forum with a pseudonym
 	 */
 	public boolean mayUsePseudonym();
+	
+	/**
+	 * 
+	 * @return if anonym posting is preferred
+	 */
+	public default boolean pseudonymAsDefault() {
+		return false;
+	}
 
 	/**
 	 * @return if allowed to open a new forum thread

@@ -1,0 +1,154 @@
+<assessmentItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
+                identifier="essay4b10a4e4d5b925db2e79d19c212"
+                title="Essay"
+                adaptive="false"
+                timeDependent="false"
+                toolName="OpenOLAT"
+                toolVersion="11.3a"
+                xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd">
+  <responseDeclaration identifier="RESPONSE_1" cardinality="single" baseType="string"/>
+  <responseDeclaration identifier="HINTREQUEST" cardinality="single" baseType="boolean"/>
+  <outcomeDeclaration identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"
+                      view="testConstructor">
+    <defaultValue>
+      <value>none</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <outcomeDeclaration identifier="FEEDBACKMODAL" cardinality="multiple" baseType="identifier"
+                      view="testConstructor"/>
+  <outcomeDeclaration identifier="SOLUTIONMODAL" cardinality="single" baseType="identifier"
+                      view="testConstructor"/>
+  <outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float">
+    <defaultValue>
+      <value>0.0</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <outcomeDeclaration identifier="MINSCORE" cardinality="single" baseType="float"
+                      view="testConstructor">
+    <defaultValue>
+      <value>0.0</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float">
+    <defaultValue>
+      <value>1.0</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <outcomeDeclaration identifier="HINTFEEDBACKMODAL" cardinality="single" baseType="identifier"/>
+  <itemBody>
+    <extendedTextInteraction responseIdentifier="RESPONSE_1" minStrings="0"/>
+    <p>
+      <endAttemptInteraction responseIdentifier="HINTREQUEST" title="Hint"/>
+    </p>
+  </itemBody>
+  <responseProcessing>
+    <responseCondition>
+      <responseIf>
+        <variable identifier="HINTREQUEST"/>
+        <setOutcomeValue identifier="HINTFEEDBACKMODAL">
+          <baseValue baseType="identifier">HINT</baseValue>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <isNull>
+          <variable identifier="RESPONSE_1"/>
+        </isNull>
+        <setOutcomeValue identifier="FEEDBACKBASIC">
+          <baseValue baseType="identifier">empty</baseValue>
+        </setOutcomeValue>
+      </responseIf>
+      <responseElseIf>
+        <not>
+          <isNull>
+            <variable identifier="RESPONSE_1"/>
+          </isNull>
+        </not>
+        <setOutcomeValue identifier="FEEDBACKBASIC">
+          <baseValue baseType="identifier">answered</baseValue>
+        </setOutcomeValue>
+      </responseElseIf>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <and>
+          <match>
+            <baseValue baseType="identifier">empty</baseValue>
+            <variable identifier="FEEDBACKBASIC"/>
+          </match>
+          <isNull>
+            <variable identifier="HINTFEEDBACKMODAL"/>
+          </isNull>
+        </and>
+        <setOutcomeValue identifier="FEEDBACKMODAL">
+          <multiple>
+            <variable identifier="FEEDBACKMODAL"/>
+            <baseValue baseType="identifier">Feedback95140547301204</baseValue>
+          </multiple>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <and>
+          <match>
+            <baseValue baseType="identifier">answered</baseValue>
+            <variable identifier="FEEDBACKBASIC"/>
+          </match>
+          <isNull>
+            <variable identifier="HINTFEEDBACKMODAL"/>
+          </isNull>
+        </and>
+        <setOutcomeValue identifier="FEEDBACKMODAL">
+          <multiple>
+            <variable identifier="FEEDBACKMODAL"/>
+            <baseValue baseType="identifier">Feedback95140547301203</baseValue>
+          </multiple>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <lt>
+          <variable identifier="SCORE"/>
+          <variable identifier="MINSCORE"/>
+        </lt>
+        <setOutcomeValue identifier="SCORE">
+          <variable identifier="MINSCORE"/>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <gt>
+          <variable identifier="SCORE"/>
+          <variable identifier="MAXSCORE"/>
+        </gt>
+        <setOutcomeValue identifier="SCORE">
+          <variable identifier="MAXSCORE"/>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+  </responseProcessing>
+  <modalFeedback showHide="show" outcomeIdentifier="SOLUTIONMODAL"
+                 identifier="Feedback95140741981089"
+                 title="Correct solution">
+    <p>Correct solution for word</p>
+  </modalFeedback>
+  <modalFeedback showHide="show" outcomeIdentifier="FEEDBACKMODAL"
+                 identifier="Feedback95140547301204"
+                 title="Nothing">
+    <p>Too little</p>
+  </modalFeedback>
+  <modalFeedback showHide="show" outcomeIdentifier="FEEDBACKMODAL"
+                 identifier="Feedback95140547301203"
+                 title="You answer">
+    <p>You answer something</p>
+  </modalFeedback>
+  <modalFeedback showHide="show" outcomeIdentifier="HINTFEEDBACKMODAL" identifier="HINT"
+                 title="Hint">
+    <p>A little hint</p>
+  </modalFeedback>
+</assessmentItem>

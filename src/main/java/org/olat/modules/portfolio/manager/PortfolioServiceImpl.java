@@ -849,6 +849,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
+	public Page getPageByBody(PageBody body) {
+		return pageDao.loadByBody(body);
+	}
+
+	@Override
 	public Page getLastPage(Identity owner, boolean mandatoryBinder) {
 		return pageDao.getLastPage(owner, mandatoryBinder);
 	}
@@ -1036,16 +1041,9 @@ public class PortfolioServiceImpl implements PortfolioService {
 			}
 			((PageImpl)reloadedPage).setLastPublicationDate(now);
 			Section section = reloadedPage.getSection();
-
 			// auto update the status of the evaluation form of the authors of the binder
-			Assignment assignment = assignmentDao.loadAssignment(page.getBody());
-			if(assignment != null && assignment.getAssignmentType() == AssignmentType.form) {
-				List<Identity> owners = getMembers(section.getBinder(), PortfolioRoles.owner.name());
-				for(Identity owner:owners) {
-					evaluationFormSessionDao.changeStatusOfSessionForPortfolioEvaluation(owner, page.getBody(), EvaluationFormSessionStatus.done);
-				}
-			}
-
+			changeAssignmentStatus(page, section, EvaluationFormSessionStatus.done);
+			
 			if(section != null) {
 				SectionStatus sectionStatus = section.getSectionStatus();
 				if(currentStatus == PageStatus.closed) {
@@ -1060,16 +1058,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			}
 		} else if(status == PageStatus.inRevision) {
 			Section section = reloadedPage.getSection();
-
-			// auto update the status of the evaluation form of the authors of the binder
-			Assignment assignment = assignmentDao.loadAssignment(page.getBody());
-			if(assignment != null && assignment.getAssignmentType() == AssignmentType.form) {
-				List<Identity> owners = getMembers(section.getBinder(), PortfolioRoles.owner.name());
-				for(Identity owner:owners) {
-					evaluationFormSessionDao.changeStatusOfSessionForPortfolioEvaluation(owner, page.getBody(), EvaluationFormSessionStatus.inProgress);
-				}
-			}
-
+			changeAssignmentStatus(page, section, EvaluationFormSessionStatus.inProgress);
 			if(section != null) {
 				SectionStatus sectionStatus = section.getSectionStatus();
 				if(sectionStatus == null || sectionStatus == SectionStatus.notStarted || sectionStatus == SectionStatus.closed) {
@@ -1081,6 +1070,29 @@ public class PortfolioServiceImpl implements PortfolioService {
 			}
 		}
 		return pageDao.updatePage(reloadedPage);
+	}
+	
+	/**
+	 * Auto update the status of the evaluation form of the authors of the binder.
+	 * 
+	 * @param page The page where the evaluation is
+	 * @param section The section of the page
+	 * @param newStatus The new status of the evaluation
+	 */
+	private void changeAssignmentStatus(Page page, Section section, EvaluationFormSessionStatus newStatus) {
+		// auto update the status of the evaluation form of the authors of the binder
+		Assignment assignment = assignmentDao.loadAssignment(page.getBody());
+		if(assignment != null && assignment.getAssignmentType() == AssignmentType.form) {
+			List<Identity> owners = getMembers(section.getBinder(), PortfolioRoles.owner.name());
+			for(Identity owner:owners) {
+				evaluationFormSessionDao.changeStatusOfSessionForPortfolioEvaluation(owner, page.getBody(), newStatus);
+			}
+		} else if(evaluationFormSessionDao.hasSessionForPortfolioEvaluation(page.getBody())) {
+			List<Identity> owners = getMembers(section.getBinder(), PortfolioRoles.owner.name());
+			for(Identity owner:owners) {
+				evaluationFormSessionDao.changeStatusOfSessionForPortfolioEvaluation(owner, page.getBody(), newStatus);
+			}
+		}
 	}
 
 	@Override

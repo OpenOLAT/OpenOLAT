@@ -40,7 +40,7 @@ public class TranscodingQueueTableRow {
 	private String format;
 	private FormLink deleteLink;
 	private FormLink retranscodeLink;
-	private String failureReason;
+	private Object[] failureReason;
 
 	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 
@@ -68,11 +68,11 @@ public class TranscodingQueueTableRow {
 	}
 	
 
-	public String getFailureReason() {
+	public Object[] getFailureReason() {
 		return failureReason;
 	}
 
-	public void setFailureReason(String failureReason) {
+	public void setFailureReason(Object[] failureReason) {
 		this.failureReason = failureReason;
 	}
 

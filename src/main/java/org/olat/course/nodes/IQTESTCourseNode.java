@@ -831,11 +831,12 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			// add default module configuration
-			config.set(IQEditController.CONFIG_KEY_ENABLEMENU, new Boolean(true));
+			config.set(IQEditController.CONFIG_KEY_ENABLEMENU, Boolean.TRUE);
 			config.set(IQEditController.CONFIG_KEY_SEQUENCE, AssessmentInstance.QMD_ENTRY_SEQUENCE_ITEM);
 			config.set(IQEditController.CONFIG_KEY_TYPE, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
 			config.set(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT);
-			config.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, new Boolean(true));
+			config.set(IQEditController.CONFIG_KEY_ENABLESCOREINFO, Boolean.TRUE);
+			config.set(IQEditController.CONFIG_KEY_CONFIG_REF, Boolean.TRUE);
 		} else {
 			int version = config.getConfigurationVersion();
 			if (version < CURRENT_CONFIG_VERSION) {

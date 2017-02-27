@@ -113,3 +113,7 @@ create view o_gp_contactext_v as (
       (bgroup.participantsintern=1 and bg_member.g_role='participant')
 );
 
+-- reset status code
+update o_repositoryentry set statuscode=0 where statuscode=1;
+
+

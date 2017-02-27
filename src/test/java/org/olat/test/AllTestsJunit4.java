@@ -69,6 +69,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.mail.manager.MailManagerTest.class,
 	org.olat.core.util.openxml.OpenXmlWorkbookTest.class,
 	org.olat.core.util.openxml.OpenXMLDocumentTest.class,
+	org.olat.core.util.xml.XMLDigitalSignatureUtilTest.class,
 	org.olat.core.id.context.BusinessControlFactoryTest.class,
 	org.olat.core.id.context.HistoryManagerTest.class,
 	org.olat.core.id.IdentityEnvironmentTest.class,
@@ -197,13 +198,19 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti21.manager.AssessmentResponseDAOTest.class,
 	org.olat.ims.qti21.manager.CorrectResponsesUtilTest.class,
 	org.olat.ims.qti21.model.xml.AssessmentItemBuilderTest.class,
+	org.olat.ims.qti21.model.xml.MultipleChoiceAssessmentItemBuilderTest.class,
+	org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilderTest.class,
+	
 	org.olat.ims.qti21.model.xml.AssessmentHtmlBuilderTest.class,
 	org.olat.ims.qti21.model.xml.AssessmentItemPackageTest.class,
 	org.olat.ims.qti21.model.xml.ManifestPackageTest.class,
 	org.olat.ims.qti21.pool.QTI12To21ConverterTest.class,
 	org.olat.ims.qti21.pool.QTI21QPoolServiceProviderTest.class,
 	org.olat.ims.qti21.repository.handlers.QTI21AssessmentTestHandlerTest.class,
-	org.olat.ims.qti21.model.xml.OnyxToQtiAssessementItemsTest.class,
+	org.olat.ims.qti21.model.xml.OnyxToQtiWorksAssessementItemsTest.class,
+	org.olat.ims.qti21.model.xml.OnyxToQtiWorksAssessementTestsTest.class,
+	org.olat.ims.qti21.model.xml.OpenOLATAssessementItemsTest.class,
+	org.olat.ims.qti21.model.xml.QTI21ExplorerHandlerTest.class,
 	org.olat.ims.lti.LTIManagerTest.class,
 	org.olat.modules.webFeed.FeedManagerImplTest.class,
 	org.olat.modules.qpool.manager.MetadataConverterHelperTest.class,
@@ -306,7 +313,6 @@ import org.junit.runners.Suite;
 	 * tree is not available
 	 */
 	org.olat.core.commons.services.scheduler.SchedulerTest.class,
-	org.olat.course.TestDeployableRepositoryExport.class,
 	org.olat.upgrade.UpgradeDefinitionTest.class
 })
 public class AllTestsJunit4 {

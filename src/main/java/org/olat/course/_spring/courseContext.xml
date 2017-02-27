@@ -55,35 +55,6 @@
 			</map>
 	    </constructor-arg>
 	</bean>
-
-	<bean id="deployedCourseList" class="java.util.ArrayList">
-	    <constructor-arg>
-	        <list>
-	            <ref bean="deployedCourse_Demo" />
-	            <ref bean="deployedCourse_OpenOLATHelp" />
-	        </list>
-	    </constructor-arg>
-	</bean>
-	
-	<bean id="deployedCourse_Demo" class="org.olat.course.DeployableCourseExport">
-		<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat-snapshots/org/openolat/course/Demo-Kurs/7.1-SNAPSHOT/Demo-Kurs-7.1-SNAPSHOT.zip" />
-		<property name="identifier" value="Demo Kurs" />
-		<property name="version" value="7.1" />
-	</bean>
-	
-	<!-- this one is the help course which will server as the online help, helpAsser flag is TRUE! -->
-	<bean id="deployedCourse_OpenOLATHelp" class="org.olat.course.DeployableCourseExport">
-		<property name="courseUrl" value="http://nexus.openolat.org/nexus/content/repositories/openolat/org/openolat/help/OpenOLAT-Help/8.1/OpenOLAT-Help-8.1.zip" />
-		<property name="identifier" value="OLAT::help-course_de.zip" />
-		<property name="access" value="4" />
-		<property name="version" value="8.1" />
-		<property name="redeploy" value="true" />
-		<!-- 
-			Url to the course which should be used as help course when help.plugin is set to 'courseHelp'. 
-			The is the legacy help system, it is not recommended to use this anymore. Context help will not
-			be available in this configuration, this is now in the confluence manual.
-		--> 
-	</bean>
 	
 	<!-- Certificates admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">

@@ -26,9 +26,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.ui.components.AssessmentObjectComponentRenderer.RenderingRequest;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
@@ -36,6 +39,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
+import uk.ac.ed.ph.jqtiplus.running.ItemProcessingContext;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
@@ -52,6 +56,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public class AssessmentTestComponent extends AssessmentObjectComponent  {
 	
 	private static final AssessmentTestComponentRenderer VELOCITY_RENDERER = new AssessmentTestComponentRenderer();
+	private static final OLog log = Tracing.createLoggerFor(AssessmentTestComponent.class);
 	
 	private TestSessionController testSessionController;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
@@ -122,8 +127,6 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 		responseIdentifiersMap.put(id, interaction);
 		return id;
 	}
-	
-	
 
 	@Override
 	public Interaction getInteractionOfResponseUniqueIdentifier(String responseUniqueId) {
@@ -136,6 +139,61 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 
 	public void setResolvedAssessmentTest(ResolvedAssessmentTest resolvedAssessmentTest) {
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
+	}
+	
+	/**
+	 * Check if the assessment item will show some
+	 * form of feedback like feedbackElement, modalFeedback
+	 * or message as invalid or bad response.
+	 * 
+	 * @param itemNode
+	 * @return
+	 */
+	public boolean willShowFeedbacks(TestPlanNode itemNode) {
+		try {
+			URI itemSystemId = itemNode.getItemSystemId();
+			ResolvedAssessmentItem resolvedAssessmentItem = getResolvedAssessmentTest()
+					.getResolvedAssessmentItemBySystemIdMap().get(itemSystemId);
+			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+			if(assessmentItem.getAdaptive()) {
+				return true;
+			}
+			
+			ItemSessionState itemSessionState = getItemSessionState(itemNode.getKey());
+			if(!itemSessionState.isResponded()) {
+				return true;
+			}
+			if(!itemNode.getEffectiveItemSessionControl().isAllowSkipping()) {
+				return true;
+			}
+
+			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+			for(Interaction interaction:interactions) {
+				if(AssessmentRenderFunctions.isBadResponse(itemSessionState, interaction.getResponseIdentifier())) {
+					return true;
+				}
+				if(AssessmentRenderFunctions.isInvalidResponse(itemSessionState, interaction.getResponseIdentifier())) {
+					return true;
+				}
+			}
+
+			ItemProcessingContext itemContext = getTestSessionController().getItemProcessingContext(itemNode);
+			
+			if(assessmentItem.getItemBody().willShowFeedback(itemContext)) {
+				return true;
+			}
+			
+			List<ModalFeedback> modalFeedbacks = assessmentItem.getModalFeedbacks();
+			for(ModalFeedback modalFeedback:modalFeedbacks) {
+				if(isFeedback(modalFeedback, itemSessionState)) {
+					return true;
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		
+		return false;
 	}
 	
 	@Override

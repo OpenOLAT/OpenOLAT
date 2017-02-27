@@ -23,6 +23,7 @@
 #if($r.visible("assessedIdentityInfos"))
 	$r.render("assessedIdentityInfos")
 #end
+#if($testResults.metadataVisible)
 <div class="panel panel-default o_personal o_sel_results_details">
   	<div class="panel-heading">
  		<h4 class="panel-title"><i class="o_icon o_qtiassessment_icon"> </i> $r.translate("head.assessment.overview")</h4>
@@ -68,77 +69,92 @@
 			</td>
 		</tr>
 		#end
+		#if($r.isNotNull($signatureUrl))
+		<tr>
+			<th>$r.translate("digital.signature.download")</th>
+			<td><a href="$signatureUrl" target="_blank"><i class="o_icon o_icon-fw o_icon_download"> </i> $r.translate("digital.signature.download.link")</a></td> 
+		</tr>
+		#end
 	</tbody></table>
 </div>
+#end
 
 #foreach($itemResult in $itemResults)
-<div class="panel panel-default o_personal">
-  	<div class="panel-heading">
- 		<h5 class="panel-title"><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)</h5>
- 	</div>
-	<table class="table"><tbody>
-		<tr>
-			<th>$r.translate("results.entry.time")</th>
-			<td>$r.formatDateAndTime($itemResult.entryTime)</td> 
-		</tr>
-		<tr>
-			<th>$r.translate("results.end.time")</th>
-			<td>$r.formatDateAndTime($itemResult.endTime)</td> 
-		</tr>
-		<tr>
-			<th>$r.translate("results.duration")</th>
-			<td>$r.formatDurationInMillis($itemResult.duration)</td> 
-		</tr>
-		<tr>
-			<th>$r.translate("results.session.status")</th>
-			<td>$itemResult.sessionStatus</td> 
-		</tr>
-		
-		#if(${itemResult.hasMaxScore()})
-		<tr class="o_sel_assessmentitem_maxscore">
-			<th>$r.translate("score.max")</th>
-			<td>$itemResult.maxScore</td> 
-		</tr>
-		#end
-		#if(${itemResult.hasScore()})
-		<tr class="o_sel_assessmentitem_score">
-			<th>$r.translate("results.score.yourscore")</th>
-			<td>$itemResult.score</td> 
-		</tr>
-		#end
-		#if(${itemResult.hasPass()})
-		<tr class="o_state #if(${testResults.getPass().booleanValue()}) o_passed #elseif(!${testResults.getPass().booleanValue()}) o_failed #else o_unknown #end">
-			<th>$r.translate("passed.yourpassed")</th>
-			<td> 
-			#if(${itemResult.getPass().booleanValue()})	
-				<i class="o_icon o_icon_passed"></i> 
-				$r.translate("passed.yes")
-			#elseif(!${itemResult.getPass().booleanValue()})		
-				<i class="o_icon o_icon_failed"></i> 
-				$r.translate("passed.no")
-			#else
-				$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
+	#if($itemResult.metadataVisible)
+	<div class="panel panel-default o_personal">
+	  	<div class="panel-heading">
+	 		<h5 class="panel-title"><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)</h5>
+	 	</div>
+		<table class="table"><tbody>
+			<tr>
+				<th>$r.translate("results.entry.time")</th>
+				<td>$r.formatDateAndTime($itemResult.entryTime)</td> 
+			</tr>
+			<tr>
+				<th>$r.translate("results.end.time")</th>
+				<td>$r.formatDateAndTime($itemResult.endTime)</td> 
+			</tr>
+			<tr>
+				<th>$r.translate("results.duration")</th>
+				<td>$r.formatDurationInMillis($itemResult.duration)</td> 
+			</tr>
+			<tr>
+				<th>$r.translate("results.session.status")</th>
+				<td>$itemResult.sessionStatus</td> 
+			</tr>
+			
+			#if(${itemResult.hasMaxScore()})
+			<tr class="o_sel_assessmentitem_maxscore">
+				<th>$r.translate("score.max")</th>
+				<td>$itemResult.maxScore</td> 
+			</tr>
 			#end
-			</td>
-		</tr>
-		#end
-	</tbody></table>
-</div>
-	#foreach($itemInteraction in $itemResult.interactionResults)
-	<div class="row #if(!$foreach.hasNext ) o_block_bottom #end">
-		#if($r.isNotNull($itemInteraction.solutionFormItem.name))
-			<div class="col-sm-6"><h5>$r.translate("response")</h5>
-				$r.render($itemInteraction.responseFormItem.name)
-			</div>
-			<div class="col-sm-6"><h5>$r.translate("solution")</h5>
-				$r.render($itemInteraction.solutionFormItem.name)
-			</div>
-		#else
-			<div class="col-sm-12"><h5>$r.translate("response")</h5>
-				$r.render($itemInteraction.responseFormItem.name)
-			</div>
-		#end
+			#if(${itemResult.hasScore()})
+			<tr class="o_sel_assessmentitem_score">
+				<th>$r.translate("results.score.yourscore")</th>
+				<td>$itemResult.score</td> 
+			</tr>
+			#end
+			#if(${itemResult.hasPass()})
+			<tr class="o_state #if(${testResults.getPass().booleanValue()}) o_passed #elseif(!${testResults.getPass().booleanValue()}) o_failed #else o_unknown #end">
+				<th>$r.translate("passed.yourpassed")</th>
+				<td> 
+				#if(${itemResult.getPass().booleanValue()})	
+					<i class="o_icon o_icon_passed"></i> 
+					$r.translate("passed.yes")
+				#elseif(!${itemResult.getPass().booleanValue()})		
+					<i class="o_icon o_icon_failed"></i> 
+					$r.translate("passed.no")
+				#else
+					$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
+				#end
+				</td>
+			</tr>
+			#end
+		</tbody></table>
 	</div>
+	#end
+	#foreach($itemInteraction in $itemResult.interactionResults)
+		#if($r.isNotNull($itemInteraction.responseFormItem.name) || $r.isNotNull($itemInteraction.solutionFormItem.name))
+		<div class="row #if(!$foreach.hasNext ) o_block_bottom #end">
+			#if($r.isNotNull($itemInteraction.responseFormItem.name) && $r.isNotNull($itemInteraction.solutionFormItem.name))
+				<div class="col-sm-6"><h5>$r.translate("response")</h5>
+					$r.render($itemInteraction.responseFormItem.name)
+				</div>
+				<div class="col-sm-6"><h5>$r.translate("solution")</h5>
+					$r.render($itemInteraction.solutionFormItem.name)
+				</div>
+			#elseif($r.isNotNull($itemInteraction.responseFormItem.name)))
+				<div class="col-sm-12"><h5>$r.translate("response")</h5>
+					$r.render($itemInteraction.responseFormItem.name)
+				</div>
+			#else
+				<div class="col-sm-12"><h5>$r.translate("solution")</h5>
+					$r.render($itemInteraction.solutionFormItem.name)
+				</div>
+			#end
+		</div>
+		#end
 	#end
 #end
 

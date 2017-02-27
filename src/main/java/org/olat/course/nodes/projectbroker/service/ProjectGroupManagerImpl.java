@@ -342,9 +342,9 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	}
 
 	public boolean isProjectManagerOrAdministrator(UserRequest ureq, CourseEnvironment courseEnv, Project project) {	
-		return isProjectManager(ureq.getIdentity(), project)
-				   || courseEnv.getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity())
-	         || ureq.getUserSession().getRoles().isOLATAdmin();
+		return ureq.getUserSession().getRoles().isOLATAdmin()
+				|| isProjectManager(ureq.getIdentity(), project)
+				|| courseEnv.getCourseGroupManager().isIdentityCourseAdministrator(ureq.getIdentity());
 	}
 	
 	public boolean isProjectParticipant(Identity identity, Project project) {

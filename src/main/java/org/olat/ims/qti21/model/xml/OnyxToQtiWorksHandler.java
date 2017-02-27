@@ -22,6 +22,7 @@ package org.olat.ims.qti21.model.xml;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.olat.core.util.StringHelper;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
@@ -42,6 +43,7 @@ import org.xml.sax.ext.DefaultHandler2;
  */
 public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 	
+	private final QTI21Infos infos;
 	private final XMLStreamWriter xtw;
 	
 	private boolean itemBody = false;
@@ -53,8 +55,9 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 	private boolean prompt = false;
 	
 	
-	public OnyxToQtiWorksHandler(XMLStreamWriter xtw) {
+	public OnyxToQtiWorksHandler(XMLStreamWriter xtw, QTI21Infos infos) {
 		this.xtw = xtw;
+		this.infos = infos;
 	}
 
 	@Override
@@ -123,6 +126,8 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 						xtw.writeAttribute(attrQName, attrValue);
 					}
 				}
+			} else if("assessmentItem".equals(qName) || "assessmentTest".equals(qName)) {
+				writeAssessmentElement(attributes);
 			} else {
 				int numOfAttributes = attributes.getLength();
 				for(int i=0;i<numOfAttributes; i++) {
@@ -145,6 +150,30 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 			
 		} catch (XMLStreamException e) {
 			throw new SAXException(e);
+		}
+	}
+	
+	private void writeAssessmentElement(Attributes attributes)
+	throws XMLStreamException {
+		boolean hasToolName = false;
+		boolean hasEditor = false;
+		int numOfAttributes = attributes.getLength();
+		for(int i=0;i<numOfAttributes; i++) {
+			String attrQName = attributes.getQName(i);
+			String attrValue = attributes.getValue(i);
+			xtw.writeAttribute(attrQName, attrValue);
+			if("toolName".equals(attrQName)) {
+				hasToolName = true;
+			} else if("toolVersion".equals(attrQName)) {
+				hasEditor = true;
+			}
+		}
+		
+		if(!hasToolName && infos != null && StringHelper.containsNonWhitespace(infos.getEditor())) {
+			xtw.writeAttribute("toolName", infos.getEditor());
+		}
+		if(!hasEditor && infos != null && StringHelper.containsNonWhitespace(infos.getVersion())) {
+			xtw.writeAttribute("toolVersion", infos.getVersion());
 		}
 	}
 	

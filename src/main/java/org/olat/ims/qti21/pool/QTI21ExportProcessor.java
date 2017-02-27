@@ -24,11 +24,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -76,12 +79,12 @@ public class QTI21ExportProcessor {
 		this.qpoolFileStorage = qpoolFileStorage;
 	}
 
-	public void process(QuestionItemFull qitem, ZipOutputStream zout, Set<String> names) {
+	public void process(QuestionItemFull qitem, ZipOutputStream zout) {
 		String dir = qitem.getDirectory();
 		File rootDirectory = qpoolFileStorage.getDirectory(dir);
 
 		String rootDir = "qitem_" + qitem.getKey();
-		File[] items = rootDirectory.listFiles();
+		
 		File imsmanifest = new File(rootDirectory, "imsmanifest.xml");
 		ManifestBuilder manifestBuilder;
 		if(imsmanifest.exists()) {
@@ -104,11 +107,21 @@ public class QTI21ExportProcessor {
 		} catch (Exception e) {
 			log.error("", e);
 		}
-		
-		for(File item:items) {
-			if(!"imsmanifest.xml".equals(item.getName())) {
-				ZipUtil.addFileToZip(rootDir + "/" + item.getName(), item, zout);
-			}
+
+		try {
+			Files.walkFileTree(rootDirectory.toPath(), new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					String filename = file.getFileName().toString();
+					if(!"imsmanifest.xml".equals(filename) && !filename.startsWith(".")) {
+						String relPath = rootDirectory.toPath().relativize(file).toString();
+						ZipUtil.addFileToZip(rootDir + "/" + relPath, file, zout);
+					}
+					return FileVisitResult.CONTINUE;
+				}
+			});
+		} catch (IOException e) {
+			log.error("", e);
 		}
 	}
 	
@@ -360,13 +373,8 @@ public class QTI21ExportProcessor {
 	}
 
 	private static final class AssessmentItemsAndResources {
-		private final Set<String> paths = new HashSet<String>();
 		private final List<ResolvedAssessmentItem> itemEls = new ArrayList<>();
 		private final List<ItemMaterial> materials = new ArrayList<>();
-		
-		public Set<String> getPaths() {
-			return paths;
-		}
 		
 		public List<ResolvedAssessmentItem> getAssessmentItems() {
 			return itemEls;

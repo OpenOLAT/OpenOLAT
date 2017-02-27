@@ -53,17 +53,25 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.nodes.iq.QTI21AssessmentRunController;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
+import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
+import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.ui.QTI21TestSessionTableModel.TSCols;
 import org.olat.ims.qti21.ui.assessment.IdentityAssessmentTestCorrectionController;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.AssessmentToolOptions;
@@ -90,6 +98,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private QTI21TestSessionTableModel tableModel;
 	
 	private RepositoryEntry entry;
+	private RepositoryEntry testEntry;
 	private final String subIdent;
 	private final boolean manualCorrections;
 	private final Identity assessedIdentity;
@@ -109,6 +118,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private QTI21Module qtiModule;
 	@Autowired
 	protected QTI21Service qtiService;
 	@Autowired
@@ -135,7 +146,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		subIdent = courseNode.getIdent();
 		readOnly = coachCourseEnv.isCourseReadOnly();
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
-		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+		testEntry = courseNode.getReferencedRepositoryEntry();
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		manualCorrections = qtiService.needManualCorrection(testEntry);
 		
@@ -158,6 +169,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			RepositoryEntry assessableEntry, Identity assessedIdentity) {
 		super(ureq, wControl, "assessment_details");
 		entry = assessableEntry;
+		testEntry = assessableEntry;
 		subIdent = null;
 		readOnly = false;
 		courseNode = null;
@@ -193,8 +205,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		tableModel = new QTI21TestSessionTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setEmtpyTableMessageKey("results.empty");
-		
-		
+
 		if(reSecurity.isEntryAdmin() && !readOnly) {
 			AssessmentToolOptions asOptions = new AssessmentToolOptions();
 			asOptions.setAdmin(reSecurity.isEntryAdmin());
@@ -342,7 +353,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 	
 	private void doPullSession(AssessmentTestSession session) {
+		session = qtiService.getAssessmentTestSession(session.getKey());
+		
 		if(session.getFinishTime() == null) {
+			if(qtiModule.isDigitalSignatureEnabled()) {
+				qtiService.signAssessmentResult(session, getSignatureOptions(session), session.getIdentity());
+			}
 			session.setFinishTime(new Date());
 		}
 		session.setTerminationTime(new Date());
@@ -356,6 +372,32 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.fireEventToListenersOf(new RetrieveAssessmentTestSessionEvent(session.getKey()), sessionOres);
 	}
+	
+	private DigitalSignatureOptions getSignatureOptions(AssessmentTestSession session) {
+		RepositoryEntry sessionTestEntry = session.getTestEntry();
+		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(sessionTestEntry);
+		
+		boolean digitalSignature = deliveryOptions.isDigitalSignature();
+		boolean sendMail = deliveryOptions.isDigitalSignatureMail();
+		if(courseNode != null) {
+			ModuleConfiguration config = courseNode.getModuleConfiguration();
+			digitalSignature = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE,
+					deliveryOptions.isDigitalSignature());
+			sendMail = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL,
+					deliveryOptions.isDigitalSignatureMail());
+		}
+		
+		DigitalSignatureOptions options = new DigitalSignatureOptions(digitalSignature, sendMail, entry, testEntry);
+		if(digitalSignature) {
+			if(courseNode == null) {
+				 AssessmentEntryOutcomesListener.decorateResourceConfirmation(session, options, getLocale());
+			} else {
+				CourseEnvironment courseEnv = CourseFactory.loadCourse(entry).getCourseEnvironment();
+				QTI21AssessmentRunController.decorateCourseConfirmation(session, options, courseEnv, courseNode, sessionTestEntry, getLocale());
+			}
+		}
+		return options;
+	}
 
 	private void doOpenResult(UserRequest ureq, AssessmentTestSession session) {
 		if(resultCtrl != null) return;
@@ -368,7 +410,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				new ResourcesMapper(assessmentObjectUri, submissionDir));
 		
 		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, false, session,
-				ShowResultsOnFinish.details, fUnzippedDirRoot, mapperUri, true, true);
+				fUnzippedDirRoot, mapperUri, QTI21AssessmentResultsOptions.allOptions(), true, true);
 		listenTo(resultCtrl);
 		cmc = new CloseableModalController(getWindowControl(), "close", resultCtrl.getInitialComponent(),
 				true, translate("table.header.results"));

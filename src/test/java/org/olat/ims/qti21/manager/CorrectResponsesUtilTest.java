@@ -24,6 +24,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import uk.ac.ed.ph.jqtiplus.types.DataTypeBinder;
+
 /**
  * 
  * Initial date: 27.04.2016<br>
@@ -44,4 +46,13 @@ public class CorrectResponsesUtilTest {
 		Assert.assertEquals("", responses.get(2));
 	}
 
+	@Test
+	public void parseDouble() {
+		double val = DataTypeBinder.parseFloat("42.0");
+		Assert.assertEquals(42.0, val, 0.0001);
+		
+
+		double thousandVal = DataTypeBinder.parseFloat("42,0");
+		Assert.assertEquals(42.0, thousandVal, 0.0001);
+	}
 }

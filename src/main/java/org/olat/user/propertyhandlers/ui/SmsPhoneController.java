@@ -56,6 +56,11 @@ public class SmsPhoneController extends BasicController {
 	public String getPhone() {
 		return sendTokenCtrl.getPhone();
 	}
+	
+	@Override
+	public WindowControl getWindowControl() {
+		return super.getWindowControl();
+	}
 
 	@Override
 	protected void doDispose() {

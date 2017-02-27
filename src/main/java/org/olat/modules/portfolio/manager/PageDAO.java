@@ -279,6 +279,22 @@ public class PageDAO {
 		return pages == null || pages.isEmpty() ? null : pages.get(0);
 	}
 	
+	public Page loadByBody(PageBody body) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select page from pfpage as page")
+		  .append(" inner join fetch page.baseGroup as baseGroup")
+		  .append(" left join fetch page.section as section")
+		  .append(" left join fetch section.binder as binder")
+		  .append(" left join fetch page.body as body")
+		  .append(" where body.key=:bodyKey");
+		
+		List<Page> pages = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Page.class)
+			.setParameter("bodyKey", body.getKey())
+			.getResultList();
+		return pages == null || pages.isEmpty() ? null : pages.get(0);
+	}
+	
 	public PageBody loadPageBodyByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select body from pfpagebody as body")

@@ -32,8 +32,14 @@ public interface MailContent {
 	
 	public String getSubject();
 	
+	public void setSubject(String subject);
+	
 	public String getBody();
 	
+	public void setBody(String body);
+	
 	public List<File> getAttachments();
+	
+	public void setAttachments(List<File> attachments);
 
 }

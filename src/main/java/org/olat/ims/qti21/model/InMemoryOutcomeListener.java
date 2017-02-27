@@ -19,6 +19,9 @@
  */
 package org.olat.ims.qti21.model;
 
+import java.util.Locale;
+
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.OutcomesListener;
 
 /**
@@ -28,6 +31,11 @@ import org.olat.ims.qti21.OutcomesListener;
  *
  */
 public class InMemoryOutcomeListener implements OutcomesListener {
+
+	@Override
+	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Locale locale) {
+		//do nothing
+	}
 
 	@Override
 	public void updateOutcomes(Float score, Boolean pass) {

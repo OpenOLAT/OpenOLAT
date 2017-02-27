@@ -66,6 +66,7 @@ public class QTI21TestSessionTableModel extends DefaultFlexiTableDataModel<Asses
 				}
 				return "<span class='o_ochre'>" + translator.translate("assessment.test.open") + "</span>";
 			}
+			case test: return session.getTestEntry().getDisplayname();
 			case results: {
 				if(session.getFinishTime() != null) {
 					return AssessmentHelper.getRoundedScore(session.getScore());
@@ -97,6 +98,7 @@ public class QTI21TestSessionTableModel extends DefaultFlexiTableDataModel<Asses
 	public enum TSCols implements FlexiColumnDef {
 		lastModified("table.header.lastModified"),
 		duration("table.header.duration"),
+		test("table.header.test"),
 		results("table.header.results"),
 		open("table.header.action"),
 		correction("table.header.action");

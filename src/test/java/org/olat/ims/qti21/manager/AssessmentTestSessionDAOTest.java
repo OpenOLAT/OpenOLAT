@@ -119,7 +119,7 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load the last session
-		AssessmentTestSession lastTestSession = testSessionDao.getLastTestSession(testEntry, courseEntry, subIdent, assessedIdentity, null);
+		AssessmentTestSession lastTestSession = testSessionDao.getLastTestSession(testEntry, courseEntry, subIdent, assessedIdentity, null, false);
 		Assert.assertNotNull(lastTestSession);
 		Assert.assertEquals(testSession2, lastTestSession);
 	}

@@ -84,11 +84,11 @@ public class AssessmentTestSessionDAO {
 	}
 	
 	public AssessmentTestSession getLastTestSession(RepositoryEntryRef testEntry,
-			RepositoryEntryRef entry, String subIdent, IdentityRef identity, String anonymousIdentifier) {
+			RepositoryEntryRef entry, String subIdent, IdentityRef identity, String anonymousIdentifier, boolean authorMode) {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session ")
-		  .append("where session.testEntry.key=:testEntryKey");
+		  .append("where session.testEntry.key=:testEntryKey and session.authorMode=:authorMode");
 		if(entry != null) {
 			sb.append(" and session.repositoryEntry.key=:courseEntryKey");
 		} else {
@@ -114,7 +114,8 @@ public class AssessmentTestSessionDAO {
 		
 		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentTestSession.class)
-				.setParameter("testEntryKey", testEntry.getKey());
+				.setParameter("testEntryKey", testEntry.getKey())
+				.setParameter("authorMode", authorMode);
 		if(entry != null) {
 			query.setParameter("courseEntryKey", entry.getKey());
 		}
@@ -242,6 +243,12 @@ public class AssessmentTestSessionDAO {
 		return sessions == null || sessions.isEmpty() ? null : sessions.get(0);
 	}
 	
+	/**
+	 * Load the assessment test session and only fetch the user.
+	 * 
+	 * @param testSessionKey
+	 * @return
+	 */
 	public AssessmentTestSession loadFullByKey(Long testSessionKey) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")
@@ -354,6 +361,35 @@ public class AssessmentTestSessionDAO {
 		return query.getResultList();
 	}
 	
+	public AssessmentTestSession getLastUserTestSession(RepositoryEntryRef courseEntry, String courseSubIdent, RepositoryEntry testEntry, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select session from qtiassessmenttestsession session")
+		  .append(" left join fetch session.testEntry testEntry")
+		  .append(" left join fetch testEntry.olatResource testResource")
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.identity.key=:identityKey ")
+		  .append(" and session.testEntry.key=:testEntryKey and (session.finishTime is not null or session.terminationTime is not null) and ");
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			sb.append("session.subIdent=:subIdent");
+		} else {
+			sb.append("session.subIdent is null");
+		}
+		sb.append(" order by session.creationDate desc");
+		
+		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class)
+				.setParameter("repositoryEntryKey", courseEntry.getKey())
+				.setParameter("testEntryKey", testEntry.getKey())
+				.setParameter("identityKey", identity.getKey());
+		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
+			query.setParameter("subIdent", courseSubIdent);
+		}
+		List<AssessmentTestSession> sessions = query
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return sessions.size() > 0 ? sessions.get(0) : null;
+	}
+	
 	public List<AssessmentTestSession> getRunningTestSessions(RepositoryEntryRef entry, String courseSubIdent, RepositoryEntry testEntry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")
@@ -361,7 +397,8 @@ public class AssessmentTestSessionDAO {
 		  .append(" left join fetch testEntry.olatResource testResource")
 		  .append(" inner join fetch session.identity assessedIdentity")
 		  .append(" inner join fetch assessedIdentity.user assessedUser")
-		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and (session.finishTime is null or session.terminationTime is null) and session.testEntry.key=:testEntryKey");
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.testEntry.key=:testEntryKey")
+		  .append(" and session.finishTime is null and session.terminationTime is null");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.append(" and session.subIdent=:subIdent");
 		} else {
@@ -383,7 +420,8 @@ public class AssessmentTestSessionDAO {
 		sb.append("select session.key from qtiassessmenttestsession session")
 		  .append(" left join session.testEntry testEntry")
 		  .append(" left join testEntry.olatResource testResource")
-		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and (session.finishTime is null or session.terminationTime is null) and session.testEntry.key=:testEntryKey");
+		  .append(" where session.repositoryEntry.key=:repositoryEntryKey and session.testEntry.key=:testEntryKey")
+		  .append(" and session.finishTime is null and session.terminationTime is null");
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			sb.append(" and session.subIdent=:subIdent");
 		} else {

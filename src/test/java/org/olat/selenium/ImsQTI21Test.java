@@ -36,7 +36,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
+import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
@@ -72,6 +72,15 @@ public class ImsQTI21Test {
 	@Page
 	private NavigationPage navBar;
 	
+	/**
+	 * Upload a test in QTI 2.1 format, create a course, bind
+	 * the test in a course element, run it and check if
+	 * the attempt go up.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
 	@Test
 	@RunAsClient
 	public void qti21Test(@InitialPage LoginPage authorLoginPage)
@@ -162,13 +171,23 @@ public class ImsQTI21Test {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI12Page(browser);
 		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		// to the test and spot it
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
 			.answerHotspot("circle")
 			.saveAnswer()
 			.assertFeedback("Correct!")
 			.endTest()
 			.closeTest();
-		
-		//TODO check the results
+		//check the results
+		qtiPage
+			.assertOnResults()
+			.assertOnAssessmentTestScore(1)
+			.assertOnAssessmentTestMaxScore(1);
 	}
 	
 	/**
@@ -219,7 +238,7 @@ public class ImsQTI21Test {
 		qtiPage
 			.clickToolbarBack()
 			.options()
-			.showResults(Boolean.TRUE, ShowResultsOnFinish.details)
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.save();
 		
 		//go to the test
@@ -231,11 +250,11 @@ public class ImsQTI21Test {
 			.answerGapText(",", "_RESPONSE_1")
 			.answerGapText("", "_RESPONSE_2")
 			.answerGapText("", "_RESPONSE_3")
-			.saveAnswer().nextAnswer()
+			.saveAnswer()
 			.answerMultipleChoice("Deutschland", "Brasilien", "S\u00FCdafrika")
-			.saveAnswer().nextAnswer()
+			.saveAnswer()
 			.answerSingleChoice("Italien")
-			.saveAnswer().nextAnswer()
+			.saveAnswer()
 			.answerCorrectKPrim("Deutschland", "Uruguay")
 			.answerIncorrectKPrim("Frankreich", "Spanien")
 			.saveAnswer()

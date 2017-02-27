@@ -72,7 +72,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.resultexport.AssessedMember;
 import org.olat.ims.qti.resultexport.ResultDetail;
 import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.QTI21DeliveryOptions.ShowResultsOnFinish;
+import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.repository.RepositoryEntry;
@@ -212,7 +212,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		
 			Controller assessmentResultController = new AssessmentResultController(
 					ureq, mockwControl, identity, false, session,
-					ShowResultsOnFinish.details, fUnzippedDirRoot, null, false, true);
+					fUnzippedDirRoot, null, QTI21AssessmentResultsOptions.allOptions(), false, true);
 
 			Component component = assessmentResultController.getInitialComponent();
 			String componentHTML = createResultHTML(component); 

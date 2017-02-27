@@ -237,7 +237,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		return tasks;
 	}
 
-	private SessionsVO getSessionsVO() {
+	protected SessionsVO getSessionsVO() {
 		SessionsVO vo = new SessionsVO();
 
 		SessionStatsManager sessionStatsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);

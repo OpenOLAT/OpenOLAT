@@ -38,6 +38,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -224,7 +225,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		renderTestItemBody(renderer, sb, component, itemRefNode, ubu, translator, options);
 		
 		//controls
-		sb.append("<div class='o_button_group'>");
+		sb.append("<div class='o_button_group o_assessmentitem_controls'>");
 		
 		//submit button
 		final ItemSessionState itemSessionState = component.getItemSessionState(itemRefNode.getKey());
@@ -338,11 +339,12 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				.getResolvedAssessmentItemBySystemIdMap().get(itemSystemId);
 		final AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 
+		sb.append("<div class='o_assessmentitem_wrapper'>");
 		//title + status
-		sb.append("<h3 class='itemTitle'>");
+		sb.append("<h4 class='itemTitle'>");
 		renderItemStatus(sb, itemSessionState, options, translator);
 		sb.append(StringHelper.escapeHtml(itemNode.getSectionPartTitle()), component.isShowTitles())
-		  .append("</h3>")
+		  .append("</h4>")
 		  .append("<div id='itemBody' class='clearfix'>");
 
 		//render itemBody
@@ -364,6 +366,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		if(component.isItemFeedbackAllowed(itemNode, assessmentItem, options)) {
 			renderTestItemModalFeedback(renderer, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
 		}
+		sb.append("</div>"); // end wrapper
 	}
 	
 	@Override
@@ -496,12 +499,13 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			if(hasReviewableItems) {
 				sb.append("<h4>").append(translator.translate("review.responses")).append("</h4>");
 				sb.append("<p>").append(translator.translate("review.responses.desc")).append("</p>");
+				sb.append("<div class='o_qti_menu_buttonstyle'>");
 				sb.append("<ul class='o_testpartnavigation'>");
 				
 				node.getChildren().forEach((childNode)
 					-> renderReview(renderer, sb, component, childNode, ubu, translator));
 		
-				sb.append("</ul>");
+				sb.append("</ul></div>");
 			}
 		}
 	}
@@ -548,16 +552,16 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 			  .append(StringHelper.escapeHtml(itemNode.getSectionPartTitle())).append("</span>");
 
 			if(!reviewable) {
-				sb.append("<span class='o_assessmentitem_status reviewNotAllowed'>").append(translator.translate("assessment.item.status.reviewNot")).append("</span>");
+				renderItemStatusMessage("reviewNotAllowed", "assessment.item.status.reviewNot", sb, translator);
 			} else if(itemSessionState.getUnboundResponseIdentifiers().size() > 0
 					|| itemSessionState.getInvalidResponseIdentifiers().size() > 0) {
-				sb.append("<span class='o_assessmentitem_status reviewInvalid'>").append(translator.translate("assessment.item.status.reviewInvalidAnswer")).append("</span>");
+				renderItemStatusMessage("reviewInvalid", "assessment.item.status.reviewInvalidAnswer", sb, translator);
 			} else if(itemSessionState.isResponded()) {
-				sb.append("<span class='o_assessmentitem_status review'>").append(translator.translate("assessment.item.status.review")).append("</span>");
+				renderItemStatusMessage("review", "assessment.item.status.review", sb, translator);
 			} else if(itemSessionState.getEntryTime() != null) {
-				sb.append("<span class='o_assessmentitem_status reviewNotAnswered'>").append(translator.translate("assessment.item.status.reviewNotAnswered")).append("</span>");
+				renderItemStatusMessage("reviewNotAnswered", "assessment.item.status.reviewNotAnswered", sb, translator);
 			} else {
-				sb.append("<span class='o_assessmentitem_status reviewNotSeen'>").append(translator.translate("assessment.item.status.reviewNotSeen")).append("</span>");
+				renderItemStatusMessage("reviewNotSeen", "assessment.item.status.reviewNotSeen", sb, translator);
 			}
 			
 			sb.append("</button></li>");
@@ -598,7 +602,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderNavigation(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, URLBuilder ubu, Translator translator) {
 		if(component.isRenderNavigation()) {
-			sb.append("<div id='o_qti_menu' class='qtiworks o_assessmenttest o_testpartnavigation'>");
+			sb.append("<div id='o_qti_menu' class='qtiworks o_assessmenttest o_testpartnavigation o_qti_menu_buttonstyle'>");
 			
 			//title
 			boolean multiPartTest = component.hasMultipleTestParts();
@@ -670,6 +674,13 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 	}
 	
+	private void renderItemStatusMessage(String status, String i18nKey, StringOutput sb, Translator translator) {
+		String title = translator.translate(i18nKey);
+		sb.append("<span class='o_assessmentitem_status ").append(status).append(" ' title=\"").append(StringEscapeUtils.escapeHtml(title))
+		.append("\"><i class='o_icon o_icon-fw o_icon_qti_").append(status).append("'> </i><span>").append(title).append("</span></span>");
+	}
+
+	
 	private void renderNavigationAssessmentItem(StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode, Translator translator) {
 		String key = itemNode.getKey().toString();
 		sb.append("<li class='o_assessmentitem'>");
@@ -684,16 +695,16 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		
 		ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
 		if(itemSessionState.getEndTime() != null) {
-			sb.append("<span class='o_assessmentitem_status ended'>Finished</span>");
+			renderItemStatusMessage("ended", "assessment.item.status.finished", sb, translator);
 		} else if(itemSessionState.getUnboundResponseIdentifiers().size() > 0
 				|| itemSessionState.getInvalidResponseIdentifiers().size() > 0) {
-			sb.append("<span class='o_assessmentitem_status invalid'>Needs Attention</span>");
+			renderItemStatusMessage("invalid", "assessment.item.status.needsAttention", sb, translator);
 		} else if(itemSessionState.isResponded() || itemSessionState.hasUncommittedResponseValues()) {
-			sb.append("<span class='o_assessmentitem_status answered'>Answered</span>");
+			renderItemStatusMessage("answered", "assessment.item.status.answered", sb, translator);
 		} else if(itemSessionState.getEntryTime() != null) {
-			sb.append("<span class='o_assessmentitem_status notAnswered'>Not Answered</span>");
+			renderItemStatusMessage("notAnswered", "assessment.item.status.notAnswered", sb, translator);
 		} else {
-			sb.append("<span class='o_assessmentitem_status notPresented'>").append(translator.translate("assessment.item.status.notSeen")).append("</span>");
+			renderItemStatusMessage("notPresented", "assessment.item.status.notSeen", sb, translator);
 		}
 		
 		sb.append("</button>");
@@ -724,31 +735,5 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
         } catch (final Exception e) {
             throw new OLATRuntimeException("Unexpected Exception parsing TestPlanNodeKey " + keyString, e);
         }
-    }
-    
-    public static class ItemRenderingRequest {
-
-    	private AssessmentItem assessmentItem;
-    	private ItemSessionState itemSessionState;
-    	
-    	public ItemRenderingRequest(AssessmentItem assessmentItem) {
-    		this.assessmentItem = assessmentItem;
-    	}
-
-		public AssessmentItem getAssessmentItem() {
-			return assessmentItem;
-		}
-
-		public void setAssessmentItem(AssessmentItem assessmentItem) {
-			this.assessmentItem = assessmentItem;
-		}
-
-		public ItemSessionState getItemSessionState() {
-			return itemSessionState;
-		}
-
-		public void setItemSessionState(ItemSessionState itemSessionState) {
-			this.itemSessionState = itemSessionState;
-		}
     }
 }

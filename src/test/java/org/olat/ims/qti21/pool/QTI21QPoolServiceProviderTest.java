@@ -86,6 +86,29 @@ public class QTI21QPoolServiceProviderTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void importArchive_qpoolQuestionsMetadata() throws URISyntaxException {
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("imp-pool-1");
+		
+		String filename = "ExportItems_pool_metadata.zip";
+		URL fileUrl = QTI21QPoolServiceProviderTest.class.getResource(filename);
+		File questionFile = new File(fileUrl.toURI());
+		
+		List<QuestionItem> items = poolServiceProvider.importItems(owner, Locale.ENGLISH, filename, questionFile);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(items);
+		Assert.assertEquals(1, items.size());
+		QuestionItem item = items.get(0);
+		Assert.assertEquals("OpenOLAT", item.getEditor());
+		Assert.assertEquals("10.2.1", item.getEditorVersion());
+		Assert.assertEquals("IMS QTI 2.1", item.getFormat());
+		Assert.assertEquals(0.54d, item.getDifficulty().doubleValue(), 0.00001);
+		Assert.assertEquals(0.5d, item.getDifferentiation().doubleValue(), 0.00001);
+		Assert.assertEquals(0.33d, item.getStdevDifficulty().doubleValue(), 0.00001);
+		Assert.assertEquals(2, item.getNumOfAnswerAlternatives());
+		Assert.assertEquals("Image", item.getKeywords());
+	}
+	
+	@Test
 	public void compatibleArchive_openolatTest() throws URISyntaxException {
 		String filename = "QTI_21_test_sc_mc.zip";
 		URL fileUrl = QTI21QPoolServiceProviderTest.class.getResource(filename);

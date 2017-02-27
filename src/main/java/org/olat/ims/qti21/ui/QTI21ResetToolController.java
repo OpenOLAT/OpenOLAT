@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -49,6 +50,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
@@ -62,6 +64,7 @@ import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -78,42 +81,36 @@ public class QTI21ResetToolController extends BasicController {
 	private CloseableModalController cmc;
 	private ConfirmResetController confirmResetCtrl;
 	
-	private ArchiveOptions options;
 	private QTICourseNode courseNode;
-	private List<Identity> identities;
 	private CourseEnvironment courseEnv;
 	private RepositoryEntry assessedEntry;
+	private final AssessmentToolOptions asOptions;
 	
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	public QTI21ResetToolController(UserRequest ureq, WindowControl wControl, 
 			CourseEnvironment courseEnv, AssessmentToolOptions asOptions, QTICourseNode courseNode) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
 		this.courseEnv = courseEnv;
-		initButton(asOptions);
+		this.asOptions = asOptions;
+		initButton();
 	}
 	
 	public QTI21ResetToolController(UserRequest ureq, WindowControl wControl, 
 			RepositoryEntry assessedEntry, AssessmentToolOptions asOptions) {
 		super(ureq, wControl);
 		this.assessedEntry = assessedEntry;
-		initButton(asOptions);
+		this.asOptions = asOptions;
+		initButton();
 	}
 	
-	private void initButton(AssessmentToolOptions asOptions) {
-		options = new ArchiveOptions();
-		if(asOptions.getGroup() == null) {
-			identities = asOptions.getIdentities();
-			options.setIdentities(identities);
-		} else {
-			identities = businessGroupService.getMembers(asOptions.getGroup());
-			options.setGroup(asOptions.getGroup());
-		}
-		
+	private void initButton() {
 		resetButton = LinkFactory.createButton("reset.test.data.title", null, this);
 		resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
 		resetButton.setTranslator(getTranslator());
@@ -137,7 +134,7 @@ public class QTI21ResetToolController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmResetCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				doReset(ureq);
+				doReset(ureq, confirmResetCtrl.getOptions(), confirmResetCtrl.getIdentities());
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 			cmc.deactivate();
@@ -158,23 +155,45 @@ public class QTI21ResetToolController extends BasicController {
 	private void doConfirmReset(UserRequest ureq) {
 		if(confirmResetCtrl != null) return;
 		
-		confirmResetCtrl = new ConfirmResetController(ureq, this.getWindowControl());
-		listenTo(confirmResetCtrl);
-
-		String title = translate("reset.test.data.title");
-		cmc = new CloseableModalController(getWindowControl(), null, confirmResetCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
+		ArchiveOptions options = new ArchiveOptions();
+		List<Identity> identities = null;
+		if(asOptions.getGroup() == null && asOptions.getIdentities() == null) {
+			if(courseEnv != null) {
+				identities = ScoreAccountingHelper.loadUsers(courseEnv);
+				options.setIdentities(identities);
+			} else {
+				identities = repositoryService.getMembers(assessedEntry, GroupRoles.participant.name());
+				options.setIdentities(identities);
+			}
+		} else if (asOptions.getIdentities() != null) {
+			identities = asOptions.getIdentities();
+			options.setIdentities(identities);
+		} else {
+			identities = businessGroupService.getMembers(asOptions.getGroup());
+			options.setGroup(asOptions.getGroup());
+		}
+		
+		if(identities == null || identities.isEmpty()) {
+			showWarning("warning.reset.test.data.nobody");
+		} else {
+			confirmResetCtrl = new ConfirmResetController(ureq, getWindowControl(), options, identities);
+			listenTo(confirmResetCtrl);
+	
+			String title = translate("reset.test.data.title");
+			cmc = new CloseableModalController(getWindowControl(), null, confirmResetCtrl.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
-	private void doReset(UserRequest ureq) {
+	private void doReset(UserRequest ureq, ArchiveOptions options, List<Identity> identities) {
 		if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
 			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
 			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 			
 			ICourse course = CourseFactory.loadCourse(courseEntry);
-			archiveData(course);
+			archiveData(course, options);
 			
 			qtiService.deleteAssessmentTestSession(identities, testEntry, courseEntry, courseNode.getIdent());
 			for(Identity identity:identities) {
@@ -191,7 +210,7 @@ public class QTI21ResetToolController extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void archiveData(ICourse course) {
+	private void archiveData(ICourse course, ArchiveOptions options) {
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), course.getCourseTitle());
 		String archiveName = courseNode.getType() + "_"
 				+ StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
@@ -234,10 +253,22 @@ public class QTI21ResetToolController extends BasicController {
 
 		private MultipleSelectionElement acknowledgeEl;
 		
-		public ConfirmResetController(UserRequest ureq, WindowControl wControl) {
+		private final ArchiveOptions options;
+		private final List<Identity> identities;
+		
+		public ConfirmResetController(UserRequest ureq, WindowControl wControl, ArchiveOptions options, List<Identity> identities) {
 			super(ureq, wControl, "confirm_reset_data");
-			
+			this.options = options;
+			this.identities = identities;
 			initForm(ureq);
+		}
+		
+		public ArchiveOptions getOptions() {
+			return options;
+		}
+		
+		public List<Identity> getIdentities() {
+			return identities;
 		}
 
 		@Override

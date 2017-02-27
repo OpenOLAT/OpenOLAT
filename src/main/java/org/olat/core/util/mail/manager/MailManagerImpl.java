@@ -104,6 +104,7 @@ import org.olat.core.util.mail.model.DBMailImpl;
 import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.core.util.mail.model.DBMailLightImpl;
 import org.olat.core.util.mail.model.DBMailRecipient;
+import org.olat.core.util.mail.model.SimpleMailContent;
 import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -717,7 +718,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		} else {
 			decoratedBody = content.getBody();
 		}
-		return new MessageContent(content.getSubject(), decoratedBody, content.getAttachments());
+		return new SimpleMailContent(content.getSubject(), decoratedBody, content.getAttachments());
 	}
 	
 	protected MailContent createWithContext(Identity recipient, MailTemplate template, MailerResult result) {
@@ -744,7 +745,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		String body = bodyWriter.toString();
 		List<File> checkedFiles = MailHelper.checkAttachments(template.getAttachments(), result);
 		File[] attachments = checkedFiles.toArray(new File[checkedFiles.size()]);
-		return new MessageContent(subject, body, attachments);
+		return new SimpleMailContent(subject, body, attachments);
 	}
 	
 	/**
@@ -776,51 +777,6 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		} catch (Exception e) {
 			log.warn("can't send email from user template", e);
 			mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
-		}
-	}
-	
-	private static class MessageContent implements MailContent {
-		private final String subject;
-		private final String body;
-		private final List<File> attachments;
-		
-		public MessageContent(String subject, String body, File[] attachmentArr) {
-			this.subject = subject;
-			this.body = body;
-			
-			attachments = new ArrayList<File>();
-			if(attachmentArr != null && attachmentArr.length > 0) {
-				for(File attachment:attachmentArr) {
-					if(attachment != null && attachment.exists()) {
-						attachments.add(attachment);
-					}
-				}
-			}
-		}
-		
-		public MessageContent(String subject, String body, List<File> attachmentList) {
-			this.subject = subject;
-			this.body = body;
-			if(attachmentList == null) {
-				this.attachments = new ArrayList<File>(1);
-			} else {
-				this.attachments = new ArrayList<File>(attachmentList);
-			}
-		}
-
-		@Override
-		public String getSubject() {
-			return subject;
-		}
-
-		@Override
-		public String getBody() {
-			return body;
-		}
-
-		@Override
-		public List<File> getAttachments() {
-			return attachments;
 		}
 	}
 

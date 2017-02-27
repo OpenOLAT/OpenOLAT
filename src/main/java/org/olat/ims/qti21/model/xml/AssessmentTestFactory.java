@@ -269,7 +269,7 @@ public class AssessmentTestFactory {
 		
 		// test par item session control
 		ItemSessionControl itemSessionControl = new ItemSessionControl(part);
-		itemSessionControl.setAllowComment(Boolean.FALSE);
+		itemSessionControl.setAllowComment(Boolean.TRUE);
 		itemSessionControl.setAllowReview(Boolean.FALSE);
 		itemSessionControl.setAllowSkipping(Boolean.TRUE);//default is true
 		itemSessionControl.setShowFeedback(Boolean.FALSE);

@@ -45,13 +45,13 @@ public class ForumSettingsAdminController extends FormBasicController {
 	private static final String[] defaultKeys = new String[]{ "enabled", "disabled" };
 	
 	private MultipleSelectionElement anonymousPostingEl;
-	private SingleSelection defaultCourseEl, defaultGroupEl;
+	private SingleSelection defaultCourseEl, defaultMessageEl;
 	
 	@Autowired
 	private ForumModule forumModule;
 	
 	public ForumSettingsAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_DEFAULT_6_6);
 		setTranslator(Util.createPackageTranslator(Forum.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
@@ -80,12 +80,24 @@ public class ForumSettingsAdminController extends FormBasicController {
 			defaultCourseEl.select(defaultKeys[1], true);
 		}
 		defaultCourseEl.addActionListener(FormEvent.ONCHANGE);
+		
+		
+		defaultMessageEl = uifactory.addRadiosHorizontal("anonymous.message.default", "anonymous.message.default", formLayout,
+				defaultKeys, defaultValues);
+		defaultMessageEl.setHelpText(translate("anonymous.message.default.hint"));
+		if(forumModule.isPseudonymForMessageEnabledByDefault()) {
+			defaultMessageEl.select(defaultKeys[0], true);
+		} else {
+			defaultMessageEl.select(defaultKeys[1], true);
+		}
+		defaultMessageEl.addActionListener(FormEvent.ONCHANGE);
 
 		updateUI();
 	}
 	
 	private void updateUI() {
 		defaultCourseEl.setVisible(anonymousPostingEl.isAtLeastSelected(1));
+		defaultMessageEl.setVisible(anonymousPostingEl.isAtLeastSelected(1));
 	}
 	
 	@Override
@@ -98,12 +110,12 @@ public class ForumSettingsAdminController extends FormBasicController {
 		if(anonymousPostingEl == source) {
 			forumModule.setAnonymousPostingWithPseudonymEnabled(anonymousPostingEl.isAtLeastSelected(1));
 			updateUI();
-		} else if(defaultGroupEl == source) {
-			boolean enabled = defaultGroupEl.isOneSelected() && defaultGroupEl.isSelected(0);
-			forumModule.setPseudonymForGroupEnabledByDefault(enabled);
 		} else if(defaultCourseEl == source) {
 			boolean enabled = defaultCourseEl.isOneSelected() && defaultCourseEl.isSelected(0);
 			forumModule.setPseudonymForCourseEnabledByDefault(enabled);
+		} else if(defaultMessageEl == source) {
+			boolean enabled = defaultMessageEl.isOneSelected() && defaultMessageEl.isSelected(0);
+			forumModule.setPseudonymForMessageEnabledByDefault(enabled);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

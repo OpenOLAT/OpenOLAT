@@ -57,8 +57,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
  * This class is common parent to all JUnit Use Case tests in OLAT framework integration tests. 
  */
 @ContextConfiguration(loader = MockServletContextWebContextLoader.class, locations = {
-	"classpath:/org/olat/_spring/mainContext.xml",
-	"classpath:org/olat/course/_spring/textContextDeployableRepoExport.xml"
+	"classpath:/org/olat/_spring/mainContext.xml"
 })
 public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	private static final OLog log = Tracing.createLoggerFor(OlatTestCase.class);

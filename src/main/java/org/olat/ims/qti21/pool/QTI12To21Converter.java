@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.atomic.DoubleAdder;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.cyberneko.html.parsers.SAXParser;
@@ -49,6 +50,7 @@ import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
+import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
 import org.olat.ims.qti.editor.beecom.objects.Control;
 import org.olat.ims.qti.editor.beecom.objects.Duration;
 import org.olat.ims.qti.editor.beecom.objects.EssayQuestion;
@@ -74,6 +76,7 @@ import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
@@ -126,6 +129,7 @@ public class QTI12To21Converter {
 	private final ManifestBuilder manifest;
 	private List<String> materialPath = new ArrayList<>();
 	private List<String> errors = new ArrayList<>();
+	private final DoubleAdder atomicMaxScore = new DoubleAdder();
 	
 	public QTI12To21Converter(File unzippedDirRoot, Locale locale) {
 		this.locale = locale;
@@ -185,6 +189,8 @@ public class QTI12To21Converter {
 				}
 			}
 		}
+		
+		assessmentTestBuilder.setMaxScore(atomicMaxScore.doubleValue());
 
 		assessmentTest = assessmentTestBuilder.build();
 		persistAssessmentObject(testFile, assessmentTest);
@@ -201,7 +207,8 @@ public class QTI12To21Converter {
 		
 		RubricBlock rubricBlock = assessmentSection.getRubricBlocks().get(0);
 		rubricBlock.getBlocks().clear();
-		htmlBuilder.appendHtml(rubricBlock, section.getObjectives());
+		String objectives = section.getObjectives();
+		htmlBuilder.appendHtml(rubricBlock, prepareContent(objectives));
 
 		boolean shuffle = SelectionOrdering.RANDOM.equals(section.getSelection_ordering().getOrderType());
 		assessmentSection.getOrdering().setShuffle(shuffle);
@@ -254,6 +261,12 @@ public class QTI12To21Converter {
 				assessmentSection.getSectionParts().add(itemRef);
 				persistAssessmentObject(itemFile, assessmentItem);
 				appendResourceAndMetadata(item, itemBuilder, itemFile);
+				
+				//collect max score
+				Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+				if(maxScore != null && maxScore.doubleValue() > 0.0d) {
+					atomicMaxScore.add(maxScore.doubleValue());
+				}
 			}
 		}
 	}
@@ -435,8 +448,15 @@ public class QTI12To21Converter {
 		Question question = item.getQuestion();
 		itemBuilder.setShuffle(question.isShuffle());
 		
-		boolean singleCorrect = question.isSingleCorrect();
+		boolean hasNegative = false;
 		List<Response> responses = question.getResponses();
+		for(Response response:responses) {
+			if(response.getPoints() < 0.0f) {
+				hasNegative = true;
+			}
+		}
+		
+		boolean singleCorrect = question.isSingleCorrect();
 		for(Response response:responses) {
 			String responseText = response.getContent().renderAsHtmlForEditor();
 			responseText = prepareContent(responseText);
@@ -452,15 +472,19 @@ public class QTI12To21Converter {
 			}
 			
 			itemBuilder.addSimpleChoice(newChoice);
-			if(response.isCorrect()) {
-				itemBuilder.addCorrectAnswer(newChoice.getIdentifier());
-			}
+			
 			double score = response.getPoints();
 			if(singleCorrect) {
+				if(response.isCorrect()) {
+					itemBuilder.addCorrectAnswer(newChoice.getIdentifier());
+				}
 				if(score > 0.0f) {
 					itemBuilder.setMaxScore(score);
 				}
 			} else {
+				if((hasNegative && response.getPoints() >= 0.0f) || (!hasNegative && response.getPoints() > 0.0f)) {
+					itemBuilder.addCorrectAnswer(newChoice.getIdentifier());
+				}
 				itemBuilder.setMapping(newChoice.getIdentifier(), score);
 			}
 		}
@@ -469,6 +493,11 @@ public class QTI12To21Converter {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.allCorrectAnswers);
 		} else {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
+			if(question instanceof ChoiceQuestion) {
+				ChoiceQuestion choice = (ChoiceQuestion)question;
+				itemBuilder.setMinScore(new Double(choice.getMinValue()));
+				itemBuilder.setMaxScore(new Double(choice.getMaxValue()));
+			}
 		}
 		
 		return itemBuilder;
