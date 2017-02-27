@@ -43,6 +43,7 @@ How to add a new job:
             <ref bean="epDeadlineTrigger" />
             <ref bean="restTokenTrigger" />
             <ref bean="taskExecutorTrigger" />
+            <ref bean="procSamplerTrigger"/>
             <ref bean="systemSamplerTrigger"/>
             <ref bean="updateQtiResultsTriggerOnyx"/>
             <ref bean="acReservationCleanupJob"/>

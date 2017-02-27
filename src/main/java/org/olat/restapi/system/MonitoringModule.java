@@ -89,6 +89,8 @@ public class MonitoringModule extends AbstractSpringModule implements ConfigOnOf
 				if(!parent.exists() || !parent.canWrite()) {
 					log.warn("Cannot write proc file: " + xmlFile);
 				}
+			} else if (!xmlFile.canWrite()) {
+				log.warn("Cannot write proc file: " + xmlFile);
 			}
 		}
 	}
