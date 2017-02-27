@@ -101,18 +101,19 @@ public class HighScoreManagerTest extends OlatTestCase {
 		allPodium.add(new ArrayList<>());
 		allPodium.add(new ArrayList<>());
 		
-		double[] allScores = highScoreManager.sortRankByScore(assessEntries, allMembers, ownIdMembers,
-				allPodium, ownIdIndices, 5, JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-2"), userManager);
+		double[] allScores = highScoreManager.sortRankByScore(assessEntries, allMembers, ownIdMembers, allPodium,
+				ownIdIndices, 5, JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-2"), userManager)
+				.getScores();
 		
 		assertNotNull(allScores);
 		assertEquals(allMembers.size(), scores.length);
 		assertTrue(allScores[0] > 20);
 		assertTrue(allScores[2] < 10);
 		
-		double[] histogramData = highScoreManager.processHistogramData(allScores, 0F, 30F);
+		double[] histogramData = highScoreManager.processHistogramData(allScores, 0F, 30F).getModifiedScores();
 		assertNotNull(histogramData);
 
-		long classwidth = highScoreManager.getClasswidth();
+		long classwidth = highScoreManager.processHistogramData(allScores, 0F, 30F).getClasswidth();
 		assertEquals(2L, classwidth);
 		
 	}
