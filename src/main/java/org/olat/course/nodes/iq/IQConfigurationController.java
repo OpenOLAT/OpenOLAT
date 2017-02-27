@@ -94,7 +94,7 @@ public class IQConfigurationController extends BasicController {
 	private VelocityContainer myContent;
 	private final BreadcrumbPanel stackPanel;
 	
-	private Link previewLink, chooseTestButton, changeTestButton, editTestButton;
+	private Link previewLink, previewButton, chooseTestButton, changeTestButton, editTestButton;
 
 	private Controller previewLayoutCtr;
 	private CloseableModalController cmc;
@@ -165,10 +165,12 @@ public class IQConfigurationController extends BasicController {
 				editTestButton = LinkFactory.createButtonSmall("command.editRepFile", myContent, this);
 			}
 
-			previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayName, Link.NONTRANSLATED, myContent, this);
+			previewLink = LinkFactory.createCustomLink("command.preview.link", "command.preview", displayName, Link.NONTRANSLATED, myContent, this);
 			previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 			previewLink.setCustomEnabledLinkCSS("o_preview");
 			previewLink.setTitle(translate("command.preview"));
+			previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
+			previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		}
 		
 		if(stackPanel != null) {
@@ -244,7 +246,7 @@ public class IQConfigurationController extends BasicController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (previewLink == source){
+		if (previewLink == source || previewButton == source) {
 			doPreview(ureq);
 		} else if (chooseTestButton == source){
 			doChooseTestAndSurvey(ureq);
@@ -543,10 +545,12 @@ public class IQConfigurationController extends BasicController {
 
 				IQEditController.setIQReference(re, moduleConfiguration);
 				String displayName = StringHelper.escapeHtml(re.getDisplayname());
-				previewLink = LinkFactory.createCustomLink("command.preview", "command.preview", displayName, Link.NONTRANSLATED, myContent, this);
+				previewLink = LinkFactory.createCustomLink("command.preview.link", "command.preview", displayName, Link.NONTRANSLATED, myContent, this);
 				previewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 				previewLink.setCustomEnabledLinkCSS("o_preview");
 				previewLink.setTitle(getTranslator().translate("command.preview"));
+				previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
+				previewButton.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 				myContent.contextPut("dontRenderRepositoryButton", new Boolean(true));
 				// If of type test, get min, max, cut - put in module config and push
 				// to velocity

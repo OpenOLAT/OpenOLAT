@@ -317,7 +317,6 @@ public class AssessmentTestFactory {
 		
 		ItemSessionControl itemSessionControl = new ItemSessionControl(section);
 		section.setItemSessionControl(itemSessionControl);
-		itemSessionControl.setMaxAttempts(0);
 		return section;
 	}
 	

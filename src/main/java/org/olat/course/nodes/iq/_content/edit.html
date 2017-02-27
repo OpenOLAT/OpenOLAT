@@ -12,13 +12,16 @@
 	#if ($dontRenderRepositoryButton)
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("file.name")</label>
-			<div class="col-sm-9"><p class="form-control-static">$r.render("command.preview")</div>
+			<div class="col-sm-9"><p class="form-control-static">$r.render("command.preview.link")</div>
 		</div>
 		<div class="form-group">
 			<div class="col-sm-offset-3 col-sm-9">
 			$r.render("command.changeRepFile")
 			#if($r.available("command.editRepFile"))
 				$r.render("command.editRepFile")
+			#end
+			#if($r.available("command.preview"))
+				$r.render("command.preview")
 			#end
 			</div>
 		</div>
