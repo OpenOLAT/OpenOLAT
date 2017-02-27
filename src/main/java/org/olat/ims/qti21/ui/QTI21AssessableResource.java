@@ -22,10 +22,12 @@ package org.olat.ims.qti21.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.AssessableResource;
 import org.olat.repository.RepositoryEntry;
@@ -50,6 +52,14 @@ public class QTI21AssessableResource extends AssessableResource {
 		Controller resetToolCtrl = new QTI21ResetToolController(ureq, wControl, entry, options);
 		List<Controller> toolsCtrl = new ArrayList<>(1);
 		toolsCtrl.add(resetToolCtrl);
+		
+		boolean isRunningSession = CoreSpringFactory.getImpl(QTI21Service.class)
+				.isRunningAssessmentTestSession(entry, null, entry);
+		if(isRunningSession) {
+			Controller retrieveToolCtrl = new QTI21RetrieveTestsToolController(ureq, wControl, entry, options);
+			toolsCtrl.add(retrieveToolCtrl);
+		}
+
 		return toolsCtrl;
 	}
 }

@@ -21,8 +21,11 @@ package org.olat.ims.qti21.ui;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -43,14 +46,19 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.group.BusinessGroupService;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,12 +70,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QTI21RetrieveTestsToolController extends BasicController implements Activateable2 {
 	
-	private final Link pullButton;
+	private Link pullButton;
 	private DialogBoxController retrieveConfirmationCtr;
 	
-	private final IQTESTCourseNode courseNode;
-	private final CourseEnvironment courseEnv;
-	private final List<Identity> assessedIdentities;
+	/** Not used, tool not implemented */
+	private RepositoryEntry assessedEntry;
+	private IQTESTCourseNode courseNode;
+	private CourseEnvironment courseEnv;
+	private final AssessmentToolOptions asOptions;
 	
 	@Autowired
 	private DB dbInstance;
@@ -75,6 +85,10 @@ public class QTI21RetrieveTestsToolController extends BasicController implements
 	private UserManager userManager;
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	
 	public QTI21RetrieveTestsToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			AssessmentToolOptions asOptions, IQTESTCourseNode courseNode) {
@@ -83,8 +97,20 @@ public class QTI21RetrieveTestsToolController extends BasicController implements
 		
 		this.courseEnv = courseEnv;
 		this.courseNode = courseNode;
-		this.assessedIdentities = asOptions.getIdentities();
-		
+		this.asOptions = asOptions;
+		initButton();
+	}
+	
+	public QTI21RetrieveTestsToolController(UserRequest ureq, WindowControl wControl, RepositoryEntry  assessedEntry,
+			AssessmentToolOptions asOptions) {
+		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(QTIResultManager.class, getLocale(), getTranslator()));
+		this.assessedEntry = assessedEntry;
+		this.asOptions = asOptions;
+		initButton();
+	}
+	
+	private void initButton() {
 		pullButton = LinkFactory.createButton("menu.retrieve.tests.title", null, this);
 		pullButton.setTranslator(getTranslator());
 		putInitialPanel(pullButton);
@@ -124,12 +150,36 @@ public class QTI21RetrieveTestsToolController extends BasicController implements
 	private void confirmPull(UserRequest ureq) {
 		StringBuilder fullnames = new StringBuilder(256);
 		
-		List<AssessmentTestSession> sessions = qtiService
+		List<AssessmentTestSession> sessions;
+		if(courseEnv != null) {
+			sessions = qtiService
 				.getRunningAssessmentTestSession(courseEnv.getCourseGroupManager().getCourseEntry(), courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
+		} else {
+			sessions = qtiService.getRunningAssessmentTestSession(assessedEntry, null, assessedEntry);
+		}
+		
+		ArchiveOptions options = new ArchiveOptions();
+		List<Identity> identities = null;
+		if(asOptions.getGroup() == null && asOptions.getIdentities() == null) {
+			if(courseEnv != null) {
+				identities = ScoreAccountingHelper.loadUsers(courseEnv);
+				options.setIdentities(identities);
+			} else {
+				identities = repositoryService.getMembers(assessedEntry, GroupRoles.participant.name());
+				options.setIdentities(identities);
+			}
+		} else if (asOptions.getIdentities() != null) {
+			identities = asOptions.getIdentities();
+			options.setIdentities(identities);
+		} else {
+			identities = businessGroupService.getMembers(asOptions.getGroup());
+			options.setGroup(asOptions.getGroup());
+		}
 		
 		List<AssessmentTestSession> sessionsToRetrieve = new ArrayList<>();
+		Set<Identity> assessedIdentites = new HashSet<>(identities);
 		for(AssessmentTestSession session:sessions) {
-			if(assessedIdentities.contains(session.getIdentity())) {
+			if(assessedIdentites.contains(session.getIdentity())) {
 				if(fullnames.length() > 0) fullnames.append(", ");
 				String name = userManager.getUserDisplayName(session.getIdentity());
 				if(StringHelper.containsNonWhitespace(name)) {
