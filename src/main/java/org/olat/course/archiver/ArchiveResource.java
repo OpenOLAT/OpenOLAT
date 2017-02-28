@@ -95,7 +95,7 @@ public class ArchiveResource implements MediaResource {
 		}
 		
 		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
-				+ "_" + Formatter.formatDatetimeSave(new Date()) + ".zip";
+				+ "_" + Formatter.formatDatetimeWithMinutes(new Date()) + ".zip";
 		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
 		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
 		hres.setHeader("Content-Description", urlEncodedLabel);

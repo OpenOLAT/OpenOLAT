@@ -266,7 +266,7 @@ public class HighScoreEditController extends FormBasicController {
 					|| showPodium.isSelected(0) || showPosition.isSelected(0);
 		} 
 		if (dateStart.getDate() != null && new Date().after(dateStart.getDate())) {
-			dateStart.setErrorKey("dateElement.toearly", null);
+			dateStart.setErrorKey("datestart.toearly", null);
 			allOK &= false;
 		}		
 		return allOK & super.validateFormLogic(ureq);

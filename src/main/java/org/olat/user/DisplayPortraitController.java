@@ -69,7 +69,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 	private final boolean isAnonymous;
 	private final boolean displayPortraitImage;
 	
-	private boolean anonymous;	
+	private boolean forceAnonymous;	
 
 	
 	/**
@@ -91,7 +91,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 	public DisplayPortraitController(UserRequest ureq, WindowControl wControl, Identity portraitIdent,
 			boolean useLarge, boolean canLinkToHomePage, boolean setAnonymous) { 
 		this(ureq, wControl, portraitIdent, useLarge, canLinkToHomePage, false, true);
-		this.anonymous = setAnonymous;
+		this.forceAnonymous = setAnonymous;
 		loadPortrait();
 	}
 
@@ -177,9 +177,9 @@ public class DisplayPortraitController extends BasicController implements Generi
 			
 			if (useLarge) {
 				image = DisplayPortraitManager.getInstance().getBigPortrait(portraitIdent.getName());
-				if (image != null && !anonymous) {
+				if (image != null && !forceAnonymous) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_BIG_CSS_CLASS);
-				} else if (isAnonymous || anonymous) {
+				} else if (isAnonymous || forceAnonymous) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.ANONYMOUS_BIG_CSS_CLASS);
 				} else if (gender.equals("-")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_BIG_CSS_CLASS);
@@ -190,9 +190,9 @@ public class DisplayPortraitController extends BasicController implements Generi
 				}
 			} else {
 				image = DisplayPortraitManager.getInstance().getSmallPortrait(portraitIdent.getName());
-				if (image != null && !anonymous) {
+				if (image != null && !forceAnonymous) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.AVATAR_SMALL_CSS_CLASS);					
-				} else if (isAnonymous || anonymous) {
+				} else if (isAnonymous || forceAnonymous) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.ANONYMOUS_SMALL_CSS_CLASS);
 				} else if (gender.equals("-")) {
 					myContent.contextPut("portraitCssClass", DisplayPortraitManager.DUMMY_SMALL_CSS_CLASS);
@@ -212,7 +212,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 			myContent.contextRemove("mapperUrl");
 		}
 
-		myContent.contextPut("hasPortrait", (image != null && !anonymous) ? Boolean.TRUE : Boolean.FALSE);
+		myContent.contextPut("hasPortrait", (image != null && !forceAnonymous) ? Boolean.TRUE : Boolean.FALSE);
 	}
 
 	@Override

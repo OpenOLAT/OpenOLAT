@@ -60,7 +60,7 @@ import org.olat.core.helpers.Settings;
 public class Formatter {
 
 	private static final DateFormat formatterDatetimeFilesystem = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm-ss_SSS");
-	private static final DateFormat formatterDatetime = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm");
+	private static final DateFormat formatterDatetimeWithMinutes = new SimpleDateFormat("yyyy-MM-dd'T'HH-mm");
 	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	private static final DateFormat shortFormatDateFileSystem = new SimpleDateFormat("yyyyMMdd");
 
@@ -311,9 +311,9 @@ public class Formatter {
 	 * @param d the date to be formatted
 	 * @return a String with the formatted date and time
 	 */
-	public static String formatDatetimeSave(Date d) {
-		synchronized (formatterDatetime) {
-			return formatterDatetime.format(d);
+	public static String formatDatetimeWithMinutes(Date d) {
+		synchronized (formatterDatetimeWithMinutes) {
+			return formatterDatetimeWithMinutes.format(d);
 		}
 	}
 	
