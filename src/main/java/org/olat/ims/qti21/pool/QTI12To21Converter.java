@@ -83,6 +83,7 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryT
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.modules.qpool.QuestionType;
@@ -110,6 +111,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.node.test.TimeLimits;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.Orientation;
 
 /**
  * 
@@ -407,6 +409,7 @@ public class QTI12To21Converter {
 		
 		Question question = item.getQuestion();
 		itemBuilder.setShuffle(question.isShuffle());
+		convertOrientation(question, itemBuilder);
 		
 		List<Response> responses = question.getResponses();
 		for(Response response:responses) {
@@ -447,6 +450,7 @@ public class QTI12To21Converter {
 		
 		Question question = item.getQuestion();
 		itemBuilder.setShuffle(question.isShuffle());
+		convertOrientation(question, itemBuilder);
 		
 		boolean hasNegative = false;
 		List<Response> responses = question.getResponses();
@@ -501,6 +505,19 @@ public class QTI12To21Converter {
 		}
 		
 		return itemBuilder;
+	}
+	
+	private void convertOrientation(Question question, SimpleChoiceAssessmentItemBuilder itemBuilder) {
+		if (question instanceof ChoiceQuestion) {
+			String flowLabel = ((ChoiceQuestion)question).getFlowLabelClass();
+			if(StringHelper.containsNonWhitespace(flowLabel)) {
+				if(ChoiceQuestion.BLOCK.equals(flowLabel)) {
+					itemBuilder.setOrientation(Orientation.HORIZONTAL);
+				} else if(ChoiceQuestion.LIST.equals(flowLabel)) {
+					itemBuilder.setOrientation(Orientation.VERTICAL);
+				}
+			}
+		}
 	}
 	
 	private AssessmentItemBuilder convertKPrim(Item item) {
