@@ -708,7 +708,7 @@ tr.choiceinteraction {
 			color: $o-qti-attempts-color;
 			font-size: 0.7em;
 			
-			&.o_assessmentitem_attempts_limited .o_icon_attempt_limit {
+			&.o_assessmentitem_attempts_limited {
 				color: $o-qti-attempts-limited-color;
 			}
 			&.o_assessmentitem_attempts_nomore {

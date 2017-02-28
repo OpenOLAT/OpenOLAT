@@ -63,6 +63,7 @@ public class QTI21ExportResultsReportController extends BasicController {
 		
 		statsButton = LinkFactory.createButton("button.export", null, this);
 		statsButton.setTranslator(getTranslator());
+		statsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
 		putInitialPanel(statsButton);
 		getInitialComponent().setSpanAsDomReplaceable(true); // override to wrap panel as span to not break link layout 
 	}

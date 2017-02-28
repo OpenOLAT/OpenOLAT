@@ -256,12 +256,12 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 				sb.append("o_assessmentitem_attempts_nomore");				
 			}
 			String title = translator.translate("attemptsleft", new String[] { Integer.toString((maxAttempts - numOfAttempts)) });
-			sb.append("' title=\"").append(StringHelper.escapeHtml(title)).append("\">")
-			  .append("<i class='o_icon o_icon_attempt_limit'>&nbsp;</i> ");
+			sb.append("' title=\"").append(StringHelper.escapeHtml(title)).append("\">");
+			sb.append(numOfAttempts).append(" / ").append(Integer.toString(maxAttempts));
 		} else {
-			sb.append("'>");
+			sb.append("'>").append(numOfAttempts);			
 		}
-		sb.append(numOfAttempts).append("</span>");
+		sb.append("</span>");
 		
 		
 		
