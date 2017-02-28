@@ -173,16 +173,16 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		//comment
 		renderComment(renderer, sb, component, itemSessionState, translator);
 		
+		//end body
+		sb.append("</div>");
+		
 		// Display active modal feedback (only after responseProcessing)
 		if(itemSessionState.getSessionStatus() == SessionStatus.FINAL) {
 			renderTestItemModalFeedback(renderer, sb, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
 		}
-		
-		//end body
-		sb.append("</div>");
 
 		//controls
-		sb.append("<div class='o_button_group'>");
+		sb.append("<div class='o_button_group o_assessmentitem_controls'>");
 		//submit button
 		if(component.isItemSessionOpen(itemSessionState, renderer.isSolutionMode())) {
 			Component submit = component.getQtiItem().getSubmitButton().getComponent();

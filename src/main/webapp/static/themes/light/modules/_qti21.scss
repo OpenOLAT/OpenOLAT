@@ -298,6 +298,7 @@ ul.sessionControl {
 			margin-top: 0;
 		}
 		/* need to redeclare o_info since modalFeedback class is on same element */
+		/* remove margins to stack into item box*/
 		.o_info {
 			@extend %o_info;
 			margin-bottom: 0;
@@ -305,21 +306,33 @@ ul.sessionControl {
 		}
 		
 		.o_info.o_correct_modal_feedback {
-			@extend %o_note;
+			@extend %o_success;
 			margin-bottom: 0;
 			margin-top: 0;
 		}
 
 		.o_info.o_incorrect_modal_feedback {
-			@extend %o_warning;
+			@extend %o_error;
 			margin-bottom: 0;
 			margin-top: 0;
 		}
 
 		.o_info.o_empty_modal_feedback {
-			@extend %o_warning;
+			@extend %o_note;
 			margin-bottom: 0;
 			margin-top: 0;
+		}
+		
+		.o_togglebox_wrapper {
+			margin-bottom: 0;
+			margin-top: 0;	
+			
+			h4 {
+				border-left: 1px solid $o-qti-item-border-color;
+				border-right: 1px solid $o-qti-item-border-color;
+				padding-bottom: 5px;
+				margin-bottom: 0;
+			}
 		}
 	}
 }
