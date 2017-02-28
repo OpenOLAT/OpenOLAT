@@ -105,7 +105,9 @@ public class HighScoreEditController extends FormBasicController {
 				new String[] { null });
 		allowHighScore.addActionListener(FormEvent.ONCLICK);
 		boolean allowhighscore = config.getBooleanSafe(CONFIG_KEY_HIGHSCORE,false);
-		if (allowhighscore) allowHighScore.select("xx", allowhighscore); else allowHighScore.uncheckAll();		
+		if (allowhighscore) {
+			allowHighScore.select("xx", allowhighscore);		
+		}
 		
 		dateStart = new JSDateChooser("startDate", getLocale());
 		dateStart.setLabel("highscore.datestart", null);
@@ -118,8 +120,9 @@ public class HighScoreEditController extends FormBasicController {
 
 		displayAnonymous = uifactory.addCheckboxesHorizontal("highscore.anonymize", formLayout, new String[] { "xx" },
 				new String[] { null });
-		if (config.getBooleanSafe(CONFIG_KEY_ANONYMIZE,false)) displayAnonymous.select("xx", true); 
-		else displayAnonymous.uncheckAll();
+		if (config.getBooleanSafe(CONFIG_KEY_ANONYMIZE,false)) {
+			displayAnonymous.select("xx", true); 
+		}
 		
 		uifactory.addSpacerElement("spacer", formLayout, false);
 
@@ -127,27 +130,32 @@ public class HighScoreEditController extends FormBasicController {
 				new String[] { translate("option.show") });	
 		showPosition.addActionListener(FormEvent.ONCLICK);
 		boolean showposition = config.getBooleanSafe(CONFIG_KEY_POSITION,false);
-		if (showposition) showPosition.select("xx", true); 
-		else showPosition.uncheckAll();
+		if (showposition) {
+			showPosition.select("xx", true); 
+		}
+		
 
 		showPodium = uifactory.addCheckboxesHorizontal("highscore.podium", formLayout, new String[] { "xx" },
 				new String[] { translate("option.show") });
 		showPodium.addActionListener(FormEvent.ONCLICK);
-		if (config.getBooleanSafe(CONFIG_KEY_PODIUM,false)) showPodium.select("xx", true); 
-		else showPodium.uncheckAll();
-
+		if (config.getBooleanSafe(CONFIG_KEY_PODIUM,false)) {
+			showPodium.select("xx", true); 
+		}
+		
 		showHistogram = uifactory.addCheckboxesHorizontal("highscore.histogram", formLayout, new String[] { "xx" },
 				new String[] { translate("option.show") });
 		showHistogram.addActionListener(FormEvent.ONCLICK);
-		if (config.getBooleanSafe(CONFIG_KEY_HISTOGRAM,false)) showHistogram.select("xx", true); 
-		else showHistogram.uncheckAll();
+		if (config.getBooleanSafe(CONFIG_KEY_HISTOGRAM,false)) {
+			showHistogram.select("xx", true); 
+		}
 
 		showListing = uifactory.addCheckboxesHorizontal("highscore.listing", formLayout, new String[] { "xx" },
 				new String[] { translate("option.show") });
 		showListing.addActionListener(FormEvent.ONCLICK);
 		boolean listing = config.getBooleanSafe(CONFIG_KEY_LISTING,false);
-		if (listing) showListing.select("xx", true); 
-		else showListing.uncheckAll();
+		if (listing) {
+			showListing.select("xx", true); 
+		}
 
 		// Translate the keys to the yes and no option values
 		final String[] yesOrNoOptions = new String[yesOrNoKeys.length];
@@ -157,10 +165,8 @@ public class HighScoreEditController extends FormBasicController {
 		horizontalRadioButtons = uifactory.addRadiosHorizontal("highscore.void", formLayout, yesOrNoKeys,
 				yesOrNoOptions);
 		int showAll = config.getBooleanEntry(CONFIG_KEY_BESTONLY) != null ? 
-				(int) config.get(CONFIG_KEY_BESTONLY) : 0;
+				(int) config.get(CONFIG_KEY_BESTONLY) : 1;
 		horizontalRadioButtons.select(yesOrNoKeys[showAll], true);	
-		// A default value is needed for show/hide rules
-//		horizontalRadioButtons.select(yesOrNoKeys[1], true);
 		horizontalRadioButtons.addActionListener(FormEvent.ONCLICK);
 		horizontalRadioButtons.setVisible(listing);
 
@@ -260,6 +266,7 @@ public class HighScoreEditController extends FormBasicController {
 					|| showPodium.isSelected(0) || showPosition.isSelected(0);
 		} 
 		if (dateStart.getDate() != null && new Date().after(dateStart.getDate())) {
+			dateStart.setErrorKey("dateElement.toearly", null);
 			allOK &= false;
 		}		
 		return allOK & super.validateFormLogic(ureq);
