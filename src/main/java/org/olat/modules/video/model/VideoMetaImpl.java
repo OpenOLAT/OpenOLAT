@@ -91,7 +91,12 @@ public class VideoMetaImpl implements VideoMeta, Persistable, ModifiedInfo {
 		this.length = length;
 	}
 	
-
+	public VideoMetaImpl(int width, int height, long size) {
+		this.width = width;
+		this.height = height;
+		this.size = size;
+	}	
+	
 	public VideoMetaImpl() {
 		// make JAXB happy
 	}
