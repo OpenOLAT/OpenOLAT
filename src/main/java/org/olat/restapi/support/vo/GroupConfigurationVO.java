@@ -37,6 +37,8 @@ public class GroupConfigurationVO {
 	
 	private String[] tools;
 	private Map<String,Integer> toolsAccess;
+	private String news;
+	
 	private Boolean ownersVisible;
 	private Boolean participantsVisible;
 	private Boolean waitingListVisible;
@@ -44,6 +46,10 @@ public class GroupConfigurationVO {
 	private Boolean ownersPublic;
 	private Boolean participantsPublic;
 	private Boolean waitingListPublic;
+	
+	public GroupConfigurationVO() {
+		//
+	}
 	
 	public String[] getTools() {
 		return tools;
@@ -61,6 +67,14 @@ public class GroupConfigurationVO {
 		this.toolsAccess = toolsAccess;
 	}
 	
+	public String getNews() {
+		return news;
+	}
+
+	public void setNews(String news) {
+		this.news = news;
+	}
+
 	public Boolean getOwnersVisible() {
 		return ownersVisible;
 	}

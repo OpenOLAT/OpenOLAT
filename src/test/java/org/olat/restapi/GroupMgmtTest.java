@@ -49,6 +49,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -59,6 +60,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -106,6 +108,8 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	private Message m1, m2, m3, m4, m5;
 	private RestConnection conn;
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
@@ -477,6 +481,111 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		assertTrue(bg.isOwnersVisibleIntern());
 		assertFalse(bg.isParticipantsVisibleIntern());
 		assertFalse(bg.isWaitingListVisibleIntern());
+	}
+	
+	@Test
+	public void testCreateCourseGroupWithNewsAndContact() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//create the group
+		GroupVO vo = new GroupVO();
+		vo.setName("rest-g7-news");
+		vo.setDescription("rest-g7 with news");
+		vo.setType("BuddyGroup");
+		URI request = UriBuilder.fromUri(getContextURI()).path("groups").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		GroupVO newGroupVo = conn.parse(response, GroupVO.class); 
+		assertNotNull(newGroupVo);
+		
+		//update the configuration
+		GroupConfigurationVO configVo = new GroupConfigurationVO();
+		configVo.setTools(new String[]{ "hasContactForm", "hasNews" });
+		configVo.setNews("<p>News!</p>");
+		URI configRequest = UriBuilder.fromUri(getContextURI()).path("groups").path(newGroupVo.getKey().toString()).path("configuration").build();
+		HttpPost configMethod = conn.createPost(configRequest, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(configMethod, configVo);
+		HttpResponse configResponse = conn.execute(configMethod);
+		assertTrue(configResponse.getStatusLine().getStatusCode() == 200 || configResponse.getStatusLine().getStatusCode() == 201);
+		EntityUtils.consume(configResponse.getEntity());
+
+		//check group
+		BusinessGroup bg = businessGroupService.loadBusinessGroup(newGroupVo.getKey());
+		assertNotNull(bg);
+		assertEquals(bg.getKey(), newGroupVo.getKey());
+		assertEquals(bg.getName(), "rest-g7-news");
+		assertEquals(bg.getDescription(), "rest-g7 with news");
+		//check collaboration tools configuration
+		CollaborationTools tools = CollaborationToolsFactory.getInstance().getCollaborationToolsIfExists(bg);
+		assertNotNull(tools);
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_FOLDER));
+		assertTrue(tools.isToolEnabled(CollaborationTools.TOOL_NEWS));
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_CALENDAR));
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_CHAT));
+		assertTrue(tools.isToolEnabled(CollaborationTools.TOOL_CONTACT));
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_FORUM));
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_PORTFOLIO));
+		assertFalse(tools.isToolEnabled(CollaborationTools.TOOL_WIKI));
+		// Check news tools access configuration
+		assertEquals("<p>News!</p>", tools.lookupNews());
+	}
+	
+	@Test
+	public void updateDeleteNews() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//create the group
+		GroupVO vo = new GroupVO();
+		vo.setName("rest-g8-news");
+		vo.setDescription("rest-g8 for news operations");
+		vo.setType("BuddyGroup");
+		URI request = UriBuilder.fromUri(getContextURI()).path("groups").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, vo);
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+		GroupVO newGroupVo = conn.parse(response, GroupVO.class); 
+		assertNotNull(newGroupVo);
+		
+		//update the configuration
+		GroupConfigurationVO configVo = new GroupConfigurationVO();
+		configVo.setTools(new String[]{ "hasNews" });
+		configVo.setNews("<p>News!</p>");
+		URI configRequest = UriBuilder.fromUri(getContextURI()).path("groups").path(newGroupVo.getKey().toString()).path("configuration").build();
+		HttpPost configMethod = conn.createPost(configRequest, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(configMethod, configVo);
+		HttpResponse configResponse = conn.execute(configMethod);
+		assertEquals(200, configResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(configResponse.getEntity());
+
+		//update the news an contact node
+		URI newsRequest = UriBuilder.fromUri(getContextURI()).path("groups").path(newGroupVo.getKey().toString()).path("news").build();
+		HttpPost updateNewsMethod = conn.createPost(newsRequest, MediaType.APPLICATION_JSON);
+		conn.addEntity(updateNewsMethod, new BasicNameValuePair("news", "<p>The last news</p>"));
+		HttpResponse updateResponse = conn.execute(updateNewsMethod);
+		assertEquals(200, updateResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(updateResponse.getEntity());
+		
+		//check the last news
+		BusinessGroup bg = businessGroupService.loadBusinessGroup(newGroupVo.getKey());
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		String news = collabTools.lookupNews();
+		assertEquals("<p>The last news</p>", news);
+		
+		//delete the news
+		HttpDelete deleteNewsMethod = conn.createDelete(newsRequest, MediaType.APPLICATION_JSON);
+		HttpResponse deleteResponse = conn.execute(deleteNewsMethod);
+		assertEquals(200, deleteResponse.getStatusLine().getStatusCode());
+		EntityUtils.consume(deleteResponse.getEntity());
+		
+		// reload and check the news are empty
+		dbInstance.commitAndCloseSession();
+		CollaborationTools reloadedCollabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		String deletedNews = reloadedCollabTools.lookupNews();
+		assertNull(deletedNews);
 	}
 	
 	@Test
