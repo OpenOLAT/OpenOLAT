@@ -27,7 +27,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.dom4j.Document;
-import org.jcodec.common.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
