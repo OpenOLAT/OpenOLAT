@@ -100,7 +100,7 @@ public class MessageImpl implements CreateInfo, Persistable, Message {
 	@JoinColumn(name="forum_fk", nullable=false, insertable=true, updatable=false)
 	private Forum forum;
 
-	@Column(name="pseudonym", nullable=true, insertable=true, updatable=false)
+	@Column(name="pseudonym", nullable=true, insertable=true, updatable=true)
 	private String pseudonym;
 	@Column(name="guest", nullable=true, insertable=true, updatable=false)
 	private boolean guest;

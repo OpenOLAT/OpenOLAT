@@ -205,6 +205,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti21.model.xml.AssessmentItemPackageTest.class,
 	org.olat.ims.qti21.model.xml.ManifestPackageTest.class,
 	org.olat.ims.qti21.pool.QTI12To21ConverterTest.class,
+	org.olat.ims.qti21.pool.QTI12To21HtmlHandlerTest.class,
 	org.olat.ims.qti21.pool.QTI21QPoolServiceProviderTest.class,
 	org.olat.ims.qti21.repository.handlers.QTI21AssessmentTestHandlerTest.class,
 	org.olat.ims.qti21.model.xml.OnyxToQtiWorksAssessementItemsTest.class,
