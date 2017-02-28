@@ -144,7 +144,7 @@ public class OLATUpgrade_11_3_0 extends OLATUpgrade {
 				String fileName = videoFile.getName();
 				long size = videoFile.length();
 				String format = FilenameUtils.getExtension(fileName);
-				if (videoManager.getVideoMetadata(videoResource) == null) {
+				if (videoManager.hasVideoMetadata(videoResource)) {
 					VideoMetaImpl entity = new VideoMetaImpl();
 					entity.setVideoResource(videoResource);
 					entity.setFormat(format);

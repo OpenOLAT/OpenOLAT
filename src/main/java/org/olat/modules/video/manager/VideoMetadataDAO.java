@@ -66,7 +66,7 @@ public class VideoMetadataDAO {
 		if (metadata.size() > 0) {
 			return metadata.get(0);
 		} else {
-			return new VideoMetaImpl(800, 600, 5000);
+			return null;
 		}
 	}
 	

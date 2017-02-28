@@ -858,8 +858,16 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	@Override
+	public boolean hasVideoMetadata(OLATResource videoResource) {
+		return videoMetadataDao.getVideoMetadata(videoResource) != null;
+	}
+	
+	@Override
 	public VideoMetaImpl getVideoMetadata(OLATResource videoResource) {
 		VideoMetaImpl meta = videoMetadataDao.getVideoMetadata(videoResource);
+		if (meta == null) {
+			return new VideoMetaImpl(800, 600, 5000);
+		}
 		return meta;
 	}
 	
