@@ -45,6 +45,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXParseException;
 
 /**
  * 
@@ -88,15 +89,8 @@ public class ProcSamplerJob extends QuartzJobBean {
 	public void writeProcFile(File xmlFile) {
 		try {
 			Statistics statistics = CoreSpringFactory.getImpl(MonitoringService.class).getStatistics();
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc;
-			if(xmlFile.exists()) {
-				doc = dBuilder.parse(xmlFile);
-			} else {
-				doc = dBuilder.newDocument();
-				doc.appendChild(doc.createElement("root"));
-			}
+			Document doc = loadDocument(xmlFile);
+			if(doc == null) return;
 			
 			Element rootEl = doc.getDocumentElement();
 			//sessions
@@ -123,13 +117,37 @@ public class ProcSamplerJob extends QuartzJobBean {
 				TransformerFactory tFactory = TransformerFactory.newInstance();
 				Transformer transformer = tFactory.newTransformer();
 				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "5");
 				transformer.transform(new DOMSource(doc), new StreamResult(out));
 			} catch(IOException e) {
 				log.error("", e);
 			}
-		} catch (Exception e) {
+		} catch(Exception e) {
 			log.error("", e);
+			
+		}
+	}
+	
+	private Document loadDocument(File xmlFile) {
+		try {
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = null;
+			if(xmlFile.exists()) {
+				try {
+					doc = dBuilder.parse(xmlFile);
+				} catch (SAXParseException e) {
+					log.error("", e);
+				}
+			}
+			
+			if(doc == null) {
+				doc = dBuilder.newDocument();
+				doc.appendChild(doc.createElement("root"));
+			}
+			return doc;
+		} catch(Exception e) {
+			log.error("", e);
+			return null;
 		}
 	}
 
