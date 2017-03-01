@@ -103,6 +103,7 @@ import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.QTI21ResetToolController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsToolController;
 import org.olat.ims.qti21.ui.assessment.QTI21CorrectionToolController;
+import org.olat.ims.qti21.ui.assessment.QTI21ValidationToolController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsToolController;
@@ -253,6 +254,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				}
 				if(qtiService.needManualCorrection(qtiTestEntry)) {
 					tools.add(new QTI21CorrectionToolController(ureq, wControl, courseEnv, options, this));
+				}
+				if(getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, false)) {
+					tools.add(new QTI21ValidationToolController(ureq, wControl));
 				}
 			}
 			tools.add(new QTI21ExportResultsReportController(ureq, wControl, courseEnv, options, this));

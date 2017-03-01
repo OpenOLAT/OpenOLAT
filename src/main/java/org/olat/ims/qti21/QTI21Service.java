@@ -30,6 +30,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
+import org.olat.ims.qti21.model.DigitalSignatureValidation;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
@@ -301,6 +302,8 @@ public interface QTI21Service {
 	 * @param mail
 	 */
 	public void signAssessmentResult(AssessmentTestSession candidateSession, DigitalSignatureOptions signatureOptions, Identity assessedIdentity);
+	
+	public DigitalSignatureValidation validateAssessmentResult(File xmlSignature);
 	
 	public CandidateEvent recordCandidateTestEvent(AssessmentTestSession candidateSession, RepositoryEntryRef testEntry, RepositoryEntryRef entry,
 			CandidateTestEventType textEventType, TestSessionState testSessionState, NotificationRecorder notificationRecorder);

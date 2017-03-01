@@ -87,6 +87,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditFileLog;
 import org.olat.ims.qti21.manager.audit.AssessmentSessionAuditOLog;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
+import org.olat.ims.qti21.model.DigitalSignatureValidation;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestMarks;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestSession;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
@@ -701,6 +702,58 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			log.error("", e);
 			return null;
 		}
+	}
+
+	@Override
+	public DigitalSignatureValidation validateAssessmentResult(File xmlSignature) {
+		try {
+			Document signature = XMLDigitalSignatureUtil.getDocument(xmlSignature);
+			String uri = XMLDigitalSignatureUtil.getReferenceURI(signature);
+			//URI looks like: http://localhost:8081/olat/RepositoryEntry/688455680/CourseNode/95134692149905/TestSession/3231/assessmentResult.xml
+			String keyName = XMLDigitalSignatureUtil.getKeyName(signature);
+			
+			int end = uri.indexOf("/assessmentResult");
+			if(end <= 0) {
+				return new DigitalSignatureValidation(DigitalSignatureValidation.Message.sessionNotFound, false);
+			}
+			int start = uri.lastIndexOf('/', end - 1);
+			if(start <= 0) {
+				return new DigitalSignatureValidation(DigitalSignatureValidation.Message.sessionNotFound, false);
+			}
+			String testSessionKey = uri.substring(start + 1, end);
+			AssessmentTestSession testSession = getAssessmentTestSession(new Long(testSessionKey));
+			if(testSession == null) {
+				return new DigitalSignatureValidation(DigitalSignatureValidation.Message.sessionNotFound, false);
+			}
+			
+			File assessmentResult = getAssessmentResultFile(testSession);
+			File certificateFile = qtiModule.getDigitalSignatureCertificateFile();
+			
+			X509CertificatePrivateKeyPair kp = null;
+			if(keyName != null && keyName.equals(certificateFile.getName())) {
+				kp = CryptoUtil.getX509CertificatePrivateKeyPairPfx(
+						certificateFile, qtiModule.getDigitalSignatureCertificatePassword());
+			} else if(keyName != null) {
+				File olderCertificateFile = new File(certificateFile.getParentFile(), keyName);
+				if(olderCertificateFile.exists()) {
+					kp = CryptoUtil.getX509CertificatePrivateKeyPairPfx(
+							olderCertificateFile, qtiModule.getDigitalSignatureCertificatePassword());
+				}
+			}
+				
+			if(kp == null) {
+				// validate document against signature
+				if(XMLDigitalSignatureUtil.validate(uri, assessmentResult, xmlSignature)) {
+					return new DigitalSignatureValidation(DigitalSignatureValidation.Message.validItself, true);
+				}
+			} else if(XMLDigitalSignatureUtil.validate(uri, assessmentResult, xmlSignature, kp.getX509Cert().getPublicKey())) {
+				// validate document against signature but use the public key of the certificate
+				return new DigitalSignatureValidation(DigitalSignatureValidation.Message.validCertificate, true);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return new DigitalSignatureValidation(DigitalSignatureValidation.Message.notValid, false);
 	}
 
 	@Override

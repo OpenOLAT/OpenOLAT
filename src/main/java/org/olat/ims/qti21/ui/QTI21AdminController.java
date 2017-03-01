@@ -25,17 +25,22 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.core.util.crypto.X509CertificatePrivateKeyPair;
 import org.olat.ims.qti21.QTI21Module;
+import org.olat.ims.qti21.ui.assessment.ValidationXmlSignatureController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,23 +57,32 @@ public class QTI21AdminController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 	
+	private FormLink validationButton;
 	private MultipleSelectionElement mathExtensionEl, digitalSignatureEl;
 	private FileElement certificateEl;
 	private TextElement certificatePasswordEl;
+	
+	private CloseableModalController cmc;
+	private ValidationXmlSignatureController validationCtrl;
 	
 	@Autowired
 	private QTI21Module qtiModule;
 	
 	public QTI21AdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, "admin");
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.title");
+		validationButton = uifactory.addFormLink("validate.xml.signature", formLayout, Link.BUTTON);
 		
-		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature", formLayout,
+		FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("options", getTranslator());
+		layoutCont.setRootForm(mainForm);
+		formLayout.add("options", layoutCont);
+		layoutCont.setFormTitle(translate("admin.title"));
+		
+		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature", layoutCont,
 				onKeys, onValues);
 		if(qtiModule.isDigitalSignatureEnabled()) {
 			digitalSignatureEl.select(onKeys[0], true);
@@ -76,7 +90,7 @@ public class QTI21AdminController extends FormBasicController {
 		digitalSignatureEl.setExampleKey("digital.signature.text", null);
 		digitalSignatureEl.addActionListener(FormEvent.ONCHANGE);
 		
-		certificateEl = uifactory.addFileElement(getWindowControl(), "digital.signature.certificate", "digital.signature.certificate", formLayout);
+		certificateEl = uifactory.addFileElement(getWindowControl(), "digital.signature.certificate", "digital.signature.certificate", layoutCont);
 		certificateEl.setExampleKey("digital.signature.certificate.example", null);
 		certificateEl.setHelpText(translate("digital.signature.certificate.hint"));
 		if(StringHelper.containsNonWhitespace(qtiModule.getDigitalSignatureCertificate())) {
@@ -87,9 +101,9 @@ public class QTI21AdminController extends FormBasicController {
 		String certificatePassword = qtiModule.getDigitalSignatureCertificatePassword();
 		String password = StringHelper.containsNonWhitespace(certificatePassword) ? PASSWORD_PLACEHOLDER : "";
 		certificatePasswordEl = uifactory.addPasswordElement("digital.signature.certificate.password", "digital.signature.certificate.password",
-				256, password, formLayout);
+				256, password, layoutCont);
 
-		mathExtensionEl = uifactory.addCheckboxesHorizontal("math.extension", "math.extension", formLayout,
+		mathExtensionEl = uifactory.addCheckboxesHorizontal("math.extension", "math.extension", layoutCont,
 				onKeys, onValues);
 		if(qtiModule.isMathAssessExtensionEnabled()) {
 			mathExtensionEl.select(onKeys[0], true);
@@ -98,7 +112,7 @@ public class QTI21AdminController extends FormBasicController {
 		mathExtensionEl.addActionListener(FormEvent.ONCHANGE);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
+		layoutCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	
@@ -155,9 +169,22 @@ public class QTI21AdminController extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(validationCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(digitalSignatureEl == source) {
 			updateUI();
+		} else if(validationButton == source) {
+			doValidate(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -179,5 +206,23 @@ public class QTI21AdminController extends FormBasicController {
 				qtiModule.setDigitalSignatureCertificatePassword(password);
 			}
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(validationCtrl);
+		removeAsListenerAndDispose(cmc);
+		validationCtrl = null;
+		cmc = null;
+	}
+
+	private void doValidate(UserRequest ureq) {
+		if(validationCtrl != null) return;
+		
+		validationCtrl = new ValidationXmlSignatureController(ureq, getWindowControl());
+		listenTo(validationCtrl);
+		cmc = new CloseableModalController(getWindowControl(), "close", validationCtrl.getInitialComponent(),
+				true, translate("validate.xml.signature"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 }

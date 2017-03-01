@@ -26,21 +26,28 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.security.GeneralSecurityException;
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.Data;
+import javax.xml.crypto.KeySelector;
+import javax.xml.crypto.KeySelectorException;
+import javax.xml.crypto.KeySelectorResult;
 import javax.xml.crypto.MarshalException;
 import javax.xml.crypto.OctetStreamData;
 import javax.xml.crypto.URIDereferencer;
 import javax.xml.crypto.URIReference;
 import javax.xml.crypto.URIReferenceException;
 import javax.xml.crypto.XMLCryptoContext;
+import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.crypto.dsig.DigestMethod;
 import javax.xml.crypto.dsig.Reference;
@@ -111,6 +118,50 @@ public class XMLDigitalSignatureUtil {
         }
         
 		DOMValidateContext validContext = new DOMValidateContext(publicKey, nl.item(0));
+		validContext.setBaseURI(uri);
+		validContext.setURIDereferencer(new FileURIDereferencer(uri, xmlFile));
+
+		XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
+		XMLSignature signature = fac.unmarshalXMLSignature(validContext);
+		boolean validFlag = signature.validate(validContext);
+		if(!validFlag) {
+            // log and throw if not valid
+            boolean sv = signature.getSignatureValue().validate(validContext);
+            String msg = "signature validation status: " + sv;
+            
+            int numOfReferences = signature.getSignedInfo().getReferences().size();
+            for (int j=0; j<numOfReferences; j++) {
+            	Reference ref = (Reference)signature.getSignedInfo().getReferences().get(j);
+                boolean refValid = ref.validate(validContext);
+                msg += " ref["+j+"] validity status: " + refValid;
+            }
+            log.warn(msg);
+		}
+		return validFlag;
+	}
+	
+	/**
+	 * 
+	 * @param uri
+	 * @param xmlFile
+	 * @param xmlSignatureFile
+	 * @return
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws MarshalException
+	 * @throws XMLSignatureException
+	 */
+	public static boolean validate(String uri, File xmlFile, File xmlSignatureFile)
+	throws ParserConfigurationException, SAXException, IOException, MarshalException, XMLSignatureException {  
+
+		Document doc = getDocument(xmlSignatureFile);
+        NodeList nl = doc.getElementsByTagName("Signature");
+        if (nl.getLength() == 0) {
+            return false;
+        }
+        
+		DOMValidateContext validContext = new DOMValidateContext(new X509KeySelector(), nl.item(0));
 		validContext.setBaseURI(uri);
 		validContext.setURIDereferencer(new FileURIDereferencer(uri, xmlFile));
 
@@ -344,6 +395,26 @@ public class XMLDigitalSignatureUtil {
 		return dbFactory.newDocumentBuilder().newDocument();
 	}
 	
+	public static String getReferenceURI(Document doc) {
+		NodeList nl = doc.getElementsByTagName("Reference");
+        for(int i=nl.getLength(); i-->0; ) {
+        	Element referenceEl = (Element)nl.item(i);
+        	Node uriNode = referenceEl.getAttributes().getNamedItem("URI");
+        	if(uriNode != null) {
+				return uriNode.getNodeValue();
+        	}
+        }
+        return null;
+	}
+	
+	public static String getKeyName(Document doc) {
+		NodeList nl = doc.getElementsByTagName("KeyName");
+        if(nl.getLength() == 1) {
+        	return getElementText(doc, "KeyName");
+        }
+		return null;
+	}
+	
 	public  static String getElementText(Document doc, String elementName) {
 		StringBuilder sb = new StringBuilder();
 		
@@ -387,4 +458,47 @@ public class XMLDigitalSignatureUtil {
 			}
 		}
 	}
+	
+    private static class X509KeySelector extends KeySelector {
+        
+    	public KeySelectorResult select(KeyInfo keyInfo, KeySelector.Purpose purpose, AlgorithmMethod method, XMLCryptoContext context)
+        throws KeySelectorException {
+            @SuppressWarnings("unchecked")
+			Iterator<Object> ki = keyInfo.getContent().iterator();
+            while (ki.hasNext()) {
+                XMLStructure info = (XMLStructure) ki.next();
+                if (!(info instanceof X509Data)) {
+                    continue;
+                }
+                X509Data x509Data = (X509Data) info;
+                @SuppressWarnings("unchecked")
+				Iterator<Object> xi = x509Data.getContent().iterator();
+                while (xi.hasNext()) {
+                    Object o = xi.next();
+                    if (!(o instanceof X509Certificate)) {
+                        continue;
+                    }
+                    final PublicKey key = ((X509Certificate)o).getPublicKey();
+
+                    if (algEquals(method.getAlgorithm(), key.getAlgorithm())) {
+                        return new KeySelectorResult() {
+                            public Key getKey() { return key; }
+                        };
+                    }
+                }
+            }
+            throw new KeySelectorException("No key found!");
+        }
+
+        static boolean algEquals(String algURI, String algName) {
+            if ((algName.equalsIgnoreCase("DSA") &&
+                    algURI.equalsIgnoreCase(SignatureMethod.DSA_SHA1)) ||
+                    (algName.equalsIgnoreCase("RSA") &&
+                            algURI.equalsIgnoreCase(SignatureMethod.RSA_SHA1))) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
 }
