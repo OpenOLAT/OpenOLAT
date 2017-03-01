@@ -60,10 +60,10 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
+import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.SelfAssessableCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -140,15 +140,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		singleUserEventCenter = userSession.getSingleUserEventCenter();
 		mainVC = createVelocityContainer("assessment_run");
 		
-		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)
-				|| userCourseEnv.isCoach()){
-			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
-			if (highScoreCtr.isViewHighscore()) {
-				Component highScoreComponent = highScoreCtr.getInitialComponent();
-				mainVC.put("highScore", highScoreComponent);							
+		if (courseNode instanceof AssessableCourseNode) {
+			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
+			if (assessableCourseNode.hasScoreConfigured() || userCourseEnv.isCoach()){
+				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
+				if (highScoreCtr.isViewHighscore()) {
+					Component highScoreComponent = highScoreCtr.getInitialComponent();
+					mainVC.put("highScore", highScoreComponent);							
+				}
 			}
 		}
-		
+				
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 		
 		if(courseNode instanceof IQTESTCourseNode) {

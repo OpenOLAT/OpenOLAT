@@ -75,7 +75,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.nodes.SelfAssessableCourseNode;
@@ -174,6 +173,13 @@ public class IQRunController extends BasicController implements GenericEventList
 		if (!modConfig.get(IQEditController.CONFIG_KEY_TYPE).equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {
 			throw new OLATRuntimeException("IQRunController launched with Test constructor but module configuration not configured as test" ,null);
 		}
+		
+		HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, courseNode);
+		if (highScoreCtr.isViewHighscore()) {
+			Component highScoreComponent = highScoreCtr.getInitialComponent();
+			myContent.put("highScore", highScoreComponent);							
+		}
+		
 		init(ureq);
 		exposeUserTestDataToVC(ureq);
 		
@@ -299,14 +305,6 @@ public class IQRunController extends BasicController implements GenericEventList
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 
 		myContent = createVelocityContainer("surveyrun");
-		
-		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
-			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, courseNode);
-			if (highScoreCtr.isViewHighscore()) {
-				Component highScoreComponent = highScoreCtr.getInitialComponent();
-				myContent.put("highScore", highScoreComponent);							
-			}
-		}
 		
 		mainPanel = putInitialPanel(myContent);		
 
