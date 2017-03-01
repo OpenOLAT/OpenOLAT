@@ -161,7 +161,7 @@ public class DENManageParticipantsController extends BasicController {
 					dateList = denManager.deleteParticipants(ores, courseNode, denManager.getSelectedEventIDs(dateList, selection));
 					listTableData.setObjects(dateList);
 					//send notification mail
-					createRemovedNotificationMail(ureq, dateList.get(0).getSubject());
+					createRemovedNotificationMail(ureq, courseNode.getShortTitle());
 				} else if(tmse.getAction().equals(DENListTableDataModel.MAIL_ACTION) && selection.cardinality() > 0) {
 					//send email to all users from the selected dates
 					List<Identity> participants = denManager.getSelectedEventParticipants(dateList, selection);
@@ -201,7 +201,7 @@ public class DENManageParticipantsController extends BasicController {
 				userSearchCMC.deactivate();
 				if(added.size() > 0) {
 					//write notification mail
-					createAddedNotificationMail(ureq, dateList.get(0).getSubject());
+					createAddedNotificationMail(ureq, selectedEvent.getSubject());
 				}
 			}
 			
@@ -217,7 +217,7 @@ public class DENManageParticipantsController extends BasicController {
 					else {
 						removed.clear();
 						removed.add(identity);
-						createRemovedNotificationMail(ureq, dateList.get(0).getSubject());
+						createRemovedNotificationMail(ureq, selectedEvent.getSubject());
 					}
 					refreshTables();
 				//write email to single user
