@@ -563,15 +563,16 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	@Override
-	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Locale locale) {
-		decorateCourseConfirmation(candidateSession, options, userCourseEnv.getCourseEnvironment(), courseNode, testEntry, locale);
+	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Date timestamp, Locale locale) {
+		decorateCourseConfirmation(candidateSession, options, userCourseEnv.getCourseEnvironment(), courseNode, testEntry, timestamp, locale);
 	}
 	
 	public static void decorateCourseConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options,
-			CourseEnvironment courseEnv, CourseNode courseNode, RepositoryEntry testEntry, Locale locale)  {
+			CourseEnvironment courseEnv, CourseNode courseNode, RepositoryEntry testEntry, Date timestamp, Locale locale)  {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(candidateSession.getIdentity());
 		String fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(candidateSession.getIdentity());
+		Date assessedDate = candidateSession.getFinishTime() == null ? timestamp : candidateSession.getFinishTime();
 
 		String[] args = new String[] {
 				courseEnv.getCourseTitle(),						// {0}
@@ -581,7 +582,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				testEntry.getDisplayname(),						// {4}
 				fullname,										// {5}
 				Formatter.getInstance(locale)
-					.formatDateAndTime(candidateSession.getFinishTime()) // {6}
+					.formatDateAndTime(assessedDate) 			// {6}
 		};
 
 		Translator translator = Util.createPackageTranslator(QTI21AssessmentRunController.class, locale);

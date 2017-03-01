@@ -1143,7 +1143,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		boolean digitalSignature = deliveryOptions.isDigitalSignature() && qtiModule.isDigitalSignatureEnabled();
 		DigitalSignatureOptions options = new DigitalSignatureOptions(digitalSignature, sendMail, entry, testEntry);
 		if(digitalSignature) {
-			outcomesListener.decorateConfirmation(candidateSession, options, getLocale());
+			outcomesListener.decorateConfirmation(candidateSession, options, getCurrentRequestTimestamp(), getLocale());
 		}
 		return options;
 	}

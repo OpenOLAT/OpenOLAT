@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.model;
 
+import java.util.Date;
 import java.util.Locale;
 
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -33,7 +34,7 @@ import org.olat.ims.qti21.OutcomesListener;
 public class InMemoryOutcomeListener implements OutcomesListener {
 
 	@Override
-	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Locale locale) {
+	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Date timestamp, Locale locale) {
 		//do nothing
 	}
 

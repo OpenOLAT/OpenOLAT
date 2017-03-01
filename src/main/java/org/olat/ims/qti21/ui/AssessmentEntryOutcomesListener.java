@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -65,14 +66,16 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 	}
 
 	@Override
-	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Locale locale) {
-		decorateResourceConfirmation(candidateSession, options, locale);
+	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Date timestamp, Locale locale) {
+		decorateResourceConfirmation(candidateSession, options, timestamp, locale);
 	}
 	
-	public static void decorateResourceConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Locale locale) {
+	public static void decorateResourceConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Date timestamp, Locale locale) {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(candidateSession.getIdentity());
 		String fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(candidateSession.getIdentity());
+		Date assessedDate = candidateSession.getFinishTime() == null ? timestamp : candidateSession.getFinishTime();
+
 		
 		Translator translator = Util.createPackageTranslator(QTI21RuntimeController.class, locale);
 		RepositoryEntry entry = candidateSession.getRepositoryEntry();
@@ -85,7 +88,7 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 				testEntry.getDisplayname(),	// {4}
 				fullname,					// {5}
 				Formatter.getInstance(locale)
-					.formatDateAndTime(candidateSession.getFinishTime()) // {6}
+					.formatDateAndTime(assessedDate) // {6}
 		};
 
 		String subject = translator.translate("digital.signature.mail.subject", args);

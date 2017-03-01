@@ -13,6 +13,16 @@
 		<property name="className" value="org.olat.core.util.mail.ui.SendDocumentsByEMailController"/>
 	</bean>
 	
+		<bean id="mailAsyncExecutorService" class="org.springframework.core.task.support.ExecutorServiceAdapter">
+		<constructor-arg index="0" ref="mailAsyncExecutor" />
+	</bean>
+	
+	<bean id="mailAsyncExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="1" />
+		<property name="maxPoolSize" value="1" />
+		<property name="queueCapacity" value="2000" />
+	</bean>
+	
 	<!-- Mail admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.syscfg.mailcfg" init-method="initExtensionPoints">
 		<property name="order" value="7208" />

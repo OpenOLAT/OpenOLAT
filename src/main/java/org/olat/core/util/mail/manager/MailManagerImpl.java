@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.zip.Adler32;
 
 import javax.activation.DataHandler;
@@ -71,12 +73,14 @@ import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.taskexecutor.model.DBSecureRunnable;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -112,6 +116,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.sun.mail.smtp.SMTPMessage;
@@ -138,6 +143,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired @Qualifier("mailAsyncExecutorService")
+	private ExecutorService asyncExecutor;
 	@Autowired
 	private NotificationsManager notificationsManager;
 	private final MailModule mailModule;
@@ -671,6 +678,19 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			}
 		}
 		return bundle;
+	}
+
+	@Override
+	public void sendMessageAsync(MailBundle... bundles) {
+		try {
+			SendMail sendMail = new SendMail(bundles);
+			DBSecureRunnable command = new DBSecureRunnable(sendMail);
+			asyncExecutor.execute(command);
+		} catch (RejectedExecutionException e) {
+			log.error("Queue full, email lost", e);
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
 
 	@Override
@@ -1707,6 +1727,20 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				sb.append(recipient.toString());
 			}
 			log.info(type + "        : " + sb);
+		}
+	}
+	
+	public static class SendMail implements Runnable {
+		
+		private final MailBundle[] bundles;
+		
+		public SendMail(MailBundle[] bundles) {
+			this.bundles = bundles;
+		}
+
+		@Override
+		public void run() {
+			CoreSpringFactory.getImpl(MailManager.class).sendMessage(bundles);
 		}
 	}
 	

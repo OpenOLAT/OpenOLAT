@@ -66,7 +66,6 @@ import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.core.util.crypto.X509CertificatePrivateKeyPair;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.xml.XMLDigitalSignatureUtil;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -656,12 +655,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 				List<File> attachments = new ArrayList<>(2);
 				attachments.add(signatureFile);
 				mail.getContent().setAttachments(attachments);
-				MailerResult result = mailManager.sendMessage(mail);
-				if(result.getReturnCode() != MailerResult.OK) {
-					log.error("Confirmation mail cannot be send");
-				}
+				mailManager.sendMessageAsync(mail);
 			}
-			
 		} catch (Exception e) {
 			log.error("", e);
 		}

@@ -180,6 +180,15 @@ public interface MailManager {
 	 */
 	public MailerResult sendMessage(MailBundle... bundles);
 	
+	/**
+	 * Send the mail bundle asynchronous. The queue is in memory (for the moment)
+	 * and a shut down of the queue will mean looses.
+	 * 
+	 * @param bundles
+	 * @return
+	 */
+	public void sendMessageAsync(MailBundle... bundles);
+	
 	public MailerResult sendExternMessage(MailBundle bundle, MailerResult result, boolean useTemplate);
 	
 	public MimeMessage createMimeMessage(Address from, Address[] tos, Address[] ccs, Address[] bccs, String subject, String body,

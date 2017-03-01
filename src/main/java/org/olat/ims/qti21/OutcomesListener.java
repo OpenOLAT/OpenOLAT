@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21;
 
+import java.util.Date;
 import java.util.Locale;
 
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
@@ -38,7 +39,7 @@ public interface OutcomesListener {
 	 * @param options
 	 * @param locale
 	 */
-	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Locale locale);
+	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Date timestamp, Locale locale);
 	
 	/**
 	 * Update the outcomes.
