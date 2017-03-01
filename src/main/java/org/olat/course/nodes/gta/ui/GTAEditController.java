@@ -152,8 +152,6 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
-		System.out.println("Fired");
-
 	}
 
 	@Override
