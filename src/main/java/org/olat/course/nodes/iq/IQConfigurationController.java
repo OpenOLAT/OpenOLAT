@@ -52,7 +52,6 @@ import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
@@ -132,7 +131,7 @@ public class IQConfigurationController extends BasicController {
 	 * @param type
 	 */
 	public IQConfigurationController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
-			AbstractAccessableCourseNode courseNode, UserCourseEnvironment euce, String type) {
+			AbstractAccessableCourseNode courseNode, String type) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.moduleConfiguration = courseNode.getModuleConfiguration();

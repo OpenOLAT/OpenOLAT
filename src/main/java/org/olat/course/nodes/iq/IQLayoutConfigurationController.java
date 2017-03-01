@@ -31,7 +31,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.process.AssessmentInstance;
@@ -78,7 +77,7 @@ public class IQLayoutConfigurationController extends BasicController {
 	 * @param type
 	 */
 	public IQLayoutConfigurationController(UserRequest ureq, WindowControl wControl, ICourse course,
-			AbstractAccessableCourseNode courseNode, UserCourseEnvironment euce, String type) {
+			AbstractAccessableCourseNode courseNode, String type) {
 		super(ureq, wControl);
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
 		//o_clusterOk by guido: save to hold reference to course inside editor

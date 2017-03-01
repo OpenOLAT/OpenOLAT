@@ -274,9 +274,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	}
 
 	private void init(UserRequest ureq) {		
-		configurationCtrl = new IQConfigurationController(ureq, getWindowControl(), stackPanel, course, courseNode, euce, type);
+		configurationCtrl = new IQConfigurationController(ureq, getWindowControl(), stackPanel, course, courseNode, type);
 		listenTo(configurationCtrl);
-		layoutConfigurationCtrl = new IQLayoutConfigurationController(ureq, getWindowControl(), course, courseNode, euce, type);
+		layoutConfigurationCtrl = new IQLayoutConfigurationController(ureq, getWindowControl(), course, courseNode, type);
 		listenTo(layoutConfigurationCtrl);		
 		highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), courseNode);
 		listenTo(highScoreNodeConfigController);
