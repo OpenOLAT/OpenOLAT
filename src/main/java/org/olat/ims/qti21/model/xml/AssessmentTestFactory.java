@@ -274,6 +274,7 @@ public class AssessmentTestFactory {
 		itemSessionControl.setAllowSkipping(Boolean.TRUE);//default is true
 		itemSessionControl.setShowFeedback(Boolean.FALSE);
 		itemSessionControl.setShowSolution(Boolean.FALSE);
+		itemSessionControl.setMaxAttempts(0);
 		part.setItemSessionControl(itemSessionControl);
 		return part;
 	}
