@@ -144,15 +144,18 @@
 			<div class="btn-group">$r.render("qt_${message.key}") $r.render("rp_${message.key}")</div>
 			#end
 			
-			#if($r.available("split_${message.key}"))
+			#if($r.available("exile_${message.key}"))
 			<div class="btn-group">
 				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
 					<i class="o_icon o_icon-fw o_icon_actions"></i>
 					<span class="caret"></span>
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right">
+					#if($r.available("split_${message.key}"))
 					<li>$r.render("split_${message.key}")</li>
 					<li>$r.render("move_${message.key}")</li>
+					#end
+					<li>$r.render("exile_${message.key}")</li>
 				</ul>
 			</div>
 			#end

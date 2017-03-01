@@ -854,6 +854,223 @@ public class ForumManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void moveMessageToAnotherForum() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-3");
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-4");
+		Identity guest3 =  securityManager.getAndUpdateAnonymousUserForLanguage(Locale.ENGLISH);
+		Forum fo1 = forumManager.addAForum();
+		dbInstance.commit();
+		Forum fo2 = forumManager.addAForum();
+		dbInstance.commit();
+		
+		//Forum 1
+		Message topMessage = forumManager.createMessage(fo1, id1, false);
+		topMessage.setTitle("Thread move message");
+		topMessage.setBody("Thread move message");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message message = forumManager.createMessage(fo1, id2, false);
+		message.setTitle("Re: Thread move message");
+		message.setBody("Thread move message");
+		forumManager.replyToMessage(message, topMessage);
+		dbInstance.commit();
+		
+		Message messageToMove = forumManager.createMessage(fo1, id3, false);
+		messageToMove.setTitle("Message to move");
+		messageToMove.setBody("Thread move message");
+		forumManager.replyToMessage(messageToMove, message);
+		dbInstance.commit();
+		
+		Message messageToMove_1 = forumManager.createMessage(fo1, id4, false);
+		messageToMove_1.setTitle("Re: Message to move 1");
+		messageToMove_1.setBody("Thread move message");
+		forumManager.replyToMessage(messageToMove_1, messageToMove);
+		dbInstance.commit();
+		
+		Message messageToMove_1_1 = forumManager.createMessage(fo1, guest3, true);
+		messageToMove_1_1.setTitle("Re: Message to move 1");
+		messageToMove_1_1.setBody("Thread move message");
+		forumManager.replyToMessage(messageToMove_1_1, messageToMove_1);
+		dbInstance.commit();
+		
+		//Forum 2
+		Message targetThread = forumManager.createMessage(fo2, id1, false);
+		targetThread.setTitle("Thread move message Forum2");
+		targetThread.setBody("Thread move message Forum2");
+		forumManager.addTopMessage(targetThread);
+		dbInstance.commit();
+
+		Message message_f2 = forumManager.createMessage(fo2, id2, false);
+		message_f2.setTitle("Re: Thread move message Forum2");
+		message_f2.setBody("Thread move message Forum2");
+		forumManager.replyToMessage(message_f2, targetThread);
+		dbInstance.commit();
+		
+		Message messageToMove_f2 = forumManager.createMessage(fo2, id3, false);
+		messageToMove_f2.setTitle("Message to move Forum2");
+		messageToMove_f2.setBody("Thread move message Forum2");
+		forumManager.replyToMessage(messageToMove_f2, targetThread);
+		dbInstance.commit();
+		
+		Message targetMessage = forumManager.createMessage(fo2, id4, false);
+		targetMessage.setTitle("Re: Message to move 1 Forum2 Target");
+		targetMessage.setBody("Thread move message Forum2");
+		forumManager.replyToMessage(targetMessage, messageToMove_f2);
+		dbInstance.commit();
+		
+		Message messageToMove_1_1_f2 = forumManager.createMessage(fo2, guest3, true);
+		messageToMove_1_1_f2.setTitle("Re: Message to move 1 Forum2");
+		messageToMove_1_1_f2.setBody("Thread move message Forum2");
+		forumManager.replyToMessage(messageToMove_1_1_f2, targetMessage);
+		dbInstance.commit();
+		
+		//move the message
+		Message movedMessage = forumManager.moveMessageToAnotherForum(messageToMove, targetMessage);
+		
+		//check target thread
+		List<Message> targetMessages = forumManager.getThread(targetThread.getKey());
+		Assert.assertEquals(6, targetMessages.size());
+		Assert.assertTrue(targetMessages.contains(targetThread));
+		Assert.assertTrue(targetMessages.contains(targetMessage));
+		Assert.assertTrue(targetMessages.contains(movedMessage));
+		
+		// check original thread
+		List<Message> originMessages = forumManager.getThread(topMessage.getKey());
+		Assert.assertEquals(4, originMessages.size());
+		Assert.assertFalse(originMessages.contains(messageToMove));
+		Assert.assertTrue(originMessages.contains(topMessage));
+		Assert.assertTrue(originMessages.contains(message));
+		Assert.assertTrue(originMessages.contains(messageToMove_1));
+		Assert.assertTrue(originMessages.contains(messageToMove_1_1));
+		
+		//check thread and parent of the target thread
+		Message reloadedTopMessage = forumManager.getMessageById(targetThread.getKey());
+		Assert.assertNull(reloadedTopMessage.getThreadtop());
+		Assert.assertNull(reloadedTopMessage.getParent());	
+	}
+	
+	@Test
+	public void createOrAppendThreadInAnotherForum() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-3");
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-4");
+		Identity guest3 =  securityManager.getAndUpdateAnonymousUserForLanguage(Locale.ENGLISH);
+		Forum fo1 = forumManager.addAForum();
+		dbInstance.commit();
+		Forum fo2 = forumManager.addAForum();
+		dbInstance.commit();
+		
+		//Forum 1
+		Message topMessage = forumManager.createMessage(fo1, id1, false);
+		topMessage.setTitle("0Thread move message");
+		topMessage.setBody("Thread move message");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message message = forumManager.createMessage(fo1, id2, false);
+		message.setTitle("1Re: Thread move message");
+		message.setBody("Thread move message");
+		forumManager.replyToMessage(message, topMessage);
+		dbInstance.commit();
+		
+		Message messageToMove = forumManager.createMessage(fo1, id3, false);
+		messageToMove.setTitle("2Message to move");
+		messageToMove.setBody("Thread move message");
+		forumManager.replyToMessage(messageToMove, message);
+		dbInstance.commit();
+		
+		Message messageToMove_1 = forumManager.createMessage(fo1, id4, false);
+		messageToMove_1.setTitle("3Re: Message to move 1");
+		messageToMove_1.setBody("Thread move message");
+		forumManager.replyToMessage(messageToMove_1, messageToMove);
+		dbInstance.commit();
+		
+		Message messageToMove_1_1 = forumManager.createMessage(fo1, guest3, true);
+		messageToMove_1_1.setTitle("4Re: Message to move 1");
+		messageToMove_1_1.setBody("Thread move message");
+		forumManager.replyToMessage(messageToMove_1_1, messageToMove_1);
+		dbInstance.commit();
+		
+		// Another Thread
+		Message topMsg = forumManager.createMessage(fo1, id1, false);
+		topMsg.setTitle("Top move message");
+		topMsg.setBody("Top move message");
+		forumManager.addTopMessage(topMsg);
+		dbInstance.commit();
+
+		Message msg = forumManager.createMessage(fo1, id4, false);
+		msg.setTitle("Re: Thread move message");
+		msg.setBody("Thread move message");
+		forumManager.replyToMessage(msg, topMsg);
+		dbInstance.commit();
+		
+		//Forum 2
+		Message targetThread = forumManager.createMessage(fo2, id1, false);
+		targetThread.setTitle("5Thread move message Forum2");
+		targetThread.setBody("Thread move message Forum2");
+		forumManager.addTopMessage(targetThread);
+		dbInstance.commit();
+
+		Message message_f2 = forumManager.createMessage(fo2, id2, false);
+		message_f2.setTitle("6Re: Thread move message Forum2");
+		message_f2.setBody("Thread move message Forum2");
+		forumManager.replyToMessage(message_f2, targetThread);
+		dbInstance.commit();
+		
+		Message messageToMove_f2 = forumManager.createMessage(fo2, id3, false);
+		messageToMove_f2.setTitle("7Message to move Forum2");
+		messageToMove_f2.setBody("Thread move message Forum2");
+		forumManager.replyToMessage(messageToMove_f2, targetThread);
+		dbInstance.commit();
+		
+		Message targetMessage = forumManager.createMessage(fo2, id4, false);
+		targetMessage.setTitle("8Re: Message to move 1 Forum2 Target");
+		targetMessage.setBody("Thread move message Forum2");
+		forumManager.replyToMessage(targetMessage, messageToMove_f2);
+		dbInstance.commit();
+		
+		Message messageToMove_1_1_f2 = forumManager.createMessage(fo2, guest3, true);
+		messageToMove_1_1_f2.setTitle("9Re: Message to move 1 Forum2");
+		messageToMove_1_1_f2.setBody("Thread move message Forum2");
+		forumManager.replyToMessage(messageToMove_1_1_f2, targetMessage);
+		dbInstance.commit();
+		
+		// move thread to forum as new thread
+		Message newthread = forumManager.createOrAppendThreadInAnotherForum(topMsg, fo2, null);
+		
+		// check if newthread is in another forum
+		Assert.assertEquals(fo2, newthread.getForum());
+
+		// move thread to another forum to append to another thread
+		Message movedthread = forumManager.createOrAppendThreadInAnotherForum(topMessage, fo2, targetThread);
+		
+		//check target thread
+		List<Message> targetMessages = forumManager.getThread(targetThread.getKey(), 0, -1, Message.OrderBy.title, true); 
+		Assert.assertEquals(10, targetMessages.size());
+		Assert.assertTrue(targetMessages.contains(targetThread));
+		Assert.assertTrue(targetMessages.contains(targetMessage));
+		Assert.assertTrue(targetMessages.contains(movedthread));
+		
+		// check if hierarchy is consistent 
+		Message fo1messagetomove_1 = forumManager.getMessageById(targetMessages.get(3).getKey());
+		Message fo1messagetomove_1_1 = forumManager.getMessageById(targetMessages.get(4).getKey());
+		Assert.assertEquals(fo1messagetomove_1, fo1messagetomove_1_1.getParent());
+		
+		Message fo2targetMessage = forumManager.getMessageById(targetMessage.getKey());
+		Message fo2messageToMove_1_1_f2 = forumManager.getMessageById(messageToMove_1_1_f2.getKey());
+		Assert.assertEquals(fo2targetMessage, fo2messageToMove_1_1_f2.getParent());
+		int index3 = targetMessages.indexOf(targetMessage);
+		int index4 = targetMessages.indexOf(messageToMove_1_1_f2);				
+		Assert.assertEquals(targetMessages.get(index3), targetMessages.get(index4).getParent());
+		
+	}	
+	
+	
+	@Test
 	public void splitMessage() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-2");

@@ -712,6 +712,37 @@ public class PropertyManager extends BasicManager implements UserDataDeletable {
 		return props;
 	}
 	
+	/**
+	 * Gets the property by long value.
+	 */
+	public Property getPropertyByLongValue (long longValue, String name) {
+		StringBuilder query = new StringBuilder();
+		query.append("select p from ")
+		.append(Property.class.getName())
+		.append(" as p")
+		.append(" where p.longValue=:longValue");
+		
+		if (name != null) {
+			query.append(" and p.name=:name");
+		}
+		
+		TypedQuery<Property> dbQuery = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(query.toString(), Property.class)
+				.setParameter("longValue", longValue);
+		
+		if (name != null) {
+			dbQuery.setParameter("name", name);
+		}
+		
+		List<Property> properties = dbQuery.setMaxResults(1).getResultList();
+		
+		if (properties.size() > 0) {
+			return properties.get(0);
+		} else {
+			return null;
+		}				
+	}
+	
 	
 	/**
 	 * @return a list of all available resource type names

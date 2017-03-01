@@ -229,6 +229,19 @@ public class ForumManager {
 		
 	}
 	
+	public List<Message> getTopMessageChildren(Message topMessage) {
+		StringBuilder query = new StringBuilder();
+		query.append("select msg from fomessage as msg")
+	     .append(" left join fetch msg.creator as creator")
+	     .append(" left join fetch msg.modifier as modifier")
+	     .append(" where msg.threadtop.key=:messageKey")
+	     .append(" order by msg.creationDate asc");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Message.class)
+				.setParameter("messageKey", topMessage.getKey())
+				.getResultList();		
+	}	
+	
 	private int countMessagesByForumID(Long forumKey, boolean onlyThreads) {
 		StringBuilder query = new StringBuilder();
 		query.append("select count(msg) from fomessage as msg")
@@ -1052,13 +1065,152 @@ public class ForumManager {
 		message.setThreadtop(targetThread);
 		message.setParent(topMsg);
 		Status status = Status.getStatus(oldMessage.getStatusCode());
-		status.setMoved(true);
+		if (status != null){
+			status.setMoved(true);
+		}
 		message.setStatusCode(Status.getStatusCode(status));
 		message = saveMessage(message);
 		
 		//move marks
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Forum.class, msg.getForum().getKey());
 		markingService.getMarkManager().moveMarks(ores, msg.getKey().toString(), message.getKey().toString());
+		
+		moveMessageContainer(oldMessage.getForum().getKey(), oldMessage.getKey(), message.getForum().getKey(), message.getKey());
+		deleteMessageRecursion(oldMessage.getForum().getKey(), oldMessage);
+		return message;
+	}	
+
+	/**
+	 * Move thread to another forum recursively.
+	 *
+	 * @param old the OLD parent message
+	 * @param parentMessage the NEW parent message
+	 * @param topMsg the top message
+	 * @return the message
+	 */
+	private Message moveThreadToAnotherForumRecursively(Message old, Message parentMessage, Message topMsg) {
+		// 1) get direct children of the old top message
+		List<Message> children = getMessageChildren(old);
+		Message message = null;
+		// 2) iterate all first level children
+		for (Message child : children) {
+			Message oldMessage = getMessageById(child.getKey());
+			topMsg = getMessageById(topMsg.getKey());
+			// 3) take the new top messages forum to create a new child
+			message = createMessage(topMsg.getForum(), oldMessage.getCreator(), oldMessage.isGuest());
+			((MessageImpl)message).setCreationDate(oldMessage.getCreationDate());
+			message.setLastModified(oldMessage.getLastModified());
+			message.setModifier(oldMessage.getModifier());
+			message.setTitle(oldMessage.getTitle());
+			message.setBody(oldMessage.getBody());
+			message.setPseudonym(oldMessage.getPseudonym());
+			// 4) set the thread top to the new top message
+			message.setThreadtop(topMsg);
+			// 5) maintain the hierarchy, parent and top message can be equal 
+			message.setParent(parentMessage);
+			Status status = Status.getStatus(oldMessage.getStatusCode());
+			if (status != null){
+				status.setMoved(true);
+			}
+			message.setStatusCode(Status.getStatusCode(status));
+			// 6) save the new massage in the new destination
+			message = saveMessage(message);
+			// 7) move the message container to a new destination
+			moveMessageContainer(oldMessage.getForum().getKey(), oldMessage.getKey(), 
+					message.getForum().getKey(), message.getKey());
+			// 8) do recursion if children are available
+			if (hasChildren(child)) {
+				moveThreadToAnotherForumRecursively(child, message, topMsg);				
+			}
+		}
+		return message;
+	}	
+	
+	/**
+	 * Creates new thread in another forum or appends selected thread to another thread in another forum.
+	 *
+	 * @param msg the OLD parent message
+	 * @param the destination forum
+	 * @param topMsg the top message
+	 * @return the message
+	 */
+	public Message createOrAppendThreadInAnotherForum(Message msg, Forum forum, Message topMsg) {
+		Message oldMessage = getMessageById(msg.getKey());
+		Message message = createMessage(forum, oldMessage.getCreator(), oldMessage.isGuest());
+		((MessageImpl)message).setCreationDate(oldMessage.getCreationDate());
+		message.setLastModified(oldMessage.getLastModified());
+		message.setModifier(oldMessage.getModifier());
+		message.setTitle(oldMessage.getTitle());
+		message.setBody(oldMessage.getBody());
+		message.setPseudonym(oldMessage.getPseudonym());
+		// topMsg either null for a new thread or destination threads' top message
+		message.setThreadtop(topMsg);
+		message.setParent(topMsg);
+		Status status = Status.getStatus(oldMessage.getStatusCode());
+		if (status != null){
+			status.setMoved(true);
+		}
+		message.setStatusCode(Status.getStatusCode(status));
+		message = saveMessage(message);
+		message = getMessageById(message.getKey());
+		moveMessageContainer(oldMessage.getForum().getKey(), oldMessage.getKey(), 
+				message.getForum().getKey(), message.getKey());
+		
+		if (hasChildren(oldMessage)) {
+			if (topMsg != null) {
+				// if added to an existing thread choose its top message
+				message = moveThreadToAnotherForumRecursively(oldMessage, message, message.getThreadtop());
+			} else {
+				// if a new thread is created in a forum the parent message is also the top message
+				message = moveThreadToAnotherForumRecursively(oldMessage, message, message);
+			}
+		}
+		// deletes all children of the old top message recursively
+		deleteMessageRecursion(oldMessage.getForum().getKey(), oldMessage);
+		
+		return message;
+	}	
+	
+
+	/**
+	 * Move single message to another forum.
+	 *
+	 * @param msg the OLD parent message
+	 * @param topMsg the NEW top message
+	 * @return the message
+	 */
+	public Message moveMessageToAnotherForum(Message msg, Message topMsg) {
+		// one has to set a new parent for all children of the moved message
+		// first message of sublist has to get the parent from the moved message
+		List<Message> children = getMessageChildren(msg);
+		for (Message child : children) {
+			child.setParent(msg.getParent());
+			dbInstance.getCurrentEntityManager().merge(child);
+		}		
+		// now move the message to the chosen thread
+		Message targetThread = topMsg.getThreadtop();
+		if(targetThread == null) {
+			targetThread = topMsg;
+		}
+		targetThread = getMessageById(targetThread.getKey());
+
+		targetThread.getForum().getKey();
+		final Message oldMessage = getMessageById(msg.getKey());
+		Message message = createMessage(targetThread.getForum(), oldMessage.getCreator(), oldMessage.isGuest());
+		((MessageImpl)message).setCreationDate(oldMessage.getCreationDate());
+		message.setLastModified(oldMessage.getLastModified());
+		message.setModifier(oldMessage.getModifier());
+		message.setTitle(oldMessage.getTitle());
+		message.setBody(oldMessage.getBody());
+		message.setPseudonym(oldMessage.getPseudonym());
+		message.setThreadtop(targetThread);
+		message.setParent(topMsg);
+		Status status = Status.getStatus(oldMessage.getStatusCode());
+		if (status != null){
+			status.setMoved(true);
+		}
+		message.setStatusCode(Status.getStatusCode(status));
+		message = saveMessage(message);
 		
 		moveMessageContainer(oldMessage.getForum().getKey(), oldMessage.getKey(), message.getForum().getKey(), message.getKey());
 		deleteMessageRecursion(oldMessage.getForum().getKey(), oldMessage);
