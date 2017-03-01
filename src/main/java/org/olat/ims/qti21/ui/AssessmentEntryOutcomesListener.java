@@ -78,11 +78,14 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 		RepositoryEntry entry = candidateSession.getRepositoryEntry();
 		RepositoryEntry testEntry = candidateSession.getTestEntry();
 		String[] args = new String[] {
-				entry.getDisplayname(),			// {0}
-				"",								// {1}
-				testEntry.getDisplayname(),		// {2}
-				fullname,						// {3}
-				Formatter.getInstance(locale).formatDateAndTime(candidateSession.getFinishTime())
+				entry.getDisplayname(),		// {0}
+				entry.getKey().toString(),	// {1}
+				"",							// {2}
+				"",							// {3}
+				testEntry.getDisplayname(),	// {4}
+				fullname,					// {5}
+				Formatter.getInstance(locale)
+					.formatDateAndTime(candidateSession.getFinishTime()) // {6}
 		};
 
 		String subject = translator.translate("digital.signature.mail.subject", args);

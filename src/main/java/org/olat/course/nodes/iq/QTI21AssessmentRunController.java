@@ -159,7 +159,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		deliveryOptions = getDeliveryOptions();
 		init(ureq);
-		initAssessment(ureq);
+		initAssessment();
 		putInitialPanel(mainVC);
 	}
 	
@@ -197,7 +197,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 	}
 	
-	private void initAssessment(UserRequest ureq) {
+	private void initAssessment() {
 	    // config : show score info
 		boolean enableScoreInfo= config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 		mainVC.contextPut("enableScoreInfo", new Boolean(enableScoreInfo));
@@ -277,7 +277,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			}
 		}
 		
-		exposeResults(ureq);
+		exposeResults();
 	}
 	
 	private void checkChats (UserRequest ureq) {
@@ -302,7 +302,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	 * Provides the show results button if results available or a message with the visibility period.
 	 * @param ureq
 	 */
-	private void exposeResults(UserRequest ureq) {
+	private void exposeResults() {
 		//migration: check if old tests have no summary configured
 		boolean showResultsOnHomePage = config.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		
@@ -398,22 +398,22 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if (source == displayCtrl) {
 			if(event == Event.CANCELLED_EVENT) {
 				doExitAssessment(ureq, event, false);
-				exposeResults(ureq);
+				exposeResults();
 				showInfo("assessment.test.cancelled");
 			} else if("suspend".equals(event.getCommand())) {
 				doExitAssessment(ureq, event, false);
-				exposeResults(ureq);
+				exposeResults();
 				showInfo("assessment.test.suspended");
 			} else if(event instanceof QTI21Event) {
 				QTI21Event qe = (QTI21Event)event;
 				if(QTI21Event.EXIT.equals(qe.getCommand())) {
 					if(!displayCtrl.isResultsVisible()) {
 						doExitAssessment(ureq, event, true);
-						initAssessment(ureq);
+						initAssessment();
 					}
 				} else if(QTI21Event.CLOSE_RESULTS.equals(qe.getCommand())) {
 					doExitAssessment(ureq, event, true);
-					initAssessment(ureq);
+					initAssessment();
 				}
 			}
 		}
@@ -574,11 +574,14 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		String fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(candidateSession.getIdentity());
 
 		String[] args = new String[] {
-				courseEnv.getCourseTitle(),	// {0}
-				courseNode.getShortTitle(),								// {1}
-				testEntry.getDisplayname(),								// {2}
-				fullname,			// {3}
-				Formatter.getInstance(locale).formatDateAndTime(candidateSession.getFinishTime())
+				courseEnv.getCourseTitle(),						// {0}
+				courseEnv.getCourseResourceableId().toString(),	// {1}
+				courseNode.getShortTitle(),						// {2}
+				courseNode.getIdent(),							// {3}
+				testEntry.getDisplayname(),						// {4}
+				fullname,										// {5}
+				Formatter.getInstance(locale)
+					.formatDateAndTime(candidateSession.getFinishTime()) // {6}
 		};
 
 		Translator translator = Util.createPackageTranslator(QTI21AssessmentRunController.class, locale);
