@@ -463,4 +463,15 @@ public interface VideoManager {
 	 */
 	public boolean hasVideoMetadata(OLATResource videoResource);
 
+	/**
+ 	 * get Frame at given frameNumber in video and save it in the VFSLeaf 'frame' if the image is not mostly black
+ 	 *
+	 * @param videoResource
+	 * @param frameNumber
+	 * @param duration
+	 * @param frame resource
+	 * @return true if image proposal is mostly black
+	 */
+	public abstract boolean getFrameWithFilter(OLATResource videoResource, int frameNumber, long duration, VFSLeaf frame);
+
 }

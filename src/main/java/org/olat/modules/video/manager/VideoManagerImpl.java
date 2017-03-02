@@ -282,6 +282,61 @@ public class VideoManagerImpl implements VideoManager {
 			return false;
 		} 
 	}
+	
+	@Override
+	public boolean getFrameWithFilter(OLATResource videoResource, int frameNumber, long duration, VFSLeaf frame) {
+		File videoFile = ((LocalFileImpl) getMasterVideoFile(videoResource)).getBasefile();
+		BufferedImage bufImg = null;
+		boolean imgBlack = true;
+		int countBlack = 0;
+		try (RandomAccessFile randomAccessFile = new RandomAccessFile(videoFile, "r")) {
+			OutputStream frameOutputStream = frame.getOutputStream(false);
+			
+			FileChannel ch = randomAccessFile.getChannel();
+			FileChannelWrapper in = new FileChannelWrapper(ch);
+			FrameGrab frameGrab = new FrameGrab(in).seekToFrameSloppy(frameNumber);
+
+			bufImg = frameGrab.getFrame();
+
+			int xmin = bufImg.getMinX();
+			int ymin = bufImg.getMinY();
+			int xmax = xmin + bufImg.getWidth();
+			int ymax = ymin + bufImg.getHeight();
+			int pixelCount = bufImg.getWidth() * bufImg.getHeight();
+
+			for (int x = xmin; x < xmax; x++) {
+				for (int y = ymin; y < ymax; y++) {
+					int rgb = bufImg.getRGB(x, y);
+//					int alpha = (0xff000000 & rgb) >>> 24;
+					int r = (0x00ff0000 & rgb) >> 16;
+					int g = (0x0000ff00 & rgb) >> 8;
+					int b = (0x000000ff & rgb);
+					if (r < 30 && g < 30 && b < 30) {
+						countBlack++;
+					}
+				}
+			}
+			if (countBlack > (int) (0.7F * pixelCount)) {
+				imgBlack = true;
+			} else {
+				imgBlack = false;
+				ImageIO.write(bufImg, "JPG", frameOutputStream);
+			}
+			// avoid endless loop
+			if (frameNumber > duration) {
+				imgBlack = false;
+			} 
+			// close everything to prevent resource leaks
+			frameOutputStream.close();
+			in.close();
+			ch.close();
+
+			return imgBlack;
+		} catch (Exception | AssertionError e) {
+			log.error("Could not get frame::" + frameNumber + " for video::" + videoFile.getAbsolutePath(), e);
+			return false;
+		}
+	}
 
 	/**
 	 * get the File of the videoresource 

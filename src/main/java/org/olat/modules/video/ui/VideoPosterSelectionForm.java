@@ -87,22 +87,39 @@ public class VideoPosterSelectionForm extends BasicController {
 		}
 
 		long firstThirdDuration = duration/7;
-		for (int x = 0; x <= duration; x += firstThirdDuration) {
+		for (int currentFrame = 0; currentFrame <= duration; currentFrame += firstThirdDuration) {
 			try {
-				String fileName = FILENAME_PREFIX_PROPOSAL_POSTER + x + FILENAME_POSTFIX_JPG;
-				VFSLeaf posterProposal = tmpContainer.createChildLeaf(fileName);
-				videoManager.getFrame(videoResource, x, posterProposal);
+				String fileName;
+				boolean imgBlack;
+				int adjust = 0;
+				do {
+					fileName = FILENAME_PREFIX_PROPOSAL_POSTER + (currentFrame+adjust) + FILENAME_POSTFIX_JPG;
+					VFSLeaf posterProposal = tmpContainer.createChildLeaf(fileName);
+					imgBlack = videoManager.getFrameWithFilter(videoResource, (currentFrame+adjust), duration, posterProposal);
+					int step = 24;
+					if (currentFrame + step <= duration) {
+						adjust += step;
+					} else {
+						adjust -= step;
+					}
+					// set lower bound to avoid endless loop
+					if (currentFrame+adjust < 0) {
+						// if all poster images are mostly black just take current frame
+						videoManager.getFrame(videoResource, currentFrame, posterProposal);
+						break;
+					}
+				} while (imgBlack);
 				VideoMediaMapper mediaMapper = new VideoMediaMapper(tmpContainer);
 				String mediaUrl = registerMapper(ureq, mediaMapper);
 				String serverUrl = Settings.createServerURI();
 				proposalLayout.contextPut("serverUrl", serverUrl);
 
-				Link button = LinkFactory.createButton(String.valueOf(x), proposalLayout, this);
+				Link button = LinkFactory.createButton(String.valueOf(currentFrame), proposalLayout, this);
 				button.setCustomEnabledLinkCSS("o_video_poster_selct");
 				button.setCustomDisplayText(translate("poster.select"));
 				button.setUserObject(fileName);
 				
-				generatedPosters.put(mediaUrl + "/" + fileName,	String.valueOf(x));
+				generatedPosters.put(mediaUrl + "/" + fileName,	String.valueOf(currentFrame));
 			} catch (Exception | AssertionError e) {
 				logError("Error while creating poster images for video::" + videoFile.getAbsolutePath(), e);
 			}
