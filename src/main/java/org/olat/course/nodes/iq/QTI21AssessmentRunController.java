@@ -81,6 +81,7 @@ import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
+import org.olat.ims.qti21.ui.QTI21OverrideOptions;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
@@ -115,6 +116,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final QTICourseNode courseNode;
 	private final RepositoryEntry testEntry;
 	private final QTI21DeliveryOptions deliveryOptions;
+	private final QTI21OverrideOptions overrideOptions;
 	// The test is really assessment not a self test or a survey
 	private final boolean assessmentType = true;
 	
@@ -160,6 +162,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 		
 		deliveryOptions = getDeliveryOptions();
+		overrideOptions = getOverrideOptions();
 		init(ureq);
 		initAssessment();
 		putInitialPanel(mainVC);
@@ -482,7 +485,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
 		RepositoryEntry courseRe = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe, courseNode.getIdent(), deliveryOptions, true, false, false);
+		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe, courseNode.getIdent(),
+				deliveryOptions, overrideOptions, true, false, false);
 		listenTo(displayCtrl);
 		if(displayCtrl.isTerminated()) {
 			//do nothing
@@ -530,6 +534,20 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			finalOptions.setAllowAnonym(config.getBooleanSafe(IQEditController.CONFIG_ALLOW_ANONYM, testOptions.isAllowAnonym()));
 			finalOptions.setDigitalSignature(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, testOptions.isDigitalSignature()));
 			finalOptions.setDigitalSignatureMail(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL, testOptions.isDigitalSignatureMail()));
+		}
+		return finalOptions;
+	}
+	
+	private QTI21OverrideOptions getOverrideOptions() {
+		QTI21OverrideOptions finalOptions = QTI21OverrideOptions.nothingOverriden();
+		boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
+		if(!configRef) {
+			Long maxTimeLimit = null;
+			int timeLimit = config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1);
+			if(timeLimit > 0) {
+				maxTimeLimit = new Long(timeLimit);
+			}
+			finalOptions = new QTI21OverrideOptions(maxTimeLimit);
 		}
 		return finalOptions;
 	}

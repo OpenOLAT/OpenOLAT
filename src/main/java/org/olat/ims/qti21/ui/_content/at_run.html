@@ -19,9 +19,32 @@
 		#elseif(${qtiWorksStatus.mayEndCurrentTestPart()} && $r.available("endTest") && $r.visible("endTest"))
 			$r.render("endTest")
 		#end
-		
 		</div>
 	</div>
+
+	#if($qtiWorksStatus.assessmentTestTimeLimit && !$qtiWorksStatus.ended)
+	<div id="o_qti_assessment_test_timer" class="clearfix"><i class='o_icon o_icon_timelimit'> </i>
+		$r.translate("timelimit.running", "<span class='o_qti_timer'></span>","<span class='o_qti_timer_duration'></span>", "$qtiWorksStatus.assessmentTestEndTime")
+		<span class="o_qti_times_up" style="display:none;">$r.translate("timelimit.finished")</span>
+		<span class="o_qti_times_message o_10_minutes" style="display:none;"><i class="o_icon o_icon_timelimit_start"> </i> $r.translate("timelimit.10.minutes")</span>
+		<span class="o_qti_times_message o_5_minutes" style="display:none;"><i class="o_icon o_icon_timelimit_half"> </i> $r.translate("timelimit.5.minutes")</span>
+		<span class="o_qti_times_message o_panic" style="display:none;"><i class="o_icon o_icon_timelimit_end"> </i> $r.translate("timelimit.1.minute")</span>
+	</div>
+	<script type="text/javascript">
+	/* <![CDATA[ */
+	jQuery(function() {
+		jQuery('#o_qti_assessment_test_timer').qtiTimer({
+			startTime:$qtiWorksStatus.assessmentTestDuration,
+			availableTime: $qtiWorksStatus.assessmentTestMaximumTimeLimits,
+			formName: '${f.form.formName}',//forn name
+    		dispIdField: '{$f.form.dispatchFieldId}',//form dispatch id
+    		dispId: '${f.getFormItem("qtirun").formDispatchId}',//item id
+    		eventIdField: '${f.form.eventFieldId}' // form eventFieldId
+		})
+	});
+	/* ]]> */
+	</script>
+	#end
 
 	#if (!$qtiWorksStatus.isSurvey() && (($displayScoreProgress && $qtiWorksStatus.hasScore()) || $displayQuestionProgress))
 	<div id="o_qti_run_infos" class="clearfix">

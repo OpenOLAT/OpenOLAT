@@ -20,9 +20,12 @@
 package org.olat.ims.qti21.ui.editor;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
@@ -35,6 +38,7 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.test.TimeLimits;
 
 /**
  * 
@@ -44,6 +48,12 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
  */
 public class AssessmentTestOptionsEditorController extends FormBasicController {
 	
+	private static final String[] onKeys = new String[]{ "on" };
+	private static final String[] onValues = new String[] { "" };
+
+	private FormLayoutContainer maxTimeCont;
+	private MultipleSelectionElement maxTimeEl;
+	private TextElement maxTimeHourEl, maxTimeMinuteEl;
 	private TextElement titleEl, maxScoreEl, cutValueEl;
 	
 	private final boolean restrictedEdit;
@@ -77,6 +87,39 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 		String cutValueStr = cutValue == null ? "" : cutValue.toString();
 		cutValueEl = uifactory.addTextElement("cut.value", "cut.value", 8, cutValueStr, formLayout);
 		cutValueEl.setEnabled(!restrictedEdit && testBuilder.isEditable());
+		
+		TimeLimits timeLimits = assessmentTest.getTimeLimits();
+		
+		long maxInSeconds = -1;
+		String timeMaxHour = "";
+		String timeMaxMinute = "";
+		if(timeLimits != null && timeLimits.getMaximum() != null && timeLimits.getMaximum().longValue() > 0) {
+			maxInSeconds = timeLimits.getMaximum().longValue();
+			timeMaxHour = Long.toString(maxInSeconds / 3600);
+			timeMaxMinute = Long.toString((maxInSeconds % 3600) / 60);
+		}
+		
+		maxTimeEl = uifactory.addCheckboxesVertical("time.limit.enable", "time.limit.max", formLayout, onKeys, onValues, 1);
+		maxTimeEl.addActionListener(FormEvent.ONCHANGE);
+		if(maxInSeconds > 0) {
+			maxTimeEl.select(onKeys[0], true);
+		}
+		
+		String page = velocity_root + "/max_time_limit.html";
+		maxTimeCont = FormLayoutContainer.createCustomFormLayout("time.limit.cont", getTranslator(), page);
+		maxTimeCont.setVisible(maxTimeEl.isAtLeastSelected(1));
+		formLayout.add(maxTimeCont);
+		
+		timeMaxHour = timeMaxHour.equals("0") ? "" : timeMaxHour;
+		maxTimeHourEl = uifactory.addTextElement("time.limit.hour", "time.limit.max", 4, timeMaxHour, maxTimeCont);
+		maxTimeHourEl.setDomReplacementWrapperRequired(false);
+		maxTimeHourEl.setDisplaySize(4);
+		maxTimeHourEl.setEnabled(!restrictedEdit);
+		
+		maxTimeMinuteEl = uifactory.addTextElement("time.limit.minute", "time.limit.max", 4, timeMaxMinute, maxTimeCont);
+		maxTimeMinuteEl.setDomReplacementWrapperRequired(false);
+		maxTimeMinuteEl.setDisplaySize(4);
+		maxTimeMinuteEl.setEnabled(!restrictedEdit);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("butons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -118,7 +161,38 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 			}
 		}
 		
+		maxTimeCont.clearError();
+		if(maxTimeEl.isAtLeastSelected(1)) {
+			allOk &= validateTime(maxTimeHourEl);
+			allOk &= validateTime(maxTimeMinuteEl);
+		}
+		
 		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean validateTime(TextElement timeEl) {
+		boolean allOk = true;
+		if(StringHelper.containsNonWhitespace(timeEl.getValue())) {
+			try {
+				double val = Long.parseLong(timeEl.getValue());
+				if(val < 0l) {
+					maxTimeCont.setErrorKey("form.error.nointeger", null);
+					allOk &= false;
+				}
+			} catch (NumberFormatException e) {
+				maxTimeCont.setErrorKey("form.error.nointeger", null);
+				allOk &= false;
+			}
+		}
+		return allOk;
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(maxTimeEl == source) {
+			maxTimeCont.setVisible(maxTimeEl.isAtLeastSelected(1));
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -131,6 +205,23 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 			testBuilder.setCutValue(new Double(cutValue));
 		} else {
 			testBuilder.setCutValue(null);
+		}
+		
+		if(maxTimeEl.isAtLeastSelected(1)) {
+			long maxTime = 0;
+			if(StringHelper.containsNonWhitespace(maxTimeHourEl.getValue())) {
+				maxTime += Long.parseLong(maxTimeHourEl.getValue()) * 3600;
+			}
+			if(StringHelper.containsNonWhitespace(maxTimeMinuteEl.getValue())) {
+				maxTime += Long.parseLong(maxTimeMinuteEl.getValue()) * 60;
+			}
+			if(maxTime > 0) {
+				testBuilder.setMaximumTimeLimits(maxTime);
+			} else {
+				testBuilder.setMaximumTimeLimits(null);
+			}
+		} else {
+			testBuilder.setMaximumTimeLimits(null);
 		}
 		
 		fireEvent(ureq, AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT);

@@ -509,6 +509,14 @@ public class VelocityRenderDecorator implements Closeable {
 		return translate(key, new String[] {arg1});
 	}
 	
+	public String translate(String key, String arg1, String arg2) {
+		return translate(key, new String[] {arg1, arg2});
+	}
+	
+	public String translate(String key, String arg1, String arg2, String arg3) {
+		return translate(key, new String[] {arg1, arg2, arg3});
+	}
+	
 	public String translate(String key, Integer arg1) {
 		return translate(key, new String[] { (arg1 == null ? "" : arg1.toString()) });
 	}

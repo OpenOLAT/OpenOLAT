@@ -179,6 +179,10 @@ public class FormDecorator {
 		}
 		return "";
 	}
+	
+	public Form getForm() {
+		return container.getRootForm();
+	}
 
 	/**
 	 * Internal helper to get a form item for the given name
@@ -186,7 +190,7 @@ public class FormDecorator {
 	 * @param formItemName
 	 * @return
 	 */
-	private FormItem getFormItem(String formItemName) {
+	public FormItem getFormItem(String formItemName) {
 		return container.getFormComponent(formItemName);
 	}
 

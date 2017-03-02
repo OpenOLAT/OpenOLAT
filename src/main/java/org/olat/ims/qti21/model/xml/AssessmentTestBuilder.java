@@ -33,6 +33,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.outcome.TestVariables;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
+import uk.ac.ed.ph.jqtiplus.node.test.TimeLimits;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeCondition;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeConditionChild;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeIf;
@@ -59,6 +60,7 @@ public class AssessmentTestBuilder {
 	
 	private Double cutValue;
 	private Double maxScore;
+	private Long maximumTimeLimits;
 	private OutcomeRule testScoreRule;
 	private OutcomeCondition cutValueRule;
 	
@@ -77,6 +79,7 @@ public class AssessmentTestBuilder {
 		extractMaxScore();
 		extractRules();
 		extractFeedbacks();
+		extractTimeLimits();
 	}
 	
 	private void extractMaxScore() {
@@ -155,6 +158,13 @@ public class AssessmentTestBuilder {
 		}
 	}
 	
+	private void extractTimeLimits() {
+		TimeLimits timeLimits = assessmentTest.getTimeLimits();
+		if(timeLimits != null && timeLimits.getMaximum() != null) {
+			maximumTimeLimits = timeLimits.getMaximum().longValue();
+		}
+	}
+	
 	public boolean isEditable() {
 		return editable;
 	}
@@ -177,6 +187,21 @@ public class AssessmentTestBuilder {
 
 	public void setMaxScore(Double maxScore) {
 		this.maxScore = maxScore;
+	}
+
+	/**
+	 * @return The maximum time for the test in seconds.
+	 */
+	public Long getMaximumTimeLimits() {
+		return maximumTimeLimits;
+	}
+
+	/**
+	 * The maximum time to solve the test in seconds.
+	 * @param maximumTimeLimits A positove value in seconds or null
+	 */
+	public void setMaximumTimeLimits(Long maximumTimeLimits) {
+		this.maximumTimeLimits = maximumTimeLimits;
 	}
 
 	public TestFeedbackBuilder getPassedFeedback() {
@@ -204,6 +229,14 @@ public class AssessmentTestBuilder {
 		
 		if(assessmentTest.getOutcomeProcessing() == null) {
 			assessmentTest.setOutcomeProcessing(new OutcomeProcessing(assessmentTest));
+		}
+		
+		if(maximumTimeLimits != null) {
+			TimeLimits timeLimits = new TimeLimits(assessmentTest);
+			timeLimits.setMaximum(maximumTimeLimits.doubleValue());
+			assessmentTest.setTimeLimits(timeLimits);
+		} else {
+			assessmentTest.setTimeLimits(null);
 		}
 		
 		buildScore();

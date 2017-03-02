@@ -135,6 +135,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	/** configuration key: use configuration of the reference repository entry */
 	public static final String CONFIG_KEY_CONFIG_REF = "configFromRef";
 	
+	public static final String CONFIG_KEY_TIME_LIMIT = "timeLimit";
+	
 	public final static String CORRECTION_AUTO = "auto";
 	public final static String CORRECTION_MANUAL = "manual";
 

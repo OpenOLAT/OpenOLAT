@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +57,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -151,6 +153,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private final File fUnzippedDirRoot;
 	private String mapperUri;
 	private final QTI21DeliveryOptions deliveryOptions;
+	private final QTI21OverrideOptions overrideOptions;
 	
 	private VelocityContainer mainVC;
 	private final StackedPanel mainPanel;
@@ -201,7 +204,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * @param authorMode if true, the database objects are not counted and can be deleted without warning
 	 */
 	public AssessmentTestDisplayController(UserRequest ureq, WindowControl wControl, OutcomesListener listener,
-			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent, QTI21DeliveryOptions deliveryOptions,
+			RepositoryEntry testEntry, RepositoryEntry entry, String subIdent,
+			QTI21DeliveryOptions deliveryOptions, QTI21OverrideOptions overrideOptions,
 			boolean showCloseResults, boolean authorMode, boolean anonym) {
 		super(ureq, wControl);
 
@@ -210,6 +214,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		this.testEntry = testEntry;
 		this.outcomesListener = listener;
 		this.deliveryOptions = deliveryOptions;
+		this.overrideOptions = overrideOptions;
 		this.showCloseResults = showCloseResults;
 		
 		UserSession usess = ureq.getUserSession();
@@ -475,10 +480,67 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		qtiService.cancelTestSession(candidateSession, testSessionState);
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
+	
+	private boolean timeLimitBarrier(UserRequest ureq) {
+		Long assessmentTestMaxTimeLimits = getAssessmentTestMaxTimeLimit();
+		if(assessmentTestMaxTimeLimits != null) {
+			long maximumAssessmentTestDuration = assessmentTestMaxTimeLimits.longValue() * 1000;//convert in milliseconds
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			if(!testSessionState.isEnded() && !testSessionState.isExited()) {
+				long durationMillis = testSessionState.getDurationAccumulated();
+				durationMillis += getRequestTimeStampDifferenceToNow();
+				if(durationMillis > maximumAssessmentTestDuration) {
+					currentRequestTimestamp = ureq.getRequestTimestamp();
+					processExitTestAfterTimeLimit(ureq);
+					return true;
+				}
+			}
+			
+			/*
+			ItemProcessingContext ctx = testSessionController.getItemProcessingContext(null);
+			ItemSessionState itemSessionState = ctx.getItemSessionState();
+			itemSessionState.getDurationAccumulated();
+			double itemDuration = ctx.getItemSessionState().computeDuration();
+			*/
+			
+		}
+		return false;
+	}
+	
+	/**
+	 * 
+	 * @return The maximum time limit in seconds.
+	 */
+	private Long getAssessmentTestMaxTimeLimit() {
+		if(overrideOptions != null && overrideOptions.getAssessmentTestMaxTimeLimit() != null) {
+			Long timeLimits = overrideOptions.getAssessmentTestMaxTimeLimit();
+			return timeLimits.longValue() > 0 ? timeLimits : null;
+		}
+		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+		if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+			return assessmentTest.getTimeLimits().getMaximum().longValue();
+		}
+		return null;
+	}
+	
+	private long getRequestTimeStampDifferenceToNow() {
+		long diff = 0l;
+		if(currentRequestTimestamp != null) {
+			//take time between 2 reloads if the user reload the page
+			diff = (new Date().getTime() - currentRequestTimestamp.getTime());
+			if(diff < 0) {
+				diff = 0;
+			}
+		}
+		return diff;
+	}
 
 	private void processQTIEvent(UserRequest ureq, QTIWorksAssessmentTestEvent qe) {
-		currentRequestTimestamp = ureq.getRequestTimestamp();
+		if(timeLimitBarrier(ureq)) {
+			return;//
+		}
 		
+		currentRequestTimestamp = ureq.getRequestTimestamp();
 		switch(qe.getEvent()) {
 			case selectItem:
 				processSelectItem(ureq, qe.getSubCommand());
@@ -513,6 +575,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				break;
 			case exitTest:
 				processExitTest(ureq);
+				break;
+			case timesUp:
+				processExitTestAfterTimeLimit(ureq);
 				break;
 			case source:
 				logError("QtiWorks event source not implemented", null);
@@ -1075,6 +1140,36 @@ public class AssessmentTestDisplayController extends BasicController implements 
         doExitTest(ureq);
 	}
 	
+	private void processExitTestAfterTimeLimit(UserRequest ureq) {
+        synchronized(testSessionController) {
+        	// make sure the ajax call and a user click don't close both the session
+            NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			if(testSessionState.isEnded() || testSessionState.isExited()) return;
+			
+			//close duration
+			testSessionController.touchDurations(currentRequestTimestamp);
+			
+	        final Date requestTimestamp = ureq.getRequestTimestamp();
+			testSessionController.exitTestIncomplete(requestTimestamp);
+	
+			 // Record current result state
+		    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, true);
+	        candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
+	        			requestTimestamp, getDigitalSignatureOptions(), getIdentity());
+	        
+	        qtiWorksCtrl.updateStatusAndResults(ureq);
+	        
+	        /* Record and log event */
+	        final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
+	                CandidateTestEventType.EXIT_DUE_TIME_LIMIT, testSessionState, notificationRecorder);
+	        candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+	        this.lastEvent = candidateTestEvent;
+        }
+        
+        doExitTest(ureq);
+	}
+	
 	//private CandidateSession enterCandidateSession(final CandidateSession candidateSession)
 	private TestSessionController enterSession(UserRequest ureq) {
 		/* Set up listener to record any notifications */
@@ -1400,7 +1495,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				layoutCont.contextPut("title", assessmentTest.getTitle());
 				layoutCont.contextPut("qtiWorksStatus", qtiWorksStatus);
 				
-				JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js" }, null);
+				String[] jss = new String[] {
+						"js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js",
+						"js/jquery/qti/jquery.qtiTimer.js",
+				};
+				JSAndCSSComponent js = new JSAndCSSComponent("js", jss, null);
 				layoutCont.put("js", js);
 				
 				layoutCont.contextPut("displayScoreProgress", deliveryOptions.isDisplayScoreProgress());
@@ -1470,25 +1569,28 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-			if(endTestPartButton == source) {
-				doEndTestPart(ureq);
-			} else if(closeTestButton == source) {
-				doCloseTest(ureq);
-			} else if(cancelTestButton == source) {
-				doCancelTest(ureq);
-			} else if(suspendTestButton == source) {
-				doSuspendTest(ureq);
-			} else if(closeResultsButton == source) {
+			if(closeResultsButton == source) {
 				doCloseResults(ureq);
-			} else if(source == qtiEl || source == qtiTreeEl) {
-				if(event instanceof QTIWorksAssessmentTestEvent) {
-					fireEvent(ureq, event);
+			} else if(!timeLimitBarrier(ureq)) {
+				if(endTestPartButton == source) {
+					doEndTestPart(ureq);
+				} else if(closeTestButton == source) {
+					doCloseTest(ureq);
+				} else if(cancelTestButton == source) {
+					doCancelTest(ureq);
+				} else if(suspendTestButton == source) {
+					doSuspendTest(ureq);
+				} else if(source == qtiEl || source == qtiTreeEl) {
+					if(event instanceof QTIWorksAssessmentTestEvent) {
+						fireEvent(ureq, event);
+					}
+				} else if(source instanceof FormLink) {
+					FormLink formLink = (FormLink)source;
+					processResponse(ureq, formLink);
 				}
-			} else if(source instanceof FormLink) {
-				FormLink formLink = (FormLink)source;
-				processResponse(ureq, formLink);
+				super.formInnerEvent(ureq, source, event);
 			}
-			super.formInnerEvent(ureq, source, event);
+			
 			updateStatusAndResults(ureq);
 			mainForm.setDirtyMarking(false);
 			mainForm.forceSubmittedAndValid();
@@ -1746,6 +1848,48 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		public void setNumOfAnsweredItems(int numOfAnsweredItems) {
 			this.numOfAnsweredItems = numOfAnsweredItems;
+		}
+		
+		public boolean isAssessmentTestTimeLimit() {
+			Long timeLimits = getAssessmentTestMaxTimeLimit();
+			return timeLimits != null;
+		}
+		
+		public String getAssessmentTestEndTime() {
+			Long timeLimits = getAssessmentTestMaxTimeLimit();
+			if(timeLimits != null) {
+				Calendar calendar = Calendar.getInstance(); // gets a calendar using the default time zone and locale.
+				calendar.add(Calendar.SECOND, timeLimits.intValue());
+				String time = Formatter.getInstance(getLocale()).formatTimeShort(calendar.getTime());
+				return time;
+			}
+			return "";
+		}
+		
+		public long getAssessmentTestDuration() {
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			long duration = testSessionState.getDurationAccumulated();
+			duration += getRequestTimeStampDifferenceToNow();
+			return duration;
+		}
+		
+		/**
+		 * 
+		 * @return A duration in milliseconds
+		 */
+		public long getAssessmentTestMaximumTimeLimits() {
+			long maxDuration = -1l;
+			Long timeLimits = getAssessmentTestMaxTimeLimit();
+			if(timeLimits != null) {
+				maxDuration = timeLimits.longValue() * 1000;
+			}
+			return maxDuration;
+		}
+		
+		public boolean isEnded() {
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			CandidateSessionContext candidateSessionContext = AssessmentTestDisplayController.this;
+			return candidateSessionContext.isTerminated() || testSessionState.isExited() || testSessionState.isEnded();
 		}
 		
 		public boolean maySuspendTest() {

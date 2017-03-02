@@ -67,6 +67,7 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.InMemoryOutcomeListener;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
+import org.olat.ims.qti21.ui.QTI21OverrideOptions;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
@@ -331,10 +332,11 @@ public class IQConfigurationController extends BasicController {
 				cleanUpQti21PreviewSession();//clean up last session
 				// need to clean up the assessment test session
 				QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
+				QTI21OverrideOptions overrideOptions = QTI21OverrideOptions.nothingOverriden();
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				previewQTI21Ctrl = new AssessmentTestDisplayController(ureq, getWindowControl(), new InMemoryOutcomeListener(),
 						re, courseEntry, courseNode.getIdent(),
-						deliveryOptions, true, true, true);
+						deliveryOptions, overrideOptions, true, true, true);
 				listenTo(previewQTI21Ctrl);
 				stackPanel.pushController(translate("preview"), previewQTI21Ctrl);
 			} else {

@@ -78,6 +78,11 @@ public enum CandidateTestEventType {
      * (for single-part tests), or the standalone test feedback page for multi-part tests.
      */
     EXIT_TEST,
+    
+    /**
+     * Exits the test because time limit 
+     */
+    EXIT_DUE_TIME_LIMIT,
 
     /** Selection of a particular item for interaction (in {@link NavigationMode#NONLINEAR}) */
     SELECT_ITEM,

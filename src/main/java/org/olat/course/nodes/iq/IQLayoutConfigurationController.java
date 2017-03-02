@@ -127,7 +127,7 @@ public class IQLayoutConfigurationController extends BasicController {
 			myContent.remove("iqeditform");
 		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 			QTI21DeliveryOptions deliveryOptions =  qti21service.getDeliveryOptions(re);
-			mod21ConfigForm = new QTI21EditLayoutForm(ureq, getWindowControl(), moduleConfiguration, deliveryOptions);
+			mod21ConfigForm = new QTI21EditLayoutForm(ureq, getWindowControl(), moduleConfiguration, re, deliveryOptions);
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
 		} else if(OnyxModule.isOnyxTest(re.getOlatResource())) {

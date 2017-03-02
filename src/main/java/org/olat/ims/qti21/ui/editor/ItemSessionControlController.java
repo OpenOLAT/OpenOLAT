@@ -37,6 +37,8 @@ import uk.ac.ed.ph.jqtiplus.node.test.ItemSessionControl;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 
 /**
+ * To set the options for the timeLimits and itemSessionControl
+ * 
  * 
  * Initial date: 03.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -50,7 +52,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	private static final String[] yesnoKeys = new String[] { YES, NO };
 	private static final String[] yesNoInheritKeys = new String[] { YES, NO, INHERIT };
 
-	private TextElement maxAttemptsEl /*, maxTimeEl */;
+	private TextElement maxAttemptsEl;
 	protected SingleSelection limitAttemptsEl, allowSkippingEl, allowCommentEl, allowReviewEl, showSolutionEl;
 	
 	private final boolean allowInherit;
@@ -74,18 +76,6 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		// inherit is allowed?
 		String[] aKeys = allowInherit ?  yesNoInheritKeys : yesnoKeys;
 		String[] aValues = allowInherit ? yesNoInheritValues : yesNoValues;
-		
-		/*
-		TimeLimits timeLimits = part.getTimeLimits();
-		String timeMax = "";
-		if(timeLimits != null && timeLimits.getMaximumMillis() != null && timeLimits.getMaximumMillis().longValue() > 0) {
-			long maxInMinute = timeLimits.getMaximumMillis().longValue() / (60 * 1000);
-			timeMax = Long.toString(maxInMinute);
-		}
-		maxTimeEl = uifactory.addTextElement("time.limit", "time.limit.max", 4, timeMax, formLayout);
-		maxTimeEl.setDisplaySize(4);
-		maxTimeEl.setEnabled(!restrictedEdit);
-		*/
 
 		ItemSessionControl itemSessionControl = part.getItemSessionControl();//can be null
 		Integer maxAttempts = null;

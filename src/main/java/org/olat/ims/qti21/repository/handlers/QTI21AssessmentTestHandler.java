@@ -69,6 +69,7 @@ import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
+import org.olat.ims.qti21.ui.QTI21OverrideOptions;
 import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.modules.qpool.model.QItemList;
@@ -331,8 +332,9 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 					@Override
 					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
 							RepositoryEntry entry, RepositoryEntrySecurity repoSecurity, AssessmentMode mode) {
-						QTI21DeliveryOptions options = qtiService.getDeliveryOptions(entry);
-						if(!options.isAllowAnonym() && uureq.getUserSession().getRoles().isGuestOnly()) {
+						QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(entry);
+						QTI21OverrideOptions overrideOptions = QTI21OverrideOptions.nothingOverriden();
+						if(!deliveryOptions.isAllowAnonym() && uureq.getUserSession().getRoles().isGuestOnly()) {
 							Translator translator = Util.createPackageTranslator(QTI21RuntimeController.class, uureq.getLocale());
 							Controller contentCtr = MessageUIFactory.createInfoMessage(uureq, wwControl,
 									translator.translate("anonym.not.allowed.title"),
@@ -342,7 +344,8 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 						boolean authorMode = reSecurity.isEntryAdmin();
 						CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
 							.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-						return new AssessmentTestDisplayController(uureq, wwControl, null, entry, entry, null, options, false, authorMode, false);
+						return new AssessmentTestDisplayController(uureq, wwControl, null, entry, entry, null,
+								deliveryOptions, overrideOptions, false, authorMode, false);
 					}
 				});
 	}
