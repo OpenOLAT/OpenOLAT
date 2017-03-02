@@ -50,6 +50,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -378,7 +379,8 @@ public class AssessmentHelper {
 				GenericTreeNode node = new GenericTreeNode();
 				node.setTitle(courseNode.getShortTitle());
 				node.setUserObject(courseNode);
-				node.setIconCssClass(CourseNodeFactory.getInstance().getCourseNodeConfiguration(courseNode.getType()).getIconCSSClass());
+				CourseNodeConfiguration nodeconfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
+				node.setIconCssClass(nodeconfig.getIconCSSClass());
 				result.add(node);
 				assessableChildren.forEach((child) -> node.addChild(child));
 			}
