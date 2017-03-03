@@ -189,7 +189,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		listenTo(accessibilityCondContr);
 		
 		// HighScore Controller
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, stNode);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, stNode.getModuleConfiguration());
 		listenTo(highScoreNodeConfigController);
 
 		ScoreCalculator scoreCalc = stNode.getScoreCalculator();
@@ -382,7 +382,6 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 			}
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
-				highScoreNodeConfigController.updateModuleConfiguration(stNode.getModuleConfiguration());
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}

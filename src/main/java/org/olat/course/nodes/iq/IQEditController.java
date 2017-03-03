@@ -279,10 +279,11 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		configurationCtrl = new IQConfigurationController(ureq, getWindowControl(), stackPanel, course, courseNode, type);
 		listenTo(configurationCtrl);
 		layoutConfigurationCtrl = new IQLayoutConfigurationController(ureq, getWindowControl(), course, courseNode, type);
-		listenTo(layoutConfigurationCtrl);		
-		highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), courseNode);
-		listenTo(highScoreNodeConfigController);
-
+		listenTo(layoutConfigurationCtrl);	
+		if (AssessmentInstance.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
+			highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), moduleConfiguration);
+			listenTo(highScoreNodeConfigController);
+		}
 		Condition accessCondition = courseNode.getPreConditionAccess();
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
 				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));		
@@ -309,7 +310,6 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			}
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
-				highScoreNodeConfigController.updateModuleConfiguration(courseNode.getModuleConfiguration());
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == layoutConfigurationCtrl) {
@@ -328,7 +328,9 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		//PANE_TAB_IQCONFIG_XXX is set during construction time
 		tabbedPane.addTab(translate(PANE_TAB_IQCONFIG_XXX), configurationCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_IQLAYOUTCONFIG), layoutConfigurationCtrl.getInitialComponent());
-		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		if (AssessmentInstance.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
+			tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		}
 	}
 	
 	/**

@@ -329,7 +329,7 @@ public class HighScoreRunController extends FormBasicController{
 		if (viewPosition && ownIdIndices.size() > 0) {
 			mainVC.contextPut("position", translate("highscore.position.info",
 					new String[] { String.valueOf(highscoreDataModel.getOwnTableEntry().getRank()),
-							String.valueOf(allScores.length - ownIdIndices.get(0))}));
+							String.valueOf(allScores.length - ownIdIndices.get(0) - 1)}));
 		}
 
 	}

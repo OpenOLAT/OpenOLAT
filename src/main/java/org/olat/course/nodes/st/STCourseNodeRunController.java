@@ -50,7 +50,6 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.navigation.NavigationHandler;
@@ -98,7 +97,7 @@ public class STCourseNodeRunController extends BasicController {
 		myContent = createVelocityContainer("run");
 		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		
-		if (stCourseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
+		if (se != null){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, stCourseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();

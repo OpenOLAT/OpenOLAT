@@ -141,18 +141,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		singleUserEventCenter = userSession.getSingleUserEventCenter();
 		mainVC = createVelocityContainer("assessment_run");
-		
-		if (courseNode instanceof AssessableCourseNode) {
-			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
-			if (assessableCourseNode.hasScoreConfigured() || userCourseEnv.isCoach()){
-				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
-				if (highScoreCtr.isViewHighscore()) {
-					Component highScoreComponent = highScoreCtr.getInitialComponent();
-					mainVC.put("highScore", highScoreComponent);							
-				}
-			}
-		}
-				
+						
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 		
 		if(courseNode instanceof IQTESTCourseNode) {
@@ -164,7 +153,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		deliveryOptions = getDeliveryOptions();
 		overrideOptions = getOverrideOptions();
 		init(ureq);
-		initAssessment();
+		initAssessment(ureq);
 		putInitialPanel(mainVC);
 	}
 	
@@ -202,7 +191,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 	}
 	
-	private void initAssessment() {
+	private void initAssessment(UserRequest ureq) {
 	    // config : show score info
 		boolean enableScoreInfo= config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 		mainVC.contextPut("enableScoreInfo", new Boolean(enableScoreInfo));
@@ -213,6 +202,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.contextPut("attemptsConfig", new Integer(maxAttempts));
 		} else {
 			mainVC.contextPut("attemptsConfig", Boolean.FALSE);
+		}
+		
+		if (courseNode instanceof AssessableCourseNode) {
+			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
+			if (assessableCourseNode.hasScoreConfigured() || userCourseEnv.isCoach()){
+				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
+				if (highScoreCtr.isViewHighscore()) {
+					Component highScoreComponent = highScoreCtr.getInitialComponent();
+					mainVC.put("highScore", highScoreComponent);							
+				}
+			}
 		}
 		
 	    // user data
@@ -414,11 +414,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				if(QTI21Event.EXIT.equals(qe.getCommand())) {
 					if(!displayCtrl.isResultsVisible()) {
 						doExitAssessment(ureq, event, true);
-						initAssessment();
+						initAssessment(ureq);
 					}
 				} else if(QTI21Event.CLOSE_RESULTS.equals(qe.getCommand())) {
 					doExitAssessment(ureq, event, true);
-					initAssessment();
+					initAssessment(ureq);
 				}
 			}
 		}

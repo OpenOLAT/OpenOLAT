@@ -106,7 +106,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), gtaNode, courseEnv, false);
 		listenTo(solutionsCtrl);
 		//highscore
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, gtaNode);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config);
 		listenTo(highScoreNodeConfigController);
 		if ("group".equals(config.get(GTACourseNode.GTASK_TYPE))) {
 			highScoreNodeConfigController.setFormInfoMessage("highscore.forminfo", getTranslator());			
@@ -207,7 +207,6 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 			}
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
-				highScoreNodeConfigController.updateModuleConfiguration(gtaNode.getModuleConfiguration());
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}

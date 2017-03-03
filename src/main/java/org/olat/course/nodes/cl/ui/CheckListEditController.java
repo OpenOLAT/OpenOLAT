@@ -89,7 +89,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 		configurationCtrl = new CheckListConfigurationController(ureq, wControl, courseNode, numOfChecks > 0);
 		listenTo(configurationCtrl);
 		
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode.getModuleConfiguration());
 		listenTo(highScoreNodeConfigController);
 	}
 
@@ -151,7 +151,6 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 			}
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
-				highScoreNodeConfigController.updateModuleConfiguration(courseNode.getModuleConfiguration());
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}

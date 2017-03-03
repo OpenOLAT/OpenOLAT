@@ -32,9 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.model.Membership;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -113,13 +111,6 @@ public class GTARunController extends BasicController {
 			Controller msgCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 			listenTo(msgCtrl);
 			putInitialPanel(msgCtrl.getInitialComponent());
-		}
-		if (gtaNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
-			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, gtaNode);
-			if (highScoreCtr.isViewHighscore()) {
-				Component highScoreComponent = highScoreCtr.getInitialComponent();
-				mainVC.put("highScore", highScoreComponent);							
-			}
 		}
 	}
 	

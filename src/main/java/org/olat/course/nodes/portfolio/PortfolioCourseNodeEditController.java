@@ -102,7 +102,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		listenTo(accessibilityCondContr);
 		
 		//highscore
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, node);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config);
 		listenTo(highScoreNodeConfigController);
 		
 	// if there is already user data available, make for read only
@@ -173,7 +173,6 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 			}
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
-				highScoreNodeConfigController.updateModuleConfiguration(courseNode.getModuleConfiguration());
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}

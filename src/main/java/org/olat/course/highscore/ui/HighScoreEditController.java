@@ -39,7 +39,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.course.nodes.CourseNode;
 import org.olat.modules.ModuleConfiguration;
 
 public class HighScoreEditController extends FormBasicController {
@@ -67,7 +66,7 @@ public class HighScoreEditController extends FormBasicController {
 	/** configuration: Date Start */
 	public static final String CONFIG_KEY_DATESTART = "dateStarting";
 	
-	private SingleSelection horizontalRadioButtons;
+	private SingleSelection bestOnlyEl;
 	
 	private MultipleSelectionElement allowHighScore;
 	private MultipleSelectionElement showPosition;
@@ -77,13 +76,12 @@ public class HighScoreEditController extends FormBasicController {
 	private MultipleSelectionElement displayAnonymous;
 
 	private IntegerElement numTableRows;
-	private CourseNode msNode;	
 	private ModuleConfiguration config;
 	private JSDateChooser dateStart;
 	
-	public HighScoreEditController(UserRequest ureq, WindowControl wControl, CourseNode msNode) {
+	public HighScoreEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
-		this.msNode = msNode;
+		this.config = config;
 		initForm(ureq);
 	}
 	
@@ -99,8 +97,6 @@ public class HighScoreEditController extends FormBasicController {
 		setFormDescription("highscore.description");
 		setFormContextHelp("ok");
 		
-		config = msNode.getModuleConfiguration();
-
 		allowHighScore = uifactory.addCheckboxesHorizontal("highscore.show", formLayout, new String[] { "xx" },
 				new String[] { null });
 		allowHighScore.addActionListener(FormEvent.ONCLICK);
@@ -162,13 +158,13 @@ public class HighScoreEditController extends FormBasicController {
 		for (int i = 0; i < yesOrNoKeys.length; i++) {
 			yesOrNoOptions[i] = translate(yesOrNoKeys[i]);
 		}
-		horizontalRadioButtons = uifactory.addRadiosHorizontal("highscore.void", formLayout, yesOrNoKeys,
+		bestOnlyEl = uifactory.addRadiosHorizontal("highscore.void", formLayout, yesOrNoKeys,
 				yesOrNoOptions);
 		int showAll = config.getBooleanEntry(CONFIG_KEY_BESTONLY) != null ? 
 				(int) config.get(CONFIG_KEY_BESTONLY) : 1;
-		horizontalRadioButtons.select(yesOrNoKeys[showAll], true);	
-		horizontalRadioButtons.addActionListener(FormEvent.ONCLICK);
-		horizontalRadioButtons.setVisible(listing);
+		bestOnlyEl.select(yesOrNoKeys[showAll], true);	
+		bestOnlyEl.addActionListener(FormEvent.ONCLICK);
+		bestOnlyEl.setVisible(listing);
 
 		numTableRows = uifactory.addIntegerElement("textField", "highscore.tablesize", 10, formLayout);
 		numTableRows.setMandatory(true);
@@ -199,7 +195,7 @@ public class HighScoreEditController extends FormBasicController {
 			activateForm(false);			
 		} else if (source == showListing){
 			activateListing();
-		} else if (source == horizontalRadioButtons){
+		} else if (source == bestOnlyEl){
 			activateTopUsers();
 		}
 		
@@ -225,8 +221,8 @@ public class HighScoreEditController extends FormBasicController {
 			} 			
 		}
 		if (!init) {
-			horizontalRadioButtons.setVisible(formactive);
-			horizontalRadioButtons.select(yesOrNoKeys[1], true);
+			bestOnlyEl.setVisible(formactive);
+			bestOnlyEl.select(yesOrNoKeys[1], true);
 			numTableRows.setVisible(formactive);
 			dateStart.setDate(null);
 		}
@@ -234,29 +230,16 @@ public class HighScoreEditController extends FormBasicController {
 
 	private void activateListing() {
 		boolean listingactive = showListing.isSelected(0);
-		horizontalRadioButtons.setVisible(listingactive);
-		horizontalRadioButtons.select(yesOrNoKeys[1], true);
+		bestOnlyEl.setVisible(listingactive);
+		bestOnlyEl.select(yesOrNoKeys[1], true);
 		numTableRows.setVisible(listingactive);
 	}
 	
 	private void activateTopUsers() {
-		int all = horizontalRadioButtons.getSelected();
+		int all = bestOnlyEl.getSelected();
 		numTableRows.setVisible(all != 0);
 	}
 	
-	public void updateModuleConfiguration(ModuleConfiguration moduleConfiguration) {
-		moduleConfiguration.set(CONFIG_KEY_HIGHSCORE, allowHighScore.isSelected(0));
-		moduleConfiguration.set(CONFIG_KEY_POSITION, showPosition.isSelected(0));
-		moduleConfiguration.set(CONFIG_KEY_PODIUM, showPodium.isSelected(0));
-		moduleConfiguration.set(CONFIG_KEY_HISTOGRAM, showHistogram.isSelected(0));
-		moduleConfiguration.set(CONFIG_KEY_LISTING, showListing.isSelected(0));
-		moduleConfiguration.set(CONFIG_KEY_DATESTART, dateStart.getDate());
-		moduleConfiguration.set(CONFIG_KEY_ANONYMIZE, displayAnonymous.isSelected(0));
-		if (showListing.isSelected(0)) {
-			moduleConfiguration.set(CONFIG_KEY_BESTONLY, horizontalRadioButtons.getSelected());
-			moduleConfiguration.set(CONFIG_KEY_NUMUSER, numTableRows.getIntValue());
-		}
-	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -276,6 +259,17 @@ public class HighScoreEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		config.set(CONFIG_KEY_HIGHSCORE, allowHighScore.isSelected(0));
+		config.set(CONFIG_KEY_POSITION, showPosition.isSelected(0));
+		config.set(CONFIG_KEY_PODIUM, showPodium.isSelected(0));
+		config.set(CONFIG_KEY_HISTOGRAM, showHistogram.isSelected(0));
+		config.set(CONFIG_KEY_LISTING, showListing.isSelected(0));
+		config.set(CONFIG_KEY_DATESTART, dateStart.getDate());
+		config.set(CONFIG_KEY_ANONYMIZE, displayAnonymous.isSelected(0));
+		if (showListing.isSelected(0)) {
+			config.set(CONFIG_KEY_BESTONLY, bestOnlyEl.getSelected());
+			config.set(CONFIG_KEY_NUMUSER, numTableRows.getIntValue());
+		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	@Override

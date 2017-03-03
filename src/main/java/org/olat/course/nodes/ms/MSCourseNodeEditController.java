@@ -99,7 +99,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		listenTo(modConfigController);
 		configurationVC.put("mseditform", modConfigController.getInitialComponent());
 		
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, msNode);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, msNode.getModuleConfiguration());
 		listenTo(highScoreNodeConfigController);
 		
 		// if there is already user data available, make for read only
@@ -159,7 +159,6 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 			
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
-				highScoreNodeConfigController.updateModuleConfiguration(msNode.getModuleConfiguration());
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}

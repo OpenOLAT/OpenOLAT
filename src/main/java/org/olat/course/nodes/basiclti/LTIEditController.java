@@ -103,7 +103,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		previewButton = LinkFactory.createButtonSmall("command.preview", myContent, this);
 		previewButton.setIconLeftCSS("o_icon o_icon_preview");
 		
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, courseNode);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config);
 		listenTo(highScoreNodeConfigController);
 		
 		ltConfigForm = new LTIConfigForm(ureq, wControl, config);
@@ -165,7 +165,6 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 			}
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
-				highScoreNodeConfigController.updateModuleConfiguration(courseNode.getModuleConfiguration());
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}

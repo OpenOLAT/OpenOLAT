@@ -1,2 +1,5 @@
 $r.render("assessmentInfos")
+#if ($r.available("highScore"))
+	$r.render("highScore")
+#end
 $r.render("infos")

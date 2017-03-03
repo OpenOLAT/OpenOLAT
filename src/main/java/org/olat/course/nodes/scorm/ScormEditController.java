@@ -161,7 +161,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		changeCPButton = LinkFactory.createButtonSmall("command.changecp", cpConfigurationVc, this);
 		changeCPButton.setElementCssClass("o_sel_scorm_change_repofile");
 		
-		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, scormNode);
+		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config);
 		listenTo(highScoreNodeConfigController);
 		
 		DeliveryOptions parentConfig = null;
@@ -336,7 +336,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 			}
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
-				highScoreNodeConfigController.updateModuleConfiguration(scormNode.getModuleConfiguration());
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}
