@@ -55,14 +55,14 @@
 			/* ]]> */
 		</script>
 		#end
-		#if ($r.available("highScore"))
-			$r.render("highScore")
-		#end
 	#else
 		<div class="o_no_scoreinfo">
 			$r.translate("score.noscoreinfoyet")
 		</div>
 	#end
+#end
+#if ($r.available("highScore"))
+	$r.render("highScore")
 #end
 
 #if ($maxAttemptsReached)

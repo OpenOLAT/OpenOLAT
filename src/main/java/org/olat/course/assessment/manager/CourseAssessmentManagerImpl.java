@@ -93,6 +93,11 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public List<AssessmentEntry> getAssessmentEntries(CourseNode courseNode) {
 		return assessmentService.loadAssessmentEntriesBySubIdent(cgm.getCourseEntry(), courseNode.getIdent());
 	}
+	
+	@Override
+	public List<AssessmentEntry> getAssessmentEntriesWithStatus(CourseNode courseNode, String status) {
+		return assessmentService.loadAssessmentEntriesBySubIdentWithStatus(cgm.getCourseEntry(), courseNode.getIdent(), status);
+	}
 
 	@Override
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity) {

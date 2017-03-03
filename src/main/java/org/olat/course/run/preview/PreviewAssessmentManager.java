@@ -66,6 +66,11 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	public List<AssessmentEntry> getAssessmentEntries(CourseNode courseNode) {
 		return Collections.emptyList();
 	}
+	
+	@Override
+	public List<AssessmentEntry> getAssessmentEntriesWithStatus(CourseNode courseNode, String status) {
+		return Collections.emptyList();
+	}
 
 	@Override
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity) {

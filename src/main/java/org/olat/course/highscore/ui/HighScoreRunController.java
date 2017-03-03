@@ -66,6 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class HighScoreRunController extends FormBasicController{
 	
 	private static final String GUIPREF_KEY_HIGHSCORE = "highscore";
+	private static final String STATUS_DONE = "done";
 	
 	private FlexiTableDataModel<HighScoreTableEntry> tableDataModel, tableDataModel2;
 	private List<HighScoreTableEntry> allMembers, ownIdMembers;
@@ -130,8 +131,14 @@ public class HighScoreRunController extends FormBasicController{
 			return;		
 		}	
 		
-		List<AssessmentEntry>  assessEntries = userCourseEnv.getCourseEnvironment()
-				.getAssessmentManager().getAssessmentEntries(courseNode);
+		List<AssessmentEntry>  assessEntries;
+		if ("iqtest".equals(courseNode.getType())) {
+			assessEntries =	userCourseEnv.getCourseEnvironment().getAssessmentManager()
+					.getAssessmentEntriesWithStatus(courseNode, STATUS_DONE);
+		} else {
+			assessEntries =	userCourseEnv.getCourseEnvironment().getAssessmentManager()
+					.getAssessmentEntries(courseNode);
+		}
 		// display only if has content
 		if (assessEntries.isEmpty()) {
 			viewHighscore = false;
@@ -327,9 +334,14 @@ public class HighScoreRunController extends FormBasicController{
 			}
 		}			
 		if (viewPosition && ownIdIndices.size() > 0) {
-			mainVC.contextPut("position", translate("highscore.position.info",
-					new String[] { String.valueOf(highscoreDataModel.getOwnTableEntry().getRank()),
-							String.valueOf(allScores.length - ownIdIndices.get(0) - 1)}));
+			int amountWorse = allScores.length - ownIdIndices.get(0) - 1;
+			if (amountWorse > 0) {
+				mainVC.contextPut("relposition", translate("highscore.position.second",
+						new String[] { String.valueOf(amountWorse)}));
+			}
+			int ownRank = highscoreDataModel.getOwnTableEntry().getRank();
+			mainVC.contextPut("position", translate("highscore.position.first",
+					new String[] { String.valueOf(ownRank) }));
 		}
 
 	}

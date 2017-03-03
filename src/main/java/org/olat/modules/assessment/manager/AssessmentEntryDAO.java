@@ -222,6 +222,39 @@ public class AssessmentEntryDAO {
 				.getResultList();
 	}
 	
+	/**
+	 * Load all assessment entries for the specific assessed repository entry with
+	 * the specific sub identifier (it is mandatory). The anonym users are excluded
+	 * by the query. The status of the assessment entry is optional 
+	 * 
+	 * @param entry The entry (mandatory)
+	 * @param subIdent The subIdent (mandatory)
+	 * @param status The status of the assessment entry (optional)
+	 * @return A list of assessment entries
+	 */
+	public List<AssessmentEntry> loadAssessmentEntryBySubIdentWithStatus(RepositoryEntryRef entry, String subIdent, String status) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select data from assessmententry data ")
+		   .append(" inner join fetch data.identity ident") 
+		   .append(" inner join fetch ident.user identuser")
+		   .append(" where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent");
+		
+		if (status != null) {
+			sb.append(" and data.status=:status");
+		}
+		
+		TypedQuery<AssessmentEntry> typedQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("repositoryEntryKey", entry.getKey())
+				.setParameter("subIdent", subIdent);
+		
+		if (status != null) {
+			typedQuery.setParameter("status", status);	
+		}	
+		
+		return typedQuery.getResultList();
+	}
+	
 	public List<Identity> getAllIdentitiesWithAssessmentData(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct data.identity from assessmententry data where data.repositoryEntry.key=:repositoryEntryKey");

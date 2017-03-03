@@ -10,7 +10,11 @@
 			<div class="container-fluid o_highscore">
 			<div class="row clearfix">
 			#if ($position) 
-				<div class="o_position">$position</div>
+				<div class="o_position">$position
+				#if($relposition)
+					<div class="o_position_relative">$relposition</div>
+				#end
+				</div>
 			#end
 				#if ($first)
 				<div class="col-sm-6 o_podium">
