@@ -26,6 +26,21 @@
 	</div>
 #end
 
+	<div class='form-group #if($f.hasError("comment.user")) has-feedback has-error #end clearfix'>
+		$r.render("comment.user_LABEL", "$f.getItemId($item)", "col-sm-3")
+		<div class="col-sm-9">
+			$r.render("comment.user", "form")
+			#if($f.hasError("comment.user"))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+		</div>
+		#if($f.hasError("comment.user"))
+			<div class="col-sm-offset-3 col-sm-9">
+				$r.render("comment.user_ERROR")
+			</div>
+		#end
+	</div>
+
 	<div class="o_button_group">
 		$r.render("buttons")
 	</div>

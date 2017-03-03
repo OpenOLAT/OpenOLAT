@@ -50,6 +50,8 @@ import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +82,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 public class IdentityAssessmentTestCorrectionController extends FormBasicController {
 	
 	private RepositoryEntry testEntry;
+	private AssessmentEntry assessmentEntry;
 	private AssessmentTestSession candidateSession;
 	
 	private int count = 0;
@@ -93,10 +96,14 @@ public class IdentityAssessmentTestCorrectionController extends FormBasicControl
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private final Map<String,AssessmentItemSession> identifierToItemSession = new HashMap<>();
 	
+	private TextElement commentEl;
+	
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	public IdentityAssessmentTestCorrectionController(UserRequest ureq, WindowControl wControl,
 			AssessmentTestSession session) {
@@ -119,6 +126,8 @@ public class IdentityAssessmentTestCorrectionController extends FormBasicControl
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		testSessionState = qtiService.loadTestSessionState(candidateSession);
 		candidateSessionContext = new TerminatedStaticCandidateSessionContext(candidateSession);
+		
+		assessmentEntry = assessmentService.loadAssessmentEntry(session.getIdentity(), session.getRepositoryEntry(), session.getSubIdent());
 
 		initForm(ureq);
 	}
@@ -152,6 +161,12 @@ public class IdentityAssessmentTestCorrectionController extends FormBasicControl
 				}
 			}
 		}
+		
+		String comment = "";
+		if(assessmentEntry != null && StringHelper.containsNonWhitespace(assessmentEntry.getComment())) {
+			comment = assessmentEntry.getComment();
+		}
+		commentEl = uifactory.addTextAreaElement("comment.user", "comment", 2500, 4, 72, true, comment, formLayout);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -196,7 +211,7 @@ public class IdentityAssessmentTestCorrectionController extends FormBasicControl
 			
 			String fullname = userManager.getUserDisplayName(candidateSession.getIdentity());
 			TextElement scoreEl = uifactory.addTextElement("scoreItem" + count++, "score", 6, mScore, layoutCont);
-			IdentityAssessmentItemWrapper wrapper = new IdentityAssessmentItemWrapper(fullname, assessmentItem, infos, responseItems, scoreEl);
+			IdentityAssessmentItemWrapper wrapper = new IdentityAssessmentItemWrapper(fullname, assessmentItem, infos, responseItems, scoreEl, null);
 			
 			Double minScore = QtiNodesExtractor.extractMinScore(assessmentItem);
 			Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
@@ -300,6 +315,13 @@ public class IdentityAssessmentTestCorrectionController extends FormBasicControl
 			
 			candidateSession.setManualScore(totalScore);
 			candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
+			
+			String comment = commentEl.getValue();
+			if(assessmentEntry != null && !comment.equals(assessmentEntry.getComment())) {
+				assessmentEntry = assessmentService.loadAssessmentEntry(candidateSession.getIdentity(), candidateSession.getRepositoryEntry(), candidateSession.getSubIdent());
+				assessmentEntry.setComment(comment);
+				assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

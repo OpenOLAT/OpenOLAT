@@ -49,6 +49,8 @@ import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,10 +91,13 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private final AssessmentTestCorrection testCorrections;
 	
+	private final Map<Identity,AssessmentEntry> assessmentEntries;
 	private final Map<Identity,AssessmentTestSession> lastSessions;
 	
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	
@@ -112,6 +117,7 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 
 		lastSessions = getLastSessions();
+		assessmentEntries = getAssessmentEntries(lastSessions.keySet());
 
 		mainVC = createVelocityContainer("corrections");
 		
@@ -194,7 +200,7 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 	}
 	
 	private AssessmentTestCorrection collectAssessedIdentityForItem(List<AssessmentItemRef> itemRefList) {
-		AssessmentTestCorrection corrections = new AssessmentTestCorrection();
+		AssessmentTestCorrection corrections = new AssessmentTestCorrection(assessmentEntries);
 		for(AssessmentItemRef itemRef:itemRefList) {
 			String itemRefIdentifier = itemRef.getIdentifier().toString();
 			List<AssessmentItemSession> itemSessions = qtiService.getAssessmentItemSessions(courseEntry, subIdent, testEntry, itemRefIdentifier);
@@ -229,6 +235,17 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 			}
 		}
 		return corrections;
+	}
+	
+	private Map<Identity,AssessmentEntry> getAssessmentEntries(Set<Identity> identities) {
+		List<AssessmentEntry> entries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, subIdent);
+		Map<Identity,AssessmentEntry> identityToAssessmentEntryMap = new HashMap<>();
+		for(AssessmentEntry assessmentEntry:entries) {
+			if(identities.contains(assessmentEntry.getIdentity())) {
+				identityToAssessmentEntryMap.put(assessmentEntry.getIdentity(), assessmentEntry);
+			}
+		}
+		return identityToAssessmentEntryMap;
 	}
 	
 	private Map<Identity,AssessmentTestSession> getLastSessions() {

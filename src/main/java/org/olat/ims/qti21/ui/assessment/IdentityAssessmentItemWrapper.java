@@ -39,17 +39,18 @@ public class IdentityAssessmentItemWrapper {
 	private final String fullName;
 	private String minScore, maxScore;
 	private Double minScoreVal, maxScoreVal;
-	private TextElement scoreEl;
+	private TextElement scoreEl, commentEl;
 	private final AssessmentItem assessmentItem;
 	private final List<InteractionResultFormItem> responseFormItems;
 	
 	private AssessmentItemCorrection itemInfos;
 	
 	public IdentityAssessmentItemWrapper(String fullName, AssessmentItem assessmentItem,
-			AssessmentItemCorrection itemInfos,
-			List<InteractionResultFormItem> responseFormItems, TextElement scoreEl) {
+			AssessmentItemCorrection itemInfos, List<InteractionResultFormItem> responseFormItems,
+			TextElement scoreEl, TextElement commentEl) {
 		this.scoreEl = scoreEl;
 		this.fullName = fullName;
+		this.commentEl = commentEl;
 		this.assessmentItem = assessmentItem;
 		this.responseFormItems = responseFormItems;
 		this.itemInfos = itemInfos;
@@ -81,6 +82,10 @@ public class IdentityAssessmentItemWrapper {
 
 	public TextElement getScoreEl() {
 		return scoreEl;
+	}
+	
+	public TextElement getCommentEl() {
+		return commentEl;
 	}
 
 	public List<InteractionResultFormItem> getResponseFormItems() {

@@ -340,6 +340,7 @@ public class AssessmentForm extends FormBasicController {
 			assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.done);
 		}
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+		flc.setDirty(true);
 	}
 	
 	public void reloadData() {
@@ -361,6 +362,13 @@ public class AssessmentForm extends FormBasicController {
 			passed.select(passedValue == null ? "undefined" : passedValue.toString(), true);
 			passed.setEnabled(cut == null);
 		}
+		
+		if (assessableElement.hasCommentConfigured()) {
+			String comment = assessmentEntry.getComment() == null ? "" : assessmentEntry.getComment();
+			userComment.setValue(comment);
+		}
+		String coachMsg = assessmentEntry.getCoachComment() == null ? "" : assessmentEntry.getCoachComment();
+		coachComment.setValue(coachMsg);
 		
 		updateStatus(assessmentEntry);
 	}

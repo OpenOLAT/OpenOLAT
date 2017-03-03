@@ -342,6 +342,11 @@ public class AssessmentForm extends FormBasicController {
 			passed.getComponent().setDirty(true);//force the dirty
 		}
 		
+		if(hasComment) {
+			userCommentValue = assessableCourseNode.getUserUserComment(assessedUserCourseEnv);
+			userComment.setValue(userCommentValue);
+		}
+		
 		updateStatus(scoreEval);
 	}
 	
@@ -368,6 +373,7 @@ public class AssessmentForm extends FormBasicController {
 		submitButton.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
 		saveAndDoneLink.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
 		reopenLink.setVisible(closed && !coachCourseEnv.isCourseReadOnly());
+		flc.setDirty(true);
 	}
 
 	@Override

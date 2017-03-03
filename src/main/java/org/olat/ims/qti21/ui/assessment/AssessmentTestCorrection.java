@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.modules.assessment.AssessmentEntry;
 
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 
@@ -42,6 +43,11 @@ public class AssessmentTestCorrection {
 	private final Set<AssessmentTestSession> testSessions = new HashSet<>();
 	private final Map<Identity, List<AssessmentItemCorrection>> identityToCorrections = new HashMap<>();
 	private final Map<AssessmentItemRef, List<AssessmentItemCorrection>> itemRefToCorrections = new HashMap<>();
+	private final Map<Identity, AssessmentEntry> identityToAssessmentEntries;
+	
+	public AssessmentTestCorrection(Map<Identity, AssessmentEntry> identityToAssessmentEntries) {
+		this.identityToAssessmentEntries = identityToAssessmentEntries;
+	}
 	
 	public List<AssessmentItemCorrection> getCorrections(AssessmentItemRef itemRef) {
 		return itemRefToCorrections.get(itemRef);
@@ -53,6 +59,14 @@ public class AssessmentTestCorrection {
 	
 	public List<AssessmentTestSession> getTestSessions() {
 		return new ArrayList<>(testSessions);
+	}
+	
+	public AssessmentEntry getAssessmentEntry(Identity assessedIdentity) {
+		return identityToAssessmentEntries.get(assessedIdentity);
+	}
+	
+	public void addAssessmentEntry(AssessmentEntry assessmentEntry) {
+		identityToAssessmentEntries.put(assessmentEntry.getIdentity(), assessmentEntry);
 	}
 	
 	public void add(AssessmentItemCorrection correction) {
