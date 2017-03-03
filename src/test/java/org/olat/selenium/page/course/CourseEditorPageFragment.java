@@ -216,9 +216,8 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment createNode(String nodeAlias) {
-		WebElement createButton = browser.findElement(createNodeButton);
-		Assert.assertTrue(createButton.isDisplayed());
-		createButton.click();
+		OOGraphene.waitElement(createNodeButton, 5, browser);
+		browser.findElement(createNodeButton).click();
 		OOGraphene.waitElement(createNodeModalBy, browser);
 		
 		//modal

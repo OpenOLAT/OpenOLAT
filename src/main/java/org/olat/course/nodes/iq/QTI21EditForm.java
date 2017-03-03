@@ -92,6 +92,8 @@ public class QTI21EditForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_qti_21_configuration");
+		
 		minScoreEl = uifactory.addStaticTextElement("score.min", "", formLayout);
 		minScoreEl.setVisible(false);
 		maxScoreEl = uifactory.addStaticTextElement("score.max", "", formLayout);
@@ -129,6 +131,7 @@ public class QTI21EditForm extends FormBasicController {
 		boolean showResultOnHomePage = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		showResultsOnHomePage = uifactory.addCheckboxesHorizontal("qti_enableResultsOnHomePage", "qti.form.results.onhomepage", formLayout, new String[]{"xx"}, new String[]{null});
 		showResultsOnHomePage.select("xx", showResultOnHomePage);
+		showResultsOnHomePage.setElementCssClass("o_sel_results_on_homepage");
 		showResultsOnHomePage.addActionListener(FormEvent.ONCLICK);
 		
 		boolean showResultsDateDependent = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);

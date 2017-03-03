@@ -41,6 +41,7 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21EditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.test.ArquillianDeployments;
@@ -91,7 +92,7 @@ public class ImsQTI21Test {
 		
 		//upload a test
 		String qtiTestTitle = "Simple QTI 2.1 " + UUID.randomUUID();
-		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/simple_QTI_21_test.zip");
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_test.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
 		navBar
 			.openAuthoringEnvironment()
@@ -114,6 +115,12 @@ public class ImsQTI21Test {
 			.nodeTitle(testNodeTitle)
 			.selectTabLearnContent()
 			.chooseTest(qtiTestTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectConfiguration()
+			.showScoreOnHomepage(true)
+			.saveConfiguration();
 
 		//publish the course
 		courseEditor
@@ -136,13 +143,12 @@ public class ImsQTI21Test {
 				.getQTI12Page(browser);
 		qtiPage
 			.start()
-			.answerSingleChoice(1)
+			.answerSingleChoice("Right")
 			.saveAnswer()
 			.endTest()
 			.closeTest()
-			.assertOnAttempts(1);
-		
-		//TODO continue
+			.assertOnCourseAttempts(1)
+			.assertOnCourseAssessmentTestScore(1);
 	}
 	
 	/**
@@ -161,7 +167,7 @@ public class ImsQTI21Test {
 		
 		//upload a test
 		String qtiTestTitle = "Simple QTI 2.1 " + UUID.randomUUID();
-		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/simple_QTI_21_hotspot.zip");
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_hotspot.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
 		navBar
 			.openAuthoringEnvironment()
@@ -223,7 +229,7 @@ public class ImsQTI21Test {
 		// import a single choice, a multiple and 2 gap texts
 		qtiEditor
 			.importTable()
-			.importFile("import_qti21_excel.txt")
+			.importFile("qti21/import_qti21_excel.txt")
 			.next()
 			.assertOnNumberOfQuestions(5)
 			.finish();

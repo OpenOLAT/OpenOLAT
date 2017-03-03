@@ -94,8 +94,11 @@ public class QTI21EditLayoutForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_qti_21_layout_configuration");
+		
 		String[] configValues = new String[]{ translate("qti.form.setting.repo"), translate("qti.form.setting.node") };
 		configEl = uifactory.addRadiosHorizontal("config", null, formLayout, configKeys, configValues);
+		configEl.setElementCssClass("o_qti_21_configuration_settings");
 		configEl.addActionListener(FormEvent.ONCHANGE);
 		boolean configRef = modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
 		String key = configRef ? configKeys[0] : configKeys[1];

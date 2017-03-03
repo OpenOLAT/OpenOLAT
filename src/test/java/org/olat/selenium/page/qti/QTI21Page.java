@@ -61,7 +61,7 @@ public class QTI21Page {
 		return this;
 	}
 	
-	public QTI21Page assertOnAttempts(int numOfAttemtps) {
+	public QTI21Page assertOnCourseAttempts(int numOfAttemtps) {
 		By attemptBy = By.xpath("//div[contains(@class,'o_course_run')]//table//tr[contains(@class,'o_attempts')]//td[text()[contains(.,'" + numOfAttemtps + "')]]");
 		OOGraphene.waitElement(attemptBy, 5, browser);
 		WebElement attemptEl = browser.findElement(attemptBy);
@@ -185,6 +185,12 @@ public class QTI21Page {
 	
 	public QTI21Page assertOnResults() {
 		By resultsBy = By.cssSelector("div.o_sel_results_details");
+		OOGraphene.waitElement(resultsBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnCourseAssessmentTestScore(int score) {
+		By resultsBy = By.xpath("//div[contains(@class,'o_personal')]//tr[contains(@class,'o_score')]/td[contains(text(),'" + score + "')]");
 		OOGraphene.waitElement(resultsBy, 5, browser);
 		return this;
 	}
