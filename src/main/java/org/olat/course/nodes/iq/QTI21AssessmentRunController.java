@@ -39,7 +39,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
-import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -69,6 +68,7 @@ import org.olat.course.nodes.SelfAssessableCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -468,7 +468,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
 			File signature = qtiService.getAssessmentResultSignature(session);
 			if(signature.exists()) {
-				resource = new FileMediaResource(signature);
+				resource = new DownloadeableMediaResource(signature);
 			}
 		}
 		if(resource == null) {

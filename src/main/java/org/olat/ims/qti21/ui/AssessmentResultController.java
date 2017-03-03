@@ -41,13 +41,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -570,7 +570,7 @@ public class AssessmentResultController extends FormBasicController {
 
 			MediaResource resource;
 			if(signature.exists()) {
-				resource = new FileMediaResource(signature);
+				resource = new DownloadeableMediaResource(signature);
 			} else {
 				resource = new NotFoundMediaResource(relPath);
 			}
