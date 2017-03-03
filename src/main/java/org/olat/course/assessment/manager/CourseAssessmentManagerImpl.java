@@ -55,6 +55,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -95,7 +96,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 	
 	@Override
-	public List<AssessmentEntry> getAssessmentEntriesWithStatus(CourseNode courseNode, String status) {
+	public List<AssessmentEntry> getAssessmentEntriesWithStatus(CourseNode courseNode, AssessmentEntryStatus status) {
 		return assessmentService.loadAssessmentEntriesBySubIdentWithStatus(cgm.getCourseEntry(), courseNode.getIdent(), status);
 	}
 

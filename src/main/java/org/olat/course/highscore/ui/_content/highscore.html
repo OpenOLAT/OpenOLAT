@@ -7,16 +7,20 @@
 	</div>
 	<div id="o_collapseHighscore" class="panel-collapse collapse #if($showConfig) in #end">
 		<div class="panel-body">
-			<div class="container-fluid o_highscore">
+			<div class="container-fluid o_highscore o_block_large_bottom">
 			<div class="row clearfix">
 			#if ($position) 
-				<div class="o_position">$position
-				#if($relposition)
-					<div class="o_position_relative">$relposition</div>
-				#end
+				<div class="o_position o_block_bottom">
+					<h2>$r.translate("highscore.position.congratulation")</h2>
+					$position
+					#if($relposition)					
+					<span class="o_position_relative">
+						$relposition					
+					</span>
+					#end
 				</div>
 			#end
-				#if ($first)
+			#if ($first)
 				<div class="col-sm-6 o_podium">
 					<div class="o_rank o_first">
 						#if ($r.available("portrait1")) 
@@ -94,19 +98,19 @@
 					</div>
 	
 				</div>
-				#end
+			#end
 				
-				#if ($r.available("scoreHistogram")) 
+			#if ($r.available("scoreHistogram")) 
 				<div class="col-sm-6 o_histogram">
 					$r.render("scoreHistogram")
 				</div>
-				#end
+			#end
 
 			</div>
 			</div>
 			#if ($r.available("table"))
 			<div class="o_listing">
-				<h4>$r.translate("highscore.title")</h4>
+				<h4>$r.translate("highscore.listing")</h4>
 				$r.render("table")
 				#if ($r.available("table2")) $r.render("table2") #end
 			</div>

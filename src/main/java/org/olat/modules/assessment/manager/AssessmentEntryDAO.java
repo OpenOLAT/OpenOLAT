@@ -232,7 +232,7 @@ public class AssessmentEntryDAO {
 	 * @param status The status of the assessment entry (optional)
 	 * @return A list of assessment entries
 	 */
-	public List<AssessmentEntry> loadAssessmentEntryBySubIdentWithStatus(RepositoryEntryRef entry, String subIdent, String status) {
+	public List<AssessmentEntry> loadAssessmentEntryBySubIdentWithStatus(RepositoryEntryRef entry, String subIdent, AssessmentEntryStatus status) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select data from assessmententry data ")
 		   .append(" inner join fetch data.identity ident") 
@@ -249,7 +249,7 @@ public class AssessmentEntryDAO {
 				.setParameter("subIdent", subIdent);
 		
 		if (status != null) {
-			typedQuery.setParameter("status", status);	
+			typedQuery.setParameter("status", status.name());	
 		}	
 		
 		return typedQuery.getResultList();

@@ -57,6 +57,7 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
@@ -66,7 +67,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class HighScoreRunController extends FormBasicController{
 	
 	private static final String GUIPREF_KEY_HIGHSCORE = "highscore";
-	private static final String STATUS_DONE = "done";
 	
 	private FlexiTableDataModel<HighScoreTableEntry> tableDataModel, tableDataModel2;
 	private List<HighScoreTableEntry> allMembers, ownIdMembers;
@@ -134,7 +134,7 @@ public class HighScoreRunController extends FormBasicController{
 		List<AssessmentEntry>  assessEntries;
 		if ("iqtest".equals(courseNode.getType())) {
 			assessEntries =	userCourseEnv.getCourseEnvironment().getAssessmentManager()
-					.getAssessmentEntriesWithStatus(courseNode, STATUS_DONE);
+					.getAssessmentEntriesWithStatus(courseNode, AssessmentEntryStatus.done);
 		} else {
 			assessEntries =	userCourseEnv.getCourseEnvironment().getAssessmentManager()
 					.getAssessmentEntries(courseNode);
@@ -336,11 +336,11 @@ public class HighScoreRunController extends FormBasicController{
 		if (viewPosition && ownIdIndices.size() > 0) {
 			int amountWorse = allScores.length - ownIdIndices.get(0) - 1;
 			if (amountWorse > 0) {
-				mainVC.contextPut("relposition", translate("highscore.position.second",
+				mainVC.contextPut("relposition", translate("highscore.position.inrelation",
 						new String[] { String.valueOf(amountWorse)}));
 			}
 			int ownRank = highscoreDataModel.getOwnTableEntry().getRank();
-			mainVC.contextPut("position", translate("highscore.position.first",
+			mainVC.contextPut("position", translate("highscore.position.yourposition",
 					new String[] { String.valueOf(ownRank) }));
 		}
 

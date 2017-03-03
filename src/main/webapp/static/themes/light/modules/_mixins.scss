@@ -18,3 +18,12 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+@mixin o-make-glossy-bg($basecolor) {
+	background: $basecolor;
+	background: -moz-linear-gradient(top, lighten($basecolor,40%) 0%,lighten($basecolor,10%) 50%,$basecolor 51%,lighten($basecolor,20%) 100%);
+	background: -webkit-linear-gradient(top, lighten($basecolor,40%) 0%,lighten($basecolor,10%) 50%,$basecolor 51%,lighten($basecolor,20%) 100%);
+	background: linear-gradient(top, lighten($basecolor,40%) 0%,lighten($basecolor,10%) 50%,$basecolor 51%,lighten($basecolor,20%) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='$basecolor', endColorstr='lighten($basecolor,20%)',GradientType=0 );
+}
+

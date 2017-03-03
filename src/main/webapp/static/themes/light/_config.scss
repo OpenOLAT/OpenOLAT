@@ -497,13 +497,26 @@ $o-datecomp-day-bg				: $body-bg !default;
 $o-datecomp-day-color			: $text-color !default;
 
 /* Highscore component */
-$o-hs-podium-first-bg				: gold !default;
-$o-hs-podium-second-bg				: silver !default;
-$o-hs-podium-third-bg				: #965A38 !default;
+$o-hs-position-title-color			: gradient !default;
+$o-hs-position-title-size			: 3em !default;
+$o-hs-position-title-weight			: 700 !default;
+$o-hs-position-size					: 1.2em !default;
+$o-hs-position-weight				: bold !default;
+$o-hs-position-relative-size		: 1em !default;	
+$o-hs-position-relative-weight		: normal !default;	
 
-$o-hs-rank-first-color				: black !default;
-$o-hs-rank-second-color				: black !default;
-$o-hs-rank-third-color				: white !default;
+$o-hs-podium-border					: 1px solid #d9d9d9 !default;
+$o-hs-podium-border-radius			: $panel-border-radius !default;
+$o-hs-podium-bg-gradientstyle		: true !default;
+$o-hs-podium-first-bg				: #FFD700 !default;
+$o-hs-podium-second-bg				: #C0C0C0 !default;
+$o-hs-podium-third-bg				: #cd7f32 !default;
+
+$o-hs-score-color					: $text-muted !default;
+$o-hs-score-size					: 90% !default;
+$o-hs-rank-first-color				: #666 !default;
+$o-hs-rank-second-color				: #666 !default;
+$o-hs-rank-third-color				: #666 !default;
 
 $o-hs-podium-height					: 300px !default;
 $o-hs-podium-margin-bottom			: 50px !default;
@@ -521,10 +534,10 @@ $o-hs-histogram-margin-bottom		: 40px !default;
 
 $o-hs-histogram-axis-color				: #888 !default;
 $o-hs-histogram-text-color				: #888 !default;
-$o-hs-histogram-bar-myself-color		: blue !default;
-$o-hs-histogram-bar-myself-hover-color	: lightblue !default;
-$o-hs-histogram-bar-other-color			: silver !default;
-$o-hs-histogram-bar-other-hover-color	: #eee !default;
+$o-hs-histogram-bar-myself-color		: $brand-primary !default;
+$o-hs-histogram-bar-myself-hover-color	: lighten($brand-primary,10%) !default;
+$o-hs-histogram-bar-other-color			: $gray-light !default;
+$o-hs-histogram-bar-other-hover-color	: lighten($gray-light, 10%) !default;
 $o-hs-histogram-bar-empty-color			: black !default;
 
 /* Process step component */

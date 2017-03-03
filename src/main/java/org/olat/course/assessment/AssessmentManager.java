@@ -37,6 +37,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * Description:<BR>
@@ -206,7 +207,7 @@ public interface AssessmentManager {
 
 	public List<AssessmentEntry> getAssessmentEntries(CourseNode courseNode);
 	
-	public List<AssessmentEntry> getAssessmentEntriesWithStatus(CourseNode courseNode, String status);
+	public List<AssessmentEntry> getAssessmentEntriesWithStatus(CourseNode courseNode, AssessmentEntryStatus status);
 	
 	public List<AssessmentEntry> getAssessmentEntries(BusinessGroup group, CourseNode courseNode);
 	

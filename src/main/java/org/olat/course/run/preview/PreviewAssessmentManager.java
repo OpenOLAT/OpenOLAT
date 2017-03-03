@@ -43,6 +43,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * Initial Date:  08.02.2005
@@ -68,7 +69,7 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	}
 	
 	@Override
-	public List<AssessmentEntry> getAssessmentEntriesWithStatus(CourseNode courseNode, String status) {
+	public List<AssessmentEntry> getAssessmentEntriesWithStatus(CourseNode courseNode, AssessmentEntryStatus status) {
 		return Collections.emptyList();
 	}
 
