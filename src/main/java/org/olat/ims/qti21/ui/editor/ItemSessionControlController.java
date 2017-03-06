@@ -27,7 +27,10 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
@@ -55,10 +58,12 @@ public abstract class ItemSessionControlController extends FormBasicController {
 	private TextElement maxAttemptsEl;
 	protected SingleSelection limitAttemptsEl, allowSkippingEl, allowCommentEl, allowReviewEl, showSolutionEl;
 	
-	private final boolean allowInherit;
-	protected final boolean editable;
-	protected final boolean restrictedEdit;
+	private DialogBoxController attemptsWarningCtrl;
+	
 	private final AbstractPart part;
+	protected final boolean editable;
+	private final boolean allowInherit;
+	protected final boolean restrictedEdit;
 	
 	public ItemSessionControlController(UserRequest ureq, WindowControl wControl,
 			AbstractPart part, boolean restrictedEdit, boolean editable) {
@@ -84,6 +89,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		}
 		limitAttemptsEl = uifactory.addRadiosHorizontal("form.imd.limittries", formLayout, aKeys, aValues);
 		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
+		limitAttemptsEl.setHelpTextKey("item.session.control.attempts.hint", null);
 		String maxAttemptsStr = maxAttempts == null ? "" : maxAttempts.toString();
 		maxAttemptsEl = uifactory.addTextElement("attempts", "item.session.control.attempts", 4, maxAttemptsStr, formLayout);
 		if(maxAttempts == null) {
@@ -180,22 +186,6 @@ public abstract class ItemSessionControlController extends FormBasicController {
 				allOk &= false;
 			}
 		}
-		
-		/*
-		maxTimeEl.clearError();
-		if(StringHelper.containsNonWhitespace(maxTimeEl.getValue())) {
-			try {
-				int timeLimite = Integer.parseInt(maxTimeEl.getValue());
-				if(timeLimite < 0) {
-					maxTimeEl.setErrorKey("form.error.nointeger", null);
-					allOk &= false;
-				}
-			} catch (NumberFormatException e) {
-				maxTimeEl.setErrorKey("form.error.nointeger", null);
-				allOk &= false;
-			}
-		}
-		*/
 
 		return allOk & super.validateFormLogic(ureq);
 	}
@@ -210,10 +200,34 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		return allOk;
 	}
 	
+	
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(attemptsWarningCtrl == source) {
+			if(!DialogBoxUIFactory.isOkEvent(event)) {
+				limitAttemptsEl.select(NO, true);
+				limitAttemptsEl.getComponent().setDirty(true);
+				maxAttemptsEl.setVisible(false);
+			}
+			removeAsListenerAndDispose(attemptsWarningCtrl);
+			attemptsWarningCtrl = null;
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == limitAttemptsEl) {
-			maxAttemptsEl.setVisible(limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0));
+			boolean limitAttemptsEnabled = limitAttemptsEl.isOneSelected() && limitAttemptsEl.isSelected(0);
+			maxAttemptsEl.setVisible(limitAttemptsEnabled);
+			if(limitAttemptsEnabled && attemptsWarningCtrl == null) {
+				if(!StringHelper.containsNonWhitespace(maxAttemptsEl.getValue()) || "0".equals(maxAttemptsEl.getValue())) {
+					maxAttemptsEl.setValue("1");
+				}
+				String text = translate("warning.item.session.control.attempts");
+				attemptsWarningCtrl = activateOkCancelDialog(ureq, null, text, attemptsWarningCtrl);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -272,16 +286,6 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		} else if(itemSessionControl != null) {
 			itemSessionControl.setMaxAttempts(null);
 		}
-		
-		/*
-		TimeLimits timeLimits = part.getTimeLimits();
-		if(StringHelper.containsNonWhitespace(maxTimeEl.getValue())) {
-			int valInMinute = Integer.parseInt(maxTimeEl.getValue());
-			checkNotNull(timeLimits).setMaximum(valInMinute * 60d);
-		} else if(timeLimits != null) {
-			timeLimits.setMaximum(null);
-		}
-		*/
 	}
 	
 	private ItemSessionControl checkNotNull(ItemSessionControl itemSessionControl) {
@@ -291,14 +295,4 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		}
 		return itemSessionControl;
 	}
-	
-	/*
-	private TimeLimits checkNotNull(TimeLimits timeLimits) {
-		if(timeLimits == null) {
-			timeLimits = new TimeLimits(part);
-			part.setTimeLimits(timeLimits);
-		}
-		return timeLimits;
-	}
-	*/
 }

@@ -94,6 +94,7 @@ public class AssessmentTestEditorController extends BasicController {
 			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder, restrictedEdit);
 			testPartOptionsCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), testPart, restrictedEdit, testBuilder.isEditable());
 			testPartOptionsCtrl.setFormTitle(null);
+			listenTo(testPartOptionsCtrl);
 		} else {
 			optionsCtrl = new AssessmentTestOptionsEditorController(ureq, getWindowControl(), assessmentTest, testBuilder, restrictedEdit);
 		}
@@ -119,7 +120,7 @@ public class AssessmentTestEditorController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(optionsCtrl == source || feedbackCtrl == source) {
+		if(optionsCtrl == source || feedbackCtrl == source || testPartOptionsCtrl == source) {
 			if(AssessmentTestEvent.ASSESSMENT_TEST_CHANGED_EVENT.equals(event)) {
 				testBuilder.build();
 				if(optionsCtrl == source) {
