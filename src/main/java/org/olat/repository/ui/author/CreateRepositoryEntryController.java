@@ -59,6 +59,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	
 	private FormLink wizardButton;
 	private TextElement displaynameEl;
+	private FormLayoutContainer exampleHelpEl;
 	
 	private RepositoryEntry addedEntry;
 	private final RepositoryHandler handler;
@@ -97,6 +98,12 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	public void setDisplayname(String displayname) {
 		displaynameEl.setValue(displayname);
 	}
+	
+	public void setExampleAndHelp(String text, String helpUrl) {
+		exampleHelpEl.contextPut("text", text);
+		exampleHelpEl.contextPut("helpUrl", helpUrl);
+		exampleHelpEl.setVisible(true);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -114,6 +121,11 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		displaynameEl.setFocus(true);
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
+		
+		String page = velocity_root + "/example_help.html";
+		exampleHelpEl = FormLayoutContainer.createCustomFormLayout("example.help", "example.help", getTranslator(), page);
+		formLayout.add(exampleHelpEl);
+		exampleHelpEl.setVisible(false);
 		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);

@@ -43,6 +43,7 @@ import org.olat.modules.qpool.QuestionItemShort;
 public class ConversionConfirmationController extends FormBasicController {
 	
 	private SingleSelection formatEl;
+	private FormLayoutContainer exampleHelpEl;
 	
 	private final Map<String,List<QuestionItemShort>> formatToItems;
 	
@@ -70,6 +71,11 @@ public class ConversionConfirmationController extends FormBasicController {
 		if(formatKeys.length > 0) {
 			formatEl.select(formatKeys[0], true);
 		}
+		
+		// only info about QTI 1.2 to 2.1 as it's the only option for now
+		String page = velocity_root + "/example_conversion.html";
+		exampleHelpEl = FormLayoutContainer.createCustomFormLayout("example.help", "example.help", getTranslator(), page);
+		formLayout.add(exampleHelpEl);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
