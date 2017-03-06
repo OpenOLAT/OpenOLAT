@@ -361,7 +361,7 @@ public class OnyxModule extends AbstractSpringModule implements ConfigOnOff {
 				status = AssessmentEntryStatus.done;
 			}
 			return new ScoreEvaluation(currentResultSet.getScore(), currentResultSet.getIsPassed(),
-					status, currentResultSet.getFullyAssessed(), currentResultSet.getAssessmentID());
+					status, Boolean.TRUE, currentResultSet.getFullyAssessed(), currentResultSet.getAssessmentID());
 			// </OLATCE-374>
 		}
 		return null;

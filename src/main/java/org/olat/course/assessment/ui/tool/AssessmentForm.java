@@ -64,10 +64,12 @@ import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
  */
 public class AssessmentForm extends FormBasicController {
 	
+	private static final String[] userVisibilityKeys = new String[]{ "visible", "hidden" };
+	
 	private TextElement score;
 	private IntegerElement attempts;
 	private StaticTextElement cutVal;
-	private SingleSelection passed;
+	private SingleSelection passed, userVisibility;
 	private TextElement userComment, coachComment;
 	private FormSubmit submitButton;
 	private FormLink saveAndDoneLink, reopenLink;
@@ -207,7 +209,7 @@ public class AssessmentForm extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		if (hasScore) {
+		if (hasScore && score.isEnabled()) {
 			Float fscore = null;
 			try {
 				fscore = parseFloat(score);
@@ -234,6 +236,12 @@ public class AssessmentForm extends FormBasicController {
 			}
 		}
 		
+		userVisibility.clearError();
+		if(!userVisibility.isOneSelected()) {
+			userVisibility.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		if(attempts != null) {
 			attempts.clearError();
 			allOk &= attempts.validateIntValue();
@@ -258,7 +266,8 @@ public class AssessmentForm extends FormBasicController {
 		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
 		if (scoreEval != null) {
 			ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-					AssessmentEntryStatus.inReview, scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
+					AssessmentEntryStatus.inReview, scoreEval.getUserVisible(),
+					scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
 			assessableCourseNode.updateUserScoreEvaluation(reopenedEval, assessedUserCourseEnv, getIdentity(), false);
 			updateStatus(reopenedEval);
 		}
@@ -291,12 +300,14 @@ public class AssessmentForm extends FormBasicController {
 				}			
 			}
 		}
+		
+		boolean visibility = userVisibility.isSelected(0);
 		// Update score,passed properties in db
-		ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);
+		ScoreEvaluation scoreEval;
 		if(setAsDone) {
-			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, AssessmentEntryStatus.done, true, null);
+			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, AssessmentEntryStatus.done, visibility, true, null);
 		} else {
-			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);
+			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, null, visibility, null, null);
 		}
 		assessableCourseNode.updateUserScoreEvaluation(scoreEval, assessedUserCourseEnv, getIdentity(), false);
 
@@ -370,7 +381,7 @@ public class AssessmentForm extends FormBasicController {
 			attempts.setEnabled(!closed && !coachCourseEnv.isCourseReadOnly());
 		}
 		
-		submitButton.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
+		submitButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		saveAndDoneLink.setVisible(!closed && !coachCourseEnv.isCourseReadOnly());
 		reopenLink.setVisible(closed && !coachCourseEnv.isCourseReadOnly());
 		flc.setDirty(true);
@@ -458,6 +469,14 @@ public class AssessmentForm extends FormBasicController {
 		coachCommentValue = assessableCourseNode.getUserCoachComment(assessedUserCourseEnv);
 		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, coachCommentValue, formLayout);
 		coachComment.setNotLongerThanCheck(2500, "input.toolong");
+		
+		String[] userVisibilityValues = new String[]{ translate("user.visibility.visible"), translate("user.visibility.hidden") };
+		userVisibility = uifactory.addRadiosHorizontal("user.visibility", "user.visibility", formLayout, userVisibilityKeys, userVisibilityValues);
+		if(scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue()) {
+			userVisibility.select(userVisibilityKeys[0], true);
+		} else {
+			userVisibility.select(userVisibilityKeys[1], true);
+		}
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);

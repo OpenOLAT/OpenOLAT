@@ -659,11 +659,11 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	 *      org.olat.core.id.Identity)
 	 */
 	@Override
-	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
+	public void updateUserScoreEvaluation(ScoreEvaluation scoreEval, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity, boolean incrementAttempts) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		ScoreEvaluation newScoreEval = new ScoreEvaluation(scoreEvaluation.getScore(), scoreEvaluation.getPassed(), scoreEvaluation.getAssessmentStatus(), null, null);
+		ScoreEvaluation newScoreEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), null, null);
 		am.saveScoreEvaluation(this, coachingIdentity, mySelf, newScoreEval, userCourseEnvironment, incrementAttempts);		
 	}
 

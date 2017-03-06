@@ -1194,6 +1194,7 @@ create table o_as_entry (
    a_status varchar2(16 char) default null,
    a_details varchar2(1024 char) default null,
    a_fully_assessed number default null,
+   a_user_visibility number default 0,
    a_assessment_id number(20) default null,
    a_completion float,
    a_comment clob,

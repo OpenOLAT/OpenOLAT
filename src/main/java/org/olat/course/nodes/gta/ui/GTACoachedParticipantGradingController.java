@@ -140,7 +140,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-		msCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), uce, gtaNode, false, false);
+		msCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), uce, gtaNode, false, false, true);
 		listenTo(msCtrl);
 		mainVC.put("msrun", msCtrl.getInitialComponent());
 	}
@@ -152,7 +152,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	
 	private void doGraded(UserRequest ureq, UserCourseEnvironment assessedUserCourseEnv) {
 		removeAsListenerAndDispose(msCtrl);
-		msCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), assessedUserCourseEnv, gtaNode, false, false);
+		msCtrl = new MSCourseNodeRunController(ureq, getWindowControl(), assessedUserCourseEnv, gtaNode, false, false, true);
 		listenTo(msCtrl);
 		mainVC.put("msrun", msCtrl.getInitialComponent());
 		

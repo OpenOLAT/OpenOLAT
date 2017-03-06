@@ -56,6 +56,10 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 
 	public void setPassed(Boolean passed);
 	
+	public Boolean getUserVisibility();
+	
+	public void setUserVisibility(Boolean visibility);
+	
 	public AssessmentEntryStatus getAssessmentStatus();
 	
 	public void setAssessmentStatus(AssessmentEntryStatus assessmentStatus);

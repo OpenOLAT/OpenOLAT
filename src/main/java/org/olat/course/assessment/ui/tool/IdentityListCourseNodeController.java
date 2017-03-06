@@ -57,6 +57,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -121,13 +122,15 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	
 	private Link nextLink, previousLink;
 	private FlexiTableElement tableEl;
-	private FormLink bulkDoneButton;
+	private FormLink bulkDoneButton, bulkVisibleButton;
 	private final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	private IdentityListCourseNodeTableModel usersTableModel;
 	
 	private List<Controller> toolsCtrl;
+	private CloseableModalController cmc;
 	private AssessedIdentityController currentIdentityCtrl;
+	private ConfirmUserVisibilityController changeUserVisibilityCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -220,6 +223,10 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			if(assessableNode.hasAttemptsConfigured()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
 			}
+			if(!(courseNode instanceof CalculatedAssessableCourseNode)) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility,
+						new UserVisibilityCellRenderer(getTranslator())));
+			}
 			if(assessableNode.hasScoreConfigured()) {
 				if(!(assessableNode instanceof STCourseNode)) {
 					if(assessableNode.getMinScoreConfiguration() != null) {
@@ -288,6 +295,9 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		if(courseNode instanceof AssessableCourseNode && !(courseNode instanceof CalculatedAssessableCourseNode)) {
 			bulkDoneButton = uifactory.addFormLink("bulk.done", formLayout, Link.BUTTON);
 			bulkDoneButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+			
+			bulkVisibleButton = uifactory.addFormLink("bulk.visible", formLayout, Link.BUTTON);
+			bulkVisibleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 		}
 	}
 	
@@ -478,8 +488,23 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			if(event == Event.CHANGED_EVENT) {
 				updateModel(ureq, null, null, null);
 			}
+		} else if(changeUserVisibilityCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doSetVisibility(ureq, changeUserVisibilityCtrl.getVisibility(), changeUserVisibilityCtrl.getRows());
+			}
+			cmc.deactivate();
+			doCleanUp();
+		} else if(cmc == source) {
+			doCleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void doCleanUp() {
+		removeAsListenerAndDispose(changeUserVisibilityCtrl);
+		removeAsListenerAndDispose(cmc);
+		changeUserVisibilityCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -498,6 +523,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			}
 		} else if(bulkDoneButton == source) {
 			doSetDone(ureq);
+		} else if(bulkVisibleButton == source) {
+			doConfirmVisible(ureq);
 		}
 		
 		super.formInnerEvent(ureq, source, event);
@@ -570,6 +597,50 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		return currentIdentityCtrl;
 	}
 	
+	private void doConfirmVisible(UserRequest ureq) {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<AssessedIdentityElementRow> rows = new ArrayList<>(selections.size());
+		for(Integer i:selections) {
+			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
+			if(row != null) {
+				rows.add(row);
+			}
+		}
+		
+		if(rows == null || rows.isEmpty()) {
+			showWarning("warning.bulk.done");
+		} else {
+			changeUserVisibilityCtrl = new ConfirmUserVisibilityController(ureq, getWindowControl(), rows);
+			listenTo(changeUserVisibilityCtrl);
+			
+			String title = translate("change.visibility.title");
+			cmc = new CloseableModalController(getWindowControl(), "close", changeUserVisibilityCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
+	private void doSetVisibility(UserRequest ureq, Boolean visibility, List<AssessedIdentityElementRow> rows) {
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
+		
+		for(AssessedIdentityElementRow row:rows) {
+			Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+			
+			Roles roles = securityManager.getRoles(assessedIdentity);
+			
+			IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
+			UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
+			assessedUserCourseEnv.getScoreAccounting().evaluateAll();
+
+			ScoreEvaluation scoreEval = assessableCourseNode.getUserScoreEvaluation(assessedUserCourseEnv);
+			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
+					scoreEval.getAssessmentStatus(), visibility, scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
+			assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false);
+		}
+		updateModel(ureq, null, null, null);
+	}
+	
 	private void doSetDone(UserRequest ureq) {
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(selections.size());
@@ -596,7 +667,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 				assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
 				ScoreEvaluation scoreEval = assessableCourseNode.getUserScoreEvaluation(assessedUserCourseEnv);
-				ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(), AssessmentEntryStatus.done, scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
+				ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
+						AssessmentEntryStatus.done, null, scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
 				assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false);
 			}
 			

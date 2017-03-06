@@ -1210,7 +1210,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
 			if(courseNode instanceof PortfolioCourseNode) {
 				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
-				ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), totalPassed, binderStatus, true, binder.getKey());
+				ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), totalPassed, binderStatus, true, true, binder.getKey());
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 				pfNode.updateUserScoreEvaluation(scoreEval, userCourseEnv, coachingIdentity, false);
 			}
@@ -1267,7 +1267,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 				AssessmentEvaluation eval = pfNode.getUserScoreEvaluation(userCourseEnv);
 				
-				ScoreEvaluation scoreEval= new ScoreEvaluation(eval.getScore(), eval.getPassed(), status, fullyAssessed, binder.getKey());
+				ScoreEvaluation scoreEval= new ScoreEvaluation(eval.getScore(), eval.getPassed(), status, true, fullyAssessed, binder.getKey());
 				pfNode.updateUserScoreEvaluation(scoreEval, userCourseEnv, coachingIdentity, false);
 			}
 		} else {

@@ -271,6 +271,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		if(scoreEvaluation.getAssessmentStatus() != null) {
 			assessmentEntry.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
 		}
+		if(scoreEvaluation.getUserVisible() != null) {
+			assessmentEntry.setUserVisibility(scoreEvaluation.getUserVisible());
+		}
 		Integer attempts = null;
 		if(incrementUserAttempts) {
 			attempts = assessmentEntry.getAttempts() == null ? 1 :assessmentEntry.getAttempts().intValue() + 1;
@@ -330,7 +333,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		if (courseEnv.getCourseConfig().isEfficencyStatementEnabled()) {
 			List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
 			AssessmentHelper.getAssessmentNodeDataList(0, courseEnv.getRunStructure().getRootNode(),
-					scoreAccounting, userCourseEnv, true, true, data);
+					scoreAccounting, userCourseEnv, true, true, true, data);
 			efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, cgm.getCourseEntry());
 		}
 

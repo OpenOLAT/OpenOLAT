@@ -508,7 +508,7 @@ public class GroupAssessmentController extends FormBasicController {
 				UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 				ScoreEvaluation newScoreEval;
 				if(setAsDone) {
-					newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, true, null);
+					newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, true, true, null);
 				} else {
 					newScoreEval = new ScoreEvaluation(score, passed);
 				}
@@ -548,7 +548,7 @@ public class GroupAssessmentController extends FormBasicController {
 				
 				ScoreEvaluation newScoreEval;
 				if(setAsDone) {
-					newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, true, null);
+					newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, true, true, null);
 				} else {
 					newScoreEval = new ScoreEvaluation(score, passed);
 				}

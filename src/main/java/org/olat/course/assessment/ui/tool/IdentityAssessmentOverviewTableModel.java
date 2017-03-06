@@ -96,6 +96,7 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 			case node: return nodeData;// rendered using the indentedNodeRenderer
 			case details: return nodeData.getShortTitle();
 			case attempts: return nodeData.getAttempts();
+			case userVisibility: return nodeData.getUserVisibility();
 			case score: return nodeData.getScore();
 			case passed: return nodeData.getPassed();
 			case min: return nodeData.getMinScore();
@@ -122,6 +123,7 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 		node("table.header.node", true),
 		details("table.header.details", true),
 		attempts("table.header.attempts", true),
+		userVisibility("table.header.userVisibility", true),
 		score("table.header.score", true),
 		min("table.header.min", true),
 		max("table.header.max", true),

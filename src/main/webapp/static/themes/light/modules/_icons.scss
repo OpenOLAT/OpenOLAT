@@ -227,6 +227,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_reply_with_quote:before { content: $fa-var-reply-all; }
 .o_icon_response_feedback:before { content: $fa-var-refresh; }
 .o_icon_restore:before { content: $fa-var-thumbs-up; }
+.o_icon_results_visible:before { content: $fa-var-eye;}
+.o_icon_results_hidden:before { content: $fa-var-eye-slash;}
 .o_icon_review:before { content: $fa-var-eye;}
 .o_icon_reviewer:before { content: $fa-var-user-md;}
 .o_icon_rss:before { content: $fa-var-rss;}

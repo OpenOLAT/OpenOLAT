@@ -136,7 +136,7 @@ public class QTI21CorrectionToolController extends BasicController {
 				
 				Float score = finalScore == null ? null : finalScore.floatValue();
 				ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
-						scoreEval.getAssessmentStatus(), scoreEval.getFullyAssessed(), testSession.getKey());
+						scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getFullyAssessed(), testSession.getKey());
 				courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false);
 			}
 		}

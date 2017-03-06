@@ -39,6 +39,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class AssessedIdentityElementRow extends UserPropertiesRow {
 	
 	private final Integer attempts;
+	private final Boolean userVisibility;
 	private final BigDecimal score;
 	private final Boolean passed;
 	private final Date creationDate;
@@ -51,6 +52,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			attempts = entry.getAttempts();
 			score = entry.getScore();
 			passed = entry.getPassed();
+			userVisibility = entry.getUserVisibility(); 
 			creationDate = entry.getCreationDate();
 			lastModified = entry.getLastModified();
 			status = entry.getAssessmentStatus();
@@ -58,6 +60,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			attempts = null;
 			score = null;
 			passed = null;
+			userVisibility = null;
 			creationDate = lastModified = null;
 			status = null;
 		}
@@ -85,5 +88,9 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public AssessmentEntryStatus getAssessmentStatus() {
 		return status;
+	}
+	
+	public Boolean getUserVisibility() {
+		return userVisibility;
 	}
 }

@@ -12,17 +12,25 @@
 				</tr> 
 				<tr class="o_score">
 					<th>$r.translate("score.yourscore")</th>
-					<td>$score</td> 
+					<td>
+					#if($score)
+						#if($resultsVisible)
+							$score
+						#else
+							$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
+						#end
+					#end
+					</td> 
 				</tr> 
-				<tr class="o_state #if ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
+				<tr class="o_state #if(!$resultsVisible) #elseif($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
 					<th>$r.translate("passed.yourpassed")</th>
 					<td>
-					#if($hasPassedValue && $passed)	
-						<i class="o_icon o_icon_passed"></i> 
-						$r.translate("passed.yes")
+					#if($hasPassedValue && !$resultsVisible)
+						$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
+					#elseif($hasPassedValue && $passed)	
+						<i class="o_icon o_icon_passed"> </i> $r.translate("passed.yes")
 					#elseif($hasPassedValue && !$passed)		
-						<i class="o_icon o_icon_failed"></i> 
-						$r.translate("passed.no")
+						<i class="o_icon o_icon_failed"> </i> $r.translate("passed.no")
 					#else
 						$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
 					#end

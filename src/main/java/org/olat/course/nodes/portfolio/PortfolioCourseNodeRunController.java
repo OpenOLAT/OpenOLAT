@@ -305,6 +305,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			scoreAccounting.evaluateAll();			
 			ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
 
+			assessmentInfosContainer.contextPut("resultsVisible", scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue());
 			//score
 			assessmentInfosContainer.contextPut("hasScoreField", new Boolean(courseNode.hasScoreConfigured()));
 			if(courseNode.hasScoreConfigured()) {

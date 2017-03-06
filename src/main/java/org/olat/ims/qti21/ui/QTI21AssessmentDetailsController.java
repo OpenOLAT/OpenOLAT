@@ -322,7 +322,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		BigDecimal finalScore = calculateFinalScore(session);
 		Float score = finalScore == null ? null : finalScore.floatValue();
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), scoreEval.getFullyAssessed(), session.getKey());
+				scoreEval.getAssessmentStatus(), null, scoreEval.getFullyAssessed(), session.getKey());
 		courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false);
 	}
 	

@@ -38,3 +38,7 @@ alter table o_qti_assessmentitem_session modify q_itemidentifier varchar(255);
 alter table o_qti_assessmentitem_session modify q_sectionidentifier varchar(255);
 alter table o_qti_assessmentitem_session modify q_testpartidentifier varchar(255);
 alter table o_qti_assessmenttest_session modify q_subident varchar(255);
+
+
+alter table o_as_entry add column a_user_visibility bit default 0;
+

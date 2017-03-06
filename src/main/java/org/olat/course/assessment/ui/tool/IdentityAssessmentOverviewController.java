@@ -89,6 +89,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private IdentityAssessmentOverviewTableModel tableModel;
 
 	private boolean loadNodesFromCourse;
+	private final boolean followUserResultsVisibility;
 	private AssessableCourseNode selectedCourseNode;
 	private List<AssessmentNodeData> preloadedNodesList;
 	private UserCourseEnvironment userCourseEnvironment;
@@ -114,6 +115,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		this.allowTableFiltering = allowTableFiltering;
 		this.userCourseEnvironment = userCourseEnvironment;		
 		loadNodesFromCourse = true;
+		followUserResultsVisibility = false;
 
 		initForm(ureq);
 		loadModel();
@@ -136,6 +138,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		allowTableFiltering = false;
 		userCourseEnvironment = null;		
 		loadNodesFromCourse = false;
+		followUserResultsVisibility = true;
 		preloadedNodesList = assessmentCourseNodes;
 	
 		initForm(ureq);
@@ -230,6 +233,9 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 			}
 		}));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.attempts));
+		if(!followUserResultsVisibility) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.userVisibility, new UserVisibilityCellRenderer(getTranslator())));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.min, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.max, new ScoreCellRenderer()));
@@ -271,7 +277,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		List<AssessmentNodeData> nodesTableList;
 		if (loadNodesFromCourse) {
 			// get list of course node and user data and populate table data model 	
-			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, discardEmptyNodes, true);
+			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, followUserResultsVisibility, discardEmptyNodes, true);
 		} else {
 			// use list from efficiency statement 
 			nodesTableList = preloadedNodesList;

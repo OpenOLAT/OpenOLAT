@@ -85,6 +85,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private String status;
 	@Column(name="a_details", nullable=true, insertable=true, updatable=true)
 	private String details;
+	@Column(name="a_user_visibility", nullable=true, insertable=true, updatable=true)
+	private Boolean userVisibility;
 
 	@Column(name="a_completion", nullable=true, insertable=true, updatable=true)
 	private Double completion;
@@ -118,6 +120,9 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@JoinColumn(name="fk_identity", nullable=true, insertable=true, updatable=false)
     private Identity identity;
 	
+	public AssessmentEntryImpl() {
+		//
+	}
 	
 	@Override
 	public Long getKey() {
@@ -201,6 +206,16 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		} else {
 			this.status = assessmentStatus.name();
 		}
+	}
+
+	@Override
+	public Boolean getUserVisibility() {
+		return userVisibility;
+	}
+
+	@Override
+	public void setUserVisibility(Boolean visibility) {
+		this.userVisibility = visibility;
 	}
 
 	@Override

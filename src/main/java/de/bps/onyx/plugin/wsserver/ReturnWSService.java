@@ -220,7 +220,7 @@ public class ReturnWSService {
 									status = AssessmentEntryStatus.done;
 								}
 								ScoreEvaluation scoreEvaluation = new ScoreEvaluation(qtiResultSet.getScore(), qtiResultSet.getIsPassed(),
-										status, qtiResultSet.getFullyAssessed(), qtiResultSet.getAssessmentID());
+										status, Boolean.TRUE, qtiResultSet.getFullyAssessed(), qtiResultSet.getAssessmentID());
 								am.saveScoreEvaluation((AssessableCourseNode)courseNode, null, assessedIdentity, scoreEvaluation, userCourseEnvironment, false);
 
 								CoreSpringFactory.getImpl(AssessmentNotificationsHandler.class).markPublisherNews(assessedIdentity, resourceId);

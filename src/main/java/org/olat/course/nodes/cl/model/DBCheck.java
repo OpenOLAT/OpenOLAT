@@ -154,8 +154,8 @@ public class DBCheck implements Persistable, CreateInfo, ModifiedInfo {
 			return true;
 		}
 		if(obj instanceof DBCheck) {
-			DBCheck checkbox = (DBCheck)obj;
-			return key != null && key.equals(checkbox.getKey());
+			DBCheck check = (DBCheck)obj;
+			return key != null && key.equals(check.getKey());
 		}
 		return false;
 	}

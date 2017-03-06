@@ -789,7 +789,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		entry.setRepositoryEntry(courseEntry);
 		entry.setSubIdent(nodeIdent);
 		entry.setAttempts(new Integer(0));
-		
+		entry.setUserVisibility(Boolean.TRUE);
 
 		CourseNode courseNode = course.getRunStructure().getNode(nodeIdent);
 		if(courseNode != null) {

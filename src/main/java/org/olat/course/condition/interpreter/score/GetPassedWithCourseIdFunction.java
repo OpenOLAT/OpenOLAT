@@ -100,9 +100,11 @@ public class GetPassedWithCourseIdFunction extends AbstractFunction {
 		UserEfficiencyStatement es = esm.getUserEfficiencyStatementLightByRepositoryEntry(courseRef, getUserCourseEnv().getIdentityEnvironment().getIdentity());
 		if (es == null) return defaultValue();
 		Boolean passed = es.getPassed();
-		if (passed == null) return defaultValue();
+		if (passed == null) {
+			return defaultValue();
+		}
 		// finally check existing value
-		return (passed.booleanValue() ? ConditionInterpreter.INT_TRUE : ConditionInterpreter.INT_FALSE);
+		return passed.booleanValue() ? ConditionInterpreter.INT_TRUE : ConditionInterpreter.INT_FALSE;
 		
 	}
 

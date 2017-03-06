@@ -118,6 +118,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 			switch(IdentityCourseElementCols.values()[col]) {
 				case username: return row.getIdentityName();
 				case attempts: return row.getAttempts();
+				case userVisibility: return row.getUserVisibility();
 				case score: return row.getScore();
 				case min: {
 					if(!(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
@@ -155,6 +156,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	public enum IdentityCourseElementCols implements FlexiSortableColumnDef {
 		username("table.header.name"),
 		attempts("table.header.attempts"),
+		userVisibility("table.header.userVisibility"),
 		score("table.header.score"),
 		min("table.header.min"),
 		max("table.header.max"),

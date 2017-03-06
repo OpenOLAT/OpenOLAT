@@ -485,15 +485,18 @@ public class IQRunController extends BasicController implements GenericEventList
 			Boolean fullyAssed = am.getNodeFullyAssessed(courseNode, getIdentity());
 			
 			String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+			Boolean userVisibility;
 			AssessmentEntryStatus assessmentStatus;
 			if(IQEditController.CORRECTION_MANUAL.equals(correctionMode)) {
 				assessmentStatus = AssessmentEntryStatus.inReview;
+				userVisibility = Boolean.FALSE;
 			} else {
 				assessmentStatus = AssessmentEntryStatus.done;
+				userVisibility = Boolean.TRUE;
 			}
 			
-			ScoreEvaluation sceval = new ScoreEvaluation(ac.getScore(), ac.isPassed(), assessmentStatus, fullyAssed, ai.getAssessID());
-			AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assesable		
+			ScoreEvaluation sceval = new ScoreEvaluation(ac.getScore(), ac.isPassed(), assessmentStatus, userVisibility, fullyAssed, ai.getAssessID());
+			AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assessable		
 			acn.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true);
 				
 			// Mark publisher for notifications

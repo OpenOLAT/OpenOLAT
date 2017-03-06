@@ -91,8 +91,7 @@ public class GetScoreFunction extends AbstractFunction {
 		 */
 		ScoreAccounting sa = getUserCourseEnv().getScoreAccounting();
 		Float score = sa.evalScoreOfCourseNode(childId);
-		Double dscore = new Double(score.doubleValue());
-		return dscore;
+		return new Double(score);
 	}
 
 	protected Object defaultValue() {

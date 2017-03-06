@@ -624,13 +624,16 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if(anonym) return;
 		
 		if(courseNode instanceof IQTESTCourseNode) {
+			Boolean visibility;
 			AssessmentEntryStatus assessmentStatus;
 			if(IQEditController.CORRECTION_MANUAL.equals(courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
 				assessmentStatus = AssessmentEntryStatus.inReview;
+				visibility = Boolean.FALSE;
 			} else {
 				assessmentStatus = AssessmentEntryStatus.done;
+				visibility = Boolean.TRUE;
 			}
-			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, Boolean.TRUE, assessmentId);
+			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, visibility, Boolean.TRUE, assessmentId);
 			
 			boolean increment = incrementAttempts.getAndSet(false);
 			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), increment);

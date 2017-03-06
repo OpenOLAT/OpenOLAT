@@ -431,12 +431,13 @@ public class AssessmentHelper {
 	 * @param discardComments
 	 * @return list of object arrays or null if empty
 	 */
-	public static List<AssessmentNodeData> getAssessmentNodeDataList(UserCourseEnvironment userCourseEnv, boolean discardEmptyNodes, boolean discardComments) {
+	public static List<AssessmentNodeData> getAssessmentNodeDataList(UserCourseEnvironment userCourseEnv,
+			boolean followUserVisibility, boolean discardEmptyNodes, boolean discardComments) {
 		List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 		scoreAccounting.evaluateAll();
 		getAssessmentNodeDataList(0, userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(),
-				scoreAccounting, userCourseEnv, discardEmptyNodes, discardComments, data);
+				scoreAccounting, userCourseEnv, followUserVisibility, discardEmptyNodes, discardComments, data);
 		return data;
 	}
 	
@@ -450,16 +451,17 @@ public class AssessmentHelper {
 	 * @param discardComments
 	 * @return
 	 */
-	public static List<AssessmentNodeData> getAssessmentNodeDataList(ScoreAccounting evaluatedScoreAccounting, UserCourseEnvironment userCourseEnv, boolean discardEmptyNodes, boolean discardComments) {
+	public static List<AssessmentNodeData> getAssessmentNodeDataList(ScoreAccounting evaluatedScoreAccounting, UserCourseEnvironment userCourseEnv,
+			boolean followUserVisibility, boolean discardEmptyNodes, boolean discardComments) {
 		List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
 		getAssessmentNodeDataList(0, userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(),
-				evaluatedScoreAccounting, userCourseEnv, discardEmptyNodes, discardComments, data);
+				evaluatedScoreAccounting, userCourseEnv, followUserVisibility, discardEmptyNodes, discardComments, data);
 		return data;
 	}
 	
 	
 	public static int getAssessmentNodeDataList(int recursionLevel, CourseNode courseNode, ScoreAccounting scoreAccounting,
-			UserCourseEnvironment userCourseEnv, boolean discardEmptyNodes, boolean discardComments, List<AssessmentNodeData> data) {
+			UserCourseEnvironment userCourseEnv, boolean followUserVisibility, boolean discardEmptyNodes, boolean discardComments, List<AssessmentNodeData> data) {
 		// 1) Get list of children data using recursion of this method
 		AssessmentNodeData assessmentNodeData = new AssessmentNodeData(recursionLevel, courseNode);
 		data.add(assessmentNodeData);
@@ -468,7 +470,7 @@ public class AssessmentHelper {
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode) courseNode.getChildAt(i);
 			numOfChildren += getAssessmentNodeDataList(recursionLevel + 1,  child,  scoreAccounting,
-					userCourseEnv, discardEmptyNodes, discardComments, data);
+					userCourseEnv, followUserVisibility, discardEmptyNodes, discardComments, data);
 		}
 		
 		// 2) Get data of this node only if
@@ -486,52 +488,55 @@ public class AssessmentHelper {
 				if(scoreEvaluation != null) {
 					assessmentNodeData.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
 				}
+				assessmentNodeData.setUserVisibility(scoreEvaluation.getUserVisible());
 				
-				// details 
-				if (assessableCourseNode.hasDetails()) {
-					hasDisplayableValuesConfigured = true;
-					String detailValue = assessableCourseNode.getDetailsListView(userCourseEnv);
-					if (detailValue == null) {
-						// ignore unset details in discardEmptyNodes mode
-						assessmentNodeData.setDetails(AssessmentHelper.DETAILS_NA_VALUE);
-					} else {
-						assessmentNodeData.setDetails(detailValue);
-						hasDisplayableUserValues = true;
-					}
-				}
-				// attempts
-				if (assessableCourseNode.hasAttemptsConfigured()) {
-					hasDisplayableValuesConfigured = true;
-					Integer attemptsValue = scoreEvaluation.getAttempts(); 
-					if (attemptsValue != null) {
-						assessmentNodeData.setAttempts(attemptsValue);
-						if (attemptsValue.intValue() > 0) {
-							// ignore attempts = 0  in discardEmptyNodes mode
+				if(!followUserVisibility || scoreEvaluation.getUserVisible() == null || scoreEvaluation.getUserVisible().booleanValue()) {
+					// details 
+					if (assessableCourseNode.hasDetails()) {
+						hasDisplayableValuesConfigured = true;
+						String detailValue = assessableCourseNode.getDetailsListView(userCourseEnv);
+						if (detailValue == null) {
+							// ignore unset details in discardEmptyNodes mode
+							assessmentNodeData.setDetails(AssessmentHelper.DETAILS_NA_VALUE);
+						} else {
+							assessmentNodeData.setDetails(detailValue);
 							hasDisplayableUserValues = true;
 						}
 					}
-				}
-				// score
-				if (assessableCourseNode.hasScoreConfigured()) {
-					hasDisplayableValuesConfigured = true;
-					Float score = scoreEvaluation.getScore();
-					if (score != null) {
-						assessmentNodeData.setRoundedScore(AssessmentHelper.getRoundedScore(score));
-						assessmentNodeData.setScore(score);
-						hasDisplayableUserValues = true;
+					// attempts
+					if (assessableCourseNode.hasAttemptsConfigured()) {
+						hasDisplayableValuesConfigured = true;
+						Integer attemptsValue = scoreEvaluation.getAttempts(); 
+						if (attemptsValue != null) {
+							assessmentNodeData.setAttempts(attemptsValue);
+							if (attemptsValue.intValue() > 0) {
+								// ignore attempts = 0  in discardEmptyNodes mode
+								hasDisplayableUserValues = true;
+							}
+						}
 					}
-					if(!(assessableCourseNode instanceof STCourseNode)) {
-						assessmentNodeData.setMaxScore(assessableCourseNode.getMaxScoreConfiguration());
-						assessmentNodeData.setMinScore(assessableCourseNode.getMinScoreConfiguration());
+					// score
+					if (assessableCourseNode.hasScoreConfigured()) {
+						hasDisplayableValuesConfigured = true;
+						Float score = scoreEvaluation.getScore();
+						if (score != null) {
+							assessmentNodeData.setRoundedScore(AssessmentHelper.getRoundedScore(score));
+							assessmentNodeData.setScore(score);
+							hasDisplayableUserValues = true;
+						}
+						if(!(assessableCourseNode instanceof STCourseNode)) {
+							assessmentNodeData.setMaxScore(assessableCourseNode.getMaxScoreConfiguration());
+							assessmentNodeData.setMinScore(assessableCourseNode.getMinScoreConfiguration());
+						}
 					}
-				}
-				// passed
-				if (assessableCourseNode.hasPassedConfigured()) {
-					hasDisplayableValuesConfigured = true;
-					Boolean passed = scoreEvaluation.getPassed();
-					if (passed != null) {
-						assessmentNodeData.setPassed(passed);
-						hasDisplayableUserValues = true;
+					// passed
+					if (assessableCourseNode.hasPassedConfigured()) {
+						hasDisplayableValuesConfigured = true;
+						Boolean passed = scoreEvaluation.getPassed();
+						if (passed != null) {
+							assessmentNodeData.setPassed(passed);
+							hasDisplayableUserValues = true;
+						}
 					}
 				}
 				// selection command available
@@ -544,6 +549,7 @@ public class AssessmentHelper {
 					// (e.g. a st node with no defined rule
 					assessmentNodeData.setSelectable(false);
 				}
+				
 				if (!hasDisplayableUserValues && assessableCourseNode.hasCommentConfigured() && !discardComments) {
 				  // comments are invisible in the table but if configured the node must be in the list
 					// for the efficiency statement this can be ignored, this is the case when discardComments is true

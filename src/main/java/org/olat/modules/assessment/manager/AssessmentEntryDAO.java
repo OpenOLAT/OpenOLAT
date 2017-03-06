@@ -60,6 +60,7 @@ public class AssessmentEntryDAO {
 		data.setRepositoryEntry(entry);
 		data.setSubIdent(subIdent);
 		data.setReferenceEntry(referenceEntry);
+		data.setUserVisibility(Boolean.TRUE);
 		dbInstance.getCurrentEntityManager().persist(data);
 		return data;
 	}
@@ -76,6 +77,7 @@ public class AssessmentEntryDAO {
 		data.setRepositoryEntry(entry);
 		data.setSubIdent(subIdent);
 		data.setReferenceEntry(referenceEntry);
+		data.setUserVisibility(Boolean.TRUE);
 		if(score != null) {
 			data.setScore(new BigDecimal(score));
 		}

@@ -46,16 +46,16 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	}
 	
 	public AssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, fullyAssessed, assessmentID);
+		this(score, passed, null, null, fullyAssessed, assessmentID);
 	}
 	
-	public AssessmentEvaluation(Float score, Boolean passed, AssessmentEntryStatus assessmentStatus, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, assessmentStatus, fullyAssessed, assessmentID, null, null);
+	public AssessmentEvaluation(Float score, Boolean passed, AssessmentEntryStatus assessmentStatus, Boolean userVisibility, Boolean fullyAssessed, Long assessmentID) {
+		this(score, passed, null, assessmentStatus, userVisibility, fullyAssessed, assessmentID, null, null);
 	}
 	
-	public AssessmentEvaluation(Float score, Boolean passed, Integer attempts, AssessmentEntryStatus assessmentStatus,
+	public AssessmentEvaluation(Float score, Boolean passed, Integer attempts, AssessmentEntryStatus assessmentStatus, Boolean userVisibility,
 			Boolean fullyAssessed, Long assessmentID, String comment, String coachComment) {
-		super(score, passed, assessmentStatus, fullyAssessed, assessmentID);
+		super(score, passed, assessmentStatus, userVisibility, fullyAssessed, assessmentID);
 		this.attempts = attempts;
 		this.comment = comment;
 		this.coachComment = coachComment;
@@ -68,7 +68,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	 * @param assessmentStatus
 	 */
 	public AssessmentEvaluation(AssessmentEvaluation eval, AssessmentEntryStatus assessmentStatus) {
-		this(eval.getScore(), eval.getPassed(), eval.getAttempts(), assessmentStatus,
+		this(eval.getScore(), eval.getPassed(), eval.getAttempts(), assessmentStatus, eval.getUserVisible(),
 				eval.getFullyAssessed(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment());
 	}
 
@@ -108,7 +108,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		if(node.hasCommentConfigured()) {
 			comment = entry.getComment();
 		}
-		return new AssessmentEvaluation(score, passed, attempts, entry.getAssessmentStatus(),
+		return new AssessmentEvaluation(score, passed, attempts, entry.getAssessmentStatus(), entry.getUserVisibility(),
 				entry.getFullyAssessed(), entry.getAssessmentId(), comment, entry.getCoachComment());
 	}
 }

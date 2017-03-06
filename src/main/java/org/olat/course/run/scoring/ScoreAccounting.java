@@ -189,6 +189,8 @@ public class ScoreAccounting {
 
 				Float score = null;
 				Boolean passed = null;
+				Boolean userVisibility = entry == null ? null : entry.getUserVisibility();
+				Long assessmendId = entry == null ? null : entry.getAssessmentId();
 				AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
 				ConditionInterpreter ci = userCourseEnvironment.getConditionInterpreter();
 				if (cNode.hasScoreConfigured() && scoreExpressionStr != null) {
@@ -215,7 +217,7 @@ public class ScoreAccounting {
 						}
 					}
 				}
-				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, null, null, null, null);
+				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, userVisibility, null, assessmendId, null, null);
 				
 				if(entry == null) {
 					Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -288,9 +290,12 @@ public class ScoreAccounting {
 	}
 
 	/**
-	 * ----- to called by getScoreFunction only -----
-	 * @param childId
-	 * @return Float
+	 * Evaluate the score of the course element. The method
+	 * takes the visibility of the results in account and will
+	 * return 0.0 if the results are not visiblity.
+	 * 
+	 * @param childId The specified course element ident
+	 * @return A float (never null)
 	 */
 	public Float evalScoreOfCourseNode(String childId) {
 		CourseNode foundNode = findChildByID(childId);
@@ -299,8 +304,13 @@ public class ScoreAccounting {
 		if (foundNode instanceof AssessableCourseNode) {
 			AssessableCourseNode acn = (AssessableCourseNode) foundNode;
 			ScoreEvaluation se = evalCourseNode(acn);
-			if(se != null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-				score = se.getScore();
+			if(se != null) {
+				// the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
+				if(se.getUserVisible() == null || se.getUserVisible().booleanValue()) {
+					score = se.getScore();
+				} else {
+					score = new Float(0.0f);
+				}
 			}
 			if (score == null) { // a child has no score yet
 				score = new Float(0.0f); // default to 0.0, so that the condition can be evaluated (zero points makes also the most sense for "no results yet", if to be expressed in a number)
@@ -314,9 +324,12 @@ public class ScoreAccounting {
 	}
 
 	/**
-	 * ----- to be called by getPassedFunction only -----
-	 * @param childId
-	 * @return Boolean
+	 * Evaluate the passed / failed state of a course element. The method
+	 * takes the visibility of the results in account and will return false
+	 * if the results are not visible.
+	 * 
+	 * @param childId The specified course element ident
+	 * @return true/false never null
 	 */
 	public Boolean evalPassedOfCourseNode(String childId) {
 		CourseNode foundNode = findChildByID(childId);
@@ -332,6 +345,11 @@ public class ScoreAccounting {
 		ScoreEvaluation se = evalCourseNode(acn);
 		if (se == null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
 			log.error("could not evaluate node '" + acn.getShortTitle() + "' (" + acn.getClass().getName() + "," + childId + ")", null);
+			return Boolean.FALSE;
+		}
+		// check if the results are visible
+		if(se.getUserVisible() != null && !se.getUserVisible().booleanValue()) {
+			return Boolean.FALSE;
 		}
 		Boolean passed = se.getPassed();
 		if (passed == null) { // a child has no "Passed" yet

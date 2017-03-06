@@ -66,6 +66,8 @@ public class AssessmentNodeData {
 	private Float minScore;
 	
 	private Boolean passed;
+	
+	private Boolean userVisibility;
 	private AssessmentEntryStatus assessmentStatus;
 	
 	private boolean selectable;
@@ -145,6 +147,14 @@ public class AssessmentNodeData {
 
 	public void setAttempts(Integer attempts) {
 		this.attempts = attempts;
+	}
+
+	public Boolean getUserVisibility() {
+		return userVisibility;
+	}
+
+	public void setUserVisibility(Boolean userVisibility) {
+		this.userVisibility = userVisibility;
 	}
 
 	public Float getScore() {

@@ -39,6 +39,7 @@ public class ScoreEvaluation {
 	private final Boolean passed; //could be Boolean.TRUE, Boolean.FALSE or null if "passed" info is not defined
 	private final Long assessmentID;
 	private final Boolean fullyAssessed;
+	private final Boolean userVisible;
 	private final AssessmentEntryStatus assessmentStatus;
 	
 	private ScoreEvaluation() {
@@ -51,7 +52,7 @@ public class ScoreEvaluation {
 	 * @param scoreEval
 	 */
 	public ScoreEvaluation(ScoreEvaluation scoreEval) {
-		this(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
+		this(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
 	}
 	
 	/**
@@ -69,7 +70,7 @@ public class ScoreEvaluation {
 	 * @param fullyAssessed
 	 */
 	public ScoreEvaluation(final Float score, final Boolean passed, final Boolean fullyAssessed) {
-		this(score, passed, fullyAssessed, null);
+		this(score, passed, null, null, fullyAssessed, null);
 	}
 
 	/**
@@ -79,14 +80,15 @@ public class ScoreEvaluation {
 	 * @param assessmentID
 	 */
 	public ScoreEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, fullyAssessed, assessmentID);
+		this(score, passed, null, null, fullyAssessed, assessmentID);
 	}
 	
-	public ScoreEvaluation(Float score, Boolean passed, AssessmentEntryStatus assessmentStatus, Boolean fullyAssessed, Long assessmentID) {
+	public ScoreEvaluation(Float score, Boolean passed, AssessmentEntryStatus assessmentStatus, Boolean userVisible, Boolean fullyAssessed, Long assessmentID) {
 		this.score = score;
 		this.passed = passed;
 		this.assessmentID = assessmentID;
 		this.fullyAssessed = fullyAssessed;
+		this.userVisible = userVisible;
 		this.assessmentStatus = assessmentStatus;
 	}
 	
@@ -108,6 +110,10 @@ public class ScoreEvaluation {
 	
 	public AssessmentEntryStatus getAssessmentStatus() {
 		return assessmentStatus;
+	}
+	
+	public Boolean getUserVisible() {
+		return userVisible;
 	}
 
 	/**

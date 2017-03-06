@@ -18,8 +18,12 @@
 		<tr class="o_score">
 			<th>$r.translate("score.yourscore")</th>
 			<td>
-			#if($score)		
-				$score
+			#if($score)
+				#if($resultsVisible)
+					$score
+				#else
+					$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
+				#end
 			#else
 				<div class="o_noinfo">$r.translate("score.noscore")</div>
 			#end				
@@ -34,13 +38,15 @@
 			<td>$passedCutValue</td>
 		</tr>
 		#end
-		<tr class="o_state #if ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
+		<tr class="o_state #if(!$resultsVisible) #elseif ($hasPassedValue && $passed) o_passed #elseif($hasPassedValue && !$passed) o_failed #else o_unknown #end">
 			<th>$r.translate("passed.yourpassed")</th>
 			<td>
-			#if($hasPassedValue && $passed)	
-				<i class="o_icon o_icon_passed"></i> $r.translate("map.passed")
-			#elseif($hasPassedValue && !$passed)		
-				<i class="o_icon o_icon_failed"></i> $r.translate("map.not.passed")
+			#if($hasPassedValue && !$resultsVisible)
+				$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
+			#elseif($hasPassedValue && $passed)
+				<i class="o_icon o_icon_passed"> </i> $r.translate("map.passed")
+			#elseif($hasPassedValue && !$passed)
+				<i class="o_icon o_icon_failed"> </i> $r.translate("map.not.passed")
 			#else
 				<div class="o_noinfo">$r.translate("map.not.rated.yet")</div>
 			#end

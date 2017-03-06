@@ -454,9 +454,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 			Identity coachingIdentity, boolean incrementAttempts) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, coachingIdentity, mySelf,
-				new ScoreEvaluation(scoreEvaluation.getScore(), scoreEvaluation.getPassed(), scoreEvaluation.getAssessmentStatus(), scoreEvaluation.getFullyAssessed(), scoreEvaluation.getAssessmentID()),
-				userCourseEnvironment, incrementAttempts);
+		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts);
 	}
 
 	@Override

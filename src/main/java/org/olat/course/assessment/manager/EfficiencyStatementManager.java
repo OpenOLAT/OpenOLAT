@@ -167,7 +167,7 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 		// write only when enabled for this course
 		if (cc.isEfficencyStatementEnabled()) {
 			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();				
-			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, true, true);
+			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, true, true, true);
 			updateUserEfficiencyStatement(identity, userCourseEnv.getCourseEnvironment(), assessmentNodeList, repoEntry);
 		}
 	}
