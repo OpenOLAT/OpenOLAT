@@ -221,6 +221,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
 			Integer attempts = acn.getUserAttempts(userCourseEnv);
 			if (scoreEval != null) {
+				mainVC.contextPut("resultsVisible", Boolean.TRUE);
 				mainVC.contextPut("hasResults", Boolean.TRUE);
 				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
 				mainVC.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
@@ -248,6 +249,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("blockAfterSuccess", blocked);
 				
 				Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+				mainVC.contextPut("resultsVisible", assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue());
 				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 				mainVC.contextPut("hasPassedValue", (passed == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", passed);

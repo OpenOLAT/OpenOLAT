@@ -61,7 +61,8 @@ public class QTI21EditForm extends FormBasicController {
 	private static final String[] onValues = new String[]{ "" };
 	private static final String[] correctionModeKeys = new String[]{ "auto", "manual" };
 	private static final String[] resultsOptionsKeys = new String[] {
-			QTI21AssessmentResultsOptions.METADATA, QTI21AssessmentResultsOptions.SECTION_SUMMARY, QTI21AssessmentResultsOptions.QUESTIONS,
+			QTI21AssessmentResultsOptions.METADATA, QTI21AssessmentResultsOptions.SECTION_SUMMARY,
+			QTI21AssessmentResultsOptions.QUESTION_SUMMARY, QTI21AssessmentResultsOptions.QUESTIONS,
 			QTI21AssessmentResultsOptions.USER_SOLUTIONS, QTI21AssessmentResultsOptions.CORRECT_SOLUTIONS
 	};
 
@@ -159,7 +160,8 @@ public class QTI21EditForm extends FormBasicController {
 		showResultsOnFinishEl.setEnabled(!configRef);
 
 		String[] resultsOptionsValues = new String[] {
-				translate("qti.form.summary.metadata"), translate("qti.form.summary.sections"), translate("qti.form.summary.questions"),
+				translate("qti.form.summary.metadata"), translate("qti.form.summary.sections"),
+				translate("qti.form.summary.questions.metadata"), translate("qti.form.summary.questions"),
 				translate("qti.form.summary.responses"), translate("qti.form.summary.solutions")
 		};
 		assessmentResultsOnFinishEl = uifactory.addCheckboxesVertical("typeResultOnFinish", "qti.form.summary", formLayout, resultsOptionsKeys, resultsOptionsValues, 1);
@@ -175,14 +177,17 @@ public class QTI21EditForm extends FormBasicController {
 			if(resultsOptions.isSectionSummary()) {
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[1], true);
 			}
-			if(resultsOptions.isQuestions()) {
+			if(resultsOptions.isQuestionSummary()) {
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[2], true);
 			}
-			if(resultsOptions.isUserSolutions()) {
+			if(resultsOptions.isQuestions()) {
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[3], true);
 			}
-			if(resultsOptions.isCorrectSolutions()) {
+			if(resultsOptions.isUserSolutions()) {
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[4], true);
+			}
+			if(resultsOptions.isCorrectSolutions()) {
+				assessmentResultsOnFinishEl.select(resultsOptionsKeys[5], true);
 			}
 		} else {
 			showResultsOnFinishEl.uncheckAll();

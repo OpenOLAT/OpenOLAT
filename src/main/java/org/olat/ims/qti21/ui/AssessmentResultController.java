@@ -59,6 +59,7 @@ import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.w3c.dom.Document;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
@@ -84,6 +85,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode.TestNodeType;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
+import uk.ac.ed.ph.jqtiplus.state.marshalling.ItemSessionStateXmlMarshaller;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BooleanValue;
 import uk.ac.ed.ph.jqtiplus.value.NumberValue;
@@ -235,7 +237,7 @@ public class AssessmentResultController extends FormBasicController {
 		AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 		QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
 		
-		Results r = new Results(false, node.getSectionPartTitle(), type.getCssClass(), options.isQuestions());
+		Results r = new Results(false, node.getSectionPartTitle(), type.getCssClass(), options.isQuestionSummary());
 		r.setSessionStatus("");//init
 		
 		ItemSessionState sessionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
@@ -252,45 +254,41 @@ public class AssessmentResultController extends FormBasicController {
 			extractOutcomeVariable(itemResult.getItemVariables(), r);
 		}
 		
-		if(!options.isQuestions() && (options.isUserSolutions() || options.isCorrectSolutions())) {
+		if(options.isQuestions()) {
+			FormItem questionItem = initQuestionItem(layoutCont, sessionState, resolvedAssessmentItem);
+			r.setQuestionItem(questionItem);
+		}
+		
+		if(options.isUserSolutions() || options.isCorrectSolutions()) {
 			List<InteractionResults> interactionResults = initFormItemInteractions(layoutCont, sessionState, assessmentItem, resolvedAssessmentItem);
 			r.getInteractionResults().addAll(interactionResults);
-		} else if(options.isQuestions() && (options.isUserSolutions() || options.isCorrectSolutions())) {
-			List<InteractionResults> interactionResults = initFormItemItemBody(layoutCont, sessionState, resolvedAssessmentItem);
-			r.getInteractionResults().addAll(interactionResults);
-		}
+		} 
 		
 		return r;
 	}
 	
-	private List<InteractionResults> initFormItemItemBody(FormLayoutContainer layoutCont, ItemSessionState sessionState,
+	private FormItem initQuestionItem(FormLayoutContainer layoutCont, ItemSessionState sessionState,
 			ResolvedAssessmentItem resolvedAssessmentItem) {
 		
 		FormItem responseFormItem = null;
-		if(options.isUserSolutions()) {
+		if(options.isQuestions()) {
 			String responseId = "responseBody" + count++;
 			ItemBodyResultFormItem formItem = new ItemBodyResultFormItem(responseId, resolvedAssessmentItem);
-			initInteractionResultFormItem(formItem, sessionState);
+			
+			Document clonedState = ItemSessionStateXmlMarshaller.marshal(sessionState);
+			ItemSessionState clonedSessionState = ItemSessionStateXmlMarshaller.unmarshal(clonedState.getDocumentElement());
+			clonedSessionState.resetResponses();
+			formItem.setItemSessionState(clonedSessionState);
+			formItem.setCandidateSessionContext(candidateSessionContext);
+			formItem.setResolvedAssessmentTest(resolvedAssessmentTest);
+			formItem.setResourceLocator(inputResourceLocator);
+			formItem.setAssessmentObjectUri(assessmentObjectUri);
+			formItem.setMapperUri(mapperUri);
 			layoutCont.add(responseId, formItem);
 			responseFormItem = formItem;
 		}
-
-		//solution
-		FormItem solutionFormItem = null;
-		if(options.isCorrectSolutions()) {
-			String solutionId = "solutionBody" + count++;
-			ItemBodyResultFormItem formItem = new ItemBodyResultFormItem(solutionId, resolvedAssessmentItem);
-			formItem.setShowSolution(true);
-			initInteractionResultFormItem(formItem, sessionState);
-			layoutCont.add(solutionId, formItem);
-			solutionFormItem = formItem;
-		}
-
-		List<InteractionResults> interactionResults = new ArrayList<>();
-		interactionResults.add(new InteractionResults(responseFormItem, solutionFormItem));
-		return interactionResults;
+		return responseFormItem;
 	}
-	
 
 	private List<InteractionResults> initFormItemInteractions(FormLayoutContainer layoutCont, ItemSessionState sessionState,
 			AssessmentItem assessmentItem, ResolvedAssessmentItem resolvedAssessmentItem) {
@@ -329,15 +327,6 @@ public class AssessmentResultController extends FormBasicController {
 			interactionResults.add(new InteractionResults(responseFormItem, solutionFormItem));
 		}
 		return interactionResults;
-	}
-	
-	private void initInteractionResultFormItem(ItemBodyResultFormItem formItem, ItemSessionState sectionState) {
-		formItem.setItemSessionState(sectionState);
-		formItem.setCandidateSessionContext(candidateSessionContext);
-		formItem.setResolvedAssessmentTest(resolvedAssessmentTest);
-		formItem.setResourceLocator(inputResourceLocator);
-		formItem.setAssessmentObjectUri(assessmentObjectUri);
-		formItem.setMapperUri(mapperUri);
 	}
 	
 	private void initInteractionResultFormItem(InteractionResultFormItem formItem, ItemSessionState sectionState) {
@@ -437,31 +426,30 @@ public class AssessmentResultController extends FormBasicController {
 		
 		private String score;
 		private String maxScore;
-		
 		private Boolean pass;
 		
-		private final boolean section;
 		private final String title;
 		private final String cssClass;
+		private final boolean section;
 		private final boolean metadataVisible;
 		
 		private String sessionStatus;
 		
-		
+		private FormItem questionItem;
 		private final List<InteractionResults> interactionResults = new ArrayList<>();
 		
-		public Results(boolean section, String cssClass, boolean visible) {
+		public Results(boolean section, String cssClass, boolean metadataVisible) {
 			this.section = section;
 			this.cssClass = cssClass;
-			this.metadataVisible = visible;
+			this.metadataVisible = metadataVisible;
 			this.title = null;
 		}
 		
-		public Results(boolean section, String title, String cssClass, boolean visible) {
+		public Results(boolean section, String title, String cssClass, boolean metadataVisible) {
 			this.section = section;
 			this.title = title;
 			this.cssClass = cssClass;
-			this.metadataVisible = visible;
+			this.metadataVisible = metadataVisible;
 		}
 		
 		public void setSessionState(ControlObjectSessionState sessionState) {
@@ -550,6 +538,14 @@ public class AssessmentResultController extends FormBasicController {
 
 		public void setSessionStatus(String sessionStatus) {
 			this.sessionStatus = sessionStatus;
+		}
+
+		public FormItem getQuestionItem() {
+			return questionItem;
+		}
+
+		public void setQuestionItem(FormItem questionItem) {
+			this.questionItem = questionItem;
 		}
 
 		public List<InteractionResults> getInteractionResults() {

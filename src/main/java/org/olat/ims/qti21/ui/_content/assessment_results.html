@@ -80,7 +80,7 @@
 #end
 
 #foreach($itemResult in $itemResults)
-	#if($itemResult.metadataVisible || ${itemResult.hasInteractions()})
+	#if($itemResult.metadataVisible || $r.isNotNull($itemResult.questionItem) || ${itemResult.hasInteractions()})
 	<div class="panel panel-default o_personal">
 	  	<div class="panel-heading">
 	 		<h5 class="panel-title"><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)</h5>
@@ -136,6 +136,13 @@
 		#end
 	</div>
 	#end
+	
+	#if($r.isNotNull($itemResult.questionItem)) 
+		<div class="o_block_bottom"><h5>$r.translate("question")</h5>
+			$r.render($itemResult.questionItem.name)
+		</div>
+	#end
+	
 	#foreach($itemInteraction in $itemResult.interactionResults)
 		#if($r.isNotNull($itemInteraction.responseFormItem.name) || $r.isNotNull($itemInteraction.solutionFormItem.name))
 		<div class="row #if(!$foreach.hasNext ) o_block_bottom #end">

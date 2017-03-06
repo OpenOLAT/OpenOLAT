@@ -56,6 +56,10 @@ public class QTI21OptionsPage {
 			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='sections']");
 			browser.findElement(levelBy).click();
 		}
+		if(options.isQuestionSummary()) {
+			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='questionSummary']");
+			browser.findElement(levelBy).click();
+		}
 		if(options.isQuestions()) {
 			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='questions']");
 			browser.findElement(levelBy).click();

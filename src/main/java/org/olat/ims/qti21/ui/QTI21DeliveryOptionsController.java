@@ -56,7 +56,11 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
 	private static final String[] settingTypeKeys = new String[]{ TestType.summative.name(), TestType.formative.name() };
-	private static final String[] resultsOptionsKeys = new String[] { "metadata", "sections", "questions", "responses", "solutions" };
+	private static final String[] resultsOptionsKeys = new String[] { 
+			QTI21AssessmentResultsOptions.METADATA, QTI21AssessmentResultsOptions.SECTION_SUMMARY,
+			QTI21AssessmentResultsOptions.QUESTION_SUMMARY, QTI21AssessmentResultsOptions.QUESTIONS,
+			QTI21AssessmentResultsOptions.USER_SOLUTIONS, QTI21AssessmentResultsOptions.CORRECT_SOLUTIONS
+		};
 
 	private SingleSelection settingTypeEl;
 	private MultipleSelectionElement showTitlesEl, showMenuEl;
@@ -147,7 +151,8 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		showResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results");
 		
 		String[] resultsOptionsValues = new String[] {
-				translate("qti.form.summary.metadata"), translate("qti.form.summary.sections"), translate("qti.form.summary.questions"),
+				translate("qti.form.summary.metadata"), translate("qti.form.summary.sections"),
+				translate("qti.form.summary.questions.metadata"), translate("qti.form.summary.questions"),
 				translate("qti.form.summary.responses"), translate("qti.form.summary.solutions")
 		};
 		assessmentResultsOnFinishEl = uifactory.addCheckboxesVertical("typeResultOnFiniish", "qti.form.summary", formLayout,
@@ -194,14 +199,17 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 			if(resultsOptions.isSectionSummary()) {
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[1], true);
 			}
-			if(resultsOptions.isQuestions()) {
+			if(resultsOptions.isQuestionSummary()) {
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[2], true);
 			}
-			if(resultsOptions.isUserSolutions()) {
+			if(resultsOptions.isQuestions()) {
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[3], true);
 			}
-			if(resultsOptions.isCorrectSolutions()) {
+			if(resultsOptions.isUserSolutions()) {
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[4], true);
+			}
+			if(resultsOptions.isCorrectSolutions()) {
+				assessmentResultsOnFinishEl.select(resultsOptionsKeys[5], true);
 			}
 		} else {
 			showResultsOnFinishEl.uncheckAll();
@@ -308,9 +316,10 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		deliveryOptions.setHideLms(hideLmsEl.isAtLeastSelected(1));
 		
 		if(showResultsOnFinishEl.isAtLeastSelected(1)) {
-			QTI21AssessmentResultsOptions resultsOptions = new QTI21AssessmentResultsOptions(assessmentResultsOnFinishEl.isSelected(0),
-					assessmentResultsOnFinishEl.isSelected(1), assessmentResultsOnFinishEl.isSelected(2),
-					assessmentResultsOnFinishEl.isSelected(3), assessmentResultsOnFinishEl.isSelected(4));
+			QTI21AssessmentResultsOptions resultsOptions = new QTI21AssessmentResultsOptions(
+					assessmentResultsOnFinishEl.isSelected(0), assessmentResultsOnFinishEl.isSelected(1),
+					assessmentResultsOnFinishEl.isSelected(2), assessmentResultsOnFinishEl.isSelected(3),
+					assessmentResultsOnFinishEl.isSelected(4), assessmentResultsOnFinishEl.isSelected(5));
 			deliveryOptions.setAssessmentResultsOptions(resultsOptions);
 		} else {
 			deliveryOptions.setAssessmentResultsOptions(QTI21AssessmentResultsOptions.noOptions());

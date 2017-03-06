@@ -616,6 +616,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	        		}
 	    		}
 	    		myContent.contextPut("blockAfterSuccess", blocked);
+	    		myContent.contextPut("resultsVisible", assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue());
 	    		myContent.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 	    		myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 	    		myContent.contextPut("passed", assessmentEntry.getPassed());
@@ -636,17 +637,19 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * @param ureq
 	 */
 	private void exposeUserSelfTestDataToVC(UserRequest ureq) {
-    // config : show score info
+		if (!(courseNode instanceof SelfAssessableCourseNode)) {
+			throw new AssertException("exposeUserSelfTestDataToVC can only be called for selftest nodes, not for test or questionnaire");
+		}
+		
+		// config : show score info
 		Object enableScoreInfoObject = modConfig.get(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
 		if (enableScoreInfoObject != null) {
 			myContent.contextPut("enableScoreInfo", enableScoreInfoObject );	
 		} else {
 			myContent.contextPut("enableScoreInfo", Boolean.TRUE );
 		}
-      
-    if ( !(courseNode instanceof SelfAssessableCourseNode))
-    	throw new AssertException("exposeUserSelfTestDataToVC can only be called for selftest nodes, not for test or questionnaire");
-    SelfAssessableCourseNode acn = (SelfAssessableCourseNode)courseNode; 
+
+		SelfAssessableCourseNode acn = (SelfAssessableCourseNode)courseNode; 
 		ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
 		if (scoreEval != null) {
 			myContent.contextPut("hasResults", Boolean.TRUE);
