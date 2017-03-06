@@ -158,15 +158,15 @@ public class HighScoreRunController extends FormBasicController{
 		} else {
 			assessEntries =	assessmentManager.getAssessmentEntries(courseNode);
 		}
+		// do not take coach or admin results into account
+		if (assessEntries != null && adminORcoach) {
+			assessEntries.remove(ownEntry);
+		}		
 		// display only if has content
 		if (assessEntries == null || assessEntries.isEmpty()) {
 			viewHighscore = false;
 			return;		
 		}
-		// do not take coach or admin results into account
-		if (adminORcoach) {
-			assessEntries.remove(ownEntry);
-		}		
 		
 		viewTable = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_LISTING);
 		viewHistogram = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HISTOGRAM);
