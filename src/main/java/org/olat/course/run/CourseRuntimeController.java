@@ -779,9 +779,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		// add course search to toolbox 
-		if (!assessmentLock && cc.isCourseSearchEnabled() && !isGuestOnly) {
+		boolean isSearchEnabled = !assessmentLock && !isGuestOnly;
+		if (isSearchEnabled) {
 			searchLink = LinkFactory.createToolLink("coursesearch", translate("command.coursesearch"), this, "o_icon_search");
-			searchLink.setVisible(imModule.isCourseEnabled() && cc.isChatEnabled());
+			searchLink.setVisible(cc.isCourseSearchEnabled());
 			toolbarPanel.addTool(searchLink);
 		}
 		
@@ -1700,6 +1701,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
 					calendarLink.setVisible(cc.isCalendarEnabled() && calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
+			case search: {
+				if(searchLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					searchLink.setVisible(cc.isCourseSearchEnabled());
 					toolbarPanel.setDirty(true);
 				}
 				break;

@@ -94,7 +94,7 @@ public class CourseOptionsController extends FormBasicController {
 	private FormLink addGlossaryCommand, removeGlossaryCommand;
 	private StaticTextElement glossaryNameEl;
 	private FormLink saveButton;
-	private FormLayoutContainer saveCont, calendarCont, chatCont, glossaryCont, sharedFolderCont;
+	private FormLayoutContainer saveCont, calendarCont, searchCont, chatCont, glossaryCont, sharedFolderCont;
 	
 	private FormLink addFolderCommand, removeFolderCommand;
 	private StaticTextElement folderNameEl;
@@ -211,9 +211,20 @@ public class CourseOptionsController extends FormBasicController {
 			}
 		}		
 		//searchbar
-		searchEl = uifactory.addCheckboxesHorizontal("searchIsOn", "chkbx.search.onoff", menuCont, onKeys, onValues);
-		searchEl.select(onKeys[0], courseConfig.isCourseSearchEnabled());
+		searchCont = FormLayoutContainer.createDefaultFormLayout("search", getTranslator());
+		searchCont.setRootForm(mainForm);
+		formLayout.add(searchCont);
+		
+		boolean searchEnabled = courseConfig.isCourseSearchEnabled();
+		boolean managedSearch = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.search);
+		searchEl = uifactory.addCheckboxesHorizontal("searchIsOn", "chkbx.search.onoff", searchCont, onKeys, onValues);
 		searchEl.addActionListener(FormEvent.ONCHANGE);
+		searchEl.select(onKeys[0], searchEnabled);
+		searchEl.setEnabled(editable && !managedSearch);
+		
+		if(managedSearch && searchEnabled) {
+			canHideToolbar &= false;
+		}
 		
 		//chat
 		chatCont = FormLayoutContainer.createDefaultFormLayout("chat", getTranslator());
@@ -383,6 +394,7 @@ public class CourseOptionsController extends FormBasicController {
 			calendarCont.setVisible(enabled);
 		}
 		chatCont.setVisible(enabled);
+		searchCont.setVisible(enabled);
 		glossaryCont.setVisible(enabled);
 	}
 
@@ -457,12 +469,13 @@ public class CourseOptionsController extends FormBasicController {
 		boolean toolbarEnabled = toolbarEl.isSelected(0);
 		courseConfig.setToolbarEnabled(toolbarEnabled);
 		
+		boolean enableSearch = searchEl.isSelected(0);
+		boolean updateSearch = courseConfig.isCourseSearchEnabled() != enableSearch;
+		courseConfig.setCourseSearchEnabled(enableSearch && toolbarEnabled);
+		
 		boolean enableChat = chatEl.isSelected(0);
 		boolean updateChat = courseConfig.isChatEnabled() != enableChat;
 		courseConfig.setChatIsEnabled(enableChat && toolbarEnabled);
-		
-		boolean enableSearch = searchEl.isSelected(0);
-		courseConfig.setCourseSearchEnabled(enableSearch && toolbarEnabled);
 		
 		boolean enableCalendar = calendarEl == null ? false : calendarEl.isSelected(0);
 		boolean updateCalendar = courseConfig.isCalendarEnabled() != enableCalendar && calendarModule.isEnableCourseToolCalendar();
@@ -494,6 +507,16 @@ public class CourseOptionsController extends FormBasicController {
 
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
+		
+		if(updateSearch) {
+			ILoggingAction loggingAction =  enableSearch ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_COURSESEARCH_ENABLED :
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_COURSESEARCH_DISABLED;
+	  		ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+	  		
+	        CoordinatorManager.getInstance().getCoordinator().getEventBus()
+        		.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.search, course.getResourceableId()), course);
+		}
 
 		if(updateChat) {
 			ILoggingAction loggingAction =  enableChat ?

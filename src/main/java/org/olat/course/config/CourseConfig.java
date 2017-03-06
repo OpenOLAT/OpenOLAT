@@ -271,7 +271,7 @@ public class CourseConfig implements Serializable, Cloneable {
 			}
 			
 			if (version == 11) {
-				if (!configuration.containsKey(COURSESEARCH_ENABLED)) configuration.put(COURSESEARCH_ENABLED, Boolean.TRUE);
+				if (!configuration.containsKey(COURSESEARCH_ENABLED)) configuration.put(COURSESEARCH_ENABLED, Boolean.FALSE);
 				this.version = 12;
 			}
 			

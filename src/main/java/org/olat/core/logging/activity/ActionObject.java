@@ -82,6 +82,7 @@ public enum ActionObject {
 	resource,
 	rights,
 	rightsempty,
+	search,
 	sharedfolder,
 	spgetfile,
 	statistic,
