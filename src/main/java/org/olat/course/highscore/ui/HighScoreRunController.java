@@ -50,6 +50,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.highscore.manager.HighScoreManager;
 import org.olat.course.highscore.model.HighScoreRankingResults;
 import org.olat.course.nodes.CourseNode;
@@ -116,7 +117,8 @@ public class HighScoreRunController extends FormBasicController{
 			CourseNode courseNode) {
 		
 		ownIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		AssessmentEntry ownEntry = userCourseEnv.getCourseEnvironment().getAssessmentManager().getAssessmentEntry(courseNode, ownIdentity);
+		AssessmentManager assessmentManager = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		AssessmentEntry ownEntry = assessmentManager.getAssessmentEntry(courseNode, ownIdentity);
 		boolean adminORcoach = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 
 		// guests will never see the highscore
@@ -133,16 +135,18 @@ public class HighScoreRunController extends FormBasicController{
 		
 		List<AssessmentEntry>  assessEntries;
 		if ("iqtest".equals(courseNode.getType())) {
-			assessEntries =	userCourseEnv.getCourseEnvironment().getAssessmentManager()
-					.getAssessmentEntriesWithStatus(courseNode, AssessmentEntryStatus.done);
+			assessEntries =	assessmentManager.getAssessmentEntriesWithStatus(courseNode, AssessmentEntryStatus.done);
 		} else {
-			assessEntries =	userCourseEnv.getCourseEnvironment().getAssessmentManager()
-					.getAssessmentEntries(courseNode);
+			assessEntries =	assessmentManager.getAssessmentEntries(courseNode);
 		}
 		// display only if has content
-		if (assessEntries.isEmpty()) {
+		if (assessEntries == null || assessEntries.isEmpty()) {
 			viewHighscore = false;
 			return;		
+		}
+		// do not take coach or admin results into account
+		if (adminORcoach) {
+			assessEntries.remove(ownEntry);
 		}
 		
 		//initialize ModuleConfiguration
