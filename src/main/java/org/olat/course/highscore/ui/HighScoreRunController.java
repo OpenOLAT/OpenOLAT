@@ -115,18 +115,37 @@ public class HighScoreRunController extends FormBasicController{
 	
 	private void setupContent(UserRequest ureq, UserCourseEnvironment userCourseEnv,
 			CourseNode courseNode) {
+		//initialize ModuleConfiguration
+		ModuleConfiguration config = courseNode.getModuleConfiguration();		
 		
-		ownIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		AssessmentManager assessmentManager = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		AssessmentEntry ownEntry = assessmentManager.getAssessmentEntry(courseNode, ownIdentity);
-		boolean adminORcoach = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
-
+		viewHighscore = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HIGHSCORE);
+		// do not build form if high-score is not set
+		if (!viewHighscore){
+			return;			
+		}
+		Date start = config.getBooleanEntry(HighScoreEditController.CONFIG_KEY_DATESTART) != null ? 
+				(Date) config.get(HighScoreEditController.CONFIG_KEY_DATESTART) : null;
+		// display only if start time has been met		
+		if (start != null && start.after(new Date())){
+			viewHighscore = false;
+			return;		
+		}
 		// guests will never see the highscore
 		if (ureq.getUserSession().getRoles().isGuestOnly()){
 			viewHighscore = false;
 			return;			
+		}		
+		
+		ownIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
+		AssessmentManager assessmentManager = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		AssessmentEntry ownEntry = assessmentManager.getAssessmentEntry(courseNode, ownIdentity);
+		
+		if (ownEntry != null && ownEntry.getUserVisibility() != null &&	!ownEntry.getUserVisibility().booleanValue()) {
+			viewHighscore = false;
+			return;
 		}
 		
+		boolean adminORcoach = userCourseEnv.isAdmin() || userCourseEnv.isCoach();		
 		// coaches or admin may see highscore, user only if already scored
 		if (!adminORcoach && (ownEntry == null || (ownEntry != null && ownEntry.getScore() == null))) {
 			viewHighscore = false;
@@ -147,23 +166,7 @@ public class HighScoreRunController extends FormBasicController{
 		// do not take coach or admin results into account
 		if (adminORcoach) {
 			assessEntries.remove(ownEntry);
-		}
-		
-		//initialize ModuleConfiguration
-		ModuleConfiguration config = courseNode.getModuleConfiguration();		
-
-		viewHighscore = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HIGHSCORE);
-		// do not build form if high-score is not set
-		if (!viewHighscore){
-			return;			
-		}
-		Date start = config.getBooleanEntry(HighScoreEditController.CONFIG_KEY_DATESTART) != null ? 
-				(Date) config.get(HighScoreEditController.CONFIG_KEY_DATESTART) : null;
-		// display only if start time has been met		
-		if (start != null && start.after(new Date())){
-			viewHighscore = false;
-			return;		
-		}
+		}		
 		
 		viewTable = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_LISTING);
 		viewHistogram = config.getBooleanSafe(HighScoreEditController.CONFIG_KEY_HISTOGRAM);

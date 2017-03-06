@@ -296,7 +296,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	}
 	
 	private void updateAssessmentInfos(Date returnDate) {
-		if(returnDate != null) {
+		if(returnDate != null || copyBinder != null) {
 			String rDate = formatter.formatDateAndTime(returnDate);
 			uifactory.addStaticTextElement("map.returnDate", rDate, infosContainer);
 
