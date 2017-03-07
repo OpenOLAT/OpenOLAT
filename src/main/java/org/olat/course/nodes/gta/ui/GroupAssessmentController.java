@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -78,7 +79,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class GroupAssessmentController extends FormBasicController {
-	
+
+	private static final String[] userVisibilityKeys = new String[]{ "visible", "hidden" };
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] onValues = new String[] { "" };
 	
@@ -86,6 +88,7 @@ public class GroupAssessmentController extends FormBasicController {
 	private GroupAssessmentModel model;
 	private FormLink saveAndDoneButton;
 	private TextElement groupScoreEl, groupCommentEl;
+	private SingleSelection userVisibilityEl;
 	private MultipleSelectionElement groupPassedEl, applyToAllEl;
 	
 	private EditCommentController editCommentCtrl;
@@ -169,6 +172,11 @@ public class GroupAssessmentController extends FormBasicController {
 			groupCommentEl.setElementCssClass("o_sel_course_gta_group_comment");
 		}
 		
+		if(withPassed || withScore || withComment) {
+			String[] userVisibilityValues = new String[]{ translate("user.visibility.visible"), translate("user.visibility.hidden") };
+			userVisibilityEl = uifactory.addRadiosHorizontal("user.visibility", "user.visibility", groupGradingCont, userVisibilityKeys, userVisibilityValues);
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.username.i18nKey(), Cols.username.ordinal()));
@@ -247,6 +255,15 @@ public class GroupAssessmentController extends FormBasicController {
 					groupCommentEl.setValue(comment);
 				}
 			}
+			
+			if(userVisibilityEl != null) {
+				userVisibilityEl.setVisible(true);
+				if(modelInfos.getUserVisible() == null || modelInfos.getUserVisible().booleanValue()) {
+					userVisibilityEl.select(userVisibilityKeys[0], true);
+				} else {
+					userVisibilityEl.select(userVisibilityKeys[1], true);
+				}
+			}
 		} else {
 			applyToAllEl.select(onKeys[0], false);
 			table.setVisible(true);
@@ -291,6 +308,7 @@ public class GroupAssessmentController extends FormBasicController {
 		Float scoreRef = null;
 		Boolean passedRef = null;
 		String commentRef = null;
+		Boolean userVisibleRef = null;
 		
 		List<AssessmentRow> rows = new ArrayList<>(identities.size());
 		for(Identity identity:identities) {
@@ -363,13 +381,26 @@ public class GroupAssessmentController extends FormBasicController {
 				}
 			}
 			
+			if(withScore || withPassed || withPassed) {
+				Boolean userVisible = scoreEval.getUserVisible();
+				if(userVisible == null) {
+					userVisible = Boolean.TRUE;
+				}
+				
+				if(count == 0) {
+					userVisibleRef = userVisible;
+				} else if(!same(userVisibleRef, userVisible)) {
+					same = false;
+				}
+			}
+			
 			count++;
 		}
 		
 		model.setObjects(rows);
 		table.reset();
 		
-		return new ModelInfos(same, scoreRef, passedRef, commentRef, duplicateWarning.toString());
+		return new ModelInfos(same, scoreRef, passedRef, commentRef, userVisibleRef, duplicateWarning.toString());
 	}
 	
 	private boolean same(Object reference, Object value) {
@@ -484,81 +515,91 @@ public class GroupAssessmentController extends FormBasicController {
 	
 	private void applyChanges(boolean setAsDone) {
 		List<AssessmentRow> rows = model.getObjects();
-		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+		boolean userVisible = userVisibilityEl.isOneSelected() && userVisibilityEl.isSelected(0);
 		if(applyToAllEl.isAtLeastSelected(1)) {
-			Float score = null;
+			applyChangesForTheWholeGroup(rows, setAsDone, userVisible);
+		} else {
+			applyChangesForEvenryMemberGroup(rows, setAsDone, userVisible);
+		}
+	}
+	
+	private void applyChangesForEvenryMemberGroup(List<AssessmentRow> rows, boolean setAsDone, boolean userVisible) {
+		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+		
+		for(AssessmentRow row:rows) {
+			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 			
+			Float score = null;
 			if(withScore) {
-				String scoreValue = groupScoreEl.getValue();
-				if(StringHelper.containsNonWhitespace(scoreValue)) {
-					score = Float.parseFloat(scoreValue);
+				String value = row.getScoreEl().getValue();
+				if(StringHelper.containsNonWhitespace(value)) {
+					score = Float.parseFloat(value);
 				}
 			}
 			
 			Boolean passed = null;
 			if(withPassed) {
 				if(cutValue == null) {
-					passed = groupPassedEl.isSelected(0);
+					passed = row.getPassedEl().isSelected(0);
 				} else if(score != null) {
 					passed = (score.floatValue() >= cutValue.floatValue()) ? Boolean.TRUE	: Boolean.FALSE;
 				}
 			}
 			
-			for(AssessmentRow row:rows) {
-				UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
-				ScoreEvaluation newScoreEval;
-				if(setAsDone) {
-					newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, true, true, null);
-				} else {
-					newScoreEval = new ScoreEvaluation(score, passed);
-				}
-				gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false);
+			ScoreEvaluation newScoreEval;
+			if(setAsDone) {
+				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, true, null);
+			} else {
+				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null);
 			}
-
-			if(withComment) {
-				String comment = groupCommentEl.getValue();
-				if(StringHelper.containsNonWhitespace(comment)) {
-					for(AssessmentRow row:rows) {
-						UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
-						gtaNode.updateUserUserComment(comment, userCourseEnv, getIdentity());
-					}
-				}
-			}
+			gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false);
 			
-		} else {
-			for(AssessmentRow row:rows) {
-				UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
-				
-				Float score = null;
-				if(withScore) {
-					String value = row.getScoreEl().getValue();
-					if(StringHelper.containsNonWhitespace(value)) {
-						score = Float.parseFloat(value);
-					}
+			if(withComment) {
+				String comment = row.getComment();
+				if(StringHelper.containsNonWhitespace(comment)) {
+					gtaNode.updateUserUserComment(comment, userCourseEnv, getIdentity());
 				}
-				
-				Boolean passed = null;
-				if(withPassed) {
-					if(cutValue == null) {
-						passed = row.getPassedEl().isSelected(0);
-					} else if(score != null) {
-						passed = (score.floatValue() >= cutValue.floatValue()) ? Boolean.TRUE	: Boolean.FALSE;
-					}
-				}
-				
-				ScoreEvaluation newScoreEval;
-				if(setAsDone) {
-					newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, true, true, null);
-				} else {
-					newScoreEval = new ScoreEvaluation(score, passed);
-				}
-				gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false);
-				
-				if(withComment) {
-					String comment = row.getComment();
-					if(StringHelper.containsNonWhitespace(comment)) {
-						gtaNode.updateUserUserComment(comment, userCourseEnv, getIdentity());
-					}
+			}
+		}
+	}
+	
+	private void applyChangesForTheWholeGroup(List<AssessmentRow> rows, boolean setAsDone, boolean userVisible) {
+		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+		
+		Float score = null;
+		if(withScore) {
+			String scoreValue = groupScoreEl.getValue();
+			if(StringHelper.containsNonWhitespace(scoreValue)) {
+				score = Float.parseFloat(scoreValue);
+			}
+		}
+		
+		Boolean passed = null;
+		if(withPassed) {
+			if(cutValue == null) {
+				passed = groupPassedEl.isSelected(0);
+			} else if(score != null) {
+				passed = (score.floatValue() >= cutValue.floatValue()) ? Boolean.TRUE	: Boolean.FALSE;
+			}
+		}
+		
+		for(AssessmentRow row:rows) {
+			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
+			ScoreEvaluation newScoreEval;
+			if(setAsDone) {
+				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, true, null);
+			} else {
+				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null);
+			}
+			gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false);
+		}
+
+		if(withComment) {
+			String comment = groupCommentEl.getValue();
+			if(StringHelper.containsNonWhitespace(comment)) {
+				for(AssessmentRow row:rows) {
+					UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
+					gtaNode.updateUserUserComment(comment, userCourseEnv, getIdentity());
 				}
 			}
 		}
@@ -589,12 +630,14 @@ public class GroupAssessmentController extends FormBasicController {
 		private final Float score;
 		private final Boolean passed;
 		private final String comment;
+		private final Boolean userVisible;
 		
-		public ModelInfos(boolean same, Float score, Boolean passed, String comment, String duplicates) {
+		public ModelInfos(boolean same, Float score, Boolean passed, String comment, Boolean userVisible, String duplicates) {
 			this.same = same;
 			this.score = score;
 			this.passed = passed;
 			this.comment = comment;
+			this.userVisible = userVisible;
 			this.duplicates = duplicates;
 		}
 
@@ -612,6 +655,10 @@ public class GroupAssessmentController extends FormBasicController {
 		
 		public String getComment() {
 			return comment;
+		}
+
+		public Boolean getUserVisible() {
+			return userVisible;
 		}
 
 		public String getDuplicates() {

@@ -249,13 +249,16 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("blockAfterSuccess", blocked);
 				
 				Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-				mainVC.contextPut("resultsVisible", assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue());
+				boolean resultsVisible = assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue();
+				mainVC.contextPut("resultsVisible", resultsVisible);
 				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 				mainVC.contextPut("hasPassedValue", (passed == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", passed);
-				StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserUserComment(userCourseEnv));
-				if (comment != null && comment.length() > 0) {
-					mainVC.contextPut("comment", StringHelper.xssScan(comment));					
+				if(resultsVisible) {
+					StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserUserComment(userCourseEnv));
+					if (comment != null && comment.length() > 0) {
+						mainVC.contextPut("comment", StringHelper.xssScan(comment));					
+					}
 				}
 				Integer attempts = assessmentEntry.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);

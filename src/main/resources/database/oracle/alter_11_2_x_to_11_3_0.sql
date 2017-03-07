@@ -39,4 +39,4 @@ alter table o_qti_assessmentitem_session modify q_testpartidentifier varchar2(25
 alter table o_qti_assessmenttest_session modify q_subident varchar2(255 char);
 
 
-alter table o_as_entry add a_user_visibility number default 0;
+alter table o_as_entry add a_user_visibility number default 1;

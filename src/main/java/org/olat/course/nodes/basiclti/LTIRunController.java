@@ -347,8 +347,8 @@ public class LTIRunController extends BasicController {
 			}
 			startPage.contextPut("score", eval.getScore());
 			startPage.contextPut("hasScore", Boolean.TRUE);
-			startPage.contextPut("resultsVisible", eval.getUserVisible() == null || eval.getUserVisible().booleanValue());
-			
+			boolean resultsVisible = eval.getUserVisible() == null || eval.getUserVisible().booleanValue();
+			startPage.contextPut("resultsVisible", resultsVisible);
 			mainPanel.setContent(startPage);
 		} else if(display == LTIDisplayOptions.window) {
 			mainPanel.setContent(startPage);

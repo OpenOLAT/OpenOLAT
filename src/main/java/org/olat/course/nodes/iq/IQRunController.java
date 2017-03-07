@@ -616,12 +616,15 @@ public class IQRunController extends BasicController implements GenericEventList
 	        		}
 	    		}
 	    		myContent.contextPut("blockAfterSuccess", blocked);
-	    		myContent.contextPut("resultsVisible", assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue());
+	    		boolean resultsVisible = assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue();
+	    		myContent.contextPut("resultsVisible", resultsVisible);
 	    		myContent.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 	    		myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 	    		myContent.contextPut("passed", assessmentEntry.getPassed());
-	    		StringBuilder comment = Formatter.stripTabsAndReturns(assessmentEntry.getComment());
-	    		myContent.contextPut("comment", StringHelper.xssScan(comment));
+	    		if(resultsVisible) {
+	    			StringBuilder comment = Formatter.stripTabsAndReturns(assessmentEntry.getComment());
+	    			myContent.contextPut("comment", StringHelper.xssScan(comment));
+	    		}
 	    		myContent.contextPut("attempts", assessmentEntry.getAttempts() == null ? 0 : assessmentEntry.getAttempts());
     		}
     	}
@@ -653,6 +656,7 @@ public class IQRunController extends BasicController implements GenericEventList
 		ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
 		if (scoreEval != null) {
 			myContent.contextPut("hasResults", Boolean.TRUE);
+			myContent.contextPut("resultsVisible", Boolean.TRUE);
 			myContent.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
 			myContent.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			myContent.contextPut("passed", scoreEval.getPassed());

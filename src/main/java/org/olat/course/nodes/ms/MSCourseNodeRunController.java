@@ -182,8 +182,10 @@ public class MSCourseNodeRunController extends BasicController {
 			myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			myContent.contextPut("passed", assessmentEntry.getPassed());
 			
-			StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
-			myContent.contextPut("comment", StringHelper.xssScan(comment));
+			if(resultsVisible) {
+				StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
+				myContent.contextPut("comment", StringHelper.xssScan(comment));
+			}
 		}
 
 		if(showLog) {

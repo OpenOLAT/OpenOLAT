@@ -305,7 +305,8 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			scoreAccounting.evaluateAll();			
 			ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
 
-			assessmentInfosContainer.contextPut("resultsVisible", scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue());
+			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
+			assessmentInfosContainer.contextPut("resultsVisible", resultsVisible);
 			//score
 			assessmentInfosContainer.contextPut("hasScoreField", new Boolean(courseNode.hasScoreConfigured()));
 			if(courseNode.hasScoreConfigured()) {
@@ -328,11 +329,13 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			}
 
 			// get comment
-			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-			String comment = am.getNodeComment(courseNode, getIdentity());
-			assessmentInfosContainer.contextPut("hasCommentField", new Boolean(comment != null));
-			if (comment != null) {
-				assessmentInfosContainer.contextPut("comment", comment);
+			if(resultsVisible) {
+				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+				String comment = am.getNodeComment(courseNode, getIdentity());
+				assessmentInfosContainer.contextPut("hasCommentField", new Boolean(comment != null));
+				if (comment != null) {
+					assessmentInfosContainer.contextPut("comment", comment);
+				}
 			}
 			assessmentInfosContainer.setVisible(true);
 		} else {

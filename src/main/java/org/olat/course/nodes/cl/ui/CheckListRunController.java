@@ -199,12 +199,15 @@ public class CheckListRunController extends FormBasicController implements Contr
 			layoutCont.contextPut("passed", null);
 			layoutCont.contextPut("comment", null);
 		} else {
-			layoutCont.contextPut("resultsVisible", scoreEval.getUserVisibility() == null || scoreEval.getUserVisibility().booleanValue());
+			boolean resultsVisible = scoreEval.getUserVisibility() == null || scoreEval.getUserVisibility().booleanValue();
+			layoutCont.contextPut("resultsVisible", resultsVisible);
 			layoutCont.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
 			layoutCont.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			layoutCont.contextPut("passed", scoreEval.getPassed());
-			StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
-			layoutCont.contextPut("comment", StringHelper.xssScan(comment));
+			if(resultsVisible) {
+				StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
+				layoutCont.contextPut("comment", StringHelper.xssScan(comment));
+			}
 		}
 
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();

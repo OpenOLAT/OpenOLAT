@@ -277,7 +277,7 @@ public class AssessmentResultController extends FormBasicController {
 			
 			Document clonedState = ItemSessionStateXmlMarshaller.marshal(sessionState);
 			ItemSessionState clonedSessionState = ItemSessionStateXmlMarshaller.unmarshal(clonedState.getDocumentElement());
-			//TODO only to make jenkins works clonedSessionState.resetResponses();
+			clonedSessionState.resetResponses();
 			formItem.setItemSessionState(clonedSessionState);
 			formItem.setCandidateSessionContext(candidateSessionContext);
 			formItem.setResolvedAssessmentTest(resolvedAssessmentTest);
