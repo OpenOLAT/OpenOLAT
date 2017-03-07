@@ -44,7 +44,7 @@ import org.openqa.selenium.WebElement;
 @Location("dmz")
 public class LoginPage {
 	
-	private static final String footerUserDivXPath = "//div[@id='o_footer_user']";
+	private static final String footerUserDivXPath = "//div[@id='o_footer_user']/span[@id='o_username']";
 	private static final String acknowledgeCheckboxXPath = "//input[@name='acknowledge_checkbox']";
 	
 	public static final By loginFormBy = By.cssSelector("div.o_login_form");
@@ -75,7 +75,7 @@ public class LoginPage {
 	}
 
 	public LoginPage assertOnLoginPage() {
-		Assert.assertTrue(browser.findElement(loginFormBy).isDisplayed());
+		OOGraphene.waitElement(loginFormBy, 5, browser);
 		return this;
 	}
 	

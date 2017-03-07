@@ -53,7 +53,7 @@ public class QTI21OptionsPage {
 			browser.findElement(levelBy).click();
 		}
 		if(options.isSectionSummary()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='sections']");
+			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='sectionsSummary']");
 			browser.findElement(levelBy).click();
 		}
 		if(options.isQuestionSummary()) {
@@ -65,11 +65,11 @@ public class QTI21OptionsPage {
 			browser.findElement(levelBy).click();
 		}
 		if(options.isUserSolutions()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='responses']");
+			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='userSolutions']");
 			browser.findElement(levelBy).click();
 		}
 		if(options.isCorrectSolutions()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='solutions']");
+			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='correctSolutions']");
 			browser.findElement(levelBy).click();
 		}
 		return this;

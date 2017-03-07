@@ -75,7 +75,7 @@
 		<version.selenium>2.53.1</version.selenium>
 		<version.drone>2.0.1.Final</version.drone>
 		<activemq.version>5.11.1</activemq.version>
-		<qtiworks.version>1.0-SNAPSHOT</qtiworks.version>
+		<qtiworks.version>1.0.1</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -1153,7 +1153,7 @@
 		<repository>
 			<id>openolat-repo</id>
 			<name>OpenOLAT Public Maven Repository Group</name>
-			<url>http://nexus.openolat.org/nexus/content/groups/public</url>
+			<url>https://nexus.openolat.org/nexus/content/groups/public</url>
 			<layout>default</layout>
 			<releases>
 				<enabled>true</enabled>
@@ -1181,7 +1181,7 @@
 		<pluginRepository>
 			<id>openolat-plugin-repo</id>
 			<name>OpenOLAT Public Maven Repository Group</name>
-			<url>http://nexus.openolat.org/nexus/content/groups/public</url>
+			<url>https://nexus.openolat.org/nexus/content/groups/public</url>
 			<layout>default</layout>
 			<releases>
 				<enabled>true</enabled>

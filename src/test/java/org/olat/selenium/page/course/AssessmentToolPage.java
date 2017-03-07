@@ -146,18 +146,9 @@ public class AssessmentToolPage {
 		browser.findElement(userLinksBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
-		
-		boolean newCertificate = false;
-		for(int i=0; i<50; i++) {
-			By certificateBy = By.cssSelector("ul.o_certificates a>i.o_icon.o_filetype_pdf");
-			List<WebElement> completedEls = browser.findElements(certificateBy);
-			if(completedEls.size() > 0) {
-				newCertificate = true;
-				break;
-			}
-			OOGraphene.waitingALittleLonger();
-		}
-		Assert.assertTrue(newCertificate);
+
+		By certificateBy = By.cssSelector("ul.o_certificates a>i.o_icon.o_filetype_pdf");
+		OOGraphene.waitElement(certificateBy, 15, browser);
 		return this;
 	}
 	

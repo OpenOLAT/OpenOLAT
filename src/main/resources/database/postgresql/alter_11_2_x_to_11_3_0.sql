@@ -23,7 +23,8 @@ create table o_sms_message_log (
    id bigserial not null,
    creationdate timestamp not null,
    lastmodified timestamp not null,
-   s_message_uuid varchar(256) not null,   s_server_response varchar(256),
+   s_message_uuid varchar(256) not null,
+   s_server_response varchar(256),
    s_service_id varchar(32) not null,
    fk_identity int8 not null,
    primary key (id)

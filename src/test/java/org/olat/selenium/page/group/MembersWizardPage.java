@@ -88,6 +88,7 @@ public class MembersWizardPage {
 		
 		//check
 		By checkAllBy = By.cssSelector("div.modal div.o_table_wrapper input[type='checkbox']");
+		OOGraphene.waitElement(checkAllBy, 5, browser);
 		List<WebElement> checkAll = browser.findElements(checkAllBy);
 		Assert.assertFalse(checkAll.isEmpty());
 		for(WebElement check:checkAll) {

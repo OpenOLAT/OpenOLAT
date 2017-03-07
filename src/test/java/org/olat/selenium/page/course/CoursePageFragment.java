@@ -55,7 +55,7 @@ public class CoursePageFragment {
 	public static final By assessmentModeBy = By.className("o_sel_course_assessment_mode");
 	public static final By membersCourseBy = By.className("o_sel_course_members");
 	public static final By treeContainerBy = By.id("o_main_left_content");
-	public static final By efficiencyStatementsBy = By.className(" o_sel_course_options_certificates");
+	public static final By efficiencyStatementsBy = By.className("o_sel_course_options_certificates");
 	
 	private WebDriver browser;
 	
