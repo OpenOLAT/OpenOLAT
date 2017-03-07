@@ -67,25 +67,82 @@ public class OOGraphene {
 	
 	public static void waitBusy(WebDriver browser, int timeoutInSeconds) {
 		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
-		.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
 	}
 	
 	public static void waitElement(By element, WebDriver browser) {
-		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+		Graphene.waitModel(browser)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
 	}
 	
+	/**
+	 * Wait until the element is visible.
+	 * 
+	 * @param element The selector for the element
+	 * @param timeoutInSeconds The timeout in seconds
+	 * @param browser The web driver
+	 */
 	public static void waitElement(By element, int timeoutInSeconds, WebDriver browser) {
 		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
 			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
 	}
 	
+	/**
+	 * Wait until the element is present.
+	 * 
+	 * @param element The selector of the element
+	 * @param timeoutInSeconds The timeout in seconds
+	 * @param browser The web driver
+	 */
 	public static void waitElementDisappears(By element, int timeoutInSeconds, WebDriver browser) {
 		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
 			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().not().present();
 	}
 	
+	/**
+	 * Wait until the element is visible.
+	 * 
+	 * @param element The element to be visible
+	 * @param browser The web driver
+	 */
 	public static void waitElement(WebElement element, WebDriver browser) {
-		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+		Graphene.waitModel(browser)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+	}
+	
+	/**
+	 * Wait until the element is visible.
+	 * 
+	 * @param element The element
+	 * @param timeoutInSeconds The timeout in seconds
+	 * @param browser The web driver
+	 */
+	public static void waitElement(WebElement element, int timeoutInSeconds, WebDriver browser) {
+		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+	}
+	
+	/**
+	 * Wait until the element is present.
+	 * 
+	 * @param element The selector of the element
+	 * @param browser The web driver
+	 */
+	public static void waitElementPresent(By element, WebDriver browser) {
+		Graphene.waitModel(browser)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().present();
+	}
+	
+	/**
+	 * Wait until the element is present.
+	 * 
+	 * @param element The selector of the element
+	 * @param timeoutInSeconds The timeout in seconds
+	 * @param browser The web driver
+	 */
+	public static void waitElementPresent(By element, int timeoutInSeconds, WebDriver browser) {
+		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().present();
 	}
 	
 	public static void waitGui(WebDriver browser) {
@@ -94,8 +151,7 @@ public class OOGraphene {
 	
 	public static WebElement moveTo(WebElement element, WebDriver browser) {
 		Actions actions = new Actions(browser);
-		actions.moveToElement(element);
-		actions.perform();
+		actions.moveToElement(element).perform();
 		return element;
 	}
 	

@@ -171,6 +171,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 		boolean fullWindow = configRef ? deliveryOptions.isHideLms() :
 				modConfig.getBooleanSafe(IQEditController.CONFIG_FULLWINDOW, deliveryOptions.isHideLms());
 		fullWindowEl = uifactory.addCheckboxesHorizontal("fullwindow", "qti.form.fullwindow", formLayout, new String[]{"x"}, new String[]{""});
+		fullWindowEl.setElementCssClass("o_qti_21_configuration_full_window");
 		fullWindowEl.setEnabled(!configRef);
 		if(fullWindow) {
 			fullWindowEl.select("x", fullWindow);

@@ -22,6 +22,7 @@ package org.olat.selenium.page.qti;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -51,6 +52,42 @@ public class QTI21ConfigurationCEPage {
 		By scoreBy = By.cssSelector(".o_sel_results_on_homepage input[type='checkbox']");
 		WebElement scoreEl = browser.findElement(scoreBy);
 		OOGraphene.check(scoreEl, showResults);
+		return this;
+	}
+	
+	public QTI21ConfigurationCEPage showResultsOnHomepage(Boolean show, QTI21AssessmentResultsOptions options) {
+		By showResultsBy = By.cssSelector("div.o_sel_qti_show_results input[type='checkbox']");
+		WebElement showResultsEl = browser.findElement(showResultsBy);
+		OOGraphene.check(showResultsEl, show);
+		OOGraphene.waitBusy(browser);
+		
+		By resultsLevelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox']");
+		OOGraphene.waitElement(resultsLevelBy, 5, browser);
+
+		if(options.isMetadata()) {
+			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='metadata']");
+			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
+		}
+		if(options.isSectionSummary()) {
+			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='sectionsSummary']");
+			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
+		}
+		if(options.isQuestionSummary()) {
+			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='questionSummary']");
+			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
+		}
+		if(options.isQuestions()) {
+			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='questions']");
+			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
+		}
+		if(options.isUserSolutions()) {
+			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='userSolutions']");
+			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
+		}
+		if(options.isCorrectSolutions()) {
+			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='correctSolutions']");
+			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
+		}
 		return this;
 	}
 	

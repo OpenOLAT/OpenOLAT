@@ -156,6 +156,7 @@ public class QTI21EditForm extends FormBasicController {
 				: QTI21AssessmentResultsOptions.parseString(modConfig.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT));
 	
 		showResultsOnFinishEl = uifactory.addCheckboxesHorizontal("resultOnFinish", "qti.form.results.onfinish", formLayout, onKeys, onValues);
+		showResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results");
 		showResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 		showResultsOnFinishEl.setEnabled(!configRef);
 
@@ -165,6 +166,7 @@ public class QTI21EditForm extends FormBasicController {
 				translate("qti.form.summary.responses"), translate("qti.form.summary.solutions")
 		};
 		assessmentResultsOnFinishEl = uifactory.addCheckboxesVertical("typeResultOnFinish", "qti.form.summary", formLayout, resultsOptionsKeys, resultsOptionsValues, 1);
+		assessmentResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
 		assessmentResultsOnFinishEl.setEnabled(!configRef);
 		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
 

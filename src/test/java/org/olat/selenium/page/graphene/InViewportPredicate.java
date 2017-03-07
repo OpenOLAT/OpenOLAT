@@ -19,26 +19,43 @@
  */
 package org.olat.selenium.page.graphene;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 import com.google.common.base.Predicate;
 
 /**
+ * Experimental predicate which check if an element is
+ * in the viewport.
  * 
- * Predicate which test the busy flag used to lock the
- * OpenOLAT GUI after a link is clicked.
- * 
- * Initial date: 20.06.2014<br>
+ * Initial date: 7 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BusyPredicate implements Predicate<WebDriver> {
+public class InViewportPredicate implements Predicate<WebDriver> {
+	
+	private final By by;
+	
+	public InViewportPredicate(By by) {
+		this.by = by;
+	}
 	
 	@Override
 	public boolean apply(WebDriver driver) {
+		WebElement element = driver.findElement(by);
+		StringBuilder sb = new StringBuilder();
+		sb.append("var rect = arguments[0].getBoundingClientRect();")
+		  .append(" console.log(rect); return (")
+		  .append("  rect.top >= 0 &&")
+		  .append("  rect.left >= 0 &&")
+		  .append("  rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&")
+		  .append("  rect.right <= (window.innerWidth || document.documentElement.clientWidth)")
+		  .append(" );");
+		
         Object busy = ((JavascriptExecutor)driver)
-        		.executeScript("return (typeof window.o_info === 'undefined') || window.o_info.linkbusy");
-        return Boolean.FALSE.equals(busy);
+        		.executeScript(sb.toString(), element);
+        return Boolean.TRUE.equals(busy);
     }
 }

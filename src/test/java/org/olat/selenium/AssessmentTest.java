@@ -155,16 +155,16 @@ public class AssessmentTest {
 		QTI12Page testPage = QTI12Page.getQTI12Page(browser);
 		testPage
 			.start()
-			.selectItem(0)
-			.answerSingleChoice(0)
+			.selectItem("Single choice")
+			.answerSingleChoice("Correct answer")
 			.saveAnswer()
-			.selectItem(1)
-			.answerMultipleChoice(0, 2)
+			.selectItem("Multiple choice")
+			.answerMultipleChoice("Correct answer", "The answer is correct")
 			.saveAnswer()
-			.selectItem(2)
+			.selectItem("Kprim")
 			.answerKPrim(true, false, true, false)
 			.saveAnswer()
-			.selectItem(3)
+			.selectItem("Fill-in")
 			.answerFillin("not")
 			.saveAnswer();
 		testPage
@@ -277,16 +277,16 @@ public class AssessmentTest {
 		QTI12Page testPage = QTI12Page.getQTI12Page(ryomouBrowser);
 		testPage
 			.start()
-			.selectItem(0)
-			.answerSingleChoice(0)
+			.selectItem("Single choice")
+			.answerSingleChoice("Correct answer")
 			.saveAnswer()
-			.selectItem(1)
-			.answerMultipleChoice(0, 2)
+			.selectItem("Multiple choice")
+			.answerMultipleChoice("Correct answer", "The answer is correct")
 			.saveAnswer()
-			.selectItem(2)
+			.selectItem("Kprim")
 			.answerKPrim(true, false, true, false)
 			.saveAnswer()
-			.selectItem(3)
+			.selectItem("Fill-in")
 			.answerFillin("not")
 			.saveAnswer();
 		testPage

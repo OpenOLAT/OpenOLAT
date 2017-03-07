@@ -39,7 +39,7 @@ import org.openqa.selenium.WebElement;
  */
 public class QTI12Page {
 	
-	private WebDriver browser;
+	private final WebDriver browser;
 	
 	private QTI12Page(WebDriver browser) {
 		this.browser = browser;
@@ -53,16 +53,16 @@ public class QTI12Page {
 	
 	public QTI12Page passE4(UserVO user) {
 		start()
-			.selectItem(0)
-			.answerSingleChoice(0)
+			.selectItem("Single choice")
+			.answerSingleChoice("Correct answer")
 			.saveAnswer()
-			.selectItem(1)
-			.answerMultipleChoice(0, 2)
+			.selectItem("Multiple choice")
+			.answerMultipleChoice("Correct answer", "The answer is correct")
 			.saveAnswer()
-			.selectItem(2)
+			.selectItem("Kprim")
 			.answerKPrim(true, false, true, false)
 			.saveAnswer()
-			.selectItem(3)
+			.selectItem("Fill-in")
 			.answerFillin("not")
 			.saveAnswer()
 			.endTest();
@@ -75,7 +75,9 @@ public class QTI12Page {
 		//close the test
 		closeTest();
 		//all answers are correct -> passed
-		WebElement passedEl = browser.findElement(By.cssSelector("tr.o_state.o_passed"));
+		By passedBy = By.cssSelector("tr.o_state.o_passed");
+		OOGraphene.waitElement(passedBy, 5, browser);
+		WebElement passedEl = browser.findElement(passedBy);
 		Assert.assertTrue(passedEl.isDisplayed());
 		return this;
 	}
@@ -88,34 +90,27 @@ public class QTI12Page {
 		return this;
 	}
 	
-	public QTI12Page selectItem(int position) {
-		By itemsBy = By.cssSelector("a.o_sel_qti_menu_item");
-		List<WebElement> itemList = browser.findElements(itemsBy);
-		Assert.assertTrue(itemList.size() > position);
-		WebElement itemEl = itemList.get(position);
-		itemEl.click();
+	public QTI12Page selectItem(String title) {
+		By itemBy = By.xpath("//div[@id='o_qti_menu']//div[contains(@class,'o_qti_menu_item')]/a[contains(normalize-space(.),'" + title + "')]");
+		OOGraphene.waitElement(itemBy, 5, browser);
+		browser.findElement(itemBy).click();
 		OOGraphene.waitBusy(browser);
+		By nextItemBy = By.cssSelector("#ofo_iq_item>div.o_qti_item>h3");
+		OOGraphene.waitElement(nextItemBy, 5, browser);
 		return this;
 	}
 	
-	public QTI12Page answerSingleChoice(int selectPosition) {
-		By itemsBy = By.cssSelector("div.o_qti_item_choice_option input[type='radio']");
-		List<WebElement> optionList = browser.findElements(itemsBy);
-		Assert.assertTrue(optionList.size() > selectPosition);
-		WebElement optionEl = optionList.get(selectPosition);
-		optionEl.click();
-		OOGraphene.waitBusy(browser);
+	public QTI12Page answerSingleChoice(String choice) {
+		By choiceBy = By.xpath("//label[contains(@for,'QTI')][span[contains(normalize-space(.),'" + choice + "')]]/input[@type='radio']");
+		browser.findElement(choiceBy).click();
 		return this;
 	}
 	
-	public QTI12Page answerMultipleChoice(int... selectPositions) {
-		By itemsBy = By.cssSelector("div.o_qti_item_choice_option input[type='checkbox']");
-		List<WebElement> optionList = browser.findElements(itemsBy);
-		for(int selectPosition:selectPositions) {
-			Assert.assertTrue(optionList.size() > selectPosition);
-			optionList.get(selectPosition).click();
+	public QTI12Page answerMultipleChoice(String... choices) {
+		for(String choice:choices) {
+			By choiceBy = By.xpath("//label[contains(@for,'QTI')][span[contains(normalize-space(.),'" + choice + "')]]/input[@type='checkbox']");
+			browser.findElement(choiceBy).click();
 		}
-		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -152,13 +147,15 @@ public class QTI12Page {
 		WebElement saveAnswerButton = browser.findElement(saveAnswerBy);
 		saveAnswerButton.click();
 		OOGraphene.waitBusy(browser);
+		By confirmationBy = By.cssSelector("#o_qti_run_content>div.o_important");
+		OOGraphene.waitElement(confirmationBy, 5, browser);
 		return this;
 	}
 	
 	public QTI12Page endTest() {
-		By endBy = By.cssSelector("div.o_button_group.o_button_group_right a");
-		WebElement endButton = browser.findElement(endBy);
-		endButton.click();
+		By endBy = By.cssSelector("div.o_button_group_right a");
+		OOGraphene.waitElement(endBy, 5, browser);
+		browser.findElement(endBy).click();
 		//accept and go further
 		Alert alert = browser.switchTo().alert();
 		alert.accept();
@@ -167,9 +164,9 @@ public class QTI12Page {
 	}
 	
 	public QTI12Page closeTest() {
-		By endBy = By.cssSelector("div.o_button_group.o_button_group_right a");
-		WebElement endButton = browser.findElement(endBy);
-		endButton.click();
+		By closeBy = By.cssSelector("div.o_button_group.o_button_group_right a");
+		OOGraphene.waitElement(closeBy, 5, browser);
+		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

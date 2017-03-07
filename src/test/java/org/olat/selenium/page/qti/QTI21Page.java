@@ -176,14 +176,44 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page closeTest() {
-		By endBy = By.cssSelector("a.o_sel_close_test");
-		browser.findElement(endBy).click();
+		By closeBy = By.cssSelector("a.o_sel_close_test");
+		OOGraphene.waitElement(closeBy, 5, browser);
+		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);
 		confirm();
 		return this;
 	}
 	
-	public QTI21Page assertOnResults() {
+	/**
+	 * Close the report with the assessment results.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21Page closeAssessmentResults() {
+		By closeBy = By.cssSelector("a.o_sel_close_results");
+		OOGraphene.waitElement(closeBy, 5, browser);
+		browser.findElement(closeBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public QTI21Page showAssessmentResults() {
+		By showBy = By.cssSelector("a.o_qti_show_assessment_results");
+		OOGraphene.waitElement(showBy, 5, browser);
+		browser.findElement(showBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By hideBy = By.cssSelector("a.o_qti_hide_assessment_results");
+		OOGraphene.waitElement(hideBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * This check specifically if the metadata of the test are visible.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21Page assertOnAssessmentResults() {
 		By resultsBy = By.cssSelector("div.o_sel_results_details");
 		OOGraphene.waitElement(resultsBy, 5, browser);
 		return this;

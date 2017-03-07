@@ -324,10 +324,12 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("showResultsVisible",Boolean.TRUE);
 				showResultsButton = LinkFactory.createLink("command.showResults", "command.showResults", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 				showResultsButton.setCustomDisplayText(translate("showResults.title"));
+				showResultsButton.setElementCssClass("o_qti_show_assessment_results");
 				showResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_open_togglebox");
 				
 				hideResultsButton = LinkFactory.createLink("command.hideResults", "command.hideResults", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 				hideResultsButton.setCustomDisplayText(translate("showResults.title"));
+				hideResultsButton.setElementCssClass("o_qti_hide_assessment_results");
 				hideResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_close_togglebox");
 			} else if(showResultsOnHomePage) {
 				Date startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
