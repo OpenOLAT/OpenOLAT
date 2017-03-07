@@ -20,6 +20,9 @@
 		</tr>
 		#end
 	</tbody></table>
+	#if ($r.available("highScore"))
+		$r.render("highScore")
+	#end
 	$r.render("group-list")
 </div>
 <div class="o_button_group">

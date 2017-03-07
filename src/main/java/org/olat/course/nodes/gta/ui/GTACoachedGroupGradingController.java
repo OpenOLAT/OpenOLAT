@@ -27,6 +27,7 @@ import java.util.Map;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -56,6 +57,7 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
+import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -163,6 +165,14 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 			layoutCont.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore(config.getFloatEntry(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
 			layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore(config.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
 			layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore(config.getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
+			
+			if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
+				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), coachCourseEnv, gtaNode);
+				if (highScoreCtr.isViewHighscore()) {
+					Component highScoreComponent = highScoreCtr.getInitialComponent();
+					layoutCont.put("highScore", highScoreComponent);							
+				}
+			}
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

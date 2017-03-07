@@ -121,7 +121,11 @@ public class HighScoreManager {
 				classwidth = 1;
 				return new HighScoreRankingResults(scores, classwidth, min);
 			} else {
-				long numberofclasses = 10;
+				// decrease amount of possible classes to avoid overlapping of large numbers(condition) on x-axis 
+				boolean largeNumbers = range > 100d || max >= 1000d;
+				int maxnumberofclasses = largeNumbers ? 12 : 20;
+				int minnumberofclasses = largeNumbers ? 4 : 5;
+				int numberofclasses = 10;
 				// primeRange increments range until a natural factor is found or upper/lower boundary is met
 				boolean primeRange = true;
 				// equalRangeExtend alternates between upper and lower boundary extension
@@ -129,7 +133,7 @@ public class HighScoreManager {
 				// check if a value between 20 and 6 is a natural factor of the range
 				// if true use it to calculate the class width
 				while (primeRange) {
-					for (int j = 20; j > 5; j--) {
+					for (int j = maxnumberofclasses; j > minnumberofclasses; j--) {
 						if (range % j == 0) {
 							numberofclasses = j;
 							primeRange = false;
