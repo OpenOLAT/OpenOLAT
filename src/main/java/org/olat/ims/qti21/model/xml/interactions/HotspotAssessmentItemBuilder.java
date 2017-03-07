@@ -91,16 +91,16 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 	private HotspotInteraction hotspotInteraction;
 	protected Map<Identifier,Double> scoreMapping;
 	
-	public HotspotAssessmentItemBuilder(QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(), qtiSerializer);
+	public HotspotAssessmentItemBuilder(String title, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(title), qtiSerializer);
 	}
 	
 	public HotspotAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.hotspot, "Hotspot");
+	private static AssessmentItem createAssessmentItem(String title) {
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.hotspot, title);
 		
 		//define the response
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");

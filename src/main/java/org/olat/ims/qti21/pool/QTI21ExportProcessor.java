@@ -202,7 +202,7 @@ public class QTI21ExportProcessor {
 			ManifestBuilder manifest = ManifestBuilder.createAssessmentTestBuilder();
 			
 			//assessment test
-			AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Assessment test from pool");
+			AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Assessment test from pool", "Section");
 			String assessmentTestFilename = assessmentTest.getIdentifier() + ".xml";
 			manifest.appendAssessmentTest(assessmentTestFilename);
 
@@ -245,7 +245,7 @@ public class QTI21ExportProcessor {
 			ManifestBuilder manifest = ManifestBuilder.createAssessmentTestBuilder();
 			
 			//assessment test
-			AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Assessment test from pool");
+			AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Assessment test from pool", "Section");
 			String assessmentTestFilename = assessmentTest.getIdentifier() + ".xml";
 			manifest.appendAssessmentTest(assessmentTestFilename);
 

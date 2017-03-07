@@ -458,25 +458,25 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(newTestPartLink == source) {
 			doNewTestPart(ureq);		
 		} else if(newSingleChoiceLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new SingleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new SingleChoiceAssessmentItemBuilder(translate("new.sc"), translate("new.answer"), qtiService.qtiSerializer()));
 		} else if(newMultipleChoiceLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MultipleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MultipleChoiceAssessmentItemBuilder(translate("new.mc"), translate("new.answer"), qtiService.qtiSerializer()));
 		} else if(newKPrimLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new KPrimAssessmentItemBuilder(qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new KPrimAssessmentItemBuilder(translate("new.kprim"), translate("new.answer"), qtiService.qtiSerializer()));
 		} else if(newMatchLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MatchAssessmentItemBuilder(qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MatchAssessmentItemBuilder(translate("new.match"), qtiService.qtiSerializer()));
 		} else if(newFIBLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(EntryType.text, qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(translate("new.fib"), EntryType.text, qtiService.qtiSerializer()));
 		} else if(newNumericalLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(EntryType.numerical, qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(translate("new.fib.numerical"), EntryType.numerical, qtiService.qtiSerializer()));
 		} else if(newHotspotLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HotspotAssessmentItemBuilder(qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HotspotAssessmentItemBuilder(translate("new.hotspot"), qtiService.qtiSerializer()));
 		} else if(newEssayLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(translate("new.essay"), qtiService.qtiSerializer()));
 		} else if(newUploadLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new UploadAssessmentItemBuilder(qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new UploadAssessmentItemBuilder(translate("new.upload"), qtiService.qtiSerializer()));
 		} else if(newDrawingLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new DrawingAssessmentItemBuilder(qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new DrawingAssessmentItemBuilder(translate("new.drawing"), qtiService.qtiSerializer()));
 		} else if(importFromPoolLink == source) {
 			doSelectQItem(ureq);
 		} else if(importFromTableLink == source) {
@@ -811,7 +811,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	 */
 	private void doNewTestPart(UserRequest ureq) {
 		TestPart testPart = AssessmentTestFactory.createTestPart(assessmentTestBuilder.getAssessmentTest());
-		AssessmentTestFactory.appendAssessmentSection(testPart);
+		AssessmentTestFactory.appendAssessmentSection(translate("new.testpart"), testPart);
 		
 		//save the test
 		doSaveAssessmentTest(null);
@@ -847,9 +847,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		AssessmentSection newSection;
 		if(parentPart instanceof TestPart) {
-			newSection = AssessmentTestFactory.appendAssessmentSection((TestPart)parentPart);
+			newSection = AssessmentTestFactory.appendAssessmentSection(translate("new.testpart"), (TestPart)parentPart);
 		} else if(parentPart instanceof AssessmentSection) {
-			newSection = AssessmentTestFactory.appendAssessmentSection((AssessmentSection)parentPart);
+			newSection = AssessmentTestFactory.appendAssessmentSection(translate("new.section"), (AssessmentSection)parentPart);
 		} else {
 			showWarning("error.cannot.create.section");
 			return;

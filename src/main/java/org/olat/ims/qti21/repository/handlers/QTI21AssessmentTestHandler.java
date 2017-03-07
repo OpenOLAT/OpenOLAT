@@ -161,7 +161,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			}
 			copyMetadata(onyxRe, re, repositoryDir);
 		} else {
-			createMinimalAssessmentTest(displayname, repositoryDir);
+			createMinimalAssessmentTest(displayname, repositoryDir, locale);
 		}
 		return re;
 	}
@@ -211,18 +211,20 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		return re;
 	}
 	
-	public void createMinimalAssessmentTest(String displayName, File directory) {
+	public void createMinimalAssessmentTest(String displayName, File directory, Locale locale) {
         ManifestBuilder manifestBuilder = ManifestBuilder.createAssessmentTestBuilder();
+
+		Translator translator = Util.createPackageTranslator(AssessmentTestComposerController.class, locale);
 
 		//single choice
 		File itemFile = new File(directory, IdentifierGenerator.newAsString(QTI21QuestionType.sc.getPrefix()) + ".xml");
-		AssessmentItem assessmentItem = AssessmentItemFactory.createSingleChoice();
+		AssessmentItem assessmentItem = AssessmentItemFactory.createSingleChoice(translator.translate("new.sc"), translator.translate("new.answer"));
 		QtiSerializer qtiSerializer = qtiService.qtiSerializer();
 		manifestBuilder.appendAssessmentItem(itemFile.getName());	
 		
 		//test
         File testFile = new File(directory, IdentifierGenerator.newAssessmentTestFilename());
-		AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest(displayName);
+		AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest(displayName, translator.translate("new.section"));
 		manifestBuilder.appendAssessmentTest(testFile.getName());
         
         // item -> test

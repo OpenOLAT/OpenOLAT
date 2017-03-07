@@ -305,7 +305,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
 		SimpleChoice newChoice = new SimpleChoice(interaction);
 		newChoice.setIdentifier(IdentifierGenerator.newAsIdentifier("mc"));
-		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, "New answer");
+		P firstChoiceText = AssessmentItemFactory.getParagraph(newChoice, translate("new.answer"));
 		newChoice.getFlowStatics().add(firstChoiceText);
 		
 		wrapAnswer(ureq, newChoice);

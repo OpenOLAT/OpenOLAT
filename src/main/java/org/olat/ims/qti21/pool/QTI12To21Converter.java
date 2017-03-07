@@ -210,7 +210,7 @@ public class QTI12To21Converter {
 	
 	private void convert(Section section, TestPart testPart)
 	throws URISyntaxException {
-		AssessmentSection assessmentSection = AssessmentTestFactory.appendAssessmentSection(testPart);
+		AssessmentSection assessmentSection = AssessmentTestFactory.appendAssessmentSection("Section", testPart);
 		assessmentSection.setTitle(section.getTitle());
 		convertDuration(section.getDuration(), assessmentSection);
 		
@@ -406,7 +406,7 @@ public class QTI12To21Converter {
 	}
 	
 	private AssessmentItemBuilder convertSingleChoice(Item item) {
-		SingleChoiceAssessmentItemBuilder itemBuilder = new SingleChoiceAssessmentItemBuilder(qtiSerializer);
+		SingleChoiceAssessmentItemBuilder itemBuilder = new SingleChoiceAssessmentItemBuilder("Single choice", "New answer", qtiSerializer);
 		convertItemBasics(item, itemBuilder);
 		itemBuilder.clearMapping();
 		itemBuilder.clearSimpleChoices();
@@ -448,7 +448,7 @@ public class QTI12To21Converter {
 	}
 	
 	private AssessmentItemBuilder convertMultipleChoice(Item item) {
-		MultipleChoiceAssessmentItemBuilder itemBuilder = new MultipleChoiceAssessmentItemBuilder(qtiSerializer);
+		MultipleChoiceAssessmentItemBuilder itemBuilder = new MultipleChoiceAssessmentItemBuilder("Multiple choice", "New answer", qtiSerializer);
 		convertItemBasics(item, itemBuilder);
 		itemBuilder.clearMapping();
 		itemBuilder.clearSimpleChoices();
@@ -528,7 +528,7 @@ public class QTI12To21Converter {
 	}
 	
 	private AssessmentItemBuilder convertKPrim(Item item) {
-		KPrimAssessmentItemBuilder itemBuilder = new KPrimAssessmentItemBuilder(qtiSerializer);
+		KPrimAssessmentItemBuilder itemBuilder = new KPrimAssessmentItemBuilder("Kprim", "New answer", qtiSerializer);
 		convertItemBasics(item, itemBuilder);
 		
 		Question question = item.getQuestion();
@@ -564,7 +564,7 @@ public class QTI12To21Converter {
 	}
 	
 	private AssessmentItemBuilder convertFIB(Item item) {
-		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder(EntryType.text, qtiSerializer);
+		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder("Gap text", EntryType.text, qtiSerializer);
 		itemBuilder.setQuestion("");
 		itemBuilder.clearTextEntries();
 		convertItemBasics(item, itemBuilder);
@@ -630,7 +630,7 @@ public class QTI12To21Converter {
 	}
 	
 	private AssessmentItemBuilder convertEssay(Item item) {
-		EssayAssessmentItemBuilder itemBuilder = new EssayAssessmentItemBuilder(qtiSerializer);
+		EssayAssessmentItemBuilder itemBuilder = new EssayAssessmentItemBuilder("Essay", qtiSerializer);
 		convertItemBasics(item, itemBuilder);
 		
 		EssayQuestion question = (EssayQuestion)item.getQuestion();

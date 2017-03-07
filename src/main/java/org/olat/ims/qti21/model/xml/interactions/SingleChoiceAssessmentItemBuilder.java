@@ -76,16 +76,16 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 	
 	private Identifier correctAnswer;
 	
-	public SingleChoiceAssessmentItemBuilder(QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(), qtiSerializer);
+	public SingleChoiceAssessmentItemBuilder(String title, String defaultAnswer, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(title, defaultAnswer), qtiSerializer);
 	}
 	
 	public SingleChoiceAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.sc, "Single choice");
+	private static AssessmentItem createAssessmentItem(String title, String defaultAnswer) {
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.sc, title);
 
 		//define correct answer
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
@@ -100,7 +100,7 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
 		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
 		
-		appendSimpleChoice(choiceInteraction, "New answer", correctResponseId);
+		appendSimpleChoice(choiceInteraction, defaultAnswer, correctResponseId);
 
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);

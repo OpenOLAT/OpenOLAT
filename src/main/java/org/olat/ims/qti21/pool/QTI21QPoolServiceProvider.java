@@ -38,12 +38,14 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -74,6 +76,7 @@ import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBui
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
 import org.olat.ims.qti21.questionimport.AssessmentItemAndMetadata;
+import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.ExportFormatOptions;
@@ -332,17 +335,18 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	public QuestionItem createItem(Identity identity, QTI21QuestionType type, String title, Locale locale) {
 		AssessmentItemBuilder itemBuilder = null;
+		Translator translator = Util.createPackageTranslator(AssessmentTestComposerController.class, locale);
 		switch(type) {
-			case sc: itemBuilder = new SingleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()); break;
-			case mc: itemBuilder = new MultipleChoiceAssessmentItemBuilder(qtiService.qtiSerializer()); break;
-			case kprim: itemBuilder = new KPrimAssessmentItemBuilder(qtiService.qtiSerializer()); break;
-			case match: itemBuilder = new MatchAssessmentItemBuilder(qtiService.qtiSerializer()); break;
-			case fib: itemBuilder = new FIBAssessmentItemBuilder(EntryType.text, qtiService.qtiSerializer()); break;
-			case numerical: itemBuilder = new FIBAssessmentItemBuilder(EntryType.numerical, qtiService.qtiSerializer()); break;
-			case essay: itemBuilder = new EssayAssessmentItemBuilder(qtiService.qtiSerializer()); break;
-			case upload: itemBuilder = new UploadAssessmentItemBuilder(qtiService.qtiSerializer()); break;
-			case drawing: itemBuilder = new DrawingAssessmentItemBuilder(qtiService.qtiSerializer()); break;
-			case hotspot: itemBuilder = new HotspotAssessmentItemBuilder(qtiService.qtiSerializer()); break;
+			case sc: itemBuilder = new SingleChoiceAssessmentItemBuilder(translator.translate("new.sc"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
+			case mc: itemBuilder = new MultipleChoiceAssessmentItemBuilder(translator.translate("new.mc"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
+			case kprim: itemBuilder = new KPrimAssessmentItemBuilder(translator.translate("new.kprim"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
+			case match: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.match"), qtiService.qtiSerializer()); break;
+			case fib: itemBuilder = new FIBAssessmentItemBuilder(translator.translate("new.fib"), EntryType.text, qtiService.qtiSerializer()); break;
+			case numerical: itemBuilder = new FIBAssessmentItemBuilder(translator.translate("new.fib.numerical"), EntryType.numerical, qtiService.qtiSerializer()); break;
+			case essay: itemBuilder = new EssayAssessmentItemBuilder(translator.translate("new.essay"), qtiService.qtiSerializer()); break;
+			case upload: itemBuilder = new UploadAssessmentItemBuilder(translator.translate("new.upload"), qtiService.qtiSerializer()); break;
+			case drawing: itemBuilder = new DrawingAssessmentItemBuilder(translator.translate("new.drawing"), qtiService.qtiSerializer()); break;
+			case hotspot: itemBuilder = new HotspotAssessmentItemBuilder(translator.translate("new.hotspot"), qtiService.qtiSerializer()); break;
 			default: return null;
 		}
 

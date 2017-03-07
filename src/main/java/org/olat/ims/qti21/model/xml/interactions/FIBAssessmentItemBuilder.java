@@ -101,16 +101,15 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	
 	private QTI21QuestionType questionType = QTI21QuestionType.fib;
 	
-	public FIBAssessmentItemBuilder(EntryType type, QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(type), qtiSerializer);
+	public FIBAssessmentItemBuilder(String title, EntryType type, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(title, type), qtiSerializer);
 	}
 	
 	public FIBAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem(EntryType type) {
-		String title = (type == EntryType.text) ? "Gap text" : "Numerical input";
+	private static AssessmentItem createAssessmentItem(String title, EntryType type) {
 		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.fib, title);
 		
 		//define the response

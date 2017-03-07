@@ -92,16 +92,16 @@ public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 	private Map<Identifier, List<Identifier>> associations;
 	private Map<DirectedPairValue, Double> scoreMapping;
 	
-	public MatchAssessmentItemBuilder(QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(), qtiSerializer);
+	public MatchAssessmentItemBuilder(String title, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(title), qtiSerializer);
 	}
 	
 	public MatchAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.match, "Match");
+	private static AssessmentItem createAssessmentItem(String title) {
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.match, title);
 		
 		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
 

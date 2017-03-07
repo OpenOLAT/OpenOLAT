@@ -53,16 +53,16 @@ public class DrawingAssessmentItemBuilder extends LobAssessmentItemBuilder {
 
 	private DrawingInteraction drawingInteraction;
 	
-	public DrawingAssessmentItemBuilder(QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(), qtiSerializer);
+	public DrawingAssessmentItemBuilder(String title, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(title), qtiSerializer);
 	}
 	
 	public DrawingAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.drawing, "Drawing");
+	private static AssessmentItem createAssessmentItem(String title) {
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.drawing, title);
 		
 		//define the response
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");

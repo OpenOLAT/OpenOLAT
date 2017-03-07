@@ -287,7 +287,7 @@ public class CSVToAssessmentItemConverter {
 			AssessmentItemBuilder itemBuilder;
 			switch(type) {
 				case "fib": {
-					FIBAssessmentItemBuilder fibItemBuilder = new FIBAssessmentItemBuilder(EntryType.text, qtiSerializer);
+					FIBAssessmentItemBuilder fibItemBuilder = new FIBAssessmentItemBuilder("Gap text", EntryType.text, qtiSerializer);
 					fibItemBuilder.setQuestion("");
 					fibItemBuilder.clearTextEntries();
 					fibItemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
@@ -295,7 +295,7 @@ public class CSVToAssessmentItemConverter {
 					break;
 				}
 				case "mc": {
-					MultipleChoiceAssessmentItemBuilder mcItemBuilder = new MultipleChoiceAssessmentItemBuilder(qtiSerializer);
+					MultipleChoiceAssessmentItemBuilder mcItemBuilder = new MultipleChoiceAssessmentItemBuilder("Multiple choice", "New answer", qtiSerializer);
 					mcItemBuilder.clearSimpleChoices();
 					mcItemBuilder.clearMapping();
 					mcItemBuilder.setShuffle(options.isShuffle());
@@ -304,7 +304,7 @@ public class CSVToAssessmentItemConverter {
 					break;
 				}
 				case "sc": {
-					SingleChoiceAssessmentItemBuilder scItemBuilder = new SingleChoiceAssessmentItemBuilder(qtiSerializer);
+					SingleChoiceAssessmentItemBuilder scItemBuilder = new SingleChoiceAssessmentItemBuilder("Single choice", "New answer", qtiSerializer);
 					scItemBuilder.clearSimpleChoices();
 					scItemBuilder.clearMapping();
 					scItemBuilder.setShuffle(options.isShuffle());
@@ -314,7 +314,7 @@ public class CSVToAssessmentItemConverter {
 				}
 				case "kprim": {
 					kprimPosition = 0;
-					KPrimAssessmentItemBuilder kprimItemBuilder = new KPrimAssessmentItemBuilder(qtiSerializer);
+					KPrimAssessmentItemBuilder kprimItemBuilder = new KPrimAssessmentItemBuilder("Kprim", "New answer", qtiSerializer);
 					itemBuilder = kprimItemBuilder;
 					break;
 				}

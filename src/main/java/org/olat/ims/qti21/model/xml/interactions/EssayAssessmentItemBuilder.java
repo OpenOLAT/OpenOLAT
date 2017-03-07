@@ -53,16 +53,16 @@ public class EssayAssessmentItemBuilder extends LobAssessmentItemBuilder {
 
 	private ExtendedTextInteraction extendedTextInteraction;
 	
-	public EssayAssessmentItemBuilder(QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(), qtiSerializer);
+	public EssayAssessmentItemBuilder(String title, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(title), qtiSerializer);
 	}
 	
 	public EssayAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.essay, "Essay");
+	private static AssessmentItem createAssessmentItem(String title) {
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.essay, title);
 		
 		//define the response
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");

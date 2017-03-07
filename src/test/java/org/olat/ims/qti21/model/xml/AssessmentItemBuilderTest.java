@@ -120,7 +120,7 @@ public class AssessmentItemBuilderTest {
 	@Test
 	public void buildAssessmentItem_singleChoice() throws IOException, URISyntaxException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		SingleChoiceAssessmentItemBuilder itemBuilder = new SingleChoiceAssessmentItemBuilder(qtiSerializer);
+		SingleChoiceAssessmentItemBuilder itemBuilder = new SingleChoiceAssessmentItemBuilder("Single choice", "New answer", qtiSerializer);
 
 		if(build.booleanValue()) {
 			itemBuilder.build();
@@ -145,7 +145,7 @@ public class AssessmentItemBuilderTest {
 	@Test
 	public void buildAssessmentItem_multipleChoice() throws IOException, URISyntaxException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		MultipleChoiceAssessmentItemBuilder itemBuilder = new MultipleChoiceAssessmentItemBuilder(qtiSerializer);
+		MultipleChoiceAssessmentItemBuilder itemBuilder = new MultipleChoiceAssessmentItemBuilder("Multiple choice", "New answer", qtiSerializer);
 		if(build.booleanValue()) {
 			itemBuilder.build();
 		}
@@ -163,7 +163,7 @@ public class AssessmentItemBuilderTest {
 	@Test
 	public void buildAssessmentItem_essay() throws IOException, URISyntaxException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		EssayAssessmentItemBuilder itemBuilder = new EssayAssessmentItemBuilder(qtiSerializer);
+		EssayAssessmentItemBuilder itemBuilder = new EssayAssessmentItemBuilder("Essay", qtiSerializer);
 		if(build.booleanValue()) {
 			itemBuilder.build();
 		}
@@ -181,7 +181,7 @@ public class AssessmentItemBuilderTest {
 	@Test
 	public void buildAssessmentItem_gap() throws IOException, URISyntaxException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder(EntryType.text, qtiSerializer);
+		FIBAssessmentItemBuilder itemBuilder = new FIBAssessmentItemBuilder("Gap text", EntryType.text, qtiSerializer);
 		if(build.booleanValue()) {
 			itemBuilder.build();
 		}
@@ -203,7 +203,7 @@ public class AssessmentItemBuilderTest {
 	@Test
 	public void buildAssessmentItem_hotspot() throws IOException, URISyntaxException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		HotspotAssessmentItemBuilder itemBuilder = new HotspotAssessmentItemBuilder(qtiSerializer);
+		HotspotAssessmentItemBuilder itemBuilder = new HotspotAssessmentItemBuilder("Hotspot", qtiSerializer);
 		if(build.booleanValue()) {
 			itemBuilder.build();
 		}
@@ -225,7 +225,7 @@ public class AssessmentItemBuilderTest {
 	@Test
 	public void buildAssessmentItem_kprim() throws IOException, URISyntaxException {
 		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
-		KPrimAssessmentItemBuilder itemBuilder = new  KPrimAssessmentItemBuilder(qtiSerializer);
+		KPrimAssessmentItemBuilder itemBuilder = new  KPrimAssessmentItemBuilder("Kprim", "New answer", qtiSerializer);
 		if(build.booleanValue()) {
 			itemBuilder.build();
 		}

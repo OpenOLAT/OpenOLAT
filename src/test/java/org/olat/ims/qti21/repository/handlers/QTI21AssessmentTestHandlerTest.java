@@ -22,6 +22,7 @@ package org.olat.ims.qti21.repository.handlers;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -76,7 +77,7 @@ public class QTI21AssessmentTestHandlerTest extends OlatTestCase {
 		File tmpDir = new File(WebappHelper.getTmpDir(), "qti21fullpackage" + UUID.randomUUID());
 		tmpDir.mkdirs();
 		
-		testHandler.createMinimalAssessmentTest("Generated test", tmpDir);
+		testHandler.createMinimalAssessmentTest("Generated test", tmpDir, Locale.ENGLISH);
 		
 		boolean foundImsManifest = false;
 		boolean foundAssessmentTest = false;

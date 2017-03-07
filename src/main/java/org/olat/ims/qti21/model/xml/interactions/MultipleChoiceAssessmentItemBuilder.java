@@ -79,16 +79,16 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 	
 	private List<Identifier> correctAnswers;
 	
-	public MultipleChoiceAssessmentItemBuilder(QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(), qtiSerializer);
+	public MultipleChoiceAssessmentItemBuilder(String title, String defaultAnswer, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(title, defaultAnswer), qtiSerializer);
 	}
 	
 	public MultipleChoiceAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.mc, "Multiple choice");
+	private static AssessmentItem createAssessmentItem(String title, String defaultAnswer) {
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.mc, title);
 		
 		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
 
@@ -106,7 +106,7 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
 		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
 		
-		appendSimpleChoice(choiceInteraction, "New answer", correctResponseId);
+		appendSimpleChoice(choiceInteraction, defaultAnswer, correctResponseId);
 
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);

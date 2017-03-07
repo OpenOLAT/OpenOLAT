@@ -106,8 +106,8 @@ import uk.ac.ed.ph.jqtiplus.value.StringValue;
  */
 public class AssessmentItemFactory {
 	
-	public static AssessmentItem createSingleChoice() {
-		AssessmentItem assessmentItem = createAssessmentItem(QTI21QuestionType.sc, "Single choice");
+	public static AssessmentItem createSingleChoice(String title, String defaultAnswer) {
+		AssessmentItem assessmentItem = createAssessmentItem(QTI21QuestionType.sc, title);
 
 		//define correct answer
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
@@ -121,7 +121,7 @@ public class AssessmentItemFactory {
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
 		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
-		appendSimpleChoice(choiceInteraction, "New answer", correctResponseId);
+		appendSimpleChoice(choiceInteraction, defaultAnswer, correctResponseId);
 
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
@@ -387,7 +387,7 @@ public class AssessmentItemFactory {
 		return responseDeclaration;
 	}
 	
-	public static MatchInteraction appendMatchInteractionForKPrim(ItemBody itemBody, Identifier responseDeclarationId) {
+	public static MatchInteraction appendMatchInteractionForKPrim(ItemBody itemBody, Identifier responseDeclarationId, String defaultAnswer) {
 		MatchInteraction matchInteraction = new MatchInteraction(itemBody);
 		matchInteraction.setResponseIdentifier(responseDeclarationId);
 		matchInteraction.setMaxAssociations(4);
@@ -406,7 +406,7 @@ public class AssessmentItemFactory {
 			correctChoice.setMatchMax(1);
 			correctChoice.setMatchMin(1);
 			correctChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(classic[i]));
-			P question = getParagraph(correctChoice, "New answer " + classic[i]);
+			P question = getParagraph(correctChoice, defaultAnswer + " " + classic[i]);
 			correctChoice.getFlowStatics().add(question);
 			questionMatchSet.getSimpleAssociableChoices().add(correctChoice);
 		}
@@ -492,13 +492,13 @@ public class AssessmentItemFactory {
 		SimpleMatchSet sourceMatchSet = new SimpleMatchSet(matchInteraction);
 		matchInteraction.getSimpleMatchSets().add(sourceMatchSet);
 		
-		String[] classic = new String[]{ "a", "b" };
+		String[] classic = new String[]{ "A", "B" };
 		for(int i=0; i<2; i++) {
 			SimpleAssociableChoice sourceChoice = new SimpleAssociableChoice(sourceMatchSet);
 			sourceChoice.setMatchMax(0);
 			sourceChoice.setMatchMin(0);
 			sourceChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(classic[i]));
-			P question = getParagraph(sourceChoice, "Source " + classic[i]);
+			P question = getParagraph(sourceChoice, classic[i]);
 			sourceChoice.getFlowStatics().add(question);
 			sourceMatchSet.getSimpleAssociableChoices().add(sourceChoice);
 		}
@@ -506,13 +506,13 @@ public class AssessmentItemFactory {
 		SimpleMatchSet targetMatchSet = new SimpleMatchSet(matchInteraction);
 		matchInteraction.getSimpleMatchSets().add(targetMatchSet);
 		
-		String[] target = new String[]{ "m", "n" };
+		String[] target = new String[]{ "M", "N" };
 		for(int i=0; i<2; i++) {
 			SimpleAssociableChoice targetChoice = new SimpleAssociableChoice(sourceMatchSet);
 			targetChoice.setMatchMax(0);
 			targetChoice.setMatchMin(0);
 			targetChoice.setIdentifier(IdentifierGenerator.newNumberAsIdentifier(target[i]));
-			P question = getParagraph(targetChoice, "Target " + target[i]);
+			P question = getParagraph(targetChoice, target[i]);
 			targetChoice.getFlowStatics().add(question);
 			targetMatchSet.getSimpleAssociableChoices().add(targetChoice);
 		}

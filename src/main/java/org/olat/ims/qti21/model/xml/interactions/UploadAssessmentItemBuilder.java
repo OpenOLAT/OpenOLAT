@@ -52,16 +52,16 @@ public class UploadAssessmentItemBuilder extends LobAssessmentItemBuilder {
 
 	private UploadInteraction uploadInteraction;
 	
-	public UploadAssessmentItemBuilder(QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(), qtiSerializer);
+	public UploadAssessmentItemBuilder(String title, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(title), qtiSerializer);
 	}
 	
 	public UploadAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.upload, "Upload");
+	private static AssessmentItem createAssessmentItem(String title) {
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.upload, title);
 		
 		//define the response
 		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");

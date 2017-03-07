@@ -87,16 +87,16 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 	private MatchInteraction matchInteraction;
 	private Map<Identifier,Identifier> associations;
 	
-	public KPrimAssessmentItemBuilder(QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(), qtiSerializer);
+	public KPrimAssessmentItemBuilder(String title, String defaultAnswer, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(title, defaultAnswer), qtiSerializer);
 	}
 	
 	public KPrimAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem() {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.kprim, "KPrim");
+	private static AssessmentItem createAssessmentItem(String title, String defaultAnswer) {
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.kprim, title);
 		
 		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
 
@@ -110,7 +110,7 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
-		MatchInteraction matchInteraction = appendMatchInteractionForKPrim(itemBody, responseDeclarationId);
+		MatchInteraction matchInteraction = appendMatchInteractionForKPrim(itemBody, responseDeclarationId, defaultAnswer);
 		SimpleMatchSet matchSet = matchInteraction.getSimpleMatchSets().get(0);
 		Map<Identifier,Identifier> associations = new HashMap<>();
 		for(SimpleAssociableChoice choice:matchSet.getSimpleAssociableChoices()) {

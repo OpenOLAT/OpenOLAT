@@ -82,7 +82,7 @@ public class BigAssessmentTestPackageBuilder {
 
 		//test
         File testFile = new File(directory, IdentifierGenerator.newAssessmentTestFilename());
-		AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Big test " + date);
+		AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Big test " + date, "Section");
 		manifest.appendAssessmentTest(testFile.getName());
 
 		TestPart part = assessmentTest.getTestParts().get(0);
@@ -119,7 +119,7 @@ public class BigAssessmentTestPackageBuilder {
 				//single choice
 				String itemId = IdentifierGenerator.newAsString(QTI21QuestionType.sc.getPrefix());
 				File itemFile = new File(directory, itemId + ".xml");
-				AssessmentItem assessmentItem = AssessmentItemFactory.createSingleChoice();
+				AssessmentItem assessmentItem = AssessmentItemFactory.createSingleChoice("Single choice", "New answer");
 				assessmentItem.setTitle((i+1) + "." + (j+1) + ". Question SC");
 				
 				AssessmentTestFactory.appendAssessmentItem(section, itemFile.getName());
