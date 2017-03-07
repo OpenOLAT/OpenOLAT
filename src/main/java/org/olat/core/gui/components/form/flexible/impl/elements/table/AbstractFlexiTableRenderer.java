@@ -218,7 +218,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderFormItem(renderer, sb, ftE.getSearchElement(), ubu, translator, renderResult, args);
 			sb.append("<div class='input-group-btn'>");
 			// reset quick search
-			sb.append("<a href=\"javascript:")
+			String id = ftE.getSearchElement().getFormDispatchId();
+			sb.append("<a href=\"javascript:jQuery('#").append(id).append("').val('');")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("reset-search", "true")))
 			  .append("\" class='btn o_reset_quick_search'><i class='o_icon o_icon_remove_filters'> </i></a>");

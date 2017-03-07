@@ -88,15 +88,29 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 		return key;
 	}
 
+	@Override
 	public void setKey(String key) {
 		this.key = key;
+		if(component != null) {
+			component.setDirty(true);
+		}
 	}
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		String paramId = component.getFormDispatchId();
 		String paramValue = getRootForm().getRequestParameter(paramId);
-		if (paramValue == null || !paramValue.equals(getValue())) {
+		// normalize the values
+		if(paramValue != null && paramValue.trim().length() == 0) {
+			paramValue = null;
+		}
+		String currentValue = getValue();
+		if(currentValue != null && currentValue.trim().length() == 0) {
+			currentValue = null;
+		}
+		if ((paramValue == null && currentValue != null)
+				|| (paramValue != null && currentValue == null)
+				|| (paramValue != null && currentValue != null && !paramValue.equals(getValue()))) {
 			setKey(null);
 			setValue(paramValue);
 		}
