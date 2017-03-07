@@ -24,14 +24,15 @@ import java.util.ArrayList;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
-import org.olat.core.util.event.GenericEventListener;
 import org.olat.user.DefaultUser;
 import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,7 @@ import org.springframework.util.StringUtils;
  *
  */
 @Service
-public class SetupModule implements GenericEventListener {
+public class SetupModule extends AbstractSpringModule {
 	
 	private static final OLog log = Tracing.createLoggerFor(SetupModule.class);
 
@@ -62,12 +63,25 @@ public class SetupModule implements GenericEventListener {
 	private ArrayList<DefaultUser> testUsers;
 
 	@Autowired
+	protected DB dbInstance;
+	@Autowired
 	private BaseSecurity securityManager;
 	
 
 	@Autowired
 	public SetupModule(CoordinatorManager coordinatorManager) {
+		super(coordinatorManager);
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, FrameworkStartupEventChannel.getStartupEventChannel());
+	}
+
+	@Override
+	public void init() {
+		//
+	}
+
+	@Override
+	protected void initFromChangedProperties() {
+		//
 	}
 
 	/**
@@ -76,6 +90,10 @@ public class SetupModule implements GenericEventListener {
 	 */
 	@Override
 	public void event(org.olat.core.gui.control.Event event) {
+		setup();
+	}
+	
+	protected void setup() {
 		createDefaultUsers();
 		DBFactory.getInstance().intermediateCommit();
 	}
@@ -97,7 +115,7 @@ public class SetupModule implements GenericEventListener {
 		}
 		// Cleanup, otherwhise this subjects will have problems in normal OLAT
 		// operation
-		DBFactory.getInstance().commitAndCloseSession();
+		dbInstance.commitAndCloseSession();
 	}
 
 	/**
