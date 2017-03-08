@@ -180,7 +180,7 @@ public class IQConfigurationController extends BasicController {
 		myContent.contextPut("type", type);
 		
 		putInitialPanel(myContent);	
-		updateEditController(ureq);
+		updateEditController(ureq, false);
 		
 		switch(type) {
 			case AssessmentInstance.QMD_ENTRY_TYPE_ASSESS:
@@ -196,7 +196,13 @@ public class IQConfigurationController extends BasicController {
 		}
 	}
 	
-	protected void updateEditController(UserRequest ureq) {
+	/**
+	 * Update the edit and layout controllers.
+	 * 
+	 * @param ureq The user request
+	 * @param replacedTest Set true if the test was replaced by a new one.
+	 */
+	protected void updateEditController(UserRequest ureq, boolean replacedTest) {
 		removeAsListenerAndDispose(mod12ConfigForm);
 		removeAsListenerAndDispose(mod21ConfigForm);
 		removeAsListenerAndDispose(modOnyxConfigForm);
@@ -209,6 +215,10 @@ public class IQConfigurationController extends BasicController {
 			myContent.remove("iqeditform");
 		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 			boolean needManualCorrection = needManualCorrectionQTI21(re);
+			if(replacedTest) {// set some default settings in case the user don't save the next panel
+				moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, needManualCorrection ? "manual" : "auto");
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 			QTI21DeliveryOptions deliveryOptions =  qti21service.getDeliveryOptions(re);
 			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), moduleConfiguration, deliveryOptions, needManualCorrection);
 			mod21ConfigForm.update(re);
@@ -221,6 +231,10 @@ public class IQConfigurationController extends BasicController {
 			myContent.put("iqeditform", modOnyxConfigForm.getInitialComponent());
 		} else {
 			boolean hasEssay = needManualCorrectionQTI12(re);
+			if(replacedTest) {// set some default settings in case the user don't save the next panel
+				moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, hasEssay ? "manual" : "auto");
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 			mod12ConfigForm = new IQ12EditForm(ureq, getWindowControl(), moduleConfiguration, hasEssay);
 			mod12ConfigForm.update(re.getOlatResource());
 			listenTo(mod12ConfigForm);
@@ -280,7 +294,7 @@ public class IQConfigurationController extends BasicController {
 				RepositoryEntry re = searchController.getSelectedEntry();
 				boolean needManualCorrection = checkManualCorrectionNeeded(re);
 				doIQReference(urequest, re, needManualCorrection);
-				updateEditController(urequest);
+				updateEditController(urequest, true);
 			}
 		} else if (source == replaceWizard) {
 			if(event == Event.CANCELLED_EVENT) {

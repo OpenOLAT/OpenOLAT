@@ -315,7 +315,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		} else if (source == layoutConfigurationCtrl) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-				configurationCtrl.updateEditController(urequest);
+				configurationCtrl.updateEditController(urequest, false);
 				layoutConfigurationCtrl.updateEditController(urequest);
 			}
 		}

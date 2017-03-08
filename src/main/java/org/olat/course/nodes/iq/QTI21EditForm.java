@@ -73,7 +73,7 @@ public class QTI21EditForm extends FormBasicController {
 	private StaticTextElement minScoreEl, maxScoreEl, cutValueEl;
 	private MultipleSelectionElement showResultsOnFinishEl, assessmentResultsOnFinishEl;
 	
-	private final boolean needManulCorrection;
+	private final boolean needManualCorrection;
 	private final ModuleConfiguration modConfig;
 	private final QTI21DeliveryOptions deliveryOptions;
 
@@ -81,12 +81,12 @@ public class QTI21EditForm extends FormBasicController {
 	private QTI21Service qtiService;
 	
 	public QTI21EditForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig,
-			QTI21DeliveryOptions deliveryOptions, boolean needManulCorrection) {
+			QTI21DeliveryOptions deliveryOptions, boolean needManualCorrection) {
 		super(ureq, wControl);
 		
 		this.modConfig = modConfig;
 		this.deliveryOptions = (deliveryOptions == null ? new QTI21DeliveryOptions() : deliveryOptions);
-		this.needManulCorrection = needManulCorrection;
+		this.needManualCorrection = needManualCorrection;
 		
 		initForm(ureq);
 	}
@@ -116,7 +116,7 @@ public class QTI21EditForm extends FormBasicController {
 			}
 		}
 		if(!selected) {
-			if(needManulCorrection) {
+			if(needManualCorrection) {
 				correctionModeEl.select(correctionModeKeys[1], true);
 			} else {
 				correctionModeEl.select(correctionModeKeys[0], true);
@@ -195,10 +195,8 @@ public class QTI21EditForm extends FormBasicController {
 			showResultsOnFinishEl.uncheckAll();
 			assessmentResultsOnFinishEl.uncheckAll();
 		}
-		
-		
+
 		uifactory.addFormSubmitButton("submit", formLayout);
-		
 		update();
 	}
 	
