@@ -55,6 +55,7 @@ import org.olat.course.highscore.manager.HighScoreManager;
 import org.olat.course.highscore.model.HighScoreRankingResults;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -74,7 +75,7 @@ public class HighScoreRunController extends FormBasicController{
 	private List<Integer> ownIdIndices;
 	private int tableSize;
 	private Identity ownIdentity;
-	private boolean viewTable, viewPosition, viewHistogram, viewPodium, viewHighscore, anonymous;
+	private boolean viewTable, viewPosition, viewHistogram, viewPodium, viewHighscore, anonymous, isSTCourseNode;
 	private double[] allScores;
 	private Link[] links = new Link[3];
 	private CloseableCalloutWindowController calloutCtr;
@@ -108,6 +109,7 @@ public class HighScoreRunController extends FormBasicController{
 			CourseNode courseNode) {
 		super(ureq, wControl, "highscore");
 		this.nodeID = courseNode.getIdent();
+		this.isSTCourseNode = courseNode instanceof STCourseNode;
 		
 		setupContent(ureq, userCourseEnv, courseNode);
 	}
@@ -151,16 +153,8 @@ public class HighScoreRunController extends FormBasicController{
 			return;		
 		}	
 		
-		List<AssessmentEntry>  assessEntries;
-		if ("iqtest".equals(courseNode.getType())) {
-			assessEntries =	assessmentManager.getAssessmentEntriesWithStatus(courseNode, null);
-		} else {
-			assessEntries =	assessmentManager.getAssessmentEntries(courseNode);
-		}
-		// do not take coach or admin results into account
-		if (assessEntries != null && adminORcoach) {
-			assessEntries.remove(ownEntry);
-		}		
+		List<AssessmentEntry> assessEntries = assessmentManager.getAssessmentEntriesWithStatus(courseNode, null, isSTCourseNode);
+
 		// display only if has content
 		if (assessEntries == null || assessEntries.isEmpty()) {
 			viewHighscore = false;

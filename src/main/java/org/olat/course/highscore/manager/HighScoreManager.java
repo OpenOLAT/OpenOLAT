@@ -74,21 +74,22 @@ public class HighScoreManager {
 //		int rank = 1;
 		double[] allScores = new double[allMembers.size()];
 		for (int j = 0; j < allMembers.size(); j++) {
-			if (allMembers.get(j).getScore() < buffer){
+			HighScoreTableEntry member = allMembers.get(j);
+			if (member.getScore() < buffer){
 				index++;
 //				rank = j + 1;
 			}
-			//first three position are put in separate lists,
-			if (index < 3){
-				allPodium.get(index).add(allMembers.get(j));
+			//first three position are put in separate lists, exclude zero scorers
+			if (index < 3 && member.getScore() > 0) {
+				allPodium.get(index).add(member);
 			}
 			// finding position rank for own id
-			if (allMembers.get(j).getIdentity().equals(ownIdentity)){
+			if (member.getIdentity().equals(ownIdentity)){
 				ownIdIndices.add(j);
 			}
 			//setting rank for each member 
-			allMembers.get(j).setRank(index + 1);
-			buffer = allMembers.get(j).getScore();
+			member.setRank(index + 1);
+			buffer = member.getScore();
 			//adding scores for histogram
 			allScores[j] = buffer;
 		}

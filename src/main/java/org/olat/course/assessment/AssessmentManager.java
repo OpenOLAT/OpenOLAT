@@ -207,7 +207,7 @@ public interface AssessmentManager {
 
 	public List<AssessmentEntry> getAssessmentEntries(CourseNode courseNode);
 	
-	public List<AssessmentEntry> getAssessmentEntriesWithStatus(CourseNode courseNode, AssessmentEntryStatus status);
+	public List<AssessmentEntry> getAssessmentEntriesWithStatus(CourseNode courseNode, AssessmentEntryStatus status, boolean excludeZeroScore);
 	
 	public List<AssessmentEntry> getAssessmentEntries(BusinessGroup group, CourseNode courseNode);
 	
