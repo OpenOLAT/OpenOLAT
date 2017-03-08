@@ -75,7 +75,7 @@ public class FinishCallback implements StepRunnerCallback {
 		if (msg.getParentKey() == null && msg.getThreadtop() == null) {
 			msg = forumManager.createOrAppendThreadInAnotherForum(msg, chosenforum, parentMessage);
 		} else {
-			msg = forumManager.moveMessageToAnotherForum(msg, parentMessage);		
+			msg = forumManager.moveMessageToAnotherForum(msg, chosenforum, parentMessage);		
 		}
 		DBFactory.getInstance().commit();//commit before sending event
 		if ((Boolean)runContext.get(SendMailStepForm.SENDMAIL)) {

@@ -928,7 +928,7 @@ public class ForumManagerTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//move the message
-		Message movedMessage = forumManager.moveMessageToAnotherForum(messageToMove, targetMessage);
+		Message movedMessage = forumManager.moveMessageToAnotherForum(messageToMove, fo2, targetMessage);
 		
 		//check target thread
 		List<Message> targetMessages = forumManager.getThread(targetThread.getKey());
