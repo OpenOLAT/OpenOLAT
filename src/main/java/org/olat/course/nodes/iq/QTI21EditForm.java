@@ -159,6 +159,7 @@ public class QTI21EditForm extends FormBasicController {
 		showResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results");
 		showResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 		showResultsOnFinishEl.setEnabled(!configRef);
+		showResultsOnFinishEl.setHelpText(translate("qti.form.results.onfinish.help"));
 
 		String[] resultsOptionsValues = new String[] {
 				translate("qti.form.summary.metadata"), translate("qti.form.summary.sections"),
