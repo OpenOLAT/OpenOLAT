@@ -198,8 +198,8 @@ public class SelectThreadStepForm extends StepFormBasicController {
 					"unread", new StaticFlexiCellRenderer("unread", new TextFlexiCellRenderer())));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.totalMessages));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
-		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ThreadListCols.select, "select",
+				new StaticFlexiCellRenderer(translate("select"), "select", "", "o_icon o_icon_select o_icon-fw")));		
 		
 		threadTableModel = new ThreadListDataModel(columnsModel, getTranslator());
 		threadTable = uifactory.addTableElement(getWindowControl(), "threads", threadTableModel, getTranslator(), formLayout);

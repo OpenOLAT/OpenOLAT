@@ -99,7 +99,8 @@ public class ThreadListDataModel extends DefaultFlexiTableDataModel<ForumThread>
 		lastModified("table.lastModified"),
 		markedMessages("table.marked"),
 		unreadMessages("table.unread"),
-		totalMessages("table.total");
+		totalMessages("table.total"),
+		select("select");
 		
 		private final String i18nKey;
 	
