@@ -276,7 +276,7 @@ public class AssessmentForm extends FormBasicController {
 	protected void doUpdateAssessmentData(boolean setAsDone) {
 		Float updatedScore = null;
 		Boolean updatedPassed = null;
-		
+
 		if (isHasAttempts() && isAttemptsDirty()) {
 			assessableCourseNode.updateUserAttempts(new Integer(getAttempts()), assessedUserCourseEnv, getIdentity());
 		}

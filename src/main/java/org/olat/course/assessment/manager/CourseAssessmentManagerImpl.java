@@ -267,7 +267,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		assessmentEntry.setPassed(passed);
 		assessmentEntry.setFullyAssessed(scoreEvaluation.getFullyAssessed());
-		assessmentEntry.setAssessmentId(assessmentId);
+		if(assessmentId != null) {
+			assessmentEntry.setAssessmentId(assessmentId);
+		}
 		if(scoreEvaluation.getAssessmentStatus() != null) {
 			assessmentEntry.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
 		}

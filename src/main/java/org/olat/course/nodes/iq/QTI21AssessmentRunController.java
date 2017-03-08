@@ -442,7 +442,12 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		} else {
 			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 			AssessmentEntry assessmentEntry = am.getAssessmentEntry(courseNode, getIdentity());
-			session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
+			if(assessmentEntry.getAssessmentId() != null) {
+				session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
+			} else {
+				RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				session = qtiService.getLastAssessmentTestSessions(courseEntry, courseNode.getIdent(), testEntry, getIdentity());
+			}
 		}
 		
 		if(session == null) {
