@@ -82,6 +82,8 @@
     	var seconds = Math.floor(remaining / 1000);
     	var minutes = Math.floor(seconds / 60);
     	seconds = seconds - (minutes * 60);
-    	return minutes + "' " + seconds + "\"";
+    	var hours = Math.floor(minutes / 60);
+    	minutes = minutes - (hours * 60);
+    	return (hours < 10 ? "0" : "") + hours + (minutes < 10 ? ":0" : ":") + minutes + (seconds < 10 ? ":0" : ":") + seconds;
     }
 }( jQuery ));

@@ -259,7 +259,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 	}
 	
 	/**
-	 * @return The time limit of the assessment test or -1 if not configured
+	 * @return The time limit of the assessment test in seconds or -1 if not configured
 	 */
 	private long getMaxTimeLimit() {
 		FileResourceManager frm = FileResourceManager.getInstance();
@@ -341,6 +341,14 @@ public class QTI21EditLayoutForm extends FormBasicController {
 		} else if(configEl == source) {
 			if(configEl.isOneSelected()) {
 				modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_CONFIG_REF, configEl.isSelected(0));
+				if(configEl.isSelected(1)) {// manual configuration
+					long maxTime = getMaxTimeLimit();
+					if(maxTime > 0) {
+						modConfig.setIntValue(IQEditController.CONFIG_KEY_TIME_LIMIT, (int)maxTime);
+					} else {
+						modConfig.remove(IQEditController.CONFIG_KEY_TIME_LIMIT);
+					}
+				}
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 		} else if(maxTimeEl == source) {

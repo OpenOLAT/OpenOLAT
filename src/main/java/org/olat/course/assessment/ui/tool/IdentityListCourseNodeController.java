@@ -260,6 +260,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		tableEl.setSearchEnabled(new AssessedIdentityListProvider(getIdentity(), courseEntry, referenceEntry, courseNode.getIdent(), assessmentCallback), ureq.getUserSession());
 		tableEl.setMultiSelect(!coachCourseEnv.isCourseReadOnly());
 		tableEl.setSortSettings(options);
+		tableEl.setSelectAllEnable(true);
 
 		List<FlexiTableFilter> filters = new ArrayList<>();
 		filters.add(new FlexiTableFilter(translate("filter.showAll"), "showAll", true));

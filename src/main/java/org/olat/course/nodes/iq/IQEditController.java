@@ -134,7 +134,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public final static String CONFIG_DIGITAL_SIGNATURE_SEND_MAIL = "digitalSignatureMail";
 	/** configuration key: use configuration of the reference repository entry */
 	public static final String CONFIG_KEY_CONFIG_REF = "configFromRef";
-	
+	/** configuration key: use a time limit for the test in seconds */
 	public static final String CONFIG_KEY_TIME_LIMIT = "timeLimit";
 	
 	public final static String CORRECTION_AUTO = "auto";
