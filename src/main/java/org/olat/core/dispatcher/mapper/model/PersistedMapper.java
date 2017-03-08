@@ -45,7 +45,8 @@ import org.olat.core.id.Persistable;
 @Table(name="o_mapper")
 @NamedQueries({
 	@NamedQuery(name="loadMapperByKeyOrdered", query="select mapper from pmapper as mapper where mapper.mapperId=:mapperId order by mapper.key"),
-	@NamedQuery(name="loadMapperByKey", query="select mapper from pmapper as mapper where mapper.mapperId=:mapperId")
+	@NamedQuery(name="loadMapperByKey", query="select mapper from pmapper as mapper where mapper.mapperId=:mapperId"),
+	@NamedQuery(name="updateMapperByMapperId", query="update pmapper set lastModified=:now, expirationDate=:expirationDate, xmlConfiguration=:config where mapperId=:mapperId")
 })
 public class PersistedMapper implements CreateInfo, ModifiedInfo, Persistable {
 

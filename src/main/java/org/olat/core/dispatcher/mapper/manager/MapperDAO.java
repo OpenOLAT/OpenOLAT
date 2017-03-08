@@ -44,6 +44,15 @@ public class MapperDAO {
 	@Autowired
 	private DB dbInstance;
 	
+	/**
+	 * Persist a mapper on the database.
+	 * 
+	 * @param sessionId The HTTP session id
+	 * @param mapperId The unique id of the mapper
+	 * @param mapper The mapper (serializable)
+	 * @param expirationTime The expiration time in seconds
+	 * @return
+	 */
 	public PersistedMapper persistMapper(String sessionId, String mapperId, Serializable mapper, int expirationTime) {
 		PersistedMapper m = new PersistedMapper();
 		m.setMapperId(mapperId);
@@ -64,33 +73,33 @@ public class MapperDAO {
 		return m;
 	}
 	
+	/**
+	 * Update a persisted mapper.
+	 * 
+	 * @param mapperId The mapper unique id (uuid)
+	 * @param mapper The mapper itself (serializable)
+	 * @param expirationTime The expiration time in seconds
+	 * @return
+	 */
 	public boolean updateConfiguration(String mapperId, Serializable mapper, int expirationTime) {
-		PersistedMapper m = loadForUpdate(mapperId);
-		if(m != null) {
-			String configuration = XStreamHelper.createXStreamInstance().toXML(mapper);
-			m.setXmlConfiguration(configuration);
-			Date currentDate = new Date();
-			m.setLastModified(currentDate);
-			if(expirationTime > 0) {
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(currentDate);
-				cal.add(Calendar.SECOND, expirationTime);
-				m.setExpirationDate(cal.getTime());
-			}
-			dbInstance.getCurrentEntityManager().merge(m);
+		String configuration = XStreamHelper.createXStreamInstance().toXML(mapper);
+		Date currentDate = new Date();
+		Date expirationDate = null;
+		if(expirationTime > 0) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(currentDate);
+			cal.add(Calendar.SECOND, expirationTime);
+			expirationDate = cal.getTime();
 		}
+		int row = dbInstance.getCurrentEntityManager().createNamedQuery("updateMapperByMapperId")
+			.setParameter("now", currentDate)
+			.setParameter("expirationDate", expirationDate)
+			.setParameter("config", configuration)
+			.setParameter("mapperId", mapperId)
+			.executeUpdate();
+
 		dbInstance.commit();
-		return true;
-	}
-	
-	private PersistedMapper loadForUpdate(String mapperId) {
-		List<PersistedMapper> mappers = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadMapperByKeyOrdered", PersistedMapper.class)
-				.setParameter("mapperId", mapperId)
-				.setFirstResult(0)
-				.setMaxResults(1)
-				.getResultList();
-		return mappers.isEmpty() ? null : mappers.get(0);
+		return row > 0;
 	}
 	
 	public PersistedMapper loadByMapperId(String mapperId) {

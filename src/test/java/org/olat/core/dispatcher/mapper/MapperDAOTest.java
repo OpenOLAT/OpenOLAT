@@ -132,6 +132,41 @@ public class MapperDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void testUpdateMapper_serializade_withExpirationDate() {
+		//create a mapper
+		String mapperId = UUID.randomUUID().toString();
+		String sessionId = UUID.randomUUID().toString().substring(0, 32);
+		PersistentMapper sMapper = new PersistentMapper("mapper-to-persist-until");
+		PersistedMapper pMapper = mapperDao.persistMapper(sessionId, mapperId, sMapper, 60000);
+		Assert.assertNotNull(pMapper);
+		dbInstance.commitAndCloseSession();
+		
+		//load the mapper
+		PersistedMapper loadedMapper = mapperDao.loadByMapperId(mapperId);
+		Assert.assertNotNull(loadedMapper);
+		Object objReloaded = XStreamHelper.createXStreamInstance().fromXML(pMapper.getXmlConfiguration());
+		Assert.assertTrue(objReloaded instanceof PersistentMapper);
+		PersistentMapper sMapperReloaded = (PersistentMapper)objReloaded;
+		Assert.assertEquals("mapper-to-persist-until", sMapperReloaded.getKey());
+		Assert.assertNotNull(loadedMapper.getExpirationDate());
+		
+		//update
+		PersistentMapper sMapper2 = new PersistentMapper("mapper-to-update-until");
+		boolean updated = mapperDao.updateConfiguration(mapperId, sMapper2, 120000);
+		Assert.assertTrue(updated);
+		dbInstance.commitAndCloseSession();
+		
+		//load the updated mapper
+		PersistedMapper loadedMapper2 = mapperDao.loadByMapperId(mapperId);
+		Assert.assertNotNull(loadedMapper2);
+		Object objReloaded2 = XStreamHelper.createXStreamInstance().fromXML(loadedMapper2.getXmlConfiguration());
+		Assert.assertTrue(objReloaded2 instanceof PersistentMapper);
+		PersistentMapper sMapperReloaded2 = (PersistentMapper)objReloaded2;
+		Assert.assertEquals("mapper-to-update-until", sMapperReloaded2.getKey());
+		Assert.assertNotNull(loadedMapper2.getExpirationDate());
+	}
+	
+	@Test
 	public void testDeleteMapperByMapper() throws Exception {
 		//create mappers
 
