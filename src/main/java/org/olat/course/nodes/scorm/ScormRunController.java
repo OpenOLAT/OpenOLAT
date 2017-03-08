@@ -133,12 +133,6 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		if(isAssessable) {
 			assessableType = config.getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
 					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
-			
-			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, scormNode);
-			if (highScoreCtr.isViewHighscore()) {
-				Component highScoreComponent = highScoreCtr.getInitialComponent();
-				startPage.put("highScore", highScoreComponent);							
-			}
 		}
 
 		// <OLATCE-289>
@@ -156,7 +150,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// </OLATCE-289>
 
 		main = new Panel("scormrunmain");
-		doStartPage();
+		doStartPage(ureq);
 		putInitialPanel(main);
 
 		boolean doSkip = config.getBooleanSafe(ScormEditController.CONFIG_SKIPLAUNCHPAGE, false);
@@ -205,10 +199,10 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 				if (maxAttemptsReached()) {
 					startPage.contextPut("maxAttemptsReached", Boolean.TRUE);
 				}
-				doStartPage();
+				doStartPage(ureq);
 			} else {
 				// </OLATCE-289>
-				doStartPage();
+				doStartPage(ureq);
 				fireEvent(ureq, event);
 			}
 		} else if (source == null) { // external source
@@ -223,7 +217,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		}
 	}
 
-	private void doStartPage() {
+	private void doStartPage(UserRequest ureq) {
 
 		// push title and learning objectives, only visible on intro page
 		startPage.contextPut("menuTitle", scormNode.getShortTitle());
@@ -254,6 +248,12 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 				startPage.contextPut("comment", StringHelper.xssScan(comment));
 			}
 			startPage.contextPut("attempts", scormNode.getUserAttempts(userCourseEnv));
+			
+			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, scormNode);
+			if (highScoreCtr.isViewHighscore()) {
+				Component highScoreComponent = highScoreCtr.getInitialComponent();
+				startPage.put("highScore", highScoreComponent);							
+			}
 		}
 		startPage.contextPut("isassessable", Boolean.valueOf(isAssessable));
 		main.setContent(startPage);
@@ -367,7 +367,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	 */
 	public void lmsFinish(String olatSahsId, Properties scoreProp, Properties lessonStatusProp) {
 		if (config.getBooleanSafe(ScormEditController.CONFIG_CLOSE_ON_FINISH, false)) {
-			doStartPage();
+			doStartPage(null);
 			scormDispC.close();
 		}
 	}

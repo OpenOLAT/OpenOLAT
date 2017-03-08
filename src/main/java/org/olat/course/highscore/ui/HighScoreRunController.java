@@ -58,7 +58,6 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
@@ -131,7 +130,7 @@ public class HighScoreRunController extends FormBasicController{
 			return;		
 		}
 		// guests will never see the highscore
-		if (ureq.getUserSession().getRoles().isGuestOnly()){
+		if (ureq != null && ureq.getUserSession().getRoles().isGuestOnly()){
 			viewHighscore = false;
 			return;			
 		}		
@@ -154,7 +153,7 @@ public class HighScoreRunController extends FormBasicController{
 		
 		List<AssessmentEntry>  assessEntries;
 		if ("iqtest".equals(courseNode.getType())) {
-			assessEntries =	assessmentManager.getAssessmentEntriesWithStatus(courseNode, AssessmentEntryStatus.done);
+			assessEntries =	assessmentManager.getAssessmentEntriesWithStatus(courseNode, null);
 		} else {
 			assessEntries =	assessmentManager.getAssessmentEntries(courseNode);
 		}
@@ -201,10 +200,13 @@ public class HighScoreRunController extends FormBasicController{
 		// add as listener to form layout for later dispatchinf of gui prefs changes
 		this.flc.getFormItemComponent().addListener(this);
 		// init showConfig from user prefs
-		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-		Boolean showConfig  = (Boolean) guiPrefs.get(HighScoreRunController.class, GUIPREF_KEY_HIGHSCORE + nodeID);
-		if (showConfig  == null) {
-			showConfig = Boolean.TRUE;
+		Boolean showConfig = Boolean.TRUE;
+		if (ureq != null) {
+			Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+			showConfig  = (Boolean) guiPrefs.get(HighScoreRunController.class, GUIPREF_KEY_HIGHSCORE + nodeID);
+			if (showConfig == null) {
+				showConfig = Boolean.TRUE;
+			}
 		}
 		// expose initial value to velocity
 		this.flc.contextPut("showConfig", Boolean.valueOf(showConfig));

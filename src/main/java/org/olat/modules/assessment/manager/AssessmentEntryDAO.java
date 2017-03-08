@@ -239,7 +239,10 @@ public class AssessmentEntryDAO {
 		sb.append("select data from assessmententry data ")
 		   .append(" inner join fetch data.identity ident") 
 		   .append(" inner join fetch ident.user identuser")
-		   .append(" where data.repositoryEntry.key=:repositoryEntryKey and data.subIdent=:subIdent");
+		   .append(" where data.repositoryEntry.key=:repositoryEntryKey")
+		   .append(" and data.subIdent=:subIdent")
+		   .append(" and data.userVisibility is true")
+		   .append(" and data.score is not null");
 		
 		if (status != null) {
 			sb.append(" and data.status=:status");
