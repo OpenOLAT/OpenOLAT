@@ -470,7 +470,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	public AssessmentTestSession getResumableAssessmentTestSession(Identity identity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, boolean authorMode) {
 		AssessmentTestSession session = testSessionDao.getLastTestSession(testEntry, entry, subIdent, identity, anonymousIdentifier, authorMode);
-		if(session == null || session.isExploded() || session.getTerminationTime() != null) {
+		if(session == null || session.isExploded() || session.getFinishTime() != null || session.getTerminationTime() != null) {
 			session = null;
 		} else {
 			File sessionFile = getTestSessionStateFile(session);

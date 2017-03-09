@@ -256,9 +256,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 			/* Handle immediate end of test session */
 	        if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
-	        	AssessmentResult assessmentResult = null;
-	        	qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult,
-	             		currentRequestTimestamp, getDigitalSignatureOptions(), getIdentity());
+	        	immediateEndTestSession(ureq);
 	         	mainVC = createVelocityContainer("end");
 	        } else {
 	        	mainVC = createVelocityContainer("run");
@@ -275,6 +273,18 @@ public class AssessmentTestDisplayController extends BasicController implements 
         OLATResourceable sessionOres = OresHelper
         		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
         CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), sessionOres);
+	}
+	
+	private void immediateEndTestSession(UserRequest ureq) {
+		AssessmentResult assessmentResult = qtiService.getAssessmentResult(candidateSession);
+		if(assessmentResult == null) {
+            candidateSession.setTerminationTime(ureq.getRequestTimestamp());
+            candidateSession.setExploded(true);
+            candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
+		} else {
+			qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult,
+         		currentRequestTimestamp, getDigitalSignatureOptions(), getIdentity());
+		}
 	}
 	
 	private String getAnonymousIdentifier(UserSession usess) {
@@ -332,7 +342,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	@Override
 	protected void doDispose() {
-		suspendAssessmentTest();
+		suspendAssessmentTest(new Date());
         OLATResourceable sessionOres = OresHelper
         		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, sessionOres);
@@ -428,7 +438,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private void doSuspend(UserRequest ureq) {
 		VelocityContainer suspendedVC = createVelocityContainer("suspended");
 		mainPanel.setContent(suspendedVC);
-		suspendAssessmentTest();
+		suspendAssessmentTest(ureq.getRequestTimestamp());
 		fireEvent(ureq, new Event("suspend"));
 	}
 
@@ -436,7 +446,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * It suspend the current item
 	 * @return
 	 */
-	private boolean suspendAssessmentTest() {
+	private boolean suspendAssessmentTest(Date requestTimestamp) {
 		if(!deliveryOptions.isEnableSuspend() || testSessionController == null
 				|| testSessionController.getTestSessionState() == null
 				|| testSessionController.getTestSessionState().isEnded()
@@ -458,8 +468,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				&& !itemSessionState.isExited()
 				&& itemSessionState.isOpen()
 				&& !itemSessionState.isSuspended()) {
+			
 			ItemSessionController itemSessionController = (ItemSessionController)itemProcessingContext;
-			itemSessionController.suspendItemSession(new Date());
+			itemSessionController.suspendItemSession(requestTimestamp);
+			computeAndRecordTestAssessmentResult(requestTimestamp, testSessionState, false);
 			
 			NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 			final CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
@@ -711,7 +723,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
 
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
+        computeAndRecordTestAssessmentResult(ureq.getRequestTimestamp(), testSessionState, false);
 
         /* Record and log event */
         final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
@@ -746,7 +758,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         }
 
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
+        computeAndRecordTestAssessmentResult(ureq.getRequestTimestamp(), testSessionState, false);
 
         /* Record and log event */
         CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
@@ -784,7 +796,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	    //boolean terminated = nextItemNode == null && testSessionController.findNextEnterableTestPart() == null; 
 
 	    // Record current result state
-	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
+	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(requestTimestamp, testSessionState, false);
 
 	    /* If we ended the testPart and there are now no more available testParts, then finish the session now */
 	    if (nextItemNode==null && testSessionController.findNextEnterableTestPart()==null) {
@@ -924,7 +936,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         this.lastEvent = candidateEvent;
 
         /* Record current result state */
-        AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, false);
+        AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(timestamp, testSessionState, false);
         
         ItemSessionState itemSessionState = testSessionState.getCurrentItemSessionState();
 		long itemDuration = itemSessionState.getDurationAccumulated();
@@ -999,7 +1011,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         TestPlanNode nextTestPart = testSessionController.findNextEnterableTestPart();
         
         // Record current result state
-	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, nextTestPart == null);
+	    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(requestTimestamp, testSessionState, nextTestPart == null);
         if(nextTestPart == null) {
         	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
         			requestTimestamp, getDigitalSignatureOptions(), getIdentity());
@@ -1108,7 +1120,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         boolean terminated = isTerminated();
 
         /* Record current result state */
-        computeAndRecordTestAssessmentResult(ureq, testSessionState, terminated);
+        computeAndRecordTestAssessmentResult(currentTimestamp, testSessionState, terminated);
 
         /* Record and log event */
         final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
@@ -1167,7 +1179,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
 
         /* Record current result state (final) */
-        computeAndRecordTestAssessmentResult(ureq, testSessionState, true);
+        computeAndRecordTestAssessmentResult(currentTimestamp, testSessionState, true);
 
         /* Record and log event */
         final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
@@ -1190,9 +1202,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			
 	        final Date requestTimestamp = ureq.getRequestTimestamp();
 			testSessionController.exitTestIncomplete(requestTimestamp);
+			
+	        candidateSession.setTerminationTime(requestTimestamp);
 	
 			 // Record current result state
-		    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, true);
+		    final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(requestTimestamp, testSessionState, true);
 	        candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
 	        			requestTimestamp, getDigitalSignatureOptions(), getIdentity());
 	        
@@ -1252,7 +1266,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         boolean ended = testSessionState.isEnded();
 
         /* Record current result state */
-        final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(ureq, testSessionState, ended);
+        final AssessmentResult assessmentResult = computeAndRecordTestAssessmentResult(timestamp, testSessionState, ended);
 
         /* Handle immediate end of test session */
         if (ended) {
@@ -1352,8 +1366,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
         return result;
     }
 	
-	private AssessmentResult computeAndRecordTestAssessmentResult(UserRequest ureq, TestSessionState testSessionState, boolean submit) {
-		AssessmentResult assessmentResult = computeTestAssessmentResult(ureq, candidateSession);
+	private AssessmentResult computeAndRecordTestAssessmentResult(Date requestTimestamp, TestSessionState testSessionState, boolean submit) {
+		AssessmentResult assessmentResult = computeTestAssessmentResult(requestTimestamp, candidateSession);
 		qtiService.recordTestAssessmentResult(candidateSession, testSessionState, assessmentResult, candidateAuditLogger);
 		processOutcomeVariables(assessmentResult.getTestResult(), submit);
 		return assessmentResult;
@@ -1388,7 +1402,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
     	}
     }
 	
-    private AssessmentResult computeTestAssessmentResult(UserRequest ureq, final AssessmentTestSession testSession) {
+    private AssessmentResult computeTestAssessmentResult(Date requestTimestamp, final AssessmentTestSession testSession) {
     	List<ContextEntry> entries = getWindowControl().getBusinessControl().getEntries();
     	OLATResourceable testSessionOres = OresHelper.createOLATResourceableInstance("TestSession", testSession.getKey());
     	entries.add(BusinessControlFactory.getInstance().createContextEntry(testSessionOres));
@@ -1396,7 +1410,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
         final URI sessionIdentifierSourceId = URI.create(url);
         final String sessionIdentifier = "testsession/" + testSession.getKey();
         return testSessionController
-        		.computeAssessmentResult(ureq.getRequestTimestamp(), sessionIdentifier, sessionIdentifierSourceId);
+        		.computeAssessmentResult(requestTimestamp, sessionIdentifier, sessionIdentifierSourceId);
     }
 	
 	private TestProcessingMap getTestProcessingMap() {

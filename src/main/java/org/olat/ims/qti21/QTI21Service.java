@@ -198,6 +198,17 @@ public interface QTI21Service {
 	 */
 	public AssessmentSessionAuditLogger getAssessmentSessionAuditLogger(AssessmentTestSession session, boolean authorMode);
 	
+	/**
+	 * This will return the last session if it's not finished, terminated or exploded.
+	 * 
+	 * @param identity The identity which play the session
+	 * @param anonymousIdentifier The anonymous identifier which play the session
+	 * @param entry The repository entry (course or test)
+	 * @param subIdent The sub identifier (typically course element ident)
+	 * @param testEntry The repository entry of the test
+	 * @param authorMode If the sesssion is played as an author
+	 * @return A test session
+	 */
 	public AssessmentTestSession getResumableAssessmentTestSession(Identity identity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, boolean authorMode);
 
