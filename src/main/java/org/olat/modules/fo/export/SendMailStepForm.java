@@ -68,7 +68,7 @@ public class SendMailStepForm extends StepFormBasicController {
 	private MailTemplate mailTemplate;
 	private MailTemplateForm templateForm;	
 	
-	private Message startMessage;
+	private Message startMessage, parentMessage;
 	
 	@Autowired
 	private ForumManager forumManager;
@@ -90,7 +90,7 @@ public class SendMailStepForm extends StepFormBasicController {
 			comment = thread;
 		}
 		String messageTitle = startMessage.getTitle();
-		Message parentMessage = (Message)getFromRunContext(PARENT_MESSAGE);
+		parentMessage = (Message)getFromRunContext(PARENT_MESSAGE);
 		String parentMessageTitle = parentMessage != null ? parentMessage.getTitle() : startMessage.getTitle();
 		FOCourseNode node = (FOCourseNode)getFromRunContext(FORUM);
 		String targetForum = node.getShortTitle();
@@ -154,18 +154,32 @@ public class SendMailStepForm extends StepFormBasicController {
 		List<Identity> listOfIdentity = new ArrayList<>();
 		if (startMessage.getThreadtop() == null) {
 			List<Message> messages = forumManager.getTopMessageChildren(startMessage);
+			// if  added to another thread, inform those creators and modifiers as well
+			if (parentMessage != null && !parentMessage.equals(startMessage)) {
+				List<Message> parentMessages = forumManager.getTopMessageChildren(parentMessage);
+				messages.addAll(parentMessages);
+			}
+			// iterate all messages and extract distinct identities involved
 			for (Message message : messages) {
 				Identity creator = message.getCreator();
-				if (!listOfIdentity.contains(creator)) {
+				if (creator != null && !listOfIdentity.contains(creator)) {
 					listOfIdentity.add(creator);
 				}
 				Identity modifier = message.getModifier();
-				if (!listOfIdentity.contains(modifier) && !creator.equals(modifier)) {
+				if (modifier != null && !listOfIdentity.contains(modifier) && !creator.equals(modifier)) {
 					listOfIdentity.add(modifier);
 				}
 			}			
 		} else {
-			listOfIdentity.add(startMessage.getCreator());
+			// only inform the message owner and possible modifier
+			Identity creator = startMessage.getCreator(); 
+			if (creator != null){
+				listOfIdentity.add(creator);
+			}
+			Identity modifier = startMessage.getCreator(); 
+			if (modifier != null){
+				listOfIdentity.add(modifier);
+			}
 		}
 		return listOfIdentity;
 	}

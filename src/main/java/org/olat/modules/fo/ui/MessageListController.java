@@ -1357,9 +1357,10 @@ public class MessageListController extends BasicController implements GenericEve
 			StepRunnerCallback finish = new FinishCallback(); 
 			Translator trans = Util.createPackageTranslator(Step_1_SelectCourse.class, getLocale());
 			Step start = new Step_1_SelectCourse(ureq);
-			exportCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-					trans.translate("title.wizard.movethread"), "o_sel_bulk_assessment_wizard");
 			Message message = forumManager.getMessageById(messageToMove.getKey());
+			String wizardTitle = trans.translate("title.wizard.movethread", new String[]{message.getTitle()}); 
+			exportCtrl = new StepsMainRunController(ureq, getWindowControl(), start, finish, null, wizardTitle,
+					"o_sel_bulk_assessment_wizard");
 			StepsRunContext runContext = exportCtrl.getRunContext();
 			// can be threadtop message
 			runContext.put("messageToMove", message);

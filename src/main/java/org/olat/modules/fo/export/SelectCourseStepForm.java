@@ -142,8 +142,11 @@ public class SelectCourseStepForm extends StepFormBasicController {
 	}
 	
 	private boolean isCourseChosen(FormItem source, FormEvent event) {
-		return "done".equals(event.getCommand()) && "next".equals(source.getName())
-				&& !(Boolean)getFromRunContext(SendMailStepForm.COURSE_CHOSEN);
+		Boolean courseChosen = (Boolean)getFromRunContext(SendMailStepForm.COURSE_CHOSEN);
+		if (courseChosen == null) { 
+			return false;
+		}
+		return "done".equals(event.getCommand()) && "next".equals(source.getName()) && !courseChosen;
 	}
 
 	
