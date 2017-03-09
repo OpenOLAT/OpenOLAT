@@ -94,7 +94,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.options");
-		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
+		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_options");
 		formLayout.setElementCssClass("o_sel_qti_resource_options");
 		
 		String[] settingTypeValues = new String[]{ translate("qti.form.setting.summative"), translate("qti.form.setting.formative") };
@@ -159,6 +159,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 				resultsOptionsKeys, resultsOptionsValues, 1);
 		assessmentResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
 		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
+		assessmentResultsOnFinishEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#overview_results");
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);

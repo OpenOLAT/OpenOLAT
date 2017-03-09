@@ -66,6 +66,8 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
 		String alternatives = interaction.alternativesToString();
 		alternativeEl = uifactory.addTextElement("fib.alternative", "fib.alternative", 256, alternatives, formLayout);
+		alternativeEl.setHelpText(translate("fib.alternative.help"));
+		alternativeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_fib");
 		
 		Integer expectedLength = interaction.getExpectedLength();
 		String expectedLengthStr = expectedLength == null ? null : expectedLength.toString();
