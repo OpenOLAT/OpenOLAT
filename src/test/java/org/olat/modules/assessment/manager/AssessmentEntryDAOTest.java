@@ -410,4 +410,52 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		AssessmentEntry deletedAssessmentEntry4 = assessmentEntryDao.loadAssessmentEntryById(nodeAssessment4.getKey());
 		Assert.assertNotNull(deletedAssessmentEntry4);
 	}
+	
+	@Test
+	public void loadAssessmentEntryBySubIdentWithStatus() {
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-22");
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-23");
+		Identity assessedIdentity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-24");
+		Identity assessedIdentity4 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-25");
+		Identity assessedIdentity5 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-25");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "rel-bg-part-1", "rel-bgis-1-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRelationToResource(group, entry);
+		businessGroupRelationDao.addRelationToResource(group, refEntry);
+		businessGroupRelationDao.addRole(assessedIdentity1, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(assessedIdentity2, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(assessedIdentity3, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(assessedIdentity4, group, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(assessedIdentity5, group, GroupRoles.coach.name());
+		
+		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, refEntry);
+		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, refEntry, 0.0f, Boolean.FALSE);
+		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity2, null, entry, null, entry, 12.0f, Boolean.FALSE);
+		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity2, null, refEntry, subIdent, refEntry, 3.0f, Boolean.FALSE);
+		AssessmentEntry nodeAssessmentId5 = assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, refEntry, 6.0f, Boolean.TRUE);
+		AssessmentEntry nodeAssessmentId6 = assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, refEntry, 1.0f, Boolean.FALSE);
+		AssessmentEntry nodeAssessmentId7 = assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity5, null, entry, subIdent, refEntry, 10.0f, Boolean.TRUE);
+		dbInstance.commitAndCloseSession();
+		// load with our subIdent above
+		List<AssessmentEntry> assessmentEntries = assessmentEntryDao
+				.loadAssessmentEntryBySubIdentWithStatus(entry, subIdent, null, true);
+		Assert.assertNotNull(assessmentEntries);
+		Assert.assertEquals(2, assessmentEntries.size());
+		Assert.assertFalse(assessmentEntries.contains(nodeAssessmentId1));
+		Assert.assertFalse(assessmentEntries.contains(nodeAssessmentId2));
+		Assert.assertFalse(assessmentEntries.contains(nodeAssessmentId3));
+		Assert.assertFalse(assessmentEntries.contains(nodeAssessmentId4));
+		Assert.assertTrue(assessmentEntries.contains(nodeAssessmentId5));
+		Assert.assertTrue(assessmentEntries.contains(nodeAssessmentId6));
+		Assert.assertFalse(assessmentEntries.contains(nodeAssessmentId7));
+	}
 }
