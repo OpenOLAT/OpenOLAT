@@ -22,6 +22,7 @@ package org.olat.selenium.page.qti;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -47,6 +48,13 @@ public class QTI21LayoutConfigurationCEPage {
 	public QTI21LayoutConfigurationCEPage fullWindow() {
 		By fullWindowBy = By.cssSelector(".o_qti_21_configuration_full_window input[type='checkbox']");
 		browser.findElement(fullWindowBy).click();
+		return this;
+	}
+	
+	public QTI21LayoutConfigurationCEPage enableSuspend() {
+		By suspendBy = By.cssSelector(".o_sel_qti_enable_suspend input[type='checkbox']");
+		WebElement suspendEl = browser.findElement(suspendBy);
+		OOGraphene.check(suspendEl, Boolean.TRUE);
 		return this;
 	}
 

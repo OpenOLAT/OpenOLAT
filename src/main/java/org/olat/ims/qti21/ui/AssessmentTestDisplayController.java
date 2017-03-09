@@ -1512,13 +1512,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			
 			if(deliveryOptions.isEnableCancel()) {
 				cancelTestButton = uifactory.addFormLink("cancelTest", "cancel.test", null, formLayout, Link.BUTTON);
+				cancelTestButton.setElementCssClass("o_sel_cancel_test");
 				cancelTestButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_cancel");
-
 			}
 			if(deliveryOptions.isEnableSuspend()) {
 				suspendTestButton = uifactory.addFormLink("suspendTest", "suspend.test", null, formLayout, Link.BUTTON);
+				suspendTestButton.setElementCssClass("o_sel_suspend_test");
 				suspendTestButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_suspend");
-
 			}
 			
 			closeResultsButton = uifactory.addFormLink("closeResults", "assessment.test.close.results", null, formLayout, Link.BUTTON);

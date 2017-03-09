@@ -297,6 +297,9 @@ public class CalendarEntryForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_cal_entry_form");
 		
+		setFormTitle("cal.form.title");
+		setFormContextHelp("Calendar");
+		
 		chooseCalendar = uifactory.addDropdownSingleselect("cal.form.chooseCalendar", formLayout, calendarKeys, calendarValues, null);
 		if(choosenWrapper != null) {
 			chooseCalendar.select(choosenWrapper.getKalendar().getCalendarID(), true);

@@ -44,6 +44,7 @@ import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21EditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
+import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
@@ -693,5 +694,127 @@ public class ImsQTI21Test {
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(9)
 			.assertOnAssessmentTestMaxScore(9);
+	}
+	
+
+	/**
+	 * Upload a test in QTI 2.1 format, create a course, bind
+	 * the test in a course element, customize the options
+	 * with full window mode, allow suspending the test,
+	 * show scores and assessment results.<br>
+	 * Then run it and at the middle of the test, suspend it, log out.
+	 * Return with resume to the course and resume the test, finish it
+	 * and check if the assessment results appears after
+	 * closing the test and on the start page of the test course element.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21Test_suspend(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "No skipping QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_4_no_skipping.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile);
+		
+		//create a course
+		String courseTitle = "Course QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		String testNodeTitle = "QTI21Test-1";
+		
+		//create a course element of type CP with the CP that we create above
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("iqtest")
+			.nodeTitle(testNodeTitle)
+			.selectTabLearnContent()
+			.chooseTest(qtiTestTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLayoutConfiguration()
+			.overrideConfiguration()
+			.fullWindow()
+			.saveLayoutConfiguration();
+		configPage
+			.selectConfiguration()
+			.showScoreOnHomepage(true)
+			.showResultsOnHomepage(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.saveConfiguration()
+			.selectLayoutConfiguration()
+			.overrideConfiguration()
+			.enableSuspend()
+			.saveLayoutConfiguration();
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		//open the course and see the CP
+		CoursePageFragment course = courseEditor
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.selectWithTitle(testNodeTitle);
+		
+		//check that the title of the start page of test is correct
+		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
+		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.start()
+			.answerSingleChoice("Correct")
+			.saveAnswer()
+			.answerMultipleChoice("Correct")
+			.saveAnswer()
+			.suspendTest();
+		
+		//log out
+		new UserToolsPage(browser)
+			.logout();
+		// return
+		authorLoginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		//resume the course, resume the test
+		qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.start()
+			.assertOnAssessmentItem("Kprim")
+			.answerCorrectKPrim("True", "Right")
+			.answerIncorrectKPrim("False", "Wrong")
+			.saveAnswer()
+			.answerGapText("43", "_RESPONSE_1")
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestMaxScore(4)
+			.assertOnAssessmentTestScore(4)
+			.assertOnAssessmentTestPassed()
+			.closeAssessmentResults();
+		//check the result on the start page
+		qtiPage
+			.assertOnCourseAssessmentTestScore(4)
+			.assertOnCourseAttempts(1);
 	}
 }

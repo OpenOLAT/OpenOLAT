@@ -65,7 +65,7 @@ public class CalendarEntryDetailsController extends BasicController {
 	private Collection<KalendarRenderWrapper> availableCalendars;
 	private boolean isNew, isReadOnly;
 	private KalendarEvent kalendarEvent;
-	private VelocityContainer mainVC, eventVC, linkVC;
+	private VelocityContainer mainVC, linkVC;
 	private TabbedPane pane;
 	private CalendarEntryForm eventForm;
 	private CloseableModalController cmc;
@@ -93,16 +93,11 @@ public class CalendarEntryDetailsController extends BasicController {
 		pane.addListener(this);
 		mainVC.put("pane", pane);
 		
-		eventVC = createVelocityContainer("calEditDetails");
-		eventVC.contextPut("caller", caller);
-		eventVC.contextPut("isNewEvent", new Boolean(isNew));
-		
 		eventForm = new CalendarEntryForm(ureq, wControl, kalendarEvent, calendarWrapper, availableCalendars, isNew);
 		listenTo(eventForm);
-		eventVC.put("eventForm", eventForm.getInitialComponent());
 		isReadOnly = calendarWrapper == null ? true : calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
-		eventVC.contextPut("isReadOnly", new Boolean(isReadOnly));
-		pane.addTab(translate("tab.event"), eventVC);
+
+		pane.addTab(translate("tab.event"), eventForm.getInitialComponent());
 		
 		linkVC = createVelocityContainer ("calEditLinks");
 		linkVC.contextPut("caller", caller);

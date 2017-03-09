@@ -239,6 +239,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 		boolean enableSuspend = configRef ? deliveryOptions.isEnableSuspend() :
 				modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESUSPEND, deliveryOptions.isEnableSuspend());
 		enableSuspendEl = uifactory.addCheckboxesHorizontal("suspend", "qti.form.enablesuspend", formLayout, onKeys, onValues);
+		enableSuspendEl.setElementCssClass("o_sel_qti_enable_suspend");
 		enableSuspendEl.setEnabled(!configRef);
 		if(enableSuspend) {
 			enableSuspendEl.select(onKeys[0], true);
@@ -247,6 +248,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 		boolean enableCancel = configRef ? deliveryOptions.isEnableCancel() :
 				modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLECANCEL, deliveryOptions.isEnableCancel());
 		enableCancelEl = uifactory.addCheckboxesHorizontal("cancel", "qti.form.enablecancel", formLayout, onKeys, onValues);
+		enableCancelEl.setElementCssClass("o_sel_qti_enable_cancel");
 		enableCancelEl.setEnabled(!configRef);
 		if(enableCancel) {
 			enableCancelEl.select(onKeys[0], true);

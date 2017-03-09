@@ -99,7 +99,7 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page answerSingleChoice(String answer) {
-		By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][p[contains(text(),'" + answer + "')]]]/td[contains(@class,'control')]/input[@type='radio']");
+		By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][p[contains(normalize-space(text()),'" + answer + "')]]]/td[contains(@class,'control')]/input[@type='radio']");
 		browser.findElement(choiceBy).click();
 		return this;
 	}
@@ -171,6 +171,14 @@ public class QTI21Page {
 	
 	public QTI21Page endTestPart() {
 		return endTest();
+	}
+	
+	public QTI21Page suspendTest() {
+		By suspendBy = By.cssSelector("a.o_sel_suspend_test");
+		browser.findElement(suspendBy).click();
+		OOGraphene.waitBusy(browser);
+		confirm();
+		return this;
 	}
 	
 	public QTI21Page endTest() {
