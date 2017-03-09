@@ -20,7 +20,7 @@
 package org.olat.ims.qti21.ui.components;
 
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.contentAsString;
-import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.valueContains;
+import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.testFeedbackVisible;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -72,7 +72,6 @@ import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedbackAccess;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
-import uk.ac.ed.ph.jqtiplus.node.test.VisibilityMode;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.state.AssessmentSectionSessionState;
@@ -455,9 +454,9 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		renderTestFeebacks(renderer, sb, currentTestPart.getTestFeedbacks(), component, TestFeedbackAccess.AT_END, ubu, translator);
 
 		//Show 'atEnd' test feedback f there's only 1 testPart
-		if(!component.hasMultipleTestParts()) {
-			renderTestFeebacks(renderer, sb, component.getAssessmentTest().getTestFeedbacks(), component, TestFeedbackAccess.AT_END, ubu, translator);
-		}
+		//if(!component.hasMultipleTestParts()) {
+		renderTestFeebacks(renderer, sb, component.getAssessmentTest().getTestFeedbacks(), component, TestFeedbackAccess.AT_END, ubu, translator);
+		//}
 		
 		//test part review
 		component.getTestSessionController().getTestSessionState().getTestPlan()
@@ -579,24 +578,20 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderTestFeeback(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestFeedback testFeedback,
 			URLBuilder ubu, Translator translator) {
-		//<xsl:variable name="identifierMatch" select="boolean(qw:value-contains(qw:get-test-outcome-value(@outcomeIdentifier), @identifier))" as="xs:boolean"/>
-		Identifier outcomeIdentifier = testFeedback.getOutcomeIdentifier();
-		Value outcomeValue = component.getTestSessionController().getTestSessionState().getOutcomeValue(outcomeIdentifier);
-		boolean identifierMatch = valueContains(outcomeValue, testFeedback.getOutcomeValue());
-		//<xsl:if test="($identifierMatch and @showHide='show') or (not($identifierMatch) and @showHide='hide')">
-		if((identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.SHOW_IF_MATCH)
-				|| (!identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.HIDE_IF_MATCH)) {
-			
-			sb.append("<h2>");
+		TestSessionState testSessionState = component.getTestSessionController().getTestSessionState();
+		if(testFeedbackVisible(testFeedback, testSessionState)) {
+			sb.append("<div class='o_info clearfix'>");
+			sb.append("<h3>");
 			if(StringHelper.containsNonWhitespace(testFeedback.getTitle())) {
 				sb.append(StringHelper.escapeHtml(testFeedback.getTitle()));
 			} else {
 				sb.append(translator.translate("assessment.test.modal.feedback"));
 			}
-			sb.append("</h2>");
+			sb.append("</h3>");
 
 			testFeedback.getChildren().forEach((flow)
 				-> renderFlow(renderer, sb, component, null, null, flow, ubu, translator));
+			sb.append("</div>");
 		}
 	}
 	

@@ -1,3 +1,16 @@
 <div id="o_qti_container">
 	<div class="o_important">$r.translate("assessment.test.suspended")</div>
 </div>
+<script type="text/javascript">
+/* <![CDATA[ */
+jQuery(function() {
+	try {
+		if(!(typeof window.qti21TestTimer === "undefined")) {
+			window.qti21TestTimer.cancel();
+		}
+	} catch(e) {
+		if(window.console) console.log(e);
+	}
+});
+/* ]]> */
+</script>

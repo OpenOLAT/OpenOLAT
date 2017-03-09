@@ -72,6 +72,8 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	
 	public boolean isExploded();
 	
+	public void setExploded(boolean exploded);
+	
 	public String getStorage();
 	
 	

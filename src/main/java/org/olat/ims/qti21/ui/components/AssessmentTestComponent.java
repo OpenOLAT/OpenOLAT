@@ -163,9 +163,7 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 			if(!itemSessionState.isResponded()) {
 				return true;
 			}
-			if(!itemNode.getEffectiveItemSessionControl().isAllowSkipping()) {
-				return true;
-			}
+
 
 			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
 			for(Interaction interaction:interactions) {
@@ -178,7 +176,6 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 			}
 
 			ItemProcessingContext itemContext = getTestSessionController().getItemProcessingContext(itemNode);
-			
 			if(assessmentItem.getItemBody().willShowFeedback(itemContext)) {
 				return true;
 			}

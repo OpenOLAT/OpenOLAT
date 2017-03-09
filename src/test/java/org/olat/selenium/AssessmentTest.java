@@ -36,7 +36,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
@@ -69,7 +68,6 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -105,9 +103,6 @@ public class AssessmentTest {
 	public void qti12Test(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
 		
-		//File upload only work with Firefox
-		Assume.assumeTrue(browser instanceof FirefoxDriver);
-				
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
@@ -200,9 +195,7 @@ public class AssessmentTest {
 	public void qti12CourseWithAssessment(@InitialPage LoginPage authorLoginPage,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
-		//File upload only work with Firefox
-		Assume.assumeTrue(browser instanceof FirefoxDriver);
-		
+
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -342,9 +335,7 @@ public class AssessmentTest {
 	public void scormCourseWithAssessment(@InitialPage LoginPage authorLoginPage,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
-		//File upload only work with Firefox
-		Assume.assumeTrue(browser instanceof FirefoxDriver);
-				
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -462,9 +453,7 @@ public class AssessmentTest {
 	public void assessmentMode_manual(@InitialPage LoginPage authorLoginPage,
 			@Drone @Student WebDriver ryomouBrowser, @Drone @Participant WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
-		//File upload only work with Firefox
-		Assume.assumeTrue(browser instanceof FirefoxDriver);
-		
+
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -878,9 +867,7 @@ public class AssessmentTest {
 			@Drone @User WebDriver ryomouBrowser,
 			@Drone @Participant WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
-		//File upload only work with Firefox
-		Assume.assumeTrue(browser instanceof FirefoxDriver);
-						
+			
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -1066,8 +1053,6 @@ public class AssessmentTest {
 	public void taskWithIndividuScoreAndRevision(@InitialPage LoginPage authorLoginPage,
 			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
-		//File upload only work with Firefox
-		Assume.assumeTrue(browser instanceof FirefoxDriver);
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");

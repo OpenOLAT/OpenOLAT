@@ -69,29 +69,31 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page startTestPart() {
+		By startBy = By.xpath("//button[contains(@onclick,'advanceTestPart')]");
+		browser.findElement(startBy).click();
+		OOGraphene.waitBusy(browser);
+		By menuBy = By.id("o_qti_menu");
+		OOGraphene.waitElement(menuBy, 5, browser);
+		return this;
+	}
+	
 	public QTI21Page assertOnAssessmentItem() {
 		By assessmentItemBy = By.cssSelector("div.qtiworks.o_assessmentitem.o_assessmenttest");
 		OOGraphene.waitElement(assessmentItemBy, 5, browser);
 		return this;
 	}
 	
-	//TODO still qti 1.2
-	public QTI21Page selectItem(int position) {
-		By itemsBy = By.cssSelector("a.o_sel_qti_menu_item");
-		List<WebElement> itemList = browser.findElements(itemsBy);
-		Assert.assertTrue(itemList.size() > position);
-		WebElement itemEl = itemList.get(position);
-		itemEl.click();
-		OOGraphene.waitBusy(browser);
+	public QTI21Page assertOnAssessmentItem(String title) {
+		By itemTitleBy = By.xpath("//div[@class='o_assessmentitem_wrapper']/h4[contains(normalize-space(.),'" + title + "')]");
+		OOGraphene.waitElement(itemTitleBy, 5, browser);
 		return this;
 	}
 	
-	public QTI21Page answerSingleChoice(int selectPosition) {
-		By itemsBy = By.cssSelector("div.choiceInteraction input[type='radio']");
-		List<WebElement> optionList = browser.findElements(itemsBy);
-		Assert.assertTrue(optionList.size() > selectPosition);
-		WebElement optionEl = optionList.get(selectPosition);
-		optionEl.click();
+	public QTI21Page selectItem(String title) {
+		By itemBy = By.xpath("//div[@id='o_qti_menu']//li[contains(@class,'o_qti_menu_item')]//a[span[contains(normalize-space(.),'" + title + "')]]");
+		OOGraphene.waitElement(itemBy, 5, browser);
+		browser.findElement(itemBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -167,6 +169,10 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page endTestPart() {
+		return endTest();
+	}
+	
 	public QTI21Page endTest() {
 		By endBy = By.cssSelector("a.o_sel_end_testpart");
 		browser.findElement(endBy).click();
@@ -219,6 +225,18 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * This check specifically if the metadata of the test are visible.
+	 * 
+	 * @param timeout
+	 * @return
+	 */
+	public QTI21Page assertOnAssessmentResults(int timeout) {
+		By resultsBy = By.cssSelector("div.o_sel_results_details");
+		OOGraphene.waitElement(resultsBy, timeout, browser);
+		return this;
+	}
+	
 	public QTI21Page assertOnCourseAssessmentTestScore(int score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_personal')]//tr[contains(@class,'o_score')]/td[contains(text(),'" + score + "')]");
 		OOGraphene.waitElement(resultsBy, 5, browser);
@@ -231,9 +249,51 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page assertOnAssessmentTestPassed() {
+		By notPassedBy = By.cssSelector("div.o_sel_results_details tr.o_state.o_passed ");
+		OOGraphene.waitElement(notPassedBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnAssessmentTestNotPassed() {
+		By notPassedBy = By.cssSelector("div.o_sel_results_details tr.o_state.o_failed ");
+		OOGraphene.waitElement(notPassedBy, 5, browser);
+		return this;
+	}
+	
 	public QTI21Page assertOnAssessmentTestMaxScore(int score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_maxscore')]/td[contains(text(),'" + score + "')]");
 		OOGraphene.waitElement(resultsBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnAssessmentTestFeedback(String feedback) {
+		By feedbackBy = By.xpath("//div[contains(@class,'o_info')]/h3[contains(text(),'" + feedback + "')]");
+		OOGraphene.waitElement(feedbackBy, 5, browser);
+		List<WebElement> feedbackEls = browser.findElements(feedbackBy);
+		Assert.assertEquals(1, feedbackEls.size());
+		return this;
+	}
+	
+	/**
+	 * Check if the assessment terminated message is visible.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21Page assertOnAssessmentTestTerminated() {
+		By terminatedBy = By.cssSelector("div.o_sel_assessment_test_terminated");
+		OOGraphene.waitElement(terminatedBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Check if the assessment terminated message is visible.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21Page assertOnAssessmentTestTerminated(int timeout) {
+		By terminatedBy = By.cssSelector("div.o_sel_assessment_test_terminated");
+		OOGraphene.waitElement(terminatedBy, timeout, browser);
 		return this;
 	}
 	

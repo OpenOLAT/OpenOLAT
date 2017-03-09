@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui;
 
+import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.testFeedbackVisible;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
@@ -109,6 +111,8 @@ import uk.ac.ed.ph.jqtiplus.node.result.TestResult;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.SubmissionMode;
+import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
+import uk.ac.ed.ph.jqtiplus.node.test.TestFeedbackAccess;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationLevel;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
@@ -658,7 +662,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
             TestPlanNodeKey itemNodeKey = testSessionState.getCurrentItemKey();
             if(itemNodeKey != null) {
 				TestPlanNode currentItemNode = testSessionState.getTestPlan().getNode(itemNodeKey);
-	        	boolean hasFeedbacks = qtiWorksCtrl.willShowSomeFeedbacks(currentItemNode);
+	        	boolean hasFeedbacks = qtiWorksCtrl.willShowSomeAssessmentItemFeedbacks(currentItemNode);
 	        	//allow skipping
 	        	if(!hasFeedbacks) {
 	        		processNextItem(ureq);
@@ -999,6 +1003,40 @@ public class AssessmentTestDisplayController extends BasicController implements 
         if(nextTestPart == null) {
         	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
         			requestTimestamp, getDigitalSignatureOptions(), getIdentity());
+        	if(!qtiWorksCtrl.willShowSomeAssessmentTestFeedbacks()) {
+        		//need feedback, no more parts, quickly exit
+        		try {
+        			//end current test part
+                    testSessionController.enterNextAvailableTestPart(requestTimestamp);
+                } catch (final QtiCandidateStateException e) {
+                    candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_ADVANCE_TEST_PART, e);
+                    logError("CANNOT_ADVANCE_TEST_PART", e);
+                    return;
+                } catch (final RuntimeException e) {
+                    candidateAuditLogger.logAndThrowCandidateException(candidateSession, CandidateExceptionReason.CANNOT_ADVANCE_TEST_PART, e);
+                    logError("RuntimeException", e);
+                    return;// handleExplosion(e, candidateSession);
+                }
+
+        		//exit the test
+                NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+                CandidateTestEventType eventType = CandidateTestEventType.EXIT_TEST;
+                testSessionController.exitTest(requestTimestamp);
+                candidateSession.setTerminationTime(requestTimestamp);
+                candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
+        		
+        		/* Record and log event */
+                final CandidateEvent candidateTestEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
+                       eventType, testSessionState, notificationRecorder);
+                candidateAuditLogger.logCandidateEvent(candidateTestEvent);
+                this.lastEvent = candidateTestEvent;
+
+                qtiWorksCtrl.updateStatusAndResults(ureq);
+        		doExitTest(ureq);
+        	}
+        } else if(!qtiWorksCtrl.willShowSomeTestPartFeedbacks()) {
+        	//no feedback, go to the next part
+        	processAdvanceTestPart(ureq);
         }
 	}
 	
@@ -1366,10 +1404,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		BadResourceException ex = resolvedAssessmentTest.getTestLookup().getBadResourceException();
 		if(ex instanceof QtiXmlInterpretationException) {
-			QtiXmlInterpretationException exml = (QtiXmlInterpretationException)ex;
-			System.out.println(exml.getInterpretationFailureReason());
-			for(QtiModelBuildingError err :exml.getQtiModelBuildingErrors()) {
-				System.out.println(err);
+			try {//try to log some informations
+				QtiXmlInterpretationException exml = (QtiXmlInterpretationException)ex;
+				logError(exml.getInterpretationFailureReason().toString(), null);
+				for(QtiModelBuildingError err :exml.getQtiModelBuildingErrors()) {
+					logError(err.toString(), null);
+				}
+			} catch (Exception e) {
+				logError("", e);
 			}
 		}
 		
@@ -1525,7 +1567,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			updateStatusAndResults(ureq);
 		}
 		
-		public boolean willShowSomeFeedbacks(TestPlanNode itemNode) {
+		public boolean willShowSomeAssessmentItemFeedbacks(TestPlanNode itemNode) {
 			if(itemNode == null || testSessionController == null
 					|| testSessionController.getTestSessionState().isExited()
 					|| testSessionController.getTestSessionState().isEnded()) {
@@ -1533,6 +1575,77 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			}
 			
 			return qtiEl.getComponent().willShowFeedbacks(itemNode);
+		}
+		
+		/**
+		 * 
+		 * @return
+		 */
+		public boolean willShowSomeAssessmentTestFeedbacks() {
+			if(testSessionController == null
+					|| testSessionController.getTestSessionState().isExited()
+					|| testSessionController.getTestSessionState().isEnded()) {
+				return true;
+			}
+			
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			TestPlanNodeKey currentTestPartNodeKey = testSessionState.getCurrentTestPartKey();
+			TestPlanNode currentTestPlanNode = testSessionState.getTestPlan().getNode(currentTestPartNodeKey);
+			boolean hasReviewableItems = currentTestPlanNode.searchDescendants(TestNodeType.ASSESSMENT_ITEM_REF)
+					.stream().anyMatch(itemNode
+							-> itemNode.getEffectiveItemSessionControl().isAllowReview()
+							|| itemNode.getEffectiveItemSessionControl().isShowFeedback());
+			if(hasReviewableItems) {
+				return true;
+			}
+			
+			//Show 'atEnd' test feedback f there's only 1 testPart
+			List<TestFeedback> testFeedbacks = qtiEl.getComponent().getAssessmentTest().getTestFeedbacks();
+			for(TestFeedback testFeedback:testFeedbacks) {
+				if(testFeedback.getTestFeedbackAccess() == TestFeedbackAccess.AT_END
+						&& testFeedbackVisible(testFeedback, testSessionController.getTestSessionState())) {
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
+		/**
+		 * 
+		 * Check if the current test part will show some test part feedback,
+		 * item feedback or item reviews.
+		 * 
+		 * @return
+		 */
+		public boolean willShowSomeTestPartFeedbacks() {
+			if(testSessionController == null
+					|| testSessionController.getTestSessionState().isExited()
+					|| testSessionController.getTestSessionState().isEnded()) {
+				return true;
+			}
+			
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			TestPlanNodeKey currentTestPartNodeKey = testSessionState.getCurrentTestPartKey();
+			TestPlanNode currentTestPlanNode = testSessionState.getTestPlan().getNode(currentTestPartNodeKey);
+			boolean hasReviewableItems = currentTestPlanNode.searchDescendants(TestNodeType.ASSESSMENT_ITEM_REF)
+					.stream().anyMatch(itemNode
+							-> itemNode.getEffectiveItemSessionControl().isAllowReview()
+							|| itemNode.getEffectiveItemSessionControl().isShowFeedback());
+			if(hasReviewableItems) {
+				return true;
+			}
+
+			TestPart currentTestPart = testSessionController.getCurrentTestPart();
+			List<TestFeedback> testFeedbacks = currentTestPart.getTestFeedbacks();
+			for(TestFeedback testFeedback:testFeedbacks) {
+				if(testFeedback.getTestFeedbackAccess() == TestFeedbackAccess.AT_END
+						&& testFeedbackVisible(testFeedback, testSessionController.getTestSessionState())) {
+					return true;
+				}
+			}
+			
+			return false;
 		}
 
 		@Override

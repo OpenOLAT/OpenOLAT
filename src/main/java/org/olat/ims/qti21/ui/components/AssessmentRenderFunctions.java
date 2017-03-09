@@ -49,9 +49,11 @@ import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.template.declaration.TemplateDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
 import uk.ac.ed.ph.jqtiplus.node.test.VisibilityMode;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
+import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.ResponseData;
 import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
@@ -623,4 +625,18 @@ public class AssessmentRenderFunctions {
 		String relativePath = component.relativePathTo(resolvedAssessmentItem);
 		return component.getMapperUri() + "/file?href=" + relativePath + (uri == null ? "" : uri);
 	}
+	
+	public static final boolean testFeedbackVisible(TestFeedback testFeedback, TestSessionState testSessionState) {
+		//<xsl:variable name="identifierMatch" select="boolean(qw:value-contains(qw:get-test-outcome-value(@outcomeIdentifier), @identifier))" as="xs:boolean"/>
+		Identifier outcomeIdentifier = testFeedback.getOutcomeIdentifier();
+		Value outcomeValue = testSessionState.getOutcomeValue(outcomeIdentifier);
+		boolean identifierMatch = valueContains(outcomeValue, testFeedback.getOutcomeValue());
+		//<xsl:if test="($identifierMatch and @showHide='show') or (not($identifierMatch) and @showHide='hide')">
+		if((identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.SHOW_IF_MATCH)
+				|| (!identifierMatch && testFeedback.getVisibilityMode() == VisibilityMode.HIDE_IF_MATCH)) {
+			return true;
+		}
+		return false;
+	}
+	
 }

@@ -197,7 +197,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
     }
 
     protected void renderTerminated(StringOutput sb, Translator translator) {
-		sb.append("<div class='o_info'>").append(translator.translate("terminated.msg")).append("</div>");
+		sb.append("<div class='o_info o_sel_assessment_test_terminated'>").append(translator.translate("terminated.msg")).append("</div>");
     }
 	
 	protected void renderItemStatus(StringOutput sb, ItemSessionState itemSessionState, RenderingRequest options, Translator translator) {
