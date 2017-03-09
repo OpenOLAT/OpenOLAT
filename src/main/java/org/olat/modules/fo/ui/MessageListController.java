@@ -1081,6 +1081,7 @@ public class MessageListController extends BasicController implements GenericEve
 			Message newTopMessage = forumManager.splitThread(reloadedMessage);
 			//do logging
 			ThreadLocalUserActivityLogger.log(ForumLoggingAction.FORUM_THREAD_SPLIT, getClass(), LoggingResourceable.wrap(newTopMessage));
+			showInfo("new.thread.location");
 			//open the new thread
 			fireEvent(ureq, new SelectMessageEvent(SelectMessageEvent.SELECT_THREAD, newTopMessage.getKey()));
 		} else {
