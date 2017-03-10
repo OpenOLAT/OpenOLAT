@@ -146,14 +146,13 @@ public class HighScoreRunController extends FormBasicController{
 		if (ownEntry != null && ownEntry.getUserVisibility() != null &&	!ownEntry.getUserVisibility().booleanValue()) {
 			viewHighscore = false;
 			return;
-		}
+		}		
+		boolean adminORcoach = userCourseEnv.isAdmin() || userCourseEnv.isCoach();		
 		// ban zero scorer from viewing the highscore on STCourseNode
-		if(isSTCourseNode && ownEntry != null && ownEntry.getScore().equals(new BigDecimal(0))) {
+		if(!adminORcoach && isSTCourseNode && ownEntry != null && ownEntry.getScore().equals(new BigDecimal(0))) {
 			viewHighscore = false;
 			return;
 		}
-		
-		boolean adminORcoach = userCourseEnv.isAdmin() || userCourseEnv.isCoach();		
 		// coaches or admin may see highscore, user only if already scored
 		if (!adminORcoach && (ownEntry == null || (ownEntry != null && ownEntry.getScore() == null))) {
 			viewHighscore = false;
