@@ -24,12 +24,14 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -55,13 +57,14 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] onValues = new String[]{ "" };
-	private static final String[] settingTypeKeys = new String[]{ TestType.summative.name(), TestType.formative.name() };
+	private static final String[] settingTypeKeys = new String[]{ "choose", TestType.summative.name(), TestType.formative.name() };
 	private static final String[] resultsOptionsKeys = new String[] { 
 			QTI21AssessmentResultsOptions.METADATA, QTI21AssessmentResultsOptions.SECTION_SUMMARY,
 			QTI21AssessmentResultsOptions.QUESTION_SUMMARY, QTI21AssessmentResultsOptions.QUESTIONS,
 			QTI21AssessmentResultsOptions.USER_SOLUTIONS, QTI21AssessmentResultsOptions.CORRECT_SOLUTIONS
 		};
 
+	private FormLink chooseProfileButton;
 	private SingleSelection settingTypeEl;
 	private MultipleSelectionElement showTitlesEl, showMenuEl;
 	private MultipleSelectionElement personalNotesEl;
@@ -96,14 +99,24 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		setFormTitle("tab.options");
 		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_options");
 		formLayout.setElementCssClass("o_sel_qti_resource_options");
+		setFormInfo("settings.choose.descr");
 		
-		String[] settingTypeValues = new String[]{ translate("qti.form.setting.summative"), translate("qti.form.setting.formative") };
-		settingTypeEl = uifactory.addRadiosHorizontal("settings.type", null, formLayout, settingTypeKeys, settingTypeValues);
-		settingTypeEl.addActionListener(FormEvent.ONCHANGE);
+		//choose profile
+		String profilePage = velocity_root + "/profile.html";
+		FormLayoutContainer profileCont = FormLayoutContainer.createCustomFormLayout("profile", getTranslator(), profilePage);
+		profileCont.setLabel("settings.profile", null);
+		formLayout.add(profileCont);
+		
+		String[] settingTypeValues = new String[]{ 
+				translate("qti.form.setting.choose"), translate("qti.form.setting.summative"), translate("qti.form.setting.formative")
+		};
+		settingTypeEl = uifactory.addDropdownSingleselect("settings.type", "settings.type", null, profileCont, settingTypeKeys, settingTypeValues, null);
+		settingTypeEl.setDomReplacementWrapperRequired(false);
 		settingTypeEl.setAllowNoSelection(true);
-		if(deliveryOptions.getTestType() != null) {
-			settingTypeEl.select(deliveryOptions.getTestType().name(), true);
-		}
+		
+		chooseProfileButton = uifactory.addFormLink("settings.choose.profile", profileCont, Link.BUTTON);
+		
+		uifactory.addSpacerElement("profile.spacer", formLayout, false);
 
 		limitAttemptsEl = uifactory.addCheckboxesHorizontal("limitAttempts", "qti.form.limit.attempts", formLayout, onKeys, onValues);
 		limitAttemptsEl.addActionListener(FormEvent.ONCLICK);
@@ -278,7 +291,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 			digitalSignatureMailEl.setVisible(digitalSignatureEl.isAtLeastSelected(1));
 		} else if(showResultsOnFinishEl == source) {
 			assessmentResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
-		} else if(settingTypeEl == source) {
+		} else if(chooseProfileButton == source) {
 			if(settingTypeEl.isOneSelected()) {
 				String selectedType = settingTypeEl.getSelectedKey();
 				if(TestType.formative.name().equals(selectedType)) {
@@ -287,6 +300,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 					applyDeliveryOptions(QTI21DeliveryOptions.summativeSettings());
 				}
 			}
+			settingTypeEl.select("choose", true);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -294,12 +308,6 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(settingTypeEl.isOneSelected()) {
-			String type = settingTypeEl.getSelectedKey();
-			deliveryOptions.setTestType(TestType.valueOf(type));
-		} else {
-			deliveryOptions.setTestType(null);
-		}
 		if(limitAttemptsEl.isAtLeastSelected(1)) {
 			deliveryOptions.setMaxAttempts(Integer.parseInt(maxAttemptsEl.getValue()));
 		} else {
