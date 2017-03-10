@@ -204,7 +204,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		navHandler = new NavigationHandler(uce, treeFilter, false);
 
-		updateTreeAndContent(ureq, currentCourseNode, null);
+		currentCourseNode = updateTreeAndContent(ureq, currentCourseNode, null);
 
 		if (courseRepositoryEntry != null && repositoryManager.createRepositoryEntryStatus(courseRepositoryEntry.getStatusCode()).isClosed()) {
 			wControl.setWarning(translate("course.closed"));
@@ -396,7 +396,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		nextLink.setEnabled(hasNext);
 	}
 	
-	protected boolean updateCurrentCourseNode(UserRequest ureq) {
+	protected CourseNode updateCurrentCourseNode(UserRequest ureq) {
 		return updateTreeAndContent(ureq, getCurrentCourseNode(), "", null, null);
 	}
 
@@ -408,11 +408,11 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 * @param nodecmd An optional command used to activate the run view or NULL if not available
 	 * @return true if the node jumped to is visible
 	 */
-	private boolean updateTreeAndContent(UserRequest ureq, CourseNode calledCourseNode, String nodecmd) {
+	private CourseNode updateTreeAndContent(UserRequest ureq, CourseNode calledCourseNode, String nodecmd) {
 		return updateTreeAndContent(ureq, calledCourseNode, nodecmd, null, null);
 	}
 	
-	private boolean updateTreeAndContent(UserRequest ureq, CourseNode calledCourseNode, String nodecmd, List<ContextEntry> entries, StateEntry state) {
+	private CourseNode updateTreeAndContent(UserRequest ureq, CourseNode calledCourseNode, String nodecmd, List<ContextEntry> entries, StateEntry state) {
 		// build menu (treemodel)
 		// dispose old node controller before creating the NodeClickedRef which creates 
 		// the new node controller. It is important that the old node controller is 
@@ -431,7 +431,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				MessageController msgController = MessageUIFactory.createInfoMessage(ureq, getWindowControl(),	translate("course.noaccess.title"), translate("course.noaccess.text"));
 				contentP.setContent(msgController.getInitialComponent());					
 				luTree.setTreeModel(new GenericTreeModel());
-				return false;
+				return null;
 			}
 		}
 
@@ -466,7 +466,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		updateNextPrevious();
 		updateCourseDataAttributes(nclr.getCalledCourseNode());
 		updateLastUsage(nclr.getCalledCourseNode());
-		return true;
+		return nclr.getCalledCourseNode();
 	}
 	
 	private void updateLastUsage(CourseNode calledCourseNode) {
@@ -524,9 +524,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				String nodeid = ureq.getParameter("nodeid");
 				if (nodeid != null) {
 					CourseNode identNode = course.getRunStructure().getNode(nodeid);
-					boolean success = updateTreeAndContent(ureq, identNode, null);
-					if (success) {
-						currentCourseNode = identNode;
+					CourseNode node = updateTreeAndContent(ureq, identNode, null);
+					if (node != null) {
+						currentCourseNode = node;
 					} else {
 						getWindowControl().setWarning(translate("msg.nodenotavailableanymore"));
 					}
