@@ -22,6 +22,8 @@ package org.olat.course.highscore.ui;
  * Initial Date:  10.08.2016 <br>
  * @author fkiefer
  */
+import java.math.BigDecimal;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -140,8 +142,13 @@ public class HighScoreRunController extends FormBasicController{
 		ownIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		AssessmentManager assessmentManager = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		AssessmentEntry ownEntry = assessmentManager.getAssessmentEntry(courseNode, ownIdentity);
-		
+		// check user visibility
 		if (ownEntry != null && ownEntry.getUserVisibility() != null &&	!ownEntry.getUserVisibility().booleanValue()) {
+			viewHighscore = false;
+			return;
+		}
+		// ban zero scorer from viewing the highscore on STCourseNode
+		if(isSTCourseNode && ownEntry != null && ownEntry.getScore().equals(new BigDecimal(0))) {
 			viewHighscore = false;
 			return;
 		}
