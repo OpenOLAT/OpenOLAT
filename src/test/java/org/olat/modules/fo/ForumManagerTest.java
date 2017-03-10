@@ -929,22 +929,25 @@ public class ForumManagerTest extends OlatTestCase {
 		
 		//move the message
 		Message movedMessage = forumManager.moveMessageToAnotherForum(messageToMove, fo2, targetMessage);
+		List<Message> children = forumManager.getMessageChildren(movedMessage);
 		
 		//check target thread
 		List<Message> targetMessages = forumManager.getThread(targetThread.getKey());
-		Assert.assertEquals(6, targetMessages.size());
+		Assert.assertEquals(8, targetMessages.size());
 		Assert.assertTrue(targetMessages.contains(targetThread));
 		Assert.assertTrue(targetMessages.contains(targetMessage));
 		Assert.assertTrue(targetMessages.contains(movedMessage));
+		Assert.assertTrue(targetMessages.contains(children.get(0)));
+
 		
 		// check original thread
 		List<Message> originMessages = forumManager.getThread(topMessage.getKey());
-		Assert.assertEquals(4, originMessages.size());
+		Assert.assertEquals(2, originMessages.size());
 		Assert.assertFalse(originMessages.contains(messageToMove));
 		Assert.assertTrue(originMessages.contains(topMessage));
 		Assert.assertTrue(originMessages.contains(message));
-		Assert.assertTrue(originMessages.contains(messageToMove_1));
-		Assert.assertTrue(originMessages.contains(messageToMove_1_1));
+		Assert.assertFalse(originMessages.contains(messageToMove_1));
+		Assert.assertFalse(originMessages.contains(messageToMove_1_1));
 		
 		//check thread and parent of the target thread
 		Message reloadedTopMessage = forumManager.getMessageById(targetThread.getKey());
