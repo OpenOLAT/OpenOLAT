@@ -73,7 +73,9 @@ public class FinishCallback implements StepRunnerCallback {
 		Message msg = (Message)runContext.get(SendMailStepForm.MESSAGE_TO_MOVE);
 		msg = forumManager.getMessageById(msg.getKey());
 		Message parentMessage = (Message)runContext.get(SendMailStepForm.PARENT_MESSAGE);	
-		parentMessage = forumManager.getMessageById(parentMessage.getKey());
+		if (parentMessage!= null) {
+			parentMessage = forumManager.getMessageById(parentMessage.getKey());
+		}
 		if (msg.getParentKey() == null && msg.getThreadtop() == null) {
 			msg = forumManager.createOrAppendThreadInAnotherForum(msg, chosenforum, parentMessage);
 		} else {
@@ -89,7 +91,7 @@ public class FinishCallback implements StepRunnerCallback {
 	private boolean sendMail(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
 		boolean success = false;
 		try {
-			ContactList contacts = new ContactList("void");
+			ContactList contacts = new ContactList("Forum");
 			ListWrapper recipients = (ListWrapper)runContext.get(SendMailStepForm.RECIPIENTS);
 			contacts.addAllIdentites(recipients.getListOfIdentity());			
 			MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());

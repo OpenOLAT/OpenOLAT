@@ -19,8 +19,10 @@
  */
 package org.olat.modules.fo.export;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.UserRequest;
@@ -152,7 +154,7 @@ public class SendMailStepForm extends StepFormBasicController {
 	}
 	
 	private List<Identity> collectCreators () {
-		List<Identity> listOfIdentity = new ArrayList<>();
+		Set<Identity> setOfIdentity = new HashSet<>();
 		if (startMessage.getThreadtop() == null) {
 			List<Message> messages = forumManager.getTopMessageChildren(startMessage);
 			// if  added to another thread, inform those creators and modifiers as well
@@ -163,26 +165,26 @@ public class SendMailStepForm extends StepFormBasicController {
 			// iterate all messages and extract distinct identities involved
 			for (Message message : messages) {
 				Identity creator = message.getCreator();
-				if (creator != null && !listOfIdentity.contains(creator)) {
-					listOfIdentity.add(creator);
+				if (creator != null) {
+					setOfIdentity.add(creator);
 				}
 				Identity modifier = message.getModifier();
-				if (modifier != null && !listOfIdentity.contains(modifier) && !creator.equals(modifier)) {
-					listOfIdentity.add(modifier);
+				if (modifier != null) {
+					setOfIdentity.add(modifier);
 				}
 			}			
 		} else {
 			// only inform the message owner and possible modifier
 			Identity creator = startMessage.getCreator(); 
 			if (creator != null){
-				listOfIdentity.add(creator);
+				setOfIdentity.add(creator);
 			}
 			Identity modifier = startMessage.getCreator(); 
 			if (modifier != null){
-				listOfIdentity.add(modifier);
+				setOfIdentity.add(modifier);
 			}
 		}
-		return listOfIdentity;
+		return setOfIdentity.stream().collect(Collectors.toList());
 	}
 	
 }
