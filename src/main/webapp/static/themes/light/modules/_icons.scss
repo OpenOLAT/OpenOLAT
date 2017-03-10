@@ -165,6 +165,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_new_portfolio:before { content: $fa-var-pencil;}
 .o_icon_news:before { content: $fa-var-info-circle; }
 .o_icon_next:before { content: $fa-var-chevron-circle-right; }
+.o_icon_next_step:before { content: $fa-var-angle-double-right; }
 .o_icon_next_page:before { content: $fa-var-angle-double-right; }
 .o_icon_next_toolbar:before { content: $fa-var-caret-right; }
 .o_icon_node_after:before { content: $fa-var-long-arrow-down; }
@@ -188,6 +189,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_preview:before { content: $fa-var-eye;}
 .o_icon_previous:before { content: $fa-var-chevron-circle-left; }
 .o_icon_previous_page:before { content: $fa-var-angle-double-left; }
+.o_icon_previous_step:before { content: $fa-var-angle-double-left; }
 .o_icon_previous_toolbar:before { content: $fa-var-caret-left; }
 .o_icon_print:before { content: $fa-var-print;}
 .o_icon_private:before { content: $fa-var-print;}
