@@ -39,11 +39,13 @@ import org.junit.runner.RunWith;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
+import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21EditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
+import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
@@ -409,6 +411,114 @@ public class ImsQTI21Test {
 	}
 	
 	/**
+	 * Test suspend. An author upload a test, set "enable suspend"
+	 * and make the test visible to registered users. A second user
+	 * open the test, does nothing, suspends and log out (check a possible red
+	 * screen in the next step), log in, answer 3 questions, suspends 
+	 * and log out. It log in a last time and finish the test successfully.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21TestFlow_suspend(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver ryomouBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Suspend QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_4_no_skipping.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.enableSuspend()
+			.save();
+		
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred)
+			.clickToolbarBack();
+		
+		//check simple time limit
+		qtiPage
+			.assertOnAssessmentItem("Single choice");
+		
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(ryomouBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		QTI21Page userQtiPage = QTI21Page
+				.getQTI12Page(ryomouBrowser);
+		userQtiPage
+			.assertOnAssessmentItem("Single choice")
+			.suspendTest();
+		//log out
+		new UserToolsPage(ryomouBrowser)
+			.logout();
+		
+		//log in and resume test
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		userQtiPage = QTI21Page
+				.getQTI12Page(ryomouBrowser);
+		userQtiPage
+			.assertOnAssessmentItem("Single choice")
+			.answerSingleChoice("Correct")
+			.saveAnswer()
+			.answerMultipleChoice("Correct")
+			.saveAnswer()
+			.assertOnAssessmentItem("Kprim")
+			.answerCorrectKPrim("True", "Right")
+			.answerIncorrectKPrim("False", "Wrong")
+			.saveAnswer()
+			.suspendTest();
+		
+		//second log out
+		new UserToolsPage(ryomouBrowser)
+			.logout();
+		
+		//log in and resume test
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		userQtiPage = QTI21Page
+				.getQTI12Page(ryomouBrowser);
+		userQtiPage
+			.assertOnAssessmentItem("Numerical input")
+			.answerGapText("42", "_RESPONSE_1")
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestMaxScore(4)
+			.assertOnAssessmentTestScore(4)
+			.assertOnAssessmentTestPassed();
+	}
+	
+	/**
 	 * Upload a test in QTI 2.1 format, create a course, bind
 	 * the test in a course element, run it and check if
 	 * the attempt go up.
@@ -419,7 +529,7 @@ public class ImsQTI21Test {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21TestInCourse(@InitialPage LoginPage authorLoginPage)
+	public void qti21Course(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -499,7 +609,7 @@ public class ImsQTI21Test {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21Test_lmsHidden_results(@InitialPage LoginPage authorLoginPage)
+	public void qti21Course_lmsHidden_results(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -584,7 +694,7 @@ public class ImsQTI21Test {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21GraphicInteractionTest(@InitialPage LoginPage authorLoginPage)
+	public void qti21GraphicInteraction(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -713,7 +823,7 @@ public class ImsQTI21Test {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21Test_suspend(@InitialPage LoginPage authorLoginPage)
+	public void qti21Course_suspend(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();

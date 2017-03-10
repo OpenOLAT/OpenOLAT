@@ -75,6 +75,13 @@ public class QTI21OptionsPage {
 		return this;
 	}
 	
+	public QTI21OptionsPage enableSuspend() {
+		By suspendBy = By.cssSelector(".o_sel_qti_enable_suspend input[type='checkbox']");
+		WebElement suspendEl = browser.findElement(suspendBy);
+		OOGraphene.check(suspendEl, Boolean.TRUE);
+		return this;
+	}
+	
 	public QTI21OptionsPage save() {
 		By saveBy = By.cssSelector("fieldset.o_sel_qti_resource_options button");
 		browser.findElement(saveBy).click();

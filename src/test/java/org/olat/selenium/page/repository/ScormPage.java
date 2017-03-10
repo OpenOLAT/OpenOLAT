@@ -84,6 +84,36 @@ public class ScormPage {
 		return this;
 	}
 	
+	/**
+	 * Check the score of SCORM on the start page of the
+	 * course element.
+	 * 
+	 * @param score
+	 * @return Itself
+	 */
+	public ScormPage assertOnScormScore(int score) {
+		By resultsBy = By.xpath("//div[contains(@class,'o_personal')]//tr[contains(@class,'o_score')]/td[contains(text(),'" + score + "')]");
+		OOGraphene.waitElement(resultsBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Check if the SCORM is passed on the course element
+	 * start page.
+	 * 
+	 * @return Itself
+	 */
+	public ScormPage assertOnScormPassed() {
+		By notPassedBy = By.cssSelector("div.o_personal tr.o_state.o_passed ");
+		OOGraphene.waitElement(notPassedBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Click the back top left of the toolbar of SCORM content
+	 * 
+	 * @return Itself
+	 */
 	public ScormPage back() {
 		By backBy = By.className("o_link_back");
 		browser.findElement(backBy).click();

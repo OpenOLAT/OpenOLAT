@@ -24,6 +24,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -339,6 +340,24 @@ public class QTI21Page {
 		browser.findElement(optionsBy).click();
 		OOGraphene.waitBusy(browser);
 		return new QTI21OptionsPage(browser);
+	}
+	
+	/**
+	 * Open the access configuration
+	 * 
+	 * @return
+	 */
+	public RepositoryAccessPage accessConfiguration() {
+		if(!browser.findElement(settingsMenu).isDisplayed()) {
+			openSettingsMenu();
+		}
+		By accessConfigBy = By.cssSelector("a.o_sel_course_access");
+		browser.findElement(accessConfigBy).click();
+		OOGraphene.waitBusy(browser);
+
+		By mainId = By.id("o_main_container");
+		OOGraphene.waitElement(mainId, 5, browser);
+		return new RepositoryAccessPage(browser);
 	}
 	
 	/**
