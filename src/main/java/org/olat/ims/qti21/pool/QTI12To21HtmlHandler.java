@@ -140,6 +140,9 @@ class QTI12To21HtmlHandler extends DefaultHandler {
 					length -= diff;
 					envelopP = true;
 				}
+				if(start < 0) {
+					start = 0;//Bug neko
+				}
 				xtw.writeCharacters(ch, start, length);
 			} else {
 				xtw.writeCharacters(ch, start, length);
