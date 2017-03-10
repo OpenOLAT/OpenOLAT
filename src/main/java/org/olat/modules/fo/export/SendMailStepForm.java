@@ -155,35 +155,18 @@ public class SendMailStepForm extends StepFormBasicController {
 	
 	private List<Identity> collectCreators () {
 		Set<Identity> setOfIdentity = new HashSet<>();
-		if (startMessage.getThreadtop() == null) {
-			List<Message> messages = forumManager.getTopMessageChildren(startMessage);
-			// if  added to another thread, inform those creators and modifiers as well
-			if (parentMessage != null && !parentMessage.equals(startMessage)) {
-				List<Message> parentMessages = forumManager.getTopMessageChildren(parentMessage);
-				messages.addAll(parentMessages);
-			}
-			// iterate all messages and extract distinct identities involved
-			for (Message message : messages) {
-				Identity creator = message.getCreator();
-				if (creator != null) {
-					setOfIdentity.add(creator);
-				}
-				Identity modifier = message.getModifier();
-				if (modifier != null) {
-					setOfIdentity.add(modifier);
-				}
-			}			
-		} else {
-			// only inform the message owner and possible modifier
-			Identity creator = startMessage.getCreator(); 
-			if (creator != null){
-				setOfIdentity.add(creator);
-			}
-			Identity modifier = startMessage.getCreator(); 
-			if (modifier != null){
-				setOfIdentity.add(modifier);
-			}
+		// inform start message
+		Identity creator = startMessage.getCreator();
+		if (creator != null) {
+			setOfIdentity.add(creator);
 		}
+		Identity modifier = startMessage.getModifier();
+		if (modifier != null) {
+			setOfIdentity.add(modifier);
+		}
+		// inform children
+		forumManager.collectThreadMembersRecursively(startMessage, setOfIdentity);
+
 		return setOfIdentity.stream().collect(Collectors.toList());
 	}
 	

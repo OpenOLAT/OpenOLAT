@@ -1064,7 +1064,31 @@ public class ForumManager {
 		moveMessageContainer(oldMessage.getForum().getKey(), oldMessage.getKey(), message.getForum().getKey(), message.getKey());
 		deleteMessageRecursion(oldMessage.getForum().getKey(), oldMessage);
 		return message;
-	}	
+	}
+	
+	
+	/**
+	 * Collect message children recursively.
+	 *
+	 * @param oldParent
+	 * @param setOfIdentity 
+	 */
+	public void collectThreadMembersRecursively(Message oldParent, Set<Identity> setOfIdentity) {
+		List<Message> children = getMessageChildren(oldParent);
+		for (Message child : children) {
+			Identity creator = child.getCreator();
+			if (creator != null) {
+				setOfIdentity.add(creator);
+			}
+			Identity modifier = child.getModifier();
+			if (modifier != null) {
+				setOfIdentity.add(modifier);
+			}
+			if (hasChildren(child)) {
+				collectThreadMembersRecursively(child, setOfIdentity);
+			}			
+		}
+	}
 
 	/**
 	 * Move thread to another forum recursively.
