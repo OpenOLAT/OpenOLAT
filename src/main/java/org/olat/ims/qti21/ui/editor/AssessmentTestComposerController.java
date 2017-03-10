@@ -811,7 +811,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	 */
 	private void doNewTestPart(UserRequest ureq) {
 		TestPart testPart = AssessmentTestFactory.createTestPart(assessmentTestBuilder.getAssessmentTest());
-		AssessmentTestFactory.appendAssessmentSection(translate("new.testpart"), testPart);
+		AssessmentTestFactory.appendAssessmentSection(translate("new.section"), testPart);
 		
 		//save the test
 		doSaveAssessmentTest(null);
