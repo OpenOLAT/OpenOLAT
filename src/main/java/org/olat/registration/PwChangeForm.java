@@ -113,16 +113,16 @@ public class PwChangeForm extends FormBasicController {
 		if(tempKey != null) {
 			List<Identity> identToChanges = userManager.findIdentitiesByEmail(Collections.singletonList(tempKey.getEmailAddress()));
 			if(identToChanges == null || identToChanges.size() == 0 || identToChanges.size() > 1) {
-				showError("pwchange.failed");
+				showError("password.failed");
 			} else {
 				Identity identToChange = identToChanges.get(0);
 				if(!saveFormData(identToChange)) {
-					showError("pwchange.failed");
+					showError("password.failed");
 				}
 			}
 		} else if(identityToChange != null) {
 			if(!saveFormData(identityToChange)) {
-				showError("pwchange.failed");
+				showError("password.failed");
 			}
 		}
 		if(tempKey != null) {
