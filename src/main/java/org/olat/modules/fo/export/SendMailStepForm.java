@@ -57,9 +57,10 @@ public class SendMailStepForm extends StepFormBasicController {
 	protected static final String SENDER = "sender";
 	protected static final String MAIL_TEMPLATE = "mailTemplate";
 	protected static final String FORUM = "forum";
-	protected static final String START_COURSE = "startCourse";
+	public static final String START_COURSE = "startCourse";
 	protected static final String PARENT_MESSAGE = "parentMessage";
-	protected static final String MESSAGE_TO_MOVE = "messageToMove";
+	public static final String MESSAGE_TO_MOVE = "messageToMove";
+	public static final String START_THREADTOP = "startMessage";
 	protected static final String ICOURSE = "icourse";
 	protected static final String COURSE = "course";
 	protected static final String NEW_THREAD = "newThread";

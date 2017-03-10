@@ -71,7 +71,9 @@ public class FinishCallback implements StepRunnerCallback {
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		Forum chosenforum = node.loadOrCreateForum(courseEnv);
 		Message msg = (Message)runContext.get(SendMailStepForm.MESSAGE_TO_MOVE);
+		msg = forumManager.getMessageById(msg.getKey());
 		Message parentMessage = (Message)runContext.get(SendMailStepForm.PARENT_MESSAGE);	
+		parentMessage = forumManager.getMessageById(parentMessage.getKey());
 		if (msg.getParentKey() == null && msg.getThreadtop() == null) {
 			msg = forumManager.createOrAppendThreadInAnotherForum(msg, chosenforum, parentMessage);
 		} else {

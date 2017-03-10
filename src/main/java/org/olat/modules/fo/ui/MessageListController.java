@@ -90,6 +90,7 @@ import org.olat.modules.fo.MessageRef;
 import org.olat.modules.fo.Status;
 import org.olat.modules.fo.archiver.formatters.ForumDownloadResource;
 import org.olat.modules.fo.export.FinishCallback;
+import org.olat.modules.fo.export.SendMailStepForm;
 import org.olat.modules.fo.export.Step_1_SelectCourse;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.portfolio.ForumMediaHandler;
@@ -828,6 +829,17 @@ public class MessageListController extends BasicController implements GenericEve
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == exportCtrl) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				if (event == Event.CHANGED_EVENT) {
+					StepsRunContext runContext = exportCtrl.getRunContext();
+					Message originTopMessage = (Message)runContext.get(SendMailStepForm.START_THREADTOP);
+					originTopMessage = forumManager.loadMessage(originTopMessage.getKey());
+					if (originTopMessage != null) {
+						//refresh origin thread
+						fireEvent(ureq, new SelectMessageEvent(SelectMessageEvent.SELECT_THREAD, originTopMessage.getKey()));
+					} else {
+						fireEvent(ureq, Event.BACK_EVENT);
+					}					
+				}
 				getWindowControl().pop();
 				removeAsListenerAndDispose(exportCtrl);
 				exportCtrl = null;
@@ -1364,7 +1376,9 @@ public class MessageListController extends BasicController implements GenericEve
 					"o_sel_bulk_assessment_wizard");
 			StepsRunContext runContext = exportCtrl.getRunContext();
 			// can be threadtop message
-			runContext.put("messageToMove", message);
+			runContext.put(SendMailStepForm.MESSAGE_TO_MOVE, message);
+			// starting thread
+			runContext.put(SendMailStepForm.START_THREADTOP, message.getThreadtop() == null ? message : message.getThreadtop());
 			// get start course
 			PropertyManager propertyManager = PropertyManager.getInstance();
 			Long forumResourceableId = forum.getResourceableId();
@@ -1375,7 +1389,7 @@ public class MessageListController extends BasicController implements GenericEve
 				OLATResourceable olatResourceable = olatManager.findResourceable(resourcetypeId, resourcetypeName);
 				RepositoryEntry startCourse = repositoryManager.lookupRepositoryEntry(olatResourceable, false);
 				if (startCourse != null) {
-					runContext.put("startCourse", startCourse);
+					runContext.put(SendMailStepForm.START_COURSE, startCourse);
 				}
 			}
 			listenTo(exportCtrl);
