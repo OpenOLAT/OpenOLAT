@@ -44,7 +44,11 @@ public class QTI12To21HtmlHandlerTest {
                 { "Hello world", "Hello world" },
                 { "First line <br/>Second line", "<p>First line <br/>Second line</p>" },
                 { "<hr />And some content", "<hr/><p>And some content</p>" },
-                { "Some content<br />&nbsp;<br /><strong>Strong content!</strong>", "<p>Some content<br/>\u00A0<br/><strong>Strong content!</strong></p>" }  
+                { "Some content<br />&nbsp;<br /><strong>Strong content!</strong>", "<p>Some content<br/>\u00A0<br/><strong>Strong content!</strong></p>" },
+                // https://jira.openolat.org/browse/OO-2608
+                { "What are the two different approaches to set up special conditions?<br />&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br />",
+                  "<p>What are the two different approaches to set up special conditions?<br/>                                   <br/></p>"
+                }  
         });
     }
     
