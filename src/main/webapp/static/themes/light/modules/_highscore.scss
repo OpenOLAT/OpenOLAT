@@ -5,13 +5,16 @@
 		text-align: center;
 		h2 {
 			@if $o-hs-position-title-color == gradient {
-				-webkit-background: linear-gradient(330deg, #e05252 0%, #99e052 25%, #52e0e0 50%, #9952e0 75%, #e05252 100%);
-				-webkit-background-clip: text;
-				-webkit-text-fill-color: transparent;
-				display: inline;
-				&:after { 
-				     content: "\A";
-				     white-space: pre; 
+				/* apply only for webkit capable browsers (Safari, Edge, Chrome) */
+				@media screen and (-webkit-min-device-pixel-ratio:0) {
+					background: linear-gradient(330deg, #e05252 0%, #99e052 25%, #52e0e0 50%, #9952e0 75%, #e05252 100%);
+					-webkit-background-clip: text;
+					-webkit-text-fill-color: transparent;
+					display: inline;
+					&:after { 
+					     content: "\A";
+					     white-space: pre; 
+					}
 				}
 
 			} @else {
