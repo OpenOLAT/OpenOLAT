@@ -12,7 +12,7 @@
 	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
 	
-	<div id="${qtiContainerId}">
+	<div id="${qtiContainerId}" style="width:${interaction.object.width}px; height:${interaction.object.height}px">
 		<img id="${qtiContainerId}_img" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${qtiContainerId}_map"></img>
 		<map name="${qtiContainerId}_map">
 		#foreach($hotspotChoice in $interaction.getHotspotChoices())
@@ -21,24 +21,24 @@
 			$r.appendFlexiFormDirtyForClick("ac_${responseIdentifier}_$hotspotChoice.identifier")
 		#end
 		</map>
-		<script type="text/javascript">
-		jQuery(function() {
-			jQuery('#${qtiContainerId}_img').maphilight({
-				fillColor: '888888',
-				strokeColor: '333333',
-				strokeOpacity: 0.5,
-				strokeWidth: 3,
-				alwaysOn: true
-			});
-
-			jQuery('#${qtiContainerId}').hotspotInteraction({
-				responseIdentifier: '$responseIdentifier',
-				formDispatchFieldId: '$r.formDispatchFieldId',
-				maxChoices: $interaction.maxChoices,
-				responseValue: '$r.toString($responseValue,",")',
-				opened: $isItemSessionOpen
-			});
-		});
-		</script>
 	</div>
+	<script type="text/javascript">
+	jQuery(function() {
+		jQuery('#${qtiContainerId}_img').maphilight({
+			fillColor: '888888',
+			strokeColor: '333333',
+			strokeOpacity: 0.5,
+			strokeWidth: 3,
+			alwaysOn: true
+		});
+
+		jQuery('#${qtiContainerId}').hotspotInteraction({
+			responseIdentifier: '$responseIdentifier',
+			formDispatchFieldId: '$r.formDispatchFieldId',
+			maxChoices: $interaction.maxChoices,
+			responseValue: '$r.toString($responseValue,",")',
+			opened: $isItemSessionOpen
+		});
+	});
+	</script>
 </div>
