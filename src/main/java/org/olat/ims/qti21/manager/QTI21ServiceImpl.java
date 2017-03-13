@@ -293,6 +293,9 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	@Override
 	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory, boolean replace, boolean debugInfo) {
         URI assessmentObjectSystemId = createAssessmentObjectUri(resourceDirectory);
+        if(assessmentObjectSystemId == null) {
+        	return null;
+        }
 		File resourceFile = new File(assessmentObjectSystemId);
 		if(replace) {
 			ResolvedAssessmentTest resolvedAssessmentTest = internalLoadAndResolveAssessmentTest(resourceDirectory, assessmentObjectSystemId);
@@ -367,17 +370,22 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	@Override
 	public URI createAssessmentObjectUri(final File resourceDirectory) {
 		final String key = resourceDirectory.getAbsolutePath();
-		return resourceToTestURI.computeIfAbsent(key, (directoryAbsolutPath) -> {
-			File manifestPath = new File(resourceDirectory, "imsmanifest.xml");
-			QTI21ContentPackage	cp = new QTI21ContentPackage(manifestPath.toPath());
-			try {
-				Path testPath = cp.getTest();
-				return testPath.toUri();
-			} catch (IOException e) {
-				log.error("", e);
-				return null;
-			}
-		});
+		try {
+			return resourceToTestURI.computeIfAbsent(key, (directoryAbsolutPath) -> {
+				File manifestPath = new File(resourceDirectory, "imsmanifest.xml");
+				QTI21ContentPackage	cp = new QTI21ContentPackage(manifestPath.toPath());
+				try {
+					Path testPath = cp.getTest();
+					return testPath.toUri();
+				} catch (IOException e) {
+					log.error("", e);
+					return null;
+				}
+			});
+		} catch (RuntimeException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 
 	@Override

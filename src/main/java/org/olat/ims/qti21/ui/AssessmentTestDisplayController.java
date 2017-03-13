@@ -241,7 +241,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		FileResourceManager frm = FileResourceManager.getInstance();
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
-		if(resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful() == null) {
+		if(resolvedAssessmentTest == null || resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful() == null) {
         	mainVC = createVelocityContainer("error");
 		} else {
 			currentRequestTimestamp = ureq.getRequestTimestamp();
@@ -269,10 +269,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
         
         mainPanel = putInitialPanel(mainVC);
-        
-        OLATResourceable sessionOres = OresHelper
-        		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
-        CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), sessionOres);
 	}
 	
 	private void immediateEndTestSession(UserRequest ureq) {

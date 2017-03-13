@@ -96,10 +96,12 @@ public interface QTI21Service {
 	
 	/**
 	 * Load the assessmentTest based on the imsmanifest.xml found in the resource
-	 * directory.
+	 * directory. Return null if the imsmanifest.xml is not found.
 	 * 
-	 * @param resourceDirectory
-	 * @return
+	 * @param resourceDirectory The directory where is the package
+	 * @param replace If true updates the cache
+	 * @param debugInfo If true writes more infos 
+	 * @return The resolved assessment test or null if the imsmanifest.xml was not found.
 	 */
 	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory, boolean replace, boolean debugInfo);
 	
