@@ -215,6 +215,13 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		}
 		if(allOk) {
 			sendConfirmationEmail(doer, identity);
+			//remove 
+			try {
+				loginModule.clearFailedLoginAttempts(identity.getName());
+				loginModule.clearFailedLoginAttempts(identity.getUser().getEmail());
+			} catch (Exception e) {
+				log.error("", e);
+			}
 		}
 		return allOk;
 	}
