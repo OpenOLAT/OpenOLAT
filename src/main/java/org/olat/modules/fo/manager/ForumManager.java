@@ -27,6 +27,7 @@ package org.olat.modules.fo.manager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -918,6 +919,16 @@ public class ForumManager {
 				.getResultList();
 		return count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).intValue();
 	}
+	
+	public void countMessageChildrenRecursively(Message message, Set<Long> messageKeys) {
+		List<Message> children = getMessageChildren(message);
+		for (Message child : children) {
+			messageKeys.add(child.getKey());
+			if (hasChildren(child)){
+				countMessageChildrenRecursively(child, messageKeys);
+			}
+		}	
+	}
 
 	/**
 	 * deletes entry of one message
@@ -1073,19 +1084,43 @@ public class ForumManager {
 	 * @param oldParent
 	 * @param setOfIdentity 
 	 */
-	public void collectThreadMembersRecursively(Message oldParent, Set<Identity> setOfIdentity) {
+	public void collectThreadMembersRecursively(Message oldParent, Set<Identity> setOfIdentity, Map<Identity, String> pseudonymes) {
 		List<Message> children = getMessageChildren(oldParent);
-		for (Message child : children) {
-			Identity creator = child.getCreator();
-			if (creator != null) {
-				setOfIdentity.add(creator);
+		children.sort(new Comparator<Message>() {
+			@Override
+			public int compare(Message o1, Message o2) {
+				if (o1 == null) return 1;
+				if (o2 == null) return -1;
+				// move posts with pseudonyms toward low indices in list
+				if (o1.getPseudonym() == null && o2.getPseudonym() != null) {
+					return 1;
+				} else if (o1.getPseudonym() != null && o2.getPseudonym() == null) {
+					return -1;
+				} else {
+					return o1.getCreationDate().compareTo(o2.getCreationDate());
+				}
 			}
-			Identity modifier = child.getModifier();
-			if (modifier != null) {
-				setOfIdentity.add(modifier);
+		});
+		for (Message child : children) {
+			if (!child.isGuest()) {
+				Identity creator = child.getCreator();
+				if (creator != null) {
+					setOfIdentity.add(creator);
+					String pseudonym = child.getPseudonym();
+					if(pseudonym != null) {
+						pseudonymes.put(creator, pseudonym);
+					} else if (pseudonymes.containsKey(creator)) {
+						// remove entry if thread also contains same identity without pseudonym 
+						pseudonymes.remove(creator);
+					}
+				}
+				Identity modifier = child.getModifier();
+				if (creator != null && modifier != null) {
+					setOfIdentity.add(modifier);
+				}
 			}
 			if (hasChildren(child)) {
-				collectThreadMembersRecursively(child, setOfIdentity);
+				collectThreadMembersRecursively(child, setOfIdentity, pseudonymes);
 			}			
 		}
 	}

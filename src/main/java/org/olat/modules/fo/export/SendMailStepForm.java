@@ -20,9 +20,11 @@
 package org.olat.modules.fo.export;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
@@ -77,6 +79,7 @@ public class SendMailStepForm extends StepFormBasicController {
 	private Message startMessage, parentMessage;
 	
 	private List<Identity> threadMembers;
+	private Map<Identity, String> pseudonymes;
 	
 	private String targetForum, targetCourseTitle, startMessageTitle;
 	
@@ -136,10 +139,21 @@ public class SendMailStepForm extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String members = displayThreadMembers();
-		FormLayoutContainer recipientsContainer = FormLayoutContainer.createDefaultFormLayout("recipients", getTranslator());
-		formLayout.add(recipientsContainer);
-		recipientsContainer.setRootForm(mainForm);
-		uifactory.addStaticTextElement("sendmail.recipients", members, recipientsContainer);
+		// summary
+		String summary = translate("thread.moving.info", new String[]{startMessageTitle, targetForum, targetCourseTitle});
+		Set<Long> messageKeys = new HashSet<>();
+		forumManager.countMessageChildrenRecursively(startMessage, messageKeys);
+		int childrenCount = messageKeys.size();
+		if (childrenCount > 0) {
+			summary += childrenCount > 1 ? translate("many.children.move", String.valueOf(childrenCount)) : translate("one.child.move") ;
+		}
+		FormLayoutContainer infoContainer = FormLayoutContainer.createDefaultFormLayout("summary", getTranslator());
+		formLayout.add(infoContainer);
+		infoContainer.setRootForm(mainForm);
+		uifactory.addStaticTextElement("thread.moved.summary", summary, infoContainer);
+		// members
+		uifactory.addStaticTextElement("sendmail.recipients", members, infoContainer);
+		// mail template
 		formLayout.add(templateForm.getInitialFormItem());
 	}
 	
@@ -177,27 +191,34 @@ public class SendMailStepForm extends StepFormBasicController {
 		} else {
 			addToRunContext(SENDMAIL, Boolean.FALSE);
 		}
-		showInfo("thread.moved.info", new String[]{startMessageTitle, targetForum, targetCourseTitle});
+		showInfo("thread.moved.success", new String[]{startMessageTitle, targetForum, targetCourseTitle});
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	
 	private List<Identity> collectCreators () {
+		pseudonymes = new HashMap<>();
 		Set<Identity> threadMemberSet = new HashSet<>();
 		// inform start message (thread top)
-		Identity creator = startMessage.getCreator();
-		if (creator != null) {
-			threadMemberSet.add(creator);
-		}
-		Identity modifier = startMessage.getModifier();
-		if (modifier != null) {
-			threadMemberSet.add(modifier);
+		if (!startMessage.isGuest()) {
+			Identity creator = startMessage.getCreator();
+			if (creator != null) {
+				threadMemberSet.add(creator);
+				String pseudonym = startMessage.getPseudonym();
+				if(pseudonym != null) {
+					pseudonymes.put(creator, pseudonym);
+				}
+			}
+			Identity modifier = startMessage.getModifier();
+			if (modifier != null) {
+				threadMemberSet.add(modifier);
+			}
 		}
 		// send copy of email to sender
 		if (templateForm != null && templateForm.isCCSenderSelected()) {
 			threadMemberSet.add(getIdentity());
 		}
 		// inform children
-		forumManager.collectThreadMembersRecursively(startMessage, threadMemberSet);
+		forumManager.collectThreadMembersRecursively(startMessage, threadMemberSet, pseudonymes);
 		
 		return new ArrayList<Identity>(threadMemberSet);
 	}
@@ -208,8 +229,12 @@ public class SendMailStepForm extends StepFormBasicController {
 		Iterator<Identity> listIterator = threadMembers.iterator();
 		while(listIterator.hasNext()) {
 			Identity identity = listIterator.next();
-			String displayName = userManager.getUserDisplayName(identity);
-			sb.append(displayName);
+			if (pseudonymes.containsKey(identity)) {
+				sb.append(pseudonymes.get(identity));
+			} else {
+				String displayName = userManager.getUserDisplayName(identity);
+				sb.append(displayName);
+			}
 			if (listIterator.hasNext()) {
 				sb.append("; ");
 			}
