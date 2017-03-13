@@ -183,6 +183,23 @@ public class MailTemplateForm extends FormBasicController {
 		return mandatoryEmail || sendMail.isSelected(0);
 	}
 	
+	/**
+	 * Checks if is ccSender selected.
+	 *
+	 * @return true, if is ccSender selected
+	 */
+	public boolean isCCSenderSelected() {
+		return ccSender.isSelected(0);
+	}
+	
+	/**
+	 * Sets the send-mail element selected.
+	 */
+	public void setSendMailElementSelected () {
+		this.sendMail.select("xx", true);
+		update();
+	}
+
 	@Override
 	protected void doDispose() {
 		//

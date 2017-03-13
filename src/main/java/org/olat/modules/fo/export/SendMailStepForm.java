@@ -19,10 +19,11 @@
  */
 package org.olat.modules.fo.export;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.UserRequest;
@@ -30,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
@@ -46,6 +48,7 @@ import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,8 +76,14 @@ public class SendMailStepForm extends StepFormBasicController {
 	
 	private Message startMessage, parentMessage;
 	
+	private List<Identity> threadMembers;
+	
+	private String targetForum, targetCourseTitle, startMessageTitle;
+	
 	@Autowired
 	private ForumManager forumManager;
+	@Autowired 
+	UserManager userManager;
 
 	
 	public SendMailStepForm(UserRequest ureq, WindowControl wControl,
@@ -85,31 +94,33 @@ public class SendMailStepForm extends StepFormBasicController {
 		String comment = translate("forum.comment");
 		String thread = translate("forum.thread");
 		ICourse course = (ICourse)getFromRunContext(ICOURSE);		
-		String courseTitle = course.getCourseTitle();
+		targetCourseTitle = course.getCourseTitle();
 		RepositoryEntry startCourse = (RepositoryEntry)getFromRunContext(START_COURSE);
 		String startCourseTitle = startCourse.getDisplayname();
 		startMessage = (Message)getFromRunContext(MESSAGE_TO_MOVE);
 		if (startMessage.getThreadtop() == null) {
 			comment = thread;
 		}
-		String messageTitle = startMessage.getTitle();
+		startMessageTitle = startMessage.getTitle();
 		parentMessage = (Message)getFromRunContext(PARENT_MESSAGE);
 		String parentMessageTitle = parentMessage != null ? parentMessage.getTitle() : startMessage.getTitle();
 		FOCourseNode node = (FOCourseNode)getFromRunContext(FORUM);
-		String targetForum = node.getShortTitle();
+		targetForum = node.getShortTitle();
 		
 		String userName = getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, null) + " "
 				+ getIdentity().getUser().getProperty(UserConstants.LASTNAME, null);
 		String email = getIdentity().getUser().getProperty(UserConstants.EMAIL, null);
 		
-		String[] subject = { comment, messageTitle };
-		String[] body = { comment, messageTitle, startCourseTitle, courseTitle, targetForum, parentMessageTitle, userName, email };
+		String[] subject = { comment, startMessageTitle };
+		String[] body = { comment, startMessageTitle, startCourseTitle, targetCourseTitle, targetForum, parentMessageTitle, userName, email };
 		
 		String subjectContent = translate("wizard.mail.subject", subject);
 		String bodyContent = translate("wizard.mail.body", body);
 		mailTemplate = createMailTemplate(subjectContent, bodyContent);		
 				
 		templateForm = new MailTemplateForm(ureq, wControl, mailTemplate, false, rootForm);
+		templateForm.setSendMailElementSelected();
+		
 		initForm(ureq);
 	}
 	
@@ -124,6 +135,11 @@ public class SendMailStepForm extends StepFormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String members = displayThreadMembers();
+		FormLayoutContainer recipientsContainer = FormLayoutContainer.createDefaultFormLayout("recipients", getTranslator());
+		formLayout.add(recipientsContainer);
+		recipientsContainer.setRootForm(mainForm);
+		uifactory.addStaticTextElement("sendmail.recipients", members, recipientsContainer);
 		formLayout.add(templateForm.getInitialFormItem());
 	}
 	
@@ -136,6 +152,18 @@ public class SendMailStepForm extends StepFormBasicController {
 	protected void doDispose() {
 		//
 	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		if (mailTemplate == null || templateForm == null) {
+			allOk &= false;
+		}
+		if (getIdentity() == null) {
+			allOk &= false;
+		}
+		return allOk &= super.validateFormLogic(ureq);
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -143,31 +171,50 @@ public class SendMailStepForm extends StepFormBasicController {
 			templateForm.updateTemplateFromForm(mailTemplate);
 			addToRunContext(MAIL_TEMPLATE, mailTemplate);
 			addToRunContext(SENDER, getIdentity());
-			List<Identity> listOfIdentity = collectCreators();
-			ListWrapper recipients = new ListWrapper(listOfIdentity);
+			ListWrapper recipients = new ListWrapper(threadMembers);
 			addToRunContext(RECIPIENTS, recipients);
 			addToRunContext(SENDMAIL, Boolean.TRUE);
 		} else {
 			addToRunContext(SENDMAIL, Boolean.FALSE);
 		}
+		showInfo("thread.moved.info", new String[]{startMessageTitle, targetForum, targetCourseTitle});
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	
 	private List<Identity> collectCreators () {
-		Set<Identity> setOfIdentity = new HashSet<>();
-		// inform start message
+		Set<Identity> threadMemberSet = new HashSet<>();
+		// inform start message (thread top)
 		Identity creator = startMessage.getCreator();
 		if (creator != null) {
-			setOfIdentity.add(creator);
+			threadMemberSet.add(creator);
 		}
 		Identity modifier = startMessage.getModifier();
 		if (modifier != null) {
-			setOfIdentity.add(modifier);
+			threadMemberSet.add(modifier);
+		}
+		// send copy of email to sender
+		if (templateForm != null && templateForm.isCCSenderSelected()) {
+			threadMemberSet.add(getIdentity());
 		}
 		// inform children
-		forumManager.collectThreadMembersRecursively(startMessage, setOfIdentity);
-
-		return setOfIdentity.stream().collect(Collectors.toList());
+		forumManager.collectThreadMembersRecursively(startMessage, threadMemberSet);
+		
+		return new ArrayList<Identity>(threadMemberSet);
+	}
+	
+	private String displayThreadMembers() {
+		StringBuilder sb = new StringBuilder();
+		threadMembers = collectCreators();
+		Iterator<Identity> listIterator = threadMembers.iterator();
+		while(listIterator.hasNext()) {
+			Identity identity = listIterator.next();
+			String displayName = userManager.getUserDisplayName(identity);
+			sb.append(displayName);
+			if (listIterator.hasNext()) {
+				sb.append("; ");
+			}
+		}
+		return sb.toString();
 	}
 	
 }

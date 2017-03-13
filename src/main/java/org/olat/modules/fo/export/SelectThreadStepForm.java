@@ -111,7 +111,7 @@ public class SelectThreadStepForm extends StepFormBasicController {
 				}
 			}
 		} else if (source == newThreadButton) {
-			displayAsNewThread();
+			displayAsNewThread(ureq);
 		} 
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -128,7 +128,7 @@ public class SelectThreadStepForm extends StepFormBasicController {
 		}
 	}
 	
-	private void displayAsNewThread() {
+	private void displayAsNewThread(UserRequest ureq) {
 		Message messageToMove = (Message)getFromRunContext(SendMailStepForm.MESSAGE_TO_MOVE);
 		String creatorFullname = userManager.getUserDisplayName(messageToMove.getCreator());
 		Date lastModified = messageToMove.getLastModified();
@@ -144,6 +144,8 @@ public class SelectThreadStepForm extends StepFormBasicController {
 			threadTableModel.sort(new SortKey(ThreadListCols.thread.name(), true));
 			threadTable.reloadData();
 			threadTable.reset();
+			// move on to next wizard step directly
+			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 	}
 	
@@ -151,11 +153,15 @@ public class SelectThreadStepForm extends StepFormBasicController {
 		Identity identity = guestOnly ? null : getIdentity();
 		List<ForumThread> threads = forumManager.getForumThreads(forum, identity);
 		for (ForumThread forumThread : threads) {
-			if (row.getKey().equals(forumThread.getKey())) return true;
+			if (row.getKey().equals(forumThread.getKey())) {
+				return true;
+			}
 		}
 		List<ForumThread> tablethreads = threadTableModel.getObjects();
 		for (ForumThread forumThread : tablethreads) {
-			if (row.getKey().equals(forumThread.getKey())) return true;
+			if (row.getKey().equals(forumThread.getKey())) {
+				return true;
+			}
 		}
 		return false;
 	}
