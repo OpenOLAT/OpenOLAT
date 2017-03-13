@@ -21,6 +21,7 @@
 package org.olat.ldap.manager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -363,13 +364,27 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		String uid = identity.getName();
 		String ldapUserPasswordAttribute = syncConfiguration.getLdapUserPasswordAttribute();
 		try {
-			DirContext ctx = bindSystem();
+			LdapContext ctx = bindSystem();
 			String dn = ldapDao.searchUserDNByUid(uid, ctx);
-			
-			ModificationItem [] modificationItems = new ModificationItem [ 1 ];
-			
-			Attribute userPasswordAttribute;
+
+			List<ModificationItem> modificationItemList = new ArrayList<>();
 			if(ldapLoginModule.isActiveDirectory()) {
+				boolean resetLockoutTime = false;
+				if(ldapLoginModule.isResetLockTimoutOnPasswordChange()) {
+					String[] attrs = syncConfiguration.getUserAttributes();
+					List<String> attrList = new ArrayList<>(Arrays.asList(attrs));
+					attrList.add("lockoutTime");
+					attrs = attrList.toArray(new String[attrList.size()]);
+					Attributes attributes = ctx.getAttributes(dn, attrs);
+					Attribute lockoutTimeAttr = attributes.get("lockoutTime");
+					if(lockoutTimeAttr != null && lockoutTimeAttr.size() > 0) {
+						Object lockoutTime = lockoutTimeAttr.get();
+						if(lockoutTime != null && !lockoutTime.equals("0")) {
+							resetLockoutTime = true;
+						}
+					}
+				}
+
 				//active directory need the password enquoted and unicoded (but little-endian)
 				String quotedPassword = "\"" + pwd + "\"";
 				char unicodePwd[] = quotedPassword.toCharArray();
@@ -378,13 +393,19 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 					pwdArray[i*2 + 1] = (byte) (unicodePwd[i] >>> 8);
 					pwdArray[i*2 + 0] = (byte) (unicodePwd[i] & 0xff);
 				}
-				userPasswordAttribute = new BasicAttribute ( ldapUserPasswordAttribute, pwdArray );
+				BasicAttribute userPasswordAttribute = new BasicAttribute(ldapUserPasswordAttribute, pwdArray );
+				modificationItemList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, userPasswordAttribute));
+				if(resetLockoutTime) {
+					BasicAttribute lockTimeoutAttribute = new BasicAttribute("lockoutTime", "0");
+					modificationItemList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, lockTimeoutAttribute));
+				}
 			} else {
-				userPasswordAttribute = new BasicAttribute ( ldapUserPasswordAttribute, pwd );
+				BasicAttribute userPasswordAttribute = new BasicAttribute(ldapUserPasswordAttribute, pwd);
+				modificationItemList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, userPasswordAttribute));
 			}
 
-			modificationItems [ 0 ] = new ModificationItem ( DirContext.REPLACE_ATTRIBUTE, userPasswordAttribute );
-			ctx.modifyAttributes ( dn, modificationItems );
+			ModificationItem[] modificationItems = modificationItemList.toArray(new ModificationItem[modificationItemList.size()]);
+			ctx.modifyAttributes(dn, modificationItems);
 			ctx.close();
 			return true;
 		} catch (NamingException e) {

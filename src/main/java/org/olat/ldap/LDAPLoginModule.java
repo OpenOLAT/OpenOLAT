@@ -128,6 +128,8 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	// Propagate the password changes onto the LDAP server
 	@Value("${ldap.propagatePasswordChangedOnLdapServer}")
 	private boolean propagatePasswordChangedOnLdapServer;
+	@Value("${ldap.resetLockTimoutOnPasswordChange}")
+	private boolean resetLockTimoutOnPasswordChange;
 	@Value("${ldap.changePasswordUrl}")
 	private String changePasswordUrl;
 	// Configuration for syncing user attributes
@@ -443,6 +445,10 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		this.propagatePasswordChangedOnLdapServer = propagatePasswordChangedOnServer;
 	}
 
+	public void setResetLockTimoutOnPasswordChange(boolean resetLockTimoutOnPasswordChange) {
+		this.resetLockTimoutOnPasswordChange = resetLockTimoutOnPasswordChange;
+	}
+
 	public boolean isLDAPEnabled() {
 		return ldapEnabled;
 	}
@@ -508,6 +514,10 @@ public class LDAPLoginModule extends AbstractSpringModule {
 
 	public boolean isPropagatePasswordChangedOnLdapServer(){
 		return propagatePasswordChangedOnLdapServer;
+	}
+
+	public boolean isResetLockTimoutOnPasswordChange() {
+		return resetLockTimoutOnPasswordChange;
 	}
 
 	public String getChangePasswordUrl() {
