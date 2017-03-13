@@ -115,6 +115,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.variable.FeedbackInline;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.TextOrVariable;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.hypertext.A;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.image.Img;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Dd;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.list.Dl;
@@ -672,6 +673,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				renderSpan(renderer, sb, (Span)inline, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
 				break;
 			}
+			case A.QTI_CLASS_NAME: {
+				renderA(renderer, sb, (A)inline, component, resolvedAssessmentItem, itemSessionState, ubu, translator);
+				break;
+			}
 			case Object.QTI_CLASS_NAME: {
 				renderObject(sb, (Object)inline, component, resolvedAssessmentItem);
 				break;
@@ -709,6 +714,31 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
 			renderEndTag(sb, span);
 		}
+	}
+	
+	protected final void renderA(AssessmentRenderer renderer, StringOutput sb, A a, AssessmentObjectComponent component,
+			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
+	
+		sb.append("<a");
+		boolean target = false;
+		for(Attribute<?> attribute:a.getAttributes()) {
+			String value = getHtmlAttributeValue(component, resolvedAssessmentItem, attribute);
+			if(StringHelper.containsNonWhitespace(value)) {
+				String name = attribute.getLocalName();
+				if("target".equals(name)) {
+					target = true;
+				}
+				sb.append(" ").append(name).append("=\"").append(value).append("\"");
+			}
+		}
+		if(!target) {
+			sb.append(" target=\"_blank\"");
+		}
+		sb.append(">");
+
+		a.getInlines().forEach((child)
+				-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, child, ubu, translator));
+		renderEndTag(sb, a);
 	}
 	
 	protected final void renderObject(StringOutput sb, Object object, AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem) {

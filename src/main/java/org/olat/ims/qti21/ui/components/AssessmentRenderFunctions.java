@@ -621,9 +621,23 @@ public class AssessmentRenderFunctions {
 		if(uri != null && uri.startsWith("http:") || uri.startsWith("https:") || uri.startsWith("mailto:")) {
 			return uri;
 		}
+		
+		String filename = "file";
+		try {
+			if(StringHelper.containsNonWhitespace(uri)) {
+				int lastIndex = uri.lastIndexOf('/');
+				if(lastIndex >= 0 && lastIndex + 1 < uri.length()) {
+					filename = uri.substring(lastIndex + 1, uri.length());
+				} else {
+					filename = uri;
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
 
 		String relativePath = component.relativePathTo(resolvedAssessmentItem);
-		return component.getMapperUri() + "/file?href=" + relativePath + (uri == null ? "" : uri);
+		return component.getMapperUri() + "/" + filename + "?href=" + relativePath + (uri == null ? "" : uri);
 	}
 	
 	public static final boolean testFeedbackVisible(TestFeedback testFeedback, TestSessionState testSessionState) {
