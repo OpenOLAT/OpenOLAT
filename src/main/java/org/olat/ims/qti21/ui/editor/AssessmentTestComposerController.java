@@ -1231,8 +1231,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
 			if(rootNode != null) {
 				URI itemUri = rootNode.getSystemId();
-				File itemFile = new File(itemUri);
-				deleted = itemFile.delete();
+				List<AssessmentItemRef> itemRefs = resolvedAssessmentTest.getItemRefsBySystemIdMap().get(itemUri);
+				if(itemRefs.size() <= 1) {
+					File itemFile = new File(itemUri);
+					deleted = itemFile.delete();
+				}
 			}
 		}
 		if(deleted) {
