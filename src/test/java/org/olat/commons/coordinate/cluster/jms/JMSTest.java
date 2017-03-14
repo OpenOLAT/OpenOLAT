@@ -26,16 +26,18 @@
 
 package org.olat.commons.coordinate.cluster.jms;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
@@ -50,23 +52,10 @@ import org.olat.test.OlatTestCase;
  * @author Felix Jost
  */
 public class JMSTest extends OlatTestCase {
-	private static boolean isInitialized = false;
-	private static Identity id1;
+	
+	private static final OLog log = Tracing.createLoggerFor(JMSTest.class);
 
-	private Event event;
 
-	@Before
-	public void setup() throws Exception {
-		if (isInitialized == false) {
-			id1 = JunitTestHelper.createAndPersistIdentityAsUser("jms" + UUID.randomUUID().toString());
-			DBFactory.getInstance().closeSession();
-			isInitialized = true;
-		}
-	}
-
-	/**
-	 * 
-	 */
 	@Test
 	public void testSendReceive() {
 		// enable test only if we have the cluster configuration enabled.
@@ -74,26 +63,29 @@ public class JMSTest extends OlatTestCase {
 		// (see file serviceconfig/org/olat/core/_spring/coreextconfig.xml)
 		EventBus bus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
 		if (bus instanceof ClusterEventBus) {
+			Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("jms");
+			
 			// send and wait some time until a message should arrive at the latest.
-			OLATResourceable ores1 = OresHelper.createOLATResourceableInstance("hellojms", new Long(123));
+			final OLATResourceable ores = OresHelper.createOLATResourceableInstance("hellojms", new Long(123));
+			final CountDownLatch doneSignal = new CountDownLatch(1);
 			
-			bus.registerFor(new GenericEventListener(){
-
+			bus.registerFor(new GenericEventListener() {
+				@Override
 				public void event(Event event) {
-					System.out.println("event received!"+event);
-					JMSTest.this.event = event;
-				}}, id1, ores1);
-			
+					log.audit("Event received: " + event);
+					doneSignal.countDown();
+				}
+			}, id, ores);
 			
 			MultiUserEvent mue = new MultiUserEvent("amuecommand");
-			bus.fireEventToListenersOf(mue, ores1);
+			bus.fireEventToListenersOf(mue, ores);
+			
 			try {
-				Thread.sleep(2000);
+				boolean interrupt = doneSignal.await(5, TimeUnit.SECONDS);
+				assertTrue("Test takes too long (more than 5s)", interrupt);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				fail("" + e.getMessage());
 			}
-			assertNotNull("after 2 secs, an answer from the jms should have arrived", event);
 		}
-		// else no tests to pass here
 	}
 }
