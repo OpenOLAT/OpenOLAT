@@ -117,7 +117,8 @@ public class AssessmentItemEditorController extends BasicController {
 		this.restrictedEdit = restrictedEdit;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
-		if(resolvedAssessmentItem == null) {
+		if(resolvedAssessmentItem == null || resolvedAssessmentItem.getItemLookup() == null
+				|| resolvedAssessmentItem.getItemLookup().getRootNodeHolder() == null) {
 			mainVC = createVelocityContainer("missing_resource");
 			mainVC.contextPut("uri", itemFile == null ? "" : itemFile);
 		} else {
@@ -155,7 +156,8 @@ public class AssessmentItemEditorController extends BasicController {
 		this.restrictedEdit = restrictedEdit;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
-		if(resolvedAssessmentItem == null) {
+		if(resolvedAssessmentItem == null || resolvedAssessmentItem.getItemLookup() == null
+				|| resolvedAssessmentItem.getItemLookup().getRootNodeHolder() == null) {
 			mainVC = createVelocityContainer("missing_resource");
 			mainVC.contextPut("uri", itemFile == null ? "" : itemFile);
 		} else {
