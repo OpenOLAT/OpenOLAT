@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openolat</groupId>
 	<artifactId>openolat-lms</artifactId>
-	<version>11.3-SNAPSHOT</version>
+	<version>11.4-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>OpenOLAT LMS</name>
 	<url>http://www.openolat.org</url>
@@ -24,9 +24,7 @@
 			<name>Apache 2.0 Open Source License</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
 			<distribution>manual</distribution>
-			<comments>
-		OpenOLAT is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-		</comments>
+			<comments>OpenOLAT is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</comments>
 		</license>
 	</licenses>
 	<distributionManagement>
