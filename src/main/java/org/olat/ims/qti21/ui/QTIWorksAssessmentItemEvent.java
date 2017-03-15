@@ -43,6 +43,7 @@ public class QTIWorksAssessmentItemEvent extends FormEvent {
 		validation("validation", "validation"),
 		authorview("author-view", "author-view"),
 		response("response", "response"),//impl
+		tmpResponse("response-tmp", "response-tmp"),
 		close("close", "close"),//ok
 		solution("solution", "solution"),
 		resetsoft("reset-soft","reset-soft"),

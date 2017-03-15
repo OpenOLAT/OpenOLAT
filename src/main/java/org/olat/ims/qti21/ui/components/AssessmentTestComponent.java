@@ -40,6 +40,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.running.ItemProcessingContext;
+import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
@@ -164,18 +165,20 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 				return true;
 			}
 
-
-			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
-			for(Interaction interaction:interactions) {
-				if(AssessmentRenderFunctions.isBadResponse(itemSessionState, interaction.getResponseIdentifier())) {
-					return true;
-				}
-				if(AssessmentRenderFunctions.isInvalidResponse(itemSessionState, interaction.getResponseIdentifier())) {
-					return true;
+			ItemProcessingContext itemContext = getTestSessionController().getItemProcessingContext(itemNode);
+			if(itemContext instanceof ItemSessionController) {
+				ItemSessionController itemSessionController = (ItemSessionController)itemContext;
+				List<Interaction> interactions = itemSessionController.getInteractions();
+				for(Interaction interaction:interactions) {
+					if(AssessmentRenderFunctions.isBadResponse(itemSessionState, interaction.getResponseIdentifier())) {
+						return true;
+					}
+					if(AssessmentRenderFunctions.isInvalidResponse(itemSessionState, interaction.getResponseIdentifier())) {
+						return true;
+					}
 				}
 			}
 
-			ItemProcessingContext itemContext = getTestSessionController().getItemProcessingContext(itemNode);
 			if(assessmentItem.getItemBody().willShowFeedback(itemContext)) {
 				return true;
 			}

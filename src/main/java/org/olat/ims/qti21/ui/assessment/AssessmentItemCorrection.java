@@ -25,6 +25,7 @@ import org.olat.core.id.Identity;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
 
+import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
@@ -77,6 +78,16 @@ public class AssessmentItemCorrection {
 
 	public ItemSessionState getItemSessionState() {
 		return itemSessionState;
+	}
+	
+	public String getItemSessionStatus() {
+		return itemSessionState != null && itemSessionState.getSessionStatus() != null ? itemSessionState.getSessionStatus().name()
+				: "";
+	}
+	
+	public boolean isItemSessionStatusFinal() {
+		return itemSessionState != null && itemSessionState.getSessionStatus() != null
+				&& SessionStatus.FINAL.equals(itemSessionState.getSessionStatus());
 	}
 
 	public AssessmentTestSession getTestSession() {

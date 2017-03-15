@@ -102,6 +102,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.JqtiPlus;
 import uk.ac.ed.ph.jqtiplus.exception.QtiCandidateStateException;
+import uk.ac.ed.ph.jqtiplus.exception.ResponseBindingException;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.result.AssessmentResult;
 import uk.ac.ed.ph.jqtiplus.node.result.ItemResult;
@@ -591,6 +592,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			case timesUp:
 				processExitTestAfterTimeLimit(ureq);
 				break;
+			case tmpResponse:
+				handleTemporaryResponse(ureq, qe.getStringResponseMap());
+				break;
 			case source:
 				logError("QtiWorks event source not implemented", null);
 				break;
@@ -816,6 +820,95 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private  ParentPartItemRefs getParentSection(TestPlanNodeKey itemKey) {
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
 		return AssessmentTestHelper.getParentSection(itemKey, testSessionState, resolvedAssessmentTest);
+	}
+	
+	private void handleTemporaryResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap) {
+		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+		TestSessionState testSessionState = testSessionController.getTestSessionState();
+		final Date timestamp = ureq.getRequestTimestamp();
+		
+		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
+		if (stringResponseMap != null) {
+			for (final Entry<Identifier, ResponseInput> responseEntry : stringResponseMap.entrySet()) {
+				final Identifier identifier = responseEntry.getKey();
+				final ResponseInput responseData = responseEntry.getValue();
+				if(responseData instanceof StringInput) {
+					responseDataMap.put(identifier, new StringResponseData(((StringInput)responseData).getResponseData()));
+				}
+            }
+		}
+		
+		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
+		ParentPartItemRefs parentParts = getParentSection(currentItemKey);
+
+		String assessmentItemIdentifier = currentItemKey.getIdentifier().toString();
+		AssessmentItemSession itemSession = qtiService
+				.getOrCreateAssessmentItemSession(candidateSession, parentParts, assessmentItemIdentifier);
+
+        TestPlanNode currentItemRefNode = testSessionState.getTestPlan().getNode(currentItemKey);
+        ItemSessionController itemSessionController = (ItemSessionController)testSessionController
+        		.getItemProcessingContext(currentItemRefNode);
+		ItemSessionState itemSessionState = itemSessionController.getItemSessionState();
+		
+		List<Interaction> interactions = itemSessionController.getInteractions();
+		Map<Identifier,Interaction> interactionMap = new HashMap<>();
+		for(Interaction interaction:interactions) {
+			interactionMap.put(interaction.getResponseIdentifier(), interaction);
+		}
+		
+		Map<Identifier, AssessmentResponse> candidateResponseMap = qtiService.getAssessmentResponses(itemSession);
+        for (Entry<Identifier, ResponseData> responseEntry : responseDataMap.entrySet()) {
+            Identifier responseIdentifier = responseEntry.getKey();
+            ResponseData responseData = responseEntry.getValue();
+            AssessmentResponse candidateItemResponse;
+            if(candidateResponseMap.containsKey(responseIdentifier)) {
+            	candidateItemResponse = candidateResponseMap.get(responseIdentifier);
+            } else {
+            	candidateItemResponse = qtiService
+            		.createAssessmentResponse(candidateSession, itemSession, responseIdentifier.toString(), ResponseLegality.VALID, responseData.getType());
+            }
+		
+            switch (responseData.getType()) {
+                case STRING: {
+                	List<String> data = ((StringResponseData) responseData).getResponseData();
+                	String stringuifiedResponse = ResponseFormater.format(data);
+                    candidateItemResponse.setStringuifiedResponse(stringuifiedResponse);
+                    break;
+                }
+                default:
+                    throw new OLATRuntimeException("Unexpected switch case: " + responseData.getType());
+            }
+            candidateResponseMap.put(responseIdentifier, candidateItemResponse);
+            itemSessionState.setRawResponseData(responseIdentifier, responseData);
+            
+            try {
+                Interaction interaction = interactionMap.get(responseIdentifier);
+                interaction.bindResponse(itemSessionController, responseData);
+            } catch (final ResponseBindingException e) {
+               //
+            }
+        }
+        
+        /* Copy uncommitted responses over */
+        for (final Entry<Identifier, Value> uncommittedResponseEntry : itemSessionState.getUncommittedResponseValues().entrySet()) {
+            final Identifier identifier = uncommittedResponseEntry.getKey();
+            final Value value = uncommittedResponseEntry.getValue();
+            itemSessionState.setResponseValue(identifier, value);
+        }
+        
+        /* Persist CandidateResponse entities */
+        qtiService.recordTestAssessmentResponses(itemSession, candidateResponseMap.values());
+
+        /* Record resulting event */
+        final CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
+                CandidateTestEventType.ITEM_EVENT, null, currentItemKey, testSessionState, notificationRecorder);
+        candidateAuditLogger.logCandidateEvent(candidateEvent, candidateResponseMap);
+        
+        /* Record current result state */
+		AssessmentResult assessmentResult = computeTestAssessmentResult(timestamp, candidateSession);
+		synchronized(this) {
+			qtiService.recordTestAssessmentResult(candidateSession, testSessionState, assessmentResult, candidateAuditLogger);
+		}
 	}
 	
 	//public CandidateSession handleResponses(final CandidateSessionContext candidateSessionContext,
@@ -1364,7 +1457,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private AssessmentResult computeAndRecordTestAssessmentResult(Date requestTimestamp, TestSessionState testSessionState, boolean submit) {
 		AssessmentResult assessmentResult = computeTestAssessmentResult(requestTimestamp, candidateSession);
-		qtiService.recordTestAssessmentResult(candidateSession, testSessionState, assessmentResult, candidateAuditLogger);
+		synchronized(this) {
+			qtiService.recordTestAssessmentResult(candidateSession, testSessionState, assessmentResult, candidateAuditLogger);
+		}
 		processOutcomeVariables(assessmentResult.getTestResult(), submit);
 		return assessmentResult;
 	}
@@ -1550,6 +1645,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				String[] jss = new String[] {
 						"js/jquery/ui/jquery-ui-1.11.4.custom.resize.min.js",
 						"js/jquery/qti/jquery.qtiTimer.js",
+						"js/jquery/qti/jquery.qtiAutosave.js",
 				};
 				JSAndCSSComponent js = new JSAndCSSComponent("js", jss, null);
 				layoutCont.put("js", js);
@@ -1705,7 +1801,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					doSuspendTest(ureq);
 				} else if(source == qtiEl || source == qtiTreeEl) {
 					if(event instanceof QTIWorksAssessmentTestEvent) {
-						fireEvent(ureq, event);
+						QTIWorksAssessmentTestEvent qwate = (QTIWorksAssessmentTestEvent)event;
+						if(qwate.getEvent() == QTIWorksAssessmentTestEvent.Event.tmpResponse) {
+							processTemporaryResponse(ureq);
+						} else {
+							fireEvent(ureq, event);
+						}
 					}
 				} else if(source instanceof FormLink) {
 					FormLink formLink = (FormLink)source;
@@ -1732,7 +1833,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				String comment) {
 			fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.response, stringResponseMap, fileResponseMap, comment, source));
 		}
-		
+
+		@Override
+		protected void fireTemporaryResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap) {
+			fireEvent(ureq, new QTIWorksAssessmentTestEvent(QTIWorksAssessmentTestEvent.Event.tmpResponse, stringResponseMap, null, null, null));
+		}
+
 		/**
 		 * Make sure that the end test part is not clicked 2x (which
 		 * the qtiworks runtime don't like).

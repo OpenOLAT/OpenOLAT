@@ -59,7 +59,7 @@ public class EssayEditorController extends FormBasicController {
 	
 	public EssayEditorController(UserRequest ureq, WindowControl wControl, EssayAssessmentItemBuilder itemBuilder,
 			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_DEFAULT_2_10);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;

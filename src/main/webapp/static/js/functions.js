@@ -1327,9 +1327,9 @@ function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 	var data = new Object();
 	data['dispatchuri'] = dispId;
 	data['dispatchevent'] = eventInt;
-	if(arguments.length > 7) {
+	if(arguments.length > 5) {
 		var argLength = arguments.length;
-		for(var i=7; i<argLength; i=i+2) {
+		for(var i=5; i<argLength; i=i+2) {
 			if(argLength > i+1) {
 				data[arguments[i]] = arguments[i+1];
 			}

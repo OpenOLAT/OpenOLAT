@@ -111,6 +111,31 @@ public abstract class AbstractQtiWorksController extends FormBasicController {
 		fireResponse(ureq, source, stringResponseMap, fileResponseMap, candidateComment);
 	}
 	
+	protected void processTemporaryResponse(UserRequest ureq) {
+		Map<Identifier, ResponseInput> stringResponseMap = extractStringResponseData();
+
+		String cmd = ureq.getParameter("tmpResponse");
+		String responseIdentifierString = cmd.substring("qtiworks_response_".length());
+		String presentedFlag = "qtiworks_presented_".concat(responseIdentifierString);
+		if(mainForm.getRequestParameterSet().contains(presentedFlag)) {
+			Identifier responseIdentifier;
+			try {
+				responseIdentifier = getResponseIdentifierFromUniqueId(responseIdentifierString);
+				//Identifier.parseString(responseIdentifierString);
+			} catch (final QtiParseException e) {
+				throw new RuntimeException("Bad response identifier encoded in parameter " + cmd, e);
+			}
+			
+			String[] responseValues = new String[]{ "submit" };
+	        StringInput stringResponseData = new StringInput(responseValues);
+			stringResponseMap.put(responseIdentifier, stringResponseData);
+		}
+		
+		fireTemporaryResponse(ureq, stringResponseMap);
+	}
+	
+	protected abstract void fireTemporaryResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap);
+	
 	protected abstract void fireResponse(UserRequest ureq, FormItem source,
 			Map<Identifier, ResponseInput> stringResponseMap, Map<Identifier, ResponseInput> fileResponseMap,
 			String comment);

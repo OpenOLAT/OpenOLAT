@@ -69,6 +69,7 @@ import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.render.RenderResult;
@@ -210,8 +211,12 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			renderItemStatusMessage("ended", "assessment.item.status.finished", sb, translator);
 		} else if(!(itemSessionState.getUnboundResponseIdentifiers().isEmpty() && itemSessionState.getInvalidResponseIdentifiers().isEmpty())) {
 			renderItemStatusMessage("invalid", "assessment.item.status.needsAttention", sb, translator);
-		} else if(itemSessionState.isResponded() || itemSessionState.getUncommittedResponseValues().size() > 0) {
-			renderItemStatusMessage("answered", "assessment.item.status.answered", sb, translator);
+		} else if(itemSessionState.isResponded()) {
+			if(itemSessionState.getUncommittedResponseValues().size() > 0) {
+				renderItemStatusMessage("notAnswered", "assessment.item.status.notAnswered", sb, translator);
+			} else {
+				renderItemStatusMessage("answered", "assessment.item.status.answered", sb, translator);
+			}
 		} else if(itemSessionState.getEntryTime() != null) {
 			renderItemStatusMessage("notAnswered", "assessment.item.status.notAnswered", sb, translator);
 		} else {
@@ -1199,7 +1204,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		
 		String responseUniqueId = component.getResponseUniqueIdentifier(itemSessionState, interaction);
 		sb.append("<textarea id='oo_").append(responseUniqueId).append("' name='qtiworks_response_").append(responseUniqueId).append("'");
-		if(component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode())) {
+		
+		boolean ended = component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode());
+		if(ended) {
 			sb.append(" disabled");
 		}
 		if(StringHelper.containsNonWhitespace(interaction.getPlaceholderText())) {
@@ -1238,11 +1245,26 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 		sb.append("</textarea>");
 		
-		FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), "oo_" + responseUniqueId);
-		sb.append(FormJSHelper.getJSStartWithVarDeclaration("oo_" + responseUniqueId))
-		//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
-		  .append("oo_").append(responseUniqueId).append(".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
-		  .append(FormJSHelper.getJSEnd());
+		if(!ended) {
+			FormJSHelper.appendFlexiFormDirty(sb, component.getQtiItem().getRootForm(), "oo_" + responseUniqueId);
+			sb.append(FormJSHelper.getJSStartWithVarDeclaration("oo_" + responseUniqueId))
+			//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
+			  .append("oo_").append(responseUniqueId).append(".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
+			  .append(FormJSHelper.getJSEnd());
+			
+			Form form = component.getQtiItem().getRootForm();
+			sb.append(FormJSHelper.getJSStart())
+			  .append("jQuery(function() {\n")
+			  .append(" jQuery('#").append("oo_").append(responseUniqueId).append("').qtiAutosave({\n")
+			  .append("  responseUniqueId:'").append(responseUniqueId).append("',\n")
+			  .append("  formName:'").append(form.getFormName()).append("',\n")
+			  .append("  dispIdField:'").append(form.getDispatchFieldId()).append("',\n")
+			  .append("  dispId:'").append(component.getQtiItem().getFormDispatchId()).append("',\n")
+			  .append("  eventIdField:'").append(form.getEventFieldId()).append("'\n")
+			  .append(" });\n")
+			  .append("})\n")
+			  .append(FormJSHelper.getJSEnd());
+		}
 	}
 	
 	protected abstract void renderPrintedVariable(AssessmentRenderer renderer, StringOutput sb,

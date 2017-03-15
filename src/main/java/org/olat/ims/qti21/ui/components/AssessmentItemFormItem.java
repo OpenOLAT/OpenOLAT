@@ -24,6 +24,7 @@ import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.exit;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resethard;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.resetsoft;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.solution;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentItemEvent.Event.tmpResponse;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -105,6 +106,10 @@ public class AssessmentItemFormItem extends AssessmentObjectFormItem {
 					case close:
 						event = new QTIWorksAssessmentItemEvent(close, this);
 						break;
+					case tmpResponse: {
+						event = new QTIWorksAssessmentItemEvent(tmpResponse, this);
+						break;
+					}
 					case exit:
 						event = new QTIWorksAssessmentItemEvent(exit, this);
 						break;

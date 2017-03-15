@@ -161,20 +161,17 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 		AssessmentItemSession itemSession = correction.getItemSession();
 		AssessmentTestSession testSession = correction.getTestSession();
 		TestSessionState testSessionState = correction.getTestSessionState();
-		ItemSessionState sessionState = correction.getItemSessionState();
-		
+
 		List<InteractionResultFormItem> responseItems = new ArrayList<>(interactions.size());
-		if(sessionState.isResponded()) {
-			for(Interaction interaction:interactions) {
-				if(interaction instanceof UploadInteraction
-						|| interaction instanceof DrawingInteraction
-						|| interaction instanceof ExtendedTextInteraction) {
-					responseItems.add(initFormExtendedTextInteraction(testPlanNodeKey, interaction, testSessionState, testSession, layoutCont));
-					
-					File submissionDir = qtiService.getSubmissionDirectory(testSession);
-					if(submissionDir != null) {
-						submissionDirectoryMaps.put(testSession.getKey(), submissionDir);
-					}
+		for(Interaction interaction:interactions) {
+			if(interaction instanceof UploadInteraction
+					|| interaction instanceof DrawingInteraction
+					|| interaction instanceof ExtendedTextInteraction) {
+				responseItems.add(initFormExtendedTextInteraction(testPlanNodeKey, interaction, testSessionState, testSession, layoutCont));
+				
+				File submissionDir = qtiService.getSubmissionDirectory(testSession);
+				if(submissionDir != null) {
+					submissionDirectoryMaps.put(testSession.getKey(), submissionDir);
 				}
 			}
 		}

@@ -26,6 +26,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 
 /**
@@ -74,6 +75,18 @@ public class IdentityAssessmentItemWrapper {
 	
 	public AssessmentTestSession getTestSession() {
 		return itemInfos.getTestSession();
+	}
+	
+	public ItemSessionState getItemSessionState() {
+		return itemInfos.getItemSessionState();
+	}
+	
+	public boolean isItemSessionStateFinal() {
+		return itemInfos.isItemSessionStatusFinal();
+	}
+	
+	public String getItemSessionStatus() {
+		return itemInfos.getItemSessionStatus();
 	}
 	
 	public TestPlanNodeKey getTestPlanNodeKey() {
