@@ -111,7 +111,8 @@ public class AssessmentTestEditorAndComposerTreeModel extends GenericTreeModel i
 	private TreeNode buildRecursively(AssessmentItemRef itemRef, TreeNode parentNode) {
 		GenericTreeNode itemNode = new GenericTreeNode(itemRef.getIdentifier().toString());
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
-		if(resolvedAssessmentItem == null || resolvedAssessmentItem.getItemLookup() == null) {
+		if(resolvedAssessmentItem == null || resolvedAssessmentItem.getItemLookup() == null
+				|| resolvedAssessmentItem.getItemLookup().getRootNodeHolder() == null) {
 			itemNode.setTitle("ERROR - Not found");
 			itemNode.setIconCssClass("o_icon o_icon_error");
 			itemNode.setUserObject(itemRef);

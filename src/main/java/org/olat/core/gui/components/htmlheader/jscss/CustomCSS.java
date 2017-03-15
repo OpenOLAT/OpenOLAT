@@ -27,7 +27,6 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.JSAndCSSAdder;
-import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.VFSContainer;
@@ -46,7 +45,7 @@ import org.olat.core.util.vfs.VFSManager;
  * 
  * @author gnaegi
  */
-public class CustomCSS extends LogDelegator implements Disposable {
+public class CustomCSS implements Disposable {
 
 	private final String relCssFilename;
 	private final String relCssFileIframe;
@@ -91,7 +90,6 @@ public class CustomCSS extends LogDelegator implements Disposable {
 		String fulluri = cssUriMapperKey.getUrl() + relCssFilename;
 		// load CSS after the theme
 		jsAndCssComp.addAutoRemovedCssPathName(fulluri, JSAndCSSAdder.CSS_INDEX_AFTER_THEME);
-		
 	}
 
 	/**
