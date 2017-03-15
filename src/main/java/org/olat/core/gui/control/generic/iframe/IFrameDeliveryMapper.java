@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
+import org.olat.core.gui.components.htmlheader.jscss.CustomCSSDelegate;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
@@ -75,6 +76,7 @@ public class IFrameDeliveryMapper implements Mapper {
 
 	private String frameId;
 	private String customCssURL;
+	private CustomCSSDelegate customCssDelegate;
 	private String themeBaseUri;
 	private String customHeaderContent;
 	
@@ -168,6 +170,10 @@ public class IFrameDeliveryMapper implements Mapper {
 
 	public void setCustomCssURL(String customCssURL) {
 		this.customCssURL = customCssURL;
+	}
+	
+	public void setCustomCssDelegate(CustomCSSDelegate customCssDelegate) {
+		this.customCssDelegate = customCssDelegate;
 	}
 
 	@Override
@@ -325,6 +331,10 @@ public class IFrameDeliveryMapper implements Mapper {
 			if (customCssURL != null) {
 				// add the custom  CSS, e.g. the course css that overrides the standard content css
 				sb.appendCss(customCssURL, "customcss");				
+			} else if(customCssDelegate != null && customCssDelegate.getCustomCSS() != null
+					&& customCssDelegate.getCustomCSS().getCSSURLIFrame() != null) {
+				String  customCssURL = customCssDelegate.getCustomCSS().getCSSURLIFrame();
+				sb.appendCss(customCssURL, "customcss");	
 			}
 		}
 		
