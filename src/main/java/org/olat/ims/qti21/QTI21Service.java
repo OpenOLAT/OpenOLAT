@@ -96,7 +96,8 @@ public interface QTI21Service {
 	
 	/**
 	 * Load the assessmentTest based on the imsmanifest.xml found in the resource
-	 * directory. Return null if the imsmanifest.xml is not found.
+	 * directory. Return null if the imsmanifest.xml is not found. The assessmentTest
+	 * is cached.
 	 * 
 	 * @param resourceDirectory The directory where is the package
 	 * @param replace If true updates the cache
@@ -105,7 +106,24 @@ public interface QTI21Service {
 	 */
 	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory, boolean replace, boolean debugInfo);
 	
+	/**
+	 * The assessment item is load and cached.
+	 * 
+	 * @param assessmentObjectSystemId
+	 * @param resourceDirectory
+	 * @return
+	 */
 	public ResolvedAssessmentItem loadAndResolveAssessmentItem(URI assessmentObjectSystemId, File resourceDirectory);
+	
+	/**
+	 * This method load a fresh instance from the disk and don't cache it. The instance can be changed and saved
+	 * safely.
+	 * 
+	 * @param assessmentObjectSystemId
+	 * @param resourceDirectory
+	 * @return
+	 */
+	public ResolvedAssessmentItem loadAndResolveAssessmentItemForCopy(URI assessmentObjectSystemId, File resourceDirectory);
 	
 	public boolean updateAssesmentObject(File resourceFile, ResolvedAssessmentObject<?> resolvedAssessmentObject);
 	

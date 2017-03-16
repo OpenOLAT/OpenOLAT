@@ -71,13 +71,10 @@ import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 
-import uk.ac.ed.ph.jqtiplus.node.content.xhtml.image.Img;
-import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
-import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.FileResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
@@ -193,7 +190,7 @@ public class QTI21ImportProcessor {
 			manifest.write(new File(itemStorage, "imsmanifest.xml"));
 			
 			//process material
-			List<String> materials = getMaterials(assessmentItem);
+			List<String> materials = ImportExportHelper.getMaterials(assessmentItem);
 			for(String material:materials) {
 				if(material.indexOf("://") < 0) {// material can be an external URL
 					Path materialFile = assessmentItemPath.getParent().resolve(material);
@@ -220,22 +217,6 @@ public class QTI21ImportProcessor {
 		} catch(Exception e) {
 			log.error("", e);
 		}
-	}
-
-	protected List<String> getMaterials(AssessmentItem item) {
-		List<String> materials = new ArrayList<>();
-		QueryUtils.search(Img.class, item).forEach((img) -> {
-			if(img.getSrc() != null) {
-				materials.add(img.getSrc().toString());
-			}
-		});
-
-		QueryUtils.search(Object.class, item).forEach((object) -> {
-			if(StringHelper.containsNonWhitespace(object.getData())) {
-				materials.add(object.getData());
-			}
-		});
-		return materials;
 	}
 	
 	protected QuestionItemImpl processItem(AssessmentItem assessmentItem, String comment, String originalItemFilename,

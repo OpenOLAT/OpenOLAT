@@ -32,6 +32,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.DoubleAdder;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -42,22 +43,24 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.pool.ImportExportHelper.AssessmentItemsAndResources;
+import org.olat.ims.qti21.pool.ImportExportHelper.ItemMaterial;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 
-import uk.ac.ed.ph.jqtiplus.node.content.xhtml.image.Img;
-import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
-import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
 
 /**
  * 
@@ -97,7 +100,7 @@ public class QTI21ExportProcessor {
 		URI assessmentItemUri = resourceFile.toURI();
 		
 		ResolvedAssessmentItem resolvedAssessmentItem = qtiService
-				.loadAndResolveAssessmentItem(assessmentItemUri, rootDirectory);
+				.loadAndResolveAssessmentItemForCopy(assessmentItemUri, rootDirectory);
 		enrichWithMetadata(qitem, resolvedAssessmentItem, manifestBuilder);
 		
 		try {
@@ -154,37 +157,16 @@ public class QTI21ExportProcessor {
 		File itemFile = new File(resourceDirectory, rootFilename);
 
 		if(itemFile.exists()) {
-			ResolvedAssessmentItem assessmentItem = qtiService.loadAndResolveAssessmentItem(itemFile.toURI(), resourceDirectory);
+			ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItemForCopy(itemFile.toURI(), resourceDirectory);
+			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 			//enrichScore(itemEl);
 			//enrichWithMetadata(fullItem, itemEl);
-			collectResources(assessmentItem.getRootNodeLookup().extractIfSuccessful(), itemFile, materials);
-			materials.addItemEl(assessmentItem);
+			ImportExportHelper.getMaterials(assessmentItem, itemFile, materials);
+			materials.addItemEl(resolvedAssessmentItem);
 		}
 	}
 	
-	protected void collectResources(AssessmentItem item, File itemFile, AssessmentItemsAndResources materials) {
-		File directory = itemFile.getParentFile();
 
-		QueryUtils.search(Img.class, item).forEach((img) -> {
-			if(img.getSrc() != null) {
-				String imgPath = img.getSrc().toString();
-				File imgFile = new File(directory, imgPath);
-				if(imgFile.exists()) {
-					materials.addMaterial(new ItemMaterial(imgFile, imgPath));
-				}
-			}
-		});
-
-		QueryUtils.search(Object.class, item).forEach((object) -> {
-			if(StringHelper.containsNonWhitespace(object.getData())) {
-				String path = object.getData();
-				File objectFile = new File(directory, path);
-				if(objectFile.exists()) {
-					materials.addMaterial(new ItemMaterial(objectFile, path));
-				}
-			}
-		});
-	}
 	
 	public void enrichWithMetadata(QuestionItemFull qitem, ResolvedAssessmentItem resolvedAssessmentItem, ManifestBuilder manifestBuilder) {
 		ResourceType resource = manifestBuilder.getResourceTypeByHref(qitem.getRootFilename());
@@ -202,6 +184,7 @@ public class QTI21ExportProcessor {
 			ManifestBuilder manifest = ManifestBuilder.createAssessmentTestBuilder();
 			
 			//assessment test
+			DoubleAdder atomicMaxScore = new DoubleAdder();
 			AssessmentTest assessmentTest = AssessmentTestFactory.createAssessmentTest("Assessment test from pool", "Section");
 			String assessmentTestFilename = assessmentTest.getIdentifier() + ".xml";
 			manifest.appendAssessmentTest(assessmentTestFilename);
@@ -211,20 +194,49 @@ public class QTI21ExportProcessor {
 
 			//assessment items
 			for(QuestionItemFull qitem:fullItems) {
-				String rootFilename = qitem.getRootFilename();
 				File resourceDirectory = qpoolFileStorage.getDirectory(qitem.getDirectory());
 				File itemFile = new File(resourceDirectory, qitem.getRootFilename());
-				String itemFilename = itemFile.getName();
-				ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItem(itemFile.toURI(), resourceDirectory);
+				ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItemForCopy(itemFile.toURI(), resourceDirectory);
+				AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+				assessmentItem.setIdentifier(QTI21QuestionType.generateNewIdentifier(assessmentItem.getIdentifier()));
+				
+				//save the item in its own container
+				File container = new File(directory, qitem.getKey().toString());
+				container.mkdirs();
+				File newItemFile = new File(container, assessmentItem.getIdentifier() + ".xml");
+				String newItemFilename = container  + "/" + newItemFile.getName();
+				qtiService.persistAssessmentObject(newItemFile, assessmentItem);
 
-				//enrichScore(itemEl);
-				//collectResources(itemEl, container, materials);
-				FileUtils.bcopy(itemFile, new File(directory, rootFilename), "");
-				AssessmentTestFactory.appendAssessmentItem(section, itemFilename);
-				manifest.appendAssessmentItem(itemFilename);
-				ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(itemFilename);
+				AssessmentTestFactory.appendAssessmentItem(section, newItemFilename);
+				manifest.appendAssessmentItem(newItemFilename);
+				ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(newItemFilename);
 				enrichWithMetadata(qitem, resolvedAssessmentItem, metadata);
+				
+				Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+				if(maxScore != null) {
+					atomicMaxScore.add(maxScore.doubleValue());
+				}
+				
+				//write materials
+				AssessmentItemsAndResources materials = new AssessmentItemsAndResources();
+				ImportExportHelper.getMaterials(assessmentItem, itemFile, materials);
+				for(ItemMaterial material:materials.getMaterials()) {
+					String exportPath = material.getExportUri();
+					File originalFile = material.getFile();
+					File exportFile = new File(container, exportPath);
+					if(!exportFile.getParentFile().exists()) {
+						exportFile.getParentFile().mkdirs();
+					}
+					FileUtils.bcopy(originalFile, exportFile, "Copy material QTI 2.1");
+				}
 			}
+			
+			AssessmentTestBuilder assessmentTestBuilder = new AssessmentTestBuilder(assessmentTest);
+			double sumMaxScore = atomicMaxScore.sum();
+			if(sumMaxScore > 0.0d) {
+				assessmentTestBuilder.setMaxScore(sumMaxScore);
+			}
+			assessmentTest = assessmentTestBuilder.build();
 
 			try(FileOutputStream out = new FileOutputStream(new File(directory, assessmentTestFilename))) {
 				qtiSerializer.serializeJqtiObject(assessmentTest, out);	
@@ -233,7 +245,7 @@ public class QTI21ExportProcessor {
 			}
 
 	        manifest.write(new File(directory, "imsmanifest.xml"));
-		} catch (IOException | URISyntaxException e) {
+		} catch (Exception e) {
 			log.error("", e);
 		}
 	}
@@ -257,17 +269,33 @@ public class QTI21ExportProcessor {
 				File resourceDirectory = qpoolFileStorage.getDirectory(qitem.getDirectory());
 				File itemFile =  new File(resourceDirectory, qitem.getRootFilename());
 				String itemFilename = itemFile.getName();
+				String container = qitem.getKey().toString();
+				String containedFilename = container + "/" + itemFilename;
 
-				ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItem(itemFile.toURI(), resourceDirectory);
-
-				//enrichScore(itemEl);
-				//collectResources(itemEl, container, materials);
-
-				ZipUtil.addFileToZip(itemFilename, itemFile, zout);
-				AssessmentTestFactory.appendAssessmentItem(section, itemFilename);
-				manifest.appendAssessmentItem(itemFilename);
-				ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(itemFilename);
+				ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItemForCopy(itemFile.toURI(), resourceDirectory);
+	
+				ZipUtil.addFileToZip(containedFilename, itemFile, zout);
+				AssessmentTestFactory.appendAssessmentItem(section, containedFilename);
+				manifest.appendAssessmentItem(containedFilename);
+				ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(containedFilename);
 				enrichWithMetadata(qitem, resolvedAssessmentItem, metadata);
+				
+				//write materials
+				try {
+					Files.walkFileTree(resourceDirectory.toPath(), new SimpleFileVisitor<Path>() {
+						@Override
+						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+							String filename = file.getFileName().toString();
+							if(!"imsmanifest.xml".equals(filename) && !filename.startsWith(".") && !itemFilename.equals(filename)) {
+								String relPath = resourceDirectory.toPath().relativize(file).toString();
+								ZipUtil.addFileToZip(container + "/" + relPath, file, zout);
+							}
+							return FileVisitResult.CONTINUE;
+						}
+					});
+				} catch (IOException e) {
+					log.error("", e);
+				}
 			}
 
 			zout.putNextEntry(new ZipEntry(assessmentTestFilename));
@@ -369,45 +397,6 @@ public class QTI21ExportProcessor {
 		}
 		if(StringHelper.containsNonWhitespace(qitem.getMasterIdentifier())) {
 			metadata.setOpenOLATMetadataMasterIdentifier(qitem.getMasterIdentifier());
-		}
-	}
-
-	private static final class AssessmentItemsAndResources {
-		private final List<ResolvedAssessmentItem> itemEls = new ArrayList<>();
-		private final List<ItemMaterial> materials = new ArrayList<>();
-		
-		public List<ResolvedAssessmentItem> getAssessmentItems() {
-			return itemEls;
-		}
-		
-		public void addItemEl(ResolvedAssessmentItem el) {
-			itemEls.add(el);
-		}
-		
-		public List<ItemMaterial> getMaterials() {
-			return materials;
-		}
-		
-		public void addMaterial(ItemMaterial material) {
-			materials.add(material);
-		}
-	}
-	
-	private static final class ItemMaterial {
-		private final File file;
-		private final String exportUri;
-		
-		public ItemMaterial(File file, String exportUri) {
-			this.file = file;
-			this.exportUri = exportUri;
-		}
-		
-		public File getFile() {
-			return file;
-		}
-		
-		public String getExportUri() {
-			return exportUri;
 		}
 	}
 }
