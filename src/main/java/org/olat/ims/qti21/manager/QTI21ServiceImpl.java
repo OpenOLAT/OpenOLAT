@@ -320,14 +320,19 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	public ResolvedAssessmentItem loadAndResolveAssessmentItem(URI assessmentObjectSystemId, File resourceDirectory) {
 		File resourceFile = new File(assessmentObjectSystemId);
 		return assessmentItemsCache.computeIfAbsent(resourceFile, (file) -> {
-			QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
-			ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
-			ResourceLocator inputResourceLocator = 
-	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-			
-	        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
-	       	return assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
+	       	return loadAndResolveAssessmentItemForCopy(assessmentObjectSystemId, resourceDirectory);
 		});
+	}
+	
+	@Override
+	public ResolvedAssessmentItem loadAndResolveAssessmentItemForCopy(URI assessmentObjectSystemId, File resourceDirectory) {
+		QtiXmlReader qtiXmlReader = new QtiXmlReader(jqtiExtensionManager());
+		ResourceLocator fileResourceLocator = new PathResourceLocator(resourceDirectory.toPath());
+		ResourceLocator inputResourceLocator = 
+        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
+		
+        AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
+       	return assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
 	}
 	
 	@Override

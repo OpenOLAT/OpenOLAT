@@ -1104,7 +1104,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				qtiService.qtiSerializer().serializeJqtiObject(originalAssessmentItem, out);
 				
 				//change identifier and title
-				ResolvedAssessmentItem resolvedCopyItem = qtiService.loadAndResolveAssessmentItem(itemFile.toURI(), unzippedDirRoot);
+				ResolvedAssessmentItem resolvedCopyItem = qtiService.loadAndResolveAssessmentItemForCopy(itemFile.toURI(), unzippedDirRoot);
 				AssessmentItem copiedAssessmentItem = resolvedCopyItem.getRootNodeLookup().extractIfSuccessful();
 				copiedAssessmentItem.setIdentifier(IdentifierGenerator.newAsString(type.getPrefix()));
 				copiedAssessmentItem.setTitle(originalAssessmentItem.getTitle() + " (Copy)");

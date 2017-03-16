@@ -28,8 +28,10 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.zip.ZipOutputStream;
@@ -444,7 +446,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		
 		//process material
 		File materialDirRoot = itemFile.getParentFile();
-		List<String> materials = processor.getMaterials(assessmentItem);
+		List<String> materials = ImportExportHelper.getMaterials(assessmentItem);
 		for(String material:materials) {
 			if(material.indexOf("://") < 0) {// material can be an external URL
 				try {
@@ -483,22 +485,34 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	}
 	
 	public void assembleTest(List<QuestionItemShort> items, Locale locale, ZipOutputStream zout) {
-		List<Long> itemKeys = new ArrayList<Long>();
-		for(QuestionItemShort item:items) {
-			itemKeys.add(item.getKey());
-		}
-
-		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(itemKeys);
+		List<QuestionItemFull> fullItems = loadQuestionFullItems(items);
 		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage, locale);
 		processor.assembleTest(fullItems, zout);	
 	}
 	
 	public void exportToEditorPackage(File exportDir, List<QuestionItemShort> items, Locale locale) {
-		List<Long> itemKeys = toKeys(items);
-		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(itemKeys);
-
+		List<QuestionItemFull> fullItems = loadQuestionFullItems(items);
 		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage, locale);
 		processor.assembleTest(fullItems, exportDir);
+	}
+	
+	private List<QuestionItemFull> loadQuestionFullItems(List<QuestionItemShort> items) {
+		List<Long> itemKeys = toKeys(items);
+		List<QuestionItemFull> fullItems = questionItemDao.loadByIds(itemKeys);
+		Map<Long, QuestionItemFull> fullItemMap = new HashMap<>();
+		for(QuestionItemFull fullItem:fullItems) {
+			fullItemMap.put(fullItem.getKey(), fullItem);
+		}
+		
+		//reorder the fullItems;
+		List<QuestionItemFull> reorderedFullItems = new ArrayList<>(fullItems.size());
+		for(QuestionItemShort item:items) {
+			QuestionItemFull itemFull = fullItemMap.get(item.getKey());
+			if(itemFull != null) {
+				reorderedFullItems.add(itemFull);
+			}
+		}
+		return reorderedFullItems;
 	}
 	
 	/**
