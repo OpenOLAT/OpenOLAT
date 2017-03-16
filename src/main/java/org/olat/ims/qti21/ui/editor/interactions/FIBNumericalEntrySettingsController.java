@@ -184,7 +184,6 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				logError("", e);
 				element.setErrorKey("error.double", null);
 				allOk &= false;
 			}
