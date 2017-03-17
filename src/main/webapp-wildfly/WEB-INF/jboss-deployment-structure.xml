@@ -14,6 +14,7 @@
 		</dependencies>
 		<exclusions>
 			<module name="org.slf4j" />
+			<module name="org.javassist" />
 			<module name="org.apache.commons.logging" />
 		</exclusions>
 	</deployment>

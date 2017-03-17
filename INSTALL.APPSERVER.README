@@ -15,17 +15,20 @@ To create your eclipse project, use these commands instead of the default one:
 for JBoss AS:
   mvn eclipse:clean eclipse:eclipse -P-tomcat,wildfly
      
-Configuration WildFly (JBoss AS 8.0)
+Configuration WildFly (JBoss AS 10.1)
 ------------------------------------
 
-1. Define a JDBC connection pool in your standalone.xml configuration with a jndi-name like:
+1. We need Hibernate 5.2, you need to use the utorial to update the version of hibernate
+   in Widlfly: http://docs.jboss.org/hibernate/orm/5.2/topical/html_single/wildfly/Wildfly.html
+
+2. Define a JDBC connection pool in your standalone.xml configuration with a jndi-name like:
      java:jboss/datasources/OpenOLATDS and set this JNDI name
    in olat.local.properties set the following properties:
      db.source=jndi
      db.jndi=java:jboss/datasources/OpenOLATDS
      cluster.mode=Cluster
    The cluster mode will disable the hibernate cache
-2. Create a queue with a jndi-name like:
+3. Create a queue with a jndi-name like:
      java:jboss/exported/jms/queue/searchQueue
    and a topic:
      java:jboss/exported/jms/topic/sysbus
@@ -36,6 +39,7 @@ Configuration WildFly (JBoss AS 8.0)
      search.broker.jndi=java:jboss/exported/jms/queue/searchQueue
      index.broker.jndi=java:jboss/exported/jms/queue/indexQueue
      exam.broker.jndi=java:jboss/exported/jms/queue/examQueue
+     certificate.broker.jndi=java:jboss/exported/jms/queue/certificateQueue
 
 
 Features located on the application server
