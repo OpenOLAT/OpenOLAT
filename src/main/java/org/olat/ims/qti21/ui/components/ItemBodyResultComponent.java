@@ -110,10 +110,15 @@ public class ItemBodyResultComponent extends AssessmentObjectComponent  {
 	public String relativePathTo(ResolvedAssessmentItem rAssessmentItem) {
 		URI itemUri = rAssessmentItem.getItemLookup().getSystemId();
 		File itemFile = new File(itemUri);
-		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
-		File testFile = new File(testUri);
-		Path relativePath = testFile.toPath().getParent().relativize(itemFile.toPath().getParent());
-		String relativePathString = relativePath.toString();
+		
+		String relativePathString = "";
+		if(resolvedAssessmentTest != null) {
+			URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
+			File testFile = new File(testUri);
+			Path relativePath = testFile.toPath().getParent().relativize(itemFile.toPath().getParent());
+			relativePathString = relativePath.toString();
+		}
+		
 		if(relativePathString.isEmpty()) {
 			return relativePathString;
 		} else if(relativePathString.endsWith("/")) {

@@ -48,6 +48,12 @@ public class ResourcesMapper implements Mapper {
 	private final File submissionDirectory;
 	private final Map<Long,File> submissionDirectoryMaps;
 	
+	public ResourcesMapper(URI assessmentObjectUri) {
+		this.assessmentObjectUri = assessmentObjectUri;
+		submissionDirectory = null;
+		submissionDirectoryMaps = null;
+	}
+	
 	public ResourcesMapper(URI assessmentObjectUri, File submissionDirectory) {
 		this.assessmentObjectUri = assessmentObjectUri;
 		this.submissionDirectory = submissionDirectory;
