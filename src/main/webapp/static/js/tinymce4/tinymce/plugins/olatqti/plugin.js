@@ -177,7 +177,7 @@
 					jQuery(imgEl).click(function() {
 						var ffxhrevent = ed.getParam("ffxhrevent");
 						var responseIdentifier = jQuery(imgEl).attr('data-qti-gap-identifier');
-						o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false,
+						o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false, false,
 							'cmd', 'gapentry', 'responseIdentifier', responseIdentifier);
 					});
 				});
