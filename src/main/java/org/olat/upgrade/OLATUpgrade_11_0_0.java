@@ -355,93 +355,98 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	
 	// select count(*) from o_property where name in ('SCORE','PASSED','ATTEMPTS','COMMENT','COACH_COMMENT','ASSESSMENT_ID','FULLY_ASSESSED');
 	private boolean processCourseAssessmentData(RepositoryEntry courseEntry) {
-		final Long courseResourceId = courseEntry.getOlatResource().getResourceableId();
-		final ICourse course = CourseFactory.loadCourse(courseEntry);
+		boolean allOk = true;
+		try {
+			final Long courseResourceId = courseEntry.getOlatResource().getResourceableId();
+			final ICourse course = CourseFactory.loadCourse(courseEntry);
 
-		//load all assessable identities
-		List<Identity> assessableIdentities = getAllAssessableIdentities(course, courseEntry);
+			//load all assessable identities
+			List<Identity> assessableIdentities = getAllAssessableIdentities(course, courseEntry);
 
-		Map<AssessmentDataKey,AssessmentEntryImpl> curentNodeAssessmentMap = new HashMap<>();
-		{//load already migrated data
-			List<AssessmentEntryImpl> currentNodeAssessmentList = loadAssessmentEntries(courseEntry);
-			for(AssessmentEntryImpl currentNodeAssessment:currentNodeAssessmentList) {
-				AssessmentDataKey key = new AssessmentDataKey(currentNodeAssessment.getIdentity().getKey(), courseResourceId, currentNodeAssessment.getSubIdent());
-				curentNodeAssessmentMap.put(key, currentNodeAssessment);
-			}
-		}
-
-		Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap = new HashMap<>();
-		{//processed properties
-			List<Property> courseProperties = loadAssessmentProperties(courseEntry);
-			for(Property property:courseProperties) {
-				String propertyCategory = property.getCategory();
-				if(StringHelper.containsNonWhitespace(propertyCategory)) {
-					int nodeIdentIndex = propertyCategory.indexOf("::");
-					if(nodeIdentIndex > 0) {
-						String nodeIdent = propertyCategory.substring(propertyCategory.indexOf("::") + 2);
-						AssessmentDataKey key = new AssessmentDataKey(property.getIdentity().getKey(), property.getResourceTypeId(), nodeIdent);
-						if(curentNodeAssessmentMap.containsKey(key)) {
-							continue;
-						}
-						
-						AssessmentEntryImpl nodeAssessment;
-						if(nodeAssessmentMap.containsKey(key)) {
-							nodeAssessment = nodeAssessmentMap.get(key);
-							if(nodeAssessment.getCreationDate().after(property.getCreationDate())) {
-								nodeAssessment.setCreationDate(property.getCreationDate());
-							}
-							
-							if(nodeAssessment.getLastModified().before(property.getLastModified())) {
-								nodeAssessment.setLastModified(property.getLastModified());
-							}
-						} else {
-							nodeAssessment = createAssessmentEntry(property.getIdentity(), property, course, courseEntry, nodeIdent);
-						}
-						copyAssessmentProperty(property, nodeAssessment, course);
-						nodeAssessmentMap.put(key, nodeAssessment);	
-					}
-				}	
-			}
-		}
-		
-		//check the transient qti ser
-		CourseNode rootNode = course.getRunStructure().getRootNode();
-		new TreeVisitor(new Visitor() {
-			@Override
-			public void visit(INode node) {
-				if(node instanceof AssessableCourseNode) {
-					processNonPropertiesStates(assessableIdentities, (AssessableCourseNode)node, course, courseEntry,
-							nodeAssessmentMap, curentNodeAssessmentMap);
+			Map<AssessmentDataKey,AssessmentEntryImpl> curentNodeAssessmentMap = new HashMap<>();
+			{//load already migrated data
+				List<AssessmentEntryImpl> currentNodeAssessmentList = loadAssessmentEntries(courseEntry);
+				for(AssessmentEntryImpl currentNodeAssessment:currentNodeAssessmentList) {
+					AssessmentDataKey key = new AssessmentDataKey(currentNodeAssessment.getIdentity().getKey(), courseResourceId, currentNodeAssessment.getSubIdent());
+					curentNodeAssessmentMap.put(key, currentNodeAssessment);
 				}
 			}
-		}, rootNode, true).visitAll();
-		
-		dbInstance.commitAndCloseSession();
-		
-		int count = 0;
-		for(AssessmentEntryImpl courseNodeAssessment:nodeAssessmentMap.values()) {
-			dbInstance.getCurrentEntityManager().persist(courseNodeAssessment);
-			if(++count % 50 == 0) {
-				dbInstance.commit();
+
+			Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap = new HashMap<>();
+			{//processed properties
+				List<Property> courseProperties = loadAssessmentProperties(courseEntry);
+				for(Property property:courseProperties) {
+					String propertyCategory = property.getCategory();
+					if(StringHelper.containsNonWhitespace(propertyCategory)) {
+						int nodeIdentIndex = propertyCategory.indexOf("::");
+						if(nodeIdentIndex > 0) {
+							String nodeIdent = propertyCategory.substring(propertyCategory.indexOf("::") + 2);
+							AssessmentDataKey key = new AssessmentDataKey(property.getIdentity().getKey(), property.getResourceTypeId(), nodeIdent);
+							if(curentNodeAssessmentMap.containsKey(key)) {
+								continue;
+							}
+							
+							AssessmentEntryImpl nodeAssessment;
+							if(nodeAssessmentMap.containsKey(key)) {
+								nodeAssessment = nodeAssessmentMap.get(key);
+								if(nodeAssessment.getCreationDate().after(property.getCreationDate())) {
+									nodeAssessment.setCreationDate(property.getCreationDate());
+								}
+								
+								if(nodeAssessment.getLastModified().before(property.getLastModified())) {
+									nodeAssessment.setLastModified(property.getLastModified());
+								}
+							} else {
+								nodeAssessment = createAssessmentEntry(property.getIdentity(), property, course, courseEntry, nodeIdent);
+							}
+							copyAssessmentProperty(property, nodeAssessment, course);
+							nodeAssessmentMap.put(key, nodeAssessment);	
+						}
+					}	
+				}
 			}
-		}
-		dbInstance.commitAndCloseSession();
-		
-		boolean allOk = verifyCourseAssessmentData(assessableIdentities, courseEntry);
-		
-		dbInstance.commitAndCloseSession();
-		
-		if(allOk) {
-			List<STCourseNode> nodes = hasAssessableSTCourseNode(course);
-			if(nodes.size() > 0) {
-				log.info("Has assessables ST nodes");
-				for(Identity identity:assessableIdentities) {
-					IdentityEnvironment identityEnv = new IdentityEnvironment(identity, null);
-					UserCourseEnvironmentImpl userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
-					userCourseEnv.getScoreAccounting().evaluateAll(true);
+			
+			//check the transient qti ser
+			CourseNode rootNode = course.getRunStructure().getRootNode();
+			new TreeVisitor(new Visitor() {
+				@Override
+				public void visit(INode node) {
+					if(node instanceof AssessableCourseNode) {
+						processNonPropertiesStates(assessableIdentities, (AssessableCourseNode)node, course, courseEntry,
+								nodeAssessmentMap, curentNodeAssessmentMap);
+					}
+				}
+			}, rootNode, true).visitAll();
+			
+			dbInstance.commitAndCloseSession();
+			
+			int count = 0;
+			for(AssessmentEntryImpl courseNodeAssessment:nodeAssessmentMap.values()) {
+				dbInstance.getCurrentEntityManager().persist(courseNodeAssessment);
+				if(++count % 50 == 0) {
 					dbInstance.commit();
 				}
 			}
+			dbInstance.commitAndCloseSession();
+			
+			allOk = verifyCourseAssessmentData(assessableIdentities, courseEntry);
+			
+			dbInstance.commitAndCloseSession();
+			
+			if(allOk) {
+				List<STCourseNode> nodes = hasAssessableSTCourseNode(course);
+				if(nodes.size() > 0) {
+					log.info("Has assessables ST nodes");
+					for(Identity identity:assessableIdentities) {
+						IdentityEnvironment identityEnv = new IdentityEnvironment(identity, null);
+						UserCourseEnvironmentImpl userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+						userCourseEnv.getScoreAccounting().evaluateAll(true);
+						dbInstance.commit();
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
 		}
 
 		return allOk;
