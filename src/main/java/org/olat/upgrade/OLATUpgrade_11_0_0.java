@@ -312,27 +312,31 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	}
 	
 	private void convertUserEfficiencyStatemen(RepositoryEntry courseEntry) {
-		final ICourse course = CourseFactory.loadCourse(courseEntry);
-		CourseNode rootNode = course.getRunStructure().getRootNode();
-		Set<Long> identityKeys = new HashSet<>(loadIdentityKeyOfAssessmentEntries(courseEntry, rootNode.getIdent()));
+		try {
+			final ICourse course = CourseFactory.loadCourse(courseEntry);
+			CourseNode rootNode = course.getRunStructure().getRootNode();
+			Set<Long> identityKeys = new HashSet<>(loadIdentityKeyOfAssessmentEntries(courseEntry, rootNode.getIdent()));
 
-		int count = 0;
-		List<UserEfficiencyStatementLight> statements = getUserEfficiencyStatements(courseEntry);
-		for(UserEfficiencyStatementLight statement:statements) {
-			Identity identity = statement.getIdentity();
-			if(!identityKeys.contains(identity.getKey())) {
-				AssessmentEntry entry = createAssessmentEntry(identity, null, course, courseEntry, rootNode.getIdent());
-				if(statement.getScore() != null) {
-					entry.setScore(new BigDecimal(statement.getScore()));
-				}
-				if(statement.getPassed() != null) {
-					entry.setPassed(statement.getPassed());
-				}
-				dbInstance.getCurrentEntityManager().persist(entry);
-				if(count++ % 25 == 0) {
-					dbInstance.commitAndCloseSession();
+			int count = 0;
+			List<UserEfficiencyStatementLight> statements = getUserEfficiencyStatements(courseEntry);
+			for(UserEfficiencyStatementLight statement:statements) {
+				Identity identity = statement.getIdentity();
+				if(!identityKeys.contains(identity.getKey())) {
+					AssessmentEntry entry = createAssessmentEntry(identity, null, course, courseEntry, rootNode.getIdent());
+					if(statement.getScore() != null) {
+						entry.setScore(new BigDecimal(statement.getScore()));
+					}
+					if(statement.getPassed() != null) {
+						entry.setPassed(statement.getPassed());
+					}
+					dbInstance.getCurrentEntityManager().persist(entry);
+					if(count++ % 25 == 0) {
+						dbInstance.commitAndCloseSession();
+					}
 				}
 			}
+		} catch (Exception e) {
+			log.error("Error with " + courseEntry.getKey() + " " + courseEntry, e);
 		}
 		dbInstance.commitAndCloseSession();
 	}
