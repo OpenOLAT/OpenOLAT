@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.olat.admin.quota.QuotaConstants;
 import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.core.CoreSpringFactory;
@@ -134,7 +135,7 @@ class GroupfoldersWebDAVMergeSource extends WebDAVMergeSource {
 		VFSSecurityCallback secCallback;
 		if(writeAccess) {
 			SubscriptionContext sc = new SubscriptionContext(group, "toolfolder");
-			secCallback = new FullAccessWithLazyQuotaCallback(folderPath, sc);
+			secCallback = new FullAccessWithLazyQuotaCallback(folderPath, QuotaConstants.IDENTIFIER_DEFAULT_GROUPS, sc);
 		} else {
 			secCallback = new ReadOnlyCallback();
 		}

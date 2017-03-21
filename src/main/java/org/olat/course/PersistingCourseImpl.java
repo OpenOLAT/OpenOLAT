@@ -28,6 +28,7 @@ package org.olat.course;
 import java.io.File;
 import java.io.Serializable;
 
+import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DBFactory;
@@ -247,7 +248,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 					"could not create course's coursefolder path:" + fCourseFolder.getAbsolutePath(), null);
 		}
 		
-		FullAccessWithQuotaCallback secCallback = new FullAccessWithLazyQuotaCallback(isolatedCourseFolder.getRelPath());
+		FullAccessWithQuotaCallback secCallback = new FullAccessWithLazyQuotaCallback(isolatedCourseFolder.getRelPath(), QuotaConstants.IDENTIFIER_DEFAULT_COURSE);
 		isolatedCourseFolder.setLocalSecurityCallback(secCallback);
 		return isolatedCourseFolder;
 	}
