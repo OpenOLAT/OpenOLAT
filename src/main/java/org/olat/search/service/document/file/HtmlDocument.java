@@ -53,7 +53,7 @@ public class HtmlDocument extends FileDocument {
 	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf) throws IOException,DocumentException,DocumentAccessException {
 		HtmlDocument htmlDocument = new HtmlDocument();
-		htmlDocument.init(leafResourceContext,leaf);
+		htmlDocument.init(leafResourceContext, leaf);
 		htmlDocument.setFileType(FILE_TYPE);
 		htmlDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 		if (log.isDebug() ) log.debug(htmlDocument.toString());

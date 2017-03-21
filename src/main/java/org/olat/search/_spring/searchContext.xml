@@ -89,6 +89,15 @@
 			<list>
 				<!-- list of files which will not be indexed -->
 				<value>imsmanifest.xml</value>
+				<value>ims_xml.xsd</value>
+				<value>imscp_v1p1.xsd</value>
+				<value>imscp_rootv1p1p2.xsd</value>
+				<value>imsmd_v1p2p2.xsd</value>
+				<value>imsmd_rootv1p2p1.xsd</value>
+				<value>XMLSchema.dtd</value>
+				<value>adlcp_rootv1p2.xsd</value>
+				<value>datatypes.dtd</value>
+				<value>SCORM_API_wrapper.js</value>
 			</list>
 		</constructor-arg>
 	</bean>
@@ -176,10 +185,48 @@
 				<ref bean="scormCourseNodeIndexer" />
 				<ref bean="portfolioCourseNodeIndexer" />
 				<ref bean="infoCourseNodeIndexer" />
+				<ref bean="calCourseNodeIndexer" />
+				<ref bean="ltiCourseNodeIndexer" />
+				<ref bean="checkListCourseNodeIndexer" />
+				<ref bean="denCourseNodeIndexer" />
+				<ref bean="enCourseNodeIndexer" />
+				<ref bean="goToMeetingCourseNodeIndexer" />
+				<ref bean="gtaCourseNodeIndexer" />
+				<ref bean="iqsurvCourseNodeIndexer" />
+				<ref bean="iqselfCourseNodeIndexer" />
+				<ref bean="iqtestCourseNodeIndexer" />
+				<ref bean="llCourseNodeIndexer" />
+				<ref bean="membersCourseNodeIndexer" />
+				<ref bean="msCourseNodeIndexer" />
+				<ref bean="pfCourseNodeIndexer" />
+				<ref bean="openMeetingsCourseNodeIndexer" />
+				<ref bean="tuCourseNodeIndexer" />
+				<ref bean="vcCourseNodeIndexer" />
+				<ref bean="videoCourseNodeIndexer" />
+				<ref bean="viteroCourseNodeIndexer" />
 			</list>
 		</property>
 	</bean>
 	
+	<bean id="tuCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.TUCourseNodeIndexer" />
+	<bean id="vcCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.VCCourseNodeIndexer" />
+	<bean id="videoCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.VideoCourseNodeIndexer" />
+	<bean id="viteroCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.ViteroCourseNodeIndexer" />
+	<bean id="ltiCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.BasicLTICourseNodeIndexer" />
+	<bean id="calCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.CalCourseNodeIndexer" />
+	<bean id="checkListCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.CheckListCourseNodeIndexer" />
+	<bean id="denCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.DENCourseNodeIndexer" />
+	<bean id="enCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.ENCourseNodeIndexer" />
+	<bean id="goToMeetingCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.GoToMeetingCourseNodeIndexer" />
+	<bean id="gtaCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.GTACourseNodeIndexer" />
+	<bean id="iqsurvCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.IQSURVCourseNodeIndexer" />
+	<bean id="iqselfCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.IQSELFCourseNodeIndexer" />
+	<bean id="iqtestCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.IQTESTCourseNodeIndexer" />
+	<bean id="llCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.LLCourseNodeIndexer" />
+	<bean id="membersCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.MembersCourseNodeIndexer" />
+	<bean id="msCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.MSCourseNodeIndexer" />
+	<bean id="pfCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.PFCourseNodeIndexer" />
+	<bean id="openMeetingsCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.OpenMeetingsCourseNodeIndexer" />
 	<bean id="spCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.SPCourseNodeIndexer" />
 	<bean id="foCourseNodeIndexer"	   class="org.olat.search.service.indexer.repository.course.FOCourseNodeIndexer" />
 	<bean id="stCourseNodeIndexer"	   class="org.olat.search.service.indexer.repository.course.STCourseNodeIndexer" />

@@ -104,7 +104,7 @@ public class OpenDocument extends FileDocument {
 			FileUtils.closeSafely(zip);
 			FileUtils.closeSafely(stream);
 		}
-		return new FileContent(dh.toString());
+		return new FileContent(dh.getContent());
 	}
 	
 	private void parse(InputStream stream, DefaultHandler handler) throws DocumentException {
@@ -143,6 +143,10 @@ public class OpenDocument extends FileDocument {
 				sb.append(' ');
 			}
 			sb.write(ch, start, length);
+		}
+		
+		public String getContent() {
+			return sb.toString();
 		}
 	}
 }

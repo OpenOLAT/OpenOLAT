@@ -86,7 +86,6 @@ public class SearchInputController extends FormBasicController implements Generi
 	private static final String FUZZY_SEARCH = "~0.7";
 	private static final String CMD_DID_YOU_MEAN_LINK = "didYouMeanLink-";
 	private static final String SEARCH_STORE_KEY = "search-store-key";
-	private static final String SEARCH_CACHE_KEY = "search-cache-key";
 	
 	private String parentContext;
 	private String documentType;
@@ -103,7 +102,6 @@ public class SearchInputController extends FormBasicController implements Generi
 	protected List<FormLink> didYouMeanLinks;
 	
 	private Map<String,Properties> prefs;
-	private SearchLRUCache searchCache;
 	private SearchClient searchClient;
 	
 	public SearchInputController(UserRequest ureq, WindowControl wControl, String resourceUrl, DisplayOption displayOption) {
@@ -256,12 +254,6 @@ public class SearchInputController extends FormBasicController implements Generi
 			prefs = new HashMap<String,Properties>();
 			ureq.getUserSession().putEntry(SEARCH_STORE_KEY, prefs);
 		}
-		
-		searchCache = (SearchLRUCache)ureq.getUserSession().getEntry(SEARCH_CACHE_KEY);
-		if(searchCache == null) {
-			searchCache = new SearchLRUCache();
-			ureq.getUserSession().putEntry(SEARCH_CACHE_KEY, searchCache);
-		}
 	}
 	
 	@Override
@@ -271,7 +263,7 @@ public class SearchInputController extends FormBasicController implements Generi
 
 	@Override
 	public void formOK(UserRequest ureq) {
-	fireEvent(ureq, QuickSearchEvent.QUICKSEARCH_EVENT);
+		fireEvent(ureq, QuickSearchEvent.QUICKSEARCH_EVENT);
 		doSearch(ureq);
 	}
 	
@@ -477,11 +469,8 @@ public class SearchInputController extends FormBasicController implements Generi
 
 			query = getQueryString(searchString, false);
 			condQueries = getCondQueryStrings(condSearchStrings, parentCtxt, docType, rsrcUrl);
-			SearchResults searchResults = searchCache.get(getQueryCacheKey(firstResult, query, condQueries));
-			if(searchResults == null || true) {
-				searchResults = searchClient.doSearch(query, condQueries, ureq.getIdentity(), ureq.getUserSession().getRoles(), firstResult, maxReturns, true);
-				searchCache.put(getQueryCacheKey(firstResult, query, condQueries), searchResults);
-			}	
+			SearchResults searchResults = searchClient.doSearch(query, condQueries, ureq.getIdentity(), ureq.getUserSession().getRoles(), firstResult, maxReturns, true);
+
 			if (firstResult == 0 && searchResults.size() == 0 && !query.endsWith(FUZZY_SEARCH)) {
 				// result-list was empty => first try to find word via spell-checker
 		    	if (doSpellCheck) {
@@ -519,21 +508,7 @@ public class SearchInputController extends FormBasicController implements Generi
 		hideDidYouMeanWords();
 		String query = getQueryString(searchString, true);
 		List<String> condQueries = getCondQueryStrings(condSearchStrings, parentCtxt, docType, rsrcUrl);
-		SearchResults searchResults = searchCache.get(getQueryCacheKey(firstResult, query, condQueries));
-		if(searchResults == null) {
-			searchResults = searchClient.doSearch(query, condQueries, ureq.getIdentity(), ureq.getUserSession().getRoles(), firstResult, maxReturns, true);
-			searchCache.put(getQueryCacheKey(firstResult, query, condQueries), searchResults);
-		}
-		return searchResults;
-	}
-	
-	private Object getQueryCacheKey(int firstResult, String query, List<String> condQueries) {
-		StringBuilder sb = new StringBuilder();
-		sb.append('[').append(firstResult).append(']').append(query).append(' ');
-		for(String condQuery:condQueries) {
-			sb.append(condQuery).append(' ');
-		}
-		return sb.toString();
+		return searchClient.doSearch(query, condQueries, ureq.getIdentity(), ureq.getUserSession().getRoles(), firstResult, maxReturns, true);
 	}
 	
 	public Set<String> getDidYouMeanWords() {

@@ -54,16 +54,16 @@ public class SearchResourceContext {
 	// Parameter to pass from parent to child
 	private Date lastModified;
 	private Date createdDate;
-	private String documentType = null;
-	private String title = null;
-	private String description = null;
-	private String parentContextType = null;
-	private String parentContextName = null;
+	private String documentType;
+	private String title;
+	private String description;
+	private String parentContextType;
+	private String parentContextName;
 
 	private BusinessControl myBusinessControl;
 	private BusinessControl parentBusinessControl;
 	
-  private String filePath = null;
+	private String filePath;
 
 
 	/**
@@ -106,10 +106,8 @@ public class SearchResourceContext {
 		String resourceUrl = BusinessControlFactory.getInstance().getAsString(bControl);
 		if (filePath != null) {
 			// It is a file resource => Append file path
-	    StringBuilder buf = new StringBuilder(resourceUrl);
-			buf.append(FILEPATH_PREFIX);
-			buf.append(filePath);
-			buf.append(ENDTAG);
+			StringBuilder buf = new StringBuilder(resourceUrl);
+			buf.append(FILEPATH_PREFIX).append(filePath).append(ENDTAG);
 			resourceUrl = buf.toString();
 		}
 		return resourceUrl;
