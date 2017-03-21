@@ -356,7 +356,11 @@ public class BinderPageListController extends AbstractPageListController {
 				String cmd = se.getCommand();
 				if("select-page".equals(cmd)) {
 					PortfolioElementRow row = model.getObject(se.getIndex());
-					doOpenRow(ureq, row, false);
+					if(row.isPendingAssignment()) {
+						doStartAssignment(ureq, row);
+					} else {
+						doOpenRow(ureq, row, false);
+					}
 				}
 			}
 		} else if(previousSectionLink == source) {
