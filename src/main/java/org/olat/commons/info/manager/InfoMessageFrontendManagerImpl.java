@@ -28,9 +28,11 @@ import java.util.Set;
 
 import org.olat.commons.info.model.InfoMessage;
 import org.olat.commons.info.notification.InfoSubscriptionManager;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
@@ -40,6 +42,7 @@ import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.group.BusinessGroup;
 
 /**
  * 
@@ -49,8 +52,10 @@ import org.olat.core.util.mail.MailerResult;
  * Initial Date:  28 juil. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class InfoMessageFrontendManagerImpl extends BasicManager implements InfoMessageFrontendManager {
+public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManager {
 	
+	private static final OLog log = Tracing.createLoggerFor(InfoMessageFrontendManagerImpl.class); 
+			
 	private MailManager mailManager;
 	private CoordinatorManager coordinatorManager;
 	private InfoMessageManager infoMessageManager;
@@ -97,6 +102,11 @@ public class InfoMessageFrontendManagerImpl extends BasicManager implements Info
 	public InfoMessage createInfoMessage(OLATResourceable ores, String subPath, String businessPath, Identity author) {
 		return infoMessageManager.createInfoMessage(ores, subPath, businessPath, author);
 	}
+	
+	@Override
+	public void saveInfoMessage(InfoMessage infoMessage) {
+		infoMessageManager.saveInfoMessage(infoMessage);
+	}
 
 	@Override
 	public boolean sendInfoMessage(InfoMessage infoMessage, MailFormatter mailFormatter, Locale locale, Identity from, List<Identity> tos) {
@@ -136,7 +146,7 @@ public class InfoMessageFrontendManagerImpl extends BasicManager implements Info
 				MailerResult result = mailManager.sendMessage(bundle);
 				send = result.isSuccessful();
 			} catch (Exception e) {
-				logError("Cannot send info messages", e);
+				log.error("Cannot send info messages", e);
 			}
 		}
 
@@ -150,6 +160,28 @@ public class InfoMessageFrontendManagerImpl extends BasicManager implements Info
 	public void deleteInfoMessage(InfoMessage infoMessage) {
 		infoMessageManager.deleteInfoMessage(infoMessage);
 		infoSubscriptionManager.markPublisherNews(infoMessage.getOLATResourceable(), infoMessage.getResSubPath());
+	}
+	
+	@Override
+	public void deleteInfoMessagesOfIdentity(BusinessGroup businessGroup, Identity identity) {
+		List<InfoMessage> infoMessages = infoMessageManager.loadInfoMessagesOfIdentity(businessGroup, identity);
+		for (InfoMessage infoMessage : infoMessages) {
+			infoMessageManager.deleteInfoMessage(infoMessage);
+			infoSubscriptionManager.markPublisherNews(infoMessage.getOLATResourceable(), infoMessage.getResSubPath());
+		}		
+	}
+	
+	@Override
+	public void removeInfoMessagesAndSubscriptionContext(BusinessGroup group) {
+		List<InfoMessage> messages = infoMessageManager.loadInfoMessageByResource(group,
+				InfoMessageFrontendManager.businessGroupResSubPath, null, null, null, 0, 0);
+		for (InfoMessage im : messages) {
+			infoMessageManager.deleteInfoMessage(im);
+		}			
+		String resName = group.getResourceableTypeName();
+		Long resId = group.getResourceableId();
+		SubscriptionContext subscriptionContext =  new SubscriptionContext(resName, resId, "");
+		infoSubscriptionManager.deleteSubscriptionContext(subscriptionContext);
 	}
 
 	@Override

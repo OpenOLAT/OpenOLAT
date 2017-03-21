@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import org.olat.commons.info.manager.InfoMessageManager;
 import org.olat.commons.info.model.InfoMessage;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -41,6 +42,8 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -72,15 +75,24 @@ public class InfoMessageNotificationHandler extends LogDelegator implements Noti
 				final Long resId = subscriber.getPublisher().getResId();
 				final String resName = subscriber.getPublisher().getResName();
 				String resSubPath = subscriber.getPublisher().getSubidentifier();
-
-				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(resName, resId), false);
-				if(re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
-					return NotificationsManager.getInstance().getNoSubscriptionInfo();
-				}
 				
-				String displayName = re.getDisplayname();
+				String displayName, notificationtitle;
+				if ("BusinessGroup".equals(resName)) {
+					BusinessGroupService groupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+					BusinessGroup group = groupService.loadBusinessGroup(resId);
+					displayName = group.getName();
+					notificationtitle = "notification.title.group";
+				} else {
+					RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(resName, resId), false);
+					if(re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+						return NotificationsManager.getInstance().getNoSubscriptionInfo();
+					}					
+					displayName = re.getDisplayname();	
+					notificationtitle = "notification.title";
+				}				
+
 				Translator translator = Util.createPackageTranslator(this.getClass(), locale);
-				String title = translator.translate("notification.title", new String[]{ displayName });
+				String title = translator.translate(notificationtitle, new String[]{ displayName });
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(title, CSS_CLASS_ICON), null);
 				
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);

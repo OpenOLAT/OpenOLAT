@@ -17,8 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
-package org.olat.course.nodes.info;
+package org.olat.group.ui.run;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +30,8 @@ import org.olat.commons.info.notification.InfoSubscriptionManager;
 import org.olat.commons.info.ui.InfoDisplayController;
 import org.olat.commons.info.ui.InfoSecurityCallback;
 import org.olat.commons.info.ui.SendInfoMailFormatter;
+import org.olat.commons.info.ui.SendMailOption;
 import org.olat.commons.info.ui.SendSubscriberMailOption;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -43,113 +42,74 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.CourseFactory;
-import org.olat.course.CourseModule;
-import org.olat.course.ICourse;
-import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.nodes.InfoCourseNode;
-import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.modules.ModuleConfiguration;
-import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
- * Description:<br>
- * Container for a InfodisplayController and the SubscriptionController
- * 
- * <P>
- * Initial Date:  27 jul. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial Date: 15.03.2017
+ * @author fkiefer, fabian.kiefer@frentix.com, www.frentix.com
  */
-public class InfoRunController extends BasicController {
+public class InfoGroupRunController extends BasicController {
 	
-	private final VelocityContainer runVc;
+	public static final String resSubPath = InfoMessageFrontendManager.businessGroupResSubPath;
+
+	private final VelocityContainer runVC;
 	private final InfoDisplayController infoDisplayController;
 	private ContextualSubscriptionController subscriptionController;
 	
 	private final String businessPath;
-	private final InfoCourseNode courseNode;
-	private final ModuleConfiguration config;
 	private InfoSubscriptionManager subscriptionManager;
+	
+	@Autowired
+	private	BusinessGroupService groupService;
+	@Autowired
+	private InfoMessageFrontendManager messageManager;
 
-	public InfoRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne, InfoCourseNode courseNode) {
+
+	public InfoGroupRunController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean canAccess) {
 		super(ureq, wControl);
 		
-		this.courseNode = courseNode;
-		this.config = courseNode.getModuleConfiguration();
-		
-		Long resId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		ICourse course = CourseFactory.loadCourse(resId);
-		String resSubPath = this.courseNode.getIdent();
-		OLATResourceable infoResourceable = new InfoOLATResourceable(resId);
+		long groupId = businessGroup.getKey();
+		OLATResourceable infoResourceable = new InfoOLATGroupResourceable(groupId);
 		businessPath = normalizeBusinessPath(wControl.getBusinessControl().getAsString());
 		
-		//manage opt-out subscription
 		UserSession usess = ureq.getUserSession();
 		if(!usess.getRoles().isGuestOnly()) {
 			subscriptionManager = InfoSubscriptionManager.getInstance();
 			SubscriptionContext subContext = subscriptionManager.getInfoSubscriptionContext(infoResourceable, resSubPath);
 			PublisherData pdata = subscriptionManager.getInfoPublisherData(infoResourceable, businessPath);
-			if(InfoCourseNodeEditController.getAutoSubscribe(config)) {
-				InfoSubscription infoSubscription = subscriptionManager.getInfoSubscription(usess.getGuiPreferences());
-				if(infoSubscription.subscribed(businessPath, false)) {
-					subscriptionManager.subscribe(infoResourceable, resSubPath, businessPath, getIdentity());
-				}
-			}
 			subscriptionController = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, pdata);
 			listenTo(subscriptionController);
 		}
-		boolean canAdd, canAdmin;
-		if(userCourseEnv.isCourseReadOnly()) {
-			canAdd = false;
-			canAdmin = false;
-		} else {
-			Identity identity = getIdentity();
-			Roles roles = usess.getRoles();
-			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-			boolean institutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry());
-			boolean courseAdmin = cgm.isIdentityCourseAdministrator(identity);
-			
-			canAdd = courseAdmin
-				|| ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID)
-				|| institutionalManager
-				|| roles.isOLATAdmin();
-		
-			canAdmin = courseAdmin
-				|| ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID)
-				|| institutionalManager
-				|| roles.isOLATAdmin();
-		}
+				
+		Roles roles = usess.getRoles();
+		boolean canAdmin = roles.isOLATAdmin() || roles.isGroupManager();
+		boolean canAdd = canAdmin || canAccess;
 
-		InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(canAdd, canAdmin);
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		
-		infoDisplayController = new InfoDisplayController(ureq, wControl, config, secCallback, infoResourceable, resSubPath, businessPath);
-		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, CoreSpringFactory.getImpl(InfoMessageFrontendManager.class)));
-		infoDisplayController.addSendMailOptions(new SendMembersMailOption(course.getCourseEnvironment().getCourseGroupManager().getCourseResource(),
-				RepositoryManager.getInstance(), repositoryService, CoreSpringFactory.getImpl(BusinessGroupService.class)));
-		MailFormatter mailFormatter = new SendInfoMailFormatter(course.getCourseTitle(), businessPath, getTranslator());
+		InfoSecurityCallback secCallback = new InfoGroupSecurityCallback(canAdd, canAdmin);
+		infoDisplayController = new InfoDisplayController(ureq, wControl, secCallback, businessGroup, resSubPath, businessPath);
+		SendMailOption subscribers = new SendSubscriberMailOption(infoResourceable, resSubPath, messageManager);
+		infoDisplayController.addSendMailOptions(subscribers);
+		SendMailOption groupMembers = new SendGroupMembersMailOption(groupService, businessGroup);
+		infoDisplayController.addSendMailOptions(groupMembers);
+		MailFormatter mailFormatter = new SendInfoMailFormatter(businessGroup.getName(), businessPath, getTranslator());
 		infoDisplayController.setSendMailFormatter(mailFormatter);
 		listenTo(infoDisplayController);
 
-		runVc = createVelocityContainer("run");
+		runVC = createVelocityContainer("run");
 		if(subscriptionController != null) {
-			runVc.put("infoSubscription", subscriptionController.getInitialComponent());
+			runVC.put("infoSubscription", subscriptionController.getInitialComponent());
 		}
-		runVc.put("displayInfos", infoDisplayController.getInitialComponent());
+		runVC.put("displayInfos", infoDisplayController.getInitialComponent());
 		
-		putInitialPanel(runVc);
+		putInitialPanel(runVC);
 	}
-	
+
 	/**
 	 * Remove ROOT, remove identity context entry or duplicate, 
 	 * @param url
@@ -179,7 +139,7 @@ public class InfoRunController extends BasicController {
 		}
 		return sb.toString();
 	}
-	
+
 	@Override
 	protected void doDispose() {
 		//
@@ -202,12 +162,12 @@ public class InfoRunController extends BasicController {
 		}
 		super.event(ureq, source, event);
 	}
-
-	private class InfoCourseSecurityCallback implements InfoSecurityCallback {
+	
+	private class InfoGroupSecurityCallback implements InfoSecurityCallback {
 		private final boolean canAdd;
 		private final boolean canAdmin;
 		
-		public InfoCourseSecurityCallback(boolean canAdd, boolean canAdmin) {
+		public InfoGroupSecurityCallback(boolean canAdd, boolean canAdmin) {
 			this.canAdd = canAdd;
 			this.canAdmin = canAdmin;
 		}
@@ -224,7 +184,7 @@ public class InfoRunController extends BasicController {
 
 		@Override
 		public boolean canEdit() {
-			return canAdmin;
+			return canAdd;
 		}
 
 		@Override
@@ -233,16 +193,16 @@ public class InfoRunController extends BasicController {
 		}
 	}
 	
-	private class InfoOLATResourceable implements OLATResourceable {
+	private class InfoOLATGroupResourceable implements OLATResourceable {
 		private final Long resId;
 		
-		public InfoOLATResourceable(Long resId) {
-			this.resId = resId;
+		public InfoOLATGroupResourceable(Long groupId) {
+			this.resId = groupId;
 		}
 		
 		@Override
 		public String getResourceableTypeName() {
-			return OresHelper.calculateTypeName(CourseModule.class);
+			return OresHelper.calculateTypeName(BusinessGroup.class);
 		}
 
 		@Override
@@ -250,4 +210,5 @@ public class InfoRunController extends BasicController {
 			return resId;
 		}
 	}
+
 }

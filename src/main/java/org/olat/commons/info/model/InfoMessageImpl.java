@@ -22,37 +22,92 @@ package org.olat.commons.info.model;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Persistable;
 
-public class InfoMessageImpl extends PersistentObject implements InfoMessage {
+/**
+ * Initial Date: 17.03.2017
+ * @author fkiefer, fabian.kiefer@frentix.com, www.frentix.com
+ */
+@Entity(name="infomessage")
+@Table(name="o_info_message")
+public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 
 	private static final long serialVersionUID = 6373476657660866469L;
-
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="info_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Column(name="version", nullable=false, insertable=true, updatable=false)
+	private int version = 0;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="modificationdate", nullable=true, insertable=true, updatable=false)
 	private Date modificationDate;
 	
+	@Column(name="title", nullable=true, insertable=true, updatable=true)
 	private String title;
+	@Column(name="message", nullable=true, insertable=true, updatable=true)
 	private String message;
 	
+	@Column(name="resid", nullable=false, insertable=true, updatable=false)
 	private Long resId;
+	@Column(name="resname", nullable=false, insertable=true, updatable=false)
 	private String resName;
-	private String subPath;
+	@Column(name="ressubpath", nullable=true, insertable=true, updatable=false)
+	private String resSubPath;
+	@Column(name="businesspath", nullable=true, insertable=true, updatable=false)
 	private String businessPath;
 	
+	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_author_id", nullable=false, insertable=true, updatable=false)
 	private Identity author;
+	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_modifier_id", nullable=true, insertable=true, updatable=true)
 	private Identity modifier;
 	
 	public InfoMessageImpl() {
 		//
 	}
-
+	
 	public Date getModificationDate() {
 		return modificationDate;
 	}
 
 	public void setModificationDate(Date modificationDate) {
 		this.modificationDate = modificationDate;
+	}
+	
+	public void setCreationDate(Date creationDate) {
+		this.creationDate= creationDate;
 	}
 
 	public String getTitle() {
@@ -88,11 +143,11 @@ public class InfoMessageImpl extends PersistentObject implements InfoMessage {
 	}
 
 	public String getResSubPath() {
-		return subPath;
+		return resSubPath;
 	}
 
 	public void setResSubPath(String subPath) {
-		this.subPath = subPath;
+		this.resSubPath = subPath;
 	}
 
 	public String getBusinessPath() {
@@ -149,5 +204,21 @@ public class InfoMessageImpl extends PersistentObject implements InfoMessage {
 			return getKey() != null && getKey().equals(info.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
+
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
 	}
 }

@@ -206,6 +206,7 @@
 				<ref bean="groupFolderIndexer" />
 				<ref bean="groupWikiIndexer"	/>
 				<ref bean="groupPortfolioIndexer" />
+				<ref bean="groupInfoIndexer" />
 			</list>
 		</property>
 	</bean>
@@ -215,6 +216,9 @@
 		<property name="collaborationManager" ref="collaborationManager"/>
 	</bean>
 	<bean id="groupWikiIndexer" class="org.olat.search.service.indexer.group.GroupWikiIndexer" />
+	<bean id="groupInfoIndexer" class="org.olat.search.service.indexer.group.GroupInfoIndexer">
+		<property name="infoMessageManager" ref="infoMessageManager"/>
+	</bean>	
 
 	<!-- Portfolio indexers -->
 	<bean id="epDefaultMapIndexer" class="org.olat.search.service.indexer.PortfolioMapIndexer">

@@ -122,4 +122,9 @@ public class InfoSubscriptionManagerImpl extends InfoSubscriptionManager {
 		SubscriptionContext context = getInfoSubscriptionContext(resource, subPath);
 		notificationsManager.markPublisherNews(context, null, true);
 	}
+	
+	@Override
+	public void deleteSubscriptionContext(SubscriptionContext context) {
+		notificationsManager.delete(context);
+	}
 }

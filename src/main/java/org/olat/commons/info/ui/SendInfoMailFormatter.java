@@ -19,7 +19,7 @@
  */
 
 
-package org.olat.course.nodes.info;
+package org.olat.commons.info.ui;
 
 import java.text.DateFormat;
 import java.util.List;
@@ -41,20 +41,19 @@ import org.olat.core.id.context.ContextEntry;
  * Initial Date:  24 aug. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SendMailFormatterForCourse implements MailFormatter {
+public class SendInfoMailFormatter implements MailFormatter {
 	
-	private final String courseTitle;
+	private final String title;
 	private final String businessPath;
 	private final Translator translator;
 	
-	public SendMailFormatterForCourse(String courseTitle, String businessPath, Translator translator) {
-		this.courseTitle = courseTitle;
+	public SendInfoMailFormatter(String title, String businessPath, Translator translator) {
+		this.title = title;
 		this.translator = translator;
 		this.businessPath = businessPath;
 	}
 	
 	@Override
-	//fxdiff VCRP-16: intern mail system
 	public String getBusinessPath() {
 		return businessPath;
 	}
@@ -76,7 +75,7 @@ public class SendMailFormatterForCourse implements MailFormatter {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("<div style='background: #FAFAFA; border: 1px solid #eee; border-radius: 5px; padding: 0 0.5em 0.5em 0.5em; margin: 1em 0 1em 0;' class='o_m_h'>");		
-		sb.append("<h3>").append(translator.translate("mail.body.title", new String[]{courseTitle})).append("</h3>");
+		sb.append("<h3>").append(translator.translate("mail.body.title", new String[]{title})).append("</h3>");
 		sb.append("<div style='font-size: 90%; color: #888' class='o_m_a'>").append(translator.translate("mail.body.from", new String[]{author, date})).append("</div>");
 		sb.append("</div>");
 		

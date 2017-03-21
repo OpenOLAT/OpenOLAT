@@ -61,4 +61,7 @@ public abstract class InfoSubscriptionManager {
 	public abstract void unsubscribe(OLATResourceable resource, String subPath, Identity identity);
 	
 	public abstract void markPublisherNews(OLATResourceable resource, String subPath);
+
+	public abstract void deleteSubscriptionContext(SubscriptionContext context);
+	
 }

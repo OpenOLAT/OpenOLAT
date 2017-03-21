@@ -745,7 +745,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		addToHistory(ureq, bwControl);
 		
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		collabToolCtr = collabTools.createNewsController(ureq, bwControl);
+		collabToolCtr = collabTools.createInfoMessageController(ureq, bwControl);
 		listenTo(collabToolCtr);
 		mainPanel.setContent(collabToolCtr.getInitialComponent());
 	}

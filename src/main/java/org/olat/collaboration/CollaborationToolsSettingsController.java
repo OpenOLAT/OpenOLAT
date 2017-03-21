@@ -157,12 +157,12 @@ public class CollaborationToolsSettingsController extends BasicController {
 
 	private void addNewsTool(UserRequest ureq) {
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
-		String newsValue = collabTools.lookupNews();
+		String access = collabTools.getNewsAccessProperty();
 		
 		if (newsController != null) {
 			removeAsListenerAndDispose(newsController);
 		}
-		newsController = new NewsFormController(ureq, getWindowControl(), (newsValue == null ? "" : newsValue));
+		newsController = new NewsFormController(ureq, getWindowControl(), (access == null ? "" : access));
 		newsController.setEnabled(!managed);
 		listenTo(newsController);
 		
@@ -244,8 +244,8 @@ public class CollaborationToolsSettingsController extends BasicController {
 			}
 		} else if (source == newsController) {
 			if (event.equals(Event.DONE_EVENT)) {
-				String news = newsController.getNewsValue();
-				collabTools.saveNews(news);
+				String access = newsController.getAccessPropertyValue();
+				collabTools.saveNewsAccessProperty(access);
 			}
 			
 		} else if (source == calendarForm) {	
