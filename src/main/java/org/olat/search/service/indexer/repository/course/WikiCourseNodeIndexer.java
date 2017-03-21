@@ -37,6 +37,7 @@ import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiPage;
 import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.document.WikiPageDocument;
 import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
@@ -56,23 +57,20 @@ public class WikiCourseNodeIndexer extends AbstractHierarchicalIndexer implement
 	
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) {
-		if (log.isDebug()) log.debug("Index wiki...");
 		String repoEntryName = "*name not available*";
 		try {
-			RepositoryEntry repositoryEntry = courseNode.getReferencedRepositoryEntry();
-			if(repositoryEntry == null) return;
+			SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, courseNode, TYPE);
+			Document nodeDocument = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+			indexWriter.addDocument(nodeDocument);
 			
+			RepositoryEntry repositoryEntry = courseNode.getReferencedRepositoryEntry();
+			if(repositoryEntry == null) return;		
 			repoEntryName = repositoryEntry.getDisplayname();
 			Wiki wiki = WikiManager.getInstance().getOrLoadWiki(repositoryEntry.getOlatResource());
 			// loop over all wiki pages
 			List<WikiPage> wikiPageList = wiki.getAllPagesWithContent();
 			for (WikiPage wikiPage : wikiPageList) {
 				try {
-					SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-					courseNodeResourceContext.setBusinessControlFor(courseNode);
-					courseNodeResourceContext.setDocumentType(TYPE);
-					courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-					courseNodeResourceContext.setDescription(courseNode.getLongTitle());
 					courseNodeResourceContext.setFilePath(wikiPage.getPageName());
 
 					Document document = WikiPageDocument.createDocument(courseNodeResourceContext, wikiPage);

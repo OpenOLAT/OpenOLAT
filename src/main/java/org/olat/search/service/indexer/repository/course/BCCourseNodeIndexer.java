@@ -27,11 +27,20 @@ package org.olat.search.service.indexer.repository.course;
 
 import java.io.IOException;
 
-import org.olat.core.commons.modules.bc.vfs.OlatNamedContainerImpl;
+import org.apache.lucene.document.Document;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.bc.BCCourseNodeEditController;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.FolderIndexerAccess;
 import org.olat.search.service.indexer.OlatFullIndexer;
@@ -43,7 +52,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
 public class BCCourseNodeIndexer extends FolderIndexer implements CourseNodeIndexer {
 
 	// Must correspond with LocalString_xx.properties
-	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
+	// Do not use '_' because we want to seach for certain documenttype and lucene have problems with '_' 
 	public static final String TYPE = "type.course.node.bc";
 
 	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.BCCourseNode";
@@ -51,19 +60,45 @@ public class BCCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		if (isLogDebugEnabled()) logDebug("Index Briefcase..." );
-
-		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-    	courseNodeResourceContext.setBusinessControlFor(courseNode);
-    	courseNodeResourceContext.setDocumentType(TYPE);
-    	courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-    	courseNodeResourceContext.setDescription(courseNode.getLongTitle());
-
-		OlatNamedContainerImpl namedContainer = BCCourseNode.getNodeFolderContainer((BCCourseNode) courseNode, course.getCourseEnvironment());
-		doIndexVFSContainer(courseNodeResourceContext,namedContainer,indexWriter,"", FolderIndexerAccess.FULL_ACCESS);
+		
+		BCCourseNode bcNode = (BCCourseNode)courseNode;
+		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, bcNode, TYPE);
+		Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, bcNode);
+		indexWriter.addDocument(document);
+		
+		VFSContainer bcContainer = null;
+		
+		if(bcNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
+			bcContainer = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment());
+		} else {
+			String subpath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH);
+			if(subpath != null) {
+				VFSItem item = course.getCourseEnvironment().getCourseFolderContainer().resolve(subpath);
+				if(item instanceof VFSContainer){
+					bcContainer = new NamedContainerImpl(courseNode.getShortTitle(), (VFSContainer) item);
+				}
+			}
+		}
+		
+		if(bcContainer != null) {
+			doIndexVFSContainer(courseNodeResourceContext, bcContainer, indexWriter, "", FolderIndexerAccess.FULL_ACCESS);
+		}
 	}
 
 	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
+
+	@Override
+	public boolean checkAccess(BusinessControl businessControl, Identity identity, Roles roles) {
+		return super.checkAccess(businessControl, identity, roles);
+	}
+
+	@Override
+	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
+		return super.checkAccess(contextEntry, businessControl, identity, roles);
+	}
+	
+	
 }

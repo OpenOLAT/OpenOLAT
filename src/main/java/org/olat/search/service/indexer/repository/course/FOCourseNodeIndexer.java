@@ -27,6 +27,7 @@ package org.olat.search.service.indexer.repository.course;
 
 import java.io.IOException;
 
+import org.apache.lucene.document.Document;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.core.id.Identity;
@@ -45,6 +46,7 @@ import org.olat.modules.fo.Status;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.properties.Property;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.indexer.ForumIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
@@ -63,11 +65,10 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) {
 		try {
-			SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-			courseNodeResourceContext.setBusinessControlFor(courseNode);
-			courseNodeResourceContext.setDocumentType(TYPE);
-			courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-			courseNodeResourceContext.setDescription(courseNode.getLongTitle());
+			SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, courseNode, TYPE);
+			Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+			indexWriter.addDocument(document);
+			
 			doIndexForum(courseNodeResourceContext, course, courseNode, indexWriter);
 		} catch(Exception ex) {
 			log.error("Exception indexing courseNode=" + courseNode, ex);

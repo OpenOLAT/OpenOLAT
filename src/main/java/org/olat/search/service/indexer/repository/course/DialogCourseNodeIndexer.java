@@ -55,6 +55,7 @@ import org.olat.modules.fo.Message;
 import org.olat.modules.fo.Status;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.document.ForumMessageDocument;
 import org.olat.search.service.document.file.DocumentAccessException;
 import org.olat.search.service.document.file.FileDocumentFactory;
@@ -81,11 +82,10 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-		courseNodeResourceContext.setBusinessControlFor(courseNode);
-		courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-		courseNodeResourceContext.setDescription(courseNode.getLongTitle());
-    
+		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, courseNode, null);
+		Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+		indexWriter.addDocument(document);
+		
 		CoursePropertyManager coursePropMgr = course.getCourseEnvironment().getCoursePropertyManager();
 		DialogElementsPropertyManager dialogElmsMgr = DialogElementsPropertyManager.getInstance();
 		DialogPropertyElements elements = dialogElmsMgr.findDialogElements(coursePropMgr, courseNode);

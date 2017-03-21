@@ -46,7 +46,6 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 	
 	private final List<Indexer> childIndexers = new ArrayList<Indexer>();
 	
-	
 	public List<Indexer> getChildIndexers() {
 		return childIndexers;
 	}
@@ -56,16 +55,17 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 	 * @param indexerList
 	 */
 	public void setIndexerList(List<Indexer> indexerList) {
-		if (indexerList == null)
+		if (indexerList == null) {
 			throw new AssertException("null value for indexerList not allowed.");
+		}
 
 		try {
 			for (Indexer indexer:indexerList) {
 				childIndexers.add(indexer);
 				logDebug("Adding indexer from configuraton. TypeName=" + indexer.getSupportedTypeName());
 			} 
-		}	catch (ClassCastException cce) {
-				throw new StartupException("Configured indexer is not of type Indexer", cce);
+		} catch (ClassCastException cce) {
+			throw new StartupException("Configured indexer is not of type Indexer", cce);
 		}
 	}
 	
@@ -74,7 +74,7 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 			childIndexers.add(indexer);
 			logDebug("Adding indexer from configuraton. TypeName=" + indexer.getSupportedTypeName());
 		}	catch (ClassCastException cce) {
-				throw new StartupException("Configured indexer is not of type Indexer", cce);
+			throw new StartupException("Configured indexer is not of type Indexer", cce);
 		}
 	}
 
@@ -90,7 +90,7 @@ public abstract class AbstractHierarchicalIndexer extends DefaultIndexer {
 			  indexer.doIndex(searchResourceContext, object, indexerWriter);
 			} catch (InterruptedException iex) {
 				throw iex;
-			}	catch (Throwable ex) {
+			} catch (Throwable ex) {
 				// FIXME:chg: Workaround to fix indexing-abort
 				logWarn("Exception in diIndex indexer.typeName=" + indexer.getSupportedTypeName(),ex);
 			}
