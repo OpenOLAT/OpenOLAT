@@ -191,13 +191,15 @@ public class InvitationEditRightsController extends FormBasicController {
 		linkEl.setElementCssClass("o_sel_pf_invitation_url");
 		linkEl.setLabel("invitation.link", null);
 		
-		subjectEl = uifactory.addTextElement("subjectElem", "mail.subject", 128, mailTemplate.getSubjectTemplate(), inviteeCont);
-		subjectEl.setDisplaySize(60);
-		subjectEl.setMandatory(true);
-	
-		bodyEl = uifactory.addTextAreaElement("bodyElem", "mail.body", -1, 15, 60, true, mailTemplate.getBodyTemplate(), inviteeCont);
-		bodyEl.setHelpUrlForManualPage("E-Mail");
-		bodyEl.setMandatory(true);
+		if(mailTemplate != null) {
+			subjectEl = uifactory.addTextElement("subjectElem", "mail.subject", 128, mailTemplate.getSubjectTemplate(), inviteeCont);
+			subjectEl.setDisplaySize(60);
+			subjectEl.setMandatory(true);
+		
+			bodyEl = uifactory.addTextAreaElement("bodyElem", "mail.body", -1, 15, 60, true, mailTemplate.getBodyTemplate(), inviteeCont);
+			bodyEl.setHelpUrlForManualPage("E-Mail");
+			bodyEl.setMandatory(true);
+		}
 		
 		//binder
 		MultipleSelectionElement accessEl = uifactory.addCheckboxesHorizontal("access-" + (counter++), null, formLayout, theKeys, theValues);

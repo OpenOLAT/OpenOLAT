@@ -19,7 +19,6 @@
  */
 package org.olat.core.util.vfs.callbacks;
 
-import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
@@ -33,15 +32,18 @@ import org.olat.core.util.vfs.QuotaManager;
 public class FullAccessWithLazyQuotaCallback extends FullAccessWithQuotaCallback {
 	
 	private final String folderPath;
+	private final String defaultQuota;
 	
-	public FullAccessWithLazyQuotaCallback(String folderPath) {
+	public FullAccessWithLazyQuotaCallback(String folderPath, String defaultQuota) {
 		super(null);
 		this.folderPath = folderPath;
+		this.defaultQuota = defaultQuota;
 	}
 	
-	public FullAccessWithLazyQuotaCallback(String folderPath, SubscriptionContext subscriptionContext) {
+	public FullAccessWithLazyQuotaCallback(String folderPath, String defaultQuota, SubscriptionContext subscriptionContext) {
 		super(null, subscriptionContext);
 		this.folderPath = folderPath;
+		this.defaultQuota = defaultQuota;
 	}
 	
 	@Override
@@ -50,7 +52,7 @@ public class FullAccessWithLazyQuotaCallback extends FullAccessWithQuotaCallback
 			QuotaManager qm = QuotaManager.getInstance();
 			Quota q = qm.getCustomQuota(folderPath);
 			if (q == null) {
-				Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS);
+				Quota defQuota = qm.getDefaultQuota(defaultQuota);
 				q = QuotaManager.getInstance().createQuota(folderPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
 			}
 			super.setQuota(q);
