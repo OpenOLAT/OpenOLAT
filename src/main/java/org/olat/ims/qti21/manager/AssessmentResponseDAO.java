@@ -151,7 +151,7 @@ public class AssessmentResponseDAO {
 		  .append(" left join ident.user as usr")
 		  .append(" where testSession.testEntry.key=:testEntryKey")
 		  .append("  and testSession.finishTime is not null and testSession.authorMode=false");
-		if(searchParams.getCourseEntry() != null) {
+		if(searchParams.getCourseEntry() != null || searchParams.getTestEntry() != null) {
 			sb.append(" and testSession.repositoryEntry.key=:repoEntryKey");
 		}
 		if(StringHelper.containsNonWhitespace(searchParams.getNodeIdent())) {
