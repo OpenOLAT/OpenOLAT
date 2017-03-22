@@ -85,7 +85,7 @@ public class SingleChoiceAssessmentItemBuilderTest {
         Assert.assertTrue(incorrectFeedback.getText().contains("This is the wrong answer"));
         
         //correct answer
-        SimpleChoice correctChoice = itemBuilder.getSimpleChoice(Identifier.assumedLegal("id87d42b76-93d7-42fc-bdec-3e2419fa901d"));
+        SimpleChoice correctChoice = itemBuilder.getChoice(Identifier.assumedLegal("id87d42b76-93d7-42fc-bdec-3e2419fa901d"));
         Assert.assertTrue(itemBuilder.isCorrect(correctChoice));
         
         //score per 

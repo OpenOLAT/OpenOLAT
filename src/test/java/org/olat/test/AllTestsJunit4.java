@@ -200,7 +200,7 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti21.model.xml.AssessmentItemBuilderTest.class,
 	org.olat.ims.qti21.model.xml.MultipleChoiceAssessmentItemBuilderTest.class,
 	org.olat.ims.qti21.model.xml.SingleChoiceAssessmentItemBuilderTest.class,
-	
+	org.olat.ims.qti21.model.xml.HottextAssessmentItemBuilderTest.class,
 	org.olat.ims.qti21.model.xml.AssessmentHtmlBuilderTest.class,
 	org.olat.ims.qti21.model.xml.AssessmentItemPackageTest.class,
 	org.olat.ims.qti21.model.xml.ManifestPackageTest.class,

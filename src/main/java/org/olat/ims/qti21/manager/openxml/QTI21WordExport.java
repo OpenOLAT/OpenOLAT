@@ -76,6 +76,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
+import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
@@ -87,12 +88,14 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicAssociateInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicOrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.PositionObjectInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.SelectPointInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.content.Hottext;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
@@ -107,6 +110,7 @@ import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeRule;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
@@ -417,8 +421,11 @@ public class QTI21WordExport implements MediaResource {
 					break;
 				case "inlinechoiceinteraction":
 				case "hottextinteraction":
+					break;
 				case "hottext":
-					break;//TODO
+					renderElement = false;
+					startHottext(attributes);
+					break;
 				case "matchinteraction":
 					renderElement = false;
 					
@@ -493,6 +500,11 @@ public class QTI21WordExport implements MediaResource {
 				case "hotspotinteraction":
 					//all work done during start
 					break;
+				case "hottextinteraction":
+				case "hottext":
+					//all work done during start
+					renderElement = true;
+					break;
 				case "matchinteraction":
 					renderElement = true;
 					break;
@@ -524,6 +536,50 @@ public class QTI21WordExport implements MediaResource {
 			Node wrapEl = factory.wrapInParagraph(responseEl);
 			checkboxNode.appendChild(wrapEl);
 			closeCurrentTableRow();
+		}
+		
+		private void startHottext(Attributes attributes) {
+			Hottext hottext = getHottextByIdentifier(attributes);
+			if(hottext != null) {
+				HottextInteraction interaction = null;
+				for(QtiNode parentNode=hottext.getParent(); parentNode.getParent() != null; parentNode = parentNode.getParent()) {
+					if(parentNode instanceof HottextInteraction) {
+						interaction = (HottextInteraction)parentNode;
+						break;
+					}
+				}
+				
+				if(interaction != null) {
+					boolean checked = false;
+					if(withResponses) {
+						List<Identifier> correctAnswers = CorrectResponsesUtil
+								.getCorrectIdentifierResponses(assessmentItem, interaction.getResponseIdentifier());
+						checked = correctAnswers.contains(hottext.getIdentifier());	
+					}
+					
+					flushText();
+					Element paragraphEl = getCurrentParagraph(false);
+					Node responseEl = factory.createCheckbox(checked, false);
+					Element runEl = factory.createRunEl(Collections.singletonList(responseEl));
+					paragraphEl.appendChild(runEl);
+					String html = htmlBuilder.inlineStaticString(hottext.getInlineStatics());
+					appendHtmlText(html, paragraphEl);
+				}
+			}
+		}
+		
+		private Hottext getHottextByIdentifier(Attributes attributes) {
+			String identifier = attributes.getValue("identifier");
+			if(StringHelper.containsNonWhitespace(identifier)) {
+				Identifier rIdentifier = Identifier.assumedLegal(identifier);
+				List<Hottext> hottexts = QueryUtils.search(Hottext.class, assessmentItem.getItemBody());
+				for(Hottext hottext:hottexts) {
+					if(rIdentifier.equals(hottext.getIdentifier())) {
+						return hottext;
+					}
+				}
+			}
+			return null;
 		}
 		
 		private void startDrawingInteraction(Attributes attributes) {

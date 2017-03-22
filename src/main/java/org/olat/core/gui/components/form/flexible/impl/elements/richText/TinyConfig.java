@@ -49,7 +49,7 @@ public class TinyConfig {
 			  "view: {title: 'View', items: 'visualblocks visualchars | preview fullscreen'}",
 			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}"
 		};
-		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatmovieviewer image charmap olatsmileys hr link";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer image charmap olatsmileys hr link";
 		editorConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//compact profile
@@ -62,7 +62,7 @@ public class TinyConfig {
 				"format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
 				"table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | styleselect | fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatmovieviewer image charmap hr link";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | styleselect | fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer image charmap hr link";
 		editorCompactConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//invisible
@@ -82,7 +82,7 @@ public class TinyConfig {
 				"format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | removeformat'}",
 				"table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatmovieviewer image charmap olatsmileys hr link";
+		String tools1 = "bold italic underline | alignjustify alignright aligncenter alignleft | formatselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer image charmap olatsmileys hr link";
 		editorFullConfig = new TinyConfig(plugins, menu, tools1);
 	}
 	//file profile
@@ -95,7 +95,7 @@ public class TinyConfig {
 			  "format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats | removeformat'}",
 			  "table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'}"
 		};
-		String tools1 = "bold italic underline | styleselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatmovieviewer image charmap olatmatheditor olatsmileys hr link | code";
+		String tools1 = "bold italic underline | styleselect | fontselect fontsizeselect | forecolor backcolor | bullist numlist indent outdent | olatqtifibtext olatqtifibnumerical olatqtihottext olatmovieviewer image charmap olatmatheditor olatsmileys hr link | code";
 		fileEditorConfig = new TinyConfig(plugins, menu, tools1);
 	}
 
@@ -148,13 +148,16 @@ public class TinyConfig {
 				.enableFeature("olatmovieviewer");
 	}
 	
-	public TinyConfig enableQTITools(boolean textEntry, boolean numericalInput) {
+	public TinyConfig enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext) {
 		TinyConfig config = enableFeature("olatqti");
 		if(!textEntry) {
 			config = config.disableButtons("olatqtifibtext");
 		}
 		if(!numericalInput) {
 			config = config.disableButtons("olatqtifibnumerical");
+		}
+		if(!hottext) {
+			config = config.disableButtons("olatqtihottext");
 		}
 		return config;
 	}

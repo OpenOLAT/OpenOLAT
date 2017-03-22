@@ -17,27 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.ims.qti21.model.statistics;
+
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 
 /**
  * 
- * Initial date: 20.02.2013<br>
+ * Initial date: 04.02.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum QuestionType {
+public class ChoiceStatistics {
 
-	MC,
-	FIB,
-	SC,
-	KPRIM,
-	ESSAY,
-	NUMERICAL,
-	HOTSPOT,
-	UPLOAD,
-	DRAWING,
-	MATCH,
-	HOTTEXT,
-	UNKOWN
-
+	private final long count;
+	private final Choice choice;
+	
+	public ChoiceStatistics(Choice choice, long count) {
+		this.count = count;
+		this.choice = choice;
+	}
+	
+	public long getCount() {
+		return count;
+	}
+	
+	public Choice getChoice() {
+		return choice;
+	}
 }

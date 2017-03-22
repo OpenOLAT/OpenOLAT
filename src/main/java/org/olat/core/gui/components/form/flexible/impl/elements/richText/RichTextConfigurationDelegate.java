@@ -17,31 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.model.statistics;
+package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
- * Initial date: 04.02.2016<br>
+ * To write something in the configuration of TinyMCE.
+ * 
+ * Initial date: 21 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SimpleChoiceStatistics {
+public interface RichTextConfigurationDelegate {
+	
+	public void appendConfigToTinyJSArray_4(StringOutput out, Translator translator);
 
-	private final long count;
-	private final SimpleChoice choice;
-	
-	public SimpleChoiceStatistics(SimpleChoice choice, long count) {
-		this.count = count;
-		this.choice = choice;
-	}
-	
-	public long getCount() {
-		return count;
-	}
-	
-	public SimpleChoice getChoice() {
-		return choice;
-	}
 }

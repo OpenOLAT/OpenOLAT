@@ -115,7 +115,7 @@ public class FIBEditorController extends FormBasicController {
 		} else {
 			setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_fib");
 		}
-		richTextConfig.enableQTITools(hasTexts, hasNumericals);
+		richTextConfig.enableQTITools(hasTexts, hasNumericals, false);
 		
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

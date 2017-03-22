@@ -20,14 +20,18 @@
 package org.olat.ims.qti21.model.xml;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 
@@ -40,8 +44,14 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.types.ResponseData;
+import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
+import uk.ac.ed.ph.jqtiplus.value.FloatValue;
+import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
+import uk.ac.ed.ph.jqtiplus.value.Value;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
@@ -76,13 +86,13 @@ public class MultipleChoiceAssessmentItemBuilderTest {
         Assert.assertTrue(interactions.get(0) instanceof ChoiceInteraction);
         
         //choices
-        SimpleChoice correct1 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mc80677ac3f4449ebc689cf60c230a3d"));
+        SimpleChoice correct1 = itemBuilder.getChoice(Identifier.assumedLegal("mc80677ac3f4449ebc689cf60c230a3d"));
         Assert.assertTrue(itemBuilder.isCorrect(correct1));
-        SimpleChoice correct2 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mc7e5667abeb415fa05a8c7d8fd3d6bb"));
+        SimpleChoice correct2 = itemBuilder.getChoice(Identifier.assumedLegal("mc7e5667abeb415fa05a8c7d8fd3d6bb"));
         Assert.assertTrue(itemBuilder.isCorrect(correct2));
-        SimpleChoice wrong1 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mcaacc51e0ca4027b3adb3107cda4e30"));
+        SimpleChoice wrong1 = itemBuilder.getChoice(Identifier.assumedLegal("mcaacc51e0ca4027b3adb3107cda4e30"));
         Assert.assertFalse(itemBuilder.isCorrect(wrong1));
-        SimpleChoice wrong2 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mc1b7b8257e2419b880936ea11bff1f1"));
+        SimpleChoice wrong2 = itemBuilder.getChoice(Identifier.assumedLegal("mc1b7b8257e2419b880936ea11bff1f1"));
         Assert.assertFalse(itemBuilder.isCorrect(wrong2));
         
         //score
@@ -123,13 +133,13 @@ public class MultipleChoiceAssessmentItemBuilderTest {
         Assert.assertTrue(interactions.get(0) instanceof ChoiceInteraction);
         
         //choices
-        SimpleChoice correct1 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mc80677ac3f4449ebc689cf60c230a3d"));
+        SimpleChoice correct1 = itemBuilder.getChoice(Identifier.assumedLegal("mc80677ac3f4449ebc689cf60c230a3d"));
         Assert.assertTrue(itemBuilder.isCorrect(correct1));
-        SimpleChoice correct2 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mc7e5667abeb415fa05a8c7d8fd3d6bb"));
+        SimpleChoice correct2 = itemBuilder.getChoice(Identifier.assumedLegal("mc7e5667abeb415fa05a8c7d8fd3d6bb"));
         Assert.assertTrue(itemBuilder.isCorrect(correct2));
-        SimpleChoice wrong1 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mcaacc51e0ca4027b3adb3107cda4e30"));
+        SimpleChoice wrong1 = itemBuilder.getChoice(Identifier.assumedLegal("mcaacc51e0ca4027b3adb3107cda4e30"));
         Assert.assertFalse(itemBuilder.isCorrect(wrong1));
-        SimpleChoice wrong2 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mc1b7b8257e2419b880936ea11bff1f1"));
+        SimpleChoice wrong2 = itemBuilder.getChoice(Identifier.assumedLegal("mc1b7b8257e2419b880936ea11bff1f1"));
         Assert.assertFalse(itemBuilder.isCorrect(wrong2));
         
         //score
@@ -170,13 +180,13 @@ public class MultipleChoiceAssessmentItemBuilderTest {
         Assert.assertTrue(interactions.get(1) instanceof EndAttemptInteraction);
         
         //choices
-        SimpleChoice correct1 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mc1959a495d449f9af65b38695d3aff1"));
+        SimpleChoice correct1 = itemBuilder.getChoice(Identifier.assumedLegal("mc1959a495d449f9af65b38695d3aff1"));
         Assert.assertTrue(itemBuilder.isCorrect(correct1));
-        SimpleChoice correct2 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mca856e7adb54d3f9af06ecf9c00da69"));
+        SimpleChoice correct2 = itemBuilder.getChoice(Identifier.assumedLegal("mca856e7adb54d3f9af06ecf9c00da69"));
         Assert.assertTrue(itemBuilder.isCorrect(correct2));
-        SimpleChoice wrong1 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mcd39be64a6b4f20a2372cba44340e59"));
+        SimpleChoice wrong1 = itemBuilder.getChoice(Identifier.assumedLegal("mcd39be64a6b4f20a2372cba44340e59"));
         Assert.assertFalse(itemBuilder.isCorrect(wrong1));
-        SimpleChoice wrong2 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mc18648f96a84d479817cb5e81165c80"));
+        SimpleChoice wrong2 = itemBuilder.getChoice(Identifier.assumedLegal("mc18648f96a84d479817cb5e81165c80"));
         Assert.assertFalse(itemBuilder.isCorrect(wrong2));
         
         //score
@@ -224,13 +234,13 @@ public class MultipleChoiceAssessmentItemBuilderTest {
         Assert.assertTrue(interactions.get(1) instanceof EndAttemptInteraction);
         
         //choices
-        SimpleChoice correct1 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mc1959a495d449f9af65b38695d3aff1"));
+        SimpleChoice correct1 = itemBuilder.getChoice(Identifier.assumedLegal("mc1959a495d449f9af65b38695d3aff1"));
         Assert.assertTrue(itemBuilder.isCorrect(correct1));
-        SimpleChoice correct2 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mca856e7adb54d3f9af06ecf9c00da69"));
+        SimpleChoice correct2 = itemBuilder.getChoice(Identifier.assumedLegal("mca856e7adb54d3f9af06ecf9c00da69"));
         Assert.assertTrue(itemBuilder.isCorrect(correct2));
-        SimpleChoice wrong1 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mcd39be64a6b4f20a2372cba44340e59"));
+        SimpleChoice wrong1 = itemBuilder.getChoice(Identifier.assumedLegal("mcd39be64a6b4f20a2372cba44340e59"));
         Assert.assertFalse(itemBuilder.isCorrect(wrong1));
-        SimpleChoice wrong2 = itemBuilder.getSimpleChoice(Identifier.assumedLegal("mc18648f96a84d479817cb5e81165c80"));
+        SimpleChoice wrong2 = itemBuilder.getChoice(Identifier.assumedLegal("mc18648f96a84d479817cb5e81165c80"));
         Assert.assertFalse(itemBuilder.isCorrect(wrong2));
         
         //score
@@ -261,6 +271,37 @@ public class MultipleChoiceAssessmentItemBuilderTest {
         Assert.assertEquals(ScoreEvaluation.allCorrectAnswers, itemBuilder.getScoreEvaluationMode());
 	}
 	
+	/**
+	 * The test run the assessmentItem and check the outcome variables SCORE and FEEDBACKBASIC.
+	 * 
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void runMultipleChoice_allAnswers_1123() throws URISyntaxException {
+        URI inputUri = URI.create("classpath:/org/olat/ims/qti21/model/xml/resources/openolat/multiple-choice-score-all-11-2-3.xml");
+		
+        //check all correct answers
+        {
+	        Map<Identifier, ResponseData> responseMap = new HashMap<>();
+	        responseMap.put(Identifier.parseString("RESPONSE_1"), new StringResponseData("mc1959a495d449f9af65b38695d3aff1", "mca856e7adb54d3f9af06ecf9c00da69"));
+			ItemSessionController itemSessionController = RunningItemHelper.run(inputUri, responseMap);
+			Value score = itemSessionController.getItemSessionState().getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER);
+			Assert.assertEquals(new FloatValue(2.0d), score);
+			Value feedbackBasic = itemSessionController.getItemSessionState().getOutcomeValue(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+			Assert.assertEquals(new IdentifierValue(QTI21Constants.CORRECT_IDENTIFIER), feedbackBasic);
+        }
+		
+		//check one correct answers
+        {
+			Map<Identifier, ResponseData> responseMap = new HashMap<>();
+	        responseMap.put(Identifier.parseString("RESPONSE_1"), new StringResponseData("mc1959a495d449f9af65b38695d3aff1"));
+			ItemSessionController itemSessionController = RunningItemHelper.run(inputUri, responseMap);
+			Value score = itemSessionController.getItemSessionState().getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER);
+			Assert.assertEquals(new FloatValue(0.0d), score);
+			Value feedbackBasic = itemSessionController.getItemSessionState().getOutcomeValue(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+			Assert.assertEquals(new IdentifierValue(QTI21Constants.INCORRECT_IDENTIFIER), feedbackBasic);
+        }
+	}
 	
 	private AssessmentItem loadAssessmentItem(URL itemUrl) throws URISyntaxException {
 		QtiXmlReader qtiXmlReader = new QtiXmlReader(new JqtiExtensionManager());
@@ -269,5 +310,4 @@ public class MultipleChoiceAssessmentItemBuilderTest {
         ResolvedAssessmentItem item = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(itemUrl.toURI());
 		return item.getItemLookup().getRootNodeHolder().getRootNode();
 	}
-
 }

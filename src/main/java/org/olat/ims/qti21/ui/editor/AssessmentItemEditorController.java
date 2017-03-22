@@ -40,6 +40,7 @@ import org.olat.ims.qti21.model.xml.interactions.DrawingAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -54,6 +55,7 @@ import org.olat.ims.qti21.ui.editor.interactions.FIBEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.FIBScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.HotspotChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.HotspotEditorController;
+import org.olat.ims.qti21.ui.editor.interactions.HottextEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.KPrimEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.LobFeedbackEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.MatchEditorController;
@@ -207,6 +209,7 @@ public class AssessmentItemEditorController extends BasicController {
 			case essay: itemBuilder = initEssayEditors(ureq, item); break;
 			case upload: itemBuilder = initUploadEditors(ureq, item); break;
 			case drawing: itemBuilder = initDrawingEditors(ureq, item); break;
+			case hottext: itemBuilder = initHottextEditors(ureq, item); break;
 			default: initItemCreatedByUnkownEditor(ureq, item); break;
 		}
 		
@@ -381,6 +384,24 @@ public class AssessmentItemEditorController extends BasicController {
 		tabbedPane.addTab(translate("form.score"), scoreEditor);
 		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
 		return uploadItemBuilder;
+	}
+	
+	private AssessmentItemBuilder initHottextEditors(UserRequest ureq, AssessmentItem item) {
+		HottextAssessmentItemBuilder hottextItemBuilder = new HottextAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new HottextEditorController(ureq, getWindowControl(), hottextItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
+		listenTo(itemEditor);
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), hottextItemBuilder, itemRef, restrictedEdit,
+				"Test editor QTI 2.1 in detail#details_testeditor_score");
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), hottextItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
+		listenTo(feedbackEditor);
+
+		tabbedPane.addTab(translate("form.hottext"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		return hottextItemBuilder;
 	}
 
 	@Override

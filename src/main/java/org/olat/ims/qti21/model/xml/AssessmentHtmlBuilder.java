@@ -48,6 +48,7 @@ import uk.ac.ed.ph.jqtiplus.node.AbstractNode;
 import uk.ac.ed.ph.jqtiplus.node.LoadingContext;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.InlineStatic;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.xmlutils.SimpleDomBuilderHandler;
 
@@ -96,6 +97,16 @@ public class AssessmentHtmlBuilder {
 			}
 		}
 		
+		return cleanUpNamespaces(sb);
+	}
+	
+	public String inlineStaticString(List<? extends InlineStatic> statics) {
+		StringOutput sb = new StringOutput();
+		if(statics != null && statics.size() > 0) {
+			for(InlineStatic inlineStatic:statics) {
+				qtiSerializer.serializeJqtiObject(inlineStatic, new StreamResult(sb));
+			}
+		}
 		return cleanUpNamespaces(sb);
 	}
 	
@@ -171,6 +182,8 @@ public class AssessmentHtmlBuilder {
 			return null;
 		}
 	}
+	
+
 	
 	/**
 	 * Convert:<br>

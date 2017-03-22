@@ -19,26 +19,35 @@
  */
 package org.olat.ims.qti21.model.xml.interactions;
 
-
-import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendChoiceInteraction;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultItemBody;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendDefaultOutcomeDeclarations;
-import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendSimpleChoice;
-import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createMultipleChoiceCorrectResponseDeclaration;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendHottext;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.appendHottextInteraction;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createHottextCorrectResponseDeclaration;
 import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.createResponseProcessing;
+import static org.olat.ims.qti21.model.xml.QtiNodesExtractor.extractIdentifiersFromCorrectResponse;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import javax.xml.transform.stream.StreamResult;
+
+import org.olat.core.gui.render.StringOutput;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 
-import uk.ac.ed.ph.jqtiplus.group.NodeGroupList;
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.BlockStatic;
+import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
+import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.MapResponse;
@@ -47,9 +56,12 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.content.Hottext;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElse;
@@ -58,126 +70,168 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseProcessing;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
-import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
-import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
-import uk.ac.ed.ph.jqtiplus.value.MultipleValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
-import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
  * 
- * Initial date: 08.12.2015<br>
+ * Initial date: 16 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentItemBuilder {
+public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder {
 	
+	private String question;
+	private Identifier responseIdentifier;
 	private List<Identifier> correctAnswers;
-	
-	public MultipleChoiceAssessmentItemBuilder(String title, String defaultAnswer, QtiSerializer qtiSerializer) {
-		super(createAssessmentItem(title, defaultAnswer), qtiSerializer);
+	private HottextInteraction hottextInteraction;
+
+	public HottextAssessmentItemBuilder(String title, String text, String hottext, QtiSerializer qtiSerializer) {
+		super(createAssessmentItem(title, text, hottext), qtiSerializer);
 	}
 	
-	public MultipleChoiceAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
+	public HottextAssessmentItemBuilder(AssessmentItem assessmentItem, QtiSerializer qtiSerializer) {
 		super(assessmentItem, qtiSerializer);
 	}
 	
-	private static AssessmentItem createAssessmentItem(String title, String defaultAnswer) {
-		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.mc, title);
+	private static AssessmentItem createAssessmentItem(String title, String text, String hottext) {
+		AssessmentItem assessmentItem = AssessmentItemFactory.createAssessmentItem(QTI21QuestionType.hottext, title);
 		
-		NodeGroupList nodeGroups = assessmentItem.getNodeGroups();
-
-		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
-		Identifier correctResponseId = IdentifierGenerator.newAsIdentifier("mc");
 		//define correct answer
-		ResponseDeclaration responseDeclaration = createMultipleChoiceCorrectResponseDeclaration(assessmentItem, responseDeclarationId,
-				Collections.singletonList(correctResponseId));
-		nodeGroups.getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
+		Identifier responseDeclarationId = Identifier.assumedLegal("RESPONSE_1");
+		Identifier correctResponseId = IdentifierGenerator.newAsIdentifier("ht");
+		List<Identifier> correctResponseIds = new ArrayList<>();
+		correctResponseIds.add(correctResponseId);
+		ResponseDeclaration responseDeclaration = createHottextCorrectResponseDeclaration(assessmentItem, responseDeclarationId, correctResponseIds);
+		assessmentItem.getNodeGroups().getResponseDeclarationGroup().getResponseDeclarations().add(responseDeclaration);
 		
 		//outcomes
 		appendDefaultOutcomeDeclarations(assessmentItem, 1.0d);
 		
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
-		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
+		HottextInteraction hottextInteraction = appendHottextInteraction(itemBody, responseDeclarationId, 0);
 		
-		appendSimpleChoice(choiceInteraction, defaultAnswer, correctResponseId);
+		P p = new P(itemBody);
+		p.getInlines().add(new TextRun(p, text));
+		appendHottext(p, correctResponseId, hottext);
+		hottextInteraction.getBlockStatics().add(p);
 
 		//response processing
 		ResponseProcessing responseProcessing = createResponseProcessing(assessmentItem, responseDeclarationId);
 		assessmentItem.getNodeGroups().getResponseProcessingGroup().setResponseProcessing(responseProcessing);
-		
 		return assessmentItem;
 	}
 	
 	@Override
 	public void extract() {
 		super.extract();
-		
-		correctAnswers = new ArrayList<>(5);
-		
-		if(choiceInteraction != null) {
+		extractHottextInteraction();
+		extractScoreEvaluationMode();
+		extractCorrectAnswers();
+	}
+	
+	private void extractHottextInteraction() {
+		StringOutput sb = new StringOutput();
+		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
+		for(Block block:blocks) {
+			if(block instanceof HottextInteraction) {
+				hottextInteraction = (HottextInteraction)block;
+				for(BlockStatic innerBlock: hottextInteraction.getBlockStatics()) {
+					qtiSerializer.serializeJqtiObject(innerBlock, new StreamResult(sb));
+				}
+				responseIdentifier = hottextInteraction.getResponseIdentifier();
+				break;
+			}
+		}
+		question = sb.toString();
+	}
+	
+	private void extractScoreEvaluationMode() {
+		boolean hasMapping = false;
+		if(hottextInteraction != null) {
 			ResponseDeclaration responseDeclaration = assessmentItem
-					.getResponseDeclaration(choiceInteraction.getResponseIdentifier());
-			if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
-				CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
-				Value value = FieldValue.computeValue(Cardinality.MULTIPLE, correctResponse.getFieldValues());
-				if(value instanceof MultipleValue) {
-					MultipleValue multiValue = (MultipleValue)value;
-					for(SingleValue sValue:multiValue.getAll()) {
+					.getResponseDeclaration(hottextInteraction.getResponseIdentifier());
+			if(responseDeclaration != null) {
+				Mapping mapping = responseDeclaration.getMapping();
+				
+				hasMapping = (mapping != null && mapping.getMapEntries() != null && mapping.getMapEntries().size() > 0);
+				if(hasMapping) {
+					scoreMapping = new HashMap<>();
+					for(MapEntry entry:mapping.getMapEntries()) {
+						SingleValue sValue = entry.getMapKey();
 						if(sValue instanceof IdentifierValue) {
-							IdentifierValue identifierValue = (IdentifierValue)sValue;
-							Identifier correctAnswer = identifierValue.identifierValue();
-							correctAnswers.add(correctAnswer);
+							Identifier identifier = ((IdentifierValue)sValue).identifierValue();
+							scoreMapping.put(identifier, entry.getMappedValue());
 						}
 					}
 				}
 			}
 		}
+		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
 	}
 	
+	private void extractCorrectAnswers() {
+		correctAnswers = new ArrayList<>(5);
+		if(hottextInteraction != null) {
+			ResponseDeclaration responseDeclaration = assessmentItem
+					.getResponseDeclaration(hottextInteraction.getResponseIdentifier());
+			if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
+				CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
+				extractIdentifiersFromCorrectResponse(correctResponse, correctAnswers);
+			}
+		}
+	}
+
 	@Override
 	public QTI21QuestionType getQuestionType() {
-		return QTI21QuestionType.mc;
+		return QTI21QuestionType.hottext;
+	}
+
+	@Override
+	public Interaction getInteraction() {
+		return hottextInteraction;
 	}
 
 	@Override
 	public boolean isCorrect(Choice choice) {
 		return correctAnswers.contains(choice.getIdentifier());
 	}
+
+	@Override
+	public List<Hottext> getChoices() {
+		return QueryUtils.search(Hottext.class, hottextInteraction.getBlockStatics());
+	}
+
+	@Override
+	public String getQuestion() {
+		return question;
+	}
+
+	@Override
+	public void setQuestion(String question) {
+		this.question = question;
+	}
 	
-	public void setCorrectAnswers(List<Identifier> identifiers) {
-		correctAnswers.clear();
-		correctAnswers.addAll(identifiers);
+	public List<Identifier> getCorrectAnswers() {
+		return correctAnswers;
 	}
 	
 	public void addCorrectAnswer(Identifier identifier) {
-		correctAnswers.add(identifier);
-	}
-
-	@Override
-	public void clearSimpleChoices() {
-		if(correctAnswers != null) {
-			correctAnswers.clear();
+		if(!correctAnswers.contains(identifier)) {
+			correctAnswers.add(identifier);
 		}
-		super.clearSimpleChoices();
-	}
-
-	@Override
-	protected void buildResponseAndOutcomeDeclarations() {
-		ResponseDeclaration responseDeclaration = AssessmentItemFactory
-				.createMultipleChoiceCorrectResponseDeclaration(assessmentItem, responseIdentifier, correctAnswers);
-		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
-			AssessmentItemFactory.appendMapping(responseDeclaration, scoreMapping);
-		}
-		assessmentItem.getResponseDeclarations().add(responseDeclaration);
 	}
 	
+	public void removeCorrectAnswer(Identifier identifier) {
+		correctAnswers.remove(identifier);
+	}
+
 	@Override
 	protected void buildItemBody() {
 		//remove current blocks
@@ -185,19 +239,38 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 		blocks.clear();
 
 		//add question
-		getHtmlHelper().appendHtml(assessmentItem.getItemBody(), question);
+		assessmentItem.getItemBody().getBlocks().add(hottextInteraction);
+		getHtmlHelper().appendHtml(hottextInteraction, question);
 		
-		//add interaction
-		ChoiceInteraction singleChoiceInteraction = AssessmentItemFactory
-				.createMultipleChoiceInteraction(assessmentItem, responseIdentifier, orientation, cssClass);
-		singleChoiceInteraction.setShuffle(isShuffle());
-		blocks.add(singleChoiceInteraction);
-		List<SimpleChoice> choiceList = getChoices();
-		singleChoiceInteraction.getSimpleChoices().addAll(choiceList);
+		// filter deleted correct answers
+		List<Hottext> hottexts = QueryUtils.search(Hottext.class, hottextInteraction.getBlockStatics());
+		Set<Identifier> hottextIdentifiers = hottexts.stream()
+				.map(hottext -> hottext.getIdentifier()).collect(Collectors.toSet());
+		for(Iterator<Identifier> correctAnswerIt = correctAnswers.iterator(); correctAnswerIt.hasNext(); ) {
+			if(!hottextIdentifiers.contains(correctAnswerIt.next())) {
+				correctAnswerIt.remove();
+			}
+		}
+
+		if(hottextInteraction.getMaxChoices() == 1) {
+			if(correctAnswers.size() > 1) {
+				hottextInteraction.setMaxChoices(0);
+			}
+		}
 	}
 
 	@Override
-	protected void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations,  List<ResponseRule> responseRules) {
+	protected void buildResponseAndOutcomeDeclarations() {
+		ResponseDeclaration responseDeclaration = AssessmentItemFactory
+				.createHottextCorrectResponseDeclaration(assessmentItem, responseIdentifier, correctAnswers);
+		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
+			AssessmentItemFactory.appendMapping(responseDeclaration, scoreMapping);
+		}
+		assessmentItem.getResponseDeclarations().add(responseDeclaration);
+	}
+
+	@Override
+	protected void buildMainScoreRule(List<OutcomeDeclaration> outcomeDeclarations, List<ResponseRule> responseRules) {
 		ResponseCondition rule = new ResponseCondition(assessmentItem.getResponseProcessing());
 		responseRules.add(0, rule);
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
@@ -206,7 +279,7 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 			buildMainScoreRuleAllCorrectAnswers(rule);
 		}
 	}
-	
+
 	private void buildMainScoreRuleAllCorrectAnswers(ResponseCondition rule) {
 		/*
 		<responseCondition>
@@ -245,7 +318,7 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 			
 			Variable scoreVar = new Variable(match);
 			ComplexReferenceIdentifier choiceResponseIdentifier
-				= ComplexReferenceIdentifier.parseString(choiceInteraction.getResponseIdentifier().toString());
+				= ComplexReferenceIdentifier.parseString(hottextInteraction.getResponseIdentifier().toString());
 			scoreVar.setIdentifier(choiceResponseIdentifier);
 			match.getExpressions().add(scoreVar);
 			
@@ -296,8 +369,11 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 			incorrectOutcomeValue.setExpression(incorrectValue);
 		}
 	}
-	
+
 	private void buildMainScoreRulePerAnswer(ResponseCondition rule) {
+		//simple as build with / without feedback
+		ensureFeedbackBasicOutcomeDeclaration();
+		
 		/*
 		<responseCondition>
 			<responseIf>
@@ -331,7 +407,7 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 			
 			Variable scoreVar = new Variable(match);
 			ComplexReferenceIdentifier choiceResponseIdentifier
-				= ComplexReferenceIdentifier.parseString(choiceInteraction.getResponseIdentifier().toString());
+				= ComplexReferenceIdentifier.parseString(hottextInteraction.getResponseIdentifier().toString());
 			scoreVar.setIdentifier(choiceResponseIdentifier);
 			match.getExpressions().add(scoreVar);
 			
@@ -353,7 +429,7 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 			sum.getExpressions().add(scoreVar);
 			
 			MapResponse mapResponse = new MapResponse(sum);
-			mapResponse.setIdentifier(choiceInteraction.getResponseIdentifier());
+			mapResponse.setIdentifier(hottextInteraction.getResponseIdentifier());
 			sum.getExpressions().add(mapResponse);
 		}
 			
@@ -384,7 +460,7 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 			sum.getExpressions().add(scoreVar);
 			
 			MapResponse mapResponse = new MapResponse(sum);
-			mapResponse.setIdentifier(choiceInteraction.getResponseIdentifier());
+			mapResponse.setIdentifier(hottextInteraction.getResponseIdentifier());
 			sum.getExpressions().add(mapResponse);
 		}
 		

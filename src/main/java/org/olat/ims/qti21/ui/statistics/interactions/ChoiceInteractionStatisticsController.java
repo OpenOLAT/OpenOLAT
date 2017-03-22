@@ -30,17 +30,14 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti.statistics.ui.ResponseInfos;
 import org.olat.ims.qti.statistics.ui.Series;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
-import org.olat.ims.qti21.model.statistics.SimpleChoiceStatistics;
-import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
+import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.SeriesFactory;
@@ -48,8 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -61,18 +58,18 @@ import uk.ac.ed.ph.jqtiplus.value.Cardinality;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ChoiceInteractionStatisticsController extends BasicController {
+public abstract class ChoiceInteractionStatisticsController extends BasicController {
 	
-	private final ChoiceInteraction interaction;
-	private final AssessmentItemRef itemRef;
-	private final AssessmentItem assessmentItem;
-	private final QTI21StatisticResourceResult resourceResult;
+	protected final Interaction interaction;
+	protected final AssessmentItemRef itemRef;
+	protected final AssessmentItem assessmentItem;
+	protected final QTI21StatisticResourceResult resourceResult;
 	
 	@Autowired
-	private QTI21StatisticsManager qtiStatisticsManager;
+	protected QTI21StatisticsManager qtiStatisticsManager;
 	
 	public ChoiceInteractionStatisticsController(UserRequest ureq, WindowControl wControl,
-			AssessmentItemRef itemRef, AssessmentItem assessmentItem, ChoiceInteraction interaction,
+			AssessmentItemRef itemRef, AssessmentItem assessmentItem, Interaction interaction,
 			StatisticsItem itemStats, QTI21StatisticResourceResult resourceResult) {
 		super(ureq, wControl, Util.createPackageTranslator(QTI21AssessmentItemStatisticsController.class, ureq.getLocale()));
 		this.interaction = interaction;
@@ -117,8 +114,7 @@ public class ChoiceInteractionStatisticsController extends BasicController {
 	}
 	
 	private Series getSingleChoice() {
-		List<SimpleChoiceStatistics> statisticResponses = qtiStatisticsManager
-				.getChoiceInteractionStatistics(itemRef.getIdentifier().toString(), assessmentItem, interaction, resourceResult.getSearchParams());
+		List<ChoiceStatistics> statisticResponses = getChoiceInteractionStatistics();
 	
 		boolean survey = QTIType.survey.equals(resourceResult.getType());
 		int numOfParticipants = resourceResult.getQTIStatisticAssessment().getNumOfParticipants();
@@ -128,8 +124,8 @@ public class ChoiceInteractionStatisticsController extends BasicController {
 		long numOfResults = 0;
 		BarSeries d1 = new BarSeries();
 		List<ResponseInfos> responseInfos = new ArrayList<>();
-		for (SimpleChoiceStatistics statisticResponse:statisticResponses) {
-			SimpleChoice choice = statisticResponse.getChoice();
+		for (ChoiceStatistics statisticResponse:statisticResponses) {
+			Choice choice = statisticResponse.getChoice();
 			String text = getAnswerText(choice);
 			double ans_count = statisticResponse.getCount();
 			numOfResults += statisticResponse.getCount();
@@ -169,8 +165,7 @@ public class ChoiceInteractionStatisticsController extends BasicController {
 	}
 	
 	private Series getMultipleChoice(StatisticsItem itemStats) {
-		List<SimpleChoiceStatistics> statisticResponses = qtiStatisticsManager
-				.getChoiceInteractionStatistics(itemRef.getIdentifier().toString(), assessmentItem, interaction, resourceResult.getSearchParams());
+		List<ChoiceStatistics> statisticResponses = getChoiceInteractionStatistics();
 
 		BarSeries d1 = new BarSeries("bar_green", "green", translate("answer.correct"));
 		BarSeries d2 = new BarSeries("bar_red", "red", translate("answer.false"));
@@ -183,8 +178,8 @@ public class ChoiceInteractionStatisticsController extends BasicController {
 		
 		int i = 0;
 		List<ResponseInfos> responseInfos = new ArrayList<>();
-		for(SimpleChoiceStatistics statisticResponse:statisticResponses) {
-			SimpleChoice choice = statisticResponse.getChoice();
+		for(ChoiceStatistics statisticResponse:statisticResponses) {
+			Choice choice = statisticResponse.getChoice();
 			String text = getAnswerText(choice);
 			boolean correct = correctAnswers.contains(choice.getIdentifier());
 			double answersPerAnswerOption = statisticResponse.getCount();
@@ -226,14 +221,9 @@ public class ChoiceInteractionStatisticsController extends BasicController {
 		return series;
 	}
 	
-	private String getAnswerText(SimpleChoice choice) {
-		String text = choice.getLabel();
-		if(!StringHelper.containsNonWhitespace(text)) {
-			text = new AssessmentHtmlBuilder().flowStaticString(choice.getFlowStatics());
-			text = FilterFactory.getHtmlTagsFilter().filter(text);
-		}
-		return text;
-	}
+	protected abstract List<ChoiceStatistics> getChoiceInteractionStatistics();
+	
+	protected abstract String getAnswerText(Choice choice);
 
 
 }

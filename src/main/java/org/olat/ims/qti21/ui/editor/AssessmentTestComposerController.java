@@ -94,6 +94,7 @@ import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -148,7 +149,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private MenuTree menuTree;
 	private Dropdown exportItemTools, addItemTools, changeItemTools;
 	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink, newMatchLink,
-			newFIBLink, newNumericalLink, newHotspotLink, newEssayLink, newUploadLink, newDrawingLink;
+			newFIBLink, newNumericalLink, newHotspotLink, newHottextLink, newEssayLink, newUploadLink, newDrawingLink;
 	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
 	private Link reloadInCacheLink, deleteLink, copyLink;
 	private final TooledStackedPanel toolbar;
@@ -265,6 +266,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newNumericalLink = LinkFactory.createToolLink("new.fib.numerical", translate("new.fib.numerical"), this, "o_mi_qtinumerical");
 		newNumericalLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newNumericalLink);
+		newHottextLink = LinkFactory.createToolLink("new.hottext", translate("new.hottext"), this, "o_mi_qtihottext");
+		newHottextLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newHottextLink);
 		
 		newHotspotLink = LinkFactory.createToolLink("new.hotspot", translate("new.hotspot"), this, "o_mi_qtihotspot");
 		newHotspotLink.setDomReplacementWrapperRequired(false);
@@ -471,6 +475,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(translate("new.fib.numerical"), EntryType.numerical, qtiService.qtiSerializer()));
 		} else if(newHotspotLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HotspotAssessmentItemBuilder(translate("new.hotspot"), qtiService.qtiSerializer()));
+		} else if(newHottextLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new HottextAssessmentItemBuilder(translate("new.hottext"), translate("new.hottext.start"), translate("new.hottext.text"), qtiService.qtiSerializer()));
 		} else if(newEssayLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new EssayAssessmentItemBuilder(translate("new.essay"), qtiService.qtiSerializer()));
 		} else if(newUploadLink == source) {

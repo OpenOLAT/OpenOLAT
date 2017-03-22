@@ -66,12 +66,14 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleAssociableChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleMatchSet;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.content.Hottext;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
@@ -612,6 +614,41 @@ public class AssessmentItemFactory {
 	}
 	
 	public static ResponseDeclaration createMultipleChoiceCorrectResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId, List<Identifier> correctResponseIds) {
+		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
+		responseDeclaration.setIdentifier(declarationId);
+		responseDeclaration.setCardinality(Cardinality.MULTIPLE);
+		responseDeclaration.setBaseType(BaseType.IDENTIFIER);
+
+		CorrectResponse correctResponse = new CorrectResponse(responseDeclaration);
+		responseDeclaration.setCorrectResponse(correctResponse);
+		
+		for(Identifier correctResponseId:correctResponseIds) {
+			appendIdentifierValue(correctResponse, correctResponseId);
+		}
+		return responseDeclaration;
+	}
+	
+	public static HottextInteraction appendHottextInteraction(ItemBody itemBody, Identifier responseDeclarationId, int maxChoices) {
+		HottextInteraction hottextInteraction = new HottextInteraction(itemBody);
+		hottextInteraction.setMaxChoices(maxChoices);
+		hottextInteraction.setResponseIdentifier(responseDeclarationId);
+		itemBody.getBlocks().add(hottextInteraction);
+		
+		PromptGroup prompts = new PromptGroup(hottextInteraction);
+		hottextInteraction.getNodeGroups().add(prompts);
+
+		return hottextInteraction;
+	}
+	
+	public static Hottext appendHottext(P parent, Identifier responseId, String text) {
+		Hottext hottext = new Hottext(parent);
+		hottext.setIdentifier(responseId);
+		hottext.getInlineStatics().add(new TextRun(hottext, text));
+		parent.getInlines().add(hottext);
+		return hottext;
+	}
+	
+	public static ResponseDeclaration createHottextCorrectResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId, List<Identifier> correctResponseIds) {
 		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
 		responseDeclaration.setIdentifier(declarationId);
 		responseDeclaration.setCardinality(Cardinality.MULTIPLE);
