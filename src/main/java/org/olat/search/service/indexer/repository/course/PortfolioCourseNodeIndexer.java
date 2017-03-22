@@ -94,8 +94,10 @@ public class PortfolioCourseNodeIndexer extends DefaultIndexer implements Course
 		if(repoEntry != null) {
 			OLATResource ores = repoEntry.getOlatResource();
 			PortfolioStructure element = structureManager.loadPortfolioStructure(ores);
-			Document pDocument = PortfolioMapDocument.createDocument(courseNodeResourceContext, element);
-			indexWriter.addDocument(pDocument);
+			if(element != null) {
+				Document pDocument = PortfolioMapDocument.createDocument(courseNodeResourceContext, element);
+				indexWriter.addDocument(pDocument);
+			}
 		}
 	}
 }
