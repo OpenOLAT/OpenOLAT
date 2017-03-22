@@ -116,6 +116,13 @@ div.hotspotInteraction {
 		/* fix missing resize handle in Safe Exam Browser */
 		resize: vertical !important;
 	}
+	
+	.o_qti_essay_last_save {
+		padding: 2px 2px;
+		font-style: italic;
+		font-size: 90%;
+		text-align:right;
+	}
 }
 
 #o_qti_run_title {
