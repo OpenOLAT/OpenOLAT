@@ -646,13 +646,13 @@ public class ACFrontendManager implements ACService {
 			Status finalStatus = getStatus(orderStatusStr,  rawOrder.getTrxStatus(), rawOrder.getPspTrxStatus());
 			
 			String methodIds = rawOrder.getTrxMethodIds();
-			
-			String[] methodIdArr = methodIds.split(",");
-			
 			List<AccessMethod> orderMethods = new ArrayList<>(2);
-			for(String methodId:methodIdArr) {
-				if(methodMap.containsKey(methodId)) {
-					orderMethods.add(methodMap.get(methodId));
+			if(StringHelper.containsNonWhitespace(methodIds)) {
+				String[] methodIdArr = methodIds.split(",");
+				for(String methodId:methodIdArr) {
+					if(methodMap.containsKey(methodId)) {
+						orderMethods.add(methodMap.get(methodId));
+					}
 				}
 			}
 			
