@@ -146,7 +146,7 @@ public class GroupPage {
 	
 	public GroupPage openNews() {
 		openMenuItem(newsTool);
-		OOGraphene.waitElement(By.id("o_msg_info"), 5, browser);
+		OOGraphene.waitElement(By.className("o_infomsg"), 5, browser);
 		return this;
 	}
 	
@@ -268,15 +268,6 @@ public class GroupPage {
 		checkToolEl.click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElement(tool.getMenuItemBy(), 2, browser);
-		return this;
-	}
-	
-	public GroupPage setMembersInfos(String text) {		
-		OOGraphene.tinymce(text, browser);
-		
-		By submitBy = By.cssSelector(".o_sel_collaboration_news_save button.btn-primary");
-		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
