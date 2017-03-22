@@ -38,7 +38,7 @@
 			var $ = ed.$, selection = ed.selection;
 			var cachedTrans, cachedCoreTrans;
 			var cachedHelp;
-			var lastSelectedGap;
+			var lastSelectedGap, lastSelectedHottext;
 			
 			// Load the OLAT translator.
 			function translator() {	
@@ -111,8 +111,8 @@
 			
 			function createHottext(e) {
 				var responseIdentifier;
-				if(typeof lastSelectedGap != 'undefined') {
-					responseIdentifier = jQuery(lastSelectedGap).data('data-identifier')
+				if(typeof lastSelectedHottext != 'undefined') {
+					responseIdentifier = jQuery(lastSelectedHottext).data('data-identifier')
 				} else {
 					var counter = 1;
 					var selectedText = ed.selection.getContent({format: 'text'});
@@ -131,7 +131,21 @@
 						var selectedNode = ed.dom.select("span[data-qti-identifier=" + identifier + "] span[contenteditable=true]");
 						ed.selection.select(selectedNode[0], true);
 					}
+					
+					jQuery("span.hottext[data-qti-identifier='" + identifier + "'] input", ed.getBody()).each(function(index, el) {
+						correctHottextEvent(el);
+					});
 				}
+			}
+			
+			function correctHottextEvent(inputEl) {
+				jQuery(inputEl).click(function() {
+					var ffxhrevent = ed.getParam("ffxhrevent");
+					var identifier = jQuery(inputEl).parent("span.hottext").data('qti-identifier');
+					o_ffXHRNFEvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2,
+							'cmd', 'hottext', 'identifier', identifier, 'correct', inputEl.checked);
+					ed.setDirty(true);
+				});
 			}
 
 			ed.addButton('olatqtifibtext', {
@@ -186,15 +200,16 @@
 				if (lastSelectedGap && lastSelectedGap.id != e.element.src) {
 					lastSelectedGap = undefined;
 				}
+				if (lastSelectedHottext && lastSelectedHottext.id != e.element.src) {
+					lastSelectedHottext = undefined;
+				}
 				
-				if (isEditableGapEntry(e.element)) {
+				if (ed.dom.is(e.element, 'img[data-qti]')) {
 					lastSelectedGap = e.element;
+				} else if (jQuery(e.element).parent('span.hottext').size() > 0) {
+					lastSelectedHottext = e.element;
 				}
 			});
-			
-			function isEditableGapEntry(img) {
-				return ed.dom.is(img, 'img[data-qti]');
-			}
 			
 			function createPlaceholder(responseIdentifier, interaction, gapType) {
 				var placeholder = new tinymce.html.Node('img', 1);
@@ -277,14 +292,7 @@
 				});
 				
 				jQuery("span.hottext input", ed.getBody()).each(function(index, el) {
-					var inputEl = el;
-					jQuery(inputEl).click(function() {
-						var ffxhrevent = ed.getParam("ffxhrevent");
-						var identifier = jQuery(inputEl).parent("span.hottext").data('qti-identifier');
-						o_ffXHRNFEvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2,
-								'cmd', 'hottext', 'identifier', identifier, 'correct', el.checked);
-						ed.setDirty(true);
-					});
+					correctHottextEvent(el);
 				});
 			});
 			
