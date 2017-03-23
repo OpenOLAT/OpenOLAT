@@ -178,11 +178,11 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 				if(a1 && a2) {
 					int apc1 = r1.getAssignmentPos();
 					int apc2 = r2.getAssignmentPos();
-					c = compareLongs(new Long(apc1), new Long(apc2));
+					c = compareInts(apc1, apc2);
 				} else if(a1) {
-					if(r1.isSection()) {
+					if(r2.isSection()) {
 						c = 1;
-					} else if(r1.isPage()) {
+					} else if(r2.isPage()) {
 						c = -1;
 					}
 				} else if(a2) {
@@ -192,14 +192,18 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 						c = 1;
 					}
 				} else {
-					Page p1 = r1.getPage();
-					Page p2 = r2.getPage();
-					if(p1 == null && p2 != null) {
-						c = -1;
-					} else if(p1 != null && p2 == null) {
-						c = 1;
-					} else {
+					boolean p1 = r1.isPage();
+					boolean p2 = r2.isPage();
+					if(p1 && p2) {
 						c = lastComparator.compare(r1, r2);
+					} else if(p1) {
+						if(r2.isSection()) {
+							c = 1;
+						}
+					} else if(p2) {
+						if(r1.isSection()) {
+							c = -1;
+						}
 					}
 				}
 			}
@@ -236,5 +240,4 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 			return c;
 		}
 	}
-	
 }
