@@ -984,6 +984,24 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		selectSortOption(sortKey, asc);
 		component.setDirty(true);
 	}
+	
+	@Override
+	public void sort(SortKey sortKey) {
+		collapseAllDetails();
+		orderBy = new SortKey[]{ sortKey };
+		
+		if(dataModel instanceof SortableFlexiTableDataModel) {
+			((SortableFlexiTableDataModel<?>)dataModel).sort(sortKey);
+		} else if(dataSource != null) {
+			currentPage = 0;
+			dataSource.clear();
+			dataSource.load(getSearchText(), getSelectedFilters(), getConditionalQueries(), 0, getPageSize(), orderBy);
+		}
+		reorderMultiSelectIndex();
+		selectSortOption(sortKey.getKey(), sortKey.isAsc());
+		component.setDirty(true);
+	}
+	
 
 	private void reorderMultiSelectIndex() {
 		if(multiSelectedIndex == null) return;
