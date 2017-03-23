@@ -36,6 +36,7 @@ public class PodcastCourseNodeIndexer extends FeedCourseNodeIndexer {
 	/**
 	 * @see org.olat.modules.webFeed.search.indexer.FeedRepositoryIndexer#getSupportedTypeName()
 	 */
+	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
@@ -43,6 +44,7 @@ public class PodcastCourseNodeIndexer extends FeedCourseNodeIndexer {
 	/**
 	 * @see org.olat.modules.webFeed.search.indexer.FeedRepositoryIndexer#getDocumentType()
 	 */
+	@Override
 	protected String getDocumentType() {
 		return TYPE;
 	}

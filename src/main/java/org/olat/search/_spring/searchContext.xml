@@ -204,10 +204,12 @@
 				<ref bean="vcCourseNodeIndexer" />
 				<ref bean="videoCourseNodeIndexer" />
 				<ref bean="viteroCourseNodeIndexer" />
+				<ref bean="coCourseNodeIndexer" />
 			</list>
 		</property>
 	</bean>
 	
+	<bean id="coCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.COCourseNodeIndexer" />
 	<bean id="tuCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.TUCourseNodeIndexer" />
 	<bean id="vcCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.VCCourseNodeIndexer" />
 	<bean id="videoCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.VideoCourseNodeIndexer" />
