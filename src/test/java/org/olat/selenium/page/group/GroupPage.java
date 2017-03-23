@@ -27,6 +27,7 @@ import org.olat.selenium.page.core.CalendarPage;
 import org.olat.selenium.page.core.ContactPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.IMPage;
+import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.BinderPage;
@@ -144,10 +145,10 @@ public class GroupPage {
 		return this;
 	}
 	
-	public GroupPage openNews() {
+	public InfoMessageCEPage openNews() {
 		openMenuItem(newsTool);
 		OOGraphene.waitElement(By.className("o_infomsg"), 5, browser);
-		return this;
+		return new InfoMessageCEPage(browser);
 	}
 	
 	public FolderPage openFolder() {

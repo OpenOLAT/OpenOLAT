@@ -204,11 +204,14 @@ public class BusinessGroupTest {
 			.openAdminTools()
 			.enableTools();
 		
-		//String news = "Welcome members ( " + UUID.randomUUID() + " )";
 		//check the news
 		group
-			.openNews();
-			//.assertNews(news);
+			.openNews()
+			.createMessage()
+			.setMessage("Information 0", "A very important info")
+			.next()
+			.finish()
+		.	assertOnMessageTitle("Information 0");
 		
 		//check calendar
 		group
