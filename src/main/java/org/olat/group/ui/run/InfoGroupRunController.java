@@ -43,7 +43,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
@@ -71,7 +70,7 @@ public class InfoGroupRunController extends BasicController {
 	private InfoMessageFrontendManager messageManager;
 
 
-	public InfoGroupRunController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean canAccess) {
+	public InfoGroupRunController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean canAccess, boolean isAdmin) {
 		super(ureq, wControl);
 		
 		long groupId = businessGroup.getKey();
@@ -86,12 +85,9 @@ public class InfoGroupRunController extends BasicController {
 			subscriptionController = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, pdata);
 			listenTo(subscriptionController);
 		}
-				
-		Roles roles = usess.getRoles();
-		boolean canAdmin = roles.isOLATAdmin() || roles.isGroupManager();
-		boolean canAdd = canAdmin || canAccess;
 
-		InfoSecurityCallback secCallback = new InfoGroupSecurityCallback(canAdd, canAdmin);
+		boolean canAddAndEdit = isAdmin || canAccess;
+		InfoSecurityCallback secCallback = new InfoGroupSecurityCallback(canAddAndEdit, isAdmin);
 		infoDisplayController = new InfoDisplayController(ureq, wControl, secCallback, businessGroup, resSubPath, businessPath);
 		SendMailOption subscribers = new SendSubscriberMailOption(infoResourceable, resSubPath, messageManager);
 		infoDisplayController.addSendMailOptions(subscribers);

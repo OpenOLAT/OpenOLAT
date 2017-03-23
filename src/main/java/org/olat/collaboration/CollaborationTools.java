@@ -253,10 +253,10 @@ public class CollaborationTools implements Serializable {
 		return new SimpleNewsController(ureq, wControl, news);
 	}
 	
-	public Controller createInfoMessageController(UserRequest ureq, WindowControl wControl) {
-		String canAdmin = getNewsAccessProperty();
-		boolean canAccess = "all".equals(canAdmin);
-		return new InfoGroupRunController(ureq, wControl, ores, canAccess);
+	public Controller createInfoMessageController(UserRequest ureq, WindowControl wControl, boolean isAdmin) {
+		String accessProperty = getNewsAccessProperty();
+		boolean canAccess = "all".equals(accessProperty);
+		return new InfoGroupRunController(ureq, wControl, ores, canAccess, isAdmin);
 	}
 
 	/**
