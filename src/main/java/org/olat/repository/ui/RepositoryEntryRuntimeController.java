@@ -912,6 +912,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
 		} else if(security.canLaunch()) {
+			removeAsListenerAndDispose(runtimeController);
 			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity, assessmentMode);
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
