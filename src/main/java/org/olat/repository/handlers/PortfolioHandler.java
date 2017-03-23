@@ -130,12 +130,14 @@ public class PortfolioHandler implements RepositoryHandler {
 		EPFrontendManager ePFMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		EPStructureManager eSTMgr = CoreSpringFactory.getImpl(EPStructureManager.class);
 		
+		RepositoryEntry re = null;
 		PortfolioStructure structure = EPXStreamHandler.getAsObject(file, false);
-		OLATResource resource = eSTMgr.createPortfolioMapTemplateResource();
-		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
-				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
-		
-		ePFMgr.importPortfolioMapTemplate(structure, resource);
+		if(structure != null) {
+			OLATResource resource = eSTMgr.createPortfolioMapTemplateResource();
+			re = CoreSpringFactory.getImpl(RepositoryService.class)
+					.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
+			ePFMgr.importPortfolioMapTemplate(structure, resource);
+		}
 		return re;
 	}
 	
