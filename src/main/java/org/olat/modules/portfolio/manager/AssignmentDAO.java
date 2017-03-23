@@ -105,6 +105,7 @@ public class AssignmentDAO {
 		assignment.setOnlyAutoEvaluation(templateReference.isOnlyAutoEvaluation());
 		assignment.setReviewerSeeAutoEvaluation(templateReference.isReviewerSeeAutoEvaluation());
 		assignment.setAnonymousExternalEvaluation(templateReference.isAnonymousExternalEvaluation());
+		assignment.setStorage(templateReference.getStorage());
 		assignment.setFormEntry(templateReference.getFormEntry());
 
 		((SectionImpl)section).getAssignments().size();
