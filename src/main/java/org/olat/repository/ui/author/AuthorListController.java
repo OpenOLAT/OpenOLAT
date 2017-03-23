@@ -110,7 +110,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 28.04.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.comx
  *
  */
 public class AuthorListController extends FormBasicController implements Activateable2, AuthoringEntryDataSourceUIFactory, FlexiTableCssDelegate {
@@ -484,11 +484,14 @@ public class AuthorListController extends FormBasicController implements Activat
 				cleanUp();
 			}
 		} else if(closeCtrl == source) {
-			cmc.deactivate();
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+			if(event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+				cleanUp();
+			} else if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				cmc.deactivate();
 				reloadRows();
+				cleanUp();
 			}
-			cleanUp();
 		} else if(confirmDeleteCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
@@ -517,6 +520,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		removeAsListenerAndDispose(importCtrl);
 		removeAsListenerAndDispose(wizardCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(closeCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
 		toolsCalloutCtrl = null;
@@ -525,6 +529,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		importCtrl = null;
 		wizardCtrl = null;
 		toolsCtrl = null;
+		closeCtrl = null;
 		cmc = null;
 	}
 	
