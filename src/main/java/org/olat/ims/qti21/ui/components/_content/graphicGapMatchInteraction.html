@@ -36,8 +36,10 @@
 		jQuery(function() {
 			var map = jQuery('#${containerId}_img').maphilight({
 				fillColor: '888888',
-				strokeColor: '0000ff',
-				strokeWidth: 3
+				strokeColor: '333333',
+				strokeOpacity: 0.5,
+				strokeWidth: 3,
+				alwaysOn: true
 			});
 
 			jQuery('#${containerId}').graphicGapInteraction({

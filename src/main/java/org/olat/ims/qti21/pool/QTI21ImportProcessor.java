@@ -155,6 +155,9 @@ public class QTI21ImportProcessor {
 			//storage
 			File itemStorage = qpoolFileStorage.getDirectory(dir);
 			File outputFile = new File(itemStorage, href);
+			if(!outputFile.getParentFile().exists()) {
+				outputFile.getParentFile().mkdirs();
+			}
 			convertXmlFile(assessmentItemPath, outputFile.toPath());
 
 			QtiXmlReader qtiXmlReader = new QtiXmlReader(qtiService.jqtiExtensionManager());
@@ -194,7 +197,7 @@ public class QTI21ImportProcessor {
 			for(String material:materials) {
 				if(material.indexOf("://") < 0) {// material can be an external URL
 					Path materialFile = assessmentItemPath.getParent().resolve(material);
-					PathUtils.copyFileToDir(materialFile, itemStorage, material);
+					PathUtils.copyFileToDir(materialFile, outputFile.getParentFile(), material);
 				}
 			}
 			return qitem;
