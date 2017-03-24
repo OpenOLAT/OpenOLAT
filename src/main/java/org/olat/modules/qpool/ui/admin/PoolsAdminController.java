@@ -19,15 +19,14 @@
  */
 package org.olat.modules.qpool.ui.admin;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.ResultInfos;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,14 +37,15 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -60,6 +60,7 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -81,12 +82,12 @@ public class PoolsAdminController extends FormBasicController {
 	private PoolEditController poolEditCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	
-	private final QPoolService qpoolService;
+	@Autowired
+	private QPoolService qpoolService;
 	
 	public PoolsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, "pools_admin", Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
-		
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+
 		initForm(ureq);
 	}
 	
@@ -99,14 +100,13 @@ public class PoolsAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.id.i18nKey(), Cols.id.ordinal(), true, "key"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.publicPool.i18nKey(), Cols.publicPool.ordinal(),
-				true, "publicPool", FlexiColumnModel.ALIGNMENT_LEFT,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.id));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.publicPool,
 				new BooleanCellRenderer(
 						new CSSIconFlexiCellRenderer("o_icon_pool_public"),
 						new CSSIconFlexiCellRenderer("o_icon_pool_private"))
 		));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, "name"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit-pool"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("pool.owners", translate("pool.owners"), "owners-pool"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete-pool"));
@@ -234,7 +234,7 @@ public class PoolsAdminController extends FormBasicController {
 		}
 	}
 	
-	private enum Cols {
+	private enum Cols implements FlexiSortableColumnDef {
 		id("pool.key"),
 		publicPool("pool.public"),
 		name("pool.name");
@@ -244,63 +244,41 @@ public class PoolsAdminController extends FormBasicController {
 		private Cols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
-		
-		public String i18nKey() {
+
+		@Override
+		public String i18nHeaderKey() {
 			return i18nKey;
 		}
-	}
-	
-	private static class PoolDataModel implements FlexiTableDataModel<Pool>, TableDataModel<Pool> {
-	
-		private List<Pool> rows;
-		private FlexiTableColumnModel columnModel;
-		private final Translator translator;
-		
-		public PoolDataModel(FlexiTableColumnModel columnModel, Translator translator) {
-			this.columnModel = columnModel;
-			this.translator = translator;
-		}
-		
+
 		@Override
-		public FlexiTableColumnModel getTableColumnModel() {
-			return columnModel;
-		}
-	
-		@Override
-		public void setTableColumnModel(FlexiTableColumnModel tableColumnModel) {
-			this.columnModel = tableColumnModel;
-		}
-	
-		@Override
-		public int getRowCount() {
-			return rows == null ? 0 : rows.size();
-		}
-		
-		@Override
-		public boolean isSelectable(int row) {
+		public boolean sortable() {
 			return true;
 		}
 
 		@Override
-		public boolean isRowLoaded(int row) {
-			return rows != null && row < rows.size();
+		public String sortKey() {
+			return name();
 		}
+	}
 	
-		@Override
-		public Pool getObject(int row) {
-			return rows.get(row);
-		}
-	
-		@Override
-		public void setObjects(List<Pool> objects) {
-			rows = new ArrayList<Pool>(objects);
-		}
-	
-		@Override
-		public int getColumnCount() {
-			return columnModel.getColumnCount();
+	private static class PoolDataModel extends DefaultFlexiTableDataModel<Pool> implements SortableFlexiTableDataModel<Pool> {
+
+		private FlexiTableColumnModel columnModel;
+		private final Translator translator;
+		
+		public PoolDataModel(FlexiTableColumnModel columnModel, Translator translator) {
+			super(columnModel);
+			this.translator = translator;
 		}
 		
+		@Override
+		public void sort(SortKey orderBy) {
+			if(orderBy != null) {
+				List<Pool> views = new SortableFlexiTableModelDelegate<Pool>(orderBy, this, translator.getLocale()).sort();
+				super.setObjects(views);
+			}
+		}
+
 		@Override
 		public PoolDataModel createCopyWithEmptyList() {
 			return new PoolDataModel(columnModel, translator);
@@ -308,11 +286,16 @@ public class PoolsAdminController extends FormBasicController {
 	
 		@Override
 		public Object getValueAt(int row, int col) {
-			Pool item = getObject(row);
+			Pool pool = getObject(row);
+			return getValueAt(pool, col);
+		}
+		
+		@Override
+		public Object getValueAt(Pool pool, int col) {
 			switch(Cols.values()[col]) {
-				case id: return item.getKey();
-				case publicPool: return new Boolean(item.isPublicPool());
-				case name: return item.getName();
+				case id: return pool.getKey();
+				case publicPool: return new Boolean(pool.isPublicPool());
+				case name: return pool.getName();
 				default: return "";
 			}
 		}
