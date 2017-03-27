@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -151,7 +152,7 @@ public class MyPageListController extends AbstractPageListController {
 			if(event instanceof FlexiTableRenderEvent) {
 				FlexiTableRenderEvent re = (FlexiTableRenderEvent)event;
 				if(re.getRendererType() == FlexiTableRendererType.custom) {
-					tableEl.sort(null, false);
+					tableEl.sort(new SortKey(null, false));
 				}
 			} else if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;

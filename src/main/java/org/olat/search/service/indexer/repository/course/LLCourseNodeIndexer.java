@@ -17,31 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.ims.qti21.model.statistics;
-
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+package org.olat.search.service.indexer.repository.course;
 
 /**
  * 
- * Initial date: 04.02.2016<br>
+ * Initial date: 20 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SimpleChoiceStatistics {
+public class LLCourseNodeIndexer extends AbstractCourseNodeIndexer {
+	
+	public static final String TYPE = "type.course.node.ll";
 
-	private final long count;
-	private final SimpleChoice choice;
+	private final static String SUPPORTED_TYPE_NAME = "de.bps.course.nodes.LLCourseNode";
 	
-	public SimpleChoiceStatistics(SimpleChoice choice, long count) {
-		this.count = count;
-		this.choice = choice;
-	}
-	
-	public long getCount() {
-		return count;
-	}
-	
-	public SimpleChoice getChoice() {
-		return choice;
+	public LLCourseNodeIndexer() {
+		super(TYPE, SUPPORTED_TYPE_NAME);
 	}
 }

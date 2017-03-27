@@ -63,6 +63,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.info.InfoCourseNodeConfiguration;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -107,6 +108,24 @@ public class InfoDisplayController extends FormBasicController {
 	private LockResult lockEntry;
 	private MailFormatter sendMailFormatter;
 	private List<SendMailOption> sendMailOptions = new ArrayList<SendMailOption>();
+	
+	public InfoDisplayController(UserRequest ureq, WindowControl wControl, InfoSecurityCallback secCallback,
+			BusinessGroup businessGroup, String resSubPath, String businessPath) {
+		super(ureq, wControl, "display");
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		infoMessageManager = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
+		this.secCallback = secCallback;
+		this.ores = businessGroup.getResource();
+		this.resSubPath = resSubPath;
+		this.businessPath = businessPath;
+		// default show 10 messages for groups
+		maxResults = maxResultsConfig = 10;
+		
+		initForm(ureq);	
+		
+		// now load with configuration
+		loadMessages();		
+	}
 	
 	public InfoDisplayController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config,
 			InfoSecurityCallback secCallback, OLATResourceable ores, String resSubPath, String businessPath) {

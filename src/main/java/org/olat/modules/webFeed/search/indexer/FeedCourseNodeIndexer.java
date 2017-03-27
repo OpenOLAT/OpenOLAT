@@ -21,6 +21,7 @@ package org.olat.modules.webFeed.search.indexer;
 
 import java.io.IOException;
 
+import org.apache.lucene.document.Document;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
@@ -33,6 +34,7 @@ import org.olat.modules.webFeed.search.document.FeedNodeDocument;
 import org.olat.repository.RepositoryEntry;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 import org.olat.search.service.indexer.repository.course.CourseNodeIndexer;
@@ -60,8 +62,13 @@ public abstract class FeedCourseNodeIndexer extends DefaultIndexer implements Co
 	 *      java.lang.Object, org.olat.search.service.indexer.OlatFullIndexer)
 	 */
 	@Override
-	public void doIndex(SearchResourceContext searchResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexer)
+	public void doIndex(SearchResourceContext courseResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexer)
 			throws IOException, InterruptedException {
+		
+		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(courseResourceContext, courseNode, getDocumentType());
+		Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+		indexer.addDocument(document);
+		
 		RepositoryEntry repositoryEntry = courseNode.getReferencedRepositoryEntry();
 		if(repositoryEntry != null) {
 			// used for log messages
@@ -72,21 +79,14 @@ public abstract class FeedCourseNodeIndexer extends DefaultIndexer implements Co
 					log.info("Indexing: " + repoEntryName);
 				}
 				Feed feed = FeedManager.getInstance().getFeed(repositoryEntry.getOlatResource());
-	
-				// Set the document type, e.g. type.repository.entry.FileResource.BLOG
-				SearchResourceContext nodeSearchContext = new SearchResourceContext(searchResourceContext);
-				nodeSearchContext.setBusinessControlFor(courseNode);
-				nodeSearchContext.setDocumentType(getDocumentType());
-				nodeSearchContext.setTitle(courseNode.getShortTitle());
-				nodeSearchContext.setDescription(courseNode.getLongTitle());
-	
+
 				// Create the olatDocument for the feed course node itself
-				OlatDocument feedNodeDoc = new FeedNodeDocument(feed, nodeSearchContext);
+				OlatDocument feedNodeDoc = new FeedNodeDocument(feed, courseNodeResourceContext);
 				indexer.addDocument(feedNodeDoc.getLuceneDocument());
 				
 				// Only index items. Feed itself is indexed by RepositoryEntryIndexer.
 				for (Item item : feed.getPublishedItems()) {
-					OlatDocument itemDoc = new FeedItemDocument(item, nodeSearchContext);
+					OlatDocument itemDoc = new FeedItemDocument(item, courseNodeResourceContext);
 					indexer.addDocument(itemDoc.getLuceneDocument());
 				}
 			} catch (NullPointerException e) {

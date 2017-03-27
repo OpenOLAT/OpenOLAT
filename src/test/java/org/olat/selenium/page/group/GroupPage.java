@@ -27,6 +27,7 @@ import org.olat.selenium.page.core.CalendarPage;
 import org.olat.selenium.page.core.ContactPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.IMPage;
+import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.BinderPage;
@@ -144,10 +145,10 @@ public class GroupPage {
 		return this;
 	}
 	
-	public GroupPage openNews() {
+	public InfoMessageCEPage openNews() {
 		openMenuItem(newsTool);
-		OOGraphene.waitElement(By.id("o_msg_info"), 5, browser);
-		return this;
+		OOGraphene.waitElement(By.className("o_infomsg"), 5, browser);
+		return new InfoMessageCEPage(browser);
 	}
 	
 	public FolderPage openFolder() {
@@ -268,15 +269,6 @@ public class GroupPage {
 		checkToolEl.click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElement(tool.getMenuItemBy(), 2, browser);
-		return this;
-	}
-	
-	public GroupPage setMembersInfos(String text) {		
-		OOGraphene.tinymce(text, browser);
-		
-		By submitBy = By.cssSelector(".o_sel_collaboration_news_save button.btn-primary");
-		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

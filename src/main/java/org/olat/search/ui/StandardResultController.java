@@ -133,8 +133,4 @@ public class StandardResultController extends FormBasicController implements Res
 			}
 		}
 	}
-	
-	public FormItem getInitialFormItem() {
-		return flc;
-	}
 }

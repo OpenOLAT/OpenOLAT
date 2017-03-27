@@ -64,12 +64,7 @@ public class STCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)
 	throws IOException,InterruptedException {
 		if (log.isDebug()) log.debug("Index StructureNode...");
-		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-		courseNodeResourceContext.setBusinessControlFor(courseNode);
-		courseNodeResourceContext.setDocumentType(TYPE);
-		courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-		courseNodeResourceContext.setDescription(courseNode.getLongTitle());
-    
+		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, courseNode, TYPE);
 		Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
 		indexWriter.addDocument(document);
 		

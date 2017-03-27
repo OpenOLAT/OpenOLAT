@@ -1,0 +1,7 @@
+<h2><i class="o_icon o_icon_news"> </i> $r.translate("menutree.news.alt")</h2>
+#if($r.available("infoSubscription"))
+	<div class="clearfix">
+		$r.render("infoSubscription")
+	</div>
+#end
+$r.render("displayInfos")

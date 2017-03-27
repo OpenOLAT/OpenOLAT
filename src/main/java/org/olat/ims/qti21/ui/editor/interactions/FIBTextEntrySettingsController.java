@@ -49,12 +49,14 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	private TextElement expectedLengthEl;
 	private MultipleSelectionElement caseSensitiveEl;
 	
+	private final boolean restrictedEdit;
 	private final TextEntry interaction;
 	
-	public FIBTextEntrySettingsController(UserRequest ureq, WindowControl wControl, TextEntry interaction) {
+	public FIBTextEntrySettingsController(UserRequest ureq, WindowControl wControl, TextEntry interaction, boolean restrictedEdit) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.interaction = interaction;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 
@@ -62,18 +64,23 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String solution = interaction.getSolution();
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solution, formLayout);
+		solutionEl.setEnabled(!restrictedEdit);
 		String placeholder = interaction.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
+		placeholderEl.setEnabled(!restrictedEdit);
 		String alternatives = interaction.alternativesToString();
 		alternativeEl = uifactory.addTextElement("fib.alternative", "fib.alternative", 256, alternatives, formLayout);
 		alternativeEl.setHelpText(translate("fib.alternative.help"));
 		alternativeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_fib");
+		alternativeEl.setEnabled(!restrictedEdit);
 		
 		Integer expectedLength = interaction.getExpectedLength();
 		String expectedLengthStr = expectedLength == null ? null : expectedLength.toString();
 		expectedLengthEl = uifactory.addTextElement("fib.expectedLength", "fib.expectedLength", 256, expectedLengthStr, formLayout);
-
+		expectedLengthEl.setEnabled(!restrictedEdit);
+		
 		caseSensitiveEl = uifactory.addCheckboxesHorizontal("fib.caseSensitive", "fib.caseSensitive", formLayout, onKeys, new String[]{ "" });
+		caseSensitiveEl.setEnabled(!restrictedEdit);
 		if(interaction.isCaseSensitive()) {
 			caseSensitiveEl.select(onKeys[0], true);
 		}
@@ -82,7 +89,9 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
-		uifactory.addFormSubmitButton("submit", buttonsContainer);
+		if(!restrictedEdit) {
+			uifactory.addFormSubmitButton("submit", buttonsContainer);
+		}
 		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 	}
 

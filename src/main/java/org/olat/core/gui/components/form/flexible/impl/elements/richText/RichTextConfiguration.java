@@ -115,7 +115,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String AUTORESIZE_BOTTOM_MARGIN = "autoresize_bottom_margin";
 	private static final String AUTORESIZE_MAX_HEIGHT = "autoresize_max_height";
 	private static final String AUTORESIZE_MIN_HEIGHT = "autoresize_min_height";
-	private static final String AUTORESIZE_OVERFLOW_PADDING = "autoresize_overflow_padding";
+	//private static final String AUTORESIZE_OVERFLOW_PADDING = "autoresize_overflow_padding";
 
 	//
 	// Generic boolean true / false values
@@ -155,6 +155,7 @@ public class RichTextConfiguration implements Disposable {
 	private boolean allowCustomMediaFactory = true;
 	private boolean inline = false;
 	private boolean sendOnBlur;
+	private boolean readOnly;
 	private CustomLinkTreeModel linkBrowserCustomTreeModel;	
 	// DOM ID of the flexi form element
 	private String domID;
@@ -163,6 +164,8 @@ public class RichTextConfiguration implements Disposable {
 	
 	private final Locale locale;
 	private TinyConfig tinyConfig;
+	
+	private RichTextConfigurationDelegate additionalConfiguration;
 	
 	public RichTextConfiguration(Locale locale) {
 		this.locale = locale;
@@ -444,8 +447,6 @@ public class RichTextConfiguration implements Disposable {
 	public void setStatusBar2(boolean statusBar) {
 		this.statusBar = statusBar;
 	}
-	
-	
 
 	public boolean isPathInStatusBar() {
 		return pathInStatusBar;
@@ -453,6 +454,23 @@ public class RichTextConfiguration implements Disposable {
 
 	public void setPathInStatusBar(boolean pathInStatusBar) {
 		this.pathInStatusBar = pathInStatusBar;
+	}
+	
+
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
+
+	public RichTextConfigurationDelegate getAdditionalConfiguration() {
+		return additionalConfiguration;
+	}
+
+	public void setAdditionalConfiguration(RichTextConfigurationDelegate additionalConfiguration) {
+		this.additionalConfiguration = additionalConfiguration;
 	}
 
 	/**
@@ -839,10 +857,10 @@ public class RichTextConfiguration implements Disposable {
 		tinyConfig = tinyConfig.enableCode();
 	}
 	
-	public void enableQTITools(boolean textEntry, boolean numericalInput) {
-		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput);
-		setQuotedConfigValue("custom_elements", "~textentryinteraction");
-		setQuotedConfigValue("extended_valid_elements", "textentryinteraction[*]");
+	public void enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext) {
+		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext);
+		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext");
+		setQuotedConfigValue("extended_valid_elements", "textentryinteraction[*],hottext[*]");
 	}
 
 	/**
@@ -980,6 +998,9 @@ public class RichTextConfiguration implements Disposable {
 		  .append("statusbar:").append(true).append(",\n")
 		  .append("resize:").append(true).append(",\n")
 		  .append("menubar:").append(tinyConfig.hasMenu()).append(",\n");
+ 		if(isReadOnly()) {
+ 			tinyMenuSb.append("readonly: 1,\n");
+ 		}
  		
  		String leftAndClear = "Left and clear";
  		String rightAndClear = "Right and clear";

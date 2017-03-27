@@ -255,7 +255,7 @@ public class AssessmentItemMetadata {
 		}
 		
 		//qti metadata
-		QTIMetadataType qtiMetadata = metadata.getQtiMetadata(false);
+		QTIMetadataType qtiMetadata = metadata.getQtiMetadata(true);
 		if(qtiMetadata.getToolName() != null) {
 			editor = qtiMetadata.getToolName();
 		}

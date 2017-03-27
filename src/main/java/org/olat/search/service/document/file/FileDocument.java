@@ -60,7 +60,7 @@ public abstract class FileDocument extends OlatDocument {
 		setResourceUrl(leafResourceContext.getResourceUrl());
 		setLastChange(new Date(leaf.getLastModified()));
 		// Check if there are documents attributes set in resource context
-		if (leafResourceContext.getDocumentType() != null && !leafResourceContext.getDocumentType().equals("")) {
+		if (StringHelper.containsNonWhitespace(leafResourceContext.getDocumentType())) {
 			// document-type in context is set => get from there
 			setDocumentType(leafResourceContext.getDocumentType());
 		} else {
@@ -74,8 +74,13 @@ public abstract class FileDocument extends OlatDocument {
 		} else if(content != null && StringHelper.containsNonWhitespace(content.getTitle())) {
 			metaTitle = content.getTitle();
 		} else {
-			metaTitle = null;
-		} 
+			String beautfiedName = leaf.getName();
+			int dotpos = beautfiedName.lastIndexOf('.');
+			if (dotpos > 0) {
+				beautfiedName = beautfiedName.substring(0, dotpos);
+			}
+			metaTitle = beautfiedName.replace('_', ' ');
+		}
 		
 		StringBuilder title = new StringBuilder();
 		if (StringHelper.containsNonWhitespace(leafResourceContext.getTitle())) {
@@ -92,7 +97,7 @@ public abstract class FileDocument extends OlatDocument {
 		setTitle(title.toString());
 
 		String metaDesc = (meta == null ? null : meta.getComment());
-		if (leafResourceContext.getDescription() != null && !leafResourceContext.getDescription().equals("")) {
+		if (StringHelper.containsNonWhitespace(leafResourceContext.getDescription())) {
 			// Title in context is set => get from there
 			setDescription(leafResourceContext.getDescription() + (metaDesc == null ? "" : " " + metaDesc));
 		} else if (metaDesc != null) {

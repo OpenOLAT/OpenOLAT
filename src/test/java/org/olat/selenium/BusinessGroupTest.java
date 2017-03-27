@@ -199,17 +199,19 @@ public class BusinessGroupTest {
 			.openGroups(browser)
 			.createGroup(groupName, "A very little group");
 		
-		String news = "Welcome members ( " + UUID.randomUUID() + " )";
 		group
 			.openAdministration()
 			.openAdminTools()
-			.enableTools()
-			.setMembersInfos(news);
+			.enableTools();
 		
 		//check the news
 		group
 			.openNews()
-			.assertNews(news);
+			.createMessage()
+			.setMessage("Information 0", "A very important info")
+			.next()
+			.finish()
+		.	assertOnMessageTitle("Information 0");
 		
 		//check calendar
 		group

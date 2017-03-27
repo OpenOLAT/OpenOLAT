@@ -131,6 +131,7 @@ public class VideoHandler extends FileHandler {
 			
 		} else if (fileName.endsWith(".zip")) {
 			// 2b) import video from archive from another OpenOLAT instance
+			DBFactory.getInstance().commit();
 			videoManager.importFromExportArchive(repoEntry, importFile);			
 		}	
 		// 3) Persist Meta data

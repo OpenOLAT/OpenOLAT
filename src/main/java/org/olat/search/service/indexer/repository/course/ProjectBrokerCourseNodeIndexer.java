@@ -26,7 +26,6 @@
 package org.olat.search.service.indexer.repository.course;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
@@ -39,6 +38,7 @@ import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.document.ProjectBrokerProjectDocument;
 import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
@@ -56,20 +56,17 @@ public class ProjectBrokerCourseNodeIndexer extends AbstractHierarchicalIndexer 
 
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-		courseNodeResourceContext.setBusinessControlFor(courseNode);
-		courseNodeResourceContext.setDocumentType(TYPE);
-		courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-		courseNodeResourceContext.setDescription(courseNode.getLongTitle());
-       
+		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, courseNode, TYPE);
+		Document nodeDocument = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+		indexWriter.addDocument(nodeDocument);
+		
 		// go further, index my projects
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 		ProjectBrokerManager projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		Long projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, courseNode);
 		if (projectBrokerId != null) {
 			List<Project> projects = projectBrokerManager.getProjectListBy(projectBrokerId);
-			for (Iterator<Project> iterator = projects.iterator(); iterator.hasNext();) {
-				Project project = iterator.next();
+			for (Project project: projects) {
 				Document document = ProjectBrokerProjectDocument.createDocument(courseNodeResourceContext, project);
 				indexWriter.addDocument(document);
 			}

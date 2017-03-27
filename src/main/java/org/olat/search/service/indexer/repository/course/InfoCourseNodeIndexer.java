@@ -38,6 +38,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.document.InfoMessageDocument;
 import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
@@ -74,14 +75,14 @@ public class InfoCourseNodeIndexer extends DefaultIndexer  implements CourseNode
 		//
 	}
 
+	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) {
 		try {
-			SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-	    courseNodeResourceContext.setBusinessControlFor(courseNode);
-	    courseNodeResourceContext.setDocumentType(TYPE);
-	    courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-	    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
-	    doIndexInfos(courseNodeResourceContext, course, courseNode, indexWriter);
+			SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, courseNode, TYPE);
+			Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+			indexWriter.addDocument(document);
+			
+			doIndexInfos(courseNodeResourceContext, course, courseNode, indexWriter);
 		} catch(Exception ex) {
 			log.error("Exception indexing courseNode=" + courseNode, ex);
 		} catch (Error err) {
@@ -89,6 +90,7 @@ public class InfoCourseNodeIndexer extends DefaultIndexer  implements CourseNode
 		}
 	}
 
+	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
@@ -101,7 +103,7 @@ public class InfoCourseNodeIndexer extends DefaultIndexer  implements CourseNode
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(InfoMessage.class, message.getKey());
 			searchResourceContext.setBusinessControlFor(ores);
 			Document document = InfoMessageDocument.createDocument(searchResourceContext, message);
-		  indexWriter.addDocument(document);
+			indexWriter.addDocument(document);
 		}
 	}
 }

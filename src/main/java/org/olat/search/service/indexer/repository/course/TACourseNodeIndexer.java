@@ -28,6 +28,7 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.lucene.document.Document;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -38,6 +39,7 @@ import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.nodes.ta.SolutionController;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.FolderIndexerAccess;
 import org.olat.search.service.indexer.OlatFullIndexer;
@@ -58,11 +60,10 @@ public class TACourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-		courseNodeResourceContext.setBusinessControlFor(courseNode);
-		courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-		courseNodeResourceContext.setDescription(courseNode.getLongTitle());
-    
+		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, courseNode, null);
+		Document nodeDocument = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+		indexWriter.addDocument(nodeDocument);
+		
 		// Index Task
 		File fTaskfolder = new File(FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFolderPathRelToFolderRoot(course.getCourseEnvironment(), courseNode));
 		VFSContainer taskRootContainer = new LocalFolderImpl(fTaskfolder);

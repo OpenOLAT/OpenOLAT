@@ -34,17 +34,18 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.lucene.document.Document;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.sp.SPEditController;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.indexer.LeafIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
 
@@ -66,15 +67,13 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 	private static final String HTML_SUFFIXES = "html htm xhtml xml";
 
 	@Override
-	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
+	public void doIndex(SearchResourceContext courseResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		if (log.isDebug()) log.debug("Index SinglePage...");
 
-		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-		courseNodeResourceContext.setBusinessControlFor(courseNode);
-		courseNodeResourceContext.setDocumentType(TYPE);
-		courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-		courseNodeResourceContext.setDescription(courseNode.getLongTitle());
-
+		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(courseResourceContext, courseNode, TYPE);
+		Document nodeDocument = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+		indexWriter.addDocument(nodeDocument);
+		
 		// The root of the configured single page. Depends on the configuration
 		// whether to follow relative links or not. When relative links are
 		// followed, the root is the course folder root, if not, it is folder
@@ -85,10 +84,6 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 		
 		// Read the course node configuration
 		VFSContainer courseFolderContainer = course.getCourseEnvironment().getCourseFolderContainer();
-//		String path = course.getCourseEnvironment().getCourseBaseContainer().getRelPath() + "/coursefolder";
-//		VFSContainer courseFolderContainer = new OlatRootFolderImpl(path, null);
-		
-		
 		boolean allowRelativeLinks = courseNode.getModuleConfiguration().getBooleanSafe(SPEditController.CONFIG_KEY_ALLOW_RELATIVE_LINKS);
 		String fileName = (String) courseNode.getModuleConfiguration().get(SPEditController.CONFIG_KEY_FILE);
 
@@ -99,7 +94,7 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 			rootContainer = courseFolderContainer;
 			chosenFile = fileName;
 		} else {
-			// Csae 2: relative links are NOT allowed. We have to calculate the
+			// Case 2: relative links are NOT allowed. We have to calculate the
 			// new root and remove the relative path to the course folder form
 			// the file.
 			String startURI = ( (fileName.charAt(0) == '/')? fileName.substring(1) : fileName);
@@ -118,21 +113,15 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 			}
 			chosenFile = startURI;
 		}
-		
-		// First: Index configured HTML file
-		if (log.isDebug()) {
-			log.debug("-------------------- Indexing course node::" + courseNode.getIdent() + "  " + courseNode.getShortName());
-			log.debug("Config: allow relative links::" + allowRelativeLinks);
-			log.debug("Config: filename::" + fileName);
-			log.debug("Base dir::" + VFSManager.getRealPath(rootContainer));
-			log.debug("chosenFile::" + chosenFile);
-		}
+
 		VFSLeaf leaf = (VFSLeaf)rootContainer.resolve(chosenFile);
 		if (leaf != null) {
 			String filePath = getPathFor(leaf);
-			if (log.isDebug()) log.debug("Found chosen file in SP. filePath=" + filePath );
 			// Use inherited method from LeafIndexer for the actual indexing of the content 
-			doIndexVFSLeafByMySelf(courseNodeResourceContext, leaf, indexWriter, filePath);
+
+			SearchResourceContext fileContext = new SearchResourceContext(courseNodeResourceContext);
+			doIndexVFSLeafByMySelf(fileContext, leaf, indexWriter, filePath);
+			
 			if (!indexOnlyChosenFile) {
 				if (log.isDebug()) log.debug("Index sub pages in SP.");
 				Set<String> alreadyIndexFileNames = new HashSet<String>();
@@ -147,6 +136,7 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 		}
 	}
 
+	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}

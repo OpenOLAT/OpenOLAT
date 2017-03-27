@@ -82,6 +82,7 @@ import org.olat.course.ICourse;
 import org.olat.course.run.calendar.CourseLinkProviderController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.ui.run.InfoGroupRunController;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.ui.ChatToolController;
 import org.olat.modules.co.ContactFormController;
@@ -221,6 +222,7 @@ public class CollaborationTools implements Serializable {
 	 * cache for Boolean Objects representing the State
 	 */
 	private final static String KEY_NEWS = "news";
+	private final static String KEY_NEWS_ACCESS = "newsAccess";
 	public final static String KEY_CALENDAR_ACCESS = "cal";
 	public final static String KEY_FOLDER_ACCESS = "folder";
 
@@ -249,6 +251,12 @@ public class CollaborationTools implements Serializable {
 	public Controller createNewsController(UserRequest ureq, WindowControl wControl) {
 		String news = lookupNews();
 		return new SimpleNewsController(ureq, wControl, news);
+	}
+	
+	public Controller createInfoMessageController(UserRequest ureq, WindowControl wControl, boolean isAdmin) {
+		String accessProperty = getNewsAccessProperty();
+		boolean canAccess = "all".equals(accessProperty);
+		return new InfoGroupRunController(ureq, wControl, ores, canAccess, isAdmin);
 	}
 
 	/**
@@ -788,6 +796,35 @@ public class CollaborationTools implements Serializable {
 	}
 
 	/**
+	 * @return Gets the news access property
+	 */
+	public String getNewsAccessProperty() {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_NEWS_ACCESS);
+		if (property == null) { // no entry
+			return null;
+		}
+		// read the text value of the existing property
+		String text = property.getStringValue();
+		return text;
+	}
+	
+	/**
+	 * @param Save news access property.
+	 */
+	public void saveNewsAccessProperty(String access) {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_NEWS_ACCESS);
+		if (property == null) { // create a new one
+			Property nP = npm.createPropertyInstance(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_NEWS_ACCESS, null, null, access, null);
+			npm.saveProperty(nP);
+		} else { // modify the existing one
+			property.setStringValue(access);
+			npm.updateProperty(property);
+		}
+	}
+
+	/**
 	 * @return the news; if there is no news yet: return null;
 	 */
 	public String lookupNews() {
@@ -799,6 +836,14 @@ public class CollaborationTools implements Serializable {
 		// read the text value of the existing property
 		String text = property.getTextValue();
 		return text;
+	}
+	
+	public Property lookupNewsDBEntry() {
+		NarrowedPropertyManager npm = NarrowedPropertyManager.getInstance(ores);
+		Property property = npm.findProperty(null, null, PROP_CAT_BG_COLLABTOOLS, KEY_NEWS);
+		if (property == null) { // no entry
+			return null;
+		} else return property;
 	}
 
 	/**

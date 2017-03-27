@@ -349,14 +349,18 @@ public class BinderPageListController extends AbstractPageListController {
 			if(event instanceof FlexiTableRenderEvent) {
 				FlexiTableRenderEvent re = (FlexiTableRenderEvent)event;
 				if(re.getRendererType() == FlexiTableRendererType.custom) {
-					tableEl.sort(null, false);
+					tableEl.sort(new SortKey(null, false));
 				}
 			} else if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				if("select-page".equals(cmd)) {
 					PortfolioElementRow row = model.getObject(se.getIndex());
-					doOpenRow(ureq, row, false);
+					if(row.isPendingAssignment()) {
+						doStartAssignment(ureq, row);
+					} else {
+						doOpenRow(ureq, row, false);
+					}
 				}
 			}
 		} else if(previousSectionLink == source) {

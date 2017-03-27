@@ -92,7 +92,7 @@ public class OlatDocument extends AbstractOlatDocument {
 		document.add(new StringField(RESOURCEURL_MD5_FIELD_NAME, Encoder.md5hash(getResourceUrl()), Field.Store.YES));
 		document.add(new StringField(DOCUMENTTYPE_FIELD_NAME, getDocumentType(), Field.Store.YES));
 		if(getCssIcon() != null) {
-			document.add(new StringField(CSS_ICON,getCssIcon(), Field.Store.YES));
+			document.add(new StringField(CSS_ICON, getCssIcon(), Field.Store.YES));
 		}
 		document.add(new StringField(FILETYPE_FIELD_NAME, getFileType(), Field.Store.YES));
 		document.add(createTextField(AUTHOR_FIELD_NAME, getAuthor(), 2));

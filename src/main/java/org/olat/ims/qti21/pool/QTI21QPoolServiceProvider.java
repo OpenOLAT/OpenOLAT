@@ -72,6 +72,7 @@ import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.EntryType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.HottextAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.KPrimAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
@@ -349,6 +350,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			case upload: itemBuilder = new UploadAssessmentItemBuilder(translator.translate("new.upload"), qtiService.qtiSerializer()); break;
 			case drawing: itemBuilder = new DrawingAssessmentItemBuilder(translator.translate("new.drawing"), qtiService.qtiSerializer()); break;
 			case hotspot: itemBuilder = new HotspotAssessmentItemBuilder(translator.translate("new.hotspot"), qtiService.qtiSerializer()); break;
+			case hottext: itemBuilder = new HottextAssessmentItemBuilder(translator.translate("new.hottext"), translator.translate("new.hottext.start"), translator.translate("new.hottext.text"), qtiService.qtiSerializer()); break;
 			default: return null;
 		}
 

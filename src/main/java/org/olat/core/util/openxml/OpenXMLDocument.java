@@ -675,8 +675,17 @@ public class OpenXMLDocument {
 	}
 	
 	public Node createCheckbox(boolean checked) {
+		return createCheckbox(checked, true);
+	}
+	
+	public Node createCheckbox(boolean checked, boolean border) {
 		try {
-			String name = checked ? "image1.png" : "image2.png";
+			String name;
+			if(border) {
+				name = checked ? "image1.png" : "image2.png";
+			} else {
+				name = checked ? "image1_noborder.png" : "image2_noborder.png";
+			}
 			URL imgUrl = OpenXMLDocument.class.getResource("_resources/" + name);
 			File imgFile = new File(imgUrl.toURI());
 			return createImageEl(imgFile);

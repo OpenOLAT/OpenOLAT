@@ -1,0 +1,155 @@
+<assessmentItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
+                identifier="hottext4d8024d019c1d86f3508c6643"
+                title="Hottext"
+                adaptive="false"
+                timeDependent="false"
+                toolName="OpenOLAT"
+                toolVersion="11.4a"
+                xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd">
+  <responseDeclaration identifier="RESPONSE_1" cardinality="multiple" baseType="identifier">
+    <correctResponse>
+      <value>htf9250a96f24bc8873c9cc54dfbaaaa</value>
+      <value>RESPONSE_3</value>
+    </correctResponse>
+    <mapping defaultValue="0.0">
+      <mapEntry mapKey="RESPONSE_3" mappedValue="2.0"/>
+      <mapEntry mapKey="RESPONSE_2" mappedValue="0.0"/>
+      <mapEntry mapKey="RESPONSE_4" mappedValue="0.0"/>
+      <mapEntry mapKey="htf9250a96f24bc8873c9cc54dfbaaaa" mappedValue="1.0"/>
+    </mapping>
+  </responseDeclaration>
+  <outcomeDeclaration identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier"
+                      view="testConstructor">
+    <defaultValue>
+      <value>none</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <outcomeDeclaration identifier="FEEDBACKMODAL" cardinality="multiple" baseType="identifier"
+                      view="testConstructor"/>
+  <outcomeDeclaration identifier="SOLUTIONMODAL" cardinality="single" baseType="identifier"
+                      view="testConstructor"/>
+  <outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float">
+    <defaultValue>
+      <value>0.0</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <outcomeDeclaration identifier="MINSCORE" cardinality="single" baseType="float"
+                      view="testConstructor">
+    <defaultValue>
+      <value>0.0</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float">
+    <defaultValue>
+      <value>3.0</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <itemBody>
+    <hottextInteraction responseIdentifier="RESPONSE_1" maxChoices="0">
+      <p>This is a <hottext identifier="htf9250a96f24bc8873c9cc54dfbaaaa">hot text</hottext> et encore un <hottext identifier="RESPONSE_2">hot</hottext> <hottext identifier="RESPONSE_3">cold</hottext> text with a lot more text et perhaps a second line with a hot text too but I don't know yet if I <hottext identifier="RESPONSE_4">want</hottext> it.</p>
+    </hottextInteraction>
+  </itemBody>
+  <responseProcessing>
+    <responseCondition>
+      <responseIf>
+        <match>
+          <variable identifier="RESPONSE_1"/>
+          <correct identifier="RESPONSE_1"/>
+        </match>
+        <setOutcomeValue identifier="SCORE">
+          <sum>
+            <variable identifier="SCORE"/>
+            <mapResponse identifier="RESPONSE_1"/>
+          </sum>
+        </setOutcomeValue>
+        <setOutcomeValue identifier="FEEDBACKBASIC">
+          <baseValue baseType="identifier">correct</baseValue>
+        </setOutcomeValue>
+      </responseIf>
+      <responseElse>
+        <setOutcomeValue identifier="SCORE">
+          <sum>
+            <variable identifier="SCORE"/>
+            <mapResponse identifier="RESPONSE_1"/>
+          </sum>
+        </setOutcomeValue>
+        <setOutcomeValue identifier="FEEDBACKBASIC">
+          <baseValue baseType="identifier">incorrect</baseValue>
+        </setOutcomeValue>
+      </responseElse>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <and>
+          <match>
+            <baseValue baseType="identifier">correct</baseValue>
+            <variable identifier="FEEDBACKBASIC"/>
+          </match>
+        </and>
+        <setOutcomeValue identifier="FEEDBACKMODAL">
+          <multiple>
+            <variable identifier="FEEDBACKMODAL"/>
+            <baseValue baseType="identifier">Feedback95370887121719</baseValue>
+          </multiple>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <and>
+          <match>
+            <baseValue baseType="identifier">incorrect</baseValue>
+            <variable identifier="FEEDBACKBASIC"/>
+          </match>
+        </and>
+        <setOutcomeValue identifier="FEEDBACKMODAL">
+          <multiple>
+            <variable identifier="FEEDBACKMODAL"/>
+            <baseValue baseType="identifier">Feedback95370887121720</baseValue>
+          </multiple>
+        </setOutcomeValue>
+        <setOutcomeValue identifier="SOLUTIONMODAL">
+          <baseValue baseType="identifier">Feedback95370887121718</baseValue>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <lt>
+          <variable identifier="SCORE"/>
+          <variable identifier="MINSCORE"/>
+        </lt>
+        <setOutcomeValue identifier="SCORE">
+          <variable identifier="MINSCORE"/>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+    <responseCondition>
+      <responseIf>
+        <gt>
+          <variable identifier="SCORE"/>
+          <variable identifier="MAXSCORE"/>
+        </gt>
+        <setOutcomeValue identifier="SCORE">
+          <variable identifier="MAXSCORE"/>
+        </setOutcomeValue>
+      </responseIf>
+    </responseCondition>
+  </responseProcessing>
+  <modalFeedback showHide="show" outcomeIdentifier="FEEDBACKMODAL"
+                 identifier="Feedback95370887121719"
+                 title="You are all right">
+    <p>All perfect</p>
+  </modalFeedback>
+  <modalFeedback showHide="show" outcomeIdentifier="SOLUTIONMODAL"
+                 identifier="Feedback95370887121718"
+                 title="Correct solution">
+    <p>An example of the correct solution</p>
+  </modalFeedback>
+  <modalFeedback showHide="show" outcomeIdentifier="FEEDBACKMODAL"
+                 identifier="Feedback95370887121720"
+                 title="Wrong">
+    <p>You miss something</p>
+  </modalFeedback>
+</assessmentItem>

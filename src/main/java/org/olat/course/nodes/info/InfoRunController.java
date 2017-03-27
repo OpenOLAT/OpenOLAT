@@ -30,6 +30,7 @@ import org.olat.commons.info.notification.InfoSubscription;
 import org.olat.commons.info.notification.InfoSubscriptionManager;
 import org.olat.commons.info.ui.InfoDisplayController;
 import org.olat.commons.info.ui.InfoSecurityCallback;
+import org.olat.commons.info.ui.SendInfoMailFormatter;
 import org.olat.commons.info.ui.SendSubscriberMailOption;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -136,7 +137,7 @@ public class InfoRunController extends BasicController {
 		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, CoreSpringFactory.getImpl(InfoMessageFrontendManager.class)));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(course.getCourseEnvironment().getCourseGroupManager().getCourseResource(),
 				RepositoryManager.getInstance(), repositoryService, CoreSpringFactory.getImpl(BusinessGroupService.class)));
-		MailFormatter mailFormatter = new SendMailFormatterForCourse(course.getCourseTitle(), businessPath, getTranslator());
+		MailFormatter mailFormatter = new SendInfoMailFormatter(course.getCourseTitle(), businessPath, getTranslator());
 		infoDisplayController.setSendMailFormatter(mailFormatter);
 		listenTo(infoDisplayController);
 

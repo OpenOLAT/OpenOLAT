@@ -380,7 +380,20 @@ public interface FlexiTableElement extends FormItem {
 	
 	public void quickSearch(UserRequest ureq, String search);
 	
+	/**
+	 * Sort with the specified parameter. A null sort key
+	 * will remove the order by.
+	 * 
+	 * @param sortKey
+	 * @param asc
+	 */
 	public void sort(String sortKey, boolean asc);
+	
+	/**
+	 * Order by the specified setting.
+	 * @param sortKey The sort key cannot be null.
+	 */
+	public void sort(SortKey sortKey);
 	
 	@Override
 	public void reset();

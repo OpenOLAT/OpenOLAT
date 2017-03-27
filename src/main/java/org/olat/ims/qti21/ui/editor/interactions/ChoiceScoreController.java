@@ -38,13 +38,15 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
-import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.content.Hottext;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
@@ -64,15 +66,15 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	private TextElement maxScoreEl;
 	private SingleSelection assessmentModeEl;
 	private FormLayoutContainer scoreCont;
-	private final List<SimpleChoiceWrapper> wrappers = new ArrayList<>();
+	private final List<ChoiceWrapper> wrappers = new ArrayList<>();
 	
-	private final SimpleChoiceAssessmentItemBuilder itemBuilder;
+	private final ChoiceAssessmentItemBuilder itemBuilder;
 	
 	private int counter = 0;
 	private final String contextHelpUrl;
 	
 	public ChoiceScoreController(UserRequest ureq, WindowControl wControl,
-			SimpleChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, boolean restrictedEdit,
+			ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, boolean restrictedEdit,
 			String contextHelpUrl) {
 		super(ureq, wControl, itemRef, restrictedEdit);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
@@ -113,8 +115,8 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		formLayout.add(scoreCont);
 		scoreCont.setLabel(null, null);
 		
-		for(SimpleChoice choice:itemBuilder.getSimpleChoices()) {
-			SimpleChoiceWrapper wrapper = createSimpleChoiceWrapper(choice);
+		for(Choice choice:itemBuilder.getChoices()) {
+			ChoiceWrapper wrapper = createChoiceWrapper(choice);
 			wrappers.add(wrapper);
 		}
 		scoreCont.contextPut("choices", wrappers);
@@ -131,23 +133,25 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	@Override
 	public void sync(UserRequest ureq, AssessmentItemBuilder assessmentItemBuilder) {
 		if(itemBuilder == assessmentItemBuilder) {
-			for(SimpleChoice choice:itemBuilder.getSimpleChoices()) {
-				SimpleChoiceWrapper wrapper = getSimpleChoiceWrapper(choice);
+			for(Choice choice:itemBuilder.getChoices()) {
+				ChoiceWrapper wrapper = getChoiceWrapper(choice);
 				if(wrapper == null) {
-					wrappers.add(createSimpleChoiceWrapper(choice));
+					wrappers.add(createChoiceWrapper(choice));
+				} else {
+					wrapper.setChoice(choice);
 				}
 			}
 			
-			for(Iterator<SimpleChoiceWrapper> wrapperIt=wrappers.iterator(); wrapperIt.hasNext(); ) {
+			for(Iterator<ChoiceWrapper> wrapperIt=wrappers.iterator(); wrapperIt.hasNext(); ) {
 				Identifier choiceIdentifier = wrapperIt.next().getChoice().getIdentifier();
-				if(itemBuilder.getSimpleChoice(choiceIdentifier) == null) {
+				if(itemBuilder.getChoice(choiceIdentifier) == null) {
 					wrapperIt.remove();
 				}
 			}
 		}
 	}
 	
-	private SimpleChoiceWrapper createSimpleChoiceWrapper(SimpleChoice choice) {
+	private ChoiceWrapper createChoiceWrapper(Choice choice) {
 		String points = "";
 		Double score = itemBuilder.getMapping(choice.getIdentifier());
 		if(score != null) {
@@ -158,12 +162,12 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		pointEl.setDisplaySize(5);
 		pointEl.setEnabled(!restrictedEdit);
 		scoreCont.add(pointElId, pointEl);
-		return new SimpleChoiceWrapper(choice, pointEl);
+		return new ChoiceWrapper(choice, pointEl);
 	}
 	
-	private SimpleChoiceWrapper getSimpleChoiceWrapper(SimpleChoice choice) {
-		for(SimpleChoiceWrapper wrapper:wrappers) {
-			if(wrapper.getChoice() == choice) {
+	private ChoiceWrapper getChoiceWrapper(Choice choice) {
+		for(ChoiceWrapper wrapper:wrappers) {
+			if(wrapper.getChoice().getIdentifier().equals(choice.getIdentifier())) {
 				return wrapper;
 			}
 		}
@@ -176,7 +180,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		allOk &= validateDouble(maxScoreEl);
 
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
-			for(SimpleChoiceWrapper wrapper:wrappers) {
+			for(ChoiceWrapper wrapper:wrappers) {
 				allOk &= validateDouble(wrapper.getPointsEl());
 			}
 		}
@@ -205,7 +209,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);
 			itemBuilder.clearMapping();
-			for(SimpleChoiceWrapper wrapper:wrappers) {
+			for(ChoiceWrapper wrapper:wrappers) {
 				String pointsStr = wrapper.getPointsEl().getValue();
 				Double points = new Double(pointsStr);
 				itemBuilder.setMapping(wrapper.getChoice().getIdentifier(), points);
@@ -223,24 +227,16 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		//
 	}
 	
-	public final class SimpleChoiceWrapper {
+	public final class ChoiceWrapper {
 		
-		private final String summary;
-		private final SimpleChoice choice;
+		private String summary;
+		private Choice choice;
 		private final TextElement pointsEl;
 		
-		public SimpleChoiceWrapper(SimpleChoice choice, TextElement pointsEl) {
-			this.choice = choice;
+		public ChoiceWrapper(Choice choice, TextElement pointsEl) {
+			setChoice(choice);
 			this.pointsEl = pointsEl;
 			pointsEl.setUserObject(this);
-			if(choice != null) {
-				String answer = new AssessmentHtmlBuilder().flowStaticString(choice.getFlowStatics());
-				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
-				answer = answer.trim();
-				summary = Formatter.truncate(answer, 128);
-			} else {
-				summary = "";
-			}
 		}
 		
 		public boolean isCorrect() {
@@ -255,8 +251,25 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			return pointsEl;
 		}
 		
-		public SimpleChoice getChoice() {
+		public Choice getChoice() {
 			return choice;
+		}
+		
+		public void setChoice(Choice choice) {
+			this.choice = choice;
+			if(choice instanceof SimpleChoice) {
+				String answer = new AssessmentHtmlBuilder().flowStaticString(((SimpleChoice)choice).getFlowStatics());
+				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
+				answer = answer.trim();
+				summary = Formatter.truncate(answer, 128);
+			} else if(choice instanceof Hottext) {
+				String answer = new AssessmentHtmlBuilder().inlineStaticString(((Hottext)choice).getInlineStatics());
+				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
+				answer = answer.trim();
+				summary = Formatter.truncate(answer, 128);
+			} else {
+				summary = "";
+			}
 		}
 	}
 }

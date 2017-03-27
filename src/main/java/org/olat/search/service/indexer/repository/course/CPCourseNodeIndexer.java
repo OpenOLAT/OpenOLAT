@@ -28,6 +28,7 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.lucene.document.Document;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.ICourse;
@@ -36,6 +37,7 @@ import org.olat.course.nodes.cp.CPEditController;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.indexer.FolderIndexer;
 import org.olat.search.service.indexer.FolderIndexerAccess;
 import org.olat.search.service.indexer.OlatFullIndexer;
@@ -55,14 +57,12 @@ public class CPCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)
 	throws IOException,InterruptedException  {
+		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, courseNode, TYPE);
+		Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+		indexWriter.addDocument(document);
+		
 	    RepositoryEntry re = CPEditController.getCPReference(courseNode.getModuleConfiguration(), false);
 	    if(re != null) {
-	    	SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-	    	courseNodeResourceContext.setBusinessControlFor(courseNode);
-	    	courseNodeResourceContext.setDocumentType(TYPE);
-	    	courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-	    	courseNodeResourceContext.setDescription(courseNode.getLongTitle());
-    
 	    	File cpRoot = FileResourceManager.getInstance().unzipFileResource(re.getOlatResource());
 	    	if(cpRoot != null) {
 	    		VFSContainer rootContainer = new LocalFolderImpl(cpRoot);

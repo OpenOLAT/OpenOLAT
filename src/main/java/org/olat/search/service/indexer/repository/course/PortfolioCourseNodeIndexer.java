@@ -31,6 +31,7 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.document.PortfolioMapDocument;
 import org.olat.search.service.indexer.DefaultIndexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
@@ -84,20 +85,19 @@ public class PortfolioCourseNodeIndexer extends DefaultIndexer implements Course
 	throws IOException, InterruptedException {
 		if(!portfolioModule.isEnabled()) return;
 		
-    PortfolioCourseNode portfolioNode = (PortfolioCourseNode)courseNode;
+		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(searchResourceContext, courseNode, NODE_TYPE);
+		Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+		indexWriter.addDocument(document);
+		
+		PortfolioCourseNode portfolioNode = (PortfolioCourseNode)courseNode;
 		RepositoryEntry repoEntry = portfolioNode.getReferencedRepositoryEntry();
 		if(repoEntry != null) {
 			OLATResource ores = repoEntry.getOlatResource();
 			PortfolioStructure element = structureManager.loadPortfolioStructure(ores);
-			
-			SearchResourceContext courseNodeResourceContext = new SearchResourceContext(searchResourceContext);
-	    courseNodeResourceContext.setBusinessControlFor(courseNode);
-	    courseNodeResourceContext.setDocumentType(NODE_TYPE);
-			courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-	    courseNodeResourceContext.setDescription(courseNode.getLongTitle());
-
-			Document document = PortfolioMapDocument.createDocument(courseNodeResourceContext, element);
-			indexWriter.addDocument(document);
+			if(element != null) {
+				Document pDocument = PortfolioMapDocument.createDocument(courseNodeResourceContext, element);
+				indexWriter.addDocument(pDocument);
+			}
 		}
 	}
 }

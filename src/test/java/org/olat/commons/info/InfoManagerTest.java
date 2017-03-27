@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.commons.info.manager.InfoMessageManager;
@@ -37,6 +38,9 @@ import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +65,8 @@ public class InfoManagerTest extends OlatTestCase {
 	
 	@Autowired
 	private InfoMessageManager infoMessageManager;
+	@Autowired
+	private BusinessGroupService groupService;
 
 	/**
 	 * Set up a course with learn group and group area
@@ -120,6 +126,87 @@ public class InfoManagerTest extends OlatTestCase {
 		assertEquals(1, retrievedMsg.size());
 		assertEquals(msg.getKey(), retrievedMsg.get(0).getKey());
 	}
+	
+	@Test
+	public void loadInfoMessagesOfIdentity() {
+		Identity id5 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-2");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-3");
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-4");
+		RepositoryEntry resource1 =  JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group1 = groupService.createBusinessGroup(null, "gdao1", "gdao1-desc", -1, -1, false, false, resource1);
+		final OLATResourceable ores1 = new OLATResourceable() {
+			@Override
+			public String getResourceableTypeName() {
+				return group1.getResourceableTypeName();
+			}
+			@Override
+			public Long getResourceableId() {
+				return group1.getResourceableId();
+			}			
+		};
+		RepositoryEntry resource2 =  JunitTestHelper.createAndPersistRepositoryEntry();
+		BusinessGroup group2 = groupService.createBusinessGroup(null, "gdao2", "gdao2-desc", -1, -1, false, false, resource2);
+		final OLATResourceable ores2 = new OLATResourceable() {
+			@Override
+			public String getResourceableTypeName() {
+				return group2.getResourceableTypeName();
+			}
+			@Override
+			public Long getResourceableId() {
+				return group2.getResourceableId();
+			}			
+		};
+
+		InfoMessage msg1 = infoMessageManager.createInfoMessage(ores2, null, null, id5);
+		msg1.setTitle("title-1");
+		msg1.setMessage("message-1");
+		assertNotNull(msg1);			
+		infoMessageManager.saveInfoMessage(msg1);
+		
+		InfoMessage msg2 = infoMessageManager.createInfoMessage(ores2, null, null, id2);
+		msg2.setTitle("title-1");
+		msg2.setMessage("message-1");
+		assertNotNull(msg2);			
+		infoMessageManager.saveInfoMessage(msg2);
+		
+		InfoMessage msg3 = infoMessageManager.createInfoMessage(ores1, null, null, id3);
+		msg3.setTitle("title-1");
+		msg3.setMessage("message-1");
+		assertNotNull(msg3);			
+		infoMessageManager.saveInfoMessage(msg3);
+		
+		InfoMessage msg4 = infoMessageManager.createInfoMessage(ores1, null, null, id5);
+		msg4.setTitle("title-1");
+		msg4.setMessage("message-1");
+		assertNotNull(msg4);			
+		infoMessageManager.saveInfoMessage(msg4);
+		
+		InfoMessage msg5 = infoMessageManager.createInfoMessage(ores2, null, null, id5);
+		msg5.setTitle("title-1");
+		msg5.setMessage("message-1");
+		assertNotNull(msg5);			
+		infoMessageManager.saveInfoMessage(msg5);
+		
+		InfoMessage msg6 = infoMessageManager.createInfoMessage(ores2, null, null, id4);
+		msg6.setTitle("title-1");
+		msg6.setMessage("message-1");
+		assertNotNull(msg6);			
+		infoMessageManager.saveInfoMessage(msg6);
+		
+		List<InfoMessage> infoMessages = infoMessageManager.loadInfoMessagesOfIdentity(group2, id5);
+		Assert.assertNotNull(infoMessages);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertEquals(2, infoMessages.size());
+		Assert.assertTrue(infoMessages.contains(msg1));
+		Assert.assertFalse(infoMessages.contains(msg2));
+		Assert.assertFalse(infoMessages.contains(msg3));
+		Assert.assertFalse(infoMessages.contains(msg4));
+		Assert.assertTrue(infoMessages.contains(msg5));
+		Assert.assertFalse(infoMessages.contains(msg6));
+	}
+	
 	
 	@Test
 	public void testLoadByResource2() {

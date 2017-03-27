@@ -17,6 +17,12 @@
 	    			o_ffXHRNFEvent(settings.formName, settings.dispIdField, settings.dispId, settings.eventIdField, '2',
 	        			'cid', 'tmpResponse', 'tmpResponse', 'qtiworks_presented_' + settings.responseUniqueId, 'qtiworks_presented_' + settings.responseUniqueId, '1',
 	        			'qtiworks_response_' + settings.responseUniqueId, jQuery('#oo_' + settings.responseUniqueId).val());
+	    			
+	    			var now = new Date();
+	    			var lastSaved = now.getHours() + ":" + now.getMinutes();
+	    			var containerEl = jQuery('#' + wrapperId).parent().get(0);
+	    			jQuery('div.o_qti_essay_last_save', containerEl).css('display','block');
+	    			jQuery('span.o_qti_essay_last_save-time', containerEl).html(lastSaved);
 	    		} else {
 	    			periodic.cancel();
 	    		}

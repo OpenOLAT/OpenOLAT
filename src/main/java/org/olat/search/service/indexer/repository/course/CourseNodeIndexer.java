@@ -28,6 +28,7 @@ package org.olat.search.service.indexer.repository.course;
 
 import java.io.IOException;
 
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.search.service.SearchResourceContext;
@@ -42,4 +43,16 @@ public interface CourseNodeIndexer extends Indexer {
 	
 	public void doIndex(SearchResourceContext searchResourceContext, ICourse course, CourseNode node, OlatFullIndexer indexWriter) throws IOException,InterruptedException;
 
+	
+	public default SearchResourceContext createSearchResourceContext(SearchResourceContext courseResourceContext, CourseNode node, String type) {
+		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(courseResourceContext);
+    	courseNodeResourceContext.setBusinessControlFor(node);
+    	courseNodeResourceContext.setDocumentType(type);
+    	if(StringHelper.containsNonWhitespace(node.getShortTitle())) {
+    		courseNodeResourceContext.setTitle(node.getShortTitle());
+    	} else if(StringHelper.containsNonWhitespace(node.getLongTitle())) {
+    		courseNodeResourceContext.setTitle(node.getLongTitle());
+    	}
+		return courseNodeResourceContext;
+	}
 }

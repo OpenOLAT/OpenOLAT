@@ -3,3 +3,13 @@
     background-repeat:no-repeat;
     background-image: url(../img/placeholder.png);
 }
+span.hottext {
+    background-color: #eee;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-weight: bold;
+}
+span.hottext input {
+	margin-right: 4px;
+}
+

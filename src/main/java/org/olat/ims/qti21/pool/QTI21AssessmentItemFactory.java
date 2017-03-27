@@ -58,6 +58,7 @@ public class QTI21AssessmentItemFactory implements QItemFactory {
 			case upload: return "QTI 2.1 " + trans.translate("new.upload");
 			case drawing: return "QTI 2.1 " + trans.translate("new.drawing");
 			case hotspot: return "QTI 2.1 " + trans.translate("new.hotspot");
+			case hottext: return "QTI 2.1 " + trans.translate("new.hottext");
 			default: return type.name();
 		}
 	}

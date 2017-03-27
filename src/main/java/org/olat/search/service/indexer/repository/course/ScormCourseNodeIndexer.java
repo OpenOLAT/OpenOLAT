@@ -22,12 +22,14 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.lucene.document.Document;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.search.service.SearchResourceContext;
+import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.indexer.OlatFullIndexer;
 import org.olat.search.service.indexer.repository.ScormRepositoryIndexer;
 
@@ -47,18 +49,14 @@ public class ScormCourseNodeIndexer extends ScormRepositoryIndexer implements Co
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)
 			throws IOException, InterruptedException {
-
+		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, courseNode, NODE_TYPE);
+		Document nodeDocument = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
+		indexWriter.addDocument(nodeDocument);
+		
 		RepositoryEntry repoEntry = courseNode.getReferencedRepositoryEntry();
 		if(repoEntry != null) {
-			SearchResourceContext courseNodeResourceContext = new SearchResourceContext(repositoryResourceContext);
-			courseNodeResourceContext.setBusinessControlFor(courseNode);
-			courseNodeResourceContext.setDocumentType(NODE_TYPE);
-			courseNodeResourceContext.setTitle(courseNode.getShortTitle());
-			courseNodeResourceContext.setDescription(courseNode.getLongTitle());
-			
 			OLATResource ores = repoEntry.getOlatResource();
 			File cpRoot = FileResourceManager.getInstance().unzipFileResource(ores);
-			
 			doIndex(courseNodeResourceContext, indexWriter, cpRoot);
 		}
 	}

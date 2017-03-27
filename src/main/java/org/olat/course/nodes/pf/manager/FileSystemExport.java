@@ -138,9 +138,12 @@ public class FileSystemExport implements MediaResource {
 				idKeys.add(identity.getKey().toString());
 			}
 		} else {
-			for (File file : sourceFolder.toFile().listFiles()) {
-				if (file.isDirectory()) {
-					idKeys.add(file.getName());
+			File[] listOfFiles = sourceFolder.toFile().listFiles();
+			if(listOfFiles != null) {
+				for (File file : listOfFiles) {
+					if (file.isDirectory()) {
+						idKeys.add(file.getName());
+					}
 				}
 			}
 		}

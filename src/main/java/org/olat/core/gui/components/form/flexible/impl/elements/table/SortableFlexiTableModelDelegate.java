@@ -168,6 +168,10 @@ public class SortableFlexiTableModelDelegate<T> {
 		return a.compareTo(b);
 	}
 	
+	protected final int compareInts(int a, int b) {
+		return Integer.compare(a, b);
+	}
+	
 	protected final int compareDoubles(double a, double b) {
 		return Double.compare(a, b);
 	}

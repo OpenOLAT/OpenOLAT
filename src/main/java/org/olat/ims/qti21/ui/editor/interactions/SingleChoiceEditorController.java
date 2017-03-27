@@ -142,7 +142,7 @@ public class SingleChoiceEditorController extends FormBasicController {
 
 		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
 		if(interaction != null) {
-			List<SimpleChoice> choices = itemBuilder.getSimpleChoices();
+			List<SimpleChoice> choices = itemBuilder.getChoices();
 			for(SimpleChoice choice:choices) {
 				wrapAnswer(ureq, choice);
 			}

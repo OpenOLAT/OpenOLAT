@@ -23,9 +23,11 @@ package org.olat.commons.info.manager;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.group.BusinessGroupRef;
 
 public abstract class InfoMessageManager {
 
@@ -42,6 +44,8 @@ public abstract class InfoMessageManager {
 	public abstract void saveInfoMessage(InfoMessage infoMessage);
 	
 	public abstract void deleteInfoMessage(InfoMessage infoMessage);
+	
+	public abstract List<InfoMessage> loadInfoMessagesOfIdentity(BusinessGroupRef businessGroup, IdentityRef identity);
 	
 	public abstract InfoMessage loadInfoMessageByKey(Long key);
 	
