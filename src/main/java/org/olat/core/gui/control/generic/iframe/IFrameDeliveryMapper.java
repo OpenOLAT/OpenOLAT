@@ -76,7 +76,7 @@ public class IFrameDeliveryMapper implements Mapper {
 
 	private String frameId;
 	private String customCssURL;
-	private CustomCSSDelegate customCssDelegate;
+	private transient CustomCSSDelegate customCssDelegate;
 	private String themeBaseUri;
 	private String customHeaderContent;
 	
@@ -174,6 +174,9 @@ public class IFrameDeliveryMapper implements Mapper {
 	
 	public void setCustomCssDelegate(CustomCSSDelegate customCssDelegate) {
 		this.customCssDelegate = customCssDelegate;
+		if(customCssDelegate.getCustomCSS() != null) {
+			customCssURL = customCssDelegate.getCustomCSS().getCSSURLIFrame();
+		}
 	}
 
 	@Override
@@ -328,14 +331,14 @@ public class IFrameDeliveryMapper implements Mapper {
 				//add olat content css as used in html editor
 				sb.appendOpenolatCss();//css only loaded once in HtmlOutput
 			}
-			if (customCssURL != null) {
-				// add the custom  CSS, e.g. the course css that overrides the standard content css
-				sb.appendCss(customCssURL, "customcss");				
-			} else if(customCssDelegate != null && customCssDelegate.getCustomCSS() != null
+			if(customCssDelegate != null && customCssDelegate.getCustomCSS() != null
 					&& customCssDelegate.getCustomCSS().getCSSURLIFrame() != null) {
 				String  customCssURL = customCssDelegate.getCustomCSS().getCSSURLIFrame();
 				sb.appendCss(customCssURL, "customcss");	
-			}
+			} else if (customCssURL != null) {
+				// add the custom  CSS, e.g. the course css that overrides the standard content css
+				sb.appendCss(customCssURL, "customcss");				
+			} 
 		}
 		
 		if (enableTextmarking) {
