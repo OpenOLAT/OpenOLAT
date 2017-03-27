@@ -13,6 +13,7 @@
 	<import resource="classpath:/org/olat/modules/coach/_spring/coachContext.xml"/>
 	<import resource="classpath:/org/olat/modules/glossary/_spring/glossaryContext.xml"/>
 	<import resource="classpath:/org/olat/modules/iq/_spring/iqContext.xml"/>
+	<import resource="classpath:/org/olat/modules/lecture/_spring/lectureContext.xml"/>
 	<import resource="classpath:/org/olat/modules/openmeetings/_spring/openmeetingsContext.xml"/>
 	<import resource="classpath:/org/olat/modules/vitero/_spring/viteroContext.xml"/>
 	<import resource="classpath:/org/olat/modules/webFeed/_spring/webFeedContext.xml"/>
@@ -82,4 +83,5 @@
 			</list>
 		</property>
 	</bean>
+	
 </beans>

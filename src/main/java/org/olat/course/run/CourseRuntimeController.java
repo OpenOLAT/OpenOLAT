@@ -44,10 +44,10 @@ import org.olat.core.gui.components.htmlheader.jscss.CustomCSS;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel.BreadCrumb;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.stack.VetoPopEvent;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel.BreadCrumb;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -123,6 +123,10 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.ui.TeacherOverviewController;
+import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.note.NoteController;
 import org.olat.repository.LeavingStatusList;
@@ -161,12 +165,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
 		areaLink, dbLink,
 		//settings
-		layoutLink, optionsLink, certificatesOptionsLink, reminderLink,
+		layoutLink, optionsLink, certificatesOptionsLink, lecturesAdminLink, reminderLink,
 		assessmentModeLink, lifeCycleChangeLink,
 		//my course
 		efficiencyStatementsLink, calendarLink, noteLink, chatLink, leaveLink, searchLink,
 		//glossary
-		openGlossaryLink, enableGlossaryLink;
+		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link currentUserCountLink;
 	private Dropdown myCourse, glossary;
 
@@ -181,11 +185,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private StatisticMainController statisticsCtrl;
 	private CourseOptionsController optionsToolCtr;
 	private CourseRemindersController remindersCtrl;
+	private TeacherOverviewController lecturesCtrl;
 	private AssessmentToolController assessmentToolCtr;
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
 	private AssessmentModeListController assessmentModeCtrl;
 	private CourseLayoutGeneratorController courseLayoutCtrl;
+	private LectureRepositoryAdminController lecturesAdminCtrl;
 	private CertificatesOptionsController certificatesOptionsCtrl;
 	private CloseableCalloutWindowController courseSearchCalloutCtr;
 	protected RepositoryEntryLifeCycleChangeController lifeCycleChangeCtr;
@@ -196,6 +202,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	@Autowired
 	private CourseModule courseModule;
 	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
+	private LectureService lectureService;
+	@Autowired
 	private ReminderModule reminderModule;
 	@Autowired
 	private CalendarModule calendarModule;
@@ -205,6 +215,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentModule assessmentModule;
+	@Autowired
+	private InstantMessagingModule imModule;
 	@Autowired
 	private CourseDBManager courseDBManager;
 	
@@ -574,6 +586,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				reminderLink.setVisible(!uce.isCourseReadOnly());
 				settings.addComponent(reminderLink);
 			}
+			
+			if(lectureModule.isEnabled()) {
+				lecturesAdminLink = LinkFactory.createToolLink("lectures.admin.cmd", translate("command.options.lectures.admin"), this, "o_icon_lecture");
+				lecturesAdminLink.setElementCssClass("o_sel_course_lectures_admin");
+				lecturesAdminLink.setVisible(!uce.isCourseReadOnly());
+				settings.addComponent(lecturesAdminLink);
+			}
 		}
 	}
 
@@ -768,8 +787,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(glossary);
 		}
 		
+		if(!assessmentLock && lectureModule.isEnabled() /* && enable for this course */
+				 && lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity())) {
+			lecturesLink = LinkFactory.createToolLink("command.lectures", translate("command.lectures"), this, "o_icon_lecture");
+			toolbarPanel.addTool(lecturesLink);
+		}
+		
 		//add group chat to toolbox
-		InstantMessagingModule imModule = CoreSpringFactory.getImpl(InstantMessagingModule.class);
 		boolean chatIsEnabled = !assessmentLock && !isGuestOnly && imModule.isEnabled()
 				&& imModule.isCourseEnabled() && reSecurity.canLaunch();
 		if(chatIsEnabled && getUserCourseEnvironment() != null && !getUserCourseEnvironment().isCourseReadOnly()) {
@@ -855,6 +879,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doLifeCycleChange(ureq);
 		} else if(reminderLink == source) {
 			doReminders(ureq);
+		} else if(lecturesAdminLink == source) {
+			doLecturesAdmin(ureq);
+		} else if(lecturesLink == source) {
+			doLectures(ureq);
 		} else if(archiverLink == source) {
 			doArchive(ureq);
 		} else if(folderLink == source) {
@@ -958,6 +986,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case assessmentTool: doAssessmentTool(ureq); break;
 						case certificates: doCertificatesOptions(ureq); break;
 						case reminders: doReminders(ureq); break;
+						case lecturesAdmin: doLecturesAdmin(ureq); break;
+						case lectures: doLectures(ureq); break;
 						case courseAreas: doCourseAreas(ureq); break;
 						case courseFolder: doCourseFolder(ureq); break;
 						case courseStatistics: doCourseStatistics(ureq); break;
@@ -1331,6 +1361,34 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		} else {
 			delayedClose = Delayed.reminders;
+		}
+	}
+	
+	private void doLecturesAdmin(UserRequest ureq) {
+		if(delayedClose == Delayed.lecturesAdmin || requestForClose(ureq)) {
+			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+				removeCustomCSS();
+
+				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, getWindowControl(), toolbarPanel, getRepositoryEntry());
+				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);
+				setActiveTool(lecturesAdminLink);
+				currentToolCtr = lecturesAdminCtrl;
+			}
+		} else {
+			delayedClose = Delayed.lecturesAdmin;
+		}
+	}
+	
+	private void doLectures(UserRequest ureq) {
+		if(delayedClose == Delayed.lectures || requestForClose(ureq)) {
+			removeCustomCSS();
+
+			TeacherOverviewController ctrl = new TeacherOverviewController(ureq, getWindowControl(), toolbarPanel, getRepositoryEntry());
+			lecturesCtrl = pushController(ureq, translate("command.lectures"), ctrl);
+			setActiveTool(lecturesLink);
+			currentToolCtr = lecturesCtrl;
+		} else {
+			delayedClose = Delayed.lectures;
 		}
 	}
 	
@@ -1839,6 +1897,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentTool,
 		certificates,
 		reminders,
+		lecturesAdmin,
+		lectures,
 		courseAreas,
 		courseFolder,
 		courseStatistics,

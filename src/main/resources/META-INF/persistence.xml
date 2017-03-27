@@ -158,6 +158,9 @@
 		<class>org.olat.modules.gotomeeting.model.GoToMeetingImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToOrganizerImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToRegistrantImpl</class>
+		<class>org.olat.modules.lecture.model.LectureBlockImpl</class>
+		<class>org.olat.modules.lecture.model.LectureBlockToGroupImpl</class>
+		<class>org.olat.modules.lecture.model.LectureBlockRollCallImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>
 		<class>org.olat.modules.portfolio.model.PageImpl</class>
