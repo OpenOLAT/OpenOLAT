@@ -87,10 +87,10 @@ public class HottextEditorController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", question, 16, -1, itemContainer,
 				formLayout, ureq.getUserSession(),  getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
-		textEl.setEnabled(!restrictedEdit);
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
 		richTextConfig.enableQTITools(false, false, true);
 		richTextConfig.setAdditionalConfiguration(new CorrectAnswersConfiguration());
+		richTextConfig.setReadOnly(restrictedEdit);
 		
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

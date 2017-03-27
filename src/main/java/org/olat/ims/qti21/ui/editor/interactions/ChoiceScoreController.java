@@ -137,6 +137,8 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 				ChoiceWrapper wrapper = getChoiceWrapper(choice);
 				if(wrapper == null) {
 					wrappers.add(createChoiceWrapper(choice));
+				} else {
+					wrapper.setChoice(choice);
 				}
 			}
 			
@@ -227,27 +229,14 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	
 	public final class ChoiceWrapper {
 		
-		private final String summary;
-		private final Choice choice;
+		private String summary;
+		private Choice choice;
 		private final TextElement pointsEl;
 		
 		public ChoiceWrapper(Choice choice, TextElement pointsEl) {
-			this.choice = choice;
+			setChoice(choice);
 			this.pointsEl = pointsEl;
 			pointsEl.setUserObject(this);
-			if(choice instanceof SimpleChoice) {
-				String answer = new AssessmentHtmlBuilder().flowStaticString(((SimpleChoice)choice).getFlowStatics());
-				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
-				answer = answer.trim();
-				summary = Formatter.truncate(answer, 128);
-			} else if(choice instanceof Hottext) {
-				String answer = new AssessmentHtmlBuilder().inlineStaticString(((Hottext)choice).getInlineStatics());
-				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
-				answer = answer.trim();
-				summary = Formatter.truncate(answer, 128);
-			} else {
-				summary = "";
-			}
 		}
 		
 		public boolean isCorrect() {
@@ -264,6 +253,23 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		
 		public Choice getChoice() {
 			return choice;
+		}
+		
+		public void setChoice(Choice choice) {
+			this.choice = choice;
+			if(choice instanceof SimpleChoice) {
+				String answer = new AssessmentHtmlBuilder().flowStaticString(((SimpleChoice)choice).getFlowStatics());
+				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
+				answer = answer.trim();
+				summary = Formatter.truncate(answer, 128);
+			} else if(choice instanceof Hottext) {
+				String answer = new AssessmentHtmlBuilder().inlineStaticString(((Hottext)choice).getInlineStatics());
+				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
+				answer = answer.trim();
+				summary = Formatter.truncate(answer, 128);
+			} else {
+				summary = "";
+			}
 		}
 	}
 }

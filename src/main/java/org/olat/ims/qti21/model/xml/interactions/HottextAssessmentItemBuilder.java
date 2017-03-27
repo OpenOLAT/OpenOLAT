@@ -52,6 +52,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.MapResponse;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -313,18 +314,7 @@ public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder {
 		rule.setResponseIf(responseIf);
 		
 		{// match the correct answers
-			Match match = new Match(responseIf);
-			responseIf.getExpressions().add(match);
-			
-			Variable scoreVar = new Variable(match);
-			ComplexReferenceIdentifier choiceResponseIdentifier
-				= ComplexReferenceIdentifier.parseString(hottextInteraction.getResponseIdentifier().toString());
-			scoreVar.setIdentifier(choiceResponseIdentifier);
-			match.getExpressions().add(scoreVar);
-			
-			Correct correct = new Correct(match);
-			correct.setIdentifier(choiceResponseIdentifier);
-			match.getExpressions().add(correct);
+			matchCorrectAnswers(responseIf);
 		}
 	
 		{//outcome score
@@ -402,18 +392,7 @@ public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder {
 		rule.setResponseIf(responseIf);
 		
 		{// match the correct answers
-			Match match = new Match(responseIf);
-			responseIf.getExpressions().add(match);
-			
-			Variable scoreVar = new Variable(match);
-			ComplexReferenceIdentifier choiceResponseIdentifier
-				= ComplexReferenceIdentifier.parseString(hottextInteraction.getResponseIdentifier().toString());
-			scoreVar.setIdentifier(choiceResponseIdentifier);
-			match.getExpressions().add(scoreVar);
-			
-			Correct correct = new Correct(match);
-			correct.setIdentifier(choiceResponseIdentifier);
-			match.getExpressions().add(correct);
+			matchCorrectAnswers(responseIf);
 		}
 	
 		{//outcome score
@@ -473,6 +452,36 @@ public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder {
 			incorrectValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
 			incorrectValue.setSingleValue(QTI21Constants.INCORRECT_IDENTIFIER_VALUE);
 			incorrectOutcomeValue.setExpression(incorrectValue);
+		}
+	}
+	
+	/**
+	 * Match the correct answer or, if there isn't not a single correct answer,
+	 * match null.
+	 * 
+	 * @param responseIf
+	 */
+	private void matchCorrectAnswers(ResponseIf responseIf) {
+		if(correctAnswers.isEmpty()) {
+			IsNull isNull = new IsNull(responseIf);
+			responseIf.getExpressions().add(isNull);
+			
+			Variable variable = new Variable(isNull);
+			variable.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier.toString()));
+			isNull.getExpressions().add(variable);
+		} else {
+			Match match = new Match(responseIf);
+			responseIf.getExpressions().add(match);
+			
+			Variable scoreVar = new Variable(match);
+			ComplexReferenceIdentifier choiceResponseIdentifier
+				= ComplexReferenceIdentifier.parseString(hottextInteraction.getResponseIdentifier().toString());
+			scoreVar.setIdentifier(choiceResponseIdentifier);
+			match.getExpressions().add(scoreVar);
+			
+			Correct correct = new Correct(match);
+			correct.setIdentifier(choiceResponseIdentifier);
+			match.getExpressions().add(correct);
 		}
 	}
 }

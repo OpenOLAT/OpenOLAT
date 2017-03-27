@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.1.0'
+				version : '1.1.1'
 			};
 		},
 
@@ -237,10 +237,12 @@
 					"contenteditable": "false"
 				});
 
-	            var inputHolder = new tinymce.html.Node('input', 1);
+				var readonly = ed.getParam("readonly");
+	            var editable = readonly == "1" ? "false" : "true";
 	            
+	            var inputHolder = new tinymce.html.Node('input', 1);
 	            inputHolder.attr({
-	            	"contenteditable": "true",
+	            	"contenteditable": editable,
 	            	"name" : "hottext",
 	            	"value": identifier,
 	            	"type" : "checkbox"
@@ -248,10 +250,13 @@
 	            if(correct) {
 	            	inputHolder.attr({ "checked": "checked" });
 	            }
+	            if(editable == "false") {
+	            	inputHolder.attr({ "disabled": "disabled" });
+	            }
 	            placeholder.append(inputHolder);
 
 	            var contentholder = new tinymce.html.Node('span', 1);
-	            contentholder.attr({ "contenteditable": "true" });
+	            contentholder.attr({ "contenteditable": editable });
 	            var textNode = new tinymce.html.Node('#text', 3);
 	            textNode.raw = true;
 	            textNode.value = content;
