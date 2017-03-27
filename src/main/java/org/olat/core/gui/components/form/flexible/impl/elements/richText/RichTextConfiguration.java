@@ -155,6 +155,7 @@ public class RichTextConfiguration implements Disposable {
 	private boolean allowCustomMediaFactory = true;
 	private boolean inline = false;
 	private boolean sendOnBlur;
+	private boolean readOnly;
 	private CustomLinkTreeModel linkBrowserCustomTreeModel;	
 	// DOM ID of the flexi form element
 	private String domID;
@@ -453,6 +454,15 @@ public class RichTextConfiguration implements Disposable {
 
 	public void setPathInStatusBar(boolean pathInStatusBar) {
 		this.pathInStatusBar = pathInStatusBar;
+	}
+	
+
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
 	}
 
 	public RichTextConfigurationDelegate getAdditionalConfiguration() {
@@ -988,6 +998,9 @@ public class RichTextConfiguration implements Disposable {
 		  .append("statusbar:").append(true).append(",\n")
 		  .append("resize:").append(true).append(",\n")
 		  .append("menubar:").append(tinyConfig.hasMenu()).append(",\n");
+ 		if(isReadOnly()) {
+ 			tinyMenuSb.append("readonly: 1,\n");
+ 		}
  		
  		String leftAndClear = "Left and clear";
  		String rightAndClear = "Right and clear";

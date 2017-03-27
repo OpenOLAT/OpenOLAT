@@ -231,7 +231,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	}
 	
 	private void buildRecursively(TestPart part, int pos, TreeNode parentNode) {
-		GenericTreeNode partNode = new GenericTreeNode(part.getIdentifier().toString());
+		GenericTreeNode partNode = new GenericTreeNode();
 		partNode.setTitle(pos + ". Test part");
 		partNode.setIconCssClass("o_icon o_qtiassessment_icon");
 		partNode.setUserObject(part);
@@ -249,7 +249,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	}
 	
 	private TreeNode buildRecursively(AssessmentSection section, TreeNode parentNode) {
-		GenericTreeNode sectionNode = new GenericTreeNode(section.getIdentifier().toString());
+		GenericTreeNode sectionNode = new GenericTreeNode();
 		sectionNode.setTitle(section.getTitle());
 		sectionNode.setIconCssClass("o_icon o_mi_qtisection");
 		sectionNode.setUserObject(section);
@@ -274,7 +274,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	}
 	
 	private TreeNode buildRecursively(AssessmentItemRef itemRef, TreeNode parentNode) {
-		GenericTreeNode itemNode = new GenericTreeNode(itemRef.getIdentifier().toString());
+		GenericTreeNode itemNode = new GenericTreeNode();
 		
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 		BadResourceException ex = resolvedAssessmentItem.getItemLookup().getBadResourceException();

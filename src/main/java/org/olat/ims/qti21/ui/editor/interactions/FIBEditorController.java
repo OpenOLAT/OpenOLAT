@@ -93,8 +93,8 @@ public class FIBEditorController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", question, 16, -1, itemContainer,
 				formLayout, ureq.getUserSession(),  getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
-		textEl.setEnabled(!restrictedEdit);
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
+		richTextConfig.setReadOnly(restrictedEdit);
 		
 		boolean hasNumericals = itemBuilder.hasNumericalInputs();
 		boolean hasTexts = itemBuilder.hasTextEntry();
@@ -221,14 +221,14 @@ public class FIBEditorController extends FormBasicController {
 		}
 		
 		if(interaction instanceof TextEntry) {
-			textEntrySettingsCtrl = new FIBTextEntrySettingsController(ureq, getWindowControl(), (TextEntry)interaction);
+			textEntrySettingsCtrl = new FIBTextEntrySettingsController(ureq, getWindowControl(), (TextEntry)interaction, restrictedEdit);
 			listenTo(textEntrySettingsCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), textEntrySettingsCtrl.getInitialComponent(), true, translate("title.add") );
 			cmc.activate();
 			listenTo(cmc);
 		} else if(interaction instanceof NumericalEntry) {
-			numericalEntrySettingsCtrl = new FIBNumericalEntrySettingsController(ureq, getWindowControl(), (NumericalEntry)interaction);
+			numericalEntrySettingsCtrl = new FIBNumericalEntrySettingsController(ureq, getWindowControl(), (NumericalEntry)interaction, restrictedEdit);
 			listenTo(numericalEntrySettingsCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), numericalEntrySettingsCtrl.getInitialComponent(), true, translate("title.add") );

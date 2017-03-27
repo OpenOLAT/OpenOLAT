@@ -55,11 +55,13 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 	private SingleSelection toleranceModeEl;
 	private TextElement lowerToleranceEl, upperToleranceEl;
 	
+	private final boolean restrictedEdit;
 	private final NumericalEntry interaction;
 	
-	public FIBNumericalEntrySettingsController(UserRequest ureq, WindowControl wControl, NumericalEntry interaction) {
+	public FIBNumericalEntrySettingsController(UserRequest ureq, WindowControl wControl, NumericalEntry interaction, boolean restrictedEdit) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestEditorController.class, ureq.getLocale()));
 		this.interaction = interaction;
+		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
 
@@ -68,17 +70,21 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		Double solution = interaction.getSolution();
 		String solString = solution == null ? "" : solution.toString();
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solString, formLayout);
+		solutionEl.setEnabled(!restrictedEdit);
 		String placeholder = interaction.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
+		placeholderEl.setEnabled(!restrictedEdit);
 		
 		Integer expectedLength = interaction.getExpectedLength();
 		String expectedLengthStr = expectedLength == null ? null : expectedLength.toString();
 		expectedLengthEl = uifactory.addTextElement("fib.expectedLength", "fib.expectedLength", 256, expectedLengthStr, formLayout);
+		expectedLengthEl.setEnabled(!restrictedEdit);
 		
 		String[] toleranceModeValues = new String[] {
 			translate("fib.tolerance.mode.exact"), translate("fib.tolerance.mode.absolute"), translate("fib.tolerance.mode.relative")
 		};
 		toleranceModeEl = uifactory.addDropdownSingleselect("fib.tolerance.mode", "fib.tolerance.mode", formLayout, toleranceModeKeys, toleranceModeValues, null);
+		toleranceModeEl.setEnabled(!restrictedEdit);
 		if(interaction.getToleranceMode() != null) {
 			for(String toleranceModeKey:toleranceModeKeys) {
 				if(toleranceModeKey.equals(interaction.getToleranceMode().name())) {
@@ -95,11 +101,13 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		String lowerToleranceString = lowerTolerance == null ? "" : lowerTolerance.toString();
 		lowerToleranceEl = uifactory.addTextElement("fib.tolerance.low", "fib.tolerance.low", 8, lowerToleranceString, formLayout);
 		lowerToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
+		lowerToleranceEl.setEnabled(!restrictedEdit);
 		
 		Double upperTolerance = interaction.getUpperTolerance();
 		String upperToleranceString = upperTolerance == null ? "" : upperTolerance.toString();
 		upperToleranceEl = uifactory.addTextElement("fib.tolerance.up", "fib.tolerance.up", 8, upperToleranceString, formLayout);
 		upperToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
+		upperToleranceEl.setEnabled(!restrictedEdit);
 		updateToleranceUpAndLow();
 
 		
@@ -107,7 +115,9 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
-		uifactory.addFormSubmitButton("submit", buttonsContainer);
+		if(!restrictedEdit) {
+			uifactory.addFormSubmitButton("submit", buttonsContainer);
+		}
 		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 	}
 	
