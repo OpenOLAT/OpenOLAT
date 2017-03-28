@@ -92,7 +92,7 @@ public interface QTI21Service {
 	public XsltStylesheetManager getXsltStylesheetManager();
 	
 	
-	public URI createAssessmentObjectUri(File resourceDirectory);
+	public URI createAssessmentTestUri(File resourceDirectory);
 	
 	/**
 	 * Load the assessmentTest based on the imsmanifest.xml found in the resource

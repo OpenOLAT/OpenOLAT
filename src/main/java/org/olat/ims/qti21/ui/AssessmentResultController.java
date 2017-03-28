@@ -141,7 +141,7 @@ public class AssessmentResultController extends FormBasicController {
 		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 		inputResourceLocator = 
         		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-		assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
+		assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
 		
 		if(!anonym && assessedIdentity != null) {
 			assessedIdentityInfosCtrl = new UserShortDescription(ureq, getWindowControl(), assessedIdentity);

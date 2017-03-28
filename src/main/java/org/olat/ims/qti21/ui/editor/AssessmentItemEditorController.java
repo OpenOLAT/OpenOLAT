@@ -219,7 +219,7 @@ public class AssessmentItemEditorController extends BasicController {
 	}
 	
 	private void initItemCreatedByUnkownEditor(UserRequest ureq, AssessmentItem item) {
-		itemEditor = new UnkownItemEditorController(ureq, getWindowControl(), resolvedAssessmentItem, item, rootDirectory);
+		itemEditor = new UnkownItemEditorController(ureq, getWindowControl(), resolvedAssessmentItem, item, itemFile, rootDirectory);
 		listenTo(itemEditor);
 		tabbedPane.addTab(translate("form.unkown"), itemEditor);
 	}
