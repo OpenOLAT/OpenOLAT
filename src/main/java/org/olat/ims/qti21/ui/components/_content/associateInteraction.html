@@ -15,17 +15,25 @@
 	<div id="${containerId}">
 		<div id="${containerId}_items" class="clearfix" style="padding:15px;">
         	#foreach($choice in $choices)
-            	<div id="ac_${responseIdentifier}_${choice.identifier}" data-qti-id="${choice.identifier}" class="o_associate_item" style="width: 100px; float:left; margin-right:15px; border:2px solid grey;">
+            	<div data-qti-id="${choice.identifier}" data-qti-match-max="${choice.matchMax}" class="o_associate_item" style="width: 100px; float:left;">
               		$r.renderFlowStatics($choice.getFlowStatics())
             	</div>
 			#end
 		</div>
 		<div id="${containerId}_panel" style="max-width:500px;">
 			#set($maxChoices = $r.maxToList($interaction.maxAssociations))
-			#foreach($maxChoice in $maxChoices)
-              	<div class="association" style="">
-					<div class="association_box left" style="width: 100px; height:50px; float:left; border: 3px dotted grey;"></div>
-					<div class="association_box right" style="width: 100px; height:50px; float:right; border: 3px dotted grey;"></div>
+			#if($r.isNotEmpty($maxChoices))
+				#foreach($maxChoice in $maxChoices)
+	              	<div class="association" style="">
+						<div class="association_box left" style="width: 100px; height:50px; float:left;"></div>
+						<div class="association_box right" style="width: 100px; height:50px; float:right;"></div>
+						<div style="clear:both; "></div>
+					</div>
+	            #end
+            #else
+            	<div class="association" style="">
+					<div class="association_box left" style="width: 100px; height:50px; float:left;"></div>
+					<div class="association_box right" style="width: 100px; height:50px; float:right;"></div>
 					<div style="clear:both; "></div>
 				</div>
             #end
@@ -38,7 +46,8 @@
 				responseIdentifier: '$responseIdentifier',
 				formDispatchFieldId: '$r.formDispatchFieldId',
 				responseValue: '$r.toString($responseValue,",")',
-				opened: $isItemSessionOpen
+				opened: $isItemSessionOpen,
+				unrestricted: #if($r.isNotEmpty($maxChoices)) false #else true #end
 			});
 		});
 		</script>

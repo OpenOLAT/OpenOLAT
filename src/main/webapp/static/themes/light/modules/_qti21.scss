@@ -16,6 +16,28 @@ ul.sessionControl {
 
 .o_associate_item {
 	padding: 5px;
+	margin:0 15px 10px 0;
+	border: 2px solid $o-qti-gap-border-color;
+	
+	&.oo-selected {
+		border: 2px solid $o-qti-gap-selected-border-color;
+	}
+	
+	&.oo-choosed {
+		border: none !important;
+	}
+	
+	&.oo-drag {
+		border: 2px solid $o-qti-gap-drag-border-color !important;
+	}
+}
+
+.association_box {
+	border: 3px dotted $o-qti-gap-border-color;
+	
+	&.oo-filled {
+		border: 3px solid $o-qti-gap-border-color;
+	}
 }
 
 .association_box {

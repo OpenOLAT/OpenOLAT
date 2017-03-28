@@ -1134,6 +1134,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private void doForceReloadFiles() {
 		updateTreeModel(true);
+		assessmentChanged = true;
 	}
 	
 	private void doConfirmDelete(UserRequest ureq) {
