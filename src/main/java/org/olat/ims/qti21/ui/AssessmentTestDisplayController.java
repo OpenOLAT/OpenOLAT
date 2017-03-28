@@ -250,7 +250,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			initMarks();
 			initOrResumeAssessmentTestSession(ureq, authorMode);
 			
-			URI assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
+			URI assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
 			File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
 			mapperUri = registerCacheableMapper(null, "QTI21Resources::" + testEntry.getKey(),
 					new ResourcesMapper(assessmentObjectUri, submissionDir));
@@ -1623,7 +1623,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	        		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
 			qtiEl.setResourceLocator(inputResourceLocator);
 			qtiEl.setTestSessionController(testSessionController);
-			qtiEl.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
+			qtiEl.setAssessmentObjectUri(qtiService.createAssessmentTestUri(fUnzippedDirRoot));
 			qtiEl.setCandidateSessionContext(AssessmentTestDisplayController.this);
 			qtiEl.setMapperUri(mapperUri);
 			qtiEl.setRenderNavigation(!showMenuTree);
@@ -1632,7 +1632,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			
 			qtiTreeEl.setResourceLocator(inputResourceLocator);
 			qtiTreeEl.setTestSessionController(testSessionController);
-			qtiTreeEl.setAssessmentObjectUri(qtiService.createAssessmentObjectUri(fUnzippedDirRoot));
+			qtiTreeEl.setAssessmentObjectUri(qtiService.createAssessmentTestUri(fUnzippedDirRoot));
 			qtiTreeEl.setCandidateSessionContext(AssessmentTestDisplayController.this);
 			qtiTreeEl.setMapperUri(mapperUri);
 			

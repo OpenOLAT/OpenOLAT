@@ -71,7 +71,7 @@ public class UnkownItemEditorController extends FormBasicController {
 	private QTI21Service qtiService;
 
 	public UnkownItemEditorController(UserRequest ureq, WindowControl wControl,
-			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItem item, File fUnzippedDirRoot) {
+			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItem item, File itemFileRef, File fUnzippedDirRoot) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.item = item;
@@ -82,7 +82,7 @@ public class UnkownItemEditorController extends FormBasicController {
 		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 		inputResourceLocator = 
         		ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
-		assessmentObjectUri = qtiService.createAssessmentObjectUri(fUnzippedDirRoot);
+		assessmentObjectUri = itemFileRef.toURI();
 		
 		mapperUri = registerCacheableMapper(null, "QTI21AlienElement::" + CodeHelper.getRAMUniqueID(),
 				new ResourcesMapper(assessmentObjectUri));

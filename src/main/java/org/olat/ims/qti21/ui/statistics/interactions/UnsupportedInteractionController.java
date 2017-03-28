@@ -42,6 +42,7 @@ public class UnsupportedInteractionController extends BasicController {
 		super(ureq, wControl, Util.createPackageTranslator(QTI21AssessmentItemStatisticsController.class, ureq.getLocale()));
 		VelocityContainer mainVC = createVelocityContainer("unsupported");
 		mainVC.contextPut("interactionType", interaction.getQtiClassName());
+		mainVC.contextPut("interactionTypeName", translate(interaction.getQtiClassName()));
 		putInitialPanel(mainVC);
 	}
 
