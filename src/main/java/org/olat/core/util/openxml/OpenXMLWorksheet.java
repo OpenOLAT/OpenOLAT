@@ -194,7 +194,7 @@ public class OpenXMLWorksheet {
 			//header rows
 			if(getHeaderRows() > 0) {
 				writer.writeStartElement("pane");
-				writer.writeAttribute("topLeftCell", "A1");
+				writer.writeAttribute("topLeftCell", "A" + (getHeaderRows() + 1));
 				writer.writeAttribute("xSplit", "0");
 				writer.writeAttribute("ySplit", Integer.toString(getHeaderRows()));
 				writer.writeAttribute("activePane", "bottomLeft");
