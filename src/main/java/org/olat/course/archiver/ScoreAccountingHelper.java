@@ -92,6 +92,8 @@ public class ScoreAccountingHelper {
 	public static void createCourseResultsOverviewXMLTable(List<Identity> identities, List<AssessableCourseNode> myNodes, ICourse course, Locale locale, OutputStream bos) {
 		OpenXMLWorkbook workbook = new OpenXMLWorkbook(bos, 1);
 		OpenXMLWorksheet sheet = workbook.nextWorksheet();
+		sheet.setHeaderRows(2);
+		
 		int headerColCnt = 0;
 		Translator t = Util.createPackageTranslator(ScoreAccountingArchiveController.class, locale);
 
@@ -111,8 +113,6 @@ public class ScoreAccountingHelper {
 		String no = t.translate("column.field.no");
 		String submitted = t.translate("column.field.submitted");
 
-
-		
 		Row headerRow1 = sheet.newRow();
 		headerRow1.addCell(headerColCnt++, sequentialNumber);
 		headerRow1.addCell(headerColCnt++, login);
@@ -176,7 +176,6 @@ public class ScoreAccountingHelper {
 			}
 		}
 		
-		sheet.setHeaderRows(2);
 
 		// preload user properties cache
 		CourseEnvironment courseEnvironment = course.getCourseEnvironment();
