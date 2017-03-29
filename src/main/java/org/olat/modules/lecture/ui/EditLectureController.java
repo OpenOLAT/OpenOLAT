@@ -19,14 +19,17 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -35,6 +38,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupOrder;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
@@ -50,27 +57,39 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditLectureController extends FormBasicController {
 	
+	private static final String[] plannedLecturesKeys = new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
+	
 	private TextElement titleEl;
 	private TextElement descriptionEl;
 	private TextElement preparationEl;
 	private TextElement locationEl;
 	private DateChooser startDateEl, endDateEl;
 	private SingleSelection teacherEl;
+	private SingleSelection plannedLecturesEl;
+	private MultipleSelectionElement groupsEl;
 	
 	private RepositoryEntry entry;
 	private LectureBlock lectureBlock;
 	
 	private List<Identity> teachers;
+	private List<GroupBox> groupBox;
 	private String[] teacherKeys, teacherValues;
 	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private LectureService lectureService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private BaseSecurity securityManager;
+	private BusinessGroupService businessGroupService;
+	
+
+	public EditLectureController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+		this(ureq, wControl, entry, null);
+	}
 	
 	public EditLectureController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, LectureBlock lectureBlock) {
 		super(ureq, wControl);
@@ -88,6 +107,16 @@ public class EditLectureController extends FormBasicController {
 		String title = lectureBlock == null ? null : lectureBlock.getTitle();
 		titleEl = uifactory.addTextElement("title", "lecture.title", 128, title, formLayout);
 		
+		plannedLecturesEl = uifactory.addDropdownSingleselect("planned.lectures", "planned.lectures", formLayout,
+				plannedLecturesKeys, plannedLecturesKeys, null);
+		String plannedlectures = lectureBlock == null ? "4" : Integer.toString(lectureBlock.getPlannedLecturesNumber());
+		for(String plannedLecturesKey:plannedLecturesKeys) {
+			if(plannedlectures.equals(plannedLecturesKey)) {
+				plannedLecturesEl.select(plannedLecturesKey, true);
+				break;
+			}
+		}
+		
 		List<Identity> coaches = repositoryService.getMembers(entry, GroupRoles.coach.name());
 		teacherKeys = new String[coaches.size()];
 		teacherValues = new String[coaches.size()];
@@ -101,6 +130,30 @@ public class EditLectureController extends FormBasicController {
 			for(String teacherKey:teacherKeys) {
 				if(currentTeacherKey.equals(teacherKey)) {
 					teacherEl.select(currentTeacherKey, true);
+				}
+			}
+		}
+		
+		Group entryBaseGroup = repositoryService.getDefaultGroup(entry);
+		groupBox = new ArrayList<>();
+		groupBox.add(new GroupBox(entry, entryBaseGroup));
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		List<BusinessGroup> businessGroups = businessGroupService.findBusinessGroups(params, entry, 0, -1, BusinessGroupOrder.nameAsc);
+		for(BusinessGroup businessGroup:businessGroups) {
+			groupBox.add(new GroupBox(businessGroup));
+		}
+		String[] groupKeys = new String[groupBox.size()];
+		String[] groupValues = new String[groupBox.size()];
+		for(int i=groupBox.size(); i-->0; ) {
+			groupKeys[i] = Integer.toString(i);
+			groupValues[i] = groupBox.get(i).getName();
+		}
+		groupsEl = uifactory.addCheckboxesVertical("lecture.groups", "lecture.groups", formLayout, groupKeys, groupValues, 2);
+		if(lectureBlock != null) {
+			List<Group> selectedGroups = lectureService.getLectureBlockToGroups(lectureBlock);
+			for(int i=0; i<groupBox.size(); i++) {
+				if(selectedGroups.contains(groupBox.get(i).getBaseGroup())) {
+					groupsEl.select(Integer.toString(i), true);
 				}
 			}
 		}
@@ -128,6 +181,31 @@ public class EditLectureController extends FormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		plannedLecturesEl.clearError();
+		if(!plannedLecturesEl.isOneSelected()) {
+			plannedLecturesEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		teacherEl.clearError();
+		if(!teacherEl.isOneSelected()) {
+			teacherEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		groupsEl.clearError();
+		if(!groupsEl.isAtLeastSelected(1)) {
+			groupsEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		if(lectureBlock == null) {
 			lectureBlock = lectureService.createLectureBlock(entry);
@@ -138,18 +216,69 @@ public class EditLectureController extends FormBasicController {
 		lectureBlock.setLocation(locationEl.getValue());
 		lectureBlock.setStartDate(startDateEl.getDate());
 		lectureBlock.setEndDate(endDateEl.getDate());
-		lectureBlock = lectureService.save(lectureBlock);
+		int plannedLectures = Integer.parseInt(plannedLecturesEl.getSelectedKey());
+		lectureBlock.setPlannedLecturesNumber(plannedLectures);
+
+		List<Group> selectedGroups = new ArrayList<>();
+		if(groupsEl.isAtLeastSelected(1)) {
+			for(String selectedGroupPos:groupsEl.getSelectedKeys()) {
+				Group bGroup = groupBox.get(Integer.parseInt(selectedGroupPos)).getBaseGroup();
+				selectedGroups.add(bGroup);
+			}	
+		}
+		lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 		
 		if(teacherEl.isOneSelected()) {
 			Long identityKey = new Long(teacherEl.getSelectedKey());
 			Identity newTeacher = securityManager.loadIdentityByKey(identityKey);
 			lectureService.addTeacher(lectureBlock, newTeacher);
 		}
+		
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	public class GroupBox {
+		
+		private BusinessGroup businessGroup;
+		private RepositoryEntry repoEntry;
+		private final Group baseGroup;
+		
+		public GroupBox(RepositoryEntry entry, Group baseGroup) {
+			this.repoEntry = entry;
+			this.baseGroup = baseGroup;
+		}
+		
+		public GroupBox(BusinessGroup businessGroup) {
+			this.businessGroup = businessGroup;
+			baseGroup = businessGroup.getBaseGroup();
+		}
+		
+		public String getName() {
+			if(repoEntry != null) {
+				return repoEntry.getDisplayname();
+			}
+			if(businessGroup != null) {
+				return businessGroup.getName();
+			}
+			return null;
+		}
+		
+		public Group getBaseGroup() {
+			return baseGroup;
+		}
+		
+		public RepositoryEntry getEntry() {
+			return repoEntry;
+		}
+		
+		public BusinessGroup getBusinessGroup() {
+			return businessGroup;
+		}
 	}
 }

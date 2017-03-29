@@ -37,9 +37,12 @@ import org.springframework.stereotype.Service;
 public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String LECTURE_ENABLED = "lecture.enabled";
+	private static final String AUTHORIZED_ABSENCE_ENABLED = "lecture.authorized.absence.enabled";
 	
 	@Value("${lecture.enabled:true}")
 	private boolean enabled;
+	@Value("${lecture.authorized.absence.enabled:true}")
+	private boolean authorizedAbsenceEnabled;
 	
 	@Autowired
 	public LectureModule(CoordinatorManager coordinatorManager) {
@@ -69,4 +72,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		this.enabled = enabled;
 		setStringProperty(LECTURE_ENABLED, Boolean.toString(enabled), true);
 	}
+
+	public boolean isAuthorizedAbsenceEnabled() {
+		return authorizedAbsenceEnabled;
+	}
+
+	public void setAuthorizedAbsenceEnabled(boolean enabled) {
+		this.authorizedAbsenceEnabled = enabled;
+		setStringProperty(AUTHORIZED_ABSENCE_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	
 }

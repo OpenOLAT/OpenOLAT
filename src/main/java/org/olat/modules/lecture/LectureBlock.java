@@ -31,9 +31,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LectureBlock extends ModifiedInfo, CreateInfo {
-	
-	public Long getKey();
+public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo {
 	
 	public String getExternalId();
 
@@ -58,6 +56,10 @@ public interface LectureBlock extends ModifiedInfo, CreateInfo {
 	public String getComment();
 
 	public void setComment(String comment);
+	
+	public int getPlannedLecturesNumber();
+	
+	public void setPlannedLecturesNumber(int number);
 
 	public String getLog();
 

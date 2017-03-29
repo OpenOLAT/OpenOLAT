@@ -58,7 +58,7 @@ public class LectureListRepositoryController extends FormBasicController {
 	private LectureListRepositoryDataModel tableModel;
 	
 	private CloseableModalController cmc;
-	private EditLectureController addLectureCtrl;
+	private EditLectureController editLectureCtrl;
 
 	private RepositoryEntry entry;
 	
@@ -124,9 +124,9 @@ public class LectureListRepositoryController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(addLectureCtrl == source) {
+		if(editLectureCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				//reload
+				loadModel();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -139,9 +139,9 @@ public class LectureListRepositoryController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(addLectureCtrl);
+		removeAsListenerAndDispose(editLectureCtrl);
 		removeAsListenerAndDispose(cmc);
-		addLectureCtrl = null;
+		editLectureCtrl = null;
 		cmc = null;
 	}
 
@@ -153,19 +153,19 @@ public class LectureListRepositoryController extends FormBasicController {
 	private void doEditLectureBlock(UserRequest ureq, LectureBlockRow row) {
 		LectureBlock block = lectureService.getLectureBlock(row);
 		
-		addLectureCtrl = new EditLectureController(ureq, getWindowControl(), entry, block);
-		listenTo(addLectureCtrl);
+		editLectureCtrl = new EditLectureController(ureq, getWindowControl(), entry, block);
+		listenTo(editLectureCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", addLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
+		cmc = new CloseableModalController(getWindowControl(), "close", editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
 		listenTo(cmc);
 		cmc.activate();
 	}
 
 	private void doAddLectureBlock(UserRequest ureq) {
-		addLectureCtrl = new EditLectureController(ureq, getWindowControl(), entry, null);
-		listenTo(addLectureCtrl);
+		editLectureCtrl = new EditLectureController(ureq, getWindowControl(), entry);
+		listenTo(editLectureCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", addLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
+		cmc = new CloseableModalController(getWindowControl(), "close", editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
 		listenTo(cmc);
 		cmc.activate();
 	}

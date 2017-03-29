@@ -1369,7 +1369,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				removeCustomCSS();
 
-				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, getWindowControl(), toolbarPanel, getRepositoryEntry());
+				OLATResourceable ores = OresHelper.createOLATResourceableType("lecturesAdmin");
+				WindowControl swControl = addToHistory(ureq, ores, null);
+				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, getRepositoryEntry());
 				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);
 				setActiveTool(lecturesAdminLink);
 				currentToolCtr = lecturesAdminCtrl;
@@ -1382,9 +1384,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private void doLectures(UserRequest ureq) {
 		if(delayedClose == Delayed.lectures || requestForClose(ureq)) {
 			removeCustomCSS();
-
-			TeacherOverviewController ctrl = new TeacherOverviewController(ureq, getWindowControl(), toolbarPanel, getRepositoryEntry());
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableType("lectures");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			TeacherOverviewController ctrl = new TeacherOverviewController(ureq, swControl, toolbarPanel, getRepositoryEntry());
 			lecturesCtrl = pushController(ureq, translate("command.lectures"), ctrl);
+
 			setActiveTool(lecturesLink);
 			currentToolCtr = lecturesCtrl;
 		} else {

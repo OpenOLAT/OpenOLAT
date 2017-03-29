@@ -19,7 +19,10 @@
  */
 package org.olat.modules.lecture.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,10 +35,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
 
@@ -107,34 +112,42 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 		this.creationDate = creationDate;
 	}
 
+	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
 
+	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
 
+	@Override
 	public String getComment() {
 		return comment;
 	}
 
+	@Override
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
 
+	@Override
 	public String getAbsenceReason() {
 		return absenceReason;
 	}
 
+	@Override
 	public void setAbsenceReason(String absenceReason) {
 		this.absenceReason = absenceReason;
 	}
 
+	@Override
 	public Boolean getAbsenceAuthorized() {
 		return absenceAuthorized;
 	}
 
+	@Override
 	public void setAbsenceAuthorized(Boolean absenceAuthorized) {
 		this.absenceAuthorized = absenceAuthorized;
 	}
@@ -162,6 +175,83 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 
 	public void setIdentity(Identity identity) {
 		this.identity = identity;
+	}
+	
+	@Transient
+	public List<Integer> getLecturesAttendedList() {
+		return deserialize(getLecturesAttended());
+	}
+	
+	@Transient
+	public void setLecturesAttendedList(List<Integer> lectures) {
+		setLecturesAttended(serialize(lectures));
+	}
+
+	public String getLecturesAttended() {
+		return lecturesAttended;
+	}
+
+	public void setLecturesAttended(String lecturesAttended) {
+		this.lecturesAttended = lecturesAttended;
+	}
+
+	public String getLecturesAbsent() {
+		return lecturesAbsent;
+	}
+
+	public void setLecturesAbsent(String lecturesAbsent) {
+		this.lecturesAbsent = lecturesAbsent;
+	}
+
+	@Transient
+	public List<Integer> getLecturesAbsentList() {
+		return deserialize(getLecturesAbsent());
+	}
+
+	@Transient
+	public void setLecturesAbsentList(List<Integer> lecturesAbsent) {
+		setLecturesAbsent(serialize(lecturesAbsent));
+	}
+	
+	private String serialize(List<Integer> lectures) {
+		StringBuilder sb = new StringBuilder();
+		if(lectures != null && lectures.size() > 0) {
+			if(lectures.size() > 1) {
+				Collections.sort(lectures);
+			}
+			for(Integer lecture:lectures) {
+				if(sb.length() > 0) sb.append("|");
+				sb.append(lecture.intValue());
+			}
+		}
+		return sb.toString();
+	}
+	
+	private List<Integer> deserialize(String string) {
+		List<Integer> list = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(string)) {
+			String[] currentAttendeeArr = string.split("[|]");
+			for(String current:currentAttendeeArr) {
+				list.add(new Integer(current));
+			}
+		}
+		return list;
+	}
+
+	public int getLecturesAttendedNumber() {
+		return lecturesAttendedNumber;
+	}
+
+	public void setLecturesAttendedNumber(int lecturesAttendedNumber) {
+		this.lecturesAttendedNumber = lecturesAttendedNumber;
+	}
+
+	public int getLecturesAbsentNumber() {
+		return lecturesAbsentNumber;
+	}
+
+	public void setLecturesAbsentNumber(int lecturesAbsentNumber) {
+		this.lecturesAbsentNumber = lecturesAbsentNumber;
 	}
 
 	@Override

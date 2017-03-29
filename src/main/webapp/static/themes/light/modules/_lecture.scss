@@ -1,0 +1,10 @@
+.progress-bar {
+
+	&.o_lecture_attended {
+		@include progress-bar-variant($progress-bar-success-bg);
+	}
+	
+	&.o_lecture_absent {
+		@include progress-bar-variant($progress-bar-warning-bg);
+	}
+}

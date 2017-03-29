@@ -90,8 +90,8 @@ public class LectureBlockToGroupImpl implements Persistable, LectureBlockToGroup
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof LectureBlockImpl) {
-			LectureBlockImpl block = (LectureBlockImpl)obj;
+		if(obj instanceof LectureBlockToGroupImpl) {
+			LectureBlockToGroupImpl block = (LectureBlockToGroupImpl)obj;
 			return getKey() != null && block.getKey().equals(getKey());
 		}
 		return super.equals(obj);

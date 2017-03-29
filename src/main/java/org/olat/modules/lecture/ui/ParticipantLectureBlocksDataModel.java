@@ -19,39 +19,12 @@
  */
 package org.olat.modules.lecture.ui;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
-
 /**
  * 
- * Initial date: 17 mars 2017<br>
+ * Initial date: 29 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureParticipantOverviewController extends FormBasicController {
-	
-	public LectureParticipantOverviewController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		
-		initForm(ureq);
-	}
+public class ParticipantLectureBlocksDataModel {
 
-	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("menu.my.lectures");
-		//
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
 }

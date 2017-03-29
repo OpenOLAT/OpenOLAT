@@ -17,40 +17,46 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture;
+package org.olat.modules.lecture.ui;
 
-import java.util.List;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 20 mars 2017<br>
+ * Initial date: 28 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LectureBlockRollCall extends ModifiedInfo, CreateInfo {
+public class ParticipantLectureBlocksController extends FormBasicController {
 	
-	public Long getKey();
+	private final RepositoryEntry entry;
 	
-	public Identity getIdentity();
-	
-	public LectureBlock getLectureBlock();
-	
-	public List<Integer> getLecturesAttendedList();
-	
-	public Boolean getAbsenceAuthorized();
-	
-	public void setAbsenceAuthorized(Boolean absenceAuthorized);
-	
-	public String getAbsenceReason();
+	public ParticipantLectureBlocksController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+		super(ureq, wControl);
+		this.entry = entry;
+		initForm(ureq);
+	}
 
-	public void setAbsenceReason(String absenceReason);
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		//
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
 	
-	public String getComment();
 	
-	public void setComment(String comment);
 
 }

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture;
 
+import org.olat.basesecurity.Group;
+
 /**
  * 
  * Initial date: 20 mars 2017<br>
@@ -26,5 +28,9 @@ package org.olat.modules.lecture;
  *
  */
 public interface LectureBlockToGroup {
+	
+	public Long getKey();
+	
+	public Group getGroup();
 
 }

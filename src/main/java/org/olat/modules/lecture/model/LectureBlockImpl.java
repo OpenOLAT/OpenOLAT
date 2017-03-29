@@ -20,9 +20,9 @@
 package org.olat.modules.lecture.model;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -119,8 +119,7 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_teacher_group", nullable=false, insertable=true, updatable=false)
 	private Group teacherGroup;
-	@OneToMany(targetEntity=LectureBlockToGroupImpl.class, fetch=FetchType.LAZY,
-			orphanRemoval=true, cascade={CascadeType.PERSIST, CascadeType.REMOVE})
+	@OneToMany(targetEntity=LectureBlockToGroupImpl.class, fetch=FetchType.LAZY, orphanRemoval=false)
 	@JoinColumn(name="fk_lecture_block")
 	private Set<LectureBlockToGroup> groups;
 	
@@ -210,6 +209,24 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	}
 
 	@Override
+	public int getPlannedLecturesNumber() {
+		return plannedLecturesNumber;
+	}
+
+	@Override
+	public void setPlannedLecturesNumber(int plannedLecturesNumber) {
+		this.plannedLecturesNumber = plannedLecturesNumber;
+	}
+
+	public int getEffectiveLecturesNumber() {
+		return effectiveLecturesNumber;
+	}
+
+	public void setEffectiveLecturesNumber(int effectiveLecturesNumber) {
+		this.effectiveLecturesNumber = effectiveLecturesNumber;
+	}
+
+	@Override
 	public String getLog() {
 		return log;
 	}
@@ -286,6 +303,9 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	}
 
 	public Set<LectureBlockToGroup> getGroups() {
+		if(groups == null) {
+			groups = new HashSet<>();
+		}
 		return groups;
 	}
 

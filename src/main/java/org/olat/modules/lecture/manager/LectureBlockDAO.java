@@ -23,10 +23,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureBlockImpl;
@@ -117,5 +120,35 @@ public class LectureBlockDAO {
 				.getResultList();
 		return firstKey != null && firstKey.size() > 0
 				&& firstKey.get(0) != null && firstKey.get(0).longValue() > 0;
+	}
+	
+	public List<LectureBlock> getLecturesAsTeacher(RepositoryEntryRef entry, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select block from lectureblock block")
+		  .append(" inner join block.teacherGroup teacherGroup")
+		  .append(" inner join teacherGroup.members teachers")
+		  .append(" where block.entry.key=:entryKey and teachers.identity.key=:identityKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlock.class)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+	}
+	
+	public List<Identity> getParticipants(LectureBlockRef block) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct ident from lectureblock block")
+		  .append(" inner join block.groups as blockToGroup")
+		  .append(" inner join blockToGroup.group as bGroup")
+		  .append(" inner join bGroup.members participants on (participants.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" inner join participants.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where block.key=:blockKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("blockKey", block.getKey())
+				.getResultList();
 	}
 }
