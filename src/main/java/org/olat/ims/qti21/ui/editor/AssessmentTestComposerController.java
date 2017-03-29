@@ -965,6 +965,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				if(sectionPart instanceof AssessmentItemRef) {
 					AssessmentItemRef itemRef = (AssessmentItemRef)sectionPart;
 					ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+					checkAndFixAbsolutPath(itemRef); 
 					
 					AssessmentItem assessmentItem = null;
 					if(resolvedAssessmentItem != null) {
@@ -990,6 +991,19 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			assessmentTestBuilder.setMaxScore(sumMaxScore);
 		} else {
 			assessmentTestBuilder.setMaxScore(null);
+		}
+	}
+	
+	private void checkAndFixAbsolutPath(AssessmentItemRef itemRef) {
+		String href = itemRef.getHref().toString();
+		if(href.startsWith("/") && href.contains("/bcroot/repository/") && href.contains("/_unzipped_/")) {
+			try {
+				int index = href.indexOf("/_unzipped_/") + ("/_unzipped_/").length();
+				String relativeHref = href.substring(index);
+				itemRef.setHref(new URI(relativeHref));
+			} catch (URISyntaxException e) {
+				logError("", e);
+			}
 		}
 	}
 	
