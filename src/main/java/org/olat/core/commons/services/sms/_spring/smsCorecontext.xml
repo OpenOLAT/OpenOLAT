@@ -29,8 +29,8 @@
 					<entry key="redoTimeout"><value>0</value></entry>
 					<entry key="i18nIntro"><value>org.olat.core.commons.services.sms.ui:confirm.sms.phone</value></entry>
 					<entry key="order"><value>0</value></entry>
-					<!-- 31536000 = 60 * 60 * 24 * 365 (or a year in seconds) -->
-					<entry key="redoTimeout"><value>31536000</value></entry>
+					<!-- 2592000 = 60 * 60 * 24 * 30 (or a month in seconds) -->
+					<entry key="redoTimeout"><value>2592000</value></entry>
 				</map>
 			</list>
 		</property>
