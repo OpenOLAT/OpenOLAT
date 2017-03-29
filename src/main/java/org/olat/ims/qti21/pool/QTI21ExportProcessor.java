@@ -201,9 +201,10 @@ public class QTI21ExportProcessor {
 				assessmentItem.setIdentifier(QTI21QuestionType.generateNewIdentifier(assessmentItem.getIdentifier()));
 				
 				//save the item in its own container
-				File container = new File(directory, qitem.getKey().toString());
-				container.mkdirs();
-				File newItemFile = new File(container, assessmentItem.getIdentifier() + ".xml");
+				String container = qitem.getKey().toString();
+				File containerDir = new File(directory, container);
+				containerDir.mkdirs();
+				File newItemFile = new File(containerDir, assessmentItem.getIdentifier() + ".xml");
 				String newItemFilename = container  + "/" + newItemFile.getName();
 				qtiService.persistAssessmentObject(newItemFile, assessmentItem);
 
