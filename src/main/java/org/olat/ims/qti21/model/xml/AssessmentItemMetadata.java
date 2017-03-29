@@ -256,11 +256,13 @@ public class AssessmentItemMetadata {
 		
 		//qti metadata
 		QTIMetadataType qtiMetadata = metadata.getQtiMetadata(true);
-		if(qtiMetadata.getToolName() != null) {
-			editor = qtiMetadata.getToolName();
-		}
-		if(qtiMetadata.getToolVersion() != null) {
-			editorVersion = qtiMetadata.getToolVersion();
+		if(qtiMetadata != null) {
+			if(qtiMetadata.getToolName() != null) {
+				editor = qtiMetadata.getToolName();
+			}
+			if(qtiMetadata.getToolVersion() != null) {
+				editorVersion = qtiMetadata.getToolVersion();
+			}
 		}
 		
 		//openolat metadata
