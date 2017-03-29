@@ -292,7 +292,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public ResolvedAssessmentTest loadAndResolveAssessmentTest(File resourceDirectory, boolean replace, boolean debugInfo) {
-        URI assessmentObjectSystemId = createAssessmentObjectUri(resourceDirectory);
+        URI assessmentObjectSystemId = createAssessmentTestUri(resourceDirectory);
         if(assessmentObjectSystemId == null) {
         	return null;
         }
@@ -373,7 +373,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
-	public URI createAssessmentObjectUri(final File resourceDirectory) {
+	public URI createAssessmentTestUri(final File resourceDirectory) {
 		final String key = resourceDirectory.getAbsolutePath();
 		try {
 			return resourceToTestURI.computeIfAbsent(key, (directoryAbsolutPath) -> {

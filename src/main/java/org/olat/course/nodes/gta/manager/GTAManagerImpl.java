@@ -26,10 +26,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
@@ -889,18 +891,6 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 	
 	protected String nextSlotRoundRobin(String[] slots, List<String> usedSlots) {
-		//remove previous rounds
-		Set<String> usedOnce = new HashSet<>();
-		for(Iterator<String> usedSlotIt=usedSlots.iterator(); usedSlotIt.hasNext(); ) {
-			String usedSlot = usedSlotIt.next();
-			if(usedOnce.contains(usedSlot)) {
-				usedSlotIt.remove();
-			} else {
-				usedOnce.add(usedSlot);
-			}
-		}
-		
-		//usedSlots are cleaned and contains only current round
 		String nextSlot = null;
 		for(String slot:slots) {
 			if(!usedSlots.contains(slot)) {
@@ -909,11 +899,41 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			}	
 		}
 		
+		//not found an used slot
 		if(nextSlot == null) {
-			//begin a new round
-			if (slots.length > 0) {
-				nextSlot = slots[0];
+			//statistics
+			Map<String,AtomicInteger> usages = new HashMap<>();
+			for(String usedSlot:usedSlots) {
+				if(usages.containsKey(usedSlot)) {
+					usages.get(usedSlot).incrementAndGet();
+				} else {
+					usages.put(usedSlot, new AtomicInteger(1));
+				}
 			}
+			
+			int minimum = Integer.MAX_VALUE;
+			for(AtomicInteger slotUsage:usages.values()) {
+				minimum = Math.min(minimum, slotUsage.get());	
+			}
+			Set<String> slotsWithMinimalUsage = new HashSet<>();
+			for(Map.Entry<String, AtomicInteger> slotUsage:usages.entrySet()) {
+				if(slotUsage.getValue().get() == minimum) {
+					slotsWithMinimalUsage.add(slotUsage.getKey());
+				}
+			}
+			
+			//found the next slot with minimal usage
+			for(String slot:slots) {
+				if(slotsWithMinimalUsage.contains(slot)) {
+					nextSlot = slot;
+					break;
+				}	
+			}
+		}
+		
+		//security
+		if(nextSlot == null && slots.length > 0) {
+			nextSlot = slots[0];
 		}
 		return nextSlot;
 	}

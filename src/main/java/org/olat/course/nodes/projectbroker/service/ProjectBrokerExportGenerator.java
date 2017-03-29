@@ -39,6 +39,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.projectbroker.ProjectBrokerControllerFactory;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectEvent;
@@ -66,7 +67,7 @@ public class ProjectBrokerExportGenerator {
 	 * @return String
 	 */
 	public static String createCourseResultsOverviewTable(CourseNode courseNode, ICourse course, Locale locale) {
-	  Translator translator = Util.createPackageTranslator(ProjectBrokerExportGenerator.class, locale);
+		Translator translator = Util.createPackageTranslator(ProjectBrokerControllerFactory.class, locale);
 		StringBuilder table = new StringBuilder();
 		ProjectBrokerModuleConfiguration moduleConfig = new ProjectBrokerModuleConfiguration(courseNode.getModuleConfiguration());
 		

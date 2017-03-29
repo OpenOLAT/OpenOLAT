@@ -59,27 +59,26 @@ public class VelocityTemplatesPreWarm implements PreWarm {
 		final File root = new File(WebappHelper.getContextRoot(), "WEB-INF/classes");
 		final Path fPath = root.toPath();
 		try {
-			Files.walkFileTree(fPath, new SimpleFileVisitor<Path>() {
-
-				@Override
-				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-					try {
-						
-						String path = fPath.relativize(file).toString();
-						if(path.endsWith(".html") && path.contains("/_content/")) {
-							StringOutput writer = new StringOutput();
-							VelocityHelper.getInstance().mergeContent(path, context, writer, null);
-							
-							numOfTemplates.incrementAndGet();
+			if(Files.exists(fPath)) {
+				Files.walkFileTree(fPath, new SimpleFileVisitor<Path>() {
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+						try {
+							String path = fPath.relativize(file).toString();
+							if(path.endsWith(".html") && path.contains("/_content/")) {
+								StringOutput writer = new StringOutput();
+								VelocityHelper.getInstance().mergeContent(path, context, writer, null);
+								numOfTemplates.incrementAndGet();
+							}
+						} catch (ResourceNotFoundException e) {
+							log.error("", e);
+						} catch (ParseErrorException e) {
+							log.error("", e);
 						}
-					} catch (ResourceNotFoundException e) {
-						log.error("", e);
-					} catch (ParseErrorException e) {
-						log.error("", e);
+						return FileVisitResult.CONTINUE;
 					}
-					return FileVisitResult.CONTINUE;
-				}
-			});
+				});
+			}
 		} catch (IOException e) {
 			log.error("", e);
 		}
