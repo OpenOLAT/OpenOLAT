@@ -600,7 +600,7 @@ public class GTAManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void roundsRobin() {
+	public void roundRobin_oneRound() {
 		String[] slots = new String[]{ "A", "B", "C" };
 		List<String> usedSlots = new ArrayList<>();
 		usedSlots.add("A");
@@ -609,6 +609,39 @@ public class GTAManagerTest extends OlatTestCase {
 		usedSlots.add("A");
 
 		String nextSlot = gtaManager.nextSlotRoundRobin(slots, usedSlots);
+		Assert.assertEquals("B", nextSlot);
+	}
+	
+	@Test
+	public void roundRobin_randomRound() {
+		String[] slots = new String[]{ "A", "B", "C" };
+		List<String> usedSlots = new ArrayList<>();
+		usedSlots.add("A");
+		usedSlots.add("B");
+		usedSlots.add("B");
+		usedSlots.add("B");
+		usedSlots.add("C");
+		usedSlots.add("C");
+		usedSlots.add("A");
+
+		String nextSlot = gtaManager.nextSlotRoundRobin(slots, usedSlots);
 		Assert.assertEquals("A", nextSlot);
+	}
+	
+	@Test
+	public void roundRobin_randomRoundAlt() {
+		String[] slots = new String[]{ "A", "B", "C" };
+		List<String> usedSlots = new ArrayList<>();
+		usedSlots.add("A");
+		usedSlots.add("B");
+		usedSlots.add("B");
+		usedSlots.add("B");
+		usedSlots.add("C");
+		usedSlots.add("C");
+		usedSlots.add("A");
+		usedSlots.add("A");
+
+		String nextSlot = gtaManager.nextSlotRoundRobin(slots, usedSlots);
+		Assert.assertEquals("C", nextSlot);
 	}
 }

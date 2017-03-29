@@ -27,7 +27,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
@@ -103,10 +102,9 @@ public class OnyxToQtiWorksAssessementTestsTest {
 			DefaultHandler2 myHandler = new Onyx38ToQtiWorksHandler(xtw);
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);
-			
-			Files.copy(outputFile.toPath(), new File("/HotCoffee/Onyx", xmlFile.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} catch(Exception e1) {
 			log.error("", e1);
+			throw e1;
 		}
 
 		QtiXmlReader qtiXmlReader = new QtiXmlReader(new JqtiExtensionManager());

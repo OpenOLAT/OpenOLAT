@@ -187,8 +187,13 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 		final Property mapKeyProperty = npm.findProperty(null, null, CollaborationTools.PROP_CAT_BG_COLLABTOOLS, CollaborationTools.KEY_PORTFOLIO);
 		if (mapKeyProperty != null) {
 			final Long mapKey = mapKeyProperty.getLongValue();
-			final PortfolioStructure map = loadPortfolioStructureByKey(mapKey);
-			deletePortfolioStructure(map);
+			final String version = mapKeyProperty.getStringValue();
+			if(!"2".equals(version)) {
+				final PortfolioStructure map = loadPortfolioStructureByKey(mapKey);
+				if(map != null) {
+					deletePortfolioStructure(map);
+				}
+			}
 			return true;
 		}
 		return false;
