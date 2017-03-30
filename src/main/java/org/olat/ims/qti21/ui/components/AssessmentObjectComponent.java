@@ -54,6 +54,7 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	private Context context;
 	
 	private String mapperUri;
+	private String submissionMapperUri;
 	private URI assessmentObjectUri;
 	private ResourceLocator resourceLocator;
 	private CandidateSessionContext candidateSessionContext;
@@ -70,6 +71,19 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 
 	public void setMapperUri(String mapperUri) {
 		this.mapperUri = mapperUri;
+	}
+	
+	/**
+	 * Allow to define a specific mapper uri for the uploaded files.
+	 * 
+	 * @return The specific submission mapper uri or the standard one if it was not defined
+	 */
+	public String getSubmissionMapperUri() {
+		return submissionMapperUri == null ? mapperUri : submissionMapperUri;
+	}
+	
+	public void setSubmissionMapperUri(String submissionMapperUri) {
+		this.submissionMapperUri = submissionMapperUri;
 	}
 
 	public URI getAssessmentObjectUri() {
