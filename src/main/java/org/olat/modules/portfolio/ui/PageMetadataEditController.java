@@ -220,7 +220,7 @@ public class PageMetadataEditController extends FormBasicController {
 			for (int i = 0; i < binders.size(); ++i) {
 				Binder binder = binders.get(i);
 				theKeys[i+1] = binder.getKey().toString();
-				theValues[i+1] = StringHelper.escapeHtml(binder.getTitle());
+				theValues[i+1] = binder.getTitle();
 			} 
 			
 			bindersEl.setKeysAndValues(theKeys, theValues, null);
@@ -240,7 +240,7 @@ public class PageMetadataEditController extends FormBasicController {
 			}
 		} else {
 			String[] theKeys = new String[] { currentBinder.getKey().toString() };
-			String[] theValues = new String[] { StringHelper.escapeHtml(currentBinder.getTitle()) };
+			String[] theValues = new String[] { currentBinder.getTitle() };
 			bindersEl.setKeysAndValues(theKeys, theValues, null);
 			bindersEl.setEnabled(false);
 			bindersEl.reset();
