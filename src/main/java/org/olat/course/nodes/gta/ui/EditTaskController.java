@@ -23,6 +23,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -53,22 +54,27 @@ public class EditTaskController extends FormBasicController {
 	private final File taskContainer;
 	
 	private final String filenameToReplace;
+	private final List<TaskDefinition> currentDefinitions;
 	
-	public EditTaskController(UserRequest ureq, WindowControl wControl, File taskContainer) {
-		this(ureq, wControl, new TaskDefinition(), taskContainer, false);
+	public EditTaskController(UserRequest ureq, WindowControl wControl, File taskContainer,
+			List<TaskDefinition> currentDefinitions) {
+		this(ureq, wControl, new TaskDefinition(), taskContainer, currentDefinitions, false);
 	}
 	
-	public EditTaskController(UserRequest ureq, WindowControl wControl, TaskDefinition task, File taskContainer) {
-		this(ureq, wControl, task, taskContainer, true);
+	public EditTaskController(UserRequest ureq, WindowControl wControl, TaskDefinition task, File taskContainer,
+			List<TaskDefinition> currentDefinitions) {
+		this(ureq, wControl, task, taskContainer, currentDefinitions, true);
 	}
 	
 	public EditTaskController(UserRequest ureq, WindowControl wControl,
-			TaskDefinition task, File taskContainer, boolean replaceFile) {
+			TaskDefinition task, File taskContainer,
+			List<TaskDefinition> currentDefinitions, boolean replaceFile) {
 		super(ureq, wControl);
 		this.replaceFile = replaceFile;
 		this.task = task;
 		this.filenameToReplace = task != null ? task.getFilename() : null;
 		this.taskContainer = taskContainer;
+		this.currentDefinitions = currentDefinitions;
 		initForm(ureq);
 	}
 	
@@ -128,6 +134,23 @@ public class EditTaskController extends FormBasicController {
 		if(fileEl.getInitialFile() == null && fileEl.getUploadFile() == null) {
 			fileEl.setErrorKey("form.mandatory.hover", null);
 			allOk &= false;
+		} else if(!replaceFile && fileEl.getUploadFile() != null) {
+			String filename = fileEl.getUploadFileName();
+			File target = new File(taskContainer, filename);
+			if(target.exists()) {
+				fileEl.setErrorKey("error.file.exists", new String[]{ filename });
+				allOk &= false;
+			}
+		} else if(replaceFile && fileEl.getUploadFile() != null) {
+			String filename = fileEl.getUploadFileName();
+			if(currentDefinitions != null) {
+				for(TaskDefinition definition:currentDefinitions) {
+					if(filename.equals(definition.getFilename()) && !task.getTitle().equals(definition.getTitle())) {
+						fileEl.setErrorKey("error.file.exists", new String[]{ filename });
+						allOk &= false;
+					}
+				}
+			}
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
@@ -140,9 +163,20 @@ public class EditTaskController extends FormBasicController {
 		
 		if(fileEl.getUploadFile() != null) {
 			if(replaceFile && StringHelper.containsNonWhitespace(task.getFilename())) {
-				File currentFile = new File(taskContainer, task.getFilename());
-				if(currentFile.exists()) {
-					currentFile.delete();
+				int usage = 0;
+				if(currentDefinitions != null) {
+					for(TaskDefinition definition:currentDefinitions) {
+						if(task.getFilename().equals(definition.getFilename())) {
+							usage++;
+						}
+					}
+				}
+				
+				if(usage == 1) {
+					File currentFile = new File(taskContainer, task.getFilename());
+					if(currentFile.exists()) {
+						currentFile.delete();
+					}
 				}
 			}
 			

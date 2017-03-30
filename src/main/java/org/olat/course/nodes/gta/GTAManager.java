@@ -74,9 +74,14 @@ public interface GTAManager {
 	 */
 	public void updateTaskDefinition(String currentFilename, TaskDefinition task, CourseEnvironment courseEnv, GTACourseNode cNode);
 	
+	/**
+	 * Remove the task definition and the file (if it's not used by an other task)
+	 * 
+	 * @param removedTask The task definition to remove
+	 * @param courseEnv The course environment
+	 * @param cNode The course element
+	 */
 	public void removeTaskDefinition(TaskDefinition removedTask, CourseEnvironment courseEnv, GTACourseNode cNode);
-	
-	
 	
 	public File getSubmitDirectory(CourseEnvironment courseEnv, GTACourseNode cNode, IdentityRef person);
 	
