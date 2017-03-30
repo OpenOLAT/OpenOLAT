@@ -102,6 +102,7 @@ public class AssessmentResultController extends FormBasicController {
 	
 	private final String mapperUri;
 	private String signatureMapperUri;
+	private final String submissionMapperUri;
 	private final QTI21AssessmentResultsOptions options;
 	
 	private final boolean anonym;
@@ -125,7 +126,7 @@ public class AssessmentResultController extends FormBasicController {
 	private QTI21Service qtiService;
 	
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
-			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri,
+			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri, String submissionMapperUri,
 			QTI21AssessmentResultsOptions options, boolean withPrint, boolean withTitle) {
 		super(ureq, wControl, "assessment_results");
 		
@@ -137,6 +138,7 @@ public class AssessmentResultController extends FormBasicController {
 		this.assessedIdentity = assessedIdentity;
 		this.candidateSession = candidateSession;
 		this.fUnzippedDirRoot = fUnzippedDirRoot;
+		this.submissionMapperUri = submissionMapperUri;
 
 		ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 		inputResourceLocator = 
@@ -336,6 +338,9 @@ public class AssessmentResultController extends FormBasicController {
 		formItem.setResourceLocator(inputResourceLocator);
 		formItem.setAssessmentObjectUri(assessmentObjectUri);
 		formItem.setMapperUri(mapperUri);
+		if(submissionMapperUri != null) {
+			formItem.setSubmissionMapperUri(submissionMapperUri);
+		}
 	}
 	
 	private void extractOutcomeVariable(List<ItemVariable> itemVariables, Results results) {
@@ -391,7 +396,7 @@ public class AssessmentResultController extends FormBasicController {
 			@Override
 			public Controller createController(UserRequest uureq, WindowControl wwControl) {
 				AssessmentResultController printViewCtrl = new AssessmentResultController(uureq, wwControl, assessedIdentity, anonym,
-						candidateSession, fUnzippedDirRoot, mapperUri, options, false, true);
+						candidateSession, fUnzippedDirRoot, mapperUri, submissionMapperUri, options, false, true);
 				printViewCtrl.flc.contextPut("printCommand", Boolean.TRUE);
 				listenTo(printViewCtrl);
 				return printViewCtrl;

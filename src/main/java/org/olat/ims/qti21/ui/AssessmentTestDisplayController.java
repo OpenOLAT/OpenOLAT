@@ -1819,7 +1819,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				removeAsListenerAndDispose(resultCtrl);
 				resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, anonym,
 						AssessmentTestDisplayController.this.getCandidateSession(),
-						fUnzippedDirRoot, mapperUri, deliveryOptions.getAssessmentResultsOptions(),  false, true);
+						fUnzippedDirRoot, mapperUri, null, deliveryOptions.getAssessmentResultsOptions(), false, true);
 				listenTo(resultCtrl);
 				flc.add("qtiResults", resultCtrl.getInitialFormItem());
 				resultsVisible = true;

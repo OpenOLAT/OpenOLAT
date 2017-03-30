@@ -461,7 +461,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					new ResourcesMapper(assessmentObjectUri, submissionDir));
 
 			resultCtrl = new AssessmentResultController(ureq, getWindowControl(), getIdentity(), true, session,
-					fUnzippedDirRoot, mapperUri, getDeliveryOptions().getAssessmentResultsOptions(), false, false);
+					fUnzippedDirRoot, mapperUri, null, getDeliveryOptions().getAssessmentResultsOptions(), false, false);
 			listenTo(resultCtrl);
 			mainVC.put("resultReport", resultCtrl.getInitialComponent());
 			mainVC.contextPut("showResults", Boolean.TRUE);

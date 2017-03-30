@@ -24,18 +24,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -66,6 +63,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.ZipUtil;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -99,7 +97,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	
 	private RepositoryEntry entry;
 	private UserRequest ureq;
-
+	
+	private final Set<RepositoryEntry> testEntries = new HashSet<>();
 
 	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, 
 			QTICourseNode courseNode, QTI21Service qtiService, UserRequest ureq) {
@@ -110,6 +109,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		this.qtiService = qtiService;
 		this.ureq = ureq;		
 		this.entry = courseEnv.getCourseGroupManager().getCourseEntry();
+		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, ureq.getLocale());
 	}
 	
 	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, QTICourseNode courseNode, 
@@ -153,7 +153,6 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		//init package translator
-		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, hres.getLocale());
 		exportFolderName = translator.translate("export.folder.name");
 		
 		String label = StringHelper.transformDisplayNameToFileSystemName(title);
@@ -168,24 +167,37 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		try { 			
 			ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream());
 			zout.setLevel(9);
-			
-			List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
-			
-			//convert velocity template to zip entry
-			String membersHTML = createMemberListingHTML(assessedMembers);	
-			convertToZipEntry(zout, exportFolderName + "/index.html", membersHTML);
-			
-			//Copy resource files or file trees to export file tree 
-			File sasstheme = new File(WebappHelper.getContextRealPath("/static/offline/qti"));
-			fsToZip(zout, sasstheme.toPath(), exportFolderName + "/css/offline/qti/");
-			
-			File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
-			fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");
-			
+			exportTestResults(zout);
 			zout.close();
-
 		} catch (Exception e) {
 			log.error("Unknown error while assessment result resource export", e);
+		}
+	}
+	
+	/**
+	 * Adds the result export to existing zip stream.
+	 *
+	 * @throws IOException
+	 */
+	public void exportTestResults(ZipOutputStream zout) throws IOException {
+		
+		List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
+		
+		//convert velocity template to zip entry
+		String membersHTML = createMemberListingHTML(assessedMembers);	
+		convertToZipEntry(zout, exportFolderName + "/index.html", membersHTML);
+		
+		//Copy resource files or file trees to export file tree 
+		File sasstheme = new File(WebappHelper.getContextRealPath("/static/offline/qti"));
+		ZipUtil.addDirectoryToZip(sasstheme.toPath(), exportFolderName + "/css/offline/qti/", zout);
+		File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
+		ZipUtil.addDirectoryToZip(fontawesome.toPath(), exportFolderName + "/css/font-awesome/", zout);
+		File qtiJs = new File(WebappHelper.getContextRealPath("/static/js/jquery/"));
+		ZipUtil.addDirectoryToZip(qtiJs.toPath(), exportFolderName + "/js/jquery/", zout);
+
+		//materials
+		for(RepositoryEntry testEntry:testEntries) {
+			copyTestMaterials(testEntry, zout);
 		}
 	}
 	
@@ -208,25 +220,32 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			WindowControl mockwControl = new WindowControlMocker();
 			
 			FileResourceManager frm = FileResourceManager.getInstance();
-			File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
+			RepositoryEntry testEntry = session.getTestEntry();
+			testEntries.add(testEntry);
+			File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		
+			String mapperUri = "../../../test" + testEntry.getKey() + "/";//add test repo key
+			String submissionMapperUri = ".";
 			Controller assessmentResultController = new AssessmentResultController(
 					ureq, mockwControl, identity, false, session,
-					fUnzippedDirRoot, null, QTI21AssessmentResultsOptions.allOptions(), false, true);
+					fUnzippedDirRoot, mapperUri, submissionMapperUri, QTI21AssessmentResultsOptions.allOptions(), false, true);
 
 			Component component = assessmentResultController.getInitialComponent();
 			String componentHTML = createResultHTML(component); 
 			convertToZipEntry(zout, idPath + assessmentID +".html", componentHTML);	
 			
 			File resultXML = qtiService.getAssessmentResultFile(session);
-			convertToZipEntry(zout, idPath + assessmentID +".xml", resultXML);		
+			convertToZipEntry(zout, idPath + assessmentID +".xml", resultXML);	
 			
+			File submissionDir = qtiService.getSubmissionDirectory(session);
+			String baseDir = idPath + "submissions/";
+			ZipUtil.addDirectoryToZip(submissionDir.toPath(), baseDir, zout);
 		}
 		return assessments;
 	}
 	
 	private List<AssessedMember> createAssessedMembersDetail (ZipOutputStream zout) throws IOException {
-		List<AssessedMember> assessedMembers = new ArrayList<AssessedMember>();		
+		List<AssessedMember> assessedMembers = new ArrayList<>();		
 		for (Identity identity : identities) {
 			
 			String idDir = exportFolderName + "/" + DATA + identity.getName();
@@ -258,34 +277,19 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		}
 		return assessedMembers;
 	}
-		
 	
-	/**
-	 * Adds the result export to existing zip stream.
-	 *
-	 * @throws IOException
-	 */
-	public void exportTestResults (ZipOutputStream zout) throws IOException {
+	private void copyTestMaterials(RepositoryEntry testEntry, ZipOutputStream zout) {
+		FileResourceManager frm = FileResourceManager.getInstance();
+		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		String baseDir = exportFolderName + "/test" + testEntry.getKey();
+		ZipUtil.addDirectoryToZip(fUnzippedDirRoot.toPath(), baseDir, zout);
 		
-		List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
-		
-		//convert velocity template to zip entry
-		String membersHTML = createMemberListingHTML(assessedMembers);	
-		convertToZipEntry(zout, exportFolderName + "/index.html", membersHTML);
-		
-		//Copy resource files or file trees to export file tree 
-		File sasstheme = new File(WebappHelper.getContextRealPath("/static/offline/qti"));
-		fsToZip(zout, sasstheme.toPath(), exportFolderName + "/css/offline/qti/");
-		
-		File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
-		fsToZip(zout, fontawesome.toPath(), exportFolderName + "/css/font-awesome/");
 	}
 	
 	private String createLink(String name, String href, boolean userview) {
 		String targetLink = userview ? "_blank" : "_self";
 		return "<a href='" + href + "' target='" + targetLink + "' class='userLink'>" + name + "</a>";		
 	}
-	
 	
 	private String createPassedIcons(boolean passed) {
 		String icon = passed ? "<i class='o_icon o_passed o_icon_passed text-success'></i>"
@@ -302,23 +306,11 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		mainVC.contextPut("rootTitle", translator.translate("table.grading"));
 		mainVC.put("results", results);
 		
-		GlobalSettings globalSettings = new GlobalSettings() {
-			public int getFontSize() { return 100;}
-			public AJAXFlags getAjaxFlags() { return new EmptyAJAXFlags();}
-			public boolean isIdDivsForced() { return false; }
-		};
-		//render VelocityContainer to StringOutPut
-		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), globalSettings); 
-		renderer.render(sb, mainVC, null);
-		//mainVC.getHTMLRendererSingleton().render(renderer, sb, mainVC, ubu, tlr, new RenderResult(), null);
 		
+		//render VelocityContainer to StringOutPut
+		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new EmptyGlobalSettings()); 
+		renderer.render(sb, mainVC, null);
 		return sb.toString();
-	}
-	
-	private static class EmptyAJAXFlags extends AJAXFlags {
-		public EmptyAJAXFlags() { super(null); }
-		@Override
-		public boolean isIframePostEnabled() { return false; }
 	}
 	
 	private String createResultListingHTML (List<ResultDetail> assessments,AssessedMember assessedMember){
@@ -356,26 +348,6 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		return velocityHelper.evaluateVTL(template, ctx);
 	}
 	
-
-	private void fsToZip(ZipOutputStream zout, final Path sourceFolder, final String targetPath) throws IOException {
-		Files.walkFileTree(sourceFolder, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				zout.putNextEntry(new ZipEntry(targetPath + sourceFolder.relativize(file).toString()));
-				Files.copy(file, zout);
-				zout.closeEntry();
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-				zout.putNextEntry(new ZipEntry(targetPath + sourceFolder.relativize(dir).toString() + "/"));
-				zout.closeEntry();
-				return FileVisitResult.CONTINUE;
-			}
-		});
-	}
-	
 	private void convertToZipEntry(ZipOutputStream zout, String link, File file) throws IOException {
 		zout.putNextEntry(new ZipEntry(link));
 		try (InputStream in = new FileInputStream(file)) {
@@ -404,10 +376,37 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		zout.closeEntry();		
 	} 
 
-
 	@Override
 	public void release() {
-
+		//
 	}
 
+	private static class EmptyAJAXFlags extends AJAXFlags {
+		
+		public EmptyAJAXFlags() {
+			super(null);
+		}
+		
+		@Override
+		public boolean isIframePostEnabled() {
+			return false;
+		}
+	}
+	
+	private static class EmptyGlobalSettings implements GlobalSettings {
+		@Override
+		public int getFontSize() {
+			return 100;
+		}
+		
+		@Override
+		public AJAXFlags getAjaxFlags() {
+			return new EmptyAJAXFlags();
+		}
+		
+		@Override
+		public boolean isIdDivsForced() {
+			return false;
+		}
+	};
 }

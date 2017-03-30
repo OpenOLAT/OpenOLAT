@@ -617,11 +617,24 @@ public class AssessmentRenderFunctions {
     </xsl:choose>
   </xsl:function>
 	 */
+	
 	public static final String convertLink(AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, String uri) {
 		if(uri != null && uri.startsWith("http:") || uri.startsWith("https:") || uri.startsWith("mailto:")) {
 			return uri;
 		}
 		
+		String filename = getLinkFilename(uri);
+		String relativePath = component.relativePathTo(resolvedAssessmentItem);
+		return component.getMapperUri() + "/" + filename + "?href=" + relativePath + (uri == null ? "" : uri);
+	}
+	
+	public static final String convertSubmissionLink(AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, String uri) {
+		String filename = getLinkFilename(uri);
+		String relativePath = component.relativePathTo(resolvedAssessmentItem);
+		return component.getSubmissionMapperUri() + "/submissions/" + filename + "?href=" + relativePath + (uri == null ? "" : uri);
+	}
+	
+	private static final String getLinkFilename(String uri) {
 		String filename = "file";
 		try {
 			if(StringHelper.containsNonWhitespace(uri)) {
@@ -635,9 +648,7 @@ public class AssessmentRenderFunctions {
 		} catch (Exception e) {
 			log.error("", e);
 		}
-
-		String relativePath = component.relativePathTo(resolvedAssessmentItem);
-		return component.getMapperUri() + "/" + filename + "?href=" + relativePath + (uri == null ? "" : uri);
+		return filename;
 	}
 	
 	public static final boolean testFeedbackVisible(TestFeedback testFeedback, TestSessionState testSessionState) {
