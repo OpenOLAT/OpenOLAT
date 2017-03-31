@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.LazyInitializationException;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -46,6 +48,8 @@ import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 
 /**
@@ -205,8 +209,7 @@ public class ScoreAccounting {
 						if(failedType == null || failedType == FailedEvaluationType.failedAsNotPassed) {
 							passed = Boolean.FALSE;
 						} else if(failedType == FailedEvaluationType.failedAsNotPassedAfterEndDate) {
-							CourseGroupManager cgm = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager();
-							RepositoryEntryLifecycle lifecycle = cgm.getCourseEntry().getLifecycle();
+							RepositoryEntryLifecycle lifecycle = getRepositoryEntryLifecycle();
 							if(lifecycle != null && lifecycle.getValidTo() != null && lifecycle.getValidTo().compareTo(new Date()) < 0) {
 								passed = Boolean.FALSE;
 							}
@@ -237,6 +240,23 @@ public class ScoreAccounting {
 				se = AssessmentEvaluation.EMPTY_EVAL;
 			}
 			return se;
+		}
+		
+		private RepositoryEntryLifecycle getRepositoryEntryLifecycle() {
+			CourseGroupManager cgm = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager();
+			try {
+				RepositoryEntryLifecycle lifecycle = cgm.getCourseEntry().getLifecycle();
+				if(lifecycle != null) {
+					lifecycle.getValidTo();//
+				}
+				return lifecycle;
+			} catch (LazyInitializationException e) {
+				//OO-2667: only seen in 1 instance but as it's a critical place, secure the system
+				RepositoryEntry reloadedEntry = CoreSpringFactory.getImpl(RepositoryService.class)
+						.loadByKey(cgm.getCourseEntry().getKey());
+				userCourseEnvironment.getCourseEnvironment().updateCourseEntry(reloadedEntry);
+				return reloadedEntry.getLifecycle();
+			}
 		}
 		
 		private boolean same(AssessmentEvaluation se, AssessmentEntry entry) {
