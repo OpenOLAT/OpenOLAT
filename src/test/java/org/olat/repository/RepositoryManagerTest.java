@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.hibernate.LazyInitializationException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -1326,6 +1327,36 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertTrue(group1CoachRole);
 		boolean group2CoachRole = businessGroupRelationDao.hasRole(owner, group2, GroupRoles.coach.name());
 		Assert.assertTrue(group2CoachRole);
+	}
+	
+	/**
+	 * This is a simulation of OO-2667 to make sure that the LazyInitializationException don't
+	 * set the transaction on rollback.
+	 */
+	@Test
+	public void lazyLoadingCheck() {
+		RepositoryEntry re = repositoryService.create("Rei Ayanami", "-", "Repository entry DAO Test 5", "", null);
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntryLifecycle cycle = lifecycleDao.create("New cycle 1", "New cycle soft 1", false, new Date(), new Date());
+		re = repositoryManager.setDescriptionAndName(re, "Updated repo entry", null, null, "", null, null, null, null, null, null, cycle);
+		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntry lazyRe = repositoryManager.setAccess(re, 2, false);
+		dbInstance.commitAndCloseSession();
+		
+		try {// produce the exception
+			lazyRe.getLifecycle().getValidFrom();
+			Assert.fail();
+		} catch (LazyInitializationException e) {
+			//
+		}
+		
+		//load a fresh entry
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(lazyRe.getKey());
+		Date validFrom = entry.getLifecycle().getValidFrom();
+		Assert.assertNotNull(validFrom);
+		dbInstance.commitAndCloseSession();
 	}
 
 	private RepositoryEntry createRepositoryEntry(final String type, Identity owner, long i) {
