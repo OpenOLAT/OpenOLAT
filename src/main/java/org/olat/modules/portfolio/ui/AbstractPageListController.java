@@ -716,7 +716,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		loadModel(ureq, null);
 	}
 	
-	private void doEditAssignment(UserRequest ureq, PortfolioElementRow row) {
+	protected void doEditAssignment(UserRequest ureq, PortfolioElementRow row) {
 		if(editAssignmentCtrl != null) return;
 		
 		Assignment assignment = row.getAssignment();
