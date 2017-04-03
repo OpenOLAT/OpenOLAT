@@ -1252,6 +1252,45 @@ public class ForumManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void deleteMessageTree_withMarks() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-15");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-16");
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("Future deleted message 1");
+		topMessage.setBody("Future deleted  stuff");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(fo, id2, false);
+		reply.setTitle("Future deleted 2");
+		reply.setBody("Future deleted  stuff");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commit();
+		
+		Message reply2 = forumManager.createMessage(fo, id1, false);
+		reply2.setTitle("Future deleted 3");
+		reply2.setBody("Future deleted  stuff");
+		forumManager.replyToMessage(reply2, reply);
+		dbInstance.commit();
+		
+		//mark as read
+		forumManager.markAsRead(id1, fo, topMessage);
+		forumManager.markAsRead(id1, fo, reply);
+		forumManager.markAsRead(id1, fo, reply2);
+		forumManager.markAsRead(id2, fo, topMessage);
+		forumManager.markAsRead(id2, fo, reply);
+		forumManager.markAsRead(id2, fo, reply2);
+		dbInstance.commitAndCloseSession();
+		
+		//delete a message
+		forumManager.deleteMessageTree(fo.getKey(), reply2);
+		dbInstance.commitAndCloseSession();
+	}
+	
+	@Test
 	public void deleteForum() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-7");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-8");
@@ -1274,6 +1313,54 @@ public class ForumManagerTest extends OlatTestCase {
 		reply2.setTitle("Future deleted forum part. 3");
 		reply2.setBody("Future deleted  stuff");
 		forumManager.replyToMessage(reply2, reply);
+		dbInstance.commitAndCloseSession();
+
+		//delete the forum
+		forumManager.deleteForum(fo.getKey());
+		dbInstance.commit();
+	}
+	
+	@Test
+	public void deleteForum_bigForumWithMarks() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-17");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-18");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-19");
+		Forum fo = forumManager.addAForum();
+		dbInstance.commit();
+		
+		List<Message> messages = new ArrayList<>();
+		for(int i=0; i<5; i++) {
+			Message topMessage = forumManager.createMessage(fo, id1, false);
+			topMessage.setTitle("Future deleted forum part. " + i);
+			topMessage.setBody("Future deleted  stuff");
+			forumManager.addTopMessage(topMessage);
+			messages.add(topMessage);
+			dbInstance.commit();
+			
+			for(int j=0; j<3; j++) {
+				Message reply = forumManager.createMessage(fo, id2, false);
+				reply.setTitle("Future deleted forum part. " + i + "." + j);
+				reply.setBody("Future deleted  stuff");
+				forumManager.replyToMessage(reply, topMessage);
+				messages.add(reply);
+				dbInstance.commit();
+
+				for(int k=0; k<3; k++) {
+					Message reply2 = forumManager.createMessage(fo, id3, false);
+					reply2.setTitle("Future deleted forum part. " + i + "." + j + "." + k);
+					reply2.setBody("Future deleted  stuff");
+					forumManager.replyToMessage(reply2, reply);
+					messages.add(reply2);
+					dbInstance.commitAndCloseSession();
+				}
+			}
+		}
+		
+		for(Message message:messages) {
+			forumManager.markAsRead(id1, fo, message);
+			forumManager.markAsRead(id2, fo, message);
+			forumManager.markAsRead(id3, fo, message);
+		}
 		dbInstance.commitAndCloseSession();
 
 		//delete the forum
