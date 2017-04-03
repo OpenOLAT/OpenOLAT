@@ -573,10 +573,14 @@ public class BinderPageListController extends AbstractPageListController {
 
 	@Override
 	protected Assignment doStartAssignment(UserRequest ureq, PortfolioElementRow row) {
-		Assignment startedAssigment = super.doStartAssignment(ureq, row);
-
-		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_ASSIGNMENT_STARTED, getClass(),
-				LoggingResourceable.wrap(row.getSection()), LoggingResourceable.wrap(startedAssigment));
-		return startedAssigment;
+		if(secCallback.canInstantiateAssignment()) {
+			Assignment startedAssigment = super.doStartAssignment(ureq, row);
+			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_ASSIGNMENT_STARTED, getClass(),
+					LoggingResourceable.wrap(row.getSection()), LoggingResourceable.wrap(startedAssigment));
+			return startedAssigment;
+		} else if(secCallback.canNewAssignment()) {
+			doEditAssignment(ureq, row);
+		}
+		return null;
 	}
 }
