@@ -619,7 +619,7 @@ public class AssessmentRenderFunctions {
 	 */
 	
 	public static final String convertLink(AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, String uri) {
-		if(uri != null && uri.startsWith("http:") || uri.startsWith("https:") || uri.startsWith("mailto:")) {
+		if(uri != null && (uri.startsWith("http:") || uri.startsWith("https:") || uri.startsWith("mailto:"))) {
 			return uri;
 		}
 		
