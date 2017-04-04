@@ -176,6 +176,7 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 			if (modifier != null && modifier.equals(identity)) {
 				infoMessage.setModifier(null);
 			}
+			infoMessageManager.saveInfoMessage(infoMessage);
 		}		
 	}
 	
