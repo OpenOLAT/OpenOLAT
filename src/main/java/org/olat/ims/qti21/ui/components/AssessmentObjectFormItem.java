@@ -83,6 +83,14 @@ public abstract class AssessmentObjectFormItem extends FormItemImpl implements F
 		getComponent().setMapperUri(mapperUri);
 	}
 	
+	public String getSubmissionMapperUri() {
+		return getComponent().getSubmissionMapperUri();
+	}
+	
+	public void setSubmissionMapperUri(String submissionMapperUri) {
+		getComponent().setSubmissionMapperUri(submissionMapperUri);
+	}
+	
 	public URI getAssessmentObjectUri() {
 		return getComponent().getAssessmentObjectUri();
 	}

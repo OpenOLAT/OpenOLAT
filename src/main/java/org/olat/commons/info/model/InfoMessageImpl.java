@@ -87,8 +87,8 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	@Column(name="businesspath", nullable=true, insertable=true, updatable=false)
 	private String businessPath;
 	
-	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
-	@JoinColumn(name="fk_author_id", nullable=false, insertable=true, updatable=false)
+	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="fk_author_id", nullable=true, insertable=true, updatable=true)
 	private Identity author;
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_modifier_id", nullable=true, insertable=true, updatable=true)

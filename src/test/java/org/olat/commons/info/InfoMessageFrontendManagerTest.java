@@ -190,7 +190,7 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 
 		dbInstance.commitAndCloseSession();
 
-		infoManager.deleteInfoMessagesOfIdentity(businessGroup, id1);
+		infoManager.updateInfoMessagesOfIdentity(businessGroup, id1);
 		dbInstance.commitAndCloseSession();
 
 		// load messages after deletion

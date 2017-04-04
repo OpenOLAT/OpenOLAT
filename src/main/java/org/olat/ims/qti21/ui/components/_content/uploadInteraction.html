@@ -23,7 +23,7 @@
 			</div>
 		</div>	
 		#else
-			<a href="${r.convertLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}" target="_blank"><i class="o_icon $r.getFiletypeIconCss($responseValue.fileName)"> </i> $responseValue.fileName</a>
+			<a href='${r.convertSubmissionLinkFull("submissions/${r.getAssessmentTestSessionKey()}/$responseValue.fileName")}' target="_blank"><i class="o_icon $r.getFiletypeIconCss($responseValue.fileName)"> </i> $responseValue.fileName</a>
 		#end
 	#else
 		## Nothing uploaded yet

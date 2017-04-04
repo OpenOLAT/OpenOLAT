@@ -227,8 +227,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				TaskDefinition row = (TaskDefinition)confirmDeleteCtrl.getUserObject();
 				doDelete(ureq, row);
-				//fireEvent(ureq, Event.DONE_EVENT);
 			}
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -236,9 +236,11 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDeleteCtrl);
 		removeAsListenerAndDispose(editTaskCtrl);
 		removeAsListenerAndDispose(addTaskCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmDeleteCtrl = null;
 		editTaskCtrl = null;
 		addTaskCtrl = null;
 		cmc = null;
@@ -269,7 +271,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	}
 	
 	private void doAddTask(UserRequest ureq) {
-		addTaskCtrl = new EditTaskController(ureq, getWindowControl(), tasksFolder);
+		List<TaskDefinition> currentDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
+		addTaskCtrl = new EditTaskController(ureq, getWindowControl(), tasksFolder, currentDefinitions);
 		listenTo(addTaskCtrl);
 
 		String title = translate("add.task");
@@ -287,7 +290,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	}
 	
 	private void doReplaceTask(UserRequest ureq, TaskDefinition taskDef) {
-		editTaskCtrl = new EditTaskController(ureq, getWindowControl(), taskDef, tasksFolder);
+		List<TaskDefinition> currentDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
+		editTaskCtrl = new EditTaskController(ureq, getWindowControl(), taskDef, tasksFolder, currentDefinitions);
 		listenTo(editTaskCtrl);
 
 		String title = translate("edit.task");
@@ -359,12 +363,6 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	
 	private void doDelete(UserRequest ureq, TaskDefinition taskDef) {
 		gtaManager.removeTaskDefinition(taskDef, courseEnv, gtaNode);
-		
-		VFSItem item = tasksContainer.resolve(taskDef.getFilename());
-		if(item != null) {
-			item.delete();
-		}
-		
 		updateModel();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

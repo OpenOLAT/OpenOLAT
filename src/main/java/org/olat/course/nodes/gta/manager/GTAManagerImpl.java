@@ -49,6 +49,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.nodes.GTACourseNode;
@@ -182,15 +183,26 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			@Override
 			public void sync() {
 				List<TaskDefinition> taskDefinitions = getTaskDefinitions(courseEnv, cNode);
+				boolean deleteFile = true;
 				for(int i=taskDefinitions.size(); i-->0; ) {
-					if(taskDefinitions.get(i).getFilename().equals(removedTask.getFilename())) {
+					if(taskDefinitions.get(i).getTitle().equals(removedTask.getTitle())) {
 						taskDefinitions.remove(i);
-						break;
+					} else if(taskDefinitions.get(i).getFilename().equals(removedTask.getFilename())) {
+						deleteFile = false;
+					}
+				}
+				
+				if(deleteFile) {
+					VFSContainer tasksContainer = getTasksContainer(courseEnv, cNode);
+					VFSItem item = tasksContainer.resolve(removedTask.getFilename());
+					if(item != null) {
+						item.delete();
 					}
 				}
 				storeTaskDefinitions(taskDefinitions, courseEnv, cNode);
 			}
 		});
+		
 	}
 
 	@Override

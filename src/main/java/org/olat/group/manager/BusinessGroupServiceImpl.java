@@ -1035,7 +1035,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 
 	private void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group, MailPackage mailing,
 			List<BusinessGroupModifiedEvent.Deferred> events) {
-		infoMessageManager.deleteInfoMessagesOfIdentity(group, identity);
+		infoMessageManager.updateInfoMessagesOfIdentity(group, identity);
 		boolean removed = businessGroupRelationDAO.removeRole(identity, group, GroupRoles.participant.name());
 		if(removed) {
 			// notify currently active users of this business group

@@ -103,11 +103,12 @@ public class InfoMessageManagerImpl extends InfoMessageManager {
 	public List<InfoMessage> loadInfoMessagesOfIdentity(BusinessGroupRef businessGroup, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select msg from ").append(InfoMessageImpl.class.getName()).append(" msg")
-			.append(" inner join fetch msg.author author")
-			.append(" inner join fetch author.user")
+			.append(" left join fetch msg.author author")
+			.append(" left join fetch author.user")
 			.append(" left join fetch msg.modifier modifier")
 			.append(" left join fetch modifier.user")
-			.append(" where author.key=:authorKey")
+			.append(" where (author.key=:authorKey")
+			.append(" or modifier.key=:authorKey)")
 			.append(" and msg.resId=:groupKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), InfoMessage.class)
@@ -120,8 +121,8 @@ public class InfoMessageManagerImpl extends InfoMessageManager {
 	public InfoMessage loadInfoMessageByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select msg from ").append(InfoMessageImpl.class.getName()).append(" msg")
-			.append(" inner join fetch msg.author author")
-			.append(" inner join fetch author.user")
+			.append(" left join fetch msg.author author")
+			.append(" left join fetch author.user")
 			.append(" left join fetch msg.modifier modifier")
 			.append(" left join fetch modifier.user")
 			.append(" where msg.key=:key");
@@ -175,8 +176,8 @@ public class InfoMessageManagerImpl extends InfoMessageManager {
 		sb.append(" from ").append(InfoMessageImpl.class.getName()).append(" msg");
 		
 		if (!count) {
-			sb.append(" inner join fetch msg.author author")
-			.append(" inner join fetch author.user")
+			sb.append(" left join fetch msg.author author")
+			.append(" left join fetch author.user")
 			.append(" left join fetch msg.modifier modifier")
 			.append(" left join fetch modifier.user");
 		}

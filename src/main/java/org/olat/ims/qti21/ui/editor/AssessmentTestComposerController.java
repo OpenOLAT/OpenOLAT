@@ -110,6 +110,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestPartEvent;
+import org.olat.imscp.xml.manifest.FileType;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.SelectItemController;
@@ -653,6 +654,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		ManifestBuilder clonedManifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		ResourceType resource = getResourceType(clonedManifestBuilder, itemRef);
 		ManifestMetadataBuilder metadata = clonedManifestBuilder.getMetadataBuilder(resource, true);
+		if(metadata == null) {
+			metadata = new ManifestMetadataBuilder();// not in imsmanifest.xml?
+		}
 
 		File itemFile = new File(rootNode.getSystemId());
 
@@ -971,6 +975,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				if(sectionPart instanceof AssessmentItemRef) {
 					AssessmentItemRef itemRef = (AssessmentItemRef)sectionPart;
 					ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+					checkAndFixAbsolutePath(itemRef); 
 					
 					AssessmentItem assessmentItem = null;
 					if(resolvedAssessmentItem != null) {
@@ -999,7 +1004,56 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 	}
 	
+	private void checkAndFixAbsolutePath(AssessmentItemRef itemRef) {
+		if(itemRef == null || itemRef.getHref() == null) return;
+		
+		String href = itemRef.getHref().toString();
+		if(isAbsolutePath(href)) {
+			try {
+				String relativeHref = fixAbsolutePath(href);
+				itemRef.setHref(new URI(relativeHref));
+			} catch (URISyntaxException e) {
+				logError("", e);
+			}
+		}
+	}
+	
+	private void checkAndFixAbsolutePath(ResourceType resource) {
+		if(resource == null) return;
+		
+		if(isAbsolutePath(resource.getHref())) {
+			resource.setHref(fixAbsolutePath(resource.getHref()));
+			
+			List<FileType> files = resource.getFile();
+			if(files != null) {
+				for(FileType file:files) {
+					if(isAbsolutePath(file.getHref())) {
+						file.setHref(fixAbsolutePath(file.getHref()));
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * It check if the path is absolute and in the form of a absolute within an openolat instance.
+	 * @param href
+	 * @return
+	 */
+	private boolean isAbsolutePath(String href) {
+		return href != null && href.startsWith("/") && href.contains("/bcroot/repository/") && href.contains("/_unzipped_/");
+	}
+	
+	private String fixAbsolutePath(String href) {
+		int index = href.indexOf("/_unzipped_/") + ("/_unzipped_/").length();
+		return href.substring(index);
+	}
+	
 	private void doSaveManifest() {
+		List<ResourceType> resources = manifestBuilder.getResourceList();
+		for(ResourceType resource:resources) {
+			checkAndFixAbsolutePath(resource);
+		}
 		manifestBuilder.write(new File(unzippedDirRoot, "imsmanifest.xml"));
 	}
 	
