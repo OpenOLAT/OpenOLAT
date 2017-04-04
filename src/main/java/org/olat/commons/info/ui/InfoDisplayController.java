@@ -270,7 +270,12 @@ public class InfoDisplayController extends FormBasicController {
 
 		String authorName = userManager.getUserDisplayName(info.getAuthor());
 		String creationDate = formatter.formatDateAndTime(info.getCreationDate());
-		String infos = translate("display.info", new String[]{StringHelper.escapeHtml(authorName), creationDate});
+		String infos;
+		if (authorName.isEmpty()) {
+			infos = translate("display.info.noauthor", new String[]{creationDate});
+		} else {
+			infos = translate("display.info", new String[]{StringHelper.escapeHtml(authorName), creationDate});
+		}		
 
 		return new InfoMessageForDisplay(info.getKey(), info.getTitle(), message, infos, modifier);
 	}
