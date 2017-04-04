@@ -62,7 +62,7 @@ public interface InfoMessageFrontendManager {
 	
 	public void deleteInfoMessage(InfoMessage infoMessage);
 	
-	public void deleteInfoMessagesOfIdentity(BusinessGroup businessGroup, Identity identity);
+	public void updateInfoMessagesOfIdentity(BusinessGroup businessGroup, Identity identity);
 	
 	public void removeInfoMessagesAndSubscriptionContext(BusinessGroup group);
 	

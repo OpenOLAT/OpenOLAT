@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.model.InfoMessageImpl;
 import org.olat.commons.info.notification.InfoSubscriptionManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
@@ -163,11 +164,18 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	}
 	
 	@Override
-	public void deleteInfoMessagesOfIdentity(BusinessGroup businessGroup, Identity identity) {
+	public void updateInfoMessagesOfIdentity(BusinessGroup businessGroup, Identity identity) {
 		List<InfoMessage> infoMessages = infoMessageManager.loadInfoMessagesOfIdentity(businessGroup, identity);
 		for (InfoMessage infoMessage : infoMessages) {
-			infoMessageManager.deleteInfoMessage(infoMessage);
-			infoSubscriptionManager.markPublisherNews(infoMessage.getOLATResourceable(), infoMessage.getResSubPath());
+			Identity author = infoMessage.getAuthor();
+			Identity modifier = infoMessage.getModifier();
+			if (author != null && author.equals(identity)) {
+				((InfoMessageImpl)infoMessage).setAuthor(null);
+				infoSubscriptionManager.markPublisherNews(infoMessage.getOLATResourceable(), infoMessage.getResSubPath());
+			} 
+			if (modifier != null && modifier.equals(identity)) {
+				infoMessage.setModifier(null);
+			}
 		}		
 	}
 	
