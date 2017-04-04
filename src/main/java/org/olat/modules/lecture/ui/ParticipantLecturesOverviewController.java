@@ -38,7 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureStatistics;
 import org.olat.modules.lecture.ui.ParticipantLecturesDataModel.LecturesCols;
-import org.olat.modules.lecture.ui.component.LectureStatisticsRenderer;
+import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,11 +85,13 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.entry));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.quota));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.progress, new LectureStatisticsRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.progress, new LectureStatisticsCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		
-		tableModel = new ParticipantLecturesDataModel(columnsModel); 
+		tableModel = new ParticipantLecturesDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl.setAndLoadPersistedPreferences(ureq, "participant-lectures");
+		tableEl.setCustomizeColumns(false);
 	}
 	
 	private void loadModel() {

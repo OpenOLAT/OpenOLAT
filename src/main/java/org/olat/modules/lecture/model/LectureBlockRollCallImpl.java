@@ -203,6 +203,7 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 		this.lecturesAbsent = lecturesAbsent;
 	}
 
+	@Override
 	@Transient
 	public List<Integer> getLecturesAbsentList() {
 		return deserialize(getLecturesAbsent());
@@ -238,6 +239,7 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 		return list;
 	}
 
+	@Override
 	public int getLecturesAttendedNumber() {
 		return lecturesAttendedNumber;
 	}
@@ -246,6 +248,7 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 		this.lecturesAttendedNumber = lecturesAttendedNumber;
 	}
 
+	@Override
 	public int getLecturesAbsentNumber() {
 		return lecturesAbsentNumber;
 	}

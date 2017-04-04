@@ -17,46 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import java.util.List;
+import java.util.Date;
+import java.util.Locale;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 
 /**
+ * Render the time only.
  * 
- * Initial date: 20 mars 2017<br>
+ * Initial date: 30 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LectureBlockRollCall extends ModifiedInfo, CreateInfo {
+public class TimeFlexiCellRenderer implements FlexiCellRenderer {
 	
-	public Long getKey();
+	private final Formatter format;
 	
-	public Identity getIdentity();
-	
-	public LectureBlock getLectureBlock();
-	
-	public int getLecturesAbsentNumber();
-	
-	public int getLecturesAttendedNumber();
-	
-	public List<Integer> getLecturesAttendedList();
-	
-	public List<Integer> getLecturesAbsentList();
-	
-	public Boolean getAbsenceAuthorized();
-	
-	public void setAbsenceAuthorized(Boolean absenceAuthorized);
-	
-	public String getAbsenceReason();
+	public TimeFlexiCellRenderer(Locale locale) {
+		format = Formatter.getInstance(locale);
+	}
 
-	public void setAbsenceReason(String absenceReason);
-	
-	public String getComment();
-	
-	public void setComment(String comment);
-
+	@Override
+	public void render(Renderer renderer, StringOutput target, Object cellValue,
+			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof Date) {
+			target.append(format.formatTimeShort((Date)cellValue));
+		}
+	}
 }

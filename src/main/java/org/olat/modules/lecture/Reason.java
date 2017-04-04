@@ -29,5 +29,15 @@ import org.olat.core.id.ModifiedInfo;
  *
  */
 public interface Reason extends ModifiedInfo, CreateInfo {
+	
+	public Long getKey();
+	
+	public String getTitle();
+	
+	public void setTitle(String title);
+	
+	public String getDescription();
+	
+	public void setDescription(String description);
 
 }

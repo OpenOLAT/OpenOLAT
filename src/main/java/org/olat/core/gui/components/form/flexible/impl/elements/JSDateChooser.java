@@ -92,6 +92,12 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	}
 
 	@Override
+	public void setDomReplacementWrapperRequired(boolean required) {
+		jscomponent.setDomReplacementWrapperRequired(required);
+		super.setDomReplacementWrapperRequired(required);
+	}
+
+	@Override
 	public void setDisplaySize(int dispSize){
 		displaySize = dispSize;
 	}

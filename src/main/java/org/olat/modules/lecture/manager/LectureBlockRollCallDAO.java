@@ -33,8 +33,11 @@ import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockRollCallImpl;
 import org.olat.modules.lecture.model.LectureStatistics;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,75 +52,79 @@ public class LectureBlockRollCallDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	
 	public LectureBlockRollCall createAndPersistRollCall(LectureBlock lectureBlock, Identity identity,
-			Boolean authorizedAbsence, Integer... lecturesAttendee) {
+			Boolean authorizedAbsence, String absenceReason, String comment, Integer... lecturesAttendee) {
 		LectureBlockRollCallImpl rollCall = new LectureBlockRollCallImpl();
 		rollCall.setCreationDate(new Date());
 		rollCall.setLastModified(rollCall.getCreationDate());
 		rollCall.setIdentity(identity);
 		rollCall.setLectureBlock(lectureBlock);
 		rollCall.setAbsenceAuthorized(authorizedAbsence);
+		rollCall.setAbsenceReason(absenceReason);
+		rollCall.setComment(comment);
 		addInternalLecture(lectureBlock, rollCall, lecturesAttendee);
 		dbInstance.getCurrentEntityManager().persist(rollCall);
 		return rollCall;
 	}
 	
-	public LectureBlockRollCall addLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... lecturesAttendee) {
-		addInternalLecture(lectureBlock, rollCall, lecturesAttendee);
+	public LectureBlockRollCall addLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... absences) {
+		addInternalLecture(lectureBlock, rollCall, absences);
 		return dbInstance.getCurrentEntityManager().merge(rollCall);
 	}
 	
-	private void addInternalLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... lecturesAttendee) {
-		if(lecturesAttendee != null && lecturesAttendee.length > 0 && lecturesAttendee[0] != null) {
+	private void addInternalLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... absences) {
+		if(absences != null && absences.length > 0 && absences[0] != null) {
 			LectureBlockRollCallImpl call = (LectureBlockRollCallImpl)rollCall;
-			List<Integer> currentAttendedList = call.getLecturesAttendedList();
-			for(int i=lecturesAttendee.length; i-->0; ) {
-				if(lecturesAttendee[i] != null && !currentAttendedList.contains(lecturesAttendee[i])) {
-					currentAttendedList.add(lecturesAttendee[i]);
+			List<Integer> currentAbsentList = call.getLecturesAbsentList();
+			for(int i=absences.length; i-->0; ) {
+				if(absences[i] != null && !currentAbsentList.contains(absences[i])) {
+					currentAbsentList.add(absences[i]);
 				}
 			}
-			call.setLecturesAttendedList(currentAttendedList);
-			call.setLecturesAttendedNumber(currentAttendedList.size());
+			call.setLecturesAbsentList(currentAbsentList);
+			call.setLecturesAbsentNumber(currentAbsentList.size());
 		
 			int plannedLecture = lectureBlock.getPlannedLecturesNumber();
 			
-			List<Integer> absentList = new ArrayList<>();
+			List<Integer> attendedList = new ArrayList<>();
 			for(int i=0; i<plannedLecture; i++) {
-				if(!currentAttendedList.contains(i)) {
-					absentList.add(i);
+				if(!currentAbsentList.contains(i)) {
+					attendedList.add(i);
 				}
 			}
-			call.setLecturesAbsentList(absentList);
-			call.setLecturesAbsentNumber(plannedLecture - currentAttendedList.size());
+			call.setLecturesAttendedList(attendedList);
+			call.setLecturesAttendedNumber(plannedLecture - currentAbsentList.size());
 		}
 	}
 	
-	public LectureBlockRollCall removeLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... lecturesAttendee) {
-		removeInternalLecture(lectureBlock, rollCall, lecturesAttendee);
+	public LectureBlockRollCall removeLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... absences) {
+		removeInternalLecture(lectureBlock, rollCall, absences);
 		return dbInstance.getCurrentEntityManager().merge(rollCall);
 	}
 	
-	private void removeInternalLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... lecturesAttendee) {
-		if(lecturesAttendee != null && lecturesAttendee.length > 0 && lecturesAttendee[0] != null) {
+	private void removeInternalLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... absences) {
+		if(absences != null && absences.length > 0 && absences[0] != null) {
 			LectureBlockRollCallImpl call = (LectureBlockRollCallImpl)rollCall;
-			List<Integer> currentAttendedList = call.getLecturesAttendedList();
-			for(int i=lecturesAttendee.length; i-->0; ) {
-				currentAttendedList.remove(lecturesAttendee[i]);
+			List<Integer> currentAbsentList = call.getLecturesAbsentList();
+			for(int i=absences.length; i-->0; ) {
+				currentAbsentList.remove(absences[i]);
 			}
-			call.setLecturesAttendedList(currentAttendedList);
-			call.setLecturesAttendedNumber(currentAttendedList.size());
+			call.setLecturesAbsentList(currentAbsentList);
+			call.setLecturesAbsentNumber(currentAbsentList.size());
 		
 			int plannedLecture = lectureBlock.getPlannedLecturesNumber();
 			
-			List<Integer> absentList = new ArrayList<>();
+			List<Integer> attendedList = new ArrayList<>();
 			for(int i=0; i<plannedLecture; i++) {
-				if(!currentAttendedList.contains(i)) {
-					absentList.add(i);
+				if(!currentAbsentList.contains(i)) {
+					attendedList.add(i);
 				}
 			}
-			call.setLecturesAbsentList(absentList);
-			call.setLecturesAbsentNumber(plannedLecture - currentAttendedList.size());
+			call.setLecturesAttendedList(attendedList);
+			call.setLecturesAttendedNumber(plannedLecture - currentAbsentList.size());
 		}
 	}
 	
@@ -163,6 +170,64 @@ public class LectureBlockRollCallDAO {
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		return rollCalls != null && rollCalls.size() > 0 ? rollCalls.get(0) : null;
+	}
+	
+	public List<LectureBlockAndRollCall> getParticipantLectureBlockAndRollCalls(RepositoryEntryRef entry, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select block, call, re.displayname")
+		  .append(" from lectureblock block")
+		  .append(" inner join block.entry re")
+		  .append(" inner join block.groups blockToGroup")
+		  .append(" inner join blockToGroup.group bGroup")
+		  .append(" inner join bGroup.members membership")
+		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
+		  .append(" where membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("'")
+		  .append(" and block.entry.key=:repoEntryKey");
+		
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repoEntryKey", entry.getKey())
+				.getResultList();
+		Map<Long,LectureBlockAndRollCall> blockToRollCallMap = new HashMap<>(); 
+		for(Object[] objects:rawObjects) {
+			int pos = 0;
+			LectureBlock block = (LectureBlock)objects[pos++];
+			LectureBlockRollCall rollCall = (LectureBlockRollCall)objects[pos++];
+			String displayname = (String)objects[pos++];
+			blockToRollCallMap.put(block.getKey(), new LectureBlockAndRollCall(displayname, block, rollCall));
+		}
+		
+		// append the coaches
+		StringBuilder sc = new StringBuilder();
+		sc.append("select block.key, coach")
+		  .append(" from lectureblock block")
+		  .append(" inner join block.teacherGroup tGroup")
+		  .append(" inner join tGroup.members membership")
+		  .append(" inner join membership.identity coach")
+		  .append(" inner join fetch coach.user usercoach")
+		  .append(" where membership.role='").append("teacher").append("' and block.entry.key=:repoEntryKey");
+		
+		//get all, it's quick
+		List<Object[]> rawCoachs = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), Object[].class)
+				.setParameter("repoEntryKey", entry.getKey())
+				.getResultList();
+		for(Object[] rawCoach:rawCoachs) {
+			Long blockKey = (Long)rawCoach[0];
+			LectureBlockAndRollCall rollCall = blockToRollCallMap.get(blockKey);
+			if(rollCall != null) {
+				Identity coach = (Identity)rawCoach[1];
+				String fullname = userManager.getUserDisplayName(coach);
+				if(rollCall.getCoach() == null) {
+					rollCall.setCoach(fullname);
+				} else {
+					rollCall.setCoach(rollCall.getCoach() + ", " + fullname);
+				}
+			}
+		}
+		
+		return new ArrayList<>(blockToRollCallMap.values());
 	}
 	
 	public List<LectureStatistics> getStatistics(IdentityRef identity) {

@@ -83,7 +83,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 
-		tableModel = new LectureListRepositoryDataModel(columnsModel); 
+		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);

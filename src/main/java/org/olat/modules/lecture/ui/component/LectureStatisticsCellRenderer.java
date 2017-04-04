@@ -31,10 +31,7 @@ import org.olat.modules.lecture.model.LectureStatistics;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class LectureStatisticsRenderer implements FlexiCellRenderer {
-	
-
-	
+public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {

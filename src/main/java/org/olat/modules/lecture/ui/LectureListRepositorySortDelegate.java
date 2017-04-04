@@ -17,46 +17,26 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture;
+package org.olat.modules.lecture.ui;
 
-import java.util.List;
+import java.util.Locale;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.modules.lecture.model.LectureBlockRow;
 
 /**
  * 
- * Initial date: 20 mars 2017<br>
+ * Initial date: 29 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LectureBlockRollCall extends ModifiedInfo, CreateInfo {
-	
-	public Long getKey();
-	
-	public Identity getIdentity();
-	
-	public LectureBlock getLectureBlock();
-	
-	public int getLecturesAbsentNumber();
-	
-	public int getLecturesAttendedNumber();
-	
-	public List<Integer> getLecturesAttendedList();
-	
-	public List<Integer> getLecturesAbsentList();
-	
-	public Boolean getAbsenceAuthorized();
-	
-	public void setAbsenceAuthorized(Boolean absenceAuthorized);
-	
-	public String getAbsenceReason();
+public class LectureListRepositorySortDelegate extends SortableFlexiTableModelDelegate<LectureBlockRow> {
 
-	public void setAbsenceReason(String absenceReason);
+	public LectureListRepositorySortDelegate(SortKey orderBy, LectureListRepositoryDataModel tableModel, Locale locale) {
+		super(orderBy, tableModel, locale);
+	}
 	
-	public String getComment();
-	
-	public void setComment(String comment);
+
 
 }

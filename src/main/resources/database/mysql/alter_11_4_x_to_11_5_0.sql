@@ -66,7 +66,7 @@ create table o_lecture_block_roll_call (
   l_absence_authorized bit default null,
   l_absence_appeal_date datetime,
   fk_lecture_block bigint not null,
-  fk_identity bigint,
+  fk_identity bigint not null,
   primary key (id)
 );
 alter table o_lecture_block_roll_call ENGINE = InnoDB;
@@ -74,6 +74,46 @@ alter table o_lecture_block_roll_call ENGINE = InnoDB;
 alter table o_lecture_block_roll_call add constraint lec_call_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
 alter table o_lecture_block_roll_call add constraint lec_call_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 
+
+create table o_lecture_participant_summary (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  l_quota float(65,30) default null,
+  l_first_admission_date datetime default null,
+  l_attended_lectures bigint not null default 0,
+  l_absent_lectures bigint not null default 0,
+  l_excused_lectures bigint not null default 0,
+  l_planneds_lectures bigint not null default 0, 
+  fk_entry bigint not null,
+  fk_identity bigint not null,
+  primary key (id),
+  unique (fk_entry, fk_identity)
+);
+alter table o_lecture_participant_summary ENGINE = InnoDB;
+
+alter table o_lecture_participant_summary add constraint lec_part_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_lecture_participant_summary add constraint lec_part_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+
+
+create table o_lecture_entry_config (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  l_lecture_enabled bool default null,
+  l_override_module_def bool default false,
+  l_rollcall_enabled bool default null,
+  l_calculate_attendance_rate bool default null,
+  l_required_attendance_rate float(65,30) default null,
+  l_sync_calendar_teacher bool default null,
+  l_sync_calendar_participant bool default null,
+  fk_entry bigint not null,
+  unique(fk_entry),
+  primary key (id)
+);
+alter table o_lecture_entry_config ENGINE = InnoDB;
+
+alter table o_lecture_entry_config add constraint lec_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
 
 

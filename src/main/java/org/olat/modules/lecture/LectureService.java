@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -35,6 +36,23 @@ import org.olat.repository.RepositoryEntryRef;
  *
  */
 public interface LectureService {
+	
+	
+	/**
+	 * Get (or create) the configuration object for the specified repossitory
+	 * entry.
+	 * 
+	 * @param entry
+	 * @return A persisted configuration
+	 */
+	public RepositoryEntryLectureConfiguration getRepositoryEntryLectureConfiguration(RepositoryEntry entry);
+	
+	/**
+	 * Update the specified configuration
+	 * @param config The configuration to merge
+	 * @return A merged configuration
+	 */
+	public RepositoryEntryLectureConfiguration updateRepositoryEntryLectureConfiguration(RepositoryEntryLectureConfiguration config);
 	
 	/**
 	 * Create but not persist a new lecture block.
@@ -53,7 +71,36 @@ public interface LectureService {
 	 */
 	public LectureBlock save(LectureBlock lectureBlock, List<Group> groups);
 	
+	/**
+	 * Reload the lecture block.
+	 * @param block
+	 * @return A fresh lecture block
+	 */
 	public LectureBlock getLectureBlock(LectureBlockRef block);
+	
+	/**
+	 * Returns all configured reasons.
+	 * 
+	 * @return A list of reasons
+	 */
+	public List<Reason> getAllReasons();
+	
+	/**
+	 * 
+	 * @param title
+	 * @param description
+	 * @return
+	 */
+	public Reason createReason(String title, String description);
+	
+	/**
+	 * Updates the reason and return the freshest.
+	 * 
+	 * @param reason The reaosn to update
+	 * @return A merged reason
+	 */
+	public Reason updateReason(Reason reason);
+
 	
 	/**
 	 * Lists the base groups attached to the specified lecture block.
@@ -63,8 +110,24 @@ public interface LectureService {
 	 */
 	public List<Group> getLectureBlockToGroups(LectureBlockRef block);
 	
-	
+	/**
+	 * Returns the list of participants of a lecture block.
+	 * 
+	 * @param block The lecture block
+	 * @return A list of identities
+	 */
 	public List<Identity> getParticipants(LectureBlockRef block);
+	
+	/**
+	 * The method will start the roll call, generate all roll call, generate missing
+	 * summaries...
+	 * 
+	 * @param teacher
+	 * @param lectureblock
+	 * @return The list of participants
+	 */
+	public List<Identity> startLectureBlock(Identity teacher, LectureBlock lectureblock);
+	
 	
 	public List<LectureBlockRollCall> getRollCalls(LectureBlockRef block);
 	
@@ -92,10 +155,22 @@ public interface LectureService {
 	 * @param identity The participant of the lecture
 	 * @param lectureBlock The lecture block
 	 * @param roolCall The roll call (optional)
-	 * @param lecturesAttendee The lectures where the participant was present
+	 * @param absences The lectures where the participant was absent
 	 * @return The updated roll call
 	 */
-	public LectureBlockRollCall addRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... lecturesAttendee);
+	public LectureBlockRollCall addRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... absences);
+	
+	/**
+	 * 
+	 * @param identity
+	 * @param lectureBlock
+	 * @param rollCall
+	 * @param comment
+	 * @param absences
+	 * @return
+	 */
+	public LectureBlockRollCall addRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall,
+			String comment, Integer... absences);
 	
 	/**
 	 * Remove the specified lectures to the ones the identity follows.
@@ -103,10 +178,10 @@ public interface LectureService {
 	 * @param identity The participant of the lecture
 	 * @param lectureBlock The lecture block
 	 * @param rollCall The roll call (optional)
-	 * @param lecturesAttendee The lectures to remove from the "present" list
+	 * @param absences The lectures to remove from the "absence" list
 	 * @return The updated roll call
 	 */
-	public LectureBlockRollCall removeRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... lecturesAttendee);
+	public LectureBlockRollCall removeRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... absences);
 	
 	/**
 	 * 
@@ -147,5 +222,13 @@ public interface LectureService {
 	 * @return A list of statistics
 	 */
 	public List<LectureStatistics> getParticipantLecturesStatistics(IdentityRef identity);
+	
+	/**
+	 * 
+	 * @param entry
+	 * @param participant
+	 * @return
+	 */
+	public List<LectureBlockAndRollCall> getParticipantLectureBlocks(RepositoryEntryRef entry, IdentityRef participant);
 
 }

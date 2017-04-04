@@ -19,44 +19,16 @@
  */
 package org.olat.modules.lecture;
 
-import java.util.List;
-
 import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 
 /**
  * 
- * Initial date: 20 mars 2017<br>
+ * Initial date: 31 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LectureBlockRollCall extends ModifiedInfo, CreateInfo {
-	
+public interface LectureParticipantSummary extends CreateInfo, ModifiedInfo {
+
 	public Long getKey();
-	
-	public Identity getIdentity();
-	
-	public LectureBlock getLectureBlock();
-	
-	public int getLecturesAbsentNumber();
-	
-	public int getLecturesAttendedNumber();
-	
-	public List<Integer> getLecturesAttendedList();
-	
-	public List<Integer> getLecturesAbsentList();
-	
-	public Boolean getAbsenceAuthorized();
-	
-	public void setAbsenceAuthorized(Boolean absenceAuthorized);
-	
-	public String getAbsenceReason();
-
-	public void setAbsenceReason(String absenceReason);
-	
-	public String getComment();
-	
-	public void setComment(String comment);
-
 }

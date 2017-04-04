@@ -257,6 +257,16 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	}
 
 	@Override
+	public Reason getReasonEffectiveEnd() {
+		return reasonEffectiveEnd;
+	}
+
+	@Override
+	public void setReasonEffectiveEnd(Reason reason) {
+		this.reasonEffectiveEnd = reason;
+	}
+
+	@Override
 	public Date getEffectiveEndDate() {
 		return effectiveEndDate;
 	}

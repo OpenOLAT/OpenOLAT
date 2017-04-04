@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -38,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
@@ -63,10 +65,11 @@ public class EditLectureController extends FormBasicController {
 	private TextElement descriptionEl;
 	private TextElement preparationEl;
 	private TextElement locationEl;
-	private DateChooser startDateEl, endDateEl;
+	private DateChooser startDateEl;
 	private SingleSelection teacherEl;
 	private SingleSelection plannedLecturesEl;
 	private MultipleSelectionElement groupsEl;
+	private TextElement endHourEl, endMinuteEl;
 	
 	private RepositoryEntry entry;
 	private LectureBlock lectureBlock;
@@ -164,10 +167,35 @@ public class EditLectureController extends FormBasicController {
 		preparationEl = uifactory.addTextAreaElement("lecture.preparation", 4, 72, preparation, formLayout);
 		String location = lectureBlock == null ? "" : lectureBlock.getLocation();
 		locationEl = uifactory.addTextElement("location", "lecture.location", 128, location, formLayout);
+
 		Date startDate = lectureBlock == null ? null : lectureBlock.getStartDate();
 		startDateEl = uifactory.addDateChooser("lecture.start", startDate, formLayout);
-		Date endDate = lectureBlock == null ? null : lectureBlock.getEndDate();
-		endDateEl = uifactory.addDateChooser("lecture.end", endDate, formLayout);
+		startDateEl.setDomReplacementWrapperRequired(false);
+		startDateEl.setDateChooserTimeEnabled(true);
+		
+		String datePage = velocity_root + "/date_start_end.html";
+		FormLayoutContainer dateCont = FormLayoutContainer.createCustomFormLayout("start_end", getTranslator(), datePage);
+		dateCont.setLabel("lecture.end", null);
+		formLayout.add(dateCont);
+		
+		endHourEl = uifactory.addTextElement("lecture.end.hour", null, 2, "", dateCont);
+		endHourEl.setDomReplacementWrapperRequired(false);
+		endHourEl.setDisplaySize(2);
+		endMinuteEl = uifactory.addTextElement("lecture.end.minute", null, 2, "", dateCont);
+		endMinuteEl.setDomReplacementWrapperRequired(false);
+		endMinuteEl.setDisplaySize(2);
+		
+		if(lectureBlock != null && lectureBlock.getEndDate() != null) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(lectureBlock.getEndDate());
+			int hour = cal.get(Calendar.HOUR_OF_DAY);
+			int minute = cal.get(Calendar.MINUTE);
+			endHourEl.setValue(Integer.toString(hour));
+			endMinuteEl.setValue(Integer.toString(minute));
+		} else {
+			endHourEl.setValue("00");
+			endMinuteEl.setValue("00");
+		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -202,7 +230,32 @@ public class EditLectureController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		allOk &= validateInt(endHourEl, 24);
+		allOk &= validateInt(endMinuteEl, 60);
 		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean validateInt(TextElement element, int max) {
+		boolean allOk = true;
+		
+		element.clearError();
+		if(StringHelper.containsNonWhitespace(element.getValue())) {
+			try {
+				int val = Integer.parseInt(element.getValue());
+				if(val < 0 || val > max) {
+					element.setErrorKey("form.legende.mandatory", new String[] { "0", Integer.toString(max)} );
+					allOk &= false;
+				}
+			} catch (NumberFormatException e) {
+				element.setErrorKey("form.legende.mandatory", new String[] { "0", Integer.toString(max)} );
+				allOk &= false;
+			}
+		} else {
+			element.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk;
 	}
 
 	@Override
@@ -215,7 +268,13 @@ public class EditLectureController extends FormBasicController {
 		lectureBlock.setPreparation(preparationEl.getValue());
 		lectureBlock.setLocation(locationEl.getValue());
 		lectureBlock.setStartDate(startDateEl.getDate());
-		lectureBlock.setEndDate(endDateEl.getDate());
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(startDateEl.getDate());
+		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(endHourEl.getValue()));
+		cal.set(Calendar.MINUTE, Integer.parseInt(endMinuteEl.getValue()));
+		lectureBlock.setEndDate(cal.getTime());
+		
 		int plannedLectures = Integer.parseInt(plannedLecturesEl.getSelectedKey());
 		lectureBlock.setPlannedLecturesNumber(plannedLectures);
 

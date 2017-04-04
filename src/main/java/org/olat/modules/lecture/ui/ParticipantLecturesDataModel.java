@@ -19,6 +19,9 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -35,13 +38,17 @@ import org.olat.modules.lecture.model.LectureStatistics;
 public class ParticipantLecturesDataModel extends DefaultFlexiTableDataModel<LectureStatistics>
 implements SortableFlexiTableDataModel<LectureStatistics> {
 	
-	public ParticipantLecturesDataModel(FlexiTableColumnModel columnModel) {
+	private final Locale locale;
+	
+	public ParticipantLecturesDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		// 
+	public void sort(SortKey orderBy) {
+		List<LectureStatistics> rows = new ParticipantLecturesSortDelegate(orderBy, this, locale).sort();
+		super.setObjects(rows);
 	}
 
 	@Override
@@ -62,7 +69,7 @@ implements SortableFlexiTableDataModel<LectureStatistics> {
 
 	@Override
 	public DefaultFlexiTableDataModel<LectureStatistics> createCopyWithEmptyList() {
-		return new ParticipantLecturesDataModel(getTableColumnModel());
+		return new ParticipantLecturesDataModel(getTableColumnModel(), locale);
 	}
 	
 	public enum LecturesCols implements FlexiSortableColumnDef {

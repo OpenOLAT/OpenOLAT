@@ -78,6 +78,8 @@ public class TeacherRollCallController extends FormBasicController {
 	private final boolean autorizedAbsenceEnabled;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
+	private List<Identity> participants;
+	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -87,9 +89,11 @@ public class TeacherRollCallController extends FormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
-	public TeacherRollCallController(UserRequest ureq, WindowControl wControl, LectureBlock block) {
+	public TeacherRollCallController(UserRequest ureq, WindowControl wControl,
+			LectureBlock block, List<Identity> participants) {
 		super(ureq, wControl, "rollcall");
 		this.lectureBlock = block;
+		this.participants = participants;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		autorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
@@ -143,7 +147,6 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<Identity> participants = lectureService.getParticipants(lectureBlock);
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(lectureBlock);
 		Map<Identity,LectureBlockRollCall> rollCallMap = new HashMap<>();
 		for(LectureBlockRollCall rollCall:rollCalls) {
@@ -163,7 +166,7 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		int numOfChecks = lectureBlock.getPlannedLecturesNumber();
 		MultipleSelectionElement[] checks = new MultipleSelectionElement[numOfChecks];
-		List<Integer> attended = rollCall == null ? Collections.emptyList() : rollCall.getLecturesAttendedList();
+		List<Integer> absences = rollCall == null ? Collections.emptyList() : rollCall.getLecturesAbsentList();
 		
 		for(int i=0; i<numOfChecks; i++) {
 			String checkId = "check_".concat(Integer.toString(++counter));
@@ -172,7 +175,7 @@ public class TeacherRollCallController extends FormBasicController {
 			check.addActionListener(FormEvent.ONCHANGE);
 			check.setUserObject(row);
 			check.setAjaxOnly(true);
-			if(attended.contains(i)) {
+			if(absences.contains(i)) {
 				check.select(onKeys[0], true);
 			}
 			checks[i] = check;
@@ -262,14 +265,19 @@ public class TeacherRollCallController extends FormBasicController {
 		for(int i=tableModel.getRowCount(); i-->0; ) {
 			TeacherRollCallRow row = tableModel.getObject(i);
 			
-			LectureBlockRollCall rollCall;
-			if(row.getRollCall() == null) {
-				rollCall = lectureService.createRollCall(row.getIdentity(), lectureBlock, null);
-			} else {
-				rollCall = row.getRollCall();
+			int numOfChecks = row.getChecks().length;
+			List<Integer> absenceList = new ArrayList<>(numOfChecks);
+			for(int j=0; j<numOfChecks; j++) {
+				if(row.getCheck(j).isAtLeastSelected(1)) {
+					absenceList.add(j);
+				}
 			}
-			rollCall.setComment(row.getCommentEl().getValue());
-			lectureService.updateRollCall(rollCall);
+			
+			String comment = row.getCommentEl().getValue();
+			Integer[] absences = absenceList.toArray(new Integer[absenceList.size()]);
+			LectureBlockRollCall rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(),
+					comment, absences);
+			row.setRollCall(rollCall);
 		}
 	}
 	
@@ -278,7 +286,7 @@ public class TeacherRollCallController extends FormBasicController {
 		for(int i=allIndex.length; i-->0; ) {
 			allIndex[i] = i;
 		}
-		LectureBlockRollCall rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), allIndex);
+		LectureBlockRollCall rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), null, allIndex);
 		for(MultipleSelectionElement check:row.getChecks()) {
 			check.select(onKeys[0], true);
 		}

@@ -59,8 +59,7 @@ public class ReasonImpl implements Persistable, Reason {
 
 	@Column(name="l_title", nullable=true, insertable=true, updatable=true)
 	private String title;
-
-	@Column(name="l_description", nullable=true, insertable=true, updatable=true)
+	@Column(name="l_descr", nullable=true, insertable=true, updatable=true)
 	private String description;
 
 	@Override
@@ -87,6 +86,7 @@ public class ReasonImpl implements Persistable, Reason {
 		lastModified = date;
 	}
 
+	@Override
 	public String getTitle() {
 		return title;
 	}
@@ -95,6 +95,7 @@ public class ReasonImpl implements Persistable, Reason {
 		this.title = title;
 	}
 
+	@Override
 	public String getDescription() {
 		return description;
 	}

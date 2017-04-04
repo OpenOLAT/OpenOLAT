@@ -21,6 +21,11 @@ package org.olat.modules.lecture.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -34,18 +39,25 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class LectureAdminController extends BasicController {
 	
-	private final LectureSettingsAdminController settingsCtrl;
-
+	private final VelocityContainer mainVC;
+	private final Link settingsLink, reasonsLink;
+	private final SegmentViewComponent segmentView;
+	
+	private ReasonAdminController reasonsCtrl;
+	private LectureSettingsAdminController settingsCtrl;
 	
 	public LectureAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		settingsCtrl = new LectureSettingsAdminController(ureq, getWindowControl());
-		listenTo(settingsCtrl);
+		mainVC = createVelocityContainer("admin");
 		
-		VelocityContainer mainVC = createVelocityContainer("admin");
-		mainVC.put("settings", settingsCtrl.getInitialComponent());
-		
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		settingsLink = LinkFactory.createLink("lectures.admin.settings", mainVC, this);
+		segmentView.addSegment(settingsLink, true);
+		reasonsLink = LinkFactory.createLink("lectures.admin.reasons", mainVC, this);
+		segmentView.addSegment(reasonsLink, false);
+
+		doOpenSettings(ureq);
 		putInitialPanel(mainVC);
 	}
 
@@ -56,6 +68,33 @@ public class LectureAdminController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(source == segmentView) {
+			if(event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = mainVC.getComponent(segmentCName);
+				if (clickedLink == settingsLink) {
+					doOpenSettings(ureq);
+				} else if (clickedLink == reasonsLink){
+					doOpenReasons(ureq);
+				}
+			}
+		}
+	}
+	
+	private void doOpenSettings(UserRequest ureq) {
+		if(settingsCtrl == null) {
+			settingsCtrl = new LectureSettingsAdminController(ureq, getWindowControl());
+			listenTo(settingsCtrl);
+		}
+		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
+	}
+	
+	private void doOpenReasons(UserRequest ureq) {
+		if(reasonsCtrl == null) {
+			reasonsCtrl = new ReasonAdminController(ureq, getWindowControl());
+			listenTo(reasonsCtrl);
+		}
+		mainVC.put("segmentCmp", reasonsCtrl.getInitialComponent());
 	}
 }

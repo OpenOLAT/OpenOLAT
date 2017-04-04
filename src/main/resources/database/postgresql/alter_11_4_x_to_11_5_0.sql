@@ -68,7 +68,7 @@ create table o_lecture_block_roll_call (
   l_absence_authorized bool default null,
   l_absence_appeal_date timestamp,
   fk_lecture_block int8 not null,
-  fk_identity int8,
+  fk_identity int8 not null,
   primary key (id)
 );
 
@@ -78,6 +78,46 @@ alter table o_lecture_block_roll_call add constraint lec_call_identity_idx forei
 create index idx_lec_call_identity_idx on o_lecture_block_roll_call(fk_identity);
 
 
+create table o_lecture_participant_summary (
+  id bigserial not null,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  l_quota float(24) default null,
+  l_first_admission_date timestamp default null,
+  l_attended_lectures int8 not null default 0,
+  l_absent_lectures int8 not null default 0,
+  l_excused_lectures int8 not null default 0,
+  l_planneds_lectures int8 not null default 0, 
+  fk_entry int8 not null,
+  fk_identity int8 not null,
+  primary key (id),
+  unique (fk_entry, fk_identity)
+);
+
+alter table o_lecture_participant_summary add constraint lec_part_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_lec_part_entry_idx on o_lecture_participant_summary(fk_entry);
+alter table o_lecture_participant_summary add constraint lec_part_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_lec_part_ident_idx on o_lecture_participant_summary(fk_identity);
+
+
+create table o_lecture_entry_config (
+  id bigserial not null,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  l_lecture_enabled bool default null,
+  l_override_module_def bool default false,
+  l_rollcall_enabled bool default null,
+  l_calculate_attendance_rate bool default null,
+  l_required_attendance_rate float(24) default null,
+  l_sync_calendar_teacher bool default null,
+  l_sync_calendar_participant bool default null,
+  fk_entry int8 not null,
+  unique(fk_entry),
+  primary key (id)
+);
+
+alter table o_lecture_entry_config add constraint lec_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_lec_entry_conf_entry_idx on o_lecture_entry_config(fk_entry);
 
 
 

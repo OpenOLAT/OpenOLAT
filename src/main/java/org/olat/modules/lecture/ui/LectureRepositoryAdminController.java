@@ -99,7 +99,7 @@ public class LectureRepositoryAdminController extends BasicController {
 	
 	private void doOpenSettings(UserRequest ureq) {
 		if(settingsCtrl == null) {
-			settingsCtrl = new LectureRepositorySettingsController(ureq, getWindowControl());
+			settingsCtrl = new LectureRepositorySettingsController(ureq, getWindowControl(), entry);
 			listenTo(settingsCtrl);
 		}
 		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());

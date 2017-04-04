@@ -30,6 +30,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureStatistics;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
@@ -165,8 +166,8 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertEquals(1, statistics_1.size());
 		LectureStatistics statistic_1 = statistics_1.get(0);
 		Assert.assertEquals(12, statistic_1.getTotalPlannedLectures());
-		Assert.assertEquals(6, statistic_1.getTotalAttendedLectures());
-		Assert.assertEquals(2, statistic_1.getTotalAbsentLectures());
+		Assert.assertEquals(2, statistic_1.getTotalAttendedLectures());
+		Assert.assertEquals(6, statistic_1.getTotalAbsentLectures());
 		
 		//check second participant
 		List<LectureStatistics> statistics_2 = lectureService.getParticipantLecturesStatistics(participant2);
@@ -174,8 +175,17 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertEquals(1, statistics_2.size());
 		LectureStatistics statistic_2 = statistics_2.get(0);
 		Assert.assertEquals(12, statistic_2.getTotalPlannedLectures());
-		Assert.assertEquals(7, statistic_2.getTotalAttendedLectures());
-		Assert.assertEquals(1, statistic_2.getTotalAbsentLectures());
+		Assert.assertEquals(1, statistic_2.getTotalAttendedLectures());
+		Assert.assertEquals(7, statistic_2.getTotalAbsentLectures());
+	}
+	
+	@Test
+	public void getRepositoryEntryLectureConfiguration() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(config);
+		Assert.assertEquals(entry, config.getEntry());
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {

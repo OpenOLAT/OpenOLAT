@@ -76,6 +76,10 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo 
 	public Date getEffectiveEndDate();
 
 	public void setEffectiveEndDate(Date effectiveEndDate);
+	
+	public Reason getReasonEffectiveEnd();
+	
+	public void setReasonEffectiveEnd(Reason reason);
 
 	public LectureBlockStatus getStatus();
 	

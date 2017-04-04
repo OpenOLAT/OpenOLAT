@@ -19,7 +19,7 @@
  */
 package org.olat.modules.lecture.ui;
 
-import java.util.List;
+import java.util.Date;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -27,74 +27,74 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.modules.lecture.model.LectureBlockAndRollCall;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
 
 /**
  * 
- * Initial date: 29 mars 2017<br>
+ * Initial date: 30 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipantLectureBlocksDataModel extends DefaultFlexiTableDataModel<LectureBlockAndRollCall>
-implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
+public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<LectureBlock>
+	implements SortableFlexiTableDataModel<LectureBlock> {
 	
 	private final Locale locale;
-	
-	public ParticipantLectureBlocksDataModel(FlexiTableColumnModel columnModel, Locale locale) {
+
+	public TeacherOverviewDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
 	}
 
 	@Override
-	public void sort(SortKey orderBy) {
-		List<LectureBlockAndRollCall> rows = new ParticipantLectureBlocksSortDelegate(orderBy, this, locale).sort();
-		super.setObjects(rows);
+	public void sort(SortKey sortKey) {
+		//
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		LectureBlockAndRollCall block = getObject(row);
+		LectureBlock block = getObject(row);
 		return getValueAt(block, col);
 	}
 
 	@Override
-	public Object getValueAt(LectureBlockAndRollCall row, int col) {
-		switch(ParticipantCols.values()[col]) {
-			case date: return row.getDate();
-			case entry: return row.getEntryDisplayname();
-			case lectureBlock: return row.getLectureBlockTitle();
-			case coach: return row.getCoach();
-			case present: return row;
-			case appeal: {
-				if(row.isRollCalled()) {
-					int planned = row.getPlannedLecturesNumber();
-					int attended = row.getLecturesAttendedNumber();
-					if(attended < planned) {
-						return Boolean.TRUE;
-					}
-				}
-				return Boolean.FALSE;
+	public Object getValueAt(LectureBlock row, int col) {
+		switch(TeachCols.values()[col]) {
+			case date: return row.getStartDate();
+			case startTime: return row.getStartDate();
+			case endTime: return row.getEndDate();
+			case lectureBlock: return row.getTitle();
+			case status: return row.getStatus();
+			case details: {
+				Date end = row.getEndDate();
+				return end.before(new Date());
 			}
+			case export: {
+				Date start = row.getStartDate();
+				LectureBlockStatus status = row.getStatus();
+				return start.after(new Date()) && (status.equals(LectureBlockStatus.partiallydone) || status.equals(LectureBlockStatus.done));
+			}
+			default: return null;
 		}
-		return null;
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<LectureBlockAndRollCall> createCopyWithEmptyList() {
-		return new ParticipantLectureBlocksDataModel(getTableColumnModel(), locale);
+	public DefaultFlexiTableDataModel<LectureBlock> createCopyWithEmptyList() {
+		return new TeacherOverviewDataModel(getTableColumnModel(), locale);
 	}
 	
-	public enum ParticipantCols implements FlexiSortableColumnDef {
+	public enum TeachCols implements FlexiSortableColumnDef {
 		date("table.header.date"),
-		entry("table.header.entry"),
+		startTime("table.header.start.time"),
+		endTime("table.header.end.time"),
 		lectureBlock("table.header.lecture.block"),
-		coach("table.header.coach"),
-		present("table.header.present"),
-		appeal("table.header.appeal");
+		status("table.header.status"),
+		details("table.header.details"),
+		export("table.header.export");
 		
 		private final String i18nKey;
 		
-		private ParticipantCols(String i18nKey) {
+		private TeachCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
 		

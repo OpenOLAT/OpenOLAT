@@ -17,46 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture;
+package org.olat.modules.lecture.model;
 
-import java.util.List;
-
-import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.modules.lecture.LectureParticipantSummary;
 
 /**
  * 
- * Initial date: 20 mars 2017<br>
+ * Initial date: 31 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LectureBlockRollCall extends ModifiedInfo, CreateInfo {
+public class ParticipantAndLectureSummary {
 	
-	public Long getKey();
+	private final Identity identity;
+	private LectureParticipantSummary summary;
 	
-	public Identity getIdentity();
-	
-	public LectureBlock getLectureBlock();
-	
-	public int getLecturesAbsentNumber();
-	
-	public int getLecturesAttendedNumber();
-	
-	public List<Integer> getLecturesAttendedList();
-	
-	public List<Integer> getLecturesAbsentList();
-	
-	public Boolean getAbsenceAuthorized();
-	
-	public void setAbsenceAuthorized(Boolean absenceAuthorized);
-	
-	public String getAbsenceReason();
+	public ParticipantAndLectureSummary(Identity identity, LectureParticipantSummary summary) {
+		this.identity = identity;
+		this.summary = summary;
+	}
 
-	public void setAbsenceReason(String absenceReason);
-	
-	public String getComment();
-	
-	public void setComment(String comment);
+	public Identity getIdentity() {
+		return identity;
+	}
 
+	public LectureParticipantSummary getSummary() {
+		return summary;
+	}
+	
+	public void setSummary(LectureParticipantSummary summary) {
+		this.summary = summary;
+	}
 }
