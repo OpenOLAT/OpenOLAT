@@ -225,7 +225,7 @@ public class InfoDisplayController extends FormBasicController {
 			DateElement dateEl = DateComponentFactory.createDateElementWithYear(dateCmpName, info.getCreationDate());
 			flc.add(dateCmpName, dateEl);
 			
-			if(secCallback.canEdit() && (ureq.getIdentity().equals(info.getAuthor()) || secCallback.canDelete())) {
+			if(secCallback.canEdit(info)) {
 				String editName = "info.edit." + info.getKey();
 				FormLink link = uifactory.addFormLink(editName, "edit", "edit", flc, Link.BUTTON_SMALL);
 				link.setElementCssClass("o_sel_info_edit_msg");

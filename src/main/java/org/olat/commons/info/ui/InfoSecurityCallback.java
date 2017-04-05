@@ -20,6 +20,8 @@
 
 package org.olat.commons.info.ui;
 
+import org.olat.commons.info.model.InfoMessage;
+
 /**
  * 
  * Description:<br>
@@ -35,7 +37,7 @@ public interface InfoSecurityCallback {
 	
 	public boolean canAdd();
 	
-	public boolean canEdit();
+	public boolean canEdit(InfoMessage infoMessage);
 	
 	public boolean canDelete();
 	

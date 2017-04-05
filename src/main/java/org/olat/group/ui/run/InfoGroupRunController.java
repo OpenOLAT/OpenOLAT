@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 
 import org.olat.commons.info.manager.InfoMessageFrontendManager;
 import org.olat.commons.info.manager.MailFormatter;
+import org.olat.commons.info.model.InfoMessage;
 import org.olat.commons.info.notification.InfoSubscription;
 import org.olat.commons.info.notification.InfoSubscriptionManager;
 import org.olat.commons.info.ui.InfoDisplayController;
@@ -42,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
@@ -87,7 +89,7 @@ public class InfoGroupRunController extends BasicController {
 		}
 
 		boolean canAddAndEdit = isAdmin || canAccess;
-		InfoSecurityCallback secCallback = new InfoGroupSecurityCallback(canAddAndEdit, isAdmin);
+		InfoSecurityCallback secCallback = new InfoGroupSecurityCallback(getIdentity(), canAddAndEdit, isAdmin);
 		infoDisplayController = new InfoDisplayController(ureq, wControl, secCallback, businessGroup, resSubPath, businessPath);
 		SendMailOption subscribers = new SendSubscriberMailOption(infoResourceable, resSubPath, messageManager);
 		infoDisplayController.addSendMailOptions(subscribers);
@@ -162,10 +164,12 @@ public class InfoGroupRunController extends BasicController {
 	private class InfoGroupSecurityCallback implements InfoSecurityCallback {
 		private final boolean canAdd;
 		private final boolean canAdmin;
+		private final Identity identity;
 		
-		public InfoGroupSecurityCallback(boolean canAdd, boolean canAdmin) {
+		public InfoGroupSecurityCallback(Identity identity, boolean canAdd, boolean canAdmin) {
 			this.canAdd = canAdd;
 			this.canAdmin = canAdmin;
+			this.identity = identity;
 		}
 		
 		@Override
@@ -179,8 +183,8 @@ public class InfoGroupRunController extends BasicController {
 		}
 
 		@Override
-		public boolean canEdit() {
-			return canAdd;
+		public boolean canEdit(InfoMessage infoMessage) {
+			return identity.equals(infoMessage.getAuthor()) || canAdmin;
 		}
 
 		@Override

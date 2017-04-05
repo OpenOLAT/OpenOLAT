@@ -26,6 +26,7 @@ import java.util.StringTokenizer;
 
 import org.olat.commons.info.manager.InfoMessageFrontendManager;
 import org.olat.commons.info.manager.MailFormatter;
+import org.olat.commons.info.model.InfoMessage;
 import org.olat.commons.info.notification.InfoSubscription;
 import org.olat.commons.info.notification.InfoSubscriptionManager;
 import org.olat.commons.info.ui.InfoDisplayController;
@@ -130,7 +131,7 @@ public class InfoRunController extends BasicController {
 				|| roles.isOLATAdmin();
 		}
 
-		InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(canAdd, canAdmin);
+		InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(getIdentity(), canAdd, canAdmin);
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
 		infoDisplayController = new InfoDisplayController(ureq, wControl, config, secCallback, infoResourceable, resSubPath, businessPath);
@@ -206,10 +207,12 @@ public class InfoRunController extends BasicController {
 	private class InfoCourseSecurityCallback implements InfoSecurityCallback {
 		private final boolean canAdd;
 		private final boolean canAdmin;
+		private final Identity identity;
 		
-		public InfoCourseSecurityCallback(boolean canAdd, boolean canAdmin) {
+		public InfoCourseSecurityCallback(Identity identity, boolean canAdd, boolean canAdmin) {
 			this.canAdd = canAdd;
 			this.canAdmin = canAdmin;
+			this.identity = identity;
 		}
 		
 		@Override
@@ -223,8 +226,8 @@ public class InfoRunController extends BasicController {
 		}
 
 		@Override
-		public boolean canEdit() {
-			return canAdmin;
+		public boolean canEdit(InfoMessage infoMessage) {
+			return identity.equals(infoMessage.getAuthor()) || canAdmin;
 		}
 
 		@Override
