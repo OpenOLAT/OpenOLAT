@@ -81,7 +81,7 @@ public class SMSPhoneController extends FormBasicController implements SupportsA
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormSubmitButton("sms.send", buttonsCont);
 		dontActivateButton = uifactory.addFormLink("dont.activate", buttonsCont, Link.BUTTON);
 	}
 	
