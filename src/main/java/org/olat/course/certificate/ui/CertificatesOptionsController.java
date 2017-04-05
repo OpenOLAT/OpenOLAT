@@ -63,6 +63,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.EventBus;
+import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
@@ -77,6 +78,7 @@ import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.course.config.ui.CourseOptionsController;
 import org.olat.course.run.RunMainController;
+import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
@@ -454,7 +456,13 @@ public class CertificatesOptionsController extends FormBasicController {
 			MediaResource resource;
 			if(selectedTemplate != null) {
 				VFSLeaf templateLeaf = certificatesManager.getTemplateLeaf(selectedTemplate);
-				resource = new VFSMediaResource(templateLeaf); 
+				if(templateLeaf.getName().equals("index.html") && templateLeaf instanceof JavaIOItem) {
+					JavaIOItem indexFile = (JavaIOItem)templateLeaf;
+					File templateDir = indexFile.getBasefile().getParentFile();
+					resource = new ZippedDirectoryMediaResource(selectedTemplate.getName(), templateDir);
+				} else {
+					resource = new VFSMediaResource(templateLeaf); 
+				}
 			} else {
 				InputStream stream = certificatesManager.getDefaultTemplate();
 				resource = new StreamedMediaResource(stream, "Certificate_template.pdf", "application/pdf");
