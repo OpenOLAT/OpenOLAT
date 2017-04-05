@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.group.ui.homepage;
+package org.olat.group.ui.run;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,71 +27,72 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.memberlist.ui.MembersDisplayRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.group.ui.run.GroupMembersRunController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
- * Initial Date:  Aug 19, 2009 <br>
- * @author twuersch, www.frentix.com
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- * @author fkiefer
+ * Initial Date: 22.03.2017
+ * @author fkiefer, fabian.kiefer@frentix.com, www.frentix.com
  */
-public class GroupMembersDisplayController extends BasicController {
-
-
+public class GroupMembersRunController extends BasicController {
+	
 	private MembersDisplayRunController membersDisplayRunController;
 	
 	@Autowired
 	private BusinessGroupService businessGroupService;	
 	
-
-	public GroupMembersDisplayController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
+	public GroupMembersRunController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean canEmail) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(GroupMembersRunController.class, getLocale()));
-		// display owners and participants
 		
 		List<Identity> coaches, participants, waiting;
-		boolean showCoaches = businessGroup.isOwnersVisiblePublic();
+		boolean showCoaches = businessGroup.isOwnersVisibleIntern();
 		if (showCoaches) {
 			coaches = businessGroupService.getMembers(businessGroup, GroupRoles.coach.name());			
 		} else {
 			coaches = Collections.emptyList();
 		}
-		boolean showParticipants = businessGroup.isParticipantsVisiblePublic();
+		boolean showParticipants = businessGroup.isParticipantsVisibleIntern();
 		if (showParticipants) {
 			participants = businessGroupService.getMembers(businessGroup, GroupRoles.participant.name());		
 		} else {
 			participants = Collections.emptyList();
 		}
-		boolean showWaiting = businessGroup.isWaitingListVisiblePublic();
+		boolean showWaiting = businessGroup.isWaitingListVisibleIntern();
 		if (showWaiting) {
 			waiting = businessGroupService.getMembers(businessGroup, GroupRoles.waiting.name());
 		} else {
 			waiting = Collections.emptyList();
 		}	
-		
 		membersDisplayRunController = new MembersDisplayRunController(ureq, wControl, getTranslator(), null, businessGroup,
-				new ArrayList<>(), coaches, participants, waiting, false, true, false, showCoaches, showParticipants, showWaiting, false);
+				new ArrayList<>(), coaches, participants, waiting, canEmail, true, false, showCoaches, showParticipants, showWaiting, true);
 		listenTo(membersDisplayRunController);
 		
-		putInitialPanel(membersDisplayRunController.getInitialComponent());	
+		putInitialPanel(membersDisplayRunController.getInitialComponent());		
+	}
+
+	
+
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		super.event(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 
 	@Override
 	protected void doDispose() {
-	// Nothing to do here.
+		//
 	}
+	
 
-	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		// events handled in child controller
-	}
 }

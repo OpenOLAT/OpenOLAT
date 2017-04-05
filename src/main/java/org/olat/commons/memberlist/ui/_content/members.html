@@ -2,6 +2,9 @@
 #if($r.available("email"))
 	$r.render("email")
 #end
+#if($r.available("download"))
+	$r.render("download")
+#end
 #if($r.available("print"))
 	$r.render("print")
 #end
@@ -29,5 +32,11 @@
 				<div class="o_important">$r.translate("members.noParticipants.message")</div>
 			#end
 		</div>
+	#end
+	#if($showWaiting && $hasWaiting)
+	<div class="clearfix o_block o_participants">
+		<h4>$r.translate("members.waiting")</h4>
+		$r.render("waiting")
+	</div>
 	#end
 </div>

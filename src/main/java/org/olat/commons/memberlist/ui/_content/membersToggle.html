@@ -1,0 +1,30 @@
+<div class="clearfix">
+	<div class="o_header_with_buttons">
+		#if ($headline)
+		<h2><i class="o_icon o_icon_group"> </i> $r.translate("userlist.title")</h2>
+		#end
+		<div class="o_button_group">
+			<div class="btn-group">
+				#if($r.available("tableCustomLink"))
+					$r.render("tableCustomLink")
+				#end
+				#if($r.available("tableLink"))
+					$r.render("tableLink")
+				#end
+			</div>
+		</div>
+	</div>
+	#if ($portrait)
+		#if ($r.available("portraitView"))
+			<div>
+				$r.render("portraitView")
+			</div>
+		#end
+	#else
+		#if ($r.available("listView"))
+			<div>
+				$r.render("listView")
+			</div>
+		#end
+	#end
+</div>

@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.instantMessaging.model.Presence;
@@ -102,7 +103,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberView>
 		return new MemberListTableModel(getTableColumnModel(), onlineStatusEnabled);
 	}
 
-	public enum Cols {
+	public enum Cols implements FlexiSortableColumnDef{
 		username("table.header.login"),
 		firstTime("table.header.firstTime"),
 		lastTime("table.header.lastTime"),
@@ -118,6 +119,20 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberView>
 		}
 		
 		public String i18n() {
+			return i18n;
+		}
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18n;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+		@Override
+		public String sortKey() {
 			return i18n;
 		}
 	}
