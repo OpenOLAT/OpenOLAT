@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.info.model.InfoMessage;
 import org.olat.commons.info.model.InfoMessageImpl;
 import org.olat.commons.info.notification.InfoSubscriptionManager;
@@ -44,6 +45,7 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupRef;
 
 /**
  * 
@@ -164,16 +166,15 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	}
 	
 	@Override
-	public void updateInfoMessagesOfIdentity(BusinessGroup businessGroup, Identity identity) {
+	public void updateInfoMessagesOfIdentity(BusinessGroupRef businessGroup, IdentityRef identity) {
 		List<InfoMessage> infoMessages = infoMessageManager.loadInfoMessagesOfIdentity(businessGroup, identity);
 		for (InfoMessage infoMessage : infoMessages) {
 			Identity author = infoMessage.getAuthor();
-			Identity modifier = infoMessage.getModifier();
-			if (author != null && author.equals(identity)) {
+			if (author != null && author.getKey().equals(identity.getKey())) {
 				((InfoMessageImpl)infoMessage).setAuthor(null);
-				infoSubscriptionManager.markPublisherNews(infoMessage.getOLATResourceable(), infoMessage.getResSubPath());
 			} 
-			if (modifier != null && modifier.equals(identity)) {
+			Identity modifier = infoMessage.getModifier();
+			if (modifier != null && modifier.getKey().equals(identity.getKey())) {
 				infoMessage.setModifier(null);
 			}
 			infoMessageManager.saveInfoMessage(infoMessage);

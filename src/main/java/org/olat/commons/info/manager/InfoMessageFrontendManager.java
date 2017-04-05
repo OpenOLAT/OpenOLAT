@@ -24,11 +24,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupRef;
 
 /**
  * 
@@ -62,7 +64,7 @@ public interface InfoMessageFrontendManager {
 	
 	public void deleteInfoMessage(InfoMessage infoMessage);
 	
-	public void updateInfoMessagesOfIdentity(BusinessGroup businessGroup, Identity identity);
+	public void updateInfoMessagesOfIdentity(BusinessGroupRef businessGroup, IdentityRef identity);
 	
 	public void removeInfoMessagesAndSubscriptionContext(BusinessGroup group);
 	
