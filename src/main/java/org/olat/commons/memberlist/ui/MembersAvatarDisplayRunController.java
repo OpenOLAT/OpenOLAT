@@ -469,7 +469,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			// Build REST URL to business group,
 			StringBuilder groupLink = new StringBuilder();
 			groupLink.append(Settings.getServerContextPathURI())
-				.append("/auth/BusinessGroup/").append(businessGroup.getKey());
+				.append("/url/BusinessGroup/").append(businessGroup.getKey());
 			return translate("email.body.template", new String[]{groupName, groupLink.toString()});	
 		} else {
 			String courseName = courseEnv.getCourseTitle();

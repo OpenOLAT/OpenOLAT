@@ -300,7 +300,7 @@ public class MembersListDisplayRunController extends BasicController {
 			// Build REST URL to business group, use hack via group manager to access
 			StringBuilder groupLink = new StringBuilder();
 			groupLink.append(Settings.getServerContextPathURI())
-				.append("/auth/BusinessGroup/").append(businessGroup.getKey());
+				.append("/url/BusinessGroup/").append(businessGroup.getKey());
 			return translate("email.body.template", new String[]{groupName, groupLink.toString()});	
 		} else {
 			String courseName = courseEnv.getCourseTitle();
