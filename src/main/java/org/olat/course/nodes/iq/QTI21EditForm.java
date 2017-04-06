@@ -170,6 +170,7 @@ public class QTI21EditForm extends FormBasicController {
 		assessmentResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results_options");
 		assessmentResultsOnFinishEl.setEnabled(!configRef);
 		assessmentResultsOnFinishEl.setHelpText(translate("qti.form.summary.help"));
+		assessmentResultsOnFinishEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#overview_results");
 
 		if(!resultsOptions.none()) {
 			showResultsOnFinishEl.select(onKeys[0], true);
