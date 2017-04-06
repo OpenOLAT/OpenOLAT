@@ -17,40 +17,22 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui;
+package org.olat.modules.lecture.manager;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
+import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 /**
  * 
- * Initial date: 17 mars 2017<br>
+ * Initial date: 5 avr. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureCoachRollCallController extends FormBasicController {
-	
-	public LectureCoachRollCallController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		
-		initForm(ureq);
-	}
+public class AutoCloseLecturesJob extends JobWithDB {
 
 	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
+	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
+		//auto close
 	}
 }

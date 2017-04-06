@@ -55,7 +55,7 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 		if(col < TeacherRollCallController.USER_PROPS_OFFSET) {
 			switch(RollCols.values()[col]) {
 				case username: return row.getIdentityName();
-				case authorizedAbsence: return row.getAuthorizedAbsence();
+				case authorizedAbsence: return row.getAuthorizedAbsenceCont();
 				case comment: return row.getCommentEl();
 				default: return null;
 			}

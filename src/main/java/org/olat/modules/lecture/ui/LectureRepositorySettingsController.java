@@ -156,7 +156,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 				overrideModuleDefaults = overrideEl.isSelected(0);
 				updateOverride();
 			}
-		} else if(enableEl == source || rollCallEnabledEl.isAtLeastSelected(1)) {
+		} else if(enableEl == source || rollCallEnabledEl == source) {
 			updateVisibility();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -200,8 +200,8 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		lectureConfig.setLectureEnabled(enableEl.isAtLeastSelected(1));
-		lectureConfig.setOverrideModuleDefault(overrideEl.isSelected(0));
 		if(enableEl.isAtLeastSelected(1) && overrideEl.isSelected(0)) {
+			lectureConfig.setOverrideModuleDefault(overrideEl.isSelected(0));
 			lectureConfig.setRollCallEnabled(rollCallEnabledEl.isAtLeastSelected(1));
 			
 			//reset values
@@ -222,6 +222,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 			lectureConfig.setTeacherCalendarSyncEnabled(teacherCalendarSyncEl.isAtLeastSelected(1));
 			lectureConfig.setParticipantCalendarSyncEnabled(participantCalendarSyncEl.isAtLeastSelected(1));
 		} else {
+			lectureConfig.setOverrideModuleDefault(false);
 			lectureConfig.setRollCallEnabled(null);
 			lectureConfig.setCalculateAttendanceRate(null);
 			lectureConfig.setRequiredAttendanceRate(null);

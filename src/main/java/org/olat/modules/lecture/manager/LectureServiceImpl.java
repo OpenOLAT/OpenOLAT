@@ -187,12 +187,15 @@ public class LectureServiceImpl implements LectureService {
 	}
 
 	@Override
-	public LectureBlockRollCall createRollCall(Identity identity, LectureBlock lectureBlock, Boolean authorizedAbsence) {
+	public LectureBlockRollCall createRollCall(Identity identity, LectureBlock lectureBlock,
+			Boolean authorizedAbsence, String reasonAbsence) {
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.getRollCall(lectureBlock, identity);
 		if(rollCall == null) {//reload in case of concurrent usage
-			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, authorizedAbsence, null, null);
+			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity,
+					authorizedAbsence, reasonAbsence, null);
 		} else if(authorizedAbsence != null) {
 			rollCall.setAbsenceAuthorized(authorizedAbsence);
+			rollCall.setAbsenceReason(reasonAbsence);
 			rollCall = lectureBlockRollCallDao.update(rollCall);
 		}
 		return rollCall;

@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
+import org.olat.modules.lecture.ui.ParticipantLectureBlocksController.AppealCallback;
 
 /**
  * 
@@ -39,10 +40,12 @@ public class ParticipantLectureBlocksDataModel extends DefaultFlexiTableDataMode
 implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 	
 	private final Locale locale;
+	private final AppealCallback appealCallback;
 	
-	public ParticipantLectureBlocksDataModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public ParticipantLectureBlocksDataModel(FlexiTableColumnModel columnModel, AppealCallback appealCallback, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+		this.appealCallback = appealCallback;
 	}
 
 	@Override
@@ -65,23 +68,14 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 			case lectureBlock: return row.getLectureBlockTitle();
 			case coach: return row.getCoach();
 			case present: return row;
-			case appeal: {
-				if(row.isRollCalled()) {
-					int planned = row.getPlannedLecturesNumber();
-					int attended = row.getLecturesAttendedNumber();
-					if(attended < planned) {
-						return Boolean.TRUE;
-					}
-				}
-				return Boolean.FALSE;
-			}
+			case appeal: return appealCallback.appealAllowed(row);
+			default: return null;
 		}
-		return null;
 	}
 
 	@Override
 	public DefaultFlexiTableDataModel<LectureBlockAndRollCall> createCopyWithEmptyList() {
-		return new ParticipantLectureBlocksDataModel(getTableColumnModel(), locale);
+		return new ParticipantLectureBlocksDataModel(getTableColumnModel(), appealCallback, locale);
 	}
 	
 	public enum ParticipantCols implements FlexiSortableColumnDef {

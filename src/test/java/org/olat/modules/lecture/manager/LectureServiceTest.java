@@ -65,6 +65,11 @@ public class LectureServiceTest extends OlatTestCase {
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
 		
+		// enable lecture on this entry
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		config.setLectureEnabled(true);
+		config = lectureService.updateRepositoryEntryLectureConfiguration(config);
+
 		lectureService.addTeacher(lectureBlock, teacher);
 		dbInstance.commitAndCloseSession();
 		

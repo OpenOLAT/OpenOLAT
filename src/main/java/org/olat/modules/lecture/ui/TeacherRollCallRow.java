@@ -22,8 +22,10 @@ package org.olat.modules.lecture.ui;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.user.UserPropertiesRow;
@@ -38,14 +40,17 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class TeacherRollCallRow extends UserPropertiesRow {
 	
 	private Identity identity;
+	private FormLink reasonLink;
 	private TextElement commentEl;
 	private LectureBlockRollCall rollCall;
 	private MultipleSelectionElement[] checks;
 	private MultipleSelectionElement authorizedAbsence;
+	private FormLayoutContainer authorizedAbsenceCont;
 	
-	public TeacherRollCallRow(Identity identity, List<UserPropertyHandler> propertyHandlers, Locale locale) {
+	public TeacherRollCallRow(LectureBlockRollCall rollCall, Identity identity, List<UserPropertyHandler> propertyHandlers, Locale locale) {
 		super(identity, propertyHandlers, locale);
 		this.identity = identity;
+		this.rollCall = rollCall;
 	}
 	
 	public Identity getIdentity() {
@@ -92,6 +97,22 @@ public class TeacherRollCallRow extends UserPropertiesRow {
 
 	public void setAuthorizedAbsence(MultipleSelectionElement authorizedAbsence) {
 		this.authorizedAbsence = authorizedAbsence;
+	}
+
+	public FormLink getReasonLink() {
+		return reasonLink;
+	}
+
+	public void setReasonLink(FormLink reasonLink) {
+		this.reasonLink = reasonLink;
+	}
+
+	public FormLayoutContainer getAuthorizedAbsenceCont() {
+		return authorizedAbsenceCont;
+	}
+
+	public void setAuthorizedAbsenceCont(FormLayoutContainer authorizedAbsenceCont) {
+		this.authorizedAbsenceCont = authorizedAbsenceCont;
 	}
 
 	public TextElement getCommentEl() {

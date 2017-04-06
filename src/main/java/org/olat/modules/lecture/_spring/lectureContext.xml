@@ -49,4 +49,62 @@
 		</property>
 	</bean>
 	
+	<!-- Lectures reminder job -->
+	<bean id="reminderLecturesTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="reminderLecturesJob.${cluster.singleton.services}" />
+	  	<!-- adjust cron style syntax for your notification needs 
+	   	"0 10 0 * *"  e.g. 10 minutes after midnight
+	   	
+	   	A "Cron-Expression" is a string comprised of 6 or 7 fields separated by white space. The 6 mandatory and 1 optional fields are as follows:
+			Field Name 	  	Allowed Values 	  	Allowed Special Characters
+			Seconds 	  	0-59 	  			, - * /
+			Minutes 	  	0-59 	  			, - * /
+			Hours 	  		0-23 	  			, - * /
+			Day-of-month 	1-31 	  			, - * ? / L W C
+			Month 	  		1-12 or JAN-DEC 	, - * /
+			Day-of-Week 	1-7 or SUN-SAT 	  	, - * ? / L C #
+			Year (Optional)	empty, 1970-2099 	, - * /    	
+	   	-->
+		<property name="cronExpression" value="15 34 */1 * * ?" />
+		<property name="startDelay" value="60000" />
+	</bean>
+
+	<bean id="reminderLecturesJob.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.modules.lecture.manager.ReminderLecturesJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="reminderLecturesJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
+	<!-- Lectures auto close job -->
+	<bean id="autoCloseLecturesTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="autoCloseLecturesJob.${cluster.singleton.services}" />
+	  	<!-- adjust cron style syntax for your notification needs 
+	   	"0 10 0 * *"  e.g. 10 minutes after midnight
+	   	
+	   	A "Cron-Expression" is a string comprised of 6 or 7 fields separated by white space. The 6 mandatory and 1 optional fields are as follows:
+			Field Name 	  	Allowed Values 	  	Allowed Special Characters
+			Seconds 	  	0-59 	  			, - * /
+			Minutes 	  	0-59 	  			, - * /
+			Hours 	  		0-23 	  			, - * /
+			Day-of-month 	1-31 	  			, - * ? / L W C
+			Month 	  		1-12 or JAN-DEC 	, - * /
+			Day-of-Week 	1-7 or SUN-SAT 	  	, - * ? / L C #
+			Year (Optional)	empty, 1970-2099 	, - * /    	
+	   	-->
+		<property name="cronExpression" value="15 34 */1 * * ?" />
+		<property name="startDelay" value="60000" />
+	</bean>
+
+	<bean id="autoCloseLecturesJob.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+		<property name="jobClass" value="org.olat.modules.lecture.manager.AutoCloseLecturesJob" />
+	</bean>
+	
+	<!-- dummy bean -->
+	<bean id="autoCloseLecturesJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
+	</bean>
+	
 </beans>

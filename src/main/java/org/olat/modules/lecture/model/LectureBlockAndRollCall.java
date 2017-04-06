@@ -22,6 +22,7 @@ package org.olat.modules.lecture.model;
 import java.util.Date;
 
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
 
 /**
@@ -33,8 +34,11 @@ import org.olat.modules.lecture.LectureBlockRollCall;
 public class LectureBlockAndRollCall {
 	
 	private final String entryDisplayname;
+	
+	private final Long lectureBlockKey;
 	private final String lectureBlockTitle;
 	private final int plannedLectures;
+	private final int effectiveLectures;
 	private final Date startDate;
 	
 	private final Long rollCallKey;
@@ -46,8 +50,10 @@ public class LectureBlockAndRollCall {
 		this.entryDisplayname = entryDisplayname;
 		
 		startDate = lectureBlock.getStartDate();
+		lectureBlockKey = lectureBlock.getKey();
 		lectureBlockTitle = lectureBlock.getTitle();
 		plannedLectures = lectureBlock.getPlannedLecturesNumber();
+		effectiveLectures = lectureBlock.getEffectiveLecturesNumber();
 		
 		if(rollCall == null) {
 			rollCallKey = null;
@@ -66,6 +72,10 @@ public class LectureBlockAndRollCall {
 		return entryDisplayname;
 	}
 	
+	public LectureBlockRef getLectureBlockRef() {
+		return new LectureBlockRefImpl(lectureBlockKey);
+	}
+	
 	public String getLectureBlockTitle() {
 		return lectureBlockTitle;
 	}
@@ -80,6 +90,10 @@ public class LectureBlockAndRollCall {
 	
 	public int getPlannedLecturesNumber() {
 		return plannedLectures;
+	}
+	
+	public int getEffectiveLecturesNumber() {
+		return effectiveLectures;
 	}
 	
 	public String getCoach() {

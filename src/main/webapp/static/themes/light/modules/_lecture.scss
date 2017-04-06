@@ -8,3 +8,9 @@
 		@include progress-bar-variant($progress-bar-warning-bg);
 	}
 }
+
+.o_lecture_authorized_absence {
+	div.form-inline {
+		display: inline;
+	}
+}

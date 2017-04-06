@@ -96,6 +96,7 @@ public class ContactFormController extends BasicController {
 	private ContactForm cntctForm;
 	private DialogBoxController noUsersErrorCtr;
 	private List<String> myButtons;
+	private Object userObject;
 	
 	@Autowired
 	private MailManager mailService;
@@ -130,6 +131,14 @@ public class ContactFormController extends BasicController {
 		init(ureq, hasAtLeastOneAddress, cmsg.getDisabledIdentities());
 	}
 	
+	public Object getUserObject() {
+		return userObject;
+	}
+
+	public void setUserObject(Object userObject) {
+		this.userObject = userObject;
+	}
+
 	private boolean hasAtLeastOneAddress(List<ContactList> recipList) {
 		boolean hasAtLeastOneAddress = false;
 		if (recipList != null && recipList.size() > 0 ) {

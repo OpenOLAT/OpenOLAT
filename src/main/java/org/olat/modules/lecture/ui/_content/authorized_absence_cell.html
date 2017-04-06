@@ -1,0 +1,6 @@
+<div id="$r.getCId()" class="o_lecture_authorized_absence">
+$r.render($row.getAuthorizedAbsence()) $r.render($row.getReasonLink())
+</div>
+#if($f.hasError($row.getAuthorizedAbsence().getComponent().getComponentName()))
+	<div>$r.render("${row.getAuthorizedAbsence().getComponent().getComponentName()}_ERROR")</div>
+#end

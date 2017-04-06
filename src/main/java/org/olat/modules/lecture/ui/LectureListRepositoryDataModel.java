@@ -63,6 +63,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case id: return row.getKey();
 			case title: return  row.getTitle();
 			case location: return row.getLocation();
+			case date: return row.getStartDate();
 			default: return null;
 		}
 	}
@@ -75,7 +76,8 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 	public enum BlockCols implements FlexiSortableColumnDef {
 		id("lecture.id"),
 		title("lecture.title"),
-		location("lecture.location")
+		location("lecture.location"),
+		date("lecture.date")
 		;
 		
 		private final String i18nKey;

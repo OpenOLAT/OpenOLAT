@@ -109,7 +109,10 @@ public class LectureBlockDAO {
 		sb.append("select block.key from lectureblock block")
 		  .append(" inner join block.teacherGroup teacherGroup")
 		  .append(" inner join teacherGroup.members teachers")
-		  .append(" where block.entry.key=:entryKey and teachers.identity.key=:identityKey");
+		  .append(" where block.entry.key=:entryKey and teachers.identity.key=:identityKey")
+		  .append(" and exists (select config.key from lectureentryconfig config")
+		  .append("   where config.entry.key=:entryKey and config.lectureEnabled=true")
+		  .append(" )");
 		
 		List<Long> firstKey = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)

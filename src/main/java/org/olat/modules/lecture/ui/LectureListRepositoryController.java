@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -81,6 +82,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.date, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 
 		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
@@ -94,7 +96,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		List<LectureBlock> blocks = lectureService.getLectureBlocks(entry);
 		List<LectureBlockRow> rows = new ArrayList<>(blocks.size());
 		for(LectureBlock block:blocks) {
-			rows.add(new LectureBlockRow(block.getKey(), block.getTitle(), block.getLocation()));
+			rows.add(new LectureBlockRow(block.getKey(), block.getTitle(), block.getLocation(), block.getStartDate()));
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);

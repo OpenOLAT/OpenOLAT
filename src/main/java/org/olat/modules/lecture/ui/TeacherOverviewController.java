@@ -44,7 +44,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +68,10 @@ public class TeacherOverviewController extends FormBasicController {
 	private TeacherRollCallController rollCallCtrl;
 	
 	private final RepositoryEntry entry;
+	private final RepositoryEntryLectureConfiguration entryConfig;
 	
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
 	
@@ -73,6 +79,7 @@ public class TeacherOverviewController extends FormBasicController {
 		super(ureq, wControl, "teacher_view");
 		this.entry = entry;
 		this.toolbarPanel = toolbarPanel;
+		entryConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		
 		initForm(ureq);
 		loadModel();
@@ -107,14 +114,16 @@ public class TeacherOverviewController extends FormBasicController {
 		startButton.setVisible(false);
 		startButton.setUserObject(null);
 		
-		
-		for(LectureBlock block:blocks) {
-			if(canStartRollCall(block)) {
-				startButton.setVisible(true);
-				startButton.setUserObject(block);
-				startButton.setPrimary(true);
-				flc.getFormItemComponent().contextPut("blockTitle", StringHelper.escapeHtml(block.getTitle()));
-				break;
+		// only show the start button if 
+		if(ConfigurationHelper.isRollCallEnabled(entryConfig, lectureModule)) {
+			for(LectureBlock block:blocks) {
+				if(canStartRollCall(block)) {
+					startButton.setVisible(true);
+					startButton.setUserObject(block);
+					startButton.setPrimary(true);
+					flc.getFormItemComponent().contextPut("blockTitle", StringHelper.escapeHtml(block.getTitle()));
+					break;
+				}
 			}
 		}
 	}
@@ -140,8 +149,8 @@ public class TeacherOverviewController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				LectureBlock row = tableModel.getObject(se.getIndex());
-				if("select".equals(cmd)) {
+				if("details".equals(cmd)) {
+					LectureBlock row = tableModel.getObject(se.getIndex());
 					doSelectLectureBlock(ureq, row);
 				}
 			}
@@ -158,12 +167,21 @@ public class TeacherOverviewController extends FormBasicController {
 	}
 	
 	private void doSelectLectureBlock(UserRequest ureq, LectureBlock block) {
-		//
+		boolean editable = false;
+		if(block.getStatus().equals(LectureBlockStatus.active)
+				|| block.getStatus().equals(LectureBlockStatus.partiallydone)) {
+			editable = true;
+		}
+		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), block);
+		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), block, participants, editable);
+		listenTo(rollCallCtrl);
+		toolbarPanel.pushController(block.getTitle(), rollCallCtrl);
 	}
-
+	
+	//same as above???
 	private void doStartRollCall(UserRequest ureq, LectureBlock block) {
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), block);
-		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), block, participants);
+		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), block, participants, true);
 		listenTo(rollCallCtrl);
 		toolbarPanel.pushController(block.getTitle(), rollCallCtrl);
 	}

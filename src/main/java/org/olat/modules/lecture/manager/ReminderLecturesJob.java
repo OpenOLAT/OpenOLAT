@@ -17,46 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.model;
+package org.olat.modules.lecture.manager;
 
-import java.util.Date;
-
-import org.olat.modules.lecture.LectureBlockRef;
+import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 
 /**
+ * A job which send reminders.
  * 
- * Initial date: 24 mars 2017<br>
+ * Initial date: 5 avr. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureBlockRow implements LectureBlockRef {
-	
-	private final Long key;
-	private final String title;
-	private final String location;
-	private final Date startDate;
-	
-	public LectureBlockRow(Long key, String title, String location, Date startDate) {
-		this.key = key;
-		this.title = title;
-		this.location = location;
-		this.startDate = startDate;
-	}
-	
+public class ReminderLecturesJob extends JobWithDB {
+
 	@Override
-	public Long getKey() {
-		return key;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public String getLocation() {
-		return location;
-	}
-
-	public Date getStartDate() {
-		return startDate;
+	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
+		// reminders
 	}
 }

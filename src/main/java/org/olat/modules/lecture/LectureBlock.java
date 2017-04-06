@@ -60,6 +60,10 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo 
 	public int getPlannedLecturesNumber();
 	
 	public void setPlannedLecturesNumber(int number);
+	
+	public int getEffectiveLecturesNumber();
+
+	public void setEffectiveLecturesNumber(int effectiveLecturesNumber);
 
 	public String getLog();
 

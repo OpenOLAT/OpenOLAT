@@ -67,9 +67,9 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 
 	@Value("${lecture.rollcall.reminder.enabled:true}")
 	private boolean rollCallReminderEnabled;
-	@Value("${lecture.rollcall.reminder.period:5}")
+	@Value("${lecture.rollcall.reminder.period:3}")
 	private int rollCallReminderPeriod;
-	@Value("${lecture.rollcall.autoclose.period:15}")
+	@Value("${lecture.rollcall.autoclose.period:5}")
 	private int rollCallAutoClosePeriod;
 
 	@Value("${lecture.absence.appeal.enabled:true}")

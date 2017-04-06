@@ -30,17 +30,22 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
@@ -72,7 +77,11 @@ public class TeacherRollCallController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private TeacherRollCallDataModel tableModel;
 	
+	private ReasonController reasonCtrl;
+	private CloseableCalloutWindowController reasonCalloutCtrl;
+	
 	private int counter = 0;
+	private final boolean editable;
 	private final LectureBlock lectureBlock;
 	private final boolean isAdministrativeUser;
 	private final boolean autorizedAbsenceEnabled;
@@ -90,8 +99,9 @@ public class TeacherRollCallController extends FormBasicController {
 	private BaseSecurityModule securityModule;
 	
 	public TeacherRollCallController(UserRequest ureq, WindowControl wControl,
-			LectureBlock block, List<Identity> participants) {
+			LectureBlock block, List<Identity> participants, boolean editable) {
 		super(ureq, wControl, "rollcall");
+		this.editable = editable;
 		this.lectureBlock = block;
 		this.participants = participants;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -134,8 +144,6 @@ public class TeacherRollCallController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("all", translate("all"), "all"));
 		if(autorizedAbsenceEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.authorizedAbsence));
-			//reason
-			
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.comment));
@@ -162,7 +170,7 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private TeacherRollCallRow forgeRow(Identity participant, LectureBlockRollCall rollCall) {
-		TeacherRollCallRow row = new TeacherRollCallRow(participant, userPropertyHandlers, getLocale());
+		TeacherRollCallRow row = new TeacherRollCallRow(rollCall, participant, userPropertyHandlers, getLocale());
 		
 		int numOfChecks = lectureBlock.getPlannedLecturesNumber();
 		MultipleSelectionElement[] checks = new MultipleSelectionElement[numOfChecks];
@@ -173,6 +181,7 @@ public class TeacherRollCallController extends FormBasicController {
 			MultipleSelectionElement check = uifactory.addCheckboxesHorizontal(checkId, null, flc, onKeys, onValues);
 			check.setDomReplacementWrapperRequired(false);
 			check.addActionListener(FormEvent.ONCHANGE);
+			check.setEnabled(editable);
 			check.setUserObject(row);
 			check.setAjaxOnly(true);
 			if(absences.contains(i)) {
@@ -184,17 +193,37 @@ public class TeacherRollCallController extends FormBasicController {
 		row.setChecks(checks);
 		
 		if(autorizedAbsenceEnabled) {
+			String page = velocity_root + "/authorized_absence_cell.html";
+			FormLayoutContainer absenceCont = FormLayoutContainer.createCustomFormLayout("auth_cont_".concat(Integer.toString(++counter)), getTranslator(), page);
+			absenceCont.setRootForm(mainForm);
+			flc.add(absenceCont);
+			
 			String authorizedAbsencedId = "auth_abs_".concat(Integer.toString(++counter));
-			MultipleSelectionElement authorizedAbsencedEl = uifactory.addCheckboxesHorizontal(authorizedAbsencedId, null, flc, onKeys, onValues);
+			MultipleSelectionElement authorizedAbsencedEl = uifactory.addCheckboxesHorizontal(authorizedAbsencedId, null, absenceCont, onKeys, onValues);
 			authorizedAbsencedEl.setDomReplacementWrapperRequired(false);
 			authorizedAbsencedEl.addActionListener(FormEvent.ONCHANGE);
 			authorizedAbsencedEl.setUserObject(row);
 			authorizedAbsencedEl.setAjaxOnly(true);
-			if(rollCall != null && rollCall.getAbsenceAuthorized() != null && rollCall.getAbsenceAuthorized().booleanValue()) {
+			authorizedAbsencedEl.setEnabled(editable);
+			
+			boolean hasAuthorization = rollCall != null && rollCall.getAbsenceAuthorized() != null
+					&& rollCall.getAbsenceAuthorized().booleanValue();
+			if(hasAuthorization) {
 				authorizedAbsencedEl.select(onKeys[0], true);
 			}
 			row.setAuthorizedAbsence(authorizedAbsencedEl);
 			flc.add(authorizedAbsencedEl);
+
+			String reasonId = "abs_reason_".concat(Integer.toString(++counter));
+			FormLink reasonLink = uifactory.addFormLink(reasonId, "reason", null, absenceCont, Link.BUTTON_XSMALL);
+			reasonLink.setDomReplacementWrapperRequired(false);
+			reasonLink.setIconLeftCSS("o_icon o_icon_notes");
+			reasonLink.setVisible(hasAuthorization);
+			reasonLink.setUserObject(row);
+			row.setReasonLink(reasonLink);
+			
+			row.setAuthorizedAbsenceCont(absenceCont);
+			absenceCont.contextPut("row", row);
 		}
 
 		String comment = rollCall == null ? "" : rollCall.getComment();
@@ -219,6 +248,27 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(reasonCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doReason(reasonCtrl.getTeacherRollCallRow(), reasonCtrl.getReason());
+			}
+			reasonCalloutCtrl.deactivate();
+			cleanUp();
+		} else if(reasonCalloutCtrl == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(reasonCalloutCtrl);
+		removeAsListenerAndDispose(reasonCtrl);
+		reasonCalloutCtrl = null;
+		reasonCtrl = null;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
 			if(event instanceof SelectionEvent) {
@@ -237,6 +287,13 @@ public class TeacherRollCallController extends FormBasicController {
 			} else {
 				doCheckRow(row, check);
 			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if(cmd != null && cmd.startsWith("abs_reason_")) {
+				TeacherRollCallRow row = (TeacherRollCallRow)link.getUserObject();
+				doCalloutReasonAbsence(ureq, link, row);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -252,6 +309,7 @@ public class TeacherRollCallController extends FormBasicController {
 			} else {
 				String reason = row.getRollCall().getAbsenceReason();
 				if(row.getAuthorizedAbsence().isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(reason)) {
+					row.getAuthorizedAbsence().setErrorKey("error.reason.mandatory", null);
 					allOk &= false;
 				}
 			}
@@ -309,10 +367,35 @@ public class TeacherRollCallController extends FormBasicController {
 	
 	private void doAuthorizedAbsence(TeacherRollCallRow row, MultipleSelectionElement check) {
 		LectureBlockRollCall rollCall = row.getRollCall();
+		boolean authorized = check.isAtLeastSelected(1);
 		if(rollCall == null) {
-			rollCall = lectureService.createRollCall(row.getIdentity(), lectureBlock, check.isAtLeastSelected(1));		
+			rollCall = lectureService.createRollCall(row.getIdentity(), lectureBlock, authorized, null);		
 		} else {
-			rollCall.setAbsenceAuthorized(check.isAtLeastSelected(1));
+			rollCall.setAbsenceAuthorized(authorized);
+			rollCall = lectureService.updateRollCall(rollCall);
+		}
+		row.getReasonLink().setVisible(authorized);
+		row.getAuthorizedAbsenceCont().setDirty(true);
+		row.setRollCall(rollCall);
+	}
+	
+	private void doCalloutReasonAbsence(UserRequest ureq, FormLink link, TeacherRollCallRow row) {
+		reasonCtrl = new ReasonController(ureq, getWindowControl(), row);
+		listenTo(reasonCtrl);
+
+		reasonCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				reasonCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(reasonCalloutCtrl);
+		reasonCalloutCtrl.activate();
+	}
+	
+	private void doReason(TeacherRollCallRow row, String reason) {
+		LectureBlockRollCall rollCall = row.getRollCall();
+		if(rollCall == null) {
+			row.getAuthorizedAbsence().select(onKeys[0], true);
+			rollCall = lectureService.createRollCall(row.getIdentity(), lectureBlock, true, reason);		
+		} else {
+			rollCall.setAbsenceReason(reason);
 			rollCall = lectureService.updateRollCall(rollCall);
 		}
 		row.setRollCall(rollCall);

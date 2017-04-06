@@ -17,46 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.model;
+package org.olat.modules.lecture.ui;
 
-import java.util.Date;
-
-import org.olat.modules.lecture.LectureBlockRef;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 
 /**
+ * An helper to calculate the configuration with the override.
  * 
- * Initial date: 24 mars 2017<br>
+ * Initial date: 4 avr. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureBlockRow implements LectureBlockRef {
+public class ConfigurationHelper {
 	
-	private final Long key;
-	private final String title;
-	private final String location;
-	private final Date startDate;
-	
-	public LectureBlockRow(Long key, String title, String location, Date startDate) {
-		this.key = key;
-		this.title = title;
-		this.location = location;
-		this.startDate = startDate;
+	protected static boolean isRollCallEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
+		return (lectureConfig.isOverrideModuleDefault() && lectureConfig.getRollCallEnabled() != null && lectureConfig.getRollCallEnabled().booleanValue())
+				|| (!lectureConfig.isOverrideModuleDefault() && lectureModule.isRollCallDefaultEnabled());
 	}
 	
-	@Override
-	public Long getKey() {
-		return key;
-	}
 
-	public String getTitle() {
-		return title;
-	}
-
-	public String getLocation() {
-		return location;
-	}
-
-	public Date getStartDate() {
-		return startDate;
-	}
 }

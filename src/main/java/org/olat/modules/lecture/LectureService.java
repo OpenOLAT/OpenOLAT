@@ -139,7 +139,8 @@ public interface LectureService {
 	 * @param authorizedAbsence If there are authorized absence
 	 * @return A new persisted roll call
 	 */
-	public LectureBlockRollCall createRollCall(Identity identity, LectureBlock lectureBlock, Boolean authorizedAbsence);
+	public LectureBlockRollCall createRollCall(Identity identity, LectureBlock lectureBlock,
+			Boolean authorizedAbsence, String absenceReason);
 	
 	/**
 	 * Standard merge
@@ -201,10 +202,13 @@ public interface LectureService {
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry, IdentityRef teacher);
 
 	/**
+	 * This method will check 2 things. First is the lectures for the specified
+	 * repository entry enabled and if it is the case, it will checks that the
+	 * identity is a teacher in at least one lecture block.
 	 * 
-	 * @param entry
-	 * @param identity
-	 * @return
+	 * @param entry The course / repository entry
+	 * @param identity The identity as teacher
+	 * @return true if the lecture is enabled and the identity a teach
 	 */
 	public boolean hasLecturesAsTeacher(RepositoryEntryRef entry, Identity identity);
 	
