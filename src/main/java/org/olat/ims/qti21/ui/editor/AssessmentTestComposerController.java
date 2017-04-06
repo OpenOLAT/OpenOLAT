@@ -1195,6 +1195,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		if(confirmDeleteCtrl != null) return;
 		
 		TreeNode selectedNode = menuTree.getSelectedNode();
+		if(selectedNode == null) {
+			showWarning("warning.atleastone");
+			return;
+		}
+		
 		Object uobject = selectedNode.getUserObject();
 		if(uobject instanceof AssessmentTest) {
 			showWarning("error.cannot.delete");
