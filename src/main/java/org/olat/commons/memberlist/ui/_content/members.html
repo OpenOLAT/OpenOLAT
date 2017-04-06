@@ -10,21 +10,21 @@
 #end
 </div>
 
-<div class="o_cmembers o_owners">
+<div class="o_cmembers">
 	#if($showOwners && $hasOwners)
-	<div class="clearfix">
+	<div class="clearfix o_owners o_sel_owners">
 		<h4>$r.translate("members.owners")</h4>
 		$r.render("owners")
 	</div>
 	#end
 	#if($showCoaches && $hasCoaches)
-	<div class="clearfix o_block o_coaches">
+	<div class="clearfix o_block o_coaches o_sel_coaches">
 		<h4>$r.translate("members.coaches")</h4>
 		$r.render("coaches")
 	</div>
 	#end
 	#if($showParticipants)
-		<div class="clearfix o_block o_participants">
+		<div class="clearfix o_block o_participants o_sel_participants">
 			<h4>$r.translate("members.participants")</h4>
 			#if($hasParticipants)
 				$r.render("participants")
@@ -34,7 +34,7 @@
 		</div>
 	#end
 	#if($showWaiting && $hasWaiting)
-	<div class="clearfix o_block o_participants">
+	<div class="clearfix o_block o_participants o_sel_waiting_list">
 		<h4>$r.translate("members.waiting")</h4>
 		$r.render("waiting")
 	</div>
