@@ -113,6 +113,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	private List<Identity> waiting;
 
 	private final boolean canEmail;
+	private final boolean canDownload;
 	private final boolean showOwners;
 	private final boolean showCoaches;
 	private final boolean showParticipants;
@@ -146,8 +147,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	
 	
 	public MembersAvatarDisplayRunController(UserRequest ureq, WindowControl wControl, Translator translator, CourseEnvironment courseEnv, BusinessGroup businessGroup,
-			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, boolean canEmail, boolean deduplicateList,
-			boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
+			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, boolean canEmail, boolean canDownload, 
+			  boolean deduplicateList, boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
 		super(ureq, wControl, "members", translator);
 		setTranslator(translator);
 		
@@ -166,6 +167,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		this.waiting = waiting;
 		// flags
 		this.canEmail = canEmail;
+		this.canDownload = canDownload;
 		this.showOwners = showOwners;
 		this.showCoaches = showCoaches;
 		this.showParticipants = showParticipants;
@@ -192,8 +194,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		IdentityEnvironment idEnv = ureq.getUserSession().getIdentityEnvironment();
 		Identity ownId = idEnv.getIdentity();
 		Roles roles = idEnv.getRoles();
-		boolean memberXlsEnabled = businessGroup != null ? businessGroup.isDownloadMembersLists() && !waiting.contains(ownId) : false;
-		if (editable && (roles.isOLATAdmin() || roles.isGroupManager() || owners.contains(ownId) || coaches.contains(ownId) || memberXlsEnabled)) {
+		if (editable && (roles.isOLATAdmin() || roles.isGroupManager() || owners.contains(ownId) || coaches.contains(ownId)
+				|| (canDownload && !waiting.contains(ownId)))) {
 			downloadLink = uifactory.addFormLink("download", "members.download", null, formLayout, Link.BUTTON);
 			downloadLink.setIconLeftCSS("o_icon o_icon_download");
 			if(formLayout instanceof FormLayoutContainer) {
@@ -463,12 +465,12 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	
 	private String createBodyTemplate() {
 		if (courseEnv == null) {
-			String courseName = businessGroup.getName();
-			// Build REST URL to business group, use hack via group manager to access
-			StringBuilder courseLink = new StringBuilder();
-			courseLink.append(Settings.getServerContextPathURI())
+			String groupName = businessGroup.getName();
+			// Build REST URL to business group,
+			StringBuilder groupLink = new StringBuilder();
+			groupLink.append(Settings.getServerContextPathURI())
 				.append("/auth/BusinessGroup/").append(businessGroup.getKey());
-			return translate("email.body.template", new String[]{courseName, courseLink.toString()});	
+			return translate("email.body.template", new String[]{groupName, groupLink.toString()});	
 		} else {
 			String courseName = courseEnv.getCourseTitle();
 			// Build REST URL to course element, use hack via group manager to access repo entry

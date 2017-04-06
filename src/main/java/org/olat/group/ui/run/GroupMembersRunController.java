@@ -68,9 +68,10 @@ public class GroupMembersRunController extends BasicController {
 			waiting = businessGroupService.getMembers(businessGroup, GroupRoles.waiting.name());
 		} else {
 			waiting = Collections.emptyList();
-		}	
-		membersDisplayRunController = new MembersDisplayRunController(ureq, wControl, getTranslator(), null, businessGroup,
-				new ArrayList<>(), coaches, participants, waiting, canEmail, true, false, showCoaches, showParticipants, showWaiting, true);
+		}
+		boolean canDownload = businessGroup.isDownloadMembersLists();
+		membersDisplayRunController = new MembersDisplayRunController(ureq, wControl, getTranslator(), null, businessGroup, new ArrayList<>(), 
+				coaches, participants, waiting, canEmail, canDownload, true, false, showCoaches, showParticipants, showWaiting, true);
 		listenTo(membersDisplayRunController);
 		
 		putInitialPanel(membersDisplayRunController.getInitialComponent());		

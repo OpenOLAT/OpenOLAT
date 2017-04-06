@@ -113,9 +113,8 @@ public class MembersMailController extends FormBasicController {
 	
 	public MembersMailController(UserRequest ureq, WindowControl wControl, Translator translator, CourseEnvironment courseEnv,
 			List<Member> ownerList, List<Member> coachList, List<Member> participantList, List<Member> waitingList, String bodyTemplate) {
-		super(ureq, wControl, Util.createPackageTranslator(MailHelper.class, ureq.getLocale()));
+		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(translator, MailHelper.class, ureq.getLocale()));
-//		setTranslator(translator);
 		
 		this.courseEnv = courseEnv;
 		this.ownerList = ownerList;
@@ -417,7 +416,7 @@ public class MembersMailController extends FormBasicController {
 				showError("FileMoveCopyFailed","");
 			} else {
 				attachmentSize += size;
-				FormLink removeFile = uifactory.addFormLink("delete_" + (++counter), "delete", "", null, uploadCont, Link.LINK);
+				FormLink removeFile = uifactory.addFormLink("delete_" + (++counter), "delete", "delete", null, uploadCont, Link.LINK);
 				removeFile.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
 				String css = CSSHelper.createFiletypeIconCssClassFor(filename);
 				Attachment wrapper = new Attachment(attachment, attachment.getName(), css, removeFile);

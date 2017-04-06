@@ -57,8 +57,6 @@ public class MembersCourseNodeRunController extends BasicController {
 	
 	public static final String USER_PROPS_ID = MembersCourseNodeRunController.class.getName();
 	
-	private CourseEnvironment courseEnv;
-	private boolean canEmail, deduplicateList, showOwners, showCoaches = false, showParticipants = false;
 	private List<Identity> owners, coaches, participants;
 
 	private MembersDisplayRunController membersDisplayRunController;
@@ -73,18 +71,21 @@ public class MembersCourseNodeRunController extends BasicController {
 	public MembersCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, ModuleConfiguration config) {
 		super(ureq, wControl);
 		
-		courseEnv = userCourseEnv.getCourseEnvironment();
+		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		
 		this.coaches = new ArrayList<>();
 		this.participants = new ArrayList<>();
 
-		showOwners = config.getBooleanSafe(MembersCourseNode.CONFIG_KEY_SHOWOWNER);
+		boolean showOwners = config.getBooleanSafe(MembersCourseNode.CONFIG_KEY_SHOWOWNER);
 		
 		MembersCourseNodeConfiguration nodeConfig = (MembersCourseNodeConfiguration)CourseNodeFactory.getInstance().getCourseNodeConfiguration("cmembers");
-		deduplicateList = nodeConfig.isDeduplicateList();
+		boolean deduplicateList = nodeConfig.isDeduplicateList();
 		
 		String emailFct = config.getStringValue(MembersCourseNode.CONFIG_KEY_EMAIL_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN);
-		canEmail = MembersCourseNode.EMAIL_FUNCTION_ALL.equals(emailFct) || userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+		boolean canEmail = MembersCourseNode.EMAIL_FUNCTION_ALL.equals(emailFct) || userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+		
+		String downloadFct = config.getStringValue(MembersCourseNode.CONFIG_KEY_DOWNLOAD_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN);
+		boolean canDownload = MembersCourseNode.EMAIL_FUNCTION_ALL.equals(downloadFct) || userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 		
 		IModuleConfiguration membersFrag = IModuleConfiguration.fragment("members", config);
 		
@@ -95,6 +96,7 @@ public class MembersCourseNodeRunController extends BasicController {
 			owners = Collections.emptyList();
 		}
 		
+		boolean showCoaches = false;
 		if(membersFrag.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL, MembersCourseNode.CONFIG_KEY_COACHES_COURSE)		
 				|| membersFrag.hasAnyOf(MembersCourseNode.CONFIG_KEY_COACHES_GROUP, MembersCourseNode.CONFIG_KEY_COACHES_AREA)) {
 			
@@ -104,6 +106,7 @@ public class MembersCourseNodeRunController extends BasicController {
 			showCoaches = true;
 		}
 		
+		boolean showParticipants = false;
 		if(membersFrag.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE)
 				|| membersFrag.hasAnyOf(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA)) {
 			
@@ -114,7 +117,7 @@ public class MembersCourseNodeRunController extends BasicController {
 		}
 		
 		membersDisplayRunController = new MembersDisplayRunController(ureq, wControl, getTranslator(), courseEnv, null,
-				owners, coaches, participants, new ArrayList<>(), canEmail, deduplicateList, showOwners, showCoaches,
+				owners, coaches, participants, new ArrayList<>(), canEmail, canDownload, deduplicateList, showOwners, showCoaches,
 				showParticipants, false, true);
 		listenTo(membersDisplayRunController);
 		

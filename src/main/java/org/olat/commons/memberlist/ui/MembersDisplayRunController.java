@@ -63,6 +63,7 @@ public class MembersDisplayRunController extends BasicController {
 	private List<Identity> waiting;
 
 	private final boolean canEmail;
+	private final boolean canDownload;
 	private final boolean showOwners;
 	private final boolean showCoaches;
 	private final boolean showParticipants;
@@ -72,8 +73,8 @@ public class MembersDisplayRunController extends BasicController {
 	
 	
 	public MembersDisplayRunController(UserRequest ureq, WindowControl wControl, Translator translator, CourseEnvironment courseEnv, BusinessGroup businessGroup,
-			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, boolean canEmail, boolean deduplicateList,
-			boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
+			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, boolean canEmail, boolean canDownload,
+			boolean deduplicateList, boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, boolean editable) {
 		super(ureq, wControl);
 		setTranslator(translator);
 		this.courseOrGroupIdentifier = courseEnv == null ? GUIPREF_KEY_GROUPMEMBER + businessGroup.getKey()
@@ -87,6 +88,7 @@ public class MembersDisplayRunController extends BasicController {
 		this.waiting = waiting;
 		// flags
 		this.canEmail = canEmail;
+		this.canDownload = canDownload;
 		this.showOwners = showOwners;
 		this.showCoaches = showCoaches;
 		this.showParticipants = showParticipants;
@@ -135,7 +137,7 @@ public class MembersDisplayRunController extends BasicController {
 	private void doOpenPortraitView(UserRequest ureq) {
 		if (membersAvatarController == null) {
 			membersAvatarController = new MembersAvatarDisplayRunController(ureq, getWindowControl(), getTranslator(), 
-					courseEnv, businessGroup, owners, coaches, participants, waiting, canEmail, deduplicateList, 
+					courseEnv, businessGroup, owners, coaches, participants, waiting, canEmail, canDownload, deduplicateList, 
 					showOwners, showCoaches, showParticipants, showWaiting, editable);
 			listenTo(membersAvatarController);
 		}
@@ -149,7 +151,7 @@ public class MembersDisplayRunController extends BasicController {
 	private void doOpenListView(UserRequest ureq, boolean onClick) {
 		if (membersListController == null) {
 			membersListController = new MembersListDisplayRunController(ureq, getWindowControl(), getTranslator(), 
-					courseEnv, businessGroup, owners, coaches, participants, waiting, canEmail, deduplicateList,
+					courseEnv, businessGroup, owners, coaches, participants, waiting, canEmail, canDownload, deduplicateList,
 					showOwners, showCoaches, showParticipants, showWaiting, editable);
 			listenTo(membersListController);
 		}
