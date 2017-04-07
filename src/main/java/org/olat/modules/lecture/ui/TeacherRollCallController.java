@@ -508,9 +508,13 @@ public class TeacherRollCallController extends FormBasicController {
 			lectureBlock.setReasonEffectiveEnd(null);
 		} else {
 			lectureBlock.setEffectiveEndDate(effectiveEndDate);
-			Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());
-			Reason selectedReason = lectureService.getReason(reasonKey);
-			lectureBlock.setReasonEffectiveEnd(selectedReason);
+			if("-".equals(effectiveEndReasonEl.getSelectedKey())) {
+				lectureBlock.setReasonEffectiveEnd(null);
+			} else {
+				Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());
+				Reason selectedReason = lectureService.getReason(reasonKey);
+				lectureBlock.setReasonEffectiveEnd(selectedReason);
+			}
 		}
 
 		lectureBlock = lectureService.save(lectureBlock, null);
@@ -560,7 +564,7 @@ public class TeacherRollCallController extends FormBasicController {
 		LectureBlockRollCall rollCall = row.getRollCall();
 		boolean authorized = check.isAtLeastSelected(1);
 		if(rollCall == null) {
-			rollCall = lectureService.createRollCall(row.getIdentity(), lectureBlock, authorized, null);		
+			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, authorized, null);		
 		} else {
 			rollCall.setAbsenceAuthorized(authorized);
 			rollCall = lectureService.updateRollCall(rollCall);
@@ -585,7 +589,7 @@ public class TeacherRollCallController extends FormBasicController {
 		LectureBlockRollCall rollCall = row.getRollCall();
 		if(rollCall == null) {
 			row.getAuthorizedAbsence().select(onKeys[0], true);
-			rollCall = lectureService.createRollCall(row.getIdentity(), lectureBlock, true, reason);		
+			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, true, reason);		
 		} else {
 			rollCall.setAbsenceReason(reason);
 			rollCall = lectureService.updateRollCall(rollCall);

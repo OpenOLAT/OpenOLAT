@@ -72,7 +72,7 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 			case export: {
 				Date start = row.getStartDate();
 				LectureBlockStatus status = row.getStatus();
-				return start.after(new Date()) && (status.equals(LectureBlockStatus.partiallydone) || status.equals(LectureBlockStatus.done));
+				return new Date().after(start) && (status.equals(LectureBlockStatus.partiallydone) || status.equals(LectureBlockStatus.done));
 			}
 			default: return null;
 		}

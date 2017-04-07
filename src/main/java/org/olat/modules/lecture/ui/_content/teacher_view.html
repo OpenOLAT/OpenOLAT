@@ -1,7 +1,12 @@
-#if($r.visible("start"))
+#if($r.visible("start") || $r.visible("start.wizard"))
 	<div class="o_button_group">
 		<div>$blockTitle</div>
-		$r.render("start")
+		#if($r.visible("start"))
+			$r.render("start")
+		#end
+		#if($r.visible("start.wizard"))
+			$r.render("start.wizard")
+		#end
 	</div>
 #end
 $r.render("table")

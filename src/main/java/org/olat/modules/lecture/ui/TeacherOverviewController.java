@@ -39,8 +39,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -62,12 +64,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TeacherOverviewController extends FormBasicController {
 	
-	private FormLink startButton;
 	private FlexiTableElement tableEl;
 	private TeacherOverviewDataModel tableModel;
 	private final TooledStackedPanel toolbarPanel;
+	private FormLink startButton, startWizardButton;
 	
 	private TeacherRollCallController rollCallCtrl;
+	private TeacherRollCallWizardController rollCallWizardCtrl;
 	
 	private final RepositoryEntry entry;
 	private final RepositoryEntryLectureConfiguration entryConfig;
@@ -92,6 +95,9 @@ public class TeacherOverviewController extends FormBasicController {
 		startButton = uifactory.addFormLink("start", formLayout, Link.BUTTON);
 		startButton.setVisible(false);
 		
+		startWizardButton = uifactory.addFormLink("start.wizard", formLayout, Link.BUTTON);
+		startWizardButton.setVisible(false);
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.date, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.startTime, new TimeFlexiCellRenderer(getLocale())));
@@ -115,6 +121,8 @@ public class TeacherOverviewController extends FormBasicController {
 		//reset
 		startButton.setVisible(false);
 		startButton.setUserObject(null);
+		startWizardButton.setVisible(false);
+		startWizardButton.setUserObject(null);
 		
 		// only show the start button if 
 		if(ConfigurationHelper.isRollCallEnabled(entryConfig, lectureModule)) {
@@ -123,6 +131,10 @@ public class TeacherOverviewController extends FormBasicController {
 					startButton.setVisible(true);
 					startButton.setUserObject(block);
 					startButton.setPrimary(true);
+					
+					startWizardButton.setVisible(true);
+					startWizardButton.setUserObject(block);
+					
 					flc.getFormItemComponent().contextPut("blockTitle", StringHelper.escapeHtml(block.getTitle()));
 					break;
 				}
@@ -152,8 +164,21 @@ public class TeacherOverviewController extends FormBasicController {
 				toolbarPanel.popController(rollCallCtrl);
 				loadModel();
 			}
+		} else if(rollCallWizardCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel();
+			}
+			getWindowControl().pop();
+			getWindowControl().getWindowBackOffice()
+				.getChiefController().getScreenMode().setMode(Mode.standard);
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(rollCallWizardCtrl);
+		rollCallWizardCtrl = null;
 	}
 
 	@Override
@@ -165,11 +190,17 @@ public class TeacherOverviewController extends FormBasicController {
 				if("details".equals(cmd)) {
 					LectureBlock row = tableModel.getObject(se.getIndex());
 					doSelectLectureBlock(ureq, row);
+				} else if("export".equals(cmd)) {
+					LectureBlock row = tableModel.getObject(se.getIndex());
+					doExportLectureBlock(ureq, row);
 				}
 			}
 		} else if(source == startButton) {
 			LectureBlock block = (LectureBlock)startButton.getUserObject();
 			doStartRollCall(ureq, block);
+		} else if(source == startWizardButton) {
+			LectureBlock block = (LectureBlock)startWizardButton.getUserObject();
+			doStartWizardRollCall(ureq, block);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -177,6 +208,11 @@ public class TeacherOverviewController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doExportLectureBlock(UserRequest ureq, LectureBlock row) {
+		LectureBlockExport export = new LectureBlockExport(row, true, getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 	
 	private void doSelectLectureBlock(UserRequest ureq, LectureBlock block) {
@@ -200,5 +236,19 @@ public class TeacherOverviewController extends FormBasicController {
 		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, true);
 		listenTo(rollCallCtrl);
 		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void doStartWizardRollCall(UserRequest ureq, LectureBlock block) {
+		if(rollCallWizardCtrl != null) return;
+		
+		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
+		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
+		rollCallWizardCtrl = new TeacherRollCallWizardController(ureq, getWindowControl(), reloadedBlock, participants);
+		listenTo(rollCallWizardCtrl);
+		
+		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
+		cc.getScreenMode().setMode(Mode.full);
+		getWindowControl().pushToMainArea(rollCallWizardCtrl.getInitialComponent());
 	}
 }

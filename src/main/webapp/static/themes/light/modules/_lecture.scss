@@ -14,3 +14,31 @@
 		display: inline;
 	}
 }
+
+.o_rollcall_next_previous_group {
+	text-align: center;
+	
+	a.o_sel_close {
+		float:left;
+		
+		span {
+			display: none;
+		}
+	}
+
+	.form-control {
+		display: inline;
+		width: auto;
+	}
+	
+	@media (max-width: $screen-xs-max) { 
+		a span {
+			display: none;
+		}	
+	}
+}
+
+.o_rollcall_portrait>div {
+	margin: 0 auto 10px auto;
+	width: 100px;
+}

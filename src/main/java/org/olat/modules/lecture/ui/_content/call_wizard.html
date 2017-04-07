@@ -1,0 +1,47 @@
+<div class="o_rollcall_portrait clearfix">
+	$r.render("portrait")
+</div>
+<div class="clearfix">
+	$r.render("userDescr")
+</div>
+<div class="clearfix">
+	<table class="table">
+		<thead>
+			<tr>
+				#foreach($check in $checks)
+					<th>$foreach.count</th>
+				#end
+				<th> </th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				#foreach($check in $checks)
+					<td>$r.render("check_${foreach.index}")</td>
+				#end
+				<td>$r.render("all")</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+#if($r.available("authorized.absence"))
+<div class="o_block">
+	$r.render("authorized.absence_LABEL", "authorized.absence")
+	$r.render("authorized.absence")
+	#if($r.visible("authorized.absence"))
+		$r.render("absence.reason_LABEL", "absence.reason")
+		$r.render("absence.reason")
+		#if($f.hasError("absence.reason"))
+			$r.render("absence.reason_ERROR")
+		#end
+	#end
+</div>
+#end
+<div class="o_block">
+	$r.render("comment_LABEL", "comment")
+	$r.render("comment")
+</div>
+<div class="o_button_group">
+	$r.render("cancel")
+	$r.render("save")
+</div>

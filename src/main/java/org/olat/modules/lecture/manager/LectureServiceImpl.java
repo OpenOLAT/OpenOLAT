@@ -194,7 +194,7 @@ public class LectureServiceImpl implements LectureService {
 	}
 
 	@Override
-	public LectureBlockRollCall createRollCall(Identity identity, LectureBlock lectureBlock,
+	public LectureBlockRollCall getOrCreateRollCall(Identity identity, LectureBlock lectureBlock,
 			Boolean authorizedAbsence, String reasonAbsence) {
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.getRollCall(lectureBlock, identity);
 		if(rollCall == null) {//reload in case of concurrent usage

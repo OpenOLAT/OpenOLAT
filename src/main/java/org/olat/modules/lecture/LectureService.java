@@ -148,7 +148,7 @@ public interface LectureService {
 	 * @param authorizedAbsence If there are authorized absence
 	 * @return A new persisted roll call
 	 */
-	public LectureBlockRollCall createRollCall(Identity identity, LectureBlock lectureBlock,
+	public LectureBlockRollCall getOrCreateRollCall(Identity identity, LectureBlock lectureBlock,
 			Boolean authorizedAbsence, String absenceReason);
 	
 	/**
