@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
@@ -31,6 +32,7 @@ import org.olat.modules.lecture.LectureParticipantSummary;
 import org.olat.modules.lecture.model.LectureParticipantSummaryImpl;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -83,5 +85,24 @@ public class LectureParticipantSummaryDAO {
 			summaries.add(new ParticipantAndLectureSummary(identity, summary));
 		}
 		return summaries;
+	}
+	
+	public LectureParticipantSummary getSummary(RepositoryEntryRef entry, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select summary from lectureparticipantsummary summary")
+		  .append(" inner join fetch summary.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where summary.entry.key=:entryKey and ident.key=:identityKey");
+		
+		List<LectureParticipantSummary> summaries = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), LectureParticipantSummary.class)
+			.setParameter("entryKey", entry.getKey())
+			.setParameter("identityKey", identity.getKey())
+			.getResultList();
+		return summaries == null || summaries.isEmpty() ? null : summaries.get(0);
+	}
+	
+	public LectureParticipantSummary update(LectureParticipantSummary summary) {
+		return dbInstance.getCurrentEntityManager().merge(summary);
 	}
 }

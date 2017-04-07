@@ -108,7 +108,7 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Column(name="l_roll_call_status", nullable=false, insertable=true, updatable=true)
 	private String rollCallStatusString;
 	
-	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
+	@ManyToOne(targetEntity=ReasonImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_reason", nullable=true, insertable=true, updatable=true)
 	private Reason reasonEffectiveEnd;
 	

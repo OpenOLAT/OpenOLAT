@@ -26,6 +26,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureStatistics;
+import org.olat.modules.lecture.model.ParticipantLectureStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -84,6 +85,14 @@ public interface LectureService {
 	 * @return A list of reasons
 	 */
 	public List<Reason> getAllReasons();
+	
+	/**
+	 * Load a reason by its primary key.
+	 * 
+	 * @param key The primary key
+	 * @return A reason
+	 */
+	public Reason getReason(Long key);
 	
 	/**
 	 * 
@@ -218,6 +227,18 @@ public interface LectureService {
 	
 	public void removeTeacher(LectureBlock block, Identity teacher);
 	
+	/**
+	 * The method will not set the date of admission.
+	 * 
+	 * @param entry
+	 * @param identity
+	 * @return
+	 */
+	public LectureParticipantSummary getOrCreateParticipantSummary(RepositoryEntry entry, Identity identity);
+	
+	
+	public LectureParticipantSummary saveParticipantSummary(LectureParticipantSummary summary);
+	
 	
 	/**
 	 * Returns the statistics for the specified participant.
@@ -226,6 +247,14 @@ public interface LectureService {
 	 * @return A list of statistics
 	 */
 	public List<LectureStatistics> getParticipantLecturesStatistics(IdentityRef identity);
+	
+	/**
+	 * Return all the statistics for a course / repository entry.
+	 * 
+	 * @param entry The course / repository entry
+	 * @return Statistics per user
+	 */
+	public List<ParticipantLectureStatistics> getParticipantsLecturesStatistics(RepositoryEntryRef entry);
 	
 	/**
 	 * 

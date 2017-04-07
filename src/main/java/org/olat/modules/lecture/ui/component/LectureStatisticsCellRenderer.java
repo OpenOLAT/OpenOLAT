@@ -26,6 +26,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.lecture.model.LectureStatistics;
+import org.olat.modules.lecture.model.ParticipantLectureStatistics;
 
 /**
  * 
@@ -35,30 +36,37 @@ public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-
 		if(cellValue instanceof LectureStatistics) {
 			LectureStatistics stats = (LectureStatistics)cellValue;
 			long total = stats.getTotalPlannedLectures();
 			long attended = stats.getTotalAttendedLectures();
-			long attendedPercent = (attended == 0) ? 0 : Math.round(100.0f * ((double)attended / (double)total));
 			long absent = stats.getTotalAbsentLectures();
-			long absentPercent = (absent == 0) ? 0 :  Math.round(100.0f * ((double)absent / (double)total));
-			
-			target.append("<div class='progress'>");
-			//attended
-			target.append("<div class='progress-bar o_lecture_attended' role='progressbar' aria-valuenow='").append(attended)
-			      .append("' aria-valuemin='0' aria-valuemax='").append(total)
-			      .append("' style='width: ").append(attendedPercent).append("%;'>")
-			      .append("<span class='sr-only'>").append(attendedPercent).append("%</span></div>");
-			//absent
-			target.append("<div class='progress-bar o_lecture_absent' role='progressbar' aria-valuenow='").append(absent)
-		      .append("' aria-valuemin='0' aria-valuemax='").append(total)
-		      .append("' style='width: ").append(absentPercent).append("%;'>")
-		      .append("<span class='sr-only'>").append(absentPercent).append("%</span></div>");
-			
-			
-			target.append("</div>");
-			
+			render(target, total, attended, absent);
+		} else if(cellValue instanceof ParticipantLectureStatistics) {
+			ParticipantLectureStatistics stats = (ParticipantLectureStatistics)cellValue;
+			long total = stats.getTotalPlannedLectures();
+			long attended = stats.getTotalAttendedLectures();
+			long absent = stats.getTotalAbsentLectures();
+			render(target, total, attended, absent);
 		}
+	}
+	
+	private void render(StringOutput target, long total, long attended, long absent) {
+		long attendedPercent = (attended == 0) ? 0 : Math.round(100.0f * ((double)attended / (double)total));
+		long absentPercent = (absent == 0) ? 0 :  Math.round(100.0f * ((double)absent / (double)total));
+		target.append("<div class='progress'>");
+		//attended
+		target.append("<div class='progress-bar o_lecture_attended' role='progressbar' aria-valuenow='").append(attended)
+		      .append("' aria-valuemin='0' aria-valuemax='").append(total)
+		      .append("' style='width: ").append(attendedPercent).append("%;'>")
+		      .append("<span class='sr-only'>").append(attendedPercent).append("%</span></div>");
+		//absent
+		target.append("<div class='progress-bar o_lecture_absent' role='progressbar' aria-valuenow='").append(absent)
+	      .append("' aria-valuemin='0' aria-valuemax='").append(total)
+	      .append("' style='width: ").append(absentPercent).append("%;'>")
+	      .append("<span class='sr-only'>").append(absentPercent).append("%</span></div>");
+		
+		
+		target.append("</div>");
 	}
 }

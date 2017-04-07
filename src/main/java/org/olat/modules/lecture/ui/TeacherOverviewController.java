@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiC
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -49,6 +50,7 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -95,7 +97,7 @@ public class TeacherOverviewController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.startTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.endTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.lectureBlock));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.status));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.status, new LectureBlockStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.details.i18nHeaderKey(), TeachCols.details.ordinal(), "details",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.export.i18nHeaderKey(), TeachCols.export.ordinal(), "export",
@@ -108,7 +110,7 @@ public class TeacherOverviewController extends FormBasicController {
 	private void loadModel() {
 		List<LectureBlock> blocks = lectureService.getLectureBlocks(entry, getIdentity());
 		tableModel.setObjects(blocks);
-		tableEl.reset(true, true, true);
+		tableEl.reset(false, false, true);
 
 		//reset
 		startButton.setVisible(false);
@@ -144,6 +146,17 @@ public class TeacherOverviewController extends FormBasicController {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(rollCallCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				toolbarPanel.popController(rollCallCtrl);
+				loadModel();
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
 			if(event instanceof SelectionEvent) {
@@ -167,22 +180,25 @@ public class TeacherOverviewController extends FormBasicController {
 	}
 	
 	private void doSelectLectureBlock(UserRequest ureq, LectureBlock block) {
+		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
+		
 		boolean editable = false;
-		if(block.getStatus().equals(LectureBlockStatus.active)
-				|| block.getStatus().equals(LectureBlockStatus.partiallydone)) {
+		if(reloadedBlock.getStatus().equals(LectureBlockStatus.active)
+				|| reloadedBlock.getStatus().equals(LectureBlockStatus.partiallydone)) {
 			editable = true;
 		}
-		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), block);
-		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), block, participants, editable);
+		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
+		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, editable);
 		listenTo(rollCallCtrl);
-		toolbarPanel.pushController(block.getTitle(), rollCallCtrl);
+		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
 	}
 	
 	//same as above???
 	private void doStartRollCall(UserRequest ureq, LectureBlock block) {
-		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), block);
-		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), block, participants, true);
+		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
+		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
+		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, true);
 		listenTo(rollCallCtrl);
-		toolbarPanel.pushController(block.getTitle(), rollCallCtrl);
+		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
 	}
 }

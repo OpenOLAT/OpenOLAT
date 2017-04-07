@@ -82,7 +82,7 @@ create table o_lecture_participant_summary (
   id bigserial not null,
   creationdate timestamp not null,
   lastmodified timestamp not null,
-  l_quota float(24) default null,
+  l_attendance_rate float(24) default null,
   l_first_admission_date timestamp default null,
   l_attended_lectures int8 not null default 0,
   l_absent_lectures int8 not null default 0,

@@ -75,10 +75,14 @@ public class LectureBlockDAO {
 	}
 	
 	public LectureBlock loadByKey(Long key) {
-		String q = "select block from lectureblock block where block.key=:blockKey";
-		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select block from lectureblock block")
+		  .append(" left join fetch block.reasonEffectiveEnd reason")
+		  .append(" inner join fetch block.entry entry")
+		  .append(" where block.key=:blockKey");
+
 		List<LectureBlock> blocks = dbInstance.getCurrentEntityManager()
-				.createQuery(q, LectureBlock.class)
+				.createQuery(sb.toString(), LectureBlock.class)
 				.setParameter("blockKey", key)
 				.getResultList();
 		return blocks == null || blocks.isEmpty() ? null : blocks.get(0);

@@ -36,6 +36,7 @@ import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockRollCallImpl;
 import org.olat.modules.lecture.model.LectureStatistics;
+import org.olat.modules.lecture.model.ParticipantLectureStatistics;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -275,6 +276,55 @@ public class LectureBlockRollCallDAO {
 			}
 			if(plannedLecturesNumber != null) {
 				entryStatistics.addTotalPlannedLectures(plannedLecturesNumber.longValue());
+			}
+		}
+		
+		return new ArrayList<>(stats.values());
+	}
+	
+	
+	public List<ParticipantLectureStatistics> getStatistics(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select ident.key, ")
+		  .append(" count(call.lecturesAttendedNumber), count(call.lecturesAbsentNumber),")
+		  .append(" count(block.plannedLecturesNumber), count(block.effectiveLecturesNumber)")
+		  .append(" from lectureblock block")
+		  .append(" inner join block.groups blockToGroup")
+		  .append(" inner join blockToGroup.group bGroup")
+		  .append(" inner join bGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
+		  .append(" where block.entry.key=:entryKey and membership.role='").append(GroupRoles.participant.name()).append("'")
+		  .append(" group by ident.key");
+		
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+		Map<Long,ParticipantLectureStatistics> stats = new HashMap<>();
+		for(Object[] rawObject:rawObjects) {
+			int pos = 0;//jump roll call key
+			Long identityKey = (Long)rawObject[pos++];
+			Long attended = PersistenceHelper.extractLong(rawObject, pos++);
+			Long absent = PersistenceHelper.extractLong(rawObject, pos++);
+			Long plannedBlocks = PersistenceHelper.extractLong(rawObject, pos++);
+			
+			ParticipantLectureStatistics entryStatistics;
+			if(stats.containsKey(identityKey)) {
+				entryStatistics = stats.get(identityKey);
+			} else {
+				entryStatistics = new ParticipantLectureStatistics(identityKey);
+				stats.put(identityKey, entryStatistics);
+			}
+			
+			if(absent != null) {
+				entryStatistics.addTotalAbsentLectures(absent.longValue());
+			}
+			if(attended != null) {
+				entryStatistics.addTotalAttendedLectures(attended.longValue());
+			}
+			if(plannedBlocks != null) {
+				entryStatistics.addTotalPlannedLectures(plannedBlocks.longValue());
 			}
 		}
 		

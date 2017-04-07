@@ -26,7 +26,6 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -43,24 +42,25 @@ public class LectureRepositoryAdminController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-	private final Link lecturesLink, settingsLink;
-	private final TooledStackedPanel toolbarPanel;
+	private final Link lecturesLink, settingsLink, participantsLink;
 	
 	private LectureListRepositoryController lecturesCtrl;
 	private LectureRepositorySettingsController settingsCtrl;
+	private ParticipantListRepositoryController participantsCtrl;
 	
 	private RepositoryEntry entry;
 	
-	public LectureRepositoryAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
+	public LectureRepositoryAdminController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
 		this.entry = entry;
-		this.toolbarPanel = toolbarPanel;
 		
 		mainVC = createVelocityContainer("admin_repository");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		lecturesLink = LinkFactory.createLink("repo.lectures", mainVC, this);
+		lecturesLink = LinkFactory.createLink("repo.lectures.block", mainVC, this);
 		segmentView.addSegment(lecturesLink, true);
+		participantsLink = LinkFactory.createLink("repo.participants", mainVC, this);
+		segmentView.addSegment(participantsLink, false);
 		settingsLink = LinkFactory.createLink("repo.settings", mainVC, this);
 		segmentView.addSegment(settingsLink, false);
 		
@@ -84,6 +84,8 @@ public class LectureRepositoryAdminController extends BasicController {
 					doOpenLectures(ureq);
 				} else if (clickedLink == settingsLink){
 					doOpenSettings(ureq);
+				} else if(clickedLink == participantsLink) {
+					doOpenParticipants(ureq);
 				}
 			}
 		}
@@ -103,5 +105,13 @@ public class LectureRepositoryAdminController extends BasicController {
 			listenTo(settingsCtrl);
 		}
 		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
+	}
+	
+	private void doOpenParticipants(UserRequest ureq) {
+		if(participantsCtrl == null) {
+			participantsCtrl = new ParticipantListRepositoryController(ureq, getWindowControl(), entry);
+			listenTo(participantsCtrl);
+		}
+		mainVC.put("segmentCmp", participantsCtrl.getInitialComponent());
 	}
 }

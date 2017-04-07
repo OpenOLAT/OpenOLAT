@@ -17,22 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture;
+package org.olat.modules.lecture.ui;
 
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.id.Identity;
+import org.olat.modules.lecture.model.ParticipantLectureStatistics;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
+ * Holder for the participant list
  * 
- * Initial date: 31 mars 2017<br>
+ * 
+ * Initial date: 6 avr. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LectureParticipantSummary extends CreateInfo, ModifiedInfo {
+public class ParticipantRow extends UserPropertiesRow {
+	
+	private final ParticipantLectureStatistics statistics;
+	
+	public ParticipantRow(Identity identity, ParticipantLectureStatistics statistics, List<UserPropertyHandler> propertyHandlers, Locale locale) {
+		super(identity, propertyHandlers, locale);
+		this.statistics = statistics;
+	}
 
-	public Long getKey();
-	
-	public Double getAttendanceRate();
-	
-	public void setAttendanceRate(Double rate);
+	public ParticipantLectureStatistics getStatistics() {
+		return statistics;
+	}
 }

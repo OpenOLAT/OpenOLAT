@@ -54,6 +54,15 @@ public class ReasonDAO {
 		return dbInstance.getCurrentEntityManager().merge(reason);
 	}
 	
+	public Reason loadReason(Long key) {
+		String sb = "select reason from lecturereason reason where reason.key=:reasonKey";
+		List<Reason> reasons = dbInstance.getCurrentEntityManager()
+				.createQuery(sb, Reason.class)
+				.setParameter("reasonKey", key)
+				.getResultList();
+		return reasons == null || reasons.isEmpty() ? null : reasons.get(0);
+	}
+	
 	public List<Reason> getReasons() {
 		String sb = "select reason from lecturereason reason";
 		return dbInstance.getCurrentEntityManager()

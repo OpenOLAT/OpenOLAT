@@ -35,6 +35,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockToGroup;
+import org.olat.modules.lecture.LectureParticipantSummary;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
@@ -42,6 +43,7 @@ import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureStatistics;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
+import org.olat.modules.lecture.model.ParticipantLectureStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryDAO;
@@ -140,6 +142,11 @@ public class LectureServiceImpl implements LectureService {
 	@Override
 	public List<Reason> getAllReasons() {
 		return reasonDao.getReasons();
+	}
+
+	@Override
+	public Reason getReason(Long key) {
+		return reasonDao.loadReason(key);
 	}
 
 	@Override
@@ -282,10 +289,29 @@ public class LectureServiceImpl implements LectureService {
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlock;
 		groupDao.removeMembership(block.getTeacherGroup(), teacher);
 	}
-	
+
+	@Override
+	public LectureParticipantSummary getOrCreateParticipantSummary(RepositoryEntry entry, Identity identity) {
+		LectureParticipantSummary summary = lectureParticipantSummaryDao.getSummary(entry, identity);
+		if(summary == null) {
+			summary = lectureParticipantSummaryDao.createSummary(entry, identity, null);
+		}
+		return summary;
+	}
+
+	@Override
+	public LectureParticipantSummary saveParticipantSummary(LectureParticipantSummary summary) {
+		return lectureParticipantSummaryDao.update(summary);
+	}
+
 	@Override
 	public List<LectureStatistics> getParticipantLecturesStatistics(IdentityRef identity) {
 		return lectureBlockRollCallDao.getStatistics(identity);
+	}
+
+	@Override
+	public List<ParticipantLectureStatistics> getParticipantsLecturesStatistics(RepositoryEntryRef entry) {
+		return lectureBlockRollCallDao.getStatistics(entry);
 	}
 
 	@Override

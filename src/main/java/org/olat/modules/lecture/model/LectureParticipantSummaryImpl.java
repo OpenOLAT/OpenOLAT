@@ -63,8 +63,8 @@ public class LectureParticipantSummaryImpl implements Persistable, LecturePartic
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 
-	@Column(name="l_quota", nullable=true, insertable=true, updatable=true)
-	private Double quota;
+	@Column(name="l_attendance_rate", nullable=true, insertable=true, updatable=true)
+	private Double attendanceRate;
 	@Column(name="l_first_admission_date", nullable=true, insertable=true, updatable=true)
 	private Date firstAdmissionDate;
 	@Column(name="l_attended_lectures", nullable=false, insertable=true, updatable=true)
@@ -107,12 +107,12 @@ public class LectureParticipantSummaryImpl implements Persistable, LecturePartic
 		this.lastModified = lastModified;
 	}
 
-	public Double getQuota() {
-		return quota;
+	public Double getAttendanceRate() {
+		return attendanceRate;
 	}
 
-	public void setQuota(Double quota) {
-		this.quota = quota;
+	public void setAttendanceRate(Double attendanceRate) {
+		this.attendanceRate = attendanceRate;
 	}
 
 	public Date getFirstAdmissionDate() {

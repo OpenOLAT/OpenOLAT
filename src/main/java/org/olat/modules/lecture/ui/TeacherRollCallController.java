@@ -20,7 +20,9 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -51,8 +54,10 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.ui.TeacherRollCallDataModel.RollCols;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -76,13 +81,16 @@ public class TeacherRollCallController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
 	private TeacherRollCallDataModel tableModel;
+	private TextElement blokcCommentEl;
+	private SingleSelection statusEl, effectiveEndReasonEl;
+	private TextElement effectiveEndHourEl, effectiveEndMinuteEl;
 	
 	private ReasonController reasonCtrl;
 	private CloseableCalloutWindowController reasonCalloutCtrl;
 	
 	private int counter = 0;
 	private final boolean editable;
-	private final LectureBlock lectureBlock;
+	private LectureBlock lectureBlock;
 	private final boolean isAdministrativeUser;
 	private final boolean autorizedAbsenceEnabled;
 	private List<UserPropertyHandler> userPropertyHandlers;
@@ -118,6 +126,94 @@ public class TeacherRollCallController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// form for the lecture block
+		FormLayoutContainer blockCont = FormLayoutContainer.createDefaultFormLayout("block", getTranslator());
+		blockCont.setRootForm(mainForm);
+		formLayout.add("block", blockCont);
+		
+		uifactory.addStaticTextElement("lecture.title", lectureBlock.getTitle(), blockCont);
+		
+		String[] statusKeys = getAvailableStatus();
+		String[] statusValues = new String[statusKeys.length];
+		for(int i=statusKeys.length; i-->0; ) {
+			statusValues[i] = translate(statusKeys[i]);
+		}
+		statusEl = uifactory.addDropdownSingleselect("status", "lecture.block.status", blockCont, statusKeys, statusValues, null);
+		boolean statusFound = false;
+		if(lectureBlock.getStatus() != null) {
+			String lectureBlockStatus = lectureBlock.getStatus().name();
+			for(int i=statusKeys.length; i-->0; ) {
+				if(lectureBlockStatus.equals(statusKeys[i])) {
+					statusEl.select(statusKeys[i], true);
+					statusFound = true;
+					break;
+				}
+			}
+		}
+		if(!statusFound) {
+			statusEl.select(statusKeys[0], true);
+		}
+
+		String datePage = velocity_root + "/date_start_end.html";
+		FormLayoutContainer dateCont = FormLayoutContainer.createCustomFormLayout("start_end", getTranslator(), datePage);
+		dateCont.setLabel("lecture.block.effective.end", null);
+		blockCont.add(dateCont);
+		
+		effectiveEndHourEl = uifactory.addTextElement("lecture.end.hour", null, 2, "", dateCont);
+		effectiveEndHourEl.setDomReplacementWrapperRequired(false);
+		effectiveEndHourEl.setDisplaySize(2);
+		effectiveEndHourEl.setEnabled(editable);
+		effectiveEndMinuteEl = uifactory.addTextElement("lecture.end.minute", null, 2, "", dateCont);
+		effectiveEndMinuteEl.setDomReplacementWrapperRequired(false);
+		effectiveEndMinuteEl.setDisplaySize(2);
+		effectiveEndMinuteEl.setEnabled(editable);
+		if(lectureBlock != null) {
+			Calendar cal = Calendar.getInstance();
+			if(lectureBlock.getEffectiveEndDate() != null) {
+				cal.setTime(lectureBlock.getEffectiveEndDate());
+			} else if(lectureBlock.getEndDate() != null) {
+				cal.setTime(lectureBlock.getEndDate());
+			}
+			int hour = cal.get(Calendar.HOUR_OF_DAY);
+			int minute = cal.get(Calendar.MINUTE);
+			effectiveEndHourEl.setValue(Integer.toString(hour));
+			effectiveEndMinuteEl.setValue(Integer.toString(minute));
+		}
+		
+		List<String> reasonKeyList = new ArrayList<>();
+		List<String> reasonValueList = new ArrayList<>();
+		reasonKeyList.add("-");
+		reasonValueList.add("-");
+		
+		List<Reason> allReasons = lectureService.getAllReasons();
+		for(Reason reason:allReasons) {
+			reasonKeyList.add(reason.getKey().toString());
+			reasonValueList.add(reason.getTitle());
+		}
+		effectiveEndReasonEl = uifactory.addDropdownSingleselect("effective.reason", "lecture.block.effective.reason", blockCont,
+				reasonKeyList.toArray(new String[reasonKeyList.size()]), reasonValueList.toArray(new String[reasonValueList.size()]), null);
+		effectiveEndReasonEl.setEnabled(editable);
+		boolean found = false;
+		if(lectureBlock.getReasonEffectiveEnd() != null) {
+			String selectedReasonKey = lectureBlock.getReasonEffectiveEnd().getKey().toString();
+			for(String reasonKey:reasonKeyList) {
+				if(reasonKey.equals(selectedReasonKey)) {
+					effectiveEndReasonEl.select(reasonKey, true);
+					found = true;
+					break;
+				}
+			}
+		}
+		if(!found) {
+			effectiveEndReasonEl.select(reasonKeyList.get(0), true);
+		}
+
+		String blockComment = lectureBlock.getComment();
+		blokcCommentEl = uifactory.addTextElement("block.comment", "lecture.block.comment", 256, blockComment, blockCont);
+		blokcCommentEl.setEnabled(editable);
+		
+		// table
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.username));
@@ -152,6 +248,19 @@ public class TeacherRollCallController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		
 		uifactory.addFormSubmitButton("save", "save", formLayout);
+	}
+	
+	private String[] getAvailableStatus() {
+		List<String> statusList = new ArrayList<>();
+		statusList.add(LectureBlockStatus.active.name());
+		if(lectureModule.isStatusPartiallyDoneEnabled()) {
+			statusList.add(LectureBlockStatus.partiallydone.name());
+		}
+		statusList.add(LectureBlockStatus.done.name());
+		if(lectureModule.isStatusCancelledEnabled()) {
+			statusList.add(LectureBlockStatus.cancelled.name());
+		}
+		return statusList.toArray(new String[statusList.size()]);
 	}
 	
 	private void loadModel() {
@@ -230,6 +339,7 @@ public class TeacherRollCallController extends FormBasicController {
 		String commentId = "comment_".concat(Integer.toString(++counter));
 		TextElement commentEl = uifactory.addTextElement(commentId, commentId, null, 128, comment, flc);
 		commentEl.setDomReplacementWrapperRequired(false);
+		commentEl.setEnabled(editable);
 		row.setCommentEl(commentEl);
 		flc.add(commentEl);
 		return row;
@@ -302,20 +412,72 @@ public class TeacherRollCallController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		for(int i=tableModel.getRowCount(); i-->0; ) {
-			TeacherRollCallRow row = tableModel.getObject(i);
-			if(row.getRollCall() == null) {
-				//??? stop?
-			} else {
-				String reason = row.getRollCall().getAbsenceReason();
-				if(row.getAuthorizedAbsence().isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(reason)) {
-					row.getAuthorizedAbsence().setErrorKey("error.reason.mandatory", null);
-					allOk &= false;
+		
+		boolean fullValidation = false;
+		if(!statusEl.isOneSelected()) {
+			statusEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else {
+			fullValidation = LectureBlockStatus.done.name().equals(statusEl.getSelectedKey());
+		}
+		
+		//block form
+		if(StringHelper.containsNonWhitespace(effectiveEndHourEl.getValue())
+				|| StringHelper.containsNonWhitespace(effectiveEndMinuteEl.getValue())) {
+			allOk &= validateInt(effectiveEndHourEl, 24, fullValidation);
+			allOk &= validateInt(effectiveEndMinuteEl, 60, fullValidation);
+			
+			if(fullValidation && (!effectiveEndReasonEl.isOneSelected() || effectiveEndReasonEl.isSelected(0))) {
+				effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
+				allOk &= false;
+			}
+		} else if(fullValidation) {
+			effectiveEndHourEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		// table
+		if(fullValidation) {
+			for(int i=tableModel.getRowCount(); i-->0; ) {
+				TeacherRollCallRow row = tableModel.getObject(i);
+				row.getAuthorizedAbsence().clearError();
+				
+				if(row.getRollCall() == null) {
+					//??? stop?
+				} else {
+					String reason = row.getRollCall().getAbsenceReason();
+					if(row.getAuthorizedAbsence().isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(reason)) {
+						row.getAuthorizedAbsence().setErrorKey("error.reason.mandatory", null);
+						allOk &= false;
+					}
 				}
 			}
 		}
 
 		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean validateInt(TextElement element, int max, boolean mandatory) {
+		boolean allOk = true;
+		
+		element.clearError();
+		if(StringHelper.containsNonWhitespace(element.getValue())) {
+			try {
+				int val = Integer.parseInt(element.getValue());
+				if(val < 0 || val > max) {
+					element.setErrorKey("error.integer.between", new String[] { "0", Integer.toString(max)} );
+					allOk &= false;
+				}
+			} catch (NumberFormatException e) {
+				element.setErrorKey("error.integer.between", new String[] { "0", Integer.toString(max)} );
+				allOk &= false;
+			}
+		} else if(mandatory) {
+			element.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk;
 	}
 
 	@Override
@@ -337,6 +499,35 @@ public class TeacherRollCallController extends FormBasicController {
 					comment, absences);
 			row.setRollCall(rollCall);
 		}
+
+		lectureBlock = lectureService.getLectureBlock(lectureBlock);
+		lectureBlock.setComment(blokcCommentEl.getValue());
+		lectureBlock.setStatus(LectureBlockStatus.valueOf(statusEl.getSelectedKey()));
+		Date effectiveEndDate = getEffectiveEndDate();
+		if(effectiveEndDate == null) {
+			lectureBlock.setReasonEffectiveEnd(null);
+		} else {
+			lectureBlock.setEffectiveEndDate(effectiveEndDate);
+			Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());
+			Reason selectedReason = lectureService.getReason(reasonKey);
+			lectureBlock.setReasonEffectiveEnd(selectedReason);
+		}
+
+		lectureBlock = lectureService.save(lectureBlock, null);
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private Date getEffectiveEndDate() {
+		Date effectiveEndDate = null;
+		if(StringHelper.containsNonWhitespace(effectiveEndHourEl.getValue())
+				&& StringHelper.containsNonWhitespace(effectiveEndMinuteEl.getValue())) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(lectureBlock.getStartDate());
+			cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(effectiveEndHourEl.getValue()));
+			cal.set(Calendar.MINUTE, Integer.parseInt(effectiveEndMinuteEl.getValue()));
+			effectiveEndDate = cal.getTime();
+		}
+		return effectiveEndDate;
 	}
 	
 	private void doCheckAllRow(TeacherRollCallRow row) {
@@ -376,6 +567,7 @@ public class TeacherRollCallController extends FormBasicController {
 		}
 		row.getReasonLink().setVisible(authorized);
 		row.getAuthorizedAbsenceCont().setDirty(true);
+		row.getAuthorizedAbsence().clearError();
 		row.setRollCall(rollCall);
 	}
 	

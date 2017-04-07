@@ -79,7 +79,7 @@ create table o_lecture_participant_summary (
   id bigint not null auto_increment,
   creationdate datetime not null,
   lastmodified datetime not null,
-  l_quota float(65,30) default null,
+  l_attendance_rate float(65,30) default null,
   l_first_admission_date datetime default null,
   l_attended_lectures bigint not null default 0,
   l_absent_lectures bigint not null default 0,
