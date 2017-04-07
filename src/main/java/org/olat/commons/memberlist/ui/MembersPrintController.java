@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.members;
+package org.olat.commons.memberlist.ui;
 
 import java.util.List;
 
@@ -35,9 +35,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.nodes.members.Member;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -61,27 +63,31 @@ public class MembersPrintController extends BasicController {
 	@Autowired
 	private DisplayPortraitManager portraitManager;
 	
-	public MembersPrintController(UserRequest ureq, WindowControl wControl,
-			CourseEnvironment courseEnv, List<UserPropertyHandler> userPropertyHandlers,
-			List<Member> owners, List<Member> coaches, List<Member> participants) {
+	public MembersPrintController(UserRequest ureq, WindowControl wControl, List<UserPropertyHandler> userPropertyHandlers, 
+			Translator translator, List<Member> owners, List<Member> coaches, List<Member> participants, List<Member> waiting, 
+			boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, String title) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(translator, getTranslator(), getLocale()));
 
 		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members-high-quality", new UserAvatarHQMapper());
 		this.userPropertyHandlers = userPropertyHandlers;
 		
 		mainVC = createVelocityContainer("print");
-		mainVC.contextPut("courseTitle", courseEnv.getCourseTitle());
+		mainVC.contextPut("courseTitle", title);
 		mainVC.contextPut("avatarBaseURL", avatarBaseURL);
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
 		
-		if(owners != null && owners.size() > 0) {
+		if(showOwners && owners != null && owners.size() > 0) {
 			initFormMemberList("owners", translate("members.owners"), owners);
 		}
-		if(coaches != null && coaches.size() > 0) {
+		if(showCoaches && coaches != null && coaches.size() > 0) {
 			initFormMemberList("coaches", translate("members.coaches"), coaches);
 		}
-		if(participants != null && participants.size() > 0) {
+		if(showParticipants && participants != null && participants.size() > 0) {
 			initFormMemberList("participants", translate("members.participants"), participants);
+		}
+		if(showWaiting && waiting != null && waiting.size() > 0) {
+			initFormMemberList("waiting", translate("members.waiting"), waiting);
 		}
 
 		MainPanel mainPanel = new MainPanel("membersPrintPanel");

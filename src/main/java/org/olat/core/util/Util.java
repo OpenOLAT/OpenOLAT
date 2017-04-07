@@ -82,6 +82,25 @@ public class Util {
 		return createPackageTranslator(baseClass, locale, null);
 	}
 	
+	public static Translator createPackageTranslator(Class<?> baseClass, Class<?> fallbackClass, Locale locale) {
+		String fallbackpackage = Util.getPackageName(fallbackClass);
+		Translator fallback = new PackageTranslator(fallbackpackage, locale);
+		String transpackage = Util.getPackageName(baseClass);
+		Translator translator = new PackageTranslator(transpackage, locale, fallback);
+		return translator;
+	}
+	
+	public static Translator createPackageTranslator(Translator baseClass, Class<?> fallbackClass, Locale locale) {
+		String fallbackpackage = Util.getPackageName(fallbackClass);
+		Translator fallback = new PackageTranslator(fallbackpackage, locale);
+		Translator translator = new PackageTranslator(((PackageTranslator)baseClass).getPackageName(), locale, fallback);
+		return translator;
+	}
+	
+	public static Translator createPackageTranslator(Translator translator, Translator fallback, Locale locale) {
+		return new PackageTranslator(((PackageTranslator)translator).getPackageName(), locale, fallback);
+	}
+	
 	/**
 	 * 
 	 * returns a Translator for the given baseclass and locale

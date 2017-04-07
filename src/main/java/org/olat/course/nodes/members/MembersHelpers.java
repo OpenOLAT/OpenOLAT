@@ -39,20 +39,20 @@ import org.olat.repository.RepositoryService;
  * <p>Initial date: May 20, 2016
  * @author lmihalkovic, http://www.frentix.com
  */
-/*public*/ class MembersHelpers {
+public class MembersHelpers {
 	private MembersHelpers() {
 		// CANNOT CREATE
 	}
 
 	// -----------------------------------------------------
 	
-	static List<Identity> getOwners(RepositoryService repositoryService, RepositoryEntry courseRepositoryEntry) {
+	public static List<Identity> getOwners(RepositoryService repositoryService, RepositoryEntry courseRepositoryEntry) {
 		return repositoryService.getMembers(courseRepositoryEntry, GroupRoles.owner.name());
 	}
 
 	// -----------------------------------------------------
 
-	static void addCoaches(IModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs, List<Identity> list) {
+	public static void addCoaches(IModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs, List<Identity> list) {
 	
 		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_COACHES_GROUP)) {
 			String coachGroupNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_GROUP);
@@ -81,24 +81,24 @@ import org.olat.repository.RepositoryService;
 		}
 	}
 	
-	static List<Identity> retrieveCoachesFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
+	public static List<Identity> retrieveCoachesFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
 		List<Identity> coaches = cgm.getCoachesFromAreas(areaKeys);
 		Set<Identity> coachesWithoutDuplicates = new HashSet<Identity>(coaches);
 		coaches = new ArrayList<Identity>(coachesWithoutDuplicates);
 		return coaches;
 	}
 	
-	static List<Identity> retrieveCoachesFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
+	public static List<Identity> retrieveCoachesFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
 		List<Identity> coaches = new ArrayList<Identity>(new HashSet<Identity>(cgm.getCoachesFromBusinessGroups(groupKeys)));
 		return coaches;
 	}
 	
-	static List<Identity> retrieveCoachesFromCourse(CourseGroupManager cgm) {
+	public static List<Identity> retrieveCoachesFromCourse(CourseGroupManager cgm) {
 		List<Identity> coaches = cgm.getCoaches();
 		return coaches;
 	}
 
-	static List<Identity> retrieveCoachesFromCourseGroups(CourseGroupManager cgm) {
+	public static List<Identity> retrieveCoachesFromCourseGroups(CourseGroupManager cgm) {
 		Set<Identity> uniq = new HashSet<Identity>();
 		{
 			List<Identity> coaches = cgm.getCoachesFromAreas();
@@ -113,7 +113,7 @@ import org.olat.repository.RepositoryService;
 	
 	// -----------------------------------------------------
 	
-	static void addParticipants(IModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs, List<Identity> list) {
+	public static void addParticipants(IModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs, List<Identity> list) {
 
 		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP)) {
 			String participantGroupNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP);
@@ -142,22 +142,22 @@ import org.olat.repository.RepositoryService;
 		}
 	}
 	
-	static List<Identity> retrieveParticipantsFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
+	public static List<Identity> retrieveParticipantsFromAreas(List<Long> areaKeys, CourseGroupManager cgm) {
 		List<Identity> participiants = cgm.getParticipantsFromAreas(areaKeys);
 		return participiants;
 	}
 	
-	static List<Identity> retrieveParticipantsFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
+	public static List<Identity> retrieveParticipantsFromGroups(List<Long> groupKeys, CourseGroupManager cgm) {
 		List<Identity> participiants = cgm.getParticipantsFromBusinessGroups(groupKeys);
 		return participiants;
 	}
 	
-	static List<Identity> retrieveParticipantsFromCourse(CourseGroupManager cgm) {
+	public static List<Identity> retrieveParticipantsFromCourse(CourseGroupManager cgm) {
 		List<Identity> participiants = cgm.getParticipants();
 		return participiants;
 	}
 	
-	static List<Identity> retrieveParticipantsFromCourseGroups(CourseGroupManager cgm) {
+	public static List<Identity> retrieveParticipantsFromCourseGroups(CourseGroupManager cgm) {
 		Set<Identity> uniq = new HashSet<Identity>();
 		{
 			List<Identity> participiants = cgm.getParticipantsFromAreas();

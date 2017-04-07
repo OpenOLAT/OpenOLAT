@@ -65,7 +65,7 @@ public class CalendarEntryDetailsController extends BasicController {
 	private Collection<KalendarRenderWrapper> availableCalendars;
 	private boolean isNew, isReadOnly;
 	private KalendarEvent kalendarEvent;
-	private VelocityContainer mainVC, linkVC;
+	private VelocityContainer linkVC;
 	private TabbedPane pane;
 	private CalendarEntryForm eventForm;
 	private CloseableModalController cmc;
@@ -87,11 +87,8 @@ public class CalendarEntryDetailsController extends BasicController {
 		this.kalendarEvent = kalendarEvent;
 		this.isNew = isNew;
 		
-		mainVC = createVelocityContainer ("calEditMain");
-		mainVC.contextPut("caller", caller);
 		pane = new TabbedPane("pane", getLocale());
 		pane.addListener(this);
-		mainVC.put("pane", pane);
 		
 		eventForm = new CalendarEntryForm(ureq, wControl, kalendarEvent, calendarWrapper, availableCalendars, isNew);
 		listenTo(eventForm);
@@ -124,7 +121,7 @@ public class CalendarEntryDetailsController extends BasicController {
 		}
 		
 		// wrap everything in a panel
-		putInitialPanel(mainVC);
+		putInitialPanel(pane);
 	}
 
 	@Override

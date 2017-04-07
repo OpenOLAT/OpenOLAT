@@ -12,6 +12,9 @@
 #if($r.available("participants"))
 	$r.render("participants")
 #end
+#if($r.available("waiting"))
+	$r.render("waiting")
+#end
 <script type='text/javascript'>
 /* <![CDATA[ */
 	jQuery(function() {

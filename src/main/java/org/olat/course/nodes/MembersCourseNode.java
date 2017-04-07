@@ -71,6 +71,7 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 	
 
 	public static final String CONFIG_KEY_EMAIL_FUNCTION = "emailFunction";
+	public static final String CONFIG_KEY_DOWNLOAD_FUNCTION = "downloadFunction";
 	public static final String EMAIL_FUNCTION_ALL = "all";
 	public static final String EMAIL_FUNCTION_COACH_ADMIN = "coachAndAdmin";
 
@@ -175,6 +176,7 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(CONFIG_KEY_SHOWCOACHES, true);
 			config.setBooleanEntry(CONFIG_KEY_SHOWPARTICIPANTS, true);
 			config.setStringValue(CONFIG_KEY_EMAIL_FUNCTION, EMAIL_FUNCTION_COACH_ADMIN);
+			config.setStringValue(CONFIG_KEY_DOWNLOAD_FUNCTION, EMAIL_FUNCTION_COACH_ADMIN);
 			config.setConfigurationVersion(3);
 		} 
 		

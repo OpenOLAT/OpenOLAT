@@ -31,9 +31,7 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.ui.GroupController;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.commons.calendar.CalendarModule;
@@ -189,12 +187,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	private BusinessGroupEditController bgEditCntrllr;
 	private Controller bgACHistoryCtrl;
 	private TableController resourcesCtr;
+	private GroupMembersRunController groupMembersToggleViewController;
 
 	private BusinessGroupSendToChooserForm sendToChooserForm;
-	
-	private GroupController gownersC;
-	private GroupController gparticipantsC;
-	private GroupController waitingListController;
 
 	/**
 	 * Business group administrator
@@ -852,42 +847,11 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	}
 
 	private void doShowMembers(UserRequest ureq) {
-		VelocityContainer membersVc = createVelocityContainer("ownersandmembers");
-		// 1. show owners if configured with Owners
-		boolean downloadAllowed = businessGroup.isDownloadMembersLists();
-		Group group = businessGroupService.getGroup(businessGroup);
-		if (businessGroup.isOwnersVisibleIntern()) {
-			removeAsListenerAndDispose(gownersC);
-			gownersC = new GroupController(ureq, getWindowControl(), false, true, true, false, downloadAllowed, false, group, GroupRoles.coach.name());
-			listenTo(gownersC);
-			membersVc.put("owners", gownersC.getInitialComponent());
-			membersVc.contextPut("showOwnerGroups", Boolean.TRUE);
-		} else {
-			membersVc.contextPut("showOwnerGroups", Boolean.FALSE);
-		}
-		// 2. show participants if configured with Participants
-		if (businessGroup.isParticipantsVisibleIntern()) {
-			removeAsListenerAndDispose(gparticipantsC);
-			gparticipantsC = new GroupController(ureq, getWindowControl(), false, true, true, false, downloadAllowed, false, group, GroupRoles.participant.name());
-			listenTo(gparticipantsC);
-			
-			membersVc.put("participants", gparticipantsC.getInitialComponent());
-			membersVc.contextPut("showPartipsGroups", Boolean.TRUE);
-		} else {
-			membersVc.contextPut("showPartipsGroups", Boolean.FALSE);
-		}
-		// 3. show waiting-list if configured 
-		membersVc.contextPut("hasWaitingList", new Boolean(businessGroup.getWaitingListEnabled()) );
-		if (businessGroup.isWaitingListVisibleIntern()) {
-			removeAsListenerAndDispose(waitingListController);
-			waitingListController = new GroupController(ureq, getWindowControl(), false, true, true, false, downloadAllowed, false, group, GroupRoles.waiting.name());
-			listenTo(waitingListController);
-			membersVc.put("waitingList", waitingListController.getInitialComponent());
-			membersVc.contextPut("showWaitingList", Boolean.TRUE);
-		} else {
-			membersVc.contextPut("showWaitingList", Boolean.FALSE);
-		}
-		mainPanel.setContent(membersVc);
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(this.businessGroup);
+		boolean canEmail = collabTools.isToolEnabled(CollaborationTools.TOOL_CONTACT);
+		groupMembersToggleViewController = new GroupMembersRunController(ureq, getWindowControl(), businessGroup, canEmail);
+		listenTo(groupMembersToggleViewController);
+		mainPanel.setContent(groupMembersToggleViewController.getInitialComponent());
 		collabToolCtr = null;
 		addToHistory(ureq, ORES_TOOLMEMBERS, null);
 	}

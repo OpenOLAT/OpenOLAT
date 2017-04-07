@@ -102,7 +102,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	private SingleSelection dateTypesEl, publicDatesEl;
 	private DateChooser startDateEl, endDateEl;
 	private FormSubmit submit;
-	private FormLayoutContainer descCont, privateDatesCont;
+	private FormLayoutContainer privateDatesCont;
 	
 	private static final String[] dateKeys = new String[]{ "none", "private", "public"};
 
@@ -125,7 +125,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 	 * @param sourceEntry
 	 */
 	public RepositoryEditDescriptionController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		super(ureq, wControl, "bgrep");
+		super(ureq, wControl);
 		setBasePackage(RepositoryService.class);
 		this.repositoryEntry = entry;
 		repoEntryType = repositoryEntry.getOlatResource().getResourceableTypeName();
@@ -138,27 +138,24 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
-		descCont = FormLayoutContainer.createDefaultFormLayout("desc", getTranslator());
-		descCont.setFormContextHelp("Info Page: Add Meta Data");
-		descCont.setRootForm(mainForm);
-		formLayout.add("desc", descCont);
+		setFormContextHelp("Info Page: Add Meta Data");
+		formLayout.setElementCssClass("o_sel_edit_repositoryentry");
 
 		String id = repositoryEntry.getResourceableId() == null ? "-" : repositoryEntry.getResourceableId().toString();
-		uifactory.addStaticTextElement("cif.id", id, descCont);
+		uifactory.addStaticTextElement("cif.id", id, formLayout);
 		
 		String externalId = repositoryEntry.getExternalId();
 		if(StringHelper.containsNonWhitespace(externalId)) {
-			uifactory.addStaticTextElement("cif.externalid", externalId, descCont);
+			uifactory.addStaticTextElement("cif.externalid", externalId, formLayout);
 		}
 		
 		String extRef = repositoryEntry.getExternalRef();
 		if(StringHelper.containsNonWhitespace(repositoryEntry.getManagedFlagsString())) {
 			if(StringHelper.containsNonWhitespace(extRef)) {
-				uifactory.addStaticTextElement("cif.externalref", extRef, descCont);
+				uifactory.addStaticTextElement("cif.externalref", extRef, formLayout);
 			}
 		} else {
-			externalRef = uifactory.addTextElement("cif.externalref", "cif.externalref", 100, extRef, descCont);
+			externalRef = uifactory.addTextElement("cif.externalref", "cif.externalref", 100, extRef, formLayout);
 			externalRef.setHelpText(translate("cif.externalref.hover"));
 			externalRef.setHelpUrlForManualPage("Info Page#_identification");
 			externalRef.setDisplaySize(30);
@@ -169,7 +166,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			initalAuthor = userManager.getUserDisplayName(initalAuthor);
 		}
 		initalAuthor = StringHelper.escapeHtml(initalAuthor);
-		uifactory.addStaticTextElement("cif.initialAuthor", initalAuthor, descCont);
+		uifactory.addStaticTextElement("cif.initialAuthor", initalAuthor, formLayout);
 		// Add resource type
 		String typeName = null;
 		OLATResource res = repositoryEntry.getOlatResource();
@@ -183,21 +180,21 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		} else {
 			typeDisplay = translate("cif.type.na");
 		}
-		uifactory.addStaticTextElement("cif.type", typeDisplay, descCont);
+		uifactory.addStaticTextElement("cif.type", typeDisplay, formLayout);
 		
-		uifactory.addSpacerElement("spacer1", descCont, false);
+		uifactory.addSpacerElement("spacer1", formLayout, false);
 
-		displayName = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, repositoryEntry.getDisplayname(), descCont);
+		displayName = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, repositoryEntry.getDisplayname(), formLayout);
 		displayName.setDisplaySize(30);
 		displayName.setMandatory(true);
 		displayName.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.title));
 
-		authors = uifactory.addTextElement("cif.authors", "cif.authors", 255, repositoryEntry.getAuthors(), descCont);
+		authors = uifactory.addTextElement("cif.authors", "cif.authors", 255, repositoryEntry.getAuthors(), formLayout);
 		authors.setDisplaySize(60);
 		
-		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), descCont);
+		language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), formLayout);
 		
-		location = uifactory.addTextElement("cif.location", "cif.location", 255, repositoryEntry.getLocation(), descCont);
+		location = uifactory.addTextElement("cif.location", "cif.location", 255, repositoryEntry.getLocation(), formLayout);
 		location.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.location));
 		
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(repositoryEntry);
@@ -209,11 +206,11 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		
 		String desc = (repositoryEntry.getDescription() != null ? repositoryEntry.getDescription() : " ");
 		description = uifactory.addRichTextElementForStringData("cif.description", "cif.description",
-				desc, 10, -1, false, mediaContainer, null, descCont, ureq.getUserSession(), getWindowControl());
+				desc, 10, -1, false, mediaContainer, null, formLayout, ureq.getUserSession(), getWindowControl());
 		description.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.description));
 		description.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 
-		uifactory.addSpacerElement("spacer2", descCont, false);
+		uifactory.addSpacerElement("spacer2", formLayout, false);
 
 		if(CourseModule.getCourseTypeName().equals(repoEntryType)) {
 			String[] dateValues = new String[] {
@@ -221,7 +218,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 					translate("cif.dates.private"),
 					translate("cif.dates.public")	
 			};
-			dateTypesEl = uifactory.addRadiosVertical("cif.dates", descCont, dateKeys, dateValues);
+			dateTypesEl = uifactory.addRadiosVertical("cif.dates", formLayout, dateKeys, dateValues);
 			dateTypesEl.setElementCssClass("o_sel_repo_lifecycle_type");
 			if(repositoryEntry.getLifecycle() == null) {
 				dateTypesEl.select("none", true);
@@ -261,13 +258,13 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 					}
 					publicValues[count++] = sb.toString();
 			}
-			publicDatesEl = uifactory.addDropdownSingleselect("cif.public.dates", descCont, publicKeys, publicValues, null);
+			publicDatesEl = uifactory.addDropdownSingleselect("cif.public.dates", formLayout, publicKeys, publicValues, null);
 	
 			String privateDatePage = velocity_root + "/cycle_dates.html";
 			privateDatesCont = FormLayoutContainer.createCustomFormLayout("private.date", getTranslator(), privateDatePage);
 			privateDatesCont.setRootForm(mainForm);
 			privateDatesCont.setLabel("cif.private.dates", null);
-			descCont.add("private.date", privateDatesCont);
+			formLayout.add("private.date", privateDatesCont);
 			
 			startDateEl = uifactory.addDateChooser("date.start", "cif.date.start", null, privateDatesCont);
 			startDateEl.setElementCssClass("o_sel_repo_lifecycle_validfrom");
@@ -291,39 +288,39 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			}
 	
 			updateDatesVisibility();
-			uifactory.addSpacerElement("spacer3", descCont, false);
+			uifactory.addSpacerElement("spacer3", formLayout, false);
 			
-			expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", 100, repositoryEntry.getExpenditureOfWork(), descCont);
+			expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", 100, repositoryEntry.getExpenditureOfWork(), formLayout);
 			expenditureOfWork.setExampleKey("details.expenditureOfWork.example", null);
 
 			String obj = (repositoryEntry.getObjectives() != null ? repositoryEntry.getObjectives() : " ");
 			objectives = uifactory.addRichTextElementForStringData("cif.objectives", "cif.objectives",
-					obj, 10, -1, false, mediaContainer, null, descCont, ureq.getUserSession(), getWindowControl());
+					obj, 10, -1, false, mediaContainer, null, formLayout, ureq.getUserSession(), getWindowControl());
 			objectives.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.objectives));
 			objectives.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			
 			
 			String req = (repositoryEntry.getRequirements() != null ? repositoryEntry.getRequirements() : " ");
 			requirements = uifactory.addRichTextElementForStringData("cif.requirements", "cif.requirements",
-					req, 10, -1,  false, mediaContainer, null, descCont, ureq.getUserSession(), getWindowControl());
+					req, 10, -1,  false, mediaContainer, null, formLayout, ureq.getUserSession(), getWindowControl());
 			requirements.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.requirements));
 			requirements.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			requirements.setMaxLength(2000);
 			
 			String cred = (repositoryEntry.getCredits() != null ? repositoryEntry.getCredits() : " ");
 			credits = uifactory.addRichTextElementForStringData("cif.credits", "cif.credits",
-					cred, 10, -1,  false, mediaContainer, null, descCont, ureq.getUserSession(), getWindowControl());
+					cred, 10, -1,  false, mediaContainer, null, formLayout, ureq.getUserSession(), getWindowControl());
 			credits.setEnabled(!RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.credits));
 			credits.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			credits.setMaxLength(2000);
 			
-			uifactory.addSpacerElement("spacer4", descCont, false);
+			uifactory.addSpacerElement("spacer4", formLayout, false);
 		}
 		
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		
 		VFSLeaf img = repositoryManager.getImage(repositoryEntry);
-		fileUpload = uifactory.addFileElement(getWindowControl(), "rentry.pic", "rentry.pic", descCont);
+		fileUpload = uifactory.addFileElement(getWindowControl(), "rentry.pic", "rentry.pic", formLayout);
 		fileUpload.setExampleKey("rentry.pic.example", new String[] {RepositoryManager.PICTURE_WIDTH + "x" + (RepositoryManager.PICTURE_HEIGHT)});
 		fileUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		fileUpload.setPreview(ureq.getUserSession(), true);
@@ -337,7 +334,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		fileUpload.limitToMimeType(imageMimeTypes, "cif.error.mimetype", new String[]{ imageMimeTypes.toString()} );
 
 		VFSLeaf movie = repositoryService.getIntroductionMovie(repositoryEntry);
-		movieUpload = uifactory.addFileElement(getWindowControl(), "rentry.movie", "rentry.movie", descCont);
+		movieUpload = uifactory.addFileElement(getWindowControl(), "rentry.movie", "rentry.movie", formLayout);
 		movieUpload.setExampleKey("rentry.movie.example", new String[] {"3:2"});
 		movieUpload.setMaxUploadSizeKB(movieUploadlimitKB, null, null);
 		movieUpload.setPreview(ureq.getUserSession(), true);
@@ -371,7 +368,6 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 				privateDatesCont.setVisible(true);
 			}
 		}
-		descCont.setDirty(true);
 	}
 
 	@Override

@@ -166,7 +166,8 @@ public class CalendarPage {
 		OOGraphene.waitElement(dayBy, 5, browser);
 		browser.findElement(dayBy).click();
 		
-		OOGraphene.waitingALittleBit();
+		OOGraphene.waitElementUntilNotVisible(datePickerBy, 5, browser);
+		//OOGraphene.waitingALittleBit();
 		return this;
 	}
 	

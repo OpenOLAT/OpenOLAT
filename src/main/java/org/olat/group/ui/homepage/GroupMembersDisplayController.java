@@ -19,53 +19,70 @@
  */
 package org.olat.group.ui.homepage;
 
-import org.olat.basesecurity.Group;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.ui.GroupController;
-import org.olat.core.CoreSpringFactory;
+import org.olat.commons.memberlist.ui.MembersDisplayRunController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.ui.run.GroupMembersRunController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * Initial Date:  Aug 19, 2009 <br>
  * @author twuersch, www.frentix.com
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author fkiefer
  */
 public class GroupMembersDisplayController extends BasicController {
 
 
-	private final VelocityContainer content;
+	private MembersDisplayRunController membersDisplayRunController;
+	
+	@Autowired
+	private BusinessGroupService businessGroupService;	
+	
 
 	public GroupMembersDisplayController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(GroupMembersRunController.class, getLocale()));
 		// display owners and participants
-		content = createVelocityContainer("groupmembersdisplay");
-		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		Group group = bgs.getGroup(businessGroup);
-
-		if(businessGroup.isOwnersVisiblePublic()) {
-			GroupController groupOwnersController = new GroupController(ureq, wControl, false, true, false, false, false, false, group, GroupRoles.coach.name());
-			content.put("owners", groupOwnersController.getInitialComponent());
-			listenTo(groupOwnersController);
+		
+		List<Identity> coaches, participants, waiting;
+		boolean showCoaches = businessGroup.isOwnersVisiblePublic();
+		if (showCoaches) {
+			coaches = businessGroupService.getMembers(businessGroup, GroupRoles.coach.name());			
+		} else {
+			coaches = Collections.emptyList();
 		}
-		if(businessGroup.isParticipantsVisiblePublic()) {
-			GroupController groupParticipantsController = new GroupController(ureq, wControl, false, true, false, false, false, false, group, GroupRoles.participant.name());
-			content.put("participants", groupParticipantsController.getInitialComponent());
-			listenTo(groupParticipantsController);
+		boolean showParticipants = businessGroup.isParticipantsVisiblePublic();
+		if (showParticipants) {
+			participants = businessGroupService.getMembers(businessGroup, GroupRoles.participant.name());		
+		} else {
+			participants = Collections.emptyList();
 		}
-		if(businessGroup.isWaitingListVisiblePublic()) {
-			GroupController groupWaitingListController = new GroupController(ureq, wControl, false, true, false, false, false, false, group, GroupRoles.waiting.name());
-			content.put("waitingList", groupWaitingListController.getInitialComponent());
-			listenTo(groupWaitingListController);
-		}
-		putInitialPanel(content);
+		boolean showWaiting = businessGroup.isWaitingListVisiblePublic();
+		if (showWaiting) {
+			waiting = businessGroupService.getMembers(businessGroup, GroupRoles.waiting.name());
+		} else {
+			waiting = Collections.emptyList();
+		}	
+		
+		membersDisplayRunController = new MembersDisplayRunController(ureq, wControl, getTranslator(), null, businessGroup,	new ArrayList<>(), 
+				coaches, participants, waiting, false, false, true, false, showCoaches, showParticipants, showWaiting, false);
+		listenTo(membersDisplayRunController);
+		
+		putInitialPanel(membersDisplayRunController.getInitialComponent());	
 	}
 
 	@Override
@@ -75,6 +92,6 @@ public class GroupMembersDisplayController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-	// Do nothing.
+		// events handled in child controller
 	}
 }

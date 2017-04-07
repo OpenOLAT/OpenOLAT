@@ -122,6 +122,7 @@ public class ACMethodDAO implements GenericEventListener {
 			for(AccessMethod method:methods) {
 				if(method.isEnabled() != enable) {
 					((AbstractAccessMethod)method).setEnabled(enable);
+					((AbstractAccessMethod)method).setLastModified(new Date());
 					dbInstance.updateObject(method);
 				}
 			}
@@ -341,6 +342,7 @@ public class ACMethodDAO implements GenericEventListener {
 			for(AccessMethod method:methods) {
 				if(method.isEnabled() != enable) {
 					((AbstractAccessMethod)method).setEnabled(enable);
+					((AbstractAccessMethod)method).setLastModified(new Date());
 					dbInstance.updateObject(method);
 				}
 			}
@@ -363,6 +365,7 @@ public class ACMethodDAO implements GenericEventListener {
 			for(AccessMethod method:methods) {
 				if(method.isEnabled() != enable) {
 					((AbstractAccessMethod)method).setEnabled(enable);
+					((AbstractAccessMethod)method).setLastModified(new Date());
 					dbInstance.updateObject(method);
 				}
 			}

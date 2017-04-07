@@ -58,6 +58,7 @@ public class MembersConfigForm extends FormBasicController {
 	private final ModuleConfiguration config;
 	private MultipleSelectionElement showOwners;
 	private SingleSelection emailFunctionEl;
+	private SingleSelection downloadFunctionEl;
 
 	private final MembersSelectorFormFragment membersFragment;
 	
@@ -130,6 +131,17 @@ public class MembersConfigForm extends FormBasicController {
 		} else if(MembersCourseNode.EMAIL_FUNCTION_ALL.equals(emailFct)) {
 			emailFunctionEl.select(MembersCourseNode.EMAIL_FUNCTION_ALL, true);
 		}
+		String[] downloadFctValues = new String[]{
+				translate("download.function.all"), translate("download.function.coachAndAdmin")
+		};
+		downloadFunctionEl = uifactory.addRadiosVertical("download", "download.function", formLayout, emailFctKeys, downloadFctValues);
+		downloadFunctionEl.addActionListener(FormEvent.ONCLICK);
+		String downloadFct =  config.getStringValue(MembersCourseNode.CONFIG_KEY_DOWNLOAD_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN);
+		if(MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN.equals(downloadFct)) {
+			downloadFunctionEl.select(MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN, true);
+		} else if(MembersCourseNode.EMAIL_FUNCTION_ALL.equals(downloadFct)) {
+			downloadFunctionEl.select(MembersCourseNode.EMAIL_FUNCTION_ALL, true);
+		}
 		
 		subm = uifactory.addFormSubmitButton("save", formLayout);
 		
@@ -191,6 +203,14 @@ public class MembersConfigForm extends FormBasicController {
 					config.setStringValue(MembersCourseNode.CONFIG_KEY_EMAIL_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN);
 				}
 				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+		} else if (downloadFunctionEl == source) {
+			if (downloadFunctionEl.isOneSelected()) {
+				if (downloadFunctionEl.isSelected(0)) {					
+					config.setStringValue(MembersCourseNode.CONFIG_KEY_DOWNLOAD_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_ALL);
+				} else {
+					config.setStringValue(MembersCourseNode.CONFIG_KEY_DOWNLOAD_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN);
+				}
 			}
 		}
 		

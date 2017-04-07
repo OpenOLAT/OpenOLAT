@@ -35,16 +35,26 @@ import org.olat.modules.portfolio.SectionStatus;
  *
  */
 public class StatusCellRenderer implements FlexiCellRenderer {
+	
+	private final Translator translator;
+	
+	public StatusCellRenderer(Translator translator) {
+		this.translator = translator;
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue,
-			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+			int row, FlexiTableComponent source, URLBuilder ubu, Translator trans) {
 		if(cellValue instanceof PageStatus) {
 			PageStatus status = (PageStatus)cellValue;
-			target.append("<i class='o_icon ").append(status.cssClass()).append(" o_icon-fw'> </i>");
+			String tip = translator.translate(status.i18nKey());
+			target.append("<i class='o_icon ").append(status.cssClass()).append(" o_icon-fw' title='")
+			      .append(tip).append("'> </i>");
 		} else if(cellValue instanceof SectionStatus) {
 			SectionStatus status = (SectionStatus)cellValue;
-			target.append("<i class='o_icon ").append(status.cssClass()).append(" o_icon-fw'> </i>");
+			String tip = translator.translate(status.i18nKey());
+			target.append("<i class='o_icon ").append(status.cssClass()).append(" o_icon-fw' title='")
+			      .append(tip).append("'> </i>");
 		}
 	}
 }

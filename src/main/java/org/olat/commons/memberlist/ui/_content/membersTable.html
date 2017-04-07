@@ -1,0 +1,37 @@
+<div class="pull-right">
+#if($r.available("email"))
+	$r.render("email")
+#end
+#if($r.available("download"))
+	$r.render("download")
+#end
+#if($r.available("print"))
+	$r.render("print")
+#end
+</div>
+<div class="clearfix">
+	#if ($r.available("ownerList"))
+		<h4>$r.translate("members.owners")</h4>
+		<div>
+			$r.render("ownerList")
+		</div>
+	#end
+	#if ($r.available("coachList"))
+		<h4>$r.translate("members.coaches")</h4>
+		<div>
+			$r.render("coachList")
+		</div>
+	#end
+	#if ($r.available("participantList"))
+		<h4>$r.translate("members.participants")</h4>
+		<div>
+			$r.render("participantList")
+		</div>
+	#end
+	#if ($r.available("waitingList"))
+		<h4>$r.translate("members.waiting")</h4>
+		<div>
+			$r.render("waitingList")
+		</div>
+	#end
+</div>

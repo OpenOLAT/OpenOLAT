@@ -326,22 +326,22 @@ public class GroupPage {
 	}
 	
 	public GroupPage assertParticipantList() {
-		By participantListBy = By.id("o_sel_group_participants");
+		By participantListBy = By.className("o_sel_participants");
 		List<WebElement> participantListEl = browser.findElements(participantListBy);
 		Assert.assertFalse(participantListEl.isEmpty());
 		return this;
 	}
 	
 	public GroupPage assertMembersInOwnerList(UserVO owner) {
-		return assertMembers(owner, "o_sel_group_coaches");
+		return assertMembers(owner, "o_sel_coaches");
 	}
 	
 	public GroupPage assertMembersInParticipantList(UserVO owner) {
-		return assertMembers(owner, "o_sel_group_participants");
+		return assertMembers(owner, "o_sel_participants");
 	}
 	
 	public GroupPage assertMembersInWaitingList(UserVO owner) {
-		return assertMembers(owner, "o_sel_group_waiting_list");
+		return assertMembers(owner, "o_sel_waiting_list");
 	}
 	
 	private GroupPage assertMembers(UserVO member, String cssClass) {
@@ -351,20 +351,20 @@ public class GroupPage {
 	}
 	
 	public boolean isInMembersOwnerList(UserVO owner) {
-		return isMembers(owner, "o_sel_group_coaches");
+		return isMembers(owner, "o_sel_coaches");
 	}
 	
 	public boolean isInMembersParticipantList(UserVO owner) {
-		return isMembers(owner, "o_sel_group_participants");
+		return isMembers(owner, "o_sel_participants");
 	}
 	
 	public boolean isInMembersInWaitingList(UserVO owner) {
-		return isMembers(owner, "o_sel_group_waiting_list");
+		return isMembers(owner, "o_sel_waiting_list");
 	}
 	
 	private boolean isMembers(UserVO member, String cssClass) {
 		String firstName = member.getFirstName();
-		By longBy = By.xpath("//div[@id='" + cssClass + "']//table//tr//td//a[contains(text(),'" + firstName + "')]");
+		By longBy = By.xpath("//div[contains(@class,'" + cssClass + "')]//div[contains(@class,'o_cmember_info_wrapper')]/a/span[contains(text(),'" + firstName + "')]");
 		List<WebElement> elements = browser.findElements(longBy);
 		return elements.size() > 0;
 	}

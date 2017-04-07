@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.members;
+package org.olat.commons.memberlist.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,26 +31,30 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
+import org.olat.course.nodes.members.Member;
 
 /**
  * 
  * Initial date: 22.12.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
+ * @author fkiefer
  */
 public class SelectMembersController extends FormBasicController {
 
-	private MultipleSelectionElement ownerEl, coachEl, participantEl;
-	private final List<Member> ownerList, coachList, participantList, preSelectedMembers;
+	private MultipleSelectionElement ownerEl, coachEl, participantEl, waitingEl;
+	private final List<Member> ownerList, coachList, participantList, waitingList, preSelectedMembers;
 	
 	private List<Member> selectedMembers = new ArrayList<>();
 	
-	public SelectMembersController(UserRequest ureq, WindowControl wControl, List<Member> preSelectedMembers,
-			List<Member> ownerList, List<Member> coachList, List<Member> participantList) {
+	public SelectMembersController(UserRequest ureq, WindowControl wControl, Translator translator,
+			List<Member> preSelectedMembers, List<Member> ownerList, List<Member> coachList, List<Member> participantList, List<Member> waitingList) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
+		setTranslator(translator);
 		this.ownerList = ownerList;
 		this.coachList = coachList;
 		this.participantList = participantList;
+		this.waitingList = waitingList;
 		this.preSelectedMembers = preSelectedMembers;
 		initForm(ureq);
 	}
@@ -62,15 +66,19 @@ public class SelectMembersController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(ownerList != null && ownerList.size() > 0) {
-			ownerEl = makeSelection("owners", ownerList, formLayout);
+			ownerEl = makeSelection("members.owners", ownerList, formLayout);
 		}
 		
 		if(coachList != null && coachList.size() > 0) {
-			coachEl = makeSelection("coaches", coachList, formLayout);
+			coachEl = makeSelection("members.coaches", coachList, formLayout);
 		}
 		
 		if(participantList != null && participantList.size() > 0) {
-			participantEl = makeSelection("participants", participantList, formLayout);
+			participantEl = makeSelection("members.participants", participantList, formLayout);
+		}
+		
+		if(waitingList != null && waitingList.size() > 0) {
+			waitingEl = makeSelection("members.waiting", waitingList, formLayout);
 		}
 
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
@@ -111,6 +119,7 @@ public class SelectMembersController extends FormBasicController {
 		selectMembers(ownerEl, ownerList);
 		selectMembers(coachEl, coachList);
 		selectMembers(participantEl, participantList);
+		selectMembers(waitingEl, waitingList);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
+import org.olat.commons.info.manager.InfoMessageFrontendManager;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.control.Event;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -60,6 +61,8 @@ public class BusinessGroupMembershipProcessor implements InitializingBean, Gener
 	private CoordinatorManager coordinator;
 	@Autowired
 	private NotificationsManager notificationsManager;
+	@Autowired
+	private InfoMessageFrontendManager infoMessageManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -108,6 +111,7 @@ public class BusinessGroupMembershipProcessor implements InitializingBean, Gener
 		BusinessGroupRef groupRef = new BusinessGroupRefImpl(groupKey);
 		
 		if(!businessGroupRelationDao.hasAnyRole(identityRef, groupRef)) {
+			infoMessageManager.updateInfoMessagesOfIdentity(groupRef, identityRef);
 			notificationsManager.unsubscribeAllForIdentityAndResId(identityRef, groupRef.getKey());
 			
 			List<BGRepositoryEntryRelation> relations = businessGroupRelationDao
