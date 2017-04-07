@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.id.OLATResourceable;
@@ -91,28 +92,12 @@ public class CPManagerTest extends OlatTestCase {
 		CPItem item = orga.getFirstItem();
 		assertEquals(PAGE_TITLE, item.getTitle());
 	}
-	@Test
-	public void testCreateNewCP() {
-	// Tested through setup. Foundation for the other tests.
-	}
-	@Test
-	public void testIsSingleUsedResource() {
-	// mgr.isSingleUsedResource(res, cp);
-	}
+
 	@Test
 	public void testAddBlankPage() {
 		final String pageTitle = "the blank page";
 		String ident = mgr.addBlankPage(cp, pageTitle);
-		assertNotNull(ident);
-		
-	}
-	@Test
-	public void testUpdatePage() {
-	// TODO:GW impl
-	}
-	@Test
-	public void testAddElement() {
-	// TODO:GW impl
+		assertNotNull(ident);	
 	}
 
 	public void testAddElementAfter() {
@@ -120,61 +105,30 @@ public class CPManagerTest extends OlatTestCase {
 		mgr.addElementAfter(cp, newItem, ITEM_ID);
 		assertTrue("The new item wasn't inserted at the second position.", newItem.getPosition() == 1);
 	}
-	@Test
-	public void testRemoveElement() {
-	// TODO:GW impl
-	}
-	@Test
-	public void testMoveElement() {
-	// TODO:GW impl
-	}
 
-	public void testCopyElement() {
-	// TODO:GW impl
-	}
-	@Test
-	public void testGetDocument() {
-	// TODO:GW impl
-	}
 	@Test
 	public void testGetItemTitle() {
 		String title = mgr.getItemTitle(cp, ITEM_ID);
 		assertNotNull(title);
 		assertEquals(PAGE_TITLE, title);
 	}
-	@Test
-	public void testGetTreeDataModel() {
-	// TODO:GW impl
-	}
-	@Test
-	public void testGetFirstOrganizationInManifest() {
-	// TODO:GW impl
-	}
 
-	public void testGetFirstPageToDisplay() {
-	// this method basically just returns the first element in the cp
-	}
 	@Test
 	public void testGetPageByItemId() {
 		String href = mgr.getPageByItemId(cp, ITEM_ID);
 		VFSItem file = cp.getRootDir().resolve(href);
 		assertNotNull("The file path doesn't lead to a file.", file);
 	}
+	
 	@Test
 	public void testWriteToFile() {
 		mgr.writeToFile(cp); // Throws exception on failure
 	}
+	
 	@Test
 	public void testWriteToZip() {
-		// Substract 1s = 1000ms from now to make sure the time is before execution
-		long before = System.currentTimeMillis() - 1000;
 		VFSLeaf zip = mgr.writeToZip(cp);
-		assertNotNull("The zip file wasn't created properly", zip);
-		assertTrue("The last modified date of the zip file wasn't updated", zip.getLastModified() > before);
+		Assert.assertNotNull("The zip file wasn't created properly", zip);
+		Assert.assertTrue("The zip file cannot be empty", zip.getSize() > 0);
 	}
-	@Test
-	public void testGetElementByIdentifier() {
-	// TODO:GW impl
-	}
-
 }

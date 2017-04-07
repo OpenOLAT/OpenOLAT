@@ -100,6 +100,18 @@ public class OOGraphene {
 	}
 	
 	/**
+	 * Wait until the element is not visible.
+	 * 
+	 * @param element
+	 * @param timeoutInSeconds
+	 * @param browser
+	 */
+	public static void waitElementUntilNotVisible(By element, int timeoutInSeconds, WebDriver browser) {
+		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().not().visible();
+	}
+	
+	/**
 	 * Wait until the element is visible.
 	 * 
 	 * @param element The element to be visible
@@ -143,6 +155,18 @@ public class OOGraphene {
 	public static void waitElementPresent(By element, int timeoutInSeconds, WebDriver browser) {
 		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
 			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().present();
+	}
+	
+	/**
+	 * The method is very, very experimental and not reliable. Only for research purpose.
+	 * 
+	 * @param by
+	 * @param browser
+	 */
+	public static void waitElementInViewport(By by, WebDriver browser) {
+		Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+			.until(new InViewportPredicate(by));
 	}
 	
 	public static void waitGui(WebDriver browser) {

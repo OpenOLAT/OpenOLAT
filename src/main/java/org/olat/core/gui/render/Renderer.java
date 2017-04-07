@@ -287,7 +287,7 @@ public class Renderer {
 	 */
 	public static String getComponentPrefix(Component comp) {
 		String did = comp.getDispatchID();
-		return "o_c"+did;
+		return "o_c".concat(did);
 	}
 	
 	/**

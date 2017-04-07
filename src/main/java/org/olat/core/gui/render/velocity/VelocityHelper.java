@@ -28,8 +28,9 @@ package org.olat.core.gui.render.velocity;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.app.VelocityEngine;
@@ -51,7 +52,7 @@ public class VelocityHelper extends LogDelegator {
 
 	private VelocityEngine ve;
 	
-	private HashSet<String> resourcesNotFound = new HashSet<String>(128);
+	private Set<String> resourcesNotFound = ConcurrentHashMap.newKeySet();
 
 	/**
 	 * 
@@ -131,10 +132,7 @@ public class VelocityHelper extends LogDelegator {
 				String themedTemplatePath = sb.toString();
 
 				// check cache
-				boolean notFound;
-				synchronized (resourcesNotFound) { //o_clusterOK by:fj
-					notFound = resourcesNotFound.contains(themedTemplatePath);
-				}
+				boolean notFound = resourcesNotFound.contains(themedTemplatePath);
 				
 				if (!notFound) {
 					// never tried before -> try to load it
@@ -142,9 +140,7 @@ public class VelocityHelper extends LogDelegator {
 						// remember not found (since velocity doesn't) then try fallback.
 						// this will happen once for each theme when a resource does not exist in its themed variant but only in the default theme.
 						if (!Settings.isDebuging()) {
-							synchronized (resourcesNotFound) { //o_clusterOK by:fj
-								resourcesNotFound.add(themedTemplatePath);
-							}
+							resourcesNotFound.add(themedTemplatePath);
 						} // for debugging, allow introduction of themed files without restarting the application
 					} else {
 						// template exists -> load it

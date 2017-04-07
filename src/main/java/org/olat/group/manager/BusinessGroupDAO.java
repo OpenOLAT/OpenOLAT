@@ -240,10 +240,13 @@ public class BusinessGroupDAO {
 		return groups.get(0);
 	}
 	
+	/**
+	 * Work with the hibernate session
+	 * @param group
+	 * @return
+	 */
 	public BusinessGroup merge(BusinessGroup group) {
-		EntityManager em = dbInstance.getCurrentEntityManager();
-		BusinessGroup mergedGroup = em.merge(group);
-		return mergedGroup;
+		return dbInstance.getCurrentEntityManager().merge(group);
 	}
 	
 	/**
@@ -256,15 +259,6 @@ public class BusinessGroupDAO {
 		groupDao.removeMemberships(group.getBaseGroup());
 		dbInstance.getCurrentEntityManager().remove(group);
 		dbInstance.getCurrentEntityManager().remove(group.getBaseGroup());
-	}
-	
-	/**
-	 * Work with the hibernate session
-	 * @param group
-	 * @return
-	 */
-	public BusinessGroup update(BusinessGroup group) {
-		return dbInstance.getCurrentEntityManager().merge(group);
 	}
 	
 	public List<BusinessGroupMembership> getBusinessGroupsMembership(Collection<BusinessGroup> groups) {
