@@ -40,6 +40,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.filters.SystemItemFilter;
 
 /**
  * Initial Date:  18.12.2002
@@ -73,7 +74,7 @@ public class FolderManager  extends BasicManager {
 	 */
 	public static List<FileInfo> getFileInfos(final String olatRelPath, Date newerThan) {
 		
-		final List<FileInfo> fileInfos = new ArrayList<FileInfo>();
+		final List<FileInfo> fileInfos = new ArrayList<>();
 		final long newerThanLong = newerThan.getTime();
 		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(olatRelPath, null);
 		getFileInfosRecursively(rootFolder, fileInfos, newerThanLong, olatRelPath.length());
@@ -93,7 +94,7 @@ public class FolderManager  extends BasicManager {
 		} else {
 			// is a folder
 			OlatRootFolderImpl container = (OlatRootFolderImpl)relPath;
-			for (VFSItem item : container.getItems()) {
+			for (VFSItem item : container.getItems(new SystemItemFilter())) {
 				getFileInfosRecursively((OlatRelPathImpl)item, fileInfos, newerThan, basePathlen);
 			}
 		}
