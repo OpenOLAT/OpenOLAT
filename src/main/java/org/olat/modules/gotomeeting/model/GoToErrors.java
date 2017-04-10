@@ -31,6 +31,7 @@ public enum GoToErrors {
 	OrganizerOverlap("error.organizer.overbooked"),
 	TrainingOver("error.code.TrainingOver"),
 	InvalidRequest("error.code.unkown"),
+	InvalidToken("error.code.InvalidToken"),
 	NoSuchTraining("error.code.NoSuchTraining"),
 	TrainingInSession("error.code.TrainingInSession"),
 	InvalidTrainingDatesMaxDuration("error.code.InvalidTrainingDatesMaxDuration");
