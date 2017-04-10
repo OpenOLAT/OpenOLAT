@@ -34,7 +34,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.core.util.vfs.restapi.SystemItemFilter;
+import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.MessageLight;

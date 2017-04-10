@@ -62,6 +62,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
+import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileMetadataVO;

@@ -230,10 +230,10 @@ public class FileUploadController extends FormBasicController {
 
 		// Add path element
 		if (showTargetPath) {			
-			String path = "/ " + uploadVFSContainer.getName();
+			String path = "/ " + StringHelper.escapeHtml(uploadVFSContainer.getName());
 			VFSContainer container = uploadVFSContainer.getParentContainer();
 			while (container != null) {
-				path = "/ " + container.getName() + " " + path;
+				path = "/ " + StringHelper.escapeHtml(container.getName()) + " " + path;
 				container = container.getParentContainer();
 			}
 			
