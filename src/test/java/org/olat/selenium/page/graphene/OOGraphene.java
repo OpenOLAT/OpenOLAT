@@ -183,7 +183,8 @@ public class OOGraphene {
 	// <div id="o_fi1000000416_diw" class="o_richtext_mce"> <iframe id="o_fi1000000416_ifr">
 	public static final void tinymce(String content, WebDriver browser) {
 		Graphene.waitModel(browser).withTimeout(waitTinyDuration, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new TinyMCELoadedPredicate());
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+			.until(new TinyMCELoadedPredicate());
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
@@ -194,7 +195,8 @@ public class OOGraphene {
 		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
 
 		Graphene.waitModel(browser).withTimeout(waitTinyDuration, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new TinyMCELoadedByIdPredicate(tinyId));
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+			.until(new TinyMCELoadedByIdPredicate(tinyId));
 		((JavascriptExecutor)browser).executeScript("top.tinymce.editors['" + tinyId + "'].setContent('" + content + "')");
 	}
 	

@@ -93,6 +93,7 @@ public class MembersWizardPage {
 		Assert.assertFalse(checkAll.isEmpty());
 		for(WebElement check:checkAll) {
 			check.click();
+			OOGraphene.waitBusy(browser);
 		}
 		return this;
 	}

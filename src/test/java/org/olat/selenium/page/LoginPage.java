@@ -234,6 +234,9 @@ public class LoginPage {
 		By okBy = By.cssSelector("button.btn.btn-primary");
 		browser.findElement(okBy).click();
 		OOGraphene.waitBusy(browser);
+
+		By reservationBy = By.xpath("//div[contains(@class,'o_reservation')]");
+		OOGraphene.waitElementDisappears(reservationBy, 5, browser);
 		return this;
 	}
 }

@@ -85,10 +85,15 @@ public class UserRestClient {
 	
 	public UserVO createAuthor()
 	throws IOException, URISyntaxException {
+		return createAuthor("Selena");
+	}
+	
+	public UserVO createAuthor(String name)
+	throws IOException, URISyntaxException {
 		RestConnection restConnection = new RestConnection(deploymentUrl);
 		assertTrue(restConnection.login(username, password));
 		
-		UserVO user = createUser(restConnection, "Selena", "Auth");
+		UserVO user = createUser(restConnection, name, "Auth");
 		
 		RolesVO roles = new RolesVO();
 		roles.setAuthor(true);

@@ -170,6 +170,13 @@ public class AuthoringEnvPage {
 			.clickToolbarBack();
 	}
 	
+	/**
+	 * Try to upload a resource if the type is recognized.
+	 * 
+	 * @param title The title of the learning resource
+	 * @param resource The zip file to import
+	 * @return Itself
+	 */
 	public AuthoringEnvPage uploadResource(String title, File resource) {
 		WebElement importLink = browser.findElement(By.className("o_sel_author_import"));
 		Assert.assertTrue(importLink.isDisplayed());
@@ -187,8 +194,10 @@ public class AuthoringEnvPage {
 		//save
 		By saveBy = By.cssSelector("div.o_sel_repo_save_details button.btn-primary");
 		WebElement saveButton = browser.findElement(saveBy);
-		saveButton.click();
-		OOGraphene.waitBusy(browser);
+		if(saveButton.isEnabled()) {
+			saveButton.click();
+			OOGraphene.waitBusy(browser);
+		}
 		return this;
 	}
 	

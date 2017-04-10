@@ -205,6 +205,7 @@ public class ForumPage {
 		By replyBy = By.xpath("//div[contains(@class,'o_forum_message')][//h4[contains(text(),'" + reference + "')]]//a[contains(@class,'o_sel_forum_reply')]");
 		browser.findElement(replyBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		if(title != null) {
 			By titleBy = By.cssSelector(".o_sel_forum_message_title input[type='text']");

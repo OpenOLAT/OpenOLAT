@@ -297,7 +297,7 @@ public class CourseTest {
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		UserVO coAuthor = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO coAuthor = new UserRestClient(deploymentUrl).createAuthor("Rei");
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
@@ -1905,9 +1905,7 @@ public class CourseTest {
 		ForumPage guestForum = ForumPage
 			.getCourseForumPage(guestBrowser)
 			.createThread("Your favorite author", "Name your favorite author", guestAlias);
-		
-		System.out.println();
-		
+	
 		// admin go to the forum
 		new CoursePageFragment(browser)
 			.clickTree()
