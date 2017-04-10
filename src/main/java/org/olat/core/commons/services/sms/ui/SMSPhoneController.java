@@ -94,6 +94,7 @@ public class SMSPhoneController extends FormBasicController implements SupportsA
 	public boolean isUserInteractionRequired(UserRequest ureq) {
 		return messageModule.isEnabled() && messageModule.isResetPasswordEnabled()
 				&& !ureq.getUserSession().getRoles().isGuestOnly()
+				&& !ureq.getUserSession().getRoles().isInvitee()
 				&& !messageService.validate(ureq.getIdentity().getUser().getProperty(UserConstants.SMSTELMOBILE, getLocale()));
 	}
 
