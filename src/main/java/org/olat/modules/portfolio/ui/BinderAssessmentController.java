@@ -21,6 +21,7 @@ package org.olat.modules.portfolio.ui;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
@@ -88,6 +90,9 @@ public class BinderAssessmentController extends FormBasicController {
 	private FormLink saveAndDoneLink, reopenLink;
 	private BinderAssessmentDataModel model;
 	
+	private CloseableModalController cmc;
+	private SectionDatesEditController editSectionDatesCtrl;
+
 	private boolean withScore;
 	private boolean withPassed;
 	
@@ -238,6 +243,29 @@ public class BinderAssessmentController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
+	
+	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(editSectionDatesCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(editSectionDatesCtrl);
+		removeAsListenerAndDispose(cmc);
+		editSectionDatesCtrl = null;
+		cmc = null;
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -260,7 +288,7 @@ public class BinderAssessmentController extends FormBasicController {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if("reopen".equals(cmd)) {
 				AssessmentSectionWrapper row = (AssessmentSectionWrapper)button.getUserObject();
-				doReopen(row.getSection());
+				doReopen(ureq, row.getSection());
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
@@ -310,10 +338,20 @@ public class BinderAssessmentController extends FormBasicController {
 				LoggingResourceable.wrap(section));
 	}
 	
-	private void doReopen(Section section) {
-		portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
-		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_REOPEN, getClass(),
-				LoggingResourceable.wrap(section));
+	private void doReopen(UserRequest ureq, Section section) {
+		if(section.getSectionStatus() != null && section.getSectionStatus().equals(SectionStatus.closed)) {
+			portfolioService.changeSectionStatus(section, SectionStatus.inProgress, getIdentity());
+			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_SECTION_REOPEN, getClass(),
+					LoggingResourceable.wrap(section));
+		} else if(section.getEndDate() != null && section.getEndDate().compareTo(new Date()) < 0) {
+			editSectionDatesCtrl = new SectionDatesEditController(ureq, getWindowControl(), section);
+			listenTo(editSectionDatesCtrl);
+			
+			String title = translate("override.dates.section");
+			cmc = new CloseableModalController(getWindowControl(), null, editSectionDatesCtrl.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doReopenBinder() {
