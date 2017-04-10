@@ -65,6 +65,7 @@ import org.olat.core.commons.services.notifications.model.PublisherImpl;
 import org.olat.core.commons.services.notifications.model.SubscriberImpl;
 import org.olat.core.commons.services.notifications.ui.NotificationSubscriptionController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -539,6 +540,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 		htmlText.append(".o_m_sub ul li {padding: 0; margin: 1px 0;}");
 		htmlText.append(".o_m_go {padding: 5px 0 0 0}");
 		htmlText.append(".o_date {font-size: 90%; color: #888}");		
+		htmlText.append(".o_m_footer {background: #FAFAFA; border: 1px solid #eee; border-radius: 5px; padding: 0 0.5em 0.5em 0.5em; margin: 1em 0 1em 0;' class='o_m_h'}");
 		htmlText.append("</style>");
 		
 		for (Iterator<SubscriptionItem> it_subs = subItems.iterator(); it_subs.hasNext();) {
@@ -572,6 +574,10 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 			htmlText.append("\n");
 			htmlText.append("</div></div>");
 		}
+		String basePath =  Settings.getServerContextPathURI() + "/auth/HomeSite/" + to.getKey() + "/";
+		htmlText.append("<div class='o_m_footer'>");
+		htmlText.append(translator.translate("footer.notifications", new String[] {basePath + "mysettings/0", basePath += "notifications/0", basePath + "/tab/1"}));
+		htmlText.append("</div>");
 
 		MailerResult result = null;
 		try {
