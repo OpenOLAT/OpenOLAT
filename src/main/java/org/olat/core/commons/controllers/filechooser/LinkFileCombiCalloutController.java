@@ -46,8 +46,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
-import org.olat.core.util.vfs.restapi.SystemItemFilter;
 
 
 /**
@@ -178,7 +178,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 					// Cleanup modal first
 					cleanupModal(true);
 					// Unzip file and open file chooser in new modal
-					VFSContainer zipContainer = doUnzip(newFile, newFile.getParentContainer(), ureq);
+					VFSContainer zipContainer = doUnzip(newFile, newFile.getParentContainer());
 					if (zipContainer != null) {
 						FileChooserController fileChooserCtr = FileChooserUIFactory.createFileChooserController(ureq, getWindowControl(), zipContainer, null, true);
 						fileChooserCtr.setShowTitle(true);
@@ -305,7 +305,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 		displayModal(toolCtr);
 	}
 
-	private VFSContainer doUnzip(VFSLeaf vfsItem, VFSContainer currentContainer, UserRequest ureq) {
+	private VFSContainer doUnzip(VFSLeaf vfsItem, VFSContainer currentContainer) {
 		String name = vfsItem.getName();
 		// we make a new folder with the same name as the zip file
 		String sZipContainer = name.substring(0, name.length() - 4);
