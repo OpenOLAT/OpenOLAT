@@ -85,7 +85,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 		deleteBinderEl = uifactory.addCheckboxesHorizontal("canDeleteBinder", "allow.delete.binder", formLayout, onKeys, onValues);
 		deleteBinderEl.addActionListener(FormEvent.ONCHANGE);
 		if(deliveryOptions.isAllowDeleteBinder()) {
-			deleteBinderEl.select(onKeys[0], false);
+			deleteBinderEl.select(onKeys[0], true);
 		}
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
