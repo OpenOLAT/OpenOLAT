@@ -955,17 +955,31 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			if(StringHelper.containsNonWhitespace(response)) {
 				try {
 					double firstNumber = Double.parseDouble(response);
-					double lTolerance = lowerTolerance == null ? 0.0d : lowerTolerance.doubleValue();
-					double uTolerance = upperTolerance == null ? 0.0d : upperTolerance.doubleValue();
-					return toleranceMode.isEqual(firstNumber, solution,
-							lTolerance, uTolerance,
-							true, true);
+					return match(firstNumber);
+				} catch(NumberFormatException nfe) {
+					if(response.indexOf(',') >= 0) {//allow , instead of .
+	                    try {
+							double firstNumber = Double.parseDouble(response.replace(',', '.'));
+							return match(firstNumber);
+						} catch (final NumberFormatException e1) {
+							//format can happen
+						} catch (Exception e) {
+							log.error("", e);
+						}
+	            	}
 				} catch (Exception e) {
 					log.error("", e);
-					return false;
 				}
 			}
 			return false;
+		}
+		
+		private boolean match(double firstNumber) {
+			double lTolerance = lowerTolerance == null ? 0.0d : lowerTolerance.doubleValue();
+			double uTolerance = upperTolerance == null ? 0.0d : upperTolerance.doubleValue();
+			return toleranceMode.isEqual(firstNumber, solution,
+					lTolerance, uTolerance,
+					true, true);
 		}
 	}
 	
