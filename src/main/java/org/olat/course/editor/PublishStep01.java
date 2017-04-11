@@ -166,7 +166,18 @@ class PublishStep01 extends BasicStep {
 			if(!loginModule.isGuestLoginLinksEnabled() && "4".equals(selectedAccess)) {//no guest but BARG
 				accessSelbox.select("3", true);//-> set BAR-
 			} else {
-				accessSelbox.select(selectedAccess, true);
+				boolean found = false;
+				for(String key:keys) {
+					if(key.equals(selectedAccess)) {
+						accessSelbox.select(key, true);
+						found = true;
+						break;
+					}
+				}
+				
+				if(!found) {//probably 0
+					accessSelbox.select(keys[0], true);
+				}
 			}
 		}
 	}
