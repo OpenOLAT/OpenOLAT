@@ -30,14 +30,20 @@ public class LectureStatistics {
 	private final Long repoKey;
 	private final String displayName;
 	
-	private long totalLectureBlocks;
+	private long totalLectureBlocks = 0l;
 	private long totalPlannedLectures = 0l;
+	private long totalEffectiveLectures = 0l;
 	private long totalAttendedLectures = 0l;
 	private long totalAbsentLectures = 0l;
+
+	private final boolean calculateRate;
+	private final double requiredRate;
 	
-	public LectureStatistics(Long repoKey, String displayName) {
+	public LectureStatistics(Long repoKey, String displayName, boolean calculateRate, double requiredRate) {
 		this.repoKey = repoKey;
 		this.displayName = displayName;
+		this.calculateRate = calculateRate;
+		this.requiredRate = requiredRate;
 	}
 
 	public Long getRepoKey() {
@@ -48,12 +54,28 @@ public class LectureStatistics {
 		return displayName;
 	}
 
+	public boolean isCalculateRate() {
+		return calculateRate;
+	}
+
+	public double getRequiredRate() {
+		return requiredRate;
+	}
+
 	public long getTotalPlannedLectures() {
 		return totalPlannedLectures;
 	}
 	
 	public void addTotalPlannedLectures(long lectures) {
 		totalPlannedLectures += lectures;
+	}
+
+	public long getTotalEffectiveLectures() {
+		return totalEffectiveLectures;
+	}
+
+	public void addTotalEffectiveLectures(long lectures) {
+		totalEffectiveLectures += lectures;
 	}
 
 	public long getTotalAttendedLectures() {
@@ -79,6 +101,12 @@ public class LectureStatistics {
 	public void addTotalLectureBlocks(long lectures) {
 		totalLectureBlocks += lectures;
 	}
-	
-	
+
+	public double getAttendanceRate() {
+		long totalLectures = totalAbsentLectures + totalAttendedLectures;
+		if(totalLectures == 0 || totalAttendedLectures == 0) {
+			return 0.0d;
+		}
+		return (double)totalAttendedLectures / (double)totalLectures;
+	}
 }

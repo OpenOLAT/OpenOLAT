@@ -166,7 +166,7 @@ public class UserToolsAdminController extends FormBasicController {
 		} else {
 			preset = "none";
 		}
-		
+
 		userToolsModule.setAvailableUserTools(aTools);
 		userToolsModule.setDefaultPresetOfUserTools(preset);
 	}

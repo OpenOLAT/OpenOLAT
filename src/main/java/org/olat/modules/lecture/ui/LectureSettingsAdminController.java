@@ -19,11 +19,16 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.Set;
+
+import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -47,6 +52,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 	
 	@Autowired
 	private LectureModule lectureModule;
+	@Autowired
+	private UserToolsModule userToolsModule;
 	
 	public LectureSettingsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -60,6 +67,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		
 		String[] onValues = new String[] { "" };
 		enableEl = uifactory.addCheckboxesHorizontal("lecture.admin.enabled", formLayout, onKeys, onValues);
+		enableEl.addActionListener(FormEvent.ONCHANGE);
 		if(lectureModule.isEnabled()) {
 			enableEl.select(onKeys[0], true);
 		}
@@ -77,11 +85,18 @@ public class LectureSettingsAdminController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		updateUI();
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private void updateUI() {
+		boolean enabled = enableEl.isAtLeastSelected(1);
+		authorizedAbsenceEnableEl.setVisible(enabled);
+		attendanceRateEl.setVisible(enabled);
 	}
 	
 	@Override
@@ -109,8 +124,30 @@ public class LectureSettingsAdminController extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(enableEl == source) {
+			updateUI();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		lectureModule.setEnabled(enableEl.isAtLeastSelected(1));
+		if(enableEl.isAtLeastSelected(1)) {
+			//enabled user tool
+			Set<String> availableTools = userToolsModule.getAvailableUserToolSet();
+			if(!availableTools.contains("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.ParticipantLecturesOverviewController")) {
+				availableTools.add("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.ParticipantLecturesOverviewController");
+			}
+			
+			StringBuilder aTools = new StringBuilder();
+			for(String selectedKey:availableTools) {
+				if(aTools.length() > 0) aTools.append(",");
+				aTools.append(selectedKey);
+			}
+			userToolsModule.setAvailableUserTools(aTools.toString());
+		}
 		lectureModule.setAuthorizedAbsenceEnabled(authorizedAbsenceEnableEl.isAtLeastSelected(1));
 		
 		String attendanceRateInPercent = attendanceRateEl.getValue();

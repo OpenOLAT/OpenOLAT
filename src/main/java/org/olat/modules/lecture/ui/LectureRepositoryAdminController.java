@@ -109,7 +109,7 @@ public class LectureRepositoryAdminController extends BasicController {
 	
 	private void doOpenParticipants(UserRequest ureq) {
 		if(participantsCtrl == null) {
-			participantsCtrl = new ParticipantListRepositoryController(ureq, getWindowControl(), entry);
+			participantsCtrl = new ParticipantListRepositoryController(ureq, getWindowControl(), entry, true);
 			listenTo(participantsCtrl);
 		}
 		mainVC.put("segmentCmp", participantsCtrl.getInitialComponent());

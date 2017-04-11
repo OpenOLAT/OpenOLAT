@@ -51,7 +51,10 @@ public enum RepositoryEntryManagedFlag {
       resourcefolder(settings,all),
       efficencystatement(settings,all),
       calendar(settings,all),
-      glossary(settings,all), 
+      glossary(settings,all),
+    lecture(all),
+      lectureconfig(lecture, all),
+      lecturemanagemenet(lecture, all),
     bookings(all),// change booking rules
     membersmanagement(all),
     groups(all),

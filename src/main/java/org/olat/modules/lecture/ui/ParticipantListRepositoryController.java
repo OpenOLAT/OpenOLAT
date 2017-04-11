@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -51,7 +50,6 @@ import org.olat.modules.lecture.model.ParticipantLectureStatistics;
 import org.olat.modules.lecture.ui.ParticipantListDataModel.ParticipantsCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +79,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	private final boolean rateEnabled;
 	private final boolean rollCallEnabled;
 	
+	private final boolean admin;
 	private final RepositoryEntry entry;
 	private RepositoryEntryLectureConfiguration lectureConfig;
 	
@@ -93,14 +92,15 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
 	private BaseSecurity securityManager;
 	
-	public ParticipantListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public ParticipantListRepositoryController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry entry, boolean admin) {
 		super(ureq, wControl, "participant_list_overview");
 		this.entry = entry;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		
+		this.admin = admin;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -158,7 +158,13 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<Identity> participants = repositoryService.getMembers(entry, GroupRoles.participant.name());
+		List<Identity> participants;
+		if(admin) {
+			participants = lectureService.getParticipants(entry);
+		} else {
+			participants = lectureService.getParticipants(entry, getIdentity());
+		}
+		
 		List<ParticipantLectureStatistics> statistics = lectureService.getParticipantsLecturesStatistics(entry);
 		Map<Long, ParticipantLectureStatistics> identityToStatisticsMap = statistics.stream().collect(Collectors.toMap(s -> s.getIdentityKey(), s -> s));
 		

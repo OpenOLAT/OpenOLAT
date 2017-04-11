@@ -78,16 +78,32 @@ alter table o_lecture_block_roll_call add constraint lec_call_identity_idx forei
 create index idx_lec_call_identity_idx on o_lecture_block_roll_call(fk_identity);
 
 
+create table o_lecture_reminder (
+  id bigserial not null,
+  creationdate timestamp not null,
+  l_status varchar(16) not null,
+  fk_lecture_block int8 not null,
+  fk_identity int8 not null,
+  primary key (id)
+);
+
+alter table o_lecture_reminder add constraint lec_reminder_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+create index idx_lec_reminder_block_idx on o_lecture_reminder(fk_lecture_block);
+alter table o_lecture_reminder add constraint lec_reminder_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_lec_reminder_identity_idx on o_lecture_reminder(fk_identity);
+
+
 create table o_lecture_participant_summary (
   id bigserial not null,
   creationdate timestamp not null,
   lastmodified timestamp not null,
-  l_attendance_rate float(24) default null,
+  l_required_attendance_rate float(24) default null,
   l_first_admission_date timestamp default null,
   l_attended_lectures int8 not null default 0,
   l_absent_lectures int8 not null default 0,
   l_excused_lectures int8 not null default 0,
-  l_planneds_lectures int8 not null default 0, 
+  l_planneds_lectures int8 not null default 0,
+  l_attendance_rate float(24) default null,
   fk_entry int8 not null,
   fk_identity int8 not null,
   primary key (id),

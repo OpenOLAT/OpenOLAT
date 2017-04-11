@@ -494,9 +494,8 @@ public class TeacherRollCallController extends FormBasicController {
 			}
 			
 			String comment = row.getCommentEl().getValue();
-			Integer[] absences = absenceList.toArray(new Integer[absenceList.size()]);
 			LectureBlockRollCall rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(),
-					comment, absences);
+					comment, absenceList);
 			row.setRollCall(rollCall);
 		}
 
@@ -535,9 +534,9 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private void doCheckAllRow(TeacherRollCallRow row) {
-		Integer[] allIndex = new Integer[lectureBlock.getPlannedLecturesNumber()];
-		for(int i=allIndex.length; i-->0; ) {
-			allIndex[i] = i;
+		List<Integer> allIndex = new ArrayList<>(lectureBlock.getPlannedLecturesNumber());
+		for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
+			allIndex.add(i);
 		}
 		LectureBlockRollCall rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), null, allIndex);
 		for(MultipleSelectionElement check:row.getChecks()) {
@@ -550,12 +549,13 @@ public class TeacherRollCallController extends FormBasicController {
 	
 	private void doCheckRow(TeacherRollCallRow row, MultipleSelectionElement check) {
 		int index = row.getIndexOfCheck(check);
+		List<Integer> indexList = Collections.singletonList(index);
 		
 		LectureBlockRollCall rollCall;
 		if(check.isAtLeastSelected(1)) {
-			rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), index);
+			rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), indexList);
 		} else {
-			rollCall = lectureService.removeRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), index);
+			rollCall = lectureService.removeRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), indexList);
 		}
 		row.setRollCall(rollCall);	
 	}

@@ -32,7 +32,10 @@ public interface LectureParticipantSummary extends CreateInfo, ModifiedInfo {
 
 	public Long getKey();
 	
-	public Double getAttendanceRate();
+	public Double getRequiredAttendanceRate();
 	
-	public void setAttendanceRate(Double rate);
+	public void setRequiredAttendanceRate(Double rate);
+	
+	
+	public Double getAttendanceRate();
 }

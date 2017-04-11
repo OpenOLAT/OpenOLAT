@@ -19,7 +19,10 @@
  */
 package org.olat.modules.lecture.manager;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.LectureService;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -34,6 +37,11 @@ public class ReminderLecturesJob extends JobWithDB {
 
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
-		// reminders
+		LectureModule lectureModule = CoreSpringFactory.getImpl(LectureModule.class);
+		boolean reminderEnabled = lectureModule.isRollCallReminderEnabled();
+		int reminderPeriod = lectureModule.getRollCallReminderPeriod();
+		if(reminderEnabled && reminderPeriod > 0) {
+			CoreSpringFactory.getImpl(LectureService.class).sendReminders();
+		}
 	}
 }

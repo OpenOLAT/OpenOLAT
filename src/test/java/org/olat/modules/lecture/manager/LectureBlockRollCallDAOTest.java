@@ -53,7 +53,7 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lecturer-1");
 		dbInstance.commitAndCloseSession();
 		
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(rollCall);
@@ -70,7 +70,7 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lecturer-1");
 		dbInstance.commitAndCloseSession();
 		
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		LectureBlockRollCall reloadRollCall = lectureBlockRollCallDao.loadByKey(rollCall.getKey());

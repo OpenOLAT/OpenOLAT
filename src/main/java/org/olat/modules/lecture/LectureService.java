@@ -128,6 +128,26 @@ public interface LectureService {
 	public List<Identity> getParticipants(LectureBlockRef block);
 	
 	/**
+	 * Return all possible participants in a lecture block linked to the specified
+	 * repository.
+	 * 
+	 * @param entry The course / repository entry
+	 * @return A list of identities
+	 */
+	public List<Identity> getParticipants(RepositoryEntry entry);
+	
+	/**
+	 * Return all possible participants in a lecture block linked to the specified
+	 * repository entry and where the specified teacher is linked.
+	 * 
+	 * @param entry The course / repository entry
+	 * @param teacher The teacher
+	 * @return A list of identities
+	 */
+	public List<Identity> getParticipants(RepositoryEntry entry, Identity teacher);
+	
+	
+	/**
 	 * The method will start the roll call, generate all roll call, generate missing
 	 * summaries...
 	 * 
@@ -168,7 +188,7 @@ public interface LectureService {
 	 * @param absences The lectures where the participant was absent
 	 * @return The updated roll call
 	 */
-	public LectureBlockRollCall addRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... absences);
+	public LectureBlockRollCall addRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences);
 	
 	/**
 	 * 
@@ -180,7 +200,7 @@ public interface LectureService {
 	 * @return
 	 */
 	public LectureBlockRollCall addRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall,
-			String comment, Integer... absences);
+			String comment, List<Integer> absences);
 	
 	/**
 	 * Remove the specified lectures to the ones the identity follows.
@@ -191,7 +211,18 @@ public interface LectureService {
 	 * @param absences The lectures to remove from the "absence" list
 	 * @return The updated roll call
 	 */
-	public LectureBlockRollCall removeRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall, Integer... absences);
+	public LectureBlockRollCall removeRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences);
+
+	
+	/**
+	 * Will close all lecture block which end date are after the
+	 * setting.
+	 * 
+	 */
+	public void autoCloseRollCall();
+	
+	public void sendReminders();
+	
 	
 	/**
 	 * 

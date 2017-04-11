@@ -68,8 +68,8 @@ public class EditParticipantRateController extends FormBasicController {
 		uifactory.addStaticTextElement("entry.rate", Long.toString(rate) + "%", formLayout);
 		
 		String customRate = "";
-		if(participantSummary.getAttendanceRate() != null) {
-			long cRate = Math.round(participantSummary.getAttendanceRate().doubleValue() * 100.0d);
+		if(participantSummary.getRequiredAttendanceRate() != null) {
+			long cRate = Math.round(participantSummary.getRequiredAttendanceRate().doubleValue() * 100.0d);
 			customRate = Long.toString(cRate);
 		}
 		rateEl = uifactory.addTextElement("participant.rate", "participant.rate", 4, customRate, formLayout);
@@ -119,9 +119,9 @@ public class EditParticipantRateController extends FormBasicController {
 		String customRate = rateEl.getValue();
 		if(StringHelper.containsNonWhitespace(customRate)) {
 			double val = Long.parseLong(customRate) / 100.0d;
-			participantSummary.setAttendanceRate(val);
+			participantSummary.setRequiredAttendanceRate(val);
 		} else {
-			participantSummary.setAttendanceRate(null);
+			participantSummary.setRequiredAttendanceRate(null);
 		}
 		participantSummary = lectureService.saveParticipantSummary(participantSummary);
 		fireEvent(ureq, Event.DONE_EVENT);
@@ -133,7 +133,7 @@ public class EditParticipantRateController extends FormBasicController {
 	}
 	
 	private void doRemoveCustomRate(UserRequest ureq) {
-		participantSummary.setAttendanceRate(null);
+		participantSummary.setRequiredAttendanceRate(null);
 		participantSummary = lectureService.saveParticipantSummary(participantSummary);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

@@ -63,6 +63,7 @@ implements SortableFlexiTableDataModel<LectureStatistics> {
 			case entry: return row.getDisplayName();
 			case quota: return row.getTotalPlannedLectures();
 			case progress: return row;
+			case rate: return row;
 			default: return null;
 		}
 	}
@@ -75,7 +76,8 @@ implements SortableFlexiTableDataModel<LectureStatistics> {
 	public enum LecturesCols implements FlexiSortableColumnDef {
 		entry("table.header.entry"),
 		quota("table.header.quota"),
-		progress("table.header.progress");
+		progress("table.header.progress"),
+		rate("table.header.rate");
 		
 		private final String i18nKey;
 		

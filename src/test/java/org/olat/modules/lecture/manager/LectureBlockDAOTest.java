@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -26,14 +27,21 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.LectureRollCallStatus;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockToGroupImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -50,9 +58,17 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private LectureService lectureService;
+	@Autowired
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
 	@Test
 	public void createLectureBlock() {
@@ -150,5 +166,152 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertEquals(defGroup, defBlockToGroup.getGroup());
 		Assert.assertEquals(lectureBlock, defBlockToGroup.getLectureBlock());
 	}
+	
+	@Test
+	public void getParticipants_lectureBlock() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-3");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-3");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-4");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+		
+		//add teacher
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commit();
+		// add participants
+		repositoryEntryRelationDao.addRole(participant1, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant2, entry, GroupRoles.participant.name());
+		// add the course to the lectures
+		Group defGroup = repositoryService.getDefaultGroup(entry);
+		lectureBlock = lectureService.save(lectureBlock, Collections.singletonList(defGroup));
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> participants = lectureBlockDao.getParticipants(lectureBlock);
+		Assert.assertNotNull(participants);
+		Assert.assertEquals(2, participants.size());
+		Assert.assertTrue(participants.contains(participant1));
+		Assert.assertTrue(participants.contains(participant2));
+	}
 
+	@Test
+	public void getParticipants_repositoryEntry() {
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-1");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-5");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-6");
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-7");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+
+		// add 2 participants to a business group linked to the repository entry
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "count relation 1", "tg", null, null, false, false, entry);
+	    businessGroupRelationDao.addRole(coach1, group, GroupRoles.coach.name());
+	    businessGroupRelationDao.addRole(participant1, group, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(participant2, group, GroupRoles.participant.name());
+
+	    // add a participant to the course itself as noise
+		repositoryEntryRelationDao.addRole(participant3, entry, GroupRoles.participant.name());
+		// add the course to the lectures
+		lectureBlock = lectureService.save(lectureBlock, Collections.singletonList(group.getBaseGroup()));
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> participants = lectureBlockDao.getParticipants(entry);
+		Assert.assertNotNull(participants);
+		Assert.assertEquals(2, participants.size());
+		Assert.assertTrue(participants.contains(participant1));
+		Assert.assertTrue(participants.contains(participant2));
+		Assert.assertFalse(participants.contains(participant3));
+		Assert.assertFalse(participants.contains(coach1));
+	}
+	
+	@Test
+	public void getParticipants_repositoryEntryTeacher() {
+		
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-6");
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-2");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-7");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-8");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+
+		//add teacher
+		lectureService.addTeacher(lectureBlock, teacher);
+	    // add a participant to the course itself as noise
+		repositoryEntryRelationDao.addRole(coach1, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(participant1, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant2, entry, GroupRoles.participant.name());
+		// add the course to the lectures
+		Group defGroup = repositoryService.getDefaultGroup(entry);
+		lectureBlock = lectureService.save(lectureBlock, Collections.singletonList(defGroup));
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> participants = lectureBlockDao.getParticipants(entry, teacher);
+		Assert.assertNotNull(participants);
+		Assert.assertEquals(2, participants.size());
+		Assert.assertTrue(participants.contains(participant1));
+		Assert.assertTrue(participants.contains(participant2));
+		Assert.assertFalse(participants.contains(coach1));
+	}
+	
+	@Test
+	public void getParticipants_repositoryEntryTeacher_paranoiaCheck() {
+		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-7");
+		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-8");
+		Identity coach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-2");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-8");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-9");
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-10");
+		Identity participant4 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-11");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock1 = createMinimalLectureBlock(entry);
+		LectureBlock lectureBlock2 = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+
+		//add teachers
+		lectureService.addTeacher(lectureBlock1, teacher1);
+		lectureService.addTeacher(lectureBlock2, teacher2);
+
+	    // add a participant to the course itself as noise
+		repositoryEntryRelationDao.addRole(coach1, entry, GroupRoles.coach.name());
+		repositoryEntryRelationDao.addRole(participant1, entry, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(participant2, entry, GroupRoles.participant.name());
+		// add the course to the lectures
+		Group defGroup = repositoryService.getDefaultGroup(entry);
+		lectureBlock1 = lectureService.save(lectureBlock1, Collections.singletonList(defGroup));
+		dbInstance.commit();
+		
+		// add 2 participants to a business group linked to the repository entry
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "lectures 2", "tg", null, null, false, false, entry);
+	    businessGroupRelationDao.addRole(coach1, group, GroupRoles.coach.name());
+	    businessGroupRelationDao.addRole(participant3, group, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(participant4, group, GroupRoles.participant.name());
+		// add the group to the lectures
+		lectureBlock2 = lectureService.save(lectureBlock2, Collections.singletonList(group.getBaseGroup()));
+		dbInstance.commitAndCloseSession();
+		
+		// teacher1 see participant 1 and 2
+		List<Identity> participantsBlocks1 = lectureBlockDao.getParticipants(entry, teacher1);
+		Assert.assertNotNull(participantsBlocks1);
+		Assert.assertEquals(2, participantsBlocks1.size());
+		Assert.assertTrue(participantsBlocks1.contains(participant1));
+		Assert.assertTrue(participantsBlocks1.contains(participant2));
+		
+		//teacher 2 see participants 3 and 4
+		List<Identity> participantsBlock2 = lectureBlockDao.getParticipants(entry, teacher2);
+		Assert.assertNotNull(participantsBlock2);
+		Assert.assertEquals(2, participantsBlock2.size());
+		Assert.assertTrue(participantsBlock2.contains(participant3));
+		Assert.assertTrue(participantsBlock2.contains(participant4));
+	}
+	
+	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock.setPlannedLecturesNumber(4);;
+		return lectureBlockDao.update(lectureBlock);
+	}
 }

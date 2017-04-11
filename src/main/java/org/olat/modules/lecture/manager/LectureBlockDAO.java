@@ -22,6 +22,8 @@ package org.olat.modules.lecture.manager;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TemporalType;
+
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -156,6 +158,54 @@ public class LectureBlockDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("blockKey", block.getKey())
+				.getResultList();
+	}
+	
+	public List<Identity> getParticipants(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct ident from lectureblock block")
+		  .append(" inner join block.groups as blockToGroup")
+		  .append(" inner join blockToGroup.group as bGroup")
+		  .append(" inner join bGroup.members participants on (participants.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" inner join participants.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where block.entry.key=:repoKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("repoKey", entry.getKey())
+				.getResultList();
+	}
+	
+	public List<Identity> getParticipants(RepositoryEntryRef entry, IdentityRef teacher) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct ident from lectureblock block")
+		  .append(" inner join block.teacherGroup teacherGroup")
+		  .append(" inner join teacherGroup.members teachers on (teachers.identity.key=:teacherKey)")
+		  .append(" inner join block.groups as blockToGroup")
+		  .append(" inner join blockToGroup.group as bGroup")
+		  .append(" inner join bGroup.members participants on (participants.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" inner join participants.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where block.entry.key=:repoKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("repoKey", entry.getKey())
+				.setParameter("teacherKey", teacher.getKey())
+				.getResultList();
+	}
+	
+	public List<LectureBlock> loadOpenBlocksBefore(Date endDate) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select block from lectureblock block")
+		  .append(" left join fetch block.reasonEffectiveEnd reason")
+		  .append(" inner join fetch block.entry entry")
+		  .append(" where block.endDate<=:endDate and block.rollCallStatusString in ('").append(LectureRollCallStatus.open.name()).append("')");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlock.class)
+				.setParameter("endDate", endDate, TemporalType.TIMESTAMP)
 				.getResultList();
 	}
 }

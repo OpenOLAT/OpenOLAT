@@ -63,10 +63,11 @@ public class LectureParticipantSummaryImpl implements Persistable, LecturePartic
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 
-	@Column(name="l_attendance_rate", nullable=true, insertable=true, updatable=true)
-	private Double attendanceRate;
 	@Column(name="l_first_admission_date", nullable=true, insertable=true, updatable=true)
 	private Date firstAdmissionDate;
+	@Column(name="l_required_attendance_rate", nullable=true, insertable=true, updatable=true)
+	private Double requiredAttendanceRate;
+	
 	@Column(name="l_attended_lectures", nullable=false, insertable=true, updatable=true)
 	private int attendedLectures;
 	@Column(name="l_absent_lectures", nullable=false, insertable=true, updatable=true)
@@ -75,6 +76,8 @@ public class LectureParticipantSummaryImpl implements Persistable, LecturePartic
 	private int excusedLectures;
 	@Column(name="l_planneds_lectures", nullable=false, insertable=true, updatable=true)
 	private int plannedLectures;
+	@Column(name="l_attendance_rate", nullable=true, insertable=true, updatable=true)
+	private Double attendanceRate;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_entry", nullable=false, insertable=true, updatable=false)
@@ -107,12 +110,14 @@ public class LectureParticipantSummaryImpl implements Persistable, LecturePartic
 		this.lastModified = lastModified;
 	}
 
-	public Double getAttendanceRate() {
-		return attendanceRate;
+	@Override
+	public Double getRequiredAttendanceRate() {
+		return requiredAttendanceRate;
 	}
 
-	public void setAttendanceRate(Double attendanceRate) {
-		this.attendanceRate = attendanceRate;
+	@Override
+	public void setRequiredAttendanceRate(Double requiredAttendanceRate) {
+		this.requiredAttendanceRate = requiredAttendanceRate;
 	}
 
 	public Date getFirstAdmissionDate() {
@@ -153,6 +158,15 @@ public class LectureParticipantSummaryImpl implements Persistable, LecturePartic
 
 	public void setPlannedLectures(int plannedLectures) {
 		this.plannedLectures = plannedLectures;
+	}
+	
+	@Override
+	public Double getAttendanceRate() {
+		return attendanceRate;
+	}
+
+	public void setAttendanceRate(Double attendanceRate) {
+		this.attendanceRate = attendanceRate;
 	}
 
 	public RepositoryEntry getEntry() {

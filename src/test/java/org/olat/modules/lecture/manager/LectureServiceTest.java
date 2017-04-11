@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -131,7 +132,7 @@ public class LectureServiceTest extends OlatTestCase {
 		Group defGroup = repositoryService.getDefaultGroup(entry);
 		lectureBlock = lectureService.save(lectureBlock, Collections.singletonList(defGroup));
 		dbInstance.commitAndCloseSession();
-		lectureService.addRollCall(participant, lectureBlock, null, 3);
+		lectureService.addRollCall(participant, lectureBlock, null, Collections.singletonList(3));
 		dbInstance.commitAndCloseSession();
 		
 		//add
@@ -159,10 +160,10 @@ public class LectureServiceTest extends OlatTestCase {
 		lectureBlock2 = lectureService.save(lectureBlock2, Collections.singletonList(defGroup));
 		lectureBlock3 = lectureService.save(lectureBlock3, Collections.singletonList(defGroup));
 		dbInstance.commitAndCloseSession();
-		lectureService.addRollCall(participant1, lectureBlock1, null, 1, 2);
-		lectureService.addRollCall(participant1, lectureBlock2, null, 1, 2, 3, 4);
-		lectureService.addRollCall(participant2, lectureBlock1, null, 1, 2, 3, 4);
-		lectureService.addRollCall(participant2, lectureBlock3, null, 2, 3, 4);
+		lectureService.addRollCall(participant1, lectureBlock1, null, toList(1, 2));
+		lectureService.addRollCall(participant1, lectureBlock2, null, toList(1, 2, 3, 4));
+		lectureService.addRollCall(participant2, lectureBlock1, null, toList(1, 2, 3, 4));
+		lectureService.addRollCall(participant2, lectureBlock3, null, toList(2, 3, 4));
 		dbInstance.commitAndCloseSession();
 
 		//check first participant
@@ -200,5 +201,13 @@ public class LectureServiceTest extends OlatTestCase {
 		lectureBlock.setTitle("Hello lecturers");
 		lectureBlock.setPlannedLecturesNumber(4);;
 		return lectureService.save(lectureBlock, null);
+	}
+	
+	private List<Integer> toList(Integer... integers) {
+		List<Integer> list = new ArrayList<>();
+		for(int i=0; i<integers.length; i++) {
+			list.add(integers[i]);
+		}
+		return list;
 	}
 }

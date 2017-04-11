@@ -178,9 +178,7 @@ public class SingleParticipantCallController extends FormBasicController {
 		}
 
 		String comment = commentEl.getValue();
-		Integer[] absences = absenceList.toArray(new Integer[absenceList.size()]);
-		rollCall = lectureService.addRollCall(calledIdentity, lectureBlock, rollCall, comment, absences);
-		
+		rollCall = lectureService.addRollCall(calledIdentity, lectureBlock, rollCall, comment, absenceList);
 		if(authorizedAbsencedEl != null && authorizedAbsencedEl.isAtLeastSelected(1)) {
 			rollCall.setAbsenceAuthorized(true);
 			rollCall.setAbsenceReason(absenceReasonEl.getValue());
