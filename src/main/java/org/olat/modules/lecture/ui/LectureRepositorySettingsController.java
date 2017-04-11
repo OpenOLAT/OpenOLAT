@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.ui;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -57,10 +58,13 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	private MultipleSelectionElement rollCallEnabledEl, calculateAttendanceRateEl;
 	private MultipleSelectionElement teacherCalendarSyncEl, participantCalendarSyncEl;
 	
+	private RepositoryEntry entry;
 	private final boolean lectureConfigManaged;
 	private boolean overrideModuleDefaults = false;
 	private RepositoryEntryLectureConfiguration lectureConfig;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
@@ -69,6 +73,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	public LectureRepositorySettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
 		
+		this.entry = entry;
 		lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		overrideModuleDefaults = lectureConfig.isOverrideModuleDefault();
 		lectureConfigManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lectureconfig);
@@ -227,6 +232,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 					}
 				}
 			}
+
 			lectureConfig.setTeacherCalendarSyncEnabled(teacherCalendarSyncEl.isAtLeastSelected(1));
 			lectureConfig.setParticipantCalendarSyncEnabled(participantCalendarSyncEl.isAtLeastSelected(1));
 		} else {
@@ -239,5 +245,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		}
 		
 		lectureConfig = lectureService.updateRepositoryEntryLectureConfiguration(lectureConfig);
+		dbInstance.commit();
+		lectureService.syncCalendars(entry);
 	}
 }

@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.RepositoryEntryLectureConfigurationImpl;
 import org.olat.repository.RepositoryEntry;
@@ -76,6 +77,20 @@ public class RepositoryEntryLectureConfigurationDAO {
 		List<RepositoryEntryLectureConfiguration> configs = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntryLectureConfiguration.class)
 				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+		return configs == null || configs.isEmpty() ? null : configs.get(0);
+	}
+	
+	public RepositoryEntryLectureConfiguration getConfiguration(LectureBlockRef entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select config from lectureentryconfig config")
+		  .append(" where config.entry.key in (select block.entry.key from lectureblock block")
+		  .append("  where block.key=:blockKey")
+		  .append(" )");
+		
+		List<RepositoryEntryLectureConfiguration> configs = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryLectureConfiguration.class)
+				.setParameter("blockKey", entry.getKey())
 				.getResultList();
 		return configs == null || configs.isEmpty() ? null : configs.get(0);
 	}

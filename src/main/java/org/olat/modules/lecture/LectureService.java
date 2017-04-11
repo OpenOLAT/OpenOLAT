@@ -263,6 +263,8 @@ public interface LectureService {
 	
 	public List<Identity> getTeachers(LectureBlock block);
 	
+	public List<Identity> getTeachers(RepositoryEntry entry);
+	
 	public void addTeacher(LectureBlock block, Identity teacher);
 	
 	public void removeTeacher(LectureBlock block, Identity teacher);
@@ -304,4 +306,19 @@ public interface LectureService {
 	 */
 	public List<LectureBlockAndRollCall> getParticipantLectureBlocks(RepositoryEntryRef entry, IdentityRef participant);
 
+	
+	/**
+	 * The method doesn't check the configuration.
+	 * 
+	 * @param lectureBlock
+	 */
+	public void syncCalendars(LectureBlock lectureBlock);
+	
+	/**
+	 * Sync the participants and teachers calendars of the specified
+	 * entry with the configuration saved in the entry.
+	 * 
+	 * @param entry
+	 */
+	public void syncCalendars(RepositoryEntry entry);
 }

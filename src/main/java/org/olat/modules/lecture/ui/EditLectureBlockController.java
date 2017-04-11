@@ -28,6 +28,7 @@ import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -61,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EditLectureController extends FormBasicController {
+public class EditLectureBlockController extends FormBasicController {
 	
 	private static final String[] plannedLecturesKeys = new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
 	
@@ -84,6 +85,8 @@ public class EditLectureController extends FormBasicController {
 	private final boolean lectureManagementManaged;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -94,11 +97,11 @@ public class EditLectureController extends FormBasicController {
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
-	public EditLectureController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		this(ureq, wControl, entry, null);
 	}
 	
-	public EditLectureController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, LectureBlock lectureBlock) {
+	public EditLectureBlockController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, LectureBlock lectureBlock) {
 		super(ureq, wControl);
 		this.entry = entry;
 		this.lectureBlock = lectureBlock;
@@ -333,7 +336,9 @@ public class EditLectureController extends FormBasicController {
 			lectureService.addTeacher(lectureBlock, newTeacher);
 		}
 		
-		
+		dbInstance.commit();
+		lectureService.syncCalendars(lectureBlock);
+
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

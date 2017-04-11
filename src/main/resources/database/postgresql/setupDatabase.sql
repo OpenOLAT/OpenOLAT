@@ -1988,6 +1988,8 @@ create table o_lecture_participant_summary (
   l_excused_lectures int8 not null default 0,
   l_planneds_lectures int8 not null default 0,
   l_attendance_rate float(24) default null,
+  l_cal_sync bool default false,
+  l_cal_last_sync_date timestamp default null,
   fk_entry int8 not null,
   fk_identity int8 not null,
   primary key (id),

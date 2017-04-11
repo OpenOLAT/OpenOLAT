@@ -145,6 +145,21 @@ public class LectureBlockDAO {
 				.getResultList();
 	}
 	
+	public List<Identity> getTeachers(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct ident from lectureblock block")
+		  .append(" inner join block.teacherGroup teacherGroup")
+		  .append(" inner join teacherGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where block.entry.key=:repoKey");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("repoKey", entry.getKey())
+				.getResultList();
+	}
+	
 	public List<Identity> getParticipants(LectureBlockRef block) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct ident from lectureblock block")

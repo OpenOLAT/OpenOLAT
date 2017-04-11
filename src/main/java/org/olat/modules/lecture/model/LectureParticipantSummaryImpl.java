@@ -78,6 +78,12 @@ public class LectureParticipantSummaryImpl implements Persistable, LecturePartic
 	private int plannedLectures;
 	@Column(name="l_attendance_rate", nullable=true, insertable=true, updatable=true)
 	private Double attendanceRate;
+
+	@Column(name="l_cal_sync", nullable=false, insertable=true, updatable=true)
+	private boolean calendarSync;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="l_cal_last_sync_date", nullable=true, insertable=true, updatable=true)
+	private Date calendarLastSyncDate;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_entry", nullable=false, insertable=true, updatable=false)

@@ -28,12 +28,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.commons.calendar.CalendarManagedFlag;
+import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.model.Kalendar;
+import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -63,6 +68,7 @@ import org.olat.modules.lecture.model.LectureBlockToTeacher;
 import org.olat.modules.lecture.model.LectureStatistics;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
 import org.olat.modules.lecture.model.ParticipantLectureStatistics;
+import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureAdminController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -79,6 +85,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class LectureServiceImpl implements LectureService {
+	
+	private static final CalendarManagedFlag[] CAL_MANAGED_FLAGS = new CalendarManagedFlag[] { CalendarManagedFlag.all };
 
 	@Autowired
 	private DB dbInstance;
@@ -94,6 +102,8 @@ public class LectureServiceImpl implements LectureService {
 	private MailManager mailManager;
 	@Autowired
 	private LectureModule lectureModule;
+	@Autowired
+	private CalendarManager calendarMgr;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
@@ -135,7 +145,8 @@ public class LectureServiceImpl implements LectureService {
 
 	@Override
 	public RepositoryEntryLectureConfiguration updateRepositoryEntryLectureConfiguration(RepositoryEntryLectureConfiguration config) {
-		return lectureConfigurationDao.update(config);
+		RepositoryEntryLectureConfiguration updatedConfig = lectureConfigurationDao.update(config);
+		return updatedConfig;
 	}
 
 	@Override
@@ -416,6 +427,11 @@ public class LectureServiceImpl implements LectureService {
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlock;
 		return groupDao.getMembers(block.getTeacherGroup(), "teacher");
 	}
+	
+	@Override
+	public List<Identity> getTeachers(RepositoryEntry entry) {
+		return lectureBlockDao.getTeachers(entry);
+	}
 
 	@Override
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry, IdentityRef teacher) {
@@ -474,6 +490,144 @@ public class LectureServiceImpl implements LectureService {
 	@Override
 	public List<LectureBlockAndRollCall> getParticipantLectureBlocks(RepositoryEntryRef entry, IdentityRef participant) {
 		return lectureBlockRollCallDao.getParticipantLectureBlockAndRollCalls(entry, participant);
+	}
+
+	@Override
+	public void syncCalendars(RepositoryEntry entry) {
+		RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(entry);
+		if(ConfigurationHelper.isSyncTeacherCalendarEnabled(config, lectureModule)) {
+			List<LectureBlock> blocks = getLectureBlocks(entry);
+			for(LectureBlock block:blocks) {
+				List<Identity> teachers = getTeachers(block);
+				syncInternalCalendar(block, teachers);
+			}
+		} else {
+			unsyncTeachersCalendar(entry);
+		}
+		
+		if(ConfigurationHelper.isSyncParticipantCalendarEnabled(config, lectureModule)) {
+			List<LectureBlock> blocks = getLectureBlocks(entry);
+			for(LectureBlock block:blocks) {
+				List<Identity> participants = getParticipants(block);
+				syncInternalCalendar(block, participants);
+			}
+		} else {
+			unsyncParticipantsCalendar(entry);
+		}
+	}
+
+	@Override
+	public void syncCalendars(LectureBlock lectureBlock) {
+		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.getConfiguration(lectureBlock);
+		if(ConfigurationHelper.isSyncTeacherCalendarEnabled(config, lectureModule)) {
+			List<Identity> teachers = getTeachers(lectureBlock);
+			syncInternalCalendar(lectureBlock, teachers);
+		} else {
+			List<Identity> teachers = getTeachers(lectureBlock);
+			unsyncInternalCalendar(lectureBlock, teachers);
+		}
+		
+		if(ConfigurationHelper.isSyncParticipantCalendarEnabled(config, lectureModule)) {
+			List<Identity> participants = getParticipants(lectureBlock);
+			syncInternalCalendar(lectureBlock, participants);
+		} else {
+			List<Identity> participants = getParticipants(lectureBlock);
+			unsyncInternalCalendar(lectureBlock, participants);
+		}
+	}
+	
+	private void syncInternalCalendar(LectureBlock lectureBlock, List<Identity> identities) {
+		RepositoryEntry entry = lectureBlock.getEntry();
+		String eventExternalId = generateExternalId(lectureBlock, entry);
+		for(Identity identity:identities) {
+			boolean updated = false;
+			
+			Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_USER, identity.getName());
+			for(KalendarEvent event:cal.getEvents()) {
+				if(eventExternalId.equals(event.getExternalId())) {
+					if(updateEvent(lectureBlock, event)) {
+						calendarMgr.updateEventFrom(cal, event);
+					}
+					updated = true;
+					break;
+				}
+			}
+			
+			if(!updated) {
+				KalendarEvent newEvent = createEvent(lectureBlock, entry);
+				calendarMgr.addEventTo(cal, newEvent);
+			}
+		}
+	}
+	
+	private void unsyncInternalCalendar(LectureBlock lectureBlock, List<Identity> identities) {
+		RepositoryEntry entry = lectureBlock.getEntry();
+		String externalId = generateExternalId(lectureBlock, entry);
+		for(Identity identity:identities) {
+			Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_USER, identity.getName());
+			List<KalendarEvent> events = new ArrayList<>(cal.getEvents());
+			for(KalendarEvent event:events) {
+				if(externalId.equals(event.getExternalId())) {
+					calendarMgr.removeEventFrom(cal, event);
+				}
+			}
+		}
+	}
+	
+	private void unsyncTeachersCalendar(RepositoryEntry entry) {
+		List<Identity> teachers = getTeachers(entry);
+		unsyncInternalCalendar(entry, teachers);
+	}
+	
+	private void unsyncParticipantsCalendar(RepositoryEntry entry) {
+		List<Identity> participants = getParticipants(entry);
+		unsyncInternalCalendar(entry, participants);
+	}
+	
+	private void unsyncInternalCalendar(RepositoryEntry entry, List<Identity> identities) {
+		String prefix = generateExternalIdPrefix(entry);
+		for(Identity identity:identities) {
+			Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_USER, identity.getName());
+			List<KalendarEvent> events = new ArrayList<>(cal.getEvents());
+			for(KalendarEvent event:events) {
+				if(event.getExternalId() != null && event.getExternalId().startsWith(prefix)) {
+					calendarMgr.removeEventFrom(cal, event);
+				}
+			}
+		}
+	}
+	
+	private KalendarEvent createEvent(LectureBlock lectureBlock, RepositoryEntry entry) {
+		String eventId = UUID.randomUUID().toString();
+		String title = lectureBlock.getTitle();
+		KalendarEvent event = new KalendarEvent(eventId, null, title, lectureBlock.getStartDate(), lectureBlock.getEndDate());
+		event.setExternalId(generateExternalId(lectureBlock, entry));
+		event.setLocation(lectureBlock.getLocation());
+		event.setDescription(lectureBlock.getDescription());
+		event.setManagedFlags(CAL_MANAGED_FLAGS);
+		return event;
+	}
+	
+	private boolean updateEvent(LectureBlock lectureBlock, KalendarEvent event) {
+		event.setSubject(lectureBlock.getTitle());
+		event.setLocation(lectureBlock.getLocation());
+		event.setDescription(lectureBlock.getDescription());
+		event.setBegin(lectureBlock.getStartDate());
+		event.setEnd(lectureBlock.getEndDate());
+		event.setManagedFlags(CAL_MANAGED_FLAGS);
+		return true;
+	}
+	
+	private String generateExternalIdPrefix(RepositoryEntry entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("lecture-block-").append(entry.getKey()).append("-");
+		return sb.toString();
+	}
+	
+	private String generateExternalId(LectureBlock lectureBlock, RepositoryEntry entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("lecture-block-").append(entry.getKey()).append("-").append(lectureBlock.getKey());
+		return sb.toString();
 	}
 	
 	public class LectureReminderTemplate extends MailTemplate {

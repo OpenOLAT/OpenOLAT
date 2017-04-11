@@ -60,7 +60,7 @@ public class LectureListRepositoryController extends FormBasicController {
 	private LectureListRepositoryDataModel tableModel;
 	
 	private CloseableModalController cmc;
-	private EditLectureController editLectureCtrl;
+	private EditLectureBlockController editLectureCtrl;
 
 	private RepositoryEntry entry;
 	
@@ -164,7 +164,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		if(editLectureCtrl != null) return;
 		
 		LectureBlock block = lectureService.getLectureBlock(row);
-		editLectureCtrl = new EditLectureController(ureq, getWindowControl(), entry, block);
+		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block);
 		listenTo(editLectureCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), "close", editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
@@ -175,7 +175,7 @@ public class LectureListRepositoryController extends FormBasicController {
 	private void doAddLectureBlock(UserRequest ureq) {
 		if(editLectureCtrl != null) return;
 		
-		editLectureCtrl = new EditLectureController(ureq, getWindowControl(), entry);
+		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry);
 		listenTo(editLectureCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), "close", editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));

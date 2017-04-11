@@ -168,6 +168,24 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getTeachers() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-7");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+		Group defGroup = repositoryEntryRelationDao.getDefaultGroup(entry);
+		lectureBlockDao.addGroupToLectureBlock(lectureBlock, defGroup);
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+
+		// get teachers
+		List<Identity> teachers = lectureBlockDao.getTeachers(entry);
+		Assert.assertNotNull(teachers);
+		Assert.assertEquals(1, teachers.size());
+		Assert.assertTrue(teachers.contains(teacher));
+	}
+	
+	@Test
 	public void getParticipants_lectureBlock() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-3");
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-3");

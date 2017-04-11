@@ -31,10 +31,19 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
  */
 public class ConfigurationHelper {
 	
-	protected static boolean isRollCallEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
+	public static boolean isRollCallEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
 		return (lectureConfig.isOverrideModuleDefault() && lectureConfig.getRollCallEnabled() != null && lectureConfig.getRollCallEnabled().booleanValue())
 				|| (!lectureConfig.isOverrideModuleDefault() && lectureModule.isRollCallDefaultEnabled());
 	}
+
+	public static boolean isSyncTeacherCalendarEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
+		return (lectureConfig.isOverrideModuleDefault() && lectureConfig.getTeacherCalendarSyncEnabled() != null && lectureConfig.getTeacherCalendarSyncEnabled().booleanValue())
+				|| (!lectureConfig.isOverrideModuleDefault() && lectureModule.isTeacherCalendarSyncEnabledDefault());
+	}
 	
+	public static boolean isSyncParticipantCalendarEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
+		return (lectureConfig.isOverrideModuleDefault() && lectureConfig.getParticipantCalendarSyncEnabled() != null && lectureConfig.getParticipantCalendarSyncEnabled().booleanValue())
+				|| (!lectureConfig.isOverrideModuleDefault() && lectureModule.isParticipantCalendarSyncEnabledDefault());
+	}
 
 }

@@ -19,9 +19,12 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.util.Date;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -38,6 +41,8 @@ public class RepositoryEntryLectureConfigurationDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private LectureBlockDAO lectureBlockDao;
 	@Autowired
 	private RepositoryEntryLectureConfigurationDAO lectureConfigurationDao;
 	
@@ -81,6 +86,25 @@ public class RepositoryEntryLectureConfigurationDAOTest extends OlatTestCase {
 		Assert.assertEquals(0.75d, reloadedConfig.getRequiredAttendanceRate(), 0.0001);
 		Assert.assertEquals(Boolean.TRUE, reloadedConfig.getParticipantCalendarSyncEnabled());
 		Assert.assertEquals(Boolean.TRUE, reloadedConfig.getTeacherCalendarSyncEnabled());
+	}
+	
+	@Test
+	public void getRepositoryEntryLectureConfiguration_lectureBlock() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();	
+		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.createConfiguration(entry);
+		dbInstance.commit();
+		
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecturers");
+		
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		//get the configuration
+		RepositoryEntryLectureConfiguration reloadedConfig = lectureConfigurationDao.getConfiguration(lectureBlock);
+		Assert.assertEquals(config, reloadedConfig);
 	}
 
 }
