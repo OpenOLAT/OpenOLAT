@@ -130,12 +130,9 @@ public class NavigationPage {
 			openMoreMenu();
 			links = browser.findElements(linkBy);
 		}
-		Assert.assertFalse(links.isEmpty());
 
-		links = browser.findElements(linkBy);
-		Assert.assertFalse(links.isEmpty());
-		OOGraphene.waitElement(links.get(0), browser);
-		links.get(0).click();
+		OOGraphene.waitElement(linkBy, browser);
+		browser.findElement(linkBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitingTransition(browser);
 	}

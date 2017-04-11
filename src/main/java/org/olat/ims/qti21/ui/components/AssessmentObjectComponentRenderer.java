@@ -1110,10 +1110,11 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				sb.append(" checked");
 			}
 			sb.append(" />");
-			FormJSHelper.appendFlexiFormDirtyOn(sb, component.getQtiItem().getRootForm(), "change click", guid);
+			sb.append("<label for='").append(guid).append("'>");
 			hottext.getInlineStatics().forEach((inline)
 					-> renderInline(renderer, sb, component, resolvedAssessmentItem, itemSessionState, inline, ubu, translator));
-			sb.append("</span>");
+			FormJSHelper.appendFlexiFormDirtyOn(sb, component.getQtiItem().getRootForm(), "change click", guid);
+			sb.append("</label></span>");
 		}
 	}
 	

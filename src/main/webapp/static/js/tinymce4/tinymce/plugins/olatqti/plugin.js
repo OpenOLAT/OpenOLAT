@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.1.1'
+				version : '1.1.2'
 			};
 		},
 
@@ -100,6 +100,7 @@
 				var ffxhrevent = ed.getParam("ffxhrevent");
 				o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false, false,
 						'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'newEntry', newEntry, 'selectedText', newSelectedText, 'gapType', gapType);
+				ed.setDirty(true);
 			}
 			
 			function guid() {
@@ -293,6 +294,7 @@
 						var responseIdentifier = jQuery(imgEl).attr('data-qti-response-identifier');
 						o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false, false,
 								'cmd', 'gapentry', 'responseIdentifier', responseIdentifier);
+						ed.setDirty(true);
 					});
 				});
 				

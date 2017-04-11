@@ -166,6 +166,8 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 
 			searchFormContainer = FormLayoutContainer.createDefaultFormLayout("usersearchPanel", getTranslator());
 			searchFormContainer.setRootForm(mainForm);
+			searchFormContainer.setElementCssClass("o_sel_usersearch_searchform");
+			searchFormContainer.setFormTitle(translate("header.normal"));
 			layoutCont.add(searchFormContainer);
 			layoutCont.add("usersearchPanel", searchFormContainer);
 			
