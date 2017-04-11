@@ -100,14 +100,14 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page answerSingleChoice(String answer) {
-		By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][p[contains(normalize-space(text()),'" + answer + "')]]]/td[contains(@class,'control')]/input[@type='radio']");
+		By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][label/p[contains(normalize-space(text()),'" + answer + "')]]]/td[contains(@class,'control')]/input[@type='radio']");
 		browser.findElement(choiceBy).click();
 		return this;
 	}
 
 	public QTI21Page answerMultipleChoice(String... answers) {
 		for(String answer:answers) {
-			By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][p[contains(text(),'" + answer + "')]]]/td[contains(@class,'control')]/input[@type='checkbox']");
+			By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][label/p[contains(text(),'" + answer + "')]]]/td[contains(@class,'control')]/input[@type='checkbox']");
 			browser.findElement(choiceBy).click();
 		}
 		return this;
@@ -337,6 +337,7 @@ public class QTI21Page {
 		}
 		
 		By optionsBy = By.cssSelector("ul.o_sel_course_settings a.o_sel_qti_resource_options");
+		OOGraphene.waitElement(optionsBy, browser);
 		browser.findElement(optionsBy).click();
 		OOGraphene.waitBusy(browser);
 		return new QTI21OptionsPage(browser);
@@ -373,6 +374,7 @@ public class QTI21Page {
 	
 	public QTI21Page openSettingsMenu() {
 		By settingsMenuCaret = By.cssSelector("a.o_sel_course_settings");
+		OOGraphene.waitElement(settingsMenuCaret, browser);
 		browser.findElement(settingsMenuCaret).click();
 		OOGraphene.waitElement(settingsMenu, browser);
 		return this;
