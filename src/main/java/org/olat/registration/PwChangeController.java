@@ -271,10 +271,18 @@ public class PwChangeController extends BasicController {
 		}
 		myContent.contextPut("pwKey", tk.getRegistrationKey());
 		StringBuilder body = new StringBuilder();
-		body.append(userTrans.translate("pwchange.intro", new String[] { identity.getName() }))
+		body.append("<style>")
+			.append(".o_m_bground {background: #FAFAFA; border: 1px solid #eee; border-radius: 5px; padding: 1em; margin: 1em;}")
+			.append("</style>")
+			.append("<div class='o_m_bground'>")
+			.append(userTrans.translate("pwchange.intro", new String[] { identity.getName() }))
+			.append("</div>")
+			.append("<div class='o_m_bground'>")
 		    .append(userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(), I18nManager.getInstance().getLocaleKey(ureq.getLocale()) }))
-		    .append(SEPARATOR)
-		    .append(userTrans.translate("reg.wherefrom", new String[] { serverpath, today, ip }));
+		    .append("</div>")
+		    .append("<div class='o_m_bground'>")
+		    .append(userTrans.translate("reg.wherefrom", new String[] { serverpath, today, ip }))
+		    .append("</div>");
 
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(identity);
