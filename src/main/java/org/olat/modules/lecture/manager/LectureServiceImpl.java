@@ -123,6 +123,15 @@ public class LectureServiceImpl implements LectureService {
 		}
 		return config;
 	}
+	
+	@Override
+	public RepositoryEntryLectureConfiguration copyRepositoryEntryLectureConfiguration(RepositoryEntry sourceEntry, RepositoryEntry targetEntry) {
+		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.getConfiguration(sourceEntry);
+		if(config != null) {
+			config = lectureConfigurationDao.cloneConfiguration(config, targetEntry);
+		}
+		return config;
+	}
 
 	@Override
 	public RepositoryEntryLectureConfiguration updateRepositoryEntryLectureConfiguration(RepositoryEntryLectureConfiguration config) {

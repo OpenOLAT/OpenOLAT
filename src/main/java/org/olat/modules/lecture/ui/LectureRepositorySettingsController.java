@@ -35,6 +35,7 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,6 +57,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	private MultipleSelectionElement rollCallEnabledEl, calculateAttendanceRateEl;
 	private MultipleSelectionElement teacherCalendarSyncEl, participantCalendarSyncEl;
 	
+	private final boolean lectureConfigManaged;
 	private boolean overrideModuleDefaults = false;
 	private RepositoryEntryLectureConfiguration lectureConfig;
 	
@@ -69,6 +71,8 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		overrideModuleDefaults = lectureConfig.isOverrideModuleDefault();
+		lectureConfigManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lectureconfig);
+		
 		initForm(ureq);
 		updateOverride();
 		updateVisibility();
@@ -79,6 +83,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		setFormTitle("lecture.admin.title");
 		
 		enableEl = uifactory.addCheckboxesHorizontal("lecture.admin.enabled", formLayout, onKeys, onValues);
+		enableEl.setEnabled(!lectureConfigManaged);
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 		if(lectureConfig.isLectureEnabled()) {
 			enableEl.select(onKeys[0], true);
@@ -86,6 +91,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		String[] overrideValues = new String[]{ translate("config.override.yes"), translate("config.override.no") };
 		overrideEl = uifactory.addRadiosHorizontal("config.override", formLayout, overrideKeys, overrideValues);
+		overrideEl.setEnabled(!lectureConfigManaged);
 		overrideEl.addActionListener(FormEvent.ONCHANGE);
 		if(lectureConfig.isOverrideModuleDefault()) {
 			overrideEl.select(overrideKeys[0], true);//yes
@@ -103,7 +109,9 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		if(!lectureConfigManaged) {
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
 	}
 	
 	private void updateOverride() {
@@ -120,7 +128,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		}
 		long attendanceRatePerCent = Math.round(attendanceRate * 100.0d);
 		attendanceRateEl.setValue(Long.toString(attendanceRatePerCent));
-		attendanceRateEl.setEnabled(overrideModuleDefaults);
+		attendanceRateEl.setEnabled(overrideModuleDefaults && !lectureConfigManaged);
 	}
 	
 	private void updateOverrideElement(MultipleSelectionElement el, Boolean entryConfig, boolean defaultValue) {
@@ -130,7 +138,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		} else {
 			el.uncheckAll();
 		}
-		el.setEnabled(overrideModuleDefaults);
+		el.setEnabled(overrideModuleDefaults && !lectureConfigManaged);
 	}
 	
 	private void updateVisibility() {

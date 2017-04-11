@@ -44,6 +44,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,12 +64,15 @@ public class LectureListRepositoryController extends FormBasicController {
 
 	private RepositoryEntry entry;
 	
+	private final boolean lectureManagementManaged;
+	
 	@Autowired
 	private LectureService lectureService;
 	
 	public LectureListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl, "admin_repository_lectures");
 		this.entry = entry;
+		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		
 		initForm(ureq);
 		loadModel();
@@ -76,15 +80,21 @@ public class LectureListRepositoryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
-
+		if(!lectureManagementManaged) {
+			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.date, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
-
+		if(lectureManagementManaged) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "edit"));//edit check it
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+		}
+		
 		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
@@ -135,8 +145,6 @@ public class LectureListRepositoryController extends FormBasicController {
 		} else if(cmc == source) {
 			cleanUp();
 		}
-		
-		
 		super.event(ureq, source, event);
 	}
 	
@@ -153,8 +161,9 @@ public class LectureListRepositoryController extends FormBasicController {
 	}
 
 	private void doEditLectureBlock(UserRequest ureq, LectureBlockRow row) {
-		LectureBlock block = lectureService.getLectureBlock(row);
+		if(editLectureCtrl != null) return;
 		
+		LectureBlock block = lectureService.getLectureBlock(row);
 		editLectureCtrl = new EditLectureController(ureq, getWindowControl(), entry, block);
 		listenTo(editLectureCtrl);
 
@@ -164,6 +173,8 @@ public class LectureListRepositoryController extends FormBasicController {
 	}
 
 	private void doAddLectureBlock(UserRequest ureq) {
+		if(editLectureCtrl != null) return;
+		
 		editLectureCtrl = new EditLectureController(ureq, getWindowControl(), entry);
 		listenTo(editLectureCtrl);
 

@@ -52,6 +52,22 @@ public class RepositoryEntryLectureConfigurationDAO {
 		return config;
 	}
 	
+	public RepositoryEntryLectureConfiguration cloneConfiguration(RepositoryEntryLectureConfiguration sourceConfig,  RepositoryEntry entry) {
+		RepositoryEntryLectureConfigurationImpl config = new RepositoryEntryLectureConfigurationImpl();
+		config.setCreationDate(new Date());
+		config.setLastModified(config.getCreationDate());
+		config.setLectureEnabled(sourceConfig.isLectureEnabled());
+		config.setOverrideModuleDefault(sourceConfig.isOverrideModuleDefault());
+		config.setCalculateAttendanceRate(sourceConfig.getCalculateAttendanceRate());
+		config.setRequiredAttendanceRate(sourceConfig.getRequiredAttendanceRate());
+		config.setParticipantCalendarSyncEnabled(sourceConfig.getParticipantCalendarSyncEnabled());
+		config.setTeacherCalendarSyncEnabled(sourceConfig.getTeacherCalendarSyncEnabled());
+		config.setRollCallEnabled(sourceConfig.getRollCallEnabled());
+		config.setEntry(entry);
+		dbInstance.getCurrentEntityManager().persist(config);
+		return config;
+	}
+	
 	public RepositoryEntryLectureConfiguration getConfiguration(RepositoryEntryRef entry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select config from lectureentryconfig config")

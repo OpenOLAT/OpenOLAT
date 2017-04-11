@@ -92,6 +92,7 @@ import org.olat.fileresource.types.GlossaryResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.SharedFolderFileResource;
 import org.olat.modules.glossary.GlossaryManager;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.reminder.ReminderRule;
@@ -426,8 +427,14 @@ public class CourseHandler implements RepositoryHandler {
 		course.postCopy(envMapper, sourceCourse);
 		
 		cloneReminders(author, envMapper, source, target);
+		cloneLectureConfig(source, target);
 		
 		return target;
+	}
+	
+	private void cloneLectureConfig(RepositoryEntry source, RepositoryEntry target) {
+		LectureService lectureService = CoreSpringFactory.getImpl(LectureService.class);
+		lectureService.copyRepositoryEntryLectureConfiguration(source, target);
 	}
 	
 	private void cloneReminders(Identity author, CourseEnvironmentMapper envMapper, RepositoryEntry source, RepositoryEntry target) {

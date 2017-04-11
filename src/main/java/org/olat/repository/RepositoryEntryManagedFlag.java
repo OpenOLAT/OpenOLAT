@@ -54,7 +54,7 @@ public enum RepositoryEntryManagedFlag {
       glossary(settings,all),
     lecture(all),
       lectureconfig(lecture, all),
-      lecturemanagemenet(lecture, all),
+      lecturemanagement(lecture, all),
     bookings(all),// change booking rules
     membersmanagement(all),
     groups(all),

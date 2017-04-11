@@ -56,6 +56,15 @@ public interface LectureService {
 	public RepositoryEntryLectureConfiguration updateRepositoryEntryLectureConfiguration(RepositoryEntryLectureConfiguration config);
 	
 	/**
+	 * Clone the configuration of the source if it's available.
+	 * 
+	 * @param sourceEntry The source of the clonage
+	 * @param targetEntry The target of the clonage
+	 * @return A cloned configuration if the source has one, or null
+	 */
+	public RepositoryEntryLectureConfiguration copyRepositoryEntryLectureConfiguration(RepositoryEntry sourceEntry, RepositoryEntry targetEntry);
+	
+	/**
 	 * Create but not persist a new lecture block.
 	 * 
 	 * @param entry The repository entry which own the block
