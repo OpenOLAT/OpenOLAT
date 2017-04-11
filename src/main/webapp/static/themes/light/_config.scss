@@ -399,10 +399,22 @@ $o-qti-error										: $brand-danger !default;
 $o-qti-box-bg										: #eee !default;
 $o-qti-box-color									: #666 !default;
 $o-qti-choice-tablelayout-bg						: #e7e7e7 !default;
+$o-qti-userselection-color							: #fff !default;
+$o-qti-userselection-bg								: $o-qti-status-review-color !default;
+$o-qti-userselection-border-color					: darken($o-qti-userselection-bg,10%) !default;
 $o-qti-gap-border-color								: #999 !default;
 $o-qti-gap-drag-border-color						: $brand-primary !default;
 $o-qti-gap-selected-border-color					: $brand-primary !default;
-
+$o-qti-hottext-color								: $text-color !default;
+$o-qti-hottext-bg									: $o-qti-menu-bg !default;
+$o-qti-hottext-border-color							: $o-qti-menu-border-color !default;
+$o-qti-hottext-border-radius						: 2px !default;
+$o-qti-hottext-checked-color						: $o-qti-userselection-color !default;
+$o-qti-hottext-checked-bg							: $o-qti-userselection-bg !default;
+$o-qti-hottext-checked-border-color					: $o-qti-userselection-border-color !default;
+$o-qti-textEntryInteraction-filled-color			: $o-qti-userselection-color !default;
+$o-qti-textEntryInteraction-filled-bg				: $o-qti-userselection-bg !default;
+$o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-color !default;
 
 /* Chat and other floating window */
 $o-dialog-window-bg				: #fefefe !default;

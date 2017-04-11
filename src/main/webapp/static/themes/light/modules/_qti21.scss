@@ -334,13 +334,57 @@ div.hotspotInteraction {
 		}
 	}
 
-	.hottext {
-		font-weight: bold;
+	.hottext {		
+		position: relative;
+		
+		margin: -2px 0.15em -2px 0.15em;
+		white-space: nowrap;
+
+		input {
+			margin: 0 3px 0 2px;
+			position: absolute;
+			top: 0.1em;
+			left: 0.05em;
+			+label {
+				display: inline;
+				
+				padding: 0 0.1em 0 1.2em;
+				background: $o-qti-hottext-bg;
+				border: 1px solid $o-qti-hottext-border-color;
+				border-radius: $o-qti-hottext-border-radius;
+				
+				color: $o-qti-hottext-color;
+				font-weight: normal;
+				white-space: normal;
+			}
+			&:checked+label {
+				color: $o-qti-hottext-checked-color;
+				background: $o-qti-hottext-checked-bg;
+				border: 1px solid $o-qti-hottext-checked-border-color;
+			}
+		}
 	}
+
 
 	.gap {
 		font-weight: bold;
 		border: 1px dashed #000;
+	}
+	
+	.textEntryInteraction {
+		input {
+			margin: -2px 2px;
+			line-height: 90%;		
+			font-size: 98%;
+			/* format fields with values in it in separate style */
+			&:valid,
+			&:disabled {
+				color: $o-qti-textEntryInteraction-filled-color;
+				-webkit-text-fill-color: $o-qti-textEntryInteraction-filled-color;
+				background: $o-qti-textEntryInteraction-filled-bg;
+				border: 1px solid $o-qti-textEntryInteraction-filled-border-color;				
+			}
+		}
 	}
 }
 
@@ -537,8 +581,10 @@ tr.choiceinteraction {
 	}
 }
 
-.choiceInteraction table {
-
+.choiceInteraction {
+	label {
+		font-weight: normal;
+	}
 }
 
 .choiceInteraction div.o_qti_item_choice_option_flow  {
