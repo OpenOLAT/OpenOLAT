@@ -146,8 +146,19 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		
-		allOk = validateDouble(solutionEl);
+
+		solutionEl.clearError();
+		if(StringHelper.containsNonWhitespace(solutionEl.getValue())) {
+			try {
+				Double.parseDouble(solutionEl.getValue());
+			} catch (NumberFormatException e) {
+				solutionEl.setErrorKey("error.double", null);
+				allOk &= false;
+			}
+		} else {
+			solutionEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 		
 		expectedLengthEl.clearError();
 		if(StringHelper.containsNonWhitespace(expectedLengthEl.getValue())) {
@@ -182,6 +193,12 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		return allOk & super.validateFormLogic(ureq);
 	}
 	
+	/**
+	 * Check if the value is a positive one.
+	 * 
+	 * @param element The text element to validate
+	 * @return true if the text is a positive double
+	 */
 	private boolean validateDouble(TextElement element) {
 		boolean allOk = true;
 		
