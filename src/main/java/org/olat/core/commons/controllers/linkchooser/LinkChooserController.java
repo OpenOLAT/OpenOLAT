@@ -63,6 +63,7 @@ public class LinkChooserController extends BasicController {
 	 * @param uploadRelPath The relative path within the rootDir where uploaded
 	 *          files should be put into. If NULL, the root Dir is used
 	 * @param suffixes Supported file suffixes for file-chooser.
+	 * @param uriValidation Set to true if the filename need to be a valid URI
 	 * @param fileName Base file-path for file-chooser.
 	 * @param userActivityLogger
 	 * @param internalLinkTreeModel Model with internal links e.g. course-node
@@ -70,7 +71,7 @@ public class LinkChooserController extends BasicController {
 	 *          internalLinkTreeModel is null.
 	 */
 	public LinkChooserController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
-			String uploadRelPath, String absolutPath, String[] suffixes, String fileName,
+			String uploadRelPath, String absolutPath, String[] suffixes, boolean uriValidation, String fileName,
 			CustomLinkTreeModel customLinkTreeModel, boolean allowCustomMediaChooserFactory) {
 		super(ureq, wControl);
 		
@@ -79,7 +80,7 @@ public class LinkChooserController extends BasicController {
 		linkChooserTabbedPane = new TabbedPane("linkChooserTabbedPane", ureq.getLocale());
 		tabbedPaneViewVC.put("linkChooserTabbedPane", linkChooserTabbedPane);
 
-		fileLinkChooserController = new FileLinkChooserController(ureq, wControl, rootDir, uploadRelPath, absolutPath, suffixes, fileName);		
+		fileLinkChooserController = new FileLinkChooserController(ureq, wControl, rootDir, uploadRelPath, absolutPath, suffixes, uriValidation, fileName);		
 		listenTo(fileLinkChooserController);
 		linkChooserTabbedPane.addTab(translate("linkchooser.tabbedpane.label.filechooser"), fileLinkChooserController.getInitialComponent());
 		

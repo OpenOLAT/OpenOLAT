@@ -33,6 +33,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -123,6 +124,7 @@ public class FileUploadController extends FormBasicController {
 	private long uploadLimitKB;
 	private long remainingQuotKB;
 	private Set<String> mimeTypes;
+	private boolean uriValidation;
 	//
 	// Form elements
 	private FileElement fileEl;
@@ -174,23 +176,23 @@ public class FileUploadController extends FormBasicController {
 	 */
 	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, long upLimitKB, long remainingQuotKB,
 			Set<String> mimeTypesRestriction, boolean showTargetPath) {
-		this(wControl, curContainer, ureq, upLimitKB, remainingQuotKB, mimeTypesRestriction, showTargetPath, false, true, true, true);
+		this(wControl, curContainer, ureq, upLimitKB, remainingQuotKB, mimeTypesRestriction, false, showTargetPath, false, true, true, true);
 	}
 	
 	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, long upLimitKB, long remainingQuotKB,
-			Set<String> mimeTypesRestriction, boolean showTargetPath, boolean showMetadata, boolean resizeImg, boolean showCancel, boolean showTitle) {
+			Set<String> mimeTypesRestriction, boolean uriValidation, boolean showTargetPath, boolean showMetadata, boolean resizeImg, boolean showCancel, boolean showTitle) {
 		this(wControl,curContainer,  ureq,  upLimitKB,  remainingQuotKB,
-				mimeTypesRestriction,  showTargetPath,  showMetadata,  resizeImg,  showCancel,  showTitle,null);
+				mimeTypesRestriction, uriValidation, showTargetPath,  showMetadata,  resizeImg,  showCancel,  showTitle,null);
 	}
 	
 	public FileUploadController(WindowControl wControl, VFSContainer curContainer, UserRequest ureq, long upLimitKB, long remainingQuotKB,
-			Set<String> mimeTypesRestriction, boolean showTargetPath, boolean showMetadata, boolean resizeImg, boolean showCancel, boolean showTitle, String subfolderPath) {
+			Set<String> mimeTypesRestriction, boolean uriValidation, boolean showTargetPath, boolean showMetadata, boolean resizeImg, boolean showCancel, boolean showTitle, String subfolderPath) {
 		super(ureq, wControl, "file_upload");
-		setVariables(curContainer, upLimitKB, remainingQuotKB, mimeTypesRestriction, showTargetPath, showMetadata, resizeImg, showCancel, showTitle, subfolderPath);
+		setVariables(curContainer, upLimitKB, remainingQuotKB, mimeTypesRestriction, uriValidation, showTargetPath, showMetadata, resizeImg, showCancel, showTitle, subfolderPath);
 		initForm(ureq);
 	}
 	
-	private void setVariables(VFSContainer curContainer, long upLimitKB, long remainingQuotKB, Set<String> mimeTypesRestriction, boolean showTargetPath,
+	private void setVariables(VFSContainer curContainer, long upLimitKB, long remainingQuotKB, Set<String> mimeTypesRestriction, boolean uriValidation, boolean showTargetPath,
 			boolean showMetadata, boolean resizeImg, boolean showCancel, boolean showTitle, String subfolderPath) {
 		this.currentContainer = curContainer;
 		this.mimeTypes = mimeTypesRestriction;
@@ -198,6 +200,7 @@ public class FileUploadController extends FormBasicController {
 		this.showTargetPath = showTargetPath;
 		// set remaining quota and max upload size
 		this.uploadLimitKB = upLimitKB;
+		this.uriValidation = uriValidation;
 		this.remainingQuotKB = remainingQuotKB;
 		// use base container as upload dir
 		this.uploadRelPath = null;
@@ -883,13 +886,42 @@ public class FileUploadController extends FormBasicController {
 		if(metaDataCtr != null && StringHelper.containsNonWhitespace(metaDataCtr.getFilename())) {
 			return validateFilename(metaDataCtr.getFilename(), metaDataCtr.getFilenameEl());
 		}
-		String filename = fileEl.getUploadFileName();
-		
-		boolean allOk = validateFilename(filename, fileEl);
+
+		boolean allOk = validateFilename(fileEl);
+		return allOk;
+	}
+	
+	private boolean validateFilename(FileElement itemEl) {
+		boolean allOk = true;
+		// validate clean the errors
 		List<ValidationStatus> fileStatus = new ArrayList<>();
-		fileEl.validate(fileStatus);//revalidate because we clear the error
-		fileEl.setDeleteEnabled(fileStatus.size() > 0);
-		return allOk && fileStatus.isEmpty();
+		// revalidate
+		itemEl.validate(fileStatus);
+
+		if(fileStatus.isEmpty()) {
+			String filename = itemEl.getUploadFileName();
+			if (!StringHelper.containsNonWhitespace(filename)) {
+				itemEl.setErrorKey("NoFileChosen", null);
+				allOk &= false;
+			}
+			
+			if(uriValidation) {
+				try {
+					new URI(filename);
+				} catch(Exception e) {
+					itemEl.setErrorKey("cfile.name.notvalid.uri", null);
+					allOk &= false;
+				}
+			}	
+			if(!FileUtils.validateFilename(filename)) {
+				itemEl.setErrorKey("cfile.name.notvalid", null);
+				allOk &= false;
+			}
+			allOk &= validateQuota(itemEl);
+		}
+		
+		itemEl.setDeleteEnabled(!allOk);
+		return allOk;
 	}
 	
 	private boolean validateFilename(String filename, FormItem itemEl) {
@@ -900,20 +932,31 @@ public class FileUploadController extends FormBasicController {
 			itemEl.setErrorKey("NoFileChosen", null);
 			allOk &= false;
 		}
-
-		boolean isFilenameValid = FileUtils.validateFilename(filename);		
-		if(!isFilenameValid) {
+		
+		if(uriValidation) {
+			try {
+				new URI(filename);
+			} catch(Exception e) {
+				itemEl.setErrorKey("cfile.name.notvalid.uri", null);
+				allOk &= false;
+			}
+		}	
+		if(!FileUtils.validateFilename(filename)) {
 			itemEl.setErrorKey("cfile.name.notvalid", null);
 			allOk &= false;
 		}
-		if (remainingQuotKB != -1  && fileEl.getUploadFile() != null
-				&& fileEl.getUploadFile().length() / 1024 > remainingQuotKB) {
-			fileEl.clearError();
+		
+		allOk &= validateQuota(fileEl);
+		return allOk;
+	}
+	
+	private boolean validateQuota(FileElement itemEl) {
+		if (remainingQuotKB != -1  && itemEl.getUploadFile() != null
+				&& itemEl.getUploadFile().length() / 1024 > remainingQuotKB) {
 			String supportAddr = WebappHelper.getMailConfig("mailQuota");
 			getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString((uploadLimitKB+0f) / 1000, 1), supportAddr }));
-			allOk &= false;
+			return false;
 		}
-		
-		return allOk;
+		return true;
 	}
 }

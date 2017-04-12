@@ -300,7 +300,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 				// remove file name from relFilePath to represent directory path
 				folderPath = relFilePath.substring(0, relFilePath.lastIndexOf("/"));
 			}
-			toolCtr = new FileUploadController(getWindowControl(), baseContainer, ureq, quotaLeftKB, quotaLeftKB, null, true, false, false, true, true, folderPath);
+			toolCtr = new FileUploadController(getWindowControl(), baseContainer, ureq, quotaLeftKB, quotaLeftKB, null, false, true, false, false, true, true, folderPath);
 		}
 		displayModal(toolCtr);
 	}

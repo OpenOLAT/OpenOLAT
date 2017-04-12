@@ -49,7 +49,7 @@ public class WikiFileUploadController extends BasicController {
 		VelocityContainer mainVC = this.createVelocityContainer("upload_file");
 		
 		fileUplCtr = new FileUploadController(getWindowControl(), mediaFolder, ureq,
-				(int)FolderConfig.getLimitULKB(), Quota.UNLIMITED, null, false, false, true, true, false);
+				(int)FolderConfig.getLimitULKB(), Quota.UNLIMITED, null, false, false, false, true, true, false);
 		listenTo(fileUplCtr);
 		mainVC.put("fileUpload", fileUplCtr.getInitialComponent());
 		putInitialPanel(mainVC);
