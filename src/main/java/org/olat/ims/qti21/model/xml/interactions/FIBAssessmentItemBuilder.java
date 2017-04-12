@@ -579,8 +579,8 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 						<correct identifier="RESPONSE_1" />
 					</match>
 					<equal toleranceMode="relative" tolerance="0.1 0.1" includeLowerBound="true" includeUpperBound="true">
-						<variable identifier="RESPONSE_2" />
 						<correct identifier="RESPONSE_2" />
+						<variable identifier="RESPONSE_2" />
 					</equal>
 				</and>
 				<setOutcomeValue identifier="SCORE">
@@ -644,13 +644,13 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 					ComplexReferenceIdentifier responseIdentifier = ComplexReferenceIdentifier
 							.assumedLegal(numericalEntry.getResponseIdentifier().toString());
 					
-					Variable variable = new Variable(equal);
-					variable.setIdentifier(responseIdentifier);
-					equal.getExpressions().add(variable);
-					
 					Correct correct = new Correct(equal);
 					correct.setIdentifier(responseIdentifier);
 					equal.getExpressions().add(correct);
+
+					Variable variable = new Variable(equal);
+					variable.setIdentifier(responseIdentifier);
+					equal.getExpressions().add(variable);
 				}
 			}
 			
@@ -772,13 +772,13 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 				ComplexReferenceIdentifier responseIdentifier = ComplexReferenceIdentifier
 						.assumedLegal(numericalEntry.getResponseIdentifier().toString());
 				
-				Variable variable = new Variable(equal);
-				variable.setIdentifier(responseIdentifier);
-				equal.getExpressions().add(variable);
-				
 				Correct correct = new Correct(equal);
 				correct.setIdentifier(responseIdentifier);
 				equal.getExpressions().add(correct);
+				
+				Variable variable = new Variable(equal);
+				variable.setIdentifier(responseIdentifier);
+				equal.getExpressions().add(variable);
 				
 				SetOutcomeValue mapOutcomeValue = new SetOutcomeValue(responseIf);
 				responseIf.getResponseRules().add(mapOutcomeValue);

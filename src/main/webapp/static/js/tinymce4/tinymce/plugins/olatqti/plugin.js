@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.1.2'
+				version : '1.1.3'
 			};
 		},
 
@@ -210,6 +210,16 @@
 				} else if (jQuery(e.element).parent('span.hottext').size() > 0) {
 					lastSelectedHottext = e.element;
 				}
+
+				jQuery("span.hottext[data-copy='needlistener'] input", e.element).each(function(index, el) {
+					var hottext = jQuery(el).parent("span.hottext").attr('data-copy','blues');
+					var ev = jQuery._data(el, 'events');
+					if(ev && ev.click) {
+						//double check 
+					} else {
+						correctHottextEvent(el);
+					}
+				});
 			});
 			
 			function createPlaceholder(responseIdentifier, interaction, gapType) {
@@ -303,6 +313,8 @@
 				});
 			});
 			
+			
+			
 			ed.on('preInit', function() {
 				ed.parser.addNodeFilter('textentryinteraction,hottext', function(nodes) {
 					var i = nodes.length, node, placeHolder, videoScript;
@@ -349,6 +361,27 @@
 					textNode.textContent = hottext;
 					ed.dom.replace(textNode, node, false);
 			    });
+			});
+			
+			ed.on('PastePreProcess', function (e) {
+				var replace = false;
+				var wrappedContent = '<div id="' + guid() + '">' + e.content + '</div>';
+				var htmlContent = jQuery(wrappedContent);
+
+				jQuery(htmlContent).find("span[data-qti='hottext']").each(function(index, el) {
+					var hotId = 'ht' + guid();
+					jQuery(el).attr('data-qti-identifier', hotId);
+					jQuery(el).attr('data-copy', 'needlistener');
+					jQuery(el).find('input').each(function(inputIndex, inputEl) {
+						jQuery(inputEl).val(hotId);
+						jQuery(inputEl).attr('checked', false);
+					});
+					replace = true;
+				});
+				
+				if(replace) {
+					e.content = jQuery(htmlContent).html();
+				}
 			});
 		}
 	});
