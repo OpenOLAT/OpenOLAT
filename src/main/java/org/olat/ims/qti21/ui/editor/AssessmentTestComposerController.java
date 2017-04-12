@@ -857,7 +857,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 
 		AssessmentSection newSection;
 		if(parentPart instanceof TestPart) {
-			newSection = AssessmentTestFactory.appendAssessmentSection(translate("new.testpart"), (TestPart)parentPart);
+			newSection = AssessmentTestFactory.appendAssessmentSection(translate("new.section"), (TestPart)parentPart);
 		} else if(parentPart instanceof AssessmentSection) {
 			newSection = AssessmentTestFactory.appendAssessmentSection(translate("new.section"), (AssessmentSection)parentPart);
 		} else {
