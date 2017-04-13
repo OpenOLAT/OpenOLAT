@@ -141,10 +141,12 @@ public class EditLectureBlockController extends FormBasicController {
 		String title = lectureBlock == null ? null : lectureBlock.getTitle();
 		titleEl = uifactory.addTextElement("title", "lecture.title", 128, title, formLayout);
 		titleEl.setEnabled(!lectureManagementManaged);
+		titleEl.setMandatory(true);
 
 		plannedLecturesEl = uifactory.addDropdownSingleselect("planned.lectures", "planned.lectures", formLayout,
 				plannedLecturesKeys, plannedLecturesKeys, null);
 		plannedLecturesEl.setEnabled(!lectureManagementManaged);
+		plannedLecturesEl.setMandatory(true);
 		String plannedlectures = lectureBlock == null ? "4" : Integer.toString(lectureBlock.getPlannedLecturesNumber());
 		for(String plannedLecturesKey:plannedLecturesKeys) {
 			if(plannedlectures.equals(plannedLecturesKey)) {
@@ -161,6 +163,7 @@ public class EditLectureBlockController extends FormBasicController {
 			teacherValues[i] = userManager.getUserDisplayName(coaches.get(i));
 		}
 		teacherEl = uifactory.addDropdownSingleselect("teacher", "lecture.teacher", formLayout, teacherKeys, teacherValues, null);
+		teacherEl.setMandatory(true);
 		teacherEl.setEnabled(!lectureManagementManaged);
 		if(teachers != null && teachers.size() > 0) {
 			String currentTeacherKey = teachers.get(0).getKey().toString();
@@ -187,6 +190,7 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		groupsEl = uifactory.addCheckboxesVertical("lecture.groups", "lecture.groups", formLayout, groupKeys, groupValues, 2);
 		groupsEl.setEnabled(!lectureManagementManaged);
+		groupsEl.setMandatory(true);
 		if(lectureBlock != null) {
 			List<Group> selectedGroups = lectureService.getLectureBlockToGroups(lectureBlock);
 			for(int i=0; i<groupBox.size(); i++) {
@@ -211,6 +215,7 @@ public class EditLectureBlockController extends FormBasicController {
 		startDateEl.setEnabled(!lectureManagementManaged);
 		startDateEl.setDomReplacementWrapperRequired(false);
 		startDateEl.setDateChooserTimeEnabled(true);
+		startDateEl.setMandatory(true);
 		
 		String datePage = velocity_root + "/date_start_end.html";
 		FormLayoutContainer dateCont = FormLayoutContainer.createCustomFormLayout("start_end", getTranslator(), datePage);
@@ -221,6 +226,7 @@ public class EditLectureBlockController extends FormBasicController {
 		endHourEl.setEnabled(!lectureManagementManaged);
 		endHourEl.setDomReplacementWrapperRequired(false);
 		endHourEl.setDisplaySize(2);
+		endHourEl.setMandatory(true);
 		endMinuteEl = uifactory.addTextElement("lecture.end.minute", null, 2, "", dateCont);
 		endMinuteEl.setEnabled(!lectureManagementManaged);
 		endMinuteEl.setDomReplacementWrapperRequired(false);
@@ -255,6 +261,12 @@ public class EditLectureBlockController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		plannedLecturesEl.clearError();
 		if(!plannedLecturesEl.isOneSelected()) {
 			plannedLecturesEl.setErrorKey("form.legende.mandatory", null);
@@ -270,6 +282,12 @@ public class EditLectureBlockController extends FormBasicController {
 		groupsEl.clearError();
 		if(!groupsEl.isAtLeastSelected(1)) {
 			groupsEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		startDateEl.clearError();
+		if(startDateEl.getDate() == null) {
+			startDateEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		

@@ -315,8 +315,8 @@ public class LectureBlockRollCallDAO {
 			}
 			
 			//only count closed roll call after the end date
-			if(rollCallEndDate != null && rollCallEndDate.before(now)
-					&& rollCallStatus != null && (LectureRollCallStatus.closed.name().equals(rollCallStatus) || LectureRollCallStatus.autoClose.name().equals(rollCallStatus))) {
+			if(rollCallEndDate != null && rollCallEndDate.before(now) && rollCallStatus != null
+					&& (LectureRollCallStatus.closed.name().equals(rollCallStatus) || LectureRollCallStatus.autoclosed.name().equals(rollCallStatus))) {
 			
 				if(lecturesAbsent != null) {
 					if(countAuthorizedAbsenceAsAttendant && absenceAuthorized != null && absenceAuthorized.booleanValue()) {

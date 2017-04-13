@@ -22,10 +22,12 @@ package org.olat.modules.lecture.ui;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -115,6 +117,11 @@ public class TeacherOverviewController extends FormBasicController {
 		
 		tableModel = new TeacherOverviewDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		
+		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
+		sortOptions.setDefaultOrderBy(new SortKey(TeachCols.date.name(), false));
+		tableEl.setSortSettings(sortOptions);
+		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview");
 	}
 	
 	private void loadModel() {

@@ -94,7 +94,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		
 		tableModel = new ParticipantLecturesDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
-		//tableEl.setAndLoadPersistedPreferences(ureq, "participant-lectures");
+		tableEl.setAndLoadPersistedPreferences(ureq, "participant-lectures");
 		tableEl.setCustomizeColumns(false);
 	}
 	

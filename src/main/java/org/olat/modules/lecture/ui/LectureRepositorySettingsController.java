@@ -168,8 +168,12 @@ public class LectureRepositorySettingsController extends FormBasicController {
 			if(overrideEl.isOneSelected()) {
 				overrideModuleDefaults = overrideEl.isSelected(0);
 				updateOverride();
+				updateVisibility();
 			}
-		} else if(enableEl == source || rollCallEnabledEl == source) {
+		} else if(enableEl == source) {
+			updateOverride();
+			updateVisibility();
+		} else if(rollCallEnabledEl == source) {
 			updateVisibility();
 		}
 		super.formInnerEvent(ureq, source, event);

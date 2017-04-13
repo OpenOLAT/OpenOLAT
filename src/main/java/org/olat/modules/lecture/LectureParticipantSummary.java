@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture;
 
+import java.util.Date;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 
@@ -36,6 +38,10 @@ public interface LectureParticipantSummary extends CreateInfo, ModifiedInfo {
 	
 	public void setRequiredAttendanceRate(Double rate);
 	
+	public Date getFirstAdmissionDate();
+	
+	public void setFirstAdmissionDate(Date admission);
 	
 	public Double getAttendanceRate();
+	
 }

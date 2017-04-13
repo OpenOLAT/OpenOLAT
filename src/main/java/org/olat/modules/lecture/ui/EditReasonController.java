@@ -64,9 +64,11 @@ public class EditReasonController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String title = reason == null ? "" : reason.getTitle();
 		titleEl = uifactory.addTextElement("title", "reason.title", 128, title, formLayout);
+		titleEl.setMandatory(true);
 		
 		String description = reason == null ? "" : reason.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("reason.description", 4, 72, description, formLayout);
+		descriptionEl.setMandatory(true);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

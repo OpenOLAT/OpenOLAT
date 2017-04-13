@@ -17,19 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture;
+package org.olat.modules.lecture.ui;
+
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.modules.lecture.LectureBlock;
 
 /**
  * 
- * Initial date: 17 mars 2017<br>
+ * Initial date: 13 avr. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum LectureRollCallStatus {
-	
-	open,
-	closed,
-	reopen,
-	autoclosed
+public class TeacherOverviewSortDelegate extends SortableFlexiTableModelDelegate<LectureBlock> {
 
+	public TeacherOverviewSortDelegate(SortKey orderBy, TeacherOverviewDataModel tableModel, Locale locale) {
+		super(orderBy, tableModel, locale);
+	}
+	
+	
 }

@@ -19,6 +19,9 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -34,13 +37,17 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<TeacherRollCallRow>
 	implements SortableFlexiTableDataModel<TeacherRollCallRow> {
 
-	public TeacherRollCallDataModel(FlexiTableColumnModel columnModel) {
+	private final Locale locale;
+	
+	public TeacherRollCallDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		// 
+	public void sort(SortKey orderBy) {
+		List<TeacherRollCallRow> rows = new TeacherRollCallSortDelegate(orderBy, this, locale).sort();
+		super.setObjects(rows);
 	}
 	
 	@Override
@@ -70,7 +77,7 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 
 	@Override
 	public DefaultFlexiTableDataModel<TeacherRollCallRow> createCopyWithEmptyList() {
-		return new TeacherRollCallDataModel(getTableColumnModel());
+		return new TeacherRollCallDataModel(getTableColumnModel(), locale);
 	}
 	
 	public enum RollCols implements FlexiSortableColumnDef {

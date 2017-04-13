@@ -19,9 +19,12 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.Date;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -44,9 +47,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EditParticipantRateController extends FormBasicController {
+public class EditParticipantSummaryController extends FormBasicController {
 	
 	private TextElement rateEl;
+	private DateChooser firstAdmissionEl;
 	private FormLink removeCustomRateButton;
 	
 	private double defaultRate;
@@ -55,7 +59,7 @@ public class EditParticipantRateController extends FormBasicController {
 	@Autowired
 	private LectureService lectureService;
 
-	public EditParticipantRateController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Identity identity, double defaultRate) {
+	public EditParticipantSummaryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Identity identity, double defaultRate) {
 		super(ureq, wControl);
 		this.defaultRate = defaultRate;
 		participantSummary = lectureService.getOrCreateParticipantSummary(entry, identity);
@@ -73,6 +77,9 @@ public class EditParticipantRateController extends FormBasicController {
 			customRate = Long.toString(cRate);
 		}
 		rateEl = uifactory.addTextElement("participant.rate", "participant.rate", 4, customRate, formLayout);
+		
+		Date firstAdmission = participantSummary.getFirstAdmissionDate();
+		firstAdmissionEl = uifactory.addDateChooser("first.admission", firstAdmission, formLayout);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -123,6 +130,7 @@ public class EditParticipantRateController extends FormBasicController {
 		} else {
 			participantSummary.setRequiredAttendanceRate(null);
 		}
+		participantSummary.setFirstAdmissionDate(firstAdmissionEl.getDate());
 		participantSummary = lectureService.saveParticipantSummary(participantSummary);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

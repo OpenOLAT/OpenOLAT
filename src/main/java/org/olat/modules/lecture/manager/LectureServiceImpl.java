@@ -334,7 +334,7 @@ public class LectureServiceImpl implements LectureService {
 	}
 	
 	private void autoClose(LectureBlock lectureBlock) {
-		lectureBlock.setRollCallStatus(LectureRollCallStatus.autoClose);
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.autoclosed);
 		if(lectureBlock.getEffectiveLecturesNumber() < 0) {
 			lectureBlock.setEffectiveLecturesNumber(lectureBlock.getPlannedLecturesNumber());
 		}
@@ -363,7 +363,6 @@ public class LectureServiceImpl implements LectureService {
 
 	@Override
 	public void sendReminders() {
-		// TODO Auto-generated method stub
 		boolean reminderEnabled = lectureModule.isRollCallReminderEnabled();
 		int reminderPeriod = lectureModule.getRollCallReminderPeriod();
 		if(reminderEnabled && reminderPeriod > 0) {
@@ -557,6 +556,7 @@ public class LectureServiceImpl implements LectureService {
 				KalendarEvent newEvent = createEvent(lectureBlock, entry);
 				calendarMgr.addEventTo(cal, newEvent);
 			}
+			lectureParticipantSummaryDao.updateCalendarSynchronization(entry, identity);
 		}
 	}
 	
@@ -571,6 +571,7 @@ public class LectureServiceImpl implements LectureService {
 					calendarMgr.removeEventFrom(cal, event);
 				}
 			}
+			lectureParticipantSummaryDao.updateCalendarSynchronization(entry, identity);
 		}
 	}
 	
@@ -594,6 +595,7 @@ public class LectureServiceImpl implements LectureService {
 					calendarMgr.removeEventFrom(cal, event);
 				}
 			}
+			lectureParticipantSummaryDao.updateCalendarSynchronization(entry, identity);
 		}
 	}
 	

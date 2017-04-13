@@ -163,6 +163,7 @@
 		<class>org.olat.modules.lecture.model.LectureBlockToGroupImpl</class>
 		<class>org.olat.modules.lecture.model.LectureBlockRollCallImpl</class>
 		<class>org.olat.modules.lecture.model.LectureParticipantSummaryImpl</class>
+		<class>org.olat.modules.lecture.model.LectureParticipantCalendarSummary</class>
 		<class>org.olat.modules.lecture.model.LectureBlockReminderImpl</class>
 		<class>org.olat.modules.lecture.model.RepositoryEntryLectureConfigurationImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>

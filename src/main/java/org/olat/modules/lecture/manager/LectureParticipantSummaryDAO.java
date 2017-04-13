@@ -90,9 +90,10 @@ public class LectureParticipantSummaryDAO {
 	public LectureParticipantSummary getSummary(RepositoryEntryRef entry, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select summary from lectureparticipantsummary summary")
+		  .append(" inner join fetch summary.entry entry")
 		  .append(" inner join fetch summary.identity ident")
 		  .append(" inner join fetch ident.user identUser")
-		  .append(" where summary.entry.key=:entryKey and ident.key=:identityKey");
+		  .append(" where entry.key=:entryKey and ident.key=:identityKey");
 		
 		List<LectureParticipantSummary> summaries = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), LectureParticipantSummary.class)
@@ -100,6 +101,18 @@ public class LectureParticipantSummaryDAO {
 			.setParameter("identityKey", identity.getKey())
 			.getResultList();
 		return summaries == null || summaries.isEmpty() ? null : summaries.get(0);
+	}
+	
+	public int updateCalendarSynchronization(RepositoryEntryRef entry, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("update lectureparticipantcalsummary set calendarSync=true, calendarLastSyncDate=:now")
+		  .append("  where entry.key=:repoKey and identity.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("repoKey", entry.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("now", new Date())
+				.executeUpdate();
 	}
 	
 	public LectureParticipantSummary update(LectureParticipantSummary summary) {

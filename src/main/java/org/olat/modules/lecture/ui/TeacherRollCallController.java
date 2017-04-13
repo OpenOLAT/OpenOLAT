@@ -56,6 +56,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RollCallSecurityCallback;
@@ -83,8 +84,8 @@ public class TeacherRollCallController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private TeacherRollCallDataModel tableModel;
 	private TextElement blokcCommentEl;
-	private SingleSelection statusEl, effectiveEndReasonEl;
 	private TextElement effectiveEndHourEl, effectiveEndMinuteEl;
+	private SingleSelection statusEl, effectiveEndReasonEl, rollCallStatusEl;
 	
 	private ReasonController reasonCtrl;
 	private CloseableCalloutWindowController reasonCalloutCtrl;
@@ -128,6 +129,7 @@ public class TeacherRollCallController extends FormBasicController {
 		// form for the lecture block
 		FormLayoutContainer blockCont = FormLayoutContainer.createDefaultFormLayout("block", getTranslator());
 		blockCont.setRootForm(mainForm);
+		blockCont.setFormTitle(translate("lecture.block"));
 		formLayout.add("block", blockCont);
 		
 		uifactory.addStaticTextElement("lecture.title", lectureBlock.getTitle(), blockCont);
@@ -211,8 +213,31 @@ public class TeacherRollCallController extends FormBasicController {
 		blokcCommentEl = uifactory.addTextElement("block.comment", "lecture.block.comment", 256, blockComment, blockCont);
 		blokcCommentEl.setEnabled(secCallback.canEdit());
 		
-		// table
+		//roll call
+		FormLayoutContainer rollCallStatusCont = FormLayoutContainer.createDefaultFormLayout("rollcallStatus", getTranslator());
+		formLayout.add(rollCallStatusCont);
+		formLayout.add("rollcallStatus", rollCallStatusCont);
+		rollCallStatusCont.setRootForm(mainForm);
+		rollCallStatusCont.setFormTitle(translate("rollcall"));
+
+		String[] rollCallKeys = new String[]{
+				LectureRollCallStatus.open.name(), LectureRollCallStatus.reopen.name(),
+				LectureRollCallStatus.closed.name(), LectureRollCallStatus.autoclosed.name()
+		};
+		String[] rollCallValues = new String[rollCallKeys.length];
+		for(int i=rollCallKeys.length; i-->0; ) {
+			rollCallValues[i] = translate(rollCallKeys[i]);
+		}
+		rollCallStatusEl = uifactory.addDropdownSingleselect("rollcall.status", "rollcall.status", rollCallStatusCont, rollCallKeys, rollCallValues, null);
+		rollCallStatusEl.setMandatory(true);
+		LectureRollCallStatus rollCallStatus = lectureBlock.getRollCallStatus() == null ? LectureRollCallStatus.open : lectureBlock.getRollCallStatus();
+		for(int i=rollCallKeys.length; i-->0; ) {
+			if(rollCallStatus.name().equals(rollCallKeys[i])) {
+				rollCallStatusEl.select(rollCallKeys[i], true);
+			}
+		}
 		
+		// table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.username));
@@ -243,9 +268,9 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.comment));
 
-		tableModel = new TeacherRollCallDataModel(columnsModel); 
+		tableModel = new TeacherRollCallDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
-		
+		tableEl.setCustomizeColumns(found);
 		uifactory.addFormSubmitButton("save", "save", formLayout);
 	}
 	
@@ -420,6 +445,11 @@ public class TeacherRollCallController extends FormBasicController {
 			fullValidation = LectureBlockStatus.done.name().equals(statusEl.getSelectedKey());
 		}
 		
+		if(!rollCallStatusEl.isOneSelected()) {
+			rollCallStatusEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		//block form
 		if(StringHelper.containsNonWhitespace(effectiveEndHourEl.getValue())
 				|| StringHelper.containsNonWhitespace(effectiveEndMinuteEl.getValue())) {
@@ -501,6 +531,7 @@ public class TeacherRollCallController extends FormBasicController {
 		lectureBlock = lectureService.getLectureBlock(lectureBlock);
 		lectureBlock.setComment(blokcCommentEl.getValue());
 		lectureBlock.setStatus(LectureBlockStatus.valueOf(statusEl.getSelectedKey()));
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.valueOf(rollCallStatusEl.getSelectedKey()));
 		Date effectiveEndDate = getEffectiveEndDate();
 		if(effectiveEndDate == null) {
 			lectureBlock.setReasonEffectiveEnd(null);

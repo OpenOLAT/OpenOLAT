@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -47,8 +48,9 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		List<LectureBlock> rows = new TeacherOverviewSortDelegate(orderBy, this, locale).sort();
+		super.setObjects(rows);
 	}
 
 	@Override

@@ -73,7 +73,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	private ParticipantListDataModel tableModel;
 
 	private CloseableModalController cmc;
-	private EditParticipantRateController editRateCtrl;
+	private EditParticipantSummaryController editRateCtrl;
 	
 	private final double defaultRate;
 	private final boolean rateEnabled;
@@ -155,6 +155,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
+		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry");
 	}
 	
 	private void loadModel() {
@@ -227,7 +228,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		if(editRateCtrl != null) return;
 		
 		Identity identity = securityManager.loadIdentityByKey(row.getIdentityKey());
-		editRateCtrl = new EditParticipantRateController(ureq, getWindowControl(), entry, identity, defaultRate);
+		editRateCtrl = new EditParticipantSummaryController(ureq, getWindowControl(), entry, identity, defaultRate);
 		listenTo(editRateCtrl);
 		
 		String title = translate("edit.participant.rate");

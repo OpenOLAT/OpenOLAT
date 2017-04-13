@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -160,7 +161,7 @@ public class ReasonAdminController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private static class ReasonDataModel extends DefaultFlexiTableDataModel<Reason>
+	private class ReasonDataModel extends DefaultFlexiTableDataModel<Reason>
 	implements SortableFlexiTableDataModel<Reason> {
 		
 		public ReasonDataModel(FlexiTableColumnModel columnsModel) {
@@ -168,10 +169,10 @@ public class ReasonAdminController extends FormBasicController {
 		}
 
 		@Override
-		public void sort(SortKey sortKey) {
-			//
+		public void sort(SortKey orderBy) {
+			List<Reason> rows = new SortableFlexiTableModelDelegate<Reason>(orderBy, this, getLocale()).sort();
+			super.setObjects(rows);
 		}
-		
 
 		@Override
 		public Object getValueAt(int row, int col) {

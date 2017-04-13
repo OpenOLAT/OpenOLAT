@@ -121,7 +121,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(ParticipantCols.date.name(), true));
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, "participant-roll-call-appeal");
+		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-roll-call-appeal");
 	}
 	
 	private void loadModel() {
