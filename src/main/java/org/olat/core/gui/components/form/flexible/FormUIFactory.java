@@ -767,7 +767,7 @@ public class FormUIFactory {
 	/**
 	 * 
 	 * This is a version with olat media only. The tiny media is disabled because we need to catch the object
-	 * tag use by QTI and interpret it as a olat video.
+	 * tag use by QTI and interpret it as a olat video. It enable the strict uri validation for file names.
 	 * 
 	 * @param name
 	 * @param i18nLabel
@@ -791,6 +791,7 @@ public class FormUIFactory {
 		rte.getEditorConfiguration().setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
 		rte.getEditorConfiguration().setExtendedValidElements("script[src|type|defer]");
 		rte.getEditorConfiguration().disableTinyMedia();
+		rte.getEditorConfiguration().setFilenameUriValidation(true);
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;
@@ -807,6 +808,7 @@ public class FormUIFactory {
 		rte.getEditorConfiguration().setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
 		rte.getEditorConfiguration().setExtendedValidElements("script[src|type|defer]");
 		rte.getEditorConfiguration().disableTinyMedia();
+		rte.getEditorConfiguration().setFilenameUriValidation(true);
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;

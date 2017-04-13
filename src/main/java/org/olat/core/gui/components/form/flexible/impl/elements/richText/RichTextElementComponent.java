@@ -136,6 +136,7 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		// Get allowed suffixes from configuration and requested media browser type from event
 		final RichTextConfiguration config = element.getEditorConfiguration();
 		final boolean allowCustomMediaFactory = config.isAllowCustomMediaFactory();
+		final boolean uriValidation = config.isFilenameUriValidation();
 		final String[] suffixes;
 		if(type.equals(CMD_FILEBROWSER)) {
 			suffixes = null;
@@ -162,10 +163,10 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 				CustomLinkTreeModel linkBrowserCustomTreeModel = config.getLinkBrowserCustomLinkTreeModel();
 				if (type.equals(CMD_FILEBROWSER)) {
 					// when in file mode we include the internal links to the selection
-					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, fileName, linkBrowserCustomTreeModel, allowCustomMediaFactory);			
+					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, uriValidation, fileName, linkBrowserCustomTreeModel, allowCustomMediaFactory);			
 				} else {
 					// in media or image mode, internal links make no sense here
-					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, fileName, null, allowCustomMediaFactory);						
+					myLinkChooserController = new LinkChooserController(lureq, lwControl, baseContainer, uploadRelPath, absolutePath, suffixes, uriValidation, fileName, null, allowCustomMediaFactory);						
 				}
 				return new LayoutMain3ColsController(lureq, lwControl, myLinkChooserController);
 			}

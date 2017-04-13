@@ -156,6 +156,7 @@ public class RichTextConfiguration implements Disposable {
 	private boolean inline = false;
 	private boolean sendOnBlur;
 	private boolean readOnly;
+	private boolean filenameUriValidation = false;
 	private CustomLinkTreeModel linkBrowserCustomTreeModel;	
 	// DOM ID of the flexi form element
 	private String domID;
@@ -882,8 +883,20 @@ public class RichTextConfiguration implements Disposable {
 	public void enableEditorHeight() {
 		setNonQuotedConfigValue(RichTextConfiguration.HEIGHT, "b_initialEditorHeight()");
 	}
-
 	
+	public boolean isFilenameUriValidation() {
+		return filenameUriValidation;
+	}
+
+	/**
+	 * Enable the validation of the URI for filename base on java.net.URI
+	 * 
+	 * @param filenameUriValidation
+	 */
+	public void setFilenameUriValidation(boolean filenameUriValidation) {
+		this.filenameUriValidation = filenameUriValidation;
+	}
+
 	/**
 	 * Get the image suffixes that are supported
 	 * 

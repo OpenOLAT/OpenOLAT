@@ -90,13 +90,15 @@ public class FileLinkChooserController extends BasicController {
 	 * @param rootDir The VFS root directory from which the linkable files should be read
 	 * @param uploadRelPath The relative path within the rootDir where uploaded
 	 *          files should be put into. If NULL, the root Dir is used
+	 * @param absolutePath
 	 * @param suffixes Array of allowed file types
+	 * @param uriValidation Set to true if the filename need to be a valid URI
 	 * @param fileName the path of the file currently edited (in order to compute
 	 *          the correct relative paths for links), e.g. bla/blu.html or
 	 *          index.html
 	 */
 	public FileLinkChooserController(UserRequest ureq, WindowControl wControl,
-			VFSContainer rootDir, String uploadRelPath, String absolutePath, String[] suffixes, String fileName) {
+			VFSContainer rootDir, String uploadRelPath, String absolutePath, String[] suffixes, boolean uriValidation, String fileName) {
 		super(ureq, wControl);
 		this.fileName = fileName;
 		this.suffixes = suffixes;
@@ -167,8 +169,8 @@ public class FileLinkChooserController extends BasicController {
 				}
 			}
 			
-			uploadCtr = new FileUploadController(wControl, fileUploadBase, ureq, uploadLimit, remainingSpace, mimeTypes,
-					true, false, true, true, false);
+			uploadCtr = new FileUploadController(wControl, fileUploadBase, ureq, uploadLimit, remainingSpace,
+					mimeTypes, uriValidation, true, false, true, true, false);
 			listenTo(uploadCtr);
 			// set specific upload path
 			uploadCtr.setUploadRelPath(uploadRelPath);

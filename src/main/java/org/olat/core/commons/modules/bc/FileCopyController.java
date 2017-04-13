@@ -87,7 +87,7 @@ public class FileCopyController extends LinkChooserController {
 	
 	public FileCopyController(UserRequest ureq, WindowControl wControl, VFSContainer rootDir,
 			FolderComponent folderComponent) {
-		super(ureq, wControl, rootDir, null, null, null, "", null, true);
+		super(ureq, wControl, rootDir, null, null, null, false, "", null, true);
 		this.folderComponent = folderComponent;
 		vfsLockManager = CoreSpringFactory.getImpl(VFSLockManager.class);
 	}

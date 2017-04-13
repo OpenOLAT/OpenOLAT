@@ -85,6 +85,8 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		};
 		toleranceModeEl = uifactory.addDropdownSingleselect("fib.tolerance.mode", "fib.tolerance.mode", formLayout, toleranceModeKeys, toleranceModeValues, null);
 		toleranceModeEl.setEnabled(!restrictedEdit);
+		toleranceModeEl.setHelpText(getToleranceHelp());
+		toleranceModeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_ni");
 		if(interaction.getToleranceMode() != null) {
 			for(String toleranceModeKey:toleranceModeKeys) {
 				if(toleranceModeKey.equals(interaction.getToleranceMode().name())) {
@@ -119,6 +121,16 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 			uifactory.addFormSubmitButton("submit", buttonsContainer);
 		}
 		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
+	}
+	
+	private String getToleranceHelp() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<ul class='list-unstyled'>")
+		  .append("<li><strong>").append(translate("fib.tolerance.mode.exact")).append(":</strong> ").append(translate("fib.tolerance.mode.exact.help"))
+		  .append("<li><strong>").append(translate("fib.tolerance.mode.absolute")).append(":</strong> ").append(translate("fib.tolerance.mode.absolute.help"))
+		  .append("<li><strong>").append(translate("fib.tolerance.mode.relative")).append(":</strong> ").append(translate("fib.tolerance.mode.relative.help"))
+		  .append("</ul>");
+		return sb.toString();
 	}
 	
 	private void updateToleranceUpAndLow() {
