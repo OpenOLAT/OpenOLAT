@@ -33,6 +33,8 @@ import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
+
 /**
  * 
  * Initial date: 24.02.2016<br>
@@ -65,6 +67,10 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		String solution = interaction.getSolution();
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solution, formLayout);
 		solutionEl.setEnabled(!restrictedEdit);
+		if(!StringHelper.containsNonWhitespace(solution)) {
+			solutionEl.setFocus(true);
+		}
+		
 		String placeholder = interaction.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
 		placeholderEl.setEnabled(!restrictedEdit);
@@ -93,6 +99,14 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 			uifactory.addFormSubmitButton("submit", buttonsContainer);
 		}
 		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
+	}
+	
+	public String getSolution() {
+		return interaction.getSolution();
+	}
+	
+	public Identifier getResponseIdentifier() {
+		return interaction.getResponseIdentifier();
 	}
 
 	@Override

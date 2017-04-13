@@ -167,20 +167,21 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		}
 	}
 	
-	private void extractQuestions() {
+	public String extractQuestions() {
 		StringOutput sb = new StringOutput();
 		List<Block> blocks = assessmentItem.getItemBody().getBlocks();
 		for(Block block:blocks) {
 			qtiSerializer.serializeJqtiObject(block, new StreamResult(sb));
 		}
 		question = sb.toString();
+		return question;
 	}
 	
 	/**
 	 * We loop around the textEntryInteraction, search the responseDeclaration. responseDeclaration
 	 * of type string are gap text, of type float are numerical.
 	 */
-	private void extractEntriesSettingsFromResponseDeclaration() {
+	public void extractEntriesSettingsFromResponseDeclaration() {
 		DoubleAdder mappedScore = new DoubleAdder();
 		AtomicInteger countAlternatives = new AtomicInteger(0);
 
@@ -199,6 +200,9 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 						extractTextEntrySettingsFromResponseDeclaration(textEntry, responseDeclaration, countAlternatives, mappedScore);
 						String marker = "responseIdentifier=\"" + interaction.getResponseIdentifier().toString() + "\"";
 						question = question.replace(marker, marker + " openolatType=\"string\"");
+						if(StringHelper.containsNonWhitespace(textEntry.getSolution())) {
+							question = question.replace(marker, marker + " data-qti-solution=\"" + StringHelper.escapeHtml(textEntry.getSolution()) + "\"");
+						}
 						entry = textEntry;
 						
 					} else if(responseDeclaration.hasBaseType(BaseType.FLOAT) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
@@ -208,6 +212,9 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 						
 						String marker = "responseIdentifier=\"" + interaction.getResponseIdentifier().toString() + "\"";
 						question = question.replace(marker, marker + " openolatType=\"float\"");
+						if(numericalEntry.getSolution() != null) {
+							question = question.replace(marker, marker + " data-qti-solution=\"" + Double.toString(numericalEntry.getSolution()) + "\"");
+						}
 					}
 				}
 				if(entry != null) {
@@ -849,7 +856,6 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			incorrectOutcomeValue.setExpression(correctValue);
 			
 			responseRules.add(count++, incorrectOutcomeValue);
-			
 		}
 	}
 	

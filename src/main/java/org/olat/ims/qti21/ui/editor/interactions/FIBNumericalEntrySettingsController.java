@@ -36,6 +36,7 @@ import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.Numeri
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
@@ -64,6 +65,14 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
+	
+	public Identifier getResponseIdentifier() {
+		return interaction.getResponseIdentifier();
+	}
+	
+	public Double getSolution() {
+		return interaction.getSolution();
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -71,6 +80,10 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		String solString = solution == null ? "" : solution.toString();
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solString, formLayout);
 		solutionEl.setEnabled(!restrictedEdit);
+		if(!restrictedEdit && !StringHelper.containsNonWhitespace(solString)) {
+			solutionEl.setFocus(true);
+		}
+		
 		String placeholder = interaction.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
 		placeholderEl.setEnabled(!restrictedEdit);
