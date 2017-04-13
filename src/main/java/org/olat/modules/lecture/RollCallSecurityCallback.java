@@ -17,32 +17,22 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.model;
-
-import org.olat.core.id.Identity;
-import org.olat.modules.lecture.LectureBlock;
+package org.olat.modules.lecture;
 
 /**
  * 
- * Initial date: 10 avr. 2017<br>
+ * Initial date: 11 avr. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureBlockToTeacher {
+public interface RollCallSecurityCallback {
 	
-	private final Identity teacher;
-	private final LectureBlock lectureBlock;
+	public boolean canEdit();
 	
-	public LectureBlockToTeacher(Identity teacher, LectureBlock lectureBlock) {
-		this.teacher = teacher;
-		this.lectureBlock = lectureBlock;
-	}
+	public boolean canViewAuthorizedAbsences();
+	
+	public boolean canEditAuthorizedAbsences();
+	
+	public boolean canEditAbsences();
 
-	public Identity getTeacher() {
-		return teacher;
-	}
-
-	public LectureBlock getLectureBlock() {
-		return lectureBlock;
-	}
 }

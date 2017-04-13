@@ -58,6 +58,7 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
+import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.ui.TeacherRollCallDataModel.RollCols;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -89,11 +90,10 @@ public class TeacherRollCallController extends FormBasicController {
 	private CloseableCalloutWindowController reasonCalloutCtrl;
 	
 	private int counter = 0;
-	private final boolean editable;
 	private LectureBlock lectureBlock;
 	private final boolean isAdministrativeUser;
-	private final boolean autorizedAbsenceEnabled;
 	private List<UserPropertyHandler> userPropertyHandlers;
+	private RollCallSecurityCallback secCallback;
 	
 	private List<Identity> participants;
 	
@@ -107,14 +107,13 @@ public class TeacherRollCallController extends FormBasicController {
 	private BaseSecurityModule securityModule;
 	
 	public TeacherRollCallController(UserRequest ureq, WindowControl wControl,
-			LectureBlock block, List<Identity> participants, boolean editable) {
+			LectureBlock block, List<Identity> participants, RollCallSecurityCallback secCallback) {
 		super(ureq, wControl, "rollcall");
-		this.editable = editable;
+		
 		this.lectureBlock = block;
+		this.secCallback = secCallback;
 		this.participants = participants;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		
-		autorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -162,11 +161,11 @@ public class TeacherRollCallController extends FormBasicController {
 		effectiveEndHourEl = uifactory.addTextElement("lecture.end.hour", null, 2, "", dateCont);
 		effectiveEndHourEl.setDomReplacementWrapperRequired(false);
 		effectiveEndHourEl.setDisplaySize(2);
-		effectiveEndHourEl.setEnabled(editable);
+		effectiveEndHourEl.setEnabled(secCallback.canEdit());
 		effectiveEndMinuteEl = uifactory.addTextElement("lecture.end.minute", null, 2, "", dateCont);
 		effectiveEndMinuteEl.setDomReplacementWrapperRequired(false);
 		effectiveEndMinuteEl.setDisplaySize(2);
-		effectiveEndMinuteEl.setEnabled(editable);
+		effectiveEndMinuteEl.setEnabled(secCallback.canEdit());
 		if(lectureBlock != null) {
 			Calendar cal = Calendar.getInstance();
 			if(lectureBlock.getEffectiveEndDate() != null) {
@@ -192,7 +191,7 @@ public class TeacherRollCallController extends FormBasicController {
 		}
 		effectiveEndReasonEl = uifactory.addDropdownSingleselect("effective.reason", "lecture.block.effective.reason", blockCont,
 				reasonKeyList.toArray(new String[reasonKeyList.size()]), reasonValueList.toArray(new String[reasonValueList.size()]), null);
-		effectiveEndReasonEl.setEnabled(editable);
+		effectiveEndReasonEl.setEnabled(secCallback.canEdit());
 		boolean found = false;
 		if(lectureBlock.getReasonEffectiveEnd() != null) {
 			String selectedReasonKey = lectureBlock.getReasonEffectiveEnd().getKey().toString();
@@ -210,7 +209,7 @@ public class TeacherRollCallController extends FormBasicController {
 
 		String blockComment = lectureBlock.getComment();
 		blokcCommentEl = uifactory.addTextElement("block.comment", "lecture.block.comment", 256, blockComment, blockCont);
-		blokcCommentEl.setEnabled(editable);
+		blokcCommentEl.setEnabled(secCallback.canEdit());
 		
 		// table
 		
@@ -238,7 +237,7 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		//all button
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("all", translate("all"), "all"));
-		if(autorizedAbsenceEnabled) {
+		if(secCallback.canViewAuthorizedAbsences() || secCallback.canEditAuthorizedAbsences()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.authorizedAbsence));
 		}
 		
@@ -290,7 +289,7 @@ public class TeacherRollCallController extends FormBasicController {
 			MultipleSelectionElement check = uifactory.addCheckboxesHorizontal(checkId, null, flc, onKeys, onValues);
 			check.setDomReplacementWrapperRequired(false);
 			check.addActionListener(FormEvent.ONCHANGE);
-			check.setEnabled(editable);
+			check.setEnabled(secCallback.canEditAbsences());
 			check.setUserObject(row);
 			check.setAjaxOnly(true);
 			if(absences.contains(i)) {
@@ -301,7 +300,7 @@ public class TeacherRollCallController extends FormBasicController {
 		}
 		row.setChecks(checks);
 		
-		if(autorizedAbsenceEnabled) {
+		if(secCallback.canEditAuthorizedAbsences() || secCallback.canViewAuthorizedAbsences()) {
 			String page = velocity_root + "/authorized_absence_cell.html";
 			FormLayoutContainer absenceCont = FormLayoutContainer.createCustomFormLayout("auth_cont_".concat(Integer.toString(++counter)), getTranslator(), page);
 			absenceCont.setRootForm(mainForm);
@@ -313,7 +312,7 @@ public class TeacherRollCallController extends FormBasicController {
 			authorizedAbsencedEl.addActionListener(FormEvent.ONCHANGE);
 			authorizedAbsencedEl.setUserObject(row);
 			authorizedAbsencedEl.setAjaxOnly(true);
-			authorizedAbsencedEl.setEnabled(editable);
+			authorizedAbsencedEl.setEnabled(secCallback.canEdit() && secCallback.canEditAuthorizedAbsences());
 			
 			boolean hasAuthorization = rollCall != null && rollCall.getAbsenceAuthorized() != null
 					&& rollCall.getAbsenceAuthorized().booleanValue();
@@ -339,7 +338,7 @@ public class TeacherRollCallController extends FormBasicController {
 		String commentId = "comment_".concat(Integer.toString(++counter));
 		TextElement commentEl = uifactory.addTextElement(commentId, commentId, null, 128, comment, flc);
 		commentEl.setDomReplacementWrapperRequired(false);
-		commentEl.setEnabled(editable);
+		commentEl.setEnabled(secCallback.canEdit());
 		row.setCommentEl(commentEl);
 		flc.add(commentEl);
 		return row;
@@ -576,7 +575,8 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private void doCalloutReasonAbsence(UserRequest ureq, FormLink link, TeacherRollCallRow row) {
-		reasonCtrl = new ReasonController(ureq, getWindowControl(), row);
+		boolean canEdit = secCallback.canEdit() && secCallback.canEditAuthorizedAbsences();
+		reasonCtrl = new ReasonController(ureq, getWindowControl(), row, canEdit);
 		listenTo(reasonCtrl);
 
 		reasonCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),

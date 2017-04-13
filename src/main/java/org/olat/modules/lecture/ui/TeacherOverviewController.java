@@ -47,10 +47,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
-import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.RollCallSecurityCallback;
+import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
@@ -72,6 +73,7 @@ public class TeacherOverviewController extends FormBasicController {
 	private TeacherRollCallController rollCallCtrl;
 	private TeacherRollCallWizardController rollCallWizardCtrl;
 	
+	private final boolean admin;
 	private final RepositoryEntry entry;
 	private final RepositoryEntryLectureConfiguration entryConfig;
 	
@@ -80,9 +82,11 @@ public class TeacherOverviewController extends FormBasicController {
 	@Autowired
 	private LectureService lectureService;
 	
-	public TeacherOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, RepositoryEntry entry) {
+	public TeacherOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
+			RepositoryEntry entry, boolean admin) {
 		super(ureq, wControl, "teacher_view");
 		this.entry = entry;
+		this.admin = admin;
 		this.toolbarPanel = toolbarPanel;
 		entryConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		
@@ -218,13 +222,9 @@ public class TeacherOverviewController extends FormBasicController {
 	private void doSelectLectureBlock(UserRequest ureq, LectureBlock block) {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
 		
-		boolean editable = false;
-		if(reloadedBlock.getStatus().equals(LectureBlockStatus.active)
-				|| reloadedBlock.getStatus().equals(LectureBlockStatus.partiallydone)) {
-			editable = true;
-		}
+		
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
-		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, editable);
+		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock));
 		listenTo(rollCallCtrl);
 		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
 	}
@@ -233,7 +233,7 @@ public class TeacherOverviewController extends FormBasicController {
 	private void doStartRollCall(UserRequest ureq, LectureBlock block) {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
-		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, true);
+		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock));
 		listenTo(rollCallCtrl);
 		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
 	}
@@ -250,5 +250,9 @@ public class TeacherOverviewController extends FormBasicController {
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 		cc.getScreenMode().setMode(Mode.full);
 		getWindowControl().pushToMainArea(rollCallWizardCtrl.getInitialComponent());
+	}
+	
+	private RollCallSecurityCallback getRollCallSecurityCallback(LectureBlock block) {
+		return new RollCallSecurityCallbackImpl(admin, true, block, lectureModule);
 	}
 }

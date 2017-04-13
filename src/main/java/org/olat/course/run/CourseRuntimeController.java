@@ -1387,7 +1387,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			OLATResourceable ores = OresHelper.createOLATResourceableType("lectures");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			TeacherOverviewController ctrl = new TeacherOverviewController(ureq, swControl, toolbarPanel, getRepositoryEntry());
+			TeacherOverviewController ctrl = new TeacherOverviewController(ureq, swControl, toolbarPanel, getRepositoryEntry(), reSecurity.isEntryAdmin());
 			lecturesCtrl = pushController(ureq, translate("command.lectures"), ctrl);
 
 			setActiveTool(lecturesLink);

@@ -37,11 +37,13 @@ public class ReasonController extends FormBasicController {
 	
 	private TextElement reasonEl;
 	
+	private final boolean editable;
 	private TeacherRollCallRow row;
 
-	public ReasonController(UserRequest ureq, WindowControl wControl, TeacherRollCallRow row) {
+	public ReasonController(UserRequest ureq, WindowControl wControl, TeacherRollCallRow row, boolean editable) {
 		super(ureq, wControl, "reason");
 		this.row = row;
+		this.editable = editable;
 		initForm(ureq);
 	}
 	
@@ -53,8 +55,11 @@ public class ReasonController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String currentReason = row.getRollCall() == null ? "" : row.getRollCall().getAbsenceReason();
 		reasonEl = uifactory.addTextAreaElement("reason", "reason", 2048, 4, 36, false, currentReason, formLayout);
+		reasonEl.setEnabled(editable);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("save", formLayout);
+		if(editable) {
+			uifactory.addFormSubmitButton("save", formLayout);
+		}
 	}
 
 	@Override

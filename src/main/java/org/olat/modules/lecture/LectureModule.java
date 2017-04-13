@@ -41,6 +41,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String STATUS_CANCELLED_ENABLED = "lecture.status.cancelled.enabled";
 	private static final String AUTHORIZED_ABSENCE_ENABLED = "lecture.authorized.absence.enabled";
 	private static final String AUTHORIZED_ABSENCE_ATTENDANT_ENABLED = "lecture.authorized.absence.as.attendant";
+	private static final String TEACHER_CAN_AUTHORIZED_ABSENCE = "teacher.can.authorized.absence";
 	private static final String ROLLCALL_REMINDER_ENABLED = "lecture.rollcall.reminder.enabled";
 	private static final String ROLLCALL_REMINDER_PERIOD = "lecture.rollcall.reminder.period";
 	private static final String ROLLCALL_AUTOCLOSE_PERIOD = "lecture.rollcall.autoclose.period";
@@ -64,6 +65,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean authorizedAbsenceEnabled;
 	@Value("${lecture.authorized.absence.as.attendant:false}")
 	private boolean countAuthorizedAbsenceAsAttendant;
+	@Value("${lecture.teacher.can.authorized.absence:true}")
+	private boolean teacherCanAuthorizedAbsence;
 
 	@Value("${lecture.rollcall.reminder.enabled:true}")
 	private boolean rollCallReminderEnabled;
@@ -121,10 +124,10 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		if(StringHelper.containsNonWhitespace(authorizedAbsenceAttendantEnabledObj)) {
 			countAuthorizedAbsenceAsAttendant = "true".equals(authorizedAbsenceAttendantEnabledObj);
 		}
-		
-		String rollcallReminderEnabledObj = getStringPropertyValue(ROLLCALL_REMINDER_ENABLED, true);
-		if(StringHelper.containsNonWhitespace(rollcallReminderEnabledObj)) {
-			rollCallReminderEnabled = "true".equals(rollcallReminderEnabledObj);
+
+		String teacherCanAuthorizedAbsenceObj = getStringPropertyValue(TEACHER_CAN_AUTHORIZED_ABSENCE, true);
+		if(StringHelper.containsNonWhitespace(teacherCanAuthorizedAbsenceObj)) {
+			teacherCanAuthorizedAbsence = "true".equals(teacherCanAuthorizedAbsenceObj);
 		}
 		
 		String rollcallReminderPeriodObj = getStringPropertyValue(ROLLCALL_REMINDER_PERIOD, true);
@@ -222,6 +225,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setCountAuthorizedAbsenceAsAttendant(boolean enable) {
 		this.countAuthorizedAbsenceAsAttendant = enable;
 		setStringProperty(AUTHORIZED_ABSENCE_ATTENDANT_ENABLED, Boolean.toString(enable), true);
+	}
+
+	public boolean isTeacherCanAuthorizedAbsence() {
+		return teacherCanAuthorizedAbsence;
+	}
+
+	public void setTeacherCanAuthorizedAbsence(boolean enable) {
+		this.teacherCanAuthorizedAbsence = enable;
+		setStringProperty(TEACHER_CAN_AUTHORIZED_ABSENCE, Boolean.toString(enable), true);
 	}
 
 	public boolean isRollCallReminderEnabled() {
