@@ -21,14 +21,15 @@ package org.olat.modules.lecture.model;
 
 /**
  * 
- * Initial date: 28 mars 2017<br>
+ * Initial date: 13 avr. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureStatistics {
+public class LectureBlockStatistics {
 	
 	private final Long repoKey;
 	private final String displayName;
+	private final Long identityKey;
 	
 	private long totalLectureBlocks = 0l;
 	private long totalPlannedLectures = 0l;
@@ -39,9 +40,10 @@ public class LectureStatistics {
 	private final boolean calculateRate;
 	private final double requiredRate;
 	
-	public LectureStatistics(Long repoKey, String displayName, boolean calculateRate, double requiredRate) {
+	public LectureBlockStatistics(Long identityKey, Long repoKey, String displayName, boolean calculateRate, double requiredRate) {
 		this.repoKey = repoKey;
 		this.displayName = displayName;
+		this.identityKey = identityKey;
 		this.calculateRate = calculateRate;
 		this.requiredRate = requiredRate;
 	}
@@ -52,6 +54,10 @@ public class LectureStatistics {
 
 	public String getDisplayName() {
 		return displayName;
+	}
+	
+	public Long getIdentityKey() {
+		return identityKey;
 	}
 
 	public boolean isCalculateRate() {
@@ -65,7 +71,7 @@ public class LectureStatistics {
 	public long getTotalPlannedLectures() {
 		return totalPlannedLectures;
 	}
-	
+
 	public void addTotalPlannedLectures(long lectures) {
 		totalPlannedLectures += lectures;
 	}
@@ -81,7 +87,7 @@ public class LectureStatistics {
 	public long getTotalAttendedLectures() {
 		return totalAttendedLectures;
 	}
-	
+
 	public void addTotalAttendedLectures(long lectures) {
 		totalAttendedLectures += lectures;
 	}
@@ -89,7 +95,7 @@ public class LectureStatistics {
 	public long getTotalAbsentLectures() {
 		return totalAbsentLectures;
 	}
-	
+
 	public void addTotalAbsentLectures(long lectures) {
 		totalAbsentLectures += lectures;
 	}

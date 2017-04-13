@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.manager;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -30,9 +31,11 @@ import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
-import org.olat.modules.lecture.model.LectureStatistics;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -136,20 +139,20 @@ public class LectureServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//add
-		List<LectureStatistics> statistics = lectureService.getParticipantLecturesStatistics(participant);
+		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(participant);
 		Assert.assertNotNull(statistics);
 		Assert.assertEquals(1, statistics.size());
 	}
 	
 	@Test
-	public void getLectureStatistics_checkFutureBlock() {
+	public void getParticipantLecturesStatistics() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-6-1");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-6-2");
 		// a lecture block
-		LectureBlock lectureBlock1 = createMinimalLectureBlock(entry);
-		LectureBlock lectureBlock2 = createMinimalLectureBlock(entry);
-		LectureBlock lectureBlock3 = createMinimalLectureBlock(entry);
+		LectureBlock lectureBlock1 = createClosedLectureBlockInPast(entry);
+		LectureBlock lectureBlock2 = createClosedLectureBlockInPast(entry);
+		LectureBlock lectureBlock3 = createClosedLectureBlockInPast(entry);
 		// add participants to the "course"
 		repositoryEntryRelationDAO.addRole(participant1, entry, GroupRole.participant.name());
 		repositoryEntryRelationDAO.addRole(participant2, entry, GroupRole.participant.name());
@@ -167,19 +170,19 @@ public class LectureServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check first participant
-		List<LectureStatistics> statistics_1 = lectureService.getParticipantLecturesStatistics(participant1);
+		List<LectureBlockStatistics> statistics_1 = lectureService.getParticipantLecturesStatistics(participant1);
 		Assert.assertNotNull(statistics_1);
 		Assert.assertEquals(1, statistics_1.size());
-		LectureStatistics statistic_1 = statistics_1.get(0);
+		LectureBlockStatistics statistic_1 = statistics_1.get(0);
 		Assert.assertEquals(12, statistic_1.getTotalPlannedLectures());
 		Assert.assertEquals(2, statistic_1.getTotalAttendedLectures());
 		Assert.assertEquals(6, statistic_1.getTotalAbsentLectures());
 		
 		//check second participant
-		List<LectureStatistics> statistics_2 = lectureService.getParticipantLecturesStatistics(participant2);
+		List<LectureBlockStatistics> statistics_2 = lectureService.getParticipantLecturesStatistics(participant2);
 		Assert.assertNotNull(statistics_2);
 		Assert.assertEquals(1, statistics_2.size());
-		LectureStatistics statistic_2 = statistics_2.get(0);
+		LectureBlockStatistics statistic_2 = statistics_2.get(0);
 		Assert.assertEquals(12, statistic_2.getTotalPlannedLectures());
 		Assert.assertEquals(1, statistic_2.getTotalAttendedLectures());
 		Assert.assertEquals(7, statistic_2.getTotalAbsentLectures());
@@ -198,6 +201,20 @@ public class LectureServiceTest extends OlatTestCase {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock.setPlannedLecturesNumber(4);;
+		return lectureService.save(lectureBlock, null);
+	}
+	
+	private LectureBlock createClosedLectureBlockInPast(RepositoryEntry entry) {
+		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -2);
+		lectureBlock.setStartDate(cal.getTime());
+		lectureBlock.setEndDate(cal.getTime());
+		lectureBlock.setStatus(LectureBlockStatus.done);
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
 		lectureBlock.setTitle("Hello lecturers");
 		lectureBlock.setPlannedLecturesNumber(4);;
 		return lectureService.save(lectureBlock, null);

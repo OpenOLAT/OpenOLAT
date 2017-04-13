@@ -25,7 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.lecture.model.LectureStatistics;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
 
 /**
  * 
@@ -39,8 +39,8 @@ public class RateCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		
-		if(cellValue instanceof LectureStatistics) {
-			LectureStatistics stats = (LectureStatistics)cellValue;
+		if(cellValue instanceof LectureBlockStatistics) {
+			LectureBlockStatistics stats = (LectureBlockStatistics)cellValue;
 			if(stats.isCalculateRate()) {
 				double attendanceRate = stats.getAttendanceRate();
 				double requiredRate = stats.getRequiredRate();

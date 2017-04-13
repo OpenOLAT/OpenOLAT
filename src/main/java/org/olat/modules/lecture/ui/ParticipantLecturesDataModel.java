@@ -27,7 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.modules.lecture.model.LectureStatistics;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
 
 /**
  * 
@@ -35,8 +35,8 @@ import org.olat.modules.lecture.model.LectureStatistics;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipantLecturesDataModel extends DefaultFlexiTableDataModel<LectureStatistics>
-implements SortableFlexiTableDataModel<LectureStatistics> {
+public class ParticipantLecturesDataModel extends DefaultFlexiTableDataModel<LectureBlockStatistics>
+implements SortableFlexiTableDataModel<LectureBlockStatistics> {
 	
 	private final Locale locale;
 	
@@ -47,18 +47,18 @@ implements SortableFlexiTableDataModel<LectureStatistics> {
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<LectureStatistics> rows = new ParticipantLecturesSortDelegate(orderBy, this, locale).sort();
+		List<LectureBlockStatistics> rows = new ParticipantLecturesSortDelegate(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		LectureStatistics stats = getObject(row);
+		LectureBlockStatistics stats = getObject(row);
 		return getValueAt(stats, col);
 	}
 	
 	@Override
-	public Object getValueAt(LectureStatistics row, int col) {
+	public Object getValueAt(LectureBlockStatistics row, int col) {
 		switch(LecturesCols.values()[col]) {
 			case entry: return row.getDisplayName();
 			case quota: return row.getTotalPlannedLectures();
@@ -69,7 +69,7 @@ implements SortableFlexiTableDataModel<LectureStatistics> {
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<LectureStatistics> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<LectureBlockStatistics> createCopyWithEmptyList() {
 		return new ParticipantLecturesDataModel(getTableColumnModel(), locale);
 	}
 	

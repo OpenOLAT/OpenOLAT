@@ -36,7 +36,7 @@ import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.lecture.LectureService;
-import org.olat.modules.lecture.model.LectureStatistics;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.ui.ParticipantLecturesDataModel.LecturesCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
 import org.olat.modules.lecture.ui.component.RateCellRenderer;
@@ -89,17 +89,16 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.quota));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.progress, new LectureStatisticsCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.rate, new RateCellRenderer()));
-		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		
 		tableModel = new ParticipantLecturesDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
-		tableEl.setAndLoadPersistedPreferences(ureq, "participant-lectures");
+		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-lectures");
 		tableEl.setCustomizeColumns(false);
 	}
 	
 	private void loadModel() {
-		List<LectureStatistics> statistics = lectureService.getParticipantLecturesStatistics(getIdentity());
+		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(getIdentity());
 		tableModel.setObjects(statistics);
 		tableEl.reset(true, true, true);
 	}
@@ -110,7 +109,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				LectureStatistics row = tableModel.getObject(se.getIndex());
+				LectureBlockStatistics row = tableModel.getObject(se.getIndex());
 				if("select".equals(cmd)) {
 					doSelect(ureq, row);
 				}
@@ -124,7 +123,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		//
 	}
 	
-	private void doSelect(UserRequest ureq, LectureStatistics statistics) {
+	private void doSelect(UserRequest ureq, LectureBlockStatistics statistics) {
 		removeAsListenerAndDispose(lectureBlocksCtrl);
 		
 		RepositoryEntry entry = repositoryService.loadByKey(statistics.getRepoKey());

@@ -64,10 +64,9 @@ import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockImpl;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
-import org.olat.modules.lecture.model.LectureStatistics;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
-import org.olat.modules.lecture.model.ParticipantLectureStatistics;
 import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureAdminController;
 import org.olat.repository.RepositoryEntry;
@@ -471,7 +470,7 @@ public class LectureServiceImpl implements LectureService {
 	}
 
 	@Override
-	public List<LectureStatistics> getParticipantLecturesStatistics(IdentityRef identity) {
+	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef identity) {
 		boolean calculateAttendanceRate = lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
 		boolean authorizedAbsence = lectureModule.isAuthorizedAbsenceEnabled();
 		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
@@ -482,8 +481,15 @@ public class LectureServiceImpl implements LectureService {
 	}
 
 	@Override
-	public List<ParticipantLectureStatistics> getParticipantsLecturesStatistics(RepositoryEntryRef entry) {
-		return lectureBlockRollCallDao.getStatistics(entry);
+	public List<LectureBlockStatistics> getParticipantsLecturesStatistics(RepositoryEntry entry) {
+		boolean calculateAttendanceRate = lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
+		boolean authorizedAbsence = lectureModule.isAuthorizedAbsenceEnabled();
+		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
+		double defaultRequiredAttendanceRate = lectureModule.getRequiredAttendanceRateDefault();
+		RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(entry);
+		return lectureBlockRollCallDao.getStatistics(entry, config,
+				authorizedAbsence, countAuthorizedAbsenceAsAttendant,
+				calculateAttendanceRate, defaultRequiredAttendanceRate);
 	}
 
 	@Override

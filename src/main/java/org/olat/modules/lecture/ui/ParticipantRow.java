@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
-import org.olat.modules.lecture.model.ParticipantLectureStatistics;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -37,14 +37,14 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class ParticipantRow extends UserPropertiesRow {
 	
-	private final ParticipantLectureStatistics statistics;
+	private final LectureBlockStatistics statistics;
 	
-	public ParticipantRow(Identity identity, ParticipantLectureStatistics statistics, List<UserPropertyHandler> propertyHandlers, Locale locale) {
+	public ParticipantRow(Identity identity, LectureBlockStatistics statistics, List<UserPropertyHandler> propertyHandlers, Locale locale) {
 		super(identity, propertyHandlers, locale);
 		this.statistics = statistics;
 	}
 
-	public ParticipantLectureStatistics getStatistics() {
+	public LectureBlockStatistics getStatistics() {
 		return statistics;
 	}
 }

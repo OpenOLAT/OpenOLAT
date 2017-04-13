@@ -34,10 +34,11 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureRollCallStatus;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockRollCallImpl;
-import org.olat.modules.lecture.model.LectureStatistics;
-import org.olat.modules.lecture.model.ParticipantLectureStatistics;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -233,7 +234,7 @@ public class LectureBlockRollCallDAO {
 		return new ArrayList<>(blockToRollCallMap.values());
 	}
 	
-	public List<LectureStatistics> getStatistics(IdentityRef identity,
+	public List<LectureBlockStatistics> getStatistics(IdentityRef identity,
 			boolean authorizedAbsenceDefault, boolean countAuthorizedAbsenceAsAttendant,
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 		StringBuilder sb = new StringBuilder();
@@ -271,7 +272,7 @@ public class LectureBlockRollCallDAO {
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
-		Map<Long,LectureStatistics> stats = new HashMap<>();
+		Map<Long,LectureBlockStatistics> stats = new HashMap<>();
 		for(Object[] rawObject:rawObjects) {
 			int pos = 1;//jump roll call key
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
@@ -287,108 +288,152 @@ public class LectureBlockRollCallDAO {
 			Long repoKey = PersistenceHelper.extractLong(rawObject, pos++);
 			String repoDisplayname = (String)rawObject[pos++];
 			
-			LectureStatistics entryStatistics;
+			LectureBlockStatistics entryStatistics;
 			if(stats.containsKey(repoKey)) {
 				entryStatistics = stats.get(repoKey);
 			} else {
 				Boolean repoCalculateRate = (Boolean)rawObject[pos++];
-				boolean calculateRate = calculateAttendanceRate;
-				if(repoCalculateRate != null) {
-					calculateRate = repoCalculateRate.booleanValue();
-				}
-				
-				double rate = -1.0d;
-				if(calculateRate) {
-					Double repoRequiredRate = (Double)rawObject[pos++];
-					Double persoRequiredRate = (Double)rawObject[pos++];
-					if(persoRequiredRate != null && persoRequiredRate.doubleValue() >= 0.0d) {
-						rate = persoRequiredRate.doubleValue();
-					} else if(repoRequiredRate != null && repoRequiredRate.doubleValue() >= 0.0d) {
-						rate = repoRequiredRate.doubleValue();
-					} else {
-						rate = requiredAttendanceRateDefault;
-					}
-				}
-
-				entryStatistics = new LectureStatistics(repoKey, repoDisplayname, calculateRate, rate);
+				Double repoRequiredRate = (Double)rawObject[pos++];
+				Double persoRequiredRate = (Double)rawObject[pos++];
+				entryStatistics = create(identity.getKey(),
+						repoKey, repoDisplayname, repoCalculateRate,  repoRequiredRate,
+						persoRequiredRate,
+						calculateAttendanceRate, requiredAttendanceRateDefault);
 				stats.put(repoKey, entryStatistics);
 			}
 			
-			//only count closed roll call after the end date
-			if(rollCallEndDate != null && rollCallEndDate.before(now) && rollCallStatus != null
-					&& (LectureRollCallStatus.closed.name().equals(rollCallStatus) || LectureRollCallStatus.autoclosed.name().equals(rollCallStatus))) {
-			
-				if(lecturesAbsent != null) {
-					if(countAuthorizedAbsenceAsAttendant && absenceAuthorized != null && absenceAuthorized.booleanValue()) {
-						//authorized absence as attendant
-						entryStatistics.addTotalAttendedLectures(lecturesAttended.longValue());
-					} else {
-						entryStatistics.addTotalAbsentLectures(lecturesAbsent.longValue());
-					}
-				}
-				if(lecturesAttended != null) {
-					entryStatistics.addTotalAttendedLectures(lecturesAttended.longValue());
-				}
-
-				if(effectiveLecturesNumber != null) {
-					entryStatistics.addTotalEffectiveLectures(effectiveLecturesNumber.longValue());
-				}
-			}
-
-			if(plannedLecturesNumber != null) {
-				entryStatistics.addTotalPlannedLectures(plannedLecturesNumber.longValue());
-			}
+			appendStatistics(entryStatistics, rollCallEndDate, rollCallStatus,
+					lecturesAttended, lecturesAbsent, absenceAuthorized,
+					plannedLecturesNumber, effectiveLecturesNumber, now,
+					countAuthorizedAbsenceAsAttendant);
 		}
 		
 		return new ArrayList<>(stats.values());
 	}
-	
-	
-	public List<ParticipantLectureStatistics> getStatistics(RepositoryEntryRef entry) {
+
+	public List<LectureBlockStatistics> getStatistics(RepositoryEntry entry,
+			RepositoryEntryLectureConfiguration config,
+			boolean authorizedAbsenceDefault, boolean countAuthorizedAbsenceAsAttendant,
+			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
+		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select ident.key, ")
-		  .append(" count(call.lecturesAttendedNumber), count(call.lecturesAbsentNumber),")
-		  .append(" count(block.plannedLecturesNumber), count(block.effectiveLecturesNumber)")
+		sb.append("select ident.key as participantKey, ")
+		  .append("  call.lecturesAttendedNumber as attendedLectures,")
+		  .append("  call.lecturesAbsentNumber as absentLectures,")
+		  .append("  call.absenceAuthorized as absenceAuthorized,")
+		  .append("  block.key as blockKey,")
+		  .append("  block.plannedLecturesNumber as blockPlanned,")
+		  .append("  block.effectiveLecturesNumber as blockEffective,")
+		  .append("  block.rollCallStatusString as rollCallStatus,")
+		  .append("  block.endDate as rollCallEndDate,")
+		  .append("  summary.requiredAttendanceRate as summaryRate")
 		  .append(" from lectureblock block")
 		  .append(" inner join block.groups blockToGroup")
 		  .append(" inner join blockToGroup.group bGroup")
 		  .append(" inner join bGroup.members membership")
 		  .append(" inner join membership.identity ident")
 		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
-		  .append(" where block.entry.key=:entryKey and membership.role='").append(GroupRoles.participant.name()).append("'")
-		  .append(" group by ident.key");
+		  .append(" left join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
+		  .append(" where block.entry.key=:entryKey and membership.role='").append(GroupRoles.participant.name()).append("'");
+
+		Date now = new Date();
+		Boolean repoCalculateRate = null;
+		Double repoRequiredRate = null;
+		if(config != null) {
+			repoCalculateRate = config.getCalculateAttendanceRate();
+			repoRequiredRate = config.getRequiredAttendanceRate();
+		}
 		
 		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("entryKey", entry.getKey())
 				.getResultList();
-		Map<Long,ParticipantLectureStatistics> stats = new HashMap<>();
+		Map<Long,LectureBlockStatistics> stats = new HashMap<>();
 		for(Object[] rawObject:rawObjects) {
 			int pos = 0;//jump roll call key
 			Long identityKey = (Long)rawObject[pos++];
-			Long attended = PersistenceHelper.extractLong(rawObject, pos++);
-			Long absent = PersistenceHelper.extractLong(rawObject, pos++);
-			Long plannedBlocks = PersistenceHelper.extractLong(rawObject, pos++);
+			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
+			Long lecturesAbsent = PersistenceHelper.extractLong(rawObject, pos++);
+			Boolean absenceAuthorized = (Boolean)rawObject[pos++];
 			
-			ParticipantLectureStatistics entryStatistics;
+			pos++;//jump block key
+			Long plannedLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
+			Long effectiveLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
+			String rollCallStatus = (String)rawObject[pos++];
+			Date rollCallEndDate = (Date)rawObject[pos++];
+			
+			LectureBlockStatistics entryStatistics;
 			if(stats.containsKey(identityKey)) {
 				entryStatistics = stats.get(identityKey);
 			} else {
-				entryStatistics = new ParticipantLectureStatistics(identityKey);
+				Double persoRequiredRate = (Double)rawObject[pos++];
+				entryStatistics = create(identityKey, entry.getKey(), entry.getDisplayname(),
+						repoCalculateRate,  repoRequiredRate,
+						persoRequiredRate,
+						calculateAttendanceRate, requiredAttendanceRateDefault);
 				stats.put(identityKey, entryStatistics);
 			}
-			
-			if(absent != null) {
-				entryStatistics.addTotalAbsentLectures(absent.longValue());
-			}
-			if(attended != null) {
-				entryStatistics.addTotalAttendedLectures(attended.longValue());
-			}
-			if(plannedBlocks != null) {
-				entryStatistics.addTotalPlannedLectures(plannedBlocks.longValue());
-			}
+
+			appendStatistics(entryStatistics, rollCallEndDate, rollCallStatus,
+					lecturesAttended, lecturesAbsent, absenceAuthorized,
+					plannedLecturesNumber, effectiveLecturesNumber, now,
+					countAuthorizedAbsenceAsAttendant);
 		}
 		
 		return new ArrayList<>(stats.values());
+	}
+	
+	private LectureBlockStatistics create(Long identityKey,
+			Long entryKey, String displayName, Boolean repoCalculateRate, Double repoRequiredRate,
+			Double persoRequiredRate,
+			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
+
+		boolean calculateRate = calculateAttendanceRate;
+		if(repoCalculateRate != null) {
+			calculateRate = repoCalculateRate.booleanValue();
+		}
+
+		double requiredRate = -1.0d;
+		if(calculateRate) {
+			if(persoRequiredRate != null && persoRequiredRate.doubleValue() >= 0.0d) {
+				requiredRate = persoRequiredRate.doubleValue();
+			} else if(repoRequiredRate != null && repoRequiredRate.doubleValue() >= 0.0d) {
+				requiredRate = repoRequiredRate.doubleValue();
+			} else {
+				requiredRate = requiredAttendanceRateDefault;
+			}
+		}
+		return new LectureBlockStatistics(identityKey, entryKey, displayName, calculateRate, requiredRate);
+	}
+	
+	private void appendStatistics(LectureBlockStatistics statistics, Date rollCallEndDate, String rollCallStatus,
+			Long lecturesAttended, Long lecturesAbsent, Boolean absenceAuthorized,
+			Long plannedLecturesNumber, Long effectiveLecturesNumber, Date now,
+			boolean countAuthorizedAbsenceAsAttendant) {
+		
+		//only count closed roll call after the end date
+		if(rollCallEndDate != null && rollCallEndDate.before(now) && rollCallStatus != null
+				&& (LectureRollCallStatus.closed.name().equals(rollCallStatus) || LectureRollCallStatus.autoclosed.name().equals(rollCallStatus))) {
+		
+			if(lecturesAbsent != null) {
+				if(countAuthorizedAbsenceAsAttendant && absenceAuthorized != null && absenceAuthorized.booleanValue()) {
+					//authorized absence as attendant
+					statistics.addTotalAttendedLectures(lecturesAttended.longValue());
+				} else {
+					statistics.addTotalAbsentLectures(lecturesAbsent.longValue());
+				}
+			}
+			if(lecturesAttended != null) {
+				statistics.addTotalAttendedLectures(lecturesAttended.longValue());
+			}
+
+			if(effectiveLecturesNumber != null) {
+				statistics.addTotalEffectiveLectures(effectiveLecturesNumber.longValue());
+			}
+		}
+
+		if(plannedLecturesNumber != null) {
+			statistics.addTotalPlannedLectures(plannedLecturesNumber.longValue());
+		}
 	}
 }

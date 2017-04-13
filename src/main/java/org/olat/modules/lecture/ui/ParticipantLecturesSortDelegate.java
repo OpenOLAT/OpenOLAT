@@ -26,7 +26,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.modules.lecture.model.LectureStatistics;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.ui.ParticipantLectureBlocksDataModel.ParticipantCols;
 
 /**
@@ -35,14 +35,14 @@ import org.olat.modules.lecture.ui.ParticipantLectureBlocksDataModel.Participant
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipantLecturesSortDelegate extends SortableFlexiTableModelDelegate<LectureStatistics> {
+public class ParticipantLecturesSortDelegate extends SortableFlexiTableModelDelegate<LectureBlockStatistics> {
 
 	public ParticipantLecturesSortDelegate(SortKey orderBy, ParticipantLecturesDataModel tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
 	}
 	
 	@Override
-	protected void sort(List<LectureStatistics> rows) {
+	protected void sort(List<LectureBlockStatistics> rows) {
 		int columnIndex = getColumnIndex();
 		ParticipantCols column = ParticipantCols.values()[columnIndex];
 		switch(column) {
@@ -53,9 +53,9 @@ public class ParticipantLecturesSortDelegate extends SortableFlexiTableModelDele
 		}
 	}
 	
-	private static class PresentComparator implements Comparator<LectureStatistics> {
+	private static class PresentComparator implements Comparator<LectureBlockStatistics> {
 		@Override
-		public int compare(LectureStatistics s1, LectureStatistics s2) {
+		public int compare(LectureBlockStatistics s1, LectureBlockStatistics s2) {
 			long a1 = s1.getTotalAttendedLectures();
 			long a2 = s2.getTotalAttendedLectures();
 			return Long.compare(a1, a2);

@@ -46,9 +46,10 @@ import org.olat.core.id.Roles;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
-import org.olat.modules.lecture.model.ParticipantLectureStatistics;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.ui.ParticipantListDataModel.ParticipantsCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
+import org.olat.modules.lecture.ui.component.RateCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -145,6 +146,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 
 		if(rollCallEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.progress, new LectureStatisticsCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rate, new RateCellRenderer()));
 		}
 		if(rateEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
@@ -166,12 +168,12 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			participants = lectureService.getParticipants(entry, getIdentity());
 		}
 		
-		List<ParticipantLectureStatistics> statistics = lectureService.getParticipantsLecturesStatistics(entry);
-		Map<Long, ParticipantLectureStatistics> identityToStatisticsMap = statistics.stream().collect(Collectors.toMap(s -> s.getIdentityKey(), s -> s));
+		List<LectureBlockStatistics> statistics = lectureService.getParticipantsLecturesStatistics(entry);
+		Map<Long, LectureBlockStatistics> identityToStatisticsMap = statistics.stream().collect(Collectors.toMap(s -> s.getIdentityKey(), s -> s));
 		
 		List<ParticipantRow> rows = new ArrayList<>(participants.size());
 		for(Identity participant:participants) {
-			ParticipantLectureStatistics stats = identityToStatisticsMap.get(participant.getKey());
+			LectureBlockStatistics stats = identityToStatisticsMap.get(participant.getKey());
 			rows.add(new ParticipantRow(participant, stats, userPropertyHandlers, getLocale()));
 		}
 		tableModel.setObjects(rows);

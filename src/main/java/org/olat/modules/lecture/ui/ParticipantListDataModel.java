@@ -60,6 +60,7 @@ implements SortableFlexiTableDataModel<ParticipantRow> {
 			switch(ParticipantsCols.values()[col]) {
 				case username: return row.getIdentityName();
 				case progress: return row.getStatistics();
+				case rate: return row.getStatistics();
 				default: return null;
 			}
 		}
@@ -74,7 +75,8 @@ implements SortableFlexiTableDataModel<ParticipantRow> {
 	
 	public enum ParticipantsCols implements FlexiSortableColumnDef {
 		username("table.header.username"),
-		progress("table.header.progress");
+		progress("table.header.progress"),
+		rate("table.header.rate");
 		
 		private final String i18nKey;
 		

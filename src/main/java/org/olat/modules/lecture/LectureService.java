@@ -25,8 +25,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
-import org.olat.modules.lecture.model.LectureStatistics;
-import org.olat.modules.lecture.model.ParticipantLectureStatistics;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -288,7 +287,7 @@ public interface LectureService {
 	 * @param identity The participant
 	 * @return A list of statistics
 	 */
-	public List<LectureStatistics> getParticipantLecturesStatistics(IdentityRef identity);
+	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef identity);
 	
 	/**
 	 * Return all the statistics for a course / repository entry.
@@ -296,7 +295,7 @@ public interface LectureService {
 	 * @param entry The course / repository entry
 	 * @return Statistics per user
 	 */
-	public List<ParticipantLectureStatistics> getParticipantsLecturesStatistics(RepositoryEntryRef entry);
+	public List<LectureBlockStatistics> getParticipantsLecturesStatistics(RepositoryEntry entry);
 	
 	/**
 	 * 
