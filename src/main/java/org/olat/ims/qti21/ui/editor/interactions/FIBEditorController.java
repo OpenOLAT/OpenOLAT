@@ -183,7 +183,8 @@ public class FIBEditorController extends FormBasicController {
 				String selectedText = ureq.getParameter("selectedText");
 				String type = ureq.getParameter("gapType");
 				String newEntry = ureq.getParameter("newEntry");
-				doGapEntry(ureq, responseIdentifier, selectedText, type, "true".equals(newEntry));
+				String emptySolution = ureq.getParameter("emptySolution");
+				doGapEntry(ureq, responseIdentifier, selectedText, emptySolution, type, "true".equals(newEntry));
 			} else if("copy-gapentry".equals(cmd)) {
 				String responseIdentifier = ureq.getParameter("responseIdentifier");
 				String selectedText = ureq.getParameter("selectedText");
@@ -223,12 +224,14 @@ public class FIBEditorController extends FormBasicController {
 		}
 	}
 
-	private void doGapEntry(UserRequest ureq, String responseIdentifier, String selectedText, String type, boolean newEntry) {
+	private void doGapEntry(UserRequest ureq, String responseIdentifier, String selectedText, String emptySolution, String type, boolean newEntry) {
 		if(textEntrySettingsCtrl != null || numericalEntrySettingsCtrl != null) return;
 		
 		AbstractEntry interaction = itemBuilder.getEntry(responseIdentifier);
 		if(interaction == null) {
 			interaction = createEntry(responseIdentifier, selectedText, type, newEntry);
+		} else if(StringHelper.containsNonWhitespace(selectedText)) {
+			updateSolution(interaction, selectedText, emptySolution);
 		}
 		
 		if(interaction instanceof TextEntry) {
@@ -303,6 +306,25 @@ public class FIBEditorController extends FormBasicController {
 		}
 	}
 	
+	private void updateSolution(AbstractEntry entry, String solution, String solutionEmpty) {
+		if(entry == null) {
+			//problem
+		} else if(entry instanceof TextEntry) {
+			if("true".equals(solutionEmpty)) {
+				((TextEntry)entry).setSolution("");
+			} else {
+				((TextEntry)entry).setSolution(solution);
+			}
+		} else if(entry instanceof NumericalEntry) {
+			try {
+				double val = Double.parseDouble(solution);
+				((NumericalEntry)entry).setSolution(val);
+			} catch (NumberFormatException e) {
+				logError("", e);
+			}
+		}
+	}
+	
 	private class SolutionExtractorHandler extends DefaultHandler {
 		
 		@Override
@@ -327,22 +349,7 @@ public class FIBEditorController extends FormBasicController {
 				if(StringHelper.containsNonWhitespace(responseIdentifier)
 						&& (StringHelper.containsNonWhitespace(solution) || StringHelper.containsNonWhitespace(solutionEmpty))) {
 					AbstractEntry entry = itemBuilder.getTextEntry(responseIdentifier);
-					if(entry == null) {
-						//problem
-					} else if(entry instanceof TextEntry) {
-						if("true".equals(solutionEmpty)) {
-							((TextEntry)entry).setSolution("");
-						} else {
-							((TextEntry)entry).setSolution(solution);
-						}
-					} else if(entry instanceof NumericalEntry) {
-						try {
-							double val = Double.parseDouble(solution);
-							((NumericalEntry)entry).setSolution(val);
-						} catch (NumberFormatException e) {
-							logError("", e);
-						}
-					}
+					updateSolution(entry, solution, solutionEmpty);
 				}
 			}
 		}
