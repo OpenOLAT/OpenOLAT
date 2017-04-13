@@ -29,9 +29,11 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.DoubleAdder;
 
@@ -137,6 +139,7 @@ public class QTI12To21Converter {
 	
 	private final ManifestBuilder manifest;
 	private List<String> materialPath = new ArrayList<>();
+	private Map<String,String> materialMappings = new HashMap<>();
 	private List<String> errors = new ArrayList<>();
 	private final DoubleAdder atomicMaxScore = new DoubleAdder();
 	
@@ -298,6 +301,9 @@ public class QTI12To21Converter {
 				VFSItem materialItem = originalContainer.resolve(material);
 				if(materialItem instanceof VFSLeaf) {
 					try(InputStream in = ((VFSLeaf) materialItem).getInputStream()) {
+						if(materialMappings.containsKey(material)) {
+							material = materialMappings.get(material);
+						}
 						File dest = new File(unzippedDirRoot, material);
 						FileUtils.copyToFile(in, dest, "");
 					} catch(Exception e) {
@@ -721,10 +727,12 @@ public class QTI12To21Converter {
 					XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 						
 					SAXParser parser = new SAXParser();
-					parser.setContentHandler(new QTI12To21HtmlHandler(xtw));
+					QTI12To21HtmlHandler handler = new QTI12To21HtmlHandler(xtw);
+					parser.setContentHandler(handler);
 					parser.parse(new InputSource(new StringReader(trimmedText)));
 					String blockedHtml = out.toString();
 					text = blockedHtml.replace("<start>", "").replace("</start>", "");
+					materialMappings.putAll(handler.getMaterialsMapping());
 				} catch (FactoryConfigurationError | XMLStreamException | SAXException | IOException e) {
 					log.error("", e);
 				}
@@ -733,6 +741,7 @@ public class QTI12To21Converter {
 				text = StringEscapeUtils.unescapeHtml(text);
 			}
 		}
+		System.out.println(text);
 		return text;
 	}
 	

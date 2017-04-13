@@ -128,6 +128,12 @@ public class AssessmentResultController extends FormBasicController {
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
 			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri, String submissionMapperUri,
 			QTI21AssessmentResultsOptions options, boolean withPrint, boolean withTitle) {
+		this(ureq, wControl, assessedIdentity, anonym, candidateSession, fUnzippedDirRoot, mapperUri, submissionMapperUri, options, withPrint, withTitle, null);
+	}
+	
+	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
+			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri, String submissionMapperUri,
+			QTI21AssessmentResultsOptions options, boolean withPrint, boolean withTitle, String exportUri) {
 		super(ureq, wControl, "assessment_results");
 		
 		this.anonym = anonym;
@@ -153,9 +159,13 @@ public class AssessmentResultController extends FormBasicController {
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		
 		File signature = qtiService.getAssessmentResultSignature(candidateSession);
-		if(signature != null) {
-			signatureMapperUri = registerCacheableMapper(null, "QTI21Signature::" + CodeHelper.getForeverUniqueID(),
-					new SignatureMapper(signature));
+		if (signature != null) {
+			if (exportUri != null) {
+				signatureMapperUri = exportUri;
+			} else {
+				signatureMapperUri = registerCacheableMapper(null, "QTI21Signature::" + CodeHelper.getForeverUniqueID(),
+						new SignatureMapper(signature));
+			}
 		}
 		
 		testSessionState = qtiService.loadTestSessionState(candidateSession);

@@ -1,7 +1,24 @@
 .textentryinteraction {
-    background-position:center;
-    background-repeat:no-repeat;
-    background-image: url(../img/placeholder.png);
+    background-color: #eee;
+    border-radius: 4px;
+    border-left: 3px solid #eee;
+    padding: 2px 4px 2px 1px;
+    font-weight: bold;
+}
+.textentryinteraction.error {
+    background-color: #f2dede;
+    border-left: 3px solid #a94442;
+}
+.textentryinteraction a:before {
+	padding-left: 5px;
+	display: inline-block;
+	font: normal normal normal 14px/1 FontAwesome; 
+	font-size: inherit; 
+	text-rendering: auto;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	transform: translate(0, 0);
+	content: '\f141'
 }
 span.hottext {
     background-color: #eee;
@@ -12,4 +29,3 @@ span.hottext {
 span.hottext input {
 	margin-right: 4px;
 }
-

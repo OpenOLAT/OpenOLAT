@@ -148,7 +148,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		else remainingQuotaKB = quotaKB - actualUsage;
 		
 		removeAsListenerAndDispose(fileUploadCtr);
-		fileUploadCtr = new FileUploadController(getWindowControl(), currentContainer, ureq, uploadLimitKB, remainingQuotaKB, null,
+		fileUploadCtr = new FileUploadController(getWindowControl(), currentContainer, ureq, uploadLimitKB, remainingQuotaKB, null, false,
 				true, showMetadata, true, showCancel, false);
 		listenTo(fileUploadCtr);
 		mainVC.put("fileUploadCtr", fileUploadCtr.getInitialComponent());

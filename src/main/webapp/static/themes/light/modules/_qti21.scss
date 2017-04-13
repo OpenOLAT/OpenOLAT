@@ -336,7 +336,6 @@ div.hotspotInteraction {
 
 	.hottext {		
 		position: relative;
-		
 		margin: -2px 0.15em -2px 0.15em;
 		white-space: nowrap;
 
@@ -347,7 +346,6 @@ div.hotspotInteraction {
 			left: 0.05em;
 			+label {
 				display: inline;
-				
 				padding: 0 0.1em 0 1.2em;
 				background: $o-qti-hottext-bg;
 				border: 1px solid $o-qti-hottext-border-color;
@@ -373,16 +371,21 @@ div.hotspotInteraction {
 	
 	.textEntryInteraction {
 		input {
-			margin: -2px 2px;
+			margin: -1px 2px;
 			line-height: 90%;		
+			vertical-align: middle;
 			font-size: 98%;
+			border: 0.5px solid $o-qti-textEntryInteraction-border-color;
+			background: $o-qti-textEntryInteraction-bg;
+			padding: 0.5px 1px;
+			color: $o-qti-textEntryInteraction-color;
 			/* format fields with values in it in separate style */
 			&:valid,
 			&:disabled {
 				color: $o-qti-textEntryInteraction-filled-color;
 				-webkit-text-fill-color: $o-qti-textEntryInteraction-filled-color;
-				background: $o-qti-textEntryInteraction-filled-bg;
-				border: 1px solid $o-qti-textEntryInteraction-filled-border-color;				
+				background: $o-qti-textEntryInteraction-filled-bg;				
+				border: 0.5px solid $o-qti-textEntryInteraction-filled-border-color;
 			}
 		}
 	}
@@ -405,6 +408,7 @@ div.hotspotInteraction {
 		padding: $padding-small-vertical $padding-small-horizontal;
 		border-left: 1px solid $o-qti-item-border-color;
 		border-right: 1px solid $o-qti-item-border-color;
+		line-height: 1.5em;
 	}
 	.modalFeedback {
 		h4:first-of-type {

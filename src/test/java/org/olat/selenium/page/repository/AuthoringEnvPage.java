@@ -197,6 +197,7 @@ public class AuthoringEnvPage {
 		if(saveButton.isEnabled()) {
 			saveButton.click();
 			OOGraphene.waitBusy(browser);
+			OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy, browser);
 		}
 		return this;
 	}

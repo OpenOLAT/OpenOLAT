@@ -226,9 +226,9 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		
 			String mapperUri = "../../../test" + testEntry.getKey() + "/";//add test repo key
 			String submissionMapperUri = ".";
-			Controller assessmentResultController = new AssessmentResultController(
-					ureq, mockwControl, identity, false, session,
-					fUnzippedDirRoot, mapperUri, submissionMapperUri, QTI21AssessmentResultsOptions.allOptions(), false, true);
+			String exportUri = "../" + translator.translate("table.user.attempt") + (sessions.indexOf(session)+1);			
+			Controller assessmentResultController = new AssessmentResultController(ureq, mockwControl, identity, false, session,
+					fUnzippedDirRoot, mapperUri, submissionMapperUri, QTI21AssessmentResultsOptions.allOptions(), false, true, exportUri);
 
 			Component component = assessmentResultController.getInitialComponent();
 			String componentHTML = createResultHTML(component); 
@@ -237,6 +237,10 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			File resultXML = qtiService.getAssessmentResultFile(session);
 			convertToZipEntry(zout, idPath + assessmentID +".xml", resultXML);	
 			
+			File signatureXML = qtiService.getAssessmentResultSignature(session);
+			if (signatureXML != null) {
+				convertToZipEntry(zout, idPath + "assessmentResultSignature.xml", signatureXML);	
+			}			
 			File submissionDir = qtiService.getSubmissionDirectory(session);
 			String baseDir = idPath + "submissions/";
 			ZipUtil.addDirectoryToZip(submissionDir.toPath(), baseDir, zout);

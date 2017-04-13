@@ -21,6 +21,8 @@ package org.olat.ims.qti21.pool;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -47,12 +49,17 @@ class QTI12To21HtmlHandler extends DefaultHandler {
 
 	private int subLevel = 0;
 	private Deque<String> skipTags = new ArrayDeque<String>();
+	private Map<String,String> materialsMapping = new HashMap<>();
 
 	private boolean envelopP = false;
 	private boolean started = false;
 	
 	public QTI12To21HtmlHandler(XMLStreamWriter xtw) {
 		this.xtw = xtw;
+	}
+	
+	public Map<String,String> getMaterialsMapping() {
+		return materialsMapping;
 	}
 
 	@Override
@@ -120,6 +127,13 @@ class QTI12To21HtmlHandler extends DefaultHandler {
 				//ignore align
 			} else if("xmlns".equals(attrQName) && !StringHelper.containsNonWhitespace(attrValue)) {
 				//ignore empty schema
+			} else if("src".equals(attrQName)) {
+				if(attrValue.contains(" ")) {
+					String newValue = attrValue.replace(' ', '_');
+					materialsMapping.put(attrValue, newValue);
+					attrValue = newValue;
+				}
+				xtw.writeAttribute(attrQName, attrValue);
 			} else {
 				xtw.writeAttribute(attrQName, attrValue);
 			}

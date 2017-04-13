@@ -214,7 +214,9 @@ public class AssessmentHtmlBuilder {
 				AttributesImpl attributesCleaned = new AttributesImpl("");
 				for(int i=0; i<attributes.getLength(); i++) {
 					String name = attributes.getLocalName(i);
-					if(!"openolattype".equalsIgnoreCase(name)) {
+					if(!"openolattype".equalsIgnoreCase(name)
+							&& !"data-qti-solution".equalsIgnoreCase(name)
+							&& !"data-qti-solution-empty".equalsIgnoreCase(name)) {
 						String value = attributes.getValue(i);
 						attributesCleaned.addAttribute(name, value);
 					}
