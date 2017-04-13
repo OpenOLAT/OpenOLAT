@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.2.0'
+				version : '1.2.1'
 			};
 		},
 
@@ -71,14 +71,17 @@
 			}
 
 			function showDialog(e, gapType) {
-				var newEntry = false;
-				var newSelectedText;
-				var responseIdentifier;
+				var ffxhrevent = ed.getParam("ffxhrevent");
 				if(typeof lastSelectedGap != 'undefined') {
-					responseIdentifier = jQuery(lastSelectedGap).attr('data-qti-response-identifier')
+					var textEntryEl = jQuery(lastSelectedGap).closest("span[data-qti='textentryinteraction']");
+					var responseIdentifier = textEntryEl.attr('data-qti-response-identifier');
+					var solution = jQuery(textEntryEl).children().html();
+					var emptySolution = (solution == "" || solution == "&nbsp;" ? "true" : "false");
+					o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false, false,
+							'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'selectedText', solution, 'emptySolution', emptySolution, 'newEntry', false);
 				} else {
 					var counter = 1;
-					newSelectedText = ed.selection.getContent({format: 'text'})
+					var newSelectedText = ed.selection.getContent({format: 'text'})
 					
 					tinymce.each(ed.dom.select("span[data-qti]"), function(node) {
 						var identifier = jQuery(node).attr('data-qti-response-identifier');
@@ -94,17 +97,15 @@
 					if(typeof newSelectedText === "undefined" || newSelectedText.length == 0) {
 						newSelectedText = "gap";
 					}
-					console.log(newSelectedText);
+					
 					var placeholder = createTextEntryPlaceholder(responseIdentifier, newSelectedText, 'textentryinteraction', gapType);
 					var holderHtml = new tinymce.html.Serializer().serialize(placeholder);
 					ed.insertContent(holderHtml);
-					newEntry = true;
+
+					o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false, false,
+							'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'newEntry', true, 'selectedText', newSelectedText, 'gapType', gapType);
 				}
 				ed.setDirty(true);
-
-				var ffxhrevent = ed.getParam("ffxhrevent");
-				o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false, false,
-						'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'newEntry', newEntry, 'selectedText', newSelectedText, 'gapType', gapType);
 			}
 			
 			function guid() {
@@ -201,7 +202,11 @@
 				
 				if (ed.dom.is(e.element, 'span[data-qti=textentryinteraction]')) {
 					lastSelectedGap = e.element;
-				} else if (jQuery(e.element).parent('span.hottext').size() > 0) {
+				} else if (jQuery(e.element).parent("span[data-qti='textentryinteraction']").size() > 0) {
+					lastSelectedGap = e.element;
+				}
+				
+				if (jQuery(e.element).parent('span.hottext').size() > 0) {
 					lastSelectedHottext = e.element;
 				}
 				
@@ -325,8 +330,10 @@
 				jQuery("a", textEntryEl).click(function() {
 					var ffxhrevent = ed.getParam("ffxhrevent");
 					var responseIdentifier = jQuery(textEntryEl).attr('data-qti-response-identifier');
+					var solution = jQuery(textEntryEl).children().html();
+					var emptySolution = (solution == "" || solution == "&nbsp;" ? "true" : "false");
 					o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2, false, false, false,
-							'cmd', 'gapentry', 'responseIdentifier', responseIdentifier);
+							'cmd', 'gapentry', 'responseIdentifier', responseIdentifier, 'selectedText', solution, 'emptySolution', emptySolution);
 					ed.setDirty(true);
 				});
 			}
@@ -353,7 +360,11 @@
 				var solution = val['data-qti-solution'];
 				jQuery("span[data-qti-response-identifier='" + responseIdentifier+ "']>span", ed.getBody()).each(function(index, el) {
 					jQuery(el).text(solution);
-				})
+				});
+				
+				jQuery("span[data-qti-response-identifier='" + responseIdentifier+ "']", ed.getBody()).each(function(index, el) {
+					textEntryEvent(jQuery(el));
+				});
 			});
 
 			// Load Content CSS upon initialization
