@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureParticipantSummary;
+import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureParticipantSummaryImpl;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
 import org.olat.repository.RepositoryEntry;
@@ -49,14 +50,29 @@ public class LectureParticipantSummaryDAO {
 	private DB dbInstance;
 	
 	public LectureParticipantSummary createSummary(RepositoryEntry entry, Identity identity, Date firstAdmissionDate) {
+		return createSummary(entry, identity, firstAdmissionDate, null);
+	}
+
+	public LectureParticipantSummary createSummary(RepositoryEntry entry, Identity identity,
+			Date firstAdmissionDate, LectureBlockStatistics statistics) {
 		LectureParticipantSummaryImpl summary = new LectureParticipantSummaryImpl();
 		summary.setCreationDate(new Date());
 		summary.setLastModified(summary.getCreationDate());
 		summary.setFirstAdmissionDate(firstAdmissionDate);
-		summary.setAbsentLectures(0);
-		summary.setAttendedLectures(0);
-		summary.setExcusedLectures(0);
-		summary.setPlannedLectures(0);
+		if(statistics == null) {
+			summary.setAbsentLectures(0);
+			summary.setAttendedLectures(0);
+			summary.setExcusedLectures(0);
+			summary.setPlannedLectures(0);
+		} else {
+			summary.setAbsentLectures(statistics.getTotalAbsentLectures());
+			summary.setAttendedLectures(statistics.getTotalAttendedLectures());
+			summary.setExcusedLectures(0);
+			summary.setPlannedLectures(statistics.getTotalPlannedLectures());
+			if(statistics.isCalculateRate()) {
+				summary.setAttendanceRate(statistics.getAttendanceRate());
+			}
+		}
 		summary.setIdentity(identity);
 		summary.setEntry(entry);
 		dbInstance.getCurrentEntityManager().persist(summary);
@@ -101,6 +117,24 @@ public class LectureParticipantSummaryDAO {
 			.setParameter("identityKey", identity.getKey())
 			.getResultList();
 		return summaries == null || summaries.isEmpty() ? null : summaries.get(0);
+	}
+	
+	public int updateStatistics(LectureBlockStatistics statistics) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("update lectureparticipantsummary set lastModified=:now,")
+		  .append(" attendedLectures=:attendedLectures, absentLectures=:absentLectures,")
+		  .append(" plannedLectures=:plannedLectures, attendanceRate=:attendanceRate")
+		  .append(" where entry.key=:repoKey and identity.key=:identityKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("repoKey", statistics.getRepoKey())
+				.setParameter("identityKey", statistics.getIdentityKey())
+				.setParameter("attendedLectures", statistics.getTotalAttendedLectures())
+				.setParameter("absentLectures", statistics.getTotalAbsentLectures())
+				.setParameter("plannedLectures", statistics.getTotalPlannedLectures())
+				.setParameter("attendanceRate", statistics.getAttendanceRate())
+				.setParameter("now", new Date())
+				.executeUpdate();
 	}
 	
 	public int updateCalendarSynchronization(RepositoryEntryRef entry, IdentityRef identity) {

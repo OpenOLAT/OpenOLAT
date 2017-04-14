@@ -280,6 +280,10 @@ public interface LectureService {
 	
 	public LectureParticipantSummary saveParticipantSummary(LectureParticipantSummary summary);
 	
+	public void recalculateSummary(RepositoryEntry entry);
+	
+	public void recalculateSummary(RepositoryEntry entry, Identity identity);
+	
 	
 	/**
 	 * Returns the statistics for the specified participant.

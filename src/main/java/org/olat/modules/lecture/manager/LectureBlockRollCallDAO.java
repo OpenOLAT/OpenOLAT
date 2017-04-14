@@ -251,6 +251,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  re.displayname as repoDisplayName,")
 		  .append("  config.calculateAttendanceRate as calculateRate,")
 		  .append("  config.requiredAttendanceRate as reopConfigRate,")
+		  .append("  summary.firstAdmissionDate as firstAdmissionDate,")
 		  .append("  summary.requiredAttendanceRate as summaryRate")
 		  .append(" from lectureblock block")
 		  .append(" inner join block.entry re")
@@ -288,13 +289,15 @@ public class LectureBlockRollCallDAO {
 			Long repoKey = PersistenceHelper.extractLong(rawObject, pos++);
 			String repoDisplayname = (String)rawObject[pos++];
 			
+			Boolean repoCalculateRate = (Boolean)rawObject[pos++];
+			Double repoRequiredRate = (Double)rawObject[pos++];
+			Date firstAdmissionDate = (Date)rawObject[pos++];
+			Double persoRequiredRate = (Double)rawObject[pos++];
+			
 			LectureBlockStatistics entryStatistics;
 			if(stats.containsKey(repoKey)) {
 				entryStatistics = stats.get(repoKey);
 			} else {
-				Boolean repoCalculateRate = (Boolean)rawObject[pos++];
-				Double repoRequiredRate = (Double)rawObject[pos++];
-				Double persoRequiredRate = (Double)rawObject[pos++];
 				entryStatistics = create(identity.getKey(),
 						repoKey, repoDisplayname, repoCalculateRate,  repoRequiredRate,
 						persoRequiredRate,
@@ -304,8 +307,9 @@ public class LectureBlockRollCallDAO {
 			
 			appendStatistics(entryStatistics, rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent, absenceAuthorized,
-					plannedLecturesNumber, effectiveLecturesNumber, now,
-					countAuthorizedAbsenceAsAttendant);
+					plannedLecturesNumber, effectiveLecturesNumber,
+					firstAdmissionDate,
+					now, countAuthorizedAbsenceAsAttendant);
 		}
 		
 		return new ArrayList<>(stats.values());
@@ -326,6 +330,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  block.effectiveLecturesNumber as blockEffective,")
 		  .append("  block.rollCallStatusString as rollCallStatus,")
 		  .append("  block.endDate as rollCallEndDate,")
+		  .append("  summary.firstAdmissionDate as firstAdmissionDate,")
 		  .append("  summary.requiredAttendanceRate as summaryRate")
 		  .append(" from lectureblock block")
 		  .append(" inner join block.groups blockToGroup")
@@ -362,11 +367,13 @@ public class LectureBlockRollCallDAO {
 			String rollCallStatus = (String)rawObject[pos++];
 			Date rollCallEndDate = (Date)rawObject[pos++];
 			
+			Date firstAdmissionDate = (Date)rawObject[pos++];
+			Double persoRequiredRate = (Double)rawObject[pos++];
+			
 			LectureBlockStatistics entryStatistics;
 			if(stats.containsKey(identityKey)) {
 				entryStatistics = stats.get(identityKey);
 			} else {
-				Double persoRequiredRate = (Double)rawObject[pos++];
 				entryStatistics = create(identityKey, entry.getKey(), entry.getDisplayname(),
 						repoCalculateRate,  repoRequiredRate,
 						persoRequiredRate,
@@ -376,8 +383,9 @@ public class LectureBlockRollCallDAO {
 
 			appendStatistics(entryStatistics, rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent, absenceAuthorized,
-					plannedLecturesNumber, effectiveLecturesNumber, now,
-					countAuthorizedAbsenceAsAttendant);
+					plannedLecturesNumber, effectiveLecturesNumber,
+					firstAdmissionDate,
+					now, countAuthorizedAbsenceAsAttendant);
 		}
 		
 		return new ArrayList<>(stats.values());
@@ -408,12 +416,14 @@ public class LectureBlockRollCallDAO {
 	
 	private void appendStatistics(LectureBlockStatistics statistics, Date rollCallEndDate, String rollCallStatus,
 			Long lecturesAttended, Long lecturesAbsent, Boolean absenceAuthorized,
-			Long plannedLecturesNumber, Long effectiveLecturesNumber, Date now,
-			boolean countAuthorizedAbsenceAsAttendant) {
+			Long plannedLecturesNumber, Long effectiveLecturesNumber,
+			Date firstAdmission,
+			Date now, boolean countAuthorizedAbsenceAsAttendant) {
 		
 		//only count closed roll call after the end date
-		if(rollCallEndDate != null && rollCallEndDate.before(now) && rollCallStatus != null
-				&& (LectureRollCallStatus.closed.name().equals(rollCallStatus) || LectureRollCallStatus.autoclosed.name().equals(rollCallStatus))) {
+		if(rollCallEndDate != null && rollCallEndDate.before(now)
+				&& firstAdmission != null && firstAdmission.before(rollCallEndDate)
+				&& rollCallStatus != null && (LectureRollCallStatus.closed.name().equals(rollCallStatus) || LectureRollCallStatus.autoclosed.name().equals(rollCallStatus))) {
 		
 			if(lecturesAbsent != null) {
 				if(countAuthorizedAbsenceAsAttendant && absenceAuthorized != null && absenceAuthorized.booleanValue()) {

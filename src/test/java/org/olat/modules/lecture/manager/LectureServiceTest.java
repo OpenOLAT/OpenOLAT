@@ -60,6 +60,8 @@ public class LectureServiceTest extends OlatTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDAO;
+	@Autowired
+	private LectureParticipantSummaryDAO lectureParticipantSummaryDao;
 	
 	@Test
 	public void addTeacher() {
@@ -149,10 +151,15 @@ public class LectureServiceTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-6-1");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-6-2");
-		// a lecture block
+		// a closed lecture block in the past
 		LectureBlock lectureBlock1 = createClosedLectureBlockInPast(entry);
 		LectureBlock lectureBlock2 = createClosedLectureBlockInPast(entry);
 		LectureBlock lectureBlock3 = createClosedLectureBlockInPast(entry);
+		// create summary in the past
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -4);
+		lectureParticipantSummaryDao.createSummary(entry, participant1, cal.getTime());
+		lectureParticipantSummaryDao.createSummary(entry, participant2, cal.getTime());
 		// add participants to the "course"
 		repositoryEntryRelationDAO.addRole(participant1, entry, GroupRole.participant.name());
 		repositoryEntryRelationDAO.addRole(participant2, entry, GroupRole.participant.name());

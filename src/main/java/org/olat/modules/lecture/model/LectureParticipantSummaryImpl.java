@@ -69,13 +69,13 @@ public class LectureParticipantSummaryImpl implements Persistable, LecturePartic
 	private Double requiredAttendanceRate;
 	
 	@Column(name="l_attended_lectures", nullable=false, insertable=true, updatable=true)
-	private int attendedLectures;
+	private long attendedLectures;
 	@Column(name="l_absent_lectures", nullable=false, insertable=true, updatable=true)
-	private int absentLectures;
+	private long absentLectures;
 	@Column(name="l_excused_lectures", nullable=false, insertable=true, updatable=true)
-	private int excusedLectures;
+	private long excusedLectures;
 	@Column(name="l_planneds_lectures", nullable=false, insertable=true, updatable=true)
-	private int plannedLectures;
+	private long plannedLectures;
 	@Column(name="l_attendance_rate", nullable=true, insertable=true, updatable=true)
 	private Double attendanceRate;
 
@@ -135,35 +135,35 @@ public class LectureParticipantSummaryImpl implements Persistable, LecturePartic
 		this.firstAdmissionDate = firstAdmissionDate;
 	}
 
-	public int getAttendedLectures() {
+	public long getAttendedLectures() {
 		return attendedLectures;
 	}
 
-	public void setAttendedLectures(int attendedLectures) {
+	public void setAttendedLectures(long attendedLectures) {
 		this.attendedLectures = attendedLectures;
 	}
 
-	public int getAbsentLectures() {
+	public long getAbsentLectures() {
 		return absentLectures;
 	}
 
-	public void setAbsentLectures(int absentLectures) {
+	public void setAbsentLectures(long absentLectures) {
 		this.absentLectures = absentLectures;
 	}
 
-	public int getExcusedLectures() {
+	public long getExcusedLectures() {
 		return excusedLectures;
 	}
 
-	public void setExcusedLectures(int excusedLectures) {
+	public void setExcusedLectures(long excusedLectures) {
 		this.excusedLectures = excusedLectures;
 	}
 
-	public int getPlannedLectures() {
+	public long getPlannedLectures() {
 		return plannedLectures;
 	}
 
-	public void setPlannedLectures(int plannedLectures) {
+	public void setPlannedLectures(long plannedLectures) {
 		this.plannedLectures = plannedLectures;
 	}
 	

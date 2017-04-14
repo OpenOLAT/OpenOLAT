@@ -54,15 +54,20 @@ public class EditParticipantSummaryController extends FormBasicController {
 	private FormLink removeCustomRateButton;
 	
 	private double defaultRate;
+	private RepositoryEntry entry;
+	private Identity assessedIdentity;
 	private LectureParticipantSummary participantSummary;
 	
 	@Autowired
 	private LectureService lectureService;
 
-	public EditParticipantSummaryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Identity identity, double defaultRate) {
+	public EditParticipantSummaryController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry entry, Identity assessedIdentity, double defaultRate) {
 		super(ureq, wControl);
+		this.entry = entry;
 		this.defaultRate = defaultRate;
-		participantSummary = lectureService.getOrCreateParticipantSummary(entry, identity);
+		this.assessedIdentity = assessedIdentity;
+		participantSummary = lectureService.getOrCreateParticipantSummary(entry, assessedIdentity);
 		initForm(ureq);
 	}
 
@@ -132,6 +137,7 @@ public class EditParticipantSummaryController extends FormBasicController {
 		}
 		participantSummary.setFirstAdmissionDate(firstAdmissionEl.getDate());
 		participantSummary = lectureService.saveParticipantSummary(participantSummary);
+		lectureService.recalculateSummary(entry, assessedIdentity);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

@@ -547,6 +547,7 @@ public class TeacherRollCallController extends FormBasicController {
 		}
 
 		lectureBlock = lectureService.save(lectureBlock, null);
+		lectureService.recalculateSummary(lectureBlock.getEntry());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

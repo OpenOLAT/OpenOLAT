@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.calendar.CalendarManagedFlag;
@@ -313,6 +314,34 @@ public class LectureServiceImpl implements LectureService {
 			rollCall = lectureBlockRollCallDao.removeLecture(lectureBlock, rollCall, absences);
 		}
 		return rollCall;
+	}
+
+	@Override
+	public void recalculateSummary(RepositoryEntry entry) {
+		List<LectureBlockStatistics> statistics = getParticipantsLecturesStatistics(entry);
+		int count = 0;
+		for(LectureBlockStatistics statistic:statistics) {
+			if(lectureParticipantSummaryDao.updateStatistics(statistic) == 0) {
+				Identity identity = dbInstance.getCurrentEntityManager()
+						.getReference(IdentityImpl.class, statistic.getIdentityKey());
+				lectureParticipantSummaryDao.createSummary(entry, identity, new Date(), statistic);
+			}
+			if(++count % 20 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+	}
+
+	@Override
+	public void recalculateSummary(RepositoryEntry entry, Identity identity) {
+		List<LectureBlockStatistics> statistics = getParticipantsLecturesStatistics(entry);
+		for(LectureBlockStatistics statistic:statistics) {
+			if(identity.getKey().equals(statistic.getIdentityKey())) {
+				if(lectureParticipantSummaryDao.updateStatistics(statistic) == 0) {
+					lectureParticipantSummaryDao.createSummary(entry, identity, new Date(), statistic);
+				}
+			}
+		}
 	}
 
 	@Override
