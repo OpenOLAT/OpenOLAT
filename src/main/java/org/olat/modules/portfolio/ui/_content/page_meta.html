@@ -1,25 +1,28 @@
 <div class="o_page_lead #if($imageAlign == "background") o_block_imagebg" style="background-image: url('$mapperThumbnailUrl/${imageName}');" #else " #end>
 	<h2>$r.escapeHtml($pageTitle) <small>$r.translate("binder.by",$owners)</small></h2>
-	<div class="o_portfolio_page_meta">
-		#if($r.isNotEmpty(pageCategories))
+	<div class="o_portfolio_page_meta">		
+		#if($r.isNotNull($lastPublicationDate))
+		<span class="o_portfolio_publication_date text-muted o_small">
+			 $r.translate("meta.last.publication", $r.formatDateAndTime($lastPublicationDate))
+			 ,
+		</span>
+		#end
+		
+		<span class="o_portfolio_last_modified text-muted o_small">
+			 $r.translate("meta.last.modified", $r.formatDateAndTime($lastModified))
+		</span>
+		
+		#if($r.isNotEmpty($pageCategories))
 		<span class="o_portfolio_categories text-muted o_small">
-			 <strong>$r.translate("meta.categories")</strong> <i class="o_icon o_icon_tags"> </i>
+			<i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 			 #foreach($category in $pageCategories)
-			 	#if(${foreach.count} > 1), #end
-			 	$category
+			 	<span class="tag label label-info">
+				 	$category
+			 	</span>
 			 #end
 		</span>
 		#end
 		
-		#if($r.isNotNull($lastPublicationDate))
-		<span class="o_portfolio_publication_date text-muted o_small">#if($r.isNotEmpty(pageCategories)), #end
-			 $r.translate("meta.last.publication", $r.formatDateAndTime($lastPublicationDate))
-		</span>
-		#end
-		
-		<span class="o_portfolio_last_modified text-muted o_small">#if($r.isNotEmpty(pageCategories) || $r.isNotNull($lastPublicationDate)), #end
-			 $r.translate("meta.last.modified", $r.formatDateAndTime($lastModified))
-		</span>
 	</div>
 	#if($r.available("poster") || $r.isNotEmpty($pageSummary))
 	<div class="o_page_summary clearfix">
