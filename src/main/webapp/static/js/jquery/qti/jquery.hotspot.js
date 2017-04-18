@@ -96,19 +96,21 @@
     function colorData(data) {
     	if(data.selectedOn) {
         	data.fillColor = '0000ff';
+        	data.fillOpacity = 0.5;
     		data.strokeColor = '0000ff';
     		data.strokeOpacity = 1;
     		data.shadow = true;
-    		data.shadowX = 4;
-    		data.shadowY = 4;
-    		data.shadowRadius = 8;
+    		data.shadowX = 0;
+    		data.shadowY = 0;
+    		data.shadowRadius = 7;
     		data.shadowColor = '000000';
     		data.shadowOpacity = 0.8;
     		data.shadowPosition = 'outside';
     	} else {
-        	data.fillColor = '888888';
-    		data.strokeColor = '333333';
-    		data.strokeOpacity = 0.5;
+			data.fillColor = 'bbbbbb';
+        	data.fillOpacity = 0.5;
+    		data.strokeColor = '666666';
+    		data.strokeOpacity = 0.8;
     		data.shadow = false;
     	}
     }
