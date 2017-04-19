@@ -50,7 +50,7 @@
 	.o_tools_container {
 		text-align: center;
 	  	min-height: $o-toolbar-height-md; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
-	  	position: realtive;
+	  	position: relative;
 	  	@include clearfix();
 
 	  	background-color: $o-toolbar-bg-color;
@@ -363,7 +363,7 @@
 }
 
 /* render toolbar with zebra effect in edit mode */
-.o_edit_mode {
+.o_edit_mode .o_toolbar {
 	
 	.o_tools_container {
 		background: repeating-linear-gradient(
