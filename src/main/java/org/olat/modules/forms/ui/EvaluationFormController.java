@@ -493,7 +493,9 @@ public class EvaluationFormController extends FormBasicController implements Val
 		dbInstance.commit();
 		loadResponses();
 		updateElements();
-		saveAsDoneButton.setVisible(false);
+		if (saveAsDoneButton != null) {
+			saveAsDoneButton.setVisible(false);			
+		}
 		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
