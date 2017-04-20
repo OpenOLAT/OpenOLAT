@@ -43,6 +43,7 @@ import org.olat.course.nodes.BlogCourseNode;
 import org.olat.course.nodes.COCourseNode;
 import org.olat.course.nodes.CPCourseNode;
 import org.olat.course.nodes.CalCourseNode;
+import org.olat.course.nodes.Card2BrainCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.DialogCourseNode;
 import org.olat.course.nodes.ENCourseNode;
@@ -107,6 +108,7 @@ public class CourseXStreamAliases {
 		readXstream.alias("BCCourseNode", BCCourseNode.class);
 		readXstream.alias("BlogCourseNode", BlogCourseNode.class);
 		readXstream.alias("CalCourseNode", CalCourseNode.class);
+		readXstream.alias("Card2BrainCourseNode", Card2BrainCourseNode.class);
 		readXstream.alias("COCourseNode", COCourseNode.class);
 		readXstream.alias("CourseNode", CourseNode.class);
 		readXstream.alias("CPCourseNode", CPCourseNode.class);

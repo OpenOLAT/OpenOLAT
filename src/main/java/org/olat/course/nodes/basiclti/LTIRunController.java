@@ -63,6 +63,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIContext;
+import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.ui.PostDataMapper;
 import org.olat.ims.lti.ui.TalkBackMapper;
