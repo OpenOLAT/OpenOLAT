@@ -83,14 +83,16 @@ public class LTIRunController extends BasicController {
 	
 	private Link startButton;
 	private final StackedPanel mainPanel;
-	private VelocityContainer run, startPage, acceptPage;
+	private VelocityContainer run;
+	private VelocityContainer startPage;
 	private BasicLTICourseNode courseNode;
 	private ModuleConfiguration config;
 	private final CourseEnvironment courseEnv;
 	private UserCourseEnvironment userCourseEnv;
 	private SortedProperties userData = new SortedProperties(); 
 	private SortedProperties customUserData = new SortedProperties(); 
-	private Link acceptLink, back;
+	private Link acceptLink;
+	private Link back;
 
 	private boolean fullScreen;
 	private ChiefController thebaseChief;
@@ -171,27 +173,27 @@ public class LTIRunController extends BasicController {
 	 *         not yet accepted or for other values
 	 */
 	private boolean checkHasDataExchangeAccepted(String hash) {
-		// 
+		boolean dataAccepted = false;
 		CoursePropertyManager propMgr = this.userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
 		Property prop = propMgr.findCourseNodeProperty(this.courseNode, getIdentity(), null, PROP_NAME_DATA_EXCHANGE_ACCEPTED);
 		if (prop != null) {
 			// compare if value in property is the same as calculated today. If not, user as to accept again
 			String storedHash = prop.getStringValue();
 			if (storedHash != null && hash != null && storedHash.equals(hash)) {
-				return true;
+				dataAccepted = true;
 			} else {
 				// remove property, not valid anymore
 				propMgr.deleteProperty(prop);
 			}
 		}
-		return false;
+		return dataAccepted;
 	}
 
 	/**
 	 * Helper to initialize the ask-for-data-exchange screen
 	 */
 	private void doAskDataExchange() {
-		acceptPage = createVelocityContainer("accept");
+		VelocityContainer acceptPage = createVelocityContainer("accept");
 		acceptPage.contextPut("userData", userData);
 		acceptPage.contextPut("customUserData", customUserData);
 		acceptLink = LinkFactory.createButton("accept", acceptPage, this);
