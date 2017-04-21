@@ -42,6 +42,8 @@ public class QTI21StatisticSearchParams {
 	private List<Group> limitToGroups;
 	private List<Identity> limitToIdentities;
 	
+	private ArchiveOptions archiveOptions;
+	
 	private boolean viewAnonymUsers;
 	private boolean viewAllUsers;
 	private boolean viewNonMembers;
@@ -50,6 +52,7 @@ public class QTI21StatisticSearchParams {
 		this.testEntry = testEntry;
 		this.courseEntry = courseEntry;
 		this.nodeIdent = nodeIdent;
+		this.archiveOptions = options;
 		
 		if(options == null) {
 			viewAnonymUsers = true;
@@ -131,4 +134,14 @@ public class QTI21StatisticSearchParams {
 	public void setViewAnonymUsers(boolean viewAnonymUsers) {
 		this.viewAnonymUsers = viewAnonymUsers;
 	}
+
+	public ArchiveOptions getArchiveOptions() {
+		return archiveOptions;
+	}
+
+	public void setArchiveOptions(ArchiveOptions archiveOptions) {
+		this.archiveOptions = archiveOptions;
+	}
+	
+	
 }

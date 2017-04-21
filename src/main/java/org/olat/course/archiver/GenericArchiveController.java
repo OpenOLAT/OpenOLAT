@@ -58,16 +58,21 @@ import org.olat.group.BusinessGroup;
 /**
  * @author schnider Comment: Archives the User selected wiki's to the personal
  *         folder of this user.
+ * @author fkiefer
  */
 public class GenericArchiveController extends BasicController {
 	
 	private static final String CMD_SELECT_NODE = "cmd.select.node";
 	
 	private final Panel main;
+	private final VelocityContainer nodeChoose;
 	private TableController nodeListCtr;
 	private NodeTableDataModel nodeTableModel;
 	private CloseableModalController cmc;
 	private ChooseGroupController chooseGroupCtrl;
+	
+	private boolean hideTitle;
+	private ArchiveOptions options;
 	
 	private final CourseNode[] nodeTypes;
 	private final OLATResourceable ores;
@@ -86,8 +91,11 @@ public class GenericArchiveController extends BasicController {
 		this.nodeTypes = nodeTypes;
 		
 		main = new Panel("main");
-		VelocityContainer nodeChoose = createVelocityContainer("nodechoose");
+		nodeChoose = createVelocityContainer("nodechoose");
 		nodeChoose.contextPut("nodeType", nodeTypes[0].getType());
+		
+		options = new ArchiveOptions();
+
 		doNodeChoose(ureq, nodeChoose);		
 		putInitialPanel(main);
 	}
@@ -241,7 +249,6 @@ public class GenericArchiveController extends BasicController {
 	}
 
 	private void archiveNode(UserRequest ureq, CourseNode node, BusinessGroup group) {
-		ArchiveOptions options = new ArchiveOptions();
 		options.setGroup(group);
 		ArchiveResource aResource = new ArchiveResource(node, ores, options, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(aResource);
@@ -252,5 +259,18 @@ public class GenericArchiveController extends BasicController {
 	 */
 	protected void doDispose() {
 		//
+	}
+
+	public boolean isHideTitle() {
+		return hideTitle;
+	}
+
+	public void setHideTitle(boolean hideTitle) {
+		this.hideTitle = hideTitle;
+		nodeChoose.contextPut("hideTitle", hideTitle);
+	}
+
+	public void setOptions(ArchiveOptions options) {
+		this.options = options;
 	}
 }
