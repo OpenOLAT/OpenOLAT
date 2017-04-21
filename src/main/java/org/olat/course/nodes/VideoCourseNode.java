@@ -149,9 +149,12 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
-		Controller controller = new VideoPeekviewController(ureq, wControl, getReferencedRepositoryEntry().getOlatResource());
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		Controller controller = new VideoPeekviewController(ureq, wControl,
+				getReferencedRepositoryEntry().getOlatResource(),
+				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey(),
+				getIdent());
 		return controller;
 	}
 }
