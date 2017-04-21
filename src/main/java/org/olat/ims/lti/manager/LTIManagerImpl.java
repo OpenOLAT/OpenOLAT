@@ -152,7 +152,7 @@ public class LTIManagerImpl implements LTIManager {
 		final String firstName = u.getProperty(UserConstants.FIRSTNAME, loc);
 		final String email = u.getProperty(UserConstants.EMAIL, loc);
 
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		setProperty(props, "resource_link_id", context.getResourceId());
 		setProperty(props, "resource_link_title", context.getResourceTitle());
 		setProperty(props, "resource_link_description", context.getResourceDescription());

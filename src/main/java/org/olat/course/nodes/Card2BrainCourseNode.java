@@ -92,7 +92,7 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("guestnoaccess.message");
 		    runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			runCtrl = new Card2BrainRunController(ureq, wControl, userCourseEnv, this);
+			runCtrl = new Card2BrainRunController(ureq, wControl, this.getModuleConfiguration());
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_card2brain_icon");
 		return new NodeRunConstructionResult(ctrl);

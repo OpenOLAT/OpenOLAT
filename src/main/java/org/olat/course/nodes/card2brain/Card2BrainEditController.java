@@ -53,18 +53,18 @@ public class Card2BrainEditController extends ActivateableTabbableDefaultControl
 	private ConditionEditController accessibilityCondContr;
 	private TabbedPane tabPane;
 	
-	public Card2BrainEditController(UserRequest ureq, WindowControl wControl, Card2BrainCourseNode card2BrainCourseNode,
-			ICourse course, UserCourseEnvironment userCourseEnv) {
+	public Card2BrainEditController(UserRequest ureq, WindowControl wControl, 
+			Card2BrainCourseNode card2BrainCourseNode, ICourse course, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
-		
-		card2BrainConfigController = new Card2BrainConfigController(ureq, wControl, card2BrainCourseNode);
+
+		card2BrainConfigController = new Card2BrainConfigController(ureq, wControl, card2BrainCourseNode.getModuleConfiguration());
 		listenTo(card2BrainConfigController);
-		
+
 		Condition accessCondition = card2BrainCourseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), card2BrainCourseNode));
+		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv, accessCondition,
+				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), card2BrainCourseNode));
 		listenTo(accessibilityCondContr);
-		
+
 		editVc = createVelocityContainer("edit");
 		editVc.put("configForm", card2BrainConfigController.getInitialComponent());
 	}
@@ -104,7 +104,5 @@ public class Card2BrainEditController extends ActivateableTabbableDefaultControl
 	protected void doDispose() {
 		//
 	}
-
-
 
 }

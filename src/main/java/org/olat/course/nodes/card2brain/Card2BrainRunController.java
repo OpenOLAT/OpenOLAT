@@ -21,7 +21,6 @@ package org.olat.course.nodes.card2brain;
 
 import java.util.Map;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -30,17 +29,10 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.course.nodes.Card2BrainCourseNode;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIContext;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.ui.PostDataMapper;
-import org.olat.ims.lti.ui.TalkBackMapper;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.card2brain.Card2BrainModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,23 +48,17 @@ public class Card2BrainRunController extends BasicController {
 
 	private Panel main;
 
-	private CourseNode courseNode;
 	private final ModuleConfiguration config;
-	private final CourseEnvironment courseEnv;
-
-	private final LTIManager ltiManager;
 
 	@Autowired
 	private Card2BrainModule card2BrainModule;
+	@Autowired
+	private LTIManager ltiManager;
 
-	public Card2BrainRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			Card2BrainCourseNode card2BrainCourseNode) {
+	public Card2BrainRunController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
 		super(ureq, wControl);
 
-		this.courseNode = card2BrainCourseNode;
-		this.config = card2BrainCourseNode.getModuleConfiguration();
-		this.courseEnv = userCourseEnv.getCourseEnvironment();
-		ltiManager = CoreSpringFactory.getImpl(LTIManager.class);
+		this.config = config;
 
 		main = new Panel("card2brainPanel");
 		runCard2Brain(ureq);
@@ -95,19 +81,7 @@ public class Card2BrainRunController extends BasicController {
 			oauth_secret = card2BrainModule.getEnterpriseSecret();
 		}
 
-		String serverUri = Settings.createServerURI();
-		String sourcedId = courseEnv.getCourseResourceableId() + "_" + courseNode.getIdent() + "_"
-				+ getIdentity().getKey();
-		container.contextPut("sourcedId", sourcedId);
-
-		Mapper talkbackMapper = new TalkBackMapper(getLocale(),
-				getWindowControl().getWindowBackOffice().getWindow().getGuiTheme().getBaseURI());
-		String backMapperUrl = registerCacheableMapper(ureq, sourcedId + "_talkback", talkbackMapper);
-		String backMapperUri = serverUri + backMapperUrl + "/";
-		String outcomeMapperUri = null;
-
-		LTIContext context = new Card2BrainContext(courseEnv, courseNode, sourcedId, backMapperUri, outcomeMapperUri);
-
+		LTIContext context = new Card2BrainContext();
 		Map<String, String> unsignedProps = ltiManager.forgeLTIProperties(getIdentity(), getLocale(), context, true,
 				true);
 
@@ -120,8 +94,7 @@ public class Card2BrainRunController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		// TODO Auto-generated method stub
-
+		//
 	}
 
 	@Override

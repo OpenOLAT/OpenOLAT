@@ -62,7 +62,7 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 			log.error("", e);
 		}
 		
-		log.info(new StringBuilder("Check set of flaschcards (").append(url).append("): ").append(setOfFlashcardExists).toString());
+		log.info(new StringBuilder("Check card2brain set of flaschcards (").append(url).append("): ").append(setOfFlashcardExists).toString());
 		return setOfFlashcardExists;
 	}
 

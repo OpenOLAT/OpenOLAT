@@ -20,8 +20,6 @@
 package org.olat.course.nodes.card2brain;
 
 import org.olat.core.id.Identity;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.ims.lti.LTIContext;
 import org.olat.ims.lti.LTIDisplayOptions;
 
@@ -37,60 +35,45 @@ public class Card2BrainContext implements LTIContext {
 	private static final String HEIGTH = "auto";
 	private static final String WIDTH = "auto";
 	private static final LTIDisplayOptions TARGET = LTIDisplayOptions.iframe;
-	
-	private final String sourcedId;
-	private final String backMapperUri;
-	private final String outcomeMapperUri;
-	private final CourseNode courseNode;
-	private final CourseEnvironment courseEnv;
-	
-	public Card2BrainContext(CourseEnvironment courseEnv, CourseNode courseNode,
-			String sourcedId, String backMapperUri, String outcomeMapperUri) {
-		this.sourcedId = sourcedId;
-		this.courseEnv = courseEnv;
-		this.courseNode = courseNode;
-		this.backMapperUri = backMapperUri;
-		this.outcomeMapperUri = outcomeMapperUri;
-	}
 
 	@Override
 	public String getSourcedId() {
-		return sourcedId;
+		return null;
 	}
 
 	@Override
 	public String getTalkBackMapperUri() {
-		return backMapperUri;
+		return null;
 	}
 	
 	@Override
 	public String getOutcomeMapperUri() {
-		return outcomeMapperUri;
+		return null;
 	}
 
 	@Override
 	public String getResourceId() {
-		return courseNode.getIdent();
+		return null;
 	}
 
 	@Override
 	public String getResourceTitle() {
-		return courseNode.getShortTitle();
+		return null;
 	}
 
 	@Override
 	public String getResourceDescription() {
-		return courseNode.getLongTitle();
+		return null;
 	}
 
 	@Override
 	public String getContextId() {
-		return courseEnv.getCourseResourceableId().toString();
+		return null;
 	}
 
 	@Override
 	public String getContextTitle() {
-		return courseEnv.getCourseTitle();
+		return null;
 	}
 
 	@Override

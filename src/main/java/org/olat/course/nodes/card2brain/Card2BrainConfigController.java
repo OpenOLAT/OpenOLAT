@@ -19,9 +19,11 @@
  */
 package org.olat.course.nodes.card2brain;
 
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -51,6 +53,8 @@ public class Card2BrainConfigController extends FormBasicController {
 	private MultipleSelectionElement enablePrivateLoginEl;
 	private TextElement privateKeyEl;
 	private TextElement privateSecretEl;
+	private FormLink previewButton;
+	private LayoutMain3ColsPreviewController previewLayoutCtr;
 	
 	private final ModuleConfiguration config;
 	
@@ -59,10 +63,10 @@ public class Card2BrainConfigController extends FormBasicController {
 	@Autowired
 	private Card2BrainManager card2BrainManager;
 	
-	public Card2BrainConfigController(UserRequest ureq, WindowControl wControl, Card2BrainCourseNode card2BrainCourseNode) {
+	public Card2BrainConfigController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
 		super(ureq, wControl);
-		
-		this.config = card2BrainCourseNode.getModuleConfiguration();
+
+		this.config = config;
 		
 		initForm(ureq);
 	}
@@ -76,7 +80,10 @@ public class Card2BrainConfigController extends FormBasicController {
 		flashcardAliasEl = uifactory.addTextElement("edit.flashcard.alias", "edit.flashcard.alias", 128, falshcardAlias, formLayout);
 		flashcardAliasEl.setMandatory(true);
 		flashcardAliasEl.setHelpTextKey("edit.FlashcardHelpText", null);
-
+		
+		previewButton = uifactory.addFormLink("edit.preview", formLayout, "btn btn-default o_xsmall");
+		previewButton.setIconLeftCSS("o_icon o_icon_preview");
+		
 		uifactory.addSpacerElement("Spacer", formLayout, false);
 		
 		boolean enablePrivateLogin = config.getBooleanSafe(Card2BrainCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN);
@@ -118,6 +125,13 @@ public class Card2BrainConfigController extends FormBasicController {
 			setFormWarning(null);
 		}
 	}
+	
+	/**
+	 * Show or hide the preview button.
+	 */
+	private void showHidePreviewButton(boolean show) {
+		previewButton.setVisible(show);	
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) { 
@@ -125,6 +139,9 @@ public class Card2BrainConfigController extends FormBasicController {
 		
 		allOk &= validateFlashcardAlias(parseAlias(flashcardAliasEl.getValue()));	
 		allOk &= validateLogin();
+		
+		// Show the preview button only when the configuration is valid.
+		showHidePreviewButton(allOk);
 
 		return allOk;
 	}
@@ -135,9 +152,7 @@ public class Card2BrainConfigController extends FormBasicController {
 		if (!StringHelper.containsNonWhitespace(alias)) {
 			flashcardAliasEl.setErrorKey(FORM_MISSING_MANDATORY, null);
 			allOk &= false;
-		}
-		
-		if (!card2BrainManager.checkSetOfFlashcards(alias)) {
+		} else if (!card2BrainManager.checkSetOfFlashcards(alias)) {
 			flashcardAliasEl.setErrorKey("edit.warning.aliasCheckFailed", null);
 			allOk &= false;
 		}
@@ -170,11 +185,24 @@ public class Card2BrainConfigController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (enablePrivateLoginEl == source) {
+		if (source == enablePrivateLoginEl) {
 			showHidePrivateLoginFields();
-		}
-		
+		} else if (source == previewButton) {
+			Controller card2brainRunCtr = new Card2BrainRunController(ureq, getWindowControl(), config);
+			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null, card2brainRunCtr.getInitialComponent(), null);
+			previewLayoutCtr.addDisposableChildController(card2brainRunCtr);
+			previewLayoutCtr.activate();
+			listenTo(previewLayoutCtr);
+		}		
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if (source == previewLayoutCtr ) {
+			removeAsListenerAndDispose(previewLayoutCtr);
+		}
+		super.event(ureq, source, event);
 	}
 	
 	protected ModuleConfiguration getUpdatedConfig() {
@@ -220,8 +248,7 @@ public class Card2BrainConfigController extends FormBasicController {
 	 * @return the parsed String
 	 */
 	private String parseAlias(String alias) {
-		return alias.replace("https://card2brain.ch/box/", "");
-		
+		return alias.replace("https://card2brain.ch/box/", "");	
 	}
 	
 }
