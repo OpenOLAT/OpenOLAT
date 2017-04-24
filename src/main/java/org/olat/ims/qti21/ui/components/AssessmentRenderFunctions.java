@@ -567,6 +567,7 @@ public class AssessmentRenderFunctions {
 		String name = attribute.getLocalName();
 		switch(name) {
 			case "accesskey":
+			case "alt":
 			case "class":
 			case "contextmenu":
 			case "dir":
@@ -578,6 +579,8 @@ public class AssessmentRenderFunctions {
 			case "tabindex":
 			case "title":
 			case "style":
+			case "width":
+			case "height":
 				value = getDomAttributeValue(attribute);
 				break;
 			case "href":

@@ -47,11 +47,12 @@
 		
 		#if($r.isNotEmpty($row.sectionCategories))
 		<div class="o_portfolio_page_meta text-muted o_small">
-			$r.translate("meta.section.categories") <i class="o_icon o_icon_tags"> </i>
+			<span class="o_portfolio_categories">
+				<i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 		 	#foreach($category in $row.sectionCategories)
-		 		#if(${foreach.count} > 1), #end
-		 		<a class="o_pf_tag" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
+		 		<a class="tag label label-info" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
 		 	#end
+		 	</span>
 		</div>
 		#end		
 	</div>
@@ -125,27 +126,25 @@
 			<div class="o_portfolio_page_meta_wrapper">
 				#if($r.isNotNull($row.assignment))
 					<i class="o_icon o_icon_assignment o_icon-fw"> </i> <strong>$r.translate("meta.assignment", $row.assignmentTitle)</strong> 
-				#end
-				#if($r.isNotEmpty($row.pageCategories))
-				<span class="o_portfolio_page_meta text-muted o_small">
-					#if($r.isNotNull($row.assignment)), #end
-					<strong>$r.translate("meta.categories")</strong> <i class="o_icon o_icon_tags"> </i>
-					 #foreach($category in $row.pageCategories)
-					 	#if(${foreach.count} > 1), #end
-					 	<a class="o_pf_tag" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
-					 #end
-				</span>
+					#if($r.isNotNull($row.lastPublicationDate)), #end
 				#end
 				#if($r.isNotNull($row.lastPublicationDate))
 				<span class="o_portfolio_page_meta text-muted o_small">
-					#if($r.isNotNull($row.assignment) || $r.isNotEmpty($row.pageCategories)), #end
 					$r.translate("meta.last.publication", $r.formatDateAndTime($row.lastPublicationDate))
+					,
 				</span>
 				#end
 				<span class="o_portfolio_page_meta text-muted o_small">
-					#if($r.isNotNull($row.assignment) || $r.isNotNull($row.lastPublicationDate) or $r.isNotEmpty($row.pageCategories)), #end
 					$r.translate("meta.last.modified", $r.formatDateAndTime($row.lastModified))
 				</span>
+				#if($r.isNotEmpty($row.pageCategories))
+				<span class="o_portfolio_categories text-muted o_small">
+					<i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
+					#foreach($category in $row.pageCategories)
+						<a class="tag label label-info" href="javascript:${f.ffXHREvent("tag_select","$category")}">$category</a>
+					#end
+				</span>
+				#end
 				#if($r.isNotNull(${r.row.getMetaBinderAndSectionTitles()}))
 				<div class="o_portfolio_page_meta text-muted o_small">
 					$r.translate("meta.binder.section.titles", ${row.getMetaBinderAndSectionTitles()})
