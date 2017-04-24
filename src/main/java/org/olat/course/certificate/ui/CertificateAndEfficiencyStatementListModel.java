@@ -52,8 +52,6 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 	public DefaultFlexiTableDataModel<CertificateAndEfficiencyStatement> createCopyWithEmptyList() {
 		return new CertificateAndEfficiencyStatementListModel(getTableColumnModel(), locale);
 	}
-	
-	
 
 	@Override
 	public void sort(SortKey orderBy) {
@@ -78,8 +76,13 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 				return AssessmentHelper.getRoundedScore(score);
 			case passed: return statement.getPassed();
 			case lastModified: return statement.getLastModified();
-			case certificate:
-				return statement.getCertificate();
+			case certificate: return statement.getCertificate();
+			case recertification: {
+				if(statement.getCertificate() != null) {
+					return statement.getCertificate().getNextRecertificationDate();
+				}
+				return null;
+			}
 			case efficiencyStatement: return statement.getEfficiencyStatementKey();
 			case deleteEfficiencyStatement: return statement.getEfficiencyStatementKey() != null;
 		}
@@ -94,6 +97,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		lastModified("table.header.lastScoreDate", true),
 		efficiencyStatement("table.header.certificate", true),
 		certificate("table.header.certificate", true),
+		recertification("table.header.recertification", true),
 		deleteEfficiencyStatement("table.action.delete", false);
 		
 		private final String i18n;
