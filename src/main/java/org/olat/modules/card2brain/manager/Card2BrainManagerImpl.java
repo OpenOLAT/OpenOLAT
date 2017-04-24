@@ -27,6 +27,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.card2brain.Card2BrainManager;
 import org.olat.modules.card2brain.Card2BrainModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

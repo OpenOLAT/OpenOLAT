@@ -34,8 +34,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.Card2BrainCourseNode;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.card2brain.Card2BrainManager;
 import org.olat.modules.card2brain.Card2BrainModule;
-import org.olat.modules.card2brain.manager.Card2BrainManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -89,7 +89,9 @@ public class Card2BrainConfigController extends FormBasicController {
 		boolean enablePrivateLogin = config.getBooleanSafe(Card2BrainCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN);
 		String[] enableValues = new String[]{ translate("on") };		
 		enablePrivateLoginEl = uifactory.addCheckboxesHorizontal("edit.access.enablePrivateLogin", formLayout, enabledKeys, enableValues);
-		enablePrivateLoginEl.select(enabledKeys[0], enablePrivateLogin);
+		if (enablePrivateLogin) {
+			enablePrivateLoginEl.select(enabledKeys[0], true);
+		}
 		enablePrivateLoginEl.addActionListener(FormEvent.ONCHANGE);
 
 		String privateKey = config.getStringValue(Card2BrainCourseNode.CONFIG_PRIVATE_KEY);
@@ -193,7 +195,7 @@ public class Card2BrainConfigController extends FormBasicController {
 			previewLayoutCtr.addDisposableChildController(card2brainRunCtr);
 			previewLayoutCtr.activate();
 			listenTo(previewLayoutCtr);
-		}		
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	

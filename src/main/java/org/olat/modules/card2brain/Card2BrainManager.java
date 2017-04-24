@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.card2brain.manager;
+package org.olat.modules.card2brain;
 
 /**
  * 

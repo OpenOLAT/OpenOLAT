@@ -68,12 +68,16 @@ public class Card2BrainAdminController extends FormBasicController {
 		
 		String[] enableValues = new String[]{ translate("on") };		
 		enabledEl = uifactory.addCheckboxesHorizontal("admin.enabled", formLayout, enabledKeys, enableValues);
-		enabledEl.select(enabledKeys[0], card2BrainModule.isEnabled());
+		if (card2BrainModule.isEnabled()) {
+			enabledEl.select(enabledKeys[0], true);
+		}
 		
 		uifactory.addSpacerElement("Spacer", formLayout, false);
 				
 		enterpriseLoginEnabledEl = uifactory.addCheckboxesHorizontal("admin.enterpriseLoginEnabled", formLayout, enabledKeys, enableValues);
-		enterpriseLoginEnabledEl.select(enabledKeys[0], card2BrainModule.isEnterpriseLoginEnabled());
+		if (card2BrainModule.isEnterpriseLoginEnabled()) {
+			enterpriseLoginEnabledEl.select(enabledKeys[0], true);
+		}
 		enterpriseLoginEnabledEl.setHelpTextKey("admin.enterpriseLoginHelpText", null);
 		enterpriseLoginEnabledEl.setHelpUrl(translate("admin.enterpriseLoginHelpUrl"));
 		enterpriseLoginEnabledEl.addActionListener(FormEvent.ONCHANGE);
@@ -146,7 +150,7 @@ public class Card2BrainAdminController extends FormBasicController {
 			allOk &= validatePeekViewUrl();
 		}
 		
-		return allOk && super.validateFormLogic(ureq);
+		return allOk & super.validateFormLogic(ureq);
 	}
 	
 	private boolean validateEnterpriseLogin() {
