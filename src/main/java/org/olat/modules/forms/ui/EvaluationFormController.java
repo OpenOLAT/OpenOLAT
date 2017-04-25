@@ -238,7 +238,7 @@ public class EvaluationFormController extends FormBasicController implements Val
 		if(element.getRows() > 0) {
 			rows = element.getRows();
 		}
-		TextElement textEl = uifactory.addTextAreaElement("textinput_" + (count++), rows, 72, initialValue, flc);
+		TextElement textEl = uifactory.addTextAreaElement("textinput_" + (count++), null, Integer.MAX_VALUE, rows, 72, false, initialValue, flc);
 		textEl.setEnabled(!readOnly);
 		FormLink saveButton = uifactory.addFormLink("save_" + (count++), "save", null, flc, Link.BUTTON);
 		saveButton.setVisible(!readOnly);
@@ -493,7 +493,9 @@ public class EvaluationFormController extends FormBasicController implements Val
 		dbInstance.commit();
 		loadResponses();
 		updateElements();
-		saveAsDoneButton.setVisible(false);
+		if (saveAsDoneButton != null) {
+			saveAsDoneButton.setVisible(false);			
+		}
 		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

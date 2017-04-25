@@ -23,17 +23,20 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
+import org.olat.ims.qti.export.QTIExportItemFormatConfig;
 
 /**
  * 
  * Initial date: 20.12.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
- *
+ * @author fkiefer
  */
 public class ArchiveOptions {
 	
 	private BusinessGroup group;
 	private List<Identity> identities;
+	
+	private QTIExportItemFormatConfig qtiExportItemFormatConfig;
 	
 	public BusinessGroup getGroup() {
 		return group;
@@ -50,4 +53,14 @@ public class ArchiveOptions {
 	public void setIdentities(List<Identity> identities) {
 		this.identities = identities;
 	}
+
+	public QTIExportItemFormatConfig getQtiExportItemFormatConfig() {
+		return qtiExportItemFormatConfig;
+	}
+
+	public void setQtiExportItemFormatConfig(QTIExportItemFormatConfig qtiExportItemFormatConfig) {
+		this.qtiExportItemFormatConfig = qtiExportItemFormatConfig;
+	}
+	
+	
 }

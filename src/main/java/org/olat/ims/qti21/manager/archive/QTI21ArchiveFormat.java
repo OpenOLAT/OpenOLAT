@@ -51,10 +51,12 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.archiver.QTIExportFormatConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.export.QTIArchiver;
 import org.olat.ims.qti.export.QTIExportFormatter;
+import org.olat.ims.qti.export.QTIExportItemFormatConfig;
 import org.olat.ims.qti.export.helper.IdentityAnonymizerCallback;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
@@ -134,6 +136,7 @@ public class QTI21ArchiveFormat {
 	private IdentityAnonymizerCallback anonymizerCallback;
 
 	private final QTI21StatisticSearchParams searchParams;
+	private QTIExportItemFormatConfig exportConfig;
 	
 	private List<ItemInfos> itemInfos;
 	private final Map<String, InteractionArchive> interactionArchiveMap = new HashMap<>();
@@ -144,6 +147,10 @@ public class QTI21ArchiveFormat {
 	
 	public QTI21ArchiveFormat(Locale locale, QTI21StatisticSearchParams searchParams) {
 		this.searchParams = searchParams;
+		this.exportConfig = searchParams.getArchiveOptions().getQtiExportItemFormatConfig();
+		if (exportConfig == null) {
+			exportConfig = new QTIExportFormatConfig(true, true, true, true);
+		}
 		
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		qtiService = CoreSpringFactory.getImpl(QTI21ServiceImpl.class);
@@ -295,14 +302,25 @@ public class QTI21ArchiveFormat {
 		
 		List<ItemInfos> infos = getItemInfos();
 		for(int i=0; i<infos.size(); i++) {
+			int delta = col;
 			ItemInfos item = infos.get(i);
-			List<Interaction> interactions = item.getInteractions();
-			for(int j=0; j<interactions.size(); j++) {
-				Interaction interaction = interactions.get(j);
-				col = interactionArchiveMap.get(interaction.getQtiClassName())
-						.writeHeader1(item.getAssessmentItem(), interaction, i, j, header1Row, col, workbook);
+			if (exportConfig.hasResponseCols() || exportConfig.hasPointCol() || exportConfig.hasTimeCols()) {
+				List<Interaction> interactions = item.getInteractions();
+				for(int j=0; j<interactions.size(); j++) {
+					Interaction interaction = interactions.get(j);
+					col = interactionArchiveMap.get(interaction.getQtiClassName())
+							.writeHeader1(item.getAssessmentItem(), interaction, i, j, header1Row, col, workbook);
+				}
 			}
-			col += 3;//score, start, duration
+			if (!exportConfig.hasResponseCols()) {
+				col -= col - delta;
+			}
+			if (exportConfig.hasPointCol()) {
+				col++;
+			}
+			if (exportConfig.hasTimeCols()) {
+				col += 2;
+			}		
 		}
 	}
 
@@ -337,16 +355,21 @@ public class QTI21ArchiveFormat {
 		List<ItemInfos> infos = getItemInfos();
 		for(int i=0; i<infos.size(); i++) {
 			ItemInfos info = infos.get(i);
-			List<Interaction> interactions = info.getInteractions();
-			for(int j=0; j<interactions.size(); j++) {
-				Interaction interaction = interactions.get(j);
-				col = interactionArchiveMap.get(interaction.getQtiClassName())
-						.writeHeader2(info.getAssessmentItem(), interaction, i, j, header2Row, col, workbook);
+			if (exportConfig.hasResponseCols()) {
+				List<Interaction> interactions = info.getInteractions();
+				for(int j=0; j<interactions.size(); j++) {
+					Interaction interaction = interactions.get(j);
+					col = interactionArchiveMap.get(interaction.getQtiClassName())
+							.writeHeader2(info.getAssessmentItem(), interaction, i, j, header2Row, col, workbook);
+				}
 			}
-
-			header2Row.addCell(col++, translator.translate("item.score"), headerStyle);
-			header2Row.addCell(col++, translator.translate("item.start"), headerStyle);
-			header2Row.addCell(col++, translator.translate("item.duration"), headerStyle);
+			if (exportConfig.hasPointCol()) {
+				header2Row.addCell(col++, translator.translate("item.score"), headerStyle);
+			}
+			if (exportConfig.hasTimeCols()) {
+				header2Row.addCell(col++, translator.translate("item.start"), headerStyle);
+				header2Row.addCell(col++, translator.translate("item.duration"), headerStyle);
+			}
 		}
 	}
 	
@@ -437,22 +460,33 @@ public class QTI21ArchiveFormat {
 			String itemRefIdentifier = itemRef.getIdentifier().toString();
 			AssessmentItemSession itemSession = responses.getItemSession(itemRefIdentifier);
 			
-			List<Interaction> interactions = info.getInteractions();
-			for(int j=0; j<interactions.size(); j++) {
-				Interaction interaction = interactions.get(j);
-				 AssessmentResponse response = responses
-						 .getResponse(itemRefIdentifier, interaction.getResponseIdentifier());
-				col = interactionArchiveMap.get(interaction.getQtiClassName())
-							.writeInteractionData(info.getAssessmentItem(), response, interaction, j, dataRow, col, workbook);
+			if (exportConfig.hasResponseCols()) {
+				List<Interaction> interactions = info.getInteractions();
+				for(int j=0; j<interactions.size(); j++) {
+					Interaction interaction = interactions.get(j);
+					 AssessmentResponse response = responses
+							 .getResponse(itemRefIdentifier, interaction.getResponseIdentifier());
+					col = interactionArchiveMap.get(interaction.getQtiClassName())
+								.writeInteractionData(info.getAssessmentItem(), response, interaction, j, dataRow, col, workbook);
+				}
 			}
 			
 			//score, start, duration
-			if(itemSession == null) {
-				col += 3;
+			if (itemSession == null) {
+				if (exportConfig.hasPointCol()) {
+					col++;
+				}
+				if (exportConfig.hasTimeCols()) {
+					col += 2;
+				}
 			} else {
-				dataRow.addCell(col++, itemSession.getScore(), null);
-				dataRow.addCell(col++, itemSession.getCreationDate(), workbook.getStyles().getTimeStyle());
-				dataRow.addCell(col++, toDurationInMilliseconds(itemSession.getDuration()), null);
+				if (exportConfig.hasPointCol()) {
+					dataRow.addCell(col++, itemSession.getScore(), null);
+				}
+				if (exportConfig.hasTimeCols()) {
+					dataRow.addCell(col++, itemSession.getCreationDate(), workbook.getStyles().getTimeStyle());
+					dataRow.addCell(col++, toDurationInMilliseconds(itemSession.getDuration()), null);
+				}
 			}
 		}
 	}

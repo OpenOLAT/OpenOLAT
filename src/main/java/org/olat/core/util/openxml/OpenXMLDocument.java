@@ -1120,7 +1120,7 @@ public class OpenXMLDocument {
 		//picture information
 		Node nvPicPrEl = picEl.appendChild(document.createElement("pic:nvPicPr"));
 		Element cNvPrEl = (Element)nvPicPrEl.appendChild(document.createElement("pic:cNvPr"));
-		cNvPrEl.setAttribute("id", "0");
+		cNvPrEl.setAttribute("id", generateSimpleId());
 		cNvPrEl.setAttribute("name", filename);
 		Node cNvPicPrEl = nvPicPrEl.appendChild(document.createElement("pic:cNvPicPr"));
 		Element picLocksEl = (Element)cNvPicPrEl.appendChild(document.createElement("a:picLocks"));
@@ -1196,7 +1196,7 @@ public class OpenXMLDocument {
 		//picture information
 		Node nvPicPrEl = picEl.appendChild(document.createElement("pic:nvPicPr"));
 		Element cNvPrEl = (Element)nvPicPrEl.appendChild(document.createElement("pic:cNvPr"));
-		cNvPrEl.setAttribute("id", "0");
+		cNvPrEl.setAttribute("id", generateSimpleId());
 		cNvPrEl.setAttribute("name", filename);
 		Node cNvPicPrEl = nvPicPrEl.appendChild(document.createElement("pic:cNvPicPr"));
 		Element picLocksEl = (Element)cNvPicPrEl.appendChild(document.createElement("a:picLocks"));
@@ -1293,8 +1293,11 @@ public class OpenXMLDocument {
 		DocReference backgroundImageRef = registerImage(backgroundImage);
 		OpenXMLSize emuSize = backgroundImageRef.getEmuSize();
 
-		Element drawingEl = document.createElement("w:drawing");
-		
+		Element alternateContentEl = document.createElement("mc:AlternateContent");
+		Element choiceEl = (Element)alternateContentEl.appendChild(document.createElement("mc:Choice"));
+		choiceEl.setAttribute("Requires", "wpg");
+		Element drawingEl = (Element)choiceEl.appendChild(document.createElement("w:drawing"));
+
 		//anchor
 		Element anchorEl = (Element)drawingEl.appendChild(document.createElement("wp:anchor"));
 		anchorEl.setAttribute("distT", "0");
@@ -1405,7 +1408,7 @@ public class OpenXMLDocument {
 			appendGraphicElementEl(grpSpEl, emuSize, element);
 		}
 
-		return drawingEl;
+		return alternateContentEl;
 	}
 	
 	/*
@@ -1643,10 +1646,22 @@ public class OpenXMLDocument {
 		return filename;	
 	}
 	
+	/**
+	 * Generate an identifier in the form of rId7. The number
+	 * is unique.
+	 * 
+	 * @return
+	 */
 	protected String generateId() {
 		return "rId" + (++currentId);
 	}
 	
+	/**
+	 * Generate an identifier which is a number. The number is
+	 * unique.
+	 * 
+	 * @return
+	 */
 	protected String generateSimpleId() {
 		return Integer.toString(++currentId);
 	}

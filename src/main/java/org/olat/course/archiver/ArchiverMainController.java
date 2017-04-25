@@ -305,7 +305,7 @@ public class ArchiverMainController extends MainLayoutBasicController {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new IQSURVCourseNode());
 				main.setContent(contentCtr.getInitialComponent());
 			} else if (menuCommand.equals(CMD_QTITESTRESULTS)) {
-				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, new IQTESTCourseNode(), new IQSELFCourseNode());
+				contentCtr = new TestArchiveController(ureq, getWindowControl(), ores, new IQTESTCourseNode(), new IQSELFCourseNode());
 				main.setContent(contentCtr.getInitialComponent());
 			} else if (menuCommand.equals(CMD_SCOREACCOUNTING)) {
 					contentCtr = new ScoreAccountingArchiveController(ureq, getWindowControl(), ores);

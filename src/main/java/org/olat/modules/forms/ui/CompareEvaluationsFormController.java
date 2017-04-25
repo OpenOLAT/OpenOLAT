@@ -183,6 +183,10 @@ public class CompareEvaluationsFormController extends FormBasicController {
 
 	private List<EvaluationFormElementWrapper> forgeTextInput(TextInput element) {
 		List<EvaluationFormResponse> responses = identifierToResponses.get(element.getId());
+		if (responses == null) {
+			// in review - selbstreview ??
+			return new ArrayList<EvaluationFormElementWrapper>();
+		}
 		List<EvaluationFormElementWrapper> inputWrappers = new ArrayList<>(responses.size());
 		for(EvaluationFormResponse response:responses) {
 			if(StringHelper.containsNonWhitespace(response.getStringuifiedResponse())) {
