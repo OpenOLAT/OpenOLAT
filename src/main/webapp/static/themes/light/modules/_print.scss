@@ -42,6 +42,32 @@
 	.o_print_break_before {
 		page-break-before: always;
 	}
+	
+	/* Hide buttons in forms and print text area with full content */
+	.btn {
+		display: none;
+	}
+	.o_form {
+		/* textarea: can not blow up for now, browsers ignore the height */
+		textarea,
+		.form-control.textarea_disabled {
+			background: #fff;
+			height: auto !important;
+			color: #000 !important;
+			resize: none;
+		}
+	}
+	
+	/* Hide comments form */
+	#o_comment_form_link,
+	.o_comments form {
+			display: none !important;
+	}
+	
+	/* Hide avatar - can not print background css images */
+	.o_avatar {
+		display: none;
+	}
 
 	/* Hide backgrounds */	
 	body.o_dmz {
