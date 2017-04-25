@@ -63,7 +63,6 @@ import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
-import org.olat.ims.qti.export.QTIExportFormatterCSVType2;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType3;
 import org.olat.ims.qti.export.QTIExportItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportKPRIMItemFormatConfig;
@@ -204,7 +203,8 @@ public class IQEditReplaceWizard extends WizardController {
 			if (courseNode instanceof IQTESTCourseNode) {
 				formatter = new QTIExportFormatterCSVType1(ureq.getLocale(), "\t", "\"", "\r\n", false);
 			} else if (courseNode instanceof IQSELFCourseNode) {
-				formatter = new QTIExportFormatterCSVType2(ureq.getLocale(), null, "\t", "\"", "\r\n", false);
+				formatter = new QTIExportFormatterCSVType1(ureq.getLocale(),"\t", "\"", "\r\n", false);
+				((QTIExportFormatterCSVType1)formatter).setAnonymous(true);
 			} else {
 				formatter = new QTIExportFormatterCSVType3(ureq.getLocale(), null, "\t", "\"", "\r\n", false);
 			}
