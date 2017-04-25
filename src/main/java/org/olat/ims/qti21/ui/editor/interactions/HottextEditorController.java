@@ -129,6 +129,22 @@ public class HottextEditorController extends FormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+
+		String questionText = textEl.getRawValue();
+		if(!StringHelper.containsNonWhitespace(questionText)) {
+			textEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(!questionText.contains("<hottext")) {
+			textEl.setErrorKey("error.missing.hottext", null);
+			allOk &= false;
+		}
+
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());

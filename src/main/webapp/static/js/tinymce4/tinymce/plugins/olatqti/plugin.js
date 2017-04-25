@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.1.3'
+				version : '1.1.4'
 			};
 		},
 
@@ -228,6 +228,7 @@
 					width: "32",
 					height: "16",
 					src : tinymce.Env.transparentSrc,
+					id : guid(),
 					"data-qti": interaction,
 					"data-qti-response-identifier": responseIdentifier,
 					"data-qti-gap-type": gapType,
@@ -347,11 +348,15 @@
 			ed.on('PreProcess', function(e) {
 				tinymce.each(ed.dom.select("img[data-qti=textentryinteraction]"), function(node) {
 					var identifier = jQuery(node).attr('data-qti-response-identifier');
-					var textNode = ed.dom.create("textEntryInteraction", {
+					var textNode = ed.dom.create("textentryinteraction", {
 						responseIdentifier: identifier
 					});
-					
+
+					var alone = node.previousSibling == null && node.nextSibling == null;
 					ed.dom.replace(textNode, node, false);
+					if(alone) {
+						jQuery(textNode).after(String.fromCharCode(160));
+					}
 			    });
 				
 				tinymce.each(ed.dom.select("span[data-qti=hottext]"), function(node) {
