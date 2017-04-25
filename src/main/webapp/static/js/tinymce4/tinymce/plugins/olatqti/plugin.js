@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.2.1'
+				version : '1.2.2'
 			};
 		},
 
@@ -423,7 +423,12 @@
 						"data-qti-solution": solution,
 						"data-qti-solution-empty": (solution == "" || solution == "&nbsp;" ? "true" : "false")
 					});
+					
+					var alone = node.previousSibling == null && (node.nextSibling == null || jQuery(node.nextSibling).attr("type") == "_moz");
 					ed.dom.replace(textNode, node, false);
+					if(alone) {
+						jQuery(textNode).after(String.fromCharCode(160));
+					}
 			    });
 				
 				tinymce.each(ed.dom.select("span[data-qti=hottext]"), function(node) {

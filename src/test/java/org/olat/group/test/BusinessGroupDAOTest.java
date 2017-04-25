@@ -262,6 +262,17 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(groupShortKeys3.contains(group1.getKey()));
 		Assert.assertTrue(groupShortKeys3.contains(group2.getKey()));
 	}
+
+	@Test
+	public void loadDescription() {
+		String description = "My desc " + UUID.randomUUID();
+		BusinessGroup group = businessGroupDao.createAndPersist(null, "load descr", description, 0, 10, true, true, false, false, false);
+		dbInstance.commitAndCloseSession();
+
+		String loadDescription = businessGroupDao.loadDescription(group.getKey());
+		Assert.assertNotNull(loadDescription);
+		Assert.assertEquals(description, loadDescription);
+	}
 	
 	@Test
 	public void loadAllBusinessGroups() {

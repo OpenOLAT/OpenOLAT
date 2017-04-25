@@ -27,8 +27,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.nodes.Card2BrainCourseNode;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.card2brain.Card2BrainModule;
 import org.springframework.beans.factory.annotation.Autowired;
 

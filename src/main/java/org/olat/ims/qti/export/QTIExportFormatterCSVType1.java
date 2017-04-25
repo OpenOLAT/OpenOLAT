@@ -67,7 +67,7 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 	private int		cut				= 30;
 	// user properties
 	private List<UserPropertyHandler> userPropertyHandlers;
-	
+	private boolean isAnonymous;
 	/**
 	 * @param locale
 	 * @param type
@@ -199,24 +199,28 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		sb.append(sep);
 
 		// add configured user properties
-		User user = set.getIdentity().getUser();
-		for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
-			if (userPropertyHandler == null) {
-				continue;
-			}
-			String property = userPropertyHandler.getUserProperty(user, translator.getLocale());
-			if (!StringHelper.containsNonWhitespace(property)) {
-				property = translator.translate("column.field.notavailable");
-			}
-			sb.append(property);
+		if (isAnonymous) {
+			sb.append(row_counter);
 			sb.append(sep);			
+		} else {
+			User user = set.getIdentity().getUser();
+			for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
+				if (userPropertyHandler == null) {
+					continue;
+				}
+				String property = userPropertyHandler.getUserProperty(user, translator.getLocale());
+				if (!StringHelper.containsNonWhitespace(property)) {
+					property = translator.translate("column.field.notavailable");
+				}
+				sb.append(property);
+				sb.append(sep);			
+			}			
+			// add other user and session information
+			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(set.getIdentity());
+			String homepage = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
+			sb.append(homepage);
+			sb.append(sep);
 		}
-		
-		// add other user and session information
-		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(set.getIdentity());
-		String homepage = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
-		sb.append(homepage);
-		sb.append(sep);
 		float assessPoints = set.getScore();
 		sb.append(assessPoints);
 		sb.append(sep);
@@ -448,12 +452,16 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 	private String createHeaderRow1Intro() {
 		StringBuilder hr1Intro = new StringBuilder();
 		hr1Intro.append(sep);//seqnum
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler != null) {
-				hr1Intro.append(sep);
+		if (isAnonymous) {
+			sb.append(sep);
+		} else {
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				if (userPropertyHandler != null) {
+					hr1Intro.append(sep);
+				}
 			}
+			hr1Intro.append(sep);
 		}
-		hr1Intro.append(sep);
 		hr1Intro.append(sep);
 		hr1Intro.append(sep);
 		hr1Intro.append(sep);
@@ -478,19 +486,24 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		hr2Intro.append(sep);
 
 		// add configured user properties
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler == null) {
-				continue;
+		if (isAnonymous) {
+			String num = translator.translate("column.header.number");
+			hr2Intro.append(num);
+			hr2Intro.append(sep);
+		} else {
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				if (userPropertyHandler == null) {
+					continue;
+				}
+				String header = translator.translate(userPropertyHandler.i18nFormElementLabelKey());
+				hr2Intro.append(header);
+				hr2Intro.append(sep);			
 			}
-			String header = translator.translate(userPropertyHandler.i18nFormElementLabelKey());
-			hr2Intro.append(header);
-			hr2Intro.append(sep);			
+			// add other user and session information
+			String homepage = translator.translate("column.header.homepage");
+			hr2Intro.append(homepage);
+			hr2Intro.append(sep);
 		}
-
-		// add other user and session information
-		String homepage = translator.translate("column.header.homepage");
-		hr2Intro.append(homepage);
-		hr2Intro.append(sep);
 		String assessPoint = translator.translate("column.header.assesspoints");
 		hr2Intro.append(assessPoint);
 		hr2Intro.append(sep);
@@ -580,4 +593,9 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		}
 		mapWithExportItemConfigs = itConfigs;
 	}
+
+	public void setAnonymous(boolean isAnonymous) {
+		this.isAnonymous = isAnonymous;
+	}
+	
 }

@@ -52,6 +52,7 @@ import org.olat.core.util.mail.MailTemplate;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
+import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.ui.main.BusinessGroupListController;
 import org.olat.repository.RepositoryEntryShort;
 
@@ -207,8 +208,8 @@ public class BGMailHelper {
 		final String courselist;
 		final String groupname;
 		final String groupdescription; 
-		StringBuilder learningResources = new StringBuilder();
 		if(group != null) {
+			StringBuilder learningResources = new StringBuilder();
 			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			List<RepositoryEntryShort> repoEntries = businessGroupService.findShortRepositoryEntries(Collections.singletonList(group), 0, -1);
 			for (RepositoryEntryShort entry: repoEntries) {
@@ -223,8 +224,14 @@ public class BGMailHelper {
 			courselist = learningResources.toString();
 			// get group name and description
 			groupname = group.getName();
-			groupdescription = (group instanceof BusinessGroup ?
-					FilterFactory.getHtmlTagAndDescapingFilter().filter(((BusinessGroup)group).getDescription()) : ""); 
+			
+			String description;
+			if(group instanceof BusinessGroup) {
+				description = ((BusinessGroup)group).getDescription(); 
+			} else {
+				description = CoreSpringFactory.getImpl(BusinessGroupDAO.class).loadDescription(group.getKey());
+			}
+			groupdescription = FilterFactory.getHtmlTagAndDescapingFilter().filter(description);
 
 			subject = subject.replace("$groupname", groupname == null ? "" : groupname);
 			body = body.replace("$groupname", groupname == null ? "" : groupname);

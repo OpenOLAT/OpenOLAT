@@ -27,8 +27,10 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
@@ -58,9 +60,15 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.QTIResultSet;
+import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
+import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFormatter;
-import org.olat.ims.qti.export.QTIExportFormatterCSVType2;
+import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
+import org.olat.ims.qti.export.QTIExportItemFormatConfig;
+import org.olat.ims.qti.export.QTIExportKPRIMItemFormatConfig;
+import org.olat.ims.qti.export.QTIExportMCQItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportManager;
+import org.olat.ims.qti.export.QTIExportSCQItemFormatConfig;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -248,7 +256,6 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 
 	@Override
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options, ZipOutputStream exportStream, String charset) {
-		QTIExportManager qem = QTIExportManager.getInstance();
 		String repositorySoftKey = (String) getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
 		
@@ -260,7 +267,18 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 				qaf.exportCourseElement(exportStream);
 				return true;	
 			} else {
-				QTIExportFormatter qef = new QTIExportFormatterCSVType2(locale, null, "\t", "\"", "\r\n", false);
+				QTIExportManager qem = QTIExportManager.getInstance();
+				QTIExportFormatter qef = new QTIExportFormatterCSVType1(locale, "\t", "\"", "\r\n", false);
+				((QTIExportFormatterCSVType1)qef).setAnonymous(true);
+				if (options.getQtiExportItemFormatConfig() != null) {
+					Map<Class<?>, QTIExportItemFormatConfig> itemConfigs = new HashMap<>();
+					Class<?>[] itemTypes = new Class<?>[] {QTIExportSCQItemFormatConfig.class, QTIExportMCQItemFormatConfig.class,
+						QTIExportKPRIMItemFormatConfig.class, QTIExportFIBItemFormatConfig.class, QTIExportEssayItemFormatConfig.class};
+					for (Class<?> itemClass : itemTypes) {
+						itemConfigs.put(itemClass, options.getQtiExportItemFormatConfig());						
+					}
+					qef.setMapWithExportItemConfigs(itemConfigs);
+				}
 				return qem.selectAndExportResults(qef, course.getResourceableId(), getShortTitle(), getIdent(), re, exportStream, locale, ".xls");
 			}
 		} catch (IOException e) {
