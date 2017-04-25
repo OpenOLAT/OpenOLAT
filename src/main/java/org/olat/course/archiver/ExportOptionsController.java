@@ -64,7 +64,7 @@ public class ExportOptionsController extends FormBasicController {
 		optionKeys = new String[]{ITEMCOLS, POSCOL, POINTCOL, TIMECOLS};
 		optionVals = new String[] {
 				translate("form.itemcols"),
-				translate("form.poscol"),
+				translate("form.poscol.extra"),
 				translate("form.pointcol"),
 				translate("form.timecols")
 		};	

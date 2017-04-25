@@ -270,7 +270,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 				QTIExportManager qem = QTIExportManager.getInstance();
 				QTIExportFormatter qef = new QTIExportFormatterCSVType1(locale, "\t", "\"", "\r\n", false);
 				((QTIExportFormatterCSVType1)qef).setAnonymous(true);
-				if (options.getQtiExportItemFormatConfig() != null) {
+				if (options != null && options.getQtiExportItemFormatConfig() != null) {
 					Map<Class<?>, QTIExportItemFormatConfig> itemConfigs = new HashMap<>();
 					Class<?>[] itemTypes = new Class<?>[] {QTIExportSCQItemFormatConfig.class, QTIExportMCQItemFormatConfig.class,
 						QTIExportKPRIMItemFormatConfig.class, QTIExportFIBItemFormatConfig.class, QTIExportEssayItemFormatConfig.class};

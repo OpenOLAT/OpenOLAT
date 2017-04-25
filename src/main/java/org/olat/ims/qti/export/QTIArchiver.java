@@ -327,7 +327,8 @@ public class QTIArchiver {
 		if (courseNode instanceof IQTESTCourseNode){
 			frmtr = new QTIExportFormatterCSVType1(locale, se, em, ca, tagless);
 		} else if (courseNode instanceof IQSELFCourseNode){
-			frmtr = new QTIExportFormatterCSVType2(locale, null, se, em, ca, tagless);
+			frmtr = new QTIExportFormatterCSVType1(locale, se, em, ca, tagless);
+			((QTIExportFormatterCSVType1)frmtr).setAnonymous(true);
 		} else { // type == 3
 			frmtr = new QTIExportFormatterCSVType3(locale, null, se, em, ca, tagless);
 		}
