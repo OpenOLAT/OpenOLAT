@@ -46,7 +46,7 @@ import org.olat.group.BusinessGroupShort;
 @Entity(name="businessgroupshort")
 @Table(name="o_gp_business")
 @NamedQueries({
-	@NamedQuery(name="loadBusinessGroupShortByIds",query="select bgi from businessgroupshort bgi  where bgi.key in (:ids)")
+	@NamedQuery(name="loadBusinessGroupShortByIds",query="select bgi from businessgroupshort bgi where bgi.key in (:ids)")
 })
 public class BusinessGroupShortImpl implements Persistable, BusinessGroupShort {
 

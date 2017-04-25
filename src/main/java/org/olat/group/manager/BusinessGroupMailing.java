@@ -19,25 +19,34 @@
  */
 package org.olat.group.manager;
 
+import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
+import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
-import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupModule;
+import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.ui.BGMailHelper;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
+import org.olat.repository.RepositoryEntryShort;
 
 /**
  * 
@@ -120,6 +129,10 @@ public class BusinessGroupMailing {
 		MailTemplate template = mailing == null ? null : mailing.getTemplate();
 		if(mailing == null || mailing.getTemplate() == null) {
 			template = getDefaultTemplate(type, group, ureqIdentity);
+		} else if(group != null && template.getContext() != null && needTemplateEnhancement(template)) {
+			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
+			List<RepositoryEntryShort> repoEntries = businessGroupService.findShortRepositoryEntries(Collections.singletonList(group), 0, -1);
+			template = new MailTemplateDelegate(template, group, repoEntries);
 		}
 		
 		MailContext context = mailing == null ? null : mailing.getContext();
@@ -138,6 +151,16 @@ public class BusinessGroupMailing {
 			mailing.appendResult(result);
 		}
 	}
+	
+	private static boolean needTemplateEnhancement(MailTemplate template) {
+		String body = template.getBodyTemplate();
+		if(body.contains("groupname") || body.contains("groupdescription") || body.contains("courselist")) {
+			if(!StringHelper.containsNonWhitespace((String)template.getContext().get("groupname"))) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public enum MailType {
 		addParticipant,
@@ -147,5 +170,100 @@ public class BusinessGroupMailing {
 		addToWaitingList,
 		removeToWaitingList,
 		graduateFromWaitingListToParticpant,
+	}
+	
+	public static class MailTemplateDelegate extends MailTemplate {
+		
+		private final MailTemplate delegate;
+		private final BusinessGroupShort group;
+		private final List<RepositoryEntryShort> entries;
+		
+		public MailTemplateDelegate(MailTemplate delegate, BusinessGroupShort group, List<RepositoryEntryShort> entries) {
+			super(null, null, null);
+			this.delegate = delegate;
+			this.group = group;
+			this.entries = entries;
+		}
+
+		@Override
+		public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
+			delegate.putVariablesInMailContext(vContext, recipient);
+			
+			StringBuilder learningResources = new StringBuilder();
+			if(entries != null && entries.size() > 0) {
+				for (RepositoryEntryShort entry: entries) {
+					String title = entry.getDisplayname();
+					String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
+					learningResources.append(title);
+					learningResources.append(" (");
+					learningResources.append(url);
+					learningResources.append(")\n");
+				}
+			}
+			vContext.put("courselist", learningResources.toString());
+			
+			if(group != null) {
+				vContext.put("groupname", group.getName());
+				
+				String description;
+				if(group instanceof BusinessGroup) {
+					description = ((BusinessGroup)group).getDescription(); 
+				} else {
+					description = CoreSpringFactory.getImpl(BusinessGroupDAO.class).loadDescription(group.getKey());
+				}
+				description = FilterFactory.getHtmlTagAndDescapingFilter().filter(description); 
+				vContext.put("groupdescription", description);
+			}
+		}
+
+		@Override
+		public Boolean getCpfrom() {
+			return delegate.getCpfrom();
+		}
+
+		@Override
+		public void setCpfrom(Boolean cpfrom) {
+			delegate.setCpfrom(cpfrom);
+		}
+
+		@Override
+		public String getSubjectTemplate() {
+			return delegate.getSubjectTemplate();
+		}
+
+		@Override
+		public void setSubjectTemplate(String subjectTemplate) {
+			delegate.setSubjectTemplate(subjectTemplate);
+		}
+		
+		@Override
+		public String getBodyTemplate() {
+			return delegate.getBodyTemplate();
+		}
+
+		@Override
+		public void setBodyTemplate(String bodyTemplate) {
+			delegate.setBodyTemplate(bodyTemplate);
+		}
+
+		@Override
+		public File[] getAttachments() {
+			return delegate.getAttachments();
+		}
+
+		@Override
+		public void setAttachments(File[] attachments) {
+			delegate.setAttachments(attachments);
+		}
+
+		@Override
+		public void addToContext(String name, String value) {
+			delegate.addToContext(name, value);
+		}
+
+		@Override
+		public VelocityContext getContext() {
+			return delegate.getContext();
+		}
 	}
 }
