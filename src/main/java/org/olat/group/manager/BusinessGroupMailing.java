@@ -28,9 +28,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -38,13 +36,13 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
-import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.ui.BGMailHelper;
+import org.olat.group.ui.BGMailHelper.BGMailTemplateInfos;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.repository.RepositoryEntryShort;
 
@@ -175,45 +173,30 @@ public class BusinessGroupMailing {
 	public static class MailTemplateDelegate extends MailTemplate {
 		
 		private final MailTemplate delegate;
-		private final BusinessGroupShort group;
-		private final List<RepositoryEntryShort> entries;
+		private final BGMailTemplateInfos infos;
 		
 		public MailTemplateDelegate(MailTemplate delegate, BusinessGroupShort group, List<RepositoryEntryShort> entries) {
 			super(null, null, null);
 			this.delegate = delegate;
-			this.group = group;
-			this.entries = entries;
+			infos = BGMailHelper.getTemplateInfos(group, entries);
+			String subject = delegate.getSubjectTemplate();
+			if(subject != null) {
+				subject = subject.replace("$groupname", infos.getGroupName());
+			}
+			setSubjectTemplate(subject);
 		}
 
 		@Override
 		public void putVariablesInMailContext(VelocityContext vContext, Identity recipient) {
 			delegate.putVariablesInMailContext(vContext, recipient);
 			
-			StringBuilder learningResources = new StringBuilder();
-			if(entries != null && entries.size() > 0) {
-				for (RepositoryEntryShort entry: entries) {
-					String title = entry.getDisplayname();
-					String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
-					learningResources.append(title);
-					learningResources.append(" (");
-					learningResources.append(url);
-					learningResources.append(")\n");
-				}
+			if(StringHelper.containsNonWhitespace(infos.getCourseList())) {
+				vContext.put("courselist", infos.getCourseList());
+			} else if(vContext.get("courselistempty") != null) {
+				vContext.put("courselist", vContext.get("courselistempty"));
 			}
-			vContext.put("courselist", learningResources.toString());
-			
-			if(group != null) {
-				vContext.put("groupname", group.getName());
-				
-				String description;
-				if(group instanceof BusinessGroup) {
-					description = ((BusinessGroup)group).getDescription(); 
-				} else {
-					description = CoreSpringFactory.getImpl(BusinessGroupDAO.class).loadDescription(group.getKey());
-				}
-				description = FilterFactory.getHtmlTagAndDescapingFilter().filter(description); 
-				vContext.put("groupdescription", description);
-			}
+			vContext.put("groupname", infos.getGroupNameWithUrl());
+			vContext.put("groupdescription", infos.getGroupDescription());
 		}
 
 		@Override
@@ -224,16 +207,6 @@ public class BusinessGroupMailing {
 		@Override
 		public void setCpfrom(Boolean cpfrom) {
 			delegate.setCpfrom(cpfrom);
-		}
-
-		@Override
-		public String getSubjectTemplate() {
-			return delegate.getSubjectTemplate();
-		}
-
-		@Override
-		public void setSubjectTemplate(String subjectTemplate) {
-			delegate.setSubjectTemplate(subjectTemplate);
 		}
 		
 		@Override

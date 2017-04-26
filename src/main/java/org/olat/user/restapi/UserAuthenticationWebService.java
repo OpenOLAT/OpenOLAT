@@ -51,6 +51,7 @@ import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.AuthenticationVO;
+import org.olat.restapi.support.vo.ErrorVO;
 
 /**
  * This web service handles functionalities related to authentication credentials of users.
@@ -123,6 +124,8 @@ public class UserAuthenticationWebService {
 	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_AUTHVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The identity not found
+	 * @response.representation.406.doc Cannot create the authentication for an unkown reason
+	 * @response.representation.409.doc Cannot create the authentication because the authentication username is already used by someone else within the same provider
 	 * @param username The username of the user
 	 * @param authenticationVO The authentication object to persist
 	 * @param request The HTTP request
@@ -148,6 +151,17 @@ public class UserAuthenticationWebService {
 		String provider = authenticationVO.getProvider();
 		String authUsername = authenticationVO.getAuthUsername();
 		String credentials = authenticationVO.getCredential();
+		
+		Authentication currentAuthentication = baseSecurity.findAuthenticationByAuthusername(authUsername, provider);
+		if(currentAuthentication != null) {
+			if(!currentAuthentication.getIdentity().equals(identity)) {
+				ErrorVO error = new ErrorVO();
+				error.setCode("unkown:409");
+				error.setTranslation("Authentication name used by: " + currentAuthentication.getIdentity().getUser().getEmail());
+				return Response.serverError().status(Status.CONFLICT).entity(error).build();
+			}
+		}
+		
 		Authentication authentication = baseSecurity.createAndPersistAuthentication(identity, provider, authUsername, credentials, null);
 		if(authentication == null) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();

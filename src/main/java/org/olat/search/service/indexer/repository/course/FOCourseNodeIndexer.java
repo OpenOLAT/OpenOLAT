@@ -85,6 +85,10 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		ContextEntry ce = businessControl.popLauncherContextEntry();
+		if(ce == null || ce.getOLATResourceable() == null || ce.getOLATResourceable().getResourceableId() == null) {
+			return false;
+		}
+		
 		Long resourceableId = ce.getOLATResourceable().getResourceableId();
 		Message message = ForumManager.getInstance().loadMessage(resourceableId);
 		if(message != null) {
@@ -94,9 +98,9 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 			}
 			boolean isMessageHidden = Status.getStatus(threadtop.getStatusCode()).isHidden(); 
 			//assumes that if is owner then is moderator so it is allowed to see the hidden forum threads
-			 //TODO: (LD) fix this!!! - the contextEntry is not the right context for this check
-			boolean isOwner = BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_ACCESS,  contextEntry.getOLATResourceable());
-			if(isMessageHidden && !isOwner) {
+			// TODO: (LD) fix this!!! - the contextEntry is not the right context for this check
+			if(isMessageHidden && !BaseSecurityManager.getInstance()/* isOwner */
+					.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_ACCESS,  contextEntry.getOLATResourceable())) {
 				return false;
 			}
 		}
