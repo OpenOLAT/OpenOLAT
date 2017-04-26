@@ -290,7 +290,7 @@ public class QTI21ArchiveFormat {
 		Row header1Row = exportSheet.newRow();
 		int col = 1;
 		if(anonymizerCallback != null) {
-			col += 5;// anonymized name -> test duration
+			col += 4;// anonymized name -> test duration
 		} else {
 			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 				if (userPropertyHandler != null) {
@@ -319,7 +319,7 @@ public class QTI21ArchiveFormat {
 				col++;
 			}
 			if (exportConfig.hasTimeCols()) {
-				col += 2;
+				col += anonymizerCallback != null ? 1 : 2;
 			}		
 		}
 	}
@@ -349,7 +349,9 @@ public class QTI21ArchiveFormat {
 		
 		header2Row.addCell(col++, translator.translate("column.header.assesspoints"), headerStyle);
 		header2Row.addCell(col++, translator.translate("column.header.passed"), headerStyle);
-		header2Row.addCell(col++, translator.translate("column.header.date"), headerStyle);
+		if (anonymizerCallback == null){
+			header2Row.addCell(col++, translator.translate("column.header.date"), headerStyle);
+		}
 		header2Row.addCell(col++, translator.translate("column.header.duration"), headerStyle);
 
 		List<ItemInfos> infos = getItemInfos();
@@ -367,7 +369,9 @@ public class QTI21ArchiveFormat {
 				header2Row.addCell(col++, translator.translate("item.score"), headerStyle);
 			}
 			if (exportConfig.hasTimeCols()) {
-				header2Row.addCell(col++, translator.translate("item.start"), headerStyle);
+				if (anonymizerCallback == null){
+					header2Row.addCell(col++, translator.translate("item.start"), headerStyle);
+				}
 				header2Row.addCell(col++, translator.translate("item.duration"), headerStyle);
 			}
 		}
@@ -450,7 +454,9 @@ public class QTI21ArchiveFormat {
 		} else {
 			col++;
 		}
-		dataRow.addCell(col++, testSession.getCreationDate(), workbook.getStyles().getDateStyle());
+		if (anonymizerCallback == null){
+			dataRow.addCell(col++, testSession.getCreationDate(), workbook.getStyles().getDateStyle());
+		}
 		dataRow.addCell(col++, toDurationInMilliseconds(testSession.getDuration()), null);
 
 		List<ItemInfos> infos = getItemInfos();
@@ -477,14 +483,16 @@ public class QTI21ArchiveFormat {
 					col++;
 				}
 				if (exportConfig.hasTimeCols()) {
-					col += 2;
+					col += anonymizerCallback != null ? 1 : 2;
 				}
 			} else {
 				if (exportConfig.hasPointCol()) {
 					dataRow.addCell(col++, itemSession.getScore(), null);
 				}
 				if (exportConfig.hasTimeCols()) {
-					dataRow.addCell(col++, itemSession.getCreationDate(), workbook.getStyles().getTimeStyle());
+					if (anonymizerCallback == null){
+						dataRow.addCell(col++, itemSession.getCreationDate(), workbook.getStyles().getTimeStyle());
+					}
 					dataRow.addCell(col++, toDurationInMilliseconds(itemSession.getDuration()), null);
 				}
 			}

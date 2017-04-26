@@ -233,11 +233,11 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		boolean isPassed = set.getIsPassed();					
 		sb.append(isPassed);
 		sb.append(sep);
-		sb.append(set.getIp());
-		sb.append(sep);
 
-		// datatime
 		if (!isAnonymous) {
+			sb.append(set.getIp());
+			sb.append(sep);
+			// datatime
 			Date date = set.getLastModified();
 			sb.append(Formatter.formatDatetime(date));
 			sb.append(sep);
@@ -478,9 +478,9 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		}
 		hr1Intro.append(sep);
 		hr1Intro.append(sep);
-		hr1Intro.append(sep);
 		if (!isAnonymous) {
-			hr1Intro.append(sep);
+			hr1Intro.append(sep);// header ip address
+			hr1Intro.append(sep);// header date
 		}
 		hr1Intro.append(sep);
 		return hr1Intro.toString();//  + sep + sep + sep + sep + sep + sep + sep + sep + sep;
@@ -526,10 +526,10 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		String passed = translator.translate("column.header.passed");
 		hr2Intro.append(passed);
 		hr2Intro.append(sep);
-		String ipAddress = translator.translate("column.header.ipaddress");
-		hr2Intro.append(ipAddress);
-		hr2Intro.append(sep);
 		if (!isAnonymous) {
+			String ipAddress = translator.translate("column.header.ipaddress");
+			hr2Intro.append(ipAddress);
+			hr2Intro.append(sep);
 			String date = translator.translate("column.header.date");
 			hr2Intro.append(date);
 			hr2Intro.append(sep);
