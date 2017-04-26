@@ -53,19 +53,19 @@ import org.olat.restapi.support.vo.KeyValuePair;
  * Access the custom dbs of a course
  * 
  * <P>
- * Initial Date:  7 apr. 2010 <br>
+ * Initial Date:	 *7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
 @Path("repo/courses/{courseId}/db/{category}")
 public class CourseDbWebService {
 	
-	private static final String VERSION  = "1.0";
+	private static final String VERSION	= "1.0";
 	
 	/**
 	 * Retrieves the version of the Course DB Web Service.
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * @response.representation.200.mediaType text/plain
+	 * @response.representation.200.doc The version of this specific Web Service
+	 * @response.representation.200.example 1.0
 	 * @return
 	 */
 	@GET
@@ -78,9 +78,9 @@ public class CourseDbWebService {
 	/**
 	 * Retrieve all values of the authenticated user
 	 * @response.representation.200.qname {http://www.example.com}keyValuePair
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc All the values in the course
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVOes}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc All the values in the course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVOes}
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param request The HTTP request
@@ -107,10 +107,10 @@ public class CourseDbWebService {
 	/**
 	 * Put a new value for an authenticated user.
 	 * @response.representation.qname {http://www.example.com}keyValuePair
-   * @response.representation.mediaType application/xml, application/json
-   * @response.representation.doc the key value pair is saved on the db
-   * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVOes}
-   * @response.representation.200.doc the key value pair is saved on the db
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc the key value pair is saved on the db
+	 * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVOes}
+	 * @response.representation.200.doc the key value pair is saved on the db
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param pair The key value pair
@@ -127,10 +127,10 @@ public class CourseDbWebService {
 	/**
 	 * Update a value for an authenticated user.
 	 * @response.representation.qname {http://www.example.com}keyValuePair
-   * @response.representation.mediaType application/xml, application/json
-   * @response.representation.doc the key value pair is saved on the db
-   * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVOes}
-   * @response.representation.200.doc the key value pair is saved on the db
+	 * @response.representation.mediaType application/xml, application/json
+	 * @response.representation.doc the key value pair is saved on the db
+	 * @response.representation.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVOes}
+	 * @response.representation.200.doc the key value pair is saved on the db
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param pair The key value pair
@@ -147,9 +147,9 @@ public class CourseDbWebService {
 	/**
 	 * Retrieve a value of an authenticated user.
 	 * @response.representation.200.qname {http://www.example.com}keyValuePair
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The value in the course
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVO}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The value in the course
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_KEYVALUEVO}
 	 * @response.representation.404.doc The entry cannot be found
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
@@ -176,9 +176,9 @@ public class CourseDbWebService {
 	/**
 	 * Retrieve a value of an authenticated user.
 	 * @response.representation.200.qname {http://www.example.com}keyValuePair
-   * @response.representation.200.mediaType text/plain, text/html
-   * @response.representation.200.doc A value of the course
-   * @response.representation.200.example Green
+	 * @response.representation.200.mediaType text/plain, text/html
+	 * @response.representation.200.doc A value of the course
+	 * @response.representation.200.example Green
 	 * @response.representation.404.doc The entry cannot be found
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
@@ -205,7 +205,7 @@ public class CourseDbWebService {
 
 	/**
 	 * Put a new value for an authenticated user.
-   * @response.representation.200.doc The value is saved in the course
+	 * @response.representation.200.doc The value is saved in the course
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param name The name of the key value pair
@@ -222,7 +222,7 @@ public class CourseDbWebService {
 
 	/**
 	 * Update a value for an authenticated user.
-   * @response.representation.200.doc The value is saved in the course
+	 * @response.representation.200.doc The value is saved in the course
 	 * @param courseId The course resourceable's id
 	 * @param category The name of the database
 	 * @param name The name of the key value pair
@@ -240,7 +240,7 @@ public class CourseDbWebService {
 	
 	/**
 	 * Delete a value for an authenticated user.
-   * @response.representation.200.doc the key value pair is remove from the db
+	 * @response.representation.200.doc the key value pair is remove from the db
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The entry cannot be found
 	 * @param courseId The course resourceable's id
@@ -269,7 +269,8 @@ public class CourseDbWebService {
 	
 	/**
 	 * Fallbakc method for the browsers
-   * @response.representation.200.doc the key value pair is remove from the db
+	 * 
+	 * @response.representation.200.doc the key value pair is remove from the db
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The entry cannot be found
 	 * @param courseId The course resourceable's id
