@@ -45,6 +45,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.i18n.I18nManager;
@@ -204,43 +205,21 @@ public class BGMailHelper {
 		String body = trans.translate(bodyKey, bodyArgs);
 		
 		// build learning resources as list of url as string
-		
-		final String courselist;
-		final String groupname;
-		final String groupdescription; 
+		final BGMailTemplateInfos infos; 
 		if(group != null) {
-			StringBuilder learningResources = new StringBuilder();
 			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			List<RepositoryEntryShort> repoEntries = businessGroupService.findShortRepositoryEntries(Collections.singletonList(group), 0, -1);
-			for (RepositoryEntryShort entry: repoEntries) {
-				String title = entry.getDisplayname();
-				String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
-				learningResources.append(title);
-				learningResources.append(" (");
-				learningResources.append(url);
-				learningResources.append(")\n");
-			}
-	
-			courselist = learningResources.toString();
-			// get group name and description
-			groupname = group.getName();
-			
-			String description;
-			if(group instanceof BusinessGroup) {
-				description = ((BusinessGroup)group).getDescription(); 
+			infos = getTemplateInfos(group, repoEntries);
+			subject = subject.replace("$groupname", infos.getGroupName());
+			body = body.replace("$groupname", infos.getGroupNameWithUrl());
+			body = body.replace("$groupdescription", infos.getGroupDescription());
+			if(StringHelper.containsNonWhitespace(infos.getCourseList())) {
+				body = body.replace("$courselist", infos.getCourseList());
 			} else {
-				description = CoreSpringFactory.getImpl(BusinessGroupDAO.class).loadDescription(group.getKey());
+				body = body.replace("$courselist", trans.translate("notification.mail.no.ressource", null));
 			}
-			groupdescription = FilterFactory.getHtmlTagAndDescapingFilter().filter(description);
-
-			subject = subject.replace("$groupname", groupname == null ? "" : groupname);
-			body = body.replace("$groupname", groupname == null ? "" : groupname);
-			body = body.replace("$groupdescription", groupdescription == null ? "" : groupdescription);
-			body = body.replace("$courselist", courselist == null ? "" : courselist);
 		} else {
-			courselist = "";
-			groupname = "";
-			groupdescription = "";
+			infos = new BGMailTemplateInfos("", "", "", "");
 		}
 		
 		// create a mail template which all these data
@@ -254,11 +233,91 @@ public class BGMailHelper {
 				//the email of the user, needs to stay named 'login'
 				context.put("login", user.getProperty(UserConstants.EMAIL, null));
 				// Put variables from greater context
-				context.put("groupname", groupname);
-				context.put("groupdescription", groupdescription);
-				context.put("courselist", courselist);
+				context.put("groupname", infos.getGroupNameWithUrl());
+				context.put("groupdescription", infos.getGroupDescription());
+				if(StringHelper.containsNonWhitespace(infos.getCourseList())) {
+					context.put("courselist", infos.getCourseList());
+				} else {
+					context.put("courselist", trans.translate("notification.mail.no.ressource", null));
+				}
+				context.put("courselistempty", trans.translate("notification.mail.no.ressource", null));
 			}
 		};
 		return mailTempl;
+	}
+	
+	public static BGMailTemplateInfos getTemplateInfos(BusinessGroupShort group, List<RepositoryEntryShort> repoEntries) {
+		StringBuilder learningResources = new StringBuilder();
+		if(repoEntries != null && repoEntries.size() > 0) {
+			for (RepositoryEntryShort entry: repoEntries) {
+				String title = entry.getDisplayname();
+				String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString("[RepositoryEntry:" + entry.getKey() + "]");
+				learningResources.append(title);
+				learningResources.append(" (");
+				learningResources.append(url);
+				learningResources.append(")\n");
+			}
+		}
+		
+		String courseList = null;
+		if(learningResources.length() > 0) {
+			courseList = learningResources.toString();
+		}
+
+		String groupNameWithUrl = null;
+		String groupDescription = null;
+		if(group != null) {
+			// get group name and description
+			StringBuilder sb = new StringBuilder();
+			sb.append(group.getName() == null ? "" : group.getName())
+			         .append(" (")
+			         .append(BusinessControlFactory.getInstance().getURLFromBusinessPathString("[BusinessGroup:" + group.getKey() + "]"))
+			         .append(")\n");
+			groupNameWithUrl = sb.toString();
+	
+			String description;
+			if(group instanceof BusinessGroup) {
+				description = ((BusinessGroup)group).getDescription(); 
+			} else {
+				description = CoreSpringFactory.getImpl(BusinessGroupDAO.class).loadDescription(group.getKey());
+			}
+			groupDescription = FilterFactory.getHtmlTagAndDescapingFilter().filter(description);
+		}
+		return new BGMailTemplateInfos(group.getName(), groupNameWithUrl, groupDescription, courseList);
+		
+	}
+	
+	public static final class BGMailTemplateInfos {
+		private final String groupName;
+		private final String groupNameWithUrl;
+		private final String groupDescription;
+		private final String courseList;
+		
+		public BGMailTemplateInfos(String groupName, String groupNameWithUrl, String groupDescription, String courseList) {
+			this.groupName = groupName;
+			this.groupNameWithUrl = groupNameWithUrl;
+			this.groupDescription = groupDescription;
+			this.courseList = courseList;
+		}
+		
+		public String getGroupName() {
+			if(groupName == null) return "";
+			return groupName;
+		}
+		
+		public String getGroupNameWithUrl() {
+			if(groupNameWithUrl == null) return "";
+			return groupNameWithUrl;
+		}
+		
+		public String getGroupDescription() {
+			if(groupDescription == null) return "";
+			return groupDescription;
+		}
+		
+		public String getCourseList() {
+			if(courseList == null) return "";
+			return courseList;
+		}
 	}
 }
