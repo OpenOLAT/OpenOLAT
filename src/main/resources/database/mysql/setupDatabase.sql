@@ -1316,8 +1316,8 @@ create table o_vid_transcoding (
 
 create table o_vid_metadata (
   id bigint not null auto_increment,
-  creationdate timestamp not null,
-  lastmodified timestamp not null,
+  creationdate datetime not null,
+  lastmodified datetime not null,
   vid_width bigint default null,
   vid_height bigint default null,
   vid_size bigint default null,
