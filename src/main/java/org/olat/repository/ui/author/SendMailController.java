@@ -268,7 +268,10 @@ public class SendMailController extends FormBasicController {
 			boolean success = false;
 			try {
 				File[] attachmentArr = getAttachments();
-				MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+				MailContext context = null;
+				if(repoEntries.size() == 1) {
+					context = new MailContextImpl("[RepositoryEntry:" + repoEntries.get(0).getKey() + "]");
+				}
 				MailBundle bundle = new MailBundle();
 				bundle.setContext(context);
 				bundle.setFromId(getIdentity());						
