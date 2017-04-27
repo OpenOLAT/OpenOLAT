@@ -226,6 +226,15 @@ public interface RepositoryService {
 	public List<Identity> getMembers(RepositoryEntryRef re, String... roles);
 	
 	/**
+	 * Get the 
+	 * @param re
+	 * @param followBusinessGroups
+	 * @param roles
+	 * @return
+	 */
+	public List<Identity> getMembers(List<? extends RepositoryEntryRef> re, RepositoryEntryRelationType relationType, String... roles);
+	
+	/**
 	 * Return all the identities the specified role linked to a repository
 	 * entry.
 	 * 

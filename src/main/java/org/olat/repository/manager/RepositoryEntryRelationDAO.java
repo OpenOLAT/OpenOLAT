@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -420,6 +421,12 @@ public class RepositoryEntryRelationDAO {
 	}
 	
 	public List<Identity> getMembers(RepositoryEntryRef re, RepositoryEntryRelationType type, String... roles) {
+		return getMembers(Collections.singletonList(re), type, roles);
+	}
+	
+	public List<Identity> getMembers(List<? extends RepositoryEntryRef> res, RepositoryEntryRelationType type, String... roles) {
+		if(res == null || res.isEmpty()) return Collections.emptyList();
+		
 		List<String> roleList = GroupRoles.toList(roles);
 		
 		String def;
@@ -436,14 +443,15 @@ public class RepositoryEntryRelationDAO {
 		  .append(" inner join baseGroup.members as memberships")
 		  .append(" inner join memberships.identity as ident")
 		  .append(" inner join fetch ident.user as identUser")
-		  .append(" where v.key=:repoKey");
+		  .append(" where v.key in (:repoKeys)");
 		if(roleList.size() > 0) {
 				sb.append(" and memberships.role in (:roles)");
 		}
-			
+		
+		List<Long> repoKeys = res.stream().map(re -> re.getKey()).collect(Collectors.toList());	
 		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
-				.setParameter("repoKey", re.getKey());
+				.setParameter("repoKeys", repoKeys);
 		if(roleList.size() > 0) {
 				query.setParameter("roles", roleList);
 		}

@@ -1,0 +1,6 @@
+<ul class="list-unstyled">
+	#foreach ($attachment in $attachments)
+	<li><i class="o_icon o_icon-fw $attachment.cssClass"> </i> $attachment.filename $r.render(${attachment.getDeleteComponentName()})</li>
+	#end
+</ul>
+

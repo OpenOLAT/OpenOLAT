@@ -27,6 +27,7 @@
 package org.olat.core.util.mail;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -272,7 +273,7 @@ public class ContactList extends LogDelegator {
 	 * 
 	 * @param listOfIdentity List containing Identites
 	 */
-	public void addAllIdentites(List<Identity> listOfIdentity) {
+	public void addAllIdentites(Collection<Identity> listOfIdentity) {
 		for (Identity identity:listOfIdentity) {
 			add(identity);
 		}

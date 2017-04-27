@@ -3,6 +3,9 @@
 #end
 $r.render("table")
 <div class="o_button_group clearfix">
+	#if($r.available("tools.send.mail"))
+		$r.render("tools.send.mail")
+	#end
 	#if($r.available("tools.add.owners"))
 		$r.render("tools.add.owners")
 	#end
