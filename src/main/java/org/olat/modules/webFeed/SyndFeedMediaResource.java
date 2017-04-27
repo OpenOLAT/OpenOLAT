@@ -29,9 +29,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.commons.servlets.RSSServlet;
 import org.olat.core.gui.media.MediaResource;
 
-import com.sun.syndication.feed.synd.SyndFeed;
-import com.sun.syndication.io.FeedException;
-import com.sun.syndication.io.SyndFeedOutput;
+import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.io.FeedException;
+import com.rometools.rome.io.SyndFeedOutput;
 
 /**
  * The media resource for synd feeds. Used for dispatching.
