@@ -208,6 +208,7 @@ public class ForumController extends BasicController implements GenericEventList
 			}
 		} else if(viewCtrl == source) {
 			if(event == Event.BACK_EVENT) {
+				reloadThreadList |= viewCtrl.hasMarkedNewMessages();
 				doThreadList(ureq);
 			} else if(event instanceof DeleteThreadEvent) {
 				reloadThreadList = true;
@@ -219,6 +220,7 @@ public class ForumController extends BasicController implements GenericEventList
 			}
 		} else if(userViewCtrl == source) {
 			if(event == Event.BACK_EVENT) {
+				reloadThreadList |= userViewCtrl.hasMarkedNewMessages();
 				cleanUpMessageViews();
 				doUserList(ureq);
 			} else if(event instanceof SelectMessageEvent) {
