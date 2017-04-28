@@ -324,7 +324,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			lastEvent = new CandidateEvent(candidateSession, testEntry, entry);
 			lastEvent.setTestEventType(CandidateTestEventType.ITEM_EVENT);
 			
-			testSessionController = resumeSession();
+			testSessionController = resumeSession(ureq);
 		}
 	}
 	
@@ -447,6 +447,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				|| testSessionController.getTestSessionState().isExited()) {
 			return false;
 		}
+		
+		testSessionController.touchDurations(currentRequestTimestamp);
+		testSessionController.suspendTestSession(requestTimestamp);
 		
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
 		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
@@ -1406,9 +1409,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		return result;
 	}
 	
-	private TestSessionController resumeSession() {
+	private TestSessionController resumeSession(UserRequest ureq) {
+		Date currentRequestTimestamp = ureq.getRequestTimestamp();
+		
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
         TestSessionController controller =  createTestSessionController(notificationRecorder);
+        controller.unsuspendTestSession(currentRequestTimestamp);
        
         TestSessionState testSessionState = controller.getTestSessionState();
 		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
@@ -1419,7 +1425,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			if(itemProcessingContext instanceof ItemSessionController
 					&& itemSessionState.isSuspended()) {
 				ItemSessionController itemSessionController = (ItemSessionController)itemProcessingContext;
-				itemSessionController.unsuspendItemSession(new Date());
+				itemSessionController.unsuspendItemSession(currentRequestTimestamp);
 			}
 		}
 		
