@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -54,7 +55,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -63,6 +63,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.support.vo.AuthenticationVO;
+import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatJerseyTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +83,8 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private OLATAuthManager authManager;
 	
@@ -106,12 +109,11 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 	@Test
 	public void createAuthentications() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
-		BaseSecurity baseSecurity = BaseSecurityManager.getInstance();
-		Identity adminIdent = baseSecurity.findIdentityByName("administrator");
+		Identity adminIdent = securityManager.findIdentityByName("administrator");
 		try {
-			Authentication refAuth = baseSecurity.findAuthentication(adminIdent, "REST-API");
+			Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API");
 			if(refAuth != null) {
-				baseSecurity.deleteAuthentication(refAuth);
+				securityManager.deleteAuthentication(refAuth);
 			}
 		} catch(Exception e) {
 			//
@@ -133,7 +135,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
 		AuthenticationVO savedAuth = conn.parse(response, AuthenticationVO.class);
-		Authentication refAuth = baseSecurity.findAuthentication(adminIdent, "REST-API");
+		Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-API");
 
 		assertNotNull(refAuth);
 		assertNotNull(refAuth.getKey());
@@ -150,15 +152,64 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		conn.shutdown();
 	}
 	
+	/**
+	 * Check if the REST call return a specific error if the pair authentication user name and provider
+	 * is already used.
+	 * 
+	 */
+	@Test
+	public void createAuthentications_checkDuplicate() throws IOException, URISyntaxException {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-auth-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-auth-2");
+		String authUsername = UUID.randomUUID().toString();
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		//set the first authentication
+		AuthenticationVO vo1 = new AuthenticationVO();
+		vo1.setAuthUsername(authUsername);
+		vo1.setIdentityKey(id1.getKey());
+		vo1.setProvider("REST-API");
+		vo1.setCredential("credentials");
+		URI request1 = UriBuilder.fromUri(getContextURI()).path("/users/" + id1.getName() + "/auth").build();
+		HttpPut method1 = conn.createPut(request1, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method1, vo1);
+
+		HttpResponse response1 = conn.execute(method1);
+		Assert.assertEquals(200, response1.getStatusLine().getStatusCode());
+		conn.parse(response1, AuthenticationVO.class);
+		Authentication refAuth1 = securityManager.findAuthentication(id1, "REST-API");
+		Assert.assertNotNull(refAuth1);
+		Assert.assertEquals(id1, refAuth1.getIdentity());
+
+		// set the second which duplicates the first
+		AuthenticationVO vo2 = new AuthenticationVO();
+		vo2.setAuthUsername(authUsername);
+		vo2.setIdentityKey(id2.getKey());
+		vo2.setProvider("REST-API");
+		vo2.setCredential("credentials");
+		URI request2 = UriBuilder.fromUri(getContextURI()).path("/users/" + id2.getName() + "/auth").build();
+		HttpPut method2 = conn.createPut(request2, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method2, vo2);
+
+		HttpResponse response2 = conn.execute(method2);
+		Assert.assertEquals(409, response2.getStatusLine().getStatusCode());
+		ErrorVO error = conn.parse(response2, ErrorVO.class);
+		Assert.assertNotNull(error);
+
+		conn.shutdown();
+	}
+	
 	@Test
 	public void deleteAuthentications() throws IOException, URISyntaxException {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
 		//create an authentication token
-		BaseSecurity baseSecurity = BaseSecurityManager.getInstance();
-		Identity adminIdent = baseSecurity.findIdentityByName("administrator");
-		Authentication authentication = baseSecurity.createAndPersistAuthentication(adminIdent, "REST-A-2", "administrator", "credentials", Encoder.Algorithm.sha512);
+		Identity adminIdent = securityManager.findIdentityByName("administrator");
+		Authentication authentication = securityManager.createAndPersistAuthentication(adminIdent, "REST-A-2", "administrator", "credentials", Encoder.Algorithm.sha512);
 		assertTrue(authentication != null && authentication.getKey() != null && authentication.getKey().longValue() > 0);
 		DBFactory.getInstance().intermediateCommit();
 		
@@ -169,7 +220,7 @@ public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 		
-		Authentication refAuth = baseSecurity.findAuthentication(adminIdent, "REST-A-2");
+		Authentication refAuth = securityManager.findAuthentication(adminIdent, "REST-A-2");
 		assertNull(refAuth);
 		
 		conn.shutdown();

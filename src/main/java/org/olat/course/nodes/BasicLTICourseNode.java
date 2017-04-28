@@ -105,7 +105,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
-		LTIEditController childTabCntrllr = new LTIEditController(getModuleConfiguration(), ureq, wControl, stackPanel, this, course, euce);
+		LTIEditController childTabCntrllr = new LTIEditController(getModuleConfiguration(), ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}
@@ -267,7 +267,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		ModuleConfiguration config = getModuleConfiguration();
 		Float scaleFactor = (Float) config.get(CONFIG_KEY_SCALEVALUE);
 		if(scaleFactor == null || scaleFactor.floatValue() < 0.0000001f) {
-			return new Float(1.0f);
+			return 1.0f;
 		}
 		return 1.0f * scaleFactor.floatValue();//LTI 1.1 return between 0.0 - 1.0
 	}
@@ -277,7 +277,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		if (!hasScoreConfigured()) { 
 			throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined when hasScore set to false", null);
 		}
-		return new Float(0.0f);
+		return 0.0f;
 	}
 
 	@Override

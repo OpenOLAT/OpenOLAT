@@ -283,9 +283,9 @@ public class RepositoryEntryResource {
 	/**
 	 * Returns the list of coaches of the repository entry.
 	 * @response.representation.200.qname {http://www.example.com}userVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc Coaches of the repository entry
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc Coaches of the repository entry
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
 	 * @response.representation.404.doc The repository entry cannot be found
 	 * @param repoEntryKey The key of the repository entry
 	 * @param request The HTTP Request

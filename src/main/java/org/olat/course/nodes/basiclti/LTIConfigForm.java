@@ -52,6 +52,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.BasicLTICourseNode;
+import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.user.UserManager;

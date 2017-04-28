@@ -92,6 +92,7 @@ public class QTI21CorrectionToolController extends BasicController {
 				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
 				List<AssessmentTestSession> testSessionsToComplete = catse.getTestSessions();
 				doUpdateCourseNode(correctionCtrl.getTestCorrections(), testSessionsToComplete);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();

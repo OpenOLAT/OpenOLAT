@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.video;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -39,24 +40,39 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class VideoPeekviewController  extends BasicController implements Controller{
+	
+	private final static String EVENT_RUN = "run";
+	
+	private final Long repositoryEntryKey;
+	private final String nodeId;
+	private VelocityContainer peekviewVC;
 
 	@Autowired
 	private VideoManager videoManager;
 
-	public VideoPeekviewController(UserRequest ureq, WindowControl wControl,  OLATResource videoResource) {
+	public VideoPeekviewController(UserRequest ureq, WindowControl wControl, OLATResource videoResource,
+			Long repositoryEntryKey, String nodeId) {
 		super(ureq, wControl);
-		VelocityContainer peekviewVC = createVelocityContainer("peekview");
+
+		this.repositoryEntryKey = repositoryEntryKey;
+		this.nodeId = nodeId;
+
+		peekviewVC = createVelocityContainer("peekview");
 		VFSContainer posterFolder = videoManager.getMasterContainer(videoResource);
 		String masterMapperId = "master-" + videoResource.getResourceableId();
 		String mediaUrl = registerCacheableMapper(ureq, masterMapperId, new VideoMediaMapper(posterFolder));
 		peekviewVC.contextPut("mediaUrl", mediaUrl);
 		peekviewVC.contextPut("nodeLink", posterFolder);
+		peekviewVC.contextPut("run", EVENT_RUN);
 		putInitialPanel(peekviewVC);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//TODO: click on image should launch run view, activate in autoplay mode		
+		if (source == peekviewVC && EVENT_RUN.equals(event.getCommand())) {
+			String businessPath = "[RepositoryEntry:" + repositoryEntryKey + "][CourseNode:" + nodeId + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());	
+		}
 	}
 
 	@Override

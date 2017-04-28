@@ -50,6 +50,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Constants;
@@ -119,6 +120,7 @@ public class AssessmentResultController extends FormBasicController {
 	private final ResourceLocator inputResourceLocator;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	private UserShortDescription assessedIdentityInfosCtrl;
+	private final Map<String,AssessmentItemSession> identifierToItemSession = new HashMap<>();
 	
 	private int count = 0;
 	
@@ -171,6 +173,10 @@ public class AssessmentResultController extends FormBasicController {
 		testSessionState = qtiService.loadTestSessionState(candidateSession);
 		assessmentResult = qtiService.getAssessmentResult(candidateSession);
 		candidateSessionContext = new TerminatedStaticCandidateSessionContext(candidateSession);
+		List<AssessmentItemSession> itemSessions = qtiService.getAssessmentItemSessions(candidateSession);
+		for(AssessmentItemSession itemSession:itemSessions) {
+			identifierToItemSession.put(itemSession.getAssessmentItemIdentifier(), itemSession);
+		}
 
 		initForm(ureq);
 	}
@@ -248,7 +254,8 @@ public class AssessmentResultController extends FormBasicController {
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 		AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 		QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
-		
+		AssessmentItemSession itemSession = identifierToItemSession.get(identifier.toString());
+
 		Results r = new Results(false, node.getSectionPartTitle(), type.getCssClass(), options.isQuestionSummary());
 		r.setSessionStatus("");//init
 		
@@ -264,6 +271,12 @@ public class AssessmentResultController extends FormBasicController {
 		ItemResult itemResult = assessmentResult.getItemResult(identifier.toString());
 		if(itemResult != null) {
 			extractOutcomeVariable(itemResult.getItemVariables(), r);
+		}
+		if(itemSession != null) {
+			if(itemSession.getManualScore() != null) {
+				r.setScore(AssessmentHelper.getRoundedScore(itemSession.getManualScore()));
+			}
+			r.setComment(itemSession.getCoachComment());
 		}
 		
 		if(options.isQuestions()) {
@@ -442,6 +455,7 @@ public class AssessmentResultController extends FormBasicController {
 		private String score;
 		private String maxScore;
 		private Boolean pass;
+		private String comment;
 		
 		private final String title;
 		private final String cssClass;
@@ -545,6 +559,14 @@ public class AssessmentResultController extends FormBasicController {
 
 		public void setPass(Boolean pass) {
 			this.pass = pass;
+		}
+
+		public String getComment() {
+			return comment;
+		}
+
+		public void setComment(String comment) {
+			this.comment = comment;
 		}
 
 		public String getSessionStatus() {

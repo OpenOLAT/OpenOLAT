@@ -17,60 +17,61 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.archiver;
+package org.olat.ims.qti.export;
 
-import org.olat.ims.qti.export.QTIExportItemFormatConfig;
+import org.olat.course.archiver.ExportFormat;
 
 /**
- * data container to persist result export config
  * 
- * Initial Date: 18.04.2017
- * @author fkiefer, fabian.kiefer@frentix.com, www.frentix.com
+ * Initial date: 27 avr. 2017<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class QTIExportFormatConfig implements QTIExportItemFormatConfig {
+public class QTIExportItemFormatDelegate implements QTIExportItemFormatConfig {
 	
-	private boolean responseCols;
-	private boolean positionsOfResponsesCol;
-	private boolean pointCol;
-	private boolean timeCols;
-
-	public QTIExportFormatConfig(boolean resCols, boolean posOfResCol, boolean pointCol, boolean timeCols){
-		this.responseCols = resCols;
-		this.positionsOfResponsesCol = posOfResCol;
-		this.pointCol = pointCol;
-		this.timeCols = timeCols;
+	private final ExportFormat delegate;
+	
+	public QTIExportItemFormatDelegate(ExportFormat delegate) {
+		this.delegate = delegate;
 	}
 
+	@Override
 	public boolean hasResponseCols() {
-		return responseCols;
+		return delegate.isResponseCols();
 	}
 
+	@Override
 	public boolean hasPositionsOfResponsesCol() {
-		return positionsOfResponsesCol;
+		return delegate.isPositionsOfResponsesCol();
 	}
 
+	@Override
 	public boolean hasPointCol() {
-		return pointCol;
+		return delegate.isPointCol();
 	}
 
+	@Override
 	public boolean hasTimeCols() {
-		return timeCols;
+		return delegate.isTimeCols();
 	}
-	
+
+	@Override
 	public void setPointCol(boolean pointColConfigured) {
-		this.pointCol = pointColConfigured;
+		delegate.setPointCol(pointColConfigured);
 	}
 
+	@Override
 	public void setPositionsOfResponsesCol(boolean positionsOfResponsesColConfigured) {
-		this.positionsOfResponsesCol = positionsOfResponsesColConfigured;
+		delegate.setPositionsOfResponsesCol(positionsOfResponsesColConfigured);
 	}
 
+	@Override
 	public void setResponseCols(boolean responseColsConfigured) {
-		this.responseCols = responseColsConfigured;
+		delegate.setResponseCols(responseColsConfigured);
 	}
 
+	@Override
 	public void setTimeCols(boolean timeColsConfigured) {
-		this.timeCols = timeColsConfigured;
+		delegate.setTimeCols(timeColsConfigured);
 	}
-
 }

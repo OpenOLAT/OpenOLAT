@@ -1,0 +1,25 @@
+/*
+	The purpose of the three classes of the peek view is to disable clicking inside the iFrame.
+*/
+.o_c2b_peekview {
+	height: 182px;
+	width: 302px;
+	border-style: solid;
+	border-width: 0.1px;
+}
+
+.o_c2b_cover {
+	height: 180px;
+	width: 300px;
+	position: absolute;
+	z-index: 2;
+	background: transparent;
+	cursor:pointer;
+}
+
+.o_c2b_iframe {
+	height: 180px;
+	width: 300px;
+	position: absolute;
+	z-index: 1;
+}

@@ -1,3 +1,5 @@
+alter table o_qti_assessmentitem_session add column q_coach_comment mediumtext;
+
 create table o_lecture_reason (
   id bigint not null auto_increment,
   creationdate datetime not null,

@@ -157,7 +157,42 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertNotNull(participants);
 		Assert.assertEquals(1, participants.size());
 		Assert.assertEquals(1, numOfParticipants);
-		Assert.assertTrue(members.contains(id2));
+		Assert.assertTrue(participants.contains(id2));
+	}
+	
+	@Test
+	public void getMembers_follow() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-1-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-2-");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-3-");
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("member-4-");
+		RepositoryEntry re1 = repositoryService.create("Rei Ayanami", "rel", "rel", null, null);
+		RepositoryEntry re2 = repositoryService.create("Rei Ayanami (alt)", "rel", "rel", null, null);
+		dbInstance.commit();
+		repositoryEntryRelationDao.addRole(id1, re1, GroupRoles.owner.name());
+		repositoryEntryRelationDao.addRole(id2, re1, GroupRoles.participant.name());
+		repositoryEntryRelationDao.addRole(id3, re2, GroupRoles.participant.name());
+		dbInstance.commit();
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "group", "tg", null, null, true, false, re2);
+	    businessGroupRelationDao.addRole(id4, group, GroupRoles.coach.name());
+	    dbInstance.commit();
+		
+		List<RepositoryEntry> res = new ArrayList<>();
+		res.add(re1);
+		res.add(re2);
+
+		//all members
+		List<Identity> coaches = repositoryEntryRelationDao.getMembers(res, RepositoryEntryRelationType.both, GroupRoles.coach.name());
+		Assert.assertNotNull(coaches);
+		Assert.assertEquals(1, coaches.size());
+		Assert.assertTrue(coaches.contains(id4));
+		
+		//participant
+		List<Identity> participants = repositoryEntryRelationDao.getMembers(res, RepositoryEntryRelationType.defaultGroup, GroupRoles.participant.name());
+		Assert.assertNotNull(participants);
+		Assert.assertEquals(2, participants.size());
+		Assert.assertTrue(participants.contains(id2));
+		Assert.assertTrue(participants.contains(id3));
 	}
 	
 	@Test

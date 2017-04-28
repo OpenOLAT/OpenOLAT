@@ -67,7 +67,7 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 	private int		cut				= 30;
 	// user properties
 	private List<UserPropertyHandler> userPropertyHandlers;
-	
+	private boolean isAnonymous;
 	/**
 	 * @param locale
 	 * @param type
@@ -162,12 +162,18 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 
 				if (qeif.getExportItemConfig(item).hasTimeCols()) {
 					// HeaderRow1
-					hR1.append(sep + sep);
+					hR1.append(sep);
+					if (!isAnonymous) {
+						hR1.append(sep);
+					}
+
 					// HeaderRow2
-					hR2.append(i);
-					hR2.append("_");
-					hR2.append(translator.translate("item.start"));
-					hR2.append(sep);
+					if (!isAnonymous) {
+						hR2.append(i);
+						hR2.append("_");
+						hR2.append(translator.translate("item.start"));
+						hR2.append(sep);
+					}
 					
 					hR2.append(i);
 					hR2.append("_");
@@ -199,38 +205,43 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		sb.append(sep);
 
 		// add configured user properties
-		User user = set.getIdentity().getUser();
-		for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
-			if (userPropertyHandler == null) {
-				continue;
-			}
-			String property = userPropertyHandler.getUserProperty(user, translator.getLocale());
-			if (!StringHelper.containsNonWhitespace(property)) {
-				property = translator.translate("column.field.notavailable");
-			}
-			sb.append(property);
+		if (isAnonymous) {
+			sb.append(row_counter);
 			sb.append(sep);			
+		} else {
+			User user = set.getIdentity().getUser();
+			for (UserPropertyHandler userPropertyHandler : this.userPropertyHandlers) {
+				if (userPropertyHandler == null) {
+					continue;
+				}
+				String property = userPropertyHandler.getUserProperty(user, translator.getLocale());
+				if (!StringHelper.containsNonWhitespace(property)) {
+					property = translator.translate("column.field.notavailable");
+				}
+				sb.append(property);
+				sb.append(sep);			
+			}			
+			// add other user and session information
+			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(set.getIdentity());
+			String homepage = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
+			sb.append(homepage);
+			sb.append(sep);
 		}
-		
-		// add other user and session information
-		ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(set.getIdentity());
-		String homepage = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
-		sb.append(homepage);
-		sb.append(sep);
 		float assessPoints = set.getScore();
 		sb.append(assessPoints);
 		sb.append(sep);
 		boolean isPassed = set.getIsPassed();					
 		sb.append(isPassed);
 		sb.append(sep);
-		sb.append(set.getIp());
-		sb.append(sep);
 
-		// datatime
-		Date  date = set.getLastModified();
-		sb.append(Formatter.formatDatetime(date));
-		sb.append(sep);
-
+		if (!isAnonymous) {
+			sb.append(set.getIp());
+			sb.append(sep);
+			// datatime
+			Date date = set.getLastModified();
+			sb.append(Formatter.formatDatetime(date));
+			sb.append(sep);
+		}
 		Long assessDuration = set.getDuration();
 		// since there are resultsets created before alter table adding the field duration
 		if (assessDuration != null) {
@@ -271,12 +282,14 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 				}
 				if (itemFormatConfig.hasTimeCols()) {
 					// startdatetime
-					if (eItem.getTimeStamp().getTime() > 0) {
-						sb.append(Formatter.formatDatetime(eItem.getTimeStamp()));
-					} else {
-						sb.append("n/a");
+					if (!isAnonymous) {
+						if (eItem.getTimeStamp().getTime() > 0) {
+							sb.append(Formatter.formatDatetime(eItem.getTimeStamp()));
+						} else {
+							sb.append("n/a");
+						}
+						sb.append(sep);
 					}
-					sb.append(sep);
 
 					// column duration
 					Long itemDuration = eItem.getDuration();
@@ -292,7 +305,12 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 				// points
 				if (itemFormatConfig.hasPointCol()) sb.append(sep);
 				// startdatetime, column duration
-				if (itemFormatConfig.hasTimeCols()) sb.append(sep + sep);
+				if (itemFormatConfig.hasTimeCols()) {
+					sb.append(sep);
+					if (!isAnonymous) {
+						sb.append(sep);
+					}
+				}
 			}
 		}
 	}
@@ -448,16 +466,22 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 	private String createHeaderRow1Intro() {
 		StringBuilder hr1Intro = new StringBuilder();
 		hr1Intro.append(sep);//seqnum
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler != null) {
-				hr1Intro.append(sep);
+		if (isAnonymous) {
+			sb.append(sep);
+		} else {
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				if (userPropertyHandler != null) {
+					hr1Intro.append(sep);
+				}
 			}
+			hr1Intro.append(sep);
 		}
 		hr1Intro.append(sep);
 		hr1Intro.append(sep);
-		hr1Intro.append(sep);
-		hr1Intro.append(sep);
-		hr1Intro.append(sep);
+		if (!isAnonymous) {
+			hr1Intro.append(sep);// header ip address
+			hr1Intro.append(sep);// header date
+		}
 		hr1Intro.append(sep);
 		return hr1Intro.toString();//  + sep + sep + sep + sep + sep + sep + sep + sep + sep;
 	}
@@ -478,31 +502,38 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		hr2Intro.append(sep);
 
 		// add configured user properties
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler == null) {
-				continue;
+		if (isAnonymous) {
+			String num = translator.translate("column.header.number");
+			hr2Intro.append(num);
+			hr2Intro.append(sep);
+		} else {
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				if (userPropertyHandler == null) {
+					continue;
+				}
+				String header = translator.translate(userPropertyHandler.i18nFormElementLabelKey());
+				hr2Intro.append(header);
+				hr2Intro.append(sep);			
 			}
-			String header = translator.translate(userPropertyHandler.i18nFormElementLabelKey());
-			hr2Intro.append(header);
-			hr2Intro.append(sep);			
+			// add other user and session information
+			String homepage = translator.translate("column.header.homepage");
+			hr2Intro.append(homepage);
+			hr2Intro.append(sep);
 		}
-
-		// add other user and session information
-		String homepage = translator.translate("column.header.homepage");
-		hr2Intro.append(homepage);
-		hr2Intro.append(sep);
 		String assessPoint = translator.translate("column.header.assesspoints");
 		hr2Intro.append(assessPoint);
 		hr2Intro.append(sep);
 		String passed = translator.translate("column.header.passed");
 		hr2Intro.append(passed);
 		hr2Intro.append(sep);
-		String ipAddress = translator.translate("column.header.ipaddress");
-		hr2Intro.append(ipAddress);
-		hr2Intro.append(sep);
-		String date = translator.translate("column.header.date");
-		hr2Intro.append(date);
-		hr2Intro.append(sep);
+		if (!isAnonymous) {
+			String ipAddress = translator.translate("column.header.ipaddress");
+			hr2Intro.append(ipAddress);
+			hr2Intro.append(sep);
+			String date = translator.translate("column.header.date");
+			hr2Intro.append(date);
+			hr2Intro.append(sep);
+		}
 		String duration = translator.translate("column.header.duration");
 		hr2Intro.append(duration);
 		hr2Intro.append(sep);
@@ -580,4 +611,9 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 		}
 		mapWithExportItemConfigs = itConfigs;
 	}
+
+	public void setAnonymous(boolean isAnonymous) {
+		this.isAnonymous = isAnonymous;
+	}
+	
 }

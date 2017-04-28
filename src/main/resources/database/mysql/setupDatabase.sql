@@ -1316,8 +1316,8 @@ create table o_vid_transcoding (
 
 create table o_vid_metadata (
   id bigint not null auto_increment,
-  creationdate timestamp not null,
-  lastmodified timestamp not null,
+  creationdate datetime not null,
+  lastmodified datetime not null,
   vid_width bigint default null,
   vid_height bigint default null,
   vid_size bigint default null,
@@ -1420,7 +1420,7 @@ create table o_mapper (
    expirationdate datetime,
    mapper_uuid varchar(64),
    orig_session_id varchar(64),
-   xml_config TEXT,
+   xml_config text,
    primary key (id)
 );
 
@@ -1457,6 +1457,7 @@ create table o_qti_assessmentitem_session (
    q_duration bigint,
    q_score float(65,30) default null,
    q_manual_score float(65,30) default null,
+   q_coach_comment mediumtext default null,
    q_passed bit default null,
    q_storage varchar(1024),
    fk_assessmenttest_session bigint not null,

@@ -25,6 +25,7 @@
 	Add your custom font sizes and other bootstrap overrides here. 
 	Full spec here: http://getbootstrap.com/customize/
 */
+$input-bg-disabled				: #fafafa !default; /* lighter than default bootstrap */
 
 /* 	Add standard bootstrap variables to the mix */
 @import "../../bootstrap/stylesheets/bootstrap/variables";

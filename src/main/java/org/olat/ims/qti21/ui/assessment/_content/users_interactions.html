@@ -14,6 +14,7 @@
 		</div>
 	#end
 
+	#if($r.isNotNull(${interactionWrapper.scoreEl}))
 	<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
 		$r.render("${interactionWrapper.scoreEl.name}_LABEL", "$f.getItemId($item)", "col-sm-3")
 		<div class="col-sm-9">
@@ -32,6 +33,7 @@
 			</div>
 		#end
 	</div>
+	#end
 	
 	<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
 		$r.render("${interactionWrapper.commentEl.name}_LABEL", "$f.getItemId($item)", "col-sm-3")
@@ -52,8 +54,9 @@
 		#end
 	</div>
 #end
-
-	<div class="o_button_group">
-		$r.render("buttons")
+	<div class="form-group">
+		<div class="col-sm-9 col-sm-offset-3">
+			$r.render("buttons")
+		</div>
 	</div>
 </fieldset>

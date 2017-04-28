@@ -30,10 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
-import org.olat.course.nodes.CourseNode;
 import org.olat.ims.qti.export.OptionsChooseForm;
-import org.olat.ims.qti.export.QTIExportItemFormatConfig;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * user interface to determine export config
@@ -47,26 +44,24 @@ public class ExportOptionsController extends FormBasicController {
 	private static final String POSCOL = "poscol";
 	private static final String POINTCOL = "pointcol";
 	private static final String TIMECOLS = "timecols";
+	private static final String COMMENTCOL = "commentcol";
 
 	private MultipleSelectionElement downloadOptionsEl;
 	
 	private String[] optionKeys, optionVals;
 	
-	@Autowired
-	private FormatConfigHelper configHelper;
-
-	
-	public ExportOptionsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public ExportOptionsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		Translator fallback = Util.createPackageTranslator(OptionsChooseForm.class, getLocale());
 		setTranslator(Util.createPackageTranslator(getTranslator(), fallback, getLocale()));
 		
-		optionKeys = new String[]{ITEMCOLS, POSCOL, POINTCOL, TIMECOLS};
+		optionKeys = new String[]{ITEMCOLS, POSCOL, POINTCOL, TIMECOLS, COMMENTCOL };
 		optionVals = new String[] {
 				translate("form.itemcols"),
-				translate("form.poscol"),
+				translate("form.poscol.extra"),
 				translate("form.pointcol"),
-				translate("form.timecols")
+				translate("form.timecols"),
+				translate("form.commentcol")
 		};	
 		
 		initForm(ureq);
@@ -81,18 +76,28 @@ public class ExportOptionsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		downloadOptionsEl = uifactory.addCheckboxesVertical("setting", "form.title", formLayout, optionKeys, optionVals, 1);
-		QTIExportItemFormatConfig c = configHelper.doLoadQTIExportFormatConfig(ureq);
-		downloadOptionsEl.select(ITEMCOLS, c.hasResponseCols());
-		downloadOptionsEl.select(POSCOL,   c.hasPositionsOfResponsesCol());
-		downloadOptionsEl.select(POINTCOL, c.hasPointCol());
-		downloadOptionsEl.select(TIMECOLS, c.hasTimeCols());		
+		ExportFormat c = FormatConfigHelper.loadExportFormat(ureq);
+		if(c.isResponseCols()) {
+			downloadOptionsEl.select(ITEMCOLS, c.isResponseCols());
+		}
+		if(c.isPositionsOfResponsesCol()) {
+			downloadOptionsEl.select(POSCOL, c.isPositionsOfResponsesCol());
+		}
+		if(c.isPointCol()) {
+			downloadOptionsEl.select(POINTCOL, c.isPointCol());
+		}
+		if(c.isTimeCols()) {
+			downloadOptionsEl.select(TIMECOLS, c.isTimeCols());
+		}
+		if(c.isCommentCol()) {
+			downloadOptionsEl.select(COMMENTCOL, c.isCommentCol());
+		}
 		
 		FormItemContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
-		formLayout.add(buttonContainer);		
-		uifactory.addFormSubmitButton("save", buttonContainer);
+		formLayout.add(buttonContainer);
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("save", buttonContainer);
 	}
-	
 	
 	@Override
 	protected void formCancelled(UserRequest ureq) {
@@ -124,7 +129,8 @@ public class ExportOptionsController extends FormBasicController {
 			boolean poscol = downloadOptionsEl.isSelected(1);
 			boolean pointcol = downloadOptionsEl.isSelected(2);
 			boolean timecols = downloadOptionsEl.isSelected(3);
-			configHelper.updateQTIExportFormatConfig(ureq, itemcols, poscol, pointcol, timecols);
+			boolean commentcol = downloadOptionsEl.isSelected(4);
+			FormatConfigHelper.updateExportFormat(ureq, itemcols, poscol, pointcol, timecols, commentcol);
 		}
 	}
 

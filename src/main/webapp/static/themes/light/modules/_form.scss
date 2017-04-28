@@ -108,6 +108,14 @@
 	.has-feedback.has-error .o_fileinput .o_fakechooser {
 		margin-right:30px;
 	}
+	
+	/* disabled text areas are rendered in div's for improved printing and layouting features */
+	.form-control.textarea_disabled {
+		resize: both;
+		overflow: auto;	
+		white-space: pre-wrap;
+		background: $input-bg-disabled;
+	}
 }
 
 /* centered form labels are still left aligned */

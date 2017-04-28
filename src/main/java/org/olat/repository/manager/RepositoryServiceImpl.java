@@ -610,6 +610,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 	}
 
 	@Override
+	public List<Identity> getMembers(List<? extends RepositoryEntryRef> res, RepositoryEntryRelationType relationType, String... roles) {
+		return reToGroupDao.getMembers(res, relationType, roles);
+	}
+
+	@Override
 	public List<Identity> getIdentitiesWithRole(String role) {
 		return reToGroupDao.getIdentitiesWithRole(role);
 	}

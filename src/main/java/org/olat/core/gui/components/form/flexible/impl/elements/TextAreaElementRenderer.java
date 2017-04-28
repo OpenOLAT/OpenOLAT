@@ -25,7 +25,6 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -34,6 +33,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -78,24 +78,26 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			if (buestEffortRowCount > rows) rows = buestEffortRowCount;
 		}
 		// Escape HTMl entities
-		value = StringEscapeUtils.escapeHtml(value);
+		value = StringHelper.escapeHtml(value);
 		//
 		if (!source.isEnabled()) {
-			//read only view
+			//read only view: rendered as fake textarea element for better styling options (e.g. print)
 			sb.append("<span id=\"").append(id).append("\" ")
 			  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
-			  .append(" ><textarea id=\"")
+			  .append(" ><div id=\"")
 			  .append(id)
-			  .append("_disabled\" readonly='readonly' class='form-control o_form_element_disabled' style=''");
+			  .append("_disabled\" class='form-control textarea_disabled o_disabled o_form_element_disabled' style='");
+			/* we do not add the width, not applied to text areas in oo despite configurable 
 			if (teC.getCols() != -1) {
-				sb.append(" cols='").append(teC.getCols()).append("'");
+				sb.append(" width:").append(teC.getCols()).append("em;");
 			}
+			*/
 			if (rows != -1) {
-				sb.append(" rows='").append(rows).append("'");
+				sb.append(" height:").append(rows * 1.5).append("em;"); // line-height is about 1.5
 			}
-			sb.append(">")
+			sb.append("'>")
 			  .append(value)
-			  .append("</textarea></span>");
+			  .append("</div></span>");
 	
 		} else {
 			//read write view

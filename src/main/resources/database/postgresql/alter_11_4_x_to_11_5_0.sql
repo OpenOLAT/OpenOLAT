@@ -1,3 +1,5 @@
+alter table o_qti_assessmentitem_session add column q_coach_comment text;
+
 create table o_lecture_reason (
   id bigserial not null,
   creationdate timestamp not null,
