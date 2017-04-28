@@ -148,6 +148,7 @@ public class MessageListController extends BasicController implements GenericEve
 	
 	private Message thread;
 	private boolean reloadList;
+	private boolean hasMarkedNewMessages;
 	
 	private final Forum forum;
 	private final boolean guestOnly;
@@ -209,6 +210,13 @@ public class MessageListController extends BasicController implements GenericEve
 		
 		// Register for forum events
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), forum);
+	}
+	
+	/**
+	 * @return true if the controller has marked some new messages as seen
+	 */
+	public boolean hasMarkedNewMessages() {
+		return hasMarkedNewMessages;
 	}
 	
 	@Override
@@ -495,24 +503,7 @@ public class MessageListController extends BasicController implements GenericEve
 	 */	
 	private void orderMessagesThreaded(List<MessageLight> messages, List<MessageLight> orderedList, MessageLight startMessage) {
 		if (messages == null || orderedList == null || startMessage == null) return;
-		/*
-		Iterator<MessageLight> iterMsg = messages.iterator();
-		while (iterMsg.hasNext()) {
-			MessageLight msg = iterMsg.next();
-			if (msg.getParentKey() == null) {
-				orderedList.add(msg);
-				List<MessageLight> copiedMessages = new ArrayList<>(messages);
-				copiedMessages.remove(msg);
-				messages = copiedMessages;
-				continue;
-			}
-			if ((msg.getParentKey() != null) && (msg.getParentKey().equals(startMessage.getKey()))) {
-				orderedList.add(msg);
-				orderMessagesThreaded(messages, orderedList, msg);
-			}
-		}
-		*/
-		
+
 		Map<Long, MessageNode> messagesMap = new HashMap<>();
 		if(startMessage != null) {
 			messagesMap.put(startMessage.getKey(), new MessageNode(startMessage));
@@ -563,6 +554,7 @@ public class MessageListController extends BasicController implements GenericEve
 	private void markRead(MessageLight message) {
 		if(!guestOnly) {
 			forumManager.markAsRead(getIdentity(), forum, message);
+			hasMarkedNewMessages = true;
 		}
 	}
 	
