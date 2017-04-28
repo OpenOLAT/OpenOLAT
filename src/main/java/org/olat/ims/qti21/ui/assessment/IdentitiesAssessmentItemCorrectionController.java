@@ -54,14 +54,13 @@ import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
-import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.DrawingInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.EndAttemptInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.UploadInteraction;
@@ -105,8 +104,6 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 	private QTI21Service qtiService;
 	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private AssessmentService assessmentService;
 	
 	public IdentitiesAssessmentItemCorrectionController(UserRequest ureq, WindowControl wControl,
 			AssessmentTestCorrection testCorrections, AssessmentItemRef itemRef,
@@ -132,6 +129,10 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 
 		initForm(ureq);
 	}
+	
+	protected void disableNext() {
+		nextQuestionButton.setEnabled(false);
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -141,8 +142,7 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 			List<AssessmentItemCorrection> corrections = testCorrections.getCorrections(itemRef);
 			if(corrections != null) {
 				for(AssessmentItemCorrection correction:corrections) {
-					AssessmentEntry assessmentEntry = testCorrections.getAssessmentEntry(correction.getAssessedIdentity());
-					initFormItemResult(correction, assessmentEntry, layoutCont);
+					initFormItemResult(correction, layoutCont);
 				}
 			}
 		}
@@ -150,25 +150,29 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		buttonsCont.setRootForm(mainForm);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		nextQuestionButton = uifactory.addFormLink("save.next", buttonsCont, Link.BUTTON);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void initFormItemResult(AssessmentItemCorrection correction, AssessmentEntry assessmentEntry, FormLayoutContainer layoutCont) {
+	private void initFormItemResult(AssessmentItemCorrection correction, FormLayoutContainer layoutCont) {
 		TestPlanNode node = correction.getItemNode();
 		TestPlanNodeKey testPlanNodeKey = node.getKey();
 		AssessmentItemSession itemSession = correction.getItemSession();
 		AssessmentTestSession testSession = correction.getTestSession();
 		TestSessionState testSessionState = correction.getTestSessionState();
 
+		boolean manualScore = false;
 		List<InteractionResultFormItem> responseItems = new ArrayList<>(interactions.size());
 		for(Interaction interaction:interactions) {
+			if(!(interaction instanceof EndAttemptInteraction)) {
+				responseItems.add(initFormExtendedTextInteraction(testPlanNodeKey, interaction, testSessionState, testSession, layoutCont));
+				
+			}
 			if(interaction instanceof UploadInteraction
 					|| interaction instanceof DrawingInteraction
 					|| interaction instanceof ExtendedTextInteraction) {
-				responseItems.add(initFormExtendedTextInteraction(testPlanNodeKey, interaction, testSessionState, testSession, layoutCont));
-				
+				manualScore = true;
 				File submissionDir = qtiService.getSubmissionDirectory(testSession);
 				if(submissionDir != null) {
 					submissionDirectoryMaps.put(testSession.getKey(), submissionDir);
@@ -177,31 +181,36 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 		}
 
 		String mScore = "";
-		if(itemSession != null && itemSession.getManualScore() != null) {
-			mScore = AssessmentHelper.getRoundedScore(itemSession.getManualScore());
-		}
-		String userComment = "";
-		if(assessmentEntry != null && StringHelper.containsNonWhitespace(assessmentEntry.getComment())) {
-			userComment = assessmentEntry.getComment();
+		String coachComment = "";
+		if(itemSession != null) {
+			if(itemSession.getManualScore() != null) {
+				mScore = AssessmentHelper.getRoundedScore(itemSession.getManualScore());
+			}
+			coachComment = itemSession.getCoachComment();
 		}
 
 		String fullname = userManager.getUserDisplayName(correction.getAssessedIdentity());
-		TextElement scoreEl = uifactory.addTextElement("scoreItem" + count++, "score", 6, mScore, layoutCont);
-		TextElement commentEl = uifactory.addTextAreaElement("commentItem" + count++, "comment", 2500, 4, 60, false, userComment, layoutCont);
+		TextElement scoreEl = null;
+		if(manualScore) {
+			scoreEl = uifactory.addTextElement("scoreItem" + count++, "score", 6, mScore, layoutCont);
+		}
+		TextElement commentEl = uifactory.addTextAreaElement("commentItem" + count++, "comment", 2500, 4, 60, false, coachComment, layoutCont);
 		IdentityAssessmentItemWrapper wrapper = new IdentityAssessmentItemWrapper(fullname, assessmentItem, correction, responseItems, scoreEl, commentEl);
 		
-		Double minScore = QtiNodesExtractor.extractMinScore(assessmentItem);
-		Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
-		if(maxScore != null) {
-			if(minScore == null) {
-				minScore = 0.0d;
+		if(manualScore) {
+			Double minScore = QtiNodesExtractor.extractMinScore(assessmentItem);
+			Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+			if(maxScore != null) {
+				if(minScore == null) {
+					minScore = 0.0d;
+				}
+	
+				wrapper.setMinScore(AssessmentHelper.getRoundedScore(minScore));
+				wrapper.setMaxScore(AssessmentHelper.getRoundedScore(maxScore));
+				wrapper.setMinScoreVal(minScore);
+				wrapper.setMaxScoreVal(maxScore);
+				scoreEl.setExampleKey("correction.min.max.score", new String[]{ wrapper.getMinScore(), wrapper.getMaxScore() });
 			}
-
-			wrapper.setMinScore(AssessmentHelper.getRoundedScore(minScore));
-			wrapper.setMaxScore(AssessmentHelper.getRoundedScore(maxScore));
-			wrapper.setMinScoreVal(minScore);
-			wrapper.setMaxScoreVal(maxScore);
-			scoreEl.setExampleKey("correction.min.max.score", new String[]{ wrapper.getMinScore(), wrapper.getMaxScore() });
 		}
 
 		itemResults.add(wrapper);
@@ -245,31 +254,32 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 	private boolean validateItemResults(IdentityAssessmentItemWrapper itemResult) {
 		boolean allOk = true;
 		
-		String scoreVal = itemResult.getScoreEl().getValue();
-		itemResult.getScoreEl().clearError();
-		if(StringHelper.containsNonWhitespace(scoreVal)) {
-			try {
-				double score = Double.parseDouble(scoreVal);
-				//check boundaries
-				
-				boolean boundariesOk = true;
-				if(itemResult.getMinScore() != null && score < itemResult.getMinScoreVal().doubleValue()) {
-					boundariesOk &= false;
+		if(itemResult.getScoreEl() != null) {
+			itemResult.getScoreEl().clearError();
+			String scoreVal = itemResult.getScoreEl().getValue();
+			if(StringHelper.containsNonWhitespace(scoreVal)) {
+				try {
+					double score = Double.parseDouble(scoreVal);
+					boolean boundariesOk = true;
+					if(itemResult.getMinScore() != null && score < itemResult.getMinScoreVal().doubleValue()) {
+						boundariesOk &= false;
+					}
+					if(itemResult.getMaxScore() != null && score > itemResult.getMaxScoreVal().doubleValue()) {
+						boundariesOk &= false;
+					}
+					
+					if(!boundariesOk) {
+						itemResult.getScoreEl()
+							.setErrorKey("correction.min.max.score", new String[]{ itemResult.getMinScore(), itemResult.getMaxScore() });
+					}
+					allOk &= boundariesOk;
+				} catch(Exception e) {
+					itemResult.getScoreEl().setErrorKey("form.error.nointeger", null);
+					allOk &= false;
 				}
-				if(itemResult.getMaxScore() != null && score > itemResult.getMaxScoreVal().doubleValue()) {
-					boundariesOk &= false;
-				}
-				
-				if(!boundariesOk) {
-					itemResult.getScoreEl()
-						.setErrorKey("correction.min.max.score", new String[]{ itemResult.getMinScore(), itemResult.getMaxScore() });
-				}
-				allOk &= boundariesOk;
-			} catch(Exception e) {
-				itemResult.getScoreEl().setErrorKey("form.error.nointeger", null);
-				allOk &= false;
 			}
 		}
+		
 		return allOk;
 	}
 
@@ -298,53 +308,62 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 		if(itemResults == null) return;
 		
 		for(IdentityAssessmentItemWrapper itemResult:itemResults) {
-			AssessmentItemCorrection itemCorrection = itemResult.getCorrection();
-			TestSessionState testSessionState = itemCorrection.getTestSessionState();
-			AssessmentTestSession candidateSession = itemCorrection.getTestSession();
-			AssessmentSessionAuditLogger candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, false);
+			doSave(itemResult);
+		}
+	}
+	
+	private void doSave(IdentityAssessmentItemWrapper itemResult) {
+		AssessmentItemCorrection itemCorrection = itemResult.getCorrection();
+		TestSessionState testSessionState = itemCorrection.getTestSessionState();
+		AssessmentTestSession candidateSession = itemCorrection.getTestSession();
+		AssessmentSessionAuditLogger candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, false);
+		
+		String scoreVal = null;
+		if(itemResult.getScoreEl() != null) {
+			scoreVal = itemResult.getScoreEl().getValue();
+		}
+		String commentVal = null;
+		if(itemResult.getCommentEl() != null) {
+			commentVal = itemResult.getCommentEl().getValue();
+		}
+		if(StringHelper.containsNonWhitespace(scoreVal) || commentVal != null) {
 			
-			String scoreVal = itemResult.getScoreEl().getValue();
+			String stringuifiedIdentifier = itemResult
+					.getTestPlanNodeKey().getIdentifier().toString();
+			
+			ParentPartItemRefs parentParts = AssessmentTestHelper
+					.getParentSection(itemResult.getTestPlanNodeKey(), testSessionState, resolvedAssessmentTest);
+			AssessmentItemSession itemSession = qtiService
+					.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier);
+			
 			if(StringHelper.containsNonWhitespace(scoreVal)) {
 				BigDecimal mScore = new BigDecimal(scoreVal);
-				String stringuifiedIdentifier = itemResult
-						.getTestPlanNodeKey().getIdentifier().toString();
-				
-				ParentPartItemRefs parentParts = AssessmentTestHelper
-						.getParentSection(itemResult.getTestPlanNodeKey(), testSessionState, resolvedAssessmentTest);
-				AssessmentItemSession itemSession = qtiService
-						.getOrCreateAssessmentItemSession(candidateSession, parentParts, stringuifiedIdentifier);
 				itemSession.setManualScore(mScore);
-				itemSession = qtiService.updateAssessmentItemSession(itemSession);
-				itemCorrection.setItemSession(itemSession);
-				
-				candidateAuditLogger.logCorrection(candidateSession, itemSession, getIdentity());
+			}
+			if(commentVal != null) {
+				itemSession.setCoachComment(commentVal);
 			}
 			
-			String comment = itemResult.getCommentEl().getValue();
-			AssessmentEntry assesssmentEntry = testCorrections.getAssessmentEntry(itemCorrection.getAssessedIdentity());
-			if(assesssmentEntry != null) {
-				if(!comment.equals(assesssmentEntry.getComment())) {
-					assesssmentEntry.setComment(comment);
-					AssessmentEntry mergedEntry = assessmentService.updateAssessmentEntry(assesssmentEntry);
-					testCorrections.addAssessmentEntry(mergedEntry);
-				}
-			}
+			itemSession = qtiService.updateAssessmentItemSession(itemSession);
+			itemCorrection.setItemSession(itemSession);
 			
-			BigDecimal totalScore = null;
-			for(AssessmentItemCorrection corr:testCorrections.getCorrections(itemCorrection.getAssessedIdentity())) {
-				BigDecimal mScore = corr.getManualScore();
-				if(totalScore == null) {
-					totalScore = mScore;
-				} else if(mScore != null) {
-					totalScore = totalScore.add(mScore);
-				}
-			}
-			
-			candidateSession.setManualScore(totalScore);
-			candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
-			itemCorrection.setTestSession(candidateSession);
-			
-			IOUtils.closeQuietly(candidateAuditLogger);
+			candidateAuditLogger.logCorrection(candidateSession, itemSession, getIdentity());
 		}
+		
+		BigDecimal totalScore = null;
+		for(AssessmentItemCorrection corr:testCorrections.getCorrections(itemCorrection.getAssessedIdentity())) {
+			BigDecimal mScore = corr.getManualScore();
+			if(totalScore == null) {
+				totalScore = mScore;
+			} else if(mScore != null) {
+				totalScore = totalScore.add(mScore);
+			}
+		}
+		
+		candidateSession.setManualScore(totalScore);
+		candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
+		itemCorrection.setTestSession(candidateSession);
+		
+		IOUtils.closeQuietly(candidateAuditLogger);
 	}
 }

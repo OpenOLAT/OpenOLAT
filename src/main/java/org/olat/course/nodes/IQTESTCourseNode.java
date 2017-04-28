@@ -86,6 +86,7 @@ import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFormatter;
 import org.olat.ims.qti.export.QTIExportFormatterCSVType1;
 import org.olat.ims.qti.export.QTIExportItemFormatConfig;
+import org.olat.ims.qti.export.QTIExportItemFormatDelegate;
 import org.olat.ims.qti.export.QTIExportKPRIMItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportMCQItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportManager;
@@ -684,12 +685,12 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				String shortTitle = getShortTitle();
 				QTIExportManager qem = QTIExportManager.getInstance();
 				QTIExportFormatter qef = new QTIExportFormatterCSVType1(locale, "\t", "\"", "\r\n", false);
-				if (options != null && options.getQtiExportItemFormatConfig() != null) {
+				if (options != null && options.getExportFormat() != null) {
 					Map<Class<?>, QTIExportItemFormatConfig> itemConfigs = new HashMap<>();
 					Class<?>[] itemTypes = new Class<?>[] {QTIExportSCQItemFormatConfig.class, QTIExportMCQItemFormatConfig.class,
 						QTIExportKPRIMItemFormatConfig.class, QTIExportFIBItemFormatConfig.class, QTIExportEssayItemFormatConfig.class};
 					for (Class<?> itemClass : itemTypes) {
-						itemConfigs.put(itemClass, options.getQtiExportItemFormatConfig());						
+						itemConfigs.put(itemClass, new QTIExportItemFormatDelegate(options.getExportFormat()));						
 					}
 					qef.setMapWithExportItemConfigs(itemConfigs);
 				}

@@ -25,8 +25,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.nodes.ArchiveOptions;
-import org.olat.ims.qti.export.QTIExportItemFormatConfig;
-import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -36,7 +34,6 @@ import com.thoughtworks.xstream.XStream;
  * Initial Date: 21.04.2017
  * @author fkiefer, fabian.kiefer@frentix.com, www.frentix.com
  */
-@Service
 public class FormatConfigHelper {
 	
 	private static final String QTI_EXPORT_ITEM_FORMAT_CONFIG = "QTIExportItemFormatConfig";
@@ -44,31 +41,30 @@ public class FormatConfigHelper {
 	
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
-		configXstream.alias(QTI_EXPORT_ITEM_FORMAT_CONFIG, QTIExportFormatConfig.class);
+		configXstream.alias(QTI_EXPORT_ITEM_FORMAT_CONFIG, ExportFormat.class);
 	}
 
-	
-	public QTIExportItemFormatConfig doLoadQTIExportFormatConfig(UserRequest ureq) {
-		QTIExportItemFormatConfig formatConfig = null;
+	public static ExportFormat loadExportFormat(UserRequest ureq) {
+		ExportFormat formatConfig = null;
 		if (ureq != null) {
 			try {
 				Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 				String formatConfigString = (String) guiPrefs.get(ExportOptionsController.class, QTI_EXPORT_ITEM_FORMAT_CONFIG);
 				Object formatObject = configXstream.fromXML(formatConfigString);
-				formatConfig = (QTIExportFormatConfig) formatObject;
+				formatConfig = (ExportFormat) formatObject;
 			} catch (Exception e) {
 				log.error("could not establish object from xml", e);
-				formatConfig = new QTIExportFormatConfig(true, true, true, true);
+				formatConfig = new ExportFormat(true, true, true, true, true);
 			}
 		}
 		return formatConfig;
 	}
 	
-	public void updateQTIExportFormatConfig(UserRequest ureq, boolean itemcols, boolean poscol, boolean pointcol, boolean timecols) {
+	public static void updateExportFormat(UserRequest ureq, boolean responsecols, boolean poscol, boolean pointcol, boolean timecols, boolean commentcol) {
 		// save new config in GUI prefs
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			QTIExportItemFormatConfig formatConfig = new QTIExportFormatConfig(itemcols, poscol, pointcol, timecols);
+			ExportFormat formatConfig = new ExportFormat(responsecols, poscol, pointcol, timecols, commentcol);
 			try {
 				String formatConfigString = configXstream.toXML(formatConfig);
 				guiPrefs.putAndSave(ExportOptionsController.class, QTI_EXPORT_ITEM_FORMAT_CONFIG, formatConfigString);
@@ -78,22 +74,10 @@ public class FormatConfigHelper {
 		}
 	}
 	
-	public ArchiveOptions getArchiveOptions(UserRequest ureq) {
+	public static ArchiveOptions getArchiveOptions(UserRequest ureq) {
 		ArchiveOptions options = new ArchiveOptions();
-		QTIExportItemFormatConfig formatConfig = null;
-		if (ureq != null) {
-			try {
-				Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-				String formatConfigString = (String) guiPrefs.get(ExportOptionsController.class, QTI_EXPORT_ITEM_FORMAT_CONFIG);
-				Object formatObject = configXstream.fromXML(formatConfigString);
-				formatConfig = (QTIExportFormatConfig) formatObject;
-			} catch (Exception e) {
-				log.error("could not establish object from xml", e);
-				formatConfig = new QTIExportFormatConfig(true, true, true, true);
-			}
-		}
-		options.setQtiExportItemFormatConfig(formatConfig);
+		ExportFormat formatConfig = loadExportFormat(ureq);
+		options.setExportFormat(formatConfig);
 		return options;
 	}
-
 }

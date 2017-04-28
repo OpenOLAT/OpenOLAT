@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
@@ -150,10 +149,7 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 	}
 	
 	private List<AssessmentItemRef> calculateAssessmentItemToCorrect() {
-		List<AssessmentItemRef> itemRefList = resolvedAssessmentTest.getAssessmentItemRefs();
-		return itemRefList.stream()
-			.filter(itemRef ->  AssessmentTestHelper.needManualCorrection(itemRef, resolvedAssessmentTest))
-			.collect(Collectors.toList());
+		return resolvedAssessmentTest.getAssessmentItemRefs();
 	}
 	
 	private void updatePreviousNext() {
@@ -189,6 +185,10 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 		if(currentItemRef != null) {
 			itemCorrectionCtrl = new IdentitiesAssessmentItemCorrectionController(ureq, getWindowControl(),
 					testCorrections, currentItemRef, testEntry, resolvedAssessmentTest);
+			int index = itemRefs.indexOf(currentItemRef);
+			if(index + 1 == itemRefs.size()) {
+				itemCorrectionCtrl.disableNext();
+			}
 			listenTo(itemCorrectionCtrl);
 			mainVC.put("itemCorrection", itemCorrectionCtrl.getInitialComponent());
 		} else if(itemCorrectionCtrl != null) {

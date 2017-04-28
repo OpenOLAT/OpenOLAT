@@ -132,6 +132,12 @@
 				</td>
 			</tr>
 			#end
+			#if($r.isNotEmpty($itemResult.comment))
+			<tr class="o_sel_assessmentitem_comment">
+				<th>$r.translate("results.comment")</th>
+				<td>$r.escapeHtml($itemResult.comment)</td> 
+			</tr>
+			#end
 		</tbody></table>
 		#end
 	</div>

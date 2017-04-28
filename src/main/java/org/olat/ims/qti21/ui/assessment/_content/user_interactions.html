@@ -10,6 +10,7 @@
 			$r.render($responseFormItem.name)
 		</div>
 	#end
+	#if($r.isNotNull(${interactionWrapper.scoreEl}))
 	<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
 		$r.render("${interactionWrapper.scoreEl.name}_LABEL", "$f.getItemId($item)", "col-sm-3")
 		<div class="col-sm-9">
@@ -28,24 +29,40 @@
 			</div>
 		#end
 	</div>
-#end
-
-	<div class='form-group #if($f.hasError("comment.user")) has-feedback has-error #end clearfix'>
-		$r.render("comment.user_LABEL", "$f.getItemId($item)", "col-sm-3")
+	#end
+	<div class='form-group #if($f.hasError($item)) has-feedback has-error #end clearfix'>
+		$r.render("${interactionWrapper.commentEl.name}_LABEL", "$f.getItemId($item)", "col-sm-3")
 		<div class="col-sm-9">
-			$r.render("comment.user", "form")
+			$r.render($interactionWrapper.commentEl.name, "form")
 			#if($f.hasError("comment.user"))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+		</div>
+		#if($f.hasError($interactionWrapper.commentEl.name))
+			<div class="col-sm-offset-3 col-sm-9">
+				$r.render("${interactionWrapper.commentEl.name}_ERROR")
+			</div>
+		#end
+	</div>
+#end
+	<hr/>
+	<div class='form-group #if($f.hasError("comment.test")) has-feedback has-error #end clearfix'>
+		$r.render("comment.test_LABEL", "$f.getItemId($item)", "col-sm-3")
+		<div class="col-sm-9">
+			$r.render("comment.test", "form")
+			#if($f.hasError("comment.test"))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
 			#end
 		</div>
 		#if($f.hasError("comment.user"))
 			<div class="col-sm-offset-3 col-sm-9">
-				$r.render("comment.user_ERROR")
+				$r.render("comment.test_ERROR")
 			</div>
 		#end
 	</div>
-
-	<div class="o_button_group">
-		$r.render("buttons")
+	<div class="form-group">
+		<div class="col-sm-9 col-sm-offset-3">
+			$r.render("buttons")
+		</div>
 	</div>
 </fieldset>

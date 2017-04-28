@@ -22,8 +22,8 @@ package org.olat.course.nodes;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.course.archiver.ExportFormat;
 import org.olat.group.BusinessGroup;
-import org.olat.ims.qti.export.QTIExportItemFormatConfig;
 
 /**
  * 
@@ -35,8 +35,7 @@ public class ArchiveOptions {
 	
 	private BusinessGroup group;
 	private List<Identity> identities;
-	
-	private QTIExportItemFormatConfig qtiExportItemFormatConfig;
+	private ExportFormat exportFormat;
 	
 	public BusinessGroup getGroup() {
 		return group;
@@ -54,13 +53,11 @@ public class ArchiveOptions {
 		this.identities = identities;
 	}
 
-	public QTIExportItemFormatConfig getQtiExportItemFormatConfig() {
-		return qtiExportItemFormatConfig;
+	public ExportFormat getExportFormat() {
+		return exportFormat;
 	}
 
-	public void setQtiExportItemFormatConfig(QTIExportItemFormatConfig qtiExportItemFormatConfig) {
-		this.qtiExportItemFormatConfig = qtiExportItemFormatConfig;
+	public void setExportFormat(ExportFormat exportFormat) {
+		this.exportFormat = exportFormat;
 	}
-	
-	
 }

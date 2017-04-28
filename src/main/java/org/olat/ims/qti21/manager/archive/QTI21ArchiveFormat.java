@@ -51,12 +51,11 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.archiver.QTIExportFormatConfig;
+import org.olat.course.archiver.ExportFormat;
 import org.olat.course.nodes.CourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.export.QTIArchiver;
 import org.olat.ims.qti.export.QTIExportFormatter;
-import org.olat.ims.qti.export.QTIExportItemFormatConfig;
 import org.olat.ims.qti.export.helper.IdentityAnonymizerCallback;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
@@ -136,7 +135,7 @@ public class QTI21ArchiveFormat {
 	private IdentityAnonymizerCallback anonymizerCallback;
 
 	private final QTI21StatisticSearchParams searchParams;
-	private QTIExportItemFormatConfig exportConfig;
+	private ExportFormat exportConfig;
 	
 	private List<ItemInfos> itemInfos;
 	private final Map<String, InteractionArchive> interactionArchiveMap = new HashMap<>();
@@ -147,9 +146,9 @@ public class QTI21ArchiveFormat {
 	
 	public QTI21ArchiveFormat(Locale locale, QTI21StatisticSearchParams searchParams) {
 		this.searchParams = searchParams;
-		this.exportConfig = searchParams.getArchiveOptions().getQtiExportItemFormatConfig();
+		exportConfig = searchParams.getArchiveOptions().getExportFormat();
 		if (exportConfig == null) {
-			exportConfig = new QTIExportFormatConfig(true, true, true, true);
+			exportConfig = new ExportFormat(true, true, true, true, true);
 		}
 		
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
@@ -304,7 +303,7 @@ public class QTI21ArchiveFormat {
 		for(int i=0; i<infos.size(); i++) {
 			int delta = col;
 			ItemInfos item = infos.get(i);
-			if (exportConfig.hasResponseCols() || exportConfig.hasPointCol() || exportConfig.hasTimeCols()) {
+			if (exportConfig.isResponseCols() || exportConfig.isPointCol() || exportConfig.isTimeCols() || exportConfig.isCommentCol()) {
 				List<Interaction> interactions = item.getInteractions();
 				for(int j=0; j<interactions.size(); j++) {
 					Interaction interaction = interactions.get(j);
@@ -312,13 +311,16 @@ public class QTI21ArchiveFormat {
 							.writeHeader1(item.getAssessmentItem(), interaction, i, j, header1Row, col, workbook);
 				}
 			}
-			if (!exportConfig.hasResponseCols()) {
+			if (!exportConfig.isResponseCols()) {
 				col -= col - delta;
 			}
-			if (exportConfig.hasPointCol()) {
+			if (exportConfig.isPointCol()) {
 				col++;
 			}
-			if (exportConfig.hasTimeCols()) {
+			if (exportConfig.isCommentCol()) {
+				col++;
+			}
+			if (exportConfig.isTimeCols()) {
 				col += anonymizerCallback != null ? 1 : 2;
 			}		
 		}
@@ -357,7 +359,7 @@ public class QTI21ArchiveFormat {
 		List<ItemInfos> infos = getItemInfos();
 		for(int i=0; i<infos.size(); i++) {
 			ItemInfos info = infos.get(i);
-			if (exportConfig.hasResponseCols()) {
+			if (exportConfig.isResponseCols()) {
 				List<Interaction> interactions = info.getInteractions();
 				for(int j=0; j<interactions.size(); j++) {
 					Interaction interaction = interactions.get(j);
@@ -365,10 +367,13 @@ public class QTI21ArchiveFormat {
 							.writeHeader2(info.getAssessmentItem(), interaction, i, j, header2Row, col, workbook);
 				}
 			}
-			if (exportConfig.hasPointCol()) {
+			if (exportConfig.isPointCol()) {
 				header2Row.addCell(col++, translator.translate("item.score"), headerStyle);
 			}
-			if (exportConfig.hasTimeCols()) {
+			if (exportConfig.isCommentCol()) {
+				header2Row.addCell(col++, translator.translate("item.comment"), headerStyle);
+			}
+			if (exportConfig.isTimeCols()) {
 				if (anonymizerCallback == null){
 					header2Row.addCell(col++, translator.translate("item.start"), headerStyle);
 				}
@@ -454,7 +459,7 @@ public class QTI21ArchiveFormat {
 		} else {
 			col++;
 		}
-		if (anonymizerCallback == null){
+		if(anonymizerCallback == null) {
 			dataRow.addCell(col++, testSession.getCreationDate(), workbook.getStyles().getDateStyle());
 		}
 		dataRow.addCell(col++, toDurationInMilliseconds(testSession.getDuration()), null);
@@ -466,11 +471,11 @@ public class QTI21ArchiveFormat {
 			String itemRefIdentifier = itemRef.getIdentifier().toString();
 			AssessmentItemSession itemSession = responses.getItemSession(itemRefIdentifier);
 			
-			if (exportConfig.hasResponseCols()) {
+			if (exportConfig.isResponseCols()) {
 				List<Interaction> interactions = info.getInteractions();
 				for(int j=0; j<interactions.size(); j++) {
 					Interaction interaction = interactions.get(j);
-					 AssessmentResponse response = responses
+					AssessmentResponse response = responses
 							 .getResponse(itemRefIdentifier, interaction.getResponseIdentifier());
 					col = interactionArchiveMap.get(interaction.getQtiClassName())
 								.writeInteractionData(info.getAssessmentItem(), response, interaction, j, dataRow, col, workbook);
@@ -479,17 +484,27 @@ public class QTI21ArchiveFormat {
 			
 			//score, start, duration
 			if (itemSession == null) {
-				if (exportConfig.hasPointCol()) {
+				if (exportConfig.isPointCol()) {
 					col++;
 				}
-				if (exportConfig.hasTimeCols()) {
+				if (exportConfig.isCommentCol()) {
+					col++;
+				}
+				if (exportConfig.isTimeCols()) {
 					col += anonymizerCallback != null ? 1 : 2;
 				}
 			} else {
-				if (exportConfig.hasPointCol()) {
-					dataRow.addCell(col++, itemSession.getScore(), null);
+				if (exportConfig.isPointCol()) {
+					if(itemSession.getManualScore() != null) {
+						dataRow.addCell(col++, itemSession.getManualScore(), null);
+					} else {
+						dataRow.addCell(col++, itemSession.getScore(), null);
+					}
 				}
-				if (exportConfig.hasTimeCols()) {
+				if (exportConfig.isCommentCol()) {
+					dataRow.addCell(col++, itemSession.getCoachComment(), null);	
+				}
+				if (exportConfig.isTimeCols()) {
 					if (anonymizerCallback == null){
 						dataRow.addCell(col++, itemSession.getCreationDate(), workbook.getStyles().getTimeStyle());
 					}

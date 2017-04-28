@@ -31,7 +31,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.nodes.CourseNode;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * wrapper for GenericArchiveController to handle individual export configuration 
@@ -46,19 +45,11 @@ public class TestArchiveController extends BasicController {
 	private GenericArchiveController genericArchiveController;
 	private CloseableModalController cmc;
 	private ExportOptionsController exportOptionsCtrl;
-
-	private final CourseNode[] nodeTypes;
-	
-	@Autowired
-	private FormatConfigHelper configHelper;
 	
 	protected TestArchiveController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, CourseNode... nodeTypes) {
 		super(ureq, wControl);
-
-		this.nodeTypes = nodeTypes;
 		
 		VelocityContainer nodeChoose = createVelocityContainer("testarchive");
-		
 		nodeChoose.contextPut("nodeType", nodeTypes[0].getType());
 
 		downloadOptionsEl = LinkFactory.createButton("download.options", nodeChoose, this);
@@ -66,13 +57,12 @@ public class TestArchiveController extends BasicController {
 		
 		genericArchiveController = new GenericArchiveController(ureq, wControl, ores, nodeTypes);
 		genericArchiveController.setHideTitle(true);
-		genericArchiveController.setOptions(configHelper.getArchiveOptions(ureq));
+		genericArchiveController.setOptions(FormatConfigHelper.getArchiveOptions(ureq));
 		listenTo(genericArchiveController);
 		
 		nodeChoose.put("genericArchiveController", genericArchiveController.getInitialComponent());
 
 		putInitialPanel(nodeChoose);	
-
 	}
 
 	@Override
@@ -86,7 +76,7 @@ public class TestArchiveController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == exportOptionsCtrl) {
 			if (event == Event.DONE_EVENT) {
-				genericArchiveController.setOptions(configHelper.getArchiveOptions(ureq));
+				genericArchiveController.setOptions(FormatConfigHelper.getArchiveOptions(ureq));
 			}
 			cmc.deactivate();
 			cleanUpPopups();
@@ -109,12 +99,11 @@ public class TestArchiveController extends BasicController {
 	}
 
 	private void doOpenExportOptios(UserRequest ureq) {
-		exportOptionsCtrl = new ExportOptionsController(ureq, getWindowControl(), nodeTypes[0]);
+		exportOptionsCtrl = new ExportOptionsController(ureq, getWindowControl());
 		listenTo(exportOptionsCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), exportOptionsCtrl.getInitialComponent(),
 				true, translate("download.options"));
 		cmc.activate();
 		listenTo(cmc);
 	}
-
 }
