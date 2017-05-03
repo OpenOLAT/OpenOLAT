@@ -222,8 +222,10 @@ public class MembersTableController extends FormBasicController {
 			if (userLastTimeVisible) {
 				if (repoEntry == null) {
 					BusinessGroupMembership groupmembership = groupmemberships.get(identity.getKey());
-					member.setFirstTime(groupmembership.getCreationDate());
-					member.setLastTime(groupmembership.getLastModified());
+					if(groupmembership != null) {
+						member.setFirstTime(groupmembership.getCreationDate());
+						member.setLastTime(groupmembership.getLastModified());
+					}
 				} else {
 					member.setFirstTime(initialLaunches.get(identity.getKey()));
 					member.setLastTime(recentLaunches.get(identity.getKey()));
