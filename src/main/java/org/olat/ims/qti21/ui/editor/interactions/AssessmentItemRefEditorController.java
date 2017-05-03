@@ -58,6 +58,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_assessment_item_options");
 		if(assessmentItemRef == null) return;
 		
 		Integer maxAttempts = null;

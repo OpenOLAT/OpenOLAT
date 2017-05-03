@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.qti;
 
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -79,6 +80,26 @@ public class QTI21EditorPage {
 		OOGraphene.waitModalDialog(browser);
 		
 		confirm();
+		return this;
+	}
+	
+	public QTI21SingleChoiceEditorPage addSingleChoice() {
+		addQuestion(QTI21QuestionType.sc);
+		return new QTI21SingleChoiceEditorPage(browser);
+	}
+	
+	public QTI21MultipleChoiceEditorPage addMultipleChoice() {
+		addQuestion(QTI21QuestionType.mc);
+		return new QTI21MultipleChoiceEditorPage(browser);
+	}
+	
+	private QTI21EditorPage addQuestion(QTI21QuestionType type) {
+		openElementsMenu();
+		
+		By addBy = By.xpath("//ul[contains(@class,'o_sel_qti_elements')]//a[contains(@onclick,'new.')][i[contains(@class,'" + type.getCssClass() + "')]]");
+		browser.findElement(addBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.className("o_sel_assessment_item_title"), browser);
 		return this;
 	}
 	

@@ -90,6 +90,7 @@ public class FIBEditorController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
+		titleEl.setElementCssClass("o_sel_assessment_item_title");
 		titleEl.setMandatory(true);
 		
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();

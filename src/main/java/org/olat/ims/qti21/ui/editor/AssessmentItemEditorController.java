@@ -127,6 +127,7 @@ public class AssessmentItemEditorController extends BasicController {
 			mainVC = createVelocityContainer("assessment_item_editor");
 			mainVC.contextPut("restrictedEdit", restrictedEdit);
 			tabbedPane = new TabbedPane("itemTabs", getLocale());
+			tabbedPane.setElementCssClass("o_sel_assessment_item_config");
 			tabbedPane.addListener(this);
 			mainVC.put("tabbedpane", tabbedPane);
 	
@@ -166,6 +167,7 @@ public class AssessmentItemEditorController extends BasicController {
 			mainVC = createVelocityContainer("assessment_item_editor");
 			mainVC.contextPut("restrictedEdit", restrictedEdit);
 			tabbedPane = new TabbedPane("itemTabs", getLocale());
+			tabbedPane.setElementCssClass("o_sel_assessment_item_config");
 			tabbedPane.addListener(this);
 			mainVC.put("tabbedpane", tabbedPane);
 	

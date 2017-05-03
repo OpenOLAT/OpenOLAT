@@ -47,7 +47,9 @@ public class QTI21Page {
 	}
 	
 	public static QTI21Page getQTI12Page(WebDriver browser) {
-		WebElement main = browser.findElement(By.id("o_main_wrapper"));
+		By mainBy = By.id("o_main_wrapper");
+		OOGraphene.waitElement(mainBy, 5, browser);
+		WebElement main = browser.findElement(mainBy);
 		Assert.assertTrue(main.isDisplayed());
 		return new QTI21Page(browser);
 	}

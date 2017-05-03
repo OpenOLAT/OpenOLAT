@@ -95,6 +95,7 @@ public class KPrimEditorController extends FormBasicController {
 		formLayout.add("metadata", metadata);
 		
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), metadata);
+		titleEl.setElementCssClass("o_sel_assessment_item_title");
 		titleEl.setMandatory(true);
 
 		String description = itemBuilder.getQuestion();
