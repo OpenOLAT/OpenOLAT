@@ -1978,6 +1978,15 @@ create table o_lecture_block_roll_call (
   primary key (id)
 );
 
+create table o_lecture_reminder (
+  id bigserial not null,
+  creationdate timestamp not null,
+  l_status varchar(16) not null,
+  fk_lecture_block int8 not null,
+  fk_identity int8 not null,
+  primary key (id)
+);
+
 create table o_lecture_participant_summary (
   id bigserial not null,
   creationdate timestamp not null,
@@ -2867,6 +2876,11 @@ alter table o_lecture_block_roll_call add constraint lec_call_block_idx foreign 
 create index idx_lec_call_block_idx on o_lecture_block_roll_call(fk_lecture_block);
 alter table o_lecture_block_roll_call add constraint lec_call_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_lec_call_identity_idx on o_lecture_block_roll_call(fk_identity);
+
+alter table o_lecture_reminder add constraint lec_reminder_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+create index idx_lec_reminder_block_idx on o_lecture_reminder(fk_lecture_block);
+alter table o_lecture_reminder add constraint lec_reminder_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_lec_reminder_identity_idx on o_lecture_reminder(fk_identity);
 
 alter table o_lecture_participant_summary add constraint lec_part_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_lec_part_entry_idx on o_lecture_participant_summary(fk_entry);

@@ -1980,6 +1980,15 @@ create table o_lecture_block_roll_call (
   primary key (id)
 );
 
+create table o_lecture_reminder (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  l_status varchar(16) not null,
+  fk_lecture_block bigint not null,
+  fk_identity bigint not null,
+  primary key (id)
+);
+
 create table o_lecture_participant_summary (
   id bigint not null auto_increment,
   creationdate datetime not null,
@@ -2351,6 +2360,7 @@ alter table o_lecture_reason ENGINE = InnoDB;
 alter table o_lecture_block ENGINE = InnoDB;
 alter table o_lecture_block_to_group ENGINE = InnoDB;
 alter table o_lecture_block_roll_call ENGINE = InnoDB;
+alter table o_lecture_reminder ENGINE = InnoDB;
 alter table o_lecture_participant_summary ENGINE = InnoDB;
 alter table o_lecture_entry_config ENGINE = InnoDB;
 
@@ -2822,6 +2832,9 @@ alter table o_lecture_block_to_group add constraint lec_block_to_group_idx forei
 
 alter table o_lecture_block_roll_call add constraint lec_call_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
 alter table o_lecture_block_roll_call add constraint lec_call_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+
+alter table o_lecture_reminder add constraint lec_reminder_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+alter table o_lecture_reminder add constraint lec_reminder_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 
 alter table o_lecture_participant_summary add constraint lec_part_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 alter table o_lecture_participant_summary add constraint lec_part_ident_idx foreign key (fk_identity) references o_bs_identity (id);
