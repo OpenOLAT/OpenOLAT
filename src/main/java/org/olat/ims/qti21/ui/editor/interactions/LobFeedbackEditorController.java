@@ -90,6 +90,8 @@ public class LobFeedbackEditorController extends FormBasicController {
 			hintTextEl = uifactory.addRichTextElementForQTI21("hintText", "form.imd.hint.text", hintText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			hintTextEl.setEnabled(!restrictedEdit);
+			hintTextEl.setHelpTextKey("feedback.hint.help", null);
+			hintTextEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			RichTextConfiguration hintConfig = hintTextEl.getEditorConfiguration();
 			hintConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
@@ -104,6 +106,8 @@ public class LobFeedbackEditorController extends FormBasicController {
 			feedbackCorrectSolutionTextEl = uifactory.addRichTextElementForQTI21("correctSolutionText", "form.imd.correct.solution.text.word", correctSolutionText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackCorrectSolutionTextEl.setEnabled(!restrictedEdit);
+			feedbackCorrectSolutionTextEl.setHelpTextKey("feedback.correctsolution.help", null);
+			feedbackCorrectSolutionTextEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			RichTextConfiguration richTextConfig2 = feedbackCorrectSolutionTextEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
