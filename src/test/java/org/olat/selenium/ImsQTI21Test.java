@@ -42,7 +42,6 @@ import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
-import org.olat.selenium.page.qti.QTI21ChoicesScoreEditorPage;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21EditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
@@ -939,7 +938,7 @@ public class ImsQTI21Test {
 	 */
 	@Test
 	@RunAsClient
-	public void choicesEditor(@InitialPage LoginPage authorLoginPage)
+	public void qti21EditorSingleChoices(@InitialPage LoginPage authorLoginPage)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
@@ -972,7 +971,32 @@ public class ImsQTI21Test {
 			.addChoice(3)
 			.setAnswer(3, "Nicht richtig")
 			.save();
-		QTI21ChoicesScoreEditorPage scScoreEditor = scEditor
-			.selectScores();
+		// change max score
+		scEditor
+			.selectScores()
+			.setMaxScore("3")
+			.save();
+		// set some feedbacks
+		scEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		
+		qtiPage
+			.answerSingleChoice("Nicht richtig")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerSingleChoice("Correct answer")
+			.saveAnswer()
+			.assertFeedback("Correct feedback");
 	}
 }

@@ -73,5 +73,10 @@ public class QTI21SingleChoiceEditorPage extends QTI21AssessmentItemEditorPage {
 		selectTab(By.className("o_sel_assessment_item_options"));
 		return new QTI21ChoicesScoreEditorPage(browser);
 	}
+	
+	public QTI21FeedbacksEditorPage selectFeedbacks() {
+		selectTab(By.className("o_sel_assessment_item_feedbacks"));
+		return new QTI21FeedbacksEditorPage(browser);
+	}
 
 }

@@ -164,11 +164,22 @@ public class QTI21Page {
 		return this;
 	}
 	
-	public QTI21Page assertFeedback(String feedback) {
-		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + feedback + "')]");
+	public QTI21Page assertFeedback(String title) {
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(feedbackBy, 5, browser);
-		List<WebElement> feedbackEls = browser.findElements(feedbackBy);
-		Assert.assertEquals(1, feedbackEls.size());
+		return this;
+	}
+	
+	public QTI21Page assertCorrectSolution(String title) {
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4/a[contains(text(),'" + title + "')]");
+		OOGraphene.waitElement(feedbackBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page hint() {
+		By hintBy = By.cssSelector("a.o_sel_assessment_item_hint");
+		browser.findElement(hintBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
