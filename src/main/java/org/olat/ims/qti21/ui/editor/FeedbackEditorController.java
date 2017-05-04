@@ -86,6 +86,8 @@ public class FeedbackEditorController extends FormBasicController {
 			hintTextEl = uifactory.addRichTextElementForQTI21("hintText", "form.imd.hint.text", hintText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			hintTextEl.setEnabled(!restrictedEdit);
+			hintTextEl.setHelpTextKey("feedback.hint.help", null);
+			hintTextEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			RichTextConfiguration hintConfig = hintTextEl.getEditorConfiguration();
 			hintConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
@@ -100,6 +102,8 @@ public class FeedbackEditorController extends FormBasicController {
 			feedbackCorrectSolutionTextEl = uifactory.addRichTextElementForQTI21("correctSolutionText", "form.imd.correct.solution.text", correctSolutionText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackCorrectSolutionTextEl.setEnabled(!restrictedEdit);
+			feedbackCorrectSolutionTextEl.setHelpTextKey("feedback.correctsolution.help", null);
+			feedbackCorrectSolutionTextEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			RichTextConfiguration richTextConfig2 = feedbackCorrectSolutionTextEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
@@ -114,6 +118,8 @@ public class FeedbackEditorController extends FormBasicController {
 			feedbackCorrectTextEl = uifactory.addRichTextElementForQTI21("correctText", "form.imd.correct.text", correctText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackCorrectTextEl.setEnabled(!restrictedEdit);
+			feedbackCorrectTextEl.setHelpTextKey("feedback.correct.help", null);
+			feedbackCorrectTextEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			RichTextConfiguration richTextConfig = feedbackCorrectTextEl.getEditorConfiguration();
 			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
@@ -129,6 +135,8 @@ public class FeedbackEditorController extends FormBasicController {
 			feedbackIncorrectTextEl = uifactory.addRichTextElementForQTI21("incorrectText", "form.imd.incorrect.text", incorrectText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackIncorrectTextEl.setEnabled(!restrictedEdit);
+			feedbackIncorrectTextEl.setHelpTextKey("feedback.incorrect.help", null);
+			feedbackIncorrectTextEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			RichTextConfiguration richTextConfig2 = feedbackIncorrectTextEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
