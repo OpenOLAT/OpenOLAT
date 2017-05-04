@@ -42,9 +42,11 @@ import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
+import org.olat.selenium.page.qti.QTI21ChoicesScoreEditorPage;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21EditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
+import org.olat.selenium.page.qti.QTI21SingleChoiceEditorPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
@@ -926,5 +928,51 @@ public class ImsQTI21Test {
 		qtiPage
 			.assertOnCourseAssessmentTestScore(4)
 			.assertOnCourseAttempts(1);
+	}
+	
+	/**
+	 * Test different settings in the single choice editor.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void choicesEditor(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		//add a single choice
+		QTI21SingleChoiceEditorPage scEditor = qtiEditor
+			.addSingleChoice();
+		scEditor
+			.setAnswer(0, "Wrong answer")
+			.addChoice(1)
+			.setCorrect(1)
+			.setAnswer(1, "Correct answer")
+			.addChoice(2)
+			.setAnswer(2, "Pas la bonne")
+			.addChoice(3)
+			.setAnswer(3, "Nicht richtig")
+			.save();
+		QTI21ChoicesScoreEditorPage scScoreEditor = scEditor
+			.selectScores();
 	}
 }

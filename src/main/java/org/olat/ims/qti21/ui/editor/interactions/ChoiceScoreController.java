@@ -95,6 +95,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		ScoreBuilder maxScore = itemBuilder.getMaxScoreBuilder();
 		String maxValue = maxScore == null ? "" : (maxScore.getScore() == null ? "" : maxScore.getScore().toString());
 		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, maxValue, formLayout);
+		maxScoreEl.setElementCssClass("o_sel_assessment_item_max_score");
 		maxScoreEl.setEnabled(!restrictedEdit);
 		
 		String[] modeValues = new String[]{
