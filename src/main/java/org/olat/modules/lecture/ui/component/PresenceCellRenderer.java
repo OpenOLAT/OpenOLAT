@@ -33,7 +33,7 @@ import org.olat.modules.lecture.model.LectureBlockAndRollCall;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AbsentPresentCellRenderer implements FlexiCellRenderer {
+public class PresenceCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,

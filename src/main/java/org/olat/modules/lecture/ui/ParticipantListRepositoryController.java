@@ -49,7 +49,8 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.ui.ParticipantListDataModel.ParticipantsCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
-import org.olat.modules.lecture.ui.component.RateCellRenderer;
+import org.olat.modules.lecture.ui.component.PercentCellRenderer;
+import org.olat.modules.lecture.ui.component.RateWarningCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -107,16 +108,15 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
 		
+		
 		lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		rateEnabled = ConfigurationHelper.isRateEnabled(lectureConfig, lectureModule);
 		if(lectureConfig.isOverrideModuleDefault()) {
-			rateEnabled = lectureConfig.getCalculateAttendanceRate() == null ?
-					lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled() : lectureConfig.getCalculateAttendanceRate().booleanValue();
 			defaultRate = lectureConfig.getRequiredAttendanceRate() == null ?
 					lectureModule.getRequiredAttendanceRateDefault() : lectureConfig.getRequiredAttendanceRate().doubleValue();
 			rollCallEnabled	= lectureConfig.getRollCallEnabled() == null ?
 					lectureModule.isRollCallDefaultEnabled() : lectureConfig.getRollCallEnabled();		
 		} else {
-			rateEnabled = lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
 			defaultRate = lectureModule.getRequiredAttendanceRateDefault();
 			rollCallEnabled = lectureModule.isRollCallDefaultEnabled();
 		}
@@ -143,14 +143,20 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(col);
 			colPos++;
 		}
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.plannedLectures));
 
 		if(rollCallEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.attendedLectures));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.absentLectures));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.progress, new LectureStatisticsCellRenderer()));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rate, new RateCellRenderer()));
 		}
 		if(rateEnabled) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rateWarning, new RateWarningCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rate, new PercentCellRenderer()));
 		}
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		
 		tableModel = new ParticipantListDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -230,7 +236,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		if(editRateCtrl != null) return;
 		
 		Identity identity = securityManager.loadIdentityByKey(row.getIdentityKey());
-		editRateCtrl = new EditParticipantSummaryController(ureq, getWindowControl(), entry, identity, defaultRate);
+		editRateCtrl = new EditParticipantSummaryController(ureq, getWindowControl(), entry, identity, rateEnabled, defaultRate);
 		listenTo(editRateCtrl);
 		
 		String title = translate("edit.participant.rate");

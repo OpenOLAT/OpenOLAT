@@ -56,15 +56,17 @@ public class EditParticipantSummaryController extends FormBasicController {
 	private double defaultRate;
 	private RepositoryEntry entry;
 	private Identity assessedIdentity;
+	private final boolean rateEnabled;
 	private LectureParticipantSummary participantSummary;
 	
 	@Autowired
 	private LectureService lectureService;
 
 	public EditParticipantSummaryController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, Identity assessedIdentity, double defaultRate) {
+			RepositoryEntry entry, Identity assessedIdentity, boolean rateEnabled, double defaultRate) {
 		super(ureq, wControl);
 		this.entry = entry;
+		this.rateEnabled = rateEnabled;
 		this.defaultRate = defaultRate;
 		this.assessedIdentity = assessedIdentity;
 		participantSummary = lectureService.getOrCreateParticipantSummary(entry, assessedIdentity);
@@ -82,6 +84,7 @@ public class EditParticipantSummaryController extends FormBasicController {
 			customRate = Long.toString(cRate);
 		}
 		rateEl = uifactory.addTextElement("participant.rate", "participant.rate", 4, customRate, formLayout);
+		rateEl.setVisible(rateEnabled);
 		
 		Date firstAdmission = participantSummary.getFirstAdmissionDate();
 		firstAdmissionEl = uifactory.addDateChooser("first.admission", firstAdmission, formLayout);

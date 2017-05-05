@@ -60,12 +60,20 @@ implements SortableFlexiTableDataModel<ParticipantRow> {
 			switch(ParticipantsCols.values()[col]) {
 				case username: return row.getIdentityName();
 				case progress: return row.getStatistics();
-				case rate: return row.getStatistics();
+				case plannedLectures: return positive(row.getStatistics().getTotalPlannedLectures());
+				case attendedLectures: return positive(row.getStatistics().getTotalAttendedLectures());
+				case absentLectures: return positive(row.getStatistics().getTotalAbsentLectures());
+				case rateWarning: return row.getStatistics();
+				case rate: return row.getStatistics().getAttendanceRate();
 				default: return null;
 			}
 		}
 		int propPos = col - ParticipantListRepositoryController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
+	}
+	
+	private static final long positive(long pos) {
+		return pos < 0 ? 0 : pos;
 	}
 
 	@Override
@@ -75,7 +83,11 @@ implements SortableFlexiTableDataModel<ParticipantRow> {
 	
 	public enum ParticipantsCols implements FlexiSortableColumnDef {
 		username("table.header.username"),
+		plannedLectures("table.header.planned.lectures"),
+		attendedLectures("table.header.attended.lectures"),
+		absentLectures("table.header.absent.lectures"),
 		progress("table.header.progress"),
+		rateWarning("table.header.rate.warning"),
 		rate("table.header.rate");
 		
 		private final String i18nKey;

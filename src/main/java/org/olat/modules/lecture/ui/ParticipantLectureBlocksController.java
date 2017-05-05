@@ -54,7 +54,8 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.ui.ParticipantLectureBlocksDataModel.ParticipantCols;
-import org.olat.modules.lecture.ui.component.AbsentPresentCellRenderer;
+import org.olat.modules.lecture.ui.component.AbsenceCellRenderer;
+import org.olat.modules.lecture.ui.component.PresenceCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +110,8 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.entry));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.lectureBlock));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.coach));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.present, new AbsentPresentCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.presence, new PresenceCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.absence, new AbsenceCellRenderer()));
 		if(appealEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("appeal", ParticipantCols.appeal.ordinal(), "appeal",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("appeal"), "appeal"), null)));
@@ -193,6 +195,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		cmsg.setSubject(translate("appeal.subject", new String[]{ row.getLectureBlockTitle() }));
 		appealCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		appealCtrl.setUserObject(row);
+		appealCtrl.setContactFormTitle(translate("new.appeal.title"));
 		listenTo(appealCtrl);
 		
 		String title = translate("appeal.title", new String[]{ row.getLectureBlockTitle() });

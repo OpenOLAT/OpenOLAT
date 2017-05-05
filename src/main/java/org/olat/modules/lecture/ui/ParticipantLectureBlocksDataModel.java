@@ -67,7 +67,8 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 			case entry: return row.getEntryDisplayname();
 			case lectureBlock: return row.getLectureBlockTitle();
 			case coach: return row.getCoach();
-			case present: return row;
+			case presence: return row;
+			case absence: return row;
 			case appeal: return appealCallback.appealAllowed(row);
 			default: return null;
 		}
@@ -83,7 +84,8 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 		entry("table.header.entry"),
 		lectureBlock("table.header.lecture.block"),
 		coach("table.header.coach"),
-		present("table.header.present"),
+		presence("table.header.presence"),
+		absence("table.header.absence"),
 		appeal("table.header.appeal");
 		
 		private final String i18nKey;

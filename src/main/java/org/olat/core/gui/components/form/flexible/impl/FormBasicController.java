@@ -481,6 +481,14 @@ public abstract class FormBasicController extends BasicController implements IFo
 		}
 	}
 	
+	protected void setFormTranslatedTitle(String translatedTitle) {
+		if(translatedTitle == null) {
+			flc.contextRemove("off_title");
+		} else {
+			flc.contextPut("off_title", translatedTitle);
+		}
+	}
+	
 	/**
 	 * Set an optional icon by giving the necessary css classes
 	 * @param iconCss 

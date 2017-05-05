@@ -312,6 +312,11 @@ public class ContactForm extends FormBasicController {
  	}
 
 	@Override
+	protected void setFormTranslatedTitle(String translatedTitle) {
+		super.setFormTranslatedTitle(translatedTitle);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent (ureq, Event.DONE_EVENT);
 	}

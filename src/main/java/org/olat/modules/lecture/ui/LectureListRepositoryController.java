@@ -84,6 +84,7 @@ public class LectureListRepositoryController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(!lectureManagementManaged) {
 			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
+			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

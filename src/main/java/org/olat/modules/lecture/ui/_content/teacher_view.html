@@ -1,6 +1,6 @@
 #if($r.visible("start") || $r.visible("start.wizard"))
 	<div class="o_button_group">
-		<div>$blockTitle</div>
+		<div class="o_block"><strong>$r.translate("current.lecture"):</strong> $r.escapeHtml($blockTitle)</div>
 		#if($r.visible("start"))
 			$r.render("start")
 		#end

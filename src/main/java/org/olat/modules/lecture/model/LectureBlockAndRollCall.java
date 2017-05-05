@@ -42,6 +42,7 @@ public class LectureBlockAndRollCall {
 	private final Date startDate;
 	
 	private final Long rollCallKey;
+	private final int lecturesAbsentNumber;
 	private final int lecturesAttendedNumber;
 	
 	private String coach;
@@ -58,9 +59,11 @@ public class LectureBlockAndRollCall {
 		if(rollCall == null) {
 			rollCallKey = null;
 			lecturesAttendedNumber = 0;
+			lecturesAbsentNumber = 0;
 		} else {
 			rollCallKey = rollCall.getKey();
 			lecturesAttendedNumber = rollCall.getLecturesAttendedNumber();
+			lecturesAbsentNumber = rollCall.getLecturesAbsentNumber();
 		}
 	}
 
@@ -88,6 +91,10 @@ public class LectureBlockAndRollCall {
 		return lecturesAttendedNumber;
 	}
 	
+	public int getLecturesAbsentNumber() {
+		return lecturesAbsentNumber;
+	}
+
 	public int getPlannedLecturesNumber() {
 		return plannedLectures;
 	}

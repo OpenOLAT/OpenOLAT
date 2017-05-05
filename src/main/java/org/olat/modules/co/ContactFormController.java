@@ -138,6 +138,12 @@ public class ContactFormController extends BasicController {
 	public void setUserObject(Object userObject) {
 		this.userObject = userObject;
 	}
+	
+	public void setContactFormTitle(String translatedTitle) {
+		if(cntctForm != null) {
+			cntctForm.setFormTranslatedTitle(translatedTitle);
+		}
+	}
 
 	private boolean hasAtLeastOneAddress(List<ContactList> recipList) {
 		boolean hasAtLeastOneAddress = false;

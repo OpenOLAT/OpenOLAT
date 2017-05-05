@@ -25,31 +25,25 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.lecture.model.LectureBlockStatistics;
+import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 
 /**
  * 
- * Initial date: 10 avr. 2017<br>
+ * Initial date: 29 mars 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RateCellRenderer implements FlexiCellRenderer {
+public class AbsenceCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		
-		if(cellValue instanceof LectureBlockStatistics) {
-			LectureBlockStatistics stats = (LectureBlockStatistics)cellValue;
-			if(stats.isCalculateRate()) {
-				double attendanceRate = stats.getAttendanceRate();
-				double requiredRate = stats.getRequiredRate();
-				
-				if(requiredRate > attendanceRate) {
-					target.append("<i class='o_icon o_icon-lg o_icon_error'> </i>");
-				} else if(attendanceRate - requiredRate < 0.05) {// less than 5%
-					target.append("<i class='o_icon o_icon-lg o_icon_warning'> </i>");	
-				}
+		if(cellValue instanceof LectureBlockAndRollCall) {
+			LectureBlockAndRollCall blockRow = (LectureBlockAndRollCall)cellValue;
+			if(blockRow.isRollCalled()) {
+				int planned = blockRow.getPlannedLecturesNumber();
+				int absent = blockRow.getLecturesAbsentNumber();
+				target.append(planned).append(" / ").append(absent);
 			}
 		}
 	}
