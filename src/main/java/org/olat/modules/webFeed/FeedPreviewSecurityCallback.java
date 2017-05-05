@@ -19,6 +19,8 @@
  */
 package org.olat.modules.webFeed;
 
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+
 /**
  * The feed preview security callback. Only reading permitted.
  * 
@@ -78,5 +80,15 @@ public class FeedPreviewSecurityCallback implements FeedSecurityCallback {
 	@Override
 	public boolean mayViewAllDrafts() {
 		return false;
+	}
+	
+	@Override
+	public SubscriptionContext getSubscriptionContext() {
+		return null;
+	}
+	
+	@Override
+	public void setSubscriptionContext(SubscriptionContext subsContext) {
+		//
 	}
 }

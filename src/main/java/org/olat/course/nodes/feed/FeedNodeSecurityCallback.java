@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.feed;
 
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 
@@ -37,6 +38,7 @@ public class FeedNodeSecurityCallback implements FeedSecurityCallback {
 	private boolean isOlatAdmin;
 	private boolean isGuestOnly;
 	private boolean isOwner;
+	private SubscriptionContext subsContext;
 
 	public FeedNodeSecurityCallback(NodeEvaluation ne, boolean isOlatAdmin, boolean isOwner, boolean isGuestOnly) {
 		this.ne = ne;
@@ -98,4 +100,14 @@ public class FeedNodeSecurityCallback implements FeedSecurityCallback {
 	public boolean mayViewAllDrafts() {
 		return isOwner || isOlatAdmin;
 	}
+
+	@Override
+	public SubscriptionContext getSubscriptionContext() {
+		return subsContext;
+	}
+
+	@Override
+	public void setSubscriptionContext(SubscriptionContext subsContext) {
+		this.subsContext = subsContext;
+	}	
 }

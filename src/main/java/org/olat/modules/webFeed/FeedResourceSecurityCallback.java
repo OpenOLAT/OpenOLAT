@@ -19,6 +19,8 @@
  */
 package org.olat.modules.webFeed;
 
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+
 /**
  * Feed resource security callback.
  * 
@@ -30,6 +32,8 @@ package org.olat.modules.webFeed;
 public class FeedResourceSecurityCallback implements FeedSecurityCallback {
 
 	private boolean isAdmin, isOwner;
+	
+	private SubscriptionContext subsContext;
 
 	public FeedResourceSecurityCallback(boolean isAdmin, boolean isOwner) {
 		this.isAdmin = isAdmin;
@@ -80,5 +84,15 @@ public class FeedResourceSecurityCallback implements FeedSecurityCallback {
 	@Override
 	public boolean mayViewAllDrafts() {
 		return isAdmin || isOwner;
+	}
+	
+	@Override
+	public SubscriptionContext getSubscriptionContext() {
+		return subsContext;
+	}
+	
+	@Override
+	public void setSubscriptionContext(SubscriptionContext subsContext) {
+		this.subsContext = subsContext;
 	}
 }

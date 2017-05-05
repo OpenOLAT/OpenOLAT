@@ -24,6 +24,7 @@ import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -169,6 +170,8 @@ public class BlogHandler implements RepositoryHandler {
 		boolean isAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		boolean isOwner = RepositoryManager.getInstance().isOwnerOfRepositoryEntry(ureq.getIdentity(), re);	
 		final FeedSecurityCallback callback = new FeedResourceSecurityCallback(isAdmin, isOwner);
+		SubscriptionContext subsContext = new SubscriptionContext(re.getOlatResource(), re.getSoftkey());
+		callback.setSubscriptionContext(subsContext);
 		return new FeedRuntimeController(ureq, wControl, re, reSecurity,
 				new RuntimeControllerCreator() {
 					@Override

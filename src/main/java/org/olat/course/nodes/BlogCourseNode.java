@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -34,6 +35,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -113,6 +115,8 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 		} else {
 			callback = new FeedNodeSecurityCallback(ne, isAdmin, isOwner, isGuest);
 		}
+		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), this); 
+		callback.setSubscriptionContext(subsContext);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(this));
 		FeedMainController blogCtr = BlogUIFactory.getInstance(ureq.getLocale()).createMainController(entry.getOlatResource(), ureq, wControl, callback,
 				courseId, nodeId);

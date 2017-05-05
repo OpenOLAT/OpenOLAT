@@ -21,6 +21,9 @@ package org.olat.modules.webFeed.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -73,8 +76,12 @@ public class FeedMainController extends BasicController implements Activateable2
 	private DisplayFeedUrlController displayUrlCtr;
 	private FeedUIFactory uiFactory;
 	private FeedSecurityCallback callback;
+	private ContextualSubscriptionController cSubscriptionCtrl;
+
 	// needed for comparison
 	private String oldFeedUrl;
+	private SubscriptionContext subsContext;
+	private OLATResourceable ores;
 	
 	@Autowired
 	private UserManager userManager;
@@ -109,6 +116,10 @@ public class FeedMainController extends BasicController implements Activateable2
 		super(ureq, wControl);
 		this.uiFactory = uiFactory;
 		this.callback = callback;
+		this.ores = ores;
+		
+		subsContext = callback.getSubscriptionContext();
+				
 		setTranslator(uiFactory.getTranslator());
 		feed = feedManager.getFeed(ores);
 		if(feed == null) {
@@ -151,7 +162,15 @@ public class FeedMainController extends BasicController implements Activateable2
 		vcInfo = uiFactory.createInfoVelocityContainer(this);
 		vcInfo.contextPut("feed", feed);
 		vcInfo.contextPut("helper", helper);
-
+		
+		if (subsContext != null) {
+			String businnessPath = wControl.getBusinessControl().getAsString();
+			PublisherData data = new PublisherData("FeedItem", ores.getResourceableId().toString(), businnessPath);
+			cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
+			listenTo(cSubscriptionCtrl);
+			vcInfo.put("subscription", cSubscriptionCtrl.getInitialComponent());
+		}
+		
 		vcRightCol = uiFactory.createRightColumnVelocityContainer(this);
 		vcMain.put("rightColumn", vcRightCol);
 

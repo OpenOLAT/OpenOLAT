@@ -19,6 +19,8 @@
  */
 package org.olat.modules.webFeed;
 
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+
 /**
  * The interface defines permission levels for the access to a feed.
  * 
@@ -62,4 +64,11 @@ public interface FeedSecurityCallback {
 	 * @return If the user can view all drafts
 	 */
 	boolean mayViewAllDrafts();
+
+	/**
+	 * @return Handle subscriptions
+	 */
+	public SubscriptionContext getSubscriptionContext();
+	
+	public void setSubscriptionContext(SubscriptionContext subsContext);
 }

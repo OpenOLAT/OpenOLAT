@@ -24,7 +24,12 @@
 					<i class="o_icon o_icon-fw o_icon_rss"></i> 
 					$r.translate("blog.subscribe.to.this.feed")
 				</a>
-			</div>
-		#end	
+			#if ($r.available("subscription"))
+				<div class="pull-right">
+				$r.render("subscription")
+				</div>
+			#end	
+		</div>
+	#end
 	</div>
 </div>
