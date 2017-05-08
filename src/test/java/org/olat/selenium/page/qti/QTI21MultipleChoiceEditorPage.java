@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.qti;
 
+import org.olat.selenium.page.graphene.OOGraphene;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -32,5 +34,49 @@ public class QTI21MultipleChoiceEditorPage extends QTI21AssessmentItemEditorPage
 	public QTI21MultipleChoiceEditorPage(WebDriver browser) {
 		super(browser);
 	}
-
+	
+	/**
+	 * Add a new choice.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21MultipleChoiceEditorPage addChoice(int position) {
+		By addBy = By.xpath("//div[contains(@class,'o_sel_add_choice_" + position + "')]/a");
+		browser.findElement(addBy).click();
+		OOGraphene.waitBusy(browser);
+		//wait the next element
+		By addedBy = By.xpath("//div[contains(@class,'o_sel_add_choice_" + (position + 1) + "')]/a");
+		OOGraphene.waitElement(addedBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21MultipleChoiceEditorPage setCorrect(int position) {
+		By correctBy = By.xpath("//div[contains(@class,'o_sel_choice_" + position + "')]//input[contains(@id,'oo_correct-')]");
+		browser.findElement(correctBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public QTI21MultipleChoiceEditorPage setAnswer(int position, String answer) {
+		String containerCssSelector = "div.o_sel_choice_" + position;
+		OOGraphene.tinymce(answer, containerCssSelector, browser);
+		return this;
+	}
+	
+	public QTI21MultipleChoiceEditorPage save() {
+		By saveBy = By.cssSelector("fieldset.o_sel_choices_save button.btn.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public QTI21ChoicesScoreEditorPage selectScores() {
+		selectTab(By.className("o_sel_assessment_item_options"));
+		return new QTI21ChoicesScoreEditorPage(browser);
+	}
+	
+	public QTI21FeedbacksEditorPage selectFeedbacks() {
+		selectTab(By.className("o_sel_assessment_item_feedbacks"));
+		return new QTI21FeedbacksEditorPage(browser);
+	}
 }

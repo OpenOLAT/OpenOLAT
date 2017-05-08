@@ -115,6 +115,14 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page deselectAnswerMultipleChoice(String... answers) {
+		for(String answer:answers) {
+			By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][label/p[contains(text(),'" + answer + "')]]]/td[contains(@class,'control')]/input[@type='checkbox']");
+			OOGraphene.check(browser.findElement(choiceBy), Boolean.FALSE);
+		}
+		return this;
+	}
+	
 	public QTI21Page answerHotspot(String shape) {
 		OOGraphene.waitElement(By.className("hotspotInteraction"), browser);
 		By areaBy = By.xpath("//div[contains(@class,'hotspotInteraction')]//map/area[@shape='" + shape + "']");
