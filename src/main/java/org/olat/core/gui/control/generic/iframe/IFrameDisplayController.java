@@ -375,9 +375,10 @@ public class IFrameDisplayController extends BasicController implements GenericE
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == eventVC) {
-			if (event.getCommand().equals(NEW_URI_EVENT)) {
+			if (NEW_URI_EVENT.equals(event.getCommand())) {
 				// This event gets triggered from the iframe content by calling a js function outside 
 				// Get new uri from JS method and fire to parents
 				String newUri = ureq.getModuleURI();
