@@ -26,6 +26,7 @@ import org.olat.ims.qti.statistics.model.StatisticAssessment;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistics;
+import org.olat.ims.qti21.model.statistics.AssessmentItemStatistic;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.HotspotChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
@@ -37,6 +38,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -86,5 +88,15 @@ public interface QTI21StatisticsManager {
 	
 	public List<AbstractTextEntryInteractionStatistics> getTextEntryInteractionsStatistic(String itemRefIdent,
 			AssessmentItem item, List<TextEntryInteraction> interactions, QTI21StatisticSearchParams searchParams);
+	
+	/**
+	 * 
+	 * @param items
+	 * @param searchParams
+	 * @param numOfParticipants
+	 * @return
+	 */
+	public List<AssessmentItemStatistic> getStatisticPerItem(ResolvedAssessmentTest resolvedAssessmentTest, QTI21StatisticSearchParams searchParams,
+			double numOfParticipants);
 
 }

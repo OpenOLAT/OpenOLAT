@@ -146,9 +146,10 @@ public class QTI21ArchiveFormat {
 	
 	public QTI21ArchiveFormat(Locale locale, QTI21StatisticSearchParams searchParams) {
 		this.searchParams = searchParams;
-		exportConfig = searchParams.getArchiveOptions().getExportFormat();
-		if (exportConfig == null) {
+		if(searchParams.getArchiveOptions() == null || searchParams.getArchiveOptions().getExportFormat() == null) {
 			exportConfig = new ExportFormat(true, true, true, true, true);
+		} else {
+			exportConfig = searchParams.getArchiveOptions().getExportFormat();
 		}
 		
 		userManager = CoreSpringFactory.getImpl(UserManager.class);

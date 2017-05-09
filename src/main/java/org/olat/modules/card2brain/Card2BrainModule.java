@@ -42,6 +42,7 @@ public class Card2BrainModule extends AbstractSpringModule implements ConfigOnOf
 	public static final String CARD2BRAIN_ENTERPRISE_SECRET= "card2brain.enterpriseSecret";
 	public static final String CARD2BRAIN_BASE_URL = "card2brain.baseUrl";
 	public static final String CARD2BRAIN_PEEK_VIEW_URL = "card2brain.peekViewUrl";
+	public static final String CARD2BRAIN_VERIFY_LTI_URL = "card2brain.verifyLtiUrl";
 	
 	@Value("${card2brain.enabled:false}")
 	private boolean enabled;
@@ -53,6 +54,8 @@ public class Card2BrainModule extends AbstractSpringModule implements ConfigOnOf
 	private String baseUrl;
 	@Value("${card2brain.peekViewUrl:null}")
 	private String peekViewUrl;
+	@Value("${card2brain.verifyLtiUrl:null}")
+	private String verifyLtiUrl;
 	
 	@Autowired
 	public Card2BrainModule(CoordinatorManager coordinatorManager) {
@@ -89,6 +92,11 @@ public class Card2BrainModule extends AbstractSpringModule implements ConfigOnOf
 		String peekViewUrlObj = getStringPropertyValue(CARD2BRAIN_PEEK_VIEW_URL, true);
 		if(StringHelper.containsNonWhitespace(peekViewUrlObj)) {
 			peekViewUrl = peekViewUrlObj;
+		}
+		
+		String verifyLtiUrlObj = getStringPropertyValue(CARD2BRAIN_VERIFY_LTI_URL, true);
+		if(StringHelper.containsNonWhitespace(verifyLtiUrlObj)) {
+			verifyLtiUrl = verifyLtiUrlObj;
 		}
 	}
 	
@@ -150,6 +158,15 @@ public class Card2BrainModule extends AbstractSpringModule implements ConfigOnOf
 	public void setPeekViewUrl(String peekViewUrl) {
 		this.peekViewUrl = peekViewUrl;
 		setStringProperty(CARD2BRAIN_PEEK_VIEW_URL, peekViewUrl, true);
+	}
+	
+	public String getVerifyLtiUrl() {
+		return verifyLtiUrl;
+	}
+	
+	public void setVerifyLtiUrl(String verifyLtiUrl) {
+		this.verifyLtiUrl = verifyLtiUrl;
+		setStringProperty(CARD2BRAIN_VERIFY_LTI_URL, verifyLtiUrl, true);
 	}
 	
 	/**

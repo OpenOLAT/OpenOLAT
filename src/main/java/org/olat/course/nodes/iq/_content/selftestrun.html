@@ -116,26 +116,27 @@
  		</div>
 </div>
 #end
-
-<div class="o_statusinfo">
-	<p>
-		$r.translate("Intro.self")
-	</p>
-	<p>	
-		$r.translate("info.selfassessment")
-	</p>
-</div>
-		
+#if ($infobox)		
+	<div class="o_statusinfo">
+		<p>
+			$r.translate("Intro.self")
+		</p>
+		<p>	
+			$r.translate("info.selfassessment")
+		</p>
+	</div>
+#end		
 <div class="o_button_group">
 	$r.render("start")
 </div>	
-	
-#if($changeLog)
-<div class="o_box">
-	#o_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
-    <pre class="small">	
+#if ($changelogconfig)		
+	#if($changeLog)
+	<div class="o_box">
+		#o_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
+	    <pre class="small">	
 $changeLog
-	</pre>
-	#o_togglebox_end()
-</div>
+		</pre>
+		#o_togglebox_end()
+	</div>
+	#end
 #end

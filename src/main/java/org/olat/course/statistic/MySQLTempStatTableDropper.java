@@ -40,7 +40,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class MySQLTempStatTableDropper implements IStatisticUpdater {
 
 	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(MySQLTempStatTableDropper.class);
+	private static final OLog log = Tracing.createLoggerFor(MySQLTempStatTableDropper.class);
 
 	/** the jdbcTemplate is used to allow access to other than the default database and 
 	 * allow raw sql code
@@ -62,12 +62,12 @@ public class MySQLTempStatTableDropper implements IStatisticUpdater {
 			jdbcTemplate_.execute("drop table o_stat_temptable;");
 
 		} catch(RuntimeException e) {
-			e.printStackTrace(System.out);
+			log.error("", e);
 		} catch(Error er) {
-			er.printStackTrace(System.out);
+			log.error("", er);
 		} finally {
 			final long diff = System.currentTimeMillis() - startTime;
-			log_.info("updateStatistic: END. duration="+diff);
+			log.info("updateStatistic: END. duration=" + diff);
 		}
 	}
 

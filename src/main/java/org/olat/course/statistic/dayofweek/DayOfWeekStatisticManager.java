@@ -31,11 +31,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.manager.BasicManager;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.IStatisticManager;
 import org.olat.course.statistic.StatisticDisplayController;
@@ -48,15 +46,17 @@ import org.olat.course.statistic.TotalAwareColumnDescriptor;
  * Initial Date:  12.02.2010 <br>
  * @author Stefan
  */
-public class DayOfWeekStatisticManager extends BasicManager implements IStatisticManager {
+public class DayOfWeekStatisticManager implements IStatisticManager {
 
 	@Override
 	public StatisticResult generateStatisticResult(UserRequest ureq, ICourse course, long courseRepositoryEntryKey) {
-		DBQuery dbQuery = DBFactory.getInstance().createQuery("select businessPath,day,value from org.olat.course.statistic.dayofweek.DayOfWeekStat sv "
-				+ "where sv.resId=:resId");
-		dbQuery.setLong("resId", courseRepositoryEntryKey);
+		String q = "select businessPath,day,value from org.olat.course.statistic.dayofweek.DayOfWeekStat sv where sv.resId=:resId";
+		List<Object[]> raw = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(q, Object[].class)
+				.setParameter("resId", courseRepositoryEntryKey)
+				.getResultList();
 
-		StatisticResult result = new StatisticResult(course, dbQuery.list());
+		StatisticResult result = new StatisticResult(course, raw);
 		
 		// now sort by user's preferred firstDayOfWeek
 		Calendar c = Calendar.getInstance(ureq.getLocale());

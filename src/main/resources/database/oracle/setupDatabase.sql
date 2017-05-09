@@ -1329,17 +1329,17 @@ create table o_goto_registrant (
 );
 
 create table o_vid_transcoding (
-   id int8 not null,
+   id number(20) not null,
    creationdate timestamp not null,
    lastmodified timestamp not null,
-   vid_resolution int8 default null,
-   vid_width int8 default null,
-   vid_height int8 default null,
-   vid_size int8 default null,
+   vid_resolution number(20) default null,
+   vid_width number(20) default null,
+   vid_height number(20) default null,
+   vid_size number(20) default null,
    vid_format varchar(128) default null,
-   vid_status int8 default null,
+   vid_status number(20) default null,
    vid_transcoder varchar(128) default null,
-   fk_resource_id int8 not null,
+   fk_resource_id number(20) not null,
    primary key (id)
 );
 
@@ -1899,11 +1899,11 @@ create table o_rem_reminder (
 );
 
 create table o_rem_sent_reminder (
-   id int8 not null,
+   id number(20) not null,
    creationdate timestamp not null,
    r_status varchar(16),
-   fk_identity int8 not null,
-   fk_reminder int8 not null,
+   fk_identity number(20) not null,
+   fk_reminder number(20) not null,
    primary key (id)
 );
 

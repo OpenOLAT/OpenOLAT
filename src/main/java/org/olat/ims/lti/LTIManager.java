@@ -56,5 +56,12 @@ public interface LTIManager {
 	 */
 	public void deleteOutcomes(OLATResource resource);
 	
+	/**
+	 * Make a LTI request with a HTTP Post request.
+	 * @param signedProps the signed LTI properties
+	 * @param url the url to send the request
+	 * @return the http response content as string or null if the request was not successful
+	 */
+	public String post(Map<String,String> signedProps, String url);
 
 }

@@ -32,14 +32,6 @@
 		<mapping-file>org/olat/course/assessment/model/UserEfficiencyStatementImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/openmeetings/model/OpenMeetingsReference.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/statistic/daily/DailyStat.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/statistic/dayofweek/DayOfWeekStat.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/statistic/hourofday/HourOfDayStat.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/statistic/studylevel/StudyLevelStat.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/statistic/studybranch3/StudyBranch3Stat.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/statistic/weekly/WeeklyStat.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/statistic/homeorg/HomeOrgStat.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/statistic/orgtype/OrgTypeStat.hbm.xml</mapping-file>
 		<mapping-file>org/olat/portfolio/model/artefacts/AbstractArtefact.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/fo/portfolio/ForumArtefact.hbm.xml</mapping-file>
 		<mapping-file>org/olat/modules/wiki/portfolio/WikiArtefact.hbm.xml</mapping-file>
@@ -106,6 +98,14 @@
 		<class>org.olat.course.certificate.model.CertificateStandalone</class>
 		<class>org.olat.course.certificate.model.CertificateLightImpl</class>
 		<class>org.olat.course.certificate.model.CertificateTemplateImpl</class>
+		<class>org.olat.course.statistic.daily.DailyStat</class>
+		<class>org.olat.course.statistic.dayofweek.DayOfWeekStat</class>
+		<class>org.olat.course.statistic.homeorg.HomeOrgStat</class>
+		<class>org.olat.course.statistic.hourofday.HourOfDayStat</class>
+		<class>org.olat.course.statistic.orgtype.OrgTypeStat</class>
+		<class>org.olat.course.statistic.studybranch3.StudyBranch3Stat</class>
+		<class>org.olat.course.statistic.studylevel.StudyLevelStat</class>
+		<class>org.olat.course.statistic.weekly.WeeklyStat</class>
 		<class>org.olat.group.model.ContactView</class>
 		<class>org.olat.group.model.ContactViewExtended</class>
 		<class>org.olat.group.model.BusinessGroupShortImpl</class>

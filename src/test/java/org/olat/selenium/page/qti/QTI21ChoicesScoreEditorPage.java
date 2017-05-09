@@ -19,7 +19,11 @@
  */
 package org.olat.selenium.page.qti;
 
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
+import org.olat.selenium.page.graphene.OOGraphene;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -29,10 +33,47 @@ import org.openqa.selenium.WebDriver;
  */
 public class QTI21ChoicesScoreEditorPage {
 	
+	private static final By choiceScoreTable = By.className("o_sel_choices_scores");
+	
 	private final WebDriver browser;
 	
 	public QTI21ChoicesScoreEditorPage(WebDriver browser) {
 		this.browser = browser;
+	}
+	
+	public QTI21ChoicesScoreEditorPage selectAssessmentMode(ScoreEvaluation mode) {
+		By modeBy = By.cssSelector("#o_coassessment_mode input[value='" + mode.name() + "']");
+		browser.findElement(modeBy).click();
+		OOGraphene.waitBusy(browser);
+		if(mode == ScoreEvaluation.allCorrectAnswers) {
+			OOGraphene.waitElementDisappears(choiceScoreTable, 5, browser);
+		} else if (mode == ScoreEvaluation.perAnswer) {
+			OOGraphene.waitElement(choiceScoreTable, 5, browser);
+		}
+		return this;
+	}
+	
+	public QTI21ChoicesScoreEditorPage setScore(String answer, String score) {
+		By scoreBy = By.xpath("//table[contains(@class,'o_sel_choices_scores')]//tr[td[contains(text(),'" + answer + "')]]/td/div/input[@type='text']");
+		WebElement scoreEl = browser.findElement(scoreBy);
+		scoreEl.clear();
+		scoreEl.sendKeys(score);
+		return this;
+	}
+	
+	public QTI21ChoicesScoreEditorPage setMaxScore(String maxScore) {
+		By maxScoreBy = By.cssSelector("div.o_sel_assessment_item_max_score input[type='text']");
+		WebElement maxScoreEl = browser.findElement(maxScoreBy);
+		maxScoreEl.clear();
+		maxScoreEl.sendKeys(maxScore);
+		return this;
+	}
+	
+	public QTI21ChoicesScoreEditorPage save() {
+		By saveBy = By.cssSelector("fieldset.o_sel_assessment_item_options button.btn.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
 	}
 
 }

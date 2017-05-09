@@ -115,6 +115,14 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page deselectAnswerMultipleChoice(String... answers) {
+		for(String answer:answers) {
+			By choiceBy = By.xpath("//tr[contains(@class,'choiceinteraction')][td[contains(@class,'choiceInteraction')][label/p[contains(text(),'" + answer + "')]]]/td[contains(@class,'control')]/input[@type='checkbox']");
+			OOGraphene.check(browser.findElement(choiceBy), Boolean.FALSE);
+		}
+		return this;
+	}
+	
 	public QTI21Page answerHotspot(String shape) {
 		OOGraphene.waitElement(By.className("hotspotInteraction"), browser);
 		By areaBy = By.xpath("//div[contains(@class,'hotspotInteraction')]//map/area[@shape='" + shape + "']");
@@ -164,11 +172,22 @@ public class QTI21Page {
 		return this;
 	}
 	
-	public QTI21Page assertFeedback(String feedback) {
-		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + feedback + "')]");
+	public QTI21Page assertFeedback(String title) {
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(feedbackBy, 5, browser);
-		List<WebElement> feedbackEls = browser.findElements(feedbackBy);
-		Assert.assertEquals(1, feedbackEls.size());
+		return this;
+	}
+	
+	public QTI21Page assertCorrectSolution(String title) {
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4/a[contains(text(),'" + title + "')]");
+		OOGraphene.waitElement(feedbackBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page hint() {
+		By hintBy = By.cssSelector("a.o_sel_assessment_item_hint");
+		browser.findElement(hintBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

@@ -456,7 +456,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		try {
 			File userStorage = testSessionDao.getSessionStorage(session);
 			File auditLog = new File(userStorage, "audit.log");
-			FileOutputStream outputStream = new FileOutputStream(auditLog);
+			FileOutputStream outputStream = new FileOutputStream(auditLog, true);
 			return new AssessmentSessionAuditFileLog(outputStream);
 		} catch (IOException e) {
 			log.error("Cannot open the user specific log audit, fall back to OLog", e);

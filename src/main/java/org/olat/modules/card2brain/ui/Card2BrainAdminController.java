@@ -22,6 +22,7 @@ package org.olat.modules.card2brain.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -30,7 +31,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.card2brain.Card2BrainManager;
 import org.olat.modules.card2brain.Card2BrainModule;
+import org.olat.modules.card2brain.manager.Card2BrainVerificationResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -48,11 +51,15 @@ public class Card2BrainAdminController extends FormBasicController {
 	private MultipleSelectionElement enterpriseLoginEnabledEl;
 	private TextElement enterpriseKeyEl;
 	private TextElement enterpriseSecretEl;
+	private FormLink checkLoginButton;
 	private TextElement baseUrlEl;
 	private TextElement peekViewUrlEl;
+	private TextElement verifyLtiUrlEl;
 
 	@Autowired
 	private Card2BrainModule card2BrainModule;
+	@Autowired
+	private Card2BrainManager card2BrainManager;
 
 	public Card2BrainAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -90,6 +97,8 @@ public class Card2BrainAdminController extends FormBasicController {
 		enterpriseSecretEl = uifactory.addPasswordElement("admin.enterpriseSecret", "admin.enterpriseSecret", 128, enterpriseSecret, formLayout);
 		enterpriseSecretEl.setMandatory(true);
 		
+		checkLoginButton = uifactory.addFormLink("admin.verifyKeySecret.button", formLayout, "btn btn-default");
+		
 		uifactory.addSpacerElement("Spacer", formLayout, false);
 		uifactory.addStaticTextElement("admin.expertSettings", null, formLayout);
 		
@@ -103,6 +112,10 @@ public class Card2BrainAdminController extends FormBasicController {
 		peekViewUrlEl.setMandatory(true);
 		peekViewUrlEl.setHelpTextKey("admin.peekViewUrlHelpText", null);
 		
+		String verifyLtiUrl = card2BrainModule.getVerifyLtiUrl();
+		verifyLtiUrlEl = uifactory.addTextElement("admin.verifyKeySecret.url", "admin.verifyKeySecret.url", 128, verifyLtiUrl, formLayout);
+		verifyLtiUrlEl.setMandatory(true);
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
@@ -112,8 +125,10 @@ public class Card2BrainAdminController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enterpriseLoginEnabledEl == source) {
+		if (enterpriseLoginEnabledEl == source) {
 			showHideEnterpriseLoginFields();
+		} else if (checkLoginButton == source) {
+			checkKeySecret();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -132,11 +147,14 @@ public class Card2BrainAdminController extends FormBasicController {
 		String enterpriseSecret = enterpriseSecretEl.getValue();
 		card2BrainModule.setEnterpriseSecret(enterpriseSecret);
 		
-		String baseURL = baseUrlEl.getValue();
-		card2BrainModule.setBaseUrl(baseURL);
+		String baseUrl = baseUrlEl.getValue();
+		card2BrainModule.setBaseUrl(baseUrl);
 		
-		String peekViewURL = peekViewUrlEl.getValue();
-		card2BrainModule.setPeekViewUrl(peekViewURL);
+		String peekViewUrl = peekViewUrlEl.getValue();
+		card2BrainModule.setPeekViewUrl(peekViewUrl);
+		
+		String verifyLtiUrl = verifyLtiUrlEl.getValue();
+		card2BrainModule.setVerifyLtiUrl(verifyLtiUrl);
 	}
 	
 	@Override
@@ -145,47 +163,23 @@ public class Card2BrainAdminController extends FormBasicController {
 		
 		//validate only if the module is enabled
 		if(card2BrainModule.isEnabled()) {
-			allOk &= validateEnterpriseLogin();
-			allOk &= validateBaseUrl();
-			allOk &= validatePeekViewUrl();
+			if (isEnterpriseLoginEnabled()) {
+				allOk &= validateIsMandatory(enterpriseKeyEl);
+				allOk &= validateIsMandatory(enterpriseSecretEl);
+			}
+			allOk &= validateIsMandatory(baseUrlEl);
+			allOk &= validateIsMandatory(peekViewUrlEl);
+			allOk &= validateIsMandatory(verifyLtiUrlEl);
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
 	}
-	
-	private boolean validateEnterpriseLogin() {
-		boolean allOk = true;
-		
-		if (isEnterpriseLoginEnabled()) {
-			if (!StringHelper.containsNonWhitespace(enterpriseKeyEl.getValue())) {
-				enterpriseKeyEl.setErrorKey(FORM_MISSING_MANDATORY, null);
-				allOk &= false;
-			}
-			if (!StringHelper.containsNonWhitespace(enterpriseSecretEl.getValue())) {
-				enterpriseSecretEl.setErrorKey(FORM_MISSING_MANDATORY, null);
-				allOk &= false;
-			}
-		}
-		
-		return allOk;
-	}
 
-	private boolean validateBaseUrl() {
+	private boolean validateIsMandatory(TextElement textElement) {
 		boolean allOk = true;
 		
-		if (!StringHelper.containsNonWhitespace(baseUrlEl.getValue())) {
-			baseUrlEl.setErrorKey(FORM_MISSING_MANDATORY, null);
-			allOk &= false;
-		}
-		
-		return allOk;
-	}
-	
-	private boolean validatePeekViewUrl() {
-		boolean allOk = true;
-		
-		if (!StringHelper.containsNonWhitespace(peekViewUrlEl.getValue())) {
-			peekViewUrlEl.setErrorKey(FORM_MISSING_MANDATORY, null);
+		if (!StringHelper.containsNonWhitespace(textElement.getValue())) {
+			textElement.setErrorKey(FORM_MISSING_MANDATORY, null);
 			allOk &= false;
 		}
 		
@@ -199,6 +193,22 @@ public class Card2BrainAdminController extends FormBasicController {
 	
 	private boolean isEnterpriseLoginEnabled() {
 		return enterpriseLoginEnabledEl.isAtLeastSelected(1);
+	}
+	
+	private void checkKeySecret() {
+		String verifyLtiUrl = verifyLtiUrlEl.getValue();
+		String key = enterpriseKeyEl.getValue();
+		String secret = enterpriseSecretEl.getValue();
+
+		Card2BrainVerificationResult verification = 
+				card2BrainManager.checkEnterpriseLogin(verifyLtiUrl, key, secret);
+		if(verification == null) {
+			showError("admin.verifyKeySecret.unavaible");
+		} else if (verification.isSuccess()) {
+			showInfo("admin.verifyKeySecret.valid");
+		} else {
+			showError("admin.verifyKeySecret.invalid", verification.getMessage());
+		}
 	}
 	
 	@Override

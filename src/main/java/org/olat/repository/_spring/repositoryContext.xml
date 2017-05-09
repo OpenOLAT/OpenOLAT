@@ -43,7 +43,7 @@
 	
 	<!-- Catalog admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="8209" />
+		<property name="order" value="8211" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.repository.ui.admin.CatalogAdminController"/>
@@ -63,7 +63,7 @@
 	
 	<!-- Repository admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="order" value="8210" />
+		<property name="order" value="8212" />
 		<property name="navigationKey" value="repositoryAdmin" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">

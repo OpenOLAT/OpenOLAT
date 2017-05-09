@@ -19,6 +19,8 @@
  */
 package org.olat.modules.webFeed;
 
+import org.olat.core.commons.services.notifications.SubscriptionContext;
+
 /**
  * 
  * Initial date: 7 déc. 2016<br>
@@ -60,5 +62,15 @@ public class FeedReadOnlySecurityCallback implements FeedSecurityCallback {
 	@Override
 	public boolean mayViewAllDrafts() {
 		return false;
+	}
+	
+	@Override
+	public SubscriptionContext getSubscriptionContext() {
+		return null;
+	}
+	
+	@Override
+	public void setSubscriptionContext(SubscriptionContext subsContext) {
+		//
 	}
 }

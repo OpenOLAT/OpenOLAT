@@ -444,7 +444,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		if(!deliveryOptions.isEnableSuspend() || testSessionController == null
 				|| testSessionController.getTestSessionState() == null
 				|| testSessionController.getTestSessionState().isEnded()
-				|| testSessionController.getTestSessionState().isExited()) {
+				|| testSessionController.getTestSessionState().isExited()
+				|| testSessionController.getTestSessionState().isSuspended()) {
 			return false;
 		}
 		
@@ -1595,6 +1596,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			String endName = qtiEl.getComponent().hasMultipleTestParts()
 					? "assessment.test.end.testPart" : "assessment.test.end.test";
 			endTestPartButton = uifactory.addFormLink("endTest", endName, null, formLayout, Link.BUTTON);
+			endTestPartButton.setForceOwnDirtyFormWarning(true);
 			endTestPartButton.setElementCssClass("o_sel_end_testpart");
 			endTestPartButton.setPrimary(true);
 			endTestPartButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_end_testpart");

@@ -37,14 +37,15 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
-import org.olat.selenium.page.qti.QTI21ChoicesScoreEditorPage;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21EditorPage;
+import org.olat.selenium.page.qti.QTI21MultipleChoiceEditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.qti.QTI21SingleChoiceEditorPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
@@ -787,7 +788,8 @@ public class ImsQTI21Test {
 			.clickToolbarBack()
 			.assertOnAssessmentItem()
 			.answerGapText("verbannen", "_RESPONSE_1")
-			.saveAnswer().nextAnswer()
+			.saveAnswer()
+			.nextAnswer()
 			.answerGapText(",", "_RESPONSE_1")
 			.answerGapText("", "_RESPONSE_2")
 			.answerGapText("", "_RESPONSE_3")
@@ -931,7 +933,11 @@ public class ImsQTI21Test {
 	}
 	
 	/**
-	 * Test different settings in the single choice editor.
+	 * Test different settings in the single choice editor. An author
+	 * make a test with 2 single choices, one with score all answer correct,
+	 * the second with score per answer and feedbacks.<br>
+	 * A second user make the test and check the score at the end of
+	 * the test.
 	 * 
 	 * @param authorLoginPage
 	 * @throws IOException
@@ -939,9 +945,11 @@ public class ImsQTI21Test {
 	 */
 	@Test
 	@RunAsClient
-	public void choicesEditor(@InitialPage LoginPage authorLoginPage)
+	public void qti21EditorSingleChoices(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
@@ -959,20 +967,286 @@ public class ImsQTI21Test {
 		qtiEditor
 			.selectNode("Single choice")
 			.deleteNode();
-		//add a single choice
+		
+		//add a single choice: all answers score
 		QTI21SingleChoiceEditorPage scEditor = qtiEditor
 			.addSingleChoice();
 		scEditor
-			.setAnswer(0, "Wrong answer")
+			.setAnswer(0, "Wrong")
 			.addChoice(1)
 			.setCorrect(1)
-			.setAnswer(1, "Correct answer")
+			.setAnswer(1, "Correct")
 			.addChoice(2)
-			.setAnswer(2, "Pas la bonne")
+			.setAnswer(2, "Faux")
 			.addChoice(3)
-			.setAnswer(3, "Nicht richtig")
+			.setAnswer(3, "Falsch")
 			.save();
-		QTI21ChoicesScoreEditorPage scScoreEditor = scEditor
-			.selectScores();
+		// change max score
+		scEditor
+			.selectScores()
+			.setMaxScore("3")
+			.save();
+		// set some feedbacks
+		scEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is only an hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		//score per answers
+		scEditor = qtiEditor
+			.addSingleChoice()
+			.setAnswer(0, "AlmostRight")
+			.addChoice(1)
+			.setAnswer(1, "NotRight")
+			.addChoice(2)
+			.setCorrect(2)
+			.setAnswer(2, "RightAnswer")
+			.addChoice(3)
+			.setAnswer(3, "TheWrongOne")
+			.save();
+		scEditor
+			.selectScores()
+			.setMaxScore("2")
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setScore("Almost", "1")
+			.setScore("NotRight", "0")
+			.setScore("RightAnswer", "2")
+			.setScore("TheWrongOne", "0")
+			.save();
+		scEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(ryomouBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI12Page(ryomouBrowser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.answerSingleChoice("Falsch")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerSingleChoice("Correct")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerSingleChoice("Almost")
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(4);// 3 points from the first question, 1 from the second
+	}
+	
+	/**
+	 * An author make a test with 2 multiple choices, the first
+	 * with the score set if all answers are correct, the second
+	 * with scoring per answers.<br>
+	 * A first user make the test, but doesn't answer all questions
+	 * correctly, log out and a second user make the perfect test.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorMultipleChoices(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO eric = new UserRestClient(deploymentUrl).createRandomUser("Eric");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add a single choice: all answers score
+		QTI21MultipleChoiceEditorPage mcEditor = qtiEditor
+			.addMultipleChoice();
+		mcEditor
+			.setAnswer(0, "Correct")
+			.setCorrect(0)
+			.addChoice(1)
+			.setCorrect(1)
+			.setAnswer(1, "OkToo")
+			.addChoice(2)
+			.setAnswer(2, "Faux")
+			.addChoice(3)
+			.setAnswer(3, "Falsch")
+			.save();
+		// change max score
+		mcEditor
+			.selectScores()
+			.setMaxScore("3")
+			.save();
+		// set some feedbacks
+		mcEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is only an hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		//score per answers
+		mcEditor = qtiEditor
+			.addMultipleChoice()
+			.setCorrect(0)
+			.setAnswer(0, "AlmostRight")
+			.addChoice(1)
+			.setAnswer(1, "NotRight")
+			.addChoice(2)
+			.setCorrect(2)
+			.setAnswer(2, "RightAnswer")
+			.addChoice(3)
+			.setAnswer(3, "TheWrongOne")
+			.save();
+		mcEditor
+			.selectScores()
+			.setMaxScore("3")
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setScore("AlmostRight", "1")
+			.setScore("NotRight", "0")
+			.setScore("RightAnswer", "2")
+			.setScore("TheWrongOne", "0")
+			.save();
+		mcEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.answerMultipleChoice("Falsch")
+			.answerMultipleChoice("OkToo")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerMultipleChoice("Falsch")
+			.answerMultipleChoice("Correct")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMultipleChoice("AlmostRight")
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(4);// 3 points from the first question, 1 from the second
+		
+
+		//a second user search the content package
+		LoginPage ericLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		ericLoginPage
+			.loginAs(eric.getLogin(), eric.getPassword())
+			.resume();
+		NavigationPage ericNavBar = new NavigationPage(participantBrowser);
+		ericNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.assertOnAssessmentItem()
+			.answerMultipleChoice("Correct", "OkToo")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMultipleChoice("AlmostRight", "RightAnswer")
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(6);// 3 points from the first question, 3 from the second
 	}
 }

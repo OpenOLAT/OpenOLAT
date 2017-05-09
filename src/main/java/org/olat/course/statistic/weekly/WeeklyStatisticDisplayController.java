@@ -57,7 +57,7 @@ public class WeeklyStatisticDisplayController extends StatisticDisplayController
 		form_ = new DateChooserForm(ureq, getWindowControl(), 8*7);
 		listenTo(form_);
 		weeklyStatisticFormVc_.put("statisticForm", form_.getInitialComponent());
-		weeklyStatisticFormVc_.contextPut("statsSince", getStatsSinceStr(ureq));
+		weeklyStatisticFormVc_.contextPut("statsSince", getStatsSinceStr());
 
 		weeklyStatisticVc_.put("weeklystatisticform", weeklyStatisticFormVc_);
 

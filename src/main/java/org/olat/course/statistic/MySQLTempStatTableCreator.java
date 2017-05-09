@@ -28,8 +28,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -97,34 +95,18 @@ public class MySQLTempStatTableCreator implements IStatisticUpdater {
 			Calendar nowUpdatedCalendar = Calendar.getInstance();
 			nowUpdatedCalendar.setTime(until);
 			
-			if (lastUpdatedCalendar.get(Calendar.MONTH)==nowUpdatedCalendar.get(Calendar.MONTH)) {
-				// that means we are in the same month, so use the current month's o_loggingtable
-				// e.g. o_loggingtable_201002
-				String monthStr = String.valueOf(lastUpdatedCalendar.get(Calendar.MONTH)+1);
-				if (monthStr.length()==1) {
-					monthStr = "0"+monthStr;
-				}
-				String sameMonthTable = "o_loggingtable_"+String.valueOf(lastUpdatedCalendar.get(Calendar.YEAR))+monthStr;
-				List<Map<String,Object>> tables = jdbcTemplate_.queryForList("show tables like '"+sameMonthTable+"'");
-				if (tables!=null && tables.size()==1) {
-					log_.info("updateStatistic: using "+sameMonthTable+" instead of "+oLoggingTable);
-					oLoggingTable = sameMonthTable;
-				} else {
-					log_.info("updateStatistic: using "+oLoggingTable+" ("+sameMonthTable+" didn't exist)");
-				}
-			} else {
-				log_.info("updateStatistic: using "+oLoggingTable+" since from and to months are not the same");
-			}
-			
-			jdbcTemplate_.execute(
+			long fromSeconds = from.getTime() / 1000l;
+			long untilSeconds = until.getTime() / 1000l;
+
+			jdbcTemplate_.update(
 					"insert into o_stat_temptable (creationdate,businesspath,userproperty2,userproperty4,userproperty10,userproperty3) " +
 						"select " +
 							"creationdate,businesspath,userproperty2,userproperty4,userproperty10,userproperty3 " +
 						"from " + 
 						oLoggingTable + 
 						" where " +
-							"actionverb='launch' and actionobject='node' and creationdate>from_unixtime('"+(from.getTime()/1000)+"') and creationdate<=from_unixtime('"+(until.getTime()/1000)+"');");
-
+							"actionverb='launch' and actionobject='node' and creationdate>from_unixtime('"+ fromSeconds +"') and creationdate<=from_unixtime('"+ untilSeconds +"');");
+			
 			long numLoggingActions = jdbcTemplate_.queryForLong("select count(*) from o_stat_temptable;");
 			log_.info("updateStatistic: insert done. number of logging actions: "+numLoggingActions);
 		} catch(RuntimeException e) {

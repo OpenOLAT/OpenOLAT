@@ -48,6 +48,7 @@ import org.springframework.stereotype.Service;
  * @author Mike Stock
  * @author guido
  * @author Florian Gnägi
+ * @author fkiefer
  */
 @Service
 public class CourseModule extends AbstractSpringModule {
@@ -58,6 +59,10 @@ public class CourseModule extends AbstractSpringModule {
 	private String helpCourseSoftkey;
 	@Autowired @Qualifier("logVisibilityForCourseAuthor")
 	private HashMap<String, String> logVisibilities;
+	@Value("${course.display.infobox}")
+	private boolean displayInfoBox;
+	@Value("${course.display.changelog}")
+	private boolean displayChangeLog;
 	
 	// Repository types
 	public static String ORES_TYPE_COURSE = OresHelper.calculateTypeName(CourseModule.class);
@@ -74,12 +79,13 @@ public class CourseModule extends AbstractSpringModule {
 	
 	@Override
 	protected void initFromChangedProperties() {
-		//
+		displayInfoBox = getBooleanPropertyValue("course.display.infobox");
+		displayChangeLog = getBooleanPropertyValue("course.display.changelog");
 	}
 
 	@Override
 	public void init() {
-		//
+		initFromChangedProperties();
 	}
 	
 	/**
@@ -174,4 +180,24 @@ public class CourseModule extends AbstractSpringModule {
 	public boolean displayParticipantsCount() {
 		return displayParticipantsCount;
 	}
+
+	public boolean isDisplayInfoBox() {
+		return displayInfoBox;
+	}
+
+	public void setDisplayInfoBox(boolean enabled) {
+		this.displayInfoBox = enabled;
+		setBooleanProperty("course.display.infobox", enabled, true);
+	}
+
+	public boolean isDisplayChangeLog() {
+		return displayChangeLog;
+	}
+
+	public void setDisplayChangeLog(boolean enabled) {
+		this.displayChangeLog = enabled;
+		setBooleanProperty("course.display.changelog", enabled, true);
+	}
+	
+	
 }

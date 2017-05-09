@@ -64,7 +64,7 @@ public class StatisticResult implements TableDataModel {
 | [RepositoryEntry:393216][CourseNode:73156787421533] |   3 |    33 |
 | [RepositoryEntry:393216][CourseNode:73156787421533] |   4 |    34 |
 	 */
-	public StatisticResult(ICourse course, List<?> result) {
+	public StatisticResult(ICourse course, List<Object[]> result) {
 		final Set<String> groupByKeys = new HashSet<String>();
 		doAddQueryListResultsForNodeAndChildren(course.getRunStructure().getRootNode(), result, groupByKeys);
 		if (result.size()!=0) {
@@ -103,7 +103,7 @@ public class StatisticResult implements TableDataModel {
 		columnHeaders_ = new ArrayList<String>(columnHeaders);
 	}
 	
-	private void doAddQueryListResultsForNodeAndChildren(CourseNode node, List<?> result, Set<String> groupByKeys) {
+	private void doAddQueryListResultsForNodeAndChildren(CourseNode node, List<Object[]> result, Set<String> groupByKeys) {
 		orderedNodesList_.add(node);
 		
 		for (Iterator<?> it = result.iterator(); it.hasNext();) {
@@ -145,6 +145,10 @@ public class StatisticResult implements TableDataModel {
 				doAddQueryListResultsForNodeAndChildren((CourseNode)n, result, groupByKeys);
 			}
 		}
+	}
+	
+	public Map<String, Integer> getStatistics(CourseNode courseNode) {
+		return statistic_.get(courseNode);
 	}
 	
 	private Map<String, Object> getIndentednodeRendererMap(int row) {

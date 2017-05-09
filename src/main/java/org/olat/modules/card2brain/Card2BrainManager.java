@@ -19,6 +19,8 @@
  */
 package org.olat.modules.card2brain;
 
+import org.olat.modules.card2brain.manager.Card2BrainVerificationResult;
+
 /**
  * 
  * Initial date: 20.04.2017<br>
@@ -33,5 +35,15 @@ public interface Card2BrainManager {
 	 * @return true if the set of flashcards exists.
 	 */
 	public boolean checkSetOfFlashcards(String alias);
+	
+	/**
+	 * Verify if the key and the secret of the enterprise login are valid.
+	 *
+	 * @param url the url of the verification service
+	 * @param key the key
+	 * @param secret the secret
+	 * @return Card2BrainVerificationResult the result of the verification
+	 */
+	public Card2BrainVerificationResult checkEnterpriseLogin(String url, String key, String secret);
 
 }
