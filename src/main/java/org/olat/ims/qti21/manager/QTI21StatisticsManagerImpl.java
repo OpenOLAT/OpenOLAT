@@ -40,6 +40,7 @@ import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.statistics.AbstractTextEntryInteractionStatistics;
+import org.olat.ims.qti21.model.statistics.AssessmentItemStatistic;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.HotspotChoiceStatistics;
 import org.olat.ims.qti21.model.statistics.KPrimStatistics;
@@ -67,6 +68,9 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.content.Hottext;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
@@ -635,6 +639,120 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 			datas.add(new RawData(itemSessionKey, responseIdentifier, stringuifiedResponse, count));
 		}
 		return datas;
+	}
+	
+	@Override
+	public List<AssessmentItemStatistic> getStatisticPerItem(ResolvedAssessmentTest resolvedAssessmentTest, QTI21StatisticSearchParams searchParams, double numOfParticipants) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select isession.assessmentItemIdentifier, isession.score, isession.manualScore, count(*) from qtiassessmentitemsession isession")
+		  .append(" inner join isession.assessmentTestSession asession");
+		decorateRSet(sb, searchParams, true);
+		sb.append(" and isession.duration > 0")
+		  .append(" group by isession.assessmentItemIdentifier, isession.score, isession.manualScore");
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		decorateRSetQuery(query, searchParams);
+		List<Object[]> results = query.getResultList();
+		if(results.isEmpty()) {
+			return new ArrayList<>();
+		}
+		
+		Map<String,AssessmentItemRef> itemMap = new HashMap<>();
+		for(AssessmentItemRef itemRef:resolvedAssessmentTest.getAssessmentItemRefs()) {
+			itemMap.put(itemRef.getIdentifier().toString(), itemRef);
+		}
+
+		Map<String, AssessmentItemHelper> identifierToHelpers = new HashMap<>();
+		for(Object[] result:results) {
+			int pos = 0;
+			String identifier = PersistenceHelper.extractString(result, pos++);
+			BigDecimal score = (BigDecimal)result[pos++];
+			BigDecimal manualScore = (BigDecimal)result[pos++];
+			Long count = PersistenceHelper.extractLong(result, pos++);
+			if(score == null || identifier == null || count == null) {
+				continue;
+			}
+
+			AssessmentItemHelper helper = identifierToHelpers.get(identifier);
+			if(helper == null) {
+				AssessmentItemRef itemRef = itemMap.get(identifier);
+				if(itemRef == null) {
+					continue;
+				} 
+				ResolvedAssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+				if(item == null) {
+					continue;
+				}
+				helper = new AssessmentItemHelper(item.getRootNodeLookup().extractIfSuccessful());
+				identifierToHelpers.put(identifier, helper);
+			}
+			
+			helper.addCount(count);
+			if(manualScore != null) {
+				helper.addTotalScore(count, manualScore);
+			} else {
+				helper.addTotalScore(count, score);
+			}
+
+			if(helper.getMaxScore() != null) {
+				double maxValue = helper.getMaxScore().doubleValue();
+				if(Math.abs(score.doubleValue() - maxValue) < 0.0001) {
+					helper.addCorrectAnswers(count);
+				}
+			}
+		}
+		
+		List<AssessmentItemStatistic> statistics = new ArrayList<>(identifierToHelpers.size());
+		for(AssessmentItemHelper helper:identifierToHelpers.values()) {
+			long numOfAnswersItem = helper.count;
+			long numOfCorrectAnswers = helper.countCorrectAnswers;
+			double average = (helper.totalScore / helper.count);
+			double averageParticipants = (helper.totalScore / numOfParticipants);
+			statistics.add(new AssessmentItemStatistic(helper.getAssessmentItem(), average, averageParticipants, numOfAnswersItem, numOfCorrectAnswers));
+		}
+		return statistics;
+	}
+	
+	public static class AssessmentItemHelper {
+		private long count = 0l;
+		private double totalScore = 0.0d;
+		private Double maxScore;
+		private long countCorrectAnswers = 0;
+		private final AssessmentItem assessmentItem;
+		
+		public AssessmentItemHelper(AssessmentItem assessmentItem) {
+			this.assessmentItem = assessmentItem;
+			if(assessmentItem != null) {
+				maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+			}
+		}
+		
+		public AssessmentItem getAssessmentItem() {
+			return assessmentItem;
+		}
+		
+		public Double getMaxScore() {
+			return maxScore;
+		}
+		
+		public void addTotalScore(Long numOfAnswers, BigDecimal score) {
+			if(numOfAnswers != null && score != null) {
+				totalScore += (numOfAnswers.doubleValue() * score.doubleValue());
+			}
+		}
+		
+		public void addCount(Long toAdd) {
+			if(toAdd != null) {
+				count += toAdd.longValue();
+			}
+		}
+		
+		public void addCorrectAnswers(Long toAdd) {
+			if(toAdd != null) {
+				countCorrectAnswers += toAdd.longValue();
+			}
+		}
 	}
 	
 	public static class RawData {

@@ -67,14 +67,29 @@ public class NumericalInputInteractionStatistics extends AbstractTextEntryIntera
 		if(correctFloatResponse == null) return false;
 		
 		try {
-			double secondNumber = Double.parseDouble(value);
-			double firstNumber = correctFloatResponse.doubleValue();
-			double tolerance1 = lowerTolerance == null ? 0.0d : lowerTolerance.doubleValue();
-			double tolerance2 = upperTolerance == null ? 0.0d : upperTolerance.doubleValue();
-			return toleranceMode.isEqual(firstNumber, secondNumber, tolerance1, tolerance2, true, true);
-		} catch (NumberFormatException | NullPointerException e) {
+			double answer = Double.parseDouble(value);
+			return match(answer);
+		} catch (NumberFormatException  e) {
+			if(value.indexOf(',') >= 0) {//allow , instead of .
+                try {
+					double answer = Double.parseDouble(value.replace(',', '.'));
+					return match(answer);
+				} catch (final NumberFormatException e1) {
+					//format can happen
+				} catch (Exception e2) {
+					log.error("", e2);
+				}
+        	}
+			return false;
+		} catch (Exception  e) {
 			log.error("", e);
 			return false;
 		}
+	}
+	
+	private boolean match(double answer) {
+		double lTolerance = lowerTolerance == null ? 0.0d : lowerTolerance.doubleValue();
+		double uTolerance = upperTolerance == null ? 0.0d : upperTolerance.doubleValue();
+		return toleranceMode.isEqual(answer, correctFloatResponse.doubleValue(), lTolerance, uTolerance, true, true);
 	}
 }

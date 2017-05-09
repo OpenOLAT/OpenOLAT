@@ -4,6 +4,7 @@
 </div>
 #end
 
+<div class="o_qti_statistics">
 <div class="panel panel-default">
 	<div class="panel-heading"><h4>$r.translate("fig.title")</h4></div>	  	
 	<table class="table"><tbody>
@@ -45,3 +46,28 @@
 #if($r.available("durationHistogram") && $r.visible("durationHistogram"))
 	$r.render("durationHistogram")
 #end
+
+#if($r.available("averageScorePerItemChart"))
+<div class="o_print_break_avoid">
+	<h4>$r.translate("chart.averagescore.peritem")</h4>
+	$r.render("averageScorePerItemChart")
+	<ul>
+	#foreach($itemInfo in $itemInfoList)
+		<li><strong>${itemInfo.label}.</strong> $itemInfo.text</li>
+	#end
+	</ul>
+</div>
+#end
+
+#if($r.available("percentRightAnswersPerItemChart"))
+<div class="o_print_break_avoid">
+	<h4>$r.translate("chart.rightanswers.peritem")</h4>
+	$r.render("percentRightAnswersPerItemChart")
+	<ul>
+	#foreach($itemInfo in $itemInfoList)
+		<li><strong>${itemInfo.label}.</strong> $itemInfo.text</li>
+	#end
+	</ul>
+</div>
+#end
+</div>
