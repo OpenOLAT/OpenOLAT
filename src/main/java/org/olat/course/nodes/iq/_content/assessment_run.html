@@ -151,28 +151,32 @@
   		</div></div>
 	</div>
 	#end
-	
-	#if($type == "test")
-	<div class="o_statusinfo">
-		<p>$r.translate("Intro.test")</p>
-		<p>$r.translate("info.assessment")</p>
-		#if ($hasChatWindowOpen)
-		<p>$r.translate("close.chat.windows.for.test")</p>
+
+	#if($infobox)	
+		#if($type == "test")
+		<div class="o_statusinfo">
+			<p>$r.translate("Intro.test")</p>
+			<p>$r.translate("info.assessment")</p>
+			#if ($hasChatWindowOpen)
+			<p>$r.translate("close.chat.windows.for.test")</p>
+			#end
+		</div>
+		#elseif($type == "self")
+		<div class="o_statusinfo">
+			<p>$r.translate("Intro.self")</p>
+			<p>$r.translate("info.selfassessment")</p>
+		</div>
 		#end
-	</div>
-	#elseif($type == "self")
-	<div class="o_statusinfo">
-		<p>$r.translate("Intro.self")</p>
-		<p>$r.translate("info.selfassessment")</p>
-	</div>
-	#end
-	
+	#end	
 	<div class="o_button_group">$r.render("start")</div>
 #end
-#if($r.isNotNull($log) && $r.isNotNull($showChangeLog) && $showChangeLog)
-<div class="o_box">
-    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
-    <pre class="small">$log</pre>
-    #o_togglebox_end()
-</div>    
+#if($changelogconfig)
+	#if($r.isNotNull($log) && $r.isNotNull($showChangeLog) && $showChangeLog)
+	<div class="o_box">
+	    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
+	    <pre class="small">$log</pre>
+	    #o_togglebox_end()
+	</div>    
+	#end
 #end
+

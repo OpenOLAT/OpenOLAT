@@ -166,7 +166,7 @@
   		</div></div>
 	</div>
 	#end
-		
+	#if ($infobox)		
 	<div class="o_statusinfo">
 		<p>
 		$r.translate("Intro.test")
@@ -180,7 +180,7 @@
 		</p>
 		#end
 	</div>
-		
+	#end		
 	<div class="o_button_group">
 		$r.render("start")
 	</div>
@@ -196,23 +196,25 @@
 			})
 		/* ]]> */
 	</script>
-
-#if ($log && $showChangelog)
-<div class="o_box">
-    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
-    <pre class="small">
+	
+#if ($changelogconfig)
+	#if ($log && $showChangelog)
+	<div class="o_box">
+	    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
+	    <pre class="small">
 $log
-    </pre>
-    #o_togglebox_end()
-</div>    
-#end
-    
-#if($changeLog)
-<div class="o_box">
-    #o_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
-    <pre class="small">
+	    </pre>
+	    #o_togglebox_end()
+	</div>    
+	#end
+	    
+	#if($changeLog)
+	<div class="o_box">
+	    #o_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
+	    <pre class="small">
 $changeLog
-    </pre>
-    #o_togglebox_end()
-</div>
+	    </pre>
+	    #o_togglebox_end()
+	</div>
+	#end
 #end

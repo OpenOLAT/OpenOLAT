@@ -9,8 +9,8 @@
 	</div>
 #end
 	
-	
 #if ($attempts == 0)
+	#if ($infobox)			
 	<div class="o_statusinfo">
 		<p>
 			$r.translate("Intro.surv")	
@@ -19,6 +19,7 @@
 			$r.translate("info.survey")
 		</p>
 	</div>
+	#end
 			
 	<div class="o_button_group">
 		$r.render("start")
@@ -28,17 +29,19 @@
 		$r.translate("info.survey.alreadydone")
 	</div>
 #end
-	
-	
-#if($changeLog)
-<div class="o_box">
-	#o_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
-	<pre class="small">
+
+#if ($changelogconfig)			
+	#if($changeLog)
+	<div class="o_box">
+		#o_togglebox_start("o_course_run_changelog" $r.translate("changelog.title"))
+		<pre class="small">
 $changeLog
-	</pre>
-	#o_togglebox_end()
-</div>
-#end
+		</pre>
+		#o_togglebox_end()
+	</div>
+	#end
+#end	
+	
 #if ($r.available("highScore"))
 	$r.render("highScore")
 #end

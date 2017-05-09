@@ -63,6 +63,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -138,6 +139,8 @@ public class IQRunController extends BasicController implements GenericEventList
 	private IQManager iqManager;
 	@Autowired
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
+	@Autowired
+	private CourseModule courseModule;
 	
 	/**
 	 * Constructor for a test run controller
@@ -193,6 +196,10 @@ public class IQRunController extends BasicController implements GenericEventList
 	  //if show results on test home page configured - show log
 		Boolean showResultOnHomePage = testCourseNode.getModuleConfiguration().getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);		
 		myContent.contextPut("showChangelog", showResultOnHomePage);
+
+		//admin setting whether to show change log and info box or not
+		myContent.contextPut("infobox", courseModule.isDisplayInfoBox());
+		myContent.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 	}
 
 	/**
@@ -279,6 +286,9 @@ public class IQRunController extends BasicController implements GenericEventList
 		}
 		//per default change log is not open
 		myContent.contextPut("showChangelog", Boolean.FALSE);
+		//admin setting whether to show change log and info box or not
+		myContent.contextPut("infobox", courseModule.isDisplayInfoBox());
+		myContent.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 	}
 
 	/**
@@ -322,6 +332,9 @@ public class IQRunController extends BasicController implements GenericEventList
 		}
 		//per default change log is not open
 		myContent.contextPut("showChangelog", Boolean.FALSE);
+		//admin setting whether to show change log and info box or not
+		myContent.contextPut("infobox", courseModule.isDisplayInfoBox());
+		myContent.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 	}
 
 	
