@@ -106,5 +106,18 @@ public interface FormLink extends FormItem {
 	 * @param true: link is rendered as a primary link; false: rendered as secondary link
 	 */
 	public void setPrimary(boolean isPrimary);
+	
+	/**
+	 * 
+	 * @return true if the flexi form link will check if the form is dirty
+	 */
+	public boolean isForceOwnDirtyFormWarning();
+	
+	/**
+	 * If warning is true, the link will check if the form is dirty.
+	 * 
+	 * @param warning
+	 */
+	public void setForceOwnDirtyFormWarning(boolean warning);
 
 }

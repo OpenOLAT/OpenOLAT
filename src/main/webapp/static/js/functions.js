@@ -313,6 +313,21 @@ function o2cl() {
 		return false;
 	}
 }
+
+// the method doesn't set the busy flag
+function o2cl_dirtyCheckOnly() {
+	try {
+		if (o_info.linkbusy) {
+			return false;
+		} else {
+			return (o2c==0 || confirm(o_info.dirty_form));
+		}
+	} catch(e) {
+		if(window.console) console.log(e);
+		return false;
+	}
+}
+
 //for flexi tree
 function o2cl_noDirtyCheck() {
 	if (o_info.linkbusy) {
@@ -1153,7 +1168,7 @@ function showerror(e) {
 function o_ffEvent(formNam, dispIdField, dispId, eventIdField, eventInt){
 	//set hidden fields and submit form
 	var dispIdEl, defDispId,eventIdEl,defEventId;
-	
+
 	dispIdEl = document.getElementById(dispIdField);
 	defDispId = dispIdEl.value;
 	dispIdEl.value=dispId;
