@@ -17,33 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.card2brain;
-
-import org.olat.modules.card2brain.manager.Card2BrainVerificationResult;
+package org.olat.modules.card2brain.manager;
 
 /**
+ * Data object to encapsulate a result of a verification.
  * 
- * Initial date: 20.04.2017<br>
+ * Initial date: 09.05.2017<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Card2BrainManager {
-	
-	/**
-	 * Check if a set of flashcards exists on card2brain.
-	 * @param alias the alias of the set of flashcards.
-	 * @return true if the set of flashcards exists.
-	 */
-	public boolean checkSetOfFlashcards(String alias);
-	
-	/**
-	 * Verify if the key and the secret of the enterprise login are valid.
-	 *
-	 * @param url the url of the verification service
-	 * @param key the key
-	 * @param secret the secret
-	 * @return Card2BrainVerificationResult the result of the verification
-	 */
-	public Card2BrainVerificationResult checkEnterpriseLogin(String url, String key, String secret);
+public class Card2BrainVerificationResult {
 
+	private boolean success;
+	private String message;
+
+	public Card2BrainVerificationResult(boolean valid, String message) {
+		this.success = valid;
+		this.message = message;
+	}
+
+	public Card2BrainVerificationResult() {
+		// nothing to do
+	}
+	
+	public boolean isSuccess() {
+		return success;
+	}
+
+	public void setSuccess(boolean valid) {
+		this.success = valid;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+	
 }

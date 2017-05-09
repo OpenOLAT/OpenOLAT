@@ -19,14 +19,19 @@
  */
 package org.olat.modules.card2brain.manager;
 
+import java.util.Map;
+
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.ims.lti.LTIManager;
 import org.olat.modules.card2brain.Card2BrainManager;
 import org.olat.modules.card2brain.Card2BrainModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +50,9 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 	
 	@Autowired
 	private Card2BrainModule card2brainModule;
+	
+	@Autowired
+	private LTIManager ltiManager;
 
 	@Override
 	public boolean checkSetOfFlashcards(String alias) {
@@ -65,6 +73,24 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 		
 		log.info(new StringBuilder("Check card2brain set of flaschcards (").append(url).append("): ").append(setOfFlashcardExists).toString());
 		return setOfFlashcardExists;
+	}
+
+	@Override
+	public Card2BrainVerificationResult checkEnterpriseLogin(String url, String key, String secret) {
+		Card2BrainVerificationResult card2BrainValidationResult = null;
+		
+		try {
+			Map<String,String> signedPros = ltiManager.sign(null, url, key, secret);
+			String content = ltiManager.post(signedPros, url);
+			ObjectMapper mapper = new ObjectMapper();
+			card2BrainValidationResult = mapper.readValue(content, Card2BrainVerificationResult.class);
+		} catch (JsonParseException jsonParseException) {
+			// ignore and return null
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		
+		return card2BrainValidationResult;
 	}
 
 }

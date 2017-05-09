@@ -24,9 +24,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.imsglobal.basiclti.BasicLTIUtil;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -35,6 +45,8 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.ims.lti.LTIContext;
@@ -55,6 +67,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class LTIManagerImpl implements LTIManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(LTIManagerImpl.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -129,8 +143,12 @@ public class LTIManagerImpl implements LTIManager {
 		String tool_consumer_instance_url = null;
 		String tool_consumer_instance_name = WebappHelper.getInstanceId();
 		String tool_consumer_instance_contact_email = WebappHelper.getMailConfig("mailSupport");
+		
+		if (props == null) {
+			props = new HashMap<>();
+		}
 
-		Map<String,String> signedProps = BasicLTIUtil.signProperties(props, url, "POST",
+		return BasicLTIUtil.signProperties(props, url, "POST",
 				oauth_consumer_key,
 				oauth_consumer_secret,
 				tool_consumer_instance_guid,
@@ -138,15 +156,13 @@ public class LTIManagerImpl implements LTIManager {
 				tool_consumer_instance_url,
 				tool_consumer_instance_name,
 				tool_consumer_instance_contact_email);
-		
-		return signedProps;
 	}
 
 	@Override
 	public Map<String,String> forgeLTIProperties(Identity identity, Locale locale, LTIContext context,
 			boolean sendName, boolean sendEmail) {
-		final Identity ident = identity;
 		final Locale loc = locale;
+		final Identity ident = identity;
 		final User u = ident.getUser();
 		final String lastName = u.getProperty(UserConstants.LASTNAME, loc);
 		final String firstName = u.getProperty(UserConstants.FIRSTNAME, loc);
@@ -208,7 +224,7 @@ public class LTIManagerImpl implements LTIManager {
 			if (!StringHelper.containsNonWhitespace(param)) {
 				continue;
 			}
-			int pos = param.indexOf("=");
+			int pos = param.indexOf('=');
 			if (pos < 1 || pos + 1 > param.length()) {
 				continue;
 			}
@@ -290,6 +306,29 @@ public class LTIManagerImpl implements LTIManager {
 			personSourceId = Settings.getServerDomainName() + ":" + identity.getKey();
 		}
 		return personSourceId;
+	}
+	
+	@Override
+	public String post(Map<String,String> signedProps, String url) {
+		String content = null;
+		
+		// Map the LTI properties to HttpClient parameters
+		List<NameValuePair> urlParameters = signedProps.keySet().stream()
+				.map(k -> new BasicNameValuePair(k, signedProps.get(k)))
+				.collect(Collectors.toList());
+		
+		// make the http request and evaluate the result
+		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+			HttpPost request = new HttpPost(url);
+			HttpEntity postParams = new UrlEncodedFormEntity(urlParameters);
+			request.setEntity(postParams);
+			HttpResponse httpResponse = httpclient.execute(request);
+			content = IOUtils.toString(httpResponse.getEntity().getContent());
+		} catch (Exception e) {
+			log.error("", e);
+		}
+
+		return content;
 	}
 
 }
