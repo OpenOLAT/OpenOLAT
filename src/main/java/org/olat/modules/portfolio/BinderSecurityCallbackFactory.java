@@ -93,7 +93,7 @@ public class BinderSecurityCallbackFactory {
 	 * @return
 	 */
 	public static final BinderSecurityCallback getCallbackForBusinessGroup() {
-		return new BinderSecurityCallbackImpl(true, false, null);
+		return new BinderSecurityCallbackGroup(true, false, null);
 	}
 
 	private static class BinderSecurityCallbackForDeletedPages extends DefaultBinderSecurityCallback {
@@ -249,6 +249,18 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canViewPendingAssignments(Section section) {
 			return true;
+		}
+	}
+	
+	private static class BinderSecurityCallbackGroup extends BinderSecurityCallbackImpl {
+		
+		public BinderSecurityCallbackGroup(boolean owner, boolean task, BinderDeliveryOptions deliveryOptions) {
+			super(owner, task, deliveryOptions);
+		}
+
+		@Override
+		public boolean canDeleteBinder(Binder binder) {
+			return false;
 		}
 	}
 	
