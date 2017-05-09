@@ -98,7 +98,6 @@ public class Card2BrainAdminController extends FormBasicController {
 		enterpriseSecretEl.setMandatory(true);
 		
 		checkLoginButton = uifactory.addFormLink("admin.verifyKeySecret.button", formLayout, "btn btn-default");
-		checkLoginButton.getComponent().setSuppressDirtyFormWarning(true); // doesn't work
 		
 		uifactory.addSpacerElement("Spacer", formLayout, false);
 		uifactory.addStaticTextElement("admin.expertSettings", null, formLayout);

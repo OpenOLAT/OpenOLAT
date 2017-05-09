@@ -21,6 +21,7 @@ package org.olat.modules.card2brain.manager;
 
 import java.util.Map;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -53,6 +54,12 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 	
 	@Autowired
 	private LTIManager ltiManager;
+	
+	ObjectMapper mapper;
+	
+	public Card2BrainManagerImpl() {
+		mapper = new ObjectMapper();
+	}
 
 	@Override
 	public boolean checkSetOfFlashcards(String alias) {
@@ -63,16 +70,31 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 		
 		try(CloseableHttpClient httpclient = HttpClients.createDefault();
 				CloseableHttpResponse response = httpclient.execute(request);) {
-			// The response of a non existent set of flashcards returns with an empty body
-			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK && EntityUtils.toByteArray(response.getEntity()).length > 0) {
-				setOfFlashcardExists = true;
-			}
+			setOfFlashcardExists = isSetOfFlashcardExisting(response);
 		} catch(Exception e) {
 			log.error("", e);
 		}
 		
 		log.info(new StringBuilder("Check card2brain set of flaschcards (").append(url).append("): ").append(setOfFlashcardExists).toString());
 		return setOfFlashcardExists;
+	}
+	
+	/**
+	 * evaluates if a set of flashcards is existing according to a http response
+	 * @param response the http response
+	 * @return true if it is existing
+	 */
+	protected boolean isSetOfFlashcardExisting(HttpResponse response) {
+		boolean isSetOfFlashcardExisting = false;
+		// The response of a non existent set of flashcards returns with an empty body
+		try {
+			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK && EntityUtils.toByteArray(response.getEntity()).length > 0) {
+				isSetOfFlashcardExisting = true;
+			}
+		} catch (Exception e) {
+			// nothing to do: isSetOfFlashcardExisting is false.
+		}
+		return isSetOfFlashcardExisting;
 	}
 
 	@Override
@@ -82,7 +104,6 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 		try {
 			Map<String,String> signedPros = ltiManager.sign(null, url, key, secret);
 			String content = ltiManager.post(signedPros, url);
-			ObjectMapper mapper = new ObjectMapper();
 			card2BrainValidationResult = mapper.readValue(content, Card2BrainVerificationResult.class);
 		} catch (JsonParseException jsonParseException) {
 			// ignore and return null
