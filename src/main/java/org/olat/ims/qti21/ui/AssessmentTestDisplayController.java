@@ -444,7 +444,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		if(!deliveryOptions.isEnableSuspend() || testSessionController == null
 				|| testSessionController.getTestSessionState() == null
 				|| testSessionController.getTestSessionState().isEnded()
-				|| testSessionController.getTestSessionState().isExited()) {
+				|| testSessionController.getTestSessionState().isExited()
+				|| testSessionController.getTestSessionState().isSuspended()) {
 			return false;
 		}
 		
