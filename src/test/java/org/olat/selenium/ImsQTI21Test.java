@@ -45,6 +45,7 @@ import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21EditorPage;
+import org.olat.selenium.page.qti.QTI21KprimEditorPage;
 import org.olat.selenium.page.qti.QTI21MultipleChoiceEditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.qti.QTI21SingleChoiceEditorPage;
@@ -1244,6 +1245,177 @@ public class ImsQTI21Test {
 			.assertFeedback("Correct feedback")
 			.nextAnswer()
 			.answerMultipleChoice("AlmostRight", "RightAnswer")
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(6);// 3 points from the first question, 3 from the second
+	}
+	
+
+	/**
+	 * An author make a test with 2 kprims.<br>
+	 * A first user make the test, but doesn't answer all questions
+	 * correctly, log out and a second user make the perfect test.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorKprim(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		UserVO melissa = new UserRestClient(deploymentUrl).createRandomUser("Melissa");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//upload a test
+		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add a kprim
+		QTI21KprimEditorPage kprimEditor = qtiEditor
+			.addKprim();
+		kprimEditor
+			.setAnswer(0, "Correct")
+			.setCorrect(0, true)
+			.setAnswer(1, "OkToo")
+			.setCorrect(1, true)
+			.setAnswer(2, "Faux")
+			.setCorrect(2, false)
+			.setAnswer(3, "Falsch")
+			.setCorrect(3, false)
+			.save();
+		// change max score
+		kprimEditor
+			.selectScores()
+			.setMaxScore("4")
+			.save();
+		// set some feedbacks
+		kprimEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is only an hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		// second kprim
+		kprimEditor = qtiEditor
+			.addKprim()
+			.setAnswer(0, "OnlyRight")
+			.setCorrect(0, true)
+			.setAnswer(1, "NotRight")
+			.setCorrect(1, false)
+			.setAnswer(2, "NotAnswer")
+			.setCorrect(2, false)
+			.setAnswer(3, "TheWrongOne")
+			.setCorrect(3, false)
+			.save();
+		kprimEditor
+			.selectScores()
+			.setMaxScore("2")
+			.save();
+		kprimEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+
+		//a user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page reiQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		reiQtiPage
+			.assertOnAssessmentItem()
+			.answerCorrectKPrim("Correct", "OkToo", "Faux")
+			.answerIncorrectKPrim("Falsch")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerCorrectKPrim("Correct", "OkToo")
+			.answerIncorrectKPrim("Falsch", "Faux")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerIncorrectKPrim("OnlyRight", "NotRight", "NotAnswer", "TheWrongOne")
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(5);// 4 points from the first question, 1 from the second
+		
+
+		//a second user search the content package
+		LoginPage melLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		melLoginPage
+			.loginAs(melissa.getLogin(), melissa.getPassword())
+			.resume();
+		NavigationPage melNavBar = new NavigationPage(participantBrowser);
+		melNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.assertOnAssessmentItem()
+			.answerCorrectKPrim("Correct", "OkToo")
+			.answerIncorrectKPrim("Faux", "Falsch")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerCorrectKPrim("OnlyRight")
+			.answerIncorrectKPrim("NotRight", "NotAnswer", "TheWrongOne")
 			.saveAnswer()
 			.endTest()
 			.assertOnAssessmentResults()

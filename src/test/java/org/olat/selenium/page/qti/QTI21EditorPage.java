@@ -93,6 +93,16 @@ public class QTI21EditorPage {
 		return new QTI21MultipleChoiceEditorPage(browser);
 	}
 	
+	public QTI21KprimEditorPage addKprim() {
+		addQuestion(QTI21QuestionType.kprim);
+		return new QTI21KprimEditorPage(browser);
+	}
+	
+	public QTI21MatchEditorPage addMatch() {
+		addQuestion(QTI21QuestionType.match);
+		return new QTI21MatchEditorPage(browser);
+	}
+	
 	private QTI21EditorPage addQuestion(QTI21QuestionType type) {
 		openElementsMenu();
 		

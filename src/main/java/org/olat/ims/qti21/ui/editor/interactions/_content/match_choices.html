@@ -5,7 +5,7 @@
 		<tr>
 			<th></th>
 			#foreach($targetChoice in $targetChoices)
-				<th>$r.render(${targetChoice.getText()})
+				<th class="o_sel_match_target_${foreach.index}">$r.render(${targetChoice.getText()})
 				#if($f.hasError($item))
 					<span class="o_icon o_icon_error form-control-feedback"></span>
 				#end #if(!$restrictedEdit) <div class="pull-right">$r.render(${targetChoice.getDeleteButton()})</div> #end</th>
@@ -16,16 +16,17 @@
 	#foreach($sourceChoice in $sourceChoices)
 		#set($set1Identifier = $sourceChoice.getIdentifierString())
 		<tr>
-			<th>$r.render(${sourceChoice.getText()})
+			<th class="o_sel_match_source_${foreach.index}">$r.render(${sourceChoice.getText()})
 				#if($f.hasError($item))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
 				#end
 				#if(!$restrictedEdit) <div class="pull-right">$r.render(${sourceChoice.getDeleteButton()})</div> #end
 			</th>
+			#set($sourceIndex = ${foreach.index})
 			#foreach($targetChoice in $targetChoices)
 				#set($set2Identifier = $targetChoice.getIdentifierString())
 				#set($responseValue = $set1Identifier + " " + $set2Identifier)
-				<td>
+				<td class="o_sel_match_${sourceIndex}_${foreach.index}">
 					<input id="oo_${set1Identifier}_${set2Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if(${sourceChoice.isCorrect(${targetChoice.getIdentifier()})}) checked #end #if($restrictedEdit) disabled #end/>
 					$f.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
 					#if(${sourceChoice.isErrorSingleChoice()})

@@ -120,6 +120,7 @@ public class MatchEditorController extends FormBasicController {
 		//single choice / multiple choice
 		String[] singleMultiValues = new String[]{ translate("form.imd.match.single.choice"), translate("form.imd.match.multiple.choice") };
 		singleMultiEl = uifactory.addRadiosHorizontal("singleMulti", "form.imd.match.single.multiple", metadata, singleMultiKeys, singleMultiValues);
+		singleMultiEl.setElementCssClass("o_sel_match_single");
 		singleMultiEl.setEnabled(!restrictedEdit);
 		singleMultiEl.addActionListener(FormEvent.ONCHANGE);
 		if (itemBuilder.isMultipleChoice()) {
@@ -160,8 +161,10 @@ public class MatchEditorController extends FormBasicController {
 		uifactory.addFormSubmitButton("submit", answersCont);
 		if(!restrictedEdit) {
 			addColumnButton = uifactory.addFormLink("add.match.column", answersCont, Link.BUTTON);
+			addColumnButton.setElementCssClass("o_sel_match_add_column");
 			addColumnButton.setIconLeftCSS("o_icon o_icon_add");
 			addRowButton = uifactory.addFormLink("add.match.row", answersCont, Link.BUTTON);
+			addRowButton.setElementCssClass("o_sel_match_add_row");
 			addRowButton.setIconLeftCSS("o_icon o_icon_add");
 		}
 	}
