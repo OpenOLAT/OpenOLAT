@@ -1475,7 +1475,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 							mailing = new MailPackage(true);
 						}
 
-						BusinessGroupMailing.sendEmail(ureqIdentity, firstWaitingListIdentity, group, MailType.graduateFromWaitingListToParticpant, mailing);				
+						BusinessGroupMailing.sendEmail(null, firstWaitingListIdentity, group, MailType.graduateFromWaitingListToParticpant, mailing);				
 						counter++;
 				  }
 				}
