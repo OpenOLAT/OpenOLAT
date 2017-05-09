@@ -25,9 +25,7 @@
 
 package org.olat.course.statistic;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -54,6 +52,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -64,6 +63,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Base class for Statistic Display Controllers - subclass this 
@@ -119,6 +119,8 @@ public class StatisticDisplayController extends BasicController {
 
 	private Translator headerTranslator_;
 	
+	@Autowired
+	private SimpleStatisticInfoHelper statisticInfoHelper; 
 	
 	public StatisticDisplayController(UserRequest ureq, WindowControl windowControl, ICourse course, IStatisticManager statisticManager) {
 		super(ureq, windowControl);
@@ -142,7 +144,7 @@ public class StatisticDisplayController extends BasicController {
 	
 	protected Component createInitialComponent(UserRequest ureq) {
 		statisticVc_ = createVelocityContainer("statistic");
-		statisticVc_.contextPut("statsSince", getStatsSinceStr(ureq));
+		statisticVc_.contextPut("statsSince", getStatsSinceStr());
 		recreateTableController(ureq);
 		
 		return statisticVc_;
@@ -285,7 +287,7 @@ public class StatisticDisplayController extends BasicController {
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.statisticType, "", STATISTIC_TYPE_VIEW_TOTAL_OF_NODES_STATISTIC));
 			selectionInfo = getTranslator().translate("statistic.chart.selectioninfo.total");
 		}
-		String chartIntroStr = headerTranslator_.translate("statistic.chart.intro", new String[] { selectionInfo, getStatsSinceStr(ureq) });
+		String chartIntroStr = headerTranslator_.translate("statistic.chart.intro", new String[] { selectionInfo, getStatsSinceStr() });
 		
 		StringBuffer chd = new StringBuffer();
 		List<Integer> values = new ArrayList<Integer>();
@@ -332,7 +334,7 @@ public class StatisticDisplayController extends BasicController {
 		if (columnId==tableCtr_.getTableDataModel().getColumnCount()-1) {
 			ThreadLocalUserActivityLogger.log(StatisticLoggingAction.VIEW_TOTAL_TOTAL_STATISTIC, getClass(), 
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.statisticType, "", STATISTIC_TYPE_VIEW_TOTAL_TOTAL_STATISTIC));
-			chartIntroStr = headerTranslator_.translate("statistic.chart.pernode.total.intro", new String[] {getStatsSinceStr(ureq)});
+			chartIntroStr = headerTranslator_.translate("statistic.chart.pernode.total.intro", new String[] { getStatsSinceStr() });
 		} else {
 			ThreadLocalUserActivityLogger.log(StatisticLoggingAction.VIEW_TOTAL_BY_VALUE_STATISTIC, getClass(), 
 					LoggingResourceable.wrapNonOlatResource(StringResourceableType.statisticType, "", STATISTIC_TYPE_VIEW_TOTAL_BY_VALUE_STATISTIC),
@@ -408,15 +410,12 @@ public class StatisticDisplayController extends BasicController {
 		}
 	}
 
-	protected String getStatsSinceStr(UserRequest ureq) {
-		Date d = SimpleStatisticInfoHelper.getFirstLoggingTableCreationDate();
+	protected String getStatsSinceStr() {
+		Date d = statisticInfoHelper.getFirstLoggingTableCreationDate();
 		if (d==null) {
 			return "n/a";
 		}
-		Calendar c = Calendar.getInstance(ureq.getLocale());
-		c.setTime(d);
-		DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, ureq.getLocale());
-		return df.format(c.getTime());
+		return Formatter.getInstance(getLocale()).formatDate(d);
 	}
 	
 	@Override

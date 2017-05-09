@@ -26,9 +26,9 @@
 package org.olat.course.statistic.orgtype;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -51,11 +51,12 @@ public class OrgTypeStatisticManager implements IStatisticManager {
 
 	@Override
 	public StatisticResult generateStatisticResult(UserRequest ureq, ICourse course, long courseRepositoryEntryKey) {
-		DBQuery dbQuery = DBFactory.getInstance().createQuery("select businessPath,orgType,value from org.olat.course.statistic.orgtype.OrgTypeStat sv "
-				+ "where sv.resId=:resId");
-		dbQuery.setLong("resId", courseRepositoryEntryKey);
-
-		return new StatisticResult(course, dbQuery.list());
+		String q = "select businessPath,orgType,value from org.olat.course.statistic.orgtype.OrgTypeStat sv where sv.resId=:resId";
+		List<Object[]> raw = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(q, Object[].class)
+				.setParameter("resId", courseRepositoryEntryKey)
+				.getResultList();
+		return new StatisticResult(course, raw);
 	}
 	
 	@Override

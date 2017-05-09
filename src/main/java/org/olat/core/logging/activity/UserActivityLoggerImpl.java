@@ -704,70 +704,6 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		
 		// start creating the LoggingObject 
 		final LoggingObject logObj = new LoggingObject(sessionId, identityKey, identityName, crudAction.name().substring(0,1), actionVerb.name(), actionObject);
-		
-		// do simpleDuration calculation & storing
-//		fxdiff: FXOLAT-94 don't do duration calculation, as its quite senseless (duration = timestamp of click 2 - click 1)
-// 		if still needed once, dont update the lastLogObj, but save duration with current one, 50x faster!		
-		
-//		LoggingObject lastLogObj = (LoggingObject) session_.getEntry(USESS_KEY_USER_ACTIVITY_LOGGING_LAST_LOG);
-//		if (lastLogObj!=null) {
-			//lastLogObj = (LoggingObject) DBFactory.getInstance().loadObject(lastLogObj);
-			//			DBFactory.getInstance().updateObject(lastLogObj);
-			// Implementation Note:
-			//   we used to do loadObject(), updateObject() here - which is the preferred best practice hibernate way 
-			//   for changing an existing object in the database.
-			//   in the setup @UZH we'll use BLACKHOLE as the storage engine for the o_loggingtable (this is to have
-			//   minimal work load on the Main OLAT DB and not have duplicate data on the Main OLAT DB and the Logging DB).
-			//   Using BLACKHOLE results in the 'lastLogObj' here, not to exist in the database anymore.
-			//   Hence we can't do a loadObject() nor an updateObject(). The latter does not work due to the fact
-			//   that Hibernate checks the number of updated rows and expect that to equal 1 - which is not the case
-			//   when using BLACKHOLE.
-			
-			// Workaround: - also compare with LoggingObject.hbm.xml docu
-			//
-			//   We use the sql-update's feature check="none", which disables the above mentioned check.
-			//   Using this in combination with manual SQL code below seems to be the only feasible way
-			//   to have Hibernate not do any row-number-checks.
-			
-			// Implications of the workaround:
-			//
-			//  * Manual SQL: It shouldn't be a big deal to have this manual SQL code as it is very standard.
-			//  * CANT USE updateObject(LoggingObject) EVER:
-			//@TODO    We might have to add a check which verifies that no one calls updateObject(LoggingObject)
-			//         if that would be called it would simply fail in the BLACKHOLE@UZH setup
-			
-			// calculate the duration - take the simple diff of the two creationDate fields
-//			Date currentTime = logObj.getCreationDate();
-//			Date lastTime = lastLogObj.getCreationDate();
-//			long duration;
-//			if (lastTime==null) {
-//				duration = -1;
-//			} else if (currentTime==null) {
-//				duration = System.currentTimeMillis() - lastTime.getTime();
-//			} else {
-//				duration = currentTime.getTime() - lastTime.getTime();
-//			}
-//			
-//			DB db = DBFactory.getInstanceForClosing();
-//			if (db!=null && db.isError()) {
-//				// then we would run into an ERROR when we'd do more with this DB
-//				// hence we just issue a log.info here with the details
-//				//@TODO: lower to log_.info once we checked that it doesn't occur very often (best for 6.4)
-//				log_.warn("log: DB is in Error state therefore the UserActivityLoggerImpl cannot update the simpleDuration of log_id "+lastLogObj.getKey()+" with value "+duration+", loggingObject: "+lastLogObj);
-//			} else {
-//				DBQuery update = DBFactory.getInstance().createQuery(
-//						"update org.olat.core.logging.activity.LoggingObject set simpleDuration = :duration where log_id = :logid");
-//				update.setLong("duration", duration);
-//				update.setLong("logid", lastLogObj.getKey());
-//				// we have to do FlushMode.AUTO (which is the default anyway)
-//				update.executeUpdate(FlushMode.AUTO);
-//			}
-//		}
-		
-		// store the current logging object in the session - for duration calculation at next log
-//		session_.putEntry(USESS_KEY_USER_ACTIVITY_LOGGING_LAST_LOG, logObj);
-		
-		
 
 		if (resourceInfos!=null && resourceInfos.size()!=0) {
 			// this should be the normal case - we do have LoggingResourceables which we can log
@@ -807,7 +743,6 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		// fill the remaining fields
 		logObj.setBusinessPath(businessPath_);
 		logObj.setSourceClass(callingClass.getCanonicalName());
-//		logObj.setSimpleDuration(duration);
 		logObj.setResourceAdminAction(actionType.equals(ActionType.admin)?true:false);
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		

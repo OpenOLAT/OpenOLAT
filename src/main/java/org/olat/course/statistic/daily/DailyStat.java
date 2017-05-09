@@ -28,7 +28,17 @@ package org.olat.course.statistic.daily;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.Persistable;
 
 /**
  * Hibernate object representing an entry in the o_stat_daily table.
@@ -36,16 +46,42 @@ import org.olat.core.commons.persistence.PersistentObject;
  * Initial Date:  18.02.2010 <br>
  * @author Stefan
  */
-public class DailyStat extends PersistentObject {
+@Entity(name="dailystat")
+@Table(name="o_stat_daily")
+public class DailyStat implements Persistable {
 
 	private static final long serialVersionUID = -2731771358539901670L;
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+
+	@Column(name="businesspath", nullable=false, unique=false, insertable=true, updatable=true)
 	private String businessPath;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="day", nullable=false, unique=false, insertable=true, updatable=true)
 	private Date day;
+	@Column(name="value", nullable=false, unique=false, insertable=true, updatable=true)
 	private int value;
+	@Column(name="resid", nullable=false, unique=false, insertable=true, updatable=true)
 	private long resId;
 	
 	public DailyStat(){
-	// for hibernate	
+		// for hibernate	
+	}
+	
+	@Override
+	public Long getKey() {
+		return key;
 	}
 	
 	public final long getResId() {
@@ -79,5 +115,26 @@ public class DailyStat extends PersistentObject {
 	public final void setValue(int value) {
 		this.value = value;
 	}
+
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 39563 : getKey().hashCode();
+	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof DailyStat) {
+			DailyStat stat = (DailyStat)obj;
+			return getKey() != null && getKey().equals(stat.getKey());
+		}
+		return super.equals(obj);
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
 }

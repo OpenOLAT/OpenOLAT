@@ -24,10 +24,10 @@
 */
 package org.olat.course.statistic;
 
+import java.util.Random;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -40,8 +40,7 @@ import org.quartz.JobExecutionException;
 public class UpdateStatisticsJob extends JobWithDB {
 
 	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(UpdateStatisticsJob.class);
-
+	private final Random random = new Random();
 	
 	/**
 	 * 
@@ -49,14 +48,25 @@ public class UpdateStatisticsJob extends JobWithDB {
 	 */
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
+		jitter();// wait 0 - 60 seconds
+
 		StatisticUpdateManager statisticManager = (StatisticUpdateManager) CoreSpringFactory.getBean("org.olat.course.statistic.StatisticUpdateManager");
 		if (statisticManager==null) {
-			log_.error("executeWithDB: UpdateStatisticsJob configured, but no StatisticUpdateManager available");
+			log.error("executeWithDB: UpdateStatisticsJob configured, but no StatisticUpdateManager available");
 		} else {
 			if (!statisticManager.updateStatistics(false, null)) {
-				log_.warn("executeWithDB: UpdateStatisticsJob could not trigger updateStatistics - must be already running");
+				log.warn("executeWithDB: UpdateStatisticsJob could not trigger updateStatistics - must be already running");
 			}
 		}
 	}
-
+	
+	private void jitter() {
+		try {
+			double millis = random.nextDouble() * 60.0d * 1000.0d;
+			long wait = Math.round(millis);
+			Thread.sleep(wait);
+		} catch (InterruptedException e) {
+			log.error("", e);
+		}
+	}
 }

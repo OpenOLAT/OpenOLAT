@@ -33,6 +33,8 @@ package org.olat.course.statistic;
  * @author Stefan
  */
 public interface StatisticUpdateManager {
+	
+	public void setEnabled(boolean enabled);
 
 	/**
 	 * Add the given IStatisticUpdater to this StatisticUpdateManager.

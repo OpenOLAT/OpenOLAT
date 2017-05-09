@@ -32,13 +32,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.IStatisticManager;
 import org.olat.course.statistic.StatisticDisplayController;
@@ -51,18 +49,20 @@ import org.olat.course.statistic.TotalAwareColumnDescriptor;
  * Initial Date:  12.02.2010 <br>
  * @author Stefan
  */
-public class HourOfDayStatisticManager extends BasicManager implements IStatisticManager {
+public class HourOfDayStatisticManager implements IStatisticManager {
 
 	/** the logging object used in this class **/
 	private static final OLog log_ = Tracing.createLoggerFor(HourOfDayStatisticManager.class);
 
 	@Override
 	public StatisticResult generateStatisticResult(UserRequest ureq, ICourse course, long courseRepositoryEntryKey) {
-		DBQuery dbQuery = DBFactory.getInstance().createQuery("select businessPath,hour,value from org.olat.course.statistic.hourofday.HourOfDayStat sv "
-				+ "where sv.resId=:resId");
-		dbQuery.setLong("resId", courseRepositoryEntryKey);
+		String q = "select businessPath,hour,value from org.olat.course.statistic.hourofday.HourOfDayStat sv where sv.resId=:resId";
+		List<Object[]> raw = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(q, Object[].class)
+				.setParameter("resId", courseRepositoryEntryKey)
+				.getResultList();
 
-		StatisticResult statisticResult = new StatisticResult(course, dbQuery.list());
+		StatisticResult statisticResult = new StatisticResult(course, raw);
 		List<String> columnHeaders = statisticResult.getColumnHeaders();
 		if (columnHeaders!=null && columnHeaders.size()>1) {
 			try{

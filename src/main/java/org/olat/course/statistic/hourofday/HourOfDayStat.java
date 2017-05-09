@@ -26,7 +26,16 @@
 
 package org.olat.course.statistic.hourofday;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.core.id.Persistable;
 
 /**
  * Hibernate object representing an entry in the o_stat_hourofday table.
@@ -34,11 +43,32 @@ import org.olat.core.commons.persistence.PersistentObject;
  * Initial Date:  12.02.2010 <br>
  * @author Stefan
  */
+@Entity(name="hourofdaystat")
+@Table(name="o_stat_hourofday")
 public class HourOfDayStat extends PersistentObject {
-	
+
+	private static final long serialVersionUID = -5831961644323028397L;
+
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+
+	@Column(name="businesspath", nullable=false, unique=false, insertable=true, updatable=true)
 	private String businessPath;
+	@Column(name="hour", nullable=false, unique=false, insertable=true, updatable=true)
 	private int hour;
+	@Column(name="value", nullable=false, unique=false, insertable=true, updatable=true)
 	private int value;
+	@Column(name="resid", nullable=false, unique=false, insertable=true, updatable=true)
 	private long resId;
 	
 	public HourOfDayStat(){
@@ -77,4 +107,25 @@ public class HourOfDayStat extends PersistentObject {
 		this.value = value;
 	}
 	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 39563 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof HourOfDayStat) {
+			HourOfDayStat stat = (HourOfDayStat)obj;
+			return getKey() != null && getKey().equals(stat.getKey());
+		}
+		return super.equals(obj);
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
 }

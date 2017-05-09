@@ -701,10 +701,7 @@
 				<bean class="org.olat.course.statistic.StatisticAutoCreator" scope="prototype">
 					<property name="className" value="org.olat.course.statistic.weekly.WeeklyStatisticDisplayController"/>
 					<property name="statisticManager">
-						<!-- mysql specific statistic manager -->
 						<bean class="org.olat.course.statistic.weekly.WeeklyStatisticManager"/>
-						<!-- not mysql specific statistic manager -->
-						<!-- <bean class="org.olat.course.statistic.weekly.GeneralWeeklyStatisticManager"/> -->
 					</property>
 				</bean>
 			</property>

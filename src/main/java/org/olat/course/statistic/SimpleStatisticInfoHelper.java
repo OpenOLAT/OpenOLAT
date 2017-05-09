@@ -25,11 +25,12 @@
 package org.olat.course.statistic;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Simple helper class which knows about since when statistics are available.
@@ -45,66 +46,42 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class SimpleStatisticInfoHelper {
 
 	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(SimpleStatisticInfoHelper.class);
-
-	/** the jdbcTemplate is used to allow access to other than the default database and 
-	 * allow raw sql code
-	 */
-	private final JdbcTemplate jdbcTemplate_;
+	private static final OLog log = Tracing.createLoggerFor(SimpleStatisticInfoHelper.class);
 
 	/** a map with all sql statements for the supported dbvendors **/
-	private final Map<String,String> sql_;
-
-	/** the dbvendor configured **/
-	private final String dbVendor_;
+	private final Map<String,String> sql;
 
 	/** the calculated creationdate **/
-	private long creationdate_;
+	private Long creationDate;
 
-	/** whether or not creationdate has been computed **/
-	private boolean initialized_ = false;
-	
-	/**
-	 *@TODO
-	 *@FIXME
-	 * harsh violation of spring idea - yet we run with this until spring is refactored for 6.4 
-	 */
-	private static volatile SimpleStatisticInfoHelper SINGLETON_;
-	
-	/** spring **/
-	public SimpleStatisticInfoHelper(JdbcTemplate jdbcTemplate, Map<String, String> sql, String dbVendor) {
-		jdbcTemplate_ = jdbcTemplate;
-		sql_ = sql;
-		dbVendor_ = dbVendor;
-		SINGLETON_ = this;
+	private DB dbInstance;
+
+	public SimpleStatisticInfoHelper(DB dbInstance, Map<String, String> sql) {
+		this.dbInstance = dbInstance;
+		this.sql = sql;
 	}
 	
 	/**
 	 * Computes the creationdate_ if it's not already computed and returns it
 	 * @return the creationdate
 	 */
-	private synchronized Date doGetFirstLoggingTableCreationDate() {
-		if (!initialized_) {
-			creationdate_ = jdbcTemplate_.queryForLong(sql_.get(dbVendor_));
-			initialized_ = true;
+	public Date getFirstLoggingTableCreationDate() {
+		if (creationDate == null) {
+			try {
+				synchronized(this) {
+					if(creationDate == null) {
+						List<?> creationDates = dbInstance.getCurrentEntityManager()
+								.createNativeQuery(sql.get(dbInstance.getDbVendor()))
+								.getResultList();
+						creationDate = creationDates == null || creationDates.isEmpty() ? null : ((Number)creationDates.get(0)).longValue();
+					}
+				}
+			} catch (Exception e) {
+				log.error("", e);
+			} finally {
+				dbInstance.commitAndCloseSession();
+			}
 		}
-		if (creationdate_!=-1) {
-			return new Date(creationdate_*1000);
-		}
-		// otherwise we have a misconfiguration
-		log_.error("getFirstLoggingTableCreationDate: misconfiguration! SimpleStatisticInfoHelper is not configured!");
-		return null;
-	}
-		
-	/**
-	 * @deprecated refactor SimpleStatisticInfoHelper in 6.4 !!!
-	 */
-	public static Date getFirstLoggingTableCreationDate() {
-		if (SINGLETON_==null) {
-			log_.error("getFirstLoggingTableCreationDate: misconfiguration! SimpleStatisticInfoHelper is not configured!");
-			return null;
-		} else {
-			return SINGLETON_.doGetFirstLoggingTableCreationDate();
-		}
+		return creationDate == null ? null : new Date(creationDate);
 	}
 }

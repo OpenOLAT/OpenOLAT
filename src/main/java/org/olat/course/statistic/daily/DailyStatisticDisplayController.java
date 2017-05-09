@@ -57,7 +57,7 @@ public class DailyStatisticDisplayController extends StatisticDisplayController 
 		form_ = new DateChooserForm(ureq, getWindowControl(), 7);
 		listenTo(form_);
 		dailyStatisticFormVc_.put("statisticForm", form_.getInitialComponent());
-		dailyStatisticFormVc_.contextPut("statsSince", getStatsSinceStr(ureq));
+		dailyStatisticFormVc_.contextPut("statsSince", getStatsSinceStr());
 
 		dailyStatisticVc_.put("dailystatisticform", dailyStatisticFormVc_);
 

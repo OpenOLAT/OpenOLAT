@@ -36,7 +36,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.event.MultiUserEvent;
@@ -50,7 +49,7 @@ import org.olat.properties.PropertyManager;
  * Initial Date:  11.02.2010 <br>
  * @author Stefan
  */
-class StatisticUpdateManagerImpl extends BasicManager implements StatisticUpdateManager, GenericEventListener {
+class StatisticUpdateManagerImpl implements StatisticUpdateManager, GenericEventListener {
 	
 	/** the logging object used in this class **/
 	static final OLog log_ = Tracing.createLoggerFor(StatisticUpdateManagerImpl.class);
@@ -78,11 +77,7 @@ class StatisticUpdateManagerImpl extends BasicManager implements StatisticUpdate
 	
 	/** spring **/
 	public StatisticUpdateManagerImpl(CoordinatorManager coordinatorManager, StatisticUpdateConfig config, String enabled) {
-		enabled_ = enabled!=null && "enabled".equals(enabled);
-		if (!enabled_) {
-			log_.info("<init> disabled by configuration");
-			return;
-		}
+		enabled_ = enabled != null && "enabled".equals(enabled);
 		updaters_.addAll(config.getUpdaters());
 		
 		// note: not using CoordinatorManager.getInstance().getCoordinator() in this spring-called-constructor
@@ -94,6 +89,10 @@ class StatisticUpdateManagerImpl extends BasicManager implements StatisticUpdate
 				OresHelper.createOLATResourceableTypeWithoutCheck(StatisticUpdateManagerImpl.class.getName()));
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(startupEvent_,
 				OresHelper.createOLATResourceableTypeWithoutCheck(StatisticUpdateManagerImpl.class.getName()));
+	}
+	
+	public void setEnabled(boolean enabled) {
+		enabled_ = enabled;
 	}
 	
 	/**
@@ -152,6 +151,8 @@ class StatisticUpdateManagerImpl extends BasicManager implements StatisticUpdate
 					
 					Date lastUpdatedDate = new Date(lastUpdatedInMilliseconds);
 					Date nowDate = new Date(nowInMilliseconds);
+					
+					System.out.println(lastUpdatedDate + " :: " + nowDate);
 
 					log_.info("updateStatistics: starting the update");
 					DBFactory.getInstance().intermediateCommit();

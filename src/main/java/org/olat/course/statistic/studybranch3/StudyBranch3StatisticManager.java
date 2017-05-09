@@ -26,9 +26,9 @@
 package org.olat.course.statistic.studybranch3;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
@@ -52,11 +52,12 @@ public class StudyBranch3StatisticManager extends BasicManager implements IStati
 
 	@Override
 	public StatisticResult generateStatisticResult(UserRequest ureq, ICourse course, long courseRepositoryEntryKey) {
-		DBQuery dbQuery = DBFactory.getInstance().createQuery("select businessPath,studyBranch3,value from org.olat.course.statistic.studybranch3.StudyBranch3Stat sv "
-				+ "where sv.resId=:resId");
-		dbQuery.setLong("resId", courseRepositoryEntryKey);
-
-		return new StatisticResult(course, dbQuery.list());
+		String q = "select businessPath,studyBranch3,value from studybranch3stat sv where sv.resId=:resId";
+		List<Object[]> raw = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(q, Object[].class)
+				.setParameter("resId", courseRepositoryEntryKey)
+				.getResultList();
+		return new StatisticResult(course, raw);
 	}
 	
 	@Override
