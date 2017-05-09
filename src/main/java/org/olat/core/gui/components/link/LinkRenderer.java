@@ -157,7 +157,10 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				Form theForm = (Form)link.getInternalAttachedObject();
 				sb.append("href=\"javascript:")
 				  .append(FormJSHelper.getJSFnCallFor(theForm, elementId, 1))
-				  .append("\" ");
+				  .append(";\" ");
+				if(link.isForceFlexiDirtyFormWarning()) {
+					sb.append("onclick=\"return o2cl_dirtyCheckOnly();\" ");
+				}
 			} else if(link.isPopup()) {
 				StringOutput href = new StringOutput();
 				LinkPopupSettings popup = link.getPopup();

@@ -106,13 +106,14 @@
 #if ($r.available("highScore"))
 	$r.render("highScore")
 #end
-
-#if($log)
-<div class="o_box">
-    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
-    <pre class="small">
+#if ($changelogconfig)
+	#if($log)
+	<div class="o_box">
+	    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
+	    <pre class="small">
 $log
-    </pre>
-    #o_togglebox_end()
-</div>
+	    </pre>
+	    #o_togglebox_end()
+	</div>
+	#end
 #end

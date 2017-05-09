@@ -34,6 +34,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -44,6 +45,7 @@ import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  Jun 16, 2004
@@ -55,6 +57,9 @@ public class MSCourseNodeRunController extends BasicController {
 	private final boolean showLog;
 	private boolean hasScore, hasPassed, hasComment;
 	private final boolean overrideUserResultsVisiblity;
+	
+	@Autowired
+	private CourseModule courseModule;
 
 	/**
 	 * Constructor for a manual scoring course run controller
@@ -113,6 +118,9 @@ public class MSCourseNodeRunController extends BasicController {
 				myContent.contextPut("hasObjectives", learningObj); // dummy value, just an exists operator					
 			}
 		} 
+		
+		//admin setting whether to show change log or not
+		myContent.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 
 		// Push variables to velcity page
 		exposeConfigToVC(config);		

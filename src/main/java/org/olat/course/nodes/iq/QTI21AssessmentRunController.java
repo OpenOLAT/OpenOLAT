@@ -53,6 +53,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
@@ -126,6 +127,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private CourseModule courseModule;
 	
 	public QTI21AssessmentRunController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, QTICourseNode courseNode) {
@@ -142,6 +145,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		mainVC = createVelocityContainer("assessment_run");
 						
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
+		
+		mainVC.contextPut("infobox", courseModule.isDisplayInfoBox());
+		mainVC.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 		
 		if(courseNode instanceof IQTESTCourseNode) {
 			mainVC.contextPut("type", "test");

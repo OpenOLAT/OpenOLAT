@@ -41,6 +41,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
@@ -109,6 +110,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 	protected BusinessGroupService businessGroupService;
 	@Autowired
 	protected UserCourseInformationsManager userCourseInformationsManager;
+	@Autowired
+	protected CourseModule courseModule;
 	
 	public GTAAbstractController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, CourseEnvironment courseEnv, boolean withTitle, boolean withGrading, boolean withSubscription) {
@@ -241,6 +244,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 		} else if(task != null && task.getTaskStatus() == TaskProcess.grading) {
 			task = gtaManager.nextStep(task, gtaNode);
 		}
+		
+		mainVC.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 		
 		nodeLog();
 		collapsedContents(task);

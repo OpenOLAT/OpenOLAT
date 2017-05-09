@@ -63,6 +63,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	private boolean hasCustomEnabledCss = false;
 	private boolean hasCustomDisabledCss = false;
 	private boolean domReplacementWrapperRequired = false;
+	private boolean ownDirtyFormWarning = false;
 	private String iconLeftCSS;
 	private String iconRightCSS;
 	private String customEnabledLinkCSS;
@@ -131,6 +132,19 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		}
 	}
 
+	@Override
+	public boolean isForceOwnDirtyFormWarning() {
+		return ownDirtyFormWarning;
+	}
+
+	@Override
+	public void setForceOwnDirtyFormWarning(boolean warning) {
+		ownDirtyFormWarning = warning;
+		if(component != null) {
+			component.setForceFlexiDirtyFormWarning(ownDirtyFormWarning);
+		}
+	}
+
 	/*
 	 * uses the FormLinkFactory to create the link associated with this formlink
 	 * it is deferred to have the translator, and most of all the form id where
@@ -174,6 +188,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 		component.setIconRightCSS(iconRightCSS);
 		component.setElementCssClass(getElementCssClass());
 		component.setTitle(title);
+		component.setForceFlexiDirtyFormWarning(ownDirtyFormWarning);
 		if(textReasonForDisabling != null) {
 			component.setTextReasonForDisabling(textReasonForDisabling);
 		}
