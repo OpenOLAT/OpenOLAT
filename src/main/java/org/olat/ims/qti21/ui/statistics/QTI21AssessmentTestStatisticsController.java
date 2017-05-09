@@ -23,6 +23,8 @@ import static org.olat.ims.qti.statistics.ui.StatisticFormatter.duration;
 import static org.olat.ims.qti.statistics.ui.StatisticFormatter.format;
 import static org.olat.ims.qti.statistics.ui.StatisticFormatter.getModeString;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +32,7 @@ import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.chart.BarSeries;
+import org.olat.core.gui.components.chart.BarSeries.Stringuified;
 import org.olat.core.gui.components.chart.StatisticsComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -54,8 +57,14 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticAssessment;
+import org.olat.ims.qti.statistics.ui.QTI12AssessmentStatisticsController.ItemInfos;
+import org.olat.ims.qti21.QTI21StatisticsManager;
+import org.olat.ims.qti21.model.statistics.AssessmentItemStatistic;
 import org.olat.modules.assessment.ui.UserFilterController;
 import org.olat.modules.assessment.ui.event.UserFilterEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 
 /**
  * 
@@ -73,6 +82,9 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	private QTIType type;
 	private QTICourseNode courseNode;
 	private final QTI21StatisticResourceResult resourceResult;
+	
+	@Autowired
+	private QTI21StatisticsManager qtiStatisticsManager;
 
 	public QTI21AssessmentTestStatisticsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QTI21StatisticResourceResult resourceResult, boolean withFilter, boolean printMode) {
@@ -137,6 +149,7 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	private void updateData() {
 		StatisticAssessment stats = resourceResult.getQTIStatisticAssessment();
 		initScoreHistogram(stats);
+		initScoreStatisticPerItem(stats.getNumOfParticipants());
 		initDurationHistogram(stats);
 		initCourseNodeInformation(stats);
 	}
@@ -210,6 +223,39 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 			durationHistogramVC.contextPut("datas", BarSeries.datasToString(stats.getDurations()));
 		}
 		mainVC.put("durationHistogram", durationHistogramVC);
+	}
+	
+	private void initScoreStatisticPerItem(double numOfParticipants) {
+		BarSeries d1 = new BarSeries();
+		BarSeries d2 = new BarSeries();
+		
+		List<AssessmentItemStatistic> statisticItems = qtiStatisticsManager
+				.getStatisticPerItem(resourceResult.getResolvedAssessmentTest(), resourceResult.getSearchParams(), numOfParticipants);
+		
+		int i = 0;
+		List<ItemInfos> itemInfos = new ArrayList<>(statisticItems.size());
+		for (AssessmentItemStatistic statisticItem: statisticItems) {
+			AssessmentItem item = statisticItem.getAssessmentItem();
+			
+			String label = Integer.toString(++i);
+			String text = item.getTitle(); 
+			d1.add(statisticItem.getAverageScore(), label);
+			d2.add(statisticItem.getNumOfCorrectAnswers(), label);
+			itemInfos.add(new ItemInfos(label, text));
+		}
+		
+		mainVC.contextPut("itemInfoList", itemInfos);
+
+		VelocityContainer averageScorePeritemVC = createVelocityContainer("hbar_average_score_per_item");
+		Stringuified data1 = BarSeries.getDatasAndColors(Collections.singletonList(d1), "bar_default");
+		averageScorePeritemVC.contextPut("datas", data1);
+		mainVC.put("averageScorePerItemChart", averageScorePeritemVC);
+		
+		VelocityContainer percentRightAnswersPerItemVC = createVelocityContainer("hbar_right_answer_per_item");
+		Stringuified data2 = BarSeries.getDatasAndColors(Collections.singletonList(d2), "bar_green");
+		percentRightAnswersPerItemVC.contextPut("datas", data2);
+		percentRightAnswersPerItemVC.contextPut("numOfParticipants", Long.toString(Math.round(numOfParticipants)));
+		mainVC.put("percentRightAnswersPerItemChart", percentRightAnswersPerItemVC);
 	}
 	
 	@Override

@@ -790,6 +790,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		listenTo(collabToolCtr);
 		toolbarPanel.popUpToRootController(ureq);
 		toolbarPanel.pushController("Portfolio", collabToolCtr);
+		
+		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Toc");
+		((Activateable2)collabToolCtr).activate(ureq, entries, null);
 		return (Activateable2)collabToolCtr;
 	}
 	

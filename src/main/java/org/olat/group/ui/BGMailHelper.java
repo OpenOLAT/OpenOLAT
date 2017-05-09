@@ -192,13 +192,18 @@ public class BGMailHelper {
 	 */
 	private static MailTemplate createMailTemplate(BusinessGroupShort group, Identity actor, String subjectKey, String bodyKey) {
 		// get some data about the actor and fetch the translated subject / body via i18n module
-		String[] bodyArgs = new String[] {
-				actor.getUser().getProperty(UserConstants.FIRSTNAME, null),
-				actor.getUser().getProperty(UserConstants.LASTNAME, null),
-				actor.getUser().getProperty(UserConstants.EMAIL, null),
-				actor.getUser().getProperty(UserConstants.EMAIL, null)// 2x for compatibility with old i18m properties
-		};
-		Locale locale = I18nManager.getInstance().getLocaleOrDefault(actor.getUser().getPreferences().getLanguage());
+		String[] bodyArgs = null;
+		String lang = null;
+		if (actor != null) {
+			bodyArgs = new String[] {
+					actor.getUser().getProperty(UserConstants.FIRSTNAME, null),
+					actor.getUser().getProperty(UserConstants.LASTNAME, null),
+					actor.getUser().getProperty(UserConstants.EMAIL, null),
+					actor.getUser().getProperty(UserConstants.EMAIL, null)// 2x for compatibility with old i18m properties
+			};
+			lang = actor.getUser().getPreferences().getLanguage();
+		}
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(lang);
 		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale,
 				Util.createPackageTranslator(BusinessGroupListController.class, locale));
 		String subject = trans.translate(subjectKey);
