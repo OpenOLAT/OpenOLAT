@@ -42,7 +42,6 @@ import org.olat.core.gui.control.generic.iframe.IFrameDisplayController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
@@ -227,6 +226,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", scoreEval.getPassed());
 				mainVC.contextPut("attempts", attempts); //at least one attempt
+				mainVC.contextPut("showChangeLog", Boolean.TRUE);
 			}
 		} else if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
@@ -238,6 +238,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("passed", Boolean.FALSE);
 				mainVC.contextPut("comment", null);
 				mainVC.contextPut("attempts", 0);
+				mainVC.contextPut("showChangeLog", Boolean.FALSE);
 			} else {
 				Boolean passed = assessmentEntry.getPassed();
 				//block if test passed (and config set to check it)
@@ -248,7 +249,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				}
 				mainVC.contextPut("blockAfterSuccess", blocked);
 				
-				Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 				boolean resultsVisible = assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue();
 				mainVC.contextPut("resultsVisible", resultsVisible);
 				mainVC.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
@@ -262,11 +262,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				}
 				Integer attempts = assessmentEntry.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
-				
-				if(!anonym) {
-					UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-					mainVC.contextPut("log", am.getUserNodeLog(courseNode, identity));
-				}
+				boolean showChangelog = (!anonym && resultsVisible && isResultVisible(config));
+				mainVC.contextPut("showChangeLog", showChangelog);
 				
 				if(deliveryOptions.isDigitalSignature()) {
 					AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
@@ -305,7 +302,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	/**
-	 * WARNING! The variables showResultsOnHomePage, showResultsVisible and showChangelog are not used 
+	 * WARNING! The variables showResultsOnHomePage and showResultsVisible are not used 
 	 * in the velocity template and the CONFIG_KEY_RESULT_ON_HOME_PAGE is not editable
 	 * in the configuration of the course element for QTI 2.1!!!!
 	 * 
@@ -345,9 +342,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			}
 		}
 		
-		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-		mainVC.contextPut("log", am.getUserNodeLog(courseNode, getIdentity()));	
-		mainVC.contextPut("showChangelog", showResultsOnHomePage);
+		if(!anonym) {
+			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+			mainVC.contextPut("log", am.getUserNodeLog(courseNode, getIdentity()));	
+		}
 	}
 	
 	private boolean isResultVisible(ModuleConfiguration modConfig) {
