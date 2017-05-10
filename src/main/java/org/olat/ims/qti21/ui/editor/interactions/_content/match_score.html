@@ -11,8 +11,9 @@
 	#foreach($sourceChoice in $sourceChoices)
 		<tr>
 			<th>${sourceChoice.getSummary()}</th>
+			#set($sourceIndex = ${foreach.index})
 			#foreach($targetChoice in $targetChoices)
-				<td>
+				<td class="o_sel_match_${sourceIndex}_${foreach.index}">
 				#set($scoreWrapper = $r.get("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}"))
 				$r.render("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}")
 				#if(${scoreWrapper.isCorrect()})

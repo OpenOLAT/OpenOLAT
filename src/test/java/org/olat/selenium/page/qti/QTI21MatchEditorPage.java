@@ -22,6 +22,7 @@ package org.olat.selenium.page.qti;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -35,6 +36,18 @@ public class QTI21MatchEditorPage extends QTI21AssessmentItemEditorPage {
 		super(browser);
 	}
 	
+	public QTI21MatchEditorPage setSource(int position, String text) {
+		String containerCssSelector = "th.o_sel_match_source_" + position;
+		OOGraphene.tinymce(text, containerCssSelector, browser);
+		return this;
+	}
+	
+	public QTI21MatchEditorPage setTarget(int position, String text) {
+		String containerCssSelector = "th.o_sel_match_target_" + position;
+		OOGraphene.tinymce(text, containerCssSelector, browser);
+		return this;
+	}
+	
 	/**
 	 * Set if the answer is correct or wrong.
 	 * 
@@ -42,34 +55,45 @@ public class QTI21MatchEditorPage extends QTI21AssessmentItemEditorPage {
 	 * @param correct
 	 * @return Itself
 	 */
-	public QTI21MatchEditorPage setCorrect(int position, boolean correct) {
-		By answerBy;
-		if(correct) {
-			answerBy = By.xpath("//div[contains(@class,'o_sel_choice_" + position + "')]//input[contains(@id,'oo_correct-')]");
-		} else {
-			answerBy = By.xpath("//div[contains(@class,'o_sel_choice_" + position + "')]//input[contains(@id,'oo_wrong-')]");
-		}
-		browser.findElement(answerBy).click();
+	public QTI21MatchEditorPage setMatch(int source, int target, boolean correct) {
+		By answerBy = By.xpath("//td[contains(@class,'o_sel_match_" + source + "_" + target + "')]/input[contains(@id,'oo_')]");
+		WebElement matchEl = browser.findElement(answerBy);
+		OOGraphene.check(matchEl, correct);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
-	public QTI21MatchEditorPage setAnswer(int position, String answer) {
-		String containerCssSelector = "div.o_sel_choice_" + position;
-		OOGraphene.tinymce(answer, containerCssSelector, browser);
-		return this;
-	}
-	
-	public QTI21MatchEditorPage save() {
-		By saveBy = By.cssSelector("fieldset.o_sel_choices_save button.btn.btn-primary");
+	public QTI21MatchEditorPage addColumn() {
+		By saveBy = By.cssSelector("div.o_sel_match_save a.o_sel_match_add_column");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
-	public QTI21ChoicesScoreEditorPage selectScores() {
+	public QTI21MatchEditorPage addRow() {
+		By saveBy = By.cssSelector("div.o_sel_match_save a.o_sel_match_add_row");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public QTI21MatchEditorPage setSingleChoices() {
+		By singleBy = By.cssSelector("div.o_sel_match_single input[type='radio'][value='single']");
+		browser.findElement(singleBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public QTI21MatchEditorPage save() {
+		By saveBy = By.cssSelector("div.o_sel_match_save button.btn.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public QTI21MatchScoreEditorPage selectScores() {
 		selectTab(By.className("o_sel_assessment_item_options"));
-		return new QTI21ChoicesScoreEditorPage(browser);
+		return new QTI21MatchScoreEditorPage(browser);
 	}
 	
 	public QTI21FeedbacksEditorPage selectFeedbacks() {

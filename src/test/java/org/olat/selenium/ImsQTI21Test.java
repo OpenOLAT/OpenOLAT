@@ -46,6 +46,7 @@ import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21EditorPage;
 import org.olat.selenium.page.qti.QTI21KprimEditorPage;
+import org.olat.selenium.page.qti.QTI21MatchEditorPage;
 import org.olat.selenium.page.qti.QTI21MultipleChoiceEditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.qti.QTI21SingleChoiceEditorPage;
@@ -953,7 +954,6 @@ public class ImsQTI21Test {
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
-		//upload a test
 		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
@@ -1097,7 +1097,6 @@ public class ImsQTI21Test {
 		UserVO eric = new UserRestClient(deploymentUrl).createRandomUser("Eric");
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
-		//upload a test
 		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
@@ -1250,7 +1249,6 @@ public class ImsQTI21Test {
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(6);// 3 points from the first question, 3 from the second
 	}
-	
 
 	/**
 	 * An author make a test with 2 kprims.<br>
@@ -1272,7 +1270,6 @@ public class ImsQTI21Test {
 		UserVO melissa = new UserRestClient(deploymentUrl).createRandomUser("Melissa");
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
-		//upload a test
 		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
@@ -1420,5 +1417,197 @@ public class ImsQTI21Test {
 			.endTest()
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(6);// 3 points from the first question, 3 from the second
+	}
+	
+	/**
+	 * An author make a test with 2 matches. A match with "multiple selection"
+	 * and score "all answers", a second with "single selection" and score
+	 * "per answers".<br>
+	 * A first user make the test, but doesn't answer all questions
+	 * correctly, log out and a second user make the perfect test.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorMatch(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		UserVO melissa = new UserRestClient(deploymentUrl).createRandomUser("Melissa");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add a match, multiple selection
+		QTI21MatchEditorPage matchEditor = qtiEditor
+			.addMatch();
+		matchEditor
+			.setSource(0, "Eclipse")
+			.setSource(1, "vim")
+			.setTarget(0, "IDE")
+			.setTarget(1, "TextProcessor")
+			.addColumn()
+			.setTarget(2, "TextEditor")
+			.setMatch(0, 0, true)
+			.setMatch(1, 2, true)
+			.save();
+		// change max score
+		matchEditor
+			.selectScores()
+			.setMaxScore("4")
+			.save();
+		// set some feedbacks
+		matchEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is only an hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		// second match
+		matchEditor = qtiEditor
+			.addMatch()
+			.setSingleChoices()
+			.setSource(0, "Java")
+			.setSource(1, "C")
+			.addRow()
+			.setSource(2, "PHP")
+			.setTarget(0, "CodeIgniter")
+			.setTarget(1, "VisualStudio")
+			.addColumn()
+			.setTarget(2, "Eclipse")
+			.setMatch(0, 2, true)
+			.setMatch(1, 1, true)
+			.setMatch(2, 0, true)
+			.save();
+		// select score "per answer" and set the scores
+		matchEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("6")
+			.setScore(0, 0, "0.0")
+			.setScore(0, 1, "0.0")
+			.setScore(0, 2, "2.0")
+			.setScore(1, 0, "0.0")
+			.setScore(1, 1, "3.0")
+			.setScore(1, 2, "0.0")
+			.setScore(2, 0, "1.0")
+			.setScore(2, 1, "0.0")
+			.setScore(2, 2, "0.0")
+			.save();
+		matchEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page reiQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		reiQtiPage
+			.assertOnAssessmentItem()
+			.answerMatch("Eclipse", "IDE", true)
+			.answerMatch("vim", "IDE", true)
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerMatch("vim", "IDE", false)
+			.answerMatch("vim", "TextEditor", true)
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMatch("Java", "Eclipse", true)
+			.answerMatch("C", "CodeIgniter", true)
+			.answerMatch("PHP", "VisualStudio", true)
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(6);// 4 points from the first question, 2 from the second
+		
+		//a second user search the content package
+		LoginPage melLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		melLoginPage
+			.loginAs(melissa.getLogin(), melissa.getPassword())
+			.resume();
+		NavigationPage melNavBar = new NavigationPage(participantBrowser);
+		melNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.assertOnAssessmentItem()
+			.answerMatch("Eclipse", "IDE", true)
+			.answerMatch("vim", "TextEditor", true)
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMatch("Java", "Eclipse", true)
+			.answerMatch("C", "CodeIgniter", true)
+			.answerMatch("PHP", "VisualStudio", true)
+			.saveAnswer()
+			.answerMatch("C", "CodeIgniter", false)
+			.answerMatch("PHP", "VisualStudio", false)
+			.answerMatch("C", "VisualStudio", true)
+			.answerMatch("PHP", "CodeIgniter", true)
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(10);// 4 points from the first question, 6 from the second
 	}
 }

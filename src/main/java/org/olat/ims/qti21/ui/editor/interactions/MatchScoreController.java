@@ -88,12 +88,13 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_score");
 		
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
+		minScoreEl.setElementCssClass("o_sel_assessment_item_min_score");
 		minScoreEl.setEnabled(false);
-		minScoreEl.setEnabled(!restrictedEdit);
 		
 		ScoreBuilder maxScore = itemBuilder.getMaxScoreBuilder();
 		String maxValue = maxScore == null ? "" : (maxScore.getScore() == null ? "" : maxScore.getScore().toString());
 		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, maxValue, formLayout);
+		maxScoreEl.setElementCssClass("o_sel_assessment_item_max_score");
 		maxScoreEl.setEnabled(!restrictedEdit);
 		
 		String[] modeValues = new String[]{

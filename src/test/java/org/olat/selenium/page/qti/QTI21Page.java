@@ -166,6 +166,13 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page answerMatch(String source, String target, boolean match) {
+		By matchBy = By.xpath("//div[contains(@class,'matchInteraction')]/table//tr[th/p[contains(text(),'" + source + "')]]/td[count(//div[contains(@class,'matchInteraction')]/table//tr/th[p[contains(text(),'" + target + "')]]/preceding-sibling::th)]/input");
+		WebElement matchEl = browser.findElement(matchBy);
+		OOGraphene.check(matchEl, match);
+		return this;
+	}
+	
 	public QTI21Page saveAnswer() {
 		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
 		browser.findElement(saveAnswerBy).click();
