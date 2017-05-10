@@ -232,7 +232,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", scoreEval.getPassed());
 				mainVC.contextPut("attempts", attempts); //at least one attempt
-				mainVC.contextPut("showChangeLog", Boolean.TRUE);
+				mainVC.contextPut("showChangeLog", Boolean.TRUE && enableScoreInfo);
 				exposeResults(true);
 			} else {
 				exposeResults(false);
@@ -271,7 +271,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				}
 				Integer attempts = assessmentEntry.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
-				boolean showChangelog = (!anonym && resultsVisible && isResultVisible(config));
+				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible(config));
 				mainVC.contextPut("showChangeLog", showChangelog);
 				
 				if(deliveryOptions.isDigitalSignature()) {
@@ -312,11 +312,12 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	/**
-	 * WARNING! The variables showResultsOnHomePage and showResultsVisible are not used 
+	 * WARNING! The variables  and are not used 
 	 * in the velocity template and the CONFIG_KEY_RESULT_ON_HOME_PAGE is not editable
 	 * in the configuration of the course element for QTI 2.1!!!!
 	 * 
 	 * Provides the show results button if results available or a message with the visibility period.
+	 * 
 	 * @param ureq
 	 */
 	private void exposeResults(boolean resultsVisible) {
