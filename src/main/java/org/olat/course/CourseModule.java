@@ -31,6 +31,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -53,6 +54,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class CourseModule extends AbstractSpringModule {
 
+	private static final String COURSE_DISPLAY_CHANGELOG = "course.display.changelog";
+	private static final String COURSE_DISPLAY_INFOBOX = "course.display.infobox";
+	
 	@Value("${course.display.participants.count}")
 	private boolean displayParticipantsCount;
 	@Value("${help.course.softkey}")
@@ -79,8 +83,15 @@ public class CourseModule extends AbstractSpringModule {
 	
 	@Override
 	protected void initFromChangedProperties() {
-		displayInfoBox = getBooleanPropertyValue("course.display.infobox");
-		displayChangeLog = getBooleanPropertyValue("course.display.changelog");
+		//set properties
+		String userAllowed = getStringPropertyValue(COURSE_DISPLAY_INFOBOX, true);
+		if(StringHelper.containsNonWhitespace(userAllowed)) {
+			displayInfoBox = "true".equals(userAllowed);
+		}
+		String authorAllowed = getStringPropertyValue(COURSE_DISPLAY_CHANGELOG, true);
+		if(StringHelper.containsNonWhitespace(authorAllowed)) {
+			displayChangeLog = "true".equals(authorAllowed);
+		}
 	}
 
 	@Override
@@ -187,7 +198,7 @@ public class CourseModule extends AbstractSpringModule {
 
 	public void setDisplayInfoBox(boolean enabled) {
 		this.displayInfoBox = enabled;
-		setBooleanProperty("course.display.infobox", enabled, true);
+		setStringProperty(COURSE_DISPLAY_INFOBOX, Boolean.toString(enabled), true);
 	}
 
 	public boolean isDisplayChangeLog() {
@@ -196,7 +207,7 @@ public class CourseModule extends AbstractSpringModule {
 
 	public void setDisplayChangeLog(boolean enabled) {
 		this.displayChangeLog = enabled;
-		setBooleanProperty("course.display.changelog", enabled, true);
+		setStringProperty(COURSE_DISPLAY_CHANGELOG, Boolean.toString(enabled), true);
 	}
 	
 	
