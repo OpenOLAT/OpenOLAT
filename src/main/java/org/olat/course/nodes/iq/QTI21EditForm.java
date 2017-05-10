@@ -107,6 +107,9 @@ public class QTI21EditForm extends FormBasicController {
 			translate("correction.manual")
 		};
 		correctionModeEl = uifactory.addRadiosVertical("correction.mode", "correction.mode", formLayout, correctionModeKeys, correctionModeValues);
+		correctionModeEl.setHelpText(translate("correction.mode.help"));
+		correctionModeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_test_konf_kurs");
+
 		String mode = modConfig.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
 		boolean selected = false;
 		for(String correctionModeKey:correctionModeKeys) {
