@@ -3,13 +3,25 @@
     background-repeat:no-repeat;
     background-image: url(../img/placeholder.png);
 }
+
 span.hottext {
     background-color: #eee;
     border-radius: 4px;
     padding: 2px 4px;
     font-weight: bold;
 }
-span.hottext input {
-	margin-right: 4px;
+.hottext a:before {
+	padding-left: 1px;
+	display: inline-block;
+	font: normal normal normal 14px/1 FontAwesome; 
+	font-size: inherit; 
+	text-rendering: auto;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	transform: translate(0, 0);
+	content: '\f096'
+}
+.hottext a.checked:before {
+	content: '\f046';
 }
 
