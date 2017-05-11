@@ -59,6 +59,13 @@ public class QTI21TestSessionTableModel extends DefaultFlexiTableDataModel<Asses
 		AssessmentTestSession session = getObject(row);
 
 		switch(TSCols.values()[col]) {
+			case terminationTime: {
+				Date endTime = session.getTerminationTime();
+				if(endTime == null) {
+					endTime = session.getFinishTime();
+				}
+				return endTime;
+			}
 			case lastModified: return session.getLastModified();
 			case duration: {
 				if(session.getFinishTime() != null) {
@@ -96,6 +103,7 @@ public class QTI21TestSessionTableModel extends DefaultFlexiTableDataModel<Asses
 	}
 
 	public enum TSCols implements FlexiColumnDef {
+		terminationTime("table.header.terminationTime"),
 		lastModified("table.header.lastModified"),
 		duration("table.header.duration"),
 		test("table.header.test"),
