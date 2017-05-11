@@ -172,6 +172,9 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream());
 			zout.setLevel(9);
 			exportTestResults(zout);
+			for(RepositoryEntry testEntry:testEntries) {
+				exportExcelResults(testEntry, zout);
+			}
 			zout.close();
 		} catch (Exception e) {
 			log.error("Unknown error while assessment result resource export", e);
@@ -202,16 +205,13 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		for(RepositoryEntry testEntry:testEntries) {
 			copyTestMaterials(testEntry, zout);
 		}
-		
-		for(RepositoryEntry testEntry:testEntries) {
-			addExcelReport(testEntry, zout);
-		}
 	}
 	
-	private void addExcelReport(RepositoryEntry testEntry, ZipOutputStream zout) {
+	private void exportExcelResults(RepositoryEntry testEntry, ZipOutputStream zout) {
 		ArchiveOptions options = new ArchiveOptions();
 		options.setIdentities(identities);
 		QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, testEntry, entry, courseNode.getIdent());
+		searchParams.setLimitToIdentities(identities);
 		QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(translator.getLocale(), searchParams);
 		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName() + "_" + testEntry.getDisplayname())
 				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())
