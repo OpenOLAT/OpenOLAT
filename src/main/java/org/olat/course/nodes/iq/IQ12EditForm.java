@@ -228,13 +228,19 @@ public class IQ12EditForm extends FormBasicController {
 			showResultsDateDependentButton.setEnabled(false);
 		}
 	
-		Date startDate = (Date) modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+		Date startDate = null;
+		if(modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE) instanceof Date) {
+			startDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+		}
 		startDateElement = uifactory.addDateChooser("qti_form_start_date", "qti.form.date.start", null, formLayout);
 		startDateElement.setDateChooserTimeEnabled(true);
 		startDateElement.setDate(startDate);
 		startDateElement.setMandatory(true);
 		
-		Date endDate = (Date) modConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+		Date endDate = null;
+		if(modConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE) instanceof Date) {
+			endDate = (Date) modConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+		}
 		endDateElement = uifactory.addDateChooser("qti_form_end_date", "qti.form.date.end", null, formLayout);
 		endDateElement.setDateChooserTimeEnabled(true);
 		endDateElement.setDate(endDate);
@@ -265,7 +271,11 @@ public class IQ12EditForm extends FormBasicController {
 			confSummary = AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT;
 		}
 		if (isAssessment || isSelfTest) {
-			summary.select(confSummary, true);
+			for(String summaryKey:summaryKeys) {
+				if(summaryKey.equals(confSummary)) {
+					summary.select(summaryKey, true);
+				}
+			}
 		} else {
 			summary.setEnabled(false);
 		}
