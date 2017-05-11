@@ -260,8 +260,9 @@ public class HotspotEditorController extends FormBasicController {
 					backgroundImage = backgroundEl.moveUploadFileTo(itemFile.getParentFile());
 				}
 			}
-			updateBackground();
+			Size backgroundSize = updateBackground();
 			updateHotspots(ureq);
+			updateHotspotsPosition(backgroundSize);
 		} else if(correctHotspotsEl == source) {
 			MultipleSelectionElement correctEl = (MultipleSelectionElement)source;
 			Collection<String> correctResponseIds = correctEl.getSelectedKeys();
@@ -332,7 +333,8 @@ public class HotspotEditorController extends FormBasicController {
 		}
 	}
 	
-	private void updateBackground() {
+	private Size updateBackground() {
+		Size size = null;
 		File objectImg = null;
 		if(backgroundImage != null) {
 			objectImg = backgroundImage;
@@ -342,7 +344,7 @@ public class HotspotEditorController extends FormBasicController {
 		
 		if(objectImg != null) {
 			String filename = objectImg.getName();
-			Size size = imageService.getSize(new LocalFileImpl(objectImg), null);
+			size = imageService.getSize(new LocalFileImpl(objectImg), null);
 			hotspotsCont.contextPut("filename", filename);
 			if(size != null) {
 				if(size.getHeight() > 0) {
@@ -359,6 +361,7 @@ public class HotspotEditorController extends FormBasicController {
 		} else {
 			hotspotsCont.contextRemove("filename");
 		}
+		return size;
 	}
 	
 	@Override
@@ -414,6 +417,91 @@ public class HotspotEditorController extends FormBasicController {
 					spot.setCoords(value);
 				}
 			}
+		}
+	}
+	
+	/**
+	 * If the image is too small, translate the hotspots to match
+	 * approximatively the new image.
+	 * 
+	 * @param backgroundSize
+	 */
+	private void updateHotspotsPosition(Size backgroundSize) {
+		if(backgroundSize == null || choiceWrappers.isEmpty()) return;
+		int width = backgroundSize.getWidth();
+		int height = backgroundSize.getHeight();
+		if(width <= 0 || height <= 0) return;
+		
+		for(HotspotWrapper wrapper:choiceWrappers) {
+			HotspotChoice choice = wrapper.getChoice();
+			if(choice != null) {
+				if(Shape.CIRCLE.equals(choice.getShape())) {
+					translateCircle(choice.getCoords(), width, height);
+				} else if(Shape.RECT.equals(choice.getShape())) {
+					translateRect(choice.getCoords(), width, height);
+				}
+			}
+		}	
+	}
+
+	private void translateCircle(List<Integer> coords, int width, int height) {
+		if(coords.size() != 3) return;
+		
+		int centerX = coords.get(0);
+		int centerY = coords.get(1);
+		int radius = coords.get(2);
+		
+		int translateX = 0;
+		int translateY = 0;
+		if(centerX > width) {
+			translateX = centerX - width;
+			if((width - translateX) < radius) {
+				translateX = width - radius;
+			}
+		}
+		if(centerY > height) {
+			translateY = centerY - height;
+			if((height - translateY) < radius) {
+				translateY = height - radius;
+			}
+		}
+		if(translateX > 0) {
+			coords.set(0, (centerX - translateX));
+		}
+		if(translateY > 0) {
+			coords.set(1, (centerY - translateY));
+		}
+	}
+	
+	private void translateRect(List<Integer> coords, int width, int height) {
+		if(coords.size() != 4) return;
+		
+		int leftX = coords.get(0);
+		int topY = coords.get(1);
+		int rightX = coords.get(2);
+		int bottomY = coords.get(3);
+		
+		int translateX = 0;
+		int translateY = 0;
+		if(rightX > width) {
+			translateX = rightX - width;
+			if(translateX > leftX) {
+				translateX = leftX;
+			}
+		}
+		if(bottomY > height) {
+			translateY = Math.min(topY, bottomY - height);
+			if(translateY > topY) {
+				translateY = topY;
+			}
+		}
+		if(translateX > 0) {
+			coords.set(0, (leftX - translateX));
+			coords.set(2, (rightX - translateX));
+		}
+		if(translateY > 0) {
+			coords.set(1, (topY - translateY));
+			coords.set(3, (bottomY - translateY));
 		}
 	}
 }

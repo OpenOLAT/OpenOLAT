@@ -1,5 +1,5 @@
 #if($r.visible("new.circle"))
-	<div class="btn-group small">$r.render("new.circle")  $r.render("new.rectangle")</div>
+	<div class="btn-group small o_block_bottom">$r.render("new.circle") $r.render("new.rectangle")</div>
 #end
 <div id="o_qti_hotspots_edit" style="position:relative; #if($width && !${width.isEmpty()}) width:${width}px; #end #if($height && !${height.isEmpty()}) height:${height}px; #end #if($filename && !${filename.isEmpty()}) background-image: url('$mapperUri/$filename'); #end">
 #foreach($hotspot in $hotspots)
