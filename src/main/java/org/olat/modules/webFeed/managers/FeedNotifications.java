@@ -79,11 +79,11 @@ public class FeedNotifications {
 				Long resId = p.getResId();
 				Feed feed;
 				if ("CourseModule".equals(resName)) {
-					OLATResourceable blog = OresHelper.createOLATResourceableInstance("FileResource.BLOG", Long.parseLong(data));
-					feed = feedManager.getFeed(blog);
+					OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, Long.parseLong(data));
+					feed = feedManager.getFeed(ores);
 				} else {
-					OLATResourceable blog = OresHelper.createOLATResourceableInstance(resName, resId);
-					feed = feedManager.getFeed(blog);
+					OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, resId);
+					feed = feedManager.getFeed(ores);
 				}
 				List<Item> listItems = feedManager.loadItems(feed);
 				for (Item item : listItems) {
@@ -97,15 +97,12 @@ public class FeedNotifications {
 	}
 	
 	private void createSubscriptionItem(Item item, Publisher p){
-		Date modDate = item.getLastModified();
+		Date modDate = item.getPublishDate();
 		if (compareDate.before(modDate)) {
 			String title = item.getTitle();
 			String author = item.getAuthor();
-			String modifier = item.getModifier();
 			String desc;
-			if (item.isDraft() && modifier != null) {
-				desc = translator.translate("notifications.unpublish", new String[] { title, modifier });				
-			} else if (item.isDraft() && modifier == null) {
+			if (item.isDraft()) {
 				return;
 			} else {
 				desc = translator.translate("notifications.entry", new String[] { title, author });
