@@ -292,9 +292,14 @@ public class IQConfigurationController extends BasicController {
 				// repository search controller done				
 				cmc.deactivate();
 				RepositoryEntry re = searchController.getSelectedEntry();
-				boolean needManualCorrection = checkManualCorrectionNeeded(re);
-				doIQReference(urequest, re, needManualCorrection);
-				updateEditController(urequest, true);
+				try {
+					boolean needManualCorrection = checkManualCorrectionNeeded(re);
+					doIQReference(urequest, re, needManualCorrection);
+					updateEditController(urequest, true);
+				} catch (Exception e) {
+					logError("", e);
+					showError("error.resource.corrupted");
+				}
 			}
 		} else if (source == replaceWizard) {
 			if(event == Event.CANCELLED_EVENT) {
