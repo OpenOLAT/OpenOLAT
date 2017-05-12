@@ -46,6 +46,7 @@ import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21EditorPage;
 import org.olat.selenium.page.qti.QTI21KprimEditorPage;
+import org.olat.selenium.page.qti.QTI21LobEditorPage;
 import org.olat.selenium.page.qti.QTI21MatchEditorPage;
 import org.olat.selenium.page.qti.QTI21MultipleChoiceEditorPage;
 import org.olat.selenium.page.qti.QTI21Page;
@@ -1609,5 +1610,103 @@ public class ImsQTI21Test {
 			.endTest()
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(10);// 4 points from the first question, 6 from the second
+	}
+	
+	/**
+	 * An author make a test with 1 upload and feedbacks.<br>
+	 * A user make the test, test hint and upload the file.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorUpload(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//make a test
+		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add an upload interaction
+		QTI21LobEditorPage uploadEditor = qtiEditor
+			.addUpload();
+		uploadEditor
+			.setQuestion("Upload a file")
+			.save()
+			.selectScores()
+			.setMaxScore("2.0")
+			.save();
+		uploadEditor
+			.selectFeedbacks()
+			.setHint("Hint", "Need a little help.")
+			.setCorrectSolution("Correct solution", "Only for Word")
+			.setAnsweredFeedback("Full", "You upload something")
+			.setEmpytFeedback("Empty", "You do not upload anything")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page reiQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		reiQtiPage
+			.assertOnAssessmentItem()
+			.saveAnswer()
+			.assertFeedback("Empty")
+			.hint()
+			.assertFeedback("Hint");
+		
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
+		File imageFile = new File(imageUrl.toURI());
+		reiQtiPage
+			.answerUpload(imageFile)
+			.saveAnswer()
+			.assertFeedback("Full")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentResultUpload("IMG_1482");
 	}
 }

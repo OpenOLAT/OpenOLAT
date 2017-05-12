@@ -75,7 +75,7 @@ public class LobFeedbackEditorController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_feedback");
-		
+		formLayout.setElementCssClass("o_sel_assessment_item_feedbacks");
 
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
@@ -84,11 +84,13 @@ public class LobFeedbackEditorController extends FormBasicController {
 			ModalFeedbackBuilder hint = itemBuilder.getHint();
 			String hintTitle = hint == null ? "" : hint.getTitle();
 			hintTitleEl = uifactory.addTextElement("hintTitle", "form.imd.hint.title", -1, hintTitle, formLayout);
+			hintTitleEl.setElementCssClass("o_sel_assessment_item_hint_title");
 			hintTitleEl.setUserObject(hint);
 			hintTitleEl.setEnabled(!restrictedEdit);
 			String hintText = hint == null ? "" : hint.getText();
 			hintTextEl = uifactory.addRichTextElementForQTI21("hintText", "form.imd.hint.text", hintText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
+			hintTextEl.setElementCssClass("o_sel_assessment_item_hint");
 			hintTextEl.setEnabled(!restrictedEdit);
 			hintTextEl.setHelpTextKey("feedback.hint.help", null);
 			hintTextEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
@@ -102,12 +104,14 @@ public class LobFeedbackEditorController extends FormBasicController {
 			feedbackCorrectSolutionTitleEl = uifactory.addTextElement("correctSolutionTitle", "form.imd.correct.solution.title", -1, correctSolutionTitle, formLayout);
 			feedbackCorrectSolutionTitleEl.setUserObject(correctSolutionFeedback);
 			feedbackCorrectSolutionTitleEl.setEnabled(!restrictedEdit);
+			feedbackCorrectSolutionTitleEl.setElementCssClass("o_sel_assessment_item_correct_solution_title");
 			String correctSolutionText = correctSolutionFeedback == null ? "" : correctSolutionFeedback.getText();
 			feedbackCorrectSolutionTextEl = uifactory.addRichTextElementForQTI21("correctSolutionText", "form.imd.correct.solution.text.word", correctSolutionText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackCorrectSolutionTextEl.setEnabled(!restrictedEdit);
 			feedbackCorrectSolutionTextEl.setHelpTextKey("feedback.correctsolution.help", null);
 			feedbackCorrectSolutionTextEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
+			feedbackCorrectSolutionTextEl.setElementCssClass("o_sel_assessment_item_correct_solution");
 			RichTextConfiguration richTextConfig2 = feedbackCorrectSolutionTextEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
@@ -118,10 +122,12 @@ public class LobFeedbackEditorController extends FormBasicController {
 			feedbackTitleEl = uifactory.addTextElement("answeredTitle", "form.imd.answered.title", -1, correctTitle, formLayout);
 			feedbackTitleEl.setUserObject(answeredFeedback);
 			feedbackTitleEl.setEnabled(!restrictedEdit);
+			feedbackTitleEl.setElementCssClass("o_sel_assessment_item_answered_feedback_title");
 			String correctText = answeredFeedback == null ? "" : answeredFeedback.getText();
 			feedbackTextEl = uifactory.addRichTextElementForQTI21("answeredText", "form.imd.answered.text", correctText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackTextEl.setEnabled(!restrictedEdit);
+			feedbackTextEl.setElementCssClass("o_sel_assessment_item_answered_feedback");
 			RichTextConfiguration richTextConfig = feedbackTextEl.getEditorConfiguration();
 			richTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
@@ -132,10 +138,12 @@ public class LobFeedbackEditorController extends FormBasicController {
 			feedbackEmptyTitleEl = uifactory.addTextElement("emptyTitle", "form.imd.empty.title", -1, emptyTitle, formLayout);
 			feedbackEmptyTitleEl.setUserObject(emptyFeedback);
 			feedbackEmptyTitleEl.setEnabled(!restrictedEdit);
+			feedbackEmptyTitleEl.setElementCssClass("o_sel_assessment_item_empty_feedback_title");
 			String emptyText = emptyFeedback == null ? "" : emptyFeedback.getText();
 			feedbackEmptyTextEl = uifactory.addRichTextElementForQTI21("emptyText", "form.imd.empty.text", emptyText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			feedbackEmptyTextEl.setEnabled(!restrictedEdit);
+			feedbackEmptyTextEl.setElementCssClass("o_sel_assessment_item_empty_feedback");
 			RichTextConfiguration emptyTextConfig = feedbackEmptyTextEl.getEditorConfiguration();
 			emptyTextConfig.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
 		}
