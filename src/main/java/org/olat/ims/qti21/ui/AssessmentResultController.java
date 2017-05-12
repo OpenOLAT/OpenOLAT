@@ -154,7 +154,7 @@ public class AssessmentResultController extends FormBasicController {
 		
 		File signature = qtiService.getAssessmentResultSignature(candidateSession);
 		if(signature != null) {
-			signatureMapperUri = registerCacheableMapper(null, "QTI21Signature::" + CodeHelper.getForeverUniqueID(),
+			signatureMapperUri = registerCacheableMapper(ureq, "QTI21Signature::" + CodeHelper.getForeverUniqueID(),
 					new SignatureMapper(signature));
 		}
 		

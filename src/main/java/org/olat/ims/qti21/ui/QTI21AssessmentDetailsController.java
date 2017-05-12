@@ -406,7 +406,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
 		URI assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
 		File submissionDir = qtiService.getSubmissionDirectory(session);
-		String mapperUri = registerCacheableMapper(null, "QTI21DetailsResources::" + session.getKey(),
+		String mapperUri = registerCacheableMapper(ureq, "QTI21DetailsResources::" + session.getKey(),
 				new ResourcesMapper(assessmentObjectUri, submissionDir));
 		
 		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, false, session,
