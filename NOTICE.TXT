@@ -21,7 +21,8 @@ Contributors and copy right holders of openolat.org codebase since 2011:
 -----------------------------------------------------------------------
 - frentix GmbH, Switzerland [http://www.frentix.com]
   Michael Enz, Christian Franck, Florian Gnägi, Roman Haag, Joël Krähemann, Matthai Kurian, Stéphane Rossé, 
-  Kirsten Scherer, Sergio Trentini 
+  Kirsten Scherer, Sergio Trentini, Marco Ferrari, Sabrina Scheiwiler, Oliver Kant, Fabian Kiefer,
+  Urs Hensler
 - BPS Bildungsportal Sachsen GmbH, Germany [http://www.bildungsportal.sachsen.de]:
   Armin Blawitzki, Stefan Köber, Sven Morgner
 - VCRP Virtueller Campus Rheinland-Pfalz [http://www.vcrp.de]
@@ -132,6 +133,7 @@ This produce uses software based on the MIT License
 * mediaelementjs (MIT License) [http://mediaelementjs.com]
 * jQuery UI Slider Pips (MIT License) [https://github.com/simeydotme/jQuery-ui-Slider-Pips]
 * maphilight (MIT License) [https://github.com/kemayo/maphilight]
+* iFrame Resizer (MIT License) [https://github.com/davidjbradshaw/iframe-resizer]
 
 -----------------------------------------------------------------------
 This product uses software based on the BSD License
