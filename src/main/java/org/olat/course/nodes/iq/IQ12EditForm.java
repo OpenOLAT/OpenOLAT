@@ -112,34 +112,43 @@ public class IQ12EditForm extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic (UserRequest ureq) {
+		boolean allOk = true;
+		
+		if(summary != null && summary.isEnabled()) {
+			summary.clearError();
+			if(!summary.isOneSelected()) {
+				summary.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+		
 		startDateElement.clearError();
 		endDateElement.clearError();
-		
 		if (startDateElement.isVisible()) {
 			if (startDateElement.isEmpty()) {
 				startDateElement.setErrorKey("qti.form.date.start.error.mandatory", null);
-				return false;
+				allOk &= false;
 			} else {
 				if (startDateElement.getDate() == null) {
 					startDateElement.setErrorKey("qti.form.date.error.format", null);
-					return false;
+					allOk &= false;
 				}
 			}
 
 			if (!endDateElement.isEmpty()) {
 				if (endDateElement.getDate() == null) {
 					endDateElement.setErrorKey("qti.form.date.error.format", null);
-					return false;
+					allOk &= false;
 				}
 
 				if (endDateElement.getDate().before(startDateElement.getDate())) {
 					endDateElement.setErrorKey("qti.form.date.error.endbeforebegin", null);
-					return false;
+					allOk &= false;
 				}
 			}
 		}
 		
-		return true;
+		return allOk;
 	}
 	
 	@Override
