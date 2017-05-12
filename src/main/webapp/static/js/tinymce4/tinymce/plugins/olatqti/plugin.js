@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.2.2'
+				version : '1.2.3'
 			};
 		},
 
@@ -138,7 +138,7 @@
 						ed.selection.select(selectedNode[0], true);
 					}
 					
-					jQuery("span.hottext[data-qti-identifier='" + identifier + "'] input", ed.getBody()).each(function(index, el) {
+					jQuery("span.hottext[data-qti-identifier='" + identifier + "'] a", ed.getBody()).each(function(index, el) {
 						correctHottextEvent(el);
 					});
 				}
@@ -221,7 +221,7 @@
 					}
 				});
 
-				jQuery("span.hottext[data-copy='needlistener'] input", e.element).each(function(index, el) {
+				jQuery("span.hottext[data-copy='needlistener'] a", e.element).each(function(index, el) {
 					var hottext = jQuery(el).parent("span.hottext").attr('data-copy','blues');
 					var ev = jQuery._data(el, 'events');
 					if(ev && ev.click) {
@@ -291,20 +291,19 @@
 				var readonly = ed.getParam("readonly");
 	            var editable = readonly == "1" ? "false" : "true";
 	            
-	            var inputHolder = new tinymce.html.Node('input', 1);
-	            inputHolder.attr({
-	            	"contenteditable": editable,
-	            	"name" : "hottext",
-	            	"value": identifier,
-	            	"type" : "checkbox"
+	            var checkHolder = new tinymce.html.Node('a', 1);
+	            checkHolder.attr({
+					"contenteditable": "false",
+					"class": (correct ? "checked": "")
 	            });
-	            if(correct) {
-	            	inputHolder.attr({ "checked": "checked" });
-	            }
-	            if(editable == "false") {
-	            	inputHolder.attr({ "disabled": "disabled" });
-	            }
-	            placeholder.append(inputHolder);
+	            var aTextHolder = new tinymce.html.Node('i', 1);
+	            aTextHolder.attr({ "contenteditable": "false" });
+	            var aTextNode = new tinymce.html.Node('#text', 3);
+	            aTextNode.raw = true;
+	            aTextNode.value = '&nbsp;';
+	            aTextHolder.append(aTextNode);
+	            checkHolder.append(aTextHolder);
+	            placeholder.append(checkHolder);
 
 	            var contentholder = new tinymce.html.Node('span', 1);
 	            contentholder.attr({ "contenteditable": editable });
@@ -316,12 +315,18 @@
 				return placeholder;
 			}
 			
-			function correctHottextEvent(inputEl) {
-				jQuery(inputEl).click(function() {
+			function correctHottextEvent(linkEl) {
+				jQuery(linkEl).click(function() {
 					var ffxhrevent = ed.getParam("ffxhrevent");
-					var identifier = jQuery(inputEl).parent("span.hottext").data('qti-identifier');
+					var jLinkEl = jQuery(linkEl);
+					var identifier = jLinkEl.parent("span.hottext").data('qti-identifier');
 					o_ffXHRNFEvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2,
-							'cmd', 'hottext', 'identifier', identifier, 'correct', inputEl.checked);
+							'cmd', 'hottext', 'identifier', identifier, 'correct', jLinkEl.hasClass('checked') ? "false" : "true");
+					if(jLinkEl.hasClass('checked')) {
+						jLinkEl.removeClass('checked');
+					} else {
+						jLinkEl.addClass('checked');
+					}
 					ed.setDirty(true);
 				});
 			}
@@ -376,7 +381,7 @@
 					textEntryEvent(el);
 				});
 				
-				jQuery("span.hottext input", ed.getBody()).each(function(index, el) {
+				jQuery("span.hottext a", ed.getBody()).each(function(index, el) {
 					correctHottextEvent(el);
 				});
 			});
@@ -449,10 +454,6 @@
 					var hotId = 'ht' + guid();
 					jQuery(el).attr('data-qti-identifier', hotId);
 					jQuery(el).attr('data-copy', 'needlistener');
-					jQuery(el).find('input').each(function(inputIndex, inputEl) {
-						jQuery(inputEl).val(hotId);
-						jQuery(inputEl).attr('checked', false);
-					});
 					replace = true;
 				});
 				

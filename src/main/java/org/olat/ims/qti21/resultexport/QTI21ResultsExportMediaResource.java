@@ -60,10 +60,12 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
+import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -72,6 +74,8 @@ import org.olat.ims.qti.resultexport.ResultDetail;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
+import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.repository.RepositoryEntry;
 
@@ -168,6 +172,9 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream());
 			zout.setLevel(9);
 			exportTestResults(zout);
+			for(RepositoryEntry testEntry:testEntries) {
+				exportExcelResults(testEntry, zout);
+			}
 			zout.close();
 		} catch (Exception e) {
 			log.error("Unknown error while assessment result resource export", e);
@@ -180,7 +187,6 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	 * @throws IOException
 	 */
 	public void exportTestResults(ZipOutputStream zout) throws IOException {
-		
 		List<AssessedMember> assessedMembers = createAssessedMembersDetail(zout);
 		
 		//convert velocity template to zip entry
@@ -199,6 +205,18 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		for(RepositoryEntry testEntry:testEntries) {
 			copyTestMaterials(testEntry, zout);
 		}
+	}
+	
+	private void exportExcelResults(RepositoryEntry testEntry, ZipOutputStream zout) {
+		ArchiveOptions options = new ArchiveOptions();
+		options.setIdentities(identities);
+		QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, testEntry, entry, courseNode.getIdent());
+		searchParams.setLimitToIdentities(identities);
+		QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(translator.getLocale(), searchParams);
+		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName() + "_" + testEntry.getDisplayname())
+				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())
+				+ ".xlsx";
+		qaf.exportCourseElement(exportFolderName + "/" + label, zout);
 	}
 	
 	private List<ResultDetail> createResultDetail (Identity identity, ZipOutputStream zout, String idDir) throws IOException {

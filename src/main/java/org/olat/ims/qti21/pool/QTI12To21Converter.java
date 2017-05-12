@@ -741,7 +741,6 @@ public class QTI12To21Converter {
 				text = StringEscapeUtils.unescapeHtml(text);
 			}
 		}
-		System.out.println(text);
 		return text;
 	}
 	

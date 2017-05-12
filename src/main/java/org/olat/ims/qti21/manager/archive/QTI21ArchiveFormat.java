@@ -204,11 +204,15 @@ public class QTI21ArchiveFormat {
 		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
 				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())
 				+ ".xlsx";
-		
+		exportCourseElement(label, exportStream);
+	}
+	
+	public void exportCourseElement(String label, ZipOutputStream exportStream) {
+		ICourse course = CourseFactory.loadCourse(searchParams.getCourseEntry());
+		CourseNode courseNode = course.getRunStructure().getNode(searchParams.getNodeIdent());
 		if("iqself".equals(courseNode.getType())) {
 			anonymizerCallback = course.getCourseEnvironment().getCoursePropertyManager();
 		}
-		
 		export(label, exportStream);
 	}
 	
@@ -219,7 +223,7 @@ public class QTI21ArchiveFormat {
 		export(archiveName, exportStream);
 	}
 	
-	private void export(String filename,  ZipOutputStream exportStream) {
+	public void export(String filename,  ZipOutputStream exportStream) {
 		try {
 			exportStream.putNextEntry(new ZipEntry(filename));
 			exportWorkbook(new ShieldOutputStream(exportStream));

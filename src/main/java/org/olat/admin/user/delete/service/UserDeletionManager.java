@@ -149,7 +149,7 @@ public class UserDeletionManager extends BasicManager {
 				logDebug(" Try to send Delete-email to identity=" + identity.getName() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null));
 				
 				MailerResult result = new MailerResult();
-				MailBundle bundle = mailManager.makeMailBundle(null, identity, template, sender, null, result);
+				MailBundle bundle = mailManager.makeMailBundle(null, identity, template, null, null, result);
 				if(bundle != null) {
 					mailManager.sendMessage(bundle);
 				}

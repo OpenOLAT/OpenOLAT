@@ -232,7 +232,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", scoreEval.getPassed());
 				mainVC.contextPut("attempts", attempts); //at least one attempt
-				mainVC.contextPut("showChangeLog", Boolean.TRUE);
+				mainVC.contextPut("showChangeLog", Boolean.TRUE && enableScoreInfo);
+				exposeResults(true);
+			} else {
+				exposeResults(false);
 			}
 		} else if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
@@ -268,7 +271,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				}
 				Integer attempts = assessmentEntry.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
-				boolean showChangelog = (!anonym && resultsVisible && isResultVisible(config));
+				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible(config));
 				mainVC.contextPut("showChangeLog", showChangelog);
 				
 				if(deliveryOptions.isDigitalSignature()) {
@@ -287,10 +290,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 						}
 					}
 				}
+
+				exposeResults(resultsVisible);
 			}
 		}
 		
-		exposeResults();
 	}
 	
 	private void checkChats (UserRequest ureq) {
@@ -308,19 +312,19 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	/**
-	 * WARNING! The variables showResultsOnHomePage and showResultsVisible are not used 
+	 * WARNING! The variables  and are not used 
 	 * in the velocity template and the CONFIG_KEY_RESULT_ON_HOME_PAGE is not editable
 	 * in the configuration of the course element for QTI 2.1!!!!
 	 * 
 	 * Provides the show results button if results available or a message with the visibility period.
+	 * 
 	 * @param ureq
 	 */
-	private void exposeResults() {
+	private void exposeResults(boolean resultsVisible) {
 		//migration: check if old tests have no summary configured
 		boolean showResultsOnHomePage = config.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
-		
 		QTI21AssessmentResultsOptions showSummary = deliveryOptions.getAssessmentResultsOptions();
-		if(!showSummary.none()) {
+		if(resultsVisible && !showSummary.none()) {
 			mainVC.contextPut("showResultsOnHomePage", new Boolean(showResultsOnHomePage));			
 			boolean dateRelatedVisibility = isResultVisible(config);		
 			if(showResultsOnHomePage && dateRelatedVisibility) {
@@ -345,10 +349,14 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				String visibilityPeriod = getTranslator().translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate});
 				mainVC.contextPut("visibilityPeriod", visibilityPeriod);
 				mainVC.contextPut("showResultsVisible", Boolean.FALSE);
+			} else {
+				mainVC.contextPut("showResultsVisible", Boolean.FALSE);
 			}
+		} else {
+			mainVC.contextPut("showResultsVisible", Boolean.FALSE);
 		}
 		
-		if(!anonym) {
+		if(!anonym && resultsVisible) {
 			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 			mainVC.contextPut("log", am.getUserNodeLog(courseNode, getIdentity()));	
 		}
@@ -414,11 +422,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if (source == displayCtrl) {
 			if(event == Event.CANCELLED_EVENT) {
 				doExitAssessment(ureq, event, false);
-				exposeResults();
+				initAssessment(ureq);
 				showInfo("assessment.test.cancelled");
 			} else if("suspend".equals(event.getCommand())) {
 				doExitAssessment(ureq, event, false);
-				exposeResults();
+				initAssessment(ureq);
 				showInfo("assessment.test.suspended");
 			} else if(event instanceof QTI21Event) {
 				QTI21Event qe = (QTI21Event)event;

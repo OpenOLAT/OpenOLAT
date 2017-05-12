@@ -36,6 +36,11 @@
 				$r.translate("podcast.subscribe.feed")
 			</a>
 		</div>
+			#if ($r.available("subscription"))
+				<div class="pull-right">
+				$r.render("subscription")
+				</div>
+			#end	
 		#end	
 	</div>
 </div>

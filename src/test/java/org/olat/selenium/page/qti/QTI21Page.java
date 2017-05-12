@@ -132,20 +132,28 @@ public class QTI21Page {
 		return this;
 	}
 
-	public QTI21Page answerCorrectKPrim(String... correctChoices) {
-		for(String correctChoice:correctChoices) {
-			By correctBy = By.xpath("//tr[td/p[contains(text(),'" + correctChoice + "')]]/td[contains(@class,'o_qti_item_kprim_input o_qti_item_kprim_input_correct')]/input[@type='checkbox']");
-			WebElement option = browser.findElement(correctBy);
-			OOGraphene.check(option, Boolean.TRUE);
+	public QTI21Page answerCorrectKPrim(String... choices) {
+		for(String choice:choices) {
+			By incorrectBy = By.xpath("//tr[td/p[contains(text(),'" + choice + "')]]/td[contains(@class,'o_qti_item_kprim_input o_qti_item_kprim_input_wrong')]/input[@type='checkbox']");
+			WebElement incorrectEl = browser.findElement(incorrectBy);
+			OOGraphene.check(incorrectEl, Boolean.FALSE);
+			
+			By correctBy = By.xpath("//tr[td/p[contains(text(),'" + choice + "')]]/td[contains(@class,'o_qti_item_kprim_input o_qti_item_kprim_input_correct')]/input[@type='checkbox']");
+			WebElement correctEl = browser.findElement(correctBy);
+			OOGraphene.check(correctEl, Boolean.TRUE);
 		}
 		return this;
 	}
 	
-	public QTI21Page answerIncorrectKPrim(String... incorrectChoices) {
-		for(String incorrectChoice:incorrectChoices) {
-			By correctBy = By.xpath("//tr[td/p[contains(text(),'" + incorrectChoice + "')]]/td[contains(@class,'o_qti_item_kprim_input o_qti_item_kprim_input_wrong')]/input[@type='checkbox']");
-			WebElement option = browser.findElement(correctBy);
-			OOGraphene.check(option, Boolean.TRUE);
+	public QTI21Page answerIncorrectKPrim(String... choices) {
+		for(String choice:choices) {
+			By correctBy = By.xpath("//tr[td/p[contains(text(),'" + choice + "')]]/td[contains(@class,'o_qti_item_kprim_input o_qti_item_kprim_input_correct')]/input[@type='checkbox']");
+			WebElement correctEl = browser.findElement(correctBy);
+			OOGraphene.check(correctEl, Boolean.FALSE);
+			
+			By incorrectBy = By.xpath("//tr[td/p[contains(text(),'" + choice + "')]]/td[contains(@class,'o_qti_item_kprim_input o_qti_item_kprim_input_wrong')]/input[@type='checkbox']");
+			WebElement incorrectEl = browser.findElement(incorrectBy);
+			OOGraphene.check(incorrectEl, Boolean.TRUE);
 		}
 		return this;
 	}
@@ -155,6 +163,13 @@ public class QTI21Page {
 		WebElement gapEl = browser.findElement(gapBy);
 		gapEl.clear();
 		gapEl.sendKeys(text);
+		return this;
+	}
+	
+	public QTI21Page answerMatch(String source, String target, boolean match) {
+		By matchBy = By.xpath("//div[contains(@class,'matchInteraction')]/table//tr[th/p[contains(text(),'" + source + "')]]/td[count(//div[contains(@class,'matchInteraction')]/table//tr/th[p[contains(text(),'" + target + "')]]/preceding-sibling::th)]/input");
+		WebElement matchEl = browser.findElement(matchBy);
+		OOGraphene.check(matchEl, match);
 		return this;
 	}
 	

@@ -48,10 +48,15 @@ import org.springframework.stereotype.Service;
 *
 */
 @Service
-public class FeedNotificationsHandler implements NotificationsHandler {
+public class BlogNotificationsHandler implements NotificationsHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(FeedNotificationsHandler.class);
-	protected static final String CSS_CLASS_ICON = "o_blog_icon";
+	private static final String NOTIFICATIONS_HEADER_COURSE = "notifications.header.course";
+	private static final String NOTIFICATIONS_HEADER = "notifications.header";
+	private static final String NOTIFICATIONS_HEADER_BLOG = "notifications.header.blog";
+	private static final String CSS_CLASS_ICON_BLOG = "o_blog_icon";
+	
+	private static final OLog log = Tracing.createLoggerFor(BlogNotificationsHandler.class);
+
 	
 	@Autowired
 	private NotificationsManager notificationsManager;
@@ -63,7 +68,7 @@ public class FeedNotificationsHandler implements NotificationsHandler {
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
 		SubscriptionInfo si = null;
 		Publisher p = subscriber.getPublisher();
-
+		
 		try {
 		 	final Translator translator = Util.createPackageTranslator(FeedMainController.class, locale);
 			
@@ -75,22 +80,23 @@ public class FeedNotificationsHandler implements NotificationsHandler {
 			} else {
 				String title;
 				try {
-					RepositoryEntry re = repoManager.lookupRepositoryEntry(OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
+					RepositoryEntry re = repoManager.lookupRepositoryEntry(
+							OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
 					String displayName = re.getDisplayname();
 					if("CourseModule".equals(p.getResName())) {
 						if (re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
 							return notificationsManager.getNoSubscriptionInfo();
 						} else {
-							title = translator.translate("notifications.header.course",  new String[]{displayName});
+							title = translator.translate(NOTIFICATIONS_HEADER_COURSE,  new String[]{displayName});
 						}
 					} else {
-						title = translator.translate("notifications.header.ref",  new String[]{displayName});
+						title = translator.translate(NOTIFICATIONS_HEADER_BLOG,  new String[]{displayName});
 					}
 				} catch (Exception e) {
 					log.error("Unknown Exception", e);
-					title = translator.translate("notifications.header");
+					title = translator.translate(NOTIFICATIONS_HEADER);
 				}
-				si = new SubscriptionInfo(subscriber.getKey(), p.getType(),	new TitleItem(title, CSS_CLASS_ICON), items);				
+				si = new SubscriptionInfo(subscriber.getKey(), p.getType(),	new TitleItem(title, CSS_CLASS_ICON_BLOG), items);				
 			}
 		} catch (Exception e) {
 			log.error("Unknown Exception", e);
@@ -108,18 +114,18 @@ public class FeedNotificationsHandler implements NotificationsHandler {
 
 	@Override
 	public String getType() {
-		return "FeedItem";
+		return "FileResource.BLOG";
 	}
 	
 	private TitleItem getTitleItem(Publisher p, Translator translator) {
 		String title;
 		try {
 			String displayName = repoManager.lookupDisplayNameByOLATResourceableId(p.getResId());
-			title = translator.translate("notifications.header.ref",  new String[]{displayName});
+			title = translator.translate(NOTIFICATIONS_HEADER_BLOG,  new String[]{displayName});
 		} catch (Exception e) {
 			log.error("", e);
 			checkPublisher(p);
-			title = translator.translate("notifications.header");
+			title = translator.translate(NOTIFICATIONS_HEADER);
 		}
 		return new TitleItem(title, CSSHelper.CSS_CLASS_FILETYPE_FOLDER);
 	}

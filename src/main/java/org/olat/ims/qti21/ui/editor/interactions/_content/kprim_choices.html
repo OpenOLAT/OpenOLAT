@@ -6,7 +6,7 @@
 </div>
 
 #foreach($choice in $choices)
-<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
+<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix o_sel_choice_${foreach.index}">
 	<div class="col-sm-1">
 		#if($r.available(${choice.getUp().getComponent().getComponentName()}) && $r.visible(${choice.getUp().getComponent().getComponentName()}))
 			<div>$r.render(${choice.getUp().getComponent().getComponentName()})</div>
