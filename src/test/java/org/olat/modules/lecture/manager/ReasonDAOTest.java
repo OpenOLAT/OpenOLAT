@@ -19,12 +19,16 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.Reason;
+import org.olat.repository.RepositoryEntry;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -40,6 +44,8 @@ public class ReasonDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private ReasonDAO reasonDao;
+	@Autowired
+	private LectureBlockDAO lectureBlockDao;
 	
 	@Test
 	public void createReason() {
@@ -66,5 +72,40 @@ public class ReasonDAOTest extends OlatTestCase {
 		Assert.assertFalse(reasons.isEmpty());
 		Assert.assertTrue(reasons.contains(reason));
 	}
+	
+	@Test
+	public void isReasonInUse() {
+		// create a reason
+		String title = "3. reason";
+		String description = "Use it";
+		Reason reason = reasonDao.createReason(title, description);
+		dbInstance.commitAndCloseSession();
+		
+		// add to a lecture block
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock.setReasonEffectiveEnd(reason);
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		// check
+		boolean inUse = reasonDao.isReasonInUse(reason);
+		Assert.assertTrue(inUse);
+	}
+	
+	@Test
+	public void isReasonInUse_notInUse() {
+		// create a reason
+		String title = "4. reason";
+		String description = "Nobody use me";
+		Reason reason = reasonDao.createReason(title, description);
+		dbInstance.commitAndCloseSession();
 
+		// check
+		boolean inUse = reasonDao.isReasonInUse(reason);
+		Assert.assertFalse(inUse);
+	}
 }

@@ -117,6 +117,10 @@ public interface LectureService {
 	 * @return A merged reason
 	 */
 	public Reason updateReason(Reason reason);
+	
+	public boolean isReasonInUse(Reason reason);
+	
+	public boolean deleteReason(Reason reason);
 
 	
 	/**

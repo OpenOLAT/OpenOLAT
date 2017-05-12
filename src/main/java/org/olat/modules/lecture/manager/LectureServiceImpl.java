@@ -198,6 +198,16 @@ public class LectureServiceImpl implements LectureService {
 	@Override
 	public Reason getReason(Long key) {
 		return reasonDao.loadReason(key);
+	}	
+
+	@Override
+	public boolean isReasonInUse(Reason reason) {
+		return reasonDao.isReasonInUse(reason);
+	}
+
+	@Override
+	public boolean deleteReason(Reason reason) {
+		return reasonDao.delete(reason);
 	}
 
 	@Override

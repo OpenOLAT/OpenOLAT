@@ -19,10 +19,11 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -30,20 +31,24 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
+import org.olat.modules.lecture.ui.ReasonAdminDataModel.ReasonCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,11 +60,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ReasonAdminController extends FormBasicController {
 	
 	private FormLink addReasonButton;
-	private ReasonDataModel dataModel;
 	private FlexiTableElement tableEl;
+	private ReasonAdminDataModel dataModel;
 	
+	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private EditReasonController editReasonCtrl;
+	private DialogBoxController deleteDialogCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
+	
+	private int counter = 0;
 	
 	@Autowired
 	private LectureService lectureService;
@@ -85,16 +95,31 @@ public class ReasonAdminController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReasonCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReasonCols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReasonCols.description));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
+				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
+		editColumn.setExportable(false);
+		columnsModel.addFlexiColumnModel(editColumn);
+		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ReasonCols.tools);
+		toolsColumn.setExportable(false);
+		columnsModel.addFlexiColumnModel(toolsColumn);
 		
-		dataModel = new ReasonDataModel(columnsModel);
+		dataModel = new ReasonAdminDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 	}
 	
 	private void loadModel() {
 		List<Reason> reasons = lectureService.getAllReasons();
-		dataModel.setObjects(reasons);
+		List<ReasonRow> rows = new ArrayList<>(reasons.size());
+		for(Reason reason:reasons) {
+			String linkName = "tools-" + counter++;
+			FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
+			toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
+			toolsLink.setUserObject(reason);
+			flc.add(linkName, toolsLink);
+			rows.add(new ReasonRow(reason, toolsLink));
+		}
+		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 
@@ -108,14 +133,31 @@ public class ReasonAdminController extends FormBasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if(toolsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				if(toolsCalloutCtrl != null) {
+					toolsCalloutCtrl.deactivate();
+					cleanUp();
+				}
+			}
+		} else if(deleteDialogCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				Reason row = (Reason)deleteDialogCtrl.getUserObject();
+				doDelete(row);
+				loadModel();
+			}
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(editReasonCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		toolsCalloutCtrl = null;
 		editReasonCtrl = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 
@@ -127,10 +169,17 @@ public class ReasonAdminController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				Reason row = dataModel.getObject(se.getIndex());
+				ReasonRow row = dataModel.getObject(se.getIndex());
 				if("edit".equals(cmd)) {
-					doEditReason(ureq, row);
+					doEditReason(ureq, row.getReason());
 				}
+			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if(cmd != null && cmd.startsWith("tools-")) {
+				Reason row = (Reason)link.getUserObject();
+				doOpenTools(ureq, row, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -161,65 +210,74 @@ public class ReasonAdminController extends FormBasicController {
 		cmc.activate();
 	}
 	
-	private class ReasonDataModel extends DefaultFlexiTableDataModel<Reason>
-	implements SortableFlexiTableDataModel<Reason> {
-		
-		public ReasonDataModel(FlexiTableColumnModel columnsModel) {
-			super(columnsModel);
-		}
+	private void doOpenTools(UserRequest ureq, Reason row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 
-		@Override
-		public void sort(SortKey orderBy) {
-			List<Reason> rows = new SortableFlexiTableModelDelegate<Reason>(orderBy, this, getLocale()).sort();
-			super.setObjects(rows);
-		}
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+	
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
+	private void doCopy(Reason reason) {
+		String copiedTitle = translate("reason.copy", new String[] { reason.getTitle() });
+		lectureService.createReason(copiedTitle, reason.getDescription());
+		loadModel();
+		showInfo("reason.copied");
+	}
 
-		@Override
-		public Object getValueAt(int row, int col) {
-			Reason reason = getObject(row);
-			return getValueAt(reason, col);
-		}
-
-		@Override
-		public Object getValueAt(Reason row, int col) {
-			switch(ReasonCols.values()[col]) {
-				case id: return row.getKey();
-				case title: return row.getTitle();
-				case description: return row.getDescription();
-				default: return null;
-			}
-		}
-
-		@Override
-		public DefaultFlexiTableDataModel<Reason> createCopyWithEmptyList() {
-			return new ReasonDataModel(getTableColumnModel());
+	private void doConfirmDelete(UserRequest ureq, Reason reason) {
+		if(lectureService.isReasonInUse(reason)) {
+			showWarning("reason.in.use");
+		} else {
+			String text = translate("confirm.delete.reason", new String[] { reason.getTitle() });
+			deleteDialogCtrl = activateYesNoDialog(ureq, translate("delete.title"), text, deleteDialogCtrl);
+			deleteDialogCtrl.setUserObject(reason);
 		}
 	}
 	
-	public enum ReasonCols implements FlexiSortableColumnDef {
-		id("reason.id"),
-		title("reason.title"),
-		description("reason.description");
+	private void doDelete(Reason reason) {
+		lectureService.deleteReason(reason);
+		showInfo("reason.deleted");
+	}
+	
+	private class ToolsController extends BasicController {
 		
-		private final String i18nKey;
+		private final Link deleteLink, copyLink;
 		
-		private ReasonCols(String i18nKey) {
-			this.i18nKey = i18nKey;
-		}
+		private final Reason reason;
 		
-		@Override
-		public String i18nHeaderKey() {
-			return i18nKey;
+		public ToolsController(UserRequest ureq, WindowControl wControl, Reason reason) {
+			super(ureq, wControl);
+			this.reason = reason;
+			
+			VelocityContainer mainVC = createVelocityContainer("reason_tools");
+			
+			copyLink = LinkFactory.createLink("copy", "copy", getTranslator(), mainVC, this, Link.LINK);
+			copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+
+			putInitialPanel(mainVC);
 		}
 
 		@Override
-		public boolean sortable() {
-			return true;
+		protected void doDispose() {
+			//
 		}
 
 		@Override
-		public String sortKey() {
-			return name();
+		protected void event(UserRequest ureq, Component source, Event event) {
+			this.fireEvent(ureq, Event.DONE_EVENT);
+			if(copyLink == source) {
+				doCopy(reason);
+			} else if(deleteLink == source) {
+				doConfirmDelete(ureq, reason);
+			}
 		}
 	}
 }

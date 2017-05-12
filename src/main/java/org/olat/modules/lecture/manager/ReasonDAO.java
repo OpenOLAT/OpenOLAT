@@ -69,5 +69,25 @@ public class ReasonDAO {
 				.createQuery(sb, Reason.class)
 				.getResultList();
 	}
-
+	
+	public boolean isReasonInUse(Reason reason) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select block.key from lectureblock block")
+		  .append(" inner join block.reasonEffectiveEnd reason")
+		  .append(" where reason.key=:reasonKey");
+		List<Number> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("reasonKey", reason.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && keys.size() > 0 && keys.get(0) != null && keys.get(0).longValue() > 0;
+	}
+	
+	public boolean delete(Reason reason) {
+		Reason reloadReference = dbInstance.getCurrentEntityManager()
+				.getReference(ReasonImpl.class, reason.getKey());
+		dbInstance.getCurrentEntityManager().remove(reloadReference);
+		return true;
+	}
 }
