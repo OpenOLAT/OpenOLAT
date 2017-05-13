@@ -180,6 +180,14 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page answerEssay(String text) {
+		By inputBy = By.cssSelector(".extendedTextInteraction textarea");
+		WebElement essayEl = browser.findElement(inputBy);
+		essayEl.clear();
+		essayEl.sendKeys(text);
+		return this;
+	}
+	
 	public QTI21Page saveAnswer() {
 		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
 		browser.findElement(saveAnswerBy).click();
@@ -326,6 +334,12 @@ public class QTI21Page {
 	 */
 	public QTI21Page assertOnAssessmentResultUpload(String name) {
 		By uploadBy = By.xpath("//div[contains(@class,'o_assessment_test_results')]//div[contains(@class,'uploadInteraction')]/a[contains(@href,'" + name + "')]");
+		OOGraphene.waitElement(uploadBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnAssessmentResultEssay(String text) {
+		By uploadBy = By.xpath("//div[contains(@class,'o_assessment_test_results')]//div[contains(@class,'extendedTextInteraction')]/textarea[contains(text(),'" + text + "')]");
 		OOGraphene.waitElement(uploadBy, 5, browser);
 		return this;
 	}

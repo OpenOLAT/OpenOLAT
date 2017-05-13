@@ -83,6 +83,7 @@ public class EssayEditorController extends FormBasicController {
 		String description = itemBuilder.getQuestion();
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 12, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
+		textEl.setElementCssClass("o_sel_assessment_item_question");
 		
 		String placeholder = itemBuilder.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("placeholder", "fib.placeholder", 256, placeholder, formLayout);
@@ -107,6 +108,7 @@ public class EssayEditorController extends FormBasicController {
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
+		buttonsContainer.setElementCssClass("o_sel_lob_save");
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}

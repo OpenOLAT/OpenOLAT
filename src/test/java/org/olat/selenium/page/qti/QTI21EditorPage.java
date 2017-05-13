@@ -108,6 +108,11 @@ public class QTI21EditorPage {
 		return new QTI21LobEditorPage(browser);
 	}
 	
+	public QTI21LobEditorPage addEssay() {
+		addQuestion(QTI21QuestionType.essay);
+		return new QTI21LobEditorPage(browser);
+	}
+	
 	private QTI21EditorPage addQuestion(QTI21QuestionType type) {
 		openElementsMenu();
 		

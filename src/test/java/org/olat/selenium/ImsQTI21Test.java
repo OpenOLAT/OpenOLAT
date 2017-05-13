@@ -1271,7 +1271,7 @@ public class ImsQTI21Test {
 		UserVO melissa = new UserRestClient(deploymentUrl).createRandomUser("Melissa");
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
-		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		String qtiTestTitle = "Kprim QTI 2.1 " + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -1442,7 +1442,7 @@ public class ImsQTI21Test {
 		UserVO melissa = new UserRestClient(deploymentUrl).createRandomUser("Melissa");
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
-		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		String qtiTestTitle = "Match QTI 2.1 " + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -1631,7 +1631,7 @@ public class ImsQTI21Test {
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//make a test
-		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		String qtiTestTitle = "Upload QTI 2.1 " + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -1708,5 +1708,102 @@ public class ImsQTI21Test {
 			.endTest()
 			.assertOnAssessmentResults()
 			.assertOnAssessmentResultUpload("IMG_1482");
+	}
+	
+	/**
+	 * An author make a test with an essai and its special feedback.<br>
+	 * A user make the test and check the feedback.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorEssay(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+
+		//make a test
+		String qtiTestTitle = "Essai QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add an essay interaction
+		QTI21LobEditorPage essayEditor = qtiEditor
+			.addEssay();
+		essayEditor
+			.setQuestion("Write a small story")
+			.save()
+			.selectScores()
+			.setMaxScore("3.0")
+			.save();
+		essayEditor
+			.selectFeedbacks()
+			.setHint("Hint", "Did you search inspiration?")
+			.setCorrectSolution("Correct solution", "It is very personal.")
+			.setAnsweredFeedback("Full", "Well done")
+			.setEmpytFeedback("Empty", "Please, a little effort.")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page reiQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		reiQtiPage
+			.assertOnAssessmentItem()
+			.saveAnswer()
+			.assertFeedback("Empty")
+			.hint()
+			.assertFeedback("Hint");
+
+		reiQtiPage
+			.answerEssay("What can I write?")
+			.saveAnswer()
+			.assertFeedback("Full")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentResultEssay("What");
 	}
 }

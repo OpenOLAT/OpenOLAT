@@ -85,7 +85,7 @@ public class UploadEditorController extends FormBasicController {
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
-		buttonsContainer.setElementCssClass("o_sel_upload_save");
+		buttonsContainer.setElementCssClass("o_sel_lob_save");
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}

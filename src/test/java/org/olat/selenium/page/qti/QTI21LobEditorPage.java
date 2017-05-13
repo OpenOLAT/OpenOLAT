@@ -42,7 +42,7 @@ public class QTI21LobEditorPage extends QTI21AssessmentItemEditorPage {
 	}
 	
 	public QTI21LobEditorPage save() {
-		By saveBy = By.cssSelector("div.o_sel_upload_save button.btn.btn-primary");
+		By saveBy = By.cssSelector("div.o_sel_lob_save button.btn.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
