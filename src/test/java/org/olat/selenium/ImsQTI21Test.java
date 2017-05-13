@@ -1806,4 +1806,106 @@ public class ImsQTI21Test {
 			.assertOnAssessmentResults()
 			.assertOnAssessmentResultEssay("What");
 	}
+	
+	
+	/**
+	 * An author make a test with a drawing and its special feedback.<br>
+	 * A user make the test and check the feedback.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorDrawing(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+
+		//make a test
+		String qtiTestTitle = "Drawing QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add an essay interaction
+		QTI21LobEditorPage essayEditor = qtiEditor
+			.addDrawing();
+		
+		URL backgroundImageUrl = JunitTestHelper.class.getResource("file_resources/house.jpg");
+		File backgroundImageFile = new File(backgroundImageUrl.toURI());
+		essayEditor
+			.setQuestion("Draw an house")
+			.updloadDrawingBackground(backgroundImageFile)
+			.save()
+			.selectScores()
+			.setMaxScore("3.0")
+			.save();
+		essayEditor
+			.selectFeedbacks()
+			.setHint("Hint", "Did you search inspiration?")
+			.setCorrectSolution("Correct solution", "It is very personal.")
+			.setAnsweredFeedback("Full", "Well done")
+			.setEmpytFeedback("Empty", "Please, a little effort.")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page reiQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		reiQtiPage
+			.assertOnAssessmentItem()
+			.saveAnswer()
+			.assertFeedback("Empty")
+			.hint()
+			.assertFeedback("Hint");
+
+		reiQtiPage
+			.answerDrawing()
+			.saveAnswer()
+			.assertFeedback("Full")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnDrawing();
+	}
 }

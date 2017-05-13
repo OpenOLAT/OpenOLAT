@@ -29,6 +29,7 @@ import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
 /**
  * 
@@ -188,6 +189,21 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page answerDrawing() {
+		By drawingBy = By.className("drawingInteraction");
+		WebElement drawingEl = browser.findElement(drawingBy);
+		
+		new Actions(browser)
+			.moveToElement(drawingEl, 30, 30)
+			.clickAndHold()
+			.moveByOffset(100, 200)
+			.release()
+			.build()
+			.perform();
+		OOGraphene.waitingALittleBit();
+		return this;
+	}
+	
 	public QTI21Page saveAnswer() {
 		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
 		browser.findElement(saveAnswerBy).click();
@@ -341,6 +357,12 @@ public class QTI21Page {
 	public QTI21Page assertOnAssessmentResultEssay(String text) {
 		By uploadBy = By.xpath("//div[contains(@class,'o_assessment_test_results')]//div[contains(@class,'extendedTextInteraction')]/textarea[contains(text(),'" + text + "')]");
 		OOGraphene.waitElement(uploadBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnDrawing() {
+		By drawingBy = By.className("drawingInteraction");
+		OOGraphene.waitElement(drawingBy, 5, browser);
 		return this;
 	}
 	

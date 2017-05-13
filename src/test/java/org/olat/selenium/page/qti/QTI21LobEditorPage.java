@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.qti;
 
+import java.io.File;
+
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -38,6 +40,13 @@ public class QTI21LobEditorPage extends QTI21AssessmentItemEditorPage {
 	
 	public QTI21LobEditorPage setQuestion(String question) {
 		OOGraphene.tinymce(question, "div.o_sel_assessment_item_question", browser);
+		return this;
+	}
+	
+	public QTI21LobEditorPage updloadDrawingBackground(File file) {
+		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputBy, file, browser);
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
