@@ -24,6 +24,7 @@ import java.util.Map;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
@@ -89,6 +90,10 @@ public class Card2BrainRunController extends BasicController {
 
 		String mapperUri = registerMapper(ureq, contentMapper);
 		container.contextPut("mapperUri", mapperUri + "/");
+		
+		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/iframeResizer/iframeResizer.min.js" }, null);
+		container.put("js", js);
+		
 		main.setContent(container);
 	}
 

@@ -131,7 +131,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = qtiService.createInMemoryAssessmentTestSession(getIdentity());
 		submissionDirToDispose = qtiService.getSubmissionDirectory(candidateSession);
-		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDirToDispose));
+		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDirToDispose));
 		
 		itemSessionController = enterSession(ureq);
 		
@@ -159,7 +159,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = qtiService.createInMemoryAssessmentTestSession(getIdentity());
 		submissionDirToDispose = qtiService.getSubmissionDirectory(candidateSession);
-		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDirToDispose));
+		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDirToDispose));
 		
 		itemSessionController = enterSession(ureq);
 		
@@ -189,7 +189,7 @@ public class AssessmentItemDisplayController extends BasicController implements 
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		candidateSession = qtiService.createAssessmentTestSession(getIdentity(), null, assessmentEntry, testEntry, itemRef.getIdentifier().toString(), testEntry, authorMode);
 		File submissionDir = qtiService.getSubmissionDirectory(candidateSession);
-		mapperUri = registerCacheableMapper(null, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDir));
+		mapperUri = registerCacheableMapper(ureq, UUID.randomUUID().toString(), new ResourcesMapper(itemFileRef.toURI(), submissionDir));
 		
 		itemSessionController = enterSession(ureq);
 		

@@ -165,7 +165,7 @@ public class AssessmentResultController extends FormBasicController {
 			if (exportUri != null) {
 				signatureMapperUri = exportUri;
 			} else {
-				signatureMapperUri = registerCacheableMapper(null, "QTI21Signature::" + CodeHelper.getForeverUniqueID(),
+				signatureMapperUri = registerCacheableMapper(ureq, "QTI21Signature::" + CodeHelper.getForeverUniqueID(),
 						new SignatureMapper(signature));
 			}
 		}

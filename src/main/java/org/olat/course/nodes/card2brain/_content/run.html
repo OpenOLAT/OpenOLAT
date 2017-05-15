@@ -3,10 +3,18 @@
 </div>
 <script type="text/javascript">
 /* <![CDATA[ */ 
-	## no window.onresize due to IE bug which triggers recurstion: http://snook.ca/archives/javascript/ie6_fires_onresize/
+	## Init the iFrame to the max height possible.
 	jQuery(function() {b_resizeIframeToMainMaxHeight("Card2BrainIFrame");});
-	jQuery(window).resize(function() {
-  		b_resizeIframeToMainMaxHeight("Card2BrainIFrame");
-	});
+	
+	## Activate the iframe-resize script for the iFrame.
+	## Set initally scrolling to true as fallback if the site in the iFrame
+	## has not loaded the contentWindow script.
+    jQuery('#Card2BrainIFrame').iFrameResize({
+    	checkOrigin:false,
+    	scrolling: true,
+  	  	initCallback: function(iframe) {
+  		    iframe.style.overflow = 'hidden';
+  		    iframe.scrolling = 'no';
+  		  }});
 /* ]]> */
 </script>

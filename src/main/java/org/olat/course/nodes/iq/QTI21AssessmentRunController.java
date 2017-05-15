@@ -469,7 +469,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
 			URI assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
 			File submissionDir = qtiService.getAssessmentResultFile(session);
-			String mapperUri = registerCacheableMapper(null, "QTI21CNResults::" + session.getTestEntry().getKey(),
+			String mapperUri = registerCacheableMapper(ureq, "QTI21CNResults::" + session.getTestEntry().getKey(),
 					new ResourcesMapper(assessmentObjectUri, submissionDir));
 
 			resultCtrl = new AssessmentResultController(ureq, getWindowControl(), getIdentity(), true, session,

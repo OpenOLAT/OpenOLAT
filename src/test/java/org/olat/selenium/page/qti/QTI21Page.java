@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.qti;
 
+import java.io.File;
 import java.util.List;
 
 import org.junit.Assert;
@@ -28,6 +29,7 @@ import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
 /**
  * 
@@ -173,6 +175,35 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page answerUpload(File file) {
+		By inputBy = By.cssSelector(".uploadInteraction input[type='file']");
+		OOGraphene.uploadFile(inputBy, file, browser);
+		return this;
+	}
+	
+	public QTI21Page answerEssay(String text) {
+		By inputBy = By.cssSelector(".extendedTextInteraction textarea");
+		WebElement essayEl = browser.findElement(inputBy);
+		essayEl.clear();
+		essayEl.sendKeys(text);
+		return this;
+	}
+	
+	public QTI21Page answerDrawing() {
+		By drawingBy = By.className("drawingInteraction");
+		WebElement drawingEl = browser.findElement(drawingBy);
+		
+		new Actions(browser)
+			.moveToElement(drawingEl, 30, 30)
+			.clickAndHold()
+			.moveByOffset(100, 200)
+			.release()
+			.build()
+			.perform();
+		OOGraphene.waitingALittleBit();
+		return this;
+	}
+	
 	public QTI21Page saveAnswer() {
 		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
 		browser.findElement(saveAnswerBy).click();
@@ -309,6 +340,29 @@ public class QTI21Page {
 	public QTI21Page assertOnAssessmentTestMaxScore(int score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_maxscore')]/td[contains(text(),'" + score + "')]");
 		OOGraphene.waitElement(resultsBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * 
+	 * @param name The name of the file without extension
+	 * @return Itself
+	 */
+	public QTI21Page assertOnAssessmentResultUpload(String name) {
+		By uploadBy = By.xpath("//div[contains(@class,'o_assessment_test_results')]//div[contains(@class,'uploadInteraction')]/a[contains(@href,'" + name + "')]");
+		OOGraphene.waitElement(uploadBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnAssessmentResultEssay(String text) {
+		By uploadBy = By.xpath("//div[contains(@class,'o_assessment_test_results')]//div[contains(@class,'extendedTextInteraction')]/textarea[contains(text(),'" + text + "')]");
+		OOGraphene.waitElement(uploadBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnDrawing() {
+		By drawingBy = By.className("drawingInteraction");
+		OOGraphene.waitElement(drawingBy, 5, browser);
 		return this;
 	}
 	
