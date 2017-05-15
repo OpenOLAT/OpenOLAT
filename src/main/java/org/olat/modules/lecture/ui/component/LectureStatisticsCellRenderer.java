@@ -49,17 +49,16 @@ public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
 		long absentPercent = (absent == 0) ? 0 :  Math.round(100.0f * ((double)absent / (double)total));
 		target.append("<div class='progress'>");
 		//attended
-		target.append("<div class='progress-bar o_lecture_attended' role='progressbar' aria-valuenow='").append(attended)
+		target.append("<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='").append(attended)
 		      .append("' aria-valuemin='0' aria-valuemax='").append(total)
 		      .append("' style='width: ").append(attendedPercent).append("%;'>")
 		      .append("<span class='sr-only'>").append(attendedPercent).append("%</span></div>");
 		//absent
-		target.append("<div class='progress-bar o_lecture_absent' role='progressbar' aria-valuenow='").append(absent)
+		target.append("<div class='progress-bar progress-bar-danger' role='progressbar' aria-valuenow='").append(absent)
 	      .append("' aria-valuemin='0' aria-valuemax='").append(total)
 	      .append("' style='width: ").append(absentPercent).append("%;'>")
 	      .append("<span class='sr-only'>").append(absentPercent).append("%</span></div>");
-		
-		
+
 		target.append("</div>");
 	}
 }
