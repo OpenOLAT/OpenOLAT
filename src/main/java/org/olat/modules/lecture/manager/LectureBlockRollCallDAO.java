@@ -184,9 +184,10 @@ public class LectureBlockRollCallDAO {
 		  .append(" inner join block.groups blockToGroup")
 		  .append(" inner join blockToGroup.group bGroup")
 		  .append(" inner join bGroup.members membership")
+		  .append(" inner join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
 		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
 		  .append(" where membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("'")
-		  .append(" and block.entry.key=:repoEntryKey");
+		  .append(" and block.entry.key=:repoEntryKey and block.endDate>=summary.firstAdmissionDate");
 		
 		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -420,12 +421,12 @@ public class LectureBlockRollCallDAO {
 	private void appendStatistics(LectureBlockStatistics statistics, Date rollCallEndDate, String rollCallStatus,
 			Long lecturesAttended, Long lecturesAbsent, Boolean absenceAuthorized,
 			Long plannedLecturesNumber, Long effectiveLecturesNumber,
-			Date firstAdmission,
+			Date firstAdmissionDate,
 			Date now, boolean countAuthorizedAbsenceAsAttendant) {
 		
 		//only count closed roll call after the end date
 		if(rollCallEndDate != null && rollCallEndDate.before(now)
-				&& firstAdmission != null && firstAdmission.before(rollCallEndDate)
+				&& firstAdmissionDate != null && firstAdmissionDate.before(rollCallEndDate)
 				&& rollCallStatus != null && (LectureRollCallStatus.closed.name().equals(rollCallStatus) || LectureRollCallStatus.autoclosed.name().equals(rollCallStatus))) {
 		
 			if(lecturesAbsent != null) {
@@ -443,6 +444,10 @@ public class LectureBlockRollCallDAO {
 			if(effectiveLecturesNumber != null) {
 				statistics.addTotalEffectiveLectures(effectiveLecturesNumber.longValue());
 			}
+		}
+		
+		if(plannedLecturesNumber != null && firstAdmissionDate != null && firstAdmissionDate.before(rollCallEndDate)) {
+			statistics.addTotalPersonalPlannedLectures(plannedLecturesNumber.longValue());
 		}
 
 		if(plannedLecturesNumber != null) {

@@ -19,43 +19,30 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
-import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
-import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,15 +52,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeacherOverviewController extends FormBasicController {
+public class TeacherOverviewController extends BasicController {
 	
-	private FlexiTableElement tableEl;
-	private TeacherOverviewDataModel tableModel;
+	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
-	private FormLink startButton, startWizardButton;
+	private final Link startButton, startWizardButton;
 	
 	private TeacherRollCallController rollCallCtrl;
 	private TeacherRollCallWizardController rollCallWizardCtrl;
+	
+	private TeacherOverviewTableController currentLecturesBlockCtrl;
+	private TeacherOverviewTableController pendingLecturesBlockCtrl;
+	private TeacherOverviewTableController nextLecturesBlockCtrl;
+	private TeacherOverviewTableController closedLecturesBlockCtrl;
+	
 	
 	private final boolean admin;
 	private final RepositoryEntry entry;
@@ -86,56 +78,51 @@ public class TeacherOverviewController extends FormBasicController {
 	
 	public TeacherOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry entry, boolean admin) {
-		super(ureq, wControl, "teacher_view");
+		super(ureq, wControl);
 		this.entry = entry;
 		this.admin = admin;
 		this.toolbarPanel = toolbarPanel;
 		entryConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		
-		initForm(ureq);
-		loadModel();
-	}
-	
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		startButton = uifactory.addFormLink("start", formLayout, Link.BUTTON);
-		startButton.setVisible(false);
+		mainVC = createVelocityContainer("teacher_view");
 		
-		startWizardButton = uifactory.addFormLink("start.wizard", formLayout, Link.BUTTON);
+		startButton = LinkFactory.createButton("start", mainVC, this);
+		startButton.setVisible(false);
+		startWizardButton = LinkFactory.createButton("start.wizard", mainVC, this);
 		startWizardButton.setVisible(false);
 		
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.date, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.startTime, new TimeFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.endTime, new TimeFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.lectureBlock));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.status, new LectureBlockStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.details.i18nHeaderKey(), TeachCols.details.ordinal(), "details",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.export.i18nHeaderKey(), TeachCols.export.ordinal(), "export",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.export"), "export"), null)));
-		
-		tableModel = new TeacherOverviewDataModel(columnsModel, getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
-		
-		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
-		sortOptions.setDefaultOrderBy(new SortKey(TeachCols.date.name(), false));
-		tableEl.setSortSettings(sortOptions);
-		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview");
+		currentLecturesBlockCtrl = new TeacherOverviewTableController(ureq, getWindowControl(), toolbarPanel, admin);
+		listenTo(currentLecturesBlockCtrl);
+		mainVC.put("currentLectures", currentLecturesBlockCtrl.getInitialComponent());
+		pendingLecturesBlockCtrl = new TeacherOverviewTableController(ureq, getWindowControl(), toolbarPanel, admin);
+		listenTo(pendingLecturesBlockCtrl);
+		mainVC.put("pendingLectures", pendingLecturesBlockCtrl.getInitialComponent());
+		nextLecturesBlockCtrl = new TeacherOverviewTableController(ureq, getWindowControl(), toolbarPanel, admin);
+		listenTo(nextLecturesBlockCtrl);
+		mainVC.put("nextLectures", nextLecturesBlockCtrl.getInitialComponent());
+		closedLecturesBlockCtrl = new TeacherOverviewTableController(ureq, getWindowControl(), toolbarPanel, admin);
+		listenTo(closedLecturesBlockCtrl);
+		mainVC.put("closedLectures", closedLecturesBlockCtrl.getInitialComponent());
+
+		loadModel();
+		putInitialPanel(mainVC);
 	}
 	
 	private void loadModel() {
 		List<LectureBlock> blocks = lectureService.getLectureBlocks(entry, getIdentity());
-		tableModel.setObjects(blocks);
-		tableEl.reset(false, false, true);
-
 		//reset
 		startButton.setVisible(false);
 		startButton.setUserObject(null);
 		startWizardButton.setVisible(false);
 		startWizardButton.setUserObject(null);
 		
+		List<LectureBlock> currentBlocks = new ArrayList<>();
+		List<LectureBlock> pendingBlocks = new ArrayList<>();
+		List<LectureBlock> nextBlocks = new ArrayList<>();
+		List<LectureBlock> closedBlocks = new ArrayList<>();
+
 		// only show the start button if 
+		Date now = new Date();
 		if(ConfigurationHelper.isRollCallEnabled(entryConfig, lectureModule)) {
 			for(LectureBlock block:blocks) {
 				if(canStartRollCall(block)) {
@@ -146,11 +133,21 @@ public class TeacherOverviewController extends FormBasicController {
 					startWizardButton.setVisible(true);
 					startWizardButton.setUserObject(block);
 					
-					flc.getFormItemComponent().contextPut("blockTitle", StringHelper.escapeHtml(block.getTitle()));
-					break;
+					currentBlocks.add(block);
+				} else if(block.getRollCallStatus() == LectureRollCallStatus.closed || block.getRollCallStatus() == LectureRollCallStatus.autoclosed) {
+					closedBlocks.add(block);
+				} else if(block.getStartDate() != null && block.getStartDate().after(now)) {
+					nextBlocks.add(block);
+				} else {
+					pendingBlocks.add(block);
 				}
 			}
 		}
+		
+		currentLecturesBlockCtrl.loadModel(currentBlocks);
+		pendingLecturesBlockCtrl.loadModel(pendingBlocks);
+		nextLecturesBlockCtrl.loadModel(nextBlocks);
+		closedLecturesBlockCtrl.loadModel(closedBlocks);
 	}
 	
 	private boolean canStartRollCall(LectureBlock block) {
@@ -193,47 +190,14 @@ public class TeacherOverviewController extends FormBasicController {
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				String cmd = se.getCommand();
-				if("details".equals(cmd)) {
-					LectureBlock row = tableModel.getObject(se.getIndex());
-					doSelectLectureBlock(ureq, row);
-				} else if("export".equals(cmd)) {
-					LectureBlock row = tableModel.getObject(se.getIndex());
-					doExportLectureBlock(ureq, row);
-				}
-			}
-		} else if(source == startButton) {
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(source == startButton) {
 			LectureBlock block = (LectureBlock)startButton.getUserObject();
 			doStartRollCall(ureq, block);
 		} else if(source == startWizardButton) {
 			LectureBlock block = (LectureBlock)startWizardButton.getUserObject();
 			doStartWizardRollCall(ureq, block);
 		}
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
-	
-	private void doExportLectureBlock(UserRequest ureq, LectureBlock row) {
-		LectureBlockExport export = new LectureBlockExport(row, true, getTranslator());
-		ureq.getDispatchResult().setResultingMediaResource(export);
-	}
-	
-	private void doSelectLectureBlock(UserRequest ureq, LectureBlock block) {
-		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
-		
-		
-		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
-		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock));
-		listenTo(rollCallCtrl);
-		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
 	}
 	
 	//same as above???

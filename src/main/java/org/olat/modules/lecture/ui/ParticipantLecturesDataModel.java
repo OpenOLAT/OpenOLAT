@@ -61,13 +61,23 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics> {
 	public Object getValueAt(LectureBlockStatistics row, int col) {
 		switch(LecturesCols.values()[col]) {
 			case entry: return row.getDisplayName();
-			case plannedLectures: return row.getTotalPlannedLectures();
+			case plannedLectures: return row.getTotalPersonalPlannedLectures();
 			case attendedLectures: return row.getTotalAttendedLectures();
 			case authorizedAbsentLectures: return row.getTotalAuthorizedAbsentLectures();
 			case absentLectures: return row.getTotalAbsentLectures();
 			case progress: return row;
-			case rateWarning: return row;
-			case rate: return row.getAttendanceRate();
+			case rateWarning: {
+				if(row.getTotalEffectiveLectures() <= 0) {
+					return null;
+				}
+				return row;
+			}
+			case rate: {
+				if(row.getTotalEffectiveLectures() <= 0) {
+					return null;
+				}
+				return row.getAttendanceRate();
+			}
 			default: return null;
 		}
 	}

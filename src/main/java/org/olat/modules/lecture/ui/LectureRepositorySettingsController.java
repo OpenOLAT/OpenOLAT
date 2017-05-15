@@ -103,6 +103,9 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		} else {
 			overrideEl.select(overrideKeys[1], true);//no
 		}
+		if(!lectureModule.isCanOverrideStandardConfiguration() && !lectureConfig.isOverrideModuleDefault()) {
+			overrideEl.setEnabled(false);
+		}
 		
 		rollCallEnabledEl = uifactory.addCheckboxesHorizontal("config.rollcall.enabled", formLayout, onKeys, onValues);
 		rollCallEnabledEl.addActionListener(FormEvent.ONCHANGE);
@@ -143,7 +146,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		} else {
 			el.uncheckAll();
 		}
-		el.setEnabled(overrideModuleDefaults && !lectureConfigManaged);
+		el.setEnabled(overrideModuleDefaults && !lectureConfigManaged && overrideEl.isEnabled());
 	}
 	
 	private void updateVisibility() {

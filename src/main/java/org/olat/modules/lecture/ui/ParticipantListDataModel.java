@@ -60,7 +60,7 @@ implements SortableFlexiTableDataModel<ParticipantRow> {
 			switch(ParticipantsCols.values()[col]) {
 				case username: return row.getIdentityName();
 				case progress: return row.getStatistics();
-				case plannedLectures: return positive(row.getStatistics().getTotalPlannedLectures());
+				case plannedLectures: return positive(row.getStatistics().getTotalPersonalPlannedLectures());
 				case attendedLectures: return positive(row.getStatistics().getTotalAttendedLectures());
 				case absentLectures: return positive(row.getStatistics().getTotalAbsentLectures());
 				case rateWarning: return row.getStatistics();

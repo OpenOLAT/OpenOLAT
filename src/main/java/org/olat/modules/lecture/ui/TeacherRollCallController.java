@@ -51,6 +51,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
@@ -134,6 +135,23 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		uifactory.addStaticTextElement("lecture.title", lectureBlock.getTitle(), blockCont);
 		
+		StringBuilder sb = new StringBuilder();
+		List<Identity> teachers =lectureService.getTeachers(lectureBlock);
+		for(Identity teacher:teachers) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(userManager.getUserDisplayName(teacher));
+		}
+		uifactory.addStaticTextElement("lecture.teacher", sb.toString(), blockCont);
+		
+		Formatter formatter = Formatter.getInstance(getLocale());
+		String date = formatter.formatDate(lectureBlock.getStartDate());
+		uifactory.addStaticTextElement("lecture.date", date, blockCont);
+		
+		String startTime = formatter.formatTimeShort(lectureBlock.getStartDate());
+		String endTime = formatter.formatTimeShort(lectureBlock.getEndDate());
+		String startEndTime= translate("lecture.from.to.format", new String[]{ startTime, endTime });
+		uifactory.addStaticTextElement("lecture.from.to", startEndTime, blockCont);
+
 		String[] statusKeys = getAvailableStatus();
 		String[] statusValues = new String[statusKeys.length];
 		for(int i=statusKeys.length; i-->0; ) {

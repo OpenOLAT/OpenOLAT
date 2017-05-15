@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -47,10 +48,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class LectureSettingsAdminController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] { "on" };
+	private static final String[] yesNoKeys = new String[] { "yes", "no" };
 	
+	private SingleSelection canOverrideStandardConfigEl;
 	private TextElement attendanceRateEl, appealPeriodEl, reminderPeriodEl,
 		autoClosePeriodEl;
-	private MultipleSelectionElement enableEl,  calculateAttendanceRateEnableEl,
+	private MultipleSelectionElement enableEl, calculateAttendanceRateEnableEl,
 		appealAbsenceEnableEl, statusEnabledEl, authorizedAbsenceEnableEl,
 		countAuthorizedAbsenceAsAttendantEl, syncTeachersCalendarEnableEl,
 		syncParticipantsCalendarEnableEl, teacherCanAuthorizeAbsenceEl,
@@ -81,7 +84,16 @@ public class LectureSettingsAdminController extends FormBasicController {
 		if(lectureModule.isEnabled()) {
 			enableEl.select(onKeys[0], true);
 		}
-		// TODO allow override
+		
+		String[] yesNoValues = new String[]{ translate("yes"), translate("no") };
+		canOverrideStandardConfigEl = uifactory.addRadiosHorizontal("lecture.can.override.standard.configuration", courseCont, yesNoKeys, yesNoValues);
+		canOverrideStandardConfigEl.addActionListener(FormEvent.ONCHANGE);
+		if(lectureModule.isCanOverrideStandardConfiguration()) {
+			canOverrideStandardConfigEl.select(yesNoKeys[0], true);
+		} else {
+			canOverrideStandardConfigEl.select(yesNoKeys[1], true);
+		}
+		
 		// roll call enabled
 		rollCallEnableEl = uifactory.addCheckboxesHorizontal("lecture.rollcall.default.enabled", courseCont, onKeys, onValues);
 		rollCallEnableEl.addActionListener(FormEvent.ONCHANGE);

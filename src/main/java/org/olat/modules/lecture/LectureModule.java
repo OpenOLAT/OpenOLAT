@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String LECTURE_ENABLED = "lecture.enabled";
+	private static final String CAN_OVERRIDE_STANDARD_CONFIGURATION = "lecture.can.override.standard.configuration";
 	private static final String STATUS_PARTIALLY_DONE_ENABLED = "lecture.status.partially.done.enabled";
 	private static final String STATUS_CANCELLED_ENABLED = "lecture.status.cancelled.enabled";
 	private static final String AUTHORIZED_ABSENCE_ENABLED = "lecture.authorized.absence.enabled";
@@ -55,6 +56,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	@Value("${lecture.enabled:true}")
 	private boolean enabled;
+	@Value("${lecture.can.override.standard.configuration:false}")
+	private boolean canOverrideStandardConfiguration;
 	
 	@Value("${lecture.status.partially.done.enabled:true}")
 	private boolean statusPartiallyDoneEnabled;
@@ -104,12 +107,16 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
 		}
+	
+		String canOverrideSStandardConfigurationObj = getStringPropertyValue(CAN_OVERRIDE_STANDARD_CONFIGURATION, true);
+		if(StringHelper.containsNonWhitespace(canOverrideSStandardConfigurationObj)) {
+			canOverrideStandardConfiguration = "true".equals(canOverrideSStandardConfigurationObj);
+		}
 		
 		String statusPartiallyDoneEnabledObj = getStringPropertyValue(STATUS_PARTIALLY_DONE_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(statusPartiallyDoneEnabledObj)) {
 			statusPartiallyDoneEnabled = "true".equals(statusPartiallyDoneEnabledObj);
 		}
-		
 		String statusCancelledEnabledObj = getStringPropertyValue(STATUS_CANCELLED_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(statusCancelledEnabledObj)) {
 			statusCancelledEnabled = "true".equals(statusCancelledEnabledObj);
@@ -189,6 +196,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		setStringProperty(LECTURE_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isCanOverrideStandardConfiguration() {
+		return canOverrideStandardConfiguration;
+	}
+
+	public void setCanOverrideSStandardConfiguration(boolean enable) {
+		this.canOverrideStandardConfiguration = enable;
+		setStringProperty(CAN_OVERRIDE_STANDARD_CONFIGURATION, Boolean.toString(enable), true);
 	}
 
 	public boolean isAuthorizedAbsenceEnabled() {

@@ -1,6 +1,8 @@
+<fieldset>
+	<legend>$r.translate("lectures.table.current")</legend>
 #if($r.visible("start") || $r.visible("start.wizard"))
+	$r.render("currentLectures")
 	<div class="o_button_group">
-		<div class="o_block"><strong>$r.translate("current.lecture"):</strong> $r.escapeHtml($blockTitle)</div>
 		#if($r.visible("start"))
 			$r.render("start")
 		#end
@@ -9,4 +11,16 @@
 		#end
 	</div>
 #end
-$r.render("table")
+</fieldset>
+<fieldset>
+	<legend>$r.translate("lectures.table.pending")</legend>
+$r.render("pendingLectures")
+</fieldset>
+<fieldset>
+	<legend>$r.translate("lectures.table.next")</legend>
+$r.render("nextLectures")
+</fieldset>
+<fieldset>
+	<legend>$r.translate("lectures.table.closed")</legend>
+$r.render("closedLectures")
+</fieldset>

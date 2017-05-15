@@ -100,6 +100,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-lectures");
 		tableEl.setCustomizeColumns(false);
+		tableEl.setEmtpyTableMessageKey("empty.lectures.list");
 	}
 	
 	private void loadModel() {

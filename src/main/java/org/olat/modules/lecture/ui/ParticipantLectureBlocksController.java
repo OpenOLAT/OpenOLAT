@@ -123,6 +123,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		options.setDefaultOrderBy(new SortKey(ParticipantCols.date.name(), true));
 		tableEl.setSortSettings(options);
 		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-roll-call-appeal");
+		tableEl.setEmtpyTableMessageKey("empty.repository.entry.lectures");
 	}
 	
 	private void loadModel() {

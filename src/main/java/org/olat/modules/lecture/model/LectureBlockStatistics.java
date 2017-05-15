@@ -33,6 +33,7 @@ public class LectureBlockStatistics {
 	
 	private long totalLectureBlocks = 0l;
 	private long totalPlannedLectures = 0l;
+	private long totalPersonalPlannedLectures = 0l;
 	private long totalEffectiveLectures = 0l;
 	private long totalAttendedLectures = 0l;
 	private long totalAbsentLectures = 0l;
@@ -75,6 +76,14 @@ public class LectureBlockStatistics {
 
 	public void addTotalPlannedLectures(long lectures) {
 		totalPlannedLectures += lectures;
+	}
+	
+	public long getTotalPersonalPlannedLectures() {
+		return totalPersonalPlannedLectures;
+	}
+	
+	public void addTotalPersonalPlannedLectures(long lectures) {
+		totalPersonalPlannedLectures += lectures;
 	}
 
 	public long getTotalEffectiveLectures() {

@@ -329,6 +329,8 @@ public interface LectureService {
 	public List<LectureBlockStatistics> getParticipantsLecturesStatistics(RepositoryEntry entry);
 	
 	/**
+	 * The list of roll calls within the specified course for the specified user
+	 * after it's first admission.
 	 * 
 	 * @param entry
 	 * @param participant
