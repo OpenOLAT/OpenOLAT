@@ -83,7 +83,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 		date("table.header.date"),
 		entry("table.header.entry"),
 		lectureBlock("table.header.lecture.block"),
-		coach("table.header.coach"),
+		coach("table.header.teachers"),
 		presence("table.header.presence"),
 		absence("table.header.absence"),
 		appeal("table.header.appeal");

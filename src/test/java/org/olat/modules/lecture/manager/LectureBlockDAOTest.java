@@ -324,6 +324,22 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertTrue(participantsBlock2.contains(participant4));
 	}
 	
+	@Test
+	public void deleteLectureBlock() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock block = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+		Long blockKey = block.getKey();
+		
+		// delete the block
+		lectureBlockDao.delete(block);
+		dbInstance.commitAndCloseSession();
+		
+		// try to relaod the block
+		LectureBlock deletedBlock = lectureBlockDao.loadByKey(blockKey);
+		Assert.assertNull(deletedBlock);
+	}
+	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());

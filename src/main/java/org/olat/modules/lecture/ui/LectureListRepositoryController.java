@@ -21,9 +21,11 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -36,17 +38,29 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
+import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -57,17 +71,24 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LectureListRepositoryController extends FormBasicController {
 
-	private FormLink addLectureButton;
+	private FormLink addLectureButton, deleteLecturesButton;
 	private FlexiTableElement tableEl;
 	private LectureListRepositoryDataModel tableModel;
 	
+	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private DialogBoxController deleteDialogCtrl;
+	private DialogBoxController bulkDeleteDialogCtrl;
 	private EditLectureBlockController editLectureCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 
+	private int counter = 0;
 	private RepositoryEntry entry;
 	
 	private final boolean lectureManagementManaged;
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private LectureService lectureService;
 	
@@ -85,6 +106,8 @@ public class LectureListRepositoryController extends FormBasicController {
 		if(!lectureManagementManaged) {
 			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
 			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
+			
+			deleteLecturesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -92,10 +115,23 @@ public class LectureListRepositoryController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.date, new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.startTime, new TimeFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.endTime, new TimeFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.teachers));
+		
 		if(lectureManagementManaged) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "edit"));//edit check it
 		} else {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
+					new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
+			editColumn.setExportable(false);
+			editColumn.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(editColumn);
+			
+			DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(BlockCols.tools);
+			toolsColumn.setExportable(false);
+			toolsColumn.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(toolsColumn);
 		}
 		
 		tableModel = new LectureListRepositoryDataModel(columnsModel, getLocale()); 
@@ -111,10 +147,25 @@ public class LectureListRepositoryController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<LectureBlock> blocks = lectureService.getLectureBlocks(entry);
+		List<LectureBlockWithTeachers> blocks = lectureService.getLectureBlocksWithTeachers(entry);
 		List<LectureBlockRow> rows = new ArrayList<>(blocks.size());
-		for(LectureBlock block:blocks) {
-			rows.add(new LectureBlockRow(block.getKey(), block.getTitle(), block.getLocation(), block.getStartDate()));
+		for(LectureBlockWithTeachers block:blocks) {
+			LectureBlock b = block.getLectureBlock();
+			StringBuilder teachers = new StringBuilder();
+			for(Identity teacher:block.getTeachers()) {
+				if(teachers.length() > 0) teachers.append(", ");
+				teachers.append(userManager.getUserDisplayName(teacher));
+			}
+
+			LectureBlockRow row = new LectureBlockRow(b, teachers.toString());
+			rows.add(row);
+			
+			String linkName = "tools-" + counter++;
+			FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
+			toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
+			toolsLink.setUserObject(row);
+			flc.add(linkName, toolsLink);
+			row.setToolsLink(toolsLink);
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -129,6 +180,8 @@ public class LectureListRepositoryController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addLectureButton == source) {
 			doAddLectureBlock(ureq);
+		} else if(deleteLecturesButton == source) {
+			doConfirmBulkDelete(ureq);
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -137,6 +190,13 @@ public class LectureListRepositoryController extends FormBasicController {
 				if("edit".equals(cmd)) {
 					doEditLectureBlock(ureq, row);
 				}
+			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if(cmd != null && cmd.startsWith("tools-")) {
+				LectureBlockRow row = (LectureBlockRow)link.getUserObject();
+				doOpenTools(ureq, row, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -152,14 +212,46 @@ public class LectureListRepositoryController extends FormBasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if(toolsCalloutCtrl == source) {
+			cleanUp();
+		} else if(toolsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				if(toolsCalloutCtrl != null) {
+					toolsCalloutCtrl.deactivate();
+					cleanUp();
+				}
+			}
+		} else if(deleteDialogCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				LectureBlockRow row = (LectureBlockRow)deleteDialogCtrl.getUserObject();
+				doDelete(row);
+				loadModel();
+				cleanUp();
+			}
+		} else if(bulkDeleteDialogCtrl == source) {
+			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				@SuppressWarnings("unchecked")
+				List<LectureBlock> blocks = (List<LectureBlock>)bulkDeleteDialogCtrl.getUserObject();
+				doDelete(blocks);
+				loadModel();
+				cleanUp();
+			}
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(bulkDeleteDialogCtrl);
+		removeAsListenerAndDispose(deleteDialogCtrl);
 		removeAsListenerAndDispose(editLectureCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
+		bulkDeleteDialogCtrl = null;
+		deleteDialogCtrl = null;
+		toolsCalloutCtrl = null;
 		editLectureCtrl = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 
@@ -189,5 +281,102 @@ public class LectureListRepositoryController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doCopy(LectureBlockRow row) {
+		String newTitle = translate("lecture.block.copy", new String[]{ row.getLectureBlock().getTitle() });
+		lectureService.copyLectureBlock(newTitle, row.getLectureBlock());
+		loadModel();
+		showInfo("lecture.block.copied");
+	}
+	
+	private void doConfirmBulkDelete(UserRequest ureq) {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<LectureBlock> blocks = new ArrayList<>();
+		for(Integer selection:selections) {
+			LectureBlockRow blockRow = tableModel.getObject(selection);
+			//TODO check managed
+			blocks.add(blockRow.getLectureBlock());
+		}
+		
+		if(blocks.size() == 0) {
+			showWarning("error.atleastone.lecture");
+		} else {
+			StringBuilder titles = new StringBuilder();
+			for(LectureBlock block:blocks) {
+				if(titles.length() > 0) titles.append(", ");
+				titles.append(StringHelper.escapeHtml(block.getTitle()));
+			}
+			String text = translate("confirm.delete.lectures", new String[] { titles.toString() });
+			bulkDeleteDialogCtrl = activateYesNoDialog(ureq, translate("delete.lectures.title"), text, bulkDeleteDialogCtrl);
+			bulkDeleteDialogCtrl.setUserObject(blocks);
+		}
+	}
+	
+	private void doConfirmDelete(UserRequest ureq, LectureBlockRow row) {
+		String text = translate("confirm.delete.lectures", new String[] { row.getLectureBlock().getTitle() });
+		deleteDialogCtrl = activateYesNoDialog(ureq, translate("delete.lectures.title"), text, deleteDialogCtrl);
+		deleteDialogCtrl.setUserObject(row);
+	}
+	
+	private void doDelete(LectureBlockRow row) {
+		lectureService.deleteLectureBlock(row.getLectureBlock());
+		showInfo("lecture.deleted");
+	}
+	
+	private void doDelete(List<LectureBlock> blocks) {
+		for(LectureBlock block:blocks) {
+			lectureService.deleteLectureBlock(block);
+		}
+		showInfo("lecture.deleted");
+	}
+	
+	private void doOpenTools(UserRequest ureq, LectureBlockRow row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+	
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+
+	private class ToolsController extends BasicController {
+		
+		private final Link deleteLink, copyLink;
+		
+		private final LectureBlockRow row;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row) {
+			super(ureq, wControl);
+			this.row = row;
+			
+			VelocityContainer mainVC = createVelocityContainer("lectures_tools");
+			
+			copyLink = LinkFactory.createLink("copy", "copy", getTranslator(), mainVC, this, Link.LINK);
+			copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void doDispose() {
+			//
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(copyLink == source) {
+				doCopy(row);
+			} else if(deleteLink == source) {
+				doConfirmDelete(ureq, row);
+			}
+		}
 	}
 }

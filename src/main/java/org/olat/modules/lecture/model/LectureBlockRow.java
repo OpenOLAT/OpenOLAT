@@ -19,8 +19,8 @@
  */
 package org.olat.modules.lecture.model;
 
-import java.util.Date;
-
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 
 /**
@@ -31,32 +31,34 @@ import org.olat.modules.lecture.LectureBlockRef;
  */
 public class LectureBlockRow implements LectureBlockRef {
 	
-	private final Long key;
-	private final String title;
-	private final String location;
-	private final Date startDate;
+	private final String teachers;
+	private final LectureBlock lectureBlock;
 	
-	public LectureBlockRow(Long key, String title, String location, Date startDate) {
-		this.key = key;
-		this.title = title;
-		this.location = location;
-		this.startDate = startDate;
+	private FormLink toolsLink;
+	
+	public LectureBlockRow(LectureBlock lectureBlock, String teachers) {
+		this.lectureBlock = lectureBlock;
+		this.teachers = teachers;
 	}
 	
 	@Override
 	public Long getKey() {
-		return key;
+		return lectureBlock.getKey();
 	}
 
-	public String getTitle() {
-		return title;
+	public LectureBlock getLectureBlock() {
+		return lectureBlock;
 	}
-
-	public String getLocation() {
-		return location;
+	
+	public String getTeachers() {
+		return teachers;
 	}
-
-	public Date getStartDate() {
-		return startDate;
+	
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+	
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 }

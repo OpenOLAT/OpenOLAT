@@ -19,8 +19,11 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.TemporalType;
 
@@ -36,6 +39,7 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockToGroupImpl;
+import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +103,76 @@ public class LectureBlockDAO {
 				.setParameter("entryKey", entryRef.getKey())
 				.getResultList();
 		return blocks;
+	}
+	
+	/**
+	 * Delete the relation to group, the roll call, the reminders and at the
+	 * end the lecture block itself.
+	 * 
+	 * @param lectureBlock The block to delete
+	 * @return The number of rows deleted
+	 */
+	public int delete(LectureBlock lectureBlock) {
+		LectureBlock reloadedBlock = dbInstance.getCurrentEntityManager()
+			.getReference(LectureBlockImpl.class, lectureBlock.getKey());
+		
+		//delete lecture block to group
+		String deleteToGroup = "delete from lectureblocktogroup blocktogroup where blocktogroup.lectureBlock.key=:lectureBlockKey";
+		int rows = dbInstance.getCurrentEntityManager()
+			.createQuery(deleteToGroup)
+			.setParameter("lectureBlockKey", reloadedBlock.getKey())
+			.executeUpdate();
+		//delete LectureBlockRollCallImpl
+		String deleteRollCall = "delete from lectureblockrollcall rollcall where rollcall.lectureBlock.key=:lectureBlockKey";
+		rows += dbInstance.getCurrentEntityManager()
+			.createQuery(deleteRollCall)
+			.setParameter("lectureBlockKey", reloadedBlock.getKey())
+			.executeUpdate();
+		//delete LectureBlockReminderImpl
+		String deleteReminder = "delete from lecturereminder reminder where reminder.lectureBlock.key=:lectureBlockKey";
+		rows += dbInstance.getCurrentEntityManager()
+			.createQuery(deleteReminder)
+			.setParameter("lectureBlockKey", reloadedBlock.getKey())
+			.executeUpdate();
+
+		dbInstance.getCurrentEntityManager()
+			.remove(reloadedBlock);
+		rows++;
+		
+		return rows;
+	}
+	
+	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(RepositoryEntryRef entry) {
+		List<LectureBlock> blocks = loadByEntry(entry);
+		Map<Long,LectureBlockWithTeachers> blockMap = new HashMap<>();
+		for(LectureBlock block:blocks) {
+			blockMap.put(block.getKey(), new  LectureBlockWithTeachers(block));
+		}
+		
+		// append the coaches
+		StringBuilder sc = new StringBuilder();
+		sc.append("select block.key, coach")
+		  .append(" from lectureblock block")
+		  .append(" inner join block.teacherGroup tGroup")
+		  .append(" inner join tGroup.members membership")
+		  .append(" inner join membership.identity coach")
+		  .append(" inner join fetch coach.user usercoach")
+		  .append(" where membership.role='").append("teacher").append("' and block.entry.key=:repoEntryKey");
+		
+		//get all, it's quick
+		List<Object[]> rawCoachs = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), Object[].class)
+				.setParameter("repoEntryKey", entry.getKey())
+				.getResultList();
+		for(Object[] rawCoach:rawCoachs) {
+			Long blockKey = (Long)rawCoach[0];
+			Identity teacher = (Identity)rawCoach[1];
+			LectureBlockWithTeachers block = blockMap.get(blockKey);
+			if(block != null) {
+				block.getTeachers().add(teacher);
+			}
+		}
+		return new ArrayList<>(blockMap.values());
 	}
 
 	public LectureBlock addGroupToLectureBlock(LectureBlock block, Group group) {

@@ -202,6 +202,11 @@ public class LectureBlockRollCallDAO {
 			blockToRollCallMap.put(block.getKey(), new LectureBlockAndRollCall(displayname, block, rollCall));
 		}
 		
+		appendCoaches(entry, blockToRollCallMap);
+		return new ArrayList<>(blockToRollCallMap.values());
+	}
+	
+	private void appendCoaches(RepositoryEntryRef entry, Map<Long,LectureBlockAndRollCall> blockToRollCallMap) {
 		// append the coaches
 		StringBuilder sc = new StringBuilder();
 		sc.append("select block.key, coach")
@@ -230,8 +235,6 @@ public class LectureBlockRollCallDAO {
 				}
 			}
 		}
-		
-		return new ArrayList<>(blockToRollCallMap.values());
 	}
 	
 	public List<LectureBlockStatistics> getStatistics(IdentityRef identity,

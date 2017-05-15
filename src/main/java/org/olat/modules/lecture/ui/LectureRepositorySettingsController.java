@@ -49,7 +49,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class LectureRepositorySettingsController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] { "on" };
-	private static final String[] onValues = new String[] { "" };
 	private static final String[] overrideKeys = new String[] { "yes", "no" };
 	
 	private SingleSelection overrideEl;
@@ -85,8 +84,9 @@ public class LectureRepositorySettingsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("lecture.admin.title");
+		setFormTitle("lecture.course.admin.title");
 		
+		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("lecture.admin.enabled", formLayout, onKeys, onValues);
 		enableEl.setEnabled(!lectureConfigManaged);
 		enableEl.addActionListener(FormEvent.ONCHANGE);

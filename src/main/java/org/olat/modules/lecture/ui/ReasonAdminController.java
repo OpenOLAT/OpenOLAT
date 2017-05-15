@@ -133,6 +133,8 @@ public class ReasonAdminController extends FormBasicController {
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
+		} else if(toolsCalloutCtrl == source) {
+			cleanUp();
 		} else if(toolsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				if(toolsCalloutCtrl != null) {

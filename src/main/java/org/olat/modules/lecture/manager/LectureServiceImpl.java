@@ -67,6 +67,7 @@ import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
+import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
 import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureAdminController;
@@ -183,6 +184,26 @@ public class LectureServiceImpl implements LectureService {
 		}
 		block.getTeacherGroup().getKey();
 		return block;
+	}
+
+	@Override
+	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block) {
+		LectureBlock copy = lectureBlockDao.createLectureBlock(block.getEntry());
+		copy.setTitle(newTitle);
+		copy.setDescription(block.getDescription());
+		copy.setPreparation(block.getPreparation());
+		copy.setRollCallStatus(LectureRollCallStatus.open);
+		copy.setEffectiveLecturesNumber(block.getEffectiveLecturesNumber());
+		copy.setPlannedLecturesNumber(block.getPlannedLecturesNumber());
+		copy.setStartDate(block.getStartDate());
+		copy.setEndDate(block.getEndDate());
+		copy = lectureBlockDao.update(copy);
+		return copy;
+	}
+
+	@Override
+	public void deleteLectureBlock(LectureBlock block) {
+		lectureBlockDao.delete(block);
 	}
 
 	@Override
@@ -457,6 +478,11 @@ public class LectureServiceImpl implements LectureService {
 	@Override
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry) {
 		return lectureBlockDao.loadByEntry(entry);
+	}
+
+	@Override
+	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry) {
+		return lectureBlockDao.getLecturesBlockWithTeachers(entry);
 	}
 
 	@Override

@@ -71,9 +71,9 @@ public class EditLectureBlockController extends FormBasicController {
 	private TextElement preparationEl;
 	private TextElement locationEl;
 	private DateChooser startDateEl;
-	private SingleSelection teacherEl;
 	private SingleSelection plannedLecturesEl;
 	private MultipleSelectionElement groupsEl;
+	private MultipleSelectionElement teacherEl;
 	private TextElement endHourEl, endMinuteEl;
 	
 	private RepositoryEntry entry;
@@ -156,22 +156,34 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		
 		List<Identity> coaches = repositoryService.getMembers(entry, GroupRoles.coach.name());
-		teacherKeys = new String[coaches.size()];
-		teacherValues = new String[coaches.size()];
-		for(int i=coaches.size(); i-->0; ) {
-			teacherKeys[i] = coaches.get(i).getKey().toString();
-			teacherValues[i] = userManager.getUserDisplayName(coaches.get(i));
+		teacherKeys = new String[coaches.size() + 1];
+		teacherValues = new String[coaches.size() + 1];
+		for(int i=coaches.size() + 1; i-->1; ) {
+			Identity coach = coaches.get(i - 1);
+			teacherKeys[i] = coach.getKey().toString();
+			teacherValues[i] = userManager.getUserDisplayName(coach);
 		}
-		teacherEl = uifactory.addDropdownSingleselect("teacher", "lecture.teacher", formLayout, teacherKeys, teacherValues, null);
+		teacherKeys[0] = "-";
+		teacherValues[0] = "-";
+		
+		teacherEl = uifactory.addCheckboxesVertical("teacher", "lecture.teacher", formLayout, teacherKeys, teacherValues, 2);
 		teacherEl.setMandatory(true);
 		teacherEl.setEnabled(!lectureManagementManaged);
+		
+		boolean found = false;
 		if(teachers != null && teachers.size() > 0) {
-			String currentTeacherKey = teachers.get(0).getKey().toString();
-			for(String teacherKey:teacherKeys) {
-				if(currentTeacherKey.equals(teacherKey)) {
-					teacherEl.select(currentTeacherKey, true);
+			for(Identity teacher:teachers) {
+				String currentTeacherKey = teacher.getKey().toString();
+				for(String teacherKey:teacherKeys) {
+					if(currentTeacherKey.equals(teacherKey)) {
+						teacherEl.select(currentTeacherKey, true);
+						found = true;
+					}
 				}
 			}
+		} 
+		if(!found) {
+			teacherEl.select(teacherKeys[0], true);
 		}
 		
 		Group entryBaseGroup = repositoryService.getDefaultGroup(entry);
@@ -274,7 +286,7 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		
 		teacherEl.clearError();
-		if(!teacherEl.isOneSelected()) {
+		if(!teacherEl.isAtLeastSelected(1)) {
 			teacherEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
@@ -348,10 +360,39 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 		
-		if(teacherEl.isOneSelected()) {
-			Long identityKey = new Long(teacherEl.getSelectedKey());
-			Identity newTeacher = securityManager.loadIdentityByKey(identityKey);
-			lectureService.addTeacher(lectureBlock, newTeacher);
+		if(teacherEl.isAtLeastSelected(1)) {
+			List<Identity> currentTeachers = lectureService.getTeachers(lectureBlock);
+			List<String> selectedTeacherKeys = new ArrayList<>(teacherEl.getSelectedKeys());
+			if(selectedTeacherKeys.size() == 1 && teacherKeys[0].equals(selectedTeacherKeys.get(0))) {
+				//remove all
+				for(Identity teacher:currentTeachers) {
+					lectureService.removeTeacher(lectureBlock, teacher);
+				}
+			} else {
+				//remove deselected
+				for(Identity teacher:currentTeachers) {
+					boolean found = selectedTeacherKeys.contains(teacher.getKey().toString());
+					if(!found) {
+						lectureService.removeTeacher(lectureBlock, teacher);
+					}
+				}
+				//add new one
+				for(String selectedTeacherKey:selectedTeacherKeys) {
+					if(selectedTeacherKey.equals(teacherKeys[0])) continue;
+					
+					boolean found = false;
+					for(Identity teacher:currentTeachers) {
+						if(selectedTeacherKey.equals(teacher.getKey().toString())) {
+							found = true;
+						}
+					}
+					
+					if(!found) {
+						Identity teacher = securityManager.loadIdentityByKey(new Long(selectedTeacherKey));
+						lectureService.addTeacher(lectureBlock, teacher);
+					}
+				}
+			}
 		}
 		
 		dbInstance.commit();

@@ -26,6 +26,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
+import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -86,6 +87,20 @@ public interface LectureService {
 	 * @return A fresh lecture block
 	 */
 	public LectureBlock getLectureBlock(LectureBlockRef block);
+	
+	/**
+	 * Make a copy of the specified lecture block.
+	 * @param block
+	 * @return
+	 */
+	public LectureBlock copyLectureBlock(String newTitle, LectureBlock block);
+	
+	/**
+	 * Delete the lecture block definitively, the roll calls...
+	 * 
+	 * @param block The block to delete.
+	 */
+	public void deleteLectureBlock(LectureBlock block);
 	
 	/**
 	 * Returns all configured reasons.
@@ -242,6 +257,14 @@ public interface LectureService {
 	 * @return
 	 */
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry);
+	
+	/**
+	 * Return the list of lecture blocks of a course with the teachers.
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry);
 	
 	/**
 	 * Returns the lecture block for the specified learning resource
