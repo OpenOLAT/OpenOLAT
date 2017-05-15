@@ -36,6 +36,7 @@ public class LectureBlockStatistics {
 	private long totalEffectiveLectures = 0l;
 	private long totalAttendedLectures = 0l;
 	private long totalAbsentLectures = 0l;
+	private long totalAuthorizedAbsentLectures = 0l;
 
 	private final boolean calculateRate;
 	private final double requiredRate;
@@ -98,6 +99,14 @@ public class LectureBlockStatistics {
 
 	public void addTotalAbsentLectures(long lectures) {
 		totalAbsentLectures += lectures;
+	}
+	
+	public long getTotalAuthorizedAbsentLectures() {
+		return totalAuthorizedAbsentLectures;
+	}
+	
+	public void addTotalAuthorizedAbsentLectures(long lectures) {
+		totalAuthorizedAbsentLectures += lectures;
 	}
 
 	public long getTotalLectureBlocks() {

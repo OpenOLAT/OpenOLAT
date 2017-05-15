@@ -39,6 +39,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.ui.ParticipantLecturesDataModel.LecturesCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
+import org.olat.modules.lecture.ui.component.PercentCellRenderer;
 import org.olat.modules.lecture.ui.component.RateWarningCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -86,9 +87,13 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.entry));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.quota));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.plannedLectures));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.attendedLectures));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.absentLectures));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.authorizedAbsentLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.progress, new LectureStatisticsCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.rate, new RateWarningCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.rateWarning, new RateWarningCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.rate, new PercentCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		
 		tableModel = new ParticipantLecturesDataModel(columnsModel, getLocale()); 

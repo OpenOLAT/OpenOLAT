@@ -61,9 +61,13 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics> {
 	public Object getValueAt(LectureBlockStatistics row, int col) {
 		switch(LecturesCols.values()[col]) {
 			case entry: return row.getDisplayName();
-			case quota: return row.getTotalPlannedLectures();
+			case plannedLectures: return row.getTotalPlannedLectures();
+			case attendedLectures: return row.getTotalAttendedLectures();
+			case authorizedAbsentLectures: return row.getTotalAuthorizedAbsentLectures();
+			case absentLectures: return row.getTotalAbsentLectures();
 			case progress: return row;
-			case rate: return row;
+			case rateWarning: return row;
+			case rate: return row.getAttendanceRate();
 			default: return null;
 		}
 	}
@@ -75,8 +79,12 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics> {
 	
 	public enum LecturesCols implements FlexiSortableColumnDef {
 		entry("table.header.entry"),
-		quota("table.header.quota"),
+		plannedLectures("table.header.planned.lectures"),
+		attendedLectures("table.header.attended.lectures"),
+		authorizedAbsentLectures("table.header.authorized.absence"),
+		absentLectures("table.header.absent.lectures"),
 		progress("table.header.progress"),
+		rateWarning("table.header.rate.warning"),
 		rate("table.header.rate");
 		
 		private final String i18nKey;

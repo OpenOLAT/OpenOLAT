@@ -54,8 +54,6 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.ui.ParticipantLectureBlocksDataModel.ParticipantCols;
-import org.olat.modules.lecture.ui.component.AbsenceCellRenderer;
-import org.olat.modules.lecture.ui.component.PresenceCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,8 +108,9 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.entry));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.lectureBlock));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.coach));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.presence, new PresenceCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.absence, new AbsenceCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.plannedLectures));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.attendedLectures));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.absentLectures));
 		if(appealEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("appeal", ParticipantCols.appeal.ordinal(), "appeal",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("appeal"), "appeal"), null)));
