@@ -24,6 +24,7 @@ import java.util.List;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -59,10 +60,10 @@ public class PublisherPageFragment {
 	
 
 	public void quickPublish() {
-		quickPublish(Access.guests);
+		quickPublish(UserAccess.guest);
 	}
 	
-	public void quickPublish(Access access) {
+	public void quickPublish(UserAccess access) {
 		assertOnPublisher()
 			.next()
 			.selectAccess(access)
@@ -92,9 +93,27 @@ public class PublisherPageFragment {
 		return this;
 	}
 	
-	public PublisherPageFragment selectAccess(Access access) {
-		WebElement select = browser.findElement(selectAccessBy);
-		new Select(select).selectByValue(access.getValue());
+	public PublisherPageFragment selectAccess(UserAccess access) {
+		if(access == UserAccess.none) {
+			By userSwitch = By.cssSelector("#o_cousersSwitch input[type='radio'][value='n']");
+			browser.findElement(userSwitch).click();
+			OOGraphene.waitBusy(browser);
+		} else {
+			By userSwitch = By.cssSelector("#o_cousersSwitch input[type='radio'][value='y']");
+			browser.findElement(userSwitch).click();
+			OOGraphene.waitBusy(browser);
+			
+			By publishForUserBy = By.cssSelector("#o_fiopublishedForUsers_SELBOX");
+			WebElement publishForUserEl = browser.findElement(publishForUserBy);
+			Select publishForUserSelect = new Select(publishForUserEl);
+			switch(access) {
+				case registred: publishForUserSelect.selectByValue("u"); break;
+				case guest: publishForUserSelect.selectByValue("g"); break;
+				case membersOnly: publishForUserSelect.selectByValue("m"); break;
+				default: {}
+			}
+			OOGraphene.waitBusy(browser);
+		}
 		return this;
 	}
 	

@@ -61,7 +61,6 @@ import org.olat.selenium.page.course.ForumCEPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
-import org.olat.selenium.page.course.PublisherPageFragment.Access;
 import org.olat.selenium.page.course.RemindersPage;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -71,9 +70,9 @@ import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.FeedPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
-import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.ScormPage;
+import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
@@ -155,7 +154,7 @@ public class CourseTest {
 		publisher
 			.assertOnPublisher()
 			.next()
-			.selectAccess(Access.guests)
+			.selectAccess(UserAccess.guest)
 			.next()
 			.selectCatalog(false)
 			.next() // -> no problem found
@@ -428,7 +427,7 @@ public class CourseTest {
 			.createNode("st")
 			.nodeTitle(secondNodeTitle)
 			.publish()
-			.quickPublish(Access.users);
+			.quickPublish(UserAccess.registred);
 		
 		// The user opens the course
 		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
@@ -1078,7 +1077,7 @@ public class CourseTest {
 		courseEditor
 			.publish()
 			.next()
-			.selectAccess(Access.guests)
+			.selectAccess(UserAccess.guest)
 			.next()
 			.selectCatalog(true)
 			.selectCategory(node1, node2_2)
@@ -1158,7 +1157,7 @@ public class CourseTest {
 		//publish
 		editor
 			.publish()
-			.quickPublish(Access.guests);
+			.quickPublish(UserAccess.registred);
 		editor.clickToolbarBack();
 		
 		course
@@ -1732,7 +1731,7 @@ public class CourseTest {
 			.nodeTitle(foTitle)
 		//publish the course
 			.publish()
-			.quickPublish(Access.users);
+			.quickPublish(UserAccess.registred);
 		
 		//go to the forum
 		courseEditor
@@ -1875,7 +1874,7 @@ public class CourseTest {
 		courseEditor
 			.publish()
 			.next()
-			.selectAccess(Access.guests)
+			.selectAccess(UserAccess.guest)
 			.next()
 			.selectCatalog(true)
 			.selectCategory(null, node1)
@@ -2014,7 +2013,7 @@ public class CourseTest {
 
 		courseEditor
 			.publish()
-			.quickPublish(Access.membersOnly);
+			.quickPublish(UserAccess.membersOnly);
 		courseEditor
 			.clickToolbarBack();
 		
