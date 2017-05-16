@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.2.3'
+				version : '1.2.4'
 			};
 		},
 
@@ -220,26 +220,43 @@
 						}
 					}
 				});
-
-				jQuery("span.hottext[data-copy='needlistener'] a", e.element).each(function(index, el) {
-					var hottext = jQuery(el).parent("span.hottext").attr('data-copy','blues');
-					var ev = jQuery._data(el, 'events');
-					if(ev && ev.click) {
-						//double check 
-					} else {
-						correctHottextEvent(el);
+				
+				jQuery("span.hottext[data-copy='needlistener']", e.element).each(function(index, el) {
+					if(jQuery("a", el).size() == 0) {
+						var checked = jQuery(el).attr('data-qti-checked');
+						jQuery(el).prepend("<a " + ("true" == checked ? "class='checked'" : "") + " contenteditable='false'><i contenteditable='false'> </i></a>");
 					}
+
+					jQuery("a", jQuery(el)).each(function(aIndex, aEl) {
+						var ev = jQuery._data(aEl, 'events');
+						if(ev && ev.click) {
+							/* double check */ 
+						} else {
+							correctHottextEvent(aEl);
+							//confirm by sending the setting to the server
+							if(jQuery(aEl).hasClass('checked')) {
+								var ffxhrevent = ed.getParam("ffxhrevent");
+								var identifier = jQuery(el).data('qti-identifier');
+								o_ffXHRNFEvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2,
+									'cmd', 'hottext', 'identifier', identifier, 'correct', 'true');
+							}
+						}
+					});
 				});
 				
-				jQuery("span.textentryinteraction[data-copy='needlistener'] a", e.element).each(function(index, el) {
-					var textEntry = jQuery(el).parent("span.textentryinteraction");
-					var hottext = textEntry.attr('data-copy','blues');
-					var ev = jQuery._data(el, 'events');
-					if(ev && ev.click) {
-						//double check 
-					} else {
-						textEntryEvent(textEntry);
+				jQuery("span.textentryinteraction[data-copy='needlistener']", e.element).each(function(index, el) {
+					if(jQuery("a", el).size() == 0) {
+						jQuery(el).append("<a contenteditable='false'><i contenteditable='false'> </i></a>");
 					}
+					
+					jQuery("a", jQuery(el)).each(function(aIndex, aEl) {
+						var ev = jQuery._data(aEl, 'events');
+						if(ev && ev.click) {
+							//double check 
+						} else {
+							textEntryEvent(el);
+						}
+					});
 				});
 			});
 			
@@ -284,6 +301,7 @@
 				placeholder.attr({
 					"data-qti": interaction,
 					"data-qti-identifier": identifier,
+					"data-qti-checked": (correct ? "true": "false"),
 					"class": interaction,
 					"contenteditable": "false"
 				});
@@ -324,8 +342,10 @@
 							'cmd', 'hottext', 'identifier', identifier, 'correct', jLinkEl.hasClass('checked') ? "false" : "true");
 					if(jLinkEl.hasClass('checked')) {
 						jLinkEl.removeClass('checked');
+						jLinkEl.parent("span.hottext").attr('data-qti-checked', "false");
 					} else {
 						jLinkEl.addClass('checked');
+						jLinkEl.parent("span.hottext").attr('data-qti-checked', "true");
 					}
 					ed.setDirty(true);
 				});
@@ -386,6 +406,11 @@
 				});
 			});
 			
+			/**
+			 * Replace on load the special XML tags of QTI to some placeholders
+			 * useable by TinyMCE.
+			 * 
+			 */
 			ed.on('preInit', function() {
 				ed.parser.addNodeFilter('textentryinteraction,hottext', function(nodes) {
 					var i = nodes.length, node, placeHolder, videoScript;
@@ -417,7 +442,8 @@
 			});
 			
 			/** 
-             * This onSetContent handler is used to convert the comments to placeholder images (e.g. when loading).
+             * This event is catch to convert the content of the editor in something useable for
+             * OpenOLAT, e.g. replace all placeholders with real HTML/XML QTI code.
              */
 			ed.on('PreProcess', function(e) {
 				tinymce.each(ed.dom.select("span[data-qti=textentryinteraction]"), function(node) {
@@ -446,6 +472,17 @@
 			});
 			
 			ed.on('PastePreProcess', function (e) {
+				var selectedNode = ed.selection.getNode();
+				if(selectedNode != null &&
+						(jQuery(selectedNode).parent("span.hottext").size() > 0 || jQuery(selectedNode).parent("span.textentryinteraction").size() > 0)) {
+					
+					// paste in an hottext or a textEntryInteraction -> only text
+					var wrappedContent = '<div id="' + guid() + '">' + e.content + '</div>';
+					var htmlContent = jQuery(wrappedContent);
+					e.content = jQuery(htmlContent).text();
+					return;
+				}
+				
 				var replace = false;
 				var wrappedContent = '<div id="' + guid() + '">' + e.content + '</div>';
 				var htmlContent = jQuery(wrappedContent);
