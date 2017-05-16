@@ -1210,7 +1210,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		if(ended) {
 			sb.append(" disabled");
 		}
-		if(StringHelper.containsNonWhitespace(interaction.getPlaceholderText())) {
+		if(!ended && StringHelper.containsNonWhitespace(interaction.getPlaceholderText())) {
 			sb.append(" placeholder=\"").append(StringHelper.escapeHtml(interaction.getPlaceholderText())).append("\"");
 		}
 		if(isBadResponse(itemSessionState, interaction.getResponseIdentifier())
