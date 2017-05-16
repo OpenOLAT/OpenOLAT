@@ -57,6 +57,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -129,6 +130,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private QTI21Service qtiService;
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	
 	public QTI21AssessmentRunController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, QTICourseNode courseNode) {
@@ -645,7 +648,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 	@Override
 	public void submit(Float score, Boolean pass, Long assessmentId) {
-		if(anonym) return;
+		if(anonym) {
+			assessmentNotificationsHandler.markPublisherNews(getIdentity(), userCourseEnv.getCourseEnvironment().getCourseResourceableId());
+			return;
+		}
 		
 		if(courseNode instanceof IQTESTCourseNode) {
 			Boolean visibility;
@@ -664,6 +670,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			if(increment) {
 				ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_CLOSE_IN_COURSE, getClass());
 			}
+
+			assessmentNotificationsHandler.markPublisherNews(getIdentity(), userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		} else if(courseNode instanceof SelfAssessableCourseNode) {
 			boolean increment = incrementAttempts.getAndSet(false);
 			if(increment) {
