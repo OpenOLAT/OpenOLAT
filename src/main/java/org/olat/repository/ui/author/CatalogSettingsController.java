@@ -99,6 +99,10 @@ public class CatalogSettingsController extends FormBasicController {
 		model = new CategoriesListModel(catalogEntries, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 200, true, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(false);
+		tableEl.setVisible(true);
+		if (catalogEntries.size() == 0) {
+			tableEl.setEmtpyTableMessageKey("no.catalog.entries");
+		}
 	}
 	
 	@Override
