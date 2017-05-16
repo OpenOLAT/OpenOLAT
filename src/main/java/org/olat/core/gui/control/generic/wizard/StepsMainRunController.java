@@ -417,6 +417,10 @@ public class StepsMainRunController extends FormBasicController implements Gener
 					addNextStep((StepFormController) nextChildCreator.createController(null, getWindowControl()), nextStep);
 				}
 			} else if (lastEvent == StepsEvent.ACTIVATE_PREVIOUS) {
+				if(currentStepIndex <= 0) {
+					return;// the case is possible with FireFox and users who use the keyboard and the enter key.
+				}
+				
 				stepPages.pop();
 				steps.pop();
 				currentStepIndex--;
