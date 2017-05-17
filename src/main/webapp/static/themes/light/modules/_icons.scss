@@ -470,6 +470,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qti_suspend:before { content: $fa-var-pause; }
 .o_icon_qti_close_results:before { content: $fa-var-window-close; }
 .o_icon_qti_hint:before { content: $fa-var-question-circle; }
+.o_icon_qti_summary_notAnswered:before { content: $fa-var-circle; color: $o-qti-status-notAnswered-color; }
+.o_icon_qti_summary_ended:before { content: $fa-var-circle; color: $o-qti-status-ended-color; }
+.o_icon_qti_summary_correct:before { content: $fa-var-circle; color: $brand-success; }
 
 /* coaching */
 .o_black_led:before { content: $fa-var-circle; color: $brand-primary; }

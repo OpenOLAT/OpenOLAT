@@ -61,7 +61,6 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
-import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.NumericalEntry;
@@ -293,10 +292,10 @@ public class QTI21WordExport implements MediaResource {
 				// pass rule
 				if(outcomeRule instanceof OutcomeCondition) {
 					OutcomeCondition outcomeCondition = (OutcomeCondition)outcomeRule;
-					boolean findIf = AssessmentTestBuilder.findSetOutcomeValue(outcomeCondition.getOutcomeIf(), QTI21Constants.PASS_IDENTIFIER);
-					boolean findElse = AssessmentTestBuilder.findSetOutcomeValue(outcomeCondition.getOutcomeElse(), QTI21Constants.PASS_IDENTIFIER);
+					boolean findIf = QtiNodesExtractor.findSetOutcomeValue(outcomeCondition.getOutcomeIf(), QTI21Constants.PASS_IDENTIFIER);
+					boolean findElse = QtiNodesExtractor.findSetOutcomeValue(outcomeCondition.getOutcomeElse(), QTI21Constants.PASS_IDENTIFIER);
 					if(findIf && findElse) {
-						Double cutValue = AssessmentTestBuilder.extractCutValue(outcomeCondition.getOutcomeIf());
+						Double cutValue = QtiNodesExtractor.extractCutValue(outcomeCondition.getOutcomeIf());
 						String cutValueLabel = translator.translate("cut.value");
 						document.appendText(cutValueLabel + ": " + AssessmentHelper.getRoundedScore(cutValue), true);
 					}

@@ -53,6 +53,9 @@ public class UserShortDescription extends BasicController {
 	
 	private static final String usageIdentifyer = UserShortDescription.class.getCanonicalName();
 
+	private final VelocityContainer mainVC;
+	private final boolean isAdministrativeUser;
+	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -64,22 +67,43 @@ public class UserShortDescription extends BasicController {
 		String usernameLabel = translate("table.user.login");
 		//use the PropertyHandlerTranslator for the velocityContainer
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		VelocityContainer velocityContainer = createVelocityContainer("userShortDescription");
+		mainVC = createVelocityContainer("userShortDescription");
 				
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		//(roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-		velocityContainer.contextPut("userPropertyHandlers", userPropertyHandlers);
-		velocityContainer.contextPut("user", identity.getUser());			
-		velocityContainer.contextPut("identityKey", identity.getKey());			
+		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+		mainVC.contextPut("user", identity.getUser());			
+		mainVC.contextPut("identityKey", identity.getKey());			
 		
 		if(getIdentity().equals(identity) || isAdministrativeUser) {
-			velocityContainer.contextPut("username", identity.getName());
+			mainVC.contextPut("username", identity.getName());
+			mainVC.contextPut("usernamePosition", "top");
 		}
-		velocityContainer.contextPut("usernameLabel", usernameLabel);
+		mainVC.contextPut("usernameLabel", usernameLabel);
 		
-		putInitialPanel(velocityContainer);
+		putInitialPanel(mainVC);
+	}
+	
+	/**
+	 * Set the position of the username / identity key if you
+	 * have the permission to see them.
+	 */
+	public void setUsernameAtTop() {
+		if(isAdministrativeUser) {
+			mainVC.contextPut("usernamePosition", "top");
+		}
+	}
+	
+	/**
+	 * Set the position of the username / identity key if you
+	 * have the permission to see them.
+	 */
+	public void setUsernameAtBottom() {
+		if(isAdministrativeUser) {
+			mainVC.contextPut("usernamePosition", "bottom");
+		}
 	}
 
 	@Override
