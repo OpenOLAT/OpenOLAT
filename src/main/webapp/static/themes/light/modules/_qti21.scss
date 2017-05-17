@@ -170,6 +170,23 @@ div.hotspotInteraction {
 	}
 }
 
+#o_qti_results_infos {
+	border: 1px solid $o-qti-run-infos-border-color;
+	border-radius: $o-qti-run-infos-border-radius;
+	background: $o-qti-run-infos-bg;
+	padding: $padding-large-vertical 0;
+	margin: 0 0 1em 0;
+	
+	.progress {
+		background-color: $o-qti-run-infos-progress-bg;	
+	}
+	
+	#o_qti_run_scoreinfo,
+	#o_qti_run_scoreprogress {
+		white-space: nowrap;
+	}
+}
+
 #o_qti_assessment_test_timer {
 	border: 1px solid $o-qti-run-infos-border-color;
 	border-radius: $o-qti-run-infos-border-radius;

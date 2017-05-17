@@ -1,5 +1,5 @@
 <table class="table table-bordered table-condensed table-striped">
-	#if($username)
+	#if($r.isNotNull($usernamePosition) && $usernamePosition == "top")
 	<tr>
 		<th>$usernameLabel</th>
 		<td>$username</td>
@@ -16,5 +16,15 @@
 			<td>$propertyHandler.getUserPropertyAsHTML($user, $locale)</td>
 		</tr>
 		#end
+	#end
+	#if($r.isNotNull($usernamePosition) && $usernamePosition == "bottom")
+	<tr>
+		<th>$usernameLabel</th>
+		<td>$username</td>
+	</tr>
+	<tr>
+		<th>Identity</th>
+		<td>$identityKey</td>
+	</tr>
 	#end
 </table>

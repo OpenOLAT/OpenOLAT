@@ -24,6 +24,47 @@
 	$r.render("assessedIdentityInfos")
 #end
 #if($testResults.metadataVisible)
+
+<div id="o_qti_results_infos" class="clearfix">
+	#if(${testResults.hasMaxScore()})
+		<div id="o_qti_scoreinfo">
+			<div id="o_qti_run_scoreinfo" class="col-md-2 col-sm-3">
+			#if ($testResults.hasMaxScore())
+	    		#if ($testResults.maxScore == "-1.0")
+	  				$r.translate("question.progress.score"): $testResults.score / $r.translate("question.progress.noMaxScore")
+	    		#else
+	  				$r.translate("question.progress.score"): $testResults.score / $testResults.maxScore
+	  			#end
+			#else
+				$r.translate("question.progress.score"): $testResults.score
+			#end
+	  		</div>
+			<div id="o_qti_run_scoreprogress" class="col-md-3 col-sm-2">
+				<div class="progress" style="width:100%;">
+					<div class="progress-bar" role="progressbar" aria-valuenow="$testResults.score" aria-valuemin="0" aria-valuemax="$testResults.maxScore" style="width:${testResults.scorePercent}%;">
+				      	<span class="sr-only">${testResults.scorePercent}%</span>
+				      </div>
+				</div>
+			</div>
+			<div class="col-md-1 col-sm-1">${testResults.scorePercent}%</div>
+		</div>
+	#end
+
+	<div id="o_qti_questioninfo">
+		<div id="o_qti_run_questioninfo" class="col-md-2 col-sm-3">
+			$r.translate("question.progress.answered"): $testResults.numberOfAnsweredQuestions / $testResults.numberOfQuestions
+		</div>
+		<div id="o_qti_run_questionprogress" class="col-md-3 col-sm-2">
+			<div class="progress" style="width:100%;">
+				<div class="progress-bar" role="progressbar" aria-valuenow="$testResults.numberOfAnsweredQuestions" aria-valuemin="0" aria-valuemax="$testResults.numberOfQuestions" style="width:${testResults.numberOfAnsweredQuestionsPercent}%;">
+			      	<span class="sr-only">${testResults.numberOfAnsweredQuestionsPercent}%</span>
+			      </div>
+			</div>
+		</div>
+		<div class="col-md-1 col-sm-1">${testResults.numberOfAnsweredQuestionsPercent}%</div>
+	</div>
+</div>
+
 <div class="panel panel-default o_personal o_sel_results_details">
   	<div class="panel-heading">
  		<h4 class="panel-title"><i class="o_icon o_qtiassessment_icon"> </i> $r.translate("head.assessment.overview")</h4>
@@ -31,7 +72,7 @@
 	<table class="table"><tbody>
 		<tr>
 			<th>$r.translate("results.entry.time")</th>
-			<td>$r.formatDateAndTime($testResults.entryTime)</td> 
+			<td>$r.formatDateAndTime($testResults.entryTime)</td>
 		</tr>
 		<tr>
 			<th>$r.translate("results.end.time")</th>
@@ -39,18 +80,28 @@
 		</tr>
 		<tr>
 			<th>$r.translate("results.duration")</th>
-			<td>$r.formatDurationInMillis($testResults.duration)</td> 
+			<td>$r.formatDurationInMillis($testResults.duration)</td>
 		</tr>
 		#if(${testResults.hasMaxScore()})
 		<tr class="o_sel_assessmenttest_maxscore">
 			<th>$r.translate("score.max")</th>
-			<td>$testResults.maxScore</td> 
+			<td>$testResults.maxScore</td>
 		</tr>
 		#end
 		#if(${testResults.hasScore()})
 		<tr class="o_sel_assessmenttest_score">
 			<th>$r.translate("results.score.yourscore")</th>
-			<td>$testResults.score</td> 
+			<td>
+				<div class="col-sm-2" style='padding-left:0;'>$testResults.score</div>
+				<div class="col-sm-8">
+					<div class="progress" style="width:100%;">
+						<div class="progress-bar" role="progressbar" aria-valuenow="$testResults.score" aria-valuemin="0" aria-valuemax="$testResults.maxScore" style="width:${testResults.scorePercent}%;">
+				      		<span class="sr-only">${testResults.scorePercent}%</span>
+				      	</div>
+					</div>
+				</div>
+				<div class="col-sm-2">${testResults.scorePercent}%</div>
+			</td>
 		</tr>
 		#end
 		#if(${testResults.hasPass()})
@@ -87,23 +138,12 @@
 	 	</div>
 	 	#if($itemResult.metadataVisible)
 		<table class="table"><tbody>
-			<tr>
-				<th>$r.translate("results.entry.time")</th>
-				<td>$r.formatDateAndTime($itemResult.entryTime)</td> 
-			</tr>
-			<tr>
-				<th>$r.translate("results.end.time")</th>
-				<td>$r.formatDateAndTime($itemResult.endTime)</td> 
-			</tr>
-			<tr>
-				<th>$r.translate("results.duration")</th>
-				<td>$r.formatDurationInMillis($itemResult.duration)</td> 
-			</tr>
-			<tr>
+			#if(!${itemResult.isSection()})
+			<tr class="o_sel_assessmentitem_status">
 				<th>$r.translate("results.session.status")</th>
 				<td>$itemResult.sessionStatus</td> 
 			</tr>
-			
+			#end
 			#if(${itemResult.hasMaxScore()})
 			<tr class="o_sel_assessmentitem_maxscore">
 				<th>$r.translate("score.max")</th>
@@ -113,7 +153,17 @@
 			#if(${itemResult.hasScore()})
 			<tr class="o_sel_assessmentitem_score">
 				<th>$r.translate("results.score.yourscore")</th>
-				<td>$itemResult.score</td> 
+				<td>
+					<div class="col-sm-2" style='padding-left:0;'>$itemResult.score</div>
+					<div class="col-sm-8">
+						<div class="progress" style="width:100%;">
+							<div class="progress-bar" role="progressbar" aria-valuenow="$itemResult.score" aria-valuemin="0" aria-valuemax="$itemResult.maxScore" style="width:${itemResult.scorePercent}%;">
+					      		<span class="sr-only">${itemResult.scorePercent}%</span>
+					      	</div>
+						</div>
+					</div>
+					<div class="col-sm-2">${itemResult.scorePercent}%</div>
+				</td> 
 			</tr>
 			#end
 			#if(${itemResult.hasPass()})
@@ -136,6 +186,21 @@
 			<tr class="o_sel_assessmentitem_comment">
 				<th>$r.translate("results.comment")</th>
 				<td>$r.escapeHtml($itemResult.comment)</td> 
+			</tr>
+			#end
+			#if($r.isNotEmpty($itemResult.getSubResults()))
+			<tr>
+				<td colspan="2">
+				#foreach($subResults in $itemResult.getSubResults())
+					#if(${subResults.isCorrect()})
+						<i class="o_icon o_icon-lg o_icon_qti_summary_correct"> </i>
+					#elseif(${subResults.isEnded()})
+						<i class="o_icon o_icon-lg $o-qti-status-ended-color"> </i>
+					#else
+						<i class="o_icon o_icon-lg o_icon_qti_summary_notAnswered"> </i>
+					#end
+				#end
+				</td>
 			</tr>
 			#end
 		</tbody></table>

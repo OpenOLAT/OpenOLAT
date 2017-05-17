@@ -46,7 +46,7 @@
 	</script>
 	#end
 
-	#if (!$qtiWorksStatus.isSurvey() && (($displayScoreProgress && $qtiWorksStatus.hasMaxScore()) || $displayQuestionProgress))
+	#if (!$qtiWorksStatus.isSurvey() && (($displayScoreProgress && $qtiWorksStatus.hasMaxScore()) || $displayQuestionProgress) && !$r.visible("qtiResults"))
 	<div id="o_qti_run_infos" class="clearfix">
 		#if (!$qtiWorksStatus.isSurvey() && $displayScoreProgress && $qtiWorksStatus.score)
 		<div id="o_qti_scoreinfo">

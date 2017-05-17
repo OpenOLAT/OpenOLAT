@@ -61,6 +61,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
+import org.olat.course.editor.PublishStep01.CourseAccessAndProperties;
 import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
@@ -704,6 +705,18 @@ public class PublishProcess {
 
 	public void changeGeneralAccess(Identity author, int access, boolean membersOnly){
 		RepositoryManager.getInstance().setAccess(repositoryEntry, access, membersOnly);
+		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, author, Change.modifiedAtPublish, "publish");
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, repositoryEntry);
+	}
+	
+	public void changeAccessAndProperties(Identity author, CourseAccessAndProperties accessAndProps) {
+		RepositoryManager manager = RepositoryManager.getInstance();
+		
+		manager.setAccessAndProperties(accessAndProps.getRepositoryEntry(), accessAndProps.getAccess(),
+				accessAndProps.isMembersOnly(), accessAndProps.isCanCopy(), accessAndProps.isCanReference(),
+				accessAndProps.isCanDownload());
+		manager.setLeaveSetting(accessAndProps.getRepositoryEntry(), accessAndProps.getSetting());
+		
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, author, Change.modifiedAtPublish, "publish");
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, repositoryEntry);
 	}

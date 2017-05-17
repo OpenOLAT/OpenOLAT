@@ -130,13 +130,9 @@ class PublishStep00 extends BasicStep {
 		 * first step is to show selection tree for selecting
 		 * prepares all data needed for next step(s)
 		 */
+		runContext.put("repoEntry", repoEntry);
 		runContext.put("publishProcess", publishProcess);
-		//fxdiff VCRP-1,2: access control of resources
-		if(repoEntry.isMembersOnly()) {
-			runContext.put("selectedCourseAccess", RepositoryEntry.MEMBERS_ONLY);
-		} else {
-			runContext.put("selectedCourseAccess",String.valueOf(repoEntry.getAccess()));
-		}
+
 		return new PublishStep00Form(ureq, wControl, form, publishProcess, runContext);
 	}
 

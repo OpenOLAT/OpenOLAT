@@ -35,12 +35,9 @@ import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
 import uk.ac.ed.ph.jqtiplus.node.test.TimeLimits;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeCondition;
-import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeConditionChild;
-import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeIf;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeProcessing;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.OutcomeRule;
 import uk.ac.ed.ph.jqtiplus.node.test.outcome.processing.SetOutcomeValue;
-import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 
 /**
@@ -101,47 +98,15 @@ public class AssessmentTestBuilder {
 				// pass rule
 				if(outcomeRule instanceof OutcomeCondition) {
 					OutcomeCondition outcomeCondition = (OutcomeCondition)outcomeRule;
-					boolean findIf = findSetOutcomeValue(outcomeCondition.getOutcomeIf(), QTI21Constants.PASS_IDENTIFIER);
-					boolean findElse = findSetOutcomeValue(outcomeCondition.getOutcomeElse(), QTI21Constants.PASS_IDENTIFIER);
+					boolean findIf = QtiNodesExtractor.findSetOutcomeValue(outcomeCondition.getOutcomeIf(), QTI21Constants.PASS_IDENTIFIER);
+					boolean findElse = QtiNodesExtractor.findSetOutcomeValue(outcomeCondition.getOutcomeElse(), QTI21Constants.PASS_IDENTIFIER);
 					if(findIf && findElse) {
-						cutValue = extractCutValue(outcomeCondition.getOutcomeIf());
+						cutValue = QtiNodesExtractor.extractCutValue(outcomeCondition.getOutcomeIf());
 						cutValueRule = outcomeCondition;
 					}
 				}
 			}
 		}
-	}
-	
-	public static Double extractCutValue(OutcomeIf outcomeIf) {
-		if(outcomeIf != null && outcomeIf.getExpressions().size() > 0) {
-			Expression gte = outcomeIf.getExpressions().get(0);
-			if(gte.getExpressions().size() > 1) {
-				Expression baseValue = gte.getExpressions().get(1);
-				if(baseValue instanceof BaseValue) {
-					BaseValue value = (BaseValue)baseValue;
-					if(value.getSingleValue() instanceof FloatValue) {
-						return ((FloatValue)value.getSingleValue()).doubleValue();
-					}
-				}
-			}
-		}
-		return null;
-	}
-	
-	public static boolean findSetOutcomeValue(OutcomeConditionChild outcomeConditionChild, Identifier identifier) {
-		if(outcomeConditionChild == null
-				|| outcomeConditionChild.getOutcomeRules() == null
-				|| outcomeConditionChild.getOutcomeRules().isEmpty()) return false;
-		
-		List<OutcomeRule> outcomeRules = outcomeConditionChild.getOutcomeRules();
-		for(OutcomeRule outcomeRule:outcomeRules) {
-			SetOutcomeValue setOutcomeValue = (SetOutcomeValue)outcomeRule;
-			if(identifier.equals(setOutcomeValue.getIdentifier())) {
-				return true;
-			}
-		}
-		
-		return false;
 	}
 	
 	private void extractFeedbacks() {

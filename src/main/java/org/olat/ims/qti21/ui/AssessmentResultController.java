@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,7 +46,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.fileresource.DownloadeableMediaResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -56,6 +56,7 @@ import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
@@ -76,6 +77,7 @@ import uk.ac.ed.ph.jqtiplus.node.result.OutcomeVariable;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.node.result.TestResult;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.state.AssessmentSectionSessionState;
@@ -155,6 +157,7 @@ public class AssessmentResultController extends FormBasicController {
 		
 		if(!anonym && assessedIdentity != null) {
 			assessedIdentityInfosCtrl = new UserShortDescription(ureq, getWindowControl(), assessedIdentity);
+			assessedIdentityInfosCtrl.setUsernameAtBottom();
 			listenTo(assessedIdentityInfosCtrl);
 		}
 		
@@ -199,13 +202,19 @@ public class AssessmentResultController extends FormBasicController {
 				layoutCont.contextPut("anonym", Boolean.TRUE);
 			}
 			
-			Results results = new Results(false, "o_qtiassessment_icon", options.isMetadata());
-			results.setSessionState(testSessionState);
+			Results testResults = new Results(false, "o_qtiassessment_icon", options.isMetadata());
+			testResults.setSessionState(testSessionState);
 			
-			layoutCont.contextPut("testResults", results);
+			layoutCont.contextPut("testResults", testResults);
 			TestResult testResult = assessmentResult.getTestResult();
 			if(testResult != null) {
-				extractOutcomeVariable(testResult.getItemVariables(), results);
+				extractOutcomeVariable(testResult.getItemVariables(), testResults);
+				
+				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+				Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+				if(cutValue != null) {
+					testResults.setCutValue(cutValue);
+				}
 			}
 			
 			if(signatureMapperUri != null) {
@@ -213,11 +222,11 @@ public class AssessmentResultController extends FormBasicController {
 				layoutCont.contextPut("signatureUrl", signatureUrl);
 			}
 
-			initFormSections(layoutCont);
+			initFormSections(layoutCont, testResults);
 		}
 	}
 	
-	private void initFormSections(FormLayoutContainer layoutCont) {
+	private void initFormSections(FormLayoutContainer layoutCont, Results testResults) {
 		List<Results> itemResults = new ArrayList<>();
 		layoutCont.contextPut("itemResults", itemResults);
 		
@@ -225,6 +234,8 @@ public class AssessmentResultController extends FormBasicController {
 		for(AssessmentItemRef itemRef:resolvedAssessmentTest.getAssessmentItemRefs()) {
 			identifierToRefs.put(itemRef.getIdentifier(), itemRef);
 		}
+
+		Map<TestPlanNode, Results> resultsMap = new HashMap<>();
 
 		TestPlan testPlan = testSessionState.getTestPlan();
 		List<TestPlanNode> nodes = testPlan.getTestPlanNodeList();
@@ -237,17 +248,23 @@ public class AssessmentResultController extends FormBasicController {
 				if(sectionState != null) {
 					r.setSessionState(sectionState);
 				}
+				resultsMap.put(node, r);
 				itemResults.add(r);
 			} else if(testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
-				Results results = initFormItemResult(layoutCont, node, identifierToRefs);
+				Results results = initFormItemResult(layoutCont, node, identifierToRefs, resultsMap);
 				if(results != null) {
 					itemResults.add(results);
+				}
+				testResults.setNumberOfQuestions(testResults.getNumberOfQuestions() + 1);
+				if(results.sessionStatus == SessionStatus.FINAL) {
+					testResults.setNumberOfAnsweredQuestions(testResults.getNumberOfAnsweredQuestions() + 1);
 				}
 			}
 		}
 	}
 
-	private Results initFormItemResult(FormLayoutContainer layoutCont, TestPlanNode node, Map<Identifier, AssessmentItemRef> identifierToRefs) {
+	private Results initFormItemResult(FormLayoutContainer layoutCont, TestPlanNode node,
+			Map<Identifier, AssessmentItemRef> identifierToRefs, Map<TestPlanNode, Results> resultsMap) {
 		TestPlanNodeKey testPlanNodeKey = node.getKey();
 		Identifier identifier = testPlanNodeKey.getIdentifier();
 		AssessmentItemRef itemRef = identifierToRefs.get(identifier);
@@ -257,14 +274,14 @@ public class AssessmentResultController extends FormBasicController {
 		AssessmentItemSession itemSession = identifierToItemSession.get(identifier.toString());
 
 		Results r = new Results(false, node.getSectionPartTitle(), type.getCssClass(), options.isQuestionSummary());
-		r.setSessionStatus("");//init
-		
+		r.setSessionStatus(null);//init
+
 		ItemSessionState sessionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
 		if(sessionState != null) {
 			r.setSessionState(sessionState);
 			SessionStatus sessionStatus = sessionState.getSessionStatus();
 			if(sessionState != null) {
-				r.setSessionStatus(translate("results.session.status." + sessionStatus.toQtiString()));
+				r.setSessionStatus(sessionStatus);
 			}
 		}
 		
@@ -274,10 +291,13 @@ public class AssessmentResultController extends FormBasicController {
 		}
 		if(itemSession != null) {
 			if(itemSession.getManualScore() != null) {
-				r.setScore(AssessmentHelper.getRoundedScore(itemSession.getManualScore()));
+				r.setScore(itemSession.getManualScore());
 			}
 			r.setComment(itemSession.getCoachComment());
 		}
+		
+		//update max score of section
+				
 		
 		if(options.isQuestions()) {
 			FormItem questionItem = initQuestionItem(layoutCont, sessionState, resolvedAssessmentItem);
@@ -287,9 +307,24 @@ public class AssessmentResultController extends FormBasicController {
 		if(options.isUserSolutions() || options.isCorrectSolutions()) {
 			List<InteractionResults> interactionResults = initFormItemInteractions(layoutCont, sessionState, assessmentItem, resolvedAssessmentItem);
 			r.getInteractionResults().addAll(interactionResults);
-		} 
+		}
 		
+		updateSectionScoreInformations(node, r, resultsMap);
 		return r;
+	}
+	
+	private void updateSectionScoreInformations(TestPlanNode node, Results assessmentItemResults, Map<TestPlanNode, Results> resultsMap) {
+		if(node.getParent() == null && resultsMap.get(node.getParent()) == null) return;
+
+		TestPlanNode section = node.getParent();
+		Results sectionResults = resultsMap.get(section);
+		sectionResults.addSubResults(assessmentItemResults);
+		if(assessmentItemResults.hasMaxScore()) {
+			sectionResults.addMaxScore(assessmentItemResults);
+			if(assessmentItemResults.hasScore()) {
+				sectionResults.addScore(assessmentItemResults);
+			}
+		}
 	}
 	
 	private FormItem initQuestionItem(FormLayoutContainer layoutCont, ItemSessionState sessionState,
@@ -380,10 +415,10 @@ public class AssessmentResultController extends FormBasicController {
 		}
 	}
 	
-	private String getOutcomeNumberVariable(ItemVariable outcomeVariable) {
+	private Double getOutcomeNumberVariable(ItemVariable outcomeVariable) {
 		Value value = outcomeVariable.getComputedValue();
 		if(value instanceof NumberValue) {
-			return AssessmentHelper.getRoundedScore(((NumberValue)value).doubleValue());
+			return ((NumberValue)value).doubleValue();
 		}
 		return null;
 	}
@@ -446,14 +481,15 @@ public class AssessmentResultController extends FormBasicController {
 		}
 	}
 	
-	public static class Results {
+	public class Results {
 		
 		private Date entryTime;
 		private Date endTime;
 		private Long duration;
 		
-		private String score;
-		private String maxScore;
+		private Double score;
+		private Double maxScore;
+		private Double cutValue;
 		private Boolean pass;
 		private String comment;
 		
@@ -462,10 +498,14 @@ public class AssessmentResultController extends FormBasicController {
 		private final boolean section;
 		private final boolean metadataVisible;
 		
-		private String sessionStatus;
+		private SessionStatus sessionStatus;
+		
+		private int numberOfQuestions = 0;
+		private int numberOfAnsweredQuestions = 0;
 		
 		private FormItem questionItem;
 		private final List<InteractionResults> interactionResults = new ArrayList<>();
+		private final List<Results> subResults = new ArrayList<>();
 		
 		public Results(boolean section, String cssClass, boolean metadataVisible) {
 			this.section = section;
@@ -526,27 +566,68 @@ public class AssessmentResultController extends FormBasicController {
 		}
 		
 		public boolean hasScore() {
-			return StringHelper.containsNonWhitespace(score);
+			return score != null;
 		}
 		
 		public String getScore() {
-			return score;
+			return AssessmentHelper.getRoundedScore(score);
 		}
 
-		public void setScore(String score) {
+		public void setScore(BigDecimal score) {
+			if(score != null) {
+				this.score = score.doubleValue();
+			}
+		}
+		
+		public void setScore(Double score) {
 			this.score = score;
 		}
 		
+		public void addScore(Results results) {
+			if(results.hasScore()) {
+				if(score == null) {
+					score = 0.0d;
+				}
+				score = score.doubleValue() + results.score.doubleValue();
+			}
+		}
+		
 		public boolean hasMaxScore() {
-			return StringHelper.containsNonWhitespace(maxScore);
+			return maxScore != null;
 		}
 		
 		public String getMaxScore() {
-			return maxScore;
+			return maxScore == null ? "" : AssessmentHelper.getRoundedScore(maxScore);
 		}
 
-		public void setMaxScore(String maxScore) {
+		public void setMaxScore(Double maxScore) {
 			this.maxScore = maxScore;
+		}
+		
+		public void addMaxScore(Results results) {
+			if(results.hasMaxScore()) {
+				if(maxScore == null) {
+					maxScore = 0.0d;
+				}
+				maxScore = maxScore.doubleValue() + results.maxScore.doubleValue();
+			}
+		}
+		
+		public Double getCutValue() {
+			return cutValue;
+		}
+		
+		public void setCutValue(Double cutValue) {
+			this.cutValue = cutValue;
+		}
+		
+		public String getScorePercent() {
+			if(maxScore == null) return null;
+			if(score == null) return "0";
+			
+			double percent = (score / maxScore) * 100.0d;
+			long percentLong = Math.round(percent);	
+			return Long.toString(percentLong);
 		}
 
 		public boolean hasPass() {
@@ -570,11 +651,53 @@ public class AssessmentResultController extends FormBasicController {
 		}
 
 		public String getSessionStatus() {
-			return sessionStatus == null ? "" : sessionStatus;
+			return sessionStatus == null ? "" : translate("results.session.status." + sessionStatus.toQtiString());
 		}
 
-		public void setSessionStatus(String sessionStatus) {
+		public void setSessionStatus(SessionStatus sessionStatus) {
 			this.sessionStatus = sessionStatus;
+		}
+		
+		public boolean isEnded() {
+			return sessionStatus == SessionStatus.FINAL;
+		}
+		
+		public boolean isCorrect() {
+			return sessionStatus == SessionStatus.FINAL &&
+					(maxScore != null && score != null && Math.abs(maxScore.doubleValue() - score.doubleValue()) < 0.0001);
+		}
+
+		public int getNumberOfQuestions() {
+			return numberOfQuestions;
+		}
+
+		public void setNumberOfQuestions(int numberOfQuestions) {
+			this.numberOfQuestions = numberOfQuestions;
+		}
+
+		public int getNumberOfAnsweredQuestions() {
+			return numberOfAnsweredQuestions;
+		}
+
+		public void setNumberOfAnsweredQuestions(int numberOfAnsweredQuestions) {
+			this.numberOfAnsweredQuestions = numberOfAnsweredQuestions;
+		}
+		
+		public String getNumberOfAnsweredQuestionsPercent() {
+			if(numberOfAnsweredQuestions <= 0) return "0";
+			if(numberOfQuestions <= 0) return "100";
+			
+			double val = ((double)numberOfAnsweredQuestions / (double)numberOfQuestions) * 100.0d;
+			long percent = Math.round(val);
+			return Long.toString(percent);
+		}
+		
+		public List<Results> getSubResults() {
+			return subResults;
+		}
+		
+		public void addSubResults(Results results) {
+			subResults.add(results);
 		}
 
 		public FormItem getQuestionItem() {

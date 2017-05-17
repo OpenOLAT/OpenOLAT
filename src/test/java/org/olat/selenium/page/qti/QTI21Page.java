@@ -320,7 +320,7 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page assertOnAssessmentTestScore(int score) {
-		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_score')]/td[contains(text(),'" + score + "')]");
+		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_score')]/td/div[contains(text(),'" + score + "')]");
 		OOGraphene.waitElement(resultsBy, 5, browser);
 		return this;
 	}

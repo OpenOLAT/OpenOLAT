@@ -49,6 +49,9 @@ openolat-lms.iml
 src/main/resources/maven.build.properties
 src/main/java/maven.build.properties
 
+#ignore my work class for selenium
+src/test/java/org/olat/selenium/SeleniumTest.java
+
 syntax: regexp
 ^olat3/\.settings$
 syntax: regexp
