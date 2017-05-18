@@ -23,7 +23,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.model.LectureBlockRow;
 
 /**
  * 
@@ -31,7 +31,7 @@ import org.olat.modules.lecture.LectureBlock;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeacherOverviewSortDelegate extends SortableFlexiTableModelDelegate<LectureBlock> {
+public class TeacherOverviewSortDelegate extends SortableFlexiTableModelDelegate<LectureBlockRow> {
 
 	public TeacherOverviewSortDelegate(SortKey orderBy, TeacherOverviewDataModel tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);

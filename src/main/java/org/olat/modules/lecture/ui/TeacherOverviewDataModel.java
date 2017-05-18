@@ -28,8 +28,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.model.LectureBlockRow;
 
 /**
  * 
@@ -37,8 +37,8 @@ import org.olat.modules.lecture.LectureBlockStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<LectureBlock>
-	implements SortableFlexiTableDataModel<LectureBlock> {
+public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<LectureBlockRow>
+	implements SortableFlexiTableDataModel<LectureBlockRow> {
 	
 	private final Locale locale;
 
@@ -49,31 +49,33 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<LectureBlock> rows = new TeacherOverviewSortDelegate(orderBy, this, locale).sort();
+		List<LectureBlockRow> rows = new TeacherOverviewSortDelegate(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		LectureBlock block = getObject(row);
+		LectureBlockRow block = getObject(row);
 		return getValueAt(block, col);
 	}
 
 	@Override
-	public Object getValueAt(LectureBlock row, int col) {
+	public Object getValueAt(LectureBlockRow row, int col) {
 		switch(TeachCols.values()[col]) {
-			case date: return row.getStartDate();
-			case startTime: return row.getStartDate();
-			case endTime: return row.getEndDate();
-			case lectureBlock: return row.getTitle();
-			case status: return row.getStatus();
+			case date: return row.getLectureBlock().getStartDate();
+			case startTime: return row.getLectureBlock().getStartDate();
+			case endTime: return row.getLectureBlock().getEndDate();
+			case lectureBlock: return row.getLectureBlock().getTitle();
+			case teachers: return row.getTeachers();
+			case location: return row.getLectureBlock().getLocation();
+			case status: return row.getLectureBlock().getStatus();
 			case details: {
-				Date end = row.getEndDate();
+				Date end = row.getLectureBlock().getEndDate();
 				return end.before(new Date());
 			}
 			case export: {
-				Date start = row.getStartDate();
-				LectureBlockStatus status = row.getStatus();
+				Date start = row.getLectureBlock().getStartDate();
+				LectureBlockStatus status = row.getLectureBlock().getStatus();
 				return new Date().after(start) && (status.equals(LectureBlockStatus.partiallydone) || status.equals(LectureBlockStatus.done));
 			}
 			default: return null;
@@ -81,7 +83,7 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<LectureBlock> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<LectureBlockRow> createCopyWithEmptyList() {
 		return new TeacherOverviewDataModel(getTableColumnModel(), locale);
 	}
 	
@@ -90,6 +92,8 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 		startTime("table.header.start.time"),
 		endTime("table.header.end.time"),
 		lectureBlock("table.header.lecture.block"),
+		location("table.header.location"),
+		teachers("table.header.teachers"),
 		status("table.header.status"),
 		details("table.header.details"),
 		export("table.header.export");

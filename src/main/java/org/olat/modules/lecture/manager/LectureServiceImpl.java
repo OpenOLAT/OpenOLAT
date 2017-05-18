@@ -56,6 +56,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureParticipantSummary;
@@ -192,6 +193,7 @@ public class LectureServiceImpl implements LectureService {
 		copy.setTitle(newTitle);
 		copy.setDescription(block.getDescription());
 		copy.setPreparation(block.getPreparation());
+		copy.setLocation(block.getLocation());
 		copy.setRollCallStatus(LectureRollCallStatus.open);
 		copy.setEffectiveLecturesNumber(block.getEffectiveLecturesNumber());
 		copy.setPlannedLecturesNumber(block.getPlannedLecturesNumber());
@@ -393,6 +395,7 @@ public class LectureServiceImpl implements LectureService {
 	}
 	
 	private void autoClose(LectureBlock lectureBlock) {
+		lectureBlock.setStatus(LectureBlockStatus.done);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.autoclosed);
 		if(lectureBlock.getEffectiveLecturesNumber() < 0) {
 			lectureBlock.setEffectiveLecturesNumber(lectureBlock.getPlannedLecturesNumber());
@@ -486,6 +489,11 @@ public class LectureServiceImpl implements LectureService {
 	}
 
 	@Override
+	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry, IdentityRef teacher) {
+		return lectureBlockDao.getLecturesBlockWithTeachers(entry, teacher);
+	}
+
+	@Override
 	public List<Identity> getTeachers(LectureBlock lectureBlock) {
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlock;
 		return groupDao.getMembers(block.getTeacherGroup(), "teacher");
@@ -537,23 +545,23 @@ public class LectureServiceImpl implements LectureService {
 	@Override
 	public List<LectureBlockStatistics> getParticipantLecturesStatistics(IdentityRef identity) {
 		boolean calculateAttendanceRate = lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
-		boolean authorizedAbsence = lectureModule.isAuthorizedAbsenceEnabled();
+		boolean absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
 		double defaultRequiredAttendanceRate = lectureModule.getRequiredAttendanceRateDefault();
 		return lectureBlockRollCallDao.getStatistics(identity,
-				authorizedAbsence, countAuthorizedAbsenceAsAttendant,
+				absenceDefaultAuthorized, countAuthorizedAbsenceAsAttendant,
 				calculateAttendanceRate, defaultRequiredAttendanceRate);
 	}
 
 	@Override
 	public List<LectureBlockStatistics> getParticipantsLecturesStatistics(RepositoryEntry entry) {
 		boolean calculateAttendanceRate = lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
-		boolean authorizedAbsence = lectureModule.isAuthorizedAbsenceEnabled();
+		boolean absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
 		double defaultRequiredAttendanceRate = lectureModule.getRequiredAttendanceRateDefault();
 		RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(entry);
 		return lectureBlockRollCallDao.getStatistics(entry, config,
-				authorizedAbsence, countAuthorizedAbsenceAsAttendant,
+				absenceDefaultAuthorized, countAuthorizedAbsenceAsAttendant,
 				calculateAttendanceRate, defaultRequiredAttendanceRate);
 	}
 

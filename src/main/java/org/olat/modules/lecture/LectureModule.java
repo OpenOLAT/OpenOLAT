@@ -53,6 +53,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String REQUIRED_ATTENDANCE_RATE_DEFAULT = "lecture.required.attendance.rate.default";
 	private static final String TEACHER_CALENDAR_SYNC_DEFAULT_ENABLED = "lecture.teacher.calendar.sync.default.enabled";
 	private static final String PARTICIPANT_CALENDAR_SYNC_DEFAULT_ENABLED = "lecture.participant.calendar.sync.default.enabed";
+	private static final String ABSENCE_DEFAULT_AUTHORIZED = "lecture.absence.default.authorized";
 	
 	@Value("${lecture.enabled:true}")
 	private boolean enabled;
@@ -68,6 +69,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean authorizedAbsenceEnabled;
 	@Value("${lecture.authorized.absence.as.attendant:false}")
 	private boolean countAuthorizedAbsenceAsAttendant;
+	@Value("${lecture.absence.default.authorized:false}")
+	private boolean absenceDefaultAuthorized;
 	@Value("${lecture.teacher.can.authorized.absence:true}")
 	private boolean teacherCanAuthorizedAbsence;
 
@@ -132,9 +135,9 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 			countAuthorizedAbsenceAsAttendant = "true".equals(authorizedAbsenceAttendantEnabledObj);
 		}
 
-		String teacherCanAuthorizedAbsenceObj = getStringPropertyValue(TEACHER_CAN_AUTHORIZED_ABSENCE, true);
-		if(StringHelper.containsNonWhitespace(teacherCanAuthorizedAbsenceObj)) {
-			teacherCanAuthorizedAbsence = "true".equals(teacherCanAuthorizedAbsenceObj);
+		String absenceDefaultAuthorizedObj = getStringPropertyValue(ABSENCE_DEFAULT_AUTHORIZED, true);
+		if(StringHelper.containsNonWhitespace(absenceDefaultAuthorizedObj)) {
+			absenceDefaultAuthorized = "true".equals(absenceDefaultAuthorizedObj);
 		}
 		
 		String rollcallReminderPeriodObj = getStringPropertyValue(ROLLCALL_REMINDER_PERIOD, true);
@@ -241,6 +244,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setCountAuthorizedAbsenceAsAttendant(boolean enable) {
 		this.countAuthorizedAbsenceAsAttendant = enable;
 		setStringProperty(AUTHORIZED_ABSENCE_ATTENDANT_ENABLED, Boolean.toString(enable), true);
+	}
+
+	public boolean isAbsenceDefaultAuthorized() {
+		return absenceDefaultAuthorized;
+	}
+
+	public void setAbsenceDefaultAuthorized(boolean absenceDefaultAuthorized) {
+		this.absenceDefaultAuthorized = absenceDefaultAuthorized;
+		setStringProperty(ABSENCE_DEFAULT_AUTHORIZED, Boolean.toString(absenceDefaultAuthorized), true);
 	}
 
 	public boolean isTeacherCanAuthorizedAbsence() {

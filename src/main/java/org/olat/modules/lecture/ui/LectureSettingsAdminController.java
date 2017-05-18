@@ -54,7 +54,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private TextElement attendanceRateEl, appealPeriodEl, reminderPeriodEl,
 		autoClosePeriodEl;
 	private MultipleSelectionElement enableEl, calculateAttendanceRateEnableEl,
-		appealAbsenceEnableEl, statusEnabledEl, authorizedAbsenceEnableEl,
+		appealAbsenceEnableEl, statusEnabledEl,
+		authorizedAbsenceEnableEl, absenceDefaultAuthorizedEl,
 		countAuthorizedAbsenceAsAttendantEl, syncTeachersCalendarEnableEl,
 		syncParticipantsCalendarEnableEl, teacherCanAuthorizeAbsenceEl,
 		reminderEnableEl, rollCallEnableEl;
@@ -171,6 +172,10 @@ public class LectureSettingsAdminController extends FormBasicController {
 		countAuthorizedAbsenceAsAttendantEl = uifactory.addCheckboxesHorizontal("lecture.count.authorized.absence.attendant", globalCont, onKeys, onValues);
 		if(lectureModule.isCountAuthorizedAbsenceAsAttendant()) {
 			countAuthorizedAbsenceAsAttendantEl.select(onKeys[0], true);
+		}
+		absenceDefaultAuthorizedEl = uifactory.addCheckboxesHorizontal("lecture.absence.default.authorized", globalCont, onKeys, onValues);
+		if(lectureModule.isAbsenceDefaultAuthorized()) {
+			absenceDefaultAuthorizedEl.select(onKeys[0], true);
 		}
 		teacherCanAuthorizeAbsenceEl = uifactory.addCheckboxesHorizontal("lecture.teacher.can.authorize.absence", globalCont, onKeys, onValues);
 		if(lectureModule.isTeacherCanAuthorizedAbsence()) {

@@ -63,6 +63,7 @@ implements SortableFlexiTableDataModel<ParticipantRow> {
 				case plannedLectures: return positive(row.getStatistics().getTotalPersonalPlannedLectures());
 				case attendedLectures: return positive(row.getStatistics().getTotalAttendedLectures());
 				case absentLectures: return positive(row.getStatistics().getTotalAbsentLectures());
+				case authorizedAbsenceLectures: return positive(row.getStatistics().getTotalAuthorizedAbsentLectures());
 				case rateWarning: return row.getStatistics();
 				case rate: return row.getStatistics().getAttendanceRate();
 				default: return null;
@@ -86,6 +87,7 @@ implements SortableFlexiTableDataModel<ParticipantRow> {
 		plannedLectures("table.header.planned.lectures"),
 		attendedLectures("table.header.attended.lectures"),
 		absentLectures("table.header.absent.lectures"),
+		authorizedAbsenceLectures("table.header.authorized.absence"),
 		progress("table.header.progress"),
 		rateWarning("table.header.rate.warning"),
 		rate("table.header.rate");

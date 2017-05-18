@@ -39,12 +39,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
+import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
@@ -56,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeacherOverviewTableController extends FormBasicController {
+public class TeacherLecturesTableController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
 	private TeacherOverviewDataModel tableModel;
@@ -65,16 +67,19 @@ public class TeacherOverviewTableController extends FormBasicController {
 	private TeacherRollCallController rollCallCtrl;
 	
 	private final boolean admin;
+	private final String emptyI18nKey;
 	
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
 	
-	public TeacherOverviewTableController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, boolean admin) {
+	public TeacherLecturesTableController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel toolbarPanel, boolean admin, String emptyI18nKey) {
 		super(ureq, wControl, "teacher_view_table");
 		this.admin = admin;
 		this.toolbarPanel = toolbarPanel;
+		this.emptyI18nKey = emptyI18nKey;
 		initForm(ureq);
 	}
 	
@@ -85,6 +90,8 @@ public class TeacherOverviewTableController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.startTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.endTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.lectureBlock));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.location));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.teachers));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.status, new LectureBlockStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.details.i18nHeaderKey(), TeachCols.details.ordinal(), "details",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null)));
@@ -99,18 +106,28 @@ public class TeacherOverviewTableController extends FormBasicController {
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
+		tableEl.setEmtpyTableMessageKey(emptyI18nKey);
 		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview");
 	}
 	
-	protected void loadModel(List<LectureBlock> blocks) {
+	protected void loadModel(List<LectureBlockRow> blocks) {
 		tableModel.setObjects(blocks);
 		tableEl.reset(false, false, true);
 	}
-
 	
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == rollCallCtrl) {
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, event);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -120,11 +137,11 @@ public class TeacherOverviewTableController extends FormBasicController {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				if("details".equals(cmd)) {
-					LectureBlock row = tableModel.getObject(se.getIndex());
-					doSelectLectureBlock(ureq, row);
+					LectureBlockRow row = tableModel.getObject(se.getIndex());
+					doSelectLectureBlock(ureq, row.getLectureBlock());
 				} else if("export".equals(cmd)) {
-					LectureBlock row = tableModel.getObject(se.getIndex());
-					doExportLectureBlock(ureq, row);
+					LectureBlockRow row = tableModel.getObject(se.getIndex());
+					doExportLectureBlock(ureq, row.getLectureBlock());
 				}
 			}
 		}

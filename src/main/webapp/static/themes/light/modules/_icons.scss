@@ -475,6 +475,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qti_summary_ended:before { content: $fa-var-circle; color: $o-qti-status-ended-color; }
 .o_icon_qti_summary_correct:before { content: $fa-var-circle; color: $brand-success; }
 
+/* lectures */
+.o_lectures_current:before { content: $fa-var-circle; color: $brand-warning; }
+.o_lectures_next:before { content: $fa-var-clock-o;  }
+.o_lectures_pending:before { content: $fa-var-circle; color: $brand-danger; }
+.o_lectures_closed:before { content: $fa-var-circle; }
+
 /* coaching */
 .o_black_led:before { content: $fa-var-circle; color: $brand-primary; }
 .o_green_led:before { content: $fa-var-circle; color: $brand-success; }

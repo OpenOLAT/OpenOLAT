@@ -26,12 +26,15 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -41,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -81,8 +85,10 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	private final double defaultRate;
 	private final boolean rateEnabled;
 	private final boolean rollCallEnabled;
+	private final boolean authorizedAbsenceEnabled;
 	
 	private final boolean admin;
+	private final boolean printView;
 	private final RepositoryEntry entry;
 	private RepositoryEntryLectureConfiguration lectureConfig;
 	
@@ -98,18 +104,18 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	private BaseSecurity securityManager;
 	
 	public ParticipantListRepositoryController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, boolean admin) {
+			RepositoryEntry entry, boolean printView, boolean admin) {
 		super(ureq, wControl, "participant_list_overview");
 		this.entry = entry;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.admin = admin;
+		this.printView = printView;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
-		
-		
+
 		lectureConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		rateEnabled = ConfigurationHelper.isRateEnabled(lectureConfig, lectureModule);
 		if(lectureConfig.isOverrideModuleDefault()) {
@@ -121,6 +127,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			defaultRate = lectureModule.getRequiredAttendanceRateDefault();
 			rollCallEnabled = lectureModule.isRollCallDefaultEnabled();
 		}
+		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 
 		initForm(ureq);
 		loadModel();
@@ -128,6 +135,13 @@ public class ParticipantListRepositoryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer && !printView) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
+			layoutCont.getFormItemComponent().addListener(this);
+			layoutCont.getFormItemComponent().contextPut("withPrint", Boolean.TRUE);
+		}
+
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.username));
@@ -150,6 +164,9 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		if(rollCallEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.attendedLectures));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.absentLectures));
+			if(authorizedAbsenceEnabled) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.authorizedAbsenceLectures));
+			}
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.progress, new LectureStatisticsCellRenderer()));
 		}
 		if(rateEnabled) {
@@ -157,17 +174,19 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rate, new PercentCellRenderer()));
 		}
 		
-		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
-				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
-		editColumn.setExportable(false);
-		editColumn.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(editColumn);
+		if(!printView) {
+			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
+					new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
+			editColumn.setExportable(false);
+			editColumn.setAlwaysVisible(true);
+			columnsModel.addFlexiColumnModel(editColumn);
+		}
 		
 		tableModel = new ParticipantListDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
-		tableEl.setExportEnabled(true);
-		tableEl.setMultiSelect(true);
-		tableEl.setSelectAllEnable(true);
+		tableEl.setExportEnabled(!printView);
+		tableEl.setMultiSelect(!printView);
+		tableEl.setSelectAllEnable(!printView);
 		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry");
 	}
 	
@@ -216,6 +235,14 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		editRateCtrl = null;
 		cmc = null;
 	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(flc.getFormItemComponent() == source && "print".equals(event.getCommand())) {
+			doPrint(ureq);
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -248,5 +275,19 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", editRateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doPrint(UserRequest ureq) {
+		ControllerCreator printControllerCreator = new ControllerCreator() {
+			@Override
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {
+				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
+				Controller printCtrl = new ParticipantListRepositoryController(lureq, lwControl, entry, true, admin);
+				listenTo(printCtrl);
+				return printCtrl;
+			}					
+		};
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
+		openInNewBrowserWindow(ureq, layoutCtrlr);
 	}
 }

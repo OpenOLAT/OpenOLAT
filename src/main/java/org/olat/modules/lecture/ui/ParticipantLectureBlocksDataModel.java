@@ -41,11 +41,16 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 	
 	private final Locale locale;
 	private final AppealCallback appealCallback;
+	private final boolean authorizedAbsenceEnabled;
+	private final boolean absenceDefaultAuthorized;
 	
-	public ParticipantLectureBlocksDataModel(FlexiTableColumnModel columnModel, AppealCallback appealCallback, Locale locale) {
+	public ParticipantLectureBlocksDataModel(FlexiTableColumnModel columnModel, AppealCallback appealCallback,
+			boolean authorizedAbsenceEnabled, boolean absenceDefaultAuthorized, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
 		this.appealCallback = appealCallback;
+		this.authorizedAbsenceEnabled = authorizedAbsenceEnabled;
+		this.absenceDefaultAuthorized = absenceDefaultAuthorized;
 	}
 
 	@Override
@@ -69,15 +74,52 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 			case coach: return row.getCoach();
 			case plannedLectures: return row.getPlannedLecturesNumber();
 			case attendedLectures: return row.getLecturesAttendedNumber() < 0 ? 0 : row.getLecturesAttendedNumber();
-			case absentLectures: return row.getLecturesAbsentNumber() < 0 ? 0 : row.getLecturesAbsentNumber();
+			case absentLectures: {
+				long value;
+				if(isAuthorized(row)) {
+					value = 0l;
+				} else {
+					value = positive(row.getLecturesAbsentNumber());
+				}
+				return value;
+			}
+			case authorizedAbsentLectures: {
+				long value;
+				if(isAuthorized(row)) {
+					value = positive(row.getLecturesAbsentNumber());
+				} else {
+					value = 0l;
+				}
+				return value;
+			}
 			case appeal: return appealCallback.appealAllowed(row);
 			default: return null;
 		}
 	}
+	
+	private boolean isAuthorized(LectureBlockAndRollCall row) {
+		boolean authorized;
+		if(authorizedAbsenceEnabled) {
+			if((row.getLecturesAuthorizedAbsent() == null && absenceDefaultAuthorized)
+					|| (row.getLecturesAuthorizedAbsent() != null && row.getLecturesAuthorizedAbsent().booleanValue())) {
+				authorized = true;
+			} else {
+				authorized = false;
+			}
+		} else {
+			authorized = false;
+		}
+		return authorized;
+	}
+
+	private int positive(int num) {
+		return num < 0 ? 0 : num;
+	}
 
 	@Override
 	public DefaultFlexiTableDataModel<LectureBlockAndRollCall> createCopyWithEmptyList() {
-		return new ParticipantLectureBlocksDataModel(getTableColumnModel(), appealCallback, locale);
+		return new ParticipantLectureBlocksDataModel(getTableColumnModel(), appealCallback,
+				authorizedAbsenceEnabled, absenceDefaultAuthorized, locale);
 	}
 	
 	public enum ParticipantCols implements FlexiSortableColumnDef {
@@ -88,6 +130,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 		plannedLectures("table.header.planned.lectures"),
 		attendedLectures("table.header.attended.lectures"),
 		absentLectures("table.header.absent.lectures"),
+		authorizedAbsentLectures("table.header.authorized.absence"),
 		appeal("table.header.appeal");
 		
 		private final String i18nKey;

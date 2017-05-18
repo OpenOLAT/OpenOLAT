@@ -29,7 +29,9 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
 
 /**
  * 
+ * Initial date: 17 mai 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
 public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
 
@@ -37,22 +39,32 @@ public class LectureStatisticsCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof LectureBlockStatistics) {
 			LectureBlockStatistics stats = (LectureBlockStatistics)cellValue;
-			long total = stats.getTotalPlannedLectures();
+			long total = stats.getTotalPersonalPlannedLectures();
 			long attended = stats.getTotalAttendedLectures();
 			long absent = stats.getTotalAbsentLectures();
-			render(target, total, attended, absent);
+			long authorizedAbsent = stats.getTotalAuthorizedAbsentLectures();
+			render(target, total, attended, absent, authorizedAbsent);
 		}
 	}
 	
-	private void render(StringOutput target, long total, long attended, long absent) {
+	private void render(StringOutput target, long total, long attended, long absent, long authorizedAbsent) {
 		long attendedPercent = (attended == 0) ? 0 : Math.round(100.0f * ((double)attended / (double)total));
 		long absentPercent = (absent == 0) ? 0 :  Math.round(100.0f * ((double)absent / (double)total));
+		long authorizedAbsentPercent = (authorizedAbsent == 0) ? 0 :  Math.round(100.0f * ((double)authorizedAbsent / (double)total));
+		
 		target.append("<div class='progress'>");
 		//attended
 		target.append("<div class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='").append(attended)
 		      .append("' aria-valuemin='0' aria-valuemax='").append(total)
 		      .append("' style='width: ").append(attendedPercent).append("%;'>")
 		      .append("<span class='sr-only'>").append(attendedPercent).append("%</span></div>");
+		
+		//authorized absent
+		target.append("<div class='progress-bar progress-bar-warning' role='progressbar' aria-valuenow='").append(authorizedAbsent)
+	      .append("' aria-valuemin='0' aria-valuemax='").append(total)
+	      .append("' style='width: ").append(authorizedAbsentPercent).append("%;'>")
+	      .append("<span class='sr-only'>").append(authorizedAbsentPercent).append("%</span></div>");
+		
 		//absent
 		target.append("<div class='progress-bar progress-bar-danger' role='progressbar' aria-valuenow='").append(absent)
 	      .append("' aria-valuemin='0' aria-valuemax='").append(total)

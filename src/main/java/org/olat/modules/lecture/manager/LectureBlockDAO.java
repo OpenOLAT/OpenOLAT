@@ -142,6 +142,12 @@ public class LectureBlockDAO {
 		return rows;
 	}
 	
+	/**
+	 * 
+	 * @param entry The course (mandatory)
+	 * @param teacher The teacher (optional)
+	 * @return
+	 */
 	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(RepositoryEntryRef entry) {
 		List<LectureBlock> blocks = loadByEntry(entry);
 		Map<Long,LectureBlockWithTeachers> blockMap = new HashMap<>();
@@ -166,10 +172,53 @@ public class LectureBlockDAO {
 				.getResultList();
 		for(Object[] rawCoach:rawCoachs) {
 			Long blockKey = (Long)rawCoach[0];
-			Identity teacher = (Identity)rawCoach[1];
+			Identity coach = (Identity)rawCoach[1];
 			LectureBlockWithTeachers block = blockMap.get(blockKey);
 			if(block != null) {
-				block.getTeachers().add(teacher);
+				block.getTeachers().add(coach);
+			}
+		}
+		return new ArrayList<>(blockMap.values());
+	}
+	
+	/**
+	 * 
+	 * @param entry The course (mandatory)
+	 * @param teacher The teacher (mandatory)
+	 * @return
+	 */
+	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(RepositoryEntryRef entry, IdentityRef teacher) {
+		List<LectureBlock> blocks = loadByEntry(entry);
+		Map<Long,LectureBlockWithTeachers> blockMap = new HashMap<>();
+		for(LectureBlock block:blocks) {
+			blockMap.put(block.getKey(), new  LectureBlockWithTeachers(block));
+		}
+		
+		// append the coaches
+		StringBuilder sc = new StringBuilder();
+		sc.append("select block.key, coach")
+		  .append(" from lectureblock block")
+		  .append(" inner join block.teacherGroup tGroup")
+		  .append(" inner join tGroup.members membership")
+		  .append(" inner join membership.identity coach")
+		  .append(" inner join fetch coach.user usercoach")
+		  .append(" where membership.role='").append("teacher").append("' and block.entry.key=:repoEntryKey")
+		  .append(" and exists (select teachership.key from bgroupmember teachership where")
+		  .append("  teachership.group.key=tGroup.key and teachership.identity.key=:teacherKey")
+		  .append(" )");
+		
+		//get all, it's quick
+		List<Object[]> rawCoachs = dbInstance.getCurrentEntityManager()
+				.createQuery(sc.toString(), Object[].class)
+				.setParameter("repoEntryKey", entry.getKey())
+				.setParameter("teacherKey", teacher.getKey())
+				.getResultList();
+		for(Object[] rawCoach:rawCoachs) {
+			Long blockKey = (Long)rawCoach[0];
+			Identity coach = (Identity)rawCoach[1];
+			LectureBlockWithTeachers block = blockMap.get(blockKey);
+			if(block != null) {
+				block.getTeachers().add(coach);
 			}
 		}
 		return new ArrayList<>(blockMap.values());

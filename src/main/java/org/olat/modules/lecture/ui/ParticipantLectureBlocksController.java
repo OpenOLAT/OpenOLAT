@@ -25,8 +25,10 @@ import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarUtils;
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -44,8 +46,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.modules.co.ContactFormController;
@@ -56,6 +60,7 @@ import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.ui.ParticipantLectureBlocksDataModel.ParticipantCols;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -77,6 +82,14 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	private CloseableModalController cmc;
 	private ContactFormController appealCtrl;
 	
+	private final boolean withPrint;
+	private final boolean withAppeal;
+	private final Identity assessedIdentity;
+	private final boolean authorizedAbsenceEnabled;
+	private final boolean absenceDefaultAuthorized;
+	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
@@ -84,10 +97,21 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	@Autowired
 	private RepositoryService repositoryService;
 	
+
 	public ParticipantLectureBlocksController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+		this(ureq, wControl, entry, ureq.getIdentity(), true, true);
+	}
+	
+	private ParticipantLectureBlocksController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry entry, Identity assessedIdentity, boolean withPrint, boolean withAppeal) {
 		super(ureq, wControl, "participant_blocks");
 		this.entry = entry;
+		this.withPrint = withPrint;
+		this.withAppeal = withAppeal;
+		this.assessedIdentity = assessedIdentity;
 		appealEnabled = lectureModule.isAbsenceAppealEnabled();
+		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		
 		int appealOffset = lectureModule.getRollCallAutoClosePeriod();//TODO absence or is it reminder period
 		int appealPeriod = lectureModule.getAbsenceAppealPeriod();
@@ -100,7 +124,17 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("title", entry.getDisplayname());
+			if(withPrint) {
+				layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
+				layoutCont.getFormItemComponent().addListener(this);
+				layoutCont.getFormItemComponent().contextPut("withPrint", Boolean.TRUE);
+				layoutCont.contextPut("title", StringHelper.escapeHtml(entry.getDisplayname()));
+			} else {
+				layoutCont.contextPut("title", translate("lectures.repository.print.title", new String[] {
+						StringHelper.escapeHtml(entry.getDisplayname()),
+						StringHelper.escapeHtml(userManager.getUserDisplayName(assessedIdentity))
+				}));
+			}
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -111,23 +145,30 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.plannedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.attendedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.absentLectures));
-		if(appealEnabled) {
+		if(authorizedAbsenceEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.authorizedAbsentLectures));
+		}
+
+		if(appealEnabled && withAppeal) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("appeal", ParticipantCols.appeal.ordinal(), "appeal",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("appeal"), "appeal"), null)));
 		}
 
-		tableModel = new ParticipantLectureBlocksDataModel(columnsModel, appealCallback, getLocale()); 
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableModel = new ParticipantLectureBlocksDataModel(columnsModel, appealCallback,
+				authorizedAbsenceEnabled, absenceDefaultAuthorized, getLocale());
+		int paging = withPrint ? 20 : -1;
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, paging, false, getTranslator(), formLayout);
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(ParticipantCols.date.name(), true));
 		tableEl.setSortSettings(options);
+		tableEl.setCustomizeColumns(withPrint);
 		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-roll-call-appeal");
 		tableEl.setEmtpyTableMessageKey("empty.repository.entry.lectures");
 	}
 	
 	private void loadModel() {
-		List<LectureBlockAndRollCall> rollCalls = lectureService.getParticipantLectureBlocks(entry, getIdentity());
+		List<LectureBlockAndRollCall> rollCalls = lectureService.getParticipantLectureBlocks(entry, assessedIdentity);
 		tableModel.setObjects(rollCalls);
 		tableEl.reset(true, true, true);
 	}
@@ -136,20 +177,13 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
-
+	
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				String cmd = se.getCommand();
-				LectureBlockAndRollCall row = tableModel.getObject(se.getIndex());
-				if("appeal".equals(cmd)) {
-					doAppeal(ureq, row);
-				}
-			}
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(flc.getFormItemComponent() == source && "print".equals(event.getCommand())) {
+			doPrint(ureq);
 		}
-		super.formInnerEvent(ureq, source, event);
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -172,6 +206,21 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		removeAsListenerAndDispose(cmc);
 		appealCtrl = null;
 		cmc = null;
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				LectureBlockAndRollCall row = tableModel.getObject(se.getIndex());
+				if("appeal".equals(cmd)) {
+					doAppeal(ureq, row);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -202,6 +251,20 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", appealCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doPrint(UserRequest ureq) {
+		ControllerCreator printControllerCreator = new ControllerCreator() {
+			@Override
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {
+				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
+				Controller printCtrl = new ParticipantLectureBlocksController(lureq, lwControl, entry, assessedIdentity, false, false);
+				listenTo(printCtrl);
+				return printCtrl;
+			}					
+		};
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
+		openInNewBrowserWindow(ureq, layoutCtrlr);
 	}
 	
 	public class AppealCallback {

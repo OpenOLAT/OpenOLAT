@@ -44,6 +44,7 @@ public class LectureBlockAndRollCall {
 	private final Long rollCallKey;
 	private final int lecturesAbsentNumber;
 	private final int lecturesAttendedNumber;
+	private final Boolean lecturesAuthorizedAbsent;
 	
 	private String coach;
 	
@@ -60,10 +61,12 @@ public class LectureBlockAndRollCall {
 			rollCallKey = null;
 			lecturesAttendedNumber = 0;
 			lecturesAbsentNumber = 0;
+			lecturesAuthorizedAbsent = null;
 		} else {
 			rollCallKey = rollCall.getKey();
 			lecturesAttendedNumber = rollCall.getLecturesAttendedNumber();
 			lecturesAbsentNumber = rollCall.getLecturesAbsentNumber();
+			lecturesAuthorizedAbsent = rollCall.getAbsenceAuthorized();
 		}
 	}
 
@@ -93,6 +96,10 @@ public class LectureBlockAndRollCall {
 	
 	public int getLecturesAbsentNumber() {
 		return lecturesAbsentNumber;
+	}
+	
+	public Boolean getLecturesAuthorizedAbsent() {
+		return lecturesAuthorizedAbsent;
 	}
 
 	public int getPlannedLecturesNumber() {

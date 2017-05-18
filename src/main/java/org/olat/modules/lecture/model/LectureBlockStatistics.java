@@ -38,6 +38,7 @@ public class LectureBlockStatistics {
 	private long totalAttendedLectures = 0l;
 	private long totalAbsentLectures = 0l;
 	private long totalAuthorizedAbsentLectures = 0l;
+	private double attendanceRate;
 
 	private final boolean calculateRate;
 	private final double requiredRate;
@@ -127,10 +128,10 @@ public class LectureBlockStatistics {
 	}
 
 	public double getAttendanceRate() {
-		long totalLectures = totalAbsentLectures + totalAttendedLectures;
-		if(totalLectures == 0 || totalAttendedLectures == 0) {
-			return 0.0d;
-		}
-		return (double)totalAttendedLectures / (double)totalLectures;
+		return attendanceRate;
+	}
+	
+	public void setAttendanceRate(double rate) {
+		this.attendanceRate = rate;
 	}
 }

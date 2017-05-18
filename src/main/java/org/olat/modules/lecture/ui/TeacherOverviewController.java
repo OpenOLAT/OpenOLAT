@@ -42,8 +42,11 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.RollCallSecurityCallback;
+import org.olat.modules.lecture.model.LectureBlockRow;
+import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,16 +64,18 @@ public class TeacherOverviewController extends BasicController {
 	private TeacherRollCallController rollCallCtrl;
 	private TeacherRollCallWizardController rollCallWizardCtrl;
 	
-	private TeacherOverviewTableController currentLecturesBlockCtrl;
-	private TeacherOverviewTableController pendingLecturesBlockCtrl;
-	private TeacherOverviewTableController nextLecturesBlockCtrl;
-	private TeacherOverviewTableController closedLecturesBlockCtrl;
+	private TeacherLecturesTableController currentLecturesBlockCtrl;
+	private TeacherLecturesTableController pendingLecturesBlockCtrl;
+	private TeacherLecturesTableController nextLecturesBlockCtrl;
+	private TeacherLecturesTableController closedLecturesBlockCtrl;
 	
 	
 	private final boolean admin;
 	private final RepositoryEntry entry;
 	private final RepositoryEntryLectureConfiguration entryConfig;
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
@@ -91,16 +96,20 @@ public class TeacherOverviewController extends BasicController {
 		startWizardButton = LinkFactory.createButton("start.wizard", mainVC, this);
 		startWizardButton.setVisible(false);
 		
-		currentLecturesBlockCtrl = new TeacherOverviewTableController(ureq, getWindowControl(), toolbarPanel, admin);
+		currentLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(), toolbarPanel,
+				admin, "empty.table.current.lectures.blocks");
 		listenTo(currentLecturesBlockCtrl);
 		mainVC.put("currentLectures", currentLecturesBlockCtrl.getInitialComponent());
-		pendingLecturesBlockCtrl = new TeacherOverviewTableController(ureq, getWindowControl(), toolbarPanel, admin);
+		pendingLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(), toolbarPanel,
+				admin, "empty.table.lectures.blocks");
 		listenTo(pendingLecturesBlockCtrl);
 		mainVC.put("pendingLectures", pendingLecturesBlockCtrl.getInitialComponent());
-		nextLecturesBlockCtrl = new TeacherOverviewTableController(ureq, getWindowControl(), toolbarPanel, admin);
+		nextLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(), toolbarPanel,
+				admin, "empty.table.lectures.blocks");
 		listenTo(nextLecturesBlockCtrl);
 		mainVC.put("nextLectures", nextLecturesBlockCtrl.getInitialComponent());
-		closedLecturesBlockCtrl = new TeacherOverviewTableController(ureq, getWindowControl(), toolbarPanel, admin);
+		closedLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(), toolbarPanel,
+				admin, "empty.table.lectures.blocks");
 		listenTo(closedLecturesBlockCtrl);
 		mainVC.put("closedLectures", closedLecturesBlockCtrl.getInitialComponent());
 
@@ -109,22 +118,32 @@ public class TeacherOverviewController extends BasicController {
 	}
 	
 	private void loadModel() {
-		List<LectureBlock> blocks = lectureService.getLectureBlocks(entry, getIdentity());
+		List<LectureBlockWithTeachers> blocksWithTeachers = lectureService.getLectureBlocksWithTeachers(entry, getIdentity());
+		
 		//reset
 		startButton.setVisible(false);
 		startButton.setUserObject(null);
 		startWizardButton.setVisible(false);
 		startWizardButton.setUserObject(null);
 		
-		List<LectureBlock> currentBlocks = new ArrayList<>();
-		List<LectureBlock> pendingBlocks = new ArrayList<>();
-		List<LectureBlock> nextBlocks = new ArrayList<>();
-		List<LectureBlock> closedBlocks = new ArrayList<>();
+		List<LectureBlockRow> currentBlocks = new ArrayList<>();
+		List<LectureBlockRow> pendingBlocks = new ArrayList<>();
+		List<LectureBlockRow> nextBlocks = new ArrayList<>();
+		List<LectureBlockRow> closedBlocks = new ArrayList<>();
 
 		// only show the start button if 
 		Date now = new Date();
 		if(ConfigurationHelper.isRollCallEnabled(entryConfig, lectureModule)) {
-			for(LectureBlock block:blocks) {
+			for(LectureBlockWithTeachers blockWithTeachers:blocksWithTeachers) {
+				LectureBlock block = blockWithTeachers.getLectureBlock();
+				
+				StringBuilder teachers = new StringBuilder();
+				for(Identity teacher:blockWithTeachers.getTeachers()) {
+					if(teachers.length() > 0) teachers.append(", ");
+					teachers.append(userManager.getUserDisplayName(teacher));
+				}
+				
+				LectureBlockRow row = new LectureBlockRow(block, teachers.toString());
 				if(canStartRollCall(block)) {
 					startButton.setVisible(true);
 					startButton.setUserObject(block);
@@ -133,21 +152,25 @@ public class TeacherOverviewController extends BasicController {
 					startWizardButton.setVisible(true);
 					startWizardButton.setUserObject(block);
 					
-					currentBlocks.add(block);
+					currentBlocks.add(row);
 				} else if(block.getRollCallStatus() == LectureRollCallStatus.closed || block.getRollCallStatus() == LectureRollCallStatus.autoclosed) {
-					closedBlocks.add(block);
+					closedBlocks.add(row);
 				} else if(block.getStartDate() != null && block.getStartDate().after(now)) {
-					nextBlocks.add(block);
+					nextBlocks.add(row);
 				} else {
-					pendingBlocks.add(block);
+					pendingBlocks.add(row);
 				}
 			}
 		}
 		
 		currentLecturesBlockCtrl.loadModel(currentBlocks);
+		mainVC.contextPut("currentBlockSize", currentBlocks.size());
 		pendingLecturesBlockCtrl.loadModel(pendingBlocks);
+		mainVC.contextPut("pendingBlockSize", pendingBlocks.size());
 		nextLecturesBlockCtrl.loadModel(nextBlocks);
+		mainVC.contextPut("nextBlockSize", nextBlocks.size());
 		closedLecturesBlockCtrl.loadModel(closedBlocks);
+		mainVC.contextPut("closedBlockSize", closedBlocks.size());
 	}
 	
 	private boolean canStartRollCall(LectureBlock block) {
@@ -180,6 +203,11 @@ public class TeacherOverviewController extends BasicController {
 			getWindowControl().getWindowBackOffice()
 				.getChiefController().getScreenMode().setMode(Mode.standard);
 			cleanUp();
+		} else if(currentLecturesBlockCtrl == source || pendingLecturesBlockCtrl == source
+				|| nextLecturesBlockCtrl == source ||  closedLecturesBlockCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				toolbarPanel.popUpToController(this);
+			}
 		}
 		super.event(ureq, source, event);
 	}

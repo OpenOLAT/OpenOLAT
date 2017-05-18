@@ -1,26 +1,34 @@
-<fieldset>
-	<legend>$r.translate("lectures.table.current")</legend>
-#if($r.visible("start") || $r.visible("start.wizard"))
-	$r.render("currentLectures")
-	<div class="o_button_group">
-		#if($r.visible("start"))
-			$r.render("start")
+<div class="o_lectures_teacher_overview">
+	<fieldset>
+		<legend><i class="o_icon o_lectures_current"> </i> $r.translate("lectures.table.current")</legend>
+		$r.render("currentLectures")
+		#if($r.visible("start") || $r.visible("start.wizard"))
+		<div class="o_button_group">
+			#if($r.visible("start"))
+				$r.render("start")
+			#end
+			#if($r.visible("start.wizard"))
+				$r.render("start.wizard")
+			#end
+		</div>
 		#end
-		#if($r.visible("start.wizard"))
-			$r.render("start.wizard")
-		#end
-	</div>
-#end
-</fieldset>
-<fieldset>
-	<legend>$r.translate("lectures.table.pending")</legend>
-$r.render("pendingLectures")
-</fieldset>
-<fieldset>
-	<legend>$r.translate("lectures.table.next")</legend>
-$r.render("nextLectures")
-</fieldset>
-<fieldset>
-	<legend>$r.translate("lectures.table.closed")</legend>
-$r.render("closedLectures")
-</fieldset>
+	</fieldset>
+	#if($r.isNotNull($pendingBlockSize) && $pendingBlockSize > 0)
+	<fieldset>
+		<legend><i class="o_icon o_lectures_pending"> </i> $r.translate("lectures.table.pending")</legend>
+	$r.render("pendingLectures")
+	</fieldset>
+	#end
+	#if($r.isNotNull($nextBlockSize) && $nextBlockSize > 0)
+	<fieldset>
+		<legend><i class="o_icon o_lectures_next"> </i> $r.translate("lectures.table.next")</legend>
+	$r.render("nextLectures")
+	</fieldset>
+	#end
+	#if($r.isNotNull($closedBlockSize) && $closedBlockSize > 0)
+	<fieldset>
+		<legend><i class="o_icon o_icon-sm o_lectures_closed"> </i> $r.translate("lectures.table.closed")</legend>
+	$r.render("closedLectures")
+	</fieldset>
+	#end
+</div>

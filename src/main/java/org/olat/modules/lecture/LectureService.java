@@ -267,6 +267,14 @@ public interface LectureService {
 	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry);
 	
 	/**
+	 * Return the list of lecture blocks of a course with the teachers for a specific teacher.
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry, IdentityRef teacher);
+	
+	/**
 	 * Returns the lecture block for the specified learning resource
 	 * and the specified identity which has the "teacher" role for the
 	 * block.
