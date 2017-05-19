@@ -40,9 +40,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
-import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti.container.qtielements.RenderInstructions;
 import org.olat.ims.qti.editor.beecom.objects.Item;
@@ -112,9 +110,8 @@ public class ItemPreviewController extends DefaultController implements Controll
 			StringBuilder sb = new StringBuilder();
 			org.olat.ims.qti.container.qtielements.Item foo = new org.olat.ims.qti.container.qtielements.Item((Element) el.elements().get(0));
 			foo.render(sb, renderInstructions);
-			String previewWithFormattedMathElements = Formatter.formatLatexFormulas(sb.toString());
-			Filter filter = FilterFactory.getBaseURLToMediaRelativeURLFilter(mediaBaseUrl);
-			return filter.filter(previewWithFormattedMathElements);
+			return FilterFactory.getBaseURLToMediaRelativeURLFilter(mediaBaseUrl)
+					.filter(sb.toString());
 		} catch (Exception e) {
 			log.warn("Cannot render preview of an QTI 1.2 item: " + theItem);
 			return "ERROR";
