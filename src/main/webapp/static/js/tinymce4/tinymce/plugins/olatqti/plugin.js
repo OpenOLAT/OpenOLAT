@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.2.4'
+				version : '1.2.5'
 			};
 		},
 
@@ -222,12 +222,12 @@
 				});
 				
 				jQuery("span.hottext[data-copy='needlistener']", e.element).each(function(index, el) {
-					if(jQuery("a", el).size() == 0) {
+					if(jQuery("a.o_check", el).size() == 0) {
 						var checked = jQuery(el).attr('data-qti-checked');
-						jQuery(el).prepend("<a " + ("true" == checked ? "class='checked'" : "") + " contenteditable='false'><i contenteditable='false'> </i></a>");
+						jQuery(el).prepend("<a class='o_check " + ("true" == checked ? "checked" : "") + "' contenteditable='false'><i contenteditable='false'> </i></a>");
 					}
 
-					jQuery("a", jQuery(el)).each(function(aIndex, aEl) {
+					jQuery("a.o_check", jQuery(el)).each(function(aIndex, aEl) {
 						var ev = jQuery._data(aEl, 'events');
 						if(ev && ev.click) {
 							/* double check */ 
@@ -245,11 +245,11 @@
 				});
 				
 				jQuery("span.textentryinteraction[data-copy='needlistener']", e.element).each(function(index, el) {
-					if(jQuery("a", el).size() == 0) {
-						jQuery(el).append("<a contenteditable='false'><i contenteditable='false'> </i></a>");
+					if(jQuery("a.o_ops", el).size() == 0) {
+						jQuery(el).append("<a class='o_ops' contenteditable='false'><i contenteditable='false'> </i></a>");
 					}
 					
-					jQuery("a", jQuery(el)).each(function(aIndex, aEl) {
+					jQuery("a.o_ops", jQuery(el)).each(function(aIndex, aEl) {
 						var ev = jQuery._data(aEl, 'events');
 						if(ev && ev.click) {
 							//double check 
@@ -284,7 +284,7 @@
 	            placeholder.append(contentholder);
 
 	            var aHolder = new tinymce.html.Node('a', 1);
-	            aHolder.attr({ "contenteditable": "false" });
+	            aHolder.attr({ "contenteditable": "false", "class": "o_ops" });
 	            var aTextHolder = new tinymce.html.Node('i', 1);
 	            aTextHolder.attr({ "contenteditable": "false" });
 	            var aTextNode = new tinymce.html.Node('#text', 3);
@@ -312,7 +312,7 @@
 	            var checkHolder = new tinymce.html.Node('a', 1);
 	            checkHolder.attr({
 					"contenteditable": "false",
-					"class": (correct ? "checked": "")
+					"class": "o_check " + (correct ? "checked": "")
 	            });
 	            var aTextHolder = new tinymce.html.Node('i', 1);
 	            aTextHolder.attr({ "contenteditable": "false" });
@@ -325,10 +325,25 @@
 
 	            var contentholder = new tinymce.html.Node('span', 1);
 	            contentholder.attr({ "contenteditable": editable });
-	            var textNode = new tinymce.html.Node('#text', 3);
-	            textNode.raw = true;
-	            textNode.value = content;
-	            contentholder.append(textNode);
+	            if(typeof content === "string") {
+	            	var textNode = new tinymce.html.Node('#text', 3);
+	            	textNode.raw = true;
+	            	textNode.value = content;
+	            	contentholder.append(textNode);
+	            } else {
+	            	var node, collection = [];
+	                for (node = content.firstChild; node; node = node.walk()) {
+	                	if(node.parent == content) {
+	                		collection.push(node);
+	                	}
+						if(node == content.lastChild) {
+							break;
+						}
+	                }
+	                for(var i=0; i<collection.length; i++) {
+		            	contentholder.append(collection[i]);
+	                }
+	            }
 	            placeholder.append(contentholder);
 				return placeholder;
 			}
@@ -352,7 +367,7 @@
 			}
 			
 			function textEntryEvent(textEntryEl) {
-				jQuery("a", textEntryEl).click(function() {
+				jQuery("a.o_ops", textEntryEl).click(function() {
 					var ffxhrevent = ed.getParam("ffxhrevent");
 					var responseIdentifier = jQuery(textEntryEl).attr('data-qti-response-identifier');
 					var solution = jQuery(textEntryEl).children().html();
@@ -401,7 +416,7 @@
 					textEntryEvent(el);
 				});
 				
-				jQuery("span.hottext a", ed.getBody()).each(function(index, el) {
+				jQuery("span.hottext a.o_check", ed.getBody()).each(function(index, el) {
 					correctHottextEvent(el);
 				});
 			});
@@ -429,11 +444,10 @@
 							var placeHolder = createTextEntryPlaceholder(responseIdentifier, solution, 'textentryinteraction', gapType);
 							node.replace(placeHolder);
 						} else if (node.name == 'hottext') {
-			
 							var identifier = node.attr('identifier');
 							var correctHottexts = ed.getParam("correctHottexts");
 							var correct = jQuery.inArray(identifier, correctHottexts) >= 0;
-							var content = getTextContent(node);
+							var content = node;
 							var placeHolder = createHottextPlaceholder(identifier, content, correct, 'hottext', 'hottext');
 							node.replace(placeHolder);
 						}
@@ -464,10 +478,10 @@
 				
 				tinymce.each(ed.dom.select("span[data-qti=hottext]"), function(node) {
 					var identifier = jQuery(node).data('qti-identifier');
-					var textNode = ed.dom.create("hottext", { identifier: identifier });
-					var hottext = jQuery('span[contenteditable="true"]', node).html();
-					textNode.textContent = hottext;
-					ed.dom.replace(textNode, node, false);
+					var hottextNode = ed.dom.create("hottext", { identifier: identifier });
+					var hottextContent = jQuery('span[contenteditable="true"]', node);
+					jQuery(hottextNode).append(hottextContent.contents());
+					ed.dom.replace(hottextNode, node, false);
 			    });
 			});
 			
@@ -504,7 +518,7 @@
 					o_ffXHRNFEvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, 2,
 							'cmd', 'copy-gapentry', 'responseIdentifier', entryId, 'newEntry', true, 'selectedText', solution, 'gapType', gapType);
 					//add it because tiny delete it
-					jQuery("a", el).append(jQuery("<i class='visible'>&nbsp;</i>"));
+					jQuery("a.o_ops", el).append(jQuery("<i class='visible'>&nbsp;</i>"));
 					replace = true;
 				});
 				
