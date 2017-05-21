@@ -567,10 +567,11 @@ public class BinderDAO {
 	}
 	
 	public Binder deleteSection(Binder binder, Section section) {
-		List<Page> pages = section.getPages();
+		List<Page> pages = new ArrayList<>(section.getPages());
 		//delete pages
 		for(Page page:pages) {
 			pageDao.deletePage(page);
+			section.getPages().remove(page);
 		}
 		
 		List<Assignment> assignments = new ArrayList<>(((SectionImpl)section).getAssignments());

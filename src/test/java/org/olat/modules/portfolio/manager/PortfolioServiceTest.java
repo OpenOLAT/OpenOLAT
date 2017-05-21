@@ -19,6 +19,7 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -895,5 +896,50 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertNull(reloadedStartedPage_1);
 		Page reloadedStartedPage_2 = pageDao.loadByKey(startedPageKey_2);
 		Assert.assertNull(reloadedStartedPage_2);
+	}
+	
+	@Test
+	public void deleteSectionWithPages() {
+		// prepare a binder with 2 sections and some pages
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("del-binder-");
+		Binder binder = portfolioService.createNewBinder("Binder to delete", "Deletion", "", owner);
+		SectionRef sectionRef1 = portfolioService.appendNewSection("1. section ", "Section 1", null, null, binder);
+		dbInstance.commit();
+		SectionRef sectionRef2 = portfolioService.appendNewSection("2. section ", "Section 2", null, null, binder);
+		dbInstance.commit();
+		portfolioService.updateBinderUserInformations(binder, owner);
+		dbInstance.commit();
+		
+		Section reloadedSection1 = portfolioService.getSection(sectionRef1);
+		List<Page> pagesSection1 = new ArrayList<>();
+		for(int i=0; i<10; i++) {
+			Page page = portfolioService.appendNewPage(owner, "New page", "A brand new page.", null, null, reloadedSection1);
+			pagesSection1.add(page);
+		}
+		
+		Section reloadedSection2 = portfolioService.getSection(sectionRef2);
+		Page page2 = portfolioService.appendNewPage(owner, "New page", "A brand new page.", null, null, reloadedSection2);
+		
+		Assert.assertNotNull(page2);
+		dbInstance.commitAndCloseSession();
+	
+		// delete the section
+		portfolioService.deleteSection(binder, reloadedSection1);
+		dbInstance.commit();
+		
+		//check if section 2 is still around
+		Section section2 = binderDao.loadSectionByKey(sectionRef2.getKey());
+		Assert.assertEquals(reloadedSection2, section2);
+		Page reloadedPage2 = pageDao.loadByKey(page2.getKey());
+		Assert.assertNotNull(reloadedPage2);
+		Assert.assertEquals(page2, reloadedPage2);
+		
+		// check if section 1 is deleted
+		Section deletedSection1 = binderDao.loadSectionByKey(sectionRef1.getKey());
+		Assert.assertNull(deletedSection1);
+		for(Page pageSection1:pagesSection1) {
+			Page deletedPage = pageDao.loadByKey(pageSection1.getKey());
+			Assert.assertNull(deletedPage);
+		}
 	}
 }
