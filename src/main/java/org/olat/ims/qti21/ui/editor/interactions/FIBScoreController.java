@@ -208,7 +208,17 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(assessmentModeEl.isOneSelected()) {
-			scoreCont.setVisible(assessmentModeEl.isSelected(1));
+			boolean perAnswer = assessmentModeEl.isSelected(1);
+			scoreCont.setVisible(perAnswer);
+			if(perAnswer) {
+				for(FIBEntryWrapper wrapper:wrappers) {
+					Double points = wrapper.getEntry().getScore();
+					if(points != null && points.doubleValue() == -1.0d) {//replace the all answers score
+						wrapper.getEntry().setScore(1.0d);
+						wrapper.getPointsEl().setValue("1.0");
+					}
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -286,7 +296,8 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 			}
 			if(obj instanceof FIBEntryWrapper) {
 				FIBEntryWrapper w = (FIBEntryWrapper)obj;
-				return entry == w.entry;
+				return entry.getResponseIdentifier() != null
+						&& entry.getResponseIdentifier().equals(w.entry.getResponseIdentifier());
 			}
 			return false;
 		}
