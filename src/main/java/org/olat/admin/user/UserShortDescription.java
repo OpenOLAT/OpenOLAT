@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,16 +71,21 @@ public class UserShortDescription extends BasicController {
 		mainVC = createVelocityContainer("userShortDescription");
 				
 		Roles roles = ureq.getUserSession().getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-		//(roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());		
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);	
+		boolean alreadyDefinedUsername = false;
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
+		for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+			if(UserConstants.USERNAME.equals(userPropertyHandler.getName())) {
+				alreadyDefinedUsername = true;
+			}
+		}
+		
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
 		mainVC.contextPut("user", identity.getUser());			
-		mainVC.contextPut("identityKey", identity.getKey());			
-		
-		if(getIdentity().equals(identity) || isAdministrativeUser) {
+		mainVC.contextPut("identityKey", identity.getKey());
+		mainVC.contextPut("usernamePosition", "top");		
+		if(!alreadyDefinedUsername && (getIdentity().equals(identity) || isAdministrativeUser)) {
 			mainVC.contextPut("username", identity.getName());
-			mainVC.contextPut("usernamePosition", "top");
 		}
 		mainVC.contextPut("usernameLabel", usernameLabel);
 		
@@ -91,9 +97,7 @@ public class UserShortDescription extends BasicController {
 	 * have the permission to see them.
 	 */
 	public void setUsernameAtTop() {
-		if(isAdministrativeUser) {
-			mainVC.contextPut("usernamePosition", "top");
-		}
+		mainVC.contextPut("usernamePosition", "top");
 	}
 	
 	/**
@@ -101,9 +105,7 @@ public class UserShortDescription extends BasicController {
 	 * have the permission to see them.
 	 */
 	public void setUsernameAtBottom() {
-		if(isAdministrativeUser) {
-			mainVC.contextPut("usernamePosition", "bottom");
-		}
+		mainVC.contextPut("usernamePosition", "bottom");
 	}
 
 	@Override
