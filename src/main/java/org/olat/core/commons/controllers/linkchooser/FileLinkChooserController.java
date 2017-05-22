@@ -130,7 +130,7 @@ public class FileLinkChooserController extends BasicController {
 		VFSItemFilter customFilter = null;
 		VFSItemFilter dirFilter = new VFSItemExcludePrefixFilter(dirFilters);
 		if (suffixes != null) {
-			VFSItemFileTypeFilter typeFilter = new VFSItemFileTypeFilter(suffixes);
+			VFSItemFileTypeFilter typeFilter = new VFSItemFileTypeFilter(suffixes, uriValidation);
 			typeFilter.setCompositeFilter(dirFilter);
 			customFilter = typeFilter;
 		} else {
