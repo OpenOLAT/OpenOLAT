@@ -246,6 +246,7 @@ public class QTI21Page {
 		browser.findElement(suspendBy).click();
 		OOGraphene.waitBusy(browser);
 		confirm();
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	

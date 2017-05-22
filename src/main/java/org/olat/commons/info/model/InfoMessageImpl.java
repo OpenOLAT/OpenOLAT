@@ -70,7 +70,7 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="modificationdate", nullable=true, insertable=true, updatable=false)
+	@Column(name="modificationdate", nullable=true, insertable=true, updatable=true)
 	private Date modificationDate;
 	
 	@Column(name="title", nullable=true, insertable=true, updatable=true)

@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AssessmentSectionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -101,7 +102,7 @@ public class AssessmentSectionDAO {
 		return dbInstance.getCurrentEntityManager().merge(assessmentSection);
 	}
 	
-	public int deleteAssessmentSections(Section section) {
+	public int deleteAssessmentSections(SectionRef section) {
 		String partQ = "delete from pfassessmentsection asection where asection.section.key=:sectionKey";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(partQ)
