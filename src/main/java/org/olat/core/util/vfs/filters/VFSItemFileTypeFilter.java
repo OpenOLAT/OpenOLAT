@@ -20,7 +20,9 @@
 
 package org.olat.core.util.vfs.filters;
 
+import java.net.URI;
 import java.util.Hashtable;
+import java.util.Map;
 
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -33,14 +35,17 @@ import org.olat.core.util.vfs.VFSItem;
  * 
  */
 public class VFSItemFileTypeFilter extends VFSItemCompositeFilter {
-	private Hashtable<String, String> fileTypes = new Hashtable<String, String>();
+	
+	private final boolean uriValidation;
+	private Map<String, String> fileTypes = new Hashtable<String, String>();
 
 	/**
 	 * Constrtuctor
 	 * 
 	 * @param filetypes
 	 */
-	public VFSItemFileTypeFilter(String[] fileTypes) {
+	public VFSItemFileTypeFilter(String[] fileTypes, boolean uriValidation) {
+		this.uriValidation = uriValidation;
 		for (int i = 0; i < fileTypes.length; i++) {
 			addFileType(fileTypes[i]);
 		}
@@ -51,24 +56,35 @@ public class VFSItemFileTypeFilter extends VFSItemCompositeFilter {
 	 */
 	public void addFileType(String fileType) {
 		fileType = fileType.toLowerCase();
-		this.fileTypes.put(fileType, fileType);
+		fileTypes.put(fileType, fileType);
 	}
 
 	/**
 	 * @param fileType
 	 */
 	public void removeFileType(String fileType) {
-		this.fileTypes.remove(fileType.toLowerCase());
+		fileTypes.remove(fileType.toLowerCase());
 	}
 
 	/**
 	 * @see org.olat.core.util.vfs.filters.VFSItemCompositeFilter#acceptFilter(VFSItem)
 	 */
+	@Override
 	public boolean acceptFilter(VFSItem vfsItem) {
 		if (vfsItem instanceof VFSContainer) {
 			return true;			
-		}		
-		String name = vfsItem.getName().toLowerCase();
+		}
+		
+		String name = vfsItem.getName();
+		if(uriValidation) {
+			try {
+				new URI(name).getPath();
+			} catch(Exception e) {
+				return false;
+			}
+		}
+		
+		name = name.toLowerCase();
 		int dotPos = name.lastIndexOf(".");
 		if (dotPos == -1) return false;
 		return fileTypes.containsKey(name.substring(dotPos + 1));
