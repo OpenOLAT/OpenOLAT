@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.2.5'
+				version : '1.2.6'
 			};
 		},
 
@@ -226,6 +226,12 @@
 						var checked = jQuery(el).attr('data-qti-checked');
 						jQuery(el).prepend("<a class='o_check " + ("true" == checked ? "checked" : "") + "' contenteditable='false'><i contenteditable='false'> </i></a>");
 					}
+					
+					//remove the placeholder for Firefox
+					if(jQuery("span[contenteditable='true']", el).text() == "x-y-x" && jQuery(el).attr('data-qti-empty') == "true") {
+						jQuery("span[contenteditable='true']", el).text("");
+						jQuery(el).attr('data-qti-empty', 'false');
+					}
 
 					jQuery("a.o_check", jQuery(el)).each(function(aIndex, aEl) {
 						var ev = jQuery._data(aEl, 'events');
@@ -248,6 +254,12 @@
 					if(jQuery("a.o_ops", el).size() == 0) {
 						jQuery(el).append("<a class='o_ops' contenteditable='false'><i contenteditable='false'> </i></a>");
 					}
+					
+					//remove the placeholder for Firefox
+					if(jQuery("span[contenteditable='true']", el).text() == "x-y-x" && jQuery(el).attr('data-qti-empty') == "true") {
+						jQuery("span[contenteditable='true']", el).text("");
+						jQuery(el).attr('data-qti-empty', 'false');
+					}s
 					
 					jQuery("a.o_ops", jQuery(el)).each(function(aIndex, aEl) {
 						var ev = jQuery._data(aEl, 'events');
@@ -505,6 +517,13 @@
 					var hotId = 'ht' + guid();
 					jQuery(el).attr('data-qti-identifier', hotId);
 					jQuery(el).attr('data-copy', 'needlistener');
+					jQuery(el).attr('data-copy-empty', 'false');
+					
+					var empty = jQuery("span[contenteditable='true']", el).text();
+					if(empty == null || empty.length == 0) {
+						jQuery("span[contenteditable='true']", el).text("x-y-x");
+						jQuery(el).attr('data-copy-empty', 'true');
+					}
 					replace = true;
 				});
 				
@@ -512,6 +531,8 @@
 					var entryId = 'te' + guid();
 					jQuery(el).attr('data-qti-response-identifier', entryId);
 					jQuery(el).attr('data-copy', 'needlistener');
+					jQuery(el).attr('data-copy-empty', 'false');
+					
 					var gapType = jQuery(el).attr("data-qti-gap-type");
 					var solution = jQuery(el).attr("data-qti-solution");
 					var ffxhrevent = ed.getParam("ffxhrevent");
@@ -519,6 +540,13 @@
 							'cmd', 'copy-gapentry', 'responseIdentifier', entryId, 'newEntry', true, 'selectedText', solution, 'gapType', gapType);
 					//add it because tiny delete it
 					jQuery("a.o_ops", el).append(jQuery("<i class='visible'>&nbsp;</i>"));
+					
+					var empty = jQuery("span[contenteditable='true']", el).text();
+					if(empty == null || empty.length == 0) {
+						jQuery("span[contenteditable='true']", el).text("x-y-x");
+						jQuery(el).attr('data-copy-empty', 'true');
+					}
+					
 					replace = true;
 				});
 				
