@@ -483,6 +483,8 @@ public class LectureBlockRollCallDAO {
 
 			if(effectiveLecturesNumber != null) {
 				statistics.addTotalEffectiveLectures(effectiveLecturesNumber.longValue());
+			} else if(plannedLecturesNumber != null) {
+				statistics.addTotalEffectiveLectures(plannedLecturesNumber.longValue());
 			}
 		}
 		

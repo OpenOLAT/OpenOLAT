@@ -218,10 +218,12 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 		this.plannedLecturesNumber = plannedLecturesNumber;
 	}
 
+	@Override
 	public int getEffectiveLecturesNumber() {
 		return effectiveLecturesNumber;
 	}
 
+	@Override
 	public void setEffectiveLecturesNumber(int effectiveLecturesNumber) {
 		this.effectiveLecturesNumber = effectiveLecturesNumber;
 	}

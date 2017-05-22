@@ -134,6 +134,7 @@ public class TeacherCloseRollCallController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		lectureBlock.setStatus(LectureBlockStatus.valueOf(statusEl.getSelectedKey()));
 		lectureBlock.setComment(blockCommentEl.getValue());
+		lectureBlock.setEffectiveLecturesNumber(lectureBlock.getPlannedLecturesNumber());
 		lectureBlock = lectureService.save(lectureBlock, null);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

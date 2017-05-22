@@ -550,6 +550,7 @@ public class TeacherRollCallController extends FormBasicController {
 		lectureBlock.setComment(blokcCommentEl.getValue());
 		lectureBlock.setStatus(LectureBlockStatus.valueOf(statusEl.getSelectedKey()));
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.valueOf(rollCallStatusEl.getSelectedKey()));
+		lectureBlock.setEffectiveLecturesNumber(lectureBlock.getPlannedLecturesNumber());//TODO
 		Date effectiveEndDate = getEffectiveEndDate();
 		if(effectiveEndDate == null) {
 			lectureBlock.setReasonEffectiveEnd(null);
