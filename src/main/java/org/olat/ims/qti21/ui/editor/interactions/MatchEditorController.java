@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
@@ -62,12 +63,16 @@ public class MatchEditorController extends FormBasicController {
 
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 	private static final String[] singleMultiKeys = new String[]{ "single", "multi"};
+	private static final String[] layoutKeys = new String[] {
+			QTI21Constants.CSS_MATCH_SOURCE_LEFT, QTI21Constants.CSS_MATCH_SOURCE_TOP,
+			QTI21Constants.CSS_MATCH_SOURCE_RIGHT, QTI21Constants.CSS_MATCH_SOURCE_BOTTOM
+		};
 	
 	private TextElement titleEl;
 	private RichTextElement textEl;
 	private FormLayoutContainer answersCont;
 	private FormLink addColumnButton, addRowButton;
-	private SingleSelection shuffleEl, singleMultiEl;
+	private SingleSelection shuffleEl, singleMultiEl, layoutEl;
 	
 	private int count = 0;
 	private VFSContainer itemContainer;
@@ -78,6 +83,17 @@ public class MatchEditorController extends FormBasicController {
 	private final List<MatchWrapper> targetWrappers = new ArrayList<>();
 	private final Map<String,List<String>> temporaryAssociations = new HashMap<>();
 	
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The parent window control
+	 * @param itemBuilder The assessment item builder for match (matrix or drag and drop)
+	 * @param rootDirectory	The directory for images...
+	 * @param rootContainer The directory for images...
+	 * @param itemFile The assessment item file
+	 * @param matrix
+	 * @param restrictedEdit
+	 */
 	public MatchEditorController(UserRequest ureq, WindowControl wControl, MatchAssessmentItemBuilder itemBuilder,
 			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
 		super(ureq, wControl, "simple_choices_editor");
@@ -127,6 +143,26 @@ public class MatchEditorController extends FormBasicController {
 			singleMultiEl.select(singleMultiKeys[1], true);
 		} else {
 			singleMultiEl.select(singleMultiKeys[0], true);
+		}
+		
+		if(itemBuilder.getQuestionType() == QTI21QuestionType.matchdraganddrop) {
+			String[] layoutValues = new String[]{
+					translate("form.imd.layout.left"), translate("form.imd.layout.top"),
+					translate("form.imd.layout.right"), translate("form.imd.layout.bottom")
+				};
+			layoutEl = uifactory.addRadiosHorizontal("layout", "form.imd.layout", metadata, layoutKeys, layoutValues);
+			layoutEl.setElementCssClass("o_sel_match_layout");
+			layoutEl.setEnabled(!restrictedEdit);
+			boolean found = false;
+			for(String layoutKey:layoutKeys) {
+				if(itemBuilder.hasMatchInteractionClass(layoutKey)) {
+					layoutEl.select(layoutKey, true);
+					found = true;
+				}
+			}
+			if(!found) {
+				layoutEl.select(layoutKeys[0], true);
+			}
 		}
 
 		//responses
@@ -238,6 +274,14 @@ public class MatchEditorController extends FormBasicController {
 			}
 		}
 		
+		if(layoutEl != null) {
+			layoutEl.clearError();
+			if(!layoutEl.isOneSelected()) {
+				layoutEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+		
 		return allOk & super.validateFormLogic(ureq);
 	}
 
@@ -279,6 +323,13 @@ public class MatchEditorController extends FormBasicController {
 		//shuffle
 		if(!restrictedEdit) {
 			itemBuilder.setShuffle(shuffleEl.isOneSelected() && shuffleEl.isSelected(0));
+		}
+		
+		//layout
+		if(!restrictedEdit && layoutEl != null) {
+			itemBuilder.removeMatchInteractionClass(layoutKeys);
+			String cssClass = layoutEl.getSelectedKey();
+			itemBuilder.addMatchInteractionClass(cssClass);
 		}
 		
 		//update 

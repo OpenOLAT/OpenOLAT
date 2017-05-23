@@ -784,25 +784,66 @@ public class OpenXMLDocument {
 		<w:shd w:val="solid" w:color="E9EAF2" w:fill="auto" />
 	</w:tcPr>
  */
+
+	/**
+	 * The border are the same color as the background.
+	 * 
+	 * @param background
+	 * @param width
+	 * @param unit
+	 * @return
+	 */
 	public Element createTableCell(String background, Integer width, Unit unit) {
 		Element cellEl = document.createElement("w:tc");
 
 		Node prefEl = null;
 		if(unit != null) {
 			prefEl = cellEl.appendChild(document.createElement("w:tcPr"));
-			createWidthEl("w:tcW", width, unit, cellEl);
+			createWidthEl("w:tcW", width, unit, prefEl);
 		}
 		if(StringHelper.containsNonWhitespace(background)) {
 			if(prefEl == null) {
 				prefEl = cellEl.appendChild(document.createElement("w:tcPr"));
 			}
-			
+
 			Node borderEl = prefEl.appendChild(document.createElement("w:tcBorders"));
 			createBorder("w:top", background, borderEl);
 			createBorder("w:left", background, borderEl);
 			createBorder("w:bottom", background, borderEl);
 			createBorder("w:right", background, borderEl);
 			createShadow(background, prefEl);
+		}
+
+		return cellEl;	
+	}
+	
+	
+	public Element createTableCell(String background, Border border, Integer width, Unit unit) {
+		Element cellEl = document.createElement("w:tc");
+
+		Node prefEl = null;
+		if(unit != null) {
+			prefEl = cellEl.appendChild(document.createElement("w:tcPr"));
+			createWidthEl("w:tcW", width, unit, prefEl);
+		}
+
+		if(StringHelper.containsNonWhitespace(background)) {
+			if(prefEl == null) {
+				prefEl = cellEl.appendChild(document.createElement("w:tcPr"));
+			}
+			createShadow(background, prefEl);
+		}
+			
+		if(border != null) {
+			if(prefEl == null) {
+				prefEl = cellEl.appendChild(document.createElement("w:tcPr"));
+			}
+			
+			Node borderEl = prefEl.appendChild(document.createElement("w:tcBorders"));
+			createBorder("w:top", border, borderEl);
+			createBorder("w:left", border, borderEl);
+			createBorder("w:bottom", border, borderEl);
+			createBorder("w:right", border, borderEl);
 		}
 
 		return cellEl;	
@@ -929,6 +970,15 @@ public class OpenXMLDocument {
 		return borderEl;
 	}
 	
+	private Element createBorder(String name, Border border, Node parent) {
+		Element borderEl = (Element)parent.appendChild(document.createElement(name));
+		borderEl.setAttribute("w:val", border.getVal());
+		borderEl.setAttribute("w:sz", Integer.toString(border.getSize()));
+		borderEl.setAttribute("w:space", Integer.toString(border.getSpace()));
+		borderEl.setAttribute("w:color", border.getColor());
+		return borderEl;
+	}
+	
 	private Element createGridCol(Integer width, Node parent) {
 		Element colEl = (Element)parent.appendChild(document.createElement("w:gridCol"));
 		colEl.setAttribute("w:w", width.toString());
@@ -1008,13 +1058,13 @@ public class OpenXMLDocument {
 		}
 	}
 
-	public Element createImageEl(String path) {
+	public Element createImageEl(String path, double maxWidthCm) {
 		if(mediaContainer == null) return null;
 		
 		VFSItem media = mediaContainer.resolve(path);
 		if(media instanceof LocalFileImpl) {
 			LocalFileImpl file = (LocalFileImpl)media;
-			return createImageEl(file.getBasefile());
+			return createImageEl(file.getBasefile(), maxWidthCm);
 		}
 		return null;
 	}
@@ -1077,7 +1127,11 @@ public class OpenXMLDocument {
  * @return
  */
 	public Element createImageEl(File image) {
-		DocReference ref = registerImage(image);
+		return createImageEl(image, OpenXMLConstants.PAGE_FULL_WIDTH_CM/* cm */);
+	}
+	
+	public Element createImageEl(File image, double widthCm) {
+		DocReference ref = registerImage(image, widthCm);
 		String id = ref.getId();
 		OpenXMLSize emuSize = ref.getEmuSize();
 		String filename = ref.getFilename();
@@ -1169,14 +1223,14 @@ public class OpenXMLDocument {
 		return drawingEl;
 	}
 	
-	private DocReference registerImage(File image) {
+	private DocReference registerImage(File image, double widthCm) {
 		DocReference ref;
 		if(fileToImagesMap.containsKey(image)) {
 			ref = fileToImagesMap.get(image);
 		} else {
 			String id = generateId();
 			Size size = ImageUtils.getImageSize(image);
-			OpenXMLSize emuSize = OpenXMLUtils.convertPixelToEMUs(size, DPI, 15.9/* cm */);
+			OpenXMLSize emuSize = OpenXMLUtils.convertPixelToEMUs(size, DPI, widthCm/* cm */);
 			String filename = getUniqueFilename(image);
 			ref = new DocReference(id, filename, emuSize, image);
 			fileToImagesMap.put(image, ref);
@@ -1290,7 +1344,7 @@ public class OpenXMLDocument {
 </w:drawing>
 */
 	public Element createGraphicEl(File backgroundImage, List<OpenXMLGraphic> elements) {
-		DocReference backgroundImageRef = registerImage(backgroundImage);
+		DocReference backgroundImageRef = registerImage(backgroundImage, OpenXMLConstants.PAGE_FULL_WIDTH_CM/**/);
 		OpenXMLSize emuSize = backgroundImageRef.getEmuSize();
 
 		Element alternateContentEl = document.createElement("mc:AlternateContent");

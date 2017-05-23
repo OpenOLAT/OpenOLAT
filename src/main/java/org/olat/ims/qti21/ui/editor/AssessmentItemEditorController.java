@@ -207,6 +207,7 @@ public class AssessmentItemEditorController extends BasicController {
 			case numerical: itemBuilder = initFIBEditors(ureq, type, item); break;
 			case kprim: itemBuilder = initKPrimChoiceEditors(ureq, item); break;
 			case match: itemBuilder = initMatchChoiceEditors(ureq, item); break;
+			case matchdraganddrop: itemBuilder = initMatchDragAndDropEditors(ureq, item); break;
 			case hotspot: itemBuilder = initHotspotEditors(ureq, item); break;
 			case essay: itemBuilder = initEssayEditors(ureq, item); break;
 			case upload: itemBuilder = initUploadEditors(ureq, item); break;
@@ -284,6 +285,23 @@ public class AssessmentItemEditorController extends BasicController {
 	}
 	
 	private AssessmentItemBuilder initMatchChoiceEditors(UserRequest ureq, AssessmentItem item) {
+		MatchAssessmentItemBuilder matchItemBuilder = new MatchAssessmentItemBuilder(item, qtiService.qtiSerializer());
+		itemEditor = new MatchEditorController(ureq, getWindowControl(), matchItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
+		listenTo(itemEditor);
+		scoreEditor = new MatchScoreController(ureq, getWindowControl(), matchItemBuilder, itemRef, restrictedEdit);
+		listenTo(scoreEditor);
+		feedbackEditor = new FeedbackEditorController(ureq, getWindowControl(), matchItemBuilder,
+				rootDirectory, rootContainer, itemFile, restrictedEdit);
+		listenTo(feedbackEditor);
+		
+		tabbedPane.addTab(translate("form.match"), itemEditor);
+		tabbedPane.addTab(translate("form.score"), scoreEditor);
+		tabbedPane.addTab(translate("form.feedback"), feedbackEditor);
+		return matchItemBuilder;
+	}
+	
+	private AssessmentItemBuilder initMatchDragAndDropEditors(UserRequest ureq, AssessmentItem item) {
 		MatchAssessmentItemBuilder matchItemBuilder = new MatchAssessmentItemBuilder(item, qtiService.qtiSerializer());
 		itemEditor = new MatchEditorController(ureq, getWindowControl(), matchItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit);

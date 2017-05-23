@@ -17,28 +17,20 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.core.util.openxml;
 
 /**
  * 
- * Initial date: 20.02.2013<br>
+ * Initial date: 23 mai 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum QuestionType {
-
-	MC,
-	FIB,
-	SC,
-	KPRIM,
-	ESSAY,
-	NUMERICAL,
-	HOTSPOT,
-	UPLOAD,
-	DRAWING,
-	MATCH,
-	MATCHDRAGANDDROP,
-	HOTTEXT,
-	UNKOWN
+public class OpenXMLConstants {
+	
+	public static final double PAGE_FULL_WIDTH_CM = 15.9;
+	
+	public static final int TABLE_FULL_WIDTH_DXA = 11294;
+	
+	public static final int TABLE_FULL_WIDTH_PCT = 4858;
 
 }

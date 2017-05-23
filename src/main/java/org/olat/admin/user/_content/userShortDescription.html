@@ -1,9 +1,11 @@
 <table class="table table-bordered table-condensed table-striped">
 	#if($r.isNotNull($usernamePosition) && $usernamePosition == "top")
-	<tr>
-		<th>$usernameLabel</th>
-		<td>$username</td>
-	</tr>
+		#if($r.isNotNull($username))
+		<tr>
+			<th>$usernameLabel</th>
+			<td>$username</td>
+		</tr>
+		#end
 	<tr>
 		<th>Identity</th>
 		<td>$identityKey</td>
@@ -18,10 +20,12 @@
 		#end
 	#end
 	#if($r.isNotNull($usernamePosition) && $usernamePosition == "bottom")
-	<tr>
-		<th>$usernameLabel</th>
-		<td>$username</td>
-	</tr>
+		#if($r.isNotNull($username))
+		<tr>
+			<th>$usernameLabel</th>
+			<td>$username</td>
+		</tr>
+		#end
 	<tr>
 		<th>Identity</th>
 		<td>$identityKey</td>

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
@@ -40,12 +41,18 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.system.MonitoringService.Statistics;
 import org.olat.restapi.system.vo.SessionsVO;
+import org.olat.search.SearchServiceStatus;
+import org.olat.search.service.SearchServiceFactory;
+import org.olat.search.service.SearchServiceStatusImpl;
+import org.olat.search.service.indexer.FullIndexerStatus;
 import org.quartz.JobExecutionContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
+
+import net.fortuna.ical4j.util.TimeZones;
 
 /**
  * 
@@ -108,9 +115,17 @@ public class ProcSamplerJob extends QuartzJobBean {
 			addValue("totalGroupCount", statistics.getTotalGroupCount(), rootEl, doc);
 			addValue("publishedCourses", statistics.getPublishedCourses(), rootEl, doc);
 			//indexer
-			addValue("lastFullIndexTime", statistics.getLastFullIndexTime(), rootEl, doc);
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+			format.setTimeZone(TimeZones.getUtcTimeZone());
+			SearchServiceStatus status = SearchServiceFactory.getService().getStatus();
+			if(status instanceof SearchServiceStatusImpl) {
+				SearchServiceStatusImpl statusImpl = (SearchServiceStatusImpl)status;
+				FullIndexerStatus fStatus = statusImpl.getFullIndexerStatus();
+				String date = format.format(new Date(fStatus.getLastFullIndexTime()));
+				addValue("lastFullIndexTime", date, rootEl, doc);
+			}
 			//marker
-			addValue("lastOpenOLATSampling", new Date().toString(), rootEl, doc);
+			addValue("lastOpenOLATSampling", format.format(new Date()), rootEl, doc);
 
 			// Use a Transformer for output
 			try(OutputStream out = new FileOutputStream(xmlFile)) {

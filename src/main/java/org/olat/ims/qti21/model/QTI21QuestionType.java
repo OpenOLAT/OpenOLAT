@@ -50,6 +50,7 @@ public enum QTI21QuestionType {
 	mc(true, "mc", "o_mi_qtimc", QuestionType.MC),
 	kprim(true, "kprim", "o_mi_qtikprim", QuestionType.KPRIM),
 	match(true, "match", "o_mi_qtimatch", QuestionType.MATCH),
+	matchdraganddrop(true, "matchdraganddrop", "o_mi_qtimatch_draganddrop", QuestionType.MATCHDRAGANDDROP),
 	fib(true, "fib", "o_mi_qtifib", QuestionType.FIB),
 	numerical(true, "numerical", "o_mi_qtinumerical", QuestionType.NUMERICAL),
 	hotspot(true, "hotspot", "o_mi_qtihotspot", QuestionType.HOTSPOT),
@@ -209,7 +210,9 @@ public enum QTI21QuestionType {
 			ResponseDeclaration responseDeclaration = item.getResponseDeclaration(interaction.getResponseIdentifier());
 			String responseIdentifier = responseDeclaration.getIdentifier().toString();
 			Cardinality cardinalty = responseDeclaration.getCardinality();
-			if(cardinalty.isMultiple()) {
+			if(hasClass(interaction, "match_dnd")) {
+				return QTI21QuestionType.matchdraganddrop;
+			} else if(cardinalty.isMultiple()) {
 				if(responseIdentifier.startsWith("KPRIM_")) {
 					return QTI21QuestionType.kprim;
 				} else {
@@ -238,5 +241,10 @@ public enum QTI21QuestionType {
 		} else {
 			return QTI21QuestionType.unkown;
 		}
+	}
+	
+	private static final boolean hasClass(Interaction interaction, String cssClass) {
+		List<String> cssClasses = interaction.getClassAttr();
+		return cssClasses != null && cssClasses.size() > 0 && cssClasses.contains(cssClass);
 	}
 }

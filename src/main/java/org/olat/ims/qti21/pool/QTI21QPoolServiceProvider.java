@@ -343,7 +343,8 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			case sc: itemBuilder = new SingleChoiceAssessmentItemBuilder(translator.translate("new.sc"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
 			case mc: itemBuilder = new MultipleChoiceAssessmentItemBuilder(translator.translate("new.mc"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
 			case kprim: itemBuilder = new KPrimAssessmentItemBuilder(translator.translate("new.kprim"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
-			case match: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.match"), qtiService.qtiSerializer()); break;
+			case match: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.match"), QTI21Constants.CSS_MATCH_MATRIX, qtiService.qtiSerializer()); break;
+			case matchdraganddrop: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.match"), QTI21Constants.CSS_MATCH_DRAG_AND_DROP, qtiService.qtiSerializer()); break;
 			case fib: itemBuilder = new FIBAssessmentItemBuilder(translator.translate("new.fib"), EntryType.text, qtiService.qtiSerializer()); break;
 			case numerical: itemBuilder = new FIBAssessmentItemBuilder(translator.translate("new.fib.numerical"), EntryType.numerical, qtiService.qtiSerializer()); break;
 			case essay: itemBuilder = new EssayAssessmentItemBuilder(translator.translate("new.essay"), qtiService.qtiSerializer()); break;

@@ -9,6 +9,7 @@ ul.sessionControl {
 	}
 }
 
+/* Associations */
 .association {
 	margin: 20px 20px 20px 40px;
 	background: transparent url('#{$o-images-path}association_bg.png') repeat-x center center;
@@ -98,7 +99,7 @@ ul.sessionControl {
 	}
 	
 	&.oo-selected {
-		border: 3px solid grey;
+		border: 3px solid $o-qti-gap-selected-border-color;
 	}
 }
 
@@ -130,7 +131,7 @@ div.hotspotInteraction {
 }
 
 
-/* essay extended text */
+/* Essay extended text */
 #itemBody .extendedTextInteraction {
 	margin: 15px 0;
 
@@ -646,6 +647,81 @@ tr.choiceinteraction {
 	
 	div.bar_green { background-color: $o-qti-bar-green; }
 	div.bar_red { background-color: $o-qti-bar-red; }
+}
+
+/* Match interaction drag & drop */
+.source-left, .target-left, .source-right, .target-right {
+	width: 50%;
+	float: left;
+	position: relative;
+	padding: 0;
+	margin-top: 5px;
+}
+
+.source-top, target-top, .source-bottom, .target-bottom {
+
+}
+
+.o_match_dnd_sources {
+	padding: 10px 10px 0 10px;
+	min-height: 60px;
+	border: 2px solid #eeeeee;
+	
+	&.oo-accepted {
+		border-color: $o-qti-match-drop-accept-border-color	;
+	}
+}
+
+.o_match_dnd_source {
+	padding: 10px;
+	margin-bottom: 10px;
+	border: 2px solid $o-qti-gap-border-color;
+	background-color: #ffffff;
+	
+	
+	&.oo-selected {
+		border: 2px solid $o-qti-match-selected-border-color;
+	}
+	
+	&.oo-drag {
+		border: 2px solid $o-qti-match-drag-border-color !important;
+	}
+}
+
+.source-bottom .o_match_dnd_source, .source-top .o_match_dnd_source {
+	margin: 0 0 10px 0;
+}
+
+.o_match_dnd_targets .oo-accepted {
+	border: 2px solid $o-qti-match-drop-accept-border-color	;
+}
+
+.o_match_dnd_target {
+	padding: 10px 10px 0 10px;
+	margin: 0 0 10px 10px;
+	border: 2px solid $o-qti-gap-border-color;
+
+	.o_match_dnd_target_drop_zone {
+		margin: 0;
+		padding: 5px 0 0 15px;
+		min-height: 30px;
+		
+		.o_match_dnd_source {
+			border: 2px solid $o-qti-match-choosed-border-color;
+		}
+	}
+}
+
+.target-bottom .o_match_dnd_target, .target-top .o_match_dnd_target {
+	margin: 0 0 10px 0;
+	
+	.o_match_dnd_target_drop_zone {
+		padding-left: 0px;
+		
+		.o_match_dnd_source {
+			padding-left: 15px;
+		}
+	}
 }
 
 /* MathEntryInteraction styling for MathAssess */

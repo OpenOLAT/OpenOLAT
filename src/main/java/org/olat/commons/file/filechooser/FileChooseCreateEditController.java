@@ -265,7 +265,7 @@ public class FileChooseCreateEditController extends BasicController{
 		VFSContainer vfsRoot = new NamedContainerImpl(getTranslator().translate(NLS_FOLDER_DISPLAYNAME), rootContainer);
 		VFSItemFilter typeFilter = null;
 		if (!allFileSuffixesAllowed && allowedFileSuffixes != null) {
-			typeFilter = new VFSItemFileTypeFilter(allowedFileSuffixes);
+			typeFilter = new VFSItemFileTypeFilter(allowedFileSuffixes, false);
 		}
 		// Clanup old file chooser and open up new one
 		removeAsListenerAndDispose(fileChooserCtr);

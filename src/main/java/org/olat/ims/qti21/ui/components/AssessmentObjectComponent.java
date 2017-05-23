@@ -184,7 +184,6 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 		jsa.addRequiredStaticJsFile("js/jquery/maphilight/jquery.maphilight.js");
 		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.qti.min.js");
 		
-
 		jsa.addRequiredStaticJsFile("js/jquery/openolat/jquery.paint.js");
 		
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.associate.js");
@@ -196,8 +195,10 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.slider.js");
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.order.js");
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.match.js");
+		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.match_dnd.js");
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.gapMatch.js");
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.hotspot.js");
+
 	}
 	
 	@Override
