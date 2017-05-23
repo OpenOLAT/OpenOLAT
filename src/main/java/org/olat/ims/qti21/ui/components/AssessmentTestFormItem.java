@@ -85,6 +85,14 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 	public void setPersonalNotes(boolean personalNotes) {
 		component.setPersonalNotes(personalNotes);
 	}
+	
+	public boolean isHideFeedbacks() {
+		return component.isHideFeedbacks();
+	}
+	
+	public void setHideFeedbacks(boolean hideFeedbacks) {
+		component.setHideFeedbacks(hideFeedbacks);
+	}
 
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {
 		return component.getResolvedAssessmentTest();

@@ -151,6 +151,10 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 	 * @return
 	 */
 	public boolean willShowFeedbacks(TestPlanNode itemNode) {
+		if(isHideFeedbacks()) {
+			return false;
+		}
+		
 		try {
 			URI itemSystemId = itemNode.getItemSystemId();
 			ResolvedAssessmentItem resolvedAssessmentItem = getResolvedAssessmentTest()

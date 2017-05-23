@@ -66,6 +66,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
 	private MultipleSelectionElement allowAnonymEl;
+	private MultipleSelectionElement showFeedbacksEl;
 	private MultipleSelectionElement digitalSignatureEl, digitalSignatureMailEl;
 
 	private FormLayoutContainer maxTimeCont;
@@ -254,6 +255,15 @@ public class QTI21EditLayoutForm extends FormBasicController {
 			enableCancelEl.select(onKeys[0], true);
 		}
 		
+		boolean hideFeedbacks = configRef ? deliveryOptions.isHideFeedbacks() :
+			modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_HIDE_FEEDBACKS, deliveryOptions.isHideFeedbacks());
+		showFeedbacksEl = uifactory.addCheckboxesHorizontal("showFeedbacks", "qti.form.showfeedbacks", formLayout, onKeys, onValues);
+		showFeedbacksEl.setElementCssClass("o_sel_qti_show_feedbacks");
+		showFeedbacksEl.setEnabled(!configRef);
+		if(!hideFeedbacks) {
+			showFeedbacksEl.select(onKeys[0], true);
+		}
+		
 		if(!configRef) {
 			uifactory.addFormSubmitButton("submit", formLayout);
 		}
@@ -381,6 +391,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLESUSPEND, enableSuspendEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, displayQuestionProgressEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_SCOREPROGRESS, displayScoreProgressEl.isSelected(0));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_HIDE_FEEDBACKS, !showFeedbacksEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_ALLOW_ANONYM, allowAnonymEl.isSelected(0));
 		
 		if(qtiModule.isDigitalSignatureEnabled() && digitalSignatureEl.isSelected(0)) {
