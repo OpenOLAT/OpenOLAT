@@ -49,11 +49,11 @@ import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
+import org.olat.course.editor.CourseAccessAndProperties;
 import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.PublishProcess;
 import org.olat.course.editor.PublishSetInformations;
 import org.olat.course.editor.StatusDescription;
-import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.COCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -69,6 +69,8 @@ import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.CatalogManager;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.OfferAccess;
 
 import de.tuchemnitz.wizard.helper.course.CourseExtensionHelper;
 import de.tuchemnitz.wizard.helper.course.HTMLDocumentHelper;
@@ -277,32 +279,19 @@ public class CourseCreationHelper {
 		// --------------------------
 		if (courseConfig.getPublish()) {
 			
-			int access = RepositoryEntry.ACC_OWNERS;
-			if (courseConfig.getAclType().equals(CourseCreationConfiguration.ACL_GUEST)) {
-				// set "BARG" as rule
-				access = RepositoryEntry.ACC_USERS_GUESTS;
-			} else if (courseConfig.getAclType().equals(CourseCreationConfiguration.ACL_OLAT)) {
-				// set "BAR" as rule
-				access = RepositoryEntry.ACC_USERS;
-			} else if (courseConfig.getAclType().equals(CourseCreationConfiguration.ACL_UNI)) {
-				// set "BAR" rule + expert rule on university
-				// hasAttribute("institution","[Hochschule]")
-				access = RepositoryEntry.ACC_USERS;
-				final CourseNode cnRoot = course.getEditorTreeModel().getCourseEditorNodeById(course.getEditorTreeModel().getRootNode().getIdent())
-				.getCourseNode();
-				String shibInstitution = ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, ureq.getLocale());
-				if (shibInstitution == null) {
-					shibInstitution = ureq.getUserSession().getSessionInfo().getAuthProvider();
-				}
-				cnRoot.setNoAccessExplanation(translator.translate("noaccessroot", new String[] {shibInstitution}));
-				if (cnRoot instanceof AbstractAccessableCourseNode) {
-					((AbstractAccessableCourseNode) cnRoot).setPreConditionAccess(new Condition("hasAttribute(\"institution\",\"" + shibInstitution
-							+ "\")"));
-				}
-			} else {
-				log.error("No valid ACL Rule: " + courseConfig.getAclType());
+			CourseAccessAndProperties accessAndProps = courseConfig.getAccessAndProperties();
+			RepositoryManager manager = RepositoryManager.getInstance();			
+			
+			addedEntry = manager.setAccessAndProperties(accessAndProps.getRepositoryEntry(), accessAndProps.getAccess(),
+					accessAndProps.isMembersOnly(), accessAndProps.isCanCopy(), accessAndProps.isCanReference(),
+					accessAndProps.isCanDownload());
+			addedEntry = manager.setLeaveSetting(addedEntry, accessAndProps.getSetting());
+			
+			List<OfferAccess> offerAccess = accessAndProps.getOfferAccess();
+			ACService acService = CoreSpringFactory.getImpl(ACService.class);
+			for (OfferAccess newLink : offerAccess) {
+				acService.saveOfferAccess(newLink);
 			}
-			addedEntry = RepositoryManager.getInstance().setAccess(addedEntry, access, false);
 		}
 
 		course = CourseFactory.openCourseEditSession(course.getResourceableId());

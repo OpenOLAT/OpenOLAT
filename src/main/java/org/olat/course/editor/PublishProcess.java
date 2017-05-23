@@ -61,7 +61,6 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
-import org.olat.course.editor.PublishStep01.CourseAccessAndProperties;
 import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
@@ -76,6 +75,8 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.manager.CatalogManager;
+import org.olat.resource.accesscontrol.ACService;
+import org.olat.resource.accesscontrol.OfferAccess;
 import org.olat.resource.references.Reference;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
@@ -716,6 +717,12 @@ public class PublishProcess {
 				accessAndProps.isMembersOnly(), accessAndProps.isCanCopy(), accessAndProps.isCanReference(),
 				accessAndProps.isCanDownload());
 		manager.setLeaveSetting(accessAndProps.getRepositoryEntry(), accessAndProps.getSetting());
+		
+		List<OfferAccess> offerAccess = accessAndProps.getOfferAccess();
+		ACService acService = CoreSpringFactory.getImpl(ACService.class);
+		for (OfferAccess newLink : offerAccess) {
+			acService.saveOfferAccess(newLink);
+		}
 		
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, author, Change.modifiedAtPublish, "publish");
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, repositoryEntry);
