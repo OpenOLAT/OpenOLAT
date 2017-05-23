@@ -132,5 +132,20 @@ public class QTI21Constants {
 
 	public static final Identifier CORRECT_SOLUTION_IDENTIFIER  = Identifier.parseString(CORRECT_SOLUTION);
 	
+	
+	public static final String CSS_MATCH_MATRIX = "match_matrix";
+	
+	public static final String CSS_MATCH_DRAG_AND_DROP = "match_dnd";
+	
+	public static final String CSS_MATCH_SOURCE_TOP = "source-top";
+	
+	public static final String CSS_MATCH_SOURCE_LEFT = "source-left";
+	
+	public static final String CSS_MATCH_SOURCE_RIGHT = "source-right";
+	
+	public static final String CSS_MATCH_SOURCE_BOTTOM = "source-bottom";
+	
+	
+	
 
 }

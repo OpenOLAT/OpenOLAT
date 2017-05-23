@@ -149,8 +149,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private MenuTree menuTree;
 	private Dropdown exportItemTools, addItemTools, changeItemTools;
-	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink, newKPrimLink, newMatchLink,
-			newFIBLink, newNumericalLink, newHotspotLink, newHottextLink, newEssayLink, newUploadLink, newDrawingLink;
+	private Link newTestPartLink, newSectionLink, newSingleChoiceLink, newMultipleChoiceLink,
+			newKPrimLink, newMatchLink, newMatchDragAndDropLink,
+			newFIBLink, newNumericalLink, newHotspotLink, newHottextLink,
+			newEssayLink, newUploadLink, newDrawingLink;
 	private Link importFromPoolLink, importFromTableLink, exportToPoolLink, exportToDocxLink;
 	private Link reloadInCacheLink, deleteLink, copyLink;
 	private final TooledStackedPanel toolbar;
@@ -260,6 +262,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		newMatchLink = LinkFactory.createToolLink("new.match", translate("new.match"), this, "o_mi_qtimatch");
 		newMatchLink.setDomReplacementWrapperRequired(false);
 		addItemTools.addComponent(newMatchLink);
+		newMatchDragAndDropLink = LinkFactory.createToolLink("new.matchdraganddrop", translate("new.matchdraganddrop"), this, "o_mi_qtimatch_draganddrop");
+		newMatchDragAndDropLink.setDomReplacementWrapperRequired(false);
+		addItemTools.addComponent(newMatchDragAndDropLink);
 		
 		newFIBLink = LinkFactory.createToolLink("new.fib", translate("new.fib"), this, "o_mi_qtifib");
 		newFIBLink.setDomReplacementWrapperRequired(false);
@@ -469,7 +474,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(newKPrimLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new KPrimAssessmentItemBuilder(translate("new.kprim"), translate("new.answer"), qtiService.qtiSerializer()));
 		} else if(newMatchLink == source) {
-			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MatchAssessmentItemBuilder(translate("new.match"), qtiService.qtiSerializer()));
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MatchAssessmentItemBuilder(translate("new.match"), QTI21Constants.CSS_MATCH_MATRIX, qtiService.qtiSerializer()));
+		} else if(newMatchDragAndDropLink == source) {
+			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new MatchAssessmentItemBuilder(translate("new.matchdraganddrop"), QTI21Constants.CSS_MATCH_DRAG_AND_DROP, qtiService.qtiSerializer()));
 		} else if(newFIBLink == source) {
 			doNewAssessmentItem(ureq, menuTree.getSelectedNode(), new FIBAssessmentItemBuilder(translate("new.fib"), EntryType.text, qtiService.qtiSerializer()));
 		} else if(newNumericalLink == source) {

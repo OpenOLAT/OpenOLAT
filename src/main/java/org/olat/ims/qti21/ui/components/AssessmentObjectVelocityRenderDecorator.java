@@ -512,6 +512,14 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		return new SliderOptions(discrete, reverse, min, max, step);
 	}
 	
+	public boolean hasCssClass(Interaction interaction, String cssClass) {
+		if(StringHelper.containsNonWhitespace(cssClass)) {
+			List<String> cssClasses = interaction.getClassAttr();
+			return cssClasses != null && cssClasses.contains(cssClass);
+		}
+		return false;
+	}
+	
 	public boolean isVisible(Choice choice, ItemSessionState iSessionState) {
 		return AssessmentRenderFunctions.isVisible(choice, iSessionState);
 	}

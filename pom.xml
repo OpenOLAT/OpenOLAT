@@ -220,6 +220,25 @@
 											</includes>
 										</aggregation>
 										<aggregation>
+											<output>${basedir}/src/main/webapp/static/js/jquery/qti/jquery.qti.min.js</output>
+											<removeIncluded>false</removeIncluded>
+											<includes>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.associate.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.gapMatch.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.graphicAssociate.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.graphicGap.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.graphicOrder.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.hotspot.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.match.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.order.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.positionObject.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.qtiAutosave.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.qtiTimer.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.selectPoint.min.js</include>
+												<include>${basedir}/target/jquery/jquery/qti/jquery.slider.min.js</include>
+											</includes>
+										</aggregation>
+										<aggregation>
 											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatmatheditor/plugin.min.js</output>
 											<removeIncluded>false</removeIncluded>
 											<includes>
@@ -266,6 +285,45 @@
 											<removeIncluded>false</removeIncluded>
 											<includes>
 												<include>${basedir}/target/jquery/jquery/openolat/jquery.timeline.min.js</include>
+											</includes>
+										</aggregation>
+									</aggregations>
+									<excludes>
+										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
+									</excludes>
+								</configuration>
+							</execution>
+							<execution>
+								<id>compressqti</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>compress</goal>
+								</goals>
+								<configuration>
+									<suffix>.min</suffix>
+									<force>true</force>
+									<encoding>UTF-8</encoding>
+									<nocompress>false</nocompress>
+									<outputDirectory>${basedir}/target/bootstrap</outputDirectory>
+									<sourceDirectory>${basedir}/src/main/webapp/static/bootstrap</sourceDirectory>
+									<excludeResources>true</excludeResources>
+									<aggregations>
+										<aggregation>
+											<output>${basedir}/target/bootstrap/bootstrap-openolat.min.js</output>
+											<removeIncluded>false</removeIncluded>
+											<includes>
+												<!-- <include>${basedir}/target/bootstrap/javascripts/bootstrap/affix.min.js</include> -->
+												<include>${basedir}/target/bootstrap/javascripts/bootstrap/alert.min.js</include>
+												<include>${basedir}/target/bootstrap/javascripts/bootstrap/button.min.js</include>
+												<!-- <include>${basedir}/target/bootstrap/javascripts/bootstrap/carousel.min.js</include> -->
+												<include>${basedir}/target/bootstrap/javascripts/bootstrap/collapse.min.js</include>
+												<include>${basedir}/target/bootstrap/javascripts/bootstrap/dropdown.min.js</include>
+												<include>${basedir}/target/bootstrap/javascripts/bootstrap/tab.min.js</include>
+												<include>${basedir}/target/bootstrap/javascripts/bootstrap/transition.min.js</include>
+												<!-- <include>${basedir}/target/bootstrap/javascripts/bootstrap/scrollspy.min.js</include>  -->
+												<include>${basedir}/target/bootstrap/javascripts/bootstrap/modal.min.js</include>
+												<include>${basedir}/target/bootstrap/javascripts/bootstrap/tooltip.min.js</include>
+												<include>${basedir}/target/bootstrap/javascripts/bootstrap/popover.min.js</include>
 											</includes>
 										</aggregation>
 									</aggregations>

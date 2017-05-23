@@ -66,6 +66,8 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	protected ListParagraph currentListParagraph;
 	protected boolean pNeedNewParagraph = true;
 	
+	protected double maxWidthCm = OpenXMLConstants.PAGE_FULL_WIDTH_CM;
+	
 	public HTMLToOpenXMLHandler(OpenXMLDocument document) {
 		this.factory = document;
 	}
@@ -85,6 +87,10 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	public HTMLToOpenXMLHandler(OpenXMLDocument document, Spacing spacing) {
 		this(document);
 		this.startSpacing = spacing;
+	}
+	
+	public void setMaxWidthCm(double width) {
+		this.maxWidthCm = width;
 	}
 	
 	public void setInitialParagraph(Element paragraph) {
@@ -327,7 +333,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	}
 	
 	protected void setImage(String path) {
-		Element imgEl = factory.createImageEl(path);
+		Element imgEl = factory.createImageEl(path, maxWidthCm);
 		if(imgEl != null) {
 			PredefinedStyle style = getCurrentPredefinedStyle();
 			Element runEl = factory.createRunEl(Collections.singletonList(imgEl), style);
@@ -337,7 +343,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	}
 	
 	protected void setImage(File file) {
-		Element imgEl = factory.createImageEl(file);
+		Element imgEl = factory.createImageEl(file, maxWidthCm);
 		if(imgEl != null) {
 			PredefinedStyle style = getCurrentPredefinedStyle();
 			Element runEl = factory.createRunEl(Collections.singletonList(imgEl), style);
@@ -355,21 +361,29 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		closeParagraph();
 	}
 	
-	protected void startTable() {
+	public void startTable() {
 		closeParagraph();
 		currentTable = new Table();
 	}
 	
-	protected void startTable(Integer... width) {
+	public void startTable(Integer... width) {
 		closeParagraph();
 		currentTable = new Table(width);
 	}
 	
-	protected void startCurrentTableRow() {
+	public void startCurrentTableRow() {
 		currentTable.addRowEl();
 	}
 	
-	protected void closeCurrentTableRow() {
+	public Node addCell(int colSpan, int rowSpan) {
+		return currentTable.addCellEl(colSpan, rowSpan);
+	}
+	
+	public Node addCell(Element cellEl) {
+		return currentTable.addCellEl(cellEl, 1);
+	}
+	
+	public void closeCurrentTableRow() {
 		if(currentTable != null) {
 			currentTable.closeRow();
 		}
@@ -378,7 +392,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		currentParagraph = null;
 	}
 	
-	protected void endTable() {
+	public void endTable() {
 		if(currentTable != null) {
 			content.add(currentTable.getTableEl());
 		}

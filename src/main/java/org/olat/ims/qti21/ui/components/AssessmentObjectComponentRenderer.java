@@ -153,6 +153,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicOrderInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MediaInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.OrderInteraction;
@@ -1010,6 +1011,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 				interactionName = interaction.getQtiClassName();
 				if(matchInteraction.getResponseIdentifier().toString().startsWith("KPRIM_")) {
 					interactionName += "_kprim";
+				} else if(hasClass(matchInteraction, QTI21Constants.CSS_MATCH_DRAG_AND_DROP)) {
+					interactionName += "_dnd";
 				}
 				break;
 			}
@@ -1024,6 +1027,13 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 
 		String templateName = interactionName.substring(0, 1).toLowerCase().concat(interactionName.substring(1));
 		return velocity_root + "/" + templateName + ".html";
+	}
+	
+	private final boolean hasClass(Interaction interaction, String cssClass) {
+		if(interaction == null || cssClass == null) return false;
+		
+		List<String> cssClasses = interaction.getClassAttr();
+		return cssClasses != null && cssClasses.size() > 0 && cssClasses.contains(cssClass);
 	}
 	
 	/*

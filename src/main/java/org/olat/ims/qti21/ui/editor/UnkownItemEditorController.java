@@ -120,13 +120,12 @@ public class UnkownItemEditorController extends FormBasicController {
         itemSessionControllerSettings.setMaxAttempts(10);
 
         /* Create controller and wire up notification recorder */
-        final ItemSessionController itemSessionController = new ItemSessionController(qtiService.jqtiExtensionManager(),
+        final ItemSessionController sessionController = new ItemSessionController(qtiService.jqtiExtensionManager(),
                 itemSessionControllerSettings, itemProcessingMap, itemSessionState);
-        itemSessionController.addNotificationListener(new NotificationRecorder(NotificationLevel.ERROR));
-        
-        
-        itemSessionController.initialize(new Date());
-        return itemSessionController;
+        sessionController.addNotificationListener(new NotificationRecorder(NotificationLevel.ERROR));
+
+        sessionController.initialize(new Date());
+        return sessionController;
     }
 
 	@Override

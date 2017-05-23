@@ -256,21 +256,15 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 	public static class MatchWrapper {
 
 		private final Identifier choiceIdentifier;
-		private final SimpleAssociableChoice choice;
-		private String summary;
+		private SimpleAssociableChoice choice;
 		
 		public MatchWrapper(Identifier choiceIdentifier, SimpleAssociableChoice choice) {
 			this.choiceIdentifier = choiceIdentifier;
 			this.choice = choice;
-			if(choice != null) {
-				summary = new AssessmentHtmlBuilder().flowStaticString(choice.getFlowStatics());
-			} else {
-				summary = "";
-			}
 		}
 		
 		public String getSummary() {
-			return summary;
+			return new AssessmentHtmlBuilder().flowStaticString(choice.getFlowStatics());
 		}
 
 		public Identifier getChoiceIdentifier() {
