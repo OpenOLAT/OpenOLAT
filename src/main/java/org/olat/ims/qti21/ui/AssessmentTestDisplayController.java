@@ -314,9 +314,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		AssessmentTestSession lastSession = qtiService.getResumableAssessmentTestSession(assessedIdentity, anonymousIdentifier, entry, subIdent, testEntry, authorMode);
 		if(lastSession == null) {
-			candidateSession = qtiService.createAssessmentTestSession(assessedIdentity, anonymousIdentifier, assessmentEntry, entry, subIdent, testEntry, authorMode);
-			candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, authorMode);
-			testSessionController = enterSession(ureq);
+			initNewAssessmentTestSession(ureq, assessmentEntry, authorMode);
 		} else {
 			candidateSession = lastSession;
 			candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, authorMode);
@@ -324,7 +322,45 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			lastEvent = new CandidateEvent(candidateSession, testEntry, entry);
 			lastEvent.setTestEventType(CandidateTestEventType.ITEM_EVENT);
 			
-			testSessionController = resumeSession(ureq);
+			if(authorMode) {
+				//check that the resumed session match the current test
+				try {
+					testSessionController = resumeSession(ureq);
+					if(!checkAuthorSession()) {
+						initNewAssessmentTestSession(ureq, assessmentEntry, authorMode);
+					}
+				} catch(Exception e) {
+					logError("Cannot resume session as author", e);
+					initNewAssessmentTestSession(ureq, assessmentEntry, authorMode);
+				}
+			} else {
+				testSessionController = resumeSession(ureq);
+			}
+		}
+	}
+	
+	private void initNewAssessmentTestSession(UserRequest ureq, AssessmentEntry assessmentEntry, boolean authorMode) {
+		candidateSession = qtiService.createAssessmentTestSession(assessedIdentity, anonymousIdentifier, assessmentEntry, entry, subIdent, testEntry, authorMode);
+		candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(candidateSession, authorMode);
+		testSessionController = enterSession(ureq);
+	}
+	
+	/**
+	 * If the session data doesn't match the current assessmentTest and assessmentItems, it will
+	 * return false.
+	 * @return
+	 */
+	private boolean checkAuthorSession() {
+		try {
+			//
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			if(!isTerminated() && !testSessionState.isExited() && testSessionState.getCurrentTestPartKey() != null) {
+				testSessionController.mayEndCurrentTestPart();
+			}
+			return true;
+		} catch(Exception e) {
+			logError("Cannot resume session as author", e);
+			return false;
 		}
 	}
 	
