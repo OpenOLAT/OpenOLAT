@@ -107,6 +107,7 @@
 #if ($r.available("highScore"))
 	$r.render("highScore")
 #end
+
 #if($showResultsOnHomePage && $attempts > 0)	
 	<div class="panel panel-default o_results">
 	  	<div class="panel-heading">
@@ -122,7 +123,7 @@
 				<div id="o_qti_results" class="small">$r.render("resultReport")</div>
 			</div></div>
 	       	#end
-	  	#else
+	  	#elseif($r.isNotNull($visibilityPeriod))
 	       	<div class="panel-collapse collapse in"><div class="panel-body">$visibilityPeriod</div></div>
 		#end
 	</div>

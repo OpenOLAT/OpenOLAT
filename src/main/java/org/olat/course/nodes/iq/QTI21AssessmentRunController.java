@@ -342,26 +342,38 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				hideResultsButton.setElementCssClass("o_qti_hide_assessment_results");
 				hideResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_close_togglebox");
 			} else if(showResultsOnHomePage) {
-				Date startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-				Date endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-				String visibilityStartDate = Formatter.getInstance(getLocale()).formatDate(startDate);
-				String visibilityEndDate = "-";
-				if(endDate != null) {
-					visibilityEndDate = Formatter.getInstance(getLocale()).formatDate(endDate);
-				}
-				String visibilityPeriod = getTranslator().translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate});
-				mainVC.contextPut("visibilityPeriod", visibilityPeriod);
+				exposeVisiblityPeriod();
 				mainVC.contextPut("showResultsVisible", Boolean.FALSE);
 			} else {
+				exposeVisiblityPeriod();
 				mainVC.contextPut("showResultsVisible", Boolean.FALSE);
 			}
 		} else {
+			exposeVisiblityPeriod();
 			mainVC.contextPut("showResultsVisible", Boolean.FALSE);
+			mainVC.contextPut("showResultsOnHomePage", new Boolean(showResultsOnHomePage && !showSummary.none()));	
 		}
 		
 		if(!anonym && resultsVisible) {
 			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 			mainVC.contextPut("log", am.getUserNodeLog(courseNode, getIdentity()));	
+		}
+	}
+	
+	private void exposeVisiblityPeriod() {
+		Date startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+		Date endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+		if(startDate != null) {
+			Formatter formatter = Formatter.getInstance(getLocale());
+			String visibilityStartDate = formatter.formatDate(startDate);
+			String visibilityEndDate = "-";
+			if(endDate != null) {
+				visibilityEndDate = formatter.formatDate(endDate);
+			}
+			String visibilityPeriod = translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate });
+			mainVC.contextPut("visibilityPeriod", visibilityPeriod);
+		} else {
+			mainVC.contextPut("visibilityPeriod", translate("showResults.visibility.future"));
 		}
 	}
 	
