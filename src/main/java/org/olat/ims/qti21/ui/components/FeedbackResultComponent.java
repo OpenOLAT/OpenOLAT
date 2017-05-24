@@ -31,18 +31,17 @@ import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 
 /**
  * 
- * Initial date: 19.04.2016<br>
+ * Initial date: 24 mai 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InteractionResultComponent extends AssessmentObjectComponent  {
+public class FeedbackResultComponent extends AssessmentObjectComponent  {
 	
-	private static final InteractionResultComponentRenderer VELOCITY_RENDERER = new InteractionResultComponentRenderer();
+	private static final FeedbackResultComponentRenderer VELOCITY_RENDERER = new FeedbackResultComponentRenderer();
 	
 	
-	private final InteractionResultFormItem qtiItem;
+	private final FeedbackResultFormItem qtiItem;
 	
-	private final Interaction interaction;
 	private TestSessionController testSessionController;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	private final ResolvedAssessmentItem resolvedAssessmentItem;
@@ -50,11 +49,10 @@ public class InteractionResultComponent extends AssessmentObjectComponent  {
 	private ItemSessionState itemSessionState;
 	private boolean showSolution;
 	
-	public InteractionResultComponent(String name, Interaction interaction,
-			ResolvedAssessmentItem resolvedAssessmentItem, InteractionResultFormItem qtiItem) {
+	public FeedbackResultComponent(String name,
+			ResolvedAssessmentItem resolvedAssessmentItem, FeedbackResultFormItem qtiItem) {
 		super(name);
 		this.qtiItem = qtiItem;
-		this.interaction = interaction;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 	}
 
@@ -84,7 +82,7 @@ public class InteractionResultComponent extends AssessmentObjectComponent  {
 
 	@Override
 	public String getResponseUniqueIdentifier(ItemSessionState state, Interaction i) {
-		return getDispatchID() + "_" + interaction.getResponseIdentifier().toString();
+		return getDispatchID() + "_ffd";
 	}
 
 	@Override
@@ -99,17 +97,13 @@ public class InteractionResultComponent extends AssessmentObjectComponent  {
 	public void setItemSessionState(ItemSessionState itemSessionState) {
 		this.itemSessionState = itemSessionState;
 	}
-
-	public Interaction getInteraction() {
-		return interaction;
-	}
 	
 	public ResolvedAssessmentItem getResolvedAssessmentItem() {
 		return resolvedAssessmentItem;
 	}
 
 	@Override
-	public InteractionResultFormItem getQtiItem() {
+	public FeedbackResultFormItem getQtiItem() {
 		return qtiItem;
 	}
 	
@@ -130,7 +124,7 @@ public class InteractionResultComponent extends AssessmentObjectComponent  {
 	}
 
 	@Override
-	public InteractionResultComponentRenderer getHTMLRendererSingleton() {
+	public FeedbackResultComponentRenderer getHTMLRendererSingleton() {
 		return VELOCITY_RENDERER;
 	}
 }

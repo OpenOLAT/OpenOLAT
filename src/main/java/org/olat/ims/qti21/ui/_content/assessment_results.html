@@ -216,7 +216,7 @@
 	
 	#foreach($itemInteraction in $itemResult.interactionResults)
 		#if($r.isNotNull($itemInteraction.responseFormItem.name) || $r.isNotNull($itemInteraction.solutionFormItem.name))
-		<div class="row #if(!$foreach.hasNext ) o_block_bottom #end">
+		<div class="row #if(!$foreach.hasNext && !$r.isNotNull($itemResult.correctSolutionItem)) o_block_bottom #end">
 			#if($r.isNotNull($itemInteraction.responseFormItem.name) && $r.isNotNull($itemInteraction.solutionFormItem.name))
 				<div class="col-sm-6"><h5>$r.translate("response")</h5>
 					$r.render($itemInteraction.responseFormItem.name)
@@ -235,6 +235,20 @@
 			#end
 		</div>
 		#end
+	#end
+
+	#if($r.isNotNull($itemResult.correctSolutionItem))
+		<div class="row o_block_bottom">
+		#if(${itemResult.hasResponses()} && ${itemResult.hasSolutions()})
+			<div class="col-sm-offset-6 col-sm-6">
+				$r.render($itemResult.correctSolutionItem.name)
+			</div>
+		#else
+			<div class="col-sm-12">
+				$r.render($itemResult.correctSolutionItem.name)
+			</div>
+		#end
+		</div>
 	#end
 #end
 

@@ -22,7 +22,6 @@ package org.olat.ims.qti21.ui.components;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
@@ -30,17 +29,17 @@ import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 
 /**
  * 
- * Initial date: 19.04.2016<br>
+ * Initial date: 24 mai 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InteractionResultFormItem extends AssessmentObjectFormItem {
+public class FeedbackResultFormItem extends AssessmentObjectFormItem {
 	
-	private final InteractionResultComponent component;
+	private final FeedbackResultComponent component;
 	
-	public InteractionResultFormItem(String name, Interaction interaction, ResolvedAssessmentItem resolvedAssessmentItem) {
+	public FeedbackResultFormItem(String name, ResolvedAssessmentItem resolvedAssessmentItem) {
 		super(name, null);
-		component = new InteractionResultComponent(name + "_cmp", interaction, resolvedAssessmentItem, this);
+		component = new FeedbackResultComponent(name + "_cmp", resolvedAssessmentItem, this);
 	}
 	
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {
@@ -76,7 +75,7 @@ public class InteractionResultFormItem extends AssessmentObjectFormItem {
 	}
 
 	@Override
-	public InteractionResultComponent getComponent() {
+	public FeedbackResultComponent getComponent() {
 		return component;
 	}
 	

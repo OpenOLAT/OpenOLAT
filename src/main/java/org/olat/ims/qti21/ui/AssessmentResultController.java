@@ -58,6 +58,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
+import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -297,7 +298,6 @@ public class AssessmentResultController extends FormBasicController {
 		}
 		
 		//update max score of section
-				
 		
 		if(options.isQuestions()) {
 			FormItem questionItem = initQuestionItem(layoutCont, sessionState, resolvedAssessmentItem);
@@ -307,6 +307,14 @@ public class AssessmentResultController extends FormBasicController {
 		if(options.isUserSolutions() || options.isCorrectSolutions()) {
 			List<InteractionResults> interactionResults = initFormItemInteractions(layoutCont, sessionState, assessmentItem, resolvedAssessmentItem);
 			r.getInteractionResults().addAll(interactionResults);
+			
+			if(options.isCorrectSolutions()) {
+				String correctSolutionId = "correctSolutionItem" + count++;
+				FeedbackResultFormItem correctSolutionItem = new FeedbackResultFormItem(correctSolutionId, resolvedAssessmentItem);
+				initInteractionResultFormItem(correctSolutionItem, sessionState);
+				layoutCont.add(correctSolutionId, correctSolutionItem);
+				r.setCorrectSolutionItem(correctSolutionItem);
+			}
 		}
 		
 		updateSectionScoreInformations(node, r, resultsMap);
@@ -379,19 +387,29 @@ public class AssessmentResultController extends FormBasicController {
 				String solutionId = "solutionItem" + count++;
 				InteractionResultFormItem formItem = new InteractionResultFormItem(solutionId, interaction, resolvedAssessmentItem);
 				formItem.setShowSolution(true);
-				formItem.setShowCorrectSolution(true);
 				initInteractionResultFormItem(formItem, sessionState);
 				layoutCont.add(solutionId, formItem);
 				solutionFormItem = formItem;
 			}
-			
 			interactionResults.add(new InteractionResults(responseFormItem, solutionFormItem));
 		}
 		return interactionResults;
 	}
 	
-	private void initInteractionResultFormItem(InteractionResultFormItem formItem, ItemSessionState sectionState) {
-		formItem.setItemSessionState(sectionState);
+	private void initInteractionResultFormItem(InteractionResultFormItem formItem, ItemSessionState sessionState) {
+		formItem.setItemSessionState(sessionState);
+		formItem.setCandidateSessionContext(candidateSessionContext);
+		formItem.setResolvedAssessmentTest(resolvedAssessmentTest);
+		formItem.setResourceLocator(inputResourceLocator);
+		formItem.setAssessmentObjectUri(assessmentObjectUri);
+		formItem.setMapperUri(mapperUri);
+		if(submissionMapperUri != null) {
+			formItem.setSubmissionMapperUri(submissionMapperUri);
+		}
+	}
+	
+	private void initInteractionResultFormItem(FeedbackResultFormItem formItem, ItemSessionState sessionState) {
+		formItem.setItemSessionState(sessionState);
 		formItem.setCandidateSessionContext(candidateSessionContext);
 		formItem.setResolvedAssessmentTest(resolvedAssessmentTest);
 		formItem.setResourceLocator(inputResourceLocator);
@@ -505,6 +523,7 @@ public class AssessmentResultController extends FormBasicController {
 		private int numberOfAnsweredQuestions = 0;
 		
 		private FormItem questionItem;
+		private FormItem correctSolutionItem;
 		private final List<InteractionResults> interactionResults = new ArrayList<>();
 		private final List<Results> subResults = new ArrayList<>();
 		
@@ -535,6 +554,24 @@ public class AssessmentResultController extends FormBasicController {
 		public boolean hasInteractions() {
 			for(InteractionResults interactionResult:interactionResults) {
 				if(interactionResult.getResponseFormItem() != null || interactionResult.getSolutionFormItem() != null) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public boolean hasResponses() {
+			for(InteractionResults interactionResult:interactionResults) {
+				if(interactionResult.getResponseFormItem() != null) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public boolean hasSolutions() {
+			for(InteractionResults interactionResult:interactionResults) {
+				if(interactionResult.getSolutionFormItem() != null) {
 					return true;
 				}
 			}
@@ -707,6 +744,14 @@ public class AssessmentResultController extends FormBasicController {
 
 		public void setQuestionItem(FormItem questionItem) {
 			this.questionItem = questionItem;
+		}
+
+		public FormItem getCorrectSolutionItem() {
+			return correctSolutionItem;
+		}
+
+		public void setCorrectSolutionItem(FormItem correctSolutionItem) {
+			this.correctSolutionItem = correctSolutionItem;
 		}
 
 		public List<InteractionResults> getInteractionResults() {

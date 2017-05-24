@@ -361,9 +361,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 	
 	private void exposeVisiblityPeriod() {
+		boolean showResultsActive = config.getBooleanSafe(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS);
 		Date startDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
 		Date endDate = config.getDateValue(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-		if(startDate != null) {
+		if(showResultsActive && startDate != null) {
 			Formatter formatter = Formatter.getInstance(getLocale());
 			String visibilityStartDate = formatter.formatDate(startDate);
 			String visibilityEndDate = "-";

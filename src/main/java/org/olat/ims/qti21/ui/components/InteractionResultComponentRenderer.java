@@ -25,19 +25,13 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
-import org.olat.ims.qti21.QTI21Constants;
 
-import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Flow;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.PrintedVariable;
-import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
-import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
-import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
  * 
@@ -70,53 +64,6 @@ public class InteractionResultComponentRenderer extends AssessmentObjectComponen
 		} else if(interaction instanceof Flow) {
 			renderFlow(assessmentRenderer, sb, cmp, resolvedAssessmentItem, itemSessionState, (Flow)interaction, ubu, translator);
 		}
-		
-		if(cmp.isShowCorrectSolution()) {
-			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-			for(ModalFeedback modalFeedback:assessmentItem.getModalFeedbacks()) {
-				Identifier outcomeIdentifier = modalFeedback.getOutcomeIdentifier();
-				if(QTI21Constants.CORRECT_SOLUTION_IDENTIFIER.equals(outcomeIdentifier)) {
-					sb.append("<div class='modalFeedback'>");
-					renderAssessmentItemCorrectSolutionModalFeedback(assessmentRenderer, sb, modalFeedback,
-							cmp, resolvedAssessmentItem, itemSessionState, ubu, translator);
-					sb.append("</div>");
-				}
-			}
-		}
-	}
-	
-	/**
-	 * A special rendering of "correct solution" feedback for the results report (without the open / close part).
-	 * @param renderer
-	 * @param sb
-	 * @param modalFeedback
-	 * @param component
-	 * @param resolvedAssessmentItem
-	 * @param itemSessionState
-	 * @param ubu
-	 * @param translator
-	 */
-	private void renderAssessmentItemCorrectSolutionModalFeedback(AssessmentRenderer renderer, StringOutput sb, ModalFeedback modalFeedback,
-			AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState,
-			URLBuilder ubu, Translator translator) {
-		
-		sb.append("<div class='modalFeedback o_togglebox_wrapper clearfix'>");
-		Attribute<?> title = modalFeedback.getAttributes().get("title");
-		String feedbackTitle = null;
-		if(title != null && title.getValue() != null) {
-			feedbackTitle = title.getValue().toString();
-		}
-		if(!StringHelper.containsNonWhitespace(feedbackTitle)) {
-			feedbackTitle = translator.translate("correct.solution");
-		}
-
-		sb.append("<h5>").append(StringHelper.escapeHtml(feedbackTitle)).append("</h5>");
-		sb.append("<div id='modal-correct-solution'><div class='o_togglebox_content clearfix'>");
-
-		modalFeedback.getFlowStatics().forEach((flow)
-			-> renderFlow(renderer, sb, component, resolvedAssessmentItem, itemSessionState, flow, ubu, translator));
-
-		sb.append("</div></div></div>");
 	}
 
 	@Override
