@@ -21,7 +21,9 @@ package org.olat.course.nodes.iq;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
@@ -52,6 +54,7 @@ import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
+import org.olat.course.nodes.QTICourseNode;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIResult;
 import org.olat.ims.qti.QTIResultManager;
@@ -101,6 +104,7 @@ public class IQConfigurationController extends BasicController {
 	private IQEditReplaceWizard replaceWizard;
 	private AssessmentTestDisplayController previewQTI21Ctrl;
 	private ReferencableEntriesSearchController searchController;
+	private ConfirmChangeResourceController confirmChangeResourceCtrl;
 	
 	private IQEditForm modOnyxConfigForm;
 	private IQ12EditForm mod12ConfigForm;
@@ -287,20 +291,19 @@ public class IQConfigurationController extends BasicController {
 	
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
-		if (source.equals(searchController)) {
+		if (source == searchController) {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				// repository search controller done				
 				cmc.deactivate();
 				RepositoryEntry re = searchController.getSelectedEntry();
-				try {
-					boolean needManualCorrection = checkManualCorrectionNeeded(re);
-					doIQReference(urequest, re, needManualCorrection);
-					updateEditController(urequest, true);
-				} catch (Exception e) {
-					logError("", e);
-					showError("error.resource.corrupted");
-				}
+				doConfirmChangeTestAndSurvey(urequest, re);
 			}
+		} else if(source == confirmChangeResourceCtrl) {
+			if(event == Event.DONE_EVENT) {
+				RepositoryEntry newEntry = confirmChangeResourceCtrl.getNewTestEntry();
+				doChangeResource(urequest, newEntry);
+			}
+			cmc.deactivate();
 		} else if (source == replaceWizard) {
 			if(event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
@@ -333,6 +336,58 @@ public class IQConfigurationController extends BasicController {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		}
+	}
+	
+	/**
+	 * This check if there is some QTI 2.1 results for the current selected test.
+	 * 
+	 * @param ureq
+	 * @param newEntry
+	 */
+	private void doConfirmChangeTestAndSurvey(UserRequest ureq, RepositoryEntry newEntry) {
+		try {
+			RepositoryEntry currentEntry = courseNode.getReferencedRepositoryEntry();
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			
+			int numOfAssessedIdentities = 0;
+			if(currentEntry != null) {
+				List<AssessmentTestSession> assessmentTestSessions = qti21service.getAssessmentTestSessions(courseEntry, courseNode.getIdent(), currentEntry);
+				Set<Identity> assessedIdentities = new HashSet<>(); 
+				for(AssessmentTestSession assessmentTestSession:assessmentTestSessions) {
+					if(StringHelper.containsNonWhitespace(assessmentTestSession.getAnonymousIdentifier())) {
+						numOfAssessedIdentities++;
+					} else if(assessmentTestSession.getIdentity() != null) {
+						assessedIdentities.add(assessmentTestSession.getIdentity());
+					}
+				}
+				numOfAssessedIdentities += assessedIdentities.size();
+			}
+			
+			if(numOfAssessedIdentities > 0) {
+				confirmChangeResourceCtrl = new ConfirmChangeResourceController(ureq, getWindowControl(),
+						course, (QTICourseNode)courseNode, newEntry, currentEntry, numOfAssessedIdentities);
+				listenTo(confirmChangeResourceCtrl);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeResourceCtrl.getInitialComponent());
+				listenTo(cmc);
+				cmc.activate();
+			} else {
+				doChangeResource(ureq, newEntry);
+			}
+		} catch (Exception e) {
+			logError("", e);
+			showError("error.resource.corrupted");
+		}
+	}
+	
+	private void doChangeResource(UserRequest ureq, RepositoryEntry newEntry) {
+		try {
+			boolean needManualCorrection = checkManualCorrectionNeeded(newEntry);
+			doIQReference(ureq, newEntry, needManualCorrection);
+			updateEditController(ureq, true);
+		} catch (Exception e) {
+			logError("", e);
+			showError("error.resource.corrupted");
 		}
 	}
 	
