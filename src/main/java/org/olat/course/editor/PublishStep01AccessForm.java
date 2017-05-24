@@ -326,6 +326,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		for(Offer offer:offers) {
 			List<OfferAccess> offerAccess = acService.getOfferAccess(offer, true);
 			for(OfferAccess access:offerAccess) {
+				button_id++;
 				addConfiguration(access);
 			}
 		}
