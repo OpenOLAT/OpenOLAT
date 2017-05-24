@@ -79,6 +79,10 @@
 	.o_statusinfo {
 		@extend %o_note;
 	}
+	.o_in_review {
+		font-style: italic;
+		position: relative;
+	}
 	
 	@if not $o-course-show-icon-title {
 		// hide icons in title, too much fuzz

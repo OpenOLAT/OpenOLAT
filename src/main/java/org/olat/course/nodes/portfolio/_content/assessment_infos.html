@@ -22,7 +22,11 @@
 				#if($resultsVisible)
 					$score
 				#else
-					$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
+					<span id="o_score_in_review" class="o_in_review">
+						<i class="o_icon o_icon-fw o_icon_warn"> </i>
+						$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
+					</span>
+					$r.mouseoverHelp("o_score_in_review", "assessment.review.explanation")
 				#end
 			#else
 				<div class="o_noinfo">$r.translate("score.noscore")</div>
@@ -42,7 +46,11 @@
 			<th>$r.translate("passed.yourpassed")</th>
 			<td>
 			#if($hasPassedValue && !$resultsVisible)
-				$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
+				<span id="o_passed_in_review" class="o_in_review">
+					<i class="o_icon o_icon-fw o_icon_warn"> </i>
+					$r.translateWithPackage("org.olat.course.nodes.ms", "in.review")
+				</span>
+				$r.mouseoverHelp("o_passed_in_review", "assessment.review.explanation")
 			#elseif($hasPassedValue && $passed)
 				<i class="o_icon o_icon_passed"> </i> $r.translate("map.passed")
 			#elseif($hasPassedValue && !$passed)
