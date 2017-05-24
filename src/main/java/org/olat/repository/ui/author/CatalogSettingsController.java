@@ -69,7 +69,6 @@ public class CatalogSettingsController extends FormBasicController {
 	private Controller catalogAdddController;
 	
 	private RepositoryEntry entry;
-	protected String velocity_root;
 
 	@Autowired
 	private CatalogManager catalogManager;
@@ -80,7 +79,6 @@ public class CatalogSettingsController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
 		this.stackPanel = stackPanel;
-		this.velocity_root = Util.getPackageVelocityRoot(this.getClass());
 		
 		initForm(ureq);
 		stackPanel.pushController(translate("details.categoriesheader"), this);
