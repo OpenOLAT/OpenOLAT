@@ -49,6 +49,7 @@ public class InteractionResultComponent extends AssessmentObjectComponent  {
 	
 	private ItemSessionState itemSessionState;
 	private boolean showSolution;
+	private boolean showCorrectSolution;
 	
 	public InteractionResultComponent(String name, Interaction interaction,
 			ResolvedAssessmentItem resolvedAssessmentItem, InteractionResultFormItem qtiItem) {
@@ -64,6 +65,14 @@ public class InteractionResultComponent extends AssessmentObjectComponent  {
 
 	public void setShowSolution(boolean showSolution) {
 		this.showSolution = showSolution;
+	}
+
+	public boolean isShowCorrectSolution() {
+		return showCorrectSolution;
+	}
+
+	public void setShowCorrectSolution(boolean showCorrectSolution) {
+		this.showCorrectSolution = showCorrectSolution;
 	}
 
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {

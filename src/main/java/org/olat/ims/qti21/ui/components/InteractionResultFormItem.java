@@ -74,6 +74,14 @@ public class InteractionResultFormItem extends AssessmentObjectFormItem {
 	public void setShowSolution(boolean showSolution) {
 		component.setShowSolution(showSolution);
 	}
+	
+	public boolean isShowCorrectSolution() {
+		return component.isShowCorrectSolution();
+	}
+	
+	public void setShowCorrectSolution(boolean showCorrectSolution) {
+		component.setShowCorrectSolution(showCorrectSolution);
+	}
 
 	@Override
 	public InteractionResultComponent getComponent() {

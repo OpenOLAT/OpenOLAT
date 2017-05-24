@@ -277,7 +277,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		}
 	}
 	
-	private void renderTestItemModalFeedback_correctSolution(AssessmentRenderer renderer, StringOutput sb, ModalFeedback modalFeedback,
+	protected void renderTestItemModalFeedback_correctSolution(AssessmentRenderer renderer, StringOutput sb, ModalFeedback modalFeedback,
 			AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState,
 			URLBuilder ubu, Translator translator) {
 		
