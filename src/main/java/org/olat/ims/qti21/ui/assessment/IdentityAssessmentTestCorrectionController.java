@@ -279,6 +279,8 @@ public class IdentityAssessmentTestCorrectionController extends FormBasicControl
 			}
 		}
 		
+		flc.getFormItemComponent().contextPut("hasErrors", new Boolean(!allOk));
+		
 		return allOk & super.validateFormLogic(ureq);
 	}
 	

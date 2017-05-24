@@ -249,6 +249,8 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 				allOk &= validateItemResults(itemResult);
 			}
 		}
+
+		flc.getFormItemComponent().contextPut("hasErrors", new Boolean(!allOk));
 		
 		return allOk & super.validateFormLogic(ureq);
 	}
