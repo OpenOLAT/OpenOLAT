@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -47,6 +48,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
@@ -108,7 +110,7 @@ public class IdentityAssessmentTestCorrectionController extends FormBasicControl
 	
 	public IdentityAssessmentTestCorrectionController(UserRequest ureq, WindowControl wControl,
 			AssessmentTestSession session) {
-		super(ureq, wControl, "user_interactions");
+		super(ureq, wControl, "user_interactions", Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.candidateSession = session;
 		testEntry = session.getTestEntry();
 		

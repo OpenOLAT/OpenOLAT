@@ -41,6 +41,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -52,6 +53,7 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.olat.repository.RepositoryEntry;
@@ -108,7 +110,7 @@ public class IdentitiesAssessmentItemCorrectionController extends FormBasicContr
 	public IdentitiesAssessmentItemCorrectionController(UserRequest ureq, WindowControl wControl,
 			AssessmentTestCorrection testCorrections, AssessmentItemRef itemRef,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest) {
-		super(ureq, wControl, "users_interactions");
+		super(ureq, wControl, "users_interactions", Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
