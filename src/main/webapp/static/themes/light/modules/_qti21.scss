@@ -596,6 +596,26 @@ div.hotspotInteraction {
 	display:none;
 }
 
+.o_assessment_test_results {
+	/* align tables in assessment results to have same column width */
+	table th {
+		width: 40%;	
+	}
+	.o_qti_metainfo {
+		table {
+			margin-bottom: 0px;
+		}
+		/* reset stripes */
+		.table-striped>tbody>tr:nth-child(odd) {
+			background-color: transparent;
+		}
+	
+	}
+	.o_state .text-muted { 
+		font-weight: normal;	
+	}
+}	
+
 /* Choice interaction */
 tr.choiceinteraction {
 	td.control {

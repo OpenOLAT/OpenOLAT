@@ -654,6 +654,15 @@ public class AssessmentResultController extends FormBasicController {
 		public Double getCutValue() {
 			return cutValue;
 		}
+
+		public String getCutPercent() {
+			if(maxScore == null) return null;
+			if(cutValue == null) return "0";
+			
+			double percent = (cutValue / maxScore) * 100.0d;
+			long percentLong = Math.round(percent);	
+			return Long.toString(percentLong);
+		}
 		
 		public void setCutValue(Double cutValue) {
 			this.cutValue = cutValue;
