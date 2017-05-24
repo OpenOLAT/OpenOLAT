@@ -57,7 +57,7 @@
 			</td>
 		</tr>
 		#if(${testResults.hasScore()})
-		<tr id="o_qti_scoreinfo" class="o_sel_assessmenttest_score">
+		<tr id="o_qti_scoreinfo" class="o_sel_assessmenttest_scores">
 			<th>$r.translate("results.score.yourscore")</th>
 			<td>
 				<div class="col-xs-3 col-md-2" style="padding-left:0;">
@@ -65,7 +65,7 @@
 		    		#if ($testResults.maxScore == "-1.0")
 		  				$testResults.score / $r.translate("question.progress.noMaxScore")
 		    		#else
-		  				<span title="$r.translateInAttribute("results.score.yourscore")">$testResults.score</span> / <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmenttest_score">$testResults.maxScore</span>
+		  				<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmenttest_score">$testResults.score</span> / <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmenttest_maxscore">$testResults.maxScore</span>
 		  			#end
 				#else
 					$testResults.score
