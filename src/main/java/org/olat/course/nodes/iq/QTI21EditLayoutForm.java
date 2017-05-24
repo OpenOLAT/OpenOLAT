@@ -354,6 +354,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 			if(configEl.isOneSelected()) {
 				modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_CONFIG_REF, configEl.isSelected(0));
 				if(configEl.isSelected(1)) {// manual configuration
+					persistConfiguration();
 					long maxTime = getMaxTimeLimit();
 					if(maxTime > 0) {
 						modConfig.setIntValue(IQEditController.CONFIG_KEY_TIME_LIMIT, (int)maxTime);
@@ -375,6 +376,11 @@ public class QTI21EditLayoutForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		persistConfiguration();
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	protected void persistConfiguration() {
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_CONFIG_REF, configEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_FULLWINDOW, fullWindowEl.isSelected(0));
 		if(limitAttemptsEl.isSelected(0)) {
@@ -418,7 +424,5 @@ public class QTI21EditLayoutForm extends FormBasicController {
 		} else {
 			modConfig.remove(IQEditController.CONFIG_KEY_TIME_LIMIT);
 		}
-		
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }
