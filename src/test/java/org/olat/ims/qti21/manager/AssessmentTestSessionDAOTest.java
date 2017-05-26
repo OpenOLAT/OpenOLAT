@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.manager;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +27,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.model.ParentPartItemRefs;
+import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
@@ -44,6 +48,8 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private AssessmentItemSessionDAO itemSessionDao;
 	@Autowired
 	private AssessmentTestSessionDAO testSessionDao;
 	@Autowired
@@ -95,6 +101,47 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(sessions);
 		Assert.assertEquals(1, sessions.size());
 		Assert.assertEquals(testSession, sessions.get(0));
+	}
+	
+	@Test
+	public void getUserTestSessionsStatistics() {
+		// prepare a test and a user
+		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry courseEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("session-3");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, courseEntry, subIdent, testEntry);
+		dbInstance.commit();
+		AssessmentTestSession testSession = testSessionDao.createAndPersistTestSession(testEntry, courseEntry, subIdent, assessmentEntry, assessedIdentity, null, false);
+		Assert.assertNotNull(testSession);
+		dbInstance.commit();
+		
+		for(int i=0; i<4; i++) {
+			ParentPartItemRefs parentParts = new ParentPartItemRefs();
+			String sectionIdentifier = UUID.randomUUID().toString();
+			parentParts.setSectionIdentifier(sectionIdentifier);
+			String testPartIdentifier = UUID.randomUUID().toString();
+			parentParts.setTestPartIdentifier(testPartIdentifier);
+			AssessmentItemSession itemSession = itemSessionDao.createAndPersistAssessmentItemSession(testSession, parentParts, UUID.randomUUID().toString());
+			Assert.assertNotNull(itemSession);
+			dbInstance.commit();
+			
+			if(i%2 == 0) {
+				itemSession.setManualScore(new BigDecimal(3));
+				itemSessionDao.merge(itemSession);
+			}
+		}
+
+		dbInstance.commitAndCloseSession();
+		
+		List<AssessmentTestSessionStatistics> sessionsStatistics = testSessionDao.getUserTestSessionsStatistics(courseEntry, subIdent, assessedIdentity);
+		Assert.assertNotNull(sessionsStatistics);
+		Assert.assertEquals(1, sessionsStatistics.size());
+		
+		AssessmentTestSessionStatistics sessionStatistics = sessionsStatistics.get(0);
+		Assert.assertNotNull(sessionStatistics.getTestSession());
+		Assert.assertEquals(testSession, sessionStatistics.getTestSession());
+		Assert.assertEquals(2, sessionStatistics.getNumOfCorrectedItems());
 	}
 	
 	@Test

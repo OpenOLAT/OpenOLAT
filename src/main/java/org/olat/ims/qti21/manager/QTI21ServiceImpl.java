@@ -94,6 +94,7 @@ import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.model.audit.CandidateTestEventType;
+import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryEntry;
@@ -512,6 +513,11 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	@Override
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity) {
 		return testSessionDao.getUserTestSessions(courseEntry, subIdent, identity);
+	}
+
+	@Override
+	public List<AssessmentTestSessionStatistics> getAssessmentTestSessionsStatistics(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity) {
+		return testSessionDao.getUserTestSessionsStatistics(courseEntry, subIdent, identity);
 	}
 	
 	@Override

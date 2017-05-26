@@ -39,66 +39,94 @@ import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController.AssessmentTestSess
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21TestSessionTableModel extends DefaultFlexiTableDataModel<AssessmentTestSession> {
+public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataModel<QTI21AssessmentTestSessionDetails> {
 	
 	private final Translator translator;
 	private AssessmentTestSession lastSession;
 	
-	public QTI21TestSessionTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public QTI21AssessmentTestSessionTableModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
 		this.translator = translator;
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<AssessmentTestSession> createCopyWithEmptyList() {
-		return new QTI21TestSessionTableModel(getTableColumnModel(), translator);
+	public DefaultFlexiTableDataModel<QTI21AssessmentTestSessionDetails> createCopyWithEmptyList() {
+		return new QTI21AssessmentTestSessionTableModel(getTableColumnModel(), translator);
 	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		AssessmentTestSession session = getObject(row);
+		QTI21AssessmentTestSessionDetails session = getObject(row);
 
 		switch(TSCols.values()[col]) {
 			case terminationTime: {
-				Date endTime = session.getTerminationTime();
+				Date endTime = session.getTestSession().getTerminationTime();
 				if(endTime == null) {
-					endTime = session.getFinishTime();
+					endTime = session.getTestSession().getFinishTime();
 				}
 				return endTime;
 			}
-			case lastModified: return session.getLastModified();
+			case lastModified: return session.getTestSession().getLastModified();
 			case duration: {
-				if(session.getFinishTime() != null) {
-					return Formatter.formatDuration(session.getDuration().longValue());
+				if(session.getTestSession().getFinishTime() != null) {
+					return Formatter.formatDuration(session.getTestSession().getDuration().longValue());
 				}
 				return "<span class='o_ochre'>" + translator.translate("assessment.test.open") + "</span>";
 			}
-			case test: return session.getTestEntry().getDisplayname();
-			case results: {
-				if(session.getFinishTime() != null) {
-					return AssessmentHelper.getRoundedScore(session.getScore());
+			case test: return session.getTestSession().getTestEntry().getDisplayname();
+			case numOfItemSessions: {
+				return session.getNumOfItems();
+			}
+			case responded: {
+				return session.getNumOfItemsResponded();
+			}
+			case corrected: {
+				return session.getNumOfItemsCorrected();
+			}
+			case score: {
+				if(session.getTestSession().getFinishTime() != null) {
+					return AssessmentHelper.getRoundedScore(session.getTestSession().getScore());
 				}
 				return "<span class='o_ochre'>" + translator.translate("assessment.test.notReleased") + "</span>";
 			}
+			case manualScore: {
+				if(session.getTestSession().getFinishTime() != null) {
+					return AssessmentHelper.getRoundedScore(session.getTestSession().getManualScore());
+				}
+				return "";
+			}
+			case finalScore: {
+				if(session.getTestSession().getFinishTime() != null) {
+					double score = 0.0d;
+					if(session.getTestSession().getScore() != null) {
+						score += session.getTestSession().getScore().doubleValue();
+					}
+					if(session.getTestSession().getManualScore() != null) {
+						score += session.getTestSession().getManualScore().doubleValue();
+					}
+					return AssessmentHelper.getRoundedScore(score);
+				}
+				return "";
+			}
 			case open: {
-				Date finished = session.getFinishTime();
+				Date finished = session.getTestSession().getFinishTime();
 				return finished == null ? Boolean.FALSE : Boolean.TRUE;
 			}
 			case correction: {
-				return (lastSession != null && lastSession.equals(session));
+				return (lastSession != null && lastSession.equals(session.getTestSession()));
 			}
 			default: return "ERROR";
 		}
 	}
 
 	@Override
-	public void setObjects(List<AssessmentTestSession> objects) {
+	public void setObjects(List<QTI21AssessmentTestSessionDetails> objects) {
 		super.setObjects(objects);
 		
-		List<AssessmentTestSession> sessions = new ArrayList<>(objects);
+		List<QTI21AssessmentTestSessionDetails> sessions = new ArrayList<>(objects);
 		Collections.sort(sessions, new AssessmentTestSessionComparator());
 		if(sessions.size() > 0) {
-			lastSession = sessions.get(0);
+			lastSession = sessions.get(0).getTestSession();
 		}
 	}
 
@@ -107,7 +135,12 @@ public class QTI21TestSessionTableModel extends DefaultFlexiTableDataModel<Asses
 		lastModified("table.header.lastModified"),
 		duration("table.header.duration"),
 		test("table.header.test"),
-		results("table.header.results"),
+		numOfItemSessions("table.header.itemSessions"),
+		responded("table.header.responded"),
+		corrected("table.header.corrected"),
+		score("table.header.score"),
+		manualScore("table.header.manualScore"),
+		finalScore("table.header.finalScore"),
 		open("table.header.action"),
 		correction("table.header.action");
 		

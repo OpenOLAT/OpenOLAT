@@ -36,6 +36,7 @@ import org.olat.ims.qti21.model.ResponseLegality;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.model.audit.CandidateItemEventType;
 import org.olat.ims.qti21.model.audit.CandidateTestEventType;
+import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -267,6 +268,16 @@ public interface QTI21Service {
 	 * @return
 	 */
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
+	
+	/**
+	 * Retrieve the sessions of a user with the number of corrected assessment items (only the test and its resource are fetched).
+	 * 
+	 * @param courseEntry The course
+	 * @param subIdent The course node identifier
+	 * @param identity The user to assess
+	 * @return A list of assessment test sessions wrapped with number of corrected items
+	 */
+	public List<AssessmentTestSessionStatistics> getAssessmentTestSessionsStatistics(RepositoryEntryRef courseEntry, String subIdent, IdentityRef identity);
 	
 	/**
 	 * Retrieve the last finished test session.
