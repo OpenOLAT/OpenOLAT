@@ -210,6 +210,10 @@ public class AssessmentResultController extends FormBasicController {
 			TestResult testResult = assessmentResult.getTestResult();
 			if(testResult != null) {
 				extractOutcomeVariable(testResult.getItemVariables(), testResults);
+				if(candidateSession.getManualScore() != null) {
+					testResults.addScore(candidateSession.getManualScore());
+					testResults.setManualScore(candidateSession.getManualScore());
+				}
 				
 				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 				Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
@@ -293,6 +297,7 @@ public class AssessmentResultController extends FormBasicController {
 		if(itemSession != null) {
 			if(itemSession.getManualScore() != null) {
 				r.setScore(itemSession.getManualScore());
+				r.setManualScore(itemSession.getManualScore());
 			}
 			r.setComment(itemSession.getCoachComment());
 		}
@@ -424,7 +429,9 @@ public class AssessmentResultController extends FormBasicController {
 		for(ItemVariable itemVariable:itemVariables) {
 			if(itemVariable instanceof OutcomeVariable) {
 				if(QTI21Constants.SCORE_IDENTIFIER.equals(itemVariable.getIdentifier())) {
-					results.setScore(getOutcomeNumberVariable(itemVariable));
+					Double score = getOutcomeNumberVariable(itemVariable);
+					results.setScore(score);
+					results.setAutoScore(score);
 				} else if(QTI21Constants.MAXSCORE_IDENTIFIER.equals(itemVariable.getIdentifier())) {
 					results.setMaxScore(getOutcomeNumberVariable(itemVariable));
 				} else if(QTI21Constants.PASS_IDENTIFIER.equals(itemVariable.getIdentifier())) {
@@ -507,6 +514,9 @@ public class AssessmentResultController extends FormBasicController {
 		private Long duration;
 		
 		private Double score;
+		private Double manualScore;
+		private Double autoScore;
+		
 		private Double maxScore;
 		private Double cutValue;
 		private Boolean pass;
@@ -627,6 +637,33 @@ public class AssessmentResultController extends FormBasicController {
 					score = 0.0d;
 				}
 				score = score.doubleValue() + results.score.doubleValue();
+			}
+		}
+		
+		public void addScore(BigDecimal additionalScore) {
+			if(score == null) {
+				score = 0.0d;
+			}
+			score = score.doubleValue() + additionalScore.doubleValue();
+		}
+		
+		public String getAutoScore() {
+			return AssessmentHelper.getRoundedScore(autoScore);
+		}
+		
+		public void setAutoScore(Double autoScore) {
+			if(autoScore != null) {
+				this.autoScore = autoScore.doubleValue();
+			}
+		}
+		
+		public String getManualScore() {
+			return AssessmentHelper.getRoundedScore(manualScore);
+		}
+		
+		public void setManualScore(BigDecimal manualScore) {
+			if(manualScore != null) {
+				this.manualScore = manualScore.doubleValue();
 			}
 		}
 		
