@@ -129,10 +129,30 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 		StatusDescription sd =  StatusDescription.NOERROR;
 		Card2BrainModule card2BrainModule = CoreSpringFactory.getImpl(Card2BrainModule.class);
 		boolean isEnterpriseLogin = !getModuleConfiguration().getBooleanSafe(CONFIG_ENABLE_PRIVATE_LOGIN);
-		boolean isValid = card2BrainModule.isLoginSafe(isEnterpriseLogin);
-		if (!isValid) {
+		if (!card2BrainModule.isEnterpriseLoginEnabled() && !card2BrainModule.isPrivateLoginEnabled()) {
+			// both logins are deactivated
+			String shortKey = "edit.warning.bothLoginDisabled.short";
+			String longKey = "edit.warning.bothLoginDisabled";
+			String[] params = new String[] { this.getShortTitle() };
+			String translPackage = Util.getPackageName(Card2BrainEditController.class);
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+			sd.setDescriptionForUnit(getIdent());
+			// set which pane is affected by error
+			sd.setActivateableViewIdentifier(Card2BrainEditController.PANE_TAB_VCCONFIG);
+		} else if (isEnterpriseLogin && !card2BrainModule.isEnterpriseLoginEnabled()) {
+			// enterprise login is not enabled anymore
 			String shortKey = "edit.warning.enterpriseLoginDisabled.short";
 			String longKey = "edit.warning.enterpriseLoginDisabled";
+			String[] params = new String[] { this.getShortTitle() };
+			String translPackage = Util.getPackageName(Card2BrainEditController.class);
+			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
+			sd.setDescriptionForUnit(getIdent());
+			// set which pane is affected by error
+			sd.setActivateableViewIdentifier(Card2BrainEditController.PANE_TAB_VCCONFIG);
+		} else if (!isEnterpriseLogin && !card2BrainModule.isPrivateLoginEnabled()) {
+			// private login is not enabled anymore
+			String shortKey = "edit.warning.privateLoginDisabled.short";
+			String longKey = "edit.warning.privateLoginDisabled";
 			String[] params = new String[] { this.getShortTitle() };
 			String translPackage = Util.getPackageName(Card2BrainEditController.class);
 			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);

@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -41,33 +42,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
  * Initial date: 11.04.2017<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class Card2BrainConfigController extends FormBasicController {
-	
-	private static final String[] enabledKeys = new String[]{"on"};
+
+	private static final String[] enabledKeys = new String[] { "on" };
 	private static final String FORM_MISSING_MANDATORY = "form.legende.mandatory";
 
 	private TextElement flashcardAliasEl;
+	private SpacerElement privateLoginSpacer;
 	private MultipleSelectionElement enablePrivateLoginEl;
 	private TextElement privateKeyEl;
 	private TextElement privateSecretEl;
 	private FormLink previewButton;
 	private LayoutMain3ColsPreviewController previewLayoutCtr;
-	
+
 	private final ModuleConfiguration config;
-	
+
 	@Autowired
 	private Card2BrainModule card2BrainModule;
 	@Autowired
 	private Card2BrainManager card2BrainManager;
-	
+
 	public Card2BrainConfigController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
 		super(ureq, wControl);
 
 		this.config = config;
-		
+
 		initForm(ureq);
 	}
 
@@ -75,73 +78,71 @@ public class Card2BrainConfigController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("edit.title");
 		setFormContextHelp("KnowledgeTransfer#_card2brain");
-		
+
 		String falshcardAlias = config.getStringValue(Card2BrainCourseNode.CONFIG_FLASHCARD_ALIAS);
-		flashcardAliasEl = uifactory.addTextElement("edit.flashcard.alias", "edit.flashcard.alias", 128, falshcardAlias, formLayout);
+		flashcardAliasEl = uifactory.addTextElement("edit.flashcard.alias", "edit.flashcard.alias", 128, falshcardAlias,
+				formLayout);
 		flashcardAliasEl.setMandatory(true);
 		flashcardAliasEl.setHelpTextKey("edit.FlashcardHelpText", null);
-		
+
 		previewButton = uifactory.addFormLink("edit.preview", formLayout, "btn btn-default o_xsmall");
 		previewButton.setIconLeftCSS("o_icon o_icon_preview");
-		
-		uifactory.addSpacerElement("Spacer", formLayout, false);
-		
+
+		privateLoginSpacer = uifactory.addSpacerElement("Spacer", formLayout, false);
+
 		boolean enablePrivateLogin = config.getBooleanSafe(Card2BrainCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN);
-		String[] enableValues = new String[]{ translate("on") };		
-		enablePrivateLoginEl = uifactory.addCheckboxesHorizontal("edit.access.enablePrivateLogin", formLayout, enabledKeys, enableValues);
+		String[] enableValues = new String[] { translate("on") };
+		enablePrivateLoginEl = uifactory.addCheckboxesHorizontal("edit.access.enablePrivateLogin", formLayout,
+				enabledKeys, enableValues);
 		if (enablePrivateLogin) {
 			enablePrivateLoginEl.select(enabledKeys[0], true);
 		}
 		enablePrivateLoginEl.addActionListener(FormEvent.ONCHANGE);
 
 		String privateKey = config.getStringValue(Card2BrainCourseNode.CONFIG_PRIVATE_KEY);
-		privateKeyEl = uifactory.addTextElement("edit.access.privateKey", "edit.access.privateKey", 128, privateKey, formLayout);
+		privateKeyEl = uifactory.addTextElement("edit.access.privateKey", "edit.access.privateKey", 128, privateKey,
+				formLayout);
 		privateKeyEl.setMandatory(true);
 		privateKeyEl.setHelpTextKey("edit.KeyHelpText", null);
-		
+
 		String privateSecret = config.getStringValue(Card2BrainCourseNode.CONFIG_PRIVATE_SECRET);
-		privateSecretEl = uifactory.addPasswordElement("edit.access.privateSecret", "edit.access.privateSecret", 128, privateSecret, formLayout);
+		privateSecretEl = uifactory.addTextElement("edit.access.privateSecret", "edit.access.privateSecret",
+				128, privateSecret, formLayout);
 		privateSecretEl.setMandatory(true);
 		privateSecretEl.setHelpTextKey("edit.SecretHelpText", null);
-		
+
 		uifactory.addFormSubmitButton("save", formLayout);
-		
+
 		showHidePrivateLoginFields();
+		validateFormLogic(ureq);
 	}
-	
+
 	/**
-	 * The checkbox of the private login is only visible if the enterprise login is enabled. Otherwise it is always a private login.
-	 * The fields for the private login are only shown if the user has to fill in a private login.
-	 * If the course node is stored with enterprise login but the enterprise login is disabled, show a message to the user and allow to register the private login.
+	 * The checkbox of the private login is only visible if the appropriate
+	 * option is enabled.
 	 */
 	private void showHidePrivateLoginFields() {
-		enablePrivateLoginEl.setVisible(card2BrainModule.isEnterpriseLoginEnabled());
-		
-		privateKeyEl.setVisible(isPrivateLoginEnabled());
-		privateSecretEl.setVisible(isPrivateLoginEnabled());
+		privateLoginSpacer.setVisible(card2BrainModule.isPrivateLoginEnabled());
+		enablePrivateLoginEl.setVisible(card2BrainModule.isPrivateLoginEnabled());
 
-		boolean isEnterpriseLogin = !config.getBooleanSafe(Card2BrainCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN);
-		if (!card2BrainModule.isLoginSafe(isEnterpriseLogin)) {
-			setFormWarning("edit.warning.enterpriseLoginDisabled");
-		} else {
-			setFormWarning(null);
-		}
+		privateKeyEl.setVisible(card2BrainModule.isPrivateLoginEnabled() && isPrivateLoginActivated());
+		privateSecretEl.setVisible(card2BrainModule.isPrivateLoginEnabled() && isPrivateLoginActivated());
 	}
-	
+
 	/**
 	 * Show or hide the preview button.
 	 */
 	private void showHidePreviewButton(boolean show) {
-		previewButton.setVisible(show);	
+		previewButton.setVisible(show);
 	}
 
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) { 
+	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
-		allOk &= validateFlashcardAlias(parseAlias(flashcardAliasEl.getValue()));	
+
+		allOk &= validateFlashcardAlias(parseAlias(flashcardAliasEl.getValue()));
 		allOk &= validateLogin();
-		
+
 		// Show the preview button only when the configuration is valid.
 		showHidePreviewButton(allOk);
 
@@ -150,7 +151,7 @@ public class Card2BrainConfigController extends FormBasicController {
 
 	private boolean validateFlashcardAlias(String alias) {
 		boolean allOk = true;
-		
+
 		if (!StringHelper.containsNonWhitespace(alias)) {
 			flashcardAliasEl.setErrorKey(FORM_MISSING_MANDATORY, null);
 			allOk &= false;
@@ -158,14 +159,14 @@ public class Card2BrainConfigController extends FormBasicController {
 			flashcardAliasEl.setErrorKey("edit.warning.aliasCheckFailed", null);
 			allOk &= false;
 		}
-		
+
 		return allOk;
 	}
-	
+
 	private boolean validateLogin() {
 		boolean allOk = true;
-		
-		if (isPrivateLoginEnabled()) {
+
+		if (isPrivateLoginActivated()) {
 			if (!StringHelper.containsNonWhitespace(privateKeyEl.getValue())) {
 				privateKeyEl.setErrorKey(FORM_MISSING_MANDATORY, null);
 				allOk &= false;
@@ -176,40 +177,55 @@ public class Card2BrainConfigController extends FormBasicController {
 			}
 		}
 		
+		boolean isEnterpriseLogin = !isPrivateLoginActivated();
+		if (!card2BrainModule.isEnterpriseLoginEnabled() && !card2BrainModule.isPrivateLoginEnabled()) {
+			setFormWarning("edit.warning.bothLoginDisabled");
+			allOk &= false;
+		} else if (isEnterpriseLogin && !card2BrainModule.isEnterpriseLoginEnabled()) {
+			setFormWarning("edit.warning.enterpriseLoginDisabled");
+			allOk &= false;
+		} else if (!isEnterpriseLogin && !card2BrainModule.isPrivateLoginEnabled()) {
+			setFormWarning("edit.warning.privateLoginDisabled");
+			allOk &= false;
+		} else {
+			setFormWarning(null);
+		}
+
 		return allOk;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		setFormWarning(null);
-		fireEvent (ureq, Event.DONE_EVENT);
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
-	
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == enablePrivateLoginEl) {
 			showHidePrivateLoginFields();
 		} else if (source == previewButton) {
 			Controller card2brainRunCtr = new Card2BrainRunController(ureq, getWindowControl(), config);
-			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null, card2brainRunCtr.getInitialComponent(), null);
+			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,
+					card2brainRunCtr.getInitialComponent(), null);
 			previewLayoutCtr.addDisposableChildController(card2brainRunCtr);
 			previewLayoutCtr.activate();
 			listenTo(previewLayoutCtr);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == previewLayoutCtr ) {
+		if (source == previewLayoutCtr) {
 			removeAsListenerAndDispose(previewLayoutCtr);
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	protected ModuleConfiguration getUpdatedConfig() {
 		config.set(Card2BrainCourseNode.CONFIG_FLASHCARD_ALIAS, parseAlias(flashcardAliasEl.getValue()));
-		if (isPrivateLoginEnabled()) {
+		if (isPrivateLoginActivated()) {
 			config.set(Card2BrainCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN, Boolean.toString(true));
 			config.set(Card2BrainCourseNode.CONFIG_PRIVATE_KEY, privateKeyEl.getValue());
 			config.set(Card2BrainCourseNode.CONFIG_PRIVATE_SECRET, privateSecretEl.getValue());
@@ -225,32 +241,33 @@ public class Card2BrainConfigController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
-	
+
 	/**
-	 * Is a private login or a enterprise login enabled?
-	 * 1. It is always a private login if the enterprise login is disabled in the configuration of the module.<br>
-	 * 2. It is a private login if the user has clicked the private login checkbox.
 	 * 
-	 * @return whether it is a private login or not (enterprise login).
+	 * @return whether the private login is activated by the user.
 	 */
-	private boolean isPrivateLoginEnabled() {
-		boolean isPrivateLoginEnabled = false;
-		
-		if (!card2BrainModule.isEnterpriseLoginEnabled() || enablePrivateLoginEl.isAtLeastSelected(1)) {
-			isPrivateLoginEnabled = true;
+	private boolean isPrivateLoginActivated() {
+		boolean isPrivateLoginActivated = false;
+
+		if (enablePrivateLoginEl.isAtLeastSelected(1)) {
+			isPrivateLoginActivated = true;
 		}
-		
-		return isPrivateLoginEnabled;
+
+		return isPrivateLoginActivated;
 	}
-	
+
 	/**
 	 * Parse the alias of the set of flashcards.<br>
-	 * Remove the unnecessary part if someone inserts the whole weblink from the card2brain website e.g. https://card2brain.ch/box/20170420_02_chemie_und_werkstoffe. 
-	 * @param alias the original alias value
+	 * Remove the unnecessary part if someone inserts the whole weblink from the
+	 * card2brain website e.g.
+	 * https://card2brain.ch/box/20170420_02_chemie_und_werkstoffe.
+	 * 
+	 * @param alias
+	 *            the original alias value
 	 * @return the parsed String
 	 */
 	private String parseAlias(String alias) {
-		return alias.replace("https://card2brain.ch/box/", "");	
+		return alias.replace("https://card2brain.ch/box/", "");
 	}
-	
+
 }
