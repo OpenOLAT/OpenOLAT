@@ -56,6 +56,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -442,9 +443,14 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		Map<String, String> userPropertiesSearch = new HashMap<String, String>();
 		for (UserPropertyHandler userPropertyHandler : searchform.getPropertyHandlers()) {
 			if (userPropertyHandler == null) continue;
+			
 			FormItem ui = searchform.getItem(userPropertyHandler.getName());
 			String uiValue = userPropertyHandler.getStringValue(ui);
-			if (StringHelper.containsNonWhitespace(uiValue)) {
+			if(userPropertyHandler.getName().startsWith("genericCheckboxProperty") && ui instanceof MultipleSelectionElement) {
+				if(!"false".equals(uiValue)) {//ignore false for the search
+					userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
+				}	
+			} else if (StringHelper.containsNonWhitespace(uiValue)) {
 				// when searching for deleted users, add wildcard to match with backup prefix
 				if (userPropertyHandler instanceof EmailProperty && searchform.getStatus().equals(Identity.STATUS_DELETED)) {
 					uiValue = "*" + uiValue;
@@ -942,6 +948,7 @@ class UsermanagerUserSearchForm extends FormBasicController {
 				TextElement textElement = (TextElement) fi;
 				textElement.setItemValidatorProvider(null);
 			}
+			System.out.println(fi);
 
 			fi.setElementCssClass("o_sel_user_search_".concat(userPropertyHandler.getName().toLowerCase()));
 			fi.setTranslator(getTranslator());
