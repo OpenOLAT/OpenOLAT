@@ -216,13 +216,13 @@ public class UserTest {
 		//login again
 		loginPage
 			.assertOnLoginPage()
-			.loginAs(user.getLogin(), user.getPassword());
+			.loginAs(user.getLogin(), user.getPassword())
+			//check that we are really logged in
+			.assertLoggedIn(user);
 		
-		//check that we don't see the resume button
+		//and check that we don't see the resume button
 		List<WebElement> resumeButtons = browser.findElements(LoginPage.resumeButton);
 		Assert.assertTrue(resumeButtons.isEmpty());
-		//double check that we are really logged in
-		loginPage.assertLoggedIn(user);
 	}
 	
 
