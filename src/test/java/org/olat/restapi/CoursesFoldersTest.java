@@ -106,8 +106,8 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 				conn.shutdown();
 			}
 		} catch (Exception e) {
-      e.printStackTrace();
-      throw e;
+			e.printStackTrace();
+			throw e;
 		}
 	}
 	

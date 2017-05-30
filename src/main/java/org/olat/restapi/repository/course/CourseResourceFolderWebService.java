@@ -61,9 +61,16 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockManager;
+import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.core.util.vfs.version.Versionable;
 import org.olat.course.ICourse;
+import org.olat.course.config.CourseConfig;
+import org.olat.modules.sharedfolder.SharedFolderManager;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.olat.resource.OLATResource;
+import org.olat.restapi.repository.SharedFolderWebService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.LinkVO;
@@ -81,22 +88,22 @@ import org.olat.restapi.support.vo.LinkVO;
  */
 @Path("repo/courses/{courseId}/resourcefolders")
 public class CourseResourceFolderWebService {
-	
+
 	private static final OLog log = Tracing.createLoggerFor(CourseResourceFolderWebService.class);
 
 	private static final String VERSION  = "1.0";
-	
+
 	public static CacheControl cc = new CacheControl();
-	
+
 	static {
 		cc.setMaxAge(-1);
 	}
-	
+
 	/**
 	 * The version of the resources folders Web Service
-   * @response.representation.200.mediaType text/plain
-   * @response.representation.200.doc The version of this specific Web Service
-   * @response.representation.200.example 1.0
+	 * @response.representation.200.mediaType text/plain
+	 * @response.representation.200.doc The version of this specific Web Service
+	 * @response.representation.200.example 1.0
 	 * @return
 	 */
 	@GET
@@ -105,12 +112,12 @@ public class CourseResourceFolderWebService {
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
 	}
-	
+
 	/**
 	 * This retrieves the files in the shared folder
-   * @response.representation.200.doc The list of files
+	 * @response.representation.200.doc The list of files
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or the shared folder not found
+	 * @response.representation.404.doc The course or the shared folder not found
 	 * @param courseId The course resourceable's id
 	 * @param uri The uri infos
 	 * @param httpRequest The HTTP request
@@ -123,13 +130,13 @@ public class CourseResourceFolderWebService {
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		return getFiles(courseId, Collections.<PathSegment>emptyList(), FolderType.SHARED_FOLDER, uriInfo, httpRequest, request);
 	}
-	
+
 	/**
 	 * This retrieves the files in the shared folder
-   * @response.representation.200.doc The list of files
+	 * @response.representation.200.doc The list of files
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or the file not found
-   * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * @response.representation.404.doc The course or the file not found
+	 * @response.representation.406.doc The course node is not acceptable to copy a file
 	 * @param courseId The course resourceable's id
 	 * @param path The path of the file or directory
 	 * @param uri The uri infos
@@ -142,15 +149,15 @@ public class CourseResourceFolderWebService {
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM})
 	public Response getSharedFiles(@PathParam("courseId") Long courseId, @PathParam("path") List<PathSegment> path,
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @Context Request request) {
-		return getFiles(courseId, path, FolderType.COURSE_FOLDER, uriInfo, httpRequest, request);
+		return getFiles(courseId, path, FolderType.SHARED_FOLDER, uriInfo, httpRequest, request);
 	}
-	
-	
+
+
 	/**
 	 * This retrieves the files in the course folder
-   * @response.representation.200.doc The list of files
+	 * @response.representation.200.doc The list of files
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course not found
+	 * @response.representation.404.doc The course not found
 	 * @param courseId The course resourceable's id
 	 * @param uri The uri infos
 	 * @param httpRequest The HTTP request
@@ -163,13 +170,13 @@ public class CourseResourceFolderWebService {
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		return getFiles(courseId, Collections.<PathSegment>emptyList(), FolderType.COURSE_FOLDER, uriInfo, httpRequest, request);
 	}
-	
+
 	/**
 	 * This retrieves the files in the course folder
-   * @response.representation.200.doc The list of files
+	 * @response.representation.200.doc The list of files
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or the file not found
-   * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * @response.representation.404.doc The course or the file not found
+	 * @response.representation.406.doc The course node is not acceptable to copy a file
 	 * @param courseId The course resourceable's id
 	 * @param path The path of the file or directory
 	 * @param uri The uri infos
@@ -184,15 +191,15 @@ public class CourseResourceFolderWebService {
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest, @Context Request request) {
 		return getFiles(courseId, path, FolderType.COURSE_FOLDER, uriInfo, httpRequest, request);
 	}
-	
+
 	/**
 	 * This attaches the uploaded file(s) to the supplied folder id.
-   * @response.representation.mediaType multipart/form-data
-   * @response.representation.doc The file
-   * @response.representation.200.doc The file is correctly saved
+	 * @response.representation.mediaType multipart/form-data
+	 * @response.representation.doc The file
+	 * @response.representation.200.doc The file is correctly saved
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or course node not found
-   * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * @response.representation.404.doc The course or course node not found
+	 * @response.representation.406.doc The course node is not acceptable to copy a file
 	 * @param courseId The course resourceable's id
 	 * @param filename The filename
 	 * @param file The file resource to upload
@@ -206,15 +213,15 @@ public class CourseResourceFolderWebService {
 			@Context HttpServletRequest request) {
 		return attachFileToCourseFolder(courseId, Collections.<PathSegment>emptyList(), request);
 	}
-	
+
 	/**
 	 * This attaches the uploaded file(s) to the supplied folder id at the specified path.
-   * @response.representation.mediaType multipart/form-data
-   * @response.representation.doc The file
-   * @response.representation.200.doc The file is correctly saved
+	 * @response.representation.mediaType multipart/form-data
+	 * @response.representation.doc The file
+	 * @response.representation.200.doc The file is correctly saved
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or course node not found
-   * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * @response.representation.404.doc The course or course node not found
+	 * @response.representation.406.doc The course node is not acceptable to copy a file
 	 * @param courseId The course resourceable's id
 	 * @param path The path of the file
 	 * @param filename The filename
@@ -229,15 +236,15 @@ public class CourseResourceFolderWebService {
 			@Context HttpServletRequest request) {
 		return attachFileToCourseFolder(courseId, path, request);
 	}
-	
+
 	/**
 	 * This attaches the uploaded file(s) to the supplied folder id at the root level
-   * @response.representation.mediaType multipart/form-data
-   * @response.representation.doc The file
-   * @response.representation.200.doc The file is correctly saved
+	 * @response.representation.mediaType multipart/form-data
+	 * @response.representation.doc The file
+	 * @response.representation.200.doc The file is correctly saved
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or course node not found
-   * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * @response.representation.404.doc The course or course node not found
+	 * @response.representation.406.doc The course node is not acceptable to copy a file
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The id for the folder that will contain the file(s)
 	 * @param filename The filename
@@ -252,15 +259,15 @@ public class CourseResourceFolderWebService {
 			@Context HttpServletRequest request) {
 		return attachFileToCourseFolder(courseId, Collections.<PathSegment>emptyList(), request);
 	}
-		
+
 	/**
 	 * This attaches the uploaded file(s) to the supplied folder id at the specified path
-   * @response.representation.mediaType multipart/form-data
-   * @response.representation.doc The file
-   * @response.representation.200.doc The file is correctly saved
+	 * @response.representation.mediaType multipart/form-data
+	 * @response.representation.doc The file
+	 * @response.representation.200.doc The file is correctly saved
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-   * @response.representation.404.doc The course or course node not found
-   * @response.representation.406.doc The course node is not acceptable to copy a file
+	 * @response.representation.404.doc The course or course node not found
+	 * @response.representation.406.doc The course node is not acceptable to copy a file
 	 * @param courseId The course resourceable's id
 	 * @param nodeId The id for the folder that will contain the file(s)
 	 * @param filename The filename
@@ -275,7 +282,7 @@ public class CourseResourceFolderWebService {
 			@Context HttpServletRequest request) {
 		return attachFileToCourseFolder(courseId, path, request);
 	}
-	
+
 	private Response attachFileToCourseFolder(Long courseId, List<PathSegment> path, HttpServletRequest request) {
 
 		MultipartReader partsReader = null;
@@ -292,17 +299,17 @@ public class CourseResourceFolderWebService {
 			MultipartReader.closeQuietly(partsReader);
 		}
 	}
-	
+
 	private Response attachFileToCourseFolder(Long courseId, List<PathSegment> path, String filename, InputStream file, HttpServletRequest request) {
 		if(!isAuthor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
+
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		
+
 		VFSContainer container = course.getCourseFolderContainer();
 		for(PathSegment segment:path) {
 			VFSItem item = container.resolve(segment.getPath());
@@ -329,7 +336,7 @@ public class CourseResourceFolderWebService {
 			if(locked) {
 				return Response.serverError().status(Status.UNAUTHORIZED).build();
 			}
-			
+
 			if (existingVFSItem instanceof Versionable && ((Versionable)existingVFSItem).getVersions().isVersioned()) {
 				Versionable existingVersionableItem = (Versionable)existingVFSItem;
 				boolean ok = existingVersionableItem.getVersions().addVersion(ureq.getIdentity(), "REST upload", file);
@@ -354,7 +361,7 @@ public class CourseResourceFolderWebService {
 		} else {
 			newFile = container.createChildContainer(filename);
 		}
-		
+
 		if(newFile instanceof MetaTagged && ((MetaTagged)newFile).getMetaInfo() != null) {
 			MetaInfo infos = ((MetaTagged)newFile).getMetaInfo();
 			infos.setAuthor(ureq.getIdentity());
@@ -363,31 +370,43 @@ public class CourseResourceFolderWebService {
 
 		return Response.ok().build();
 	}
-	
+
 	public Response getFiles(Long courseId, List<PathSegment> path, FolderType type, UriInfo uriInfo, HttpServletRequest httpRequest, Request request) {
 		if(!isAuthor(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
+
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		
+
 		VFSContainer container = null;
+		RepositoryEntry re = null;
 		switch(type) {
 			case COURSE_FOLDER:
 				container = course.getCourseFolderContainer();
 				break;
-			case SHARED_FOLDER:
+			case SHARED_FOLDER: {
 				container = null;
+				String sfSoftkey = course.getCourseConfig().getSharedFolderSoftkey();
+				OLATResource sharedResource = CoreSpringFactory.getImpl(RepositoryService.class).loadRepositoryEntryResourceBySoftKey(sfSoftkey);
+				if (sharedResource != null) {
+					re = CoreSpringFactory.getImpl(RepositoryService.class).loadByResourceKey(sharedResource.getKey());
+					container = SharedFolderManager.getInstance().getNamedSharedFolder(re, true);
+					CourseConfig courseConfig = course.getCourseConfig();
+					if(courseConfig.isSharedFolderReadOnlyMount()) {
+						container.setLocalSecurityCallback(new ReadOnlyCallback());
+					}
+				}
 				break;
+			}
 		}
-		
+
 		if(container == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
-		
+
 		VFSLeaf leaf = null;
 		for(PathSegment seg:path) {
 			VFSItem item = container.resolve(seg.getPath());
@@ -398,7 +417,7 @@ public class CourseResourceFolderWebService {
 				container = (VFSContainer)item;
 			}
 		}
-		
+
 		if(leaf != null) {
 			Date lastModified = new Date(leaf.getLastModified());
 			Response.ResponseBuilder response = request.evaluatePreconditions(lastModified);
@@ -416,16 +435,19 @@ public class CourseResourceFolderWebService {
 		for(VFSItem item:items) {
 			UriBuilder baseUriBuilder = uriInfo.getBaseUriBuilder();
 			UriBuilder repoUri = baseUriBuilder.path(CourseResourceFolderWebService.class).path("files");
+			if (type.equals(FolderType.SHARED_FOLDER) && re != null) {
+				repoUri = baseUriBuilder.replacePath("restapi").path(SharedFolderWebService.class).path(re.getKey().toString()).path("files");
+			}
 			for(PathSegment pathSegment:path) {
 				repoUri.path(pathSegment.getPath());
 			}
 			String uri = repoUri.path(item.getName()).build(courseId).toString();
 			links[count++] = new LinkVO("self", uri, item.getName());
 		}
-		
+
 		return Response.ok(links).build();
 	}
-	
+
 	public enum FolderType {
 		COURSE_FOLDER,
 		SHARED_FOLDER

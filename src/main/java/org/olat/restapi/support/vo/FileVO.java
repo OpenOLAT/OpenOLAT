@@ -32,7 +32,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Initial Date:  27 jan. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
-//fxdiff Folder
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "link")
 public class FileVO extends LinkVO {
