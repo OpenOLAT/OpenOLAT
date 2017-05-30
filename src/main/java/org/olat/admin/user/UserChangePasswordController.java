@@ -27,7 +27,6 @@ package org.olat.admin.user;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -39,6 +38,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.login.auth.OLATAuthManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date: Jul 29, 2003
@@ -58,7 +58,10 @@ public class UserChangePasswordController extends BasicController {
 	private VelocityContainer mainVC;
 	private Identity user;
 	
-	private final OLATAuthManager olatAuthenticationSpi;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private OLATAuthManager olatAuthenticationSpi;
 
 	/**
 	 * @param ureq
@@ -68,9 +71,7 @@ public class UserChangePasswordController extends BasicController {
 	public UserChangePasswordController(UserRequest ureq, WindowControl wControl, Identity changeableUser) { 
 		super(ureq, wControl);
 		
-		olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
-		BaseSecurity mgr = CoreSpringFactory.getImpl(BaseSecurity.class);
-		if (!mgr.isIdentityPermittedOnResourceable(
+		if (!securityManager.isIdentityPermittedOnResourceable(
 				ureq.getIdentity(), 
 				Constants.PERMISSION_ACCESS, 
 				OresHelper.lookupType(this.getClass())))

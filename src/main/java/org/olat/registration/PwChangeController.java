@@ -31,9 +31,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.services.sms.SimpleMessageModule;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -245,9 +243,7 @@ public class PwChangeController extends BasicController {
 	}
 	
 	private TemporaryKey sendEmail(UserRequest ureq, Identity identity) {
-		// check if user has an OLAT provider token, otherwhise a pwd change makes no sense
-		Authentication auth = securityManager.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
-		if (auth == null || !userModule.isPwdChangeAllowed(identity)) { 
+		if (!userModule.isPwdChangeAllowed(identity)) { 
 			getWindowControl().setWarning(translate("password.cantchange"));
 			return null;
 		}
