@@ -17,7 +17,7 @@
 		  	#end
 		  	
 		  	#if($hasChapters)
-			  	<track kind="chapters" src="$masterUrl/chapters.vtt$!addForceReload" />
+			  	<track kind="chapters" src="$masterUrl/chapters.vtt$!addForceReload" srclang="en" />
 		  	#end
 		</video>
 
@@ -32,9 +32,7 @@
 			## Configuration for flash fallback			
 			## Set mode:'shim' to force flash usage
 			pluginPath: mediaElementBaseUrl,
-			flashName: 'flashmediaelement.swf',
-			silverlightName: 'silverlightmediaelement.xap',
-			plugins: ['flash','silverlight'],
+			stretching: 'responsive',
 			
 			## Enabled features - should be same order as in player.js. 
 			## Special here is tracks and sourcechooser which are not available in player.js
@@ -71,7 +69,7 @@
 				##
 		        ## Preselect the preferred source
 		        #if($useSourceChooser)
-		        jQuery(jQuery('.mejs-sourcechooser-selector input')[$preferredResolution]).prop("checked", true).trigger("click");
+		        jQuery(jQuery('.mejs__source-chooser-selector input')[$preferredResolution]).prop("checked", true).trigger("click");
 		        #end
 			}
 		});

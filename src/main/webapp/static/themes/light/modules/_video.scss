@@ -117,12 +117,31 @@
 }
 
 /* beautify source chooser plugin, remove radio button */
-.mejs-controls .mejs-sourcechooser-button .mejs-sourcechooser-selector {
+.mejs__controls .mejs__sourcechooser-button > button {
+    background: transparent;
+    display: inline-block;
+	font: normal normal normal #{$fa-font-size-base}/1 FontAwesome; // shortening font declaration
+	font-size: inherit; // can't have font-size inherit on line above, so need to override
+	text-rendering: auto; // optimizelegibility throws things off #1094
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	transform: translate(0, 0); // ensures no half-pixel rendering in firefox
+}
+.mejs__controls .mejs__sourcechooser-button > button:before {
+    content: $fa-var-gear;
+    color: white;
+    font-size: 18px;
+}
+.mejs__controls .mejs__sourcechooser-button .mejs__sourcechooser-selector {
 	visibility: visible !important;
-	width: 160px;
+	width: 170px;
+	padding-left: 10px;
+	
 	ul li {
 		label {
 			font-weight: normal;
+			font-size: 10px;
+			
 			width: 140px;
 			&:hover {
 				color: #eee;
@@ -144,11 +163,13 @@
 }
 
 /* beautify track plugin, remove radio button */
-.mejs-controls .mejs-captions-button .mejs-captions-selector {
+.mejs__controls .mejs__captions-button .mejs__captions-selector {
 	right: -26px;
 	ul li {
 		label {
 			font-weight: normal;
+			font-size: 10px;
+			
 			&:hover {
 				color: #eee;
 			}
@@ -167,8 +188,25 @@
 		}
 	}	
 }
+
 /* beautify speed plugin */
-.mejs-controls .mejs-speed-button .mejs-speed-selector {
+.mejs__button.mejs__speed-button {
+	width: 36px;
+}
+.mejs__controls .mejs__speed-button > button {
+    background: transparent;
+    width: 36px;
+    margin: 11px 0 0 0;
+    font-size: 11px;
+    line-height: normal;
+    color: #ffffff;
+}
+
+.mejs__controls .mejs__speed-button .mejs__speed-selector {
+	height: 150px;
+	top: auto;
+	bottom: 40px;
+	
 	ul li {
 		label {
 			font-weight: normal;
@@ -178,7 +216,7 @@
 }
 
 /* fix overflow of chapters when not enough space */
-.mejs-chapters .mejs-chapter .mejs-chapter-block {
+.mejs__chapters .mejs__chapter .mejs__chapter-block {
 	.ch-title,
 	.ch-time {
 		overflow: hidden;
