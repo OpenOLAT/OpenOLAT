@@ -481,9 +481,12 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage, locale);
 		QuestionItemFull fullItem = questionItemDao.loadById(qitem.getKey());
 		ResolvedAssessmentItem resolvedAssessmentItem = processor.exportToQTIEditor(fullItem, editorContainer);
-		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().extractAssumingSuccessful();
-		assessmentItem.setIdentifier(QTI21QuestionType.generateNewIdentifier(assessmentItem.getIdentifier()));
-		return assessmentItem;
+		if(resolvedAssessmentItem != null) {
+			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().extractAssumingSuccessful();
+			assessmentItem.setIdentifier(QTI21QuestionType.generateNewIdentifier(assessmentItem.getIdentifier()));
+			return assessmentItem;
+		}
+		return null;
 	}
 	
 	public void assembleTest(List<QuestionItemShort> items, Locale locale, ZipOutputStream zout) {

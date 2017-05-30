@@ -694,22 +694,31 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private void doInsert(UserRequest ureq, List<QuestionItemView> items) {
 		TreeNode selectedNode = menuTree.getSelectedNode();
 		TreeNode sectionNode = getNearestSection(selectedNode);
-		
+
+		boolean allOk = true;
 		String firstItemId = null;
 		Map<AssessmentItemRef,AssessmentItem> flyingObjects = new HashMap<>();
 		try {
 			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
 			for(QuestionItemView item:items) {
 				AssessmentItem assessmentItem = qti21QPoolServiceProvider.exportToQTIEditor(item, getLocale(), unzippedDirRoot);
-				AssessmentItemRef itemRef = doInsert(section, assessmentItem);
-				if(firstItemId == null) {
-					firstItemId = itemRef.getIdentifier().toString();
+				if(assessmentItem != null) {
+					AssessmentItemRef itemRef = doInsert(section, assessmentItem);
+					if(firstItemId == null) {
+						firstItemId = itemRef.getIdentifier().toString();
+					}
+					flyingObjects.put(itemRef, assessmentItem);
+				} else {
+					allOk &= false;
 				}
-				flyingObjects.put(itemRef, assessmentItem);
 			}
 		} catch (IOException | URISyntaxException e) {
 			showError("error.import.question");
 			logError("", e);
+		}
+		
+		if(!allOk) {
+			showError("error.import.question");
 		}
 		
 		if(firstItemId != null) {

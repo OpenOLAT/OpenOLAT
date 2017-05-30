@@ -159,10 +159,12 @@ public class QTI21ExportProcessor {
 		if(itemFile.exists()) {
 			ResolvedAssessmentItem resolvedAssessmentItem = qtiService.loadAndResolveAssessmentItemForCopy(itemFile.toURI(), resourceDirectory);
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-			//enrichScore(itemEl);
-			//enrichWithMetadata(fullItem, itemEl);
-			ImportExportHelper.getMaterials(assessmentItem, itemFile, materials);
-			materials.addItemEl(resolvedAssessmentItem);
+			if(assessmentItem != null) {
+				//enrichScore(itemEl);
+				//enrichWithMetadata(fullItem, itemEl);
+				ImportExportHelper.getMaterials(assessmentItem, itemFile, materials);
+				materials.addItemEl(resolvedAssessmentItem);
+			}
 		}
 	}
 	
