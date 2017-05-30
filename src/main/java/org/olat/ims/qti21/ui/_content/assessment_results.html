@@ -20,87 +20,68 @@
 	</div>
 	#end
 </div>
+
+<div class="panel panel-default o_qti_metainfo">
+  <div class="panel-heading">
+  	<h3 class="panel-title"><i class="o_icon o_qtiassessment_icon"> </i> $r.translate("head.assessment.overview")</h3> 	
+  </div>
 #if($r.visible("assessedIdentityInfos"))
 	$r.render("assessedIdentityInfos")
 #end
+
 #if($testResults.metadataVisible)
-
-<div id="o_qti_results_infos" class="clearfix">
-	#if(${testResults.hasMaxScore()})
-		<div id="o_qti_scoreinfo">
-			<div id="o_qti_run_scoreinfo" class="col-md-2 col-sm-3">
-			#if ($testResults.hasMaxScore())
-	    		#if ($testResults.maxScore == "-1.0")
-	  				$r.translate("question.progress.score"): $testResults.score / $r.translate("question.progress.noMaxScore")
-	    		#else
-	  				$r.translate("question.progress.score"): $testResults.score / $testResults.maxScore
-	  			#end
-			#else
-				$r.translate("question.progress.score"): $testResults.score
-			#end
-	  		</div>
-			<div id="o_qti_run_scoreprogress" class="col-md-3 col-sm-2">
-				<div class="progress" style="width:100%;">
-					<div class="progress-bar" role="progressbar" aria-valuenow="$testResults.score" aria-valuemin="0" aria-valuemax="$testResults.maxScore" style="width:${testResults.scorePercent}%;">
-				      	<span class="sr-only">${testResults.scorePercent}%</span>
-				      </div>
-				</div>
-			</div>
-			<div class="col-md-1 col-sm-1">${testResults.scorePercent}%</div>
-		</div>
-	#end
-
-	<div id="o_qti_questioninfo">
-		<div id="o_qti_run_questioninfo" class="col-md-2 col-sm-3">
-			$r.translate("question.progress.answered"): $testResults.numberOfAnsweredQuestions / $testResults.numberOfQuestions
-		</div>
-		<div id="o_qti_run_questionprogress" class="col-md-3 col-sm-2">
-			<div class="progress" style="width:100%;">
-				<div class="progress-bar" role="progressbar" aria-valuenow="$testResults.numberOfAnsweredQuestions" aria-valuemin="0" aria-valuemax="$testResults.numberOfQuestions" style="width:${testResults.numberOfAnsweredQuestionsPercent}%;">
-			      	<span class="sr-only">${testResults.numberOfAnsweredQuestionsPercent}%</span>
-			      </div>
-			</div>
-		</div>
-		<div class="col-md-1 col-sm-1">${testResults.numberOfAnsweredQuestionsPercent}%</div>
-	</div>
-</div>
-
-<div class="panel panel-default o_personal o_sel_results_details">
-  	<div class="panel-heading">
- 		<h4 class="panel-title"><i class="o_icon o_qtiassessment_icon"> </i> $r.translate("head.assessment.overview")</h4>
- 	</div>
-	<table class="table"><tbody>
-		<tr>
-			<th>$r.translate("results.entry.time")</th>
-			<td>$r.formatDateAndTime($testResults.entryTime)</td>
-		</tr>
-		<tr>
-			<th>$r.translate("results.end.time")</th>
-			<td>$r.formatDateAndTime($testResults.endTime)</td> 
-		</tr>
-		<tr>
+	<div class="o_personal o_sel_results_details"><table class="table table-bordered table-condensed table-striped">
+		<tr class="o_sel_assessmenttest_duration">
 			<th>$r.translate("results.duration")</th>
-			<td>$r.formatDurationInMillis($testResults.duration)</td>
-		</tr>
-		#if(${testResults.hasMaxScore()})
-		<tr class="o_sel_assessmenttest_maxscore">
-			<th>$r.translate("score.max")</th>
-			<td>$testResults.maxScore</td>
-		</tr>
-		#end
-		#if(${testResults.hasScore()})
-		<tr class="o_sel_assessmenttest_score">
-			<th>$r.translate("results.score.yourscore")</th>
 			<td>
-				<div class="col-sm-2" style='padding-left:0;'>$testResults.score</div>
-				<div class="col-sm-8">
+					$r.formatDurationInMillis($testResults.duration) 
+				<span class="hidden-xs hidden-sm text-muted small o_block_inline_left">
+					$r.formatDateAndTime($testResults.entryTime) - $r.formatDateAndTime($testResults.endTime)
+				</span>
+			</td>
+		</tr>
+		<tr id="o_qti_run_questioninfo">
+			<th>$r.translate("question.progress.answered")</th>
+			<td>
+				<div class="col-xs-3 col-md-2" style="padding-left:0;">
+					<span title="$r.translateInAttribute("question.progress.answered")">$testResults.numberOfAnsweredQuestions</span> / <span title="$r.translateInAttribute("questions")">$testResults.numberOfQuestions</span>
+				</div>
+				<div  id="o_qti_run_questionprogress" class="col-xs-6 col-md-8">
 					<div class="progress" style="width:100%;">
-						<div class="progress-bar" role="progressbar" aria-valuenow="$testResults.score" aria-valuemin="0" aria-valuemax="$testResults.maxScore" style="width:${testResults.scorePercent}%;">
-				      		<span class="sr-only">${testResults.scorePercent}%</span>
-				      	</div>
+						<div class="progress-bar" role="progressbar" aria-valuenow="$testResults.numberOfAnsweredQuestions" aria-valuemin="0" aria-valuemax="$testResults.numberOfQuestions" style="width:${testResults.numberOfAnsweredQuestionsPercent}%;">
+					      	<span class="sr-only">${testResults.numberOfAnsweredQuestionsPercent}%</span>
+					      </div>
 					</div>
 				</div>
-				<div class="col-sm-2">${testResults.scorePercent}%</div>
+				<div class="col-xs-1">${testResults.numberOfAnsweredQuestionsPercent}%</div>
+			</td>
+		</tr>
+		#if(${testResults.hasScore()})
+		<tr id="o_qti_scoreinfo" class="o_sel_assessmenttest_scores">
+			<th>$r.translate("results.score.yourscore")</th>
+			<td>
+				<div class="col-xs-3 col-md-2" style="padding-left:0;">
+				#if ($testResults.hasMaxScore())
+		    		#if ($testResults.maxScore == "-1.0")
+		  				$testResults.score / $r.translate("question.progress.noMaxScore")
+		    		#else
+		  				<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmenttest_score">$testResults.score</span> / <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmenttest_maxscore">$testResults.maxScore</span>
+		  			#end
+				#else
+					$testResults.score
+				#end
+				</div>
+				<div  id="o_qti_run_scoreprogress" class="col-xs-6 col-md-8">
+					<div class="progress" style="width:100%;">
+					<div class="progress-bar" role="progressbar" aria-valuenow="$testResults.score" aria-valuemin="0" aria-valuemax="$testResults.maxScore" style="width:${testResults.scorePercent}%;">
+				      	<span class="sr-only">${testResults.scorePercent}%</span>
+				    </div>
+				    #if ($testResults.cutValue)
+						<div class="o_progress_marker" style="left:${testResults.cutPercent}%" title="$r.translateInAttribute("score.cut"): ${testResults.cutValue}"></div>
+					#end
+					</div>
+				</div>
+				<div class="col-xs-1">${testResults.scorePercent}%</div>
 			</td>
 		</tr>
 		#end
@@ -108,15 +89,20 @@
 		<tr class="o_state #if(${testResults.getPass().booleanValue()}) o_passed #elseif(!${testResults.getPass().booleanValue()}) o_failed #else o_unknown #end">
 			<th>$r.translate("passed.yourpassed")</th>
 			<td> 
-			#if(${testResults.getPass().booleanValue()})	
-				<i class="o_icon o_icon_passed"></i> 
-				$r.translate("passed.yes")
-			#elseif(!${testResults.getPass().booleanValue()})		
-				<i class="o_icon o_icon_failed"></i> 
-				$r.translate("passed.no")
-			#else
-				$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
-			#end
+				#if(${testResults.getPass().booleanValue()})	
+					<i class="o_icon o_icon_passed"></i> 
+					$r.translate("passed.yes")
+				#elseif(!${testResults.getPass().booleanValue()})		
+					<i class="o_icon o_icon_failed"></i> 
+					$r.translate("passed.no")
+				#else
+					$r.translateWithPackage("org.olat.course.nodes.st", "passed.noinfo")
+				#end
+				#if ($testResults.cutValue)
+				<span class="o_state_cutinfo hidden-xs text-muted small o_block_inline_left">
+					($r.translate("score.cut"): $testResults.cutValue)
+				</span>
+				#end
 			</td>
 		</tr>
 		#end
@@ -126,7 +112,7 @@
 			<td><a href="$signatureUrl" target="_blank"><i class="o_icon o_icon-fw o_icon_download"> </i> $r.translate("digital.signature.download.link")</a></td> 
 		</tr>
 		#end
-	</tbody></table>
+	</tbody></table></div>
 </div>
 #end
 
@@ -154,15 +140,15 @@
 			<tr class="o_sel_assessmentitem_score">
 				<th>$r.translate("results.score.yourscore")</th>
 				<td>
-					<div class="col-sm-2" style='padding-left:0;'>$itemResult.score</div>
-					<div class="col-sm-8">
+					<div class="col-xs-3 col-md-2" style='padding-left:0;'>$itemResult.score</div>
+					<div class="col-xs-6 col-md-8">
 						<div class="progress" style="width:100%;">
 							<div class="progress-bar" role="progressbar" aria-valuenow="$itemResult.score" aria-valuemin="0" aria-valuemax="$itemResult.maxScore" style="width:${itemResult.scorePercent}%;">
 					      		<span class="sr-only">${itemResult.scorePercent}%</span>
 					      	</div>
 						</div>
 					</div>
-					<div class="col-sm-2">${itemResult.scorePercent}%</div>
+					<div class="col-xs-1">${itemResult.scorePercent}%</div>
 				</td> 
 			</tr>
 			#end
@@ -216,25 +202,39 @@
 	
 	#foreach($itemInteraction in $itemResult.interactionResults)
 		#if($r.isNotNull($itemInteraction.responseFormItem.name) || $r.isNotNull($itemInteraction.solutionFormItem.name))
-		<div class="row #if(!$foreach.hasNext ) o_block_bottom #end">
+		<div class="row #if(!$foreach.hasNext && !$r.isNotNull($itemResult.correctSolutionItem)) o_block_bottom #end">
 			#if($r.isNotNull($itemInteraction.responseFormItem.name) && $r.isNotNull($itemInteraction.solutionFormItem.name))
-				<div class="col-sm-6"><h5>$r.translate("response")</h5>
+				<div class="col-xs-6"><h5>$r.translate("response")</h5>
 					$r.render($itemInteraction.responseFormItem.name)
 				</div>
-				<div class="col-sm-6"><h5>$r.translate("solution")</h5>
+				<div class="col-xs-6"><h5>$r.translate("solution")</h5>
 					$r.render($itemInteraction.solutionFormItem.name)
 				</div>
 			#elseif($r.isNotNull($itemInteraction.responseFormItem.name))
-				<div class="col-sm-12"><h5>$r.translate("response")</h5>
+				<div class="col-xs-12"><h5>$r.translate("response")</h5>
 					$r.render($itemInteraction.responseFormItem.name)
 				</div>
 			#else
-				<div class="col-sm-12"><h5>$r.translate("solution")</h5>
+				<div class="col-xs-12"><h5>$r.translate("solution")</h5>
 					$r.render($itemInteraction.solutionFormItem.name)
 				</div>
 			#end
 		</div>
 		#end
+	#end
+
+	#if($r.isNotNull($itemResult.correctSolutionItem))
+		<div class="row o_block_bottom">
+		#if(${itemResult.hasResponses()} && ${itemResult.hasSolutions()})
+			<div class="col-sm-offset-6 col-sm-6">
+				$r.render($itemResult.correctSolutionItem.name)
+			</div>
+		#else
+			<div class="col-sm-12">
+				$r.render($itemResult.correctSolutionItem.name)
+			</div>
+		#end
+		</div>
 	#end
 #end
 

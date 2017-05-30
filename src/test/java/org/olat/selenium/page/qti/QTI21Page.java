@@ -175,6 +175,48 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page answerMatchDropSourceToTarget(String source, String target) {
+		By sourceBy = By.xpath("//li[contains(@class,'o_match_dnd_source')]/p[contains(text(),'" + source + "')]");
+		OOGraphene.waitElement(sourceBy, 5, browser);
+		WebElement sourceEl = browser.findElement(sourceBy);
+		By targetBy = By.xpath("//li[contains(@class,'o_match_dnd_target')]/p[contains(text(),'" + target + "')]");
+		WebElement targetEl = browser.findElement(targetBy);
+		new Actions(browser)
+			.moveToElement(sourceEl, 30, 30)
+			.clickAndHold()
+			.moveToElement(targetEl, 30, 30)
+			.release()
+			.build()
+			.perform();
+
+		By sourceDroppedBy = By.xpath("//ul[contains(@class,'o_match_dnd_target_drop_zone')]/li[contains(@class,'o_match_dnd_source')]/p[contains(text(),'" + source + "')]");
+		OOGraphene.waitElement(sourceDroppedBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page answerMatchDropTargetToTarget(String source, String target) {
+		By sourceDroppedBy = By.xpath("//ul[contains(@class,'o_match_dnd_target_drop_zone')]/li[contains(@class,'o_match_dnd_source')]/p[contains(text(),'" + source + "')]");
+		WebElement sourceEl = browser.findElement(sourceDroppedBy);
+		By targetBy = By.xpath("//li[contains(@class,'o_match_dnd_target')]/p[contains(text(),'" + target + "')]");
+		WebElement targetEl = browser.findElement(targetBy);
+		new Actions(browser)
+			.moveToElement(sourceEl, 30, 30)
+			.clickAndHold()
+			.moveToElement(targetEl, 30, 30)
+			.release()
+			.build()
+			.perform();
+
+		OOGraphene.waitElement(sourceDroppedBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page answerMatchDetarget(String source) {
+		By sourceDroppedBy = By.xpath("//ul[contains(@class,'o_match_dnd_target_drop_zone')]/li[contains(@class,'o_match_dnd_source')]/p[contains(text(),'" + source + "')]");
+		browser.findElement(sourceDroppedBy).click();
+		return this;
+	}
+	
 	public QTI21Page answerUpload(File file) {
 		By inputBy = By.cssSelector(".uploadInteraction input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
@@ -321,7 +363,7 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page assertOnAssessmentTestScore(int score) {
-		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_score')]/td/div[contains(text(),'" + score + "')]");
+		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_scores')]/td/div/span[contains(@class,'o_sel_assessmenttest_score')][contains(text(),'" + score + "')]");
 		OOGraphene.waitElement(resultsBy, 5, browser);
 		return this;
 	}
@@ -339,7 +381,7 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page assertOnAssessmentTestMaxScore(int score) {
-		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_maxscore')]/td[contains(text(),'" + score + "')]");
+		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_scores')]/td/div/span[contains(@class,'o_sel_assessmenttest_maxscore')][contains(text(),'" + score + "')]");
 		OOGraphene.waitElement(resultsBy, 5, browser);
 		return this;
 	}

@@ -87,15 +87,15 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 		DBFactory.getInstance().intermediateCommit();
 	}
 	
-  @After
+ 	@After
 	public void tearDown() throws Exception {
 		try {
 			if(conn != null) {
 				conn.shutdown();
 			}
 		} catch (Exception e) {
-      e.printStackTrace();
-      throw e;
+			e.printStackTrace();
+			throw e;
 		}
 	}
 	
@@ -158,7 +158,6 @@ public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 			}
 		}
 		assertNotNull(contentType);
-		//assertEquals("text/html", contentType);
 	}
 	
 	private URI getCourseFolderURI() {

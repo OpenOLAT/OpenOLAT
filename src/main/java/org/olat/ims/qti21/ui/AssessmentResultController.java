@@ -58,6 +58,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
+import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -209,6 +210,10 @@ public class AssessmentResultController extends FormBasicController {
 			TestResult testResult = assessmentResult.getTestResult();
 			if(testResult != null) {
 				extractOutcomeVariable(testResult.getItemVariables(), testResults);
+				if(candidateSession.getManualScore() != null) {
+					testResults.addScore(candidateSession.getManualScore());
+					testResults.setManualScore(candidateSession.getManualScore());
+				}
 				
 				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
 				Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
@@ -292,12 +297,12 @@ public class AssessmentResultController extends FormBasicController {
 		if(itemSession != null) {
 			if(itemSession.getManualScore() != null) {
 				r.setScore(itemSession.getManualScore());
+				r.setManualScore(itemSession.getManualScore());
 			}
 			r.setComment(itemSession.getCoachComment());
 		}
 		
 		//update max score of section
-				
 		
 		if(options.isQuestions()) {
 			FormItem questionItem = initQuestionItem(layoutCont, sessionState, resolvedAssessmentItem);
@@ -307,6 +312,14 @@ public class AssessmentResultController extends FormBasicController {
 		if(options.isUserSolutions() || options.isCorrectSolutions()) {
 			List<InteractionResults> interactionResults = initFormItemInteractions(layoutCont, sessionState, assessmentItem, resolvedAssessmentItem);
 			r.getInteractionResults().addAll(interactionResults);
+			
+			if(options.isCorrectSolutions()) {
+				String correctSolutionId = "correctSolutionItem" + count++;
+				FeedbackResultFormItem correctSolutionItem = new FeedbackResultFormItem(correctSolutionId, resolvedAssessmentItem);
+				initInteractionResultFormItem(correctSolutionItem, sessionState);
+				layoutCont.add(correctSolutionId, correctSolutionItem);
+				r.setCorrectSolutionItem(correctSolutionItem);
+			}
 		}
 		
 		updateSectionScoreInformations(node, r, resultsMap);
@@ -383,14 +396,25 @@ public class AssessmentResultController extends FormBasicController {
 				layoutCont.add(solutionId, formItem);
 				solutionFormItem = formItem;
 			}
-			
 			interactionResults.add(new InteractionResults(responseFormItem, solutionFormItem));
 		}
 		return interactionResults;
 	}
 	
-	private void initInteractionResultFormItem(InteractionResultFormItem formItem, ItemSessionState sectionState) {
-		formItem.setItemSessionState(sectionState);
+	private void initInteractionResultFormItem(InteractionResultFormItem formItem, ItemSessionState sessionState) {
+		formItem.setItemSessionState(sessionState);
+		formItem.setCandidateSessionContext(candidateSessionContext);
+		formItem.setResolvedAssessmentTest(resolvedAssessmentTest);
+		formItem.setResourceLocator(inputResourceLocator);
+		formItem.setAssessmentObjectUri(assessmentObjectUri);
+		formItem.setMapperUri(mapperUri);
+		if(submissionMapperUri != null) {
+			formItem.setSubmissionMapperUri(submissionMapperUri);
+		}
+	}
+	
+	private void initInteractionResultFormItem(FeedbackResultFormItem formItem, ItemSessionState sessionState) {
+		formItem.setItemSessionState(sessionState);
 		formItem.setCandidateSessionContext(candidateSessionContext);
 		formItem.setResolvedAssessmentTest(resolvedAssessmentTest);
 		formItem.setResourceLocator(inputResourceLocator);
@@ -405,7 +429,9 @@ public class AssessmentResultController extends FormBasicController {
 		for(ItemVariable itemVariable:itemVariables) {
 			if(itemVariable instanceof OutcomeVariable) {
 				if(QTI21Constants.SCORE_IDENTIFIER.equals(itemVariable.getIdentifier())) {
-					results.setScore(getOutcomeNumberVariable(itemVariable));
+					Double score = getOutcomeNumberVariable(itemVariable);
+					results.setScore(score);
+					results.setAutoScore(score);
 				} else if(QTI21Constants.MAXSCORE_IDENTIFIER.equals(itemVariable.getIdentifier())) {
 					results.setMaxScore(getOutcomeNumberVariable(itemVariable));
 				} else if(QTI21Constants.PASS_IDENTIFIER.equals(itemVariable.getIdentifier())) {
@@ -488,6 +514,9 @@ public class AssessmentResultController extends FormBasicController {
 		private Long duration;
 		
 		private Double score;
+		private Double manualScore;
+		private Double autoScore;
+		
 		private Double maxScore;
 		private Double cutValue;
 		private Boolean pass;
@@ -504,6 +533,7 @@ public class AssessmentResultController extends FormBasicController {
 		private int numberOfAnsweredQuestions = 0;
 		
 		private FormItem questionItem;
+		private FormItem correctSolutionItem;
 		private final List<InteractionResults> interactionResults = new ArrayList<>();
 		private final List<Results> subResults = new ArrayList<>();
 		
@@ -534,6 +564,24 @@ public class AssessmentResultController extends FormBasicController {
 		public boolean hasInteractions() {
 			for(InteractionResults interactionResult:interactionResults) {
 				if(interactionResult.getResponseFormItem() != null || interactionResult.getSolutionFormItem() != null) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public boolean hasResponses() {
+			for(InteractionResults interactionResult:interactionResults) {
+				if(interactionResult.getResponseFormItem() != null) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public boolean hasSolutions() {
+			for(InteractionResults interactionResult:interactionResults) {
+				if(interactionResult.getSolutionFormItem() != null) {
 					return true;
 				}
 			}
@@ -592,6 +640,33 @@ public class AssessmentResultController extends FormBasicController {
 			}
 		}
 		
+		public void addScore(BigDecimal additionalScore) {
+			if(score == null) {
+				score = 0.0d;
+			}
+			score = score.doubleValue() + additionalScore.doubleValue();
+		}
+		
+		public String getAutoScore() {
+			return AssessmentHelper.getRoundedScore(autoScore);
+		}
+		
+		public void setAutoScore(Double autoScore) {
+			if(autoScore != null) {
+				this.autoScore = autoScore.doubleValue();
+			}
+		}
+		
+		public String getManualScore() {
+			return AssessmentHelper.getRoundedScore(manualScore);
+		}
+		
+		public void setManualScore(BigDecimal manualScore) {
+			if(manualScore != null) {
+				this.manualScore = manualScore.doubleValue();
+			}
+		}
+		
 		public boolean hasMaxScore() {
 			return maxScore != null;
 		}
@@ -615,6 +690,15 @@ public class AssessmentResultController extends FormBasicController {
 		
 		public Double getCutValue() {
 			return cutValue;
+		}
+
+		public String getCutPercent() {
+			if(maxScore == null) return null;
+			if(cutValue == null) return "0";
+			
+			double percent = (cutValue / maxScore) * 100.0d;
+			long percentLong = Math.round(percent);	
+			return Long.toString(percentLong);
 		}
 		
 		public void setCutValue(Double cutValue) {
@@ -706,6 +790,14 @@ public class AssessmentResultController extends FormBasicController {
 
 		public void setQuestionItem(FormItem questionItem) {
 			this.questionItem = questionItem;
+		}
+
+		public FormItem getCorrectSolutionItem() {
+			return correctSolutionItem;
+		}
+
+		public void setCorrectSolutionItem(FormItem correctSolutionItem) {
+			this.correctSolutionItem = correctSolutionItem;
 		}
 
 		public List<InteractionResults> getInteractionResults() {

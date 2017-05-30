@@ -68,6 +68,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 	private SingleSelection settingTypeEl;
 	private MultipleSelectionElement showTitlesEl, showMenuEl;
 	private MultipleSelectionElement personalNotesEl;
+	private MultipleSelectionElement showFeedbacksEl;
 	private MultipleSelectionElement enableCancelEl, enableSuspendEl;
 	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
@@ -158,7 +159,10 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		digitalSignatureEl.setVisible(qtiModule.isDigitalSignatureEnabled());
 		digitalSignatureEl.addActionListener(FormEvent.ONCHANGE);
 		digitalSignatureMailEl = uifactory.addCheckboxesHorizontal("digital.signature.mail", "digital.signature.mail.test.option", formLayout, onKeys, onValues);
-
+		
+		showFeedbacksEl = uifactory.addCheckboxesHorizontal("showFeedbacks", "qti.form.showfeedbacks", formLayout, onKeys, onValues);
+		showFeedbacksEl.setElementCssClass("o_sel_qti_show_feedbacks");
+		
 		showResultsOnFinishEl = uifactory.addCheckboxesHorizontal("resultOnFiniish", "qti.form.results.onfinish", formLayout, onKeys, onValues);
 		showResultsOnFinishEl.addActionListener(FormEvent.ONCHANGE);
 		showResultsOnFinishEl.setElementCssClass("o_sel_qti_show_results");
@@ -202,6 +206,7 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		applyMultipleSelection(displayScoreProgressEl, options.isDisplayScoreProgress());
 		applyMultipleSelection(enableSuspendEl, options.isEnableSuspend());
 		applyMultipleSelection(enableCancelEl, options.isEnableCancel());
+		applyMultipleSelection(showFeedbacksEl, !options.isHideFeedbacks());
 		
 		QTI21AssessmentResultsOptions resultsOptions = options.getAssessmentResultsOptions();
 		if(!resultsOptions.none()) {
@@ -323,7 +328,8 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		deliveryOptions.setDisplayScoreProgress(displayScoreProgressEl.isAtLeastSelected(1));
 		deliveryOptions.setAllowAnonym(allowAnonymEl.isAtLeastSelected(1));
 		deliveryOptions.setHideLms(hideLmsEl.isAtLeastSelected(1));
-		
+		deliveryOptions.setHideFeedbacks(!showFeedbacksEl.isAtLeastSelected(1));//reverse logic for compatibility
+
 		if(showResultsOnFinishEl.isAtLeastSelected(1)) {
 			QTI21AssessmentResultsOptions resultsOptions = new QTI21AssessmentResultsOptions(
 					assessmentResultsOnFinishEl.isSelected(0), assessmentResultsOnFinishEl.isSelected(1),

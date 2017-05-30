@@ -66,6 +66,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 	private MultipleSelectionElement limitAttemptsEl, blockAfterSuccessEl;
 	private MultipleSelectionElement displayQuestionProgressEl, displayScoreProgressEl;
 	private MultipleSelectionElement allowAnonymEl;
+	private MultipleSelectionElement showFeedbacksEl;
 	private MultipleSelectionElement digitalSignatureEl, digitalSignatureMailEl;
 
 	private FormLayoutContainer maxTimeCont;
@@ -254,6 +255,15 @@ public class QTI21EditLayoutForm extends FormBasicController {
 			enableCancelEl.select(onKeys[0], true);
 		}
 		
+		boolean hideFeedbacks = configRef ? deliveryOptions.isHideFeedbacks() :
+			modConfig.getBooleanSafe(IQEditController.CONFIG_KEY_HIDE_FEEDBACKS, deliveryOptions.isHideFeedbacks());
+		showFeedbacksEl = uifactory.addCheckboxesHorizontal("showFeedbacks", "qti.form.showfeedbacks", formLayout, onKeys, onValues);
+		showFeedbacksEl.setElementCssClass("o_sel_qti_show_feedbacks");
+		showFeedbacksEl.setEnabled(!configRef);
+		if(!hideFeedbacks) {
+			showFeedbacksEl.select(onKeys[0], true);
+		}
+		
 		if(!configRef) {
 			uifactory.addFormSubmitButton("submit", formLayout);
 		}
@@ -344,6 +354,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 			if(configEl.isOneSelected()) {
 				modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_CONFIG_REF, configEl.isSelected(0));
 				if(configEl.isSelected(1)) {// manual configuration
+					persistConfiguration();
 					long maxTime = getMaxTimeLimit();
 					if(maxTime > 0) {
 						modConfig.setIntValue(IQEditController.CONFIG_KEY_TIME_LIMIT, (int)maxTime);
@@ -365,6 +376,11 @@ public class QTI21EditLayoutForm extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		persistConfiguration();
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	protected void persistConfiguration() {
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_CONFIG_REF, configEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_FULLWINDOW, fullWindowEl.isSelected(0));
 		if(limitAttemptsEl.isSelected(0)) {
@@ -381,6 +397,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_ENABLESUSPEND, enableSuspendEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_QUESTIONPROGRESS, displayQuestionProgressEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_SCOREPROGRESS, displayScoreProgressEl.isSelected(0));
+		modConfig.setBooleanEntry(IQEditController.CONFIG_KEY_HIDE_FEEDBACKS, !showFeedbacksEl.isSelected(0));
 		modConfig.setBooleanEntry(IQEditController.CONFIG_ALLOW_ANONYM, allowAnonymEl.isSelected(0));
 		
 		if(qtiModule.isDigitalSignatureEnabled() && digitalSignatureEl.isSelected(0)) {
@@ -407,7 +424,5 @@ public class QTI21EditLayoutForm extends FormBasicController {
 		} else {
 			modConfig.remove(IQEditController.CONFIG_KEY_TIME_LIMIT);
 		}
-		
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

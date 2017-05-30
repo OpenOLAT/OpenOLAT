@@ -92,7 +92,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModeManager;
-import org.olat.course.editor.PublishStep01.CourseAccessAndProperties;
 import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;

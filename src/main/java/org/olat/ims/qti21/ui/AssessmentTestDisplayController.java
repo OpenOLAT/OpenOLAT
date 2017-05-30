@@ -1670,6 +1670,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			qtiEl.setRenderNavigation(!showMenuTree);
 			qtiEl.setPersonalNotes(deliveryOptions.isPersonalNotes());
 			qtiEl.setShowTitles(deliveryOptions.isShowTitles());
+			qtiEl.setHideFeedbacks(deliveryOptions.isHideFeedbacks());
 			
 			qtiTreeEl.setResourceLocator(inputResourceLocator);
 			qtiTreeEl.setTestSessionController(testSessionController);

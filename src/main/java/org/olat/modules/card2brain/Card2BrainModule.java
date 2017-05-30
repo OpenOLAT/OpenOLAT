@@ -38,6 +38,7 @@ public class Card2BrainModule extends AbstractSpringModule implements ConfigOnOf
 
 	public static final String CARD2BRAIN_ENABLED = "card2brain.enabled";
 	public static final String CARD2BRAIN_ENTERPRISE_LOGIN_ENABLED = "card2brain.enterpriseLoginEnabled";
+	public static final String CARD2BRAIN_PRIVATE_LOGIN_ENABLED = "card2brain.privateLoginEnabled";
 	public static final String CARD2BRAIN_ENTERPRISE_KEY = "card2brain.enterpriseKey";
 	public static final String CARD2BRAIN_ENTERPRISE_SECRET= "card2brain.enterpriseSecret";
 	public static final String CARD2BRAIN_BASE_URL = "card2brain.baseUrl";
@@ -48,6 +49,8 @@ public class Card2BrainModule extends AbstractSpringModule implements ConfigOnOf
 	private boolean enabled;
 	@Value("${card2brain.enterpriseLoginEnalbled:false}")
 	private boolean enterpriseLoginEnabled;
+	@Value("${card2brain.privateLoginEnalbled:false}")
+	private boolean privateLoginEnabled;
 	private String enterpriseKey;
 	private String enterpriseSecret;
 	@Value("${card2brain.baseUrl:null}")
@@ -72,6 +75,11 @@ public class Card2BrainModule extends AbstractSpringModule implements ConfigOnOf
 		String enterpriseLoginEnabledObj = getStringPropertyValue(CARD2BRAIN_ENTERPRISE_LOGIN_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enterpriseLoginEnabledObj)) {
 			enterpriseLoginEnabled = "true".equals(enterpriseLoginEnabledObj);
+		}
+		
+		String privateLoginEnabledObj = getStringPropertyValue(CARD2BRAIN_PRIVATE_LOGIN_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(privateLoginEnabledObj)) {
+			privateLoginEnabled = "true".equals(privateLoginEnabledObj);
 		}
 
 		String enterpriseKeyObj = getStringPropertyValue(CARD2BRAIN_ENTERPRISE_KEY, true);
@@ -124,6 +132,15 @@ public class Card2BrainModule extends AbstractSpringModule implements ConfigOnOf
 		setStringProperty(CARD2BRAIN_ENTERPRISE_LOGIN_ENABLED, Boolean.toString(enterpriseLoginEnalbled), true);
 	}
 
+	public boolean isPrivateLoginEnabled() {
+		return privateLoginEnabled;
+	}
+	
+	public void setPrivateLoginEnabled(boolean privateLoginEnalbled) {
+		this.privateLoginEnabled = privateLoginEnalbled;
+		setStringProperty(CARD2BRAIN_PRIVATE_LOGIN_ENABLED, Boolean.toString(privateLoginEnalbled), true);
+	}
+
 	public String getEnterpriseKey() {
 		return enterpriseKey;
 	}
@@ -168,17 +185,4 @@ public class Card2BrainModule extends AbstractSpringModule implements ConfigOnOf
 		this.verifyLtiUrl = verifyLtiUrl;
 		setStringProperty(CARD2BRAIN_VERIFY_LTI_URL, verifyLtiUrl, true);
 	}
-	
-	/**
-	 * Check if the use of a certain login is safe.<br>
-	 * - If the enterprise login is enable, it is safe to use a enterprise login.<br>
-	 * - If the enterprise login is not enabled, it is only safe to not use a enterprise login.
-	 * 
-	 * @param enterpriseLogin true to check a enterprise login
-	 * @return whether the enterprise can be used safe
-	 */
-	public boolean isLoginSafe(boolean enterpriseLogin) {
-		return this.isEnterpriseLoginEnabled() || !enterpriseLogin;
-	}
-
 }

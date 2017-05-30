@@ -49,6 +49,7 @@ public class Card2BrainAdminController extends FormBasicController {
 	
 	private MultipleSelectionElement enabledEl;
 	private MultipleSelectionElement enterpriseLoginEnabledEl;
+	private MultipleSelectionElement privateLoginEnabledEl;
 	private TextElement enterpriseKeyEl;
 	private TextElement enterpriseSecretEl;
 	private FormLink checkLoginButton;
@@ -94,10 +95,19 @@ public class Card2BrainAdminController extends FormBasicController {
 		enterpriseKeyEl.setMandatory(true);
 		
 		String enterpriseSecret = card2BrainModule.getEnterpriseSecret();
-		enterpriseSecretEl = uifactory.addPasswordElement("admin.enterpriseSecret", "admin.enterpriseSecret", 128, enterpriseSecret, formLayout);
+		enterpriseSecretEl = uifactory.addTextElement("admin.enterpriseSecret", "admin.enterpriseSecret", 128, enterpriseSecret, formLayout);
 		enterpriseSecretEl.setMandatory(true);
 		
 		checkLoginButton = uifactory.addFormLink("admin.verifyKeySecret.button", formLayout, "btn btn-default");
+		
+		uifactory.addSpacerElement("Spacer", formLayout, false);
+
+		privateLoginEnabledEl = uifactory.addCheckboxesHorizontal("admin.privateLoginEnabled", formLayout, enabledKeys, enableValues);
+		if (card2BrainModule.isPrivateLoginEnabled()) {
+			privateLoginEnabledEl.select(enabledKeys[0], true);
+		}
+		privateLoginEnabledEl.setHelpTextKey("admin.privateLoginHelpText", null);
+		privateLoginEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		
 		uifactory.addSpacerElement("Spacer", formLayout, false);
 		uifactory.addStaticTextElement("admin.expertSettings", null, formLayout);
@@ -140,6 +150,9 @@ public class Card2BrainAdminController extends FormBasicController {
 
 		boolean enterpriseLoginEnabled = enterpriseLoginEnabledEl.isAtLeastSelected(1);
 		card2BrainModule.setEnterpriseLoginEnabled(enterpriseLoginEnabled);
+		
+		boolean privateLoginEnabled = privateLoginEnabledEl.isAtLeastSelected(1);
+		card2BrainModule.setPrivateLoginEnabled(privateLoginEnabled);
 		
 		String enterpriseKey = enterpriseKeyEl.getValue();
 		card2BrainModule.setEnterpriseKey(enterpriseKey);
@@ -189,6 +202,7 @@ public class Card2BrainAdminController extends FormBasicController {
 	private void showHideEnterpriseLoginFields() {
 		enterpriseKeyEl.setVisible(isEnterpriseLoginEnabled());
 		enterpriseSecretEl.setVisible(isEnterpriseLoginEnabled());
+		checkLoginButton.setVisible(isEnterpriseLoginEnabled());
 	}
 	
 	private boolean isEnterpriseLoginEnabled() {

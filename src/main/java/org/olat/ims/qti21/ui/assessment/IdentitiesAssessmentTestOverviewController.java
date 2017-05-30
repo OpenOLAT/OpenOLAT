@@ -35,8 +35,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.assessment.IdentitiesAssessmentTestOverviewDataModel.IACols;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.user.UserManager;
@@ -66,7 +68,7 @@ public class IdentitiesAssessmentTestOverviewController extends FormBasicControl
 	
 	public IdentitiesAssessmentTestOverviewController(UserRequest ureq, WindowControl wControl,
 			AssessmentTestCorrection testCorrections) {
-		super(ureq, wControl, "overview_corrections");
+		super(ureq, wControl, "overview_corrections", Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.testCorrections = testCorrections;
 		

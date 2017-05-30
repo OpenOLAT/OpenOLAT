@@ -273,62 +273,70 @@ public class UserSearchController extends BasicController {
 		} else if (source == searchform) {
 			if (event == Event.DONE_EVENT) {
 				// form validation was ok
-
-				String login = searchform.login.getValue();
-				// build user fields search map
-				Map<String, String> userPropertiesSearch = new HashMap<String, String>();				
-				for (UserPropertyHandler userPropertyHandler : searchform.userPropertyHandlers) {
-					if (userPropertyHandler == null) continue;
-					FormItem ui = searchform.propFormItems.get(userPropertyHandler.getName());
-					String uiValue = userPropertyHandler.getStringValue(ui);
-					if (StringHelper.containsNonWhitespace(uiValue)) {
-						userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
-						getLogger().info("Search property:" + userPropertyHandler.getName() + "=" + uiValue);
-					}
-				}
-				if (userPropertiesSearch.isEmpty()) userPropertiesSearch = null;
-				
-				tableCtr = new TableController(tableConfig, ureq, getWindowControl(), myContent.getTranslator());
-				listenTo(tableCtr);
-				
-				List<Identity> users = searchUsers(login,	userPropertiesSearch, true);
-				int maxResults = securityModule.getUserSearchMaxResultsValue();
-				if(maxResults > 0 && users.size() > maxResults) {
-					users = users.subList(0, maxResults);
-					showWarning("error.search.maxResults", Integer.toString(maxResults));
-				}
-				if (!users.isEmpty()) {
-					tdm = new UserTableDataModel(users, ureq.getLocale(), isAdministrativeUser);
-					// add the data column descriptors
-					tdm.addColumnDescriptors(tableCtr, null);
-					// add the action columns
-					if (useMultiSelect) {
-						// add multiselect action
-						tableCtr.addMultiSelectAction(this.actionKeyChoose, ACTION_MULTISELECT_CHOOSE);
-					} else {
-						// add single column selec action
-						tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ACTION_SINGLESELECT_CHOOSE, "table.header.action", myContent
-								.getTranslator().translate("action.choose")));
-					}
-					tableCtr.setTableDataModel(tdm);
-					tableCtr.setMultiSelect(useMultiSelect);
-					searchPanel.pushContent(tableCtr.getInitialComponent());
-					myContent.contextPut("showButton","true");
-				} else {
-					getWindowControl().setInfo(translate("error.no.user.found"));
-				}
+				doSearch(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
 		}
-		
 	}
 	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		// Child controllers auto-disposed by basic controller
+	}
+	
+	private void doSearch(UserRequest ureq) {
+		String login = searchform.login.getValue();
+		// build user fields search map
+		Map<String, String> userPropertiesSearch = new HashMap<>();				
+		for (UserPropertyHandler userPropertyHandler : searchform.userPropertyHandlers) {
+			if (userPropertyHandler == null) continue;
+			FormItem ui = searchform.propFormItems.get(userPropertyHandler.getName());
+			String uiValue = userPropertyHandler.getStringValue(ui);
+			if(userPropertyHandler.getName().startsWith("genericCheckboxProperty")) {
+				if(!"false".equals(uiValue)) {
+					userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
+				}
+			} else if (StringHelper.containsNonWhitespace(uiValue)) {
+				userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
+			}
+		}
+		if (userPropertiesSearch.isEmpty()) {
+			userPropertiesSearch = null;
+		}
+		
+		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), myContent.getTranslator());
+		listenTo(tableCtr);
+		
+		List<Identity> users = searchUsers(login, userPropertiesSearch, true);
+		int maxResults = securityModule.getUserSearchMaxResultsValue();
+		if(maxResults > 0 && users.size() > maxResults) {
+			users = users.subList(0, maxResults);
+			showWarning("error.search.maxResults", Integer.toString(maxResults));
+		}
+		if (!users.isEmpty()) {
+			tdm = new UserTableDataModel(users, getLocale(), isAdministrativeUser);
+			// add the data column descriptors
+			tdm.addColumnDescriptors(tableCtr, null);
+			// add the action columns
+			if (useMultiSelect) {
+				// add multiselect action
+				tableCtr.addMultiSelectAction(this.actionKeyChoose, ACTION_MULTISELECT_CHOOSE);
+			} else {
+				// add single column selec action
+				tableCtr.addColumnDescriptor(new StaticColumnDescriptor(ACTION_SINGLESELECT_CHOOSE, "table.header.action", myContent
+						.getTranslator().translate("action.choose")));
+			}
+			tableCtr.setTableDataModel(tdm);
+			tableCtr.setMultiSelect(useMultiSelect);
+			searchPanel.pushContent(tableCtr.getInitialComponent());
+			myContent.contextPut("showButton","true");
+		} else {
+			getWindowControl().setInfo(translate("error.no.user.found"));
+		}
 	}
 
 	/**

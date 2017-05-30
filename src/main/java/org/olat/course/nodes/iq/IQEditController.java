@@ -82,6 +82,8 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_RENDERMENUOPTION="renderMenu";
 	/** configuration key: enable score progress switch*/
 	public static final String CONFIG_KEY_SCOREPROGRESS = "displayScoreProgress";
+	/** configuration key: suppress feedbacks */
+	public static final String CONFIG_KEY_HIDE_FEEDBACKS = "hideFeedbacks";
 	/** configuration key: enable cancel switch*/
 	public static final String CONFIG_KEY_ENABLECANCEL = "enableCancel";
 	/** configuration key: enable suspend switch*/

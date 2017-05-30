@@ -569,6 +569,8 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderTestFeebacks(AssessmentRenderer renderer, StringOutput sb, List<TestFeedback> testFeedbacks, AssessmentTestComponent component, TestFeedbackAccess access,
 			URLBuilder ubu, Translator translator) {
+		if(component.isHideFeedbacks()) return;
+		
 		for(TestFeedback testFeedback:testFeedbacks) {
 			if(testFeedback.getTestFeedbackAccess() == access) {
 				renderTestFeeback(renderer, sb, component, testFeedback, ubu, translator);
@@ -578,6 +580,8 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderTestFeeback(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestFeedback testFeedback,
 			URLBuilder ubu, Translator translator) {
+		if(component.isHideFeedbacks()) return;
+		
 		TestSessionState testSessionState = component.getTestSessionController().getTestSessionState();
 		if(testFeedbackVisible(testFeedback, testSessionState)) {
 			sb.append("<div class='o_info clearfix'>");

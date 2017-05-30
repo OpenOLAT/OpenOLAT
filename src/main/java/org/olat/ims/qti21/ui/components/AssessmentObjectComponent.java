@@ -53,6 +53,8 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 	
 	private Context context;
 	
+	private boolean hideFeedbacks = false;
+	
 	private String mapperUri;
 	private String submissionMapperUri;
 	private URI assessmentObjectUri;
@@ -94,6 +96,14 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 		this.assessmentObjectUri = assessmentObjectUri;
 	}
 	
+	public boolean isHideFeedbacks() {
+		return hideFeedbacks;
+	}
+
+	public void setHideFeedbacks(boolean hideFeedbacks) {
+		this.hideFeedbacks = hideFeedbacks;
+	}
+
 	public abstract String getResponseUniqueIdentifier(ItemSessionState itemSessionState, Interaction interaction);
 
 	public abstract Interaction getInteractionOfResponseUniqueIdentifier(String responseUniqueId);

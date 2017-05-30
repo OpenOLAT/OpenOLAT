@@ -22,6 +22,7 @@ package org.olat.ims.qti21.ui;
 import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -68,7 +69,8 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
-import org.olat.ims.qti21.ui.QTI21TestSessionTableModel.TSCols;
+import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
+import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionTableModel.TSCols;
 import org.olat.ims.qti21.ui.assessment.IdentityAssessmentTestCorrectionController;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.ModuleConfiguration;
@@ -80,6 +82,13 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
+import uk.ac.ed.ph.jqtiplus.state.TestPlan;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNode.TestNodeType;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
+import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 
 /**
  * This controller is used by the assessment tools of the course and
@@ -95,7 +104,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 
 	private Component resetToolCmp;
 	private FlexiTableElement tableEl;
-	private QTI21TestSessionTableModel tableModel;
+	private QTI21AssessmentTestSessionTableModel tableModel;
 	
 	private RepositoryEntry entry;
 	private RepositoryEntry testEntry;
@@ -188,7 +197,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.terminationTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.lastModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.duration, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.results, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.numOfItemSessions, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.responded, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.corrected, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.score, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.manualScore, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.finalScore, new TextFlexiCellRenderer(EscapeMode.none)));
 		
 		if(readOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "open"));
@@ -203,7 +217,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 	
 
-		tableModel = new QTI21TestSessionTableModel(columnsModel, getTranslator());
+		tableModel = new QTI21AssessmentTestSessionTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setEmtpyTableMessageKey("results.empty");
 
@@ -228,14 +242,42 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 	
 	protected void updateModel() {
-		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, subIdent, assessedIdentity);
-		Collections.sort(sessions, new AssessmentTestSessionComparator());
-		tableModel.setObjects(sessions);
+		List<AssessmentTestSessionStatistics> sessionsStatistics = qtiService.getAssessmentTestSessionsStatistics(entry, subIdent, assessedIdentity);
+		List<QTI21AssessmentTestSessionDetails> infos = new ArrayList<>();
+		for(AssessmentTestSessionStatistics sessionStatistics:sessionsStatistics) {
+			AssessmentTestSession testSession = sessionStatistics.getTestSession();
+			TestSessionState testSessionState = qtiService.loadTestSessionState(testSession);
+			TestPlan testPlan = testSessionState.getTestPlan();
+			List<TestPlanNode> nodes = testPlan.getTestPlanNodeList();
+			
+			int responded = 0;
+			int numOfItems = 0;
+			for(TestPlanNode node:nodes) {
+				TestNodeType testNodeType = node.getTestNodeType();
+				ItemSessionState itemSessionState = testSessionState.getItemSessionStates().get(node.getKey());
+
+				TestPlanNodeKey testPlanNodeKey = node.getKey();
+				if(testPlanNodeKey != null && testPlanNodeKey.getIdentifier() != null
+						&& testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
+					numOfItems++;
+					if(itemSessionState.isResponded()) {
+						responded++;
+					}
+				}
+			}
+
+			infos.add(new QTI21AssessmentTestSessionDetails(testSession,
+					numOfItems, responded, sessionStatistics.getNumOfCorrectedItems()));
+		}
+		
+		
+		Collections.sort(infos, new AssessmentTestSessionComparator());
+		tableModel.setObjects(infos);
 		tableEl.reloadData();
 		tableEl.reset();
 			
 		if(resetToolCmp != null) {
-			if(sessions.size() > 0) {
+			if(sessionsStatistics.size() > 0) {
 				flc.getFormItemComponent().put("reset.tool", resetToolCmp);
 			} else {
 				flc.getFormItemComponent().remove(resetToolCmp);
@@ -288,16 +330,16 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				AssessmentTestSession row = tableModel.getObject(se.getIndex());
-				row = qtiService.getAssessmentTestSession(row.getKey());
+				QTI21AssessmentTestSessionDetails row = tableModel.getObject(se.getIndex());
+				AssessmentTestSession testSession = qtiService.getAssessmentTestSession(row.getTestSession().getKey());
 				if("open".equals(cmd)) {
-					if(row.getFinishTime() == null) {
-						doConfirmPullSession(ureq, row);
+					if(testSession.getFinishTime() == null) {
+						doConfirmPullSession(ureq, testSession);
 					} else {
-						doOpenResult(ureq, row);
+						doOpenResult(ureq, testSession);
 					}
 				} else if("correction".equals(cmd)) {
-					doCorrection(ureq, row);
+					doCorrection(ureq, testSession);
 				}
 			}
 		}
@@ -419,10 +461,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		listenTo(cmc);
 	}
 	
-	public static class AssessmentTestSessionComparator implements Comparator<AssessmentTestSession> {
+	public static class AssessmentTestSessionComparator implements Comparator<QTI21AssessmentTestSessionDetails> {
 
 		@Override
-		public int compare(AssessmentTestSession a1, AssessmentTestSession a2) {
+		public int compare(QTI21AssessmentTestSessionDetails q1, QTI21AssessmentTestSessionDetails q2) {
+			AssessmentTestSession a1 = q1.getTestSession();
+			AssessmentTestSession a2 = q2.getTestSession();
+			
 			Date t1 = a1.getTerminationTime();
 			if(t1 == null) {
 				t1 = a1.getFinishTime();
@@ -436,9 +481,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			if(t1 == null && t2 == null) {
 				c = 0;
 			} else if(t2 == null) {
-				return -1;
-			} else if(t1 == null) {
 				return 1;
+			} else if(t1 == null) {
+				return -1;
 			} else {
 				c = t1.compareTo(t2);
 			}

@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -62,12 +63,13 @@ public class CatalogSettingsController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private CategoriesListModel model;
 	private TooledStackedPanel stackPanel;
+	private FormLayoutContainer catalog;
 
 	private CloseableModalController cmc;
 	private Controller catalogAdddController;
 	
 	private RepositoryEntry entry;
-	
+
 	@Autowired
 	private CatalogManager catalogManager;
 	
@@ -91,6 +93,11 @@ public class CatalogSettingsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		String catalogPage = velocity_root + "/catalog_info.html";
+		catalog = FormLayoutContainer.createCustomFormLayout("info", getTranslator(), catalogPage);
+		catalog.setRootForm(mainForm);
+		formLayout.add(catalog);
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("catalog.path", 0));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", translate("remove"), "remove"));
@@ -101,7 +108,10 @@ public class CatalogSettingsController extends FormBasicController {
 		tableEl.setCustomizeColumns(false);
 		tableEl.setVisible(true);
 		if (catalogEntries.size() == 0) {
+			catalog.contextPut("hasContent", false);
 			tableEl.setEmtpyTableMessageKey("no.catalog.entries");
+		} else {
+			catalog.contextPut("hasContent", true);
 		}
 	}
 	
@@ -190,6 +200,12 @@ public class CatalogSettingsController extends FormBasicController {
 	private void updateTable() {
 		List<CatalogEntry> catalogEntries = catalogManager.getCatalogCategoriesFor(entry);
 		model.setObjects(catalogEntries);
+		if (catalogEntries.size() == 0) {
+			catalog.contextPut("hasContent", false);
+			tableEl.setEmtpyTableMessageKey("no.catalog.entries");
+		} else {
+			catalog.contextPut("hasContent", true);
+		}
 		tableEl.reset();
 	}
 

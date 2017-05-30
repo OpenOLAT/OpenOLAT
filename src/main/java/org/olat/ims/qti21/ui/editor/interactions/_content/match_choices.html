@@ -2,10 +2,20 @@
 
 <table id="qti_container_${responseIdentifier}" class="table">
 	<thead>
+		#if($r.isNotNull($showHeaders) && $showHeaders)
 		<tr>
-			<th></th>
+			<th style="border: none;"></th>
+			<th style="border: none;" colspan="${targetChoices.size()}">$r.translate("form.imd.layout.match.targets")</th>
+		</tr>
+		#end
+		<tr>
+			<th style="border-top: none;">
+			#if($r.isNotNull($showHeaders) && $showHeaders)
+				$r.translate("form.imd.layout.match.sources")
+			#end
+			</th>
 			#foreach($targetChoice in $targetChoices)
-				<th class="o_sel_match_target_${foreach.index}">$r.render(${targetChoice.getText()})
+				<th class="o_sel_match_target_${foreach.index}" style="border-top: none;">$r.render(${targetChoice.getText()})
 				#if($f.hasError($item))
 					<span class="o_icon o_icon_error form-control-feedback"></span>
 				#end #if(!$restrictedEdit) <div class="pull-right">$r.render(${targetChoice.getDeleteButton()})</div> #end</th>

@@ -29,6 +29,7 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityC
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -36,8 +37,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -76,7 +76,6 @@ public class VideoDisplayController extends BasicController {
 	// User preferred resolution, stored in GUI prefs
 	private Integer userPreferredResolution = null;
 	
-	private final boolean readOnly;
 	private RepositoryEntry entry;
 	private String descriptionText;
 	private String mediaRepoBaseUrl;
@@ -95,7 +94,6 @@ public class VideoDisplayController extends BasicController {
 			boolean customDescription, boolean autoWidth, String descriptionText, boolean readOnly) {
 		super(ureq, wControl);
 		this.entry = entry;
-		this.readOnly = readOnly;
 		this.descriptionText = (customDescription ? this.descriptionText = descriptionText : null);
 		
 		mainVC = createVelocityContainer("video_run");
@@ -106,14 +104,7 @@ public class VideoDisplayController extends BasicController {
 		if(mediaContainer != null) {
 			mediaRepoBaseUrl = registerMapper(ureq, new VFSContainerMapper(mediaContainer.getParentContainer()));
 		}
-
-		// load mediaelementjs player and sourcechooser plugin
-		StringOutput sb = new StringOutput(50);
-		Renderer.renderStaticURI(sb, "movie/mediaelementjs/mediaelementplayer.min.css");
-		String[] cssPath = new String[] {sb.toString()};
-		String[] jsCodePath= new String[] { "movie/mediaelementjs/mediaelement-and-player.min.js", "movie/mediaelementjs/features/oo-mep-feature-sourcechooser.js" };
-		JSAndCSSComponent mediaelementjs = new JSAndCSSComponent("mediaelementjs", jsCodePath ,cssPath);
-		mainVC.put("mediaelementjs", mediaelementjs);
+		initMediaElementJs();
 				
 		VFSLeaf video = videoManager.getMasterVideoFile(entry.getOlatResource());
 		if(video != null) {
@@ -152,6 +143,38 @@ public class VideoDisplayController extends BasicController {
 			// Finally load the video, transcoded versions and tracks
 			loadVideo(ureq, video);
 		}
+	}
+	
+	private void initMediaElementJs() {
+		// load mediaelementjs player, speed and sourcechooser pluginss
+		String[] cssPath;
+		String[] jsCodePath;
+		if(Settings.isDebuging()) {
+			cssPath = new String[] {
+					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/source-chooser/source-chooser.css"),
+					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/speed/speed.css"),
+					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.css")
+				};
+			jsCodePath = new String[] {
+					"movie/mediaelementjs/mediaelement-and-player.js",
+					"movie/mediaelementjs/features/source-chooser/source-chooser.js",
+					"movie/mediaelementjs/features/speed/speed.js"
+				};
+		} else {
+			cssPath = new String[] {
+					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/source-chooser/source-chooser.css"),
+					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/speed/speed.css"),
+					StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.min.css")
+				};
+			jsCodePath = new String[] {
+					"movie/mediaelementjs/mediaelement-and-player.min.js",
+					"movie/mediaelementjs/features/source-chooser/source-chooser.min.js",
+					"movie/mediaelementjs/features/speed/speed.min.js"
+				};
+		}
+		
+		JSAndCSSComponent mediaelementjs = new JSAndCSSComponent("mediaelementjs", jsCodePath ,cssPath);
+		mainVC.put("mediaelementjs", mediaelementjs);
 	}
 
 

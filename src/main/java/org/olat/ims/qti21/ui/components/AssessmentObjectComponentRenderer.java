@@ -248,6 +248,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	protected void renderTestItemModalFeedback(AssessmentRenderer renderer, StringOutput sb, AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
+		if(component.isHideFeedbacks()) return;
+		
 		List<ModalFeedback> modalFeedbacks = new ArrayList<>();
 		AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 		for(ModalFeedback modalFeedback:assessmentItem.getModalFeedbacks()) {
@@ -320,7 +322,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	 * @param ubu
 	 * @param translator
 	 */
-	protected void renderTestItemModalFeedback_feedbackModal(AssessmentRenderer renderer, StringOutput sb, ModalFeedback modalFeedback,
+	private void renderTestItemModalFeedback_feedbackModal(AssessmentRenderer renderer, StringOutput sb, ModalFeedback modalFeedback,
 			AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
 		sb.append("<div class='modalFeedback o_info clearfix");
@@ -368,7 +370,7 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	 * @param ubu
 	 * @param translator
 	 */
-	protected void renderTestItemModalFeedback_standard(AssessmentRenderer renderer, StringOutput sb, ModalFeedback modalFeedback,
+	private void renderTestItemModalFeedback_standard(AssessmentRenderer renderer, StringOutput sb, ModalFeedback modalFeedback,
 			AssessmentObjectComponent component,
 			ResolvedAssessmentItem resolvedAssessmentItem, ItemSessionState itemSessionState, URLBuilder ubu, Translator translator) {
 		sb.append("<div class='modalFeedback o_info clearfix'>");
@@ -893,6 +895,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	
 	private void renderEndAttemptInteraction(AssessmentRenderer renderer, StringOutput sb, EndAttemptInteraction interaction,
 			ItemSessionState itemSessionState, AssessmentObjectComponent component, URLBuilder ubu, Translator translator) {
+		if(QTI21Constants.HINT_REQUEST_IDENTIFIER.equals(interaction.getResponseIdentifier())
+				&& component.isHideFeedbacks()) {
+			return;//don't show our hint's, they trigger feedbacks
+		}
 
 		boolean ended =  component.isItemSessionEnded(itemSessionState, renderer.isSolutionMode());
 		AssessmentObjectFormItem item = component.getQtiItem();

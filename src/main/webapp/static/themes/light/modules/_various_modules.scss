@@ -638,3 +638,12 @@ div.o_assessment_user_type_filter {
 		font-size: 80%;
 	}
 }	
+
+/* indicator on progress bar */
+.progress .o_progress_marker {
+	position: absolute; 
+	height: 100%;
+	top: 0;
+	width: 3px; 	
+	background: $o-progress-marker-color;
+}

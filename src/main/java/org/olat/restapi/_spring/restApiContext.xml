@@ -23,6 +23,7 @@
 				<value>org.olat.restapi.repository.CatalogWebService</value>
 				<value>org.olat.restapi.repository.RepositoryEntriesResource</value>
 				<value>org.olat.restapi.repository.RepositoryEntryLifecycleWebService</value>
+				<value>org.olat.restapi.repository.SharedFolderWebService</value>
 				<value>org.olat.restapi.repository.course.CourseWebService</value>
 				<value>org.olat.restapi.repository.course.CoursesWebService</value>
 				<value>org.olat.restapi.repository.course.CoursesInfosWebService</value>

@@ -100,6 +100,7 @@ class CcStep01 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
+		stepsRunContext.put("repoEntry", repoEntry);
 		StepFormController stepP = new CcStep01Form(ureq, windowControl, form, stepsRunContext, null);
 		return stepP;
 	}

@@ -145,15 +145,12 @@
 											<output>${basedir}/target/bootstrap/bootstrap-openolat.min.js</output>
 											<removeIncluded>false</removeIncluded>
 											<includes>
-												<!-- <include>${basedir}/target/bootstrap/javascripts/bootstrap/affix.min.js</include> -->
 												<include>${basedir}/target/bootstrap/javascripts/bootstrap/alert.min.js</include>
 												<include>${basedir}/target/bootstrap/javascripts/bootstrap/button.min.js</include>
-												<!-- <include>${basedir}/target/bootstrap/javascripts/bootstrap/carousel.min.js</include> -->
 												<include>${basedir}/target/bootstrap/javascripts/bootstrap/collapse.min.js</include>
 												<include>${basedir}/target/bootstrap/javascripts/bootstrap/dropdown.min.js</include>
 												<include>${basedir}/target/bootstrap/javascripts/bootstrap/tab.min.js</include>
 												<include>${basedir}/target/bootstrap/javascripts/bootstrap/transition.min.js</include>
-												<!-- <include>${basedir}/target/bootstrap/javascripts/bootstrap/scrollspy.min.js</include>  -->
 												<include>${basedir}/target/bootstrap/javascripts/bootstrap/modal.min.js</include>
 												<include>${basedir}/target/bootstrap/javascripts/bootstrap/tooltip.min.js</include>
 												<include>${basedir}/target/bootstrap/javascripts/bootstrap/popover.min.js</include>
@@ -161,10 +158,13 @@
 										</aggregation>
 									</aggregations>
 									<excludes>
+										<exclude>**/jw/*</exclude>
+										<exclude>**/mediaelementjs/*</exclude>
+										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 									</excludes>
 								</configuration>
-							</execution>														
+							</execution>
 							<execution>
 								<!-- compress movie player in place, don't append to any other file -->
 								<id>compressmovieplayer</id>
@@ -177,17 +177,27 @@
 									<force>true</force>
 									<encoding>UTF-8</encoding>
 									<nocompress>false</nocompress>
-									<outputDirectory>${basedir}/src/main/webapp/static/movie</outputDirectory>
+									<outputDirectory>${basedir}/target/jsmovie</outputDirectory>
 									<sourceDirectory>${basedir}/src/main/webapp/static/movie</sourceDirectory>
 									<excludeResources>true</excludeResources>
+									<aggregations>
+										<aggregation>
+											<output>${basedir}/src/main/webapp/static/movie/player.min.js</output>
+											<removeIncluded>false</removeIncluded>
+											<includes>
+												<include>${basedir}/target/jsmovie/player.min.js</include>
+											</includes>
+										</aggregation>
+									</aggregations>
 									<excludes>
 										<exclude>**/*.min.js</exclude>
-										<exclude>**/mediaelementjs/*</exclude>
-										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 										<exclude>**/jw/*</exclude>
+										<exclude>**/mediaelementjs/*</exclude>
+										<exclude>**/mediaelementjs/**/*</exclude>
+										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 									</excludes>
 								</configuration>
-							</execution>							
+							</execution>
 							<execution>
 								<id>compressjs</id>
 								<phase>process-resources</phase>
@@ -289,6 +299,9 @@
 										</aggregation>
 									</aggregations>
 									<excludes>
+										<exclude>**/jw/*</exclude>
+										<exclude>**/mediaelementjs/*</exclude>
+										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 									</excludes>
 								</configuration>
@@ -328,6 +341,9 @@
 										</aggregation>
 									</aggregations>
 									<excludes>
+										<exclude>**/jw/*</exclude>
+										<exclude>**/mediaelementjs/*</exclude>
+										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 									</excludes>
 								</configuration>
@@ -360,6 +376,9 @@
 										</aggregation>
 									</aggregations>
 									<excludes>
+										<exclude>**/jw/*</exclude>
+										<exclude>**/mediaelementjs/*</exclude>
+										<exclude>**/mediaelementjs/**/*</exclude>
 										<exclude>**/sliderpips/jquery-ui-slider-pips.js</exclude>
 									</excludes>
 								</configuration>

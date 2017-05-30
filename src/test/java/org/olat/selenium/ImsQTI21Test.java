@@ -1612,6 +1612,196 @@ public class ImsQTI21Test {
 			.assertOnAssessmentTestScore(10);// 4 points from the first question, 6 from the second
 	}
 	
+
+	/**
+	 * An author make a test with 2 match of the drag and drop variety
+	 * with feedbacks.<br>
+	 * A first user make the test, check the feedbacks but make an error
+	 * and score the maximum. A second user answers all the questions
+	 * correctly.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorMatchDragAndDrop(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO asuka = new UserRestClient(deploymentUrl).createRandomUser("Asuka");
+		UserVO chara = new UserRestClient(deploymentUrl).createRandomUser("Chara");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "Match DnD QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add a match, multiple selection
+		QTI21MatchEditorPage matchEditor = qtiEditor
+			.addMatchDragAndDrop();
+		matchEditor
+			.setSource(0, "Einstein")
+			.setSource(1, "Planck")
+			.addRow()
+			.setSource(2, "Euler")
+			.setTarget(0, "Physicist")
+			.setTarget(1, "Mathematician")
+			.setMatch(0, 0, true)
+			.setMatch(1, 0, true)
+			.setMatch(2, 1, true)
+			.save();
+		// change max score
+		matchEditor
+			.selectScores()
+			.setMaxScore("4")
+			.save();
+		// set some feedbacks
+		matchEditor
+			.selectFeedbacks()
+			.setHint("Hint", "Euler come from Switzerland")
+			.setCorrectSolution("Correct solution", "The correct solution is simple")
+			.setCorrectFeedback("Correct feedback", "You are right")
+			.setIncorrectFeedback("Incorrect", "Your answer is not exactly correct")
+			.save();
+		
+		// second match
+		matchEditor = qtiEditor
+			.addMatchDragAndDrop()
+			.setSingleChoices()
+			.setSource(0, "Euler")
+			.setSource(1, "Broglie")
+			.addRow()
+			.setSource(2, "Konrad")
+			.setTarget(0, "Mathematics")
+			.setTarget(1, "Medicine")
+			.addColumn()
+			.setTarget(2, "Physics")
+			.setMatch(0, 0, true)
+			.setMatch(1, 2, true)
+			.setMatch(2, 1, true)
+			.save();
+		// select score "per answer" and set the scores
+		matchEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("8")
+			.setScore(0, 0, "2.0")
+			.setScore(0, 1, "0.0")
+			.setScore(0, 2, "0.0")
+			.setScore(1, 0, "0.0")
+			.setScore(1, 1, "0.0")
+			.setScore(1, 2, "3.0")
+			.setScore(2, 0, "0.0")
+			.setScore(2, 1, "2.0")
+			.setScore(2, 2, "0.0")
+			.save();
+		matchEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		//close editor
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage asukaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		asukaLoginPage
+			.loginAs(asuka.getLogin(), asuka.getPassword())
+			.resume();
+		NavigationPage asukaNavBar = new NavigationPage(participantBrowser);
+		asukaNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page asukaQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		asukaQtiPage
+			.assertOnAssessmentItem()
+			.answerMatchDropSourceToTarget("Einstein", "Physicist")
+			.answerMatchDropSourceToTarget("Planck", "Mathematician")
+			.answerMatchDropSourceToTarget("Euler", "Mathematician")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerMatchDropTargetToTarget("Planck", "Physicist")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMatchDropSourceToTarget("Broglie", "Physics") // 2 points
+			.answerMatchDropSourceToTarget("Euler", "Medicine")  // 2 points
+			.answerMatchDropSourceToTarget("Konrad", "Medicine") // 3 points
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(9);
+		
+		//a second user search the content package
+		LoginPage charaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		charaLoginPage
+			.loginAs(chara.getLogin(), chara.getPassword())
+			.resume();
+		NavigationPage charaNavBar = new NavigationPage(participantBrowser);
+		charaNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.answerMatchDropSourceToTarget("Einstein", "Physicist")
+			.answerMatchDropSourceToTarget("Planck", "Physicist")
+			.answerMatchDropSourceToTarget("Euler", "Mathematician")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMatchDropSourceToTarget("Broglie", "Physics")   // 2 points
+			.answerMatchDropSourceToTarget("Euler", "Mathematics") // 2 points
+			.answerMatchDropSourceToTarget("Konrad", "Medicine")   // 3 points
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(11);// 4 points from the first question, 7 from the second	
+	}
+	
 	/**
 	 * An author make a test with 1 upload and feedbacks.<br>
 	 * A user make the test, test hint and upload the file.

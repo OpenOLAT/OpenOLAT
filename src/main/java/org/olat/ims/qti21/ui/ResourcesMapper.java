@@ -89,6 +89,9 @@ public class ResourcesMapper implements Mapper {
 				} else {
 					resource = new FileMediaResource(file, true);
 				}
+			} else if(filename.endsWith("/raw/_noversion_/images/transparent.gif")) {
+				String realPath = request.getServletContext().getRealPath("/static/images/transparent.gif");
+				resource = new FileMediaResource(new File(realPath), true);
 			} else {
 				String submissionName = null;
 				File storage = null;

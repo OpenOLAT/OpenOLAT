@@ -169,6 +169,7 @@ public class MatchEditorController extends FormBasicController {
 		String page = velocity_root + "/match_choices.html";
 		answersCont = FormLayoutContainer.createCustomFormLayout("answers", getTranslator(), page);
 		answersCont.setRootForm(mainForm);
+		answersCont.contextPut("showHeaders", (itemBuilder.getQuestionType() == QTI21QuestionType.matchdraganddrop));
 		formLayout.add(answersCont);
 		formLayout.add("answers", answersCont);
 

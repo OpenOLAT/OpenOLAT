@@ -352,6 +352,12 @@ public class AssignmentEditController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
 		if(sectionsEl != null) {
 			sectionsEl.clearError();
 			if(!sectionsEl.isOneSelected()) {
