@@ -41,6 +41,7 @@ import org.olat.core.util.Util;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -60,8 +61,11 @@ public class UserSearchForm extends FormBasicController {
 	private FormLink searchButton;
 	
 	protected TextElement login;
-	protected List<UserPropertyHandler> userPropertyHandlers;
-	protected Map<String,FormItem> propFormItems;
+	protected final List<UserPropertyHandler> userPropertyHandlers;
+	protected final Map<String,FormItem> propFormItems = new HashMap<>();
+	
+	@Autowired
+	private UserManager userManager;
 
 	
 	/**
@@ -73,9 +77,8 @@ public class UserSearchForm extends FormBasicController {
 	public UserSearchForm(UserRequest ureq, WindowControl wControl, boolean isAdminProps, boolean cancelButton, boolean allowReturnKey) {
 		super(ureq, wControl);
 		
-		UserManager um = UserManager.getInstance();
-		Translator decoratedTranslator = um.getPropertyHandlerTranslator(this.getTranslator());
-		setTranslator(decoratedTranslator);
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(getClass().getCanonicalName(), isAdminProps);
 		
 		this.isAdminProps = isAdminProps;
 		this.cancelButton = cancelButton;
@@ -97,7 +100,7 @@ public class UserSearchForm extends FormBasicController {
 		}
 		
 		boolean filled = !login.isEmpty();
-		StringBuffer  full = new StringBuffer(login.getValue().trim());  
+		StringBuilder  full = new StringBuilder(login.getValue().trim());  
 		FormItem lastFormElement = login;
 		
 		// DO NOT validate each user field => see OLAT-3324
@@ -151,22 +154,12 @@ public class UserSearchForm extends FormBasicController {
 		login.setVisible(isAdminProps);
 		login.setElementCssClass("o_sel_user_search_username");
 
-		UserManager um = UserManager.getInstance();
-		Translator tr = Util.createPackageTranslator(
-				UserPropertyHandler.class,
-				getLocale(), 
-				getTranslator());
-		
-		userPropertyHandlers = um.getUserPropertyHandlersFor(
-				getClass().getCanonicalName(), isAdminProps);
-		
-		propFormItems = new HashMap<String,FormItem>();
+		Translator tr = Util.createPackageTranslator(UserPropertyHandler.class, getLocale(),  getTranslator());
+
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 			
-			FormItem fi = userPropertyHandler.addFormItem(
-					getLocale(), null, getClass().getCanonicalName(), false, formLayout
-			);
+			FormItem fi = userPropertyHandler.addFormItem(getLocale(), null, getClass().getCanonicalName(), false, formLayout);
 			fi.setTranslator(tr);
 			
 			// DO NOT validate email field => see OLAT-3324, OO-155, OO-222

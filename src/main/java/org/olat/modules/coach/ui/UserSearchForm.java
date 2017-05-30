@@ -60,7 +60,7 @@ public class UserSearchForm extends FormBasicController {
 	private TextElement login;
 	private MultipleSelectionElement statusEl;
 	private List<UserPropertyHandler> userPropertyHandlers;
-	private Map <String,FormItem>propFormItems;
+	private final Map<String,FormItem> propFormItems = new HashMap<>();
 	
 	@Autowired
 	private UserManager userManager;
@@ -87,8 +87,7 @@ public class UserSearchForm extends FormBasicController {
 		login.setVisible(adminProps);
 		
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(PROPS_IDENTIFIER, adminProps);
-		
-		propFormItems = new HashMap<String,FormItem>();
+
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler != null) {
 				FormItem fi = userPropertyHandler.addFormItem(getLocale(), null, getClass().getCanonicalName(), false, formLayout);
@@ -116,12 +115,16 @@ public class UserSearchForm extends FormBasicController {
 	}
 	
 	public Map<String,String> getSearchProperties() {
-		Map<String, String> userPropertiesSearch = new HashMap<String, String>();				
+		Map<String, String> userPropertiesSearch = new HashMap<>();				
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler != null) {
 				FormItem ui = propFormItems.get(userPropertyHandler.getName());
 				String uiValue = userPropertyHandler.getStringValue(ui);
-				if (StringHelper.containsNonWhitespace(uiValue) && !uiValue.equals("-")) {
+				if(userPropertyHandler.getName().startsWith("genericCheckboxProperty")) {
+					if(!"false".equals(uiValue)) {
+						userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
+					}
+				} else if (StringHelper.containsNonWhitespace(uiValue) && !uiValue.equals("-")) {
 					userPropertiesSearch.put(userPropertyHandler.getName(), uiValue);
 				}
 			}
