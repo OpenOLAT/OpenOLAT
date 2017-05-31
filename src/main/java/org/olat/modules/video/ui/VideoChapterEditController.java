@@ -20,7 +20,6 @@
 package org.olat.modules.video.ui;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -41,7 +39,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -61,14 +58,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VideoChapterEditController extends FormBasicController {
 	
 	private RepositoryEntry entry;
-	private VelocityContainer mainVC;
 	private VideoChapterTableModel tableModel;
 	private VideoDisplayController videoDisplayCtr;
 	private FlexiTableElement chapterTable;
 	
 	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 
-	private List<VideoChapterTableRow> chapters;
+	private final List<VideoChapterTableRow> chapters;
 
 	@Autowired
 	private VideoManager videoManager;
@@ -83,25 +79,27 @@ public class VideoChapterEditController extends FormBasicController {
 	public VideoChapterEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl, "video_chapter");
 		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-		chapters = new ArrayList<>();
 		this.entry = entry;
+		chapters = videoManager.loadChapters(entry.getOlatResource());
 		initForm(ureq);
-		videoManager.loadChapters(chapters, entry.getOlatResource());
 		loadTableModel();
 	}
 
 	@Override
 	protected void doDispose() {
-
+		//
 	}
-
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
+		//video preview
 		videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), entry, false, false, false, false, null, false, false, null, false);
 		listenTo(videoDisplayCtr);	
-		videoDisplayCtr.reloadVideo(ureq);
+		videoDisplayCtr.reloadVideo(ureq, null);
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.getFormItemComponent().put("video", videoDisplayCtr.getInitialComponent());
+		}
 		
 		FlexiTableColumnModel chapterTableModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		chapterTableModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableCols.chapterName));
@@ -117,9 +115,6 @@ public class VideoChapterEditController extends FormBasicController {
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonGroupLayout);
 		addChapterEl = uifactory.addFormLink("video.chapter.add", buttonGroupLayout, Link.BUTTON);
-		
-		mainVC = ((FormLayoutContainer) formLayout).getFormItemComponent();
-		mainVC.put("video", videoDisplayCtr.getInitialComponent());
 	}
 
 	private void loadTableModel() {	
@@ -127,14 +122,14 @@ public class VideoChapterEditController extends FormBasicController {
 		chapterTable.reset(true, true, true);		
 	}
 	
-	private void doDelete (UserRequest ureq, Object toRemove) {				
+	private void doDelete(UserRequest ureq, VideoChapterTableRow toRemove) {
 		if (chapters != null){
 			chapters.remove(toRemove);	
 			organizeChapters();
 			tableModel.setObjects(chapters);
 		}
 		chapterTable.reset(true, true, true);	
-		saveChapters(ureq);
+		saveChapters(ureq, toRemove.getBegin());
 	}
 	
 	@Override
@@ -144,7 +139,7 @@ public class VideoChapterEditController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				se.getIndex();
-				Object currentObject = tableModel.getObject(se.getIndex());
+				VideoChapterTableRow currentObject = tableModel.getObject(se.getIndex());
 				if ("delete".equals(se.getCommand())){
 					doDelete(ureq, currentObject);					
 				} else if ("edit".equals(se.getCommand())){
@@ -164,12 +159,6 @@ public class VideoChapterEditController extends FormBasicController {
 	}
 
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		super.event(ureq, source, event);
-	}
-	
-
-	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == videoDisplayCtr) {
 			if (event instanceof VideoEvent) {
@@ -181,7 +170,6 @@ public class VideoChapterEditController extends FormBasicController {
 		} else if (source == chapterEditCtr){
 			if (event == Event.DONE_EVENT) {
 				doAddOrUpdateChapter(ureq, chapterEditCtr.getVideoChapterTableRow());
-				videoDisplayCtr.reloadVideo(ureq);
 			} 
 			cmc.deactivate();
 			cleanUpCMC();
@@ -203,11 +191,12 @@ public class VideoChapterEditController extends FormBasicController {
 		// only formInnerEvent()
 	}
 	
-	private void saveChapters(UserRequest ureq) {
+	private void saveChapters(UserRequest ureq, Date time) {
 		videoManager.saveChapters(chapters, entry.getOlatResource());
-		videoDisplayCtr.reloadVideo(ureq);
-	}; 
-
+		
+		long timeInSeconds = time.getTime() / 1000l;
+		videoDisplayCtr.reloadVideo(ureq, timeInSeconds);
+	}
 
 	private void doOpenCallout(UserRequest ureq, VideoChapterTableRow videoChapterTableRow, boolean chapterExists) {
 		
@@ -241,7 +230,7 @@ public class VideoChapterEditController extends FormBasicController {
 		});		
 		organizeChapters();
 		loadTableModel();
-		saveChapters(ureq);
+		saveChapters(ureq, row.getBegin());
 	}
 	
 	private void organizeChapters () {

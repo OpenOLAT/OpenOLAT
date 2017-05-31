@@ -39,7 +39,7 @@
 			features: ['playpause','current','volume','progress','duration','tracks' #if($useSourceChooser),'sourcechooser'#end ,'speed','fullscreen'],
 			
 			## Callback to communicate with the server
-			success: function (mediaElement, domObject) {
+			success: function (mediaElement, domObject, player) {
 
 				## listen to play events, fired when movie is finished
 		        mediaElement.addEventListener('play', function(e) {
@@ -70,6 +70,15 @@
 		        ## Preselect the preferred source
 		        #if($useSourceChooser)
 		        jQuery(jQuery('.mejs__source-chooser-selector input')[$preferredResolution]).prop("checked", true).trigger("click");
+		        #end
+
+		        #if($r.isNotNull($currentTimeAt))
+			        player.play();
+		        	mediaElement.addEventListener('loadedmetadata', function(e) {
+				        console.log('Start time', ${currentTimeAt});
+			        	player.setCurrentTime(${currentTimeAt});
+						player.pause();
+			        }, false);
 		        #end
 			}
 		});
