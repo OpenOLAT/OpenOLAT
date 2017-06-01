@@ -59,11 +59,8 @@ import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
- * Description:<BR/>
- * TODO: Class Description for LTConfigForm
- * <P/>
  *
-* @author guido
+ * @author guido
  * @author Charles Severance
  */
 public class LTIConfigForm extends FormBasicController {
@@ -78,10 +75,10 @@ public class LTIConfigForm extends FormBasicController {
 
 	public static final String[] PROTOCOLS = new String[] {"http", "https"};
 
-  public static final String CONFIG_KEY_DEBUG = "debug";
-  public static final String CONFIG_KEY_CUSTOM = "custom";
-  public static final String CONFIG_KEY_SENDNAME = "sendname";
-  public static final String CONFIG_KEY_SENDEMAIL = "sendemail";
+	public static final String CONFIG_KEY_DEBUG = "debug";
+	public static final String CONFIG_KEY_CUSTOM = "custom";
+	public static final String CONFIG_KEY_SENDNAME = "sendname";
+	public static final String CONFIG_KEY_SENDEMAIL = "sendemail";
   
 	public static final String usageIdentifyer = LTIManager.class.getCanonicalName();
 	
@@ -91,6 +88,9 @@ public class LTIConfigForm extends FormBasicController {
 	private TextElement tkey;
 	private TextElement tpass;
 	
+	private MultipleSelectionElement skipLaunchPageEl;
+	private MultipleSelectionElement skipAcceptLaunchPageEl;
+	
 	private SelectionElement sendName;
 	private SelectionElement sendEmail;
 	private SelectionElement doDebug;
@@ -98,19 +98,25 @@ public class LTIConfigForm extends FormBasicController {
 	private TextElement scaleFactorEl;
 	private TextElement cutValueEl;
 	private MultipleSelectionElement isAssessableEl;
-	private MultipleSelectionElement authorRoleEl, coachRoleEl, participantRoleEl;
+	private MultipleSelectionElement authorRoleEl;
+	private MultipleSelectionElement coachRoleEl;
+	private MultipleSelectionElement participantRoleEl;
 	private FormLayoutContainer customParamLayout;
-	private SingleSelection displayEl, heightEl, widthEl;
+	private SingleSelection displayEl;
+	private SingleSelection heightEl;
+	private SingleSelection widthEl;
 
 	private String fullURI;
 	private Boolean sendNameConfig;
 	private Boolean sendEmailConfig;
 	private Boolean doDebugConfig;
 	private boolean isAssessable;
-	private String key, pass;
+	private String key;
+	private String pass;
 	
-	private List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+	private List<NameValuePair> nameValuePairs = new ArrayList<>();
 	
+	private static final String[] enabledKeys = new String[]{"on"};
 
 	private String[] ltiRolesKeys = new String[]{
 			"Learner", "Instructor", "Administrator", "TeachingAssistant", "ContentDeveloper", "Mentor"
@@ -204,7 +210,7 @@ public class LTIConfigForm extends FormBasicController {
 		if (uri != null && uri.length() > 0 && uri.charAt(0) == '/')
 			uri = uri.substring(1);
 		String query = null;
-		if (configVersion == 2) {
+		if (configVersion >= 2) {
 			//query string is available since config version 2
 			query = (String) config.get(LTIConfigForm.CONFIGKEY_QUERY);
 		}
@@ -253,11 +259,29 @@ public class LTIConfigForm extends FormBasicController {
 
 		uifactory.addSpacerElement("attributes", formLayout, false);
 
+		String[] enableValues = new String[]{ translate("on") };	
+		skipLaunchPageEl = uifactory.addCheckboxesHorizontal("display.config.skipLaunchPage", formLayout, enabledKeys, enableValues);
+		if (config.getBooleanSafe(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE)) {
+			skipLaunchPageEl.select(enabledKeys[0], true);
+		}
+			
+		skipAcceptLaunchPageEl = uifactory.addCheckboxesHorizontal("display.config.skipAcceptLaunchPage", formLayout, enabledKeys, enableValues);
+		if (config.getBooleanSafe(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE)) {
+			skipAcceptLaunchPageEl.select(enabledKeys[0], true);
+		}
+		
+		uifactory.addSpacerElement("attributes", formLayout, false);
+
 		sendName = uifactory.addCheckboxesHorizontal("sendName", "display.config.sendName", formLayout, new String[]{"xx"}, new String[]{null});
 		sendName.select("xx", sendNameConfig);
+		sendName.addActionListener(FormEvent.ONCHANGE);
 		
 		sendEmail = uifactory.addCheckboxesHorizontal("sendEmail", "display.config.sendEmail", formLayout, new String[]{"xx"}, new String[]{null});
 		sendEmail.select("xx", sendEmailConfig);
+		sendEmail.addActionListener(FormEvent.ONCHANGE);
+		
+		boolean sendEnabled = sendName.isSelected(0) || sendEmail.isSelected(0);
+		skipAcceptLaunchPageEl.setVisible(sendEnabled);
 		
 		String page = velocity_root + "/custom.html";
 		customParamLayout = FormLayoutContainer.createCustomFormLayout("custom_fields", getTranslator(), page);
@@ -460,6 +484,7 @@ public class LTIConfigForm extends FormBasicController {
 		return fullURL;
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) { 
 		boolean allOk = true;
@@ -500,6 +525,9 @@ public class LTIConfigForm extends FormBasicController {
 			scaleFactorEl.setVisible(assessEnabled);
 			cutValueEl.setVisible(assessEnabled);
 			flc.setDirty(true);
+		} else if (sendName == source || sendEmail == source) {
+			boolean sendEnabled = sendName.isSelected(0) || sendEmail.isSelected(0);
+			skipAcceptLaunchPageEl.setVisible(sendEnabled);
 		} else if(source instanceof FormLink && source.getName().startsWith("add_")) {
 			NameValuePair pair = (NameValuePair)source.getUserObject();
 			doAddNameValuePair(pair);
@@ -551,7 +579,7 @@ public class LTIConfigForm extends FormBasicController {
 		} catch (MalformedURLException e) {
 			throw new OLATRuntimeException("MalformedURL in LTConfigForm which should not happen, since we've validated before. URL: " + thost.getValue(), e);
 		}
-		config.setConfigurationVersion(2);
+		config.setConfigurationVersion(BasicLTICourseNode.CURRENT_VERSION);
 		config.set(CONFIGKEY_PROTO, url.getProtocol());
 		config.set(CONFIGKEY_HOST, url.getHost());
 		config.set(CONFIGKEY_URI, url.getPath());
@@ -562,8 +590,18 @@ public class LTIConfigForm extends FormBasicController {
 		config.set(CONFIGKEY_PASS, tpass.getValue());
 		config.set(CONFIG_KEY_DEBUG, Boolean.toString(doDebug.isSelected(0)));
 		config.set(CONFIG_KEY_CUSTOM, getCustomConfig());
+		if (skipLaunchPageEl.isAtLeastSelected(1)) {
+			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE, Boolean.TRUE);
+		} else {
+			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE, Boolean.FALSE);
+		}
 		config.set(CONFIG_KEY_SENDNAME, Boolean.toString(sendName.isSelected(0)));
 		config.set(CONFIG_KEY_SENDEMAIL, Boolean.toString(sendEmail.isSelected(0)));
+		if (skipAcceptLaunchPageEl.isAtLeastSelected(1) && (sendName.isSelected(0) || sendEmail.isSelected(0))) {
+			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE, Boolean.TRUE);
+		} else {
+			config.setBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE, Boolean.FALSE);
+		}
 		
 		if(isAssessableEl.isAtLeastSelected(1)) {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.TRUE);
@@ -583,7 +621,7 @@ public class LTIConfigForm extends FormBasicController {
 			} else {
 				config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.FALSE);
 				config.remove(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-			}	
+			}
 		} else {
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.FALSE);
 			config.setBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_PASSED_FIELD, Boolean.FALSE);
@@ -649,10 +687,10 @@ public class LTIConfigForm extends FormBasicController {
 	}
 
 	private String getFormKey() {
-		if (StringHelper.containsNonWhitespace(tkey.getValue()))
+		if (StringHelper.containsNonWhitespace(tkey.getValue())) {
 			return tkey.getValue();
-		else 
-			return null;
+		}
+		return null;
 	}
 	
 	public static class NameValuePair {

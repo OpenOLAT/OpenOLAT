@@ -151,15 +151,7 @@ public class LTIRunController extends BasicController {
 
 		mainPanel = new SimpleStackedPanel("ltiContainer");
 		putInitialPanel(mainPanel);
-		
-		// only run directly when user as already accepted to data exchange or no data has to be exchanged
-		createExchangeDataProperties();
-		String dataExchangeHash = createHashFromExchangeDataProperties();
-		if (dataExchangeHash == null || checkHasDataExchangeAccepted(dataExchangeHash)) {
-			doRun(ureq);						
-		} else {
-			doAskDataExchange();
-		}
+		doRun(ureq);
 	}
 
 	/**
@@ -353,10 +345,25 @@ public class LTIRunController extends BasicController {
 			boolean resultsVisible = eval.getUserVisible() == null || eval.getUserVisible().booleanValue();
 			startPage.contextPut("resultsVisible", resultsVisible);
 			mainPanel.setContent(startPage);
-		} else if(display == LTIDisplayOptions.window) {
-			mainPanel.setContent(startPage);
+		}
+		
+		// only run when user as already accepted to data exchange or no data 
+		// has to be exchanged or when it is configured to not show the accept
+		// dialog,
+		createExchangeDataProperties();
+		String dataExchangeHash = createHashFromExchangeDataProperties();
+		Boolean skipAcceptLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE);
+		if (dataExchangeHash == null || checkHasDataExchangeAccepted(dataExchangeHash) || (skipAcceptLaunchPage != null && skipAcceptLaunchPage.booleanValue()) ) {
+			Boolean skipLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE);
+			if(skipLaunchPage != null && skipLaunchPage.booleanValue()) {
+				// start the content immediately
+				openBasicLTIContent(ureq);
+			} else {
+				// or show the start button
+				mainPanel.setContent(startPage);
+			}					
 		} else {
-			openBasicLTIContent(ureq);
+			doAskDataExchange();
 		}
 	}
 	
