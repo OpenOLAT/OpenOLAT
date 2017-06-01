@@ -66,6 +66,7 @@ import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.nodes.SelfAssessableCourseNode;
+import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -267,9 +268,18 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("hasPassedValue", (passed == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", passed);
 				if(resultsVisible) {
-					StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserUserComment(userCourseEnv));
-					if (comment != null && comment.length() > 0) {
-						mainVC.contextPut("comment", StringHelper.xssScan(comment));					
+					if(testCourseNode.hasCommentConfigured()) {
+						StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserUserComment(userCourseEnv));
+						if (comment != null && comment.length() > 0) {
+							mainVC.contextPut("comment", StringHelper.xssScan(comment));					
+						}
+					}
+					
+					if(testCourseNode.hasIndividualAsssessmentDocuments()) {
+						List<File> docs = testCourseNode.getIndividualAssessmentDocuments(userCourseEnv);
+						String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
+						mainVC.contextPut("docsMapperUri", mapperUri);
+						mainVC.contextPut("docs", docs);
 					}
 				}
 				Integer attempts = assessmentEntry.getAttempts();

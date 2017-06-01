@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.cl.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -62,6 +63,7 @@ import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
+import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -171,7 +173,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			if(withScore || withPassed) {
 				layoutCont.contextPut("enableScoreInfo", Boolean.TRUE);
 				exposeConfigToVC(layoutCont);
-				exposeUserDataToVC(layoutCont);
+				exposeUserDataToVC(ureq, layoutCont);
 			} else {
 				layoutCont.contextPut("enableScoreInfo", Boolean.FALSE);
 			}
@@ -191,13 +193,14 @@ public class CheckListRunController extends FormBasicController implements Contr
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
 	}
 	
-	private void exposeUserDataToVC(FormLayoutContainer layoutCont) {
+	private void exposeUserDataToVC(UserRequest ureq, FormLayoutContainer layoutCont) {
 		AssessmentEntry scoreEval = courseNode.getUserAssessmentEntry(userCourseEnv);
 		if(scoreEval == null) {
 			layoutCont.contextPut("score", null);
 			layoutCont.contextPut("hasPassedValue", Boolean.FALSE);
 			layoutCont.contextPut("passed", null);
 			layoutCont.contextPut("comment", null);
+			layoutCont.contextPut("docs", null);
 		} else {
 			boolean resultsVisible = scoreEval.getUserVisibility() == null || scoreEval.getUserVisibility().booleanValue();
 			layoutCont.contextPut("resultsVisible", resultsVisible);
@@ -205,8 +208,19 @@ public class CheckListRunController extends FormBasicController implements Contr
 			layoutCont.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			layoutCont.contextPut("passed", scoreEval.getPassed());
 			if(resultsVisible) {
-				StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
-				layoutCont.contextPut("comment", StringHelper.xssScan(comment));
+				if(courseNode.hasCommentConfigured()) {
+					StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
+					layoutCont.contextPut("comment", StringHelper.xssScan(comment));
+				}
+				if(courseNode.hasIndividualAsssessmentDocuments()) {
+					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
+					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
+					layoutCont.contextPut("docsMapperUri", mapperUri);
+					layoutCont.contextPut("docs", docs);
+				}
+			} else {
+				layoutCont.contextPut("comment", null);
+				layoutCont.contextPut("docs", null);
 			}
 		}
 
@@ -270,13 +284,13 @@ public class CheckListRunController extends FormBasicController implements Contr
 			CheckboxWrapper wrapper = (CheckboxWrapper)boxEl.getUserObject();
 			if(wrapper != null) {
 				boolean checked = boxEl.isAtLeastSelected(1);
-				doCheck(wrapper, checked);
+				doCheck(ureq, wrapper, checked);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doCheck(CheckboxWrapper wrapper, boolean checked) {
+	private void doCheck(UserRequest ureq, CheckboxWrapper wrapper, boolean checked) {
 		DBCheckbox theOne;
 		if(wrapper.getDbCheckbox() == null) {
 			String uuid = wrapper.getCheckbox().getCheckboxId();
@@ -305,7 +319,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			logUpdateCheck(checkbox.getCheckboxId(), checkbox.getTitle());
 		}
 		
-		exposeUserDataToVC(flc);
+		exposeUserDataToVC(ureq, flc);
 	}
 	
 	private void logUpdateCheck(String checkboxId, String boxTitle) {

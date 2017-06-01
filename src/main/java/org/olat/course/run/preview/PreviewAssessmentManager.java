@@ -25,6 +25,7 @@
 
 package org.olat.course.run.preview;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -114,6 +115,22 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 		throw new AssertException("Not implemented for preview.");
 	}
 
+	@Override
+	public void addIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity,
+			File document, String filename) {
+		// do nothing
+	}
+
+	@Override
+	public void removeIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, File document) {
+		// do nothing
+	}
+
+	@Override
+	public void deleteIndividualAssessmentDocuments(CourseNode courseNode) {
+		//
+	}
+
 	/**
 	 * @see org.olat.course.assessment.AssessmentManager#saveNodeCoachComment(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, java.lang.String)
 	 */
@@ -164,6 +181,11 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	@Override
 	public String getNodeComment(CourseNode courseNode, Identity identity) {
 		return "This is a preview"; //default comment for preview
+	}
+	
+	@Override
+	public List<File> getIndividualAssessmentDocuments(CourseNode courseNode, Identity identity) {
+		return Collections.emptyList();
 	}
 
 	/**

@@ -1171,6 +1171,7 @@ create table o_as_entry (
    a_completion float(65,30),
    a_comment text,
    a_coach_comment text,
+   a_num_assessment_docs bigint not null default 0,
    fk_entry bigint not null,
    a_subident varchar(64),
    fk_reference_entry bigint,

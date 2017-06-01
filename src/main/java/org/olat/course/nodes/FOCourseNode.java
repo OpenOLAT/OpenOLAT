@@ -466,7 +466,10 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#cleanupOnDelete(org.olat.course.ICourse)
 	 */
+	@Override
 	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		
 		// mark the subscription to this node as deleted
 		SubscriptionContext forumSubContext = CourseModule.createTechnicalSubscriptionContext(course.getCourseEnvironment(), this);
 		NotificationsManager.getInstance().delete(forumSubContext);

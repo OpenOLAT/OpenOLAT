@@ -20,7 +20,9 @@
 
 package org.olat.course.nodes.portfolio;
 
+import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
@@ -52,6 +54,7 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
+import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -174,7 +177,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		}
 		
 		if(templateMap != null || templateBinder != null) {
-			updateUI();
+			updateUI(ureq);
 		}
 	}
 	
@@ -193,7 +196,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		return deadLineInfo;
 	}
 	
-	protected void updateUI() {
+	protected void updateUI(UserRequest ureq) {
 		if(templateMap != null) {
 			copyMap = ePFMgr.loadPortfolioStructureMap(getIdentity(), templateMap, courseOres, courseNode.getIdent(), null);
 		} else if(templateBinder != null) {
@@ -204,7 +207,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		if(copyMap == null && (copyBinder == null || copyBinder.getBinderStatus() == BinderStatus.deleted)) {
 			updateEmptyUI();
 		} else {
-			updateSelectedUI();
+			updateSelectedUI(ureq);
 		}	
 
 		if(selectMapLink != null) {
@@ -241,7 +244,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		}
 	}
 	
-	private void updateSelectedUI() {
+	private void updateSelectedUI(UserRequest ureq) {
 		if(selectMapLink == null) {
 			selectMapLink = uifactory.addFormLink("select", "select.mymap", "select.mymap", infosContainer, Link.LINK);
 			selectMapLink.setElementCssClass("o_sel_ep_select_map");
@@ -250,29 +253,29 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		}
 		
 		if(copyMap != null) {
-			updateSelectedMapUI();
+			updateSelectedMapUI(ureq);
 		} else if(copyBinder != null) {
-			updateSelectedBinderUI();
+			updateSelectedBinderUI(ureq);
 		}
 	}
 
-	private void updateSelectedBinderUI() {
+	private void updateSelectedBinderUI(UserRequest ureq) {
 		String copyTitle = StringHelper.escapeHtml(copyBinder.getTitle());
 		selectMapLink.getComponent().setCustomDisplayText(copyTitle);
 		
 		updateCopyDate(copyBinder.getCopyDate());
-		updateAssessmentInfos(copyBinder.getReturnDate());
+		updateAssessmentInfos(ureq, copyBinder.getReturnDate());
 		updateDeadlineText(copyBinder.getDeadLine());
 	}
 
-	private void updateSelectedMapUI() {	
+	private void updateSelectedMapUI(UserRequest ureq) {	
 		String copyTitle = StringHelper.escapeHtml(copyMap.getTitle());
 		selectMapLink.getComponent().setCustomDisplayText(copyTitle);
 		
 		// show results, when already handed in
 		EPStructuredMap structuredMap = (EPStructuredMap)copyMap;
 		updateCopyDate(structuredMap.getCopyDate());
-		updateAssessmentInfos(structuredMap.getReturnDate());
+		updateAssessmentInfos(ureq, structuredMap.getReturnDate());
 		updateDeadlineText(structuredMap.getDeadLine());
 	}
 	
@@ -295,7 +298,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		}
 	}
 	
-	private void updateAssessmentInfos(Date returnDate) {
+	private void updateAssessmentInfos(UserRequest ureq, Date returnDate) {
 		if(returnDate != null || copyBinder != null) {
 			String rDate = formatter.formatDateAndTime(returnDate);
 			uifactory.addStaticTextElement("map.returnDate", rDate, infosContainer);
@@ -330,11 +333,17 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 
 			// get comment
 			if(resultsVisible) {
-				AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-				String comment = am.getNodeComment(courseNode, getIdentity());
-				assessmentInfosContainer.contextPut("hasCommentField", new Boolean(comment != null));
-				if (comment != null) {
+				if(courseNode.hasCommentConfigured()) {
+					AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+					String comment = am.getNodeComment(courseNode, getIdentity());
 					assessmentInfosContainer.contextPut("comment", comment);
+				}
+				
+				if(courseNode.hasIndividualAsssessmentDocuments()) {
+					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
+					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
+					assessmentInfosContainer.contextPut("docsMapperUri", mapperUri);
+					assessmentInfosContainer.contextPut("docs", docs);
 				}
 			}
 			assessmentInfosContainer.setVisible(true);
@@ -353,7 +362,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		if(restoreBinderCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				doRestore();
-				updateUI();
+				updateUI(ureq);
 			}
 		}
 		super.event(ureq, source, event);
@@ -393,7 +402,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 				}
 			}
 			
-			updateUI();
+			updateUI(ureq);
 		} else if (source == selectMapLink) {
 			String resourceUrl;
 			if(copyMap != null) {

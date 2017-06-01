@@ -160,6 +160,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
 		// load configuration
 		ViteroManager provider = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 		// remove meeting

@@ -21,11 +21,12 @@
 package org.olat.course.nodes.ms;
 
 import java.util.Map;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -51,10 +52,10 @@ public class MSEditFormController extends FormBasicController {
 	private ModuleConfiguration modConfig;
 
 	/** whether score will be awarded or not. */
-	private SelectionElement scoreGranted;
+	private MultipleSelectionElement scoreGranted;
 
 	/** Dropdown for choosing whether pass/fail will be displayed or not. */
-	private SelectionElement displayPassed;
+	private MultipleSelectionElement displayPassed;
 
 	/**
 	 * whether pass and fail will be decided automatically
@@ -63,7 +64,9 @@ public class MSEditFormController extends FormBasicController {
 	private SingleSelection displayType;
 
 	/** whether results will be commented individually. */
-	private SelectionElement commentFlag;
+	private MultipleSelectionElement commentFlag;
+	/** whether results will be commented individually. */
+	private MultipleSelectionElement individualAssessmentDocsFlag;
 
 	/** Text input element for the minimum score. */
 	private TextElement minVal;
@@ -212,6 +215,12 @@ public class MSEditFormController extends FormBasicController {
 		Boolean cf = (Boolean) modConfig.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
 		if (cf == null) cf = Boolean.TRUE;
 		commentFlag.select("xx", cf.booleanValue());
+		
+		individualAssessmentDocsFlag = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", formLayout, new String[]{"xx"}, new String[]{null});
+		boolean docsCf = modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+		if(docsCf) {
+			individualAssessmentDocsFlag.select("xx", true);
+		}
 
 		uifactory.addSpacerElement("spacer3", formLayout, false);
 
@@ -362,6 +371,8 @@ public class MSEditFormController extends FormBasicController {
 
 		// mandatory comment flag
 		moduleConfiguration.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, new Boolean(commentFlag.isSelected(0)));
+		// individual assessment docs
+		moduleConfiguration.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, new Boolean(individualAssessmentDocsFlag.isSelected(0)));
 
 		// set info text only if something is in there
 		String iu = infotextUser.getValue();

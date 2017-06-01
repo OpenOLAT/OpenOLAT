@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes;
 
+import java.io.File;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -97,6 +98,12 @@ public interface AssessableCourseNode extends CourseNode {
 	public boolean hasAttemptsConfigured();
 	
 	/**
+	 * 
+	 * @return True if this course node can hold some documents about the assessment of the learner
+	 */
+	public boolean hasIndividualAsssessmentDocuments();
+	
+	/**
 	 * @return True if this course node has additional details to be edited / viewed
 	 */
 	public boolean hasDetails();
@@ -122,6 +129,13 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @return the user comment for this user for this node, given by coach
 	 */
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment);
+	
+	/**
+	 * @param userCourseEnvironment The course environment of the assessed user.
+	 * @return The list of assessment document associated with this user and course element.
+	 */
+	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment);
+	
 	/**
 	 * @param userCourseEnvironment
 	 * @return The coach comment for this user for this node (not visible to user)
@@ -177,6 +191,25 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @param coachingIdentity
 	 */
 	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity);
+	
+	/**
+	 * Add if allowed a document for the assessed user.
+	 * 
+	 * @param document The document
+	 * @param userCourseEnvironment The course environment of the assessed user
+	 * @param coachingIdentity The coach who upload the document
+	 */
+	public void addIndividualAssessmentDocument(File document, String filename, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity);
+	
+	/**
+	 * Remove a document
+	 * 
+	 * @param document The document to remove
+	 * @param userCourseEnvironment The course environment of the assessed user
+	 * @param coachingIdentity The coach who delete the document
+	 */
+	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity);
+	
 	/**
 	 * Increments the users attempts for this node and this user + 1. 
 	 * @param userCourseEnvironment

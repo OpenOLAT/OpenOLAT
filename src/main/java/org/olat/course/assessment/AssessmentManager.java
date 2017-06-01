@@ -25,6 +25,7 @@
 
 package org.olat.course.assessment;
 
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 
@@ -74,6 +75,26 @@ public interface AssessmentManager {
 	 * @param comment
 	 */
 	public void saveNodeComment(CourseNode courseNode, Identity identity, Identity assessedIdentity, String comment);
+	
+	/**
+	 * Add an individual document for assessment purpose
+	 * 
+	 * @param courseNode The course element
+	 * @param identity The user who add the document
+	 * @param assessedIdentity The assessed user
+	 * @param document The document
+	 */
+	public void addIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, File document, String filename);
+	
+	/**
+	 * Remove a document
+	 * 
+	 * @param courseNode The course element
+	 * @param identity The user who delete the document
+	 * @param assessedIdentity The assessed user
+	 * @param document The document to delete
+	 */
+	public void removeIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, File document);
 
 	/**
 	 * Save an coach comment for this node for a user. If there is already a coach comment property available, 
@@ -113,6 +134,19 @@ public interface AssessmentManager {
 	 * @return The achieved passed or null if no passed available
 	 */
 	public String getNodeComment(CourseNode courseNode, Identity identity);
+	
+	/**
+	 * @param courseNode The course node
+	 * @param identity The assessed identity.
+	 * @return A list of documents
+	 */
+	public List<File> getIndividualAssessmentDocuments(CourseNode courseNode, Identity identity);
+	
+	/**
+	 * 
+	 * @param courseNode
+	 */
+	public void deleteIndividualAssessmentDocuments(CourseNode courseNode);
 
 	/**
 	 * @param courseNode The course node

@@ -91,6 +91,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Column(name="a_completion", nullable=true, insertable=true, updatable=true)
 	private Double completion;
 
+	@Column(name="a_num_assessment_docs", nullable=true, insertable=true, updatable=true)
+	private int numberOfAssessmentDocuments;
 	@Column(name="a_comment", nullable=true, insertable=true, updatable=true)
 	private String comment;
 	@Column(name="a_coach_comment", nullable=true, insertable=true, updatable=true)
@@ -246,6 +248,16 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+	
+	@Override
+	public int getNumberOfAssessmentDocuments() {
+		return numberOfAssessmentDocuments;
+	}
+
+	@Override
+	public void setNumberOfAssessmentDocuments(int numOfDocuments) {
+		numberOfAssessmentDocuments = numOfDocuments;
 	}
 
 	@Override

@@ -25,6 +25,9 @@
 
 package org.olat.course.nodes.ms;
 
+import java.io.File;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -124,7 +127,7 @@ public class MSCourseNodeRunController extends BasicController {
 
 		// Push variables to velcity page
 		exposeConfigToVC(config);		
-		exposeUserDataToVC(userCourseEnv, msCourseNode);
+		exposeUserDataToVC(ureq, userCourseEnv, msCourseNode);
 		putInitialPanel(myContent);
 	}
 	
@@ -170,7 +173,7 @@ public class MSCourseNodeRunController extends BasicController {
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
 	}
 	
-	private void exposeUserDataToVC(UserCourseEnvironment userCourseEnv, PersistentAssessableCourseNode courseNode) {
+	private void exposeUserDataToVC(UserRequest ureq, UserCourseEnvironment userCourseEnv, PersistentAssessableCourseNode courseNode) {
 		AssessmentEntry assessmentEntry = courseNode.getUserAssessmentEntry(userCourseEnv);
 		if(assessmentEntry == null) {
 			myContent.contextPut("hasPassedValue", Boolean.FALSE);
@@ -180,7 +183,7 @@ public class MSCourseNodeRunController extends BasicController {
 			String rawComment = assessmentEntry.getComment();
 			hasPassed = assessmentEntry.getPassed() != null;
 			hasScore = assessmentEntry.getScore() != null;
-			hasComment = StringHelper.containsNonWhitespace(rawComment);
+			hasComment = courseNode.hasCommentConfigured() && StringHelper.containsNonWhitespace(rawComment);
 		
 			boolean resultsVisible = overrideUserResultsVisiblity
 					|| assessmentEntry.getUserVisibility() == null
@@ -191,8 +194,17 @@ public class MSCourseNodeRunController extends BasicController {
 			myContent.contextPut("passed", assessmentEntry.getPassed());
 			
 			if(resultsVisible) {
-				StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
-				myContent.contextPut("comment", StringHelper.xssScan(comment));
+				if(hasComment) {
+					StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
+					myContent.contextPut("comment", StringHelper.xssScan(comment));
+				}
+				
+				if(courseNode.hasIndividualAsssessmentDocuments()) {
+					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
+					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
+					myContent.contextPut("docsMapperUri", mapperUri);
+					myContent.contextPut("docs", docs);
+				}
 			}
 		}
 

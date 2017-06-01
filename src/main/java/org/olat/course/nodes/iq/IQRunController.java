@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.iq;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -79,6 +80,7 @@ import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.nodes.SelfAssessableCourseNode;
+import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.QTIChangeLogMessage;
@@ -617,6 +619,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	    		myContent.contextPut("hasPassedValue", Boolean.FALSE);
 	    		myContent.contextPut("passed", Boolean.FALSE);
 	    		myContent.contextPut("comment", null);
+	    		myContent.contextPut("docs", null);
 	    		myContent.contextPut("attempts", 0);
     		} else {
 	    		//block if test passed (and config set to check it)
@@ -635,8 +638,17 @@ public class IQRunController extends BasicController implements GenericEventList
 	    		myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 	    		myContent.contextPut("passed", assessmentEntry.getPassed());
 	    		if(resultsVisible) {
-	    			StringBuilder comment = Formatter.stripTabsAndReturns(assessmentEntry.getComment());
-	    			myContent.contextPut("comment", StringHelper.xssScan(comment));
+	    			if(acn.hasCommentConfigured()) {
+	    				StringBuilder comment = Formatter.stripTabsAndReturns(assessmentEntry.getComment());
+	    				myContent.contextPut("comment", StringHelper.xssScan(comment));
+	    			}
+
+	    			if(acn.hasIndividualAsssessmentDocuments()) {
+	    				List<File> docs = acn.getIndividualAssessmentDocuments(userCourseEnv);
+						String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
+						myContent.contextPut("docsMapperUri", mapperUri);
+						myContent.contextPut("docs", docs);
+	    			}
 	    		}
 	    		myContent.contextPut("attempts", assessmentEntry.getAttempts() == null ? 0 : assessmentEntry.getAttempts());
     		}

@@ -56,7 +56,6 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.core.util.i18n.I18nManager;
@@ -926,8 +925,7 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @return Source without HTML tags.
 	 */
 	public static String filterHTMLTags(String source) {
-		Filter htmlTagsFilter = FilterFactory.getHtmlTagsFilter();
-		return htmlTagsFilter.filter(source);
+		return FilterFactory.getHtmlTagsFilter().filter(source);
 	}
 	
 	/**
@@ -936,6 +934,7 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @return The css class for the file or a default css class
 	 */
 	public static String getFiletypeIconCss(String filename) {
+		if(filename == null) return "";
 		return CSSHelper.createFiletypeIconCssClassFor(filename);
 	}
 	

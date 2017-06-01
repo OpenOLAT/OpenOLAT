@@ -286,6 +286,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
 		// mark the subscription to this node as deleted
 		SubscriptionContext subsContext = WikiManager.createTechnicalSubscriptionContextForCourse(course.getCourseEnvironment(), this);
 		NotificationsManager.getInstance().delete(subsContext);

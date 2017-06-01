@@ -44,6 +44,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private final Boolean passed;
 	private final Date creationDate;
 	private final Date lastModified;
+	private final int numOfAssessmentDocs;
 	private final AssessmentEntryStatus status;
 	
 	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
@@ -56,6 +57,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			creationDate = entry.getCreationDate();
 			lastModified = entry.getLastModified();
 			status = entry.getAssessmentStatus();
+			numOfAssessmentDocs = entry.getNumberOfAssessmentDocuments();
 		} else {
 			attempts = null;
 			score = null;
@@ -63,6 +65,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			userVisibility = null;
 			creationDate = lastModified = null;
 			status = null;
+			numOfAssessmentDocs = 0;
 		}
 	}
 
@@ -84,6 +87,10 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public Date getLastModified() {
 		return lastModified;
+	}
+
+	public int getNumOfAssessmentDocs() {
+		return numOfAssessmentDocs;
 	}
 
 	public AssessmentEntryStatus getAssessmentStatus() {

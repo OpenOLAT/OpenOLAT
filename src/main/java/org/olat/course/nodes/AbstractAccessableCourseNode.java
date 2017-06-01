@@ -72,6 +72,13 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	protected AbstractAccessableCourseNode(String type) {
 		super(type);
 	}
+	
+	@Override
+	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		course.getCourseEnvironment()
+				.getAssessmentManager().deleteIndividualAssessmentDocuments(this);
+	}
 
 	/**
 	 * Returns the generic access precondition

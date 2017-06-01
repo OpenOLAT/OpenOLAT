@@ -195,6 +195,7 @@ public class ScoreAccounting {
 				Boolean passed = null;
 				Boolean userVisibility = entry == null ? null : entry.getUserVisibility();
 				Long assessmendId = entry == null ? null : entry.getAssessmentId();
+				int numOfAssessmentDocs = entry == null ? -1 : entry.getNumberOfAssessmentDocuments();
 				AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
 				ConditionInterpreter ci = userCourseEnvironment.getConditionInterpreter();
 				if (cNode.hasScoreConfigured() && scoreExpressionStr != null) {
@@ -220,7 +221,7 @@ public class ScoreAccounting {
 						}
 					}
 				}
-				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, userVisibility, null, assessmendId, null, null);
+				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, userVisibility, null, assessmendId, null, null, numOfAssessmentDocs);
 				
 				if(entry == null) {
 					Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();

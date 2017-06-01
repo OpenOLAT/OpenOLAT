@@ -48,11 +48,7 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 
 	public void setAttempts(Integer attempts);
 
-	public BigDecimal getScore();
-
 	public void setScore(BigDecimal score);
-
-	public Boolean getPassed();
 
 	public void setPassed(Boolean passed);
 	
@@ -79,6 +75,10 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	public String getComment();
 
 	public void setComment(String comment);
+	
+	public int getNumberOfAssessmentDocuments();
+	
+	public void setNumberOfAssessmentDocuments(int numOfDocuments);
 
 	public String getCoachComment();
 

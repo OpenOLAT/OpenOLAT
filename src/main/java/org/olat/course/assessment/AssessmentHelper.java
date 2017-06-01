@@ -487,6 +487,7 @@ public class AssessmentHelper {
 				AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(assessableCourseNode);
 				if(scoreEvaluation != null) {
 					assessmentNodeData.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
+					assessmentNodeData.setNumOfAssessmentDocs(scoreEvaluation.getNumOfAssessmentDocs());
 				}
 				assessmentNodeData.setUserVisibility(scoreEvaluation.getUserVisible());
 				
