@@ -163,7 +163,7 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		if(source == transcodingTable) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
-				TranscodingRow currentObject = (TranscodingRow) tableModel.getObject(se.getIndex());
+				TranscodingRow currentObject = tableModel.getObject(se.getIndex());
 				if ("quality.delete".equals(se.getCommand())){
 					queueDeleteTranscoding(currentObject);
 					showInfo("delete.transcodings");

@@ -68,7 +68,6 @@ public class VideoAdminListController extends FormBasicController {
 	
 	private TranscodingQueueTableModel tableModel;
 	private FlexiTableElement tableEl;
-	private FormItemContainer formLayout;
 	private FormLink refreshButton;
 	private CloseableModalController closeableModalController;
 	private HomePageDisplayController homePageDisplayController;
@@ -106,7 +105,6 @@ public class VideoAdminListController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		this.formLayout = formLayout;
 		setFormTitle("number.transcodings");
 		setFormDescription("number.transcodings");
 		setFormContextHelp("Portfolio template: Administration and editing#configuration");
@@ -148,18 +146,18 @@ public class VideoAdminListController extends FormBasicController {
 		}
 		tableModel.setObjects(rows);
 		
-		if (formLayout.hasFormComponent(tableEl)){
-			formLayout.remove(tableEl);
+		if (flc.hasFormComponent(tableEl)){
+			flc.remove(tableEl);
 		}
-		if (formLayout.hasFormComponent(refreshButton)){
-			formLayout.remove(refreshButton);
+		if (flc.hasFormComponent(refreshButton)){
+			flc.remove(refreshButton);
 		}
 		
-		tableEl = uifactory.addTableElement(getWindowControl(), "queue", tableModel, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "queue", tableModel, getTranslator(), flc);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		
-		refreshButton = uifactory.addFormLink("button.refresh", formLayout,Link.BUTTON);
+		refreshButton = uifactory.addFormLink("button.refresh", flc, Link.BUTTON);
 		refreshButton.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
 
 	}

@@ -181,12 +181,17 @@ public class VideoDisplayController extends BasicController {
 	/**
 	 * Reload the video, e.g. when new captions or transcoded versions are available
 	 * @param ureq
+	 * @param currentTime The start time in seconds (optional)
 	 */
-	protected void reloadVideo(UserRequest ureq) {
+	protected void reloadVideo(UserRequest ureq, Long currentTime) {
 		//load video as VFSLeaf
 		VFSLeaf video = videoManager.getMasterVideoFile(entry.getOlatResource());
 		loadVideo(ureq, video);
 		mainVC.contextPut("addForceReload", "?t=" + CodeHelper.getRAMUniqueID());
+		if(currentTime != null) {
+			System.out.println("current");
+			mainVC.contextPut("currentTimeAt", currentTime.toString());
+		}
 	}
 	
 	/**

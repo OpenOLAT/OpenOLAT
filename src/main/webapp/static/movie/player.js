@@ -148,6 +148,12 @@ var BPlayer = {
 			loop: config.repeat,
 			pluginPath: mediaElementBaseUrl,
 			stretching: 'responsive',
+			hls: {
+		        path: mediaElementBaseUrl + 'hls/hls.min.js'
+		    },
+		    flv : {
+		        path: mediaElementBaseUrl + 'flv/flv.min.js'
+		    },
 			success: function(mediaElement, originalNode, player) {
 				if(config.autostart) {
 					try {
@@ -157,15 +163,25 @@ var BPlayer = {
 						if(window.console) console.log(e);
 					}
 				}
-				mediaElement.addEventListener('loadeddata', function() {
-                    if(config.start) {
-						try {
-							player.setCurrentTime(config.start);
-						} catch(e) {
-							if(window.console) console.log(e);
-						}
+				
+				if(config.start) {
+					var pauseOnce = true;
+					if(!config.autostart) {
+						player.play();
 					}
-                });
+				
+					mediaElement.addEventListener('loadedmetadata', function() {
+							try {
+								player.setCurrentTime(config.start);
+								if(!config.autostart && pauseOnce) {
+									pauseOnce = true;
+									player.pause();//player need to play to position itself at the current time
+								}
+							} catch(e) {
+								if(window.console) console.log(e);
+							}
+	                });
+				}
 			}
 		};
 

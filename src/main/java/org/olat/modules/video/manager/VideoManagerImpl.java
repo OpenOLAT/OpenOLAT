@@ -33,6 +33,7 @@ import java.math.RoundingMode;
 import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -859,8 +860,8 @@ public class VideoManagerImpl implements VideoManager {
 	 * @param List<VideoChapterTableRow> chapters the chapters
 	 * @param OLATResource videoResource the video resource
 	 */
-	public void loadChapters(List<VideoChapterTableRow> chapters, OLATResource videoResource) {
-		chapters.clear();
+	public List<VideoChapterTableRow> loadChapters(OLATResource videoResource) {
+		List<VideoChapterTableRow> chapters = new ArrayList<>();
 		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		vttDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		
@@ -896,6 +897,7 @@ public class VideoManagerImpl implements VideoManager {
 				log.error("Unable to load WEBVTT File for resource::" + videoResource,e);
 			}
 		}
+		return chapters;
 	}
 	
 	@Override

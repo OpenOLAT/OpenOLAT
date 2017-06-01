@@ -33,6 +33,9 @@ import java.util.regex.PatternSyntaxException;
 import org.olat.NewControllerFactory;
 import org.olat.admin.site.UserAdminSite;
 import org.olat.admin.user.UserAdminContextEntryControllerCreator;
+import org.olat.basesecurity.Authentication;
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
@@ -67,6 +70,9 @@ public class UserModule extends AbstractSpringModule {
 	
 	@Value("${password.change.allowed}")
 	private boolean pwdchangeallowed;
+	@Value("${password.change.allowed.without.authentications:false}")
+	private boolean pwdChangeWithoutAuthenticationAllowed;
+
 	private String adminUserName = "administrator";
 	@Value("${user.logoByProfile:disabled}")
 	private String enabledLogoByProfile;
@@ -173,10 +179,21 @@ public class UserModule extends AbstractSpringModule {
 			return isAnyPasswordChangeAllowed();
 		}
 		
-		// if this is set to false, noone can change their pw
+		// if this is set to false, nobody can change their password
 		if (!pwdchangeallowed) {
 			return false;
 		}
+		
+		// call to CoreSpringFactory to break dependencies cycles
+		// (the method will only be called with a running application)
+		
+		// check if the user has an OLAT provider token, otherwise a password change makes no sense
+		Authentication auth = CoreSpringFactory.getImpl(BaseSecurity.class)
+				.findAuthentication(id, BaseSecurityModule.getDefaultAuthProviderIdentifier());
+		if(auth == null && !pwdChangeWithoutAuthenticationAllowed) {
+			return false;
+		}
+		
 		LDAPLoginManager ldapLoginManager = CoreSpringFactory.getImpl(LDAPLoginManager.class);
 		if (ldapLoginManager.isIdentityInLDAPSecGroup(id)) {
 			// it's an ldap-user
