@@ -55,6 +55,7 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.ui.LTIResultDetailsController;
 import org.olat.modules.ModuleConfiguration;
@@ -71,7 +72,8 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	private static final long serialVersionUID = 2210572148308757127L;
 	private static final String translatorPackage = Util.getPackageName(LTIEditController.class);
 	private static final String TYPE = "lti";
-
+	
+	public static final int CURRENT_VERSION = 3;
 	public static final String CONFIG_KEY_AUTHORROLE = "authorRole";
 	public static final String CONFIG_KEY_COACHROLE = "coachRole";
 	public static final String CONFIG_KEY_PARTICIPANTROLE = "participantRole";
@@ -79,6 +81,8 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	public static final String CONFIG_KEY_HAS_SCORE_FIELD = MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD;
 	public static final String CONFIG_KEY_HAS_PASSED_FIELD = MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD;
 	public static final String CONFIG_KEY_PASSED_CUT_VALUE = MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE;
+	public static final String CONFIG_SKIP_LAUNCH_PAGE = "skiplaunchpage";
+	public static final String CONFIG_SKIP_ACCEPT_LAUNCH_PAGE = "skipacceptlaunchpage";
 	public static final String CONFIG_HEIGHT = "displayHeight";
 	public static final String CONFIG_WIDTH = "displayWidth";
 	public static final String CONFIG_HEIGHT_AUTO = DeliveryOptions.CONFIG_HEIGHT_AUTO;
@@ -239,7 +243,8 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		if (isNewNode) {
 			// use defaults for new course building blocks
 			config.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, Boolean.FALSE.booleanValue());
-			config.setConfigurationVersion(2);
+			config.setBooleanEntry(CONFIG_SKIP_LAUNCH_PAGE, Boolean.FALSE.booleanValue());
+			config.setBooleanEntry(CONFIG_SKIP_ACCEPT_LAUNCH_PAGE, Boolean.FALSE.booleanValue());
 		} else {
 			// clear old popup configuration
 			config.remove(NodeEditController.CONFIG_INTEGRATION);
@@ -248,10 +253,17 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 			if (config.getConfigurationVersion() < 2) {
 				// update new configuration options using default values for existing nodes
 				config.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, Boolean.TRUE.booleanValue());
-				config.setConfigurationVersion(2);
 			}
-			// else node is up-to-date - nothing to do
+			if (config.getConfigurationVersion() < 3) {
+				if (BasicLTICourseNode.CONFIG_DISPLAY.equals(LTIDisplayOptions.window.name())) {
+					config.setBooleanEntry(CONFIG_SKIP_LAUNCH_PAGE, Boolean.FALSE.booleanValue());
+				} else {
+					config.setBooleanEntry(CONFIG_SKIP_LAUNCH_PAGE, Boolean.TRUE.booleanValue());
+				}
+				config.setBooleanEntry(CONFIG_SKIP_ACCEPT_LAUNCH_PAGE, Boolean.FALSE.booleanValue());
+			}
 		}
+		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 
 	@Override
