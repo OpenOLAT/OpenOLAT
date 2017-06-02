@@ -47,6 +47,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentHelper;
@@ -337,6 +338,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 					AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 					String comment = am.getNodeComment(courseNode, getIdentity());
 					assessmentInfosContainer.contextPut("comment", comment);
+					assessmentInfosContainer.contextPut("in-comment", isPanelOpen(ureq, "comment", true));
 				}
 				
 				if(courseNode.hasIndividualAsssessmentDocuments()) {
@@ -344,6 +346,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 					assessmentInfosContainer.contextPut("docsMapperUri", mapperUri);
 					assessmentInfosContainer.contextPut("docs", docs);
+					assessmentInfosContainer.contextPut("in-assessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
 				}
 			}
 			assessmentInfosContainer.setVisible(true);
@@ -415,6 +418,12 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			BusinessControl bc = BusinessControlFactory.getInstance().createFromString(resourceUrl);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 			NewControllerFactory.getInstance().launch(ureq, bwControl);
+		} else if("ONCLICK".equals(event.getCommand())) {
+			String cmd = ureq.getParameter("fcid");
+			String panelId = ureq.getParameter("panel");
+			if(StringHelper.containsNonWhitespace(cmd) && StringHelper.containsNonWhitespace(panelId)) {
+				saveOpenPanel(ureq, panelId, "show".equals(cmd));
+			}
 		}
 	}
 	
@@ -423,5 +432,23 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 		copyBinder.setBinderStatus(BinderStatus.open);
 		copyBinder = portfolioService.updateBinder(copyBinder);
 		showInfo("restore.binder.success");
+	}
+	
+	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		Boolean showConfig  = (Boolean) guiPrefs.get(PortfolioCourseNodeRunController.class, getOpenPanelId(panelId));
+		return showConfig == null ? def : showConfig.booleanValue();
+	}
+	
+	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		if (guiPrefs != null) {
+			guiPrefs.putAndSave(PortfolioCourseNodeRunController.class, getOpenPanelId(panelId), new Boolean(newValue));
+		}
+		flc.getFormItemComponent().contextPut("in-" + panelId, new Boolean(newValue));
+	}
+	
+	private String getOpenPanelId(String panelId) {
+		return panelId + "::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent();
 	}
 }

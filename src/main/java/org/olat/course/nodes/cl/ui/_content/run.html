@@ -69,21 +69,23 @@
 	<div class="panel panel-default o_comment">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseComment">
 	  		<h4 class="panel-title">
-				<i id="collapseCommentToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>	  		
+				<i id="collapseCommentToggler" class="o_icon o_icon-fw #if($r.isTrue($in-comment)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>	  		
 	  			$r.translate("comment.title")
 	  		</h4>
 	  	</div>
-		<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">
+		<div id="collapseComment" class="panel-collapse collapse #if($r.isTrue($in-comment)) in #end"><div class="panel-body">
 			$comment
   		</div></div>
 	</div>
 	<script type="text/javascript">
 		/* <![CDATA[ */
 			jQuery('#collapseComment').on('hide.bs.collapse', function () {
-					jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				$f.backgroundCommand("hide","panel","comment")
 			})
 			jQuery('#collapseComment').on('show.bs.collapse', function () {
-					jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$f.backgroundCommand("show","panel","comment")
 			})
 		/* ]]> */
 	</script>
@@ -93,11 +95,11 @@
 	<div class="panel panel-default o_assessment_docs">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseAssessmentDocuments">
 	  		<h4 class="panel-title">
-	  			<i id="collapseAssessmentDocumentsToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>
+	  			<i id="collapseAssessmentDocumentsToggler" class="o_icon o_icon-fw #if($r.isTrue($in-assessmentDocuments)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
 	  			$r.translate("assessment.documents.title")
 	  		</h4>
 	  	</div>
-		<div id="collapseAssessmentDocuments" class="panel-collapse collapse in"><div class="panel-body">
+		<div id="collapseAssessmentDocuments" class="panel-collapse collapse #if($r.isTrue($in-assessmentDocuments)) in #end"><div class="panel-body">
 			<ul class="list-unstyled">
 			#foreach($doc in $docs)
 				<li><a href="$docsMapperUri/$doc.name" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($doc.name)"> </i> $r.escapeHtml($doc.name) ($r.formatBytes(${doc.length()}))</a></li>
@@ -107,11 +109,13 @@
 	</div>
 	<script type="text/javascript">
 		/* <![CDATA[ */
-			jQuery('#collapseComment').on('hide.bs.collapse', function () {
-					jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			jQuery('#collapseAssessmentDocuments').on('hide.bs.collapse', function () {
+				jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				$f.backgroundCommand("hide","panel","assessmentDocuments")
 			})
-			jQuery('#collapseComment').on('show.bs.collapse', function () {
-					jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			jQuery('#collapseAssessmentDocuments').on('show.bs.collapse', function () {
+				jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$f.backgroundCommand("show","panel","assessmentDocuments")
 			})
 		/* ]]> */
 	</script>
@@ -121,21 +125,23 @@
 	<div class="panel panel-default o_disclaimer">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDisclaimer">
 	  		<h4 class="panel-title">
-				<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>	  		
+				<i id="collapseDisclaimerToggler" class="o_icon o_icon-fw #if($r.isTrue($in-disclaimer)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>	  		
 	  			$r.translate("info.title")
 	  		</h4>	
 	  	</div>
-		<div id="collapseDisclaimer" class="panel-collapse collapse in"><div class="panel-body">
+		<div id="collapseDisclaimer" class="panel-collapse collapse #if($r.isTrue($in-disclaimer)) in #end"><div class="panel-body">
 			$r.formatLatexFormulas($infoTextUser)
   		</div></div>
 	</div>
 	<script type="text/javascript">
 		/* <![CDATA[ */
 			jQuery('#collapseDisclaimer').on('hide.bs.collapse', function () {
-					jQuery('#collapseDisclaimerToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				jQuery('#collapseDisclaimerToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				$f.backgroundCommand("hide","panel","disclaimer")
 			})
 			jQuery('#collapseDisclaimer').on('show.bs.collapse', function () {
-					jQuery('#collapseDisclaimerToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				jQuery('#collapseDisclaimerToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$f.backgroundCommand("show","panel","disclaimer")
 			})
 		/* ]]> */
 	</script>
@@ -145,14 +151,12 @@
 	<div class="panel panel-default o_duedate #if($afterDueDate) o_duedate_passed #end">
 	  	<div class="panel-heading" data-toggle="collapse" data-target="#collapseDuedate">
 	  		<h4 class="panel-title">
-				<i id="collapseDuedateToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>	  		
+				<i id="collapseDuedateToggler" class="o_icon o_icon-fw #if($r.isTrue($in-due-date)) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>	  		
 	  			$r.translate("config.due.date")
 	  		</h4>
 	  	</div>
-		<div id="collapseDuedate" class="panel-collapse collapse in"><div class="panel-body">
-			<p>
-				$r.translate("run.due.date.desc")
-			</p>
+		<div id="collapseDuedate" class="panel-collapse collapse #if($r.isTrue($in-due-date)) in #end"><div class="panel-body">
+			<p>$r.translate("run.due.date.desc")</p>
 			<p class="#if($afterDueDate) o_failed #else o_passed #end">
 				<i class="o_icon o_icon_calendar o_icon-fw"></i>
 				$r.translate("run.due.date", $r.formatDateAndTime($dueDate))
@@ -162,10 +166,12 @@
 	<script type="text/javascript">
 		/* <![CDATA[ */
 			jQuery('#collapseDuedate').on('hide.bs.collapse', function () {
-					jQuery('#collapseManagedToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				jQuery('#collapseDuedateToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				$f.backgroundCommand("hide","panel","due-date")
 			})
 			jQuery('#collapseDuedate').on('show.bs.collapse', function () {
-					jQuery('#collapseDuedateToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				jQuery('#collapseDuedateToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+				$f.backgroundCommand("show","panel","due-date")
 			})
 		/* ]]> */
 	</script>

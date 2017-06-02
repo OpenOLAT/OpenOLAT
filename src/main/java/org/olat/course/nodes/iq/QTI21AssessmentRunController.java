@@ -526,9 +526,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		Boolean showConfig  = (Boolean) guiPrefs.get(QTI21AssessmentRunController.class, getOpenPanelId(panelId));
-		if (showConfig == null) {
-			showConfig = Boolean.TRUE;
-		}
 		return showConfig == null ? def : showConfig.booleanValue();
 	}
 	
