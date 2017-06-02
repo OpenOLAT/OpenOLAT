@@ -44,10 +44,21 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 		this.entry = entry;
 		this.identityEnv = identityEnv;
 	}
+	
+
+	@Override
+	public VFSItemFilter getDefaultItemFilter() {
+		return null;
+	}
 
 	@Override
 	public void setDefaultItemFilter(VFSItemFilter defaultFilter) {
 		//
+	}
+	
+	@Override
+	public boolean exists() {
+		return true;
 	}
 
 	@Override
@@ -66,11 +77,6 @@ class CoursefolderWebDAVNamedContainer extends NamedContainerImpl {
 			}
 		}
 		return super.getDelegate();
-	}
-
-	@Override
-	public VFSItemFilter getDefaultItemFilter() {
-		return null;
 	}
 
 	@Override
