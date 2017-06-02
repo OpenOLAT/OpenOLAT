@@ -51,6 +51,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
@@ -190,6 +191,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					mainVC.put("disc", iFrameCtr.getInitialComponent());
 					iFrameCtr.setCurrentURI(sDisclaimer);
 					mainVC.contextPut("hasDisc", Boolean.TRUE);
+					mainVC.contextPut("in-disclaimer", isPanelOpen(ureq, "disclaimer", true));
 				}
 			}
 		}
@@ -237,9 +239,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("passed", scoreEval.getPassed());
 				mainVC.contextPut("attempts", attempts); //at least one attempt
 				mainVC.contextPut("showChangeLog", Boolean.TRUE && enableScoreInfo);
-				exposeResults(true);
+				exposeResults(ureq, true);
 			} else {
-				exposeResults(false);
+				exposeResults(ureq, false);
 			}
 		} else if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
@@ -271,7 +273,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					if(testCourseNode.hasCommentConfigured()) {
 						StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserUserComment(userCourseEnv));
 						if (comment != null && comment.length() > 0) {
-							mainVC.contextPut("comment", StringHelper.xssScan(comment));					
+							mainVC.contextPut("comment", StringHelper.xssScan(comment));
+							mainVC.contextPut("in-comment", isPanelOpen(ureq, "comment", true));
 						}
 					}
 					
@@ -280,6 +283,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 						String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 						mainVC.contextPut("docsMapperUri", mapperUri);
 						mainVC.contextPut("docs", docs);
+						mainVC.contextPut("in-assessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
 					}
 				}
 				Integer attempts = assessmentEntry.getAttempts();
@@ -304,7 +308,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					}
 				}
 
-				exposeResults(resultsVisible);
+				exposeResults(ureq, resultsVisible);
 			}
 		}
 		
@@ -333,7 +337,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	 * 
 	 * @param ureq
 	 */
-	private void exposeResults(boolean resultsVisible) {
+	private void exposeResults(UserRequest ureq, boolean resultsVisible) {
 		//migration: check if old tests have no summary configured
 		boolean showResultsOnHomePage = config.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		QTI21AssessmentResultsOptions showSummary = deliveryOptions.getAssessmentResultsOptions();
@@ -351,6 +355,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				hideResultsButton.setCustomDisplayText(translate("showResults.title"));
 				hideResultsButton.setElementCssClass("o_qti_hide_assessment_results");
 				hideResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_close_togglebox");
+				if(isPanelOpen(ureq, "results", false)) {
+					doShowResults(ureq);
+				}
 			} else if(showResultsOnHomePage) {
 				exposeVisiblityPeriod();
 				mainVC.contextPut("showResultsVisible", Boolean.FALSE);
@@ -437,9 +444,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}else if(source == showResultsButton) {			
 			doShowResults(ureq);
 		} else if (source == hideResultsButton) {
-			doHideResults();
+			doHideResults(ureq);
 		} else if (source == signatureDownloadLink) {
 			doDownloadSignature(ureq);
+		} else if("show".equals(event.getCommand())) {
+			saveOpenPanel(ureq, ureq.getParameter("panel"), true);
+		} else if("hide".equals(event.getCommand())) {
+			saveOpenPanel(ureq, ureq.getParameter("panel"), false);
 		}
 	}
 	
@@ -504,10 +515,33 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.put("resultReport", resultCtrl.getInitialComponent());
 			mainVC.contextPut("showResults", Boolean.TRUE);
 		}
+		saveOpenPanel(ureq, "results", Boolean.TRUE);
 	}
 
-	private void doHideResults() {
+	private void doHideResults(UserRequest ureq) {
 		mainVC.contextPut("showResults", Boolean.FALSE);
+		saveOpenPanel(ureq, "results", Boolean.FALSE);
+	}
+	
+	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		Boolean showConfig  = (Boolean) guiPrefs.get(QTI21AssessmentRunController.class, getOpenPanelId(panelId));
+		if (showConfig == null) {
+			showConfig = Boolean.TRUE;
+		}
+		return showConfig == null ? def : showConfig.booleanValue();
+	}
+	
+	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		if (guiPrefs != null) {
+			guiPrefs.putAndSave(QTI21AssessmentRunController.class, getOpenPanelId(panelId), new Boolean(newValue));
+		}
+		mainVC.contextPut("in-" + panelId, new Boolean(newValue));
+	}
+	
+	private String getOpenPanelId(String panelId) {
+		return panelId + "::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent();
 	}
 	
 	private void doDownloadSignature(UserRequest ureq) {
