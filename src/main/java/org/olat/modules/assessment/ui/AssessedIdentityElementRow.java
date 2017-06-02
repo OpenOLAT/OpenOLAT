@@ -42,19 +42,20 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private final Boolean userVisibility;
 	private final BigDecimal score;
 	private final Boolean passed;
-	private final Date creationDate;
+	private final Date initialCourseLaunchDate;
 	private final Date lastModified;
 	private final int numOfAssessmentDocs;
 	private final AssessmentEntryStatus status;
 	
-	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry, Date initialCourseLaunchDate,
+			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
+		this.initialCourseLaunchDate = initialCourseLaunchDate;
 		if(entry != null) {
 			attempts = entry.getAttempts();
 			score = entry.getScore();
 			passed = entry.getPassed();
-			userVisibility = entry.getUserVisibility(); 
-			creationDate = entry.getCreationDate();
+			userVisibility = entry.getUserVisibility();
 			lastModified = entry.getLastModified();
 			status = entry.getAssessmentStatus();
 			numOfAssessmentDocs = entry.getNumberOfAssessmentDocuments();
@@ -63,7 +64,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			score = null;
 			passed = null;
 			userVisibility = null;
-			creationDate = lastModified = null;
+			lastModified = null;
 			status = null;
 			numOfAssessmentDocs = 0;
 		}
@@ -81,9 +82,10 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 		return passed;
 	}
 
-	public Date getCreationDate() {
-		return creationDate;
+	public Date getInitialCourseLaunchDate() {
+		return initialCourseLaunchDate;
 	}
+	
 
 	public Date getLastModified() {
 		return lastModified;

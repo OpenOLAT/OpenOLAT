@@ -70,6 +70,8 @@ public interface UserCourseInformationsManager {
 	 */
 	public Map<Long,Date> getInitialLaunchDates(Long courseResourceId);
 	
+	public Map<Long,Date> getInitialLaunchDates(OLATResource resource);
+	
 	public int deleteUserCourseInformations(RepositoryEntry entry);
 
 }

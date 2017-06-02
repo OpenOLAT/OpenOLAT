@@ -146,7 +146,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 					CertificateLight certificate = certificateMap.get(row.getIdentityKey());
 					return certificate == null ? null : certificate.getNextRecertificationDate();
 				}
-				case initialLaunchDate: return row.getCreationDate();
+				case initialLaunchDate: return row.getInitialCourseLaunchDate();
 				case lastScoreUpdate: return row.getLastModified();
 			}
 		}

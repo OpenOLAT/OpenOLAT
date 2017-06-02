@@ -136,7 +136,7 @@ public class AssessedIdentityListTableModel extends DefaultFlexiTableDataModel<A
 					}
 					return certificateMap.get(row.getIdentityKey());
 				}
-				case initialLaunchDate: return row.getCreationDate();
+				case initialLaunchDate: return row.getInitialCourseLaunchDate();
 				case lastScoreUpdate: return row.getLastModified();
 			}
 		}
