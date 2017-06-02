@@ -33,8 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 
 /**
  * The Class ChapterEditController.
@@ -43,8 +41,6 @@ import org.olat.core.logging.Tracing;
  * simple Controller to get current time from video resource and pass on content of alterable textfields
  */
 public class ChapterEditController extends FormBasicController {
-
-	private static final OLog log = Tracing.createLoggerFor(ChapterEditController.class);
 
 	private String time;
 	private String chapter;
@@ -100,8 +96,8 @@ public class ChapterEditController extends FormBasicController {
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonGroupLayout);
-		uifactory.addFormSubmitButton("submit", "video.chapter." + (chapterExists ? "edit" : "add"), buttonGroupLayout);
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("submit", "video.chapter." + (chapterExists ? "edit" : "add"), buttonGroupLayout);
 	}
 
 	/**
@@ -164,7 +160,7 @@ public class ChapterEditController extends FormBasicController {
 		} else if (timeAlreadyExists()) {
 			beginEl.setErrorKey("chapter.error.already.exists", null);			
 		} else {
-			this.fireEvent(ureq, Event.DONE_EVENT);			
+			fireEvent(ureq, Event.DONE_EVENT);			
 		}
 	}
 
@@ -190,22 +186,16 @@ public class ChapterEditController extends FormBasicController {
 	 */
 	private boolean setTextElementValuesAndCheckFormat (){
 		boolean incorrectTimeFormat = false;
-		String time = beginEl.getValue();
+		String beginTime = beginEl.getValue();
 		String chapterTitle = chapterTitleEl.getValue();
 		try {
-			videoChapterTableRow.setBegin(displayDateFormat.parse(time));
+			videoChapterTableRow.setBegin(displayDateFormat.parse(beginTime));
 			videoChapterTableRow.setChapterName(chapterTitle);		
-			videoChapterTableRow.setIntervals(time);
+			videoChapterTableRow.setIntervals(beginTime);
 		} catch (ParseException e) {
-			log.error("The content of the TextElement cannot be parsed as a Date", e);
+			logError("The content of the TextElement cannot be parsed as a Date", e);
 			incorrectTimeFormat = true;
 		}
 		return incorrectTimeFormat;
 	}
-	
-	
-	
-	
-	
-
 }

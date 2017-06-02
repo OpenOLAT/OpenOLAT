@@ -66,7 +66,6 @@ public class VideoQualityTableFormController extends FormBasicController {
 	private CloseableModalController cmc;
 	private VelocityContainer previewVC;
 	private OLATResource videoResource;
-	private FormItemContainer formLayout;
 	private FormLink refreshbtn;
 
 	private int count = 0;
@@ -86,8 +85,6 @@ public class VideoQualityTableFormController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		this.formLayout = formLayout;
-
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.resolution));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QualityTableCols.dimension));
@@ -97,8 +94,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 
 		tableModel = new VideoQualityTableModel(columnsModel, getTranslator());
 		
-		initTable();
-			
+		initTable();	
 	}
 	
 	private void initTable(){
@@ -161,21 +157,19 @@ public class VideoQualityTableFormController extends FormBasicController {
 	 	rows.sort(new VideoComparator());
 		tableModel.setObjects(rows);
 		
-		if (formLayout.hasFormComponent(tableEl)){
-			formLayout.remove(tableEl);
+		if (flc.hasFormComponent(tableEl)){
+			flc.remove(tableEl);
 		}
-		if (formLayout.hasFormComponent(refreshbtn)){
-			formLayout.remove(refreshbtn);
+		if (flc.hasFormComponent(refreshbtn)){
+			flc.remove(refreshbtn);
 		}
 						
-		tableEl = uifactory.addTableElement(getWindowControl(), "qualityTable", tableModel, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "qualityTable", tableModel, getTranslator(), flc);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
-		
 				
-		refreshbtn = uifactory.addFormLink("button.refresh", formLayout, Link.BUTTON);
+		refreshbtn = uifactory.addFormLink("button.refresh", flc, Link.BUTTON);
 		refreshbtn.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
-
 	}
 	
 	@Override
