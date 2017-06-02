@@ -162,7 +162,14 @@ div.hotspotInteraction {
 	margin: 0 15px 1em 15px;
 	
 	.progress {
-		background-color: $o-qti-run-infos-progress-bg;	
+		background-color: $o-qti-run-infos-progress-bg;
+	}	
+	#o_qti_scoreinfo .progress-bar {
+		@include progress-bar-variant($o-qti-run-infos-score-progress-color);
+	}
+	
+	#o_qti_questioninfo .progress-bar {
+		@include progress-bar-variant($o-qti-run-infos-question-progress-color);
 	}
 	
 	#o_qti_run_scoreinfo,
@@ -595,26 +602,6 @@ div.hotspotInteraction {
 .o_assessment_test_results .o_sel_assessment_item_hint {
 	display:none;
 }
-
-.o_assessment_test_results {
-	/* align tables in assessment results to have same column width */
-	table th {
-		width: 40%;	
-	}
-	.o_qti_metainfo {
-		table {
-			margin-bottom: 0px;
-		}
-		/* reset stripes */
-		.table-striped>tbody>tr:nth-child(odd) {
-			background-color: transparent;
-		}
-	
-	}
-	.o_state .text-muted { 
-		font-weight: normal;	
-	}
-}	
 
 /* Choice interaction */
 tr.choiceinteraction {
@@ -1069,3 +1056,57 @@ ul.testPartDrilldown {
 .testItemControl {
 	margin-top: 0.5em;
 }
+
+
+
+/* Results reporting / detailed assessment results */
+.o_assessment_test_results {
+	/* align tables in assessment results to have same column width */
+	table th {
+		width: 40%;	
+	}
+	.o_qti_metainfo {
+		.o_qti_metainfo_listing{
+			.o_qti_run_durationinfo {}
+			.o_qti_run_questioninfo {}
+			.o_qti_run_scoreinfo {}
+			.o_qti_cutinfo {}
+			.o_qti_stateinfo {}
+			.o_qti_signature {}
+		
+		}
+		.o_qti_metainfo_visual{}
+	}
+	.o_qti_sectionsummary {
+		.o_qti_section {
+			text-align: center;
+			.o_qti_section_visual{
+				 display: inline-block; 
+				 width: 140px;
+			}
+			.o_qti_section_sublisting {
+				 display: inline-block; 
+				 width: 140px;
+			}
+			.o_qti_section_goto {
+				 display: inline-block; 
+				 width: 140px;
+			}
+		}
+	}
+	
+	.o_qti_sections {
+		.o_qti_section {
+			margin-top: 40px;
+			h3 {
+				margin-bottom: 20px;
+			}
+			.o_qti_items {
+				.o_qti_item {}
+			
+			}
+		}
+	}
+	
+}	
+

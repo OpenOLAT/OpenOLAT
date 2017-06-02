@@ -193,6 +193,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_previous_toolbar:before { content: $fa-var-caret-left; }
 .o_icon_print:before { content: $fa-var-print;}
 .o_icon_private:before { content: $fa-var-print;}
+.o_icon_progress_success:before { content: $fa-var-check; color: #e5efe5}
+.o_icon_progress_danger:before { content: $fa-var-times; color: #efe5e5}
 .o_icon_provider_adfs:before { content: $fa-var-windows;}
 .o_icon_provider_facebook:before { content: $fa-var-facebook;}
 .o_icon_provider_google:before { content: $fa-var-google-plus;}
@@ -472,8 +474,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qti_close_results:before { content: $fa-var-window-close; }
 .o_icon_qti_hint:before { content: $fa-var-question-circle; }
 .o_icon_qti_summary_notAnswered:before { content: $fa-var-circle; color: $o-qti-status-notAnswered-color; }
-.o_icon_qti_summary_ended:before { content: $fa-var-circle; color: $o-qti-status-ended-color; }
-.o_icon_qti_summary_correct:before { content: $fa-var-circle; color: $brand-success; }
+.o_icon_qti_summary_ended:before { content: $fa-var-times-circle; color: $brand-danger; }
+.o_icon_qti_summary_correct:before { content: $fa-var-check-circle; color: $brand-success; }
 
 /* coaching */
 .o_black_led:before { content: $fa-var-circle; color: $brand-primary; }
