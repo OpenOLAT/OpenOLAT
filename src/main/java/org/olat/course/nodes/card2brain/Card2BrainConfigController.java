@@ -79,8 +79,8 @@ public class Card2BrainConfigController extends FormBasicController {
 		setFormTitle("edit.title");
 		setFormContextHelp("KnowledgeTransfer#_card2brain");
 
-		String falshcardAlias = config.getStringValue(Card2BrainCourseNode.CONFIG_FLASHCARD_ALIAS);
-		flashcardAliasEl = uifactory.addTextElement("edit.flashcard.alias", "edit.flashcard.alias", 128, falshcardAlias,
+		String flashcardAlias = config.getStringValue(Card2BrainCourseNode.CONFIG_FLASHCARD_ALIAS);
+		flashcardAliasEl = uifactory.addTextElement("edit.flashcard.alias", "edit.flashcard.alias", 128, flashcardAlias,
 				formLayout);
 		flashcardAliasEl.setMandatory(true);
 		flashcardAliasEl.setHelpTextKey("edit.FlashcardHelpText", null);
@@ -114,7 +114,15 @@ public class Card2BrainConfigController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", formLayout);
 
 		showHidePrivateLoginFields();
-		validateFormLogic(ureq);
+		validateLogin();
+		
+		if (StringHelper.containsNonWhitespace(flashcardAlias)) {
+			// Validate at init e.g. if the flashcards still exists.
+			validateFormLogic(ureq);
+		} else {
+			// Don't show the preview button after insert of an new course element
+			showHidePreviewButton(false);
+		}
 	}
 
 	/**
