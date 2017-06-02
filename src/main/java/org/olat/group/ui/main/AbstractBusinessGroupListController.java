@@ -910,7 +910,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	private void finishUserManagement(MembershipModification mod, List<BusinessGroup> groups, MailTemplate template, boolean sendMail) {
 		MailPackage mailing = new MailPackage(template, getWindowControl().getBusinessControl().getAsString(), sendMail);
 		businessGroupService.updateMembership(getIdentity(), mod, groups, mailing);
-		MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), getLocale());
+		MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), false, getLocale());
 	}
 	
 	protected void doSearch(UserRequest ureq, SearchEvent event) {

@@ -51,10 +51,12 @@ public class MailerResult {
 	public static final int TEMPLATE_GENERAL_ERROR = 6;
 	public static final int ATTACHMENT_INVALID = 7;
 
+
 	private final List<String> invalidAddresses = new ArrayList<>();
 	private final List<Identity> failedIdentites = new ArrayList<>();
 	
 	private int returnCode = OK;
+	private String errorMessage;
 
 	/**
 	 * @return list of identities to which the mail could not be send, e.g.
@@ -73,6 +75,26 @@ public class MailerResult {
 	 */
 	public int getReturnCode() {
 		return returnCode;
+	}
+
+	/**
+	 * Package helper to set the return code.
+	 * 
+	 * @param returnCode
+	 */
+	public void setReturnCode(int returnCode) {
+		this.returnCode = returnCode;
+	}
+	
+	/**
+	 * @return The error message returned by the JavaMail library and / or the mail server.
+	 */
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
 	}
 
 	/**
@@ -95,15 +117,6 @@ public class MailerResult {
 				invalidAddresses.add(address.toString());
 			}
 		}
-	}
-
-	/**
-	 * Package helper to set the return code.
-	 * 
-	 * @param returnCode
-	 */
-	public void setReturnCode(int returnCode) {
-		this.returnCode = returnCode;
 	}
 	
 	public void append(MailerResult newResult) {

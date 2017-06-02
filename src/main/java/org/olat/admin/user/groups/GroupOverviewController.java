@@ -325,7 +325,7 @@ public class GroupOverviewController extends BasicController {
 				MailPackage mailing = new MailPackage(doSendMail);
 				// 2) remove as participant
 				businessGroupService.removeParticipants(getIdentity(), Collections.singletonList(identity), group, mailing);
-				MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), getLocale());
+				MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
 			}
 		}
 

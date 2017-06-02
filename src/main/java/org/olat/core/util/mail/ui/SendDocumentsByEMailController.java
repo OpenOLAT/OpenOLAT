@@ -549,7 +549,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			result.append(mailManager.sendMessage(bundle));
 		}
 
-		MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getLocale());
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
 	}
 
 	public class FileInfo {

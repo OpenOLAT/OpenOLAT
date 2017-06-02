@@ -356,7 +356,7 @@ public class MailListController extends BasicController implements Activateable2
 						DBMailLight mail = (DBMailLight) tableCtr.getTableDataModel().getObject(i);						
 						MailerResult result = forwardToMyRealMail(mail);
 						if(result.getReturnCode() != MailerResult.OK) {
-							MailHelper.printErrorsAndWarnings(result, getWindowControl(), getLocale());
+							MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
 						} else {
 							showInfo("mail.action.send.real.success", mail.getSubject());
 						}

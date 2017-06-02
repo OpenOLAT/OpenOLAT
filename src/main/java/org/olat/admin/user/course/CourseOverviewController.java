@@ -493,7 +493,7 @@ public class CourseOverviewController extends BasicController  {
 		
 		//make sure all is committed before loading the model again (I see issues without)
 		DBFactory.getInstance().commitAndCloseSession();
-		MailHelper.printErrorsAndWarnings(result, getWindowControl(), getLocale());
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
 	}
 
 	/**
@@ -564,7 +564,7 @@ public class CourseOverviewController extends BasicController  {
 				MailPackage mailing = new MailPackage(doSendMail);
 				// 2) remove as participant
 				businessGroupService.removeParticipants(getIdentity(), membersToRemove, group, mailing);
-				MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), getLocale());
+				MailHelper.printErrorsAndWarnings(mailing.getResult(), getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
 			}
 		}
 		

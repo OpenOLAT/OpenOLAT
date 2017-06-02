@@ -1694,9 +1694,11 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			result.setReturnCode(MailerResult.RECIPIENT_ADDRESS_ERROR);
 			result.addInvalidAddresses(e.getInvalidAddresses());
 			result.addInvalidAddresses(e.getValidUnsentAddresses());
+			result.setErrorMessage(e.getMessage());
 			log.warn("Could not send mail", e);
 		} catch (MessagingException e) {
 			result.setReturnCode(MailerResult.SEND_GENERAL_ERROR);
+			result.setErrorMessage(e.getMessage());
 			log.warn("Could not send mail", e);
 		}
 	}
