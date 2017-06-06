@@ -218,7 +218,7 @@ public class CourseReminderLogsController extends FormBasicController {
 		List<Identity> identitiesToRemind = Collections.singletonList(id);
 		MailerResult result = reminderService.sendReminder(reloadedReminder, identitiesToRemind);
 		if(result.getReturnCode() != MailerResult.OK) {
-			MailHelper.printErrorsAndWarnings(result, getWindowControl(), getLocale());
+			MailHelper.printErrorsAndWarnings(result, getWindowControl(), false, getLocale());
 		} else {
 			showInfo("reminder.resend");
 		}

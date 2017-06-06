@@ -187,6 +187,6 @@ public class RepositoryMembersController extends AbstractMemberListController {
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
 		MailPackage bgMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		businessGroupService.updateMemberships(getIdentity(), allModifications, bgMailing);
-		MailHelper.printErrorsAndWarnings(result, getWindowControl(), getLocale());
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
 	}
 }

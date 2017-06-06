@@ -180,6 +180,7 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
 		// remove meeting
 		try {
 			GoToMeetingManager provider = CoreSpringFactory.getImpl(GoToMeetingManager.class);

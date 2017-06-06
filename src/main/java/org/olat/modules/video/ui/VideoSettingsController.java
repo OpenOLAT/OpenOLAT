@@ -19,6 +19,8 @@
  */
 package org.olat.modules.video.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -30,6 +32,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -37,7 +44,7 @@ import org.olat.repository.RepositoryEntry;
  * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
-public class VideoSettingsController extends BasicController {
+public class VideoSettingsController extends BasicController implements Activateable2 {
 
 	private RepositoryEntry entry;
 
@@ -51,8 +58,6 @@ public class VideoSettingsController extends BasicController {
 
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-
-
 
 	public VideoSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry ) {
 		super(ureq, wControl);
@@ -74,9 +79,35 @@ public class VideoSettingsController extends BasicController {
 		segmentView.addSegment(qualityConfig, false);
 
 		doOpenMetaDataConfig(ureq);
-
 		putInitialPanel(mainVC);
+	}
+	
+	@Override
+	protected void doDispose() {
+		//
+	}
 
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("metadata".equalsIgnoreCase(type)) {
+			doOpenMetaDataConfig(ureq);
+			segmentView.select(metaDataLink);
+		} else if("poster".equalsIgnoreCase(type)) {
+			doOpenPosterConfig(ureq);
+			segmentView.select(posterEditLink);
+		} else if("tracks".equalsIgnoreCase(type)) {
+			doOpenTrackConfig(ureq);
+			segmentView.select(trackEditLink);
+		} else if("quality".equalsIgnoreCase(type)) {
+			doOpenQualityConfig(ureq);
+			segmentView.select(qualityConfig);
+		} else if("chapters".equalsIgnoreCase(type)) {
+			doOpenChapterConfig(ureq);
+			segmentView.select(chapterEditLink);
+		}
 	}
 
 	@Override
@@ -101,51 +132,61 @@ public class VideoSettingsController extends BasicController {
 		}
 	}
 
-	@Override
-	protected void doDispose() {
-		// TODO Auto-generated method stub
-
-	}
-
 	private void doOpenMetaDataConfig(UserRequest ureq) {
 		if(metaDataController == null) {
-			metaDataController = new VideoMetaDataEditFormController(ureq, getWindowControl(), entry);
+			OLATResourceable ores = OresHelper.createOLATResourceableType("metadata");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			metaDataController = new VideoMetaDataEditFormController(ureq, swControl, entry);
 			listenTo(metaDataController);
+		} else {
+			addToHistory(ureq, metaDataController);
 		}
 		mainVC.put("segmentCmp", metaDataController.getInitialComponent());
 	}
 
 	private void doOpenPosterConfig(UserRequest ureq) {
 		if(posterEditController == null) {
-			posterEditController = new VideoPosterEditController(ureq, getWindowControl(), entry.getOlatResource());
+			OLATResourceable ores = OresHelper.createOLATResourceableType("poster");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			posterEditController = new VideoPosterEditController(ureq, swControl, entry.getOlatResource());
 			listenTo(posterEditController);
+		} else {
+			addToHistory(ureq, posterEditController);
 		}
 		mainVC.put("segmentCmp", posterEditController.getInitialComponent());
 	}
 
 	private void doOpenTrackConfig(UserRequest ureq) {
 		if(trackEditController == null) {
-			trackEditController = new VideoTrackEditController(ureq, getWindowControl(), entry.getOlatResource());
+			OLATResourceable ores = OresHelper.createOLATResourceableType("tracks");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			trackEditController = new VideoTrackEditController(ureq, swControl, entry.getOlatResource());
 			listenTo(trackEditController);
+		} else {
+			addToHistory(ureq, trackEditController);
 		}
 		mainVC.put("segmentCmp", trackEditController.getInitialComponent());
 	}
 
 	private void doOpenQualityConfig(UserRequest ureq) {
-		if(qualityEditController != null) {
-			removeAsListenerAndDispose(qualityEditController);
-		}
-		qualityEditController = new VideoQualityTableFormController(ureq, getWindowControl(), entry);
+		removeAsListenerAndDispose(qualityEditController);
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableType("quality");
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		qualityEditController = new VideoQualityTableFormController(ureq, swControl, entry);
 		listenTo(qualityEditController);
 		mainVC.put("segmentCmp", qualityEditController.getInitialComponent());
 	}
 	
 	private void doOpenChapterConfig(UserRequest ureq){
 		if (chapterEditController == null){
-			chapterEditController = new VideoChapterEditController(ureq, getWindowControl(), entry);
+			OLATResourceable ores = OresHelper.createOLATResourceableType("chapters");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			chapterEditController = new VideoChapterEditController(ureq, swControl, entry);
 			listenTo(chapterEditController);
+		} else {
+			addToHistory(ureq, chapterEditController);
 		}
 		mainVC.put("segmentCmp", chapterEditController.getInitialComponent());
 	} 
-
 }

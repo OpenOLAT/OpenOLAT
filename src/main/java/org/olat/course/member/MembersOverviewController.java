@@ -387,7 +387,7 @@ public class MembersOverviewController extends BasicController implements Activa
 		
 		MailPackage mailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		businessGroupService.updateMemberships(getIdentity(), allModifications, mailing);
-		MailHelper.printErrorsAndWarnings(result, getWindowControl(), getLocale());
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
 		
 		switchToAllMembers(ureq);
 	}

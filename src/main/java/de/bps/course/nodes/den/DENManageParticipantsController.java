@@ -241,7 +241,7 @@ public class DENManageParticipantsController extends BasicController {
 					MailBundle ccBundles = mailManager.makeMailBundle(context, sender, notificationCtr.getMailTemplate(), sender, metaId, result);
 					result.append(mailManager.sendMessage(ccBundles));
 				}
-				MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getLocale());
+				MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
 			}
 			notificationCmc.deactivate();
 			selectedIds.clear();

@@ -1,0 +1,284 @@
+/* based on code found here: 
+https://medium.com/@andsens/radial-progress-indicator-using-css-a917b80c43f9
+http://jsfiddle.net/andsens/mLA7X/
+https://gist.github.com/digitalbreed/84a19db69244b22519e03550ba010a25
+*/
+
+.radial-progress {	
+	/* derived variables */
+	$o-radial-progress-inset-size			: $o-radial-progress-circle-size * 0.75 !default; // 90px
+	$o-radial-progress-percentage-font-size	: $o-radial-progress-circle-size * 0.18 !default; // 22px
+	$o-radial-progress-percentage-text-width: $o-radial-progress-circle-size * 0.48 !default; // 57px
+			
+	margin: $o-radial-progress-margin;
+	width: $o-radial-progress-circle-size;
+	height: $o-radial-progress-circle-size;
+	background-color: $o-radial-progress-circle-bg;
+	border-radius: 50%;
+	
+	/* fix display issues in print and behave like an image tag*/
+	display: inline-block;
+	position: relative;
+
+	.circle {
+		.mask, .fill, .shadow {
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			border-radius: 50%;
+		}
+		.shadow {
+			box-shadow: $o-radial-progress-shadow inset;
+		}
+		.mask, .fill {
+			-webkit-backface-visibility: hidden;
+			transition: -webkit-transform $o-radial-progress-transition-length;
+			transition: -ms-transform $o-radial-progress-transition-length;
+			transition: transform $o-radial-progress-transition-length;
+			border-radius: 50%;
+		}
+		.mask {
+			clip: rect(0px, $o-radial-progress-circle-size, $o-radial-progress-circle-size, $o-radial-progress-circle-size/2);
+			.fill {
+				clip: rect(0px, $o-radial-progress-circle-size/2, $o-radial-progress-circle-size, 0px);
+				background-color: $o-radial-progress-circle-color;
+			}
+		}
+	}
+	.inset {
+		width: $o-radial-progress-inset-size;
+		height: $o-radial-progress-inset-size;
+		position: absolute;
+		border-radius: 50%;
+		margin-left: ($o-radial-progress-circle-size - $o-radial-progress-inset-size)/2;
+		margin-top: ($o-radial-progress-circle-size - $o-radial-progress-inset-size)/2;
+		overflow: hidden;
+		background-color: $o-radial-progress-inset-color;
+		box-shadow: $o-radial-progress-shadow;
+		font-size: $o-radial-progress-percentage-font-size;
+		
+		.bgIcon {
+			position: absolute;
+			font-size: $o-radial-progress-inset-size - 10px;
+			top: 5px;
+			left: -5px;
+			opacity: 0;
+			transition: opacity 0;
+			transition-delay: $o-radial-progress-transition-length;
+		}
+		
+		.percentage {
+			height: 80%;
+			width: 80%;
+			position: absolute;
+			top: 10%;
+			left: 10%;
+			display: table; /* for vertical alignment */
+			line-height: 1;
+			
+			.centeredWrapper {
+				display: table-cell;
+				vertical-align: middle;
+				text-align: center;
+				.number {
+					font-weight: 800;
+					color: $o-radial-progress-number-color;
+				}
+				.addon {
+					color: $o-radial-progress-addon-color;	
+					margin-top: 5px; 
+					div:nth-of-type(1) {
+						font-size: 0.55em; 
+						font-weight: bold;
+					}
+					div:nth-of-type(2) {
+						margin-top: 2px; 
+						font-size:0.45em;
+					}					
+				}
+			}
+		}
+	}
+
+	$increment: 180deg / 100;
+	@for $i from 0 through 100 {
+		&[data-progress="#{$i}"] {
+			.circle {
+				.mask.full, .fill {
+					-webkit-transform: rotate($increment * $i);
+					-ms-transform: rotate($increment * $i);
+					transform: rotate($increment * $i);
+				}
+				.fill.fix {
+					-webkit-transform: rotate($increment * $i * 2);
+					-ms-transform: rotate($increment * $i * 2);
+					transform: rotate($increment * $i * 2);
+				}
+			}
+		}
+	}
+	&:not([data-progress="0"]) {
+		.inset .bgIcon {
+			opacity: 1;
+		}
+	}
+
+	/* color variants */
+	&.radial-progress-success {
+		.circle .mask .fill {
+			background-color: $o-radial-progress-circle-success-color;
+		}
+		.inset .percentage .number span {
+			color: $o-radial-progress-percentage-success-color;
+		}
+	}
+	&.radial-progress-info {
+		.circle .mask .fill {
+			background-color: $o-radial-progress-circle-info-color;
+		}
+		.inset .percentage .number span {
+			color: $o-radial-progress-percentage-info-color;
+		}
+	}
+	&.radial-progress-danger {
+		.circle .mask .fill {
+			background-color: $o-radial-progress-circle-danger-color;
+		}
+		.inset .percentage .number span {
+			color: $o-radial-progress-percentage-danger-color;
+		}
+	}
+	&.radial-progress-warning {
+		.circle .mask .fill {
+			background-color: $o-radial-progress-circle-warning-color;
+		}
+		.inset .percentage .number span {
+			color: $o-radial-progress-percentage-warning-color;
+		}
+	}
+	
+	
+	/* small variant */
+	&.radial-progress-sm {
+		/* derived variables */
+		$o-radial-progress-inset-size-sm				: $o-radial-progress-circle-size-sm * 0.75 !default;
+		$o-radial-progress-percentage-font-size-sm		: $o-radial-progress-circle-size-sm * 0.18 !default;
+		$o-radial-progress-percentage-text-width-sm		: $o-radial-progress-circle-size-sm * 0.48 !default;
+
+		width: $o-radial-progress-circle-size-sm;
+		height: $o-radial-progress-circle-size-sm;
+		.circle {
+			.mask {
+				clip: rect(0px, $o-radial-progress-circle-size-sm, $o-radial-progress-circle-size-sm, $o-radial-progress-circle-size-sm/2);
+				.fill {
+					clip: rect(0px, $o-radial-progress-circle-size-sm/2, $o-radial-progress-circle-size-sm, 0px);
+				}
+			}
+		}
+		.inset {
+			width: $o-radial-progress-inset-size-sm;
+			height: $o-radial-progress-inset-size-sm;
+			margin-left: ($o-radial-progress-circle-size-sm - $o-radial-progress-inset-size-sm)/2;
+			margin-top: ($o-radial-progress-circle-size-sm - $o-radial-progress-inset-size-sm)/2;
+			font-size: $o-radial-progress-percentage-font-size-sm;
+			.bgIcon {
+				position: absolute;
+				font-size: $o-radial-progress-inset-size-sm - 10px;
+				top: 5px;
+				left: -2px;
+			}
+		}
+	}
+
+	/* large variant */
+	&.radial-progress-lg {
+		/* derived variables */
+		$o-radial-progress-inset-size-lg				: $o-radial-progress-circle-size-lg * 0.75 !default;
+		$o-radial-progress-percentage-font-size-lg		: $o-radial-progress-circle-size-lg * 0.18 !default;
+		$o-radial-progress-percentage-text-width-lg		: $o-radial-progress-circle-size-lg * 0.48 !default;
+
+		width: $o-radial-progress-circle-size-lg;
+		height: $o-radial-progress-circle-size-lg;
+		.circle {
+			.mask {
+				clip: rect(0px, $o-radial-progress-circle-size-lg, $o-radial-progress-circle-size-lg, $o-radial-progress-circle-size-lg/2);
+				.fill {
+					clip: rect(0px, $o-radial-progress-circle-size-lg/2, $o-radial-progress-circle-size-lg, 0px);
+				}
+			}
+		}
+		.inset {
+			width: $o-radial-progress-inset-size-lg;
+			height: $o-radial-progress-inset-size-lg;
+			margin-left: ($o-radial-progress-circle-size-lg - $o-radial-progress-inset-size-lg)/2;
+			margin-top: ($o-radial-progress-circle-size-lg - $o-radial-progress-inset-size-lg)/2;
+			font-size: $o-radial-progress-percentage-font-size-lg;
+			.bgIcon {
+				position: absolute;
+				font-size: $o-radial-progress-inset-size-lg - 20px;
+				top: 5px;
+				left: -6px;
+			}
+		}
+	}
+
+
+
+}
+
+
+
+/* Markup example
+
+<div class="radial-progress radial-progress #if(${itemResult.hasPass()}) #if(${itemResult.getPass().booleanValue()}) radial-progress-success #elseif(!${itemResult.getPass().booleanValue()}) radial-progress-danger #end #end " id="$velocityCount" data-progress="0">
+	<div class="circle">
+		<div class="mask full">
+			<div class="fill"></div>
+		</div>
+		<div class="mask half">
+			<div class="fill"></div>
+			<div class="fill fix"></div>
+		</div>
+		<div class="shadow"></div>
+	</div>
+	<div class="inset">
+		#if(${itemResult.hasPass()})
+			#if(${itemResult.getPass().booleanValue()})	
+			<i class="bgIcon o_icon o_icon-fw o_icon_progress_success"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.yes")" > </i>	
+			#elseif(!${itemResult.getPass().booleanValue()})
+			<i class="bgIcon o_icon o_icon-fw o_icon_progress_danger"  title="$r.translateInAttribute("passed.yourpassed") $r.translateInAttribute("passed.no")" > </i>	
+			#end
+		#end
+							
+		<div class="percentage">
+			<div class="centeredWrapper">
+				<div class="number">
+					<span>${itemResult.scorePercent}%</span>
+				</div>
+
+				<div class="text-muted" style="text-align:center">
+					<div class="o_score" style="margin-top: 5px; font-size: 0.6em; font-weight: bold">
+						$r.translate("table.header.score"): 
+						<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score text-muted xsmall">$itemResult.score</span>
+					</div>
+					#if(${itemResult.hasMaxScore()})
+					<div class="o_score_max o_small" style="margin-top: 2px; font-size:0.5em;">
+						von <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore text-muted xsmall">$itemResult.maxScore</span>
+					</div>
+					#end
+				</div>						
+			
+			</div>
+		</div>
+	</div>
+</div>
+			
+<script type="text/javascript">
+ <![CDATA[ 
+setTimeout(function() {
+	jQuery("#myid").attr("data-progress","35");
+},100);
+ ]]> 
+</script>
+
+*/

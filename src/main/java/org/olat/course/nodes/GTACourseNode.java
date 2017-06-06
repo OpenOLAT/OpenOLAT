@@ -676,6 +676,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	
 	@Override
 	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		//tasks
 		File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
@@ -760,6 +762,16 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 			if (comment != null) {
 				return comment.booleanValue();
 			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean hasIndividualAsssessmentDocuments() {
+		boolean hasGrading = getModuleConfiguration().getBooleanSafe(GTASK_GRADING);
+		if (hasGrading) {
+			return getModuleConfiguration()
+					.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
 		}
 		return false;
 	}
@@ -909,6 +921,12 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		return am.getNodeComment(this, userCourseEnv.getIdentityEnvironment().getIdentity());
 	}
+	
+	@Override
+	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		return am.getIndividualAssessmentDocuments(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
+	}
 
 	@Override
 	public String getUserCoachComment(UserCourseEnvironment userCourseEnv) {
@@ -939,10 +957,28 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 
 	@Override
 	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnv, Identity coachingIdentity) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		if (userComment != null) {
+			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+			Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 			am.saveNodeComment(this, coachingIdentity, assessedIdentity, userComment);
+		}
+	}
+	
+	@Override
+	public void addIndividualAssessmentDocument(File document, String filename, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if(document != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			am.addIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document, filename);
+		}
+	}
+
+	@Override
+	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if(document != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			am.removeIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document);
 		}
 	}
 

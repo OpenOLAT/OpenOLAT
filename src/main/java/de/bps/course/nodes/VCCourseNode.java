@@ -207,6 +207,8 @@ public class VCCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		
 		// load configuration
 		final String providerId = getModuleConfiguration().getStringValue(CONF_PROVIDER_ID);
 		VCProvider provider = providerId == null ? VCProviderFactory.createDefaultProvider() : VCProviderFactory.createProvider(providerId);

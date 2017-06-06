@@ -110,7 +110,11 @@ public class MatchEditorController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
-		metadata.setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_match");
+		if (itemBuilder.getQuestionType() == QTI21QuestionType.matchdraganddrop) {
+			metadata.setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_draganddrop");
+		} else {
+			metadata.setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_match");
+		}
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);
 		formLayout.add("metadata", metadata);

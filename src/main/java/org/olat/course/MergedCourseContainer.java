@@ -19,8 +19,10 @@
  */
 package org.olat.course;
 
+import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -30,15 +32,20 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
+import org.olat.core.util.vfs.Quota;
+import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.bc.BCCourseNodeEditController;
+import org.olat.course.nodes.bc.FolderNodeCallback;
 import org.olat.course.nodes.pf.manager.PFManager;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
@@ -122,7 +129,7 @@ public class MergedCourseContainer extends MergeSource {
 		MergeSource nodesContainer = new MergeSource(null, "_courseelementdata");
 		if(identityEnv == null) {
 			CourseNode rootNode = persistingCourse.getRunStructure().getRootNode();
-			addFolderBuildingBlocks(persistingCourse, nodesContainer, rootNode);
+			addFoldersForAdmin(persistingCourse, nodesContainer, rootNode);
 		} else {
 			TreeEvaluation treeEval = new TreeEvaluation();
 			GenericTreeModel treeModel = new GenericTreeModel();
@@ -131,7 +138,7 @@ public class MergedCourseContainer extends MergeSource {
 			NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, new VisibleTreeFilter());
 			TreeNode treeRoot = rootNodeEval.getTreeNode();
 			treeModel.setRootNode(treeRoot);
-			addFolderBuildingBlocks(persistingCourse, nodesContainer, treeRoot);
+			addFolders(persistingCourse, nodesContainer, treeRoot);
 		}
 		
 		if (nodesContainer.getItems().size() > 0) {
@@ -167,7 +174,7 @@ public class MergedCourseContainer extends MergeSource {
 		}
 	}
 	
-	private void addFolderBuildingBlocks(PersistingCourseImpl course, MergeSource nodesContainer, TreeNode courseNode) {
+	private void addFolders(PersistingCourseImpl course, MergeSource nodesContainer, TreeNode courseNode) {
 		if(courseNode == null) return;
 		
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
@@ -187,7 +194,7 @@ public class MergedCourseContainer extends MergeSource {
 				if (courseNodeChild instanceof BCCourseNode) {
 					final BCCourseNode bcNode = (BCCourseNode) courseNodeChild;
 					// add folder not to merge source. Use name and node id to have unique name
-					VFSContainer rootFolder = getBCContainer(course, bcNode);
+					VFSContainer rootFolder = getBCContainer(course, bcNode, nodeEval, false);
 
 					boolean canDownload = nodeEval.isCapabilityAccessible("download");
 					if(canDownload && rootFolder != null) {
@@ -207,13 +214,13 @@ public class MergedCourseContainer extends MergeSource {
 						courseNodeContainer.addContainersChildren(nodeContentContainer, true);
 						nodesContainer.addContainer(courseNodeContainer);	
 						// Do recursion for all children
-						addFolderBuildingBlocks(course, courseNodeContainer, child);
+						addFolders(course, courseNodeContainer, child);
 		
 					} else {
 						// For non-folder course nodes, add merge source (no files to show) ...
 						MergeSource courseNodeContainer = new MergeSource(null, folderName);
 						// , then do recursion for all children ...
-						addFolderBuildingBlocks(course, courseNodeContainer, child);
+						addFolders(course, courseNodeContainer, child);
 						// ... but only add this container if it contains any children with at least one BC course node
 						if (courseNodeContainer.getItems().size() > 0) {
 							nodesContainer.addContainer(courseNodeContainer);
@@ -231,7 +238,7 @@ public class MergedCourseContainer extends MergeSource {
 					VFSContainer nodeContentContainer = new NamedContainerImpl(folderName, rootFolder);
 					courseNodeContainer.addContainersChildren(nodeContentContainer, true);
 		
-					addFolderBuildingBlocks(course, courseNodeContainer, child);
+					addFolders(course, courseNodeContainer, child);
 
 					nodesContainer.addContainer(courseNodeContainer);
 					
@@ -239,7 +246,7 @@ public class MergedCourseContainer extends MergeSource {
 					// For non-folder course nodes, add merge source (no files to show) ...
 					MergeSource courseNodeContainer = new MergeSource(null, folderName);
 					// , then do recursion for all children ...
-					addFolderBuildingBlocks(course, courseNodeContainer, child);
+					addFolders(course, courseNodeContainer, child);
 					// ... but only add this container if it contains any children with at least one BC course node
 					if (courseNodeContainer.getItems().size() > 0) {
 						nodesContainer.addContainer(courseNodeContainer);
@@ -260,7 +267,7 @@ public class MergedCourseContainer extends MergeSource {
 	 * @param courseNode
 	 * @return container for the current course node
 	 */
-	private void addFolderBuildingBlocks(PersistingCourseImpl course, MergeSource nodesContainer, CourseNode courseNode) {
+	private void addFoldersForAdmin(PersistingCourseImpl course, MergeSource nodesContainer, CourseNode courseNode) {
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode) courseNode.getChildAt(i);
 			String folderName = RequestUtil.normalizeFilename(child.getShortTitle());
@@ -268,11 +275,10 @@ public class MergedCourseContainer extends MergeSource {
 			if (child instanceof BCCourseNode) {
 				final BCCourseNode bcNode = (BCCourseNode) child;
 				// add folder not to merge source. Use name and node id to have unique name
-				VFSContainer rootFolder = getBCContainer(course, bcNode);
+				VFSContainer rootFolder = getBCContainer(course, bcNode, null, true);
 				if(courseReadOnly) {
 					rootFolder.setLocalSecurityCallback(new ReadOnlyCallback());	
 				}
-
 				folderName = getFolderName(nodesContainer, bcNode, folderName);
 
  				if(rootFolder != null) {
@@ -282,7 +288,7 @@ public class MergedCourseContainer extends MergeSource {
  					courseNodeContainer.addContainersChildren(nodeContentContainer, true);
  					nodesContainer.addContainer(courseNodeContainer);	
  					// Do recursion for all children
- 					addFolderBuildingBlocks(course, courseNodeContainer, child);
+ 					addFoldersForAdmin(course, courseNodeContainer, child);
  				}
 			} else if (child instanceof PFCourseNode) {
 				final PFCourseNode pfNode = (PFCourseNode) child;					
@@ -295,12 +301,12 @@ public class MergedCourseContainer extends MergeSource {
 				courseNodeContainer.addContainersChildren(nodeContentContainer, true);
 				nodesContainer.addContainer(courseNodeContainer);
 				// Do recursion for all children
-				addFolderBuildingBlocks(course, courseNodeContainer, child);
+				addFoldersForAdmin(course, courseNodeContainer, child);
 			} else {
 				// For non-folder course nodes, add merge source (no files to show) ...
 				MergeSource courseNodeContainer = new MergeSource(null, folderName);
 				// , then do recursion for all children ...
-				addFolderBuildingBlocks(course, courseNodeContainer, child);
+				addFoldersForAdmin(course, courseNodeContainer, child);
 				// ... but only add this container if it contains any children with at least one BC course node
 				if (courseNodeContainer.getItems().size() > 0) {
 					nodesContainer.addContainer(courseNodeContainer);
@@ -330,7 +336,7 @@ public class MergedCourseContainer extends MergeSource {
 		return folderName;
 	}
 	
-	private VFSContainer getBCContainer(ICourse course, BCCourseNode bcNode) {
+	private VFSContainer getBCContainer(ICourse course, BCCourseNode bcNode, NodeEvaluation nodeEval, boolean isOlatAdmin) {
 		bcNode.updateModuleConfigDefaults(false);
 		// add folder not to merge source. Use name and node id to have unique name
 		VFSContainer rootFolder = null;
@@ -353,14 +359,23 @@ public class MergedCourseContainer extends MergeSource {
 						}
 					}
 				}
-			}else{
+			} else {
 				VFSContainer courseBase = course.getCourseBaseContainer();
 				rootFolder = (VFSContainer) courseBase.resolve("/coursefolder" + subpath);
 			}
 		}
+		
 		if(bcNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
 			String path = BCCourseNode.getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), bcNode);
 			rootFolder = new OlatRootFolderImpl(path, null);
+			if(nodeEval != null) {
+				rootFolder.setLocalSecurityCallback(new FolderNodeCallback(path, nodeEval, isOlatAdmin, false, null));
+			} else {
+				VFSSecurityCallback secCallback = VFSManager.findInheritedSecurityCallback(this);
+				if(secCallback != null) {
+					rootFolder.setLocalSecurityCallback(new OverrideQuotaSecurityCallback(path, secCallback));
+				}
+			}
 		}
 		return rootFolder;
 	}
@@ -373,5 +388,75 @@ public class MergedCourseContainer extends MergeSource {
 			log.error("Cannot init the merged container of a course after deserialization", e);
 			return null;
 		}
+	}
+	
+	private static class OverrideQuotaSecurityCallback implements VFSSecurityCallback {
+		
+		private final String relPath;
+		private Quota overridenQuota;
+		private final VFSSecurityCallback secCallback;
+		
+		public OverrideQuotaSecurityCallback(String relPath, VFSSecurityCallback secCallback) {
+			this.relPath = relPath;
+			this.secCallback = secCallback;
+		}
+
+		@Override
+		public boolean canRead() {
+			return secCallback.canRead();
+		}
+
+		@Override
+		public boolean canWrite() {
+			return secCallback.canWrite();
+		}
+
+		@Override
+		public boolean canCreateFolder() {
+			return secCallback.canCreateFolder();
+		}
+
+		@Override
+		public boolean canDelete() {
+			return secCallback.canDelete();
+		}
+
+		@Override
+		public boolean canList() {
+			return secCallback.canList();
+		}
+
+		@Override
+		public boolean canCopy() {
+			return secCallback.canCopy();
+		}
+
+		@Override
+		public boolean canDeleteRevisionsPermanently() {
+			return secCallback.canDeleteRevisionsPermanently();
+		}
+
+		@Override
+		public Quota getQuota() {
+			if(overridenQuota == null) {
+				QuotaManager qm = QuotaManager.getInstance();
+				overridenQuota = qm.getCustomQuota(relPath);
+				if (overridenQuota == null) {
+					Quota defQuota = qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
+					overridenQuota = qm.createQuota(relPath, defQuota.getQuotaKB(), defQuota.getUlLimitKB());
+				}
+			}
+			return overridenQuota;
+		}
+
+		@Override
+		public void setQuota(Quota quota) {
+			//
+		}
+
+		@Override
+		public SubscriptionContext getSubscriptionContext() {
+			return secCallback.getSubscriptionContext();
+		}	
 	}
 }

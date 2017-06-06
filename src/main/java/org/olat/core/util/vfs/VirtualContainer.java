@@ -34,13 +34,12 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 
 public class VirtualContainer extends AbstractVirtualContainer {
 
-	private List<VFSItem> children;
+	private final List<VFSItem> children = new ArrayList<>();
 	private VFSSecurityCallback secCallback = null;
 	private VFSContainer parentContainer;
 		
 	public VirtualContainer(String name) {
 		super(name);
-		children = new ArrayList<VFSItem>();
 	}	
 	
 	@Override
@@ -55,16 +54,18 @@ public class VirtualContainer extends AbstractVirtualContainer {
 	public void addItem(VFSItem vfsItem) {
 		children.add(vfsItem);
 	}
-	
+
+	@Override
 	public List<VFSItem> getItems() {
 		return children;
 	}
 
+	@Override
 	public List<VFSItem> getItems(VFSItemFilter filter) {
 		if (filter == null) {
 			return children;
 		} else {
-			List<VFSItem> filtered = new ArrayList<VFSItem>(children.size());
+			List<VFSItem> filtered = new ArrayList<>(children.size());
 			for (VFSItem vfsItem : children) {
 				if (filter.accept(vfsItem)) {
 					filtered.add(vfsItem);
@@ -74,32 +75,54 @@ public class VirtualContainer extends AbstractVirtualContainer {
 		}
 	}
 
+	@Override
 	public VFSStatus canWrite() {
 		return VFSConstants.NO;
 	}
 
+	@Override
 	public VFSSecurityCallback getLocalSecurityCallback() {
 		return secCallback;
 	}
 
+	@Override
 	public VFSContainer getParentContainer() {
 		return parentContainer;
 	}
 
+	@Override
 	public boolean isSame(VFSItem vfsItem) {
 		return (this == vfsItem);
 	}
 
+	@Override
 	public VFSItem resolve(String path) {
+		if(path != null && path.length() > 1 && path.startsWith("/")) {
+			String childName = VFSManager.extractChild(path);
+			String nextPath = path.substring(childName.length() + 1);
+			// simple optimized case
+			for (VFSItem container:children) {
+				if (container.getName().equals(childName)) {
+					VFSItem vfsItem = container.resolve(nextPath);
+					// set default filter on resolved file if it is a container
+					if (vfsItem != null && vfsItem instanceof VFSContainer) {
+						VFSContainer resolvedContainer = (VFSContainer) vfsItem;
+						resolvedContainer.setDefaultItemFilter(defaultFilter);
+					}
+					return vfsItem;
+				}
+			}
+		}
 		return VFSManager.resolveFile(this, path);
 	}
 
+	@Override
 	public void setLocalSecurityCallback(VFSSecurityCallback secCallback) {
 		this.secCallback = secCallback;
 	}
 
+	@Override
 	public void setParentContainer(VFSContainer parentContainer) {
 		this.parentContainer = parentContainer;
 	}
-
 }

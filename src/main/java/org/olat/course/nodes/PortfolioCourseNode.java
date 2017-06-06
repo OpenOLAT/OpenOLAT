@@ -349,6 +349,12 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		Boolean comment = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
 		return (comment == null) ? false : comment.booleanValue();
 	}
+	
+	@Override
+	public boolean hasIndividualAsssessmentDocuments() {
+		return getModuleConfiguration()
+				.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+	}
 
 	@Override
 	public boolean hasAttemptsConfigured() {
@@ -400,8 +406,13 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	@Override
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		String userCommentValue = am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-		return userCommentValue;
+		return am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
+	}
+	
+	@Override
+	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		return am.getIndividualAssessmentDocuments(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
 	}
 
 	@Override
@@ -459,10 +470,28 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 
 	@Override
 	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		if (userComment != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 			am.saveNodeComment(this, coachingIdentity, mySelf, userComment);
+		}
+	}
+	
+	@Override
+	public void addIndividualAssessmentDocument(File document, String filename, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if(document != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			am.addIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document, filename);
+		}
+	}
+
+	@Override
+	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if(document != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			am.removeIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document);
 		}
 	}
 

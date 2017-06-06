@@ -102,7 +102,7 @@ public class UnpublishResourceCallback implements StepRunnerCallback {
 			
 			StringBuilder errorMessage = new StringBuilder();
 			StringBuilder warningMessage = new StringBuilder();
-			MailHelper.appendErrorsAndWarnings(result, errorMessage, warningMessage, ureq.getLocale());
+			MailHelper.appendErrorsAndWarnings(result, errorMessage, warningMessage, ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
 			if (warningMessage.length() > 0) {
 				wControl.setWarning(warningMessage.toString());
 			}

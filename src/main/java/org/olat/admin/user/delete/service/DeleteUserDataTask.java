@@ -39,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
+import org.olat.course.assessment.manager.CourseAssessmentManagerImpl;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.ta.DropboxController;
@@ -72,7 +73,7 @@ public class DeleteUserDataTask implements LongRunnable {
 		Identity identity = CoreSpringFactory.getImpl(BaseSecurity.class).loadIdentityByKey(identityKey);
 		deleteHomesMetaAndVersionDataOf(identity);
 		deleteAllTempQtiEditorFilesOf(identity);
-		deleteAllDropboxReturnboxFilesOf(identity);
+		deleteAllCoursesUserFilesOf(identity);
 		log.info("Finished UserFileDeletionManager thread for identity=" + identity + " in " + (System.currentTimeMillis() - startTime) + " (ms)");
 	}
 	
@@ -116,26 +117,40 @@ public class DeleteUserDataTask implements LongRunnable {
 	 * 
 	 * @param identity
 	 */
-	private void deleteAllDropboxReturnboxFilesOf(Identity identity) {
-		File courseBaseDir = getCourseBaseContainer();
+	private void deleteAllCoursesUserFilesOf(Identity identity) {
+		File coursesBaseDir = getCoursesBaseContainer();
 		// loop over all courses path e.g. olatdata\bcroot\course\78931391428316\dropboxes\78933379704296\deltest 
 		//                                                                       ^^^^^^^^^ dirTypeName
-		String[] courseDirNames = courseBaseDir.list();
+		String[] courseDirNames = coursesBaseDir.list();
 		// 1. loop over all course-id e.g. 78931391428316
 		for (String courseDirName:courseDirNames) {
 			if(!StringHelper.isLong(courseDirName)) continue;
 			
-			File courseDir = new File(courseBaseDir, courseDirName);
+			File courseDir = new File(coursesBaseDir, courseDirName);
 			if (courseDir.isDirectory()) {
-				deleteAllDropboxReturnboxFiles(identity, courseDir);
+				deleteAssessmentDocuments(identity, courseDir);
+				deleteDropboxReturnbox(identity, courseDir);
+			}
+		}
+	}
+
+	private void deleteAssessmentDocuments(Identity identity, File courseDir) {
+		File assessmentDocsDir = new File(courseDir, CourseAssessmentManagerImpl.ASSESSMENT_DOCS_DIR);
+		if(assessmentDocsDir.exists()) {
+			File[] nodeDirs = assessmentDocsDir.listFiles();
+			for(File nodeDir:nodeDirs) {
+				File userDir = new File(nodeDir, "person_" + identity.getKey());
+				if(userDir.exists()) {
+					FileUtils.deleteDirsAndFiles(userDir, true, true); 
+					log.audit("User-Deletion: identity=" + identity.getName() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+				}
 			}
 		}
 	}
 	
-	private void deleteAllDropboxReturnboxFiles(Identity identity, File courseDir) {
+	private void deleteDropboxReturnbox(Identity identity, File courseDir) {
 		File returnboxDir = new File(courseDir, ReturnboxController.RETURNBOX_DIR_NAME);
 		File dropboxDir = new File(courseDir, DropboxController.DROPBOX_DIR_NAME);
-		
 		if(returnboxDir.exists() || dropboxDir.exists()) {
 			ICourse currentCourse = null;
 			File[] dropboxReturnboxDirs = new File[]{ returnboxDir, dropboxDir};
@@ -206,7 +221,7 @@ public class DeleteUserDataTask implements LongRunnable {
 	 * 
 	 * @return e.g. olatdata\bcroot\course\
 	 */
-	private File getCourseBaseContainer() {
+	private File getCoursesBaseContainer() {
 		OlatRootFolderImpl courseRootContainer = new OlatRootFolderImpl(File.separator + PersistingCourseImpl.COURSE_ROOT_DIR_NAME + File.separator, null);
 		return courseRootContainer.getBasefile(); 
 	}

@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.cl.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -48,6 +49,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -62,6 +64,7 @@ import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
+import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -137,6 +140,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			layoutCont.contextPut("readOnly", new Boolean(readOnly));
 			if(dueDate != null) {
 				layoutCont.contextPut("dueDate", dueDate);
+				layoutCont.contextPut("in-due-date", isPanelOpen(ureq, "due-date", true));
 				if(dueDate.compareTo(new Date()) < 0) {
 					layoutCont.contextPut("afterDueDate", Boolean.TRUE);
 				}
@@ -170,34 +174,36 @@ public class CheckListRunController extends FormBasicController implements Contr
 			
 			if(withScore || withPassed) {
 				layoutCont.contextPut("enableScoreInfo", Boolean.TRUE);
-				exposeConfigToVC(layoutCont);
-				exposeUserDataToVC(layoutCont);
+				exposeConfigToVC(ureq, layoutCont);
+				exposeUserDataToVC(ureq, layoutCont);
 			} else {
 				layoutCont.contextPut("enableScoreInfo", Boolean.FALSE);
 			}
 		}
 	}
 	
-	private void exposeConfigToVC(FormLayoutContainer layoutCont) {
+	private void exposeConfigToVC(UserRequest ureq, FormLayoutContainer layoutCont) {
 		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD));
 		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD));
 		layoutCont.contextPut(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
 	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
 	    	layoutCont.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
+	    	layoutCont.contextPut("in-disclaimer", isPanelOpen(ureq, "disclaimer", true));
 	    }
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
 	    layoutCont.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
 	}
 	
-	private void exposeUserDataToVC(FormLayoutContainer layoutCont) {
+	private void exposeUserDataToVC(UserRequest ureq, FormLayoutContainer layoutCont) {
 		AssessmentEntry scoreEval = courseNode.getUserAssessmentEntry(userCourseEnv);
 		if(scoreEval == null) {
 			layoutCont.contextPut("score", null);
 			layoutCont.contextPut("hasPassedValue", Boolean.FALSE);
 			layoutCont.contextPut("passed", null);
 			layoutCont.contextPut("comment", null);
+			layoutCont.contextPut("docs", null);
 		} else {
 			boolean resultsVisible = scoreEval.getUserVisibility() == null || scoreEval.getUserVisibility().booleanValue();
 			layoutCont.contextPut("resultsVisible", resultsVisible);
@@ -205,8 +211,21 @@ public class CheckListRunController extends FormBasicController implements Contr
 			layoutCont.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			layoutCont.contextPut("passed", scoreEval.getPassed());
 			if(resultsVisible) {
-				StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
-				layoutCont.contextPut("comment", StringHelper.xssScan(comment));
+				if(courseNode.hasCommentConfigured()) {
+					StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
+					layoutCont.contextPut("comment", StringHelper.xssScan(comment));
+					layoutCont.contextPut("in-comment", isPanelOpen(ureq, "comment", true));
+				}
+				if(courseNode.hasIndividualAsssessmentDocuments()) {
+					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
+					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
+					layoutCont.contextPut("docsMapperUri", mapperUri);
+					layoutCont.contextPut("docs", docs);
+					layoutCont.contextPut("in-assessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
+				}
+			} else {
+				layoutCont.contextPut("comment", null);
+				layoutCont.contextPut("docs", null);
 			}
 		}
 
@@ -270,13 +289,19 @@ public class CheckListRunController extends FormBasicController implements Contr
 			CheckboxWrapper wrapper = (CheckboxWrapper)boxEl.getUserObject();
 			if(wrapper != null) {
 				boolean checked = boxEl.isAtLeastSelected(1);
-				doCheck(wrapper, checked);
+				doCheck(ureq, wrapper, checked);
+			}
+		} else if("ONCLICK".equals(event.getCommand())) {
+			String cmd = ureq.getParameter("fcid");
+			String panelId = ureq.getParameter("panel");
+			if(StringHelper.containsNonWhitespace(cmd) && StringHelper.containsNonWhitespace(panelId)) {
+				saveOpenPanel(ureq, panelId, "show".equals(cmd));
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doCheck(CheckboxWrapper wrapper, boolean checked) {
+	private void doCheck(UserRequest ureq, CheckboxWrapper wrapper, boolean checked) {
 		DBCheckbox theOne;
 		if(wrapper.getDbCheckbox() == null) {
 			String uuid = wrapper.getCheckbox().getCheckboxId();
@@ -305,7 +330,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			logUpdateCheck(checkbox.getCheckboxId(), checkbox.getTitle());
 		}
 		
-		exposeUserDataToVC(flc);
+		exposeUserDataToVC(ureq, flc);
 	}
 	
 	private void logUpdateCheck(String checkboxId, String boxTitle) {
@@ -316,6 +341,24 @@ public class CheckListRunController extends FormBasicController implements Contr
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//nothin to do
+	}
+	
+	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		Boolean showConfig  = (Boolean) guiPrefs.get(CheckListRunController.class, getOpenPanelId(panelId));
+		return showConfig == null ? def : showConfig.booleanValue();
+	}
+	
+	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		if (guiPrefs != null) {
+			guiPrefs.putAndSave(CheckListRunController.class, getOpenPanelId(panelId), new Boolean(newValue));
+		}
+		flc.getFormItemComponent().contextPut("in-" + panelId, new Boolean(newValue));
+	}
+	
+	private String getOpenPanelId(String panelId) {
+		return panelId + "::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent();
 	}
 	
 	public static class CheckboxWrapper {

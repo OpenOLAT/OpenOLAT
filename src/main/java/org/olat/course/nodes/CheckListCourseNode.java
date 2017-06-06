@@ -317,13 +317,24 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		String userCommentValue = am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
 		return userCommentValue;
 	}
+	
+	@Override
+	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		return am.getIndividualAssessmentDocuments(this, mySelf);
+	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
 	 */
 	@Override
 	public boolean hasCommentConfigured() {
-		// never has comments
+		return true;
+	}
+	
+	@Override
+	public boolean hasIndividualAsssessmentDocuments() {
 		return true;
 	}
 
@@ -398,10 +409,28 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	@Override
 	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		if (userComment != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 			am.saveNodeComment(this, coachingIdentity, mySelf, userComment);
+		}
+	}
+	
+	@Override
+	public void addIndividualAssessmentDocument(File document, String filename, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if(document != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			am.addIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document, filename);
+		}
+	}
+
+	@Override
+	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if(document != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			am.removeIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document);
 		}
 	}
 

@@ -117,7 +117,7 @@ class GroupfoldersWebDAVMergeSource extends WebDAVMergeSource {
 		OlatRootFolderImpl localImpl = new OlatRootFolderImpl(folderPath, this);
 		//already done in OlatRootFolderImpl localImpl.getBasefile().mkdirs(); // lazy initialize dirs
 		String containerName = RequestUtil.normalizeFilename(name);
-		NamedContainerImpl grpContainer = new NamedContainerImpl(containerName, localImpl);
+		NamedContainerImpl grpContainer = new GroupNamedContainer(containerName, localImpl);
 
 		boolean writeAccess;
 		if (!isOwner) {
@@ -127,7 +127,7 @@ class GroupfoldersWebDAVMergeSource extends WebDAVMergeSource {
 			if (lFolderAccess != null) {
 				folderAccess = lFolderAccess.intValue();
 			}
-			writeAccess = (folderAccess == CollaborationTools.CALENDAR_ACCESS_ALL);
+			writeAccess = (folderAccess == CollaborationTools.FOLDER_ACCESS_ALL);
 		} else {
 			writeAccess = true;
 		}
@@ -141,5 +141,17 @@ class GroupfoldersWebDAVMergeSource extends WebDAVMergeSource {
 		}
 		grpContainer.setLocalSecurityCallback(secCallback);
 		return grpContainer;
+	}
+	
+	private static class GroupNamedContainer extends NamedContainerImpl {
+		
+		public GroupNamedContainer(String containerName, VFSContainer container) {
+			super(containerName, container);
+		}
+
+		@Override
+		public boolean exists() {
+			return true;
+		}
 	}
 }

@@ -69,7 +69,8 @@ public class UserShortDescription extends BasicController {
 		//use the PropertyHandlerTranslator for the velocityContainer
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		mainVC = createVelocityContainer("userShortDescription");
-				
+		mainVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
+		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);	
 		boolean alreadyDefinedUsername = false;

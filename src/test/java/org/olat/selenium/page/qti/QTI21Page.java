@@ -369,13 +369,13 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page assertOnAssessmentTestPassed() {
-		By notPassedBy = By.cssSelector("div.o_sel_results_details tr.o_state.o_passed ");
+		By notPassedBy = By.cssSelector("div.o_sel_results_details tr.o_qti_stateinfo.o_passed");
 		OOGraphene.waitElement(notPassedBy, 5, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnAssessmentTestNotPassed() {
-		By notPassedBy = By.cssSelector("div.o_sel_results_details tr.o_state.o_failed ");
+		By notPassedBy = By.cssSelector("div.o_sel_results_details tr.o_qti_stateinfo.o_failed");
 		OOGraphene.waitElement(notPassedBy, 5, browser);
 		return this;
 	}

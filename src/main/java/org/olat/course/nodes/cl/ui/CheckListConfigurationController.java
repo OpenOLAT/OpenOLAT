@@ -55,7 +55,7 @@ public class CheckListConfigurationController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 	private static final String[] outputKeys = new String[]{ "cutvalue", "sum", "coach"};
 	
-	private MultipleSelectionElement dueDateEl, scoreGrantedEl, passedEl, commentEl;
+	private MultipleSelectionElement dueDateEl, scoreGrantedEl, passedEl, commentEl, assessmentDocsEl;
 	private SingleSelection outputEl, numOfCheckListEl, sumCheckboxEl;
 	private TextElement minPointsEl, maxPointsEl, cutValueEl, titlePrefixEl;
 	private RichTextElement tipUserEl, tipCoachEl;
@@ -200,6 +200,14 @@ public class CheckListConfigurationController extends FormBasicController {
 			commentEl.select(onKeys[0], true);
 		}
 		
+		assessmentDocsEl = uifactory.addCheckboxesHorizontal("form.individual.assessment.docs", formLayout, new String[]{"xx"}, new String[]{null});
+		boolean docsCf = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+		if(docsCf) {
+			assessmentDocsEl.select(onKeys[0], true);
+		}
+		
+		uifactory.addSpacerElement("spacer-comment", formLayout, false);
+		
 		String iu = (String)config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 		tipUserEl = uifactory.addRichTextElementForStringDataMinimalistic("tip.user", "config.tip.user", iu, 5, -1, formLayout,
 				getWindowControl());
@@ -271,6 +279,8 @@ public class CheckListConfigurationController extends FormBasicController {
 
 		// mandatory comment flag
 		config.set(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, new Boolean(commentEl.isSelected(0)));
+		// individual assessment docs
+		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, new Boolean(assessmentDocsEl.isSelected(0)));
 
 		// set info text only if something is in there
 		String iu = tipUserEl.getValue();

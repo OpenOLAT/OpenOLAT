@@ -308,6 +308,16 @@ public class OOGraphene {
 		}
 	}
 	
+	public static final void closeErrorBox(WebDriver browser) {
+		By errorBoxBy = By.cssSelector(".modal-body.alert.alert-danger");
+		waitElement(errorBoxBy, 5, browser);
+		By closeButtonBy = By.cssSelector("div.modal-dialog button.close");
+		waitElement(closeButtonBy, 5, browser);
+		browser.findElement(closeButtonBy).click();
+		By dialogBy = By.cssSelector("div.modal-dialog");
+		OOGraphene.waitElementDisappears(dialogBy, 2, browser);
+	}
+	
 	public static final void waitAndCloseBlueMessageWindow(WebDriver browser) {
 		try {
 			Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)

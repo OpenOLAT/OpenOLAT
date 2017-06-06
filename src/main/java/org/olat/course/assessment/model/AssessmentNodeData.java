@@ -70,6 +70,8 @@ public class AssessmentNodeData {
 	private Boolean userVisibility;
 	private AssessmentEntryStatus assessmentStatus;
 	
+	private int numOfAssessmentDocs;
+	
 	private boolean selectable;
 	private boolean onyx = false;
 	
@@ -203,6 +205,14 @@ public class AssessmentNodeData {
 
 	public void setAssessmentStatus(AssessmentEntryStatus assessmentStatus) {
 		this.assessmentStatus = assessmentStatus;
+	}
+
+	public int getNumOfAssessmentDocs() {
+		return numOfAssessmentDocs;
+	}
+
+	public void setNumOfAssessmentDocs(int numOfAssessmentDocs) {
+		this.numOfAssessmentDocs = numOfAssessmentDocs;
 	}
 
 	public boolean isOnyx() {

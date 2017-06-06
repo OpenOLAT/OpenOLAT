@@ -147,6 +147,14 @@ public class FormDecorator {
 		return FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, true, true, new NameValuePair(key, value));
 	}
 	
+	public String backgroundCommand(String command, String key, String value) {
+		Form theForm = container.getRootForm();
+		String elementId = "o_fi" + container.getComponent().getDispatchID();
+		return FormJSHelper.getXHRNFFnCallFor(theForm, elementId, 1,
+				new NameValuePair("fcid", command),
+				new NameValuePair(key, value));
+	}
+	
 	public String appendFlexiFormDirty(String id) {
 		StringOutput sb = new StringOutput(256);
 		FormJSHelper.appendFlexiFormDirty(sb, container.getRootForm(), id);

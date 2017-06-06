@@ -36,6 +36,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	private final Integer attempts;
 	private final String comment;
 	private final String coachComment;
+	private final int numOfAssessmentDocs;
 
 	public AssessmentEvaluation(Float score, Boolean passed) {
 		this(score, passed, null, null);
@@ -46,19 +47,16 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	}
 	
 	public AssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, null, fullyAssessed, assessmentID);
-	}
-	
-	public AssessmentEvaluation(Float score, Boolean passed, AssessmentEntryStatus assessmentStatus, Boolean userVisibility, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, assessmentStatus, userVisibility, fullyAssessed, assessmentID, null, null);
+		this(score, passed, null, null, null, fullyAssessed, assessmentID, null, null, -1);
 	}
 	
 	public AssessmentEvaluation(Float score, Boolean passed, Integer attempts, AssessmentEntryStatus assessmentStatus, Boolean userVisibility,
-			Boolean fullyAssessed, Long assessmentID, String comment, String coachComment) {
+			Boolean fullyAssessed, Long assessmentID, String comment, String coachComment, int numOfAssessmentDocs) {
 		super(score, passed, assessmentStatus, userVisibility, fullyAssessed, assessmentID);
 		this.attempts = attempts;
 		this.comment = comment;
 		this.coachComment = coachComment;
+		this.numOfAssessmentDocs = numOfAssessmentDocs;
 	}
 	
 	/**
@@ -69,7 +67,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	 */
 	public AssessmentEvaluation(AssessmentEvaluation eval, AssessmentEntryStatus assessmentStatus) {
 		this(eval.getScore(), eval.getPassed(), eval.getAttempts(), assessmentStatus, eval.getUserVisible(),
-				eval.getFullyAssessed(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment());
+				eval.getFullyAssessed(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1);
 	}
 
 	public Integer getAttempts() {
@@ -82,6 +80,10 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 
 	public String getCoachComment() {
 		return coachComment;
+	}
+	
+	public int getNumOfAssessmentDocs() {
+		return numOfAssessmentDocs;
 	}
 	
 	public static final AssessmentEvaluation toAssessmentEvalutation(AssessmentEntry entry, AssessableCourseNode node) {
@@ -109,6 +111,6 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 			comment = entry.getComment();
 		}
 		return new AssessmentEvaluation(score, passed, attempts, entry.getAssessmentStatus(), entry.getUserVisibility(),
-				entry.getFullyAssessed(), entry.getAssessmentId(), comment, entry.getCoachComment());
+				entry.getFullyAssessed(), entry.getAssessmentId(), comment, entry.getCoachComment(), entry.getNumberOfAssessmentDocuments());
 	}
 }

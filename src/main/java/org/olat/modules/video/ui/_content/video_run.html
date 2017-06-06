@@ -22,7 +22,7 @@
 		</video>
 
 
-		<script defer="defer" type="text/javascript">
+		<script type="text/javascript">
 		// <![CDATA[
 		## using jQuery
 		var mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();
@@ -75,7 +75,6 @@
 		        #if($r.isNotNull($currentTimeAt))
 			        player.play();
 		        	mediaElement.addEventListener('loadedmetadata', function(e) {
-				        console.log('Start time', ${currentTimeAt});
 			        	player.setCurrentTime(${currentTimeAt});
 						player.pause();
 			        }, false);

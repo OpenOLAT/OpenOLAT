@@ -309,6 +309,8 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	 */
 	@Override
 	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		
 		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
 		// 1) Delete all properties: attempts
 		pm.deleteNodeProperties(this, null);

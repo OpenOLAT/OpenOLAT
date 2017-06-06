@@ -199,7 +199,10 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	 * life cycle of node data e.g properties stuff should be deleted if node gets
 	 * deleted life cycle: create - delete - migrate
 	 */
+	@Override
 	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		
 		DialogElementsPropertyManager depm = DialogElementsPropertyManager.getInstance();
 		
 		//remove all possible forum subscriptions

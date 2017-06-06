@@ -1199,6 +1199,7 @@ create table o_as_entry (
    a_completion float,
    a_comment clob,
    a_coach_comment clob,
+   a_num_assessment_docs number(20) default 0 not null,
    fk_entry number(20) not null,
    a_subident varchar2(64 char),
    fk_reference_entry number(20),

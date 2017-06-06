@@ -266,7 +266,6 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 	@Override
 	public Map<Long,Date> getInitialLaunchDates(Long courseResourceId) {
 		try {
-
 			StringBuilder sb = new StringBuilder();
 			sb.append("select infos.identity.key, infos.initialLaunch from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
 			  .append(" inner join infos.resource as resource")
@@ -287,6 +286,33 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			return dateMap;
 		} catch (Exception e) {
 			log.error("Cannot retrieve course informations for: " + courseResourceId, e);
+			return Collections.emptyMap();
+		}
+	}
+	
+	@Override
+	public Map<Long,Date> getInitialLaunchDates(OLATResource resource) {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select infos.identity.key, infos.initialLaunch from usercourseinfos as infos ")
+			  .append(" inner join infos.resource as resource")
+			  .append(" where resource.key=:resourceKey");
+
+			TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+					.setParameter("resourceKey", resource.getKey());
+
+			List<Object[]> infoList = query.getResultList();
+			Map<Long,Date> dateMap = new HashMap<Long,Date>();
+			for(Object[] infos:infoList) {
+				Long identityKey = (Long)infos[0];
+				Date initialLaunch = (Date)infos[1];
+				if(identityKey != null && initialLaunch != null) {
+					dateMap.put(identityKey, initialLaunch);
+				}
+			}
+			return dateMap;
+		} catch (Exception e) {
+			log.error("Cannot retrieve course informations for: " + resource, e);
 			return Collections.emptyMap();
 		}
 	}

@@ -51,7 +51,9 @@
 		/* textarea: can not blow up for now, browsers ignore the height */
 		textarea,
 		.form-control.textarea_disabled {
-			background: #fff;
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background: #fff !important;
 			height: auto !important;
 			color: #000 !important;
 			resize: none;
@@ -72,11 +74,25 @@
 	/* Hide backgrounds */	
 	body.o_dmz {
 		background: white !important;
+		-webkit-print-color-adjust: exact;
+		color-adjust: exact;
+	}
+	
+	/* When printing dialogs, hide everything below */
+	.modal-dialog {
+		margin: 0 !important;
+		width: 100% !important;
+		height: 100% !important;	
+		background: #fff !important;
+		-webkit-print-color-adjust: exact;
+		color-adjust: exact;
 	}
 	
 	/* Print background colors in progress bar */
 	.progress {
+		page-break-inside : avoid;
 		-webkit-print-color-adjust: exact;
+		color-adjust: exact;
 	  	background-color: rgba(0,0,0,.1) !important;
 	  	border: 1px solid rgba(0,0,0,.5);
 	}
@@ -85,6 +101,24 @@
 		background-color: #000 !important;
 		/* fallback for non-webkit browsers */
 		border: 10px solid #000;
+	}
+	
+	/* Print background colors in radial progress bar */
+	.radial-progress {
+		page-break-inside : avoid;
+		-webkit-print-color-adjust: exact;
+		color-adjust: exact;
+		background-color: #eee !important;
+		.circle .mask .fill {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background-color: #000 !important;
+		}
+		.inset {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background-color: #fff !important;
+		}
 	}
 	
 	body {

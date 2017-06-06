@@ -590,6 +590,17 @@ div.o_assessment_user_type_filter {
 	}
 }
 
+/* list */
+ul.o_assessment_docs {
+	margin-bottom: 0;
+}
+ul.o_assessment_docs>li {
+	margin-bottom: 0.33em;
+}
+ul.o_assessment_docs>li:last-child {
+	margin-bottom: 0em;
+}
+
 /* personal mail box tool */
 .o_mail_message {
 	.o_mail_meta {

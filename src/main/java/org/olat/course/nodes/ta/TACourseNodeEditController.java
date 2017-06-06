@@ -535,7 +535,7 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 				MailBundle ccBundle = mailManager.makeMailBundle(context, sender, mailTemplate, sender, metaId, result);
 				result.append(mailManager.sendMessage(ccBundle));
 			}
-			MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getLocale());
+			MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), ureq.getLocale());
 		}
 	}
 	

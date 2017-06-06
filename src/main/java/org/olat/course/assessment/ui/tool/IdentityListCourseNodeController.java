@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.certificate.CertificateLight;
@@ -142,6 +144,8 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 	private RepositoryService repositoryService;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private UserCourseInformationsManager userInfosMgr;
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	
@@ -240,6 +244,9 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			}
 			if(assessableNode.hasPassedConfigured()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.passed, new PassedCellRenderer()));
+			}
+			if(assessableNode.hasIndividualAsssessmentDocuments()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.numOfAssessmentDocs));
 			}
 		}
 
@@ -340,11 +347,13 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		assessmentEntries.stream()
 			.filter(entry -> entry.getIdentity() != null)
 			.forEach((entry) -> entryMap.put(entry.getIdentity().getKey(), entry));
+		Map<Long,Date> initialLaunchDates = userInfosMgr.getInitialLaunchDates(courseEntry.getOlatResource());
 
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
-			rows.add(new AssessedIdentityElementRow(assessedIdentity, entry, userPropertyHandlers, getLocale()));
+			Date initialLaunchDate = initialLaunchDates.get(assessedIdentity.getKey());
+			rows.add(new AssessedIdentityElementRow(assessedIdentity, entry, initialLaunchDate, userPropertyHandlers, getLocale()));
 		}
 		
 		if(toolContainer.getCertificateMap() == null) {

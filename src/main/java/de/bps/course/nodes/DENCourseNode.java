@@ -123,6 +123,7 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
 	 */
+	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
@@ -138,10 +139,12 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 		return sd;
 	}
 
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
 
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}

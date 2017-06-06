@@ -222,15 +222,11 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	 * @see org.olat.course.nodes.GenericCourseNode#calcAccessAndVisibility(org.olat.course.condition.interpreter.ConditionInterpreter,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		super.calcAccessAndVisibility(ci, nodeEval);
 		// evaluate the preconditions
 		boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));
 		nodeEval.putAccessStatus(EDIT_CONDITION_ID, editor);
 	}
-
-	public void cleanupOnDelete(ICourse course) {
-	// no clean up: subscription or on the course calendar
-	}
-
 }

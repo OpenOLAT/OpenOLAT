@@ -387,6 +387,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
 	 */
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
@@ -394,6 +395,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
 	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
@@ -401,6 +403,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(org.olat.course.ICourse)
 	 */
+	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);
 		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);

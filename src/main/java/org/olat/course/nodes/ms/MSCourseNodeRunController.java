@@ -25,6 +25,9 @@
 
 package org.olat.course.nodes.ms;
 
+import java.io.File;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -34,6 +37,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
@@ -56,7 +60,9 @@ public class MSCourseNodeRunController extends BasicController {
 	private final VelocityContainer myContent;
 	private final boolean showLog;
 	private boolean hasScore, hasPassed, hasComment;
+	private final UserCourseEnvironment userCourseEnv;
 	private final boolean overrideUserResultsVisiblity;
+	private final PersistentAssessableCourseNode courseNode;
 	
 	@Autowired
 	private CourseModule courseModule;
@@ -82,36 +88,39 @@ public class MSCourseNodeRunController extends BasicController {
 	 * @param ureq The user request
 	 * @param wControl The window control
 	 * @param userCourseEnv The user course environment
-	 * @param msCourseNode An assessable course element
+	 * @param courseNode An assessable course element
 	 * @param displayNodeInfo If true, the node title and learning objectives will be displayed
 	 * @param showLog If true, the change log will be displayed
 	 * @param overrideUserResultsVisiblity If the controller can override the user visiblity of the score evaluation
 	 */
-	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, PersistentAssessableCourseNode msCourseNode,
+	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, PersistentAssessableCourseNode courseNode,
 			boolean displayNodeInfo, boolean showLog, boolean overrideUserResultsVisiblity) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
 		this.showLog = showLog;
+		this.courseNode = courseNode;
+		this.userCourseEnv = userCourseEnv;
 		this.overrideUserResultsVisiblity = overrideUserResultsVisiblity;
 		myContent = createVelocityContainer("run");
 
-		if (msCourseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
-			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, msCourseNode);
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
+		if (config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)) {
+			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, courseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
 				myContent.put("highScore", highScoreComponent);							
 			}
 		}
 				
-		ModuleConfiguration config = msCourseNode.getModuleConfiguration();
 		myContent.contextPut("displayNodeInfo", Boolean.valueOf(displayNodeInfo));
 		if (displayNodeInfo) {
 			// push title and learning objectives, only visible on intro page
-			myContent.contextPut("menuTitle", msCourseNode.getShortTitle());
-			myContent.contextPut("displayTitle", msCourseNode.getLongTitle());
+			myContent.contextPut("menuTitle", courseNode.getShortTitle());
+			myContent.contextPut("displayTitle", courseNode.getLongTitle());
 			
 			// Adding learning objectives
-			String learningObj = msCourseNode.getLearningObjectives();
+			String learningObj = courseNode.getLearningObjectives();
 			if (learningObj != null) {
 				Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, ureq); 
 				myContent.put("learningObjectives", learningObjectives);
@@ -122,9 +131,9 @@ public class MSCourseNodeRunController extends BasicController {
 		//admin setting whether to show change log or not
 		myContent.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 
-		// Push variables to velcity page
-		exposeConfigToVC(config);		
-		exposeUserDataToVC(userCourseEnv, msCourseNode);
+		// Push variables to velocity page
+		exposeConfigToVC(ureq, config);		
+		exposeUserDataToVC(ureq, userCourseEnv, courseNode);
 		putInitialPanel(myContent);
 	}
 	
@@ -154,23 +163,28 @@ public class MSCourseNodeRunController extends BasicController {
 	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		//
+		if("show".equals(event.getCommand())) {
+			saveOpenPanel(ureq, ureq.getParameter("panel"), true);
+		} else if("hide".equals(event.getCommand())) {
+			saveOpenPanel(ureq, ureq.getParameter("panel"), false);
+		}
 	}
 	
-	private void exposeConfigToVC(ModuleConfiguration config) {
+	private void exposeConfigToVC(UserRequest ureq, ModuleConfiguration config) {
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
 	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
 	    	myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
+	    	myContent.contextPut("in-disclaimer", isPanelOpen(ureq, "disclaimer", true));
 	    }
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
 	}
 	
-	private void exposeUserDataToVC(UserCourseEnvironment userCourseEnv, PersistentAssessableCourseNode courseNode) {
+	private void exposeUserDataToVC(UserRequest ureq, UserCourseEnvironment userCourseEnv, PersistentAssessableCourseNode courseNode) {
 		AssessmentEntry assessmentEntry = courseNode.getUserAssessmentEntry(userCourseEnv);
 		if(assessmentEntry == null) {
 			myContent.contextPut("hasPassedValue", Boolean.FALSE);
@@ -180,7 +194,7 @@ public class MSCourseNodeRunController extends BasicController {
 			String rawComment = assessmentEntry.getComment();
 			hasPassed = assessmentEntry.getPassed() != null;
 			hasScore = assessmentEntry.getScore() != null;
-			hasComment = StringHelper.containsNonWhitespace(rawComment);
+			hasComment = courseNode.hasCommentConfigured() && StringHelper.containsNonWhitespace(rawComment);
 		
 			boolean resultsVisible = overrideUserResultsVisiblity
 					|| assessmentEntry.getUserVisibility() == null
@@ -191,8 +205,19 @@ public class MSCourseNodeRunController extends BasicController {
 			myContent.contextPut("passed", assessmentEntry.getPassed());
 			
 			if(resultsVisible) {
-				StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
-				myContent.contextPut("comment", StringHelper.xssScan(comment));
+				if(hasComment) {
+					StringBuilder comment = Formatter.stripTabsAndReturns(rawComment);
+					myContent.contextPut("comment", StringHelper.xssScan(comment));
+					myContent.contextPut("in-comment", isPanelOpen(ureq, "comment", true));
+				}
+				
+				if(courseNode.hasIndividualAsssessmentDocuments()) {
+					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
+					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
+					myContent.contextPut("docsMapperUri", mapperUri);
+					myContent.contextPut("docs", docs);
+					myContent.contextPut("in-assessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
+				}
 			}
 		}
 
@@ -202,10 +227,24 @@ public class MSCourseNodeRunController extends BasicController {
 		}
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		Boolean showConfig  = (Boolean) guiPrefs.get(MSCourseNodeRunController.class, getOpenPanelId(panelId));
+		return showConfig == null ? def : showConfig.booleanValue();
+	}
+	
+	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		if (guiPrefs != null) {
+			guiPrefs.putAndSave(MSCourseNodeRunController.class, getOpenPanelId(panelId), new Boolean(newValue));
+		}
+		myContent.contextPut("in-" + panelId, new Boolean(newValue));
+	}
+	
+	private String getOpenPanelId(String panelId) {
+		return panelId + "::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent();
+	}
+
 	@Override
 	protected void doDispose() {
 		// do nothing here yet

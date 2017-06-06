@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -92,6 +93,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	public static final String CONFIG_KEY_PASSED_CUT_VALUE = "passedCutValue";
 	/** configuration: comment can be set */
 	public static final String CONFIG_KEY_HAS_COMMENT_FIELD = "hasCommentField";
+	/** configuration: individual assessment document can be set (use getBooleanSafe default false) */
+	public static final String CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS = "hasIndividualAsssessmentDocs";
 	/** configuration: infotext for user */
 	public static final String CONFIG_KEY_INFOTEXT_USER = "infoTextUser";
 	/** configuration: infotext for coach */
@@ -252,6 +255,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 */
 	@Override
 	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		
 		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
 		// Delete all properties: score, passed, log, comment, coach_comment
 		pm.deleteNodeProperties(this, null);
@@ -263,6 +268,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
 	 */
+	@Override
 	public boolean hasCommentConfigured() {
 		ModuleConfiguration config = getModuleConfiguration();
 		Boolean comment = (Boolean) config.get(CONFIG_KEY_HAS_COMMENT_FIELD);
@@ -270,9 +276,15 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return comment.booleanValue();
 	}
 
+	@Override
+	public boolean hasIndividualAsssessmentDocuments() {
+		return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+	}
+
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasPassedConfigured()
 	 */
+	@Override
 	public boolean hasPassedConfigured() {
 		ModuleConfiguration config = getModuleConfiguration();
 		Boolean passed = (Boolean) config.get(CONFIG_KEY_HAS_PASSED_FIELD);
@@ -353,8 +365,13 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	@Override
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		String userCommentValue = am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-		return userCommentValue;
+		return am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
+	}
+	
+	@Override
+	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		return am.getIndividualAssessmentDocuments(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
 	}
 
 	/**
@@ -409,10 +426,28 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 */
 	@Override
 	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		if (userComment != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 			am.saveNodeComment(this, coachingIdentity, mySelf, userComment);
+		}
+	}
+	
+	@Override
+	public void addIndividualAssessmentDocument(File document, String filename, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if(document != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			am.addIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document, filename);
+		}
+	}
+
+	@Override
+	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		if(document != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			am.removeIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document);
 		}
 	}
 

@@ -150,7 +150,7 @@ public class EnrollmentManager extends BasicManager {
 		if(bundle != null) {
 			mailManager.sendMessage(bundle);
 		}
-		MailHelper.printErrorsAndWarnings(result, wControl, trans.getLocale());
+		MailHelper.printErrorsAndWarnings(result, wControl, false, trans.getLocale());
 	}
 
 	public void doCancelEnrollmentInWaitingList(final Identity identity, final BusinessGroup enrolledWaitingListGroup, final ENCourseNode enNode,
@@ -174,7 +174,7 @@ public class EnrollmentManager extends BasicManager {
 		if(bundle != null) {
 			mailManager.sendMessage(bundle);
 		}
-		MailHelper.printErrorsAndWarnings(result, wControl, trans.getLocale());
+		MailHelper.printErrorsAndWarnings(result, wControl, false, trans.getLocale());
 	}
 
 	// Helper Methods
@@ -396,7 +396,7 @@ public class EnrollmentManager extends BasicManager {
 		if(bundle != null) {
 			mailManager.sendMessage(bundle);
 		}
-		MailHelper.printErrorsAndWarnings(result, wControl, trans.getLocale());
+		MailHelper.printErrorsAndWarnings(result, wControl, false, trans.getLocale());
 		return true;
 	}
 
@@ -433,7 +433,7 @@ public class EnrollmentManager extends BasicManager {
 		if(bundle != null) {
 			mailManager.sendMessage(bundle);
 		}
-		MailHelper.printErrorsAndWarnings(result, wControl, trans.getLocale());
+		MailHelper.printErrorsAndWarnings(result, wControl, false, trans.getLocale());
 		return true;
 	}
 

@@ -255,6 +255,7 @@ public class AssessmentResultController extends FormBasicController {
 				}
 				resultsMap.put(node, r);
 				itemResults.add(r);
+				testResults.setNumberOfSections(testResults.getNumberOfSections() + 1);
 			} else if(testNodeType == TestNodeType.ASSESSMENT_ITEM_REF) {
 				Results results = initFormItemResult(layoutCont, node, identifierToRefs, resultsMap);
 				if(results != null) {
@@ -529,6 +530,7 @@ public class AssessmentResultController extends FormBasicController {
 		
 		private SessionStatus sessionStatus;
 		
+		private int numberOfSections = 0;
 		private int numberOfQuestions = 0;
 		private int numberOfAnsweredQuestions = 0;
 		
@@ -776,6 +778,14 @@ public class AssessmentResultController extends FormBasicController {
 			return Long.toString(percent);
 		}
 		
+		public int getNumberOfSections() {
+			return numberOfSections;
+		}
+
+		public void setNumberOfSections(int numberOfSections) {
+			this.numberOfSections = numberOfSections;
+		}
+
 		public List<Results> getSubResults() {
 			return subResults;
 		}

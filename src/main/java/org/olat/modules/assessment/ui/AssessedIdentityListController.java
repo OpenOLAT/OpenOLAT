@@ -21,6 +21,7 @@ package org.olat.modules.assessment.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,7 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessedIdentityListProvider;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
@@ -109,6 +111,8 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private UserCourseInformationsManager userInfosMgr;
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	@Autowired
@@ -251,10 +255,13 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		assessmentEntries.stream().filter((entry) -> entry.getIdentity() != null)
 			.forEach((entry) -> entryMap.put(entry.getIdentity().getKey(), entry));
 
+		Map<Long,Date> initialLaunchDates = userInfosMgr.getInitialLaunchDates(testEntry.getOlatResource());
+
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
-			rows.add(new AssessedIdentityElementRow(assessedIdentity, entry, userPropertyHandlers, getLocale()));
+			Date initialLaunchDate = initialLaunchDates.get(assessedIdentity.getKey());
+			rows.add(new AssessedIdentityElementRow(assessedIdentity, entry, initialLaunchDate, userPropertyHandlers, getLocale()));
 		}
 
 		usersTableModel.setObjects(rows);

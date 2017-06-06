@@ -190,7 +190,7 @@ public class ProjectGroupController extends BasicController {
 					MailBundle ccBundle = mailManager.makeMailBundle(context, urequest.getIdentity(), mailTemplate, null, metaId, result);
 					result.append(mailManager.sendMessage(ccBundle));
 				}
-				MailHelper.printErrorsAndWarnings(result, getWindowControl(), urequest.getLocale());
+				MailHelper.printErrorsAndWarnings(result, getWindowControl(), urequest.getUserSession().getRoles().isOLATAdmin(), urequest.getLocale());
 			}
 			fireEvent(urequest, Event.CHANGED_EVENT );		
 			// Participant and waiting-list were changed => reload both

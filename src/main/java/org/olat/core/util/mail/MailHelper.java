@@ -40,6 +40,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
@@ -170,15 +171,19 @@ public class MailHelper {
 	 * @param wControl The current window controller
 	 * @param locale The users local
 	 */
-	public static void printErrorsAndWarnings(MailerResult mailerResult, WindowControl wControl, Locale locale) {
+	public static void printErrorsAndWarnings(MailerResult mailerResult, WindowControl wControl, boolean admin, Locale locale) {
+		if(mailerResult == null || wControl == null) return;
+		
 		StringBuilder errors = new StringBuilder();
 		StringBuilder warnings = new StringBuilder();
-		appendErrorsAndWarnings(mailerResult, errors, warnings, locale);
+		appendErrorsAndWarnings(mailerResult, errors, warnings, admin, locale);
 		// now print a warning to the users screen
 		if (errors.length() > 0) {
+			if (warnings.length() > 0) {
+				errors.append(warnings);
+			}
 			wControl.setError(errors.toString());
-		}
-		if (warnings.length() > 0) {
+		} else if (warnings.length() > 0) {
 			wControl.setWarning(warnings.toString());
 		}
 	}
@@ -194,44 +199,72 @@ public class MailHelper {
 	 * @param warnings StringBuilder for the warnings
 	 * @param locale The users local
 	 */
-	public static void appendErrorsAndWarnings(MailerResult mailerResult, StringBuilder errors, StringBuilder warnings, Locale locale) {
-		Translator trans = Util.createPackageTranslator(MailerResult.class, locale);
+	public static void appendErrorsAndWarnings(MailerResult mailerResult, StringBuilder errors, StringBuilder warnings, boolean admin, Locale locale) {
+		if(mailerResult == null) return;
+
 		int returnCode = mailerResult.getReturnCode();
-		List<Identity> failedIdentites = mailerResult.getFailedIdentites();
+		Translator trans = Util.createPackageTranslator(MailerResult.class, locale);
 
 		// first the severe errors
-		if (returnCode == MailerResult.SEND_GENERAL_ERROR) {
-			errors.append("<p>").append(trans.translate("mailhelper.error.send.general")).append("</p>");
-		} else if (returnCode == MailerResult.SENDER_ADDRESS_ERROR) {
-			errors.append("<p>").append(trans.translate("mailhelper.error.sender.address")).append("</p>");
-		} else if (returnCode == MailerResult.RECIPIENT_ADDRESS_ERROR) {
-			errors.append("<p>").append(trans.translate("mailhelper.error.recipient.address")).append("</p>");
-		} else if (returnCode == MailerResult.TEMPLATE_GENERAL_ERROR) {
-			errors.append("<p>").append(trans.translate("mailhelper.error.template.general")).append("</p>");
-		} else if (returnCode == MailerResult.TEMPLATE_PARSE_ERROR) {
-			errors.append("<p>").append(trans.translate("mailhelper.error.template.parse")).append("</p>");
-		} else if (returnCode == MailerResult.ATTACHMENT_INVALID) {
-			errors.append("<p>").append(trans.translate("mailhelper.error.attachment")).append("</p>");
-		} else {
-			// mail could be send, but maybe not to all the users (e.g. invalid mail
-			// adresses or a temporary problem)
-			if (failedIdentites != null && failedIdentites.size() > 0) {
-				warnings.append("<p>").append(trans.translate("mailhelper.error.failedusers"));
-				warnings.append("<ul>");
-				for (Identity identity : failedIdentites) {
-					User user = identity.getUser();
-					warnings.append("<li>");
-					String fullname = UserManager.getInstance().getUserDisplayName(identity);
-					warnings.append(trans.translate("mailhelper.error.failedusers.user", new String[] {
-							user.getProperty(UserConstants.FIRSTNAME, null),
-							user.getProperty(UserConstants.LASTNAME, null),
-							user.getProperty(UserConstants.EMAIL, null),
-							fullname
-						}));
-					warnings.append("</li>");
-				}
-				warnings.append("</ul></p>");
+		switch(returnCode) {
+			case MailerResult.MAILHOST_UNDEFINED: {	
+				errors.append("<p><strong>").append(trans.translate("mailhelper.error.undefined.smtp")).append("</strong></p>");
+				break;
 			}
+			case MailerResult.SEND_GENERAL_ERROR: {
+				errors.append("<p>").append(trans.translate("mailhelper.error.send.general")).append("</p>");
+				if(admin && StringHelper.containsNonWhitespace(mailerResult.getErrorMessage())) {
+					errors.append("<p><em>").append(mailerResult.getErrorMessage()).append("</em></p>");
+				}
+				break;
+			}
+			case MailerResult.SENDER_ADDRESS_ERROR: {
+				errors.append("<p>").append(trans.translate("mailhelper.error.sender.address")).append("</p>");
+				if(admin && StringHelper.containsNonWhitespace(mailerResult.getErrorMessage())) {
+					errors.append("<p><em>").append(mailerResult.getErrorMessage()).append("</em></p>");
+				}
+				break;
+			}
+			case MailerResult.TEMPLATE_GENERAL_ERROR: {
+				errors.append("<p>").append(trans.translate("mailhelper.error.template.general")).append("</p>");
+				break;
+			}
+			case MailerResult.TEMPLATE_PARSE_ERROR: {
+				errors.append("<p>").append(trans.translate("mailhelper.error.template.parse")).append("</p>");
+				break;
+			}
+			case MailerResult.ATTACHMENT_INVALID: {	
+				errors.append("<p>").append(trans.translate("mailhelper.error.attachment")).append("</p>");
+				break;
+			}
+		}
+
+		List<Identity> failedIdentites = mailerResult.getFailedIdentites();
+		if (failedIdentites != null && failedIdentites.size() > 0) {
+			warnings.append("<p>").append(trans.translate("mailhelper.error.failedusers"));
+			warnings.append("<ul>");
+			for (Identity identity : failedIdentites) {
+				User user = identity.getUser();
+				warnings.append("<li>");
+				String fullname = UserManager.getInstance().getUserDisplayName(identity);
+				warnings.append(trans.translate("mailhelper.error.failedusers.user", new String[] {
+						user.getProperty(UserConstants.FIRSTNAME, null),
+						user.getProperty(UserConstants.LASTNAME, null),
+						user.getProperty(UserConstants.EMAIL, null),
+						fullname
+					}));
+				warnings.append("</li>");
+			}
+			warnings.append("</ul></p>");
+		}
+
+		List<String> invalidAddresses = mailerResult.getInvalidAddresses();
+		if (invalidAddresses != null && invalidAddresses.size() > 0) {
+			warnings.append("<p>").append(trans.translate("mailhelper.error.failedadresses")).append("<ul>");
+			for (String invalidAddress:invalidAddresses) {
+				warnings.append("<li>").append(invalidAddress).append("</li>");
+			}
+			warnings.append("<ul>");
 		}
 	}
 
@@ -275,6 +308,3 @@ public class MailHelper {
 		return attachmentList;
 	}
 }
-
-
-

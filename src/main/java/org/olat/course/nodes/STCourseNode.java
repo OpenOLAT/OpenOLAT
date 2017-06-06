@@ -27,6 +27,7 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
@@ -471,12 +472,22 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 		throw new OLATRuntimeException(STCourseNode.class, "No comments available in ST nodes", null);
 	}
 
+	@Override
+	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment) {
+		return Collections.emptyList();
+	}
+
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
 	 */
 	@Override
 	public boolean hasCommentConfigured() {
 		// never has comments
+		return false;
+	}
+
+	@Override
+	public boolean hasIndividualAsssessmentDocuments() {
 		return false;
 	}
 
@@ -547,6 +558,16 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	@Override
 	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		throw new OLATRuntimeException(STCourseNode.class, "Comment variable can't be updated in ST nodes", null);
+	}
+
+	@Override
+	public void addIndividualAssessmentDocument(File document, String filename, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		throw new OLATRuntimeException(STCourseNode.class, "Document can't be uploaded in ST nodes", null);
+	}
+
+	@Override
+	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+		throw new OLATRuntimeException(STCourseNode.class, "Document can't be removed in ST nodes", null);
 	}
 
 	/**

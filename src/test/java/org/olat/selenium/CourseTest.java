@@ -258,7 +258,9 @@ public class CourseTest {
 		RepositoryEditDescriptionPage editDescription = new RepositoryEditDescriptionPage(browser);
 		//from description editor, back to details and launch the course
 		editDescription
-			.assertOnGeneralTab()
+			.assertOnGeneralTab();
+		OOGraphene.closeErrorBox(browser);//close mail error
+		editDescription	
 			.clickToolbarBack();
 		
 		//open course editor

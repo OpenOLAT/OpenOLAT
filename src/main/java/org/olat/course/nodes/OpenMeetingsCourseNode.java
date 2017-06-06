@@ -188,6 +188,7 @@ public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
 		// load configuration
 		OpenMeetingsManager provider = CoreSpringFactory.getImpl(OpenMeetingsManager.class);
 		// remove meeting

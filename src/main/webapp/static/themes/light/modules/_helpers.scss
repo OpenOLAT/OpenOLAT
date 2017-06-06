@@ -40,6 +40,18 @@
 	@extend %o_block_inline_right;
 }
 
+/* vertical and horizontal centered block: add wrappern and place content in wrapper */
+.o_block_centered_wrapper {
+	display: table; 
+	width: 100%; 
+	height: 100%;
+}
+.o_block_centered_content {
+	display: table-cell; 
+	vertical-align: middle; 
+	text-align: center;
+}
+
 /* content block with a full-scale background image (fat media style) */
 .o_block_imagebg {
 	background-repeat:no-repeat;

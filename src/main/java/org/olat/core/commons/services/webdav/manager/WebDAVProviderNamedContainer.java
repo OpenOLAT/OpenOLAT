@@ -42,6 +42,11 @@ public class WebDAVProviderNamedContainer extends NamedContainerImpl {
 	}
 
 	@Override
+	public boolean exists() {
+		return true;
+	}
+
+	@Override
 	public VFSContainer getDelegate() {
 		if(super.getDelegate() == null) {
 			setDelegate(provider.getContainer(identityEnv));

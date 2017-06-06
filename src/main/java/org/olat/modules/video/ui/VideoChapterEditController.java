@@ -134,7 +134,6 @@ public class VideoChapterEditController extends FormBasicController {
 	
 	@Override
 	public void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-
 		if(source == chapterTable) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -147,7 +146,6 @@ public class VideoChapterEditController extends FormBasicController {
 					doOpenCallout(ureq, vctr, true);
 				} 
 			}
-			
 		} else if (addChapterEl == source) {
 			long currentLong = currentTimeCode != null ? (long) Float.parseFloat(currentTimeCode) * 1000 : 0;
 			Date currentDate = new Date(currentLong);
@@ -155,7 +153,11 @@ public class VideoChapterEditController extends FormBasicController {
 					displayDateFormat.format(currentDate), currentDate, currentDate);
 			doOpenCallout(ureq, vctr, false);
 		}
-		
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		//avoid reload of html template, to prevent videoreload
 	}
 
 	@Override
@@ -172,14 +174,14 @@ public class VideoChapterEditController extends FormBasicController {
 				doAddOrUpdateChapter(ureq, chapterEditCtr.getVideoChapterTableRow());
 			} 
 			cmc.deactivate();
-			cleanUpCMC();
+			cleanUp();
 		} else if (source == cmc) {
-			cleanUpCMC();
+			cleanUp();
 		} 
 		super.event(ureq, source, event);
 	}
 	
-	private void cleanUpCMC(){
+	private void cleanUp(){
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(chapterEditCtr);
 		cmc = null;
@@ -199,6 +201,7 @@ public class VideoChapterEditController extends FormBasicController {
 	}
 
 	private void doOpenCallout(UserRequest ureq, VideoChapterTableRow videoChapterTableRow, boolean chapterExists) {
+		if(chapterEditCtr != null) return;
 		
 		chapterEditCtr = new ChapterEditController(ureq, getWindowControl(), videoChapterTableRow, 
 				chapterExists, chapters, duration); 
@@ -207,13 +210,7 @@ public class VideoChapterEditController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), chapterEditCtr.getInitialComponent(), 
 				true, translate("video.chapter." + (chapterExists ? "edit" : "new")));
 		listenTo(cmc);
-		
 		cmc.activate();
-	}
-	
-	@Override
-	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
-		//avoid reload of html template, to prevent videoreload
 	}
 	
 	private void doAddOrUpdateChapter(UserRequest ureq, VideoChapterTableRow row){
@@ -231,6 +228,7 @@ public class VideoChapterEditController extends FormBasicController {
 		organizeChapters();
 		loadTableModel();
 		saveChapters(ureq, row.getBegin());
+		addToHistory(ureq, this);
 	}
 	
 	private void organizeChapters () {
@@ -254,5 +252,4 @@ public class VideoChapterEditController extends FormBasicController {
 			}
 		}
 	}
-
 }

@@ -19,20 +19,31 @@
  */
 package org.olat.course.assessment.manager;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -66,6 +77,10 @@ import org.olat.util.logging.activity.LoggingResourceable;
  *
  */
 public class CourseAssessmentManagerImpl implements AssessmentManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(CourseAssessmentManagerImpl.class);
+	
+	public static final String ASSESSMENT_DOCS_DIR = "assessmentdocs";
 	
 	private static final Float FLOAT_ZERO = new Float(0);
 	private static final Integer INTEGER_ZERO = new Integer(0);
@@ -180,6 +195,70 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 				getClass(), 
 				LoggingResourceable.wrap(assessedIdentity), 
 				LoggingResourceable.wrapNonOlatResource(StringResourceableType.qtiUserComment, "", StringHelper.stripLineBreaks(comment)));	
+	}
+
+	@Override
+	public void addIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, File document, String filename) {
+		if(document == null) return;
+		if(!StringHelper.containsNonWhitespace(filename)) {
+			filename = document.getName();
+		}
+		
+		try {
+			File directory = getAssessmentDocumentsDirectory(courseNode, assessedIdentity);
+			File targetFile = new File(directory, filename);
+			if(targetFile.exists()) {
+				String newName = FileUtils.rename(targetFile);
+				targetFile = new File(directory, newName);
+			}
+			Files.copy(document.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			
+			//update counter
+			AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+			File[] docs = directory.listFiles(new SystemFileFilter(true, false));
+			int numOfDocs = docs == null ? 0 : docs.length;
+			nodeAssessment.setNumberOfAssessmentDocuments(numOfDocs);
+			assessmentService.updateAssessmentEntry(nodeAssessment);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+
+	@Override
+	public void removeIndividualAssessmentDocument(CourseNode courseNode, Identity identity, Identity assessedIdentity, File document) {
+		if(document != null && document.exists()) {
+			document.delete();
+			
+			//update counter
+			File directory = getAssessmentDocumentsDirectory(courseNode, assessedIdentity);
+			AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+			File[] docs = directory.listFiles(new SystemFileFilter(true, false));
+			int numOfDocs = docs == null ? 0 : docs.length;
+			nodeAssessment.setNumberOfAssessmentDocuments(numOfDocs);
+			assessmentService.updateAssessmentEntry(nodeAssessment);
+		}
+	}
+	
+	@Override
+	public void deleteIndividualAssessmentDocuments(CourseNode courseNode) {
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+		String courseRelPath = course.getCourseEnvironment().getCourseBaseContainer().getRelPath();
+		Path path = Paths.get(FolderConfig.getCanonicalRoot(), courseRelPath, ASSESSMENT_DOCS_DIR, courseNode.getIdent());
+		File file = path.toFile();
+		if(file.exists()) {
+			FileUtils.deleteDirsAndFiles(file, true, true);
+		}
+	}
+
+	private File getAssessmentDocumentsDirectory(CourseNode cNode, Identity assessedIdentity) {
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+		String courseRelPath = course.getCourseEnvironment().getCourseBaseContainer().getRelPath();
+		Path path = Paths.get(FolderConfig.getCanonicalRoot(), courseRelPath, ASSESSMENT_DOCS_DIR, cNode.getIdent(), "person_" + assessedIdentity.getKey());
+		File file = path.toFile();
+		if(!file.exists()) {
+			file.mkdirs();
+		}
+		return file;
 	}
 
 	@Override
@@ -373,6 +452,19 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		AssessmentEntry entry = assessmentService
 				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
 		return entry == null ? null : entry.getComment();
+	}
+
+	@Override
+	public List<File> getIndividualAssessmentDocuments(CourseNode courseNode, Identity identity) {
+		File directory = getAssessmentDocumentsDirectory(courseNode, identity);
+		File[] documents = directory.listFiles(new SystemFileFilter(true, false));
+		List<File> documentList = new ArrayList<>();
+		if(documents != null && documents.length > 0) {
+			for(File document:documents) {
+				documentList.add(document);
+			}
+		}
+		return documentList;
 	}
 
 	@Override
