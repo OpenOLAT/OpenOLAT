@@ -37,6 +37,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.webFeed.models.Feed;
@@ -99,11 +100,8 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 				List<Item> listItems = feedManager.loadItems(feed);
 				List<SubscriptionListItem> items = new ArrayList<>();
 				for (Item item : listItems) {
-					if (!item.isDraft() && (compareDate.before(item.getPublishDate()) || compareDate.before(item.getLastModified()))) {
-						SubscriptionListItem subscriptionItem = createSubscriptionItem(item, p, translator);
-						if(subscriptionItem != null) {
-							items.add(subscriptionItem);
-						}
+					if (!item.isDraft()) {
+						appendSubscriptionItem(item, p, compareDate, translator, items);
 					}
 				}
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(),	new TitleItem(title, getCssClassIcon()), items);
@@ -115,22 +113,34 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 		return si;
 	}
 	
-	private SubscriptionListItem createSubscriptionItem(Item item, Publisher p, Translator translator){
+	private void appendSubscriptionItem(Item item, Publisher p, Date compareDate, Translator translator, List<SubscriptionListItem> items) {
 		String title = item.getTitle();
 		String author = item.getAuthor();
 		String businessPath = p.getBusinessPath();
 		String urlToSend = BusinessControlFactory.getInstance()
 					.getURLFromBusinessPathString(businessPath);
 		String iconCssClass = item.extraCSSClass();
-		Date modDate = item.getPublishDate();
-		String desc;
-		if(modDate == null) {
-			modDate = item.getLastModified();
-			desc = translator.translate("notifications.entry.modified", new String[] { title, author });
-		} else {
-			desc = translator.translate("notifications.entry.published", new String[] { title, author });
+		Date publishDate = item.getPublishDate();
+		if(publishDate != null) {
+			if(compareDate.before(publishDate)) {
+				String desc = translator.translate("notifications.entry.published", new String[] { title, author });
+				items.add(new SubscriptionListItem(desc, urlToSend, businessPath, publishDate, iconCssClass));
+			}
+			
+			if(item.getModifierKey() > 0) {
+				Date modDate = item.getLastModified();
+				if(compareDate.before(modDate)) {
+					String desc;
+					String modifier = item.getModifier();
+					if(StringHelper.containsNonWhitespace(modifier)) {
+						desc = translator.translate("notifications.entry.modified", new String[] { title, modifier });
+					} else {
+						desc = translator.translate("notifications.entry.modified", new String[] { title, "???" });
+					}
+					items.add(new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass));
+				}
+			}
 		}
-		return new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass);
 	}
 	
 	protected abstract String getCssClassIcon();
