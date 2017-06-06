@@ -45,11 +45,11 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
+import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedViewHelper;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,17 +121,13 @@ public class FeedMainController extends BasicController implements Activateable2
 		subsContext = callback.getSubscriptionContext();
 				
 		setTranslator(uiFactory.getTranslator());
-		feed = feedManager.getFeed(ores);
+		feed = feedManager.loadFeed(ores);
 		if(feed == null) {
 			vcMain = createVelocityContainer("feed_error");
 			vcMain.contextPut("errorMessage", translate("feed.error"));
 			putInitialPanel(vcMain);
 		} else {
-			String authorFullname = userManager.getUserDisplayName(feed.getAuthor());
-			if(authorFullname == null) {
-				authorFullname = "???";
-			}
-			helper = new FeedViewHelper(feed, getIdentity(), authorFullname, uiFactory.getTranslator(), courseId, nodeId, callback);
+			helper = new FeedViewHelper(feed, getIdentity(), uiFactory.getTranslator(), courseId, nodeId);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), feed);
 			display(ureq, wControl, displayConfig);
 			// do logging
@@ -204,7 +200,7 @@ public class FeedMainController extends BasicController implements Activateable2
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// feed for this event and make sure the updated feed object is in the view
-		feed = feedManager.getFeed(feed);
+		feed = feedManager.loadFeed(feed);
 		vcInfo.contextPut("feed", feed);
 		
 		if (source == editFeedButton) {
@@ -261,27 +257,24 @@ public class FeedMainController extends BasicController implements Activateable2
 						if (newFeed == null) {
 							feed.setExternal(null);
 							itemsCtr.makeInternalAndExternalButtons();
-							// No more episodes to display
-							itemsCtr.resetItems(ureq, feed);
-						} else if (!newFeed.equals(oldFeedUrl)) {
-							// Set the episodes dirty since the feed url changed.							
-							itemsCtr.resetItems(ureq, feed);
 						}
-						// Set the URIs correctly
-						helper.setURIs();
-					} 
+					}
+					feed = feedManager.updateFeed(feed);
 					//handle image-changes if any
 					if (feedFormCtr.isImageDeleted()) {
-						feedManager.deleteImage(feed);
+						feed = feedManager.deleteFeedImage(feed);
 					} else {
 						// set the image
 						FileElement image = null;
+						// TODO hier wird image null!!!
 						image = feedFormCtr.getFile();
-						feedManager.setImage(image, feed);
-					}							
-					
-					// Eventually update the feed
-					feed = feedManager.updateFeedMetadata(feed);
+						feed = feedManager.replaceFeedImage(feed, image);
+					}
+
+					itemsCtr.resetItems(ureq, feed);	
+					// Set the URIs correctly
+					helper.setURIs();
+
 					// Dispose the feedFormCtr
 					removeAsListenerAndDispose(feedFormCtr);
 					feedFormCtr = null;
@@ -304,6 +297,7 @@ public class FeedMainController extends BasicController implements Activateable2
 				feedFormCtr = null;
 			}
 		} else if (source == itemsCtr && event.equals(ItemsController.HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT)) {
+			feed = feedManager.loadFeed(feed);
 			oldFeedUrl = feed.getExternalFeedUrl();			
 			feedFormCtr = new FeedFormController(ureq, getWindowControl(), feed, uiFactory);
 			activateModalDialog(feedFormCtr, uiFactory.getTranslator().translate("feed.edit"));
@@ -327,13 +321,14 @@ public class FeedMainController extends BasicController implements Activateable2
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
+		Item item = null;
 		String itemId = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(itemId != null && itemId.startsWith("item=")) {
 			itemId = itemId.substring(5, itemId.length());
+			Long itemKey = Long.parseLong(itemId);
+			item = FeedManager.getInstance().loadItem(itemKey);
 		}
-		int index = feed.getItemIds().indexOf(itemId);
-		if (index >= 0) {
-			Item item = feed.getItems().get(index);
+		if (item != null) {
 			itemsCtr.activate(ureq, item);
 		}
 	}

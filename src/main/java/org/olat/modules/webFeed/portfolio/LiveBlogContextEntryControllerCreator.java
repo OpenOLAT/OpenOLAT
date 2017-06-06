@@ -33,12 +33,14 @@ import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.fileresource.types.BlogFileResource;
+import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedResourceSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.blog.BlogUIFactory;
+import org.olat.resource.OLATResourceManager;
 
 /**
  * 
@@ -74,7 +76,8 @@ public class LiveBlogContextEntryControllerCreator  {
 		@Override
 		public Controller createController(List<ContextEntry> ces, UserRequest ureq, WindowControl wControl) {
 			OLATResourceable ores = ces.get(0).getOLATResourceable();
-			Feed feed = feedManager.getFeed(ores);
+			ores = OLATResourceManager.getInstance().findResourceable(ores.getResourceableId(), BlogFileResource.TYPE_NAME);
+			Feed feed = feedManager.loadFeed(ores);
 			boolean isOwner = feed.getAuthor() != null && ureq.getIdentity() != null && feed.getAuthor().equals(ureq.getIdentity().getName());
 			FeedSecurityCallback secCallback = new FeedResourceSecurityCallback(isOwner, isOwner);
 			FeedMainController controller = new FeedMainController(ores, ureq, wControl, BlogUIFactory.getInstance(ureq.getLocale()), secCallback);
@@ -84,7 +87,8 @@ public class LiveBlogContextEntryControllerCreator  {
 		@Override
 		public String getTabName(ContextEntry ce, UserRequest ureq) {
 			OLATResourceable ores = ce.getOLATResourceable();
-			Feed feed = feedManager.getFeed(ores);
+			ores = OLATResourceManager.getInstance().findResourceable(ores.getResourceableId(), BlogFileResource.TYPE_NAME);
+			Feed feed = feedManager.loadFeed(ores);
 			return feed.getTitle();
 		}
 
@@ -92,7 +96,8 @@ public class LiveBlogContextEntryControllerCreator  {
 		public boolean validateContextEntryAndShowError(ContextEntry ce, UserRequest ureq, WindowControl wControl) {
 			try {
 				OLATResourceable ores = ce.getOLATResourceable();
-				Feed feed = feedManager.getFeed(ores);
+				ores = OLATResourceManager.getInstance().findResourceable(ores.getResourceableId(), BlogFileResource.TYPE_NAME);
+				Feed feed = feedManager.loadFeed(ores);
 				return feed != null;
 			} catch (Exception e) {
 				log.warn("Try to load a live blog with an invalid context entry: " + ce, e);

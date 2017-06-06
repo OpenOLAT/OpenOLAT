@@ -39,9 +39,9 @@ import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -105,9 +105,11 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 		String storagePath = fileStorage.getRelativePath(mediaDir);
 		media = mediaDao.updateStoragePath(media, storagePath, BlogArtefact.BLOG_FILE_NAME);
 		VFSContainer mediaContainer = fileStorage.getMediaContainer(media);
-		VFSContainer itemContainer = feedManager.getItemContainer(item, feed);
+		VFSContainer itemContainer = feedManager.getItemContainer(item);
+		FeedManager.getInstance().saveItemAsXML(item);
 		VFSManager.copyContent(itemContainer, mediaContainer);
-
+		FeedManager.getInstance().deleteItemXML(item);
+		
 		return media;
 	}
 

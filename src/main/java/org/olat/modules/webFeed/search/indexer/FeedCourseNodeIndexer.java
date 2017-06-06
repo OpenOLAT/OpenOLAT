@@ -20,15 +20,16 @@
 package org.olat.modules.webFeed.search.indexer;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.search.document.FeedItemDocument;
 import org.olat.modules.webFeed.search.document.FeedNodeDocument;
 import org.olat.repository.RepositoryEntry;
@@ -78,14 +79,15 @@ public abstract class FeedCourseNodeIndexer extends DefaultIndexer implements Co
 				if (log.isDebug()) {
 					log.info("Indexing: " + repoEntryName);
 				}
-				Feed feed = FeedManager.getInstance().getFeed(repositoryEntry.getOlatResource());
+				Feed feed = FeedManager.getInstance().loadFeed(repositoryEntry.getOlatResource());
+				List<Item> publishedItems = FeedManager.getInstance().loadPublishedItems(feed);
 
 				// Create the olatDocument for the feed course node itself
 				OlatDocument feedNodeDoc = new FeedNodeDocument(feed, courseNodeResourceContext);
 				indexer.addDocument(feedNodeDoc.getLuceneDocument());
 				
-				// Only index items. Feed itself is indexed by RepositoryEntryIndexer.
-				for (Item item : feed.getPublishedItems()) {
+				// Only index items. FeedImpl itself is indexed by RepositoryEntryIndexer.
+				for (Item item : publishedItems) {
 					OlatDocument itemDoc = new FeedItemDocument(item, courseNodeResourceContext);
 					indexer.addDocument(itemDoc.getLuceneDocument());
 				}

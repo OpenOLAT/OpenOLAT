@@ -20,6 +20,8 @@
 
 package org.olat.modules.webFeed.portfolio;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -28,11 +30,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.types.BlogFileResource;
+import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedResourceSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.search.document.FeedItemDocument;
 import org.olat.modules.webFeed.ui.FeedItemDisplayConfig;
 import org.olat.modules.webFeed.ui.FeedMainController;
@@ -119,9 +121,10 @@ public class LiveBlogArtefactHandler extends EPAbstractHandler<LiveBlogArtefact>
 			manager = FeedManager.getInstance();
 			String oresId = businessPath.substring(LIVEBLOG.length(), businessPath.length() - 1);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(BlogFileResource.TYPE_NAME, Long.parseLong(oresId));
-			Feed feed = manager.getFeed(ores);
+			Feed feed = manager.loadFeed(ores);
+			List<Item> publishedItems = manager.loadPublishedItems(feed);
 
-			for (Item item : feed.getPublishedItems()) {
+			for (Item item : publishedItems) {
 				OlatDocument itemDoc = new FeedItemDocument(item, context);
 				String content = itemDoc.getContent();
 				sb.append(content);

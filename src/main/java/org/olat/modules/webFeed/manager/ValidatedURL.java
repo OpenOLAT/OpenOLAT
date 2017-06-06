@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.webFeed.managers;
+package org.olat.modules.webFeed.manager;
 
 /**
  * <P>

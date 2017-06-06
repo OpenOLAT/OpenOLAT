@@ -19,8 +19,8 @@
  */
 package org.olat.modules.webFeed.portfolio;
 
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.Item;
 
 /**
  * 

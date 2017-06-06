@@ -45,9 +45,9 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.managers.ValidatedURL;
-import org.olat.modules.webFeed.models.Feed;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.manager.FeedManager;
+import org.olat.modules.webFeed.manager.ValidatedURL;
 
 /**
  * This controller is responsible for editing feed information. <br />
@@ -84,7 +84,7 @@ class FeedFormController extends FormBasicController {
 	public FeedFormController(UserRequest ureq, WindowControl wControl, Feed feed, FeedUIFactory uiFactory) {
 		super(ureq, wControl);
 		this.feed = feed;
-		this.feedQuota = FeedManager.getInstance().getQuota(feed.getResource());
+		this.feedQuota = FeedManager.getInstance().getQuota(feed);
 		setTranslator(uiFactory.getTranslator());
 		initForm(ureq);
 	}
@@ -127,7 +127,7 @@ class FeedFormController extends FormBasicController {
 				} else {
 					file.clearError();
 				}
-				deleteImage.setVisible(true);	
+				deleteImage.setVisible(true);
 			}
 		} else if(source == deleteImage) {
 			VFSLeaf img = FeedManager.getInstance().createFeedMediaFile(feed, feed.getImageName(), null);

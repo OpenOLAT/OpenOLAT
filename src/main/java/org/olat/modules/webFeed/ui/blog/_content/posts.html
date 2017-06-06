@@ -4,10 +4,9 @@
 		$r.render("feed.add.item")
 	</div>
 #end
-##<h4 class="o_title">$r.translate("blog.posts") ($helper.itemsCount($callback))</h4>
 <div class="clearfix"></div>
 
-#if (!$feed.hasItems())
+#if ($items.size() == 0)
 	<div class="o_blog_no_posts o_important">
 		<p>
 			<i class="o_icon o_icon_warn"></i>
@@ -23,8 +22,7 @@
 		#end
 	</div>
 #else
-	<!-- loop over episodes -->
-	#foreach( $post in $helper.getItems($callback) ) 	
+	#foreach( $post in $helper.getItemsOnPage($items) ) 	
 		<div class="o_post o_block_with_datecomp clearfix $!post.extraCSSClass()">
 			<div class="o_head">
 				#if (( $helper.isAuthor($post) && !$post.isDraft()) && $feed.isInternal() && $r.available("feed.artefact.item.$post.getGuid()"))
@@ -93,7 +91,7 @@
 	#end
 	
 	<ul class="pagination">
-		#if ( $helper.hasOlderItems() )
+		#if ( $helper.hasOlderItems($items) )
 		<li>
 			$r.render("feed.older.items")
 		</li>

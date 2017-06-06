@@ -66,8 +66,8 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 		boolean setOfFlashcardExists = false;
 
 		String url = String.format(card2brainModule.getPeekViewUrl(), alias);
-		HttpGet request = new HttpGet(url);
 		
+		HttpGet request = new HttpGet(url);
 		try(CloseableHttpClient httpclient = HttpClients.createDefault();
 				CloseableHttpResponse response = httpclient.execute(request);) {
 			setOfFlashcardExists = isSetOfFlashcardExisting(response);

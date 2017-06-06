@@ -50,7 +50,7 @@ import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.webFeed.FeedResourceSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
-import org.olat.modules.webFeed.managers.FeedManager;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedRuntimeController;
 import org.olat.modules.webFeed.ui.blog.BlogUIFactory;
@@ -113,6 +113,7 @@ public class BlogHandler implements RepositoryHandler {
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
 		File blogRoot = new File(fResourceFileroot, FeedManager.getInstance().getFeedKind(resource));
 		FileResource.copyResource(file, filename, blogRoot);
+		FeedManager.getInstance().importFeedFromXML(resource);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
 				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();
@@ -138,7 +139,7 @@ public class BlogHandler implements RepositoryHandler {
 		// For now, notifications are not implemented since a blog feed is meant
 		// to be subscriped to anyway.
 		// NotificationsManager.getInstance().deletePublishersOf(res);
-		FeedManager.getInstance().delete(res);
+		FeedManager.getInstance().deleteFeed(res);
 		return true;
 	}
 

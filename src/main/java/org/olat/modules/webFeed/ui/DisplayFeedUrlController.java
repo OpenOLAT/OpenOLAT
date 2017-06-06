@@ -28,8 +28,8 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedViewHelper;
-import org.olat.modules.webFeed.models.Feed;
 
 /**
  * Controller for displaying the feed-url to the students. When the element is

@@ -34,11 +34,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedViewHelper;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
@@ -62,8 +62,6 @@ public class FeedPeekviewController extends BasicController implements Controlle
 	private final String nodeId;
 	
 	@Autowired
-	private FeedManager feedManager;
-	@Autowired
 	private UserManager userManager;
 
 	/**
@@ -84,7 +82,7 @@ public class FeedPeekviewController extends BasicController implements Controlle
 			Long courseId, String nodeId, FeedUIFactory feedUIFactory, int itemsToDisplay, String wrapperCssClass) {
 		super(ureq, wControl);
 		this.nodeId = nodeId;
-		Feed feed = feedManager.getFeed(olatResource);
+		Feed feed = FeedManager.getInstance().loadFeed(olatResource);
 
 		VelocityContainer peekviewVC = createVelocityContainer("peekview");
 		if(feed == null) {
@@ -94,11 +92,11 @@ public class FeedPeekviewController extends BasicController implements Controlle
 			peekviewVC.contextPut("wrapperCssClass", wrapperCssClass != null ? wrapperCssClass : "");
 			// add gui helper
 			String authorFullname = userManager.getUserDisplayName(feed.getAuthor());
-			FeedViewHelper helper = new FeedViewHelper(feed, getIdentity(), authorFullname, getTranslator(), courseId, nodeId, callback);
+			FeedViewHelper helper = new FeedViewHelper(feed, getIdentity(), getTranslator(), courseId, nodeId);
 			peekviewVC.contextPut("helper", helper);
 			// add items, only as many as configured
-			List<Item> allItems = feed.getFilteredItems(callback, getIdentity());
-			List<Item> items = new ArrayList<Item>();
+			List<Item> allItems = FeedManager.getInstance().loadFilteredAndSortedItems(feed, callback, getIdentity());
+			List<Item> items = new ArrayList<>();
 			for (int i = 0; i < allItems.size(); i++) {
 				if (items.size() == itemsToDisplay) {
 					break;
@@ -113,7 +111,7 @@ public class FeedPeekviewController extends BasicController implements Controlle
 					nodeLink.setCustomDisplayText(StringHelper.escapeHtml(item.getTitle()));
 					nodeLink.setIconLeftCSS("o_icon o_" + feed.getResourceableTypeName().replace(".", "-") + "_icon");
 					nodeLink.setCustomEnabledLinkCSS("o_gotoNode");
-					nodeLink.setUserObject(item.getGuid());
+					nodeLink.setUserObject(Long.toString(item.getKey()));
 				}
 			}
 			peekviewVC.contextPut("items", items);

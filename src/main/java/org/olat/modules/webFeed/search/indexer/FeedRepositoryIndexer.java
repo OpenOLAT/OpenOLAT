@@ -20,10 +20,11 @@
 package org.olat.modules.webFeed.search.indexer;
 
 import java.io.IOException;
+import java.util.List;
 
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.search.document.FeedItemDocument;
 import org.olat.repository.RepositoryEntry;
 import org.olat.search.model.OlatDocument;
@@ -56,13 +57,14 @@ public abstract class FeedRepositoryIndexer extends DefaultIndexer {
 			if (isLogDebugEnabled()) {
 				logDebug("Indexing: " + repoEntryName);
 			}
-			Feed feed = FeedManager.getInstance().getFeed(repositoryEntry.getOlatResource());
+			Feed feed = FeedManager.getInstance().loadFeed(repositoryEntry.getOlatResource());
 			if(feed != null) {
 				// Only index items. Feed itself is indexed by RepositoryEntryIndexer.
+				List<Item> publishedItems = FeedManager.getInstance().loadPublishedItems(feed);
 				if (isLogDebugEnabled()) {
-					logDebug("PublishedItems size=" + feed.getPublishedItems().size());
+					logDebug("PublishedItems size=" + publishedItems.size());
 				}
-				for (Item item : feed.getPublishedItems()) {
+				for (Item item : publishedItems) {
 					SearchResourceContext feedContext = new SearchResourceContext(searchResourceContext);
 					feedContext.setDocumentType(getDocumentType());
 					OlatDocument itemDoc = new FeedItemDocument(item, feedContext);
@@ -77,6 +79,7 @@ public abstract class FeedRepositoryIndexer extends DefaultIndexer {
 	/**
 	 * @see org.olat.search.service.indexer.Indexer#getSupportedTypeName()
 	 */
+	@Override
 	public abstract String getSupportedTypeName();
 
 	/**

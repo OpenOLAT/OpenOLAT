@@ -41,9 +41,9 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.manager.FeedManager;
 
 /**
  * Form controller for blog posts.
@@ -69,13 +69,13 @@ public class BlogPostFormController extends FormBasicController {
 	 * @param ureq
 	 * @param control
 	 */
-	public BlogPostFormController(UserRequest ureq, WindowControl control, Item post, Feed blog, Translator translator) {
+	public BlogPostFormController(UserRequest ureq, WindowControl control, Item item, Feed feed, Translator translator) {
 		super(ureq, control);
-		this.post = post;
-		this.currentlyDraft = post.isDraft();
-		this.baseDir = FeedManager.getInstance().getItemContainer(post, blog);
+		this.post = item;
+		this.currentlyDraft = item.isDraft();
+		this.baseDir = FeedManager.getInstance().getItemContainer(item);
 		if(baseDir.getLocalSecurityCallback() == null) {
-			Quota quota = FeedManager.getInstance().getQuota(blog.getResource());
+			Quota quota = FeedManager.getInstance().getQuota(feed);
 			baseDir.setLocalSecurityCallback(new FullAccessWithQuotaCallback(quota));
 		}
 		setTranslator(translator);
@@ -97,7 +97,8 @@ public class BlogPostFormController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		// Update post. It is saved by the manager.
 		setValues();
-		if(!currentlyDraft || post.getModifierKey() > 0) {
+		Long modifierKey = post.getModifierKey();
+		if(!currentlyDraft || modifierKey != null) {
 			post.setModifierKey(ureq.getIdentity().getKey());
 		//fxdiff BAKS-18
 		} else if(currentlyDraft && !ureq.getIdentity().getKey().equals(post.getAuthorKey())) {
@@ -134,7 +135,8 @@ public class BlogPostFormController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == draftLink) {
 			setValues();
-			if(!currentlyDraft || post.getModifierKey() > 0) {
+			Long modifierKey = post.getModifierKey();
+			if(!currentlyDraft ||  modifierKey != null) {
 				post.setModifierKey(ureq.getIdentity().getKey());
 			//fxdiff BAKS-18
 			} else if(currentlyDraft && !ureq.getIdentity().getKey().equals(post.getAuthorKey())) {

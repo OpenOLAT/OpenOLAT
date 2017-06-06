@@ -57,8 +57,8 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -172,7 +172,7 @@ public class FeedMediaDispatcher extends LogDelegator implements Dispatcher {
 			Identity identity = getIdentity(path.getIdentityKey());
 			long sinceModifiedMillis = request.getDateHeader("If-Modified-Since");
 			
-			Feed feedLight = manager.getFeed(feed);
+			Feed feedLight = manager.loadFeed(feed);
 			long lastModifiedMillis = -1;
 			if (feedLight != null) {
 				lastModifiedMillis = feedLight.getLastModified().getTime();
