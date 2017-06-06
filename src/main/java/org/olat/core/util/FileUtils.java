@@ -71,7 +71,7 @@ public class FileUtils {
 
 	// matches files and folders of type:
 	// bla, bla1, bla12, bla.html, bla1.html, bla12.html
-	private static final Pattern fileNamePattern = Pattern.compile("(.+?)\\p{Digit}*(\\.\\w{2,4})?");
+	private static final Pattern fileNamePattern = Pattern.compile("(.+?)\\p{Digit}*(\\.\\w{2,7})?");
 	
 	//windows: invalid characters for filenames: \ / : * ? " < > | 
 	//linux: invalid characters for file/folder names: /, but you have to escape certain chars, like ";$%&*"
