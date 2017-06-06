@@ -61,6 +61,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
@@ -366,6 +367,7 @@ public class IQRunController extends BasicController implements GenericEventList
 					myContent.put("disc", iFrameCtr.getInitialComponent());
 					iFrameCtr.setCurrentURI(sDisclaimer);
 					myContent.contextPut("hasDisc", Boolean.TRUE);
+					myContent.contextPut("in-disclaimer", isPanelOpen(ureq, "disclaimer", true));
 				}
 			}
 		}
@@ -489,6 +491,10 @@ public class IQRunController extends BasicController implements GenericEventList
 			} 
 		} else if (source == hideResultsButton) {
 			myContent.contextPut("showResults", Boolean.FALSE);
+		} else if("show".equals(event.getCommand())) {
+			saveOpenPanel(ureq, ureq.getParameter("panel"), true);
+		} else if("hide".equals(event.getCommand())) {
+			saveOpenPanel(ureq, ureq.getParameter("panel"), false);
 		}
 	}
 
@@ -641,6 +647,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	    			if(acn.hasCommentConfigured()) {
 	    				StringBuilder comment = Formatter.stripTabsAndReturns(assessmentEntry.getComment());
 	    				myContent.contextPut("comment", StringHelper.xssScan(comment));
+						myContent.contextPut("in-comment", isPanelOpen(ureq, "comment", true));
 	    			}
 
 	    			if(acn.hasIndividualAsssessmentDocuments()) {
@@ -648,6 +655,7 @@ public class IQRunController extends BasicController implements GenericEventList
 						String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 						myContent.contextPut("docsMapperUri", mapperUri);
 						myContent.contextPut("docs", docs);
+						myContent.contextPut("in-assessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
 	    			}
 	    		}
 	    		myContent.contextPut("attempts", assessmentEntry.getAttempts() == null ? 0 : assessmentEntry.getAttempts());
@@ -699,24 +707,25 @@ public class IQRunController extends BasicController implements GenericEventList
     //migration: check if old tests have no summary configured
 	  String configuredSummary = (String) modConfig.get(IQEditController.CONFIG_KEY_SUMMARY);
 	  boolean noSummary = configuredSummary==null || (configuredSummary!=null && configuredSummary.equals(AssessmentInstance.QMD_ENTRY_SUMMARY_NONE));
-		if(!noSummary) {
+	  if(!noSummary) {
 			Boolean showResultsObj = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);		
 			boolean showResultsOnHomePage = (showResultsObj!=null && showResultsObj.booleanValue());
-			myContent.contextPut("showResultsOnHomePage",new Boolean(showResultsOnHomePage));			
+			myContent.contextPut("showResultsOnHomePage",new Boolean(showResultsOnHomePage));
+			myContent.contextPut("in-results", isPanelOpen(ureq, "results", true));
 			boolean dateRelatedVisibility = AssessmentHelper.isResultVisible(modConfig);		
 			if(showResultsOnHomePage && dateRelatedVisibility) {
 				myContent.contextPut("showResultsVisible",Boolean.TRUE);
-			  showResultsButton = LinkFactory.createButton("command.showResults", myContent, this);
-			  hideResultsButton = LinkFactory.createButton("command.hideResults", myContent, this);
+				showResultsButton = LinkFactory.createButton("command.showResults", myContent, this);
+				hideResultsButton = LinkFactory.createButton("command.hideResults", myContent, this);
 			} else if(showResultsOnHomePage) {
 				Date startDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-			  Date endDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-			  String visibilityStartDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(startDate);
-			  String visibilityEndDate = "-";
-			  if(endDate!=null) {
-			    visibilityEndDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(endDate);
-			  }
-			  String visibilityPeriod = getTranslator().translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate});
+				Date endDate = (Date)modConfig.get(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+			  	String visibilityStartDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(startDate);
+			  	String visibilityEndDate = "-";
+			  	if(endDate!=null) {
+				  	visibilityEndDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ureq.getLocale()).format(endDate);
+			  	}
+			  	String visibilityPeriod = getTranslator().translate("showResults.visibility", new String[] { visibilityStartDate, visibilityEndDate});
 				myContent.contextPut("visibilityPeriod",visibilityPeriod);
 				myContent.contextPut("showResultsVisible",Boolean.FALSE);
 			}
@@ -729,6 +738,24 @@ public class IQRunController extends BasicController implements GenericEventList
 		// although this is not an assessable node we still use the assessment
 		// manager since this one uses caching
 		myContent.contextPut("attempts", am.getNodeAttempts(courseNode, identity));
+	}
+	
+	private boolean isPanelOpen(UserRequest ureq, String panelId, boolean def) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		Boolean showConfig  = (Boolean) guiPrefs.get(IQRunController.class, getOpenPanelId(panelId));
+		return showConfig == null ? def : showConfig.booleanValue();
+	}
+	
+	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		if (guiPrefs != null) {
+			guiPrefs.putAndSave(IQRunController.class, getOpenPanelId(panelId), new Boolean(newValue));
+		}
+		myContent.contextPut("in-" + panelId, new Boolean(newValue));
+	}
+	
+	private String getOpenPanelId(String panelId) {
+		return panelId + "::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent();
 	}
 	
 	/**
