@@ -281,7 +281,8 @@ public class AssessmentResultController extends FormBasicController {
 
 		Results r = new Results(false, node.getSectionPartTitle(), type.getCssClass(), options.isQuestionSummary());
 		r.setSessionStatus(null);//init
-
+		r.setItemIdentifier(node.getIdentifier().toString());
+		
 		ItemSessionState sessionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
 		if(sessionState != null) {
 			r.setSessionState(sessionState);
@@ -509,7 +510,7 @@ public class AssessmentResultController extends FormBasicController {
 	}
 	
 	public class Results {
-		
+
 		private Date entryTime;
 		private Date endTime;
 		private Long duration;
@@ -523,6 +524,7 @@ public class AssessmentResultController extends FormBasicController {
 		private Boolean pass;
 		private String comment;
 		
+		private String itemIdentifier;
 		private final String title;
 		private final String cssClass;
 		private final boolean section;
@@ -545,7 +547,7 @@ public class AssessmentResultController extends FormBasicController {
 			this.metadataVisible = metadataVisible;
 			this.title = null;
 		}
-		
+
 		public Results(boolean section, String title, String cssClass, boolean metadataVisible) {
 			this.section = section;
 			this.title = title;
@@ -553,6 +555,15 @@ public class AssessmentResultController extends FormBasicController {
 			this.metadataVisible = metadataVisible;
 		}
 		
+		
+		public void setItemIdentifier(String itemIdentifier) {
+			this.itemIdentifier = itemIdentifier;
+		}
+		
+		public String getItemIdentifier() {
+			return this.itemIdentifier;
+		}
+
 		public void setSessionState(ControlObjectSessionState sessionState) {
 			entryTime = sessionState.getEntryTime();
 			endTime = sessionState.getEndTime();

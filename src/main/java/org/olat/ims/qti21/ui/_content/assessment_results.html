@@ -1,4 +1,5 @@
 <div class="o_assessment_test_results">
+<a id="o_result_overview" title="$r.translateInAttribute("head.assessment.details")"></a>
 
 <div class="o_header_with_buttons">
 	#if($title)
@@ -179,6 +180,7 @@
 </div> ## END o_qti_metainfo
 #end
 
+#if ($testResults.numberOfSections > 1)
 <div class="o_qti_sectionsummary row o_block_large">
 #foreach($itemResult in $itemResults)
 	#if(${itemResult.isSection()} && ${itemResult.metadataVisible})
@@ -255,12 +257,13 @@
 		</div>
 		#end
 		<div class="o_qti_section_sublisting o_block_top o_small">
-			<a href="#o_result_${velocityCount}">$r.translate("results.goto.section") <i class="o_icon o_icon-fw o_icon_start"> </i></a>
+			<a href="#o_result_${velocityCount}"  onclick="o_scrollToElement('#o_result_${velocityCount}');">$r.translate("results.goto.section") <i class="o_icon o_icon-fw o_icon_start"> </i></a>
 		</div>
 	</div>
 	#end
-#end
+#end  ## END #foreach($itemResult in $itemResults)
 </div>
+#end  ## END $testResults.numberOfSections > 1
 
 
 <div class="o_qti_sections o_block_large">
@@ -280,30 +283,38 @@
 		#if ($inSection)
 			## END last o_qti_section
 			</div>
+			<div class="o_qti_to_overview o_block_top">			
+				<a href="#o_result_overview" onclick="o_scrollToElement('#o_result_overview');" title="$r.translateInAttribute("results.goto.overview")">
+					<i class="o_icon o_icon_back"></i> 
+					$r.translate("results.goto.overview")
+				</a>
+			</div>
 			#set($inSection = false)
 		#end
-		<div class="o_qti_section">
-		#set($inSection = true)
-		<a id="o_result_${velocityCount}"></a>
-		<h3><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
-			#if($itemResult.metadataVisible)
-			<small>
-				#if(${itemResult.hasScore()})				
-					#if ($itemResult.hasMaxScore())
-			    		#if ($itemResult.maxScore == "-1.0")
-			  				$itemResult.score $r.translate("results.points") ($r.translate("question.progress.noMaxScore"))
-			    		#else
-			  				<span title="$r.translateInAttribute("results.score.yourscore")">$itemResult.score</span> 
-			  				$r.translate("results.of") <span title="$r.translateInAttribute("score.max")">$itemResult.maxScore</span> $r.translate("results.of.points")
-			  			#end
-					#else
-						$itemResult.score
+		#if ($testResults.numberOfSections > 1)
+			<div class="o_qti_section">
+			#set($inSection = true)
+			<a id="o_result_${velocityCount}" title="$r.escapeHtml($itemResult.title)"></a>
+			<h3><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
+				#if($itemResult.metadataVisible)
+				<small>
+					#if(${itemResult.hasScore()})				
+						#if ($itemResult.hasMaxScore())
+				    		#if ($itemResult.maxScore == "-1.0")
+				  				$itemResult.score $r.translate("results.points") ($r.translate("question.progress.noMaxScore"))
+				    		#else
+				  				<span title="$r.translateInAttribute("results.score.yourscore")">$itemResult.score</span> 
+				  				$r.translate("results.of") <span title="$r.translateInAttribute("score.max")">$itemResult.maxScore</span> $r.translate("results.of.points")
+				  			#end
+						#else
+							$itemResult.score
+						#end
+						(${itemResult.scorePercent}%)
 					#end
-					(${itemResult.scorePercent}%)
+				</small>
 				#end
-			</small>
-			#end
-		</h3>
+			</h3>
+		#end
 	#else
 		## this is an ITEM
 		#if (!$inItem)
@@ -311,33 +322,41 @@
 		#end
 		<div class="o_qti_item panel panel-default">
 		<div class="panel-heading">
-			<h4 class="panel-title"><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)</h4>
+			<h4 class="panel-title">
+				<i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
+				<small></small>
+			</h4>
 		</div>
 		#set($inItem = true)
 	 	#if($itemResult.metadataVisible)
 		<table class="table"><tbody>
+			<tr class="o_qti_item_id">
+				<th>ID</th>
+				<td>$itemResult.itemIdentifier</td> 
+			</tr>
 			<tr class="o_sel_assessmentitem_status">
 				<th>$r.translate("results.session.status")</th>
-				<td>$itemResult.sessionStatus</td> 
+				<td>
+					#if(${itemResult.hasPass()})
+						#if(${itemResult.getPass().booleanValue()})	
+						<i class="bgIcon o_icon o_icon-fw o_icon_passed"> </i>	 
+						#elseif(!${itemResult.getPass().booleanValue()})
+						<i class="bgIcon o_icon o_icon-fw o_icon_failed" > </i>	
+						#end
+					#end
+					$itemResult.sessionStatus
+				</td> 
 			</tr>
-			#if(${itemResult.hasMaxScore()})
-			<tr class="o_sel_assessmentitem_maxscore">
-				<th>$r.translate("score.max")</th>
-				<td>$itemResult.maxScore</td> 
-			</tr>
-			#end
-			#if(${itemResult.hasPass()})
-				#if(${itemResult.getPass().booleanValue()})	
-				<i class="bgIcon o_icon o_icon-fw o_icon_progress_success"> </i>	
-				#elseif(!${itemResult.getPass().booleanValue()})
-				<i class="bgIcon o_icon o_icon-fw o_icon_progress_danger" > </i>	
-				#end
-			#end
 			#if(${itemResult.hasScore()})
 			<tr class="o_sel_assessmentitem_score">
 				<th>$r.translate("results.score.yourscore")</th>
 				<td>
-					<div class="col-xs-3 col-md-2" style='padding-left:0;'>$itemResult.score</div>
+					<div class="col-xs-3 col-md-2" style='padding-left:0;'>
+						<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score">$itemResult.score</span>
+						#if(${itemResult.hasMaxScore()})
+							/ <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore">$itemResult.maxScore</span>
+						#end
+					</div>
 					<div class="col-xs-6 col-md-8">
 						<div class="progress" style="width:100%;">
 							<div class="progress-bar" role="progressbar" aria-valuenow="$itemResult.score" aria-valuemin="0" aria-valuemax="$itemResult.maxScore" style="width:${itemResult.scorePercent}%;">
@@ -347,6 +366,11 @@
 					</div>
 					<div class="col-xs-1">${itemResult.scorePercent}%</div>
 				</td> 
+			</tr>
+			#elseif(${itemResult.hasMaxScore()})
+			<tr>
+				<th>$r.translate("score.max")</th>
+				<td><span class="o_sel_assessmentitem_maxscore">$itemResult.maxScore</span></td> 
 			</tr>
 			#end
 			#if(${itemResult.hasPass()})
@@ -364,17 +388,19 @@
 				#end
 				</td>
 			</tr>
-			#end
-			#if($r.isNotEmpty($itemResult.comment))
-			<tr class="o_sel_assessmentitem_comment">
-				<th>$r.translate("results.comment")</th>
-				<td>$r.escapeHtml($itemResult.comment)</td> 
-			</tr>
-			#end
+			#end  ## END #if($itemResult.metadataVisible)
 		</tbody></table>
 		#end
+		
+		#if($itemResult.metadataVisible && $r.isNotEmpty($itemResult.comment))
+		<div class="o_sel_assessmentitem_comment o_qti_item_comment">
+			<h4>$r.translate("results.comment")</h4>
+			$r.escapeHtml($itemResult.comment) 
+		</div>
+		#end
+		
 		<div class="panel-body">		
-
+ 
 		#if($r.isNotNull($itemResult.questionItem)) 
 			<div class="o_block_bottom clearfix"><h4>$r.translate("question")</h4>
 				$r.render($itemResult.questionItem.name)
@@ -425,14 +451,22 @@
 #end
 
 #if ($inItem)
-	## END last o_qti_item and o_qti_items
-	</div></div>
+	## END o_qti_items
+	</div>
 #end
 #if ($inSection)
 	## END last o_qti_section
 	</div>
 #end
 </div> ## END of o_qti_sections
+
+<div class="o_qti_to_overview o_block_top">			
+	<a href="#o_result_overview" onclick="o_scrollToElement('#o_result_overview');" title="$r.translateInAttribute("results.goto.overview")">
+		<i class="o_icon o_icon_back"></i> 
+		$r.translate("results.goto.overview")
+	</a>
+</div>
+
 
 #if($printCommand)
 <script type="text/javascript">

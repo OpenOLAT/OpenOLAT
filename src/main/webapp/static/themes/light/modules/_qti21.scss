@@ -1102,11 +1102,30 @@ ul.testPartDrilldown {
 				margin-bottom: 20px;
 			}
 			.o_qti_items {
-				.o_qti_item {}
+				.o_qti_item {
+					.o_qti_item_id {
+						display: none;
+					}
+					.o_qti_item_comment {
+						@extend %o_note;
+						margin: 0;
+						padding: 5px 10px 10px 5px;
+						border-top: 1px solid $panel-default-border;
+						broder-bottom: 1px solid $panel-default-border;
+						h4 {
+							font-size: 100%;
+							font-weight: bold;
+							color: inherit;
+						}
+					}
+				}
 			
 			}
 		}
 	}
-	
+	.o_qti_to_overview {
+		text-align: right;
+		@extend %o_small;			
+	}	
 }	
 
