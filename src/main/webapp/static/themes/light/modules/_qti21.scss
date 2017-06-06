@@ -672,27 +672,37 @@ tr.choiceinteraction {
 .o_match_dnd_sources {
 	padding: 10px 10px 0 10px;
 	min-height: 60px;
-	border: 2px solid #eeeeee;
+	border: 1px solid $o-qti-match-sources-border-color;
+	border-radius: $o-qti-match-border-radius;
+	background: $o-qti-match-sources-bg;
 	
 	&.oo-accepted {
-		border-color: $o-qti-match-drop-accept-border-color	;
+		border-color: $o-qti-match-drop-accept-border-color;
 	}
 }
 
 .o_match_dnd_source {
 	padding: 10px;
 	margin-bottom: 10px;
-	border: 2px solid $o-qti-gap-border-color;
+	border: 2px $o-qti-match-source-border-style $o-qti-gap-border-color;
+	border-radius: $o-qti-match-border-radius;
 	background-color: #ffffff;
+	background: $o-qti-match-source-bg;
 	
 	
 	&.oo-selected {
-		border: 2px solid $o-qti-match-selected-border-color;
+		border: 2px $o-qti-match-source-border-style $o-qti-match-selected-border-color;
+		background: $o-qti-match-selected-bg;
 	}
 	
 	&.oo-drag {
-		border: 2px solid $o-qti-match-drag-border-color !important;
+		border: 2px $o-qti-match-source-border-style $o-qti-match-drag-border-color !important;
 	}
+	
+	cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;	
 }
 
 .source-bottom .o_match_dnd_source, .source-top .o_match_dnd_source {
@@ -700,13 +710,16 @@ tr.choiceinteraction {
 }
 
 .o_match_dnd_targets .oo-accepted {
-	border: 2px solid $o-qti-match-drop-accept-border-color	;
+	border: 2px solid $o-qti-match-drop-accept-border-color;
+	border-radius: $o-qti-match-border-radius;
 }
 
 .o_match_dnd_target {
 	padding: 10px 10px 0 10px;
 	margin: 0 0 10px 10px;
-	border: 2px solid $o-qti-gap-border-color;
+	border: 2px solid $o-qti-match-target-border-color;
+	border-radius: $o-qti-match-border-radius;
+	background: $o-qti-match-target-bg;
 
 	.o_match_dnd_target_drop_zone {
 		margin: 0;
@@ -714,7 +727,7 @@ tr.choiceinteraction {
 		min-height: 30px;
 		
 		.o_match_dnd_source {
-			border: 2px solid $o-qti-match-choosed-border-color;
+			border: 2px $o-qti-match-source-border-style $o-qti-match-choosed-border-color;
 		}
 	}
 }
