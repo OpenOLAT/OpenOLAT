@@ -596,8 +596,7 @@ public class MediaCenterController extends FormBasicController
 		detailsCtrl = new MediaDetailsController(ureq, swControl, stackPanel, media);
 		listenTo(detailsCtrl);
 		
-		String displayName = StringHelper.escapeHtml(media.getTitle());
-		stackPanel.pushController(displayName, detailsCtrl);
+		stackPanel.pushController(media.getTitle(), detailsCtrl);
 		return detailsCtrl;
 	}
 	
