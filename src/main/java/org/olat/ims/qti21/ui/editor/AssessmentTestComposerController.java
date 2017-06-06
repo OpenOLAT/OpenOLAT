@@ -68,6 +68,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
+import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -359,7 +360,11 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	@Override
 	protected void doDispose() {
 		if (lockEntry != null && lockEntry.isSuccess()) {
-			CoordinatorManager.getInstance().getCoordinator().getLocker().releasePersistentLock(lockEntry);
+			try {
+				CoordinatorManager.getInstance().getCoordinator().getLocker().releasePersistentLock(lockEntry);
+			} catch (AssertException e) {
+				logWarn("Lock was already released", e);
+			}
 		}
 		if (activeSessionLock != null && activeSessionLock.isSuccess()) {
 			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(activeSessionLock);			
