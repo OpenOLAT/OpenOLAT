@@ -22,6 +22,7 @@ package org.olat.modules.webFeed.ui.blog;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,12 +39,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
+import org.olat.fileresource.types.BlogFileResource;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Form controller for blog posts.
@@ -56,6 +60,8 @@ import org.olat.modules.webFeed.models.Item;
 public class BlogPostFormController extends FormBasicController {
 
 	private Item post;
+	private OLATResourceable feedOres;
+	
 	private VFSContainer baseDir;
 	
 	private TextElement title;
@@ -64,6 +70,9 @@ public class BlogPostFormController extends FormBasicController {
 	private FormLink draftLink;
 	
 	private boolean currentlyDraft;
+	
+	@Autowired
+	private NotificationsManager notificationManager;
 
 	/**
 	 * @param ureq
@@ -72,6 +81,7 @@ public class BlogPostFormController extends FormBasicController {
 	public BlogPostFormController(UserRequest ureq, WindowControl control, Item post, Feed blog, Translator translator) {
 		super(ureq, control);
 		this.post = post;
+		this.feedOres = blog;
 		this.currentlyDraft = post.isDraft();
 		this.baseDir = FeedManager.getInstance().getItemContainer(post, blog);
 		if(baseDir.getLocalSecurityCallback() == null) {
@@ -99,12 +109,12 @@ public class BlogPostFormController extends FormBasicController {
 		setValues();
 		if(!currentlyDraft || post.getModifierKey() > 0) {
 			post.setModifierKey(ureq.getIdentity().getKey());
-		//fxdiff BAKS-18
 		} else if(currentlyDraft && !ureq.getIdentity().getKey().equals(post.getAuthorKey())) {
 			post.setModifierKey(ureq.getIdentity().getKey());
 		}
 		post.setDraft(false);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		notificationManager.markPublisherNews(BlogFileResource.TYPE_NAME, feedOres.getResourceableId().toString(), null, false);
 	}
 
 	/**
@@ -136,12 +146,11 @@ public class BlogPostFormController extends FormBasicController {
 			setValues();
 			if(!currentlyDraft || post.getModifierKey() > 0) {
 				post.setModifierKey(ureq.getIdentity().getKey());
-			//fxdiff BAKS-18
 			} else if(currentlyDraft && !ureq.getIdentity().getKey().equals(post.getAuthorKey())) {
 				post.setModifierKey(ureq.getIdentity().getKey());
 			}
 			post.setDraft(true);
-			this.fireEvent(ureq, Event.CHANGED_EVENT);
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
 

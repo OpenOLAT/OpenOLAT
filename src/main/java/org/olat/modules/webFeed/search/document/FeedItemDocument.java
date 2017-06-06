@@ -34,6 +34,8 @@ import org.olat.search.service.SearchResourceContext;
  * @author gwassmann
  */
 public class FeedItemDocument extends OlatDocument {
+
+	private static final long serialVersionUID = -3074986648480909133L;
 	private static Filter tagsFilter = FilterFactory.getHtmlTagsFilter();
 
 	public FeedItemDocument(Item item, SearchResourceContext searchResourceContext) {

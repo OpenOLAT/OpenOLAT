@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Date;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -49,6 +50,7 @@ import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
+import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.managers.FeedManager;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
@@ -82,6 +84,8 @@ public class EpisodeFormController extends FormBasicController {
 
 	@Autowired
 	private MovieService movieService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	/**
 	 * @param ureq
@@ -124,7 +128,6 @@ public class EpisodeFormController extends FormBasicController {
 		// Set episode as published (no draft feature for podcast)
 		episode.setDraft(false);
 		
-		//fxdiff FXOLAT-118: size for video podcast
 		String width = widthEl.getValue();
 		if(StringHelper.containsNonWhitespace(width)) {
 			try {
@@ -143,7 +146,8 @@ public class EpisodeFormController extends FormBasicController {
 			}
 		}
 		
-		this.fireEvent(ureq, Event.CHANGED_EVENT);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+		notificationsManager.markPublisherNews(PodcastFileResource.TYPE_NAME, podcast.getResourceableId().toString(), null, false);
 	}
 
 	/**

@@ -171,6 +171,8 @@ public abstract class NotificationsManager extends BasicManager {
 	 * @param ignoreNewsFor
 	 */
 	public abstract void markPublisherNews(SubscriptionContext subscriptionContext, Identity ignoreNewsFor, boolean sendEvent);
+	
+	public abstract void markPublisherNews(String publisherType, String data, Identity ignoreNewsFor, boolean sendEvent);
 
 	public abstract void registerAsListener(GenericEventListener gel, Identity ident);
 
