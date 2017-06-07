@@ -157,7 +157,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		manualCorrections = qtiService.needManualCorrection(testEntry);
+		manualCorrections = qtiService.needManualCorrection(testEntry)
+				|| IQEditController.CORRECTION_MANUAL.equals(courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE));
 		
 		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
