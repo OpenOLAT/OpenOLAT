@@ -261,7 +261,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				if(options.isAdmin()) {
 					tools.add(new QTI21ResetToolController(ureq, wControl, courseEnv, options, this));
 				}
-				if(qtiService.needManualCorrection(qtiTestEntry)) {
+				if(qtiService.needManualCorrection(qtiTestEntry)
+						|| IQEditController.CORRECTION_MANUAL.equals(getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
 					tools.add(new QTI21CorrectionToolController(ureq, wControl, courseEnv, options, this));
 				}
 				if(getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, false)) {
