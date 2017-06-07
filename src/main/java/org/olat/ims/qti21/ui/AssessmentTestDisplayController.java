@@ -862,6 +862,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private void handleTemporaryResponse(UserRequest ureq, Map<Identifier, ResponseInput> stringResponseMap) {
 		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
+		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
+		if(currentItemKey == null) {
+			return;//
+		}
+		
 		final Date timestamp = ureq.getRequestTimestamp();
 		
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
@@ -875,9 +880,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
             }
 		}
 		
-		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
 		ParentPartItemRefs parentParts = getParentSection(currentItemKey);
-
 		String assessmentItemIdentifier = currentItemKey.getIdentifier().toString();
 		AssessmentItemSession itemSession = qtiService
 				.getOrCreateAssessmentItemSession(candidateSession, parentParts, assessmentItemIdentifier);
