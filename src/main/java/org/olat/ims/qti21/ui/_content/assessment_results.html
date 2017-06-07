@@ -23,6 +23,9 @@
 #if($r.visible("assessedIdentityInfos"))
 	$r.render("assessedIdentityInfos")
 #end
+#if($r.isNotNull($testSessionNotFound) && $testSessionNotFound)
+<div class="o_warning">$r.translate("assessment.test.session.reseted")</div>
+#end
 #if($testResults.metadataVisible)
 <div class="panel panel-default o_personal o_sel_results_details">
   	<div class="panel-heading">

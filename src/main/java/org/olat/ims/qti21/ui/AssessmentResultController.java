@@ -169,35 +169,45 @@ public class AssessmentResultController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("title", new Boolean(withTitle));
-			layoutCont.contextPut("print", new Boolean(withPrint));
-			layoutCont.contextPut("printCommand", Boolean.FALSE);
-			if(withPrint) {
-				layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
-				layoutCont.getFormItemComponent().addListener(this);
+			if(testSessionState == null || assessmentResult == null) {
+				// An author has deleted the test session before the user end it.
+				// It can happen with time limited tests.
+				Results results = new Results(false, "o_qtiassessment_icon", false);
+				layoutCont.contextPut("testResults", results);
+				layoutCont.contextPut("itemResults", new ArrayList<>());
+				layoutCont.contextPut("testSessionNotFound", Boolean.TRUE);
+			} else {
+				layoutCont.contextPut("title", new Boolean(withTitle));
+				layoutCont.contextPut("print", new Boolean(withPrint));
+				layoutCont.contextPut("printCommand", Boolean.FALSE);
+				layoutCont.contextPut("testSessionNotFound", Boolean.FALSE);
+				if(withPrint) {
+					layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
+					layoutCont.getFormItemComponent().addListener(this);
+				}
+	
+				if(assessedIdentityInfosCtrl != null) {
+					layoutCont.put("assessedIdentityInfos", assessedIdentityInfosCtrl.getInitialComponent());
+				} else if(anonym) {
+					layoutCont.contextPut("anonym", Boolean.TRUE);
+				}
+				
+				Results results = new Results(false, "o_qtiassessment_icon", options.isMetadata());
+				results.setSessionState(testSessionState);
+				
+				layoutCont.contextPut("testResults", results);
+				TestResult testResult = assessmentResult.getTestResult();
+				if(testResult != null) {
+					extractOutcomeVariable(testResult.getItemVariables(), results);
+				}
+				
+				if(signatureMapperUri != null) {
+					String signatureUrl = signatureMapperUri + "/assessmentResultSignature.xml";
+					layoutCont.contextPut("signatureUrl", signatureUrl);
+				}
+	
+				initFormSections(layoutCont);
 			}
-
-			if(assessedIdentityInfosCtrl != null) {
-				layoutCont.put("assessedIdentityInfos", assessedIdentityInfosCtrl.getInitialComponent());
-			} else if(anonym) {
-				layoutCont.contextPut("anonym", Boolean.TRUE);
-			}
-			
-			Results results = new Results(false, "o_qtiassessment_icon", options.isMetadata());
-			results.setSessionState(testSessionState);
-			
-			layoutCont.contextPut("testResults", results);
-			TestResult testResult = assessmentResult.getTestResult();
-			if(testResult != null) {
-				extractOutcomeVariable(testResult.getItemVariables(), results);
-			}
-			
-			if(signatureMapperUri != null) {
-				String signatureUrl = signatureMapperUri + "/assessmentResultSignature.xml";
-				layoutCont.contextPut("signatureUrl", signatureUrl);
-			}
-
-			initFormSections(layoutCont);
 		}
 	}
 	
