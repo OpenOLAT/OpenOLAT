@@ -61,6 +61,7 @@
     
     initializeSourcePanelEvents = function(containerId, settings) {
     	jQuery("#" + containerId + " .o_match_dnd_sources").droppable({
+    		tolerance: 'pointer',
     		over: function(event, ui) {
     			jQuery(this).addClass('oo-accepted');
     		},
@@ -92,6 +93,9 @@
     	jElements.on('click', function(e, el) {
     		var itemEl = jQuery(this);
     		if(!itemEl.hasClass('oo-choosed') && !itemEl.hasClass('oo-selected')) {
+    			jQuery("#" + containerId + " .o_match_dnd_sources .o_match_dnd_source").each(function(index, el) {
+    				jQuery(el).removeClass('oo-selected');
+    			});
     			itemEl.addClass('oo-selected');
     		} else if(itemEl.parents(".o_match_dnd_targets").size() > 0 && !itemEl.hasClass('oo-dropped-mrk')) {
     			removeSourceFromTarget(itemEl, containerId);
@@ -102,11 +106,12 @@
     		containment: "#" + containerId,
     		scroll: false,
     		revert: "invalid",
+    		cursorAt: { left: 5, top: 5 },
     		start: function(event, ui) {
     			jQuery(ui.helper).removeClass('oo-dropped-mrk');
     		},
     		stop: function(event, ui) {
-    			jQuery(this).css({'left': '0px', 'top': '0px' });
+    			jQuery(this).css({'left': '0px', 'top': '0px', 'z-index': '' });
     			jQuery(ui.helper).removeClass('oo-drag');
     		},
     		helper: function() {
@@ -119,12 +124,16 @@
     	    			.attr('id', 'n' + guid())
     	    			.data('qti-cloned','true')
     	    			.addClass('oo-drag')
-    	    			.addClass('oo-drag-mrk');
+    	    			.addClass('oo-drag-mrk')
+    	    			.css('z-index', 10)
+    	    			.css('width', choiceEl.width())
+    	    			.css('height', choiceEl.height());
     	    		return cloned;
     			}
     	    	choiceEl
     	    		.addClass('oo-drag')
-    				.addClass('oo-drag-mrk');
+    				.addClass('oo-drag-mrk')
+	    			.css('z-index', 10);
     			return choiceEl;
     		}
     	}).on('click', {formId: settings.formDispatchFieldId}, setFlexiFormDirtyByListener);
@@ -159,6 +168,7 @@
 			recalculate(containerId, settings);
 			setFlexiFormDirty(settings.formDispatchFieldId, false);
     	}).droppable({
+    		tolerance: "pointer",
     		accept: function(el) {
     			var choiceQtiId = jQuery(el).data('qti-id');
     			//check if the source is already in the target
@@ -221,7 +231,7 @@
     	var container = box.find("ul.o_match_dnd_target_drop_zone");
     	sourceEl
 			.removeClass('oo-selected')
-			.css({'width' : 'auto', 'left': '0px', 'top': '0px' })
+			.css({'width' : 'auto', 'left': '0px', 'top': '0px', 'z-index': '' })
 			.addClass('oo-choosed')
 			.appendTo(container);
 		box.addClass('oo-filled');
@@ -236,7 +246,7 @@
     	var availableSources = jQuery("#" + containerId + " .o_match_dnd_sources li[data-qti-id='" + gapId + "']").size();
     	if(availableSources == 0) {
     		jSelectedEl
-    			.css({'width' : 'auto', 'left': '0px', 'top': '0px' })
+    			.css({'width' : 'auto', 'left': '0px', 'top': '0px', 'z-index': '' })
     			.appendTo(jQuery('#' + containerId +' .o_match_dnd_sources'));
     	} else {
     		jSelectedEl.remove();

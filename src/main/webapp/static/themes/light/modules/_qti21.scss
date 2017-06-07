@@ -688,7 +688,7 @@ tr.choiceinteraction {
 	border-radius: $o-qti-match-border-radius;
 	background-color: #ffffff;
 	background: $o-qti-match-source-bg;
-	
+	@include clearfix;
 	
 	&.oo-selected {
 		border: 2px $o-qti-match-source-border-style $o-qti-match-selected-border-color;
@@ -720,6 +720,7 @@ tr.choiceinteraction {
 	border: 2px solid $o-qti-match-target-border-color;
 	border-radius: $o-qti-match-border-radius;
 	background: $o-qti-match-target-bg;
+	@include clearfix;
 
 	.o_match_dnd_target_drop_zone {
 		margin: 0;

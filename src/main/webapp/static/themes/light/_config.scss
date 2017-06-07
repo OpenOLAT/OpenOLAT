@@ -424,7 +424,7 @@ $o-qti-match-source-bg								: $state-warning-bg !default;
 $o-qti-match-source-border-style					: dashed !default;
 $o-qti-match-selected-border-color					: $brand-warning !default;
 $o-qti-match-selected-bg							: lighten($brand-warning, 25%) !default;
-$o-qti-match-drop-accept-border-color				: $brand-info !default;
+$o-qti-match-drop-accept-border-color				: darken($brand-info, 25%) !default;
 $o-qti-match-target-border-color					: $brand-info !default;
 $o-qti-match-target-bg								: $state-info-bg !default;
 $o-qti-match-border-radius							: $panel-border-radius !default;
