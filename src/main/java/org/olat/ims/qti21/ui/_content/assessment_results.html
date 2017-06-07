@@ -28,6 +28,10 @@
 	$r.render("assessedIdentityInfos")
 #end
 
+#if($r.isNotNull($testSessionNotFound) && $testSessionNotFound)
+<div class="o_warning">$r.translate("assessment.test.session.reseted")</div>
+#end
+
 #if($testResults.metadataVisible)
 <div class="o_qti_metainfo o_block_large">
 	#if(${testResults.hasPass()})
