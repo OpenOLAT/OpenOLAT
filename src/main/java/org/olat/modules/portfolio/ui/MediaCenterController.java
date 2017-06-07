@@ -399,7 +399,10 @@ public class MediaCenterController extends FormBasicController
 			} else if(event instanceof EPArtefactListChoosenEvent) {
 				EPArtefactListChoosenEvent cmEvent = (EPArtefactListChoosenEvent)event;
 				for(AbstractArtefact artefact:cmEvent.getArtefacts()) {
-					doImportArtefactV1(artefact);
+					media = doImportArtefactV1(artefact);
+				}
+				if(cmEvent.getArtefacts().size() > 1) {
+					media = null;//only auto select a single media
 				}
 				loadModel();
 				tableEl.reloadData();
@@ -407,7 +410,7 @@ public class MediaCenterController extends FormBasicController
 			}
 			cmc.deactivate();
 			cleanUp();
-			if(select || media != null) {
+			if(select && media != null) {
 				doSelect(ureq, media.getKey());
 			}
 		} else if(newMediasCtrl == source) {

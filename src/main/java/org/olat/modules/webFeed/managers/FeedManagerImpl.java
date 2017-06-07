@@ -45,6 +45,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Encoder;
@@ -579,14 +580,19 @@ public class FeedManagerImpl extends FeedManager {
 	 * @param container
 	 * @return The item
 	 */
+	@Override
 	public Item loadItem(VFSItem container) {
 		VFSLeaf itemLeaf = null;
 		Item item = null;
 
 		if (container != null) {
 			itemLeaf = (VFSLeaf) container.resolve(ITEM_FILE_NAME);
-			if (itemLeaf != null) {
-				item = (Item) XStreamHelper.readObject(xstream, itemLeaf.getInputStream());
+			if (itemLeaf != null && itemLeaf.getSize() > 0) {
+				try {
+					item = (Item) XStreamHelper.readObject(xstream, itemLeaf.getInputStream());
+				} catch (OLATRuntimeException e) {
+					log.error("Corrupted or empty feed item:" + itemLeaf, e);
+				}
 			}
 		}
 		return item;
