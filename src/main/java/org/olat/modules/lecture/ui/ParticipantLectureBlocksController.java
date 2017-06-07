@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -33,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -43,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -72,6 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ParticipantLectureBlocksController extends FormBasicController {
 	
+	private FormLink openCourseButton;
 	private FlexiTableElement tableEl;
 	private ParticipantLectureBlocksDataModel tableModel;
 	
@@ -129,6 +133,9 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 				layoutCont.getFormItemComponent().addListener(this);
 				layoutCont.getFormItemComponent().contextPut("withPrint", Boolean.TRUE);
 				layoutCont.contextPut("title", StringHelper.escapeHtml(entry.getDisplayname()));
+				
+				openCourseButton = uifactory.addFormLink("open.course", formLayout, Link.BUTTON);
+				openCourseButton.setIconLeftCSS("o_icon o_CourseModule_icon");
 			} else {
 				layoutCont.contextPut("title", translate("lectures.repository.print.title", new String[] {
 						StringHelper.escapeHtml(entry.getDisplayname()),
@@ -219,6 +226,8 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 					doAppeal(ureq, row);
 				}
 			}
+		} else if(openCourseButton == source) {
+			doOpenCourse(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -265,6 +274,11 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);
+	}
+	
+	private void doOpenCourse(UserRequest ureq) {
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
 	public class AppealCallback {

@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -120,7 +121,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		}
 	
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.entry));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.entry, "open.course"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.plannedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.attendedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.absentLectures));
@@ -165,6 +166,8 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 				LectureBlockStatistics row = tableModel.getObject(se.getIndex());
 				if("select".equals(cmd)) {
 					doSelect(ureq, row);
+				} else if("open.course".equals(cmd)) {
+					doOpenCourse(ureq, row);
 				}
 			}
 		}
@@ -197,5 +200,10 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		};
 		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(printControllerCreator);
 		openInNewBrowserWindow(ureq, layoutCtrlr);
+	}
+	
+	private void doOpenCourse(UserRequest ureq, LectureBlockStatistics row) {
+		String businessPath = "[RepositoryEntry:" + row.getRepoKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 }
