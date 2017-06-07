@@ -32,22 +32,22 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 public class ConfigurationHelper {
 	
 	public static boolean isRollCallEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
-		return (lectureConfig.isOverrideModuleDefault() && lectureConfig.getRollCallEnabled() != null && lectureConfig.getRollCallEnabled().booleanValue())
-				|| (!lectureConfig.isOverrideModuleDefault() && lectureModule.isRollCallDefaultEnabled());
+		return (lectureConfig != null && lectureConfig.isOverrideModuleDefault() && lectureConfig.getRollCallEnabled() != null && lectureConfig.getRollCallEnabled().booleanValue())
+				|| ((lectureConfig == null || !lectureConfig.isOverrideModuleDefault()) && lectureModule.isRollCallDefaultEnabled());
 	}
 
 	public static boolean isSyncTeacherCalendarEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
-		return (lectureConfig.isOverrideModuleDefault() && lectureConfig.getTeacherCalendarSyncEnabled() != null && lectureConfig.getTeacherCalendarSyncEnabled().booleanValue())
-				|| (!lectureConfig.isOverrideModuleDefault() && lectureModule.isTeacherCalendarSyncEnabledDefault());
+		return (lectureConfig != null && lectureConfig.isOverrideModuleDefault() && lectureConfig.getTeacherCalendarSyncEnabled() != null && lectureConfig.getTeacherCalendarSyncEnabled().booleanValue())
+				|| ((lectureConfig == null || !lectureConfig.isOverrideModuleDefault()) && lectureModule.isTeacherCalendarSyncEnabledDefault());
 	}
 	
 	public static boolean isSyncParticipantCalendarEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
-		return (lectureConfig.isOverrideModuleDefault() && lectureConfig.getParticipantCalendarSyncEnabled() != null && lectureConfig.getParticipantCalendarSyncEnabled().booleanValue())
-				|| (!lectureConfig.isOverrideModuleDefault() && lectureModule.isParticipantCalendarSyncEnabledDefault());
+		return (lectureConfig != null && lectureConfig.isOverrideModuleDefault() && lectureConfig.getParticipantCalendarSyncEnabled() != null && lectureConfig.getParticipantCalendarSyncEnabled().booleanValue())
+				|| ((lectureConfig == null || !lectureConfig.isOverrideModuleDefault()) && lectureModule.isParticipantCalendarSyncEnabledDefault());
 	}
 	
 	public static boolean isRateEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
-		if(lectureConfig.isOverrideModuleDefault()) {
+		if(lectureConfig != null && lectureConfig.isOverrideModuleDefault()) {
 			return lectureConfig.getCalculateAttendanceRate() == null ?
 					lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled() : lectureConfig.getCalculateAttendanceRate().booleanValue();
 		}

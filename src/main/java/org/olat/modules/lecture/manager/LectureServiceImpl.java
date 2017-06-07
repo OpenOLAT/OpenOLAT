@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -75,6 +76,7 @@ import org.olat.modules.lecture.ui.LectureAdminController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -86,7 +88,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class LectureServiceImpl implements LectureService {
+public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	
 	private static final CalendarManagedFlag[] CAL_MANAGED_FLAGS = new CalendarManagedFlag[] { CalendarManagedFlag.all };
 
@@ -206,6 +208,25 @@ public class LectureServiceImpl implements LectureService {
 	@Override
 	public void deleteLectureBlock(LectureBlock block) {
 		lectureBlockDao.delete(block);
+	}
+
+	@Override
+	public int delete(RepositoryEntry entry) {
+		int rows = 0;
+		List<LectureBlock> blocksToDelete = lectureBlockDao.getLectureBlocks(entry);
+		for(LectureBlock blockToDelete:blocksToDelete) {
+			rows += lectureBlockDao.delete(blockToDelete);
+		}
+		rows += lectureConfigurationDao.deleteConfiguration(entry);
+		rows += lectureParticipantSummaryDao.deleteSummaries(entry);
+		return rows;
+	}
+
+	@Override
+	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		lectureParticipantSummaryDao.deleteSummaries(identity);
+		lectureBlockRollCallDao.deleteRollCalls(identity);
+		lectureBlockReminderDao.deleteReminders(identity);
 	}
 
 	@Override

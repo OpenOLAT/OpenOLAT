@@ -142,6 +142,13 @@ public class LectureBlockDAO {
 		return rows;
 	}
 	
+	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry) {
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("lectureBlocksByRepositoryEntry", LectureBlock.class)
+				.setParameter("repoEntryKey", entry.getKey())
+				.getResultList();
+	}
+	
 	/**
 	 * 
 	 * @param entry The course (mandatory)

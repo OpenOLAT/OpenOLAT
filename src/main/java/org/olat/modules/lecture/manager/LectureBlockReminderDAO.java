@@ -78,4 +78,12 @@ public class LectureBlockReminderDAO {
 		}
 		return blockToTeachers;
 	}
+	
+	public int deleteReminders(Identity identity) {
+		String del = "delete from lecturereminder reminder where reminder.identity.key=:identityKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(del)
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+	}
 }

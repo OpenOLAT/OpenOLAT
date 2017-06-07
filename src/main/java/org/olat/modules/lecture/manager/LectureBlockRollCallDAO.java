@@ -151,6 +151,14 @@ public class LectureBlockRollCallDAO {
 		return dbInstance.getCurrentEntityManager().merge(rollCall);
 	}
 	
+	public int deleteRollCalls(Identity identity) {
+		String del = "delete from lectureblockrollcall rollcall where rollcall.identity.key=:identityKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(del)
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+	}
+	
 	public List<LectureBlockRollCall> getRollCalls(LectureBlockRef block) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select rollcall from lectureblockrollcall rollcall")

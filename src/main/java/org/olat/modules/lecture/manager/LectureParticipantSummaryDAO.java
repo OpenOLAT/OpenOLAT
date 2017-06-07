@@ -152,4 +152,22 @@ public class LectureParticipantSummaryDAO {
 	public LectureParticipantSummary update(LectureParticipantSummary summary) {
 		return dbInstance.getCurrentEntityManager().merge(summary);
 	}
+	
+	public int deleteSummaries(RepositoryEntryRef entry) {
+		//delete summaries
+		String deleteSummaries = "delete from lectureparticipantsummary summary where summary.entry.key=:repoEntryKey";
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(deleteSummaries)
+			.setParameter("repoEntryKey", entry.getKey())
+			.executeUpdate();
+	}
+	
+	public int deleteSummaries(Identity identity) {
+		//delete summaries
+		String deleteSummaries = "delete from lectureparticipantsummary summary where summary.identity.key=:identityKey";
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(deleteSummaries)
+			.setParameter("identityKey", identity.getKey())
+			.executeUpdate();
+	}
 }

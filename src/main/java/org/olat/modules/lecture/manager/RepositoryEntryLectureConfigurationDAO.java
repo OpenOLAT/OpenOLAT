@@ -70,12 +70,8 @@ public class RepositoryEntryLectureConfigurationDAO {
 	}
 	
 	public RepositoryEntryLectureConfiguration getConfiguration(RepositoryEntryRef entry) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select config from lectureentryconfig config")
-		  .append(" where config.entry.key=:entryKey");
-		
 		List<RepositoryEntryLectureConfiguration> configs = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryLectureConfiguration.class)
+				.createNamedQuery("lectureconfigByRepositoryEntry", RepositoryEntryLectureConfiguration.class)
 				.setParameter("entryKey", entry.getKey())
 				.getResultList();
 		return configs == null || configs.isEmpty() ? null : configs.get(0);
@@ -97,5 +93,12 @@ public class RepositoryEntryLectureConfigurationDAO {
 	
 	public RepositoryEntryLectureConfiguration update(RepositoryEntryLectureConfiguration config) {
 		return dbInstance.getCurrentEntityManager().merge(config);
+	}
+	
+	public int deleteConfiguration(RepositoryEntryRef entry) {
+		String sb = "delete from  lectureentryconfig config where config.entry.key=:repoEntryKey";
+		return dbInstance.getCurrentEntityManager().createQuery(sb)
+				.setParameter("repoEntryKey", entry.getKey())
+				.executeUpdate();
 	}
 }

@@ -103,6 +103,13 @@ public interface LectureService {
 	public void deleteLectureBlock(LectureBlock block);
 	
 	/**
+	 * Delete all the lecture blocks and configuration of the specified course.
+	 * 
+	 * @param entry
+	 */
+	public int delete(RepositoryEntry entry);
+	
+	/**
 	 * Returns all configured reasons.
 	 * 
 	 * @return A list of reasons
