@@ -33,6 +33,8 @@ import org.olat.search.service.SearchResourceContext;
  */
 public class FeedNodeDocument extends OlatDocument {
 
+	private static final long serialVersionUID = 5585883273458311252L;
+
 	public FeedNodeDocument(Feed feed, SearchResourceContext searchResourceContext) {
 		super();
 		setTitle(feed.getTitle());

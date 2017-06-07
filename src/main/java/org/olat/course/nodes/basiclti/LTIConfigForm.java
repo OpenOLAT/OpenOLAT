@@ -47,6 +47,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.CodeHelper;
@@ -90,6 +92,7 @@ public class LTIConfigForm extends FormBasicController {
 	
 	private MultipleSelectionElement skipLaunchPageEl;
 	private MultipleSelectionElement skipAcceptLaunchPageEl;
+	private DialogBoxController confirmDialogCtr;
 	
 	private SelectionElement sendName;
 	private SelectionElement sendEmail;
@@ -269,6 +272,8 @@ public class LTIConfigForm extends FormBasicController {
 		if (config.getBooleanSafe(BasicLTICourseNode.CONFIG_SKIP_ACCEPT_LAUNCH_PAGE)) {
 			skipAcceptLaunchPageEl.select(enabledKeys[0], true);
 		}
+		skipAcceptLaunchPageEl.setHelpTextKey("display.config.skipAcceptLaunchPageWarning", null);
+		skipAcceptLaunchPageEl.addActionListener(FormEvent.ONCHANGE);
 		
 		uifactory.addSpacerElement("attributes", formLayout, false);
 
@@ -364,7 +369,10 @@ public class LTIConfigForm extends FormBasicController {
 	
 	@Override
 	protected void doDispose() {
-		//
+		// Dispose confirm dialog controller since it isn't listend to.
+		if (confirmDialogCtr != null) {
+			removeAsListenerAndDispose(confirmDialogCtr);
+		}
 	}
 	
 	private void updateNameValuePair(String custom) {
@@ -528,6 +536,8 @@ public class LTIConfigForm extends FormBasicController {
 		} else if (sendName == source || sendEmail == source) {
 			boolean sendEnabled = sendName.isSelected(0) || sendEmail.isSelected(0);
 			skipAcceptLaunchPageEl.setVisible(sendEnabled);
+		} else if (source == skipAcceptLaunchPageEl && skipAcceptLaunchPageEl.isAtLeastSelected(1)) {
+			confirmDialogCtr = activateYesNoDialog(ureq, null, translate("display.config.skipAcceptLaunchPageConfirm"), confirmDialogCtr);
 		} else if(source instanceof FormLink && source.getName().startsWith("add_")) {
 			NameValuePair pair = (NameValuePair)source.getUserObject();
 			doAddNameValuePair(pair);
@@ -552,6 +562,17 @@ public class LTIConfigForm extends FormBasicController {
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == confirmDialogCtr) {
+			if (DialogBoxUIFactory.isYesEvent(event)) {
+				skipAcceptLaunchPageEl.select(enabledKeys[0], true);
+			} else {
+				skipAcceptLaunchPageEl.select(enabledKeys[0], false);
+			}
+		}
+	} 
 
 	@Override
 	protected void formOK(UserRequest ureq) {

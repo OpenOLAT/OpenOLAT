@@ -213,12 +213,16 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		CourseNode nextNode = treeOverviewCtrl.getNextNode(currentNodeCtrl.getCourseNode());
 		if(nextNode != null && nextNode.getParent() != null) {
 			if(nextNode instanceof STCourseNode) {
-				for(nextNode=treeOverviewCtrl.getNextNode(nextNode); nextNode instanceof STCourseNode; ) {
+				int count = 0;
+				for(nextNode=treeOverviewCtrl.getNextNode(nextNode); nextNode instanceof STCourseNode; nextNode=treeOverviewCtrl.getNextNode(nextNode)) {
 					//search the next node which is not a structure node
+					if(count++ > 500) {
+						break;
+					}
 				}
 			}
 			
-			if(nextNode.getParent() != null) {
+			if(nextNode.getParent() != null && !(nextNode instanceof STCourseNode)) {
 				doSelectCourseNode(ureq, nextNode);
 			}
 		}
@@ -231,13 +235,15 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		if(previousNode != null && previousNode.getParent() != null) {
 			if(previousNode instanceof STCourseNode) {
 				CourseNode node = previousNode;
-				for(previousNode=treeOverviewCtrl.getPreviousNode(previousNode); previousNode instanceof STCourseNode && node != previousNode; ) {
+				for(previousNode=treeOverviewCtrl.getPreviousNode(previousNode); previousNode instanceof STCourseNode && node != previousNode; previousNode=treeOverviewCtrl.getPreviousNode(previousNode)) {
 					//search the previous node which is not a structure node
 					node = previousNode;
 				}
 			}
-
-			doSelectCourseNode(ureq, previousNode);
+			
+			if(!(previousNode instanceof STCourseNode)) {
+				doSelectCourseNode(ureq, previousNode);
+			}
 		}
 	}
 	
