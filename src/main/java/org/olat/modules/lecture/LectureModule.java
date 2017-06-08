@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String LECTURE_ENABLED = "lecture.enabled";
+	private static final String LECTURE_MANAGED = "lecture.managed";
 	private static final String CAN_OVERRIDE_STANDARD_CONFIGURATION = "lecture.can.override.standard.configuration";
 	private static final String STATUS_PARTIALLY_DONE_ENABLED = "lecture.status.partially.done.enabled";
 	private static final String STATUS_CANCELLED_ENABLED = "lecture.status.cancelled.enabled";
@@ -57,6 +58,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	@Value("${lecture.enabled:true}")
 	private boolean enabled;
+	@Value("${lecture.managed:true}")
+	private boolean lecturesManaged;
 	@Value("${lecture.can.override.standard.configuration:false}")
 	private boolean canOverrideStandardConfiguration;
 	
@@ -109,6 +112,11 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		String enabledObj = getStringPropertyValue(LECTURE_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
+		}
+		
+		String managedObj = getStringPropertyValue(LECTURE_MANAGED, true);
+		if(StringHelper.containsNonWhitespace(managedObj)) {
+			lecturesManaged = "true".equals(managedObj);
 		}
 	
 		String canOverrideSStandardConfigurationObj = getStringPropertyValue(CAN_OVERRIDE_STANDARD_CONFIGURATION, true);
@@ -208,6 +216,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setCanOverrideSStandardConfiguration(boolean enable) {
 		this.canOverrideStandardConfiguration = enable;
 		setStringProperty(CAN_OVERRIDE_STANDARD_CONFIGURATION, Boolean.toString(enable), true);
+	}
+
+	public boolean isLecturesManaged() {
+		return lecturesManaged;
+	}
+
+	public void setLecturesManaged(boolean lecturesManaged) {
+		this.lecturesManaged = lecturesManaged;
+		setStringProperty(LECTURE_MANAGED, Boolean.toString(lecturesManaged), true);
 	}
 
 	public boolean isAuthorizedAbsenceEnabled() {

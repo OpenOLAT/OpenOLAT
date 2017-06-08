@@ -40,6 +40,7 @@ public class LectureBlockAndRollCall {
 	private final int plannedLectures;
 	private final int effectiveLectures;
 	private final Date startDate;
+	private final boolean compulsory;
 	
 	private final Long rollCallKey;
 	private final int lecturesAbsentNumber;
@@ -56,6 +57,7 @@ public class LectureBlockAndRollCall {
 		lectureBlockTitle = lectureBlock.getTitle();
 		plannedLectures = lectureBlock.getPlannedLecturesNumber();
 		effectiveLectures = lectureBlock.getEffectiveLecturesNumber();
+		compulsory = lectureBlock.isCompulsory();
 		
 		if(rollCall == null) {
 			rollCallKey = null;
@@ -88,6 +90,10 @@ public class LectureBlockAndRollCall {
 	
 	public boolean isRollCalled() {
 		return rollCallKey != null;
+	}
+	
+	public boolean isCompulsory() {
+		return compulsory;
 	}
 	
 	public int getLecturesAttendedNumber() {

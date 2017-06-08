@@ -255,6 +255,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  call.lecturesAbsentNumber as absentLectures,")
 		  .append("  call.absenceAuthorized as absenceAuthorized,")
 		  .append("  block.key as blockKey,")
+		  .append("  block.compulsory as compulsory,")
 		  .append("  block.plannedLecturesNumber as blockPlanned,")
 		  .append("  block.effectiveLecturesNumber as blockEffective,")
 		  .append("  block.rollCallStatusString as rollCallStatus,")
@@ -294,6 +295,7 @@ public class LectureBlockRollCallDAO {
 			Boolean absenceAuthorized = (Boolean)rawObject[pos++];
 			
 			pos++;//jump block key
+			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
 			Long plannedLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
 			Long effectiveLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
 			if(effectiveLecturesNumber == null) {
@@ -321,7 +323,7 @@ public class LectureBlockRollCallDAO {
 				stats.put(repoKey, entryStatistics);
 			}
 			
-			appendStatistics(entryStatistics, rollCallEndDate, rollCallStatus,
+			appendStatistics(entryStatistics, compulsory, rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent,
 					absenceAuthorized, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
@@ -344,6 +346,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  call.lecturesAbsentNumber as absentLectures,")
 		  .append("  call.absenceAuthorized as absenceAuthorized,")
 		  .append("  block.key as blockKey,")
+		  .append("  block.compulsory as compulsory,")
 		  .append("  block.plannedLecturesNumber as blockPlanned,")
 		  .append("  block.effectiveLecturesNumber as blockEffective,")
 		  .append("  block.rollCallStatusString as rollCallStatus,")
@@ -380,6 +383,7 @@ public class LectureBlockRollCallDAO {
 			Boolean absenceAuthorized = (Boolean)rawObject[pos++];
 			
 			pos++;//jump block key
+			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
 			Long plannedLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
 			Long effectiveLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
 			if(effectiveLecturesNumber == null) {
@@ -401,7 +405,7 @@ public class LectureBlockRollCallDAO {
 				stats.put(identityKey, entryStatistics);
 			}
 
-			appendStatistics(entryStatistics, rollCallEndDate, rollCallStatus,
+			appendStatistics(entryStatistics, compulsory, rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent,
 					absenceAuthorized, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
@@ -461,11 +465,12 @@ public class LectureBlockRollCallDAO {
 		return new LectureBlockStatistics(identityKey, entryKey, displayName, calculateRate, requiredRate);
 	}
 	
-	private void appendStatistics(LectureBlockStatistics statistics, Date rollCallEndDate, String rollCallStatus,
+	private void appendStatistics(LectureBlockStatistics statistics, boolean compulsory, Date rollCallEndDate, String rollCallStatus,
 			Long lecturesAttended, Long lecturesAbsent,
 			Boolean absenceAuthorized, boolean absenceDefaultAuthorized,
 			Long plannedLecturesNumber, Long effectiveLecturesNumber,
 			Date firstAdmissionDate, Date now) {
+		if(!compulsory) return;// not compulsory blocks are simply ignored
 		
 		//only count closed roll call after the end date
 		if(rollCallEndDate != null && rollCallEndDate.before(now)

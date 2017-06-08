@@ -68,31 +68,43 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 	@Override
 	public Object getValueAt(LectureBlockAndRollCall row, int col) {
 		switch(ParticipantCols.values()[col]) {
+			case compulsory: return row.isCompulsory();
 			case date: return row.getDate();
 			case entry: return row.getEntryDisplayname();
 			case lectureBlock: return row.getLectureBlockTitle();
 			case coach: return row.getCoach();
-			case plannedLectures: return row.getPlannedLecturesNumber();
-			case attendedLectures: return row.getLecturesAttendedNumber() < 0 ? 0 : row.getLecturesAttendedNumber();
-			case absentLectures: {
-				long value;
-				if(isAuthorized(row)) {
-					value = 0l;
-				} else {
-					value = positive(row.getLecturesAbsentNumber());
+			case plannedLectures: return row.isCompulsory() ? row.getPlannedLecturesNumber() : null;
+			case attendedLectures: {
+				if(row.isCompulsory()) {
+					return row.getLecturesAttendedNumber() < 0 ? 0 : row.getLecturesAttendedNumber();
 				}
-				return value;
+				return null;
+			}
+			case absentLectures: {
+				if(row.isCompulsory()) {
+					long value;
+					if(isAuthorized(row)) {
+						value = 0l;
+					} else {
+						value = positive(row.getLecturesAbsentNumber());
+					}
+					return value;
+				}
+				return null;
 			}
 			case authorizedAbsentLectures: {
-				long value;
-				if(isAuthorized(row)) {
-					value = positive(row.getLecturesAbsentNumber());
-				} else {
-					value = 0l;
+				if(row.isCompulsory()) {
+					long value;
+					if(isAuthorized(row)) {
+						value = positive(row.getLecturesAbsentNumber());
+					} else {
+						value = 0l;
+					}
+					return value;
 				}
-				return value;
+				return null;
 			}
-			case appeal: return appealCallback.appealAllowed(row);
+			case appeal: return row.isCompulsory() && appealCallback.appealAllowed(row);
 			default: return null;
 		}
 	}
@@ -123,6 +135,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 	}
 	
 	public enum ParticipantCols implements FlexiSortableColumnDef {
+		compulsory("table.header.compulsory"),
 		date("table.header.date"),
 		entry("table.header.entry"),
 		lectureBlock("table.header.lecture.block"),

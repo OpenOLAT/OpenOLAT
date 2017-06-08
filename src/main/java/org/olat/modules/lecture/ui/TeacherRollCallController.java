@@ -273,15 +273,17 @@ public class TeacherRollCallController extends FormBasicController {
 			colPos++;
 		}
 		
-		for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
-			FlexiColumnModel col = new DefaultFlexiColumnModel("table.header.lecture." + (i+1), i + CHECKBOX_OFFSET, true, "lecture." + (i+1));
-			columnsModel.addFlexiColumnModel(col);
-		}
-		
-		//all button
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("all", translate("all"), "all"));
-		if(secCallback.canViewAuthorizedAbsences() || secCallback.canEditAuthorizedAbsences()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.authorizedAbsence));
+		if(lectureBlock.isCompulsory()) {
+			for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
+				FlexiColumnModel col = new DefaultFlexiColumnModel("table.header.lecture." + (i+1), i + CHECKBOX_OFFSET, true, "lecture." + (i+1));
+				columnsModel.addFlexiColumnModel(col);
+			}
+			
+			//all button
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("all", translate("all"), "all"));
+			if(secCallback.canViewAuthorizedAbsences() || secCallback.canEditAuthorizedAbsences()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.authorizedAbsence));
+			}
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.comment));
@@ -323,7 +325,7 @@ public class TeacherRollCallController extends FormBasicController {
 	private TeacherRollCallRow forgeRow(Identity participant, LectureBlockRollCall rollCall) {
 		TeacherRollCallRow row = new TeacherRollCallRow(rollCall, participant, userPropertyHandlers, getLocale());
 		
-		int numOfChecks = lectureBlock.getPlannedLecturesNumber();
+		int numOfChecks = lectureBlock.isCompulsory() ? lectureBlock.getPlannedLecturesNumber() : 0;
 		MultipleSelectionElement[] checks = new MultipleSelectionElement[numOfChecks];
 		List<Integer> absences = rollCall == null ? Collections.emptyList() : rollCall.getLecturesAbsentList();
 		

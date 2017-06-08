@@ -85,6 +85,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_comments:before { content: $fa-var-comments;}
 .o_icon_comments_none:before { content: $fa-var-comment-o;}
 .o_icon_compress:before { content: $fa-var-compress;}
+.o_icon_compulsory:before { content: $fa-var-asterisk; }
 .o_icon_content_popup:before { content: $fa-var-external-link; }
 .o_icon_correct_answer:before { content: $fa-var-check; color: $brand-success; }
 .o_icon_correction:before { content: $fa-var-pencil;}

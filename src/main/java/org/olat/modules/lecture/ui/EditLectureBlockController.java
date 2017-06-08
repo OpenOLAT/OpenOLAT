@@ -49,6 +49,7 @@ import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -64,6 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditLectureBlockController extends FormBasicController {
 	
+	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] plannedLecturesKeys = new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
 	
 	private TextElement titleEl;
@@ -72,9 +74,8 @@ public class EditLectureBlockController extends FormBasicController {
 	private TextElement locationEl;
 	private DateChooser startDateEl;
 	private SingleSelection plannedLecturesEl;
-	private MultipleSelectionElement groupsEl;
-	private MultipleSelectionElement teacherEl;
 	private TextElement endHourEl, endMinuteEl;
+	private MultipleSelectionElement groupsEl, teacherEl, compulsoryEl;
 	
 	private RepositoryEntry entry;
 	private LectureBlock lectureBlock;
@@ -106,7 +107,6 @@ public class EditLectureBlockController extends FormBasicController {
 		this.entry = entry;
 		this.lectureBlock = lectureBlock;
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
-		
 		if(lectureBlock != null && lectureBlock.getKey() != null) {
 			teachers = lectureService.getTeachers(lectureBlock);
 		}
@@ -140,12 +140,12 @@ public class EditLectureBlockController extends FormBasicController {
 
 		String title = lectureBlock == null ? null : lectureBlock.getTitle();
 		titleEl = uifactory.addTextElement("title", "lecture.title", 128, title, formLayout);
-		titleEl.setEnabled(!lectureManagementManaged);
+		titleEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.title));
 		titleEl.setMandatory(true);
 
 		plannedLecturesEl = uifactory.addDropdownSingleselect("planned.lectures", "planned.lectures", formLayout,
 				plannedLecturesKeys, plannedLecturesKeys, null);
-		plannedLecturesEl.setEnabled(!lectureManagementManaged);
+		plannedLecturesEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.plannedLectures));
 		plannedLecturesEl.setMandatory(true);
 		String plannedlectures = lectureBlock == null ? "4" : Integer.toString(lectureBlock.getPlannedLecturesNumber());
 		for(String plannedLecturesKey:plannedLecturesKeys) {
@@ -155,6 +155,14 @@ public class EditLectureBlockController extends FormBasicController {
 			}
 		}
 		
+		String[] onValues = new String[]{ "" };
+		boolean compulsory = lectureBlock == null ? true : lectureBlock.isCompulsory();
+		compulsoryEl = uifactory.addCheckboxesVertical("compulsory", "lecture.compulsory", formLayout, onKeys, onValues, 1);
+		compulsoryEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.compulsory));
+		if(compulsory) {
+			compulsoryEl.select(onKeys[0], true);
+		}
+
 		List<Identity> coaches = repositoryService.getMembers(entry, GroupRoles.coach.name());
 		teacherKeys = new String[coaches.size() + 1];
 		teacherValues = new String[coaches.size() + 1];
@@ -168,7 +176,7 @@ public class EditLectureBlockController extends FormBasicController {
 		
 		teacherEl = uifactory.addCheckboxesVertical("teacher", "lecture.teacher", formLayout, teacherKeys, teacherValues, 2);
 		teacherEl.setMandatory(true);
-		teacherEl.setEnabled(!lectureManagementManaged);
+		teacherEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.teachers));
 		
 		boolean found = false;
 		if(teachers != null && teachers.size() > 0) {
@@ -201,7 +209,7 @@ public class EditLectureBlockController extends FormBasicController {
 			groupValues[i] = groupBox.get(i).getName();
 		}
 		groupsEl = uifactory.addCheckboxesVertical("lecture.groups", "lecture.groups", formLayout, groupKeys, groupValues, 2);
-		groupsEl.setEnabled(!lectureManagementManaged);
+		groupsEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.groups));
 		groupsEl.setMandatory(true);
 		if(lectureBlock != null) {
 			List<Group> selectedGroups = lectureService.getLectureBlockToGroups(lectureBlock);
@@ -214,17 +222,17 @@ public class EditLectureBlockController extends FormBasicController {
 
 		String description = lectureBlock == null ? "" : lectureBlock.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("lecture.descr", 4, 72, description, formLayout);
-		descriptionEl.setEnabled(!lectureManagementManaged);
+		descriptionEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.description));
 		String preparation = lectureBlock == null ? "" : lectureBlock.getPreparation();
 		preparationEl = uifactory.addTextAreaElement("lecture.preparation", 4, 72, preparation, formLayout);
-		preparationEl.setEnabled(!lectureManagementManaged);
+		preparationEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.preparation));
 		String location = lectureBlock == null ? "" : lectureBlock.getLocation();
 		locationEl = uifactory.addTextElement("location", "lecture.location", 128, location, formLayout);
-		locationEl.setEnabled(!lectureManagementManaged);
+		locationEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.location));
 
 		Date startDate = lectureBlock == null ? null : lectureBlock.getStartDate();
 		startDateEl = uifactory.addDateChooser("lecture.start", startDate, formLayout);
-		startDateEl.setEnabled(!lectureManagementManaged);
+		startDateEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
 		startDateEl.setDomReplacementWrapperRequired(false);
 		startDateEl.setDateChooserTimeEnabled(true);
 		startDateEl.setMandatory(true);
@@ -235,12 +243,12 @@ public class EditLectureBlockController extends FormBasicController {
 		formLayout.add(dateCont);
 		
 		endHourEl = uifactory.addTextElement("lecture.end.hour", null, 2, "", dateCont);
-		endHourEl.setEnabled(!lectureManagementManaged);
+		endHourEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
 		endHourEl.setDomReplacementWrapperRequired(false);
 		endHourEl.setDisplaySize(2);
 		endHourEl.setMandatory(true);
 		endMinuteEl = uifactory.addTextElement("lecture.end.minute", null, 2, "", dateCont);
-		endMinuteEl.setEnabled(!lectureManagementManaged);
+		endMinuteEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
 		endMinuteEl.setDomReplacementWrapperRequired(false);
 		endMinuteEl.setDisplaySize(2);
 		
@@ -259,9 +267,7 @@ public class EditLectureBlockController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		if(!lectureManagementManaged) {
-			uifactory.addFormSubmitButton("save", buttonsCont);
-		}
+		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 
 	@Override
@@ -337,6 +343,7 @@ public class EditLectureBlockController extends FormBasicController {
 			lectureBlock = lectureService.createLectureBlock(entry);
 		}
 		lectureBlock.setTitle(titleEl.getValue());
+		lectureBlock.setCompulsory(compulsoryEl.isAtLeastSelected(1));
 		lectureBlock.setDescription(descriptionEl.getValue());
 		lectureBlock.setPreparation(preparationEl.getValue());
 		lectureBlock.setLocation(locationEl.getValue());
@@ -358,6 +365,7 @@ public class EditLectureBlockController extends FormBasicController {
 				selectedGroups.add(bGroup);
 			}	
 		}
+
 		lectureBlock = lectureService.save(lectureBlock, selectedGroups);
 		
 		if(teacherEl.isAtLeastSelected(1)) {

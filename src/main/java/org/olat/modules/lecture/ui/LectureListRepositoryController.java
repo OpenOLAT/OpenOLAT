@@ -54,6 +54,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
@@ -346,7 +347,7 @@ public class LectureListRepositoryController extends FormBasicController {
 
 	private class ToolsController extends BasicController {
 		
-		private final Link deleteLink, copyLink;
+		private Link deleteLink, copyLink;
 		
 		private final LectureBlockRow row;
 		
@@ -358,9 +359,10 @@ public class LectureListRepositoryController extends FormBasicController {
 			
 			copyLink = LinkFactory.createLink("copy", "copy", getTranslator(), mainVC, this, Link.LINK);
 			copyLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
-			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
-			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
-
+			if(!LectureBlockManagedFlag.isManaged(row.getLectureBlock(), LectureBlockManagedFlag.delete)) {
+				deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			}
 			putInitialPanel(mainVC);
 		}
 

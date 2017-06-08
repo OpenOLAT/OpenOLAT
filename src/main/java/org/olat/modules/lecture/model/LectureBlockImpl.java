@@ -43,6 +43,7 @@ import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -78,6 +79,9 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 
 	@Column(name="l_external_id", nullable=true, insertable=true, updatable=true)
 	private String externalId;
+	@Column(name="l_managed_flags", nullable=true, insertable=true, updatable=true)
+	private String managedFlagsString;
+
 	@Column(name="l_title", nullable=true, insertable=true, updatable=true)
 	private String title;
 	@Column(name="l_descr", nullable=true, insertable=true, updatable=true)
@@ -100,6 +104,8 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="l_eff_end_date", nullable=true, insertable=true, updatable=true)
 	private Date effectiveEndDate;
+	@Column(name="l_compulsory", nullable=true, insertable=true, updatable=true)
+	private boolean compulsory;
 
 	@Column(name="l_planned_lectures_num", nullable=true, insertable=true, updatable=true)
 	private int plannedLecturesNumber;
@@ -162,6 +168,19 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
 	}
+	
+	@Override
+	public LectureBlockManagedFlag[] getManagedFlags() {
+		return LectureBlockManagedFlag.toEnum(managedFlagsString);
+	}
+
+	public String getManagedFlagsString() {
+		return managedFlagsString;
+	}
+
+	public void setManagedFlagsString(String managedFlagsString) {
+		this.managedFlagsString = managedFlagsString;
+	}
 
 	@Override
 	public String getTitle() {
@@ -171,6 +190,16 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Override
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	@Override
+	public boolean isCompulsory() {
+		return compulsory;
+	}
+
+	@Override
+	public void setCompulsory(boolean compulsory) {
+		this.compulsory = compulsory;
 	}
 
 	@Override
