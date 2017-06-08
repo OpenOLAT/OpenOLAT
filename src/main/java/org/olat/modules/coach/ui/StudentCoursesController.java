@@ -73,6 +73,7 @@ import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
+import org.olat.modules.coach.ui.UserDetailsController.Segment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -99,7 +100,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 	
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
-	private EfficiencyStatementDetailsController statementCtrl;
+	private UserDetailsController statementCtrl;
 	
 	private boolean hasChanged = false;
 	
@@ -378,9 +379,9 @@ public class StudentCoursesController extends FormBasicController implements Act
 	}
 	
 	private void selectDetails(UserRequest ureq, EfficiencyStatementEntry entry) {
-		boolean selectAssessmentTool = false;
+		Segment selectedTool = null;
 		if(statementCtrl != null) {
-			selectAssessmentTool = statementCtrl.isAssessmentToolSelected();
+			selectedTool = statementCtrl.getSelectedSegment();
 		}
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(RepositoryEntry.class, entry.getCourse().getKey());
@@ -391,8 +392,8 @@ public class StudentCoursesController extends FormBasicController implements Act
 				displayName, String.valueOf(entryIndex), String.valueOf(model.getRowCount())
 		});
 		
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, stackPanel,
-				entry, student, details, entryIndex, model.getRowCount(), selectAssessmentTool);
+		statementCtrl = new UserDetailsController(ureq, bwControl, stackPanel,
+				entry, student, details, entryIndex, model.getRowCount(), selectedTool);
 		listenTo(statementCtrl);
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(displayName, statementCtrl);

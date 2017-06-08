@@ -71,6 +71,7 @@ import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
+import org.olat.modules.coach.ui.UserDetailsController.Segment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -97,7 +98,7 @@ public class CourseController extends FormBasicController implements Activateabl
 	private CloseableModalController cmc;
 	private ContactController contactCtrl;
 	private final TooledStackedPanel stackPanel;
-	private EfficiencyStatementDetailsController statementCtrl;
+	private UserDetailsController statementCtrl;
 	
 	private boolean hasChanged = false;
 	private int index;
@@ -354,9 +355,9 @@ public class CourseController extends FormBasicController implements Activateabl
 	}
 	
 	private void doSelectDetails(UserRequest ureq,  EfficiencyStatementEntry entry) {
-		boolean selectAssessmentTool = false;
+		Segment selectedTool = null;
 		if(statementCtrl != null) {
-			selectAssessmentTool = statementCtrl.isAssessmentToolSelected();
+			selectedTool = statementCtrl.getSelectedSegment();
 			removeAsListenerAndDispose(statementCtrl);
 		}
 
@@ -369,8 +370,8 @@ public class CourseController extends FormBasicController implements Activateabl
 				fullname, String.valueOf(entryIndex), String.valueOf(model.getRowCount())
 		});
 		
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, stackPanel,
-				entry, assessedIdentity, details, entryIndex, model.getRowCount(), selectAssessmentTool);
+		statementCtrl = new UserDetailsController(ureq, bwControl, stackPanel,
+				entry, assessedIdentity, details, entryIndex, model.getRowCount(), selectedTool);
 		listenTo(statementCtrl);
 		
 		stackPanel.popUpToController(this);

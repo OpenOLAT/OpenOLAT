@@ -72,6 +72,7 @@ import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
+import org.olat.modules.coach.ui.UserDetailsController.Segment;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +95,7 @@ public class GroupController extends FormBasicController implements Activateable
 	
 	private FlexiTableElement tableEl;
 	private EfficiencyStatementEntryTableDataModel model;
-	private EfficiencyStatementDetailsController statementCtrl;
+	private UserDetailsController statementCtrl;
 
 	private boolean hasChanged = false;
 	
@@ -342,9 +343,9 @@ public class GroupController extends FormBasicController implements Activateable
 	}
 	
 	private void selectDetails(UserRequest ureq, EfficiencyStatementEntry statementEntry) {
-		boolean selectAssessmentTool = false;
+		Segment selectedTool = null;
 		if(statementCtrl != null) {
-			selectAssessmentTool = statementCtrl.isAssessmentToolSelected();
+			selectedTool = statementCtrl.getSelectedSegment();
 		}
 
 		int entryIndex = model.getObjects().indexOf(statementEntry) + 1;
@@ -359,8 +360,8 @@ public class GroupController extends FormBasicController implements Activateable
 				display, String.valueOf(entryIndex), String.valueOf(model.getRowCount())
 		});
 
-		statementCtrl = new EfficiencyStatementDetailsController(ureq, bwControl, stackPanel,
-				statementEntry, assessedIdentity, details, entryIndex, model.getRowCount(), selectAssessmentTool);
+		statementCtrl = new UserDetailsController(ureq, bwControl, stackPanel,
+				statementEntry, assessedIdentity, details, entryIndex, model.getRowCount(), selectedTool);
 		listenTo(statementCtrl);
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(display, statementCtrl);
