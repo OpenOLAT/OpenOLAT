@@ -189,6 +189,7 @@ public class AssessmentResultController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("options", options);
 			if(testSessionState == null || assessmentResult == null) {
 				// An author has deleted the test session before the user end it.
 				// It can happen with time limited tests.

@@ -188,7 +188,7 @@
 <div class="o_qti_sectionsummary row o_block_large">
 #foreach($itemResult in $itemResults)
 	#if(${itemResult.isSection()} && ${itemResult.metadataVisible})
-	<div class="o_qti_section col-xs-6 col-sm-4 col-md-3 col-lg-3">
+	<div class="o_qti_section o_block_bottom col-xs-6 col-sm-4 col-md-3 col-lg-3">
 		<h4>$r.escapeHtml($itemResult.title)</h4>
 	
 		#if(${itemResult.hasScore()})			
@@ -245,6 +245,12 @@
 			</script>			
 		</div>  ## END of o_performance_summary
 		#end
+		
+		#if($options.isQuestionSummary() || $options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
+		<div class="o_qti_section_goto o_block_bottom o_small">
+			<a href="#o_result_${velocityCount}"  onclick="o_scrollToElement('#o_result_${velocityCount}');">$r.translate("results.goto.section") <i class="o_icon o_icon-fw o_icon_start"> </i></a>
+		</div>
+		#end		
 
 		## The listing of items in the section, rendered as bullets
 		#if($r.isNotEmpty($itemResult.getSubResults()))
@@ -260,9 +266,6 @@
 			#end
 		</div>
 		#end
-		<div class="o_qti_section_sublisting o_block_top o_small">
-			<a href="#o_result_${velocityCount}"  onclick="o_scrollToElement('#o_result_${velocityCount}');">$r.translate("results.goto.section") <i class="o_icon o_icon-fw o_icon_start"> </i></a>
-		</div>
 	</div>
 	#end
 #end  ## END #foreach($itemResult in $itemResults)
@@ -270,15 +273,15 @@
 #end  ## END $testResults.numberOfSections > 1
 
 
-<div class="o_qti_sections o_block_large">
 ## 2nd iteration: List Section titles and Items
+#if($options.isQuestionSummary() || $options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
+<div class="o_qti_sections o_block_large">
 #set($inItem = false)
 #set($inSection = false)
 #foreach($itemResult in $itemResults)
-#if($itemResult.metadataVisible || $r.isNotNull($itemResult.questionItem) || ${itemResult.hasInteractions()})
-
 	## Title for section or header. Close divs of last iteration. Structure: o_qti_section contains one o_qti_items container which contains several o_qti_item
 	#if(${itemResult.isSection()})
+		## Cleanup of last iteration: close items and section container
 		#if ($inItem)
 			## END last o_qti_items
 			</div>
@@ -295,9 +298,11 @@
 			</div>
 			#set($inSection = false)
 		#end
+		## Start open section container		
+		<div class="o_qti_section">
+		#set($inSection = true)
+		## Hide section title / metadata if there is only one section, redundant with test overview
 		#if ($testResults.numberOfSections > 1)
-			<div class="o_qti_section">
-			#set($inSection = true)
 			<a id="o_result_${velocityCount}" title="$r.escapeHtml($itemResult.title)"></a>
 			<h3><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
 				#if($itemResult.metadataVisible)
@@ -392,11 +397,11 @@
 				#end
 				</td>
 			</tr>
-			#end  ## END #if($itemResult.metadataVisible)
+			#end
 		</tbody></table>
-		#end
+		#end  ## END #if($itemResult.metadataVisible)
 		
-		#if($itemResult.metadataVisible && $r.isNotEmpty($itemResult.comment))
+		#if($r.isNotEmpty($itemResult.comment))
 		<div class="o_sel_assessmentitem_comment o_qti_item_comment">
 			<h4>$r.translate("results.comment")</h4>
 			$r.escapeHtml($itemResult.comment) 
@@ -451,8 +456,7 @@
 		</div> ## END of panel-body
 	</div> ## END of o_qti_item
 	#end
-#end
-#end
+#end  ## END foreach 
 
 #if ($inItem)
 	## END o_qti_items
@@ -470,7 +474,7 @@
 		$r.translate("results.goto.overview")
 	</a>
 </div>
-
+#end  ## END of #if($options.isQuestionSummary() || $options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
 
 #if($printCommand)
 <script type="text/javascript">
