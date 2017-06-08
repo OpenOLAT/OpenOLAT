@@ -183,7 +183,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		removeAsListenerAndDispose(lectureBlocksCtrl);
 		
 		RepositoryEntry entry = repositoryService.loadByKey(statistics.getRepoKey());
-		lectureBlocksCtrl = new ParticipantLectureBlocksController(ureq, getWindowControl(), entry);
+		lectureBlocksCtrl = new ParticipantLectureBlocksController(ureq, getWindowControl(), entry, assessedIdentity);
 		listenTo(lectureBlocksCtrl);
 		stackPanel.pushController(entry.getDisplayname(), lectureBlocksCtrl);
 	}

@@ -31,7 +31,6 @@ import org.olat.admin.user.course.CourseOverviewController;
 import org.olat.admin.user.groups.GroupOverviewController;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
@@ -61,6 +60,8 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.properties.Property;
 import org.olat.user.ChangePrefsController;
 import org.olat.user.DisplayPortraitController;
@@ -95,8 +96,9 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_EDIT_UQUOTA			= "edit.uquota";
 	private static final String NLS_VIEW_GROUPS 		= "view.groups";
 	private static final String NLS_VIEW_COURSES		= "view.courses";
-	private static final String NLS_VIEW_EFF_STATEMENTS 		= "view.effStatements";
-	private static final String NLS_VIEW_SUBSCRIPTIONS 		= "view.subscriptions";
+	private static final String NLS_VIEW_EFF_STATEMENTS = "view.effStatements";
+	private static final String NLS_VIEW_SUBSCRIPTIONS 	= "view.subscriptions";
+	private static final String NLS_VIEW_LECTURES		= "view.lectures";
 	
 	private VelocityContainer myContent;
 		
@@ -111,6 +113,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private ProfileAndHomePageEditController userProfileCtr;
 	private CourseOverviewController courseCtr;
 	private GroupOverviewController grpCtr;
+	private ParticipantLecturesOverviewController lecturesCtrl;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
 
 	private final boolean isOlatAdmin;
@@ -121,6 +124,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
 	private LDAPLoginManager ldapLoginManager;
+	@Autowired
+	private LectureModule lectureModule;
 
 	/**
 	 * Constructor that creates a back - link as default
@@ -231,34 +236,44 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @return boolean
 	 */
 	private boolean allowedToManageUser(UserRequest ureq, Identity identity) {
-		//fxdiff 	FXOLAT-184 prevent editing of users that are in frentix-superadmin group (except "frentix" wants to change own profile)
+		// prevent editing of users that are in frentix-superadmin group (except "frentix" wants to change own profile)
 		Identity editor = ureq.getUserSession().getIdentity();
-		SecurityGroup frentixSuperAdminGroup =  BaseSecurityManager.getInstance().findSecurityGroupByName("fxadmins");
-		if(BaseSecurityManager.getInstance().isIdentityInSecurityGroup(identity, frentixSuperAdminGroup)){
-			if(editor.equals(identity) || BaseSecurityManager.getInstance().isIdentityInSecurityGroup(editor, frentixSuperAdminGroup)) {
+		SecurityGroup frentixSuperAdminGroup =  securityManager.findSecurityGroupByName("fxadmins");
+		if(securityManager.isIdentityInSecurityGroup(identity, frentixSuperAdminGroup)){
+			if(editor.equals(identity) || securityManager.isIdentityInSecurityGroup(editor, frentixSuperAdminGroup)) {
 				return true;
 			}
 			return false;
 		}
 
-		if (isOlatAdmin) return true;
+		if (isOlatAdmin) {
+			return true;
+		}
 
 		// only admins can administrate admin and usermanager users
 		boolean isAdmin = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN);
 		boolean isUserManager = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_USERMANAGER);
-		if (isAdmin || isUserManager) return false;
+		if (isAdmin || isUserManager) {
+			return false;
+		}
 		// if user is author ony allowed to edit if configured
 		boolean isAuthor = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR);
 		Boolean canManageAuthor = BaseSecurityModule.USERMANAGER_CAN_MANAGE_AUTHORS;
-		if (isAuthor && !canManageAuthor.booleanValue()) return false;
+		if (isAuthor && !canManageAuthor.booleanValue()) {
+			return false;
+		}
 		// if user is groupmanager ony allowed to edit if configured
 		boolean isGroupManager = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GROUPMANAGER);
 		Boolean canManageGroupmanager = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GROUPMANAGERS;
-		if (isGroupManager && !canManageGroupmanager.booleanValue()) return false;
+		if (isGroupManager && !canManageGroupmanager.booleanValue()) {
+			return false;
+		}
 		// if user is guest ony allowed to edit if configured
 		boolean isGuestOnly = securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_GUESTONLY);
 		Boolean canManageGuest = BaseSecurityModule.USERMANAGER_CAN_MANAGE_GUESTS;
-		if (isGuestOnly && !canManageGuest.booleanValue()) return false;
+		if (isGuestOnly && !canManageGuest.booleanValue()) {
+			return false;
+		}
 		// passed all tests, current user is allowed to edit given identity
 		return true;
 	}
@@ -279,7 +294,7 @@ public class UserAdminController extends BasicController implements Activateable
 		 *  profile form. The system admin is always able to do so.
 		 */
 		Boolean canEditAllFields = BaseSecurityModule.USERMANAGER_CAN_EDIT_ALL_PROFILE_FIELDS;
-		if (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)) {
+		if (securityManager.isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)) {
 			canEditAllFields = Boolean.TRUE;
 		}
 
@@ -320,6 +335,7 @@ public class UserAdminController extends BasicController implements Activateable
 		
 		if (isOlatAdmin) {
 			efficicencyCtrl = new CertificateAndEfficiencyStatementListController(ureq, getWindowControl(), identity, true);
+			listenTo(efficicencyCtrl);
 			BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("statements", getTranslator(), efficicencyCtrl);
 			stackPanel.pushController(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl);
 			efficicencyCtrl.setBreadcrumbPanel(stackPanel);
@@ -342,6 +358,16 @@ public class UserAdminController extends BasicController implements Activateable
 			String relPath = FolderConfig.getUserHomes() + "/" + identity.getName();
 			quotaCtr = QuotaManager.getInstance().getQuotaEditorInstance(ureq, getWindowControl(), relPath, false);
 			userTabP.addTab(translate(NLS_EDIT_UQUOTA), quotaCtr.getInitialComponent());
+		}
+		
+		if(lectureModule.isEnabled()) {
+			lecturesCtrl = new ParticipantLecturesOverviewController(ureq, getWindowControl(), identity, true, true);
+			listenTo(lecturesCtrl);
+			BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("lectures", getTranslator(), lecturesCtrl);
+			stackPanel.pushController(translate(NLS_VIEW_LECTURES), lecturesCtrl);
+			lecturesCtrl.setBreadcrumbPanel(stackPanel);
+			stackPanel.setInvisibleCrumb(1);
+			userTabP.addTab(translate(NLS_VIEW_LECTURES), stackPanel);
 		}
 		
 		// now push to velocity

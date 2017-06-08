@@ -65,6 +65,7 @@ public class LectureBlockDAO {
 		block.setLastModified(block.getCreationDate());
 		block.setStatus(LectureBlockStatus.active);
 		block.setRollCallStatus(LectureRollCallStatus.open);
+		block.setCompulsory(true);
 		block.setEntry(entry);
 		return block;
 	}

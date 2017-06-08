@@ -102,9 +102,8 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	@Autowired
 	private RepositoryService repositoryService;
 	
-
-	public ParticipantLectureBlocksController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
-		this(ureq, wControl, entry, ureq.getIdentity(), true, true);
+	public ParticipantLectureBlocksController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Identity assessedIdentity) {
+		this(ureq, wControl, entry, assessedIdentity, true, true);
 	}
 	
 	private ParticipantLectureBlocksController(UserRequest ureq, WindowControl wControl,
@@ -158,7 +157,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.authorizedAbsentLectures));
 		}
 
-		if(appealEnabled && withAppeal) {
+		if(appealEnabled && withAppeal && assessedIdentity.equals(getIdentity())) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("appeal", ParticipantCols.appeal.ordinal(), "appeal",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("appeal"), "appeal"), null)));
 		}
