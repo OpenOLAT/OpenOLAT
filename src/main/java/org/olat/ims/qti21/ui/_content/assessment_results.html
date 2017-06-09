@@ -214,7 +214,7 @@
 #end
 </div> ## END o_qti_metainfo
 
-#if ($testResults.numberOfSections > 1 || !$options.isMetadata() )
+#if (($r.isNotNull($testResults.numberOfSections) && $testResults.numberOfSections > 1) || !$options.isMetadata() )
 <div class="o_qti_sectionsummary row o_block_large">
 #foreach($itemResult in $itemResults)
 	#if(${itemResult.isSection()} && ${itemResult.metadataVisible})
@@ -334,7 +334,7 @@
 		<div class="o_qti_section">
 		#set($inSection = true)
 		## Hide section title / metadata if there is only one section, redundant with test overview
-		#if ($testResults.numberOfSections > 1)
+		#if ($r.isNotNull($testResults.numberOfSections) && $testResults.numberOfSections > 1)
 			<a id="o_result_${velocityCount}" title="$r.escapeHtml($itemResult.title)"></a>
 			<h3><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
 				#if($itemResult.metadataVisible)
