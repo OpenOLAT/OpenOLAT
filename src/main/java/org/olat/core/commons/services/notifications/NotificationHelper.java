@@ -22,7 +22,6 @@ package org.olat.core.commons.services.notifications;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -73,26 +72,24 @@ public class NotificationHelper {
 	
 	public static Map<Subscriber, SubscriptionInfo> getSubscriptionMap(Locale locale, boolean showWithNewsOnly, Date compareDate, List<Subscriber> subs) {		
 		NotificationsManager man = NotificationsManager.getInstance();
-		Map<Subscriber, SubscriptionInfo> subToSubInfo = new HashMap<Subscriber, SubscriptionInfo>();
-		// calc subscriptioninfo for all subscriptions and, if only those with news
+		Map<Subscriber, SubscriptionInfo> subToSubInfo = new HashMap<>();
+		// calculate subscription info for all subscriptions and, if only those with news
 		// are to be shown, remove the other ones
-		for (Iterator<Subscriber> it_subs = subs.iterator(); it_subs.hasNext();) {
-			Subscriber subscriber = it_subs.next();
+		for (Subscriber subscriber:subs) {
 			Publisher pub = subscriber.getPublisher();
 			SubscriptionInfo subsInfo;
 			if (man.isPublisherValid(pub)) {
 				NotificationsHandler notifHandler = man.getNotificationsHandler(pub);
-				if (notifHandler!=null) {
+				if (notifHandler != null) {
 					subsInfo = notifHandler.createSubscriptionInfo(subscriber, locale, compareDate);
 				} else {
-					// OLAT-5647
 					log.error("getSubscriptionMap: No notificationhandler for valid publisher: "+pub+", resname: "+pub.getResName()+", businesspath: "+pub.getBusinessPath()+", subscriber: "+subscriber);
 					subsInfo = man.getNoSubscriptionInfo();
 				}
 			} else {
 				subsInfo = man.getNoSubscriptionInfo();
 			}
-			if (subsInfo.hasNews() || !showWithNewsOnly) {
+			if (subsInfo != null && subsInfo.hasNews() || !showWithNewsOnly) {
 				subToSubInfo.put(subscriber, subsInfo);
 			}
 		}

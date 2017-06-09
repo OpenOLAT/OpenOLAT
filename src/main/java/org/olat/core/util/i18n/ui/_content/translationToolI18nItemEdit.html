@@ -146,7 +146,7 @@ function checkClick(wrapperName, langCode) {
 	
 ## Method to copy the text from the reference language to the target language
 function copyFromReference() {
-	var refVal = jQuery('.o_translation_edit_reference textarea').val();
+	var refVal = jQuery('.o_translation_edit_reference .o_form_element_disabled').text();
 	jQuery('.o_translation_edit_target textarea').val(refVal);	
 }
 	

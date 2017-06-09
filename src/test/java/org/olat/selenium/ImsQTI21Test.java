@@ -687,7 +687,6 @@ public class ImsQTI21Test {
 			.closeAssessmentResults()
 			.assertOnCourseAttempts(1)
 			.assertOnCourseAssessmentTestScore(1)
-			.showAssessmentResults()
 			.assertOnAssessmentResults();
 	}
 	

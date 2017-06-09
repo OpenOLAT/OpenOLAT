@@ -160,8 +160,8 @@ public class FeedMainController extends BasicController implements Activateable2
 		vcInfo.contextPut("helper", helper);
 		
 		if (subsContext != null) {
-			String businnessPath = wControl.getBusinessControl().getAsString();
-			PublisherData data = new PublisherData(ores.getResourceableTypeName(), ores.getResourceableId().toString(), businnessPath);
+			String businessPath = wControl.getBusinessControl().getAsString();
+			PublisherData data = new PublisherData(ores.getResourceableTypeName(), ores.getResourceableId().toString(), businessPath);
 			cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
 			listenTo(cSubscriptionCtrl);
 			vcInfo.put("subscription", cSubscriptionCtrl.getInitialComponent());

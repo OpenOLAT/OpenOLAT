@@ -61,6 +61,7 @@ import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
 import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
 
@@ -130,6 +131,9 @@ public class AssessmentResultController extends FormBasicController {
 	@Autowired
 	private QTI21Service qtiService;
 	
+	@Autowired
+	private UserManager userMgr;
+	
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
 			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri, String submissionMapperUri,
 			QTI21AssessmentResultsOptions options, boolean withPrint, boolean withTitle) {
@@ -189,45 +193,62 @@ public class AssessmentResultController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			layoutCont.contextPut("title", new Boolean(withTitle));
-			layoutCont.contextPut("print", new Boolean(withPrint));
-			layoutCont.contextPut("printCommand", Boolean.FALSE);
-			if(withPrint) {
-				layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
-				layoutCont.getFormItemComponent().addListener(this);
+			layoutCont.contextPut("options", options);
+			if(assessedIdentity != null) {
+				layoutCont.contextPut("userDisplayName", userMgr.getUserDisplayName(assessedIdentity.getKey()));
+			} else {
+				layoutCont.contextPut("userDisplayName", Boolean.FALSE);
 			}
+			
+			
+			if(testSessionState == null || assessmentResult == null) {
+				// An author has deleted the test session before the user end it.
+				// It can happen with time limited tests.
+				Results results = new Results(false, "o_qtiassessment_icon", false);
+				layoutCont.contextPut("testResults", results);
+				layoutCont.contextPut("itemResults", new ArrayList<>());
+				layoutCont.contextPut("testSessionNotFound", Boolean.TRUE);
+			} else {
+				layoutCont.contextPut("title", new Boolean(withTitle));
+				layoutCont.contextPut("print", new Boolean(withPrint));
+				layoutCont.contextPut("printCommand", Boolean.FALSE);
+				if(withPrint) {
+					layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
+					layoutCont.getFormItemComponent().addListener(this);
+				}
 
-			if(assessedIdentityInfosCtrl != null) {
-				layoutCont.put("assessedIdentityInfos", assessedIdentityInfosCtrl.getInitialComponent());
-			} else if(anonym) {
-				layoutCont.contextPut("anonym", Boolean.TRUE);
-			}
-			
-			Results testResults = new Results(false, "o_qtiassessment_icon", options.isMetadata());
-			testResults.setSessionState(testSessionState);
-			
-			layoutCont.contextPut("testResults", testResults);
-			TestResult testResult = assessmentResult.getTestResult();
-			if(testResult != null) {
-				extractOutcomeVariable(testResult.getItemVariables(), testResults);
-				if(candidateSession.getManualScore() != null) {
-					testResults.addScore(candidateSession.getManualScore());
-					testResults.setManualScore(candidateSession.getManualScore());
+				if(assessedIdentityInfosCtrl != null) {
+					layoutCont.put("assessedIdentityInfos", assessedIdentityInfosCtrl.getInitialComponent());
+				} else if(anonym) {
+					layoutCont.contextPut("anonym", Boolean.TRUE);
 				}
 				
-				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-				Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
-				if(cutValue != null) {
-					testResults.setCutValue(cutValue);
+				Results testResults = new Results(false, "o_qtiassessment_icon", options.isMetadata());
+				testResults.setSessionState(testSessionState);
+				
+				layoutCont.contextPut("testResults", testResults);
+				TestResult testResult = assessmentResult.getTestResult();
+				if(testResult != null) {
+					extractOutcomeVariable(testResult.getItemVariables(), testResults);
+					if(candidateSession.getManualScore() != null) {
+						testResults.addScore(candidateSession.getManualScore());
+						testResults.setManualScore(candidateSession.getManualScore());
+					}
+					
+					AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+					Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
+					if(cutValue != null) {
+						testResults.setCutValue(cutValue);
+					}
 				}
+				
+				if(signatureMapperUri != null) {
+					String signatureUrl = signatureMapperUri + "/assessmentResultSignature.xml";
+					layoutCont.contextPut("signatureUrl", signatureUrl);
+				}
+	
+				initFormSections(layoutCont, testResults);
 			}
-			
-			if(signatureMapperUri != null) {
-				String signatureUrl = signatureMapperUri + "/assessmentResultSignature.xml";
-				layoutCont.contextPut("signatureUrl", signatureUrl);
-			}
-
-			initFormSections(layoutCont, testResults);
 		}
 	}
 	
@@ -281,7 +302,8 @@ public class AssessmentResultController extends FormBasicController {
 
 		Results r = new Results(false, node.getSectionPartTitle(), type.getCssClass(), options.isQuestionSummary());
 		r.setSessionStatus(null);//init
-
+		r.setItemIdentifier(node.getIdentifier().toString());
+		
 		ItemSessionState sessionState = testSessionState.getItemSessionStates().get(testPlanNodeKey);
 		if(sessionState != null) {
 			r.setSessionState(sessionState);
@@ -509,7 +531,7 @@ public class AssessmentResultController extends FormBasicController {
 	}
 	
 	public class Results {
-		
+
 		private Date entryTime;
 		private Date endTime;
 		private Long duration;
@@ -523,6 +545,7 @@ public class AssessmentResultController extends FormBasicController {
 		private Boolean pass;
 		private String comment;
 		
+		private String itemIdentifier;
 		private final String title;
 		private final String cssClass;
 		private final boolean section;
@@ -545,7 +568,7 @@ public class AssessmentResultController extends FormBasicController {
 			this.metadataVisible = metadataVisible;
 			this.title = null;
 		}
-		
+
 		public Results(boolean section, String title, String cssClass, boolean metadataVisible) {
 			this.section = section;
 			this.title = title;
@@ -553,6 +576,15 @@ public class AssessmentResultController extends FormBasicController {
 			this.metadataVisible = metadataVisible;
 		}
 		
+		
+		public void setItemIdentifier(String itemIdentifier) {
+			this.itemIdentifier = itemIdentifier;
+		}
+		
+		public String getItemIdentifier() {
+			return this.itemIdentifier;
+		}
+
 		public void setSessionState(ControlObjectSessionState sessionState) {
 			entryTime = sessionState.getEntryTime();
 			endTime = sessionState.getEndTime();

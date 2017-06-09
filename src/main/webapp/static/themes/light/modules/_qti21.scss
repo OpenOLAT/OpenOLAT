@@ -672,27 +672,37 @@ tr.choiceinteraction {
 .o_match_dnd_sources {
 	padding: 10px 10px 0 10px;
 	min-height: 60px;
-	border: 2px solid #eeeeee;
+	border: 1px solid $o-qti-match-sources-border-color;
+	border-radius: $o-qti-match-border-radius;
+	background: $o-qti-match-sources-bg;
 	
 	&.oo-accepted {
-		border-color: $o-qti-match-drop-accept-border-color	;
+		border-color: $o-qti-match-drop-accept-border-color;
 	}
 }
 
 .o_match_dnd_source {
 	padding: 10px;
 	margin-bottom: 10px;
-	border: 2px solid $o-qti-gap-border-color;
+	border: 2px $o-qti-match-source-border-style $o-qti-gap-border-color;
+	border-radius: $o-qti-match-border-radius;
 	background-color: #ffffff;
-	
+	background: $o-qti-match-source-bg;
+	@include clearfix;
 	
 	&.oo-selected {
-		border: 2px solid $o-qti-match-selected-border-color;
+		border: 2px $o-qti-match-source-border-style $o-qti-match-selected-border-color;
+		background: $o-qti-match-selected-bg;
 	}
 	
 	&.oo-drag {
-		border: 2px solid $o-qti-match-drag-border-color !important;
+		border: 2px $o-qti-match-source-border-style $o-qti-match-drag-border-color !important;
 	}
+	
+	cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;	
 }
 
 .source-bottom .o_match_dnd_source, .source-top .o_match_dnd_source {
@@ -700,13 +710,17 @@ tr.choiceinteraction {
 }
 
 .o_match_dnd_targets .oo-accepted {
-	border: 2px solid $o-qti-match-drop-accept-border-color	;
+	border: 2px solid $o-qti-match-drop-accept-border-color;
+	border-radius: $o-qti-match-border-radius;
 }
 
 .o_match_dnd_target {
 	padding: 10px 10px 0 10px;
 	margin: 0 0 10px 10px;
-	border: 2px solid $o-qti-gap-border-color;
+	border: 2px solid $o-qti-match-target-border-color;
+	border-radius: $o-qti-match-border-radius;
+	background: $o-qti-match-target-bg;
+	@include clearfix;
 
 	.o_match_dnd_target_drop_zone {
 		margin: 0;
@@ -714,7 +728,7 @@ tr.choiceinteraction {
 		min-height: 30px;
 		
 		.o_match_dnd_source {
-			border: 2px solid $o-qti-match-choosed-border-color;
+			border: 2px $o-qti-match-source-border-style $o-qti-match-choosed-border-color;
 		}
 	}
 }
@@ -1061,6 +1075,10 @@ ul.testPartDrilldown {
 
 /* Results reporting / detailed assessment results */
 .o_assessment_test_results {
+	.o_qti_assessment_title {
+		border-bottom: 1px solid $panel-default-border;
+	}
+	
 	/* align tables in assessment results to have same column width */
 	table th {
 		width: 40%;	
@@ -1080,17 +1098,11 @@ ul.testPartDrilldown {
 	.o_qti_sectionsummary {
 		.o_qti_section {
 			text-align: center;
-			.o_qti_section_visual{
-				 display: inline-block; 
-				 width: 140px;
-			}
+			.o_qti_section_visual{}
+			.o_qti_section_goto {}
 			.o_qti_section_sublisting {
-				 display: inline-block; 
-				 width: 140px;
-			}
-			.o_qti_section_goto {
-				 display: inline-block; 
-				 width: 140px;
+				padding: 0 10%;
+				min-height: 3em;
 			}
 		}
 	}
@@ -1102,11 +1114,30 @@ ul.testPartDrilldown {
 				margin-bottom: 20px;
 			}
 			.o_qti_items {
-				.o_qti_item {}
+				.o_qti_item {
+					.o_qti_item_id {
+						display: none;
+					}
+					.o_qti_item_comment {
+						@extend %o_note;
+						margin: 0;
+						padding: 5px 10px 10px 5px;
+						border-top: 1px solid $panel-default-border;
+						broder-bottom: 1px solid $panel-default-border;
+						h4 {
+							font-size: 100%;
+							font-weight: bold;
+							color: inherit;
+						}
+					}
+				}
 			
 			}
 		}
 	}
-	
+	.o_qti_to_overview {
+		text-align: right;
+		@extend %o_small;			
+	}	
 }	
 

@@ -148,6 +148,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		singleUserEventCenter = userSession.getSingleUserEventCenter();
 		mainVC = createVelocityContainer("assessment_run");
+		mainVC.setDomReplaceable(false); // DOM ID set in velocity
 						
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 		
@@ -355,7 +356,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				hideResultsButton.setCustomDisplayText(translate("showResults.title"));
 				hideResultsButton.setElementCssClass("o_qti_hide_assessment_results");
 				hideResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_close_togglebox");
-				if(isPanelOpen(ureq, "results", false)) {
+				if(isPanelOpen(ureq, "results", true)) {
 					doShowResults(ureq);
 				}
 			} else if(showResultsOnHomePage) {

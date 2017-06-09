@@ -1,8 +1,14 @@
 <div class="o_assessment_test_results">
+<a id="o_result_overview" title="$r.translateInAttribute("head.assessment.details")"></a>
 
-<div class="o_header_with_buttons">
+<div class="o_header_with_buttons o_qti_assessment_title">
 	#if($title)
-	<h3>$r.translate("head.assessment.details")</h3>
+	<h2>
+		$r.translate("head.assessment.details")
+		#if($userDisplayName)
+		<small>$r.translate("results.title.for", "$userDisplayName")</small>
+		#end
+	</h2>
 	#end
 	#if($print)
 	<div class="o_button_group o_button_group_right">
@@ -27,22 +33,26 @@
 	$r.render("assessedIdentityInfos")
 #end
 
-#if($testResults.metadataVisible)
+#if($r.isNotNull($testSessionNotFound) && $testSessionNotFound)
+<div class="o_warning">$r.translate("assessment.test.session.reseted")</div>
+#end
+
 <div class="o_qti_metainfo o_block_large">
-	#if(${testResults.hasPass()})
+	#if(${testResults.hasPass()} && $testResults.metadataVisible)
 		#if(${testResults.getPass().booleanValue()})
-		<h2 class="text-success">$r.translate("results.title.passed")</h2>
+		<h3 class="text-success">$r.translate("results.title.passed")</h3>
 		#elseif(!${testResults.getPass().booleanValue()})
-		<h2 class="text-danger">$r.translate("results.title.failed")</h2>
+		<h3 class="text-danger">$r.translate("results.title.failed")</h3>
 		#else
-		<h2>$r.translate("results.title.generic")</h2>
+		<h3>$r.translate("results.title.generic")</h3>
 		#end
 	#else
-		<h2>$r.translate("results.title.generic")</h2>
+		<h3>$r.translate("results.title.generic")</h3>
 	#end
 
+#if($testResults.metadataVisible)
 	<div class="row">	
-	<div class="o_qti_metainfo_listing #if(${testResults.hasScore()})col-xs-12 col-sm-7 col-md-9 col-lg-9 #end"> ## START left column
+	<div class="o_qti_metainfo_listing #if(${testResults.hasScore()})col-xs-12 col-sm-7 col-md-8 col-lg-9 #end"> ## START left column
 	<div class="o_sel_results_details o_block_large">
 	<table class="table table-condensed"><tbody>
 		<tr class="o_qti_run_durationinfo">
@@ -114,12 +124,37 @@
 			<td><a href="$signatureUrl" target="_blank"><i class="o_icon o_icon-fw o_icon_download"> </i> $r.translate("digital.signature.download.link")</a></td> 
 		</tr>
 		#end
+	
+		#if ($testResults.numberOfSections == 1)
+		#set($itemResult = $itemResults.get(0))
+		#if($r.isNotEmpty($itemResult.getSubResults()))
+		<tr class="o_qti_signature">
+			<th>$r.translate("results.questions.overview")</th>
+			<td>
+			<div class="o_qti_section_sublisting">
+				#foreach($subResults in $itemResult.getSubResults())
+					#if(${subResults.isCorrect()})
+						<i class="o_icon o_icon-lg o_icon_qti_summary_correct" title="$r.escapeHtml($subResults.title): $r.translateInAttribute("answer.correct")"> </i>
+					#elseif(${subResults.isEnded()})
+						<i class="o_icon o_icon-lg o_icon_qti_summary_ended" title="$r.escapeHtml($subResults.title): $r.translateInAttribute("answer.false")"> </i>
+					#else
+						<i class="o_icon o_icon-lg o_icon_qti_summary_notAnswered" title="$r.escapeHtml($subResults.title): $r.translateInAttribute("answer.noanswer")"> </i>
+					#end
+				#end
+			</div>
+			</td>
+		</tr>
+		#end
+		#end
 	</tbody></table>
+	
+	
+	
 	</div>	
 	</div> ## END left column / o_qti_metainfo_listing
 		
 	#if(${testResults.hasScore()})			
-	<div class="o_qti_metainfo_visual col-xs-12 col-sm-5 col-md-3 col-lg-3"> ## START right column
+	<div class="o_qti_metainfo_visual col-xs-12 col-sm-5 col-md-4 col-lg-3"> ## START right column
 	<div class="o_block_centered_wrapper"><div class="o_block_centered_content">
 		<div class="radial-progress radial-progress-lg #if(${testResults.hasPass()}) #if(${testResults.getPass().booleanValue()}) radial-progress-success #elseif(!${testResults.getPass().booleanValue()}) radial-progress-danger #end #end " id="o_performance_summary_visual" data-progress="0">
 			<div class="circle">
@@ -176,13 +211,14 @@
 	#end
 	
 	</div> ## END row
-</div> ## END o_qti_metainfo
 #end
+</div> ## END o_qti_metainfo
 
+#if (($r.isNotNull($testResults.numberOfSections) && $testResults.numberOfSections > 1) || !$options.isMetadata() )
 <div class="o_qti_sectionsummary row o_block_large">
 #foreach($itemResult in $itemResults)
 	#if(${itemResult.isSection()} && ${itemResult.metadataVisible})
-	<div class="o_qti_section col-xs-6 col-sm-4 col-md-3 col-lg-3">
+	<div class="o_qti_section o_block_large_bottom col-xs-6 col-sm-4 col-md-3 col-lg-3">
 		<h4>$r.escapeHtml($itemResult.title)</h4>
 	
 		#if(${itemResult.hasScore()})			
@@ -239,6 +275,12 @@
 			</script>			
 		</div>  ## END of o_performance_summary
 		#end
+		
+		#if($options.isQuestionSummary() || $options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
+		<div class="o_qti_section_goto o_block_bottom o_small">
+			<a href="#o_result_${velocityCount}"  onclick="o_scrollToElement('#o_result_${velocityCount}');">$r.translate("results.goto.section") <i class="o_icon o_icon-fw o_icon_start"> </i></a>
+		</div>
+		#end		
 
 		## The listing of items in the section, rendered as bullets
 		#if($r.isNotEmpty($itemResult.getSubResults()))
@@ -254,24 +296,22 @@
 			#end
 		</div>
 		#end
-		<div class="o_qti_section_sublisting o_block_top o_small">
-			<a href="#o_result_${velocityCount}">$r.translate("results.goto.section") <i class="o_icon o_icon-fw o_icon_start"> </i></a>
-		</div>
 	</div>
 	#end
-#end
+#end  ## END #foreach($itemResult in $itemResults)
 </div>
+#end  ## END $testResults.numberOfSections > 1
 
 
-<div class="o_qti_sections o_block_large">
 ## 2nd iteration: List Section titles and Items
+#if($options.isQuestionSummary() || $options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
+<div class="o_qti_sections o_block_large">
 #set($inItem = false)
 #set($inSection = false)
 #foreach($itemResult in $itemResults)
-#if($itemResult.metadataVisible || $r.isNotNull($itemResult.questionItem) || ${itemResult.hasInteractions()})
-
 	## Title for section or header. Close divs of last iteration. Structure: o_qti_section contains one o_qti_items container which contains several o_qti_item
 	#if(${itemResult.isSection()})
+		## Cleanup of last iteration: close items and section container
 		#if ($inItem)
 			## END last o_qti_items
 			</div>
@@ -280,30 +320,42 @@
 		#if ($inSection)
 			## END last o_qti_section
 			</div>
+			#if($options.isSectionSummary())
+			<div class="o_qti_to_overview o_block_top">			
+				<a href="#o_result_overview" onclick="o_scrollToElement('#o_result_overview');" title="$r.translateInAttribute("results.goto.overview")">
+					<i class="o_icon o_icon_back"></i> 
+					$r.translate("results.goto.overview")
+				</a>
+			</div>
+			#end
 			#set($inSection = false)
 		#end
+		## Start open section container		
 		<div class="o_qti_section">
 		#set($inSection = true)
-		<a id="o_result_${velocityCount}"></a>
-		<h3><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
-			#if($itemResult.metadataVisible)
-			<small>
-				#if(${itemResult.hasScore()})				
-					#if ($itemResult.hasMaxScore())
-			    		#if ($itemResult.maxScore == "-1.0")
-			  				$itemResult.score $r.translate("results.points") ($r.translate("question.progress.noMaxScore"))
-			    		#else
-			  				<span title="$r.translateInAttribute("results.score.yourscore")">$itemResult.score</span> 
-			  				$r.translate("results.of") <span title="$r.translateInAttribute("score.max")">$itemResult.maxScore</span> $r.translate("results.of.points")
-			  			#end
-					#else
-						$itemResult.score
+		## Hide section title / metadata if there is only one section, redundant with test overview
+		#if ($r.isNotNull($testResults.numberOfSections) && $testResults.numberOfSections > 1)
+			<a id="o_result_${velocityCount}" title="$r.escapeHtml($itemResult.title)"></a>
+			<h3><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
+				#if($itemResult.metadataVisible)
+				<small>
+					#if(${itemResult.hasScore()})				
+						#if ($itemResult.hasMaxScore())
+				    		#if ($itemResult.maxScore == "-1.0")
+				  				$itemResult.score $r.translate("results.points") ($r.translate("question.progress.noMaxScore"))
+				    		#else
+				  				<span title="$r.translateInAttribute("results.score.yourscore")">$itemResult.score</span> 
+				  				$r.translate("results.of") <span title="$r.translateInAttribute("score.max")">$itemResult.maxScore</span> $r.translate("results.of.points")
+				  			#end
+						#else
+							$itemResult.score
+						#end
+						(${itemResult.scorePercent}%)
 					#end
-					(${itemResult.scorePercent}%)
+				</small>
 				#end
-			</small>
-			#end
-		</h3>
+			</h3>
+		#end
 	#else
 		## this is an ITEM
 		#if (!$inItem)
@@ -311,33 +363,41 @@
 		#end
 		<div class="o_qti_item panel panel-default">
 		<div class="panel-heading">
-			<h4 class="panel-title"><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)</h4>
+			<h4 class="panel-title">
+				<i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
+				<small></small>
+			</h4>
 		</div>
 		#set($inItem = true)
 	 	#if($itemResult.metadataVisible)
 		<table class="table"><tbody>
+			<tr class="o_qti_item_id">
+				<th>ID</th>
+				<td>$itemResult.itemIdentifier</td> 
+			</tr>
 			<tr class="o_sel_assessmentitem_status">
 				<th>$r.translate("results.session.status")</th>
-				<td>$itemResult.sessionStatus</td> 
+				<td>
+					#if(${itemResult.hasPass()})
+						#if(${itemResult.getPass().booleanValue()})	
+						<i class="bgIcon o_icon o_icon-fw o_icon_passed"> </i>	 
+						#elseif(!${itemResult.getPass().booleanValue()})
+						<i class="bgIcon o_icon o_icon-fw o_icon_failed" > </i>	
+						#end
+					#end
+					$itemResult.sessionStatus
+				</td> 
 			</tr>
-			#if(${itemResult.hasMaxScore()})
-			<tr class="o_sel_assessmentitem_maxscore">
-				<th>$r.translate("score.max")</th>
-				<td>$itemResult.maxScore</td> 
-			</tr>
-			#end
-			#if(${itemResult.hasPass()})
-				#if(${itemResult.getPass().booleanValue()})	
-				<i class="bgIcon o_icon o_icon-fw o_icon_progress_success"> </i>	
-				#elseif(!${itemResult.getPass().booleanValue()})
-				<i class="bgIcon o_icon o_icon-fw o_icon_progress_danger" > </i>	
-				#end
-			#end
 			#if(${itemResult.hasScore()})
 			<tr class="o_sel_assessmentitem_score">
 				<th>$r.translate("results.score.yourscore")</th>
 				<td>
-					<div class="col-xs-3 col-md-2" style='padding-left:0;'>$itemResult.score</div>
+					<div class="col-xs-3 col-md-2" style='padding-left:0;'>
+						<span title="$r.translateInAttribute("results.score.yourscore")" class="o_sel_assessmentitem_score">$itemResult.score</span>
+						#if(${itemResult.hasMaxScore()})
+							/ <span title="$r.translateInAttribute("score.max")" class="o_sel_assessmentitem_maxscore">$itemResult.maxScore</span>
+						#end
+					</div>
 					<div class="col-xs-6 col-md-8">
 						<div class="progress" style="width:100%;">
 							<div class="progress-bar" role="progressbar" aria-valuenow="$itemResult.score" aria-valuemin="0" aria-valuemax="$itemResult.maxScore" style="width:${itemResult.scorePercent}%;">
@@ -347,6 +407,11 @@
 					</div>
 					<div class="col-xs-1">${itemResult.scorePercent}%</div>
 				</td> 
+			</tr>
+			#elseif(${itemResult.hasMaxScore()})
+			<tr>
+				<th>$r.translate("score.max")</th>
+				<td><span class="o_sel_assessmentitem_maxscore">$itemResult.maxScore</span></td> 
 			</tr>
 			#end
 			#if(${itemResult.hasPass()})
@@ -365,16 +430,19 @@
 				</td>
 			</tr>
 			#end
-			#if($r.isNotEmpty($itemResult.comment))
-			<tr class="o_sel_assessmentitem_comment">
-				<th>$r.translate("results.comment")</th>
-				<td>$r.escapeHtml($itemResult.comment)</td> 
-			</tr>
-			#end
 		</tbody></table>
+		#end  ## END #if($itemResult.metadataVisible)
+		
+		#if($r.isNotEmpty($itemResult.comment))
+		<div class="o_sel_assessmentitem_comment o_qti_item_comment">
+			<h4>$r.translate("results.comment")</h4>
+			$r.escapeHtml($itemResult.comment) 
+		</div>
 		#end
+		
+		#if($options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
 		<div class="panel-body">		
-
+ 
 		#if($r.isNotNull($itemResult.questionItem)) 
 			<div class="o_block_bottom clearfix"><h4>$r.translate("question")</h4>
 				$r.render($itemResult.questionItem.name)
@@ -419,20 +487,31 @@
 		#end
 		
 		</div> ## END of panel-body
+		#end  ##END #if($options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
 	</div> ## END of o_qti_item
 	#end
-#end
-#end
+#end  ## END foreach 
 
 #if ($inItem)
-	## END last o_qti_item and o_qti_items
-	</div></div>
+	## END o_qti_items
+	</div>
 #end
 #if ($inSection)
 	## END last o_qti_section
 	</div>
 #end
 </div> ## END of o_qti_sections
+
+#if($options.isSectionSummary())
+<div class="o_qti_to_overview o_block_top">			
+	<a href="#o_result_overview" onclick="o_scrollToElement('#o_result_overview');" title="$r.translateInAttribute("results.goto.overview")">
+		<i class="o_icon o_icon_back"></i> 
+		$r.translate("results.goto.overview")
+	</a>
+</div>
+#end
+
+#end  ## END of #if($options.isQuestionSummary() || $options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
 
 #if($printCommand)
 <script type="text/javascript">
