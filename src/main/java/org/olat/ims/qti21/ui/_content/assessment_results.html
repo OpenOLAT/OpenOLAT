@@ -1,9 +1,14 @@
 <div class="o_assessment_test_results">
 <a id="o_result_overview" title="$r.translateInAttribute("head.assessment.details")"></a>
 
-<div class="o_header_with_buttons">
+<div class="o_header_with_buttons o_qti_assessment_title">
 	#if($title)
-	<h2>$r.translate("head.assessment.details")</h2>
+	<h2>
+		$r.translate("head.assessment.details")
+		#if($userDisplayName)
+		<small>$r.translate("results.title.for", "$userDisplayName")</small>
+		#end
+	</h2>
 	#end
 	#if($print)
 	<div class="o_button_group o_button_group_right">

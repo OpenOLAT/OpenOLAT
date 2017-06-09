@@ -61,6 +61,7 @@ import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
 import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
 import org.olat.ims.qti21.ui.components.InteractionResultFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
 
@@ -130,6 +131,9 @@ public class AssessmentResultController extends FormBasicController {
 	@Autowired
 	private QTI21Service qtiService;
 	
+	@Autowired
+	private UserManager userMgr;
+	
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
 			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri, String submissionMapperUri,
 			QTI21AssessmentResultsOptions options, boolean withPrint, boolean withTitle) {
@@ -190,6 +194,13 @@ public class AssessmentResultController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("options", options);
+			if(assessedIdentity != null) {
+				layoutCont.contextPut("userDisplayName", userMgr.getUserDisplayName(assessedIdentity.getKey()));
+			} else {
+				layoutCont.contextPut("userDisplayName", Boolean.FALSE);
+			}
+			
+			
 			if(testSessionState == null || assessmentResult == null) {
 				// An author has deleted the test session before the user end it.
 				// It can happen with time limited tests.

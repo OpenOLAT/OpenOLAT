@@ -1075,6 +1075,10 @@ ul.testPartDrilldown {
 
 /* Results reporting / detailed assessment results */
 .o_assessment_test_results {
+	.o_qti_assessment_title {
+		border-bottom: 1px solid $panel-default-border;
+	}
+	
 	/* align tables in assessment results to have same column width */
 	table th {
 		width: 40%;	
