@@ -56,6 +56,7 @@ import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
@@ -418,6 +419,7 @@ public class RepositoryEntriesTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	@Ignore
 	public void testImportBlog() throws IOException, URISyntaxException {
 		URL cpUrl = RepositoryEntriesTest.class.getResource("blog-demo.zip");
 		assertNotNull(cpUrl);

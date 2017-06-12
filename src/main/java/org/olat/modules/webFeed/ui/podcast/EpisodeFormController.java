@@ -51,9 +51,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.fileresource.types.PodcastFileResource;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -91,13 +91,13 @@ public class EpisodeFormController extends FormBasicController {
 	 * @param ureq
 	 * @param control
 	 */
-	public EpisodeFormController(UserRequest ureq, WindowControl control, Item episode, Feed podcast, Translator translator) {
+	public EpisodeFormController(UserRequest ureq, WindowControl control, Item item, Feed feed, Translator translator) {
 		super(ureq, control);
-		this.episode = episode;
-		this.podcast = podcast;
-		this.baseDir = FeedManager.getInstance().getItemContainer(episode, podcast);
+		this.episode = item;
+		this.podcast = feed;
+		this.baseDir = FeedManager.getInstance().getItemContainer(item);
 		if(baseDir.getLocalSecurityCallback() == null) {
-			Quota quota = FeedManager.getInstance().getQuota(podcast.getResource());
+			Quota quota = FeedManager.getInstance().getQuota(feed);
 			baseDir.setLocalSecurityCallback(new FullAccessWithQuotaCallback(quota));
 		}
 		
@@ -298,7 +298,7 @@ public class EpisodeFormController extends FormBasicController {
 		file = uifactory.addFileElement(getWindowControl(), "file", flc);
 		file.setLabel("podcast.episode.file.label", null);
 		file.setMandatory(true, "podcast.episode.mandatory");
-		File mediaFile = FeedManager.getInstance().getItemEnclosureFile(episode, podcast);
+		File mediaFile = FeedManager.getInstance().loadItemEnclosureFile(episode);
 		file.setInitialFile(mediaFile);
 		file.addActionListener(FormEvent.ONCHANGE);
 		if(baseDir.getLocalSecurityCallback() != null && baseDir.getLocalSecurityCallback().getQuota() != null) {
@@ -307,9 +307,9 @@ public class EpisodeFormController extends FormBasicController {
 			file.setMaxUploadSizeKB(uploadLimitKB.intValue(), "ULLimitExceeded", new String[] { Formatter.roundToString((uploadLimitKB.floatValue()) / 1024f, 1), supportAddr });
 		}
 		
-		String width = episode.getWidth() > 0 ? Integer.toString(episode.getWidth()) : "";
+		String width = episode.getWidth() != null && episode.getWidth() > 0 ? Integer.toString(episode.getWidth()) : "";
 		widthEl = uifactory.addTextElement("video-width", "podcast.episode.file.width", 12, width, flc);
-		String height = episode.getHeight() > 0 ? Integer.toString(episode.getHeight()) : "";
+		String height = episode.getHeight() != null && episode.getHeight() > 0 ? Integer.toString(episode.getHeight()) : "";
 		heightEl = uifactory.addTextElement("video-height", "podcast.episode.file.height", 12, height, flc);
 
 		// Submit and cancel buttons

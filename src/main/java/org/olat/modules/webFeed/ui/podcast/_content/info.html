@@ -1,21 +1,21 @@
 <div class="o_podcast_info">
 	#if ($callback.mayEditMetadata())
-		<div class="o_feed_edit">$r.render("feed.edit")</div>
+		<div class="o_feed_edit pull-right">$r.render("feed.edit")</div>
 	#end
 	<h2>	
 		<i class="o_icon o_icon-fw o_icon o_FileResource-PODCAST_icon"></i> 
 		$r.escapeHtml($!feed.getTitle())
 	</h2>
-	#if ($helper.getImageUrl() && $helper.getImageUrl() != "")
-		<img class="o_media" src="$helper.getImageUrl()?thumbnail=180x121" alt="Podcast Icon" />
+	#if ($helper.getImageUrl($feed) && $helper.getImageUrl($feed) != "")
+		<img class="o_media" src="$helper.getImageUrl($feed)?thumbnail=180x121" alt="Podcast Icon" />
 	#end
 	<div class="o_block">
 		#if ($!feed.getAuthor())
-			<div class="o_author">$r.translate("feed.author"): $r.escapeHtml($helper.getFeedAuthor())</div>
+			<div class="o_author">$r.translate("feed.author"): $r.escapeHtml($feed.getAuthor())</div>
 		#end
-		<div class="o_date">$r.translateWithPackage("org.olat.modules.webFeed.ui.blog","feed.last.change") $!helper.getLastModified()	</div>
-		#if ($helper.getFeedDescriptionForBrowser() != "")
-		<div class="o_desc o_info">$!helper.getFeedDescriptionForBrowser()</div>
+		<div class="o_date">$r.translateWithPackage("org.olat.modules.webFeed.ui.blog","feed.last.change") $!helper.getLastModified($feed)	</div>
+		#if ($feed.getDescription() != "")
+		<div class="o_desc o_info">$!helper.getFeedDescriptionForBrowser($feed)</div>
 		#end
 		
 		#if ( !$feed.isUndefined() && $helper.getFeedUrl() )			

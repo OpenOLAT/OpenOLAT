@@ -39,7 +39,8 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.model.ItemImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.thoughtworks.xstream.XStream;
@@ -57,7 +58,7 @@ public class BlogEntryMediaController extends BasicController {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		xstream.alias("item", Item.class);
+		xstream.alias("item", ItemImpl.class);
 	}
 	
 	@Autowired
@@ -72,7 +73,7 @@ public class BlogEntryMediaController extends BasicController {
 			if(item instanceof VFSLeaf) {
 				VFSLeaf itemLeaf = (VFSLeaf)item;
 				try(InputStream in = itemLeaf.getInputStream()) {
-					Item blogItem = (Item)xstream.fromXML(in);
+					Item blogItem = (ItemImpl)xstream.fromXML(in);
 					if(blogItem.getDate() != null) {
 						DateComponentFactory.createDateComponentWithYear("dateComp", blogItem.getDate(), mainVC);
 					}

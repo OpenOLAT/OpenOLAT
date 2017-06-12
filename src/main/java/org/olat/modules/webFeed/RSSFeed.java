@@ -25,9 +25,7 @@ import java.util.List;
 import org.olat.commons.servlets.RSSServlet;
 import org.olat.core.id.Identity;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.modules.webFeed.models.Enclosure;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.manager.FeedManager;
 
 import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndContentImpl;
@@ -80,12 +78,13 @@ public class RSSFeed extends SyndFeedImpl {
 			image.setDescription(feed.getDescription());
 			image.setTitle(feed.getTitle());
 			image.setLink(getLink());
-			image.setUrl(helper.getImageUrl());
+			image.setUrl(helper.getImageUrl(feed));
 			setImage(image);
 		}
 
-		List<SyndEntry> episodes = new ArrayList<SyndEntry>();
-		for (Item item : feed.getPublishedItems()) {
+		List<SyndEntry> episodes = new ArrayList<>();
+		List<Item> publishedItems = FeedManager.getInstance().loadPublishedItems(feed);
+		for (Item item : publishedItems) {
 			SyndEntry entry = new SyndEntryImpl();
 			entry.setTitle(item.getTitle());
 
@@ -111,7 +110,7 @@ public class RSSFeed extends SyndFeedImpl {
 				enclosure.setLength(media.getLength());
 				// Also set the item link to point to the enclosure
 				entry.setLink(helper.getMediaUrl(item));
-				List<SyndEnclosure> enclosures = new ArrayList<SyndEnclosure>();
+				List<SyndEnclosure> enclosures = new ArrayList<>();
 				enclosures.add(enclosure);
 				entry.setEnclosures(enclosures);
 			}

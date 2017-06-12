@@ -39,7 +39,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.model.ItemImpl;
 import org.olat.portfolio.manager.EPFrontendManager;
 
 import com.thoughtworks.xstream.XStream;
@@ -72,7 +73,7 @@ public class BlogArtefactDetailsController extends BasicController {
 			InputStream in = itemXml.getInputStream();
 			
 			XStream xstream = XStreamHelper.createXStreamInstance();
-			xstream.alias("item", Item.class);
+			xstream.alias("item", ItemImpl.class);
 			Item item = (Item)xstream.fromXML(in);
 			FileUtils.closeSafely(in);
 			

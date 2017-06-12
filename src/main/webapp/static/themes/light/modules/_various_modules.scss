@@ -658,3 +658,8 @@ ul.o_assessment_docs>li:last-child {
 	width: 3px; 	
 	background: $o-progress-marker-color;
 }
+
+/* web documents */
+.o_web_content {
+	padding-bottom: floor($grid-gutter-width / 2);
+}

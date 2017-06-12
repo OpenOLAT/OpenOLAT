@@ -1075,6 +1075,10 @@ ul.testPartDrilldown {
 
 /* Results reporting / detailed assessment results */
 .o_assessment_test_results {
+	.o_qti_assessment_title {
+		border-bottom: 1px solid $panel-default-border;
+	}
+	
 	/* align tables in assessment results to have same column width */
 	table th {
 		width: 40%;	
@@ -1094,17 +1098,11 @@ ul.testPartDrilldown {
 	.o_qti_sectionsummary {
 		.o_qti_section {
 			text-align: center;
-			.o_qti_section_visual{
-				 display: inline-block; 
-				 width: 140px;
-			}
+			.o_qti_section_visual{}
+			.o_qti_section_goto {}
 			.o_qti_section_sublisting {
-				 display: inline-block; 
-				 width: 140px;
-			}
-			.o_qti_section_goto {
-				 display: inline-block; 
-				 width: 140px;
+				padding: 0 10%;
+				min-height: 3em;
 			}
 		}
 	}

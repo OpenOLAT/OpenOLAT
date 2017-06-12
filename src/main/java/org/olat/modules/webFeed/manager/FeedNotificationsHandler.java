@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.webFeed.managers;
+package org.olat.modules.webFeed.manager;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,8 +40,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -96,7 +96,7 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 				}
 				
 				OLATResourceable feedOres = OresHelper.createOLATResourceableInstance(p.getType(), new Long(p.getData()));
-				Feed feed = feedManager.getFeed(feedOres);
+				Feed feed = feedManager.loadFeed(feedOres);
 				List<Item> listItems = feedManager.loadItems(feed);
 				List<SubscriptionListItem> items = new ArrayList<>();
 				for (Item item : listItems) {

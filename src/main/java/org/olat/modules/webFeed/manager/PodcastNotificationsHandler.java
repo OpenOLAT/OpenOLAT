@@ -17,36 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.webFeed.managers;
+package org.olat.modules.webFeed.manager;
 
 import org.olat.core.gui.translator.Translator;
-import org.olat.fileresource.types.BlogFileResource;
+import org.olat.fileresource.types.PodcastFileResource;
 import org.springframework.stereotype.Service;
 /**
 *
-* Initial date: 27.04.2017<br>
+* Initial date: 11.05.2017<br>
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
 *
 */
 @Service
-public class BlogNotificationsHandler extends FeedNotificationsHandler {
+public class PodcastNotificationsHandler extends FeedNotificationsHandler {
 	
-	private static final String NOTIFICATIONS_HEADER_BLOG = "notifications.header.blog";
-	private static final String CSS_CLASS_ICON_BLOG = "o_blog_icon";
-	
+	private static final String NOTIFICATIONS_HEADER_PODCAST = "notifications.header.podcast";
+	private static final String CSS_CLASS_ICON_PODCAST = "o_podcast_icon";
 
 	@Override
 	protected String getCssClassIcon() {
-		return CSS_CLASS_ICON_BLOG;
+		return CSS_CLASS_ICON_PODCAST;
 	}
 
 	@Override
-	protected String getHeader(Translator translator, String title) {
-		return translator.translate(NOTIFICATIONS_HEADER_BLOG,  new String[]{ title });
+	protected String getHeader(Translator translator, String displayName) {
+		return translator.translate(NOTIFICATIONS_HEADER_PODCAST, new String[]{ displayName });
 	}
 
 	@Override
 	public String getType() {
-		return BlogFileResource.TYPE_NAME;// FileResource.BLOG
+		return PodcastFileResource.TYPE_NAME;// FileResource.PODCAST
 	}
 }

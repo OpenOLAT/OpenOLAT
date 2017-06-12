@@ -5,14 +5,13 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<bean id="feedManager" class="org.olat.modules.webFeed.managers.FeedManagerImpl">
+<bean id="feedManager" class="org.olat.modules.webFeed.manager.FeedManagerImpl">
 	<constructor-arg index="0" ref="resourceManager"/>
 	<constructor-arg index="1" ref="fileresourceManager"/>
 	<constructor-arg index="2" ref="coordinatorManager"/>
 	<!-- repositoryManager is set by setter as we mock it for testing. 
 	-> To mock managers it is often more practical to have setters than constr. args! -->
 	<property name="repositoryManager" ref="repositoryManager" />
-	<property name="imageHelper" ref="imageHelper" />
 </bean>
 
 <bean id="liveBlogContextEntryControllerCreator" class="org.olat.modules.webFeed.portfolio.LiveBlogContextEntryControllerCreator">

@@ -1,3 +1,4 @@
+<div id="$r.getCId()" class="o_course_run o_course_iq">
 #if ($enableScoreInfo)
 	#if($r.isNotNull($attempts) && $attempts > 0)
 		<div class="panel panel-default o_personal">
@@ -152,7 +153,7 @@
 	  	#if($showResultsVisible)				
 	       	#if($showResults)
 	       	<div class="panel-collapse collapse in"><div class="panel-body">
-				<div id="o_qti_results" class="small">$r.render("resultReport")</div>
+				<div id="o_qti_results">$r.render("resultReport")</div>
 			</div></div>
 	       	#end
 	  	#elseif($r.isNotNull($visibilityPeriod))
@@ -245,3 +246,4 @@
 	#end
 #end
 
+</div>  ## END of o_course_run o_course_iq container

@@ -37,9 +37,10 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.nodes.CourseNode;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.manager.FeedManager;
+import org.olat.modules.webFeed.model.ItemImpl;
 import org.olat.portfolio.EPAbstractHandler;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
@@ -61,7 +62,7 @@ import com.thoughtworks.xstream.XStream;
 public class BlogArtefactHandler extends EPAbstractHandler<BlogArtefact> {
 	
 	private static final OLog log = Tracing.createLoggerFor(BlogArtefactHandler.class);
-
+	
 	@Override
 	public String getType() {
 		return BlogArtefact.TYPE;
@@ -82,7 +83,7 @@ public class BlogArtefactHandler extends EPAbstractHandler<BlogArtefact> {
 		if (source instanceof Feed) {
 			feed = (Feed)source;
 			String subPath = getItemUUID(artefact.getBusinessPath());
-			for(Item item:feed.getItems()) {
+			for(Item item:FeedManager.getInstance().loadItems(feed)) {
 				if(subPath.equals(item.getGuid())) {
 					prefillBlogArtefact(artefact, feed, item);
 				}
@@ -115,11 +116,11 @@ public class BlogArtefactHandler extends EPAbstractHandler<BlogArtefact> {
 	}
 
 	private void prefillBlogArtefact(AbstractArtefact artefact, Feed feed, Item item) {
-		VFSContainer itemContainer = FeedManager.getInstance().getItemContainer(item, feed);
+		VFSContainer itemContainer = FeedManager.getInstance().getItemContainer(item);
 		artefact.setFileSourceContainer(itemContainer);
 		artefact.setTitle(item.getTitle());
 		artefact.setDescription(item.getDescription());
-
+		
 		VFSLeaf itemXml = (VFSLeaf)itemContainer.resolve(BlogArtefact.BLOG_FILE_NAME);
 		if(itemXml != null) {
 			InputStream in = itemXml.getInputStream();
@@ -164,15 +165,15 @@ public class BlogArtefactHandler extends EPAbstractHandler<BlogArtefact> {
 		if(content != null) {
 			try {
 				XStream xstream = XStreamHelper.createXStreamInstance();
-				xstream.alias("item", Item.class);
-				Item item = (Item)xstream.fromXML(content);
+				xstream.alias("item", ItemImpl.class);
+				ItemImpl item = (ItemImpl)xstream.fromXML(content);
 				
 				String mapperBaseURL = "";
 				Filter mediaUrlFilter = FilterFactory.getBaseURLToMediaRelativeURLFilter(mapperBaseURL);
 				sb.append(mediaUrlFilter.filter(item.getDescription())).append(" ")
 					.append(mediaUrlFilter.filter(item.getContent()));
 			} catch (Exception e) {
-				log.warn("Cannot read an artefact of type blog while idnexing", e);
+				log.warn("Cannot read an artefact of type blog while indexing", e);
 			}
 		}
 	}

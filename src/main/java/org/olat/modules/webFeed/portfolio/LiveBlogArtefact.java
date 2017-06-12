@@ -21,8 +21,8 @@
 package org.olat.modules.webFeed.portfolio;
 
 import org.olat.fileresource.types.BlogFileResource;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -55,7 +55,7 @@ public class LiveBlogArtefact extends AbstractArtefact {
 		String businessPath = getBusinessPath();
 		Long resid = Long.parseLong(businessPath.substring(10, businessPath.length() - 1));
 		OLATResource ores = OLATResourceManager.getInstance().findResourceable(resid, BlogFileResource.TYPE_NAME);
-		return FeedManager.getInstance().getFeed(ores);
+		return FeedManager.getInstance().loadFeed(ores);
 	}
 	
 }

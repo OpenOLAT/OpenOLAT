@@ -1,9 +1,14 @@
 <div class="o_assessment_test_results">
 <a id="o_result_overview" title="$r.translateInAttribute("head.assessment.details")"></a>
 
-<div class="o_header_with_buttons">
+<div class="o_header_with_buttons o_qti_assessment_title">
 	#if($title)
-	<h3>$r.translate("head.assessment.details")</h3>
+	<h2>
+		$r.translate("head.assessment.details")
+		#if($userDisplayName)
+		<small>$r.translate("results.title.for", "$userDisplayName")</small>
+		#end
+	</h2>
 	#end
 	#if($print)
 	<div class="o_button_group o_button_group_right">
@@ -32,22 +37,22 @@
 <div class="o_warning">$r.translate("assessment.test.session.reseted")</div>
 #end
 
-#if($testResults.metadataVisible)
 <div class="o_qti_metainfo o_block_large">
-	#if(${testResults.hasPass()})
+	#if(${testResults.hasPass()} && $testResults.metadataVisible)
 		#if(${testResults.getPass().booleanValue()})
-		<h2 class="text-success">$r.translate("results.title.passed")</h2>
+		<h3 class="text-success">$r.translate("results.title.passed")</h3>
 		#elseif(!${testResults.getPass().booleanValue()})
-		<h2 class="text-danger">$r.translate("results.title.failed")</h2>
+		<h3 class="text-danger">$r.translate("results.title.failed")</h3>
 		#else
-		<h2>$r.translate("results.title.generic")</h2>
+		<h3>$r.translate("results.title.generic")</h3>
 		#end
 	#else
-		<h2>$r.translate("results.title.generic")</h2>
+		<h3>$r.translate("results.title.generic")</h3>
 	#end
 
+#if($testResults.metadataVisible)
 	<div class="row">	
-	<div class="o_qti_metainfo_listing #if(${testResults.hasScore()})col-xs-12 col-sm-7 col-md-9 col-lg-9 #end"> ## START left column
+	<div class="o_qti_metainfo_listing #if(${testResults.hasScore()})col-xs-12 col-sm-7 col-md-8 col-lg-9 #end"> ## START left column
 	<div class="o_sel_results_details o_block_large">
 	<table class="table table-condensed"><tbody>
 		<tr class="o_qti_run_durationinfo">
@@ -119,12 +124,37 @@
 			<td><a href="$signatureUrl" target="_blank"><i class="o_icon o_icon-fw o_icon_download"> </i> $r.translate("digital.signature.download.link")</a></td> 
 		</tr>
 		#end
+	
+		#if ($testResults.numberOfSections == 1)
+		#set($itemResult = $itemResults.get(0))
+		#if($r.isNotEmpty($itemResult.getSubResults()))
+		<tr class="o_qti_signature">
+			<th>$r.translate("results.questions.overview")</th>
+			<td>
+			<div class="o_qti_section_sublisting">
+				#foreach($subResults in $itemResult.getSubResults())
+					#if(${subResults.isCorrect()})
+						<i class="o_icon o_icon-lg o_icon_qti_summary_correct" title="$r.escapeHtml($subResults.title): $r.translateInAttribute("answer.correct")"> </i>
+					#elseif(${subResults.isEnded()})
+						<i class="o_icon o_icon-lg o_icon_qti_summary_ended" title="$r.escapeHtml($subResults.title): $r.translateInAttribute("answer.false")"> </i>
+					#else
+						<i class="o_icon o_icon-lg o_icon_qti_summary_notAnswered" title="$r.escapeHtml($subResults.title): $r.translateInAttribute("answer.noanswer")"> </i>
+					#end
+				#end
+			</div>
+			</td>
+		</tr>
+		#end
+		#end
 	</tbody></table>
+	
+	
+	
 	</div>	
 	</div> ## END left column / o_qti_metainfo_listing
 		
 	#if(${testResults.hasScore()})			
-	<div class="o_qti_metainfo_visual col-xs-12 col-sm-5 col-md-3 col-lg-3"> ## START right column
+	<div class="o_qti_metainfo_visual col-xs-12 col-sm-5 col-md-4 col-lg-3"> ## START right column
 	<div class="o_block_centered_wrapper"><div class="o_block_centered_content">
 		<div class="radial-progress radial-progress-lg #if(${testResults.hasPass()}) #if(${testResults.getPass().booleanValue()}) radial-progress-success #elseif(!${testResults.getPass().booleanValue()}) radial-progress-danger #end #end " id="o_performance_summary_visual" data-progress="0">
 			<div class="circle">
@@ -181,14 +211,14 @@
 	#end
 	
 	</div> ## END row
-</div> ## END o_qti_metainfo
 #end
+</div> ## END o_qti_metainfo
 
-#if ($testResults.numberOfSections > 1)
+#if (($r.isNotNull($testResults.numberOfSections) && $testResults.numberOfSections > 1) || !$options.isMetadata() )
 <div class="o_qti_sectionsummary row o_block_large">
 #foreach($itemResult in $itemResults)
 	#if(${itemResult.isSection()} && ${itemResult.metadataVisible})
-	<div class="o_qti_section col-xs-6 col-sm-4 col-md-3 col-lg-3">
+	<div class="o_qti_section o_block_large_bottom col-xs-6 col-sm-4 col-md-3 col-lg-3">
 		<h4>$r.escapeHtml($itemResult.title)</h4>
 	
 		#if(${itemResult.hasScore()})			
@@ -245,6 +275,12 @@
 			</script>			
 		</div>  ## END of o_performance_summary
 		#end
+		
+		#if($options.isQuestionSummary() || $options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
+		<div class="o_qti_section_goto o_block_bottom o_small">
+			<a href="#o_result_${velocityCount}"  onclick="o_scrollToElement('#o_result_${velocityCount}');">$r.translate("results.goto.section") <i class="o_icon o_icon-fw o_icon_start"> </i></a>
+		</div>
+		#end		
 
 		## The listing of items in the section, rendered as bullets
 		#if($r.isNotEmpty($itemResult.getSubResults()))
@@ -260,9 +296,6 @@
 			#end
 		</div>
 		#end
-		<div class="o_qti_section_sublisting o_block_top o_small">
-			<a href="#o_result_${velocityCount}"  onclick="o_scrollToElement('#o_result_${velocityCount}');">$r.translate("results.goto.section") <i class="o_icon o_icon-fw o_icon_start"> </i></a>
-		</div>
 	</div>
 	#end
 #end  ## END #foreach($itemResult in $itemResults)
@@ -270,15 +303,15 @@
 #end  ## END $testResults.numberOfSections > 1
 
 
-<div class="o_qti_sections o_block_large">
 ## 2nd iteration: List Section titles and Items
+#if($options.isQuestionSummary() || $options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
+<div class="o_qti_sections o_block_large">
 #set($inItem = false)
 #set($inSection = false)
 #foreach($itemResult in $itemResults)
-#if($itemResult.metadataVisible || $r.isNotNull($itemResult.questionItem) || ${itemResult.hasInteractions()})
-
 	## Title for section or header. Close divs of last iteration. Structure: o_qti_section contains one o_qti_items container which contains several o_qti_item
 	#if(${itemResult.isSection()})
+		## Cleanup of last iteration: close items and section container
 		#if ($inItem)
 			## END last o_qti_items
 			</div>
@@ -287,17 +320,21 @@
 		#if ($inSection)
 			## END last o_qti_section
 			</div>
+			#if($options.isSectionSummary())
 			<div class="o_qti_to_overview o_block_top">			
 				<a href="#o_result_overview" onclick="o_scrollToElement('#o_result_overview');" title="$r.translateInAttribute("results.goto.overview")">
 					<i class="o_icon o_icon_back"></i> 
 					$r.translate("results.goto.overview")
 				</a>
 			</div>
+			#end
 			#set($inSection = false)
 		#end
-		#if ($testResults.numberOfSections > 1)
-			<div class="o_qti_section">
-			#set($inSection = true)
+		## Start open section container		
+		<div class="o_qti_section">
+		#set($inSection = true)
+		## Hide section title / metadata if there is only one section, redundant with test overview
+		#if ($r.isNotNull($testResults.numberOfSections) && $testResults.numberOfSections > 1)
 			<a id="o_result_${velocityCount}" title="$r.escapeHtml($itemResult.title)"></a>
 			<h3><i class="o_icon $itemResult.cssClass"> </i> $r.escapeHtml($itemResult.title)
 				#if($itemResult.metadataVisible)
@@ -392,17 +429,18 @@
 				#end
 				</td>
 			</tr>
-			#end  ## END #if($itemResult.metadataVisible)
+			#end
 		</tbody></table>
-		#end
+		#end  ## END #if($itemResult.metadataVisible)
 		
-		#if($itemResult.metadataVisible && $r.isNotEmpty($itemResult.comment))
+		#if($r.isNotEmpty($itemResult.comment))
 		<div class="o_sel_assessmentitem_comment o_qti_item_comment">
 			<h4>$r.translate("results.comment")</h4>
 			$r.escapeHtml($itemResult.comment) 
 		</div>
 		#end
 		
+		#if($options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
 		<div class="panel-body">		
  
 		#if($r.isNotNull($itemResult.questionItem)) 
@@ -449,10 +487,10 @@
 		#end
 		
 		</div> ## END of panel-body
+		#end  ##END #if($options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
 	</div> ## END of o_qti_item
 	#end
-#end
-#end
+#end  ## END foreach 
 
 #if ($inItem)
 	## END o_qti_items
@@ -464,13 +502,16 @@
 #end
 </div> ## END of o_qti_sections
 
+#if($options.isSectionSummary())
 <div class="o_qti_to_overview o_block_top">			
 	<a href="#o_result_overview" onclick="o_scrollToElement('#o_result_overview');" title="$r.translateInAttribute("results.goto.overview")">
 		<i class="o_icon o_icon_back"></i> 
 		$r.translate("results.goto.overview")
 	</a>
 </div>
+#end
 
+#end  ## END of #if($options.isQuestionSummary() || $options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
 
 #if($printCommand)
 <script type="text/javascript">

@@ -23,8 +23,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.ui.artefacts.collect.EPCollectStepForm00;
 
@@ -62,6 +62,6 @@ public class EPCreateLiveBlogArtefactStepForm00 extends EPCollectStepForm00 {
 		feed.setAuthor(blogArtefact.getAuthor().getName());
 		feed.setTitle(blogArtefact.getTitle());
 		feed.setDescription(blogArtefact.getDescription());
-		FeedManager.getInstance().updateFeedMetadata(feed);
+		FeedManager.getInstance().updateFeed(feed);
 	}
 }

@@ -25,7 +25,6 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -34,9 +33,9 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.manager.FeedFileStorge;
+import org.olat.modules.webFeed.manager.FeedManager;
 
 /**
  * Abstract feed file resource class. Used to decrease redundancy.
@@ -88,8 +87,7 @@ public abstract class FeedFileResource extends FileResource {
 			Path fPath = PathUtils.visit(file, filename, visitor);
 			
 			if(visitor.isValid()) {
-				Path feedXml = fPath.resolve(FeedManager.FEED_FILE_NAME);
-				Feed feed = FeedManager.getInstance().readFeedFile(feedXml);
+				Feed feed = FeedManager.getInstance().loadFeedFromXML(fPath);
 				if(feed != null && type.equals(feed.getResourceableTypeName())) {
 					eval.setValid(true);
 					eval.setDisplayname(feed.getTitle());
@@ -110,7 +108,7 @@ public abstract class FeedFileResource extends FileResource {
 		throws IOException {
 
 			String filename = file.getFileName().toString();
-			if(FeedManager.FEED_FILE_NAME.equals(filename)) {
+			if(FeedFileStorge.FEED_FILE_NAME.equals(filename)) {
 				feedFile = true;
 			}
 			return feedFile ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;
@@ -129,59 +127,15 @@ public abstract class FeedFileResource extends FileResource {
 	 */
 	public static boolean validate(File directory, String type) {
 		boolean valid = false;
-		if (directory != null) {
-			// Verify the directory structure:
-			// /root
-			// __feed.xml
-			// __/items
-			// ____/item
-			// ______item.xml
-			// ______/media.xml
-			// ________...
-			// ____/item
-			// ______...
-			VFSContainer root = new LocalFolderImpl(directory);
-			// try to read podcast
-			try {
-				Feed feed = FeedManager.getInstance().readFeedFile(root);
-				if (feed != null) {
-					// The feed is valid, let's check the items
-					if (feed.isInternal()) {
-						List<String> itemIds = feed.getItemIds();
-						VFSContainer itemsContainer = (VFSContainer) root.resolve(FeedManager.ITEMS_DIR);
-						if (itemsContainer == null) {
-							valid = itemIds.isEmpty(); //empty podcast
-						} else {
-							int validItemsCount = 0;
-							for (String itemId : itemIds) {
-								// Try loading each item
-								VFSItem itemContainer = itemsContainer.resolve(itemId);
-								Item item = FeedManager.getInstance().loadItem(itemContainer);
-								if (item != null) {
-									// This item is valid, increase the counter
-									validItemsCount++;
-								}
-							}
-							if (validItemsCount == itemIds.size()) {
-								// The feed and all items are valid
-								valid = true;
-							}
-						}
-					} else if (feed.isExternal()) {
-						// assume the feed url is valid.
-						valid = true;
-					} else if (feed.isUndefined()) {
-						// the feed is empty.
-						valid = true;
-					}
-					// check type
-					if (!type.equals(feed.getResourceableTypeName())) {
-						valid = false;
-					}
-				}
-			} catch (Exception e) {
-				// Reading feed failed, the directory is hence invalid
+		// try to read feed file
+		try {
+			Feed feed = FeedManager.getInstance().loadFeedFromXML(directory.toPath());
+			if (feed != null && type.equals(feed.getResourceableTypeName())) {
+				valid = true;
 			}
+		} catch (Exception e) {
+			// Reading feed failed, the directory is hence invalid
+			log.error("", e);
 		}
 		return valid;
 	}

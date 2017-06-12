@@ -20,7 +20,6 @@
 package org.olat.modules.webFeed.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -60,15 +59,14 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
+import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedViewHelper;
-import org.olat.modules.webFeed.managers.FeedManager;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
-import org.olat.modules.webFeed.models.ItemPublishDateComparator;
+import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.manager.FeedManager;
+import org.olat.modules.webFeed.model.ItemImpl;
 import org.olat.modules.webFeed.portfolio.BlogEntryMedia;
 import org.olat.modules.webFeed.portfolio.BlogEntryMediaHandler;
 import org.olat.portfolio.EPUIFactory;
@@ -90,13 +88,14 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private ArrayList<Link> editButtons;
 	private ArrayList<Link> deleteButtons;
 	private ArrayList<Link> itemLinks;
-	private Map<Item,Controller> artefactLinks;
-	private Map<Item,Controller> commentsLinks;
+	private Map<Item, Controller> artefactLinks;
+	private Map<Item, Controller> commentsLinks;
 	private Link addItemButton, makeInternalButton, makeExternalButton, olderItemsLink, newerItemsLink, startpageLink;
 	private FormBasicController itemFormCtr;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDialogCtr;
 	private Feed feedResource;
+	private List<Item> accessibleItems;
 	private Item currentItem;
 	private FeedViewHelper helper;
 	private FeedUIFactory uiFactory;
@@ -104,7 +103,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private FeedSecurityCallback callback;
 	private Panel mainPanel;
 	private ItemController itemCtr;
-	//private int allItemsCount = 0;
+	// private int allItemsCount = 0;
 	private List<ItemId> allItemIds;
 	// Only one lock variable is needed, since only one item can be edited
 	// at a time.
@@ -112,7 +111,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private FeedItemDisplayConfig displayConfig;
 	public static Event HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT = new Event("cmd.handle.new.external.feed.dialog");
 	public static Event FEED_INFO_IS_DIRTY_EVENT = new Event("cmd.feed.info.is.dirty");
-	
+
+	FeedManager feedManager = FeedManager.getInstance();
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -122,6 +122,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * default constructor, with full FeedItemDisplayConfig
+	 * 
 	 * @param ureq
 	 * @param wControl
 	 * @param feed
@@ -130,13 +131,15 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param callback
 	 * @param vcRightColumn
 	 */
-	public ItemsController(final UserRequest ureq, final WindowControl wControl, final Feed feed, final FeedViewHelper helper, final FeedUIFactory uiFactory,
-			final FeedSecurityCallback callback, final VelocityContainer vcRightColumn) {
+	public ItemsController(final UserRequest ureq, final WindowControl wControl, final Feed feed,
+			final FeedViewHelper helper, final FeedUIFactory uiFactory, final FeedSecurityCallback callback,
+			final VelocityContainer vcRightColumn) {
 		this(ureq, wControl, feed, helper, uiFactory, callback, vcRightColumn, null);
 	}
-	
+
 	/**
 	 * load items with a given displayconfig
+	 * 
 	 * @param ureq
 	 * @param wControl
 	 * @param feed
@@ -146,15 +149,17 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param vcRightColumn
 	 * @param displayConfig
 	 */
-	public ItemsController(final UserRequest ureq, final WindowControl wControl, final Feed feed, final FeedViewHelper helper, final FeedUIFactory uiFactory,
-			final FeedSecurityCallback callback, final VelocityContainer vcRightColumn, FeedItemDisplayConfig displayConfig) {
+	public ItemsController(final UserRequest ureq, final WindowControl wControl, final Feed feed,
+			final FeedViewHelper helper, final FeedUIFactory uiFactory, final FeedSecurityCallback callback,
+			final VelocityContainer vcRightColumn, FeedItemDisplayConfig displayConfig) {
 		super(ureq, wControl);
-		
+
 		if (displayConfig == null) {
 			displayConfig = new FeedItemDisplayConfig(true, true, true);
 		}
 		this.displayConfig = displayConfig;
 		this.feedResource = feed;
+		this.accessibleItems = feedManager.loadFilteredAndSortedItems(feed, callback, ureq.getIdentity());
 		this.helper = helper;
 		this.uiFactory = uiFactory;
 		this.callback = callback;
@@ -162,6 +167,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 		vcItems = uiFactory.createItemsVelocityContainer(this);
 		vcItems.contextPut("feed", feed);
+		vcItems.contextPut("items", accessibleItems);
 		vcItems.contextPut("callback", callback);
 		vcItems.contextPut("helper", helper);
 
@@ -174,13 +180,12 @@ public class ItemsController extends BasicController implements Activateable2 {
 		newerItemsLink.setCustomEnabledLinkCSS("o_forward");
 		newerItemsLink.setCustomDisplayText("&raquo;");
 		newerItemsLink.setTitle("feed.newer.items");
-		
+
 		startpageLink = LinkFactory.createLink("feed.startpage", vcItems, this);
 		startpageLink.setCustomEnabledLinkCSS("o_first_page");
 
-		
 		createEditButtons(ureq, feed);
-	
+
 		// Add item details page link
 		createItemLinks(feed);
 		// Add item user comments link and rating
@@ -191,11 +196,10 @@ public class ItemsController extends BasicController implements Activateable2 {
 		createDateComponents(feed);
 
 		// The year/month navigation
-		List<Item> items = feed.getFilteredItems(callback, ureq.getIdentity());
-		setAllItemIds(items);
-		naviCtr = new YearNavigationController(ureq, wControl, getTranslator(), items);
+		setAllItemIds(accessibleItems);
+		naviCtr = new YearNavigationController(ureq, wControl, getTranslator(), accessibleItems);
 		listenTo(naviCtr);
-		if (displayConfig.isShowDateNavigation()){
+		if (displayConfig.isShowDateNavigation()) {
 			vcRightColumn.put("navi", naviCtr.getInitialComponent());
 		}
 
@@ -203,18 +207,19 @@ public class ItemsController extends BasicController implements Activateable2 {
 		mainPanel.setContent(vcItems);
 		this.putInitialPanel(mainPanel);
 	}
-	
+
 	private void setAllItemIds(List<Item> items) {
 		allItemIds = new ArrayList<ItemId>();
-		for(Item item:items) {
+		for (Item item : items) {
 			allItemIds.add(new ItemId(item));
 		}
 	}
-	
+
 	private boolean isSameAllItems(List<Item> items) {
-		if(allItemIds == null) return false;
+		if (allItemIds == null)
+			return false;
 		List<ItemId> itemIds = new ArrayList<ItemId>();
-		for(Item item:items) {
+		for (Item item : items) {
 			itemIds.add(new ItemId(item));
 		}
 		return allItemIds.containsAll(itemIds) && itemIds.containsAll(allItemIds);
@@ -222,19 +227,19 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * Creates all necessary buttons for editing the feed's items
-	 * @param feed the current feed object
+	 * 
+	 * @param feed
+	 *            the current feed object
 	 */
 	private void createEditButtons(UserRequest ureq, Feed feed) {
-		List<Item> items = feed.getCopiedListOfItems();
-
 		editButtons = new ArrayList<>();
 		deleteButtons = new ArrayList<>();
 		artefactLinks = new HashMap<>();
 		if (feed.isInternal()) {
 			addItemButton = LinkFactory.createButtonSmall("feed.add.item", vcItems, this);
 			addItemButton.setElementCssClass("o_sel_feed_item_new");
-			if (items != null) {
-				for (Item item : items) {
+			if (accessibleItems != null) {
+				for (Item item : accessibleItems) {
 					createButtonsForItem(ureq, feed, item);
 				}
 			}
@@ -244,7 +249,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 			// - it has just been created,
 			// - all items have been removed or
 			// - the feed url of an external feed has been set empty.
-			// In such a case, the user can decide whether to make it internal or
+			// In such a case, the user can decide whether to make it internal
+			// or
 			// external.
 			makeInternalAndExternalButtons();
 		}
@@ -257,32 +263,36 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param feed
 	 */
 	private void createCommentsAndRatingsLinks(UserRequest ureq, Feed feed) {
-		List<Item> items = feed.getCopiedListOfItems();
-		if (items != null) {
-			for (Item item : items) {
+		if (accessibleItems != null) {
+			for (Item item : accessibleItems) {
 				// Add rating and commenting controller
 				createCommentsAndRatingsLink(ureq, feed, item);
-			}			
-		}		
+			}
+		}
 	}
+
 	/**
 	 * Create comments and rating component link for given feed item
+	 * 
 	 * @param ureq
 	 * @param feed
 	 * @param item
 	 */
 	private void createCommentsAndRatingsLink(UserRequest ureq, Feed feed, Item item) {
-		if(feed == null || item == null) return;//check against concurrent changes
+		if (feed == null || item == null)
+			return;// check against concurrent changes
 		if (CoreSpringFactory.containsBean(CommentAndRatingService.class)) {
-			if(commentsLinks == null) {
-				commentsLinks = new HashMap<Item,Controller>();
-			} else if(commentsLinks.containsKey(item)) {
+			if (commentsLinks == null) {
+				commentsLinks = new HashMap<Item, Controller>();
+			} else if (commentsLinks.containsKey(item)) {
 				removeAsListenerAndDispose(commentsLinks.get(item));
 			}
 
 			boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
-			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), callback.mayEditMetadata(), anonym);
-			UserCommentsAndRatingsController commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), feed, item.getGuid(), secCallback, true, true, false);
+			CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(),
+					callback.mayEditMetadata(), anonym);
+			UserCommentsAndRatingsController commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq,
+					getWindowControl(), feed, item.getGuid(), secCallback, true, true, false);
 			commentsAndRatingCtr.setUserObject(item);
 			listenTo(commentsAndRatingCtr);
 			commentsLinks.put(item, commentsAndRatingCtr);
@@ -298,22 +308,20 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param feed
 	 */
 	private void createDateComponents(Feed feed) {
-		List<Item> items = feed.getCopiedListOfItems();
-		if (items != null) {
-			for (Item item : items) {
+		if (accessibleItems != null) {
+			for (Item item : accessibleItems) {
 				String guid = item.getGuid();
-				if(item.getDate() != null) {
+				if (item.getDate() != null) {
 					DateComponentFactory.createDateComponentWithYear("date." + guid, item.getDate(), vcItems);
 				}
-			}			
-		}				
+			}
+		}
 	}
-	
+
 	private void createItemLinks(Feed feed) {
-		List<Item> items = feed.getCopiedListOfItems();
-		itemLinks = new ArrayList<Link>();
-		if (items != null) {
-			for (Item item : items) {
+		itemLinks = new ArrayList<>();
+		if (accessibleItems != null) {
+			for (Item item : accessibleItems) {
 				createItemLink(item);
 			}
 		}
@@ -324,14 +332,16 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 */
 	private void createItemLink(Item item) {
 		String guid = item.getGuid();
-		Link itemLink_more = LinkFactory.createCustomLink("link.to." + guid, "link.to." + guid, "feed.link.more", Link.LINK, vcItems, this);
+		Link itemLink_more = LinkFactory.createCustomLink("link.to." + guid, "link.to." + guid, "feed.link.more",
+				Link.LINK, vcItems, this);
 		itemLink_more.setIconRightCSS("o_icon o_icon_start");
 		itemLink_more.setCustomEnabledLinkCSS("o_link_forward");
 		itemLink_more.setUserObject(item);
-		
-		Link itemLink_title = LinkFactory.createCustomLink("titlelink.to." + guid, "titlelink.to." + guid, StringEscapeUtils.escapeHtml(item.getTitle()), Link.NONTRANSLATED, vcItems, this);
+
+		Link itemLink_title = LinkFactory.createCustomLink("titlelink.to." + guid, "titlelink.to." + guid,
+				StringEscapeUtils.escapeHtml(item.getTitle()), Link.NONTRANSLATED, vcItems, this);
 		itemLink_title.setUserObject(item);
-		
+
 		itemLinks.add(itemLink_title);
 		itemLinks.add(itemLink_more);
 	}
@@ -357,35 +367,41 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 		String guid = item.getGuid();
 		String editId = "feed.edit.item.".concat(guid);
-		Link editButton = LinkFactory.createCustomLink(editId, editId, "feed.edit.item", Link.BUTTON_SMALL, vcItems, this);
+		Link editButton = LinkFactory.createCustomLink(editId, editId, "feed.edit.item", Link.BUTTON_SMALL, vcItems,
+				this);
 		editButton.setElementCssClass("o_sel_feed_item_edit");
 		editButton.setEnabled(edit);
 		editButton.setVisible(edit);
-		
+
 		String deleteId = "delete.".concat(guid);
-		Link deleteButton = LinkFactory.createCustomLink(deleteId, deleteId, "delete", Link.BUTTON_SMALL, vcItems, this);
+		Link deleteButton = LinkFactory.createCustomLink(deleteId, deleteId, "delete", Link.BUTTON_SMALL, vcItems,
+				this);
 		deleteButton.setElementCssClass("o_sel_feed_item_delete");
 		deleteButton.setEnabled(delete);
 		deleteButton.setVisible(delete);
 
-		if(feedResource.isInternal() && getIdentity().getKey() != null && getIdentity().getKey().equals(item.getAuthorKey())) {
-			String businessPath = BusinessControlFactory.getInstance().getAsString(getWindowControl().getBusinessControl());
+		if (feedResource.isInternal() && getIdentity().getKey() != null
+				&& getIdentity().getKey().equals(item.getAuthorKey())) {
+			String businessPath = BusinessControlFactory.getInstance()
+					.getAsString(getWindowControl().getBusinessControl());
 			businessPath += "[item=" + item.getGuid() + ":0]";
-			
-			if(portfolioModule.isEnabled()) {
+
+			if (portfolioModule.isEnabled()) {
 				String name = "feed.artefact.item.".concat(guid);
 				BlogEntryMedia media = new BlogEntryMedia(feed, item);
-				MediaCollectorComponent collectorCmp = new MediaCollectorComponent(name, getWindowControl(), media, blogMediaHandler, businessPath);
+				MediaCollectorComponent collectorCmp = new MediaCollectorComponent(name, getWindowControl(), media,
+						blogMediaHandler, businessPath);
 				vcItems.put(name, collectorCmp);
 			} else {
-				Controller artefactCtrl = EPUIFactory.createArtefactCollectWizzardController(ureq, getWindowControl(), feedResource, businessPath);
-				if(artefactCtrl != null) {
+				Controller artefactCtrl = EPUIFactory.createArtefactCollectWizzardController(ureq, getWindowControl(),
+						feedResource, businessPath);
+				if (artefactCtrl != null) {
 					artefactLinks.put(item, artefactCtrl);
 					vcItems.put("feed.artefact.item.".concat(guid), artefactCtrl.getInitialComponent());
 				}
 			}
 		}
-		
+
 		editButton.setUserObject(item);
 		deleteButton.setUserObject(item);
 		editButtons.add(editButton);
@@ -398,14 +414,14 @@ public class ItemsController extends BasicController implements Activateable2 {
 	@Override
 	protected void doDispose() {
 		// make sure the lock is released
-		FeedManager.getInstance().releaseLock(lock);
+		feedManager.releaseLock(lock);
 		// Dispose confirm deletion dialog controller since it isn't listend to.
 		if (confirmDialogCtr != null) {
 			removeAsListenerAndDispose(confirmDialogCtr);
 		}
-		
-		if(artefactLinks != null) {
-			for(Controller ctrl:artefactLinks.values()) {
+
+		if (artefactLinks != null) {
+			for (Controller ctrl : artefactLinks.values()) {
 				ctrl.dispose();
 			}
 			artefactLinks.clear();
@@ -420,40 +436,41 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		FeedManager feedManager = FeedManager.getInstance();
-		// feed for this event and make sure the updated feed object is in the view
-		Feed feed = feedManager.getFeed(feedResource);
-		vcItems.contextPut("feed", feed);
-		
+		// feed for this event and make sure the updated feed object is in the
+		// view
+		feedResource = feedManager.loadFeed(feedResource);
+		accessibleItems = feedManager.loadFilteredAndSortedItems(feedResource, callback, ureq.getIdentity());
+
 		if (source == addItemButton) {
-			currentItem = new Item();
+			currentItem = new ItemImpl(feedResource);
 			currentItem.setDraft(true);
 			currentItem.setAuthorKey(ureq.getIdentity().getKey());
-			// Generate new GUID for item, needed for media files that are stored relative to the GUID
-			currentItem.setGuid(CodeHelper.getGlobalForeverUniqueID()); 
-			// Create item and media containers 
-			feedManager.createItemContainer(feed, currentItem);
-			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feed);
+			// Generate new GUID for item, needed for media files that are
+			// stored relative to the GUID
+			currentItem.setGuid(CodeHelper.getGlobalForeverUniqueID());
+			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feedResource);
 			activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
 
 		} else if (editButtons != null && editButtons.contains(source)) {
 			currentItem = (Item) ((Link) source).getUserObject();
-			// check if still available, maybe deleted by other user in the meantime
-			if (feed.getItems().contains(currentItem)) {
-				lock = feedManager.acquireLock(feed, currentItem, getIdentity());
+			// check if still available, maybe deleted by other user in the
+			// meantime
+			if (accessibleItems.contains(currentItem)) {
+				lock = feedManager.acquireLock(feedResource, currentItem, getIdentity());
 				if (lock.isSuccess()) {
 					// reload to prevent stale object, then launch editor
-					currentItem = feedManager.getItem(feed, currentItem.getGuid());					
-					itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feed);
+					currentItem = feedManager.loadItem(currentItem.getKey());
+					itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem,
+							feedResource);
 					activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
 				} else {
 					String fullName = userManager.getUserDisplayName(lock.getOwner());
 					showInfo("feed.item.is.being.edited.by", fullName);
-				}				
+				}
 			} else {
 				showInfo("feed.item.is.being.edited.by", "unknown");
 			}
-			
+
 		} else if (deleteButtons != null && deleteButtons.contains(source)) {
 			Item item = (Item) ((Link) source).getUserObject();
 			confirmDialogCtr = activateYesNoDialog(ureq, null, translate("feed.item.confirm.delete"), confirmDialogCtr);
@@ -461,69 +478,70 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 		} else if (itemLinks != null && itemLinks.contains(source)) {
 			Item item = (Item) ((Link) source).getUserObject();
-			// Reload first, could be stale
-			item = feedManager.getItem(feed, item.getGuid());					
-			if(item != null) {
+			if (item != null) {
 				displayItemController(ureq, item);
 			}
 		} else if (source == makeInternalButton) {
-			if (feed.isUndefined()) {
-				feedManager.updateFeedMode(Boolean.FALSE, feed);				
-			} else if (feed.isExternal()) {
-				// Very special case: another user concurrently changed feed to external. Do nothing
+			if (feedResource.isUndefined()) {
+				feedResource = feedManager.updateFeedMode(Boolean.FALSE, feedResource);
+			} else if (feedResource.isExternal()) {
+				// Very special case: another user concurrently changed feed to
+				// external. Do nothing
 				vcItems.setDirty(true);
 				return;
 			}
 			// else nothing to do, already set to internal by a concurrent user
-			
+
 			// Add temporary item and open edit dialog
 			addItemButton = LinkFactory.createButton("feed.add.item", vcItems, this);
 			addItemButton.setElementCssClass("o_sel_feed_item_new");
-			currentItem = new Item();
+			currentItem = new ItemImpl(feedResource);
 			currentItem.setDraft(true);
 			currentItem.setAuthorKey(ureq.getIdentity().getKey());
-			// Generate new GUID for item, needed for media files that are stored relative to the GUID
-			currentItem.setGuid(CodeHelper.getGlobalForeverUniqueID()); 
-			// Create item and media containers 
-			feedManager.createItemContainer(feed, currentItem);
-			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feed);
+			// Generate new GUID for item, needed for media files that are
+			// stored relative to the GUID
+			currentItem.setGuid(CodeHelper.getGlobalForeverUniqueID());
+			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feedResource);
 			activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
 			// do logging
-			ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(), LoggingResourceable.wrap(feed));
-			
+			ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(),
+					LoggingResourceable.wrap(feedResource));
 
 		} else if (source == makeExternalButton) {
-			if (feed.isUndefined()) {
-				feedManager.updateFeedMode(Boolean.TRUE, feed);
+			if (feedResource.isUndefined()) {
+				feedResource = feedManager.updateFeedMode(Boolean.TRUE, feedResource);
 				vcItems.setDirty(true);
-				// Ask listening FeedMainController to open and handle a new external
+				// Ask listening FeedMainController to open and handle a new
+				// external
 				// feed dialog.
 				fireEvent(ureq, HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT);
 				// do logging
-				ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(), LoggingResourceable.wrap(feed));
-			} 
+				ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(),
+						LoggingResourceable.wrap(feedResource));
+			}
 			// else nothing to do, already set to external by a concurrent user
 
 		} else if (source == olderItemsLink) {
 			helper.olderItems();
-			createEditButtons(ureq, feed);
-			createCommentsAndRatingsLinks(ureq, feed);
+			createEditButtons(ureq, feedResource);
+			createCommentsAndRatingsLinks(ureq, feedResource);
 			vcItems.setDirty(true);
 
 		} else if (source == newerItemsLink) {
 			helper.newerItems();
-			createEditButtons(ureq, feed);
-			createCommentsAndRatingsLinks(ureq, feed);
+			createEditButtons(ureq, feedResource);
+			createCommentsAndRatingsLinks(ureq, feedResource);
 			vcItems.setDirty(true);
 
 		} else if (source == startpageLink) {
 			helper.startpage();
-			createEditButtons(ureq, feed);
-			createCommentsAndRatingsLinks(ureq, feed);
+			createEditButtons(ureq, feedResource);
+			createCommentsAndRatingsLinks(ureq, feedResource);
 			vcItems.setDirty(true);
 
 		} else if (source instanceof Link) {
-			// if it's a link try to get attached identity and assume that user wants
+			// if it's a link try to get attached identity and assume that user
+			// wants
 			// to see the users home page
 			Link userLink = (Link) source;
 			Object userObject = userLink.getUserObject();
@@ -533,22 +551,24 @@ public class ItemsController extends BasicController implements Activateable2 {
 				NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
 			}
 		}
-		
+
 		// Check if someone else added an item, reload everything
-		if (!isSameAllItems(feed.getFilteredItems(callback, ureq.getIdentity()))) {
-			resetItems(ureq, feed);
+		List<Item> items = feedManager.loadFilteredAndSortedItems(feedResource, callback, ureq.getIdentity());
+		if (!isSameAllItems(items)) {
+			resetItems(ureq, feedResource);
 		}
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
+	 *      org.olat.core.gui.control.Controller,
+	 *      org.olat.core.gui.control.Event)
 	 */
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		FeedManager feedManager = FeedManager.getInstance();
-		// reload feed for this event and make sure the updated feed object is in the view
-		Feed feed = feedManager.getFeed(feedResource);
-		vcItems.contextPut("feed", feed);
+		// reload feed for this event and make sure the updated feed object is
+		// in the view
+		feedResource = feedManager.loadFeed(feedResource);
+		accessibleItems = feedManager.loadFilteredAndSortedItems(feedResource, callback, ureq.getIdentity());
 
 		if (source == cmc) {
 			if (event.equals(CloseableModalController.CLOSE_MODAL_EVENT)) {
@@ -556,29 +576,28 @@ public class ItemsController extends BasicController implements Activateable2 {
 				cmc = null;
 				removeAsListenerAndDispose(itemFormCtr);
 				itemFormCtr = null;
-				// Check if this item has ever been added to the feed. If not, remove the temp dir
-				cleanupTmpItemMediaDir(currentItem, feed, feedManager);
+				// Check if this item has ever been added to the feed. If not,
+				// remove the temp dir
+				cleanupTmpItemMediaDir(currentItem);
 				// If there were no items and the user doesn't want to save the
 				// first item, go back to the decision whether to make the feed
 				// internally or subscribe to an external feed.
-				if (!feed.hasItems()) {
-					feedManager.updateFeedMode(null, feed);
+				if (!feedManager.hasItems(feedResource)) {
+					feedResource = feedManager.updateFeedMode(null, feedResource);
 					makeInternalAndExternalButtons();
 				}
-				//release lock
+				// release lock
 				feedManager.releaseLock(lock);
 			}
 		} else if (source == confirmDialogCtr && DialogBoxUIFactory.isYesEvent(event)) {
 			// The user confirmed that the item shall be deleted
 			Item item = (Item) ((DialogBoxController) source).getUserObject();
-			lock = feedManager.acquireLock(feed, item, getIdentity());
+			lock = feedManager.acquireLock(feedResource, item, getIdentity());
 			if (lock.isSuccess()) {
 				// remove the item from the naviCtr
 				naviCtr.remove(item);
-				// remove the item also from the helper (cached selection)
-				helper.removeItem(item);
 				// permanently remove item
-				feed = feedManager.remove(item, feed);
+				feedResource = feedManager.deleteItem(item);
 				// remove delete and edit buttons of this item
 				deleteButtons.remove(source);
 				for (Link editButton : editButtons) {
@@ -589,23 +608,24 @@ public class ItemsController extends BasicController implements Activateable2 {
 				}
 				// If the last item has been deleted, provide buttons for adding
 				// items manually or from an external source/feed.
-				if (!feed.hasItems()) {
+				if (!feedManager.hasItems(feedResource)) {
 					makeInternalAndExternalButtons();
 					// The subscription/feed url from the feed info is obsolete
 					fireEvent(ureq, ItemsController.FEED_INFO_IS_DIRTY_EVENT);
 				} else {
 					if (callback.mayEditItems() || callback.mayCreateItems()) {
-						createEditButtons(ureq, feed);
+						createEditButtons(ureq, feedResource);
 					}
-					createCommentsAndRatingsLinks(ureq, feed);
+					createCommentsAndRatingsLinks(ureq, feedResource);
 				}
 				vcItems.setDirty(true);
 				// in case we were in single item view, show all items
 				mainPanel.setContent(vcItems);
 				feedManager.releaseLock(lock);
-				lock = null;				
+				lock = null;
 				// do logging
-				ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_DELETE, getClass(), LoggingResourceable.wrap(item));
+				ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_DELETE, getClass(),
+						LoggingResourceable.wrap(item));
 
 			} else {
 				String fullName = userManager.getUserDisplayName(lock.getOwner());
@@ -616,58 +636,57 @@ public class ItemsController extends BasicController implements Activateable2 {
 			if (event.equals(Event.CHANGED_EVENT) || event.equals(Event.CANCELLED_EVENT)) {
 				if (event.equals(Event.CHANGED_EVENT)) {
 					FileElement mediaFile = currentItem.getMediaFile();
-					if (feedManager.getItemContainer(currentItem, feed) == null) {
+					if (feedManager.getItemContainer(currentItem) == null) {
 						// Ups, deleted in the meantime by someone else
 						// remove the item from the naviCtr
 						naviCtr.remove(currentItem);
-						// remove the item also from the helper (cached selection)
-						helper.removeItem(currentItem);
 					} else {
-						if (!feed.getItems().contains(currentItem)) {
-							// Add the modified item if it is not part of the feed
-							feed = feedManager.addItem(currentItem, mediaFile, feed);
-							if(feed == null) {
-								//the item could not be added, is not internal
-								feed = feedManager.getFeed(feedResource);
-								if(!feed.isInternal() && !feed.isExternal() && !feed.hasItems()) {
-									feed = feedManager.updateFeedMode(Boolean.FALSE, feed);
-									feed = feedManager.addItem(currentItem, mediaFile, feed);
+						if (!accessibleItems.contains(currentItem)) {
+							// Add the modified item if it is not part of the
+							// feed
+							feedResource = feedManager.createItem(feedResource, currentItem, mediaFile);
+							if (feedResource == null) {
+								// the item could not be added, is not internal
+								feedResource = feedManager.loadFeed(feedResource);
+								if (!feedResource.isInternal() && !feedResource.isExternal()
+										&& !feedManager.hasItems(feedResource)) {
+									feedResource = feedManager.updateFeedMode(Boolean.FALSE, feedResource);
+									feedResource = feedManager.createItem(feedResource, currentItem, mediaFile);
 								}
 							}
-							
-							if(feed != null) {
-								createButtonsForItem(ureq, feed, currentItem);
+
+							if (feedResource != null) {
+								createButtonsForItem(ureq, feedResource, currentItem);
 								createItemLink(currentItem);
 								// Add date component
 								String guid = currentItem.getGuid();
-								if(currentItem.getDate() != null) {
-									DateComponentFactory.createDateComponentWithYear("date." + guid, currentItem.getDate(), vcItems);
+								if (currentItem.getDate() != null) {
+									DateComponentFactory.createDateComponentWithYear("date." + guid,
+											currentItem.getDate(), vcItems);
 								}
 								// Add comments and rating
-								createCommentsAndRatingsLink(ureq, feed, currentItem);
+								createCommentsAndRatingsLink(ureq, feedResource, currentItem);
 								// add it to the navigation controller
 								naviCtr.add(currentItem);
-								// ... and also to the helper
-								helper.addItem(currentItem);
-								if (feed.getItems() != null && feed.getItems().size() == 1) {
-									// First item added, show feed url (for subscription)
+								accessibleItems = feedManager.loadFilteredAndSortedItems(feedResource, callback,
+										ureq.getIdentity());
+								if (accessibleItems != null && accessibleItems.size() == 1) {
+									// First item added, show feed url (for
+									// subscription)
 									fireEvent(ureq, ItemsController.FEED_INFO_IS_DIRTY_EVENT);
-									// Set the base URI of the feed for the current user. All users
+									// Set the base URI of the feed for the
+									// current user. All users
 									// have unique URIs.
 									helper.setURIs();
 								}
-								// do logging
-								ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_CREATE, getClass(), LoggingResourceable.wrap(currentItem));
 							}
 						} else {
 							// Write item file
-							feed = feedManager.updateItem(currentItem, mediaFile, feed);
-							// Update current item in the users view, replace in helper cache of
-							// current selected items.
-							helper.updateItem(currentItem); 
+							currentItem = feedManager.updateItem(currentItem, mediaFile);
 							// Do logging
-							ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_EDIT, getClass(), LoggingResourceable.wrap(currentItem));
-						}						
+							ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_EDIT, getClass(),
+									LoggingResourceable.wrap(currentItem));
+						}
 					}
 					vcItems.setDirty(true);
 					// if the current item is displayed, update the view
@@ -676,13 +695,16 @@ public class ItemsController extends BasicController implements Activateable2 {
 					}
 
 				} else if (event.equals(Event.CANCELLED_EVENT)) {
-					// Check if this item has ever been added to the feed. If not, remove the temp dir
-					cleanupTmpItemMediaDir(currentItem, feed, feedManager);
-					// If there were no items and the user doesn't want to save the
-					// first item, go back to the decision whether to make the feed
+					// Check if this item has ever been added to the feed. If
+					// not, remove the temp dir
+					cleanupTmpItemMediaDir(currentItem);
+					// If there were no items and the user doesn't want to save
+					// the
+					// first item, go back to the decision whether to make the
+					// feed
 					// internally or subscribe to an external feed.
-					if (!feed.hasItems()) {
-						feedManager.updateFeedMode(null, feed);
+					if (!feedManager.hasItems(feedResource)) {
+						feedResource = feedManager.updateFeedMode(null, feedResource);
 						makeInternalAndExternalButtons();
 					}
 				}
@@ -698,19 +720,16 @@ public class ItemsController extends BasicController implements Activateable2 {
 			}
 		} else if (source == naviCtr && event instanceof NavigationEvent) {
 			List<? extends Dated> selItems = ((NavigationEvent) event).getSelectedItems();
-			List<Item> items = new ArrayList<Item>();
+			List<Item> items = new ArrayList<>();
 			for (Dated item : selItems) {
 				if (item instanceof Item) {
 					items.add((Item) item);
 				}
 			}
-			// make sure items are sorted properly
-			Collections.sort(items, new ItemPublishDateComparator());
-			helper.setSelectedItems(items);
 			if (callback.mayEditItems() || callback.mayCreateItems()) {
-				createEditButtons(ureq, feed);
+				createEditButtons(ureq, feedResource);
 			}
-			createCommentsAndRatingsLinks(ureq, feed);
+			createCommentsAndRatingsLinks(ureq, feedResource);
 			vcItems.setDirty(true);
 			mainPanel.setContent(vcItems);
 
@@ -718,76 +737,80 @@ public class ItemsController extends BasicController implements Activateable2 {
 			if (event == Event.BACK_EVENT) {
 				mainPanel.setContent(vcItems);
 			}
-			
+
 		} else if (source instanceof UserCommentsAndRatingsController) {
 			UserCommentsAndRatingsController commentsRatingsCtr = (UserCommentsAndRatingsController) source;
 			if (event == UserCommentsAndRatingsController.EVENT_COMMENT_LINK_CLICKED) {
 				// go to details page
 				Item item = (Item) commentsRatingsCtr.getUserObject();
-				item = feedManager.getItem(feed, item.getGuid());	
-				if(item != null) {
+				if (item != null) {
 					ItemController myItemCtr = displayItemController(ureq, item);
-					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType(ItemController.ACTIVATION_KEY_COMMENTS);
+					List<ContextEntry> entries = BusinessControlFactory.getInstance()
+							.createCEListFromResourceType(ItemController.ACTIVATION_KEY_COMMENTS);
 					myItemCtr.activate(ureq, entries, null);
 				}
 			}
 		}
-		
-		// Check if someone else added an item, reload everything
-		if (feed == null) {
-			//do something
-		} else if(!isSameAllItems(feed.getFilteredItems(callback, getIdentity()))) {
-			resetItems(ureq, feed);
+
+		// reload everything
+		if (feedResource != null) {
+			resetItems(ureq, feedResource);
 		}
 	}
 
 	/**
 	 * Private helper to remove any temp media files created for this feed
+	 * 
 	 * @param tmpItem
-	 * @param feed
-	 * @param feedManager
 	 */
-	private void cleanupTmpItemMediaDir(Item tmpItem, Feed feed, FeedManager feedManager) {
-		// Add GUID null check to not accidentally delete the entire feed directory
-		// in case there is somewhere a programming error
-		if (!feed.getItems().contains(tmpItem) && tmpItem.getGuid() != null) {
-			VFSContainer itemContainer = feedManager.getItemContainer(tmpItem, feed);
-			if (itemContainer != null) {
-				itemContainer.delete();
-			}
-		}					
+	private void cleanupTmpItemMediaDir(Item tmpItem) {
+		String guid = tmpItem.getGuid();
+		if (guid == null) return;
+		
+		// delete the dir only if the item is not saved.
+		Long key = tmpItem.getKey();
+		if (key == null) {
+			feedManager.deleteItem(tmpItem);
+		}
 	}
 
 	/**
-	 * @param controller The <code>FormBasicController</code> to be displayed in
-	 *          the modal dialog.
+	 * @param controller
+	 *            The <code>FormBasicController</code> to be displayed in the
+	 *            modal dialog.
 	 */
 	private void activateModalDialog(FormBasicController controller, String title) {
 		listenTo(controller);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), controller.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), controller.getInitialComponent(),
+				true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
 
 	/**
 	 * Sets the items view dirty.
+	 * 
 	 * @param ureq
-	 * @param feed the current feed
+	 * @param feed
+	 *            the current feed
 	 */
 	public void resetItems(UserRequest ureq, Feed feed) {
-		FeedManager.getInstance().loadItems(feed);
-		List<Item> items = feed.getFilteredItems(callback, ureq.getIdentity());
-		helper.setSelectedItems(items);
-		naviCtr.setDatedObjects(items);
-		setAllItemIds(items);
+		feedResource = feedManager.loadFeed(feedResource);
+		accessibleItems = feedManager.loadFilteredAndSortedItems(feed, callback, ureq.getIdentity());
+		vcItems.contextPut("feed", feedResource);
+		vcItems.contextPut("items", accessibleItems);
+
+		naviCtr.setDatedObjects(accessibleItems);
+		setAllItemIds(accessibleItems);
 		// Add item details page link
-		createItemLinks(feed);
+		createItemLinks(feedResource);
 		// Add item user comments link and rating
 		if (displayConfig.isShowCRInMinimized()) {
-			createCommentsAndRatingsLinks(ureq, feed);
+			createCommentsAndRatingsLinks(ureq, feedResource);
 		}
 		// Add date components
-		createDateComponents(feed);
+		createDateComponents(feedResource);
+
 		vcItems.setDirty(true);
 	}
 
@@ -801,26 +824,31 @@ public class ItemsController extends BasicController implements Activateable2 {
 		removeAsListenerAndDispose(itemCtr);
 		Link editButton = getButtonByUserObject(item, editButtons);
 		Link deleteButton = getButtonByUserObject(item, deleteButtons);
-		Controller artefactLink =  getArtefactLinkByUserObject(item);
-		FeedManager feedManager = FeedManager.getInstance();
-		Feed feed = feedManager.getFeed(feedResource);
-		itemCtr = new ItemController(ureq, getWindowControl(), item, feed, helper, uiFactory, callback, editButton, deleteButton, artefactLink, displayConfig);
-		listenTo(itemCtr);
-		mainPanel.setContent(itemCtr.getInitialComponent());
+		Controller artefactLink = getArtefactLinkByUserObject(item);
+		Feed feed = feedManager.loadFeed(feedResource);
+		item = feedManager.loadItem(item.getKey());
+		if (item != null) {
+			itemCtr = new ItemController(ureq, getWindowControl(), item, feed, helper, uiFactory, callback, editButton,
+					deleteButton, artefactLink, displayConfig);
+			listenTo(itemCtr);
+			mainPanel.setContent(itemCtr.getInitialComponent());
+		}
 		return itemCtr;
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty() || feedResource == null) return;
-		
+		if (entries == null || entries.isEmpty() || feedResource == null)
+			return;
+
+		Item item = null;
 		String itemId = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(itemId != null && itemId.startsWith("item=")) {
 			itemId = itemId.substring(5, itemId.length());
+			Long itemKey = Long.parseLong(itemId);
+			item = FeedManager.getInstance().loadItem(itemKey);
 		}
-		int index = feedResource.getItemIds().indexOf(itemId);
-		if (index >= 0) {
-			Item item = feedResource.getItems().get(index);
+		if (item != null) {
 			activate(ureq, item);
 		}
 	}
@@ -850,7 +878,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		}
 		return result;
 	}
-	
+
 	private Controller getArtefactLinkByUserObject(Item item) {
 		Controller result = null;
 		if (artefactLinks != null && artefactLinks.containsKey(item)) {
@@ -858,16 +886,16 @@ public class ItemsController extends BasicController implements Activateable2 {
 		}
 		return result;
 	}
-	
+
 	private class ItemId {
 		private final String guid;
 		private final Date lastModification;
-		
+
 		public ItemId(Item item) {
 			guid = item.getGuid();
 			lastModification = item.getLastModified();
 		}
-		
+
 		@Override
 		public int hashCode() {
 			return guid.hashCode() + (lastModification == null ? -483 : lastModification.hashCode());
@@ -875,15 +903,15 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 		@Override
 		public boolean equals(Object obj) {
-			if(this == obj) {
+			if (this == obj) {
 				return true;
 			}
-			if(obj instanceof ItemId) {
-				ItemId id = (ItemId)obj;
-				return guid.equals(id.guid) && ((lastModification == null && id.lastModification == null) ||
-						(lastModification != null && lastModification.equals(id.lastModification)));
+			if (obj instanceof ItemId) {
+				ItemId id = (ItemId) obj;
+				return guid.equals(id.guid) && ((lastModification == null && id.lastModification == null)
+						|| (lastModification != null && lastModification.equals(id.lastModification)));
 			}
-			
+
 			return false;
 		}
 	}

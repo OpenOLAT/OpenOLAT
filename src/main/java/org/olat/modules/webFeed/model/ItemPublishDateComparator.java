@@ -17,10 +17,12 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.webFeed.models;
+package org.olat.modules.webFeed.model;
 
 import java.util.Comparator;
 import java.util.Date;
+
+import org.olat.modules.webFeed.Item;
 
 /**
  * Compares the publish date of two items.
@@ -34,6 +36,7 @@ public class ItemPublishDateComparator implements Comparator<Item> {
 	/**
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
+	@Override
 	public int compare(Item a, Item b) {
 		// reverse chronological order
 		Date d1 = a.getPublishDate();

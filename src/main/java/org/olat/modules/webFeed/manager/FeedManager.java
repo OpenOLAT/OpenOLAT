@@ -9,7 +9,7 @@
  * <p>
  * Unless required by applicable law or agreed to in writing,<br>
  * software distributed under the License is distributed on an "AS IS" BASIS, <br>
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or ied. <br>
  * See the License for the specific language governing permissions and <br>
  * limitations under the License.
  * <p>
@@ -17,29 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.webFeed.managers;
+package org.olat.modules.webFeed.manager;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.fileresource.types.BlogFileResource;
-import org.olat.fileresource.types.PodcastFileResource;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.FeedSecurityCallback;
+import org.olat.modules.webFeed.Item;
 import org.olat.resource.OLATResource;
 
 /**
@@ -51,14 +47,16 @@ import org.olat.resource.OLATResource;
  * 
  * @author gwassmann
  */
-public abstract class FeedManager extends BasicManager {
+public abstract class FeedManager {
 
 	protected static FeedManager INSTANCE;
 
+	//TODO delete moved to FeedFileStorage
 	public static final String ITEMS_DIR = "items";
 	public static final String FEED_FILE_NAME = "feed.xml";
 	public static final String ITEM_FILE_NAME = "item.xml";
 	public static final String MEDIA_DIR = "media";
+	
 	public static final String RSS_FEED_NAME = "feed.rss";
 	public static final String RESOURCE_NAME = "feed";
 
@@ -80,25 +78,33 @@ public abstract class FeedManager extends BasicManager {
 	}
 
 	/**
-	 * Creates an OLAT podcast resource
+	 * Creates a blank OLAT podcast resource 
 	 * 
 	 * @return The resource
 	 */
 	public abstract OLATResourceable createPodcastResource();
+	
+	/**
+	 * Check if a feed has items
+	 * 
+	 * @param feed
+	 * @return
+	 */
+	public abstract boolean hasItems(Feed feed);
 
 	/**
-	 * Creates an OLAT blog resource
+	 * Creates a blank OLAT blog resource
 	 * 
 	 * @return The resource
 	 */
 	public abstract OLATResourceable createBlogResource();
 
 	/**
-	 * Deletes a given feed.
+	 * Deletes a feed.
 	 * 
 	 * @param feed
 	 */
-	public abstract void delete(OLATResourceable feed);
+	public abstract void deleteFeed(OLATResourceable feed);
 
 	/**
 	 * Copies a given feed resourceable
@@ -108,72 +114,132 @@ public abstract class FeedManager extends BasicManager {
 	public abstract boolean copy(OLATResource source, OLATResource target);
 
 	/**
-	 * Adds the given <code>Item</code> to the <code>Feed</code>.
+	 * Create the given Item and saves the appropriate file (podcast, video etc.)
+	 * on the file system.
 	 * 
-	 * @param item
-	 * @param feed
+	 * @param feed the item will be added to this feed
+	 * @param item the item to add
+	 * @param file the file of the item
+	 * @return
 	 */
-	public abstract Feed addItem(Item item, FileElement file, Feed feed);
+	public abstract Feed createItem(Feed feed, Item item, FileElement file);
 
+	
 	/**
-	 * Removes the given <code>Item</code> from the <code>Feed</code>. Its content
-	 * will be deleted.
+	 * Removes the given Item from the feed and delete the item from the
+	 * database. Additionally the content on the file system (podcast etc.)
+	 * and the comments and the ratings of the item are deleted.
 	 * 
-	 * @param item
-	 * @param feed
+	 * @param item the item to remove
+	 * @return the feed without the removed item
 	 */
-	public abstract Feed remove(Item item, Feed feed);
-
+	public abstract Feed deleteItem(Item item);
+	
 	/**
+	 * Update the Item in the database and save the file element in the file
+	 * system.
+	 * 
 	 * @param modifiedItem
-	 * @param feed
+	 * @param file
+	 * @return the updated feed
 	 */
-	public abstract Feed updateItem(Item modifiedItem, FileElement file, Feed feed);
+	public abstract Item updateItem(Item modifiedItem, FileElement file);
 
 	/**
-	 * Update the feed source mode
+	 * Update the feed source mode. Additionally it deleted all Items of the Feed
+	 * if the mode of the Feed changes.
 	 * 
-	 * @param external True: set to be an external feed; false: this is an
-	 *          internal feed; null=undefined
+	 * @param external true: set to be an external feed; false: this is an
+	 *          internal feed; null: undefined
 	 * @param feed
 	 * @return Feed the updated feed object
 	 */
 	public abstract Feed updateFeedMode(Boolean external, Feed feed);
 
 	/**
-	 * Update the feed metadata from the given feed object
+	 * Update the feed from the given feed object
 	 * 
 	 * @param feed
 	 * @return
 	 */
-	public abstract Feed updateFeedMetadata(Feed feed);
-
+	public abstract Feed updateFeed(Feed feed);
+	
+	/**
+	 * Load the Item with the given key from the database or NULL if no such
+	 * item exists.
+	 * 
+	 * @param key the key of the Item
+	 * @return the loaded Item or NULL
+	 */
+	public abstract Item loadItem(Long key);
+	
+	/**
+	 * Load the Item with the given guid from the database or NULL if no such
+	 * item exists.
+	 * @param feedKey the key of the feed
+	 * @param guid the guid of the Item
+	 * 
+	 * @return the loaded Item or NULL
+	 */
+	public abstract Item loadItemByGuid(Long feedKey, String guid);
+	
 	/**
 	 * Load all items of the feed (from file system or the external feed)
 	 * 
 	 * @param feed
 	 */
-	public abstract List<Item> loadItems(final Feed feed);
-
+	public abstract List<Item> loadItems(Feed feed);
+	
 	/**
-	 * Get the item from the feed with the given GUID or NULL if no such item
-	 * exists. Make sure you did load the feed before executing this!
+	 * Load the guid of all Items of the feed
 	 * 
 	 * @param feed
-	 * @param GUID
-	 * @return the Item or NULL
 	 */
-	public abstract Item getItem(Feed feed, String GUID);
+	public abstract List<String> loadItemsGuid(Feed feed);
+	
+	/**
+	 * Load all published Items
+	 * 
+	 * @param feed
+	 */
+	public abstract List<Item> loadPublishedItems(Feed feed);
+	
+	/**
+	 * Load all Items of a feed and filter them in relation to the identity rights.
+	 * 
+	 * @param feed
+	 * @param callback
+	 * @param identity
+	 * @return
+	 */
+	public abstract List<Item> loadFilteredAndSortedItems(Feed feed, FeedSecurityCallback callback, Identity identity);
 	
 	/**
 	 * Returns the feed with the provided id or null if not found.
 	 * 
 	 * @param feed The feed to be re-read
-	 * @return The newly read feed (without items)
+	 * @return The newly read feed
 	 */
-	public abstract Feed getFeed(OLATResourceable feed);
+	public abstract Feed loadFeed(OLATResourceable feed);
 	
-	public abstract OlatRootFolderImpl getResourceContainer(OLATResourceable ores);
+	/**
+	 * Returns the feed from the XML file inside the directory or null if not
+	 * found.
+	 * 
+	 * @param feedDir the directory which contains the feed file
+	 * @return the feed or null
+	 */
+	public abstract Feed loadFeedFromXML(Path feedDir);
+	
+	/**
+	 * Import the feed and all items from an feed XML file.<br>
+	 * The XML File is read and the feed is stored in the database. All XML
+	 * files of the items are read and the items stored in the database.<br>
+	 * At the end the XML Files are deleted.
+	 * 
+	 * @param ores
+	 */
+	public abstract void importFeedFromXML(OLATResource ores);
 
 	/**
 	 * Returns the media file of the item
@@ -236,36 +302,32 @@ public abstract class FeedManager extends BasicManager {
 	 * Returns the container of the item which belongs to the feed
 	 * 
 	 * @param item
-	 * @param feed
 	 * @return The container of the item
 	 */
-	public abstract VFSContainer getItemContainer(Item item, Feed feed);
-
+	public abstract VFSContainer getItemContainer(Item item);
+	
 	/**
-	 * Returns the media container of the item of feed
+	 * Save the item in an XML file in the item container.
 	 * 
 	 * @param item
-	 * @param feed
-	 * @return The media container of the item
 	 */
-	public abstract VFSContainer getItemMediaContainer(Item item, Feed feed);
+	public abstract void saveItemAsXML(Item item);
+	
+	/**
+	 * Delete the item XML file from the item container.
+	 * 
+	 * @param item
+	 */
+	public abstract void deleteItemXML(Item item);
 
 	/**
 	 * Returns the File of the item's enclosure if it exists or null
 	 * 
 	 * @param item
-	 * @param feed
 	 * @return The enclosure media file
 	 */
-	public abstract File getItemEnclosureFile(Item item, Feed feed);
+	public abstract File loadItemEnclosureFile(Item item);
 
-	/**
-	 * Returns the container of the feed
-	 * 
-	 * @param feed
-	 * @return The feed container
-	 */
-	public abstract VFSContainer getFeedContainer(OLATResourceable feed);
 	
 	public abstract Quota getQuota(OLATResourceable feed);
 
@@ -320,48 +382,24 @@ public abstract class FeedManager extends BasicManager {
 	 * @param ores
 	 * @return The kind of the resource type
 	 */
-	public String getFeedKind(OLATResourceable ores) {
-		String feedKind = null;
-		String typeName = ores.getResourceableTypeName();
-		if (PodcastFileResource.TYPE_NAME.equals(typeName)) {
-			feedKind = KIND_PODCAST;
-		} else if (BlogFileResource.TYPE_NAME.equals(typeName)) {
-			feedKind = KIND_BLOG;
-		} else if ("LiveBlog".equals(typeName)) {
-			feedKind = KIND_BLOG;
-		}
-		return feedKind;
-	}
+	public abstract String getFeedKind(OLATResourceable ores);
 
 	/**
-	 * Set the image of the feed (update handled separately)
+	 * Replace the image of the feed.
+	 * If the image is null, the existing image is kept.
 	 * 
+	 * @param feed
 	 * @param image
-	 * @param feed
+	 * @return
 	 */
-	public abstract void setImage(FileElement image, Feed feed);
-
-	/**
-	 * Delete the image of the feed
-	 * 
-	 * @param feed
-	 */
-	public abstract void deleteImage(Feed feed);
-
-	/**
-	 * Prepare the filesystem for a new item, create the item container and all
-	 * necessary sub container, e.g. the media container
-	 * 
-	 * @param feed
-	 * @param currentItem
-	 * @return the container for the item
-	 */
-	public abstract VFSContainer createItemContainer(Feed feed, Item currentItem);
-
-	public abstract Feed readFeedFile(VFSContainer root);
+	public abstract Feed replaceFeedImage(Feed feed, FileElement image);
 	
-	public abstract Feed readFeedFile(Path feedPath);
-
-	public abstract Item loadItem(VFSItem itemContainer);
+	/**
+	 * Delete the feed image.
+	 * 
+	 * @param feed
+	 * @return
+	 */
+	public abstract Feed deleteFeedImage(Feed feed);
 
 }

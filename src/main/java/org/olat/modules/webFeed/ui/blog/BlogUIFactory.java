@@ -33,8 +33,8 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.AbstractFeedCourseNode;
 import org.olat.course.nodes.feed.blog.BlogNodeEditController;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.webFeed.models.Feed;
-import org.olat.modules.webFeed.models.Item;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 

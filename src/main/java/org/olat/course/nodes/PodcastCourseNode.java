@@ -50,7 +50,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.FeedReadOnlySecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
-import org.olat.modules.webFeed.managers.FeedManager;
+import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
 import org.olat.modules.webFeed.ui.podcast.PodcastUIFactory;
