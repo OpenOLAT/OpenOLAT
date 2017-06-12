@@ -2763,7 +2763,6 @@ alter table o_feed_item add constraint feed_item_to_ident_author_fk foreign key 
 create index idx_item_ident_author_idx on o_feed_item(fk_identity_author_id);
 alter table o_feed_item add constraint feed_item_to_ident_modified_fk foreign key (fk_identity_modified_id) references o_bs_identity (id);
 create index idx_item_ident_modified_idx on o_feed_item(fk_identity_modified_id);
-create index idx_item_guid_idx on o_feed_item (f_guid);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);

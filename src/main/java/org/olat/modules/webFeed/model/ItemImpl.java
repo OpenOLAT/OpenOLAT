@@ -131,6 +131,7 @@ public class ItemImpl implements Item, Serializable {
 		this.feed = feed;
 	}
 	
+	@SuppressWarnings("unused")
 	private ItemImpl() {
 		// make Hibernate happy
 	}
