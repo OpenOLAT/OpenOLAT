@@ -360,7 +360,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		
 		
 		//create single page
-		URL pageUrl = RepositoryEntriesTest.class.getResource("singlepage.html");
+		URL pageUrl = CoursesElementsTest.class.getResource("singlepage.html");
 		assertNotNull(pageUrl);
 		File page = new File(pageUrl.toURI());
 		
@@ -835,7 +835,7 @@ public class CoursesElementsTest extends OlatJerseyTestCase {
 		assertNotNull(course.getEditorRootNodeId());
 		
 		//the page
-		URL pageUrl = RepositoryEntriesTest.class.getResource("singlepage.html");
+		URL pageUrl = CoursesElementsTest.class.getResource("singlepage.html");
 		assertNotNull(pageUrl);
 		File page = new File(pageUrl.toURI());
 		
