@@ -70,6 +70,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
+import org.olat.modules.lecture.restapi.LectureBlocksWebService;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -157,15 +158,29 @@ public class RepositoryEntryResource {
     return response.build();
   }
   
+	/**
+	 * To get the web service for the lecture blocks of a specific learning resource.
+	 * 
+	 * @param repoEntryKey The primary key of the learning resource 
+	 * @return The web service for lecture blocks.
+	 */
+	@Path("lectureblocks")
+	public LectureBlocksWebService getLectureBlocksWebService(@PathParam("repoEntryKey")String repoEntryKey) {
+	    RepositoryEntry re = lookupRepositoryEntry(repoEntryKey);
+	    if(re == null) return null;
+		LectureBlocksWebService service = new LectureBlocksWebService(re);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
   
   //get put/post delete add owner
   
 	/**
 	 * Returns the list of owners of the repository entry specified by the groupKey.
 	 * @response.representation.200.qname {http://www.example.com}userVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc Owners of the repository entry
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc Owners of the repository entry
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
 	 * @response.representation.404.doc The repository entry cannot be found
 	 * @param repoEntryKey The key of the repository entry
 	 * @param request The HTTP Request

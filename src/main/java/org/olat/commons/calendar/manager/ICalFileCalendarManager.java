@@ -274,7 +274,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		} catch (FileNotFoundException fne) {
 			throw new OLATRuntimeException("Not found: " + calendarFile, fne);
 		} catch (Exception e) {
-			throw new OLATRuntimeException("Error parsing calendar file.", e);
+			throw new OLATRuntimeException("Error parsing calendar file: " + calendarFile, e);
 		}
 	}
 
