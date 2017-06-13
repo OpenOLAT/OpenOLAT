@@ -509,6 +509,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		return lectureBlockDao.getLecturesBlockWithTeachers(entry);
 	}
 
+	/**
+	 * 
+	 */
 	@Override
 	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry, IdentityRef teacher) {
 		return lectureBlockDao.getLecturesBlockWithTeachers(entry, teacher);

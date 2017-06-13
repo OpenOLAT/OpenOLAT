@@ -277,6 +277,7 @@ public interface LectureService {
 	 * Return the list of lecture blocks of a course with the teachers for a specific teacher.
 	 * 
 	 * @param entry
+	 * @param teacher The teacher to filter with (optional)
 	 * @return
 	 */
 	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry, IdentityRef teacher);

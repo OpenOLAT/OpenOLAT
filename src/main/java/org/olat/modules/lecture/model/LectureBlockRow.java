@@ -32,18 +32,24 @@ import org.olat.modules.lecture.LectureBlockRef;
 public class LectureBlockRow implements LectureBlockRef {
 	
 	private final String teachers;
+	private final boolean iamTeacher;
 	private final LectureBlock lectureBlock;
 	
 	private FormLink toolsLink;
 	
-	public LectureBlockRow(LectureBlock lectureBlock, String teachers) {
+	public LectureBlockRow(LectureBlock lectureBlock, String teachers, boolean iamTeacher) {
 		this.lectureBlock = lectureBlock;
 		this.teachers = teachers;
+		this.iamTeacher = iamTeacher;
 	}
 	
 	@Override
 	public Long getKey() {
 		return lectureBlock.getKey();
+	}
+	
+	public boolean isIamTeacher() {
+		return iamTeacher;
 	}
 
 	public LectureBlock getLectureBlock() {

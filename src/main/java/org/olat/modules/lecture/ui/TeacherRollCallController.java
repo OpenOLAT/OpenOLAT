@@ -37,11 +37,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -137,7 +139,7 @@ public class TeacherRollCallController extends FormBasicController {
 		uifactory.addStaticTextElement("lecture.title", lectureBlock.getTitle(), blockCont);
 		
 		StringBuilder sb = new StringBuilder();
-		List<Identity> teachers =lectureService.getTeachers(lectureBlock);
+		List<Identity> teachers = lectureService.getTeachers(lectureBlock);
 		for(Identity teacher:teachers) {
 			if(sb.length() > 0) sb.append(", ");
 			sb.append(userManager.getUserDisplayName(teacher));
@@ -180,7 +182,9 @@ public class TeacherRollCallController extends FormBasicController {
 			}
 			
 			//all button
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("all", translate("all"), "all"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("all",
+					RollCols.all.ordinal(), "all",
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("all"), "all"), null)));
 			if(secCallback.canViewAuthorizedAbsences() || secCallback.canEditAuthorizedAbsences()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.authorizedAbsence));
 			}
@@ -188,7 +192,7 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.comment));
 
-		tableModel = new TeacherRollCallDataModel(columnsModel, getLocale()); 
+		tableModel = new TeacherRollCallDataModel(columnsModel, secCallback, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		

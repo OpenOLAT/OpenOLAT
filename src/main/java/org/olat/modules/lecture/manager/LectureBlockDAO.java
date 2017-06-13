@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -196,38 +197,40 @@ public class LectureBlockDAO {
 	 * @return
 	 */
 	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(RepositoryEntryRef entry, IdentityRef teacher) {
-		List<LectureBlock> blocks = loadByEntry(entry);
-		Map<Long,LectureBlockWithTeachers> blockMap = new HashMap<>();
-		for(LectureBlock block:blocks) {
-			blockMap.put(block.getKey(), new  LectureBlockWithTeachers(block));
-		}
-		
-		// append the coaches
 		StringBuilder sc = new StringBuilder();
-		sc.append("select block.key, coach")
+		sc.append("select block, coach")
 		  .append(" from lectureblock block")
 		  .append(" inner join block.teacherGroup tGroup")
 		  .append(" inner join tGroup.members membership")
 		  .append(" inner join membership.identity coach")
 		  .append(" inner join fetch coach.user usercoach")
-		  .append(" where membership.role='").append("teacher").append("' and block.entry.key=:repoEntryKey")
-		  .append(" and exists (select teachership.key from bgroupmember teachership where")
-		  .append("  teachership.group.key=tGroup.key and teachership.identity.key=:teacherKey")
-		  .append(" )");
+		  .append(" where membership.role='").append("teacher").append("' and block.entry.key=:repoEntryKey");
+		if(teacher != null) {
+			sc.append(" and exists (select teachership.key from bgroupmember teachership where")
+			  .append("  teachership.group.key=tGroup.key and teachership.identity.key=:teacherKey")
+			  .append(" )");
+		}
 		
 		//get all, it's quick
-		List<Object[]> rawCoachs = dbInstance.getCurrentEntityManager()
+		TypedQuery<Object[]> coachQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sc.toString(), Object[].class)
-				.setParameter("repoEntryKey", entry.getKey())
-				.setParameter("teacherKey", teacher.getKey())
-				.getResultList();
+				.setParameter("repoEntryKey", entry.getKey());
+		if(teacher != null) {
+			coachQuery.setParameter("teacherKey", teacher.getKey());
+		}
+		
+		List<Object[]> rawCoachs = coachQuery.getResultList();
+		Map<Long,LectureBlockWithTeachers> blockMap = new HashMap<>();
 		for(Object[] rawCoach:rawCoachs) {
-			Long blockKey = (Long)rawCoach[0];
+			LectureBlock block = (LectureBlock)rawCoach[0];
 			Identity coach = (Identity)rawCoach[1];
-			LectureBlockWithTeachers block = blockMap.get(blockKey);
-			if(block != null) {
-				block.getTeachers().add(coach);
+			
+			LectureBlockWithTeachers blockWith = blockMap.get(block.getKey());
+			if(blockWith == null) {
+				blockWith = new LectureBlockWithTeachers(block);
+				blockMap.put(block.getKey(), blockWith);
 			}
+			blockWith.getTeachers().add(coach);
 		}
 		return new ArrayList<>(blockMap.values());
 	}

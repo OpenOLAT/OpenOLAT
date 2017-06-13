@@ -112,7 +112,7 @@ public class TeacherLecturesTableController extends FormBasicController {
 	
 	protected void loadModel(List<LectureBlockRow> blocks) {
 		tableModel.setObjects(blocks);
-		tableEl.reset(false, false, true);
+		tableEl.reset(true, true, true);
 	}
 	
 	@Override

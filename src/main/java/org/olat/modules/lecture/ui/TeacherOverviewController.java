@@ -28,7 +28,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
@@ -37,6 +39,7 @@ import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -56,11 +59,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeacherOverviewController extends BasicController {
+public class TeacherOverviewController extends BasicController implements TooledController {
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel toolbarPanel;
-	private final Link startButton, startWizardButton;
+	private final Link startButton, startWizardButton, allTeachersSwitch;
 	
 	private TeacherRollCallController rollCallCtrl;
 	private TeacherRollCallWizardController rollCallWizardCtrl;
@@ -91,6 +94,15 @@ public class TeacherOverviewController extends BasicController {
 		this.toolbarPanel = toolbarPanel;
 		toolbarPanel.addListener(this);
 		entryConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
+
+		allTeachersSwitch = LinkFactory.createToolLink("all.teachers.switch", translate("all.teachers.switch"), this);
+		boolean all = isAllTeachersSwitch(ureq, false);
+		allTeachersSwitch.setUserObject(all);
+		if(all) {
+			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
+		} else {
+			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
+		}
 		
 		mainVC = createVelocityContainer("teacher_view");
 		
@@ -119,10 +131,16 @@ public class TeacherOverviewController extends BasicController {
 		loadModel();
 		putInitialPanel(mainVC);
 	}
+
+	@Override
+	public void initTools() {
+		toolbarPanel.addTool(allTeachersSwitch, Align.right);
+	}
 	
 	private void loadModel() {
-		List<LectureBlockWithTeachers> blocksWithTeachers = lectureService.getLectureBlocksWithTeachers(entry, getIdentity());
-		
+		Identity filterByTeacher = ((Boolean)allTeachersSwitch.getUserObject()).booleanValue() ? null : getIdentity();
+		List<LectureBlockWithTeachers> blocksWithTeachers = lectureService.getLectureBlocksWithTeachers(entry, filterByTeacher);
+
 		//reset
 		startButton.setVisible(false);
 		startButton.setUserObject(null);
@@ -141,13 +159,15 @@ public class TeacherOverviewController extends BasicController {
 				LectureBlock block = blockWithTeachers.getLectureBlock();
 				
 				StringBuilder teachers = new StringBuilder();
+				List<Identity> teacherList = blockWithTeachers.getTeachers();
+				
 				for(Identity teacher:blockWithTeachers.getTeachers()) {
 					if(teachers.length() > 0) teachers.append(", ");
 					teachers.append(userManager.getUserDisplayName(teacher));
 				}
 				
-				LectureBlockRow row = new LectureBlockRow(block, teachers.toString());
-				if(canStartRollCall(block)) {
+				LectureBlockRow row = new LectureBlockRow(block, teachers.toString(), teacherList.contains(getIdentity()));
+				if(canStartRollCall(blockWithTeachers)) {
 					startButton.setVisible(true);
 					startButton.setUserObject(block);
 					startButton.setPrimary(true);
@@ -177,12 +197,15 @@ public class TeacherOverviewController extends BasicController {
 		dirtyTables = false;
 	}
 	
-	private boolean canStartRollCall(LectureBlock block) {
-		Date start = block.getStartDate();
-		Date end = block.getEndDate();
-		Date now = new Date();
-		if(start.compareTo(now) <= 0 && end.compareTo(now) >= 0) {
-			return true;
+	private boolean canStartRollCall(LectureBlockWithTeachers blockWithTeachers) {
+		LectureBlock lectureBlock = blockWithTeachers.getLectureBlock();
+		if(blockWithTeachers.getTeachers().contains(getIdentity())) {
+			Date start = lectureBlock.getStartDate();
+			Date end = lectureBlock.getEndDate();
+			Date now = new Date();
+			if(start.compareTo(now) <= 0 && end.compareTo(now) >= 0) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -239,14 +262,19 @@ public class TeacherOverviewController extends BasicController {
 					loadModel();
 				}
 			}
+		} else if(source == allTeachersSwitch) {
+			Boolean val = (Boolean)allTeachersSwitch.getUserObject();
+			doToggleAllTeachersSwitch(ureq, val);
 		}
 	}
 	
 	//same as above???
 	private void doStartRollCall(UserRequest ureq, LectureBlock block) {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
+		List<Identity> teachers = lectureService.getTeachers(reloadedBlock);
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
-		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock));
+		RollCallSecurityCallback secCallback = getRollCallSecurityCallback(reloadedBlock, teachers.contains(getIdentity()));
+		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, secCallback);
 		listenTo(rollCallCtrl);
 		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
 	}
@@ -265,7 +293,35 @@ public class TeacherOverviewController extends BasicController {
 		getWindowControl().pushToMainArea(rollCallWizardCtrl.getInitialComponent());
 	}
 	
-	private RollCallSecurityCallback getRollCallSecurityCallback(LectureBlock block) {
-		return new RollCallSecurityCallbackImpl(admin, true, block, lectureModule);
+	private void doToggleAllTeachersSwitch(UserRequest ureq, Boolean value) {
+		saveAllTeachersSwitch(ureq, !value.booleanValue());
+		loadModel();
+	}
+	
+	private boolean isAllTeachersSwitch(UserRequest ureq, boolean def) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		Boolean showConfig  = (Boolean) guiPrefs.get(TeacherOverviewController.class, getAllTeachersSwitchPrefsId());
+		return showConfig == null ? def : showConfig.booleanValue();
+	}
+	
+	private void saveAllTeachersSwitch(UserRequest ureq, boolean newValue) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		if (guiPrefs != null) {
+			guiPrefs.putAndSave(TeacherOverviewController.class, getAllTeachersSwitchPrefsId(), new Boolean(newValue));
+		}
+		if(newValue) {
+			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
+		} else {
+			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
+		}
+		allTeachersSwitch.setUserObject(newValue);
+	}
+	
+	private String getAllTeachersSwitchPrefsId() {
+		return "Lectures::" + entry.getKey();
+	}
+	
+	private RollCallSecurityCallback getRollCallSecurityCallback(LectureBlock block, boolean iamTeacher) {
+		return new RollCallSecurityCallbackImpl(admin, iamTeacher, block, lectureModule);
 	}
 }

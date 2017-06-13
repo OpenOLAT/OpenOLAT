@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.modules.lecture.RollCallSecurityCallback;
 
 /**
  * 
@@ -38,10 +39,12 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 	implements SortableFlexiTableDataModel<TeacherRollCallRow> {
 
 	private final Locale locale;
+	private final RollCallSecurityCallback secCallback;
 	
-	public TeacherRollCallDataModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public TeacherRollCallDataModel(FlexiTableColumnModel columnModel, RollCallSecurityCallback secCallback, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+		this.secCallback = secCallback;
 	}
 
 	@Override
@@ -64,6 +67,7 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 				case username: return row.getIdentityName();
 				case authorizedAbsence: return row.getAuthorizedAbsenceCont();
 				case comment: return row.getCommentEl();
+				case all: return secCallback.canEditAbsences();
 				default: return null;
 			}
 		} else if(col < TeacherRollCallController.CHECKBOX_OFFSET) {
@@ -77,13 +81,14 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 
 	@Override
 	public DefaultFlexiTableDataModel<TeacherRollCallRow> createCopyWithEmptyList() {
-		return new TeacherRollCallDataModel(getTableColumnModel(), locale);
+		return new TeacherRollCallDataModel(getTableColumnModel(), secCallback, locale);
 	}
 	
 	public enum RollCols implements FlexiSortableColumnDef {
 		username("table.header.username"),
 		authorizedAbsence("table.header.authorized.absence"),
-		comment("table.header.comment");
+		comment("table.header.comment"),
+		all("all");
 		
 		private final String i18nKey;
 		

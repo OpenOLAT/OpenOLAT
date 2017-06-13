@@ -25,6 +25,8 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 
 /**
  * 
@@ -32,12 +34,19 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CompulsoryCellRenderer implements FlexiCellRenderer {
+public class CompulsoryStatusCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof Boolean && ((Boolean)cellValue).booleanValue()) {
+		if(cellValue instanceof LectureBlockAndRollCall) {
+			LectureBlockAndRollCall block = (LectureBlockAndRollCall)cellValue;
+			if(LectureBlockStatus.cancelled.equals(block.getStatus())) {
+				target.append("<i class='o_icon o_icon_cancelled'> </i>");
+			} else if(block.isCompulsory()) {
+				target.append("<i class='o_icon o_icon_compulsory'> </i>");
+			}
+		} else if(cellValue instanceof Boolean && ((Boolean)cellValue).booleanValue()) {
 			target.append("<i class='o_icon o_icon_compulsory'> </i>");
 		}
 	}

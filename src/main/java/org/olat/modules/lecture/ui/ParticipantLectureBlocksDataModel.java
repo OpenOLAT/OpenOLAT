@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.ui.ParticipantLectureBlocksController.AppealCallback;
 
@@ -68,19 +69,30 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 	@Override
 	public Object getValueAt(LectureBlockAndRollCall row, int col) {
 		switch(ParticipantCols.values()[col]) {
-			case compulsory: return row.isCompulsory();
+			case compulsory: return row;
 			case date: return row.getDate();
 			case entry: return row.getEntryDisplayname();
 			case lectureBlock: return row.getLectureBlockTitle();
 			case coach: return row.getCoach();
-			case plannedLectures: return row.isCompulsory() ? row.getPlannedLecturesNumber() : null;
+			case plannedLectures: {
+				if(LectureBlockStatus.cancelled.equals(row.getStatus())) {
+					return null;
+				}
+				return row.isCompulsory() ? row.getPlannedLecturesNumber() : null;
+			}
 			case attendedLectures: {
+				if(LectureBlockStatus.cancelled.equals(row.getStatus())) {
+					return null;
+				}
 				if(row.isCompulsory()) {
 					return row.getLecturesAttendedNumber() < 0 ? 0 : row.getLecturesAttendedNumber();
 				}
 				return null;
 			}
 			case absentLectures: {
+				if(LectureBlockStatus.cancelled.equals(row.getStatus())) {
+					return null;
+				}
 				if(row.isCompulsory()) {
 					long value;
 					if(isAuthorized(row)) {
@@ -93,6 +105,9 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 				return null;
 			}
 			case authorizedAbsentLectures: {
+				if(LectureBlockStatus.cancelled.equals(row.getStatus())) {
+					return null;
+				}
 				if(row.isCompulsory()) {
 					long value;
 					if(isAuthorized(row)) {
@@ -104,7 +119,12 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 				}
 				return null;
 			}
-			case appeal: return row.isCompulsory() && appealCallback.appealAllowed(row);
+			case appeal: {
+				if(LectureBlockStatus.cancelled.equals(row.getStatus())) {
+					return false;
+				}
+				return row.isCompulsory() && appealCallback.appealAllowed(row);
+			}
 			default: return null;
 		}
 	}

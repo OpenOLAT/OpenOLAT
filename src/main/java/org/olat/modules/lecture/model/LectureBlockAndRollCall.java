@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockStatus;
 
 /**
  * 
@@ -41,6 +42,7 @@ public class LectureBlockAndRollCall {
 	private final int effectiveLectures;
 	private final Date startDate;
 	private final boolean compulsory;
+	private final LectureBlockStatus status;
 	
 	private final Long rollCallKey;
 	private final int lecturesAbsentNumber;
@@ -58,6 +60,7 @@ public class LectureBlockAndRollCall {
 		plannedLectures = lectureBlock.getPlannedLecturesNumber();
 		effectiveLectures = lectureBlock.getEffectiveLecturesNumber();
 		compulsory = lectureBlock.isCompulsory();
+		status = lectureBlock.getStatus();
 		
 		if(rollCall == null) {
 			rollCallKey = null;
@@ -86,6 +89,10 @@ public class LectureBlockAndRollCall {
 	
 	public String getLectureBlockTitle() {
 		return lectureBlockTitle;
+	}
+	
+	public LectureBlockStatus getStatus() {
+		return status;
 	}
 	
 	public boolean isRollCalled() {

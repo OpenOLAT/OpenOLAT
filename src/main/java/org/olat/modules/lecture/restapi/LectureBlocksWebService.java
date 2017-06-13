@@ -148,8 +148,7 @@ public class LectureBlocksWebService {
 			block.setManagedFlagsString(blockVo.getManagedFlagsString());
 		}
 		block.setPlannedLecturesNumber(blockVo.getPlannedLectures());
-		block = lectureService.save(block, null);
-		return block;
+		return lectureService.save(block, null);
 	}
 	
 	@GET

@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
@@ -258,6 +259,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  block.compulsory as compulsory,")
 		  .append("  block.plannedLecturesNumber as blockPlanned,")
 		  .append("  block.effectiveLecturesNumber as blockEffective,")
+		  .append("  block.statusString as status,")
 		  .append("  block.rollCallStatusString as rollCallStatus,")
 		  .append("  block.endDate as rollCallEndDate,")
 		  .append("  re.key as repoKey,")
@@ -301,6 +303,7 @@ public class LectureBlockRollCallDAO {
 			if(effectiveLecturesNumber == null) {
 				effectiveLecturesNumber = plannedLecturesNumber;
 			}
+			String status = (String)rawObject[pos++];
 			String rollCallStatus = (String)rawObject[pos++];
 			Date rollCallEndDate = (Date)rawObject[pos++];
 
@@ -323,7 +326,8 @@ public class LectureBlockRollCallDAO {
 				stats.put(repoKey, entryStatistics);
 			}
 			
-			appendStatistics(entryStatistics, compulsory, rollCallEndDate, rollCallStatus,
+			appendStatistics(entryStatistics, compulsory, status,
+					rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent,
 					absenceAuthorized, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
@@ -349,6 +353,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  block.compulsory as compulsory,")
 		  .append("  block.plannedLecturesNumber as blockPlanned,")
 		  .append("  block.effectiveLecturesNumber as blockEffective,")
+		  .append("  block.statusString as status,")
 		  .append("  block.rollCallStatusString as rollCallStatus,")
 		  .append("  block.endDate as rollCallEndDate,")
 		  .append("  summary.firstAdmissionDate as firstAdmissionDate,")
@@ -389,6 +394,7 @@ public class LectureBlockRollCallDAO {
 			if(effectiveLecturesNumber == null) {
 				effectiveLecturesNumber = plannedLecturesNumber;
 			}
+			String status = (String)rawObject[pos++];
 			String rollCallStatus = (String)rawObject[pos++];
 			Date rollCallEndDate = (Date)rawObject[pos++];
 			
@@ -405,7 +411,8 @@ public class LectureBlockRollCallDAO {
 				stats.put(identityKey, entryStatistics);
 			}
 
-			appendStatistics(entryStatistics, compulsory, rollCallEndDate, rollCallStatus,
+			appendStatistics(entryStatistics, compulsory, status,
+					rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent,
 					absenceAuthorized, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
@@ -465,7 +472,8 @@ public class LectureBlockRollCallDAO {
 		return new LectureBlockStatistics(identityKey, entryKey, displayName, calculateRate, requiredRate);
 	}
 	
-	private void appendStatistics(LectureBlockStatistics statistics, boolean compulsory, Date rollCallEndDate, String rollCallStatus,
+	private void appendStatistics(LectureBlockStatistics statistics, boolean compulsory, String blockStatus,
+			Date rollCallEndDate, String rollCallStatus,
 			Long lecturesAttended, Long lecturesAbsent,
 			Boolean absenceAuthorized, boolean absenceDefaultAuthorized,
 			Long plannedLecturesNumber, Long effectiveLecturesNumber,
@@ -475,7 +483,8 @@ public class LectureBlockRollCallDAO {
 		//only count closed roll call after the end date
 		if(rollCallEndDate != null && rollCallEndDate.before(now)
 				&& firstAdmissionDate != null && firstAdmissionDate.before(rollCallEndDate)
-				&& rollCallStatus != null && (LectureRollCallStatus.closed.name().equals(rollCallStatus) || LectureRollCallStatus.autoclosed.name().equals(rollCallStatus))) {
+				&& blockStatus != null && !LectureBlockStatus.cancelled.name().equals(blockStatus)
+				&& rollCallStatus != null  && (LectureRollCallStatus.closed.name().equals(rollCallStatus) || LectureRollCallStatus.autoclosed.name().equals(rollCallStatus))) {
 		
 			if(lecturesAbsent != null) {
 				if(absenceAuthorized != null) {

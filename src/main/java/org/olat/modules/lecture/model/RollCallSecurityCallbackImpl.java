@@ -88,7 +88,7 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 	
 	@Override
 	public boolean canReopen() {
-		return isClosed();
+		return repoAdmin && isClosed();
 	}
 
 	private boolean isBlockEditable() {
