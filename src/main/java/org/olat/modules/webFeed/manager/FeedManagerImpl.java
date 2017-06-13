@@ -573,10 +573,9 @@ public class FeedManagerImpl extends FeedManager {
 		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(feed, false);
 		if (entry != null && feed != null) {
 			Date whenTheFeedWasLastModified = feed.getLastModified();
-			if (whenTheFeedWasLastModified == null || entry.getLastModified().after(whenTheFeedWasLastModified)) {
+			if (feed.getTitle() == null || whenTheFeedWasLastModified == null || entry.getLastModified().after(whenTheFeedWasLastModified)) {
 				// Copy the title (only) initially
-				String feedTitle = feed.getTitle();
-				if (feedTitle == null) {
+				if (feed.getTitle() == null) {
 					feed.setTitle(entry.getDisplayname());
 				}
 				if (StringHelper.containsNonWhitespace(entry.getAuthors())) {
@@ -712,7 +711,7 @@ public class FeedManagerImpl extends FeedManager {
 			SyndFeed feed = input.build(new XmlReader(realUrl));
 			if (!feed.getEntries().isEmpty()) {
 				// check for enclosures
-				SyndEntry entry = (SyndEntry) feed.getEntries().get(0);
+				SyndEntry entry = feed.getEntries().get(0);
 				if (type != null && type.indexOf("BLOG") >= 0) {
 					return new ValidatedURL(url, ValidatedURL.State.VALID);
 				}
