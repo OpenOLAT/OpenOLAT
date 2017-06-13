@@ -182,7 +182,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		isOlatAdmin = roles.isOLATAdmin() || roles.isInstitutionalResourceManager();
 		hasAuthorRight = roles.isAuthor() || roles.isInstitutionalResourceManager() || roles.isOLATAdmin();
 
-		dataSource = new AuthoringEntryDataSource(searchParams, this);
+		dataSource = new AuthoringEntryDataSource(searchParams, this, !withSearch);
 		initForm(ureq);
 
 		stackPanel = new TooledStackedPanel(i18nName, getTranslator(), this);

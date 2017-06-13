@@ -108,6 +108,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Florian Gnägi
  */
 public class FileUploadController extends FormBasicController {
+	
+	private static final String[] resizeKeys = new String[]{"resize"};
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 
 	private VFSContainer currentContainer;
@@ -266,11 +268,11 @@ public class FileUploadController extends FormBasicController {
 			}
 			formLayout.add(resizeCont);
 
-			String[] keys = new String[]{"resize"};
 			String[] values = new String[]{translate("resize_image")};
-			resizeEl = uifactory.addCheckboxesHorizontal("resize_image", resizeCont, keys, values);
+			resizeEl = uifactory.addCheckboxesHorizontal("resize_image", resizeCont, resizeKeys, values);
 			resizeEl.setLabel(null, null);
-			resizeEl.select("resize", true);
+			resizeEl.select(resizeKeys[0], true);
+			resizeEl.setVisible(false);
 		}
 		
 		// Check remaining quota
@@ -311,19 +313,29 @@ public class FileUploadController extends FormBasicController {
 				fileEl.reset();
 				fileEl.setDeleteEnabled(false);
 				fileEl.clearError();
-			} else if(metaDataCtr != null) {
+				resizeEl.setVisible(false);
+			} else  {
 				String filename = fileEl.getUploadFileName();
-				if(filename == null) {
-					metaDataCtr.getFilenameEl().setExampleKey("mf.filename.warning", null);
-				} else if(!FileUtils.validateFilename(filename)) {
-					String suffix = FileUtils.getFileSuffix(filename);
-					if(suffix != null && suffix.length() > 0) {
-						filename = filename.substring(0, filename.length() - suffix.length() - 1);
+				if(metaDataCtr != null) {
+					if(filename == null) {
+						metaDataCtr.getFilenameEl().setExampleKey("mf.filename.warning", null);	
+					} else if(!FileUtils.validateFilename(filename)) {
+						String suffix = FileUtils.getFileSuffix(filename);
+						if(suffix != null && suffix.length() > 0) {
+							filename = filename.substring(0, filename.length() - suffix.length() - 1);
+						}
+						filename = FileUtils.normalizeFilename(filename) + "." + suffix;
+						metaDataCtr.getFilenameEl().setExampleKey("mf.filename.warning", null);
 					}
-					filename = FileUtils.normalizeFilename(filename) + "." + suffix;
-					metaDataCtr.getFilenameEl().setExampleKey("mf.filename.warning", null);
+					metaDataCtr.setFilename(filename);
 				}
-				metaDataCtr.setFilename(filename);
+				
+				boolean isImg = false;
+				if(resizeImg && filename != null) {
+					isImg = imageExtPattern.matcher(filename.toLowerCase()).find();
+				}
+				resizeEl.setVisible(isImg);
+				resizeEl.select(resizeKeys[0], true);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

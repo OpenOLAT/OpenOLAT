@@ -25,34 +25,11 @@
 		</div>
 	#end
 
-#if($resizeImg)
-	<div id="resize_image_wrapper" style="display:none;">
-		$r.render("resize_image_wrapper")
-	</div>
-#end
+	$r.render("resize_image_wrapper")
 
 #if ($showMetadata)
 	$r.render("metadata")
 #end
 	$r.render("buttons")
 </fieldset>
-
-
-#if($resizeImg)
-<script type="text/javascript">
-/* <![CDATA[ */ 
-jQuery(function() {
-	jQuery('.o_realchooser').on("change", function() {
-		var re = new RegExp('[.](jpeg)|(jpg)|(png)$');
-		var name = jQuery(this).val();
-		if(name != null && name.toLowerCase().match(re)) {
-			jQuery('#resize_image_wrapper').show();
-		} else { 
-			jQuery('#resize_image_wrapper').hide();
-		} 
-	});
-});
-/* ]]> */
-</script>
-#end
 </div>

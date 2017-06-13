@@ -80,13 +80,12 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 				try {
 					RepositoryEntry re = repoManager.lookupRepositoryEntry(
 							OresHelper.createOLATResourceableInstance(p.getResName(), p.getResId()), false);
+					if (re.getAccess() == RepositoryEntry.DELETED || re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
+						return notificationsManager.getNoSubscriptionInfo();
+					}
 					String displayName = re.getDisplayname();
 					if("CourseModule".equals(p.getResName())) {
-						if (re.getRepositoryEntryStatus().isClosed() || re.getRepositoryEntryStatus().isUnpublished()) {
-							return notificationsManager.getNoSubscriptionInfo();
-						} else {
-							title = translator.translate(NOTIFICATIONS_HEADER_COURSE,  new String[]{displayName});
-						}
+						title = translator.translate(NOTIFICATIONS_HEADER_COURSE,  new String[]{displayName});
 					} else {
 						title = getHeader(translator, displayName);
 					}
@@ -127,7 +126,7 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 				items.add(new SubscriptionListItem(desc, urlToSend, businessPath, publishDate, iconCssClass));
 			}
 			
-			if(item.getModifierKey() > 0) {
+			if(item.getModifierKey() != null) {
 				Date modDate = item.getLastModified();
 				if(compareDate.before(modDate)) {
 					String desc;
