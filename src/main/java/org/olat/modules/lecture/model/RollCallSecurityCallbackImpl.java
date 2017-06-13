@@ -20,8 +20,8 @@
 package org.olat.modules.lecture.model;
 
 import org.olat.modules.lecture.LectureBlock;
-import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.RollCallSecurityCallback;
 
 /**
@@ -34,7 +34,7 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 
 	private final boolean repoAdmin;
 	private final boolean teacher;
-	private final LectureBlock lectureBlock;
+	private LectureBlock lectureBlock;
 	private final LectureModule lectureModule;
 	
 	public RollCallSecurityCallbackImpl(boolean repoAdmin, boolean teacher, LectureBlock lectureBlock, LectureModule lectureModule) {
@@ -45,11 +45,15 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 	}
 	
 	@Override
-	public boolean canEdit() {
-		return repoAdmin || (teacher && isBlockEditable());
+	public void updateLectureBlock(LectureBlock block) {
+		lectureBlock = block;
 	}
-	
-	
+
+	@Override
+	public boolean canEdit() {
+		if(isClosed()) return false;
+		return (repoAdmin || teacher) && isBlockEditable();
+	}
 
 	@Override
 	public boolean canViewAuthorizedAbsences() {
@@ -65,6 +69,7 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 
 	@Override
 	public boolean canEditAuthorizedAbsences() {
+		if(isClosed()) return false;
 		boolean autorizedAbsenceAllowed = lectureModule.isAuthorizedAbsenceEnabled();
 		if(autorizedAbsenceAllowed) {
 			if(repoAdmin) {
@@ -77,15 +82,22 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 
 	@Override
 	public boolean canEditAbsences() {
+		if(isClosed()) return false;
 		return repoAdmin || (teacher && isBlockEditable());
 	}
 	
+	@Override
+	public boolean canReopen() {
+		return isClosed();
+	}
+
 	private boolean isBlockEditable() {
-		boolean editable = false;
-		if(lectureBlock.getStatus().equals(LectureBlockStatus.active)
-				|| lectureBlock.getStatus().equals(LectureBlockStatus.partiallydone)) {
-			editable = true;
-		}
-		return editable;
+		return lectureBlock.getRollCallStatus() == LectureRollCallStatus.open
+			|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.reopen;
+	}
+	
+	private boolean isClosed() {
+		return lectureBlock.getRollCallStatus() == LectureRollCallStatus.closed
+			|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.autoclosed;
 	}
 }

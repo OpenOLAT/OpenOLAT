@@ -34,5 +34,9 @@ public interface RollCallSecurityCallback {
 	public boolean canEditAuthorizedAbsences();
 	
 	public boolean canEditAbsences();
+	
+	public boolean canReopen();
+	
+	public void updateLectureBlock(LectureBlock lectureBlock);
 
 }

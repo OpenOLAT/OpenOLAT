@@ -45,7 +45,8 @@ class FormButtonComponent extends FormBaseComponentImpl {
 	FormButtonComponent(String id, FormButton foButton) {
 		super(id, foButton.getName());
 		this.formButton = foButton;
-		this.setDomReplacementWrapperRequired(false);
+		setDomReplacementWrapperRequired(false);
+		setSpanAsDomReplaceable(true);
 	}
 	
 	/**

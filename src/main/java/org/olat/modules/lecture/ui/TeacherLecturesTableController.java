@@ -123,7 +123,7 @@ public class TeacherLecturesTableController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == rollCallCtrl) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);
 			}
 		}

@@ -1,0 +1,272 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.lecture.ui;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.Reason;
+import org.olat.modules.lecture.RollCallSecurityCallback;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * 
+ * Initial date: 12 juin 2017<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class CloseRollCallConfirmationController extends FormBasicController {
+
+	private SingleSelection effectiveLecturesEl;
+	private SingleSelection effectiveEndReasonEl;
+	private TextElement effectiveEndHourEl, effectiveEndMinuteEl;
+	
+	private LectureBlock lectureBlock;
+	private final RollCallSecurityCallback secCallback;
+	
+	@Autowired
+	private LectureService lectureService;
+	
+	public CloseRollCallConfirmationController(UserRequest ureq, WindowControl wControl,
+			LectureBlock lectureBlock, RollCallSecurityCallback secCallback) {
+		super(ureq, wControl);
+		this.lectureBlock = lectureBlock;
+		this.secCallback = secCallback;
+		
+		initForm(ureq);
+	}
+	
+	public LectureBlock getLectureBLock() {
+		return lectureBlock;
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		int plannedLectures = lectureBlock.getPlannedLecturesNumber();
+		String[] effectiveKeys = new String[plannedLectures];
+		for(int i=plannedLectures; i-->0; ) {
+			effectiveKeys[i] = Integer.toString(i + 1);
+		}
+		effectiveLecturesEl = uifactory.addDropdownSingleselect("effective.lectures", formLayout, effectiveKeys, effectiveKeys, null);
+		int selectedEffectiveLectures = lectureBlock.getPlannedLecturesNumber();
+		if(lectureBlock.getEffectiveLecturesNumber() > 0) {
+			selectedEffectiveLectures = lectureBlock.getEffectiveLecturesNumber();
+		}
+		String selectedKey = Integer.toString(selectedEffectiveLectures);
+		for(String effectiveKey:effectiveKeys) {
+			if(effectiveKey.equals(selectedKey)) {
+				effectiveLecturesEl.select(effectiveKey, true);
+				break;
+			}
+		}
+		
+		String datePage = velocity_root + "/date_start_end.html";
+		FormLayoutContainer dateCont = FormLayoutContainer.createCustomFormLayout("start_end", getTranslator(), datePage);
+		dateCont.setLabel("lecture.block.effective.end", null);
+		formLayout.add(dateCont);
+		
+		effectiveEndHourEl = uifactory.addTextElement("lecture.end.hour", null, 2, "", dateCont);
+		effectiveEndHourEl.setDomReplacementWrapperRequired(false);
+		effectiveEndHourEl.setDisplaySize(2);
+		effectiveEndHourEl.setEnabled(secCallback.canEdit());
+		effectiveEndMinuteEl = uifactory.addTextElement("lecture.end.minute", null, 2, "", dateCont);
+		effectiveEndMinuteEl.setDomReplacementWrapperRequired(false);
+		effectiveEndMinuteEl.setDisplaySize(2);
+		effectiveEndMinuteEl.setEnabled(secCallback.canEdit());
+
+		Calendar cal = Calendar.getInstance();
+		if(lectureBlock.getEffectiveEndDate() != null) {
+			cal.setTime(lectureBlock.getEffectiveEndDate());
+		} else if(lectureBlock.getEndDate() != null) {
+			cal.setTime(lectureBlock.getEndDate());
+		}
+		int hour = cal.get(Calendar.HOUR_OF_DAY);
+		int minute = cal.get(Calendar.MINUTE);
+		effectiveEndHourEl.setValue(Integer.toString(hour));
+		
+		String minuteStr = Integer.toString(minute);
+		if(minuteStr.length() == 1) {
+			minuteStr = "0" + minuteStr;
+		}
+		effectiveEndMinuteEl.setValue(minuteStr);
+
+		List<String> reasonKeyList = new ArrayList<>();
+		List<String> reasonValueList = new ArrayList<>();
+		reasonKeyList.add("-");
+		reasonValueList.add("-");
+		
+		List<Reason> allReasons = lectureService.getAllReasons();
+		for(Reason reason:allReasons) {
+			reasonKeyList.add(reason.getKey().toString());
+			reasonValueList.add(reason.getTitle());
+		}
+		effectiveEndReasonEl = uifactory.addDropdownSingleselect("effective.reason", "lecture.block.effective.reason", formLayout,
+				reasonKeyList.toArray(new String[reasonKeyList.size()]), reasonValueList.toArray(new String[reasonValueList.size()]), null);
+		effectiveEndReasonEl.setEnabled(secCallback.canEdit());
+		boolean found = false;
+		if(lectureBlock.getReasonEffectiveEnd() != null) {
+			String selectedReasonKey = lectureBlock.getReasonEffectiveEnd().getKey().toString();
+			for(String reasonKey:reasonKeyList) {
+				if(reasonKey.equals(selectedReasonKey)) {
+					effectiveEndReasonEl.select(reasonKey, true);
+					found = true;
+					break;
+				}
+			}
+		}
+		if(!found) {
+			effectiveEndReasonEl.select(reasonKeyList.get(0), true);
+		}
+
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setRootForm(mainForm);
+		formLayout.add(buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("close.lecture.blocks", buttonsCont);
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		lectureBlock.setEffectiveLecturesNumber(lectureBlock.getPlannedLecturesNumber());//TODO
+		Date effectiveEndDate = getEffectiveEndDate();
+		if(effectiveEndDate == null) {
+			lectureBlock.setReasonEffectiveEnd(null);
+		} else {
+			lectureBlock.setEffectiveEndDate(effectiveEndDate);
+			if("-".equals(effectiveEndReasonEl.getSelectedKey())) {
+				lectureBlock.setReasonEffectiveEnd(null);
+			} else {
+				Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());
+				Reason selectedReason = lectureService.getReason(reasonKey);
+				lectureBlock.setReasonEffectiveEnd(selectedReason);
+			}
+		}
+		
+		lectureBlock.setStatus(LectureBlockStatus.done);
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
+		lectureBlock = lectureService.save(lectureBlock, null);
+		lectureService.recalculateSummary(lectureBlock.getEntry());
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		effectiveEndHourEl.clearError();
+		effectiveEndReasonEl.clearError();
+		//need to be the first validation
+		if(StringHelper.containsNonWhitespace(effectiveEndHourEl.getValue())
+				|| StringHelper.containsNonWhitespace(effectiveEndMinuteEl.getValue())) {
+			allOk &= validateInt(effectiveEndHourEl, 24);
+			allOk &= validateInt(effectiveEndMinuteEl, 60);
+
+			if(!effectiveEndReasonEl.isOneSelected()) {
+				effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
+				allOk &= false;
+			} else if(effectiveEndReasonEl.isSelected(0) && differentEffectiveEndDate()) {
+				effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
+				allOk &= false;
+			}
+		} else {
+			effectiveEndHourEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		effectiveLecturesEl.clearError();
+		if(!effectiveLecturesEl.isOneSelected()) {
+			effectiveLecturesEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+	
+		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean differentEffectiveEndDate() {
+		Date endDate = lectureBlock.getEndDate();
+		if(endDate == null) return true;
+		Date effectiveEndDate = getEffectiveEndDate();
+		long diff = endDate.getTime() - effectiveEndDate.getTime();
+		return Math.abs(diff) > 60000l;//bigger than a minute
+	}
+	
+	private boolean validateInt(TextElement element, int max) {
+		boolean allOk = true;
+		
+		element.clearError();
+		if(StringHelper.containsNonWhitespace(element.getValue())) {
+			try {
+				int val = Integer.parseInt(element.getValue());
+				if(val < 0 || val > max) {
+					element.setErrorKey("error.integer.between", new String[] { "0", Integer.toString(max)} );
+					allOk &= false;
+				}
+			} catch (NumberFormatException e) {
+				element.setErrorKey("error.integer.between", new String[] { "0", Integer.toString(max)} );
+				allOk &= false;
+			}
+		} else {
+			element.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
+	
+	private Date getEffectiveEndDate() {
+		Date effectiveEndDate = null;
+		if(StringHelper.containsNonWhitespace(effectiveEndHourEl.getValue())
+				&& StringHelper.containsNonWhitespace(effectiveEndMinuteEl.getValue())) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(lectureBlock.getStartDate());
+			cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(effectiveEndHourEl.getValue()));
+			cal.set(Calendar.MINUTE, Integer.parseInt(effectiveEndMinuteEl.getValue()));
+			effectiveEndDate = cal.getTime();
+		}
+		return effectiveEndDate;
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+}

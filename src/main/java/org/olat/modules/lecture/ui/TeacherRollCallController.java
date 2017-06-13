@@ -20,9 +20,7 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,11 +32,11 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -49,6 +47,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
@@ -59,7 +58,6 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
-import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.ui.TeacherRollCallDataModel.RollCols;
 import org.olat.user.UserManager;
@@ -84,12 +82,15 @@ public class TeacherRollCallController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
 	private TeacherRollCallDataModel tableModel;
-	private TextElement blokcCommentEl;
-	private TextElement effectiveEndHourEl, effectiveEndMinuteEl;
-	private SingleSelection statusEl, effectiveEndReasonEl, rollCallStatusEl;
+	private TextElement blockCommentEl;
+	private FormSubmit quickSaveButton;
+	private FormLink reopenButton, cancelLectureBlockButton, closeLectureBlocksButton;
 	
 	private ReasonController reasonCtrl;
+	private CloseableModalController cmc;
 	private CloseableCalloutWindowController reasonCalloutCtrl;
+	private CloseRollCallConfirmationController closeRollCallCtrl;
+	private CancelRollCallConfirmationController cancelRollCallCtrl;
 	
 	private int counter = 0;
 	private LectureBlock lectureBlock;
@@ -145,115 +146,14 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		String date = formatter.formatDate(lectureBlock.getStartDate());
-		uifactory.addStaticTextElement("lecture.date", date, blockCont);
-		
 		String startTime = formatter.formatTimeShort(lectureBlock.getStartDate());
 		String endTime = formatter.formatTimeShort(lectureBlock.getEndDate());
 		String startEndTime= translate("lecture.from.to.format", new String[]{ startTime, endTime });
-		uifactory.addStaticTextElement("lecture.from.to", startEndTime, blockCont);
-
-		String[] statusKeys = getAvailableStatus();
-		String[] statusValues = new String[statusKeys.length];
-		for(int i=statusKeys.length; i-->0; ) {
-			statusValues[i] = translate(statusKeys[i]);
-		}
-		statusEl = uifactory.addDropdownSingleselect("status", "lecture.block.status", blockCont, statusKeys, statusValues, null);
-		boolean statusFound = false;
-		if(lectureBlock.getStatus() != null) {
-			String lectureBlockStatus = lectureBlock.getStatus().name();
-			for(int i=statusKeys.length; i-->0; ) {
-				if(lectureBlockStatus.equals(statusKeys[i])) {
-					statusEl.select(statusKeys[i], true);
-					statusFound = true;
-					break;
-				}
-			}
-		}
-		if(!statusFound) {
-			statusEl.select(statusKeys[0], true);
-		}
-
-		String datePage = velocity_root + "/date_start_end.html";
-		FormLayoutContainer dateCont = FormLayoutContainer.createCustomFormLayout("start_end", getTranslator(), datePage);
-		dateCont.setLabel("lecture.block.effective.end", null);
-		blockCont.add(dateCont);
-		
-		effectiveEndHourEl = uifactory.addTextElement("lecture.end.hour", null, 2, "", dateCont);
-		effectiveEndHourEl.setDomReplacementWrapperRequired(false);
-		effectiveEndHourEl.setDisplaySize(2);
-		effectiveEndHourEl.setEnabled(secCallback.canEdit());
-		effectiveEndMinuteEl = uifactory.addTextElement("lecture.end.minute", null, 2, "", dateCont);
-		effectiveEndMinuteEl.setDomReplacementWrapperRequired(false);
-		effectiveEndMinuteEl.setDisplaySize(2);
-		effectiveEndMinuteEl.setEnabled(secCallback.canEdit());
-		if(lectureBlock != null) {
-			Calendar cal = Calendar.getInstance();
-			if(lectureBlock.getEffectiveEndDate() != null) {
-				cal.setTime(lectureBlock.getEffectiveEndDate());
-			} else if(lectureBlock.getEndDate() != null) {
-				cal.setTime(lectureBlock.getEndDate());
-			}
-			int hour = cal.get(Calendar.HOUR_OF_DAY);
-			int minute = cal.get(Calendar.MINUTE);
-			effectiveEndHourEl.setValue(Integer.toString(hour));
-			effectiveEndMinuteEl.setValue(Integer.toString(minute));
-		}
-		
-		List<String> reasonKeyList = new ArrayList<>();
-		List<String> reasonValueList = new ArrayList<>();
-		reasonKeyList.add("-");
-		reasonValueList.add("-");
-		
-		List<Reason> allReasons = lectureService.getAllReasons();
-		for(Reason reason:allReasons) {
-			reasonKeyList.add(reason.getKey().toString());
-			reasonValueList.add(reason.getTitle());
-		}
-		effectiveEndReasonEl = uifactory.addDropdownSingleselect("effective.reason", "lecture.block.effective.reason", blockCont,
-				reasonKeyList.toArray(new String[reasonKeyList.size()]), reasonValueList.toArray(new String[reasonValueList.size()]), null);
-		effectiveEndReasonEl.setEnabled(secCallback.canEdit());
-		boolean found = false;
-		if(lectureBlock.getReasonEffectiveEnd() != null) {
-			String selectedReasonKey = lectureBlock.getReasonEffectiveEnd().getKey().toString();
-			for(String reasonKey:reasonKeyList) {
-				if(reasonKey.equals(selectedReasonKey)) {
-					effectiveEndReasonEl.select(reasonKey, true);
-					found = true;
-					break;
-				}
-			}
-		}
-		if(!found) {
-			effectiveEndReasonEl.select(reasonKeyList.get(0), true);
-		}
+		uifactory.addStaticTextElement("lecture.date", date + " " + startEndTime, blockCont);
 
 		String blockComment = lectureBlock.getComment();
-		blokcCommentEl = uifactory.addTextElement("block.comment", "lecture.block.comment", 256, blockComment, blockCont);
-		blokcCommentEl.setEnabled(secCallback.canEdit());
-		
-		//roll call
-		FormLayoutContainer rollCallStatusCont = FormLayoutContainer.createDefaultFormLayout("rollcallStatus", getTranslator());
-		formLayout.add(rollCallStatusCont);
-		formLayout.add("rollcallStatus", rollCallStatusCont);
-		rollCallStatusCont.setRootForm(mainForm);
-		rollCallStatusCont.setFormTitle(translate("rollcall"));
-
-		String[] rollCallKeys = new String[]{
-				LectureRollCallStatus.open.name(), LectureRollCallStatus.reopen.name(),
-				LectureRollCallStatus.closed.name(), LectureRollCallStatus.autoclosed.name()
-		};
-		String[] rollCallValues = new String[rollCallKeys.length];
-		for(int i=rollCallKeys.length; i-->0; ) {
-			rollCallValues[i] = translate(rollCallKeys[i]);
-		}
-		rollCallStatusEl = uifactory.addDropdownSingleselect("rollcall.status", "rollcall.status", rollCallStatusCont, rollCallKeys, rollCallValues, null);
-		rollCallStatusEl.setMandatory(true);
-		LectureRollCallStatus rollCallStatus = lectureBlock.getRollCallStatus() == null ? LectureRollCallStatus.open : lectureBlock.getRollCallStatus();
-		for(int i=rollCallKeys.length; i-->0; ) {
-			if(rollCallStatus.name().equals(rollCallKeys[i])) {
-				rollCallStatusEl.select(rollCallKeys[i], true);
-			}
-		}
+		blockCommentEl = uifactory.addTextElement("block.comment", "lecture.block.comment", 256, blockComment, blockCont);
+		blockCommentEl.setEnabled(secCallback.canEdit());
 		
 		// table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -290,23 +190,45 @@ public class TeacherRollCallController extends FormBasicController {
 
 		tableModel = new TeacherRollCallDataModel(columnsModel, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
-		tableEl.setCustomizeColumns(found);
-		uifactory.addFormSubmitButton("save", "save", formLayout);
-	}
-	
-	private String[] getAvailableStatus() {
-		List<String> statusList = new ArrayList<>();
-		statusList.add(LectureBlockStatus.active.name());
-		if(lectureModule.isStatusPartiallyDoneEnabled()) {
-			statusList.add(LectureBlockStatus.partiallydone.name());
-		}
-		statusList.add(LectureBlockStatus.done.name());
+		tableEl.setCustomizeColumns(true);
+		
+		//buttons
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		quickSaveButton = uifactory.addFormSubmitButton("save", "save.temporary", formLayout);
+		closeLectureBlocksButton = uifactory.addFormLink("close.lecture.blocks", formLayout, Link.BUTTON);
 		if(lectureModule.isStatusCancelledEnabled()) {
-			statusList.add(LectureBlockStatus.cancelled.name());
+			cancelLectureBlockButton = uifactory.addFormLink("cancel.lecture.blocks", formLayout, Link.BUTTON);
 		}
-		return statusList.toArray(new String[statusList.size()]);
+		reopenButton = uifactory.addFormLink("reopen.lecture.blocks", formLayout, Link.BUTTON);
+		updateUI();
 	}
 	
+	private void updateUI() {
+		quickSaveButton.setVisible(secCallback.canEdit());
+		closeLectureBlocksButton.setVisible(secCallback.canEdit());
+		if(cancelLectureBlockButton != null) {
+			cancelLectureBlockButton.setVisible(secCallback.canEdit());
+		}
+		reopenButton.setVisible(secCallback.canReopen());
+		
+		List<TeacherRollCallRow> rows = tableModel.getObjects();
+		if(rows != null) {
+			for(TeacherRollCallRow row:rows) {
+				MultipleSelectionElement[] checks = row.getChecks();
+				if(checks != null) {
+					for(MultipleSelectionElement check:checks) {
+						check.setEnabled(secCallback.canEditAbsences());
+						check.getComponent().setDirty(true);
+					}
+				}
+				row.getCommentEl().setEnabled(secCallback.canEdit());
+			}
+		}
+		
+		blockCommentEl.setEnabled(secCallback.canEdit());
+		tableEl.reset(false, false, true);
+	}
+
 	private void loadModel() {
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(lectureBlock);
 		Map<Identity,LectureBlockRollCall> rollCallMap = new HashMap<>();
@@ -411,80 +333,44 @@ public class TeacherRollCallController extends FormBasicController {
 			cleanUp();
 		} else if(reasonCalloutCtrl == source) {
 			cleanUp();
+		} else if(closeRollCallCtrl == source) {
+			lectureBlock = closeRollCallCtrl.getLectureBLock();
+			cmc.deactivate();
+			cleanUp();
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
+		} else if(cancelRollCallCtrl == source) {
+			lectureBlock = cancelRollCallCtrl.getLectureBlock();
+			cmc.deactivate();
+			cleanUp();
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, Event.DONE_EVENT);
+			}
+		} else if(cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(cancelRollCallCtrl);
 		removeAsListenerAndDispose(reasonCalloutCtrl);
+		removeAsListenerAndDispose(closeRollCallCtrl);
 		removeAsListenerAndDispose(reasonCtrl);
+		removeAsListenerAndDispose(cmc);
+		cancelRollCallCtrl = null;
 		reasonCalloutCtrl = null;
+		closeRollCallCtrl = null;
 		reasonCtrl = null;
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				String cmd = se.getCommand();
-				TeacherRollCallRow row = tableModel.getObject(se.getIndex());
-				if("all".equals(cmd)) {
-					doCheckAllRow(row);
-				}
-			}
-		} else if(source instanceof MultipleSelectionElement) {
-			MultipleSelectionElement check = (MultipleSelectionElement)source;
-			TeacherRollCallRow row = (TeacherRollCallRow)check.getUserObject();
-			if(row.getAuthorizedAbsence() == check) {
-				doAuthorizedAbsence(row, check);
-			} else {
-				doCheckRow(row, check);
-			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			String cmd = link.getCmd();
-			if(cmd != null && cmd.startsWith("abs_reason_")) {
-				TeacherRollCallRow row = (TeacherRollCallRow)link.getUserObject();
-				doCalloutReasonAbsence(ureq, link, row);
-			}
-		}
-		super.formInnerEvent(ureq, source, event);
+		cmc = null;
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		
-		
+
 		boolean fullValidation = false;
-		if(!statusEl.isOneSelected()) {
-			statusEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		} else {
-			fullValidation = LectureBlockStatus.done.name().equals(statusEl.getSelectedKey());
-		}
-		
-		if(!rollCallStatusEl.isOneSelected()) {
-			rollCallStatusEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
-		//block form
-		if(StringHelper.containsNonWhitespace(effectiveEndHourEl.getValue())
-				|| StringHelper.containsNonWhitespace(effectiveEndMinuteEl.getValue())) {
-			allOk &= validateInt(effectiveEndHourEl, 24, fullValidation);
-			allOk &= validateInt(effectiveEndMinuteEl, 60, fullValidation);
-			
-			if(fullValidation && (!effectiveEndReasonEl.isOneSelected() || effectiveEndReasonEl.isSelected(0))) {
-				effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
-				allOk &= false;
-			}
-		} else if(fullValidation) {
-			effectiveEndHourEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
 		// table
 		if(fullValidation) {
 			for(int i=tableModel.getRowCount(); i-->0; ) {
@@ -506,31 +392,51 @@ public class TeacherRollCallController extends FormBasicController {
 		return allOk & super.validateFormLogic(ureq);
 	}
 	
-	private boolean validateInt(TextElement element, int max, boolean mandatory) {
-		boolean allOk = true;
-		
-		element.clearError();
-		if(StringHelper.containsNonWhitespace(element.getValue())) {
-			try {
-				int val = Integer.parseInt(element.getValue());
-				if(val < 0 || val > max) {
-					element.setErrorKey("error.integer.between", new String[] { "0", Integer.toString(max)} );
-					allOk &= false;
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == tableEl) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				TeacherRollCallRow row = tableModel.getObject(se.getIndex());
+				if("all".equals(cmd)) {
+					doCheckAllRow(row);
 				}
-			} catch (NumberFormatException e) {
-				element.setErrorKey("error.integer.between", new String[] { "0", Integer.toString(max)} );
-				allOk &= false;
 			}
-		} else if(mandatory) {
-			element.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
+		} else if(source instanceof MultipleSelectionElement) {
+			MultipleSelectionElement check = (MultipleSelectionElement)source;
+			TeacherRollCallRow row = (TeacherRollCallRow)check.getUserObject();
+			if(row.getAuthorizedAbsence() == check) {
+				doAuthorizedAbsence(row, check);
+			} else {
+				doCheckRow(row, check);
+			}
+		} else if(reopenButton == source) {
+			doReopen(ureq);
+		} else if(closeLectureBlocksButton == source) {
+			saveLectureBlocks();
+			doConfirmCloseLectureBlock(ureq);
+		} else if(cancelLectureBlockButton == source) {
+			saveLectureBlocks();
+			doConfirmCancelLectureBlock(ureq);
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if(cmd != null && cmd.startsWith("abs_reason_")) {
+				TeacherRollCallRow row = (TeacherRollCallRow)link.getUserObject();
+				doCalloutReasonAbsence(ureq, link, row);
+			}
 		}
-		
-		return allOk;
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		saveLectureBlocks();
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void saveLectureBlocks() {
 		for(int i=tableModel.getRowCount(); i-->0; ) {
 			TeacherRollCallRow row = tableModel.getObject(i);
 			
@@ -549,40 +455,25 @@ public class TeacherRollCallController extends FormBasicController {
 		}
 
 		lectureBlock = lectureService.getLectureBlock(lectureBlock);
-		lectureBlock.setComment(blokcCommentEl.getValue());
-		lectureBlock.setStatus(LectureBlockStatus.valueOf(statusEl.getSelectedKey()));
-		lectureBlock.setRollCallStatus(LectureRollCallStatus.valueOf(rollCallStatusEl.getSelectedKey()));
-		lectureBlock.setEffectiveLecturesNumber(lectureBlock.getPlannedLecturesNumber());//TODO
-		Date effectiveEndDate = getEffectiveEndDate();
-		if(effectiveEndDate == null) {
-			lectureBlock.setReasonEffectiveEnd(null);
-		} else {
-			lectureBlock.setEffectiveEndDate(effectiveEndDate);
-			if("-".equals(effectiveEndReasonEl.getSelectedKey())) {
-				lectureBlock.setReasonEffectiveEnd(null);
+		lectureBlock.setComment(blockCommentEl.getValue());
+		
+		if(lectureBlock.getRollCallStatus() == null) {
+			lectureBlock.setRollCallStatus(LectureRollCallStatus.open);
+		}
+		if(lectureBlock.getStatus() == null || lectureBlock.getStatus() == LectureBlockStatus.active) {
+			if(lectureModule.isStatusPartiallyDoneEnabled()) {
+				lectureBlock.setStatus(LectureBlockStatus.partiallydone);
 			} else {
-				Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());
-				Reason selectedReason = lectureService.getReason(reasonKey);
-				lectureBlock.setReasonEffectiveEnd(selectedReason);
+				lectureBlock.setStatus(LectureBlockStatus.active);
 			}
 		}
-
 		lectureBlock = lectureService.save(lectureBlock, null);
 		lectureService.recalculateSummary(lectureBlock.getEntry());
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	
-	private Date getEffectiveEndDate() {
-		Date effectiveEndDate = null;
-		if(StringHelper.containsNonWhitespace(effectiveEndHourEl.getValue())
-				&& StringHelper.containsNonWhitespace(effectiveEndMinuteEl.getValue())) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(lectureBlock.getStartDate());
-			cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(effectiveEndHourEl.getValue()));
-			cal.set(Calendar.MINUTE, Integer.parseInt(effectiveEndMinuteEl.getValue()));
-			effectiveEndDate = cal.getTime();
-		}
-		return effectiveEndDate;
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
 	private void doCheckAllRow(TeacherRollCallRow row) {
@@ -648,5 +539,35 @@ public class TeacherRollCallController extends FormBasicController {
 			rollCall = lectureService.updateRollCall(rollCall);
 		}
 		row.setRollCall(rollCall);
+	}
+	
+	private void doConfirmCloseLectureBlock(UserRequest ureq) {
+		if(closeRollCallCtrl != null) return;
+		
+		closeRollCallCtrl = new CloseRollCallConfirmationController(ureq, getWindowControl(), lectureBlock, secCallback);
+		listenTo(closeRollCallCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", closeRollCallCtrl.getInitialComponent(), true, translate("close.lecture.blocks"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doConfirmCancelLectureBlock(UserRequest ureq) {
+		if(closeRollCallCtrl != null) return;
+		
+		cancelRollCallCtrl = new CancelRollCallConfirmationController(ureq, getWindowControl(), lectureBlock);
+		listenTo(cancelRollCallCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", cancelRollCallCtrl.getInitialComponent(), true, translate("cancel.lecture.blocks"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doReopen(UserRequest ureq) {
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.reopen);
+		lectureBlock = lectureService.save(lectureBlock, null);
+		secCallback.updateLectureBlock(lectureBlock);
+		updateUI();
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

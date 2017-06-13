@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
@@ -71,6 +72,7 @@ public class TeacherOverviewController extends BasicController {
 	
 	
 	private final boolean admin;
+	private boolean dirtyTables = false;
 	private final RepositoryEntry entry;
 	private final RepositoryEntryLectureConfiguration entryConfig;
 	
@@ -87,6 +89,7 @@ public class TeacherOverviewController extends BasicController {
 		this.entry = entry;
 		this.admin = admin;
 		this.toolbarPanel = toolbarPanel;
+		toolbarPanel.addListener(this);
 		entryConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		
 		mainVC = createVelocityContainer("teacher_view");
@@ -171,6 +174,7 @@ public class TeacherOverviewController extends BasicController {
 		mainVC.contextPut("nextBlockSize", nextBlocks.size());
 		closedLecturesBlockCtrl.loadModel(closedBlocks);
 		mainVC.contextPut("closedBlockSize", closedBlocks.size());
+		dirtyTables = false;
 	}
 	
 	private boolean canStartRollCall(LectureBlock block) {
@@ -205,8 +209,11 @@ public class TeacherOverviewController extends BasicController {
 			cleanUp();
 		} else if(currentLecturesBlockCtrl == source || pendingLecturesBlockCtrl == source
 				|| nextLecturesBlockCtrl == source ||  closedLecturesBlockCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
+				loadModel();
 				toolbarPanel.popUpToController(this);
+			} else if(event == Event.CHANGED_EVENT) {
+				dirtyTables = true;
 			}
 		}
 		super.event(ureq, source, event);
@@ -225,6 +232,13 @@ public class TeacherOverviewController extends BasicController {
 		} else if(source == startWizardButton) {
 			LectureBlock block = (LectureBlock)startWizardButton.getUserObject();
 			doStartWizardRollCall(ureq, block);
+		} else if(source == toolbarPanel) {
+			if(event instanceof PopEvent) {
+				PopEvent popEvent = (PopEvent)event;
+				if(popEvent.getController() instanceof TeacherRollCallController && dirtyTables) {
+					loadModel();
+				}
+			}
 		}
 	}
 	

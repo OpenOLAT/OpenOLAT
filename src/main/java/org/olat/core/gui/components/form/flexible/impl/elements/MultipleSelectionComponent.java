@@ -53,6 +53,16 @@ class MultipleSelectionComponent extends FormBaseComponentImpl {
 	}
 
 	@Override
+	public void setEnabled(boolean enabled) {
+		if(checkComponents != null) {
+			for(CheckboxElement checkComponent:checkComponents) {
+				checkComponent.setEnabled(enabled);
+			}
+		}
+		super.setEnabled(enabled);
+	}
+
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
