@@ -127,7 +127,7 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 				items.add(new SubscriptionListItem(desc, urlToSend, businessPath, publishDate, iconCssClass));
 			}
 			
-			if(item.getModifierKey() > 0) {
+			if(item.getModifierKey() != null) {
 				Date modDate = item.getLastModified();
 				if(compareDate.before(modDate)) {
 					String desc;
