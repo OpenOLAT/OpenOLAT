@@ -63,11 +63,13 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 	private final RepositoryService repositoryService;
 	private final AuthoringEntryDataSourceUIFactory uifactory;
 	private Integer count;
+	private final boolean useFilters;
 	
 	public AuthoringEntryDataSource(SearchAuthorRepositoryEntryViewParams searchParams,
-			AuthoringEntryDataSourceUIFactory uifactory) {
+			AuthoringEntryDataSourceUIFactory uifactory, boolean useFilters) {
 		this.searchParams = searchParams;
 		this.uifactory = uifactory;
+		this.useFilters = useFilters;
 		
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
@@ -103,6 +105,8 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			} else {
 				searchParams.setResourceTypes(null);
 			}
+		} else if(useFilters) {
+			searchParams.setResourceTypes(null);
 		}
 		
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
