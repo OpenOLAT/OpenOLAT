@@ -76,10 +76,10 @@ public class FeedPage {
 	 * @param url
 	 * @return
 	 */
-	public FeedPage newExternalPodcast(String url) {
+	public FeedPage newExternalPodcast(String title, String url) {
 		//click the button to create an external feed
 		By lastButton = By.xpath("//div[contains(@class,'o_podcast_no_episodes')]//a[contains(@href,'feed.make.external')]");
-		return newExternalFeed(lastButton, url);
+		return newExternalFeed(lastButton, title, url);
 	}
 	
 	/**
@@ -87,17 +87,24 @@ public class FeedPage {
 	 * @param url
 	 * @return
 	 */
-	public FeedPage newExternalBlog(String url) {
+	public FeedPage newExternalBlog(String title, String url) {
 		//click the button to create an external feed
 		By lastButton = By.xpath("//div[contains(@class,'o_blog_no_posts')]//a[contains(@href,'feed.make.external')]");
-		return newExternalFeed(lastButton, url);
+		return newExternalFeed(lastButton, title, url);
 	}
 	
-	private FeedPage newExternalFeed(By configureExternalButton, String url) {
+	private FeedPage newExternalFeed(By configureExternalButton, String title, String url) {
 		browser.findElement(configureExternalButton).click();
 		OOGraphene.waitBusy(browser);
 		By popupBy = By.cssSelector("div.modal-dialog");
 		OOGraphene.waitElement(popupBy, 5, browser);
+		
+		if(title != null) {
+			By titleBy = By.cssSelector("div.o_sel_feed_title input[type='text']");
+			WebElement titleEl = browser.findElement(titleBy);
+			titleEl.clear();
+			titleEl.sendKeys(title);
+		}
 		
 		//fill the URL input field
 		By urlField = By.cssSelector("div.modal-dialog div.o_sel_feed_url input[type='text']");
