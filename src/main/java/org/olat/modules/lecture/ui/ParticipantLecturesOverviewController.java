@@ -69,6 +69,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private ParticipantLecturesDataModel tableModel;
 	
 	private final boolean withPrint;
+	private final boolean withTitle;
 	private final boolean withSelect;
 	private final Identity assessedIdentity;
 	private ParticipantLectureBlocksController lectureBlocksCtrl;
@@ -82,14 +83,15 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	@Autowired
 	private RepositoryService repositoryService;
 	
-	public ParticipantLecturesOverviewController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, ureq.getIdentity(), true, true);
+	public ParticipantLecturesOverviewController(UserRequest ureq, WindowControl wControl, boolean withTitle) {
+		this(ureq, wControl, ureq.getIdentity(), true, true, withTitle);
 	}
 	
 	public ParticipantLecturesOverviewController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, boolean withPrint, boolean withSelect) {
+			Identity assessedIdentity, boolean withPrint, boolean withSelect, boolean withTitle) {
 		super(ureq, wControl, "participant_overview");
 		this.withPrint = withPrint;
+		this.withTitle = withTitle;
 		this.withSelect = withSelect;
 		this.assessedIdentity = assessedIdentity;
 		initForm(ureq);
@@ -99,6 +101,10 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
 		this.stackPanel = stackPanel;
+	}
+	
+	public int getRowCount() {
+		return tableModel.getRowCount();
 	}
 
 	@Override
@@ -113,8 +119,10 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 			layoutCont.contextPut("winid", "w" + layoutCont.getFormItemComponent().getDispatchID());
 			layoutCont.getFormItemComponent().addListener(this);
 			layoutCont.getFormItemComponent().contextPut("withPrint", Boolean.TRUE);
-			setFormTitle("menu.my.lectures.alt");
-		} else {
+			if(withTitle) {
+				setFormTitle("menu.my.lectures.alt");
+			}
+		} else if(withTitle) {
 			setFormTitle("lectures.print.title", new String[]{
 					StringHelper.escapeHtml(userManager.getUserDisplayName(assessedIdentity))
 			});
@@ -147,6 +155,10 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(assessedIdentity);
 		tableModel.setObjects(statistics);
 		tableEl.reset(true, true, true);
+	}
+	
+	public boolean hasRows() {
+		return tableModel.getRowCount() > 0;
 	}
 
 	@Override
@@ -193,7 +205,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
-				Controller printCtrl = new ParticipantLecturesOverviewController(lureq, lwControl, assessedIdentity, false, false);
+				Controller printCtrl = new ParticipantLecturesOverviewController(lureq, lwControl, assessedIdentity, false, false, true);
 				listenTo(printCtrl);
 				return printCtrl;
 			}					

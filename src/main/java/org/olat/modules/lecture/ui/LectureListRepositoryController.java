@@ -158,7 +158,7 @@ public class LectureListRepositoryController extends FormBasicController {
 				teachers.append(userManager.getUserDisplayName(teacher));
 			}
 
-			LectureBlockRow row = new LectureBlockRow(b, teachers.toString(), false);
+			LectureBlockRow row = new LectureBlockRow(b, entry.getDisplayname(), teachers.toString(), false);
 			rows.add(row);
 			
 			String linkName = "tools-" + counter++;

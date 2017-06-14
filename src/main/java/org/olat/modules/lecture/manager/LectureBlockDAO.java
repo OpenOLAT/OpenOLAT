@@ -107,6 +107,21 @@ public class LectureBlockDAO {
 		return blocks;
 	}
 	
+	public List<LectureBlock> loadByTeacher(IdentityRef identityRef) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select block from lectureblock block")
+		  .append(" inner join block.teacherGroup tGroup")
+		  .append(" inner join tGroup.members membership")
+		  .append(" inner join fetch block.entry entry")
+		  .append(" where membership.identity.key=:teacherKey");
+		
+		List<LectureBlock> blocks = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlock.class)
+				.setParameter("teacherKey", identityRef.getKey())
+				.getResultList();
+		return blocks;
+	}
+	
 	/**
 	 * Delete the relation to group, the roll call, the reminders and at the
 	 * end the lecture block itself.

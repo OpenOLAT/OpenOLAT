@@ -1,0 +1,14 @@
+#if($r.available("segments"))
+<div class="o_lectures_overviewview clearfix">
+	$r.render("segments")
+	#if($r.available("segmentCmp"))
+	<div class="o_segments_content">$r.render("segmentCmp")</div>
+	#end
+</div>
+#elseif($r.available("teacherView"))
+<div class="o_lectures_teacher_view">$r.render("teacherView")</div>
+#elseif($r.available("participantView"))
+<div class="o_lectures_participant_view">$r.render("participantView")</div>
+#else
+<div class=o_info>$r.translate("info.no.lectures")</div>
+#end

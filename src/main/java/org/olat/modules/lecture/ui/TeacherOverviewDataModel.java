@@ -65,6 +65,7 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 			case date: return row.getLectureBlock().getStartDate();
 			case startTime: return row.getLectureBlock().getStartDate();
 			case endTime: return row.getLectureBlock().getEndDate();
+			case entry: return row.getEntryDisplayname();
 			case lectureBlock: return row.getLectureBlock().getTitle();
 			case teachers: return row.getTeachers();
 			case location: return row.getLectureBlock().getLocation();
@@ -91,6 +92,7 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 		date("table.header.date"),
 		startTime("table.header.start.time"),
 		endTime("table.header.end.time"),
+		entry("table.header.entry"),
 		lectureBlock("table.header.lecture.block"),
 		location("table.header.location"),
 		teachers("table.header.teachers"),

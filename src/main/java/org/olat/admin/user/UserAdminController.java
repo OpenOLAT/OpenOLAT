@@ -361,7 +361,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 		
 		if(lectureModule.isEnabled()) {
-			lecturesCtrl = new ParticipantLecturesOverviewController(ureq, getWindowControl(), identity, true, true);
+			lecturesCtrl = new ParticipantLecturesOverviewController(ureq, getWindowControl(), identity, true, true, true);
 			listenTo(lecturesCtrl);
 			BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("lectures", getTranslator(), lecturesCtrl);
 			stackPanel.pushController(translate(NLS_VIEW_LECTURES), lecturesCtrl);

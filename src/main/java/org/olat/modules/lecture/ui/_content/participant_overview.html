@@ -1,5 +1,7 @@
 <fieldset>
+#if($r.isNotEmpty($off_title))
 	<legend><i class="o_icon o_icon-fw o_icon_lecture"> </i> $off_title</legend>
+#end
 #if($r.isNotNull($withPrint) && $withPrint)
 	<div class="o_button_group o_button_group_right">
 		<script type="text/javascript">

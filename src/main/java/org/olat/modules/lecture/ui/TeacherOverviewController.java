@@ -166,7 +166,7 @@ public class TeacherOverviewController extends BasicController implements Tooled
 					teachers.append(userManager.getUserDisplayName(teacher));
 				}
 				
-				LectureBlockRow row = new LectureBlockRow(block, teachers.toString(), teacherList.contains(getIdentity()));
+				LectureBlockRow row = new LectureBlockRow(block, entry.getDisplayname(), teachers.toString(), teacherList.contains(getIdentity()));
 				if(canStartRollCall(blockWithTeachers)) {
 					startButton.setVisible(true);
 					startButton.setUserObject(block);
