@@ -607,6 +607,27 @@ public class FeedFileStorgeTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadItemsFromXML_missing_XML() {
+		BlogFileResource resource = new BlogFileResource();
+		Feed feed = new FeedImpl(resource);
+		Item item1 = new ItemImpl(feed);
+		String guid1 = "guid 1";
+		item1.setGuid(guid1);
+		sut.saveItemAsXML(item1);
+		Item item2 = new ItemImpl(feed);
+		String guid2 = "guid 2";
+		item2.setGuid(guid2);
+		sut.saveItemAsXML(item2);
+		sut.deleteItemXML(item1);
+		
+		List<Item> items = sut.loadItemsFromXML(feed);
+		
+		assertThat(items.size()).isEqualTo(1);
+		
+		fileResourceManager.deleteFileResource(resource);
+	}
+	
+	@Test
 	public void loadItemsFromXML_empty() {
 		BlogFileResource resource = new BlogFileResource();
 		Feed feed = new FeedImpl(resource);

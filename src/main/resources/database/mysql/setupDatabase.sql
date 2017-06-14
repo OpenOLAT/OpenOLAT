@@ -1928,7 +1928,6 @@ create table o_feed (
    lastmodified datetime not null,
    f_resourceable_id bigint,
    f_resourceable_type varchar(64),
-   f_type varchar(20),
    f_title varchar(1024),
    f_description varchar(1024),
    f_author varchar(255),

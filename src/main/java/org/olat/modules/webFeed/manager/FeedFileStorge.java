@@ -389,7 +389,9 @@ public class FeedFileStorge {
 			if (itemContainers != null && !itemContainers.isEmpty()) {
 				for (VFSItem itemContainer : itemContainers) {
 					Item item = loadItemFromXML((VFSContainer) itemContainer);
-					items.add(item);
+					if (item != null) {
+						items.add(item);
+					}
 				}
 			}
 		}
