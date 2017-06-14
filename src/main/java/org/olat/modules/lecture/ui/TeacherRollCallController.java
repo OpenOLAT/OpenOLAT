@@ -559,7 +559,7 @@ public class TeacherRollCallController extends FormBasicController {
 	private void doConfirmCancelLectureBlock(UserRequest ureq) {
 		if(closeRollCallCtrl != null) return;
 		
-		cancelRollCallCtrl = new CancelRollCallConfirmationController(ureq, getWindowControl(), lectureBlock);
+		cancelRollCallCtrl = new CancelRollCallConfirmationController(ureq, getWindowControl(), lectureBlock, secCallback);
 		listenTo(cancelRollCallCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", cancelRollCallCtrl.getInitialComponent(), true, translate("cancel.lecture.blocks"));

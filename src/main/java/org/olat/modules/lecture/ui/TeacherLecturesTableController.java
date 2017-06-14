@@ -154,7 +154,9 @@ public class TeacherLecturesTableController extends FormBasicController {
 	}
 	
 	private void doExportLectureBlock(UserRequest ureq, LectureBlock row) {
-		LectureBlockExport export = new LectureBlockExport(row, true, getTranslator());
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		List<Identity> teachers = lectureService.getTeachers(lectureBlock);
+		LectureBlockExport export = new LectureBlockExport(lectureBlock, teachers, true, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 	

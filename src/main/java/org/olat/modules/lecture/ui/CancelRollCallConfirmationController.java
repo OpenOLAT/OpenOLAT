@@ -19,8 +19,12 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -30,6 +34,8 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.Reason;
+import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -39,15 +45,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CancelRollCallConfirmationController extends FormBasicController {
+
+	private SingleSelection effectiveEndReasonEl;
 	
 	private LectureBlock lectureBlock;
+	private RollCallSecurityCallback secCallback;
 	
 	@Autowired
 	private LectureService lectureService;
 	
-	public CancelRollCallConfirmationController(UserRequest ureq, WindowControl wControl, LectureBlock lectureBlock) {
+	public CancelRollCallConfirmationController(UserRequest ureq, WindowControl wControl,
+			LectureBlock lectureBlock, RollCallSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.lectureBlock = lectureBlock;
+		this.secCallback = secCallback;
 		
 		initForm(ureq);
 	}
@@ -58,6 +69,34 @@ public class CancelRollCallConfirmationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
+		List<String> reasonKeyList = new ArrayList<>();
+		List<String> reasonValueList = new ArrayList<>();
+		
+		List<Reason> allReasons = lectureService.getAllReasons();
+		for(Reason reason:allReasons) {
+			reasonKeyList.add(reason.getKey().toString());
+			reasonValueList.add(reason.getTitle());
+		}
+		
+		effectiveEndReasonEl = uifactory.addDropdownSingleselect("effective.reason", "lecture.block.effective.reason", formLayout,
+				reasonKeyList.toArray(new String[reasonKeyList.size()]), reasonValueList.toArray(new String[reasonValueList.size()]), null);
+		effectiveEndReasonEl.setEnabled(secCallback.canEdit());
+		boolean found = false;
+		if(lectureBlock.getReasonEffectiveEnd() != null) {
+			String selectedReasonKey = lectureBlock.getReasonEffectiveEnd().getKey().toString();
+			for(String reasonKey:reasonKeyList) {
+				if(reasonKey.equals(selectedReasonKey)) {
+					effectiveEndReasonEl.select(reasonKey, true);
+					found = true;
+					break;
+				}
+			}
+		}
+		if(!found) {
+			effectiveEndReasonEl.select(reasonKeyList.get(0), true);
+		}
+
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -70,9 +109,26 @@ public class CancelRollCallConfirmationController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		effectiveEndReasonEl.clearError();
+		if(!effectiveEndReasonEl.isOneSelected()) {
+			effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
+			allOk &= false;
+		}
+
+		return allOk & super.validateFormLogic(ureq);
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());
+		Reason selectedReason = lectureService.getReason(reasonKey);
+		lectureBlock.setReasonEffectiveEnd(selectedReason);
+
 		lectureBlock.setStatus(LectureBlockStatus.cancelled);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
 		lectureBlock.setEffectiveLecturesNumber(0);

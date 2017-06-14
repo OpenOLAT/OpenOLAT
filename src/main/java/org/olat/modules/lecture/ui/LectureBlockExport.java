@@ -56,18 +56,22 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 	private final Translator translator;
 	private final LectureBlock lectureBlock;
 	private final LectureService lectureService;
+	private final List<Identity> teachers;
 	
 	private final boolean authorizedAbsence;
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
-	public LectureBlockExport(LectureBlock lectureBlock, boolean isAdministrativeUser, Translator translator) {
+	private final UserManager userManager;
+	
+	public LectureBlockExport(LectureBlock lectureBlock, List<Identity> teachers, boolean isAdministrativeUser, Translator translator) {
 		super(label(lectureBlock));
+		this.teachers = teachers;
 		this.lectureBlock = lectureBlock;
 		lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		this.isAdministrativeUser = isAdministrativeUser;
 		this.authorizedAbsence = true;
-		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(ParticipantListRepositoryController.USER_PROPS_ID, isAdministrativeUser);
 		this.translator = userManager.getPropertyHandlerTranslator(translator);
 	}
@@ -82,11 +86,112 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 	protected void generate(OutputStream out) {
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
-			addHeaders(exportSheet);
+			exportSheet.setHeaderRows(3);
+			addHeaders_1(exportSheet);
+			addHeaders_2(exportSheet);
+			addHeaders_3(exportSheet);
 			addContent(exportSheet);
+			addFooter(exportSheet);
 		} catch (IOException e) {
 			log.error("", e);
 		}
+	}
+	
+	private void addFooter(OpenXMLWorksheet exportSheet) {
+		exportSheet.newRow();
+		exportSheet.newRow();
+		Row footerRow = exportSheet.newRow();
+
+		int pos = 0;
+		if(isAdministrativeUser) {
+			pos++;
+		}
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (userPropertyHandler == null) continue;
+			pos++;
+		}
+
+		footerRow.addCell(pos, translator.translate("export.footer.lectures.hint"));
+	}
+
+	private void addHeaders_1(OpenXMLWorksheet exportSheet) {
+		Row headerRow = exportSheet.newRow();
+		int pos = 0;
+		
+		Formatter formatter = Formatter.getInstance(translator.getLocale());
+		String[] args = new String[] {
+			lectureBlock.getTitle(),
+			formatter.formatDate(lectureBlock.getStartDate()),
+			formatter.formatTimeShort(lectureBlock.getStartDate()),
+			formatter.formatTimeShort(lectureBlock.getEndDate())
+		};
+		headerRow.addCell(pos, translator.translate("export.header.lectureblocks", args));
+		
+		if(isAdministrativeUser) {
+			pos++;
+		}
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (userPropertyHandler == null) continue;
+			pos++;
+		}
+		
+		if(teachers != null && teachers.size() > 0) {
+			StringBuilder sb = new StringBuilder();
+			for(Identity teacher:teachers) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(userManager.getUserDisplayName(teacher));
+			}
+			
+			headerRow.addCell(pos, translator.translate("export.header.teachers", new String[]{ sb.toString() }));
+		}
+		
+		if(StringHelper.containsNonWhitespace(lectureBlock.getLocation())) {
+			pos += lectureBlock.getPlannedLecturesNumber();
+			headerRow.addCell(pos, translator.translate("export.header.location", new String[]{ lectureBlock.getLocation() }));
+		}
+	}
+
+	private void addHeaders_2(OpenXMLWorksheet exportSheet) {
+		Row headerRow = exportSheet.newRow();
+		int pos = 0;
+		if(isAdministrativeUser) {
+			pos++;
+		}
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (userPropertyHandler == null) continue;
+			pos++;
+		}
+		headerRow.addCell(pos++, translator.translate("export.header.lectures"));
+	}
+	
+	private void addHeaders_3(OpenXMLWorksheet exportSheet) {
+		Row headerRow = exportSheet.newRow();
+		
+		int pos = 0;
+		if(isAdministrativeUser) {
+			headerRow.addCell(pos++, translator.translate("table.header.username"));
+		}
+		
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (userPropertyHandler == null) continue;
+
+			String propName = userPropertyHandler.getName();
+			headerRow.addCell(pos++, translator.translate("form.name." + propName));
+		}
+		
+		for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
+			headerRow.addCell(pos++, Integer.toString(i + 1));	
+		}
+		
+		if(authorizedAbsence) {
+			//authorized absence
+			headerRow.addCell(pos++, translator.translate("table.header.authorized.absence"));
+			//authorized absence reason
+			headerRow.addCell(pos++, translator.translate("authorized.absence.reason"));
+		}
+		
+		//comment
+		headerRow.addCell(pos++, translator.translate("table.header.comment"));
 	}
 	
 	private void addContent(OpenXMLWorksheet exportSheet) {
@@ -126,33 +231,5 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 		}
 	}
 	
-	private void addHeaders(OpenXMLWorksheet exportSheet) {
-		Row headerRow = exportSheet.newRow();
-		
-		int pos = 0;
-		if(isAdministrativeUser) {
-			headerRow.addCell(pos++, translator.translate("table.header.username"));
-		}
-		
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler == null) continue;
 
-			String propName = userPropertyHandler.getName();
-			headerRow.addCell(pos++, translator.translate("form.name." + propName));
-		}
-		
-		for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
-			headerRow.addCell(pos++, Integer.toString(i + 1));	
-		}
-		
-		if(authorizedAbsence) {
-			//authorized absence
-			headerRow.addCell(pos++, translator.translate("table.header.authorized.absence"));
-			//authorized absence reason
-			headerRow.addCell(pos++, translator.translate("authorized.absence.reason"));
-		}
-		
-		//comment
-		headerRow.addCell(pos++, translator.translate("table.header.comment"));
-	}
 }
