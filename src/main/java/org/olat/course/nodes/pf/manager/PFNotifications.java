@@ -50,6 +50,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.pf.ui.PFRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 /**
 *
 * Initial date: 05.01.2017<br>
@@ -70,13 +71,15 @@ public class PFNotifications {
 
 	private NotificationsManager notificationsManager;
 	private PFManager pfManager;
+	private UserManager userManager;
 
 	public PFNotifications(Subscriber subscriber, Locale locale, Date compareDate, PFManager pfManager, 
-			NotificationsManager notificationsManager) {
+			NotificationsManager notificationsManager,UserManager userManager) {
 		this.subscriber = subscriber;
 		this.compareDate = compareDate;
 		this.notificationsManager = notificationsManager;
 		this.pfManager = pfManager;
+		this.userManager = userManager;
 		translator = Util.createPackageTranslator(PFRunController.class, locale);
 	}
 	
@@ -135,8 +138,9 @@ public class PFNotifications {
 			String forby = translator.translate("notifications.entry." + 
 					(filePath.contains(PFManager.FILENAME_DROPBOX) ? "by" : "for"));
 
+			String userDisplayName = userManager.getUserDisplayName(participant);
 			String desc = translator.translate("notifications.entry." + action,
-					new String[] { filePath, forby, participant.getName() });
+					new String[] { filePath, forby, userDisplayName});
 			String businessPath = p.getBusinessPath();
 			String urlToSend = BusinessControlFactory.getInstance()
 					.getURLFromBusinessPathString(businessPath);
