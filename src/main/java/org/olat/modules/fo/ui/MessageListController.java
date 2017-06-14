@@ -309,8 +309,19 @@ public class MessageListController extends BasicController implements GenericEve
 			}
 		} else if(message != null) {
 			MessageView view = loadView(ureq, message);
-			backupViews.add(view);
-			
+			int index = 0;
+			for(int i=0; i<backupViews.size(); i++) {
+				if(backupViews.get(i).getKey().equals(message.getKey())) {
+					backupViews.remove(backupViews.get(i));
+					index = i;
+					break;
+				}
+			}
+			if(index >= 0) {
+				backupViews.add(index, view);
+			} else {
+				backupViews.add(view);
+			}
 			mainVC.contextPut("messages", backupViews);
 			messageTableCtrl.loadMessages(new ArrayList<>(0));
 
