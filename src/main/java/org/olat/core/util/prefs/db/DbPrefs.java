@@ -31,6 +31,7 @@ package org.olat.core.util.prefs.db;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -71,6 +72,7 @@ public class DbPrefs implements Preferences, Serializable {
 		this.isTransient = isTransient;
 	}
 
+	@Override
 	public void save() {
 		if (!isTransient) {
 			PreferencesStorage storage = (PreferencesStorage)CoreSpringFactory.getBean("core.preferences.PreferencesStorage");
@@ -86,6 +88,12 @@ public class DbPrefs implements Preferences, Serializable {
 	@Override
 	public Object get(Class<?> attributedClass, String key) {
 		return prefstore.get(attributedClass.getName()+"::"+key);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <U> List<U> getList(Class<?> attributedClass, String key, Class<U> type) {
+		return (List<U>)prefstore.get(attributedClass.getName()+"::"+key);
 	}
 
 	@Override
@@ -128,6 +136,7 @@ public class DbPrefs implements Preferences, Serializable {
 	 * 
 	 * @see org.olat.core.util.prefs.Preferences#putAndSave(java.lang.Class, java.lang.String, java.lang.Object)
 	 */
+	@Override
 	public void putAndSave(Class<?> attributedClass, String key, Object value) {
 		put(attributedClass, key, value);
 		save();
@@ -137,6 +146,7 @@ public class DbPrefs implements Preferences, Serializable {
 	 * 
 	 * @see org.olat.core.util.prefs.Preferences#findPrefByKey(java.lang.String)
 	 */
+	@Override
 	public Object findPrefByKey(String partOfKey) {
 		for (Iterator<String> iterator = prefstore.keySet().iterator(); iterator.hasNext();) {
 			String key = iterator.next();
@@ -147,7 +157,7 @@ public class DbPrefs implements Preferences, Serializable {
 		return null;
 	}
 
-	
+	@Override
 	public  String toString(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("total of stored kv-pairs: ").append(prefstore.size());

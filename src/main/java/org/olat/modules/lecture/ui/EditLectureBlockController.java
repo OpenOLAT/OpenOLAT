@@ -21,6 +21,8 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -30,20 +32,26 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
+import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
@@ -51,6 +59,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.LocationHistory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryService;
@@ -71,7 +80,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private TextElement titleEl;
 	private TextElement descriptionEl;
 	private TextElement preparationEl;
-	private TextElement locationEl;
+	private AutoCompleter locationEl;
 	private DateChooser startDateEl;
 	private SingleSelection plannedLecturesEl;
 	private TextElement endHourEl, endMinuteEl;
@@ -84,6 +93,7 @@ public class EditLectureBlockController extends FormBasicController {
 	private List<GroupBox> groupBox;
 	private String[] teacherKeys, teacherValues;
 	private final boolean lectureManagementManaged;
+	private final List<LocationHistory> locations;
 	
 	@Autowired
 	private DB dbInstance;
@@ -106,6 +116,7 @@ public class EditLectureBlockController extends FormBasicController {
 		super(ureq, wControl);
 		this.entry = entry;
 		this.lectureBlock = lectureBlock;
+		locations = getLocations(ureq);
 		lectureManagementManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.lecturemanagement);
 		if(lectureBlock != null && lectureBlock.getKey() != null) {
 			teachers = lectureService.getTeachers(lectureBlock);
@@ -227,8 +238,10 @@ public class EditLectureBlockController extends FormBasicController {
 		preparationEl = uifactory.addTextAreaElement("lecture.preparation", 4, 72, preparation, formLayout);
 		preparationEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.preparation));
 		String location = lectureBlock == null ? "" : lectureBlock.getLocation();
-		locationEl = uifactory.addTextElement("location", "lecture.location", 128, location, formLayout);
+		locationEl = uifactory.addTextElementWithAutoCompleter("location", "lecture.location", 128, location, formLayout);
 		locationEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.location));
+		locationEl.setListProvider(new LocationListProvider(), ureq.getUserSession());
+		locationEl.setMinLength(1);
 
 		Date startDate = lectureBlock == null ? null : lectureBlock.getStartDate();
 		startDateEl = uifactory.addDateChooser("lecture.start", startDate, formLayout);
@@ -338,6 +351,11 @@ public class EditLectureBlockController extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		if(lectureBlock == null) {
 			lectureBlock = lectureService.createLectureBlock(entry);
@@ -404,14 +422,47 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		
 		dbInstance.commit();
+		updateLocationsPrefs(ureq);
 		lectureService.syncCalendars(lectureBlock);
-
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private List<LocationHistory> getLocations(UserRequest ureq) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		List<LocationHistory> showConfig  = guiPrefs.getList(LectureBlock.class, getLocationsPrefsId(), LocationHistory.class);
+		return showConfig == null ? new ArrayList<>() : showConfig;
+	}
+	
+	private void updateLocationsPrefs(UserRequest ureq) {
+		String location = lectureBlock.getLocation();
+		if(StringHelper.containsNonWhitespace(location)) {
+			List<LocationHistory> newLocations = new ArrayList<>(locations);
+			LocationHistory newLocation = new LocationHistory(location, new Date());
+			if(locations.contains(newLocation)) {
+				int index = locations.indexOf(newLocation);
+				locations.get(index).setLastUsed(new Date());
+			} else {
+				newLocations.add(newLocation);
+				Collections.sort(newLocations, new LocationDateComparator());
+				if(newLocations.size() > 10) {
+					newLocations = new ArrayList<>(newLocations.subList(0, 10));//pack it in a new list for XStream
+				}
+			}
+			
+			Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+			if (guiPrefs != null) {
+				guiPrefs.putAndSave(LectureBlock.class, getLocationsPrefsId(), newLocations);
+			}
+		}
+	}
+	
+	private String getLocationsPrefsId() {
+		return "Lectures::Location::" + getIdentity().getKey();
 	}
 	
 	public class GroupBox {
@@ -450,6 +501,51 @@ public class EditLectureBlockController extends FormBasicController {
 		
 		public BusinessGroup getBusinessGroup() {
 			return businessGroup;
+		}
+	}
+	
+	public class LocationListProvider implements ListProvider {
+		@Override
+		public void getResult(String searchValue, ListReceiver receiver) {
+			if(locations != null && locations.size() > 0) {
+				if(locations.size() > 2) {
+					Collections.sort(locations, new LocationDateComparator());
+				}
+				
+				for(LocationHistory location:locations) {
+					receiver.addEntry(location.getLocation(), location.getLocation());
+				}
+			}
+		}
+	}
+	
+	private static class LocationDateComparator implements Comparator<LocationHistory> {
+
+		@Override
+		public int compare(LocationHistory o1, LocationHistory o2) {
+			if(o1 == null) {
+				if(o2 == null) {
+					return 0;
+				} else {
+					return -1;
+				}
+			} else if(o2 == null) {
+				return 1;
+			}
+			
+			Date d1 = o1.getLastUsed();
+			Date d2 = o2.getLastUsed();
+			if(d1 == null) {
+				if(d2 == null) {
+					return 0;
+				} else {
+					return -1;
+				}
+			} else if(d2 == null) {
+				return 1;
+			}
+			
+			return -d1.compareTo(d2);
 		}
 	}
 }

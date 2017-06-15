@@ -26,6 +26,7 @@ package org.olat.core.util.prefs.ram;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.olat.core.util.prefs.Preferences;
@@ -52,6 +53,12 @@ public class RamPreferences implements Preferences {
 	@Override
 	public Object get(String attributedClass, String key) {
 		return store.get(attributedClass + ":" + key);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <U> List<U> getList(Class<?> attributedClass, String key, Class<U> type) {
+		return (List<U>)store.get(attributedClass + ":" + key);
 	}
 
 	/**

@@ -50,6 +50,7 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 		boolean showDisplayKey = false;
 		String id = autoCompleter.getFormDispatchId();
 		String mapperUri = autoCompleter.getMapperUri();
+		int minLength = autoCompleter.getMinLength();
 		StringOutput command = new StringOutput(64);
 		ubu.createCopyFor(cmp).openXHREvent(command, null, false, false,
 				new NameValuePair(VelocityContainer.COMMAND_ID, "select"));
@@ -89,9 +90,9 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 		  .append(" jQuery('#").append(id).append("').typeahead({\n")
 		  .append("	  hint: false,\n")
 		  .append("	  highlight: false,\n")
-		  .append("	  minLength: 3\n")
+		  .append("	  minLength: ").append(minLength).append("\n")
 		  .append(" },{\n")
-		  .append("	  minLength: 3,\n")
+		  .append("	  minLength: ").append(minLength).append(",\n")
 		  .append("	  displayKey: 'fullName',\n")
 		  .append("	  source: fullNameTypeahead.ttAdapter()\n")
 		  .append(" }).on('typeahead:selected', function (e, object) {\n")

@@ -35,6 +35,16 @@ public interface AutoCompleter extends FormItem {
 	
 	public void setKey(String key);
 	
+	public int getMinLength();
+
+	/**
+	 * Set the minimal length to start a query server-side and
+	 * show the auto-completion.
+	 * 
+	 * @param minLength
+	 */
+	public void setMinLength(int minLength);
+	
 	public String getValue();
 	
 	public String getMapperUri();

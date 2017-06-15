@@ -56,6 +56,7 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 	
 	private String noResults;
 	private String key;
+	private int minLength = 3;
 	
 	public AutoCompleterImpl(String id, String name) {
 		super(id, name, false);
@@ -94,6 +95,14 @@ public class AutoCompleterImpl extends AbstractTextElement implements AutoComple
 		if(component != null) {
 			component.setDirty(true);
 		}
+	}
+
+	public int getMinLength() {
+		return minLength;
+	}
+
+	public void setMinLength(int minLength) {
+		this.minLength = minLength;
 	}
 
 	@Override

@@ -26,6 +26,7 @@
 
 package org.olat.core.util.prefs;
 
+import java.util.List;
 
 /**
 
@@ -43,6 +44,8 @@ public interface Preferences {
 	 * @return the object
 	 */
 	public Object get(Class<?> attributedClass, String key);
+	
+	public <U> List<U> getList(Class<?> attributedClass, String key, Class<U> type);
 	
 	/**
 	 * 
