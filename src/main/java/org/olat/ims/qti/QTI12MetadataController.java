@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.impl.NekoHTMLFilter;
@@ -134,9 +135,10 @@ public class QTI12MetadataController extends FormBasicController  {
 			for(Response response:responses) {
 				String responseSummary = getResponseSummary(response);
 				if(responseSummary != null) {
+					
 					boolean correct =  response.isCorrect();
 					String points = Float.toString(response.getPoints());
-					ResponseAndPoints responseInfos = new ResponseAndPoints(responseSummary, points, correct);
+					ResponseAndPoints responseInfos = new ResponseAndPoints(Formatter.formatLatexFormulas(responseSummary), points, correct);
 					responsesPoints.add(responseInfos);
 				}
 			}
@@ -154,7 +156,7 @@ public class QTI12MetadataController extends FormBasicController  {
 					if(response.isCorrect()) {
 						String responseSummary = getResponseSummary(response);
 						if(responseSummary != null) {
-							correctResponseNames.add(responseSummary);
+							correctResponseNames.add(Formatter.formatLatexFormulas(responseSummary));
 						}
 					}
 				}

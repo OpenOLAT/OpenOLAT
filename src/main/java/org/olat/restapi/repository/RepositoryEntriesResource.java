@@ -328,19 +328,16 @@ public class RepositoryEntriesResource {
 
 		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		RepositoryHandlerFactory handlerFactory = CoreSpringFactory.getImpl(RepositoryHandlerFactory.class);
-		
 		try {
 			RepositoryHandler handler = null;
 			for(String type:handlerFactory.getSupportedTypes()) {
 				RepositoryHandler h = handlerFactory.getRepositoryHandler(type);
 				ResourceEvaluation eval = h.acceptImport(fResource, fResource.getName());
-				log.audit("Handler: " + type + " validity: " + (eval != null && eval.isValid()));
 				if(eval != null && eval.isValid()) {
 					handler = h;
 					break;
 				}
 			}
-			
 			
 			RepositoryEntry addedEntry = null;
 			if(handler != null) {

@@ -354,11 +354,13 @@ public class AssessmentResultController extends FormBasicController {
 
 		TestPlanNode section = node.getParent();
 		Results sectionResults = resultsMap.get(section);
-		sectionResults.addSubResults(assessmentItemResults);
-		if(assessmentItemResults.hasMaxScore()) {
-			sectionResults.addMaxScore(assessmentItemResults);
-			if(assessmentItemResults.hasScore()) {
-				sectionResults.addScore(assessmentItemResults);
+		if(sectionResults != null) {
+			sectionResults.addSubResults(assessmentItemResults);
+			if(assessmentItemResults.hasMaxScore()) {
+				sectionResults.addMaxScore(assessmentItemResults);
+				if(assessmentItemResults.hasScore()) {
+					sectionResults.addScore(assessmentItemResults);
+				}
 			}
 		}
 	}

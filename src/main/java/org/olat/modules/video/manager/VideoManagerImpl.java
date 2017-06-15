@@ -369,17 +369,6 @@ public class VideoManagerImpl implements VideoManager {
 		}
 	}
 
-//	/**
-//	 * Write the metdatadata-xml in the videoresource folder
-//	 * @param metaData
-//	 * @param videoResource
-//	 */
-//	private void writeVideoMetadataFile(VideoMetadata metaData, OLATResource videoResource){
-//		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
-//		VFSLeaf metaDataFile = VFSManager.resolveOrCreateLeafFromPath(baseContainer, FILENAME_VIDEO_METADATA_XML);
-//		XStreamHelper.writeObject(XStreamHelper.createXStreamInstance(), metaDataFile, metaData);
-//	}
-
 	@Override
 	public boolean isMetadataFileValid(OLATResource videoResource) {
 		VFSContainer baseContainer = FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
@@ -388,7 +377,6 @@ public class VideoManagerImpl implements VideoManager {
 			VideoMetadata meta = (VideoMetadata) XStreamHelper.readObject(XStreamHelper.createXStreamInstance(), metaDataFile);
 			return meta != null;
 		} catch (Exception e) {
-			log.error("Error while parsing XStream file for videoResource::" + videoResource, e);
 			return false;
 		}
 	}
@@ -578,8 +566,8 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public boolean hasMasterContainer (OLATResource videoResource) {
 		VFSContainer baseContainer =  FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
-		VFSContainer masterContainer = (VFSContainer) baseContainer.resolve(DIRNAME_MASTER);
-		return masterContainer != null & masterContainer.exists();		
+		VFSItem masterContainer = baseContainer.resolve(DIRNAME_MASTER);
+		return masterContainer instanceof VFSContainer && masterContainer.exists();		
 	}
 	
 	@Override

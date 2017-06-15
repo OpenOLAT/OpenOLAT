@@ -189,7 +189,6 @@ import org.junit.runners.Suite;
 	org.olat.modules.webFeed.manager.FeedDAOTest.class,
 	org.olat.modules.webFeed.manager.ItemDAOTest.class,
 	org.olat.modules.webFeed.manager.FeedFileStorgeTest.class,
-	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.properties.PropertyTest.class,
 	org.olat.search.service.document.file.FileDocumentFactoryTest.class,
 	org.olat.search.service.indexer.repository.course.SPCourseNodeIndexerTest.class,
@@ -229,7 +228,6 @@ import org.junit.runners.Suite;
 	org.olat.ims.qti21.model.xml.OpenOLATAssessementItemsTest.class,
 	org.olat.ims.qti21.model.xml.QTI21ExplorerHandlerTest.class,
 	org.olat.ims.lti.LTIManagerTest.class,
-	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.modules.qpool.manager.MetadataConverterHelperTest.class,
 	org.olat.modules.qpool.manager.QuestionDAOTest.class,
 	org.olat.modules.qpool.manager.FileStorageTest.class,
@@ -319,7 +317,9 @@ import org.junit.runners.Suite;
 	/**
 	 * Pure JUnit test without need of framework
 	 */
+	org.olat.modules.card2brain.manager.Card2BrainManagerImplTest.class,
 	org.olat.modules.fo.WordCountTest.class,
+	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.modules.webFeed.manager.RomeFeedFetcherTest.class,
 	/**
 	 * 
