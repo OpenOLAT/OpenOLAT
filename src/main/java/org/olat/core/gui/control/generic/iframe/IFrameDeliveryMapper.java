@@ -597,6 +597,27 @@ public class IFrameDeliveryMapper implements Mapper {
 			appendStaticJs("js/prototype/prototype.js");
 		}
 		
+		/*
+		 MathJax.Hub.Config({
+			extensions: ["jsMath2jax.js"],
+			messageStyle: 'none',
+			showProcessingMessages: false,
+			showMathMenu: false,
+			menuSettings: { },
+			jsMath2jax: {
+				preview: "none"
+			},
+			tex2jax: {
+				ignoreClass: "math"
+			},
+			"HTML-CSS": {
+			    EqnChunk: 5, EqnChunkFactor: 1, EqnChunkDelay: 100
+			},
+			"fast-preview": {
+				disabled: true
+			}
+		});
+		*/
 		public void appendJsMath() {
 			append("<script type=\"text/javascript\" src=\"");
 			append(WebappHelper.getMathJaxCdn());
@@ -604,12 +625,21 @@ public class IFrameDeliveryMapper implements Mapper {
 			append("<script type=\"text/javascript\">\n");
 			append("MathJax.Hub.Config({\n");	
 			append(" extensions: [\"jsMath2jax.js\"],\n");
+			append(" messageStyle: 'none',\n");
 			append(" showProcessingMessages: false,\n");
+			append(" showMathMenu: false,\n");
+			append(" menuSettings: { },\n");
 			append(" jsMath2jax: {\n");
 			append("   preview: \"none\"\n");
 			append(" },\n");
 			append(" tex2jax: {\n");
 			append("   ignoreClass: \"math\"\n");
+			append(" },\n");
+			append(" \"HTML-CSS\": {\n");
+			append("   EqnChunk: 5, EqnChunkFactor: 1, EqnChunkDelay: 100\n");
+			append(" },\n");
+			append(" \"fast-preview\": {\n");
+			append("   disabled: true\n");
 			append(" }\n");
 			append("});");
 			append("</script>");

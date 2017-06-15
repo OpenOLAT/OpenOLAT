@@ -29,8 +29,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.ui.ResponseInfos;
 import org.olat.ims.qti.statistics.ui.Series;
@@ -129,7 +129,7 @@ public class KPrimStatisticsController extends BasicController {
 			for(SimpleAssociableChoice choice:fourMatchSet.getSimpleAssociableChoices()) {
 				if(choice.getIdentifier().equals(choiceIdentifier)) {
 					String textFlow = assessmentHtmlBuilder.flowStaticString(choice.getFlowStatics());
-					text = FilterFactory.getHtmlTagAndDescapingFilter().filter(textFlow);
+					text = Formatter.formatLatexFormulas(textFlow);
 				}
 			}
 			responseInfos.add(new ResponseInfos(label, text, null, correctRight, survey, true));

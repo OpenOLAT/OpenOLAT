@@ -5,7 +5,7 @@
 	<h3><i class="o_icon $series.itemCss""> </i> $title</h3>
 	#if ($question && $question != "")
 		<h4>$r.translate("chart.item")</h4>
-		<div class="o_qti_statistics_question clearfix">$question</div>
+		<div class="o_qti_statistics_question clearfix">$r.formatLatexFormulas($question)</div>
 	#end
 	
 	<h4>$r.translate("fig.title")</h4>
@@ -66,7 +66,7 @@
 		<strong>$responseInfo.label.</strong> 
 		#if($responseInfo.points) $r.translate("answer.points", $responseInfo.formattedPoints) #end
 		#if($responseInfo.wrongAnswersAvailable)
-			<span class="o_qti_statistics_answer"><strong>$responseInfo.text</strong></span>
+			<span class="o_qti_statistics_answer"><strong>$r.formatLatexFormulas($responseInfo.text)</strong></span>
 			<p class="o_qti_statistics_wrong_answer">#if($responseInfo.survey)
 			<i>$r.translate("fib.answer")</i>
 			#else
@@ -74,7 +74,7 @@
 			#end
 			$responseInfo.formattedWrongAnswers</p>
 		#else
-			<span class="o_qti_statistics_answer">$responseInfo.text</span>
+			<span class="o_qti_statistics_answer">$r.formatLatexFormulas($responseInfo.text)</span>
 		#end
 		 </li>
 	#end 	

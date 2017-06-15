@@ -23,8 +23,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti21.model.statistics.ChoiceStatistics;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
@@ -65,7 +65,7 @@ public class HottextInteractionStatisticsController extends ChoiceInteractionSta
 		String text = choice.getLabel();
 		if(!StringHelper.containsNonWhitespace(text)) {
 			text = new AssessmentHtmlBuilder().inlineStaticString(((Hottext)choice).getInlineStatics());
-			text = FilterFactory.getHtmlTagsFilter().filter(text);
+			text = Formatter.formatLatexFormulas(text);
 		}
 		return text;
 	}
