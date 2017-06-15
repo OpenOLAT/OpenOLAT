@@ -236,6 +236,7 @@ public class MatchStatisticsController extends BasicController {
 			this.choice = choice;
 			this.choiceIdentifier = choice.getIdentifier();
 			summary = assessmentHtmlBuilder.flowStaticString(choice.getFlowStatics());
+			
 		}
 
 		public Identifier getChoiceIdentifier() {
