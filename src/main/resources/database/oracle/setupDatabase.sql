@@ -2005,6 +2005,112 @@ create table o_feed_item (
    primary key (id)
 );
 
+-- lectures
+create table o_lecture_reason (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  l_title varchar2(255 char),
+  l_descr varchar2(2000 char),
+  primary key (id)
+);
+
+create table o_lecture_block (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  l_external_id varchar2(255 char),
+  l_managed_flags varchar2(255 char),
+  l_title varchar2(255 char),
+  l_descr clob,
+  l_preparation clob,
+  l_location varchar2(255 char),
+  l_comment clob, 
+  l_log clob,
+  l_start_date date not null,
+  l_end_date date not null,
+  l_compulsory number default 1 not null,
+  l_eff_end_date date,
+  l_planned_lectures_num number(20) default 0 not null,
+  l_effective_lectures_num number(20) default 0 not null,
+  l_effective_lectures varchar2(128 char),
+  l_status varchar2(16 char) not null,
+  l_roll_call_status varchar2(16 char) not null,
+  fk_reason number(20),
+  fk_entry number(20) not null,
+  fk_teacher_group number(20) not null,
+  primary key (id)
+);
+
+create table o_lecture_block_to_group (
+  id number(20) generated always as identity,
+  fk_lecture_block number(20) not null,
+  fk_group number(20) not null,
+  primary key (id)
+);
+
+create table o_lecture_block_roll_call (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  l_comment clob, 
+  l_log clob,
+  l_lectures_attended varchar2(128 char),
+  l_lectures_absent varchar2(128 char),
+  l_lectures_attended_num number(20) default 0 not null,
+  l_lectures_absent_num number(20) default 0 not null,
+  l_absence_reason clob,
+  l_absence_authorized number default null,
+  l_absence_appeal_date date,
+  fk_lecture_block number(20) not null,
+  fk_identity number(20) not null,
+  primary key (id)
+);
+
+create table o_lecture_reminder (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  l_status varchar2(16 char) not null,
+  fk_lecture_block number(20) not null,
+  fk_identity number(20) not null,
+  primary key (id)
+);
+
+create table o_lecture_participant_summary (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  l_required_attendance_rate float(24) default null,
+  l_first_admission_date date default null,
+  l_attended_lectures number(20) default 0 not null,
+  l_absent_lectures number(20) default 0 not null,
+  l_excused_lectures number(20) default 0 not null,
+  l_planneds_lectures number(20) default 0 not null,
+  l_attendance_rate float(24) default null,
+  l_cal_sync number default 0 not null,
+  l_cal_last_sync_date date default null,
+  fk_entry number(20) not null,
+  fk_identity number(20) not null,
+  primary key (id),
+  unique (fk_entry, fk_identity)
+);
+
+create table o_lecture_entry_config (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  l_lecture_enabled number default null,
+  l_override_module_def number default 0 not null,
+  l_rollcall_enabled number default null,
+  l_calculate_attendance_rate number default null,
+  l_required_attendance_rate float(24) default null,
+  l_sync_calendar_teacher number default null,
+  l_sync_calendar_participant number default null,
+  fk_entry number(20) not null,
+  unique(fk_entry),
+  primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -2953,6 +3059,36 @@ alter table o_feed_item add constraint feed_item_to_ident_author_fk foreign key 
 create index idx_item_ident_author_idx on o_feed_item (fk_identity_author_id);
 alter table o_feed_item add constraint feed_item_to_ident_modified_fk foreign key (fk_identity_modified_id) references o_bs_identity (id);
 create index idx_item_ident_modified_idx on o_feed_item (fk_identity_modified_id);
+
+-- lectures
+alter table o_lecture_block add constraint lec_block_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_lec_block_entry_idx on o_lecture_block(fk_entry);
+alter table o_lecture_block add constraint lec_block_gcoach_idx foreign key (fk_teacher_group) references o_bs_group (id);
+create index idx_lec_block_gcoach_idx on o_lecture_block(fk_teacher_group);
+alter table o_lecture_block add constraint lec_block_reason_idx foreign key (fk_reason) references o_lecture_reason (id);
+create index idx_lec_block_reason_idx on o_lecture_block(fk_reason);
+
+alter table o_lecture_block_to_group add constraint lec_block_to_block_idx foreign key (fk_group) references o_bs_group (id);
+create index idx_lec_block_to_block_idx on o_lecture_block_to_group(fk_group);
+alter table o_lecture_block_to_group add constraint lec_block_to_group_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+create index idx_lec_block_to_group_idx on o_lecture_block_to_group(fk_lecture_block);
+
+alter table o_lecture_block_roll_call add constraint lec_call_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+create index idx_lec_call_block_idx on o_lecture_block_roll_call(fk_lecture_block);
+alter table o_lecture_block_roll_call add constraint lec_call_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_lec_call_identity_idx on o_lecture_block_roll_call(fk_identity);
+
+alter table o_lecture_reminder add constraint lec_reminder_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+create index idx_lec_reminder_block_idx on o_lecture_reminder(fk_lecture_block);
+alter table o_lecture_reminder add constraint lec_reminder_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_lec_reminder_identity_idx on o_lecture_reminder(fk_identity);
+
+alter table o_lecture_participant_summary add constraint lec_part_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_lec_part_entry_idx on o_lecture_participant_summary(fk_entry);
+alter table o_lecture_participant_summary add constraint lec_part_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_lec_part_ident_idx on o_lecture_participant_summary(fk_identity);
+
+alter table o_lecture_entry_config add constraint lec_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);
