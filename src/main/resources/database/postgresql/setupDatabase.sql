@@ -1840,7 +1840,6 @@ create table o_gta_task_list (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    g_course_node_ident varchar(36),
-   g_roundrobin text,
    fk_entry int8 not null,
    primary key (id)
 );
