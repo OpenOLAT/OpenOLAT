@@ -25,11 +25,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
+
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
@@ -37,11 +41,14 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
+import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockRollCallImpl;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
+import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -338,6 +345,207 @@ public class LectureBlockRollCallDAO {
 		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant);
 		return statisticsList;
 	}
+	
+	public List<LectureBlockIdentityStatistics> getStatistics(LectureStatisticsSearchParameters params,
+			List<UserPropertyHandler> userPropertyHandlers, Identity identity, boolean admin,
+			boolean absenceDefaultAuthorized, boolean countAuthorizedAbsenceAsAttendant,
+			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
+		
+		StringBuilder sb = new StringBuilder(2048);
+		sb.append("select ident.key as participantKey, ")
+		  .append("  call.lecturesAttendedNumber as attendedLectures,")
+		  .append("  call.lecturesAbsentNumber as absentLectures,")
+		  .append("  call.absenceAuthorized as absenceAuthorized,")
+		  .append("  block.key as blockKey,")
+		  .append("  block.compulsory as compulsory,")
+		  .append("  block.plannedLecturesNumber as blockPlanned,")
+		  .append("  block.effectiveLecturesNumber as blockEffective,")
+		  .append("  block.statusString as status,")
+		  .append("  block.rollCallStatusString as rollCallStatus,")
+		  .append("  block.endDate as rollCallEndDate,")
+		  .append("  re.key as repoKey,")
+		  .append("  re.displayname as repoDisplayName,")
+		  .append("  config.overrideModuleDefault as overrideDef,")
+		  .append("  config.calculateAttendanceRate as calculateRate,")
+		  .append("  config.requiredAttendanceRate as repoConfigRate,")//rate enabled
+		  .append("  summary.firstAdmissionDate as firstAdmissionDate,")
+		  .append("  summary.requiredAttendanceRate as summaryRate");
+		for(UserPropertyHandler handler:userPropertyHandlers) {
+			sb.append(", user.").append(handler.getName()).append(" as ").append("p_").append(handler.getName());
+		} 
+		sb.append(" from lectureblock block")
+		  .append(" inner join block.entry re")
+		  .append(" inner join block.groups blockToGroup")
+		  .append(" inner join blockToGroup.group bGroup")
+		  .append(" inner join bGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join ident.user user")
+		  .append(" left join lectureentryconfig as config on (re.key=config.entry.key)")
+		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
+		  .append(" left join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
+		  .append(" where membership.role='").append(GroupRoles.participant.name()).append("'");
+		if(!admin) {
+			sb.append(" and (exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
+			  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and rel.defaultGroup=true and membership.identity.key=:identityKey")
+			  .append("     and membership.role='").append(GroupRoles.owner.name()).append("'")
+			  .append("     and re.access >= ").append(RepositoryEntry.ACC_OWNERS)
+			  .append(" ) or exists (select membership.key from bgroupmember as membership ")
+			  .append("     where block.teacherGroup.key=membership.group.key and membership.identity.key=:identityKey")
+			  .append("     and (re.access >= ").append(RepositoryEntry.ACC_USERS)
+			  .append("     or (re.access = ").append(RepositoryEntry.ACC_OWNERS).append(" and re.membersOnly=true))")
+			  .append(" ))");
+		} else {
+			sb.append(" and re.access >= ").append(RepositoryEntry.ACC_OWNERS);
+		}
+
+		if(params.getLifecycle() != null) {
+			sb.append(" and re.lifecycle.key=:lifecycleKey");
+		}
+		if(params.getStartDate() != null) {
+			sb.append(" and block.startDate>=:startDate");
+		}
+		if(params.getEndDate() != null) {
+			sb.append(" and block.endDate<=:endDate");
+		}
+		if(params.getBulkIdentifiers() != null && params.getBulkIdentifiers().size() > 0) {
+			sb.append(" and (")
+			  .append("  lower(ident.name) in (:bulkIdentifiers)")
+			  .append("  or lower(ident.externalId) in (:bulkIdentifiers)")
+			  .append("  or lower(user.email) in (:bulkIdentifiers)")
+			  .append("  or lower(user.institutionalEmail) in (:bulkIdentifiers)")
+			  .append(")");
+		}
+		
+		Map<String,Object> queryParams = new HashMap<>();
+		appendUsersStatisticsSearchParams(params, queryParams, sb);
+
+		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(StringHelper.containsNonWhitespace(params.getLogin())) {
+			rawQuery.setParameter("login", params.getLogin());
+		}
+		if(params.getLifecycle() != null) {
+			rawQuery.setParameter("lifecycleKey", params.getLifecycle().getKey());
+		}
+		if(params.getStartDate() != null) {
+			rawQuery.setParameter("startDate", params.getStartDate(), TemporalType.TIMESTAMP);
+		}
+		if(params.getEndDate() != null) {
+			rawQuery.setParameter("endDate", params.getEndDate(), TemporalType.TIMESTAMP);
+		}
+		if(params.getBulkIdentifiers() != null && params.getBulkIdentifiers().size() > 0) {
+			rawQuery.setParameter("bulkIdentifiers", params.getBulkIdentifiers());
+		}
+		for(Map.Entry<String, Object> entry:queryParams.entrySet()) {
+			rawQuery.setParameter(entry.getKey(), entry.getValue());
+		}
+		if(!admin) {
+			rawQuery.setParameter("identityKey", identity.getKey());
+		}
+
+		Date now = new Date();
+		List<Object[]> rawObjects = rawQuery.getResultList();
+		Map<Membership,LectureBlockIdentityStatistics> stats = new HashMap<>();
+		for(Object[] rawObject:rawObjects) {
+			int pos = 0;//jump roll call key
+			Long identityKey = (Long)rawObject[pos++];
+			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
+			Long lecturesAbsent = PersistenceHelper.extractLong(rawObject, pos++);
+			Boolean absenceAuthorized = (Boolean)rawObject[pos++];
+			
+			pos++;//jump block key
+			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
+			Long plannedLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
+			Long effectiveLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
+			if(effectiveLecturesNumber == null) {
+				effectiveLecturesNumber = plannedLecturesNumber;
+			}
+			String status = (String)rawObject[pos++];
+			String rollCallStatus = (String)rawObject[pos++];
+			Date rollCallEndDate = (Date)rawObject[pos++];
+			
+			//entry and config
+			Long repoKey = PersistenceHelper.extractLong(rawObject, pos++);
+			String repoDisplayname = (String)rawObject[pos++];
+			boolean overrideDefault = PersistenceHelper.extractBoolean(rawObject, pos++, false);
+			Boolean repoCalculateRate = (Boolean)rawObject[pos++];
+			Double repoRequiredRate = (Double)rawObject[pos++];
+			
+			//summary
+			Date firstAdmissionDate = (Date)rawObject[pos++];
+			Double persoRequiredRate = (Double)rawObject[pos++];
+			
+			LectureBlockIdentityStatistics entryStatistics;
+			
+			Membership memberKey = new Membership(identityKey, repoKey);
+			if(stats.containsKey(memberKey)) {
+				entryStatistics = stats.get(memberKey);
+			} else {
+				
+				//user data
+				int numOfProperties = userPropertyHandlers.size();
+				String[] identityProps = new String[numOfProperties];
+				for(int i=0; i<numOfProperties; i++) {
+					identityProps[i] = (String)rawObject[pos++];
+				}
+				
+				entryStatistics = createIdentityStatistics(identityKey, identityProps,
+						repoKey, repoDisplayname,
+						overrideDefault, repoCalculateRate,  repoRequiredRate,
+						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
+				stats.put(memberKey, entryStatistics);
+			}
+
+			appendStatistics(entryStatistics, compulsory, status,
+					rollCallEndDate, rollCallStatus,
+					lecturesAttended, lecturesAbsent,
+					absenceAuthorized, absenceDefaultAuthorized,
+					plannedLecturesNumber, effectiveLecturesNumber,
+					firstAdmissionDate, now);
+		}
+		
+		List<LectureBlockIdentityStatistics> statisticsList = new ArrayList<>(stats.values());
+		calculateAttendanceRate(statisticsList, countAuthorizedAbsenceAsAttendant);
+		return statisticsList;
+	}
+	
+	private void appendUsersStatisticsSearchParams(LectureStatisticsSearchParameters params, Map<String,Object> queryParams, StringBuilder sb) {
+		if(StringHelper.containsNonWhitespace(params.getLogin())) {
+			String login = PersistenceHelper.makeFuzzyQueryString(params.getLogin());
+			if (login.contains("_") && dbInstance.isOracle()) {
+				//oracle needs special ESCAPE sequence to search for escaped strings
+				sb.append(" and lower(ident.name) like :login ESCAPE '\\'");
+			} else if (dbInstance.isMySQL()) {
+				sb.append(" and ident.name like :login");
+			} else {
+				sb.append(" and lower(ident.name) like :login");
+			}
+			queryParams.put("login", login);
+		}
+		
+		if(params.getUserProperties() != null && params.getUserProperties().size() > 0) {
+			Map<String,String> searchParams = new HashMap<>(params.getUserProperties());
+	
+			int count = 0;
+			for(Map.Entry<String, String> entry:searchParams.entrySet()) {
+				String propName = entry.getKey();
+				String propValue = entry.getValue();
+				String qName = "p_" + ++count;
+				
+				UserPropertyHandler handler = userManager.getUserPropertiesConfig().getPropertyHandler(propName);
+				if(dbInstance.isMySQL()) {
+					sb.append(" and user.").append(handler.getName()).append(" like :").append(qName);
+				} else {
+					sb.append(" and lower(user.").append(handler.getName()).append(") like :").append(qName);
+					if(dbInstance.isOracle()) {
+						sb.append(" escape '\\'");
+					}
+				}
+				queryParams.put(qName, PersistenceHelper.makeFuzzyQueryString(propValue));
+			}
+		}
+	}
+	
 
 	public List<LectureBlockStatistics> getStatistics(RepositoryEntry entry,
 			RepositoryEntryLectureConfiguration config,
@@ -424,7 +632,7 @@ public class LectureBlockRollCallDAO {
 		return statisticsList;
 	}
 	
-	private void calculateAttendanceRate(List<LectureBlockStatistics> statisticsList, boolean countAuthorizedAbsenceAsAttendant) {
+	private void calculateAttendanceRate(List<? extends LectureBlockStatistics> statisticsList, boolean countAuthorizedAbsenceAsAttendant) {
 		for(LectureBlockStatistics statistics:statisticsList) {
 			long totalAttendedLectures = statistics.getTotalEffectiveLectures();
 			long totalAbsentLectures = statistics.getTotalAbsentLectures();
@@ -452,6 +660,24 @@ public class LectureBlockRollCallDAO {
 			Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,
 			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 
+		RequiredRate requiredRate = calculateRequiredRate(overrideDefault, repoCalculateRate, repoRequiredRate,
+				persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
+		return new LectureBlockStatistics(identityKey, entryKey, displayName, requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
+	}
+	
+	private LectureBlockIdentityStatistics createIdentityStatistics(Long identityKey, String[] identityProps, Long entryKey, String displayName,
+			Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,
+			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
+
+		RequiredRate requiredRate = calculateRequiredRate(overrideDefault, repoCalculateRate, repoRequiredRate,
+				persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
+		return new LectureBlockIdentityStatistics(identityKey, identityProps,
+				entryKey, displayName, requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
+	}
+	
+	private RequiredRate calculateRequiredRate(Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,
+			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
+		
 		final boolean calculateRate;
 		if(repoCalculateRate != null && overrideDefault != null && !overrideDefault.booleanValue()) {
 			calculateRate = repoCalculateRate.booleanValue();
@@ -469,7 +695,8 @@ public class LectureBlockRollCallDAO {
 				requiredRate = requiredAttendanceRateDefault;
 			}
 		}
-		return new LectureBlockStatistics(identityKey, entryKey, displayName, calculateRate, requiredRate);
+		
+		return new RequiredRate(calculateRate, requiredRate);
 	}
 	
 	private void appendStatistics(LectureBlockStatistics statistics, boolean compulsory, String blockStatus,
@@ -516,6 +743,53 @@ public class LectureBlockRollCallDAO {
 
 		if(plannedLecturesNumber != null) {
 			statistics.addTotalPlannedLectures(plannedLecturesNumber.longValue());
+		}
+	}
+	
+	private static class Membership {
+		private final Long identityKey;
+		private final Long repoEntryKey;
+		
+		public Membership(Long identityKey, Long repoEntryKey) {
+			this.identityKey = identityKey;
+			this.repoEntryKey = repoEntryKey;
+		}
+
+		@Override
+		public int hashCode() {
+			return identityKey.hashCode() + repoEntryKey.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof Membership) {
+				Membership membership = (Membership)obj;
+				return identityKey != null && identityKey.equals(membership.identityKey)
+						&& repoEntryKey != null && repoEntryKey.equals(membership.repoEntryKey);
+			}
+			return false;
+		}
+	}
+	
+	private static class RequiredRate {
+		
+		private final boolean calculateRate;
+		private final double requiredRate;
+		
+		public RequiredRate(boolean calculateRate, double requiredRate) {
+			this.calculateRate = calculateRate;
+			this.requiredRate = requiredRate;
+		}
+
+		public boolean isCalculateRate() {
+			return calculateRate;
+		}
+
+		public double getRequiredRate() {
+			return requiredRate;
 		}
 	}
 }

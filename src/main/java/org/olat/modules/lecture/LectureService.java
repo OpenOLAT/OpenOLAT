@@ -25,10 +25,13 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
+import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -350,6 +353,14 @@ public interface LectureService {
 	 * @return Statistics per user
 	 */
 	public List<LectureBlockStatistics> getParticipantsLecturesStatistics(RepositoryEntry entry);
+	
+	/**
+	 * 
+	 * @param params
+	 * @return
+	 */
+	public List<LectureBlockIdentityStatistics> getLecturesStatistics(LectureStatisticsSearchParameters params,
+			List<UserPropertyHandler> userPropertyHandlers, Identity identity, boolean admin);
 	
 	/**
 	 * The list of roll calls within the specified course for the specified user

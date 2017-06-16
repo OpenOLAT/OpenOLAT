@@ -43,7 +43,10 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.LecturesSearchController;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -64,6 +67,10 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private CourseListController courseListCtrl;
 	private StudentListController studentListCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
+	private LecturesSearchController lecturesSearchCtrl;
+	
+	@Autowired
+	private LectureModule lectureModule;
 	
 	public CoachMainController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
@@ -145,6 +152,15 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				listenTo(courseListCtrl);
 			}
 			selectedCtrl = courseListCtrl;
+		} else if("lectures".equalsIgnoreCase(cmd)) {
+			if(lecturesSearchCtrl == null) {
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Lectures", 0l);
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+				lecturesSearchCtrl = new LecturesSearchController(ureq, bwControl, content);
+				listenTo(lecturesSearchCtrl);
+			}
+			selectedCtrl = lecturesSearchCtrl;
 		} else if("search".equalsIgnoreCase(cmd)) {
 			if(userSearchCtrl == null) {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
@@ -190,6 +206,14 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		courses.setTitle(translate("courses.menu.title"));
 		courses.setAltText(translate("courses.menu.title.alt"));
 		root.addChild(courses);
+		
+		if(lectureModule.isEnabled()) {
+			GenericTreeNode lectures = new GenericTreeNode();
+			lectures.setUserObject("Lectures");
+			lectures.setTitle(translate("lectures.menu.title"));
+			lectures.setAltText(translate("courses.menu.title.alt"));
+			root.addChild(lectures);
+		}
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		if(roles.isUserManager() || roles.isOLATAdmin()) {

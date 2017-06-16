@@ -66,10 +66,12 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
+import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
 import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureAdminController;
@@ -78,6 +80,7 @@ import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.user.UserDataDeletable;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -590,6 +593,18 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		double defaultRequiredAttendanceRate = lectureModule.getRequiredAttendanceRateDefault();
 		RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(entry);
 		return lectureBlockRollCallDao.getStatistics(entry, config,
+				absenceDefaultAuthorized, countAuthorizedAbsenceAsAttendant,
+				calculateAttendanceRate, defaultRequiredAttendanceRate);
+	}
+	
+	@Override
+	public List<LectureBlockIdentityStatistics> getLecturesStatistics(LectureStatisticsSearchParameters params,
+			List<UserPropertyHandler> userPropertyHandlers, Identity identity, boolean admin) {
+		boolean calculateAttendanceRate = lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
+		boolean absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
+		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
+		double defaultRequiredAttendanceRate = lectureModule.getRequiredAttendanceRateDefault();
+		return lectureBlockRollCallDao.getStatistics(params, userPropertyHandlers, identity, admin,
 				absenceDefaultAuthorized, countAuthorizedAbsenceAsAttendant,
 				calculateAttendanceRate, defaultRequiredAttendanceRate);
 	}
