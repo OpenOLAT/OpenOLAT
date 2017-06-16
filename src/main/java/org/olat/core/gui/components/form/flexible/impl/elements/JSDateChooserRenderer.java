@@ -145,14 +145,6 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("</div>");
 	}
-	
-	private StringOutput renderMS(StringOutput dc, String id, int time) {
-		dc.append("<input class='form-control o_date_ms' type='text' id='").append(id).append("'")
-	      .append(" name=\"").append(id).append("\" size='2'")
-		  .append(" maxlength='2' value='").append(time > 9 ? "" + time : "0" + time).append("'")
-		  .append(" />");
-		return dc;
-	}
 
 	private void renderTextElementReadonly(StringOutput sb, JSDateChooserComponent jsdcc, int maxlength) {
 		TextElementComponent teC = jsdcc.getTextElementComponent();
@@ -182,7 +174,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				shorter += "&nbsp;";
 			}
 		}				
-		sb.append("<input id='").append(id).append("' disabled='disabled' class='o_form_element_disabled' size=\"")
+		sb.append("<input id='").append(id).append("' disabled='disabled' class='form-control o_disabled' size=\"")
 		  .append(te.displaySize)
 		  .append("\" value=\"").append(shorter).append("\" /></span>");
 		
@@ -197,15 +189,28 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				hour = cal.get(Calendar.HOUR_OF_DAY);
 				minute = cal.get(Calendar.MINUTE);
 			}
-			sb.append("<span class='o_form_element_disabled'> ")
-			  .append(hour)
-			  .append(" : ");
-			if(minute < 10) {
-				sb.append("0");
-			}
-			sb.append(minute)
-			  .append("</span>");
+			sb.append("<div class='form-group o_date_ms'>");
+			renderMSDisabled(sb, "o_dch_" + id, hour);
+			sb.append(" : ");
+			renderMSDisabled(sb, "o_dcm_" + id, minute);
+			sb.append("</div>");
 		}
+	}
+	
+	private StringOutput renderMS(StringOutput dc, String id, int time) {
+		dc.append("<input class='form-control o_date_ms' type='text' id='").append(id).append("'")
+	      .append(" name=\"").append(id).append("\" size='2'")
+		  .append(" maxlength='2' value='").append(time > 9 ? "" + time : "0" + time).append("'")
+		  .append(" />");
+		return dc;
+	}
+	
+	private StringOutput renderMSDisabled(StringOutput dc, String id, int time) {
+		dc.append("<input class='form-control o_disabled o_date_ms' disabled='disabled' type='text' id='").append(id).append("'")
+	      .append(" name=\"").append(id).append("\" size='2'")
+		  .append(" maxlength='2' value='").append(time > 9 ? "" + time : "0" + time).append("'")
+		  .append(" />");
+		return dc;
 	}
 	
 	private void renderTextElement(StringOutput sb, TextElementComponent teC, int maxlength) {
