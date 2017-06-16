@@ -107,6 +107,7 @@ public class ShibbolethMigrationForm extends FormBasicController {
 		login.setEnabled(false);
 		
 		password = uifactory.addPasswordElement("smf_password", "smf.password", 255, "", formLayout);
+		password.setAutocomplete("new-password");
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);

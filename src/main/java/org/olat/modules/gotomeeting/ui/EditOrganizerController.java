@@ -79,6 +79,7 @@ public class EditOrganizerController extends FormBasicController {
 		String username = organizer == null ? "" : organizer.getUsername();
 		usernameEl = uifactory.addTextElement("organizer.username", "organizer.username", 128, username, formLayout);
 		passwordEl = uifactory.addPasswordElement("organizer.password", "organizer.password", 128, "", formLayout);
+		passwordEl.setAutocomplete("new-password");
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);

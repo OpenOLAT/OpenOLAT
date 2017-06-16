@@ -98,7 +98,7 @@ public class OpenMeetingsConfigurationController extends FormBasicController {
 			loginEl = uifactory.addTextElement("openmeetings-login", "option.adminlogin", 32, login, moduleFlc);
 			String password = openMeetingsModule.getAdminPassword();
 			passwordEl = uifactory.addPasswordElement("openmeetings-password", "option.adminpassword", 32, password, moduleFlc);
-			
+			passwordEl.setAutocomplete("new-password");
 			
 			String externalType = openMeetingsManager.getOpenOLATExternalType();
 			uifactory.addStaticTextElement("om.externaltype", "openolat.externaltype", externalType, moduleFlc);

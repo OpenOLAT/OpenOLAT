@@ -102,6 +102,7 @@ public class QTI21AdminController extends FormBasicController {
 		String password = StringHelper.containsNonWhitespace(certificatePassword) ? PASSWORD_PLACEHOLDER : "";
 		certificatePasswordEl = uifactory.addPasswordElement("digital.signature.certificate.password", "digital.signature.certificate.password",
 				256, password, layoutCont);
+		certificatePasswordEl.setAutocomplete("new-password");
 
 		mathExtensionEl = uifactory.addCheckboxesHorizontal("math.extension", "math.extension", layoutCont,
 				onKeys, onValues);

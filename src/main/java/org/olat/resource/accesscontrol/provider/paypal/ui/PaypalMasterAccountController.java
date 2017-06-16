@@ -155,6 +155,7 @@ public class PaypalMasterAccountController extends FormBasicController {
 			usernameEl = uifactory.addTextElement("api-username", "paypal.config.username", 255, userId, formLayout);
 			passwordEl = uifactory.addPasswordElement("api-password", "paypal.config.password", 255, "", formLayout);
 			passwordEl.setExampleKey("paypal.config.password.expl", null);
+			passwordEl.setAutocomplete("new-password");
 			String signature = paypalModule.getPaypalSecuritySignature();
 			signatureEl = uifactory.addTextElement("api-signature", "paypal.config.signature", 255, signature, formLayout);
 			String applicationId = paypalModule.getPaypalApplicationId();

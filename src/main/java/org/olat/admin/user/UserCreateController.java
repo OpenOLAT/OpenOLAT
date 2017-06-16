@@ -223,12 +223,14 @@ class NewUserForm extends FormBasicController {
 			psw1TextElement.setDisplaySize(30);
 			psw1TextElement.setVisible(showPasswordFields);
 			psw1TextElement.setElementCssClass("o_sel_id_password1");
+			psw1TextElement.setAutocomplete("new-password");
 
 			psw2TextElement = uifactory.addPasswordElement(PASSWORD_NEW2, "new.form.password.new2", 255, "", formLayout);
 			psw2TextElement.setMandatory(true);
 			psw2TextElement.setDisplaySize(30);		
 			psw2TextElement.setVisible(showPasswordFields);
 			psw2TextElement.setElementCssClass("o_sel_id_password2");
+			psw2TextElement.setAutocomplete("new-password");
 		}
 		
 		uifactory.addFormSubmitButton("save", "submit.save", formLayout);

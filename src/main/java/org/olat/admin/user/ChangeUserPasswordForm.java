@@ -105,7 +105,9 @@ public class ChangeUserPasswordForm extends FormBasicController {
 		username.setEnabled(false);		
 		
 		pass1 = uifactory.addPasswordElement("pass1", "form.password.new1", 255, "", formLayout);
+		pass1.setAutocomplete("new-password");
 		pass2 = uifactory.addPasswordElement("pass2", "form.password.new2", 255, "", formLayout);
+		pass2.setAutocomplete("new-password");
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}
 

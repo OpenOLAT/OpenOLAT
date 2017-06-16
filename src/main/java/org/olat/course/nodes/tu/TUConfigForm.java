@@ -292,6 +292,7 @@ public class TUConfigForm extends FormBasicController {
 		
 		tuser = uifactory.addTextElement("user", "TUConfigForm.user", 255, user == null ? "" : user, formLayout);
 		tpass = uifactory.addPasswordElement("pass", "TUConfigForm.pass", 255, pass == null ? "" : pass, formLayout);
+		tpass.setAutocomplete("new-password");
 		
 		uifactory.addFormSubmitButton("submit", formLayout);
 		

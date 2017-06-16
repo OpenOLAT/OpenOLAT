@@ -180,7 +180,21 @@ public interface TextElement extends FormItem{
 	 * @return true: has a placeholder text ; false: has no placeholder
 	 */
 	public boolean hasPlaceholder();
-
+	
+	/**
+	 * Set the autocomplete behavior of the TextElement. Default value is null
+	 * (is same behavior as "on"). To avoid the automatic completion of password
+	 * fields use "new-password".
+	 * 
+	 * @param autocomplete
+	 */
+	public void setAutocomplete(String autocomplete);
+	
+	/**
+	 * 
+	 * @return the autocomplete value or null if not set
+	 */
+	public String getAutocomplete();
 
 	public void setDomReplacementWrapperRequired(boolean required);
 	
