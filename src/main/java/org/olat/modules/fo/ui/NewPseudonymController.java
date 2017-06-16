@@ -67,6 +67,7 @@ public class NewPseudonymController extends FormBasicController {
 		
 		passwordEl = uifactory.addPasswordElement("password", "new.password.label", 128, "", formLayout);
 		passwordEl.setElementCssClass("o_sel_forum_alias_pass");
+		passwordEl.setAutocomplete("new-password");
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);

@@ -87,6 +87,10 @@ class TextElementRenderer extends DefaultComponentRenderer {
 				sb.append(" autofocus");
 			}
 			
+			if (te.getAutocomplete() != null) {
+				sb.append(" autocomplete=\"").append(te.getAutocomplete()).append("\"");
+			}
+			
 			sb.append(" />");
 			
 			//add set dirty form only if enabled

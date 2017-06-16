@@ -206,6 +206,7 @@ public class MessageEditController extends FormBasicController {
 			passwordEl = uifactory.addPasswordElement("password", "password", 128, "", formLayout);
 			passwordEl.setElementCssClass("o_sel_forum_message_alias_pass");
 			passwordEl.setPlaceholderKey("password.placeholder", null);
+			passwordEl.setAutocomplete("new-password");
 
 			if(guestOnly) {
 				usePseudonymEl.setVisible(false);

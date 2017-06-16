@@ -151,8 +151,6 @@ class StatisticUpdateManagerImpl implements StatisticUpdateManager, GenericEvent
 					
 					Date lastUpdatedDate = new Date(lastUpdatedInMilliseconds);
 					Date nowDate = new Date(nowInMilliseconds);
-					
-					System.out.println(lastUpdatedDate + " :: " + nowDate);
 
 					log_.info("updateStatistics: starting the update");
 					DBFactory.getInstance().intermediateCommit();

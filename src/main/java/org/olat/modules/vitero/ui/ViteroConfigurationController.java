@@ -123,6 +123,7 @@ public class ViteroConfigurationController extends FormBasicController {
 			loginEl = uifactory.addTextElement("vitero-login", "option.adminlogin", 32, login, moduleFlc);
 			String password = viteroModule.getAdminPassword();
 			passwordEl = uifactory.addPasswordElement("vitero-password", "option.adminpassword", 32, password, moduleFlc);
+			passwordEl.setAutocomplete("new-password");
 			int customerId = viteroModule.getCustomerId();
 			String customer = customerId > 0 ? Integer.toString(customerId) : null;
 			customerEl = uifactory.addTextElement("option.customerId", "option.customerId", 32, customer, moduleFlc);

@@ -84,6 +84,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	private String checkRegexp;
 	private String checkRegexpErrorKey;
 	private String placeholder;
+	private String autocomplete;
 	private ItemValidatorProvider itemValidatorProvider;
 	protected boolean originalInitialised=false;
 	
@@ -145,6 +146,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#preventValueTrim()
 	 */
+	@Override
 	public void preventValueTrim(boolean preventTrim){
 		this.preventTrim = preventTrim;
 	}
@@ -154,6 +156,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	 * 
 	 * @param value The value to set
 	 */
+	@Override
 	public void setValue(String value) {
 		if (value == null) {
 			value = "";
@@ -187,6 +190,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	 * 
 	 * @param value The new original value
 	 */
+	@Override
 	public void setNewOriginalValue(String value) {
 		if (value == null) value = "";
 		original = new String(value);
@@ -200,6 +204,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	 * 
 	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#setDisplaySize(int)
 	 */
+	@Override
 	public void setDisplaySize(int displaySize){
 		this.displaySize = displaySize;
 	}
@@ -212,10 +217,12 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#setMaxLength(int)
 	 */
+	@Override
 	public void setMaxLength(int maxLength){
 		this.maxlength = maxLength;
 	}
 
+	@Override
 	public void setCheckVisibleLength(boolean checkVisibleLength) {
 		this.checkVisibleLength = checkVisibleLength;
 	}
@@ -224,6 +231,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	 * @param errorKey
 	 * @return
 	 */
+	@Override
 	public void setNotEmptyCheck(String errorKey) {
 		checkForNotEmpty = true;
 		notEmptyErrorKey = errorKey;
@@ -233,10 +241,9 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		if (value == null || value.equals("")) {
 			setErrorKey(notEmptyErrorKey, null);
 			return false;
-		} else {
-			clearError();
-			return true;
 		}
+		clearError();
+		return true;
 	}
 	
 
@@ -247,6 +254,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#setNotLongerThanCheck(int,
 	 *      java.lang.String)
 	 */
+	@Override
 	public void setNotLongerThanCheck(int maxLength, String errorKey) {
 		if (maxLength == -1) {
 			checkForLength = false;
@@ -286,6 +294,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	 * @param errorKey
 	 * @return true if they are equal
 	 */
+	@Override
 	public void setIsEqualCheck(String otherValue, String errorKey) {
 		checkForEquals = true;
 		checkForOtherValue = otherValue;
@@ -296,9 +305,8 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		if (value == null || !value.equals(checkForOtherValue)) {
 			setErrorKey(otherValueErrorKey, null);
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	}
 
 	/**
@@ -306,6 +314,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	 * 
 	 * @return boolean true if is empty, false otherwhise
 	 */
+	@Override
 	public boolean isEmpty() {
 		return value.equals("");
 	}
@@ -316,6 +325,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	 * @param errorKey
 	 * @return boolean true if is empty, false otherwise
 	 */
+	@Override
 	public boolean isEmpty(String errorKey) {
 		if (isEmpty()) {
 			setErrorKey(errorKey, null);
@@ -352,13 +362,26 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		return (placeholder != null);
 	}
 	
-
+	@Override
+	public void setAutocomplete(String autocomplete) {
+		if (StringHelper.containsNonWhitespace(autocomplete)) {
+			this.autocomplete = autocomplete;
+		} else {
+			this.autocomplete = null;
+		}
+	}
 	
+	@Override
+	public String getAutocomplete() {
+		return autocomplete;
+	}
+
 	/**
 	 * @param regExp
 	 * @param errorKey
 	 * @return
 	 */
+	@Override
 	public void setRegexMatchCheck(String regExp, String errorKey) {
 		checkForMatchRegexp = true;
 		checkRegexp = regExp;
@@ -369,11 +392,11 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		if (value == null || !value.matches(checkRegexp)) {
 			setErrorKey(checkRegexpErrorKey, null);
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	}
 	
+	@Override
 	public void setItemValidatorProvider(ItemValidatorProvider itemValidatorProvider){
 		checkForCustomItemValidator = (itemValidatorProvider != null);
 		this.itemValidatorProvider = itemValidatorProvider;
@@ -385,9 +408,8 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		boolean isValid = itemValidatorProvider.isValidValue(value, validationErrorCallback, locale);
 		if (isValid) {
 			return true;
-		} else {
-			setErrorKey(validationErrorCallback.getErrorKey(), validationErrorCallback.getArgs());
-			return false; 
 		}
+		setErrorKey(validationErrorCallback.getErrorKey(), validationErrorCallback.getArgs());
+		return false;
 	}
 }

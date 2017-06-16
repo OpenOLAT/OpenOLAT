@@ -55,9 +55,9 @@ public class PostgreSQLTempStatTableCreator implements IStatisticUpdater {
 		final long startTime = System.currentTimeMillis();
 		log_.info("updateStatistic: dropping o_stat_temptable if still existing");
 		try {
-			jdbcTemplate.execute("drop table o_stat_temptable;");
+			jdbcTemplate.execute("drop table if exists o_stat_temptable;");
 		} catch (Exception e) {
-			//
+			log_.error("Cannot drop the temporary table", e);
 		}
 		
 		try{
