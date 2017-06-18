@@ -58,10 +58,10 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
-import org.olat.course.nodes.members.MembersCourseNodeRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
+import org.olat.group.ui.main.AbstractMemberListController;
 import org.olat.group.ui.main.MemberListTableModel;
 import org.olat.group.ui.main.MemberListTableModel.Cols;
 import org.olat.group.ui.main.MemberView;
@@ -80,9 +80,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author fkiefer, fabian.kiefer@frentix.com, www.frentix.com
  */
 public class MembersTableController extends FormBasicController {
-	
-	public static final String USER_PROPS_ID = MembersCourseNodeRunController.class.getName();
-	public static final int USER_PROPS_OFFSET = 500;
 
 	protected FlexiTableElement membersTable;
 	protected MemberListTableModel membersModel;
@@ -250,33 +247,31 @@ public class MembersTableController extends FormBasicController {
 	}
 	
 	private SortKey initColumns(FlexiTableColumnModel columnsModel) {
+		int colPos = AbstractMemberListController.USER_PROPS_OFFSET;
 		SortKey defaultSortKey = null;
-		String editAction = "vcard";
-		
+		String rowAction = "vcard";
+				
 		if (chatEnabled && editable) {
 			DefaultFlexiColumnModel chatCol = new DefaultFlexiColumnModel(Cols.online.i18n(), Cols.online.ordinal());
 			chatCol.setExportable(false);
 			columnsModel.addFlexiColumnModel(chatCol);
 		}
 			
-		int colPos = USER_PROPS_OFFSET;
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 
 			String propName = userPropertyHandler.getName();
-			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
-			String myEditAction = editAction;
+			boolean visible = userManager.isMandatoryUserProperty(MembersDisplayRunController.USER_PROPS_LIST_ID , userPropertyHandler);
+			String emailRowAction = rowAction;
 			FlexiColumnModel col;
 			if(UserConstants.FIRSTNAME.equals(propName) || UserConstants.LASTNAME.equals(propName) || UserConstants.EMAIL.equals(propName)) {
-				if (UserConstants.EMAIL.equals(propName)) {
-					myEditAction = "email";
-					if (!canEmail) {
-						continue;
-					}
+				// when email is enabled, the action will trigger email workflow
+				if (UserConstants.EMAIL.equals(propName) && canEmail) {
+					emailRowAction = "email";
 				}
 				col = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
-						colPos, myEditAction, true, propName,
-						new StaticFlexiCellRenderer(myEditAction, new TextFlexiCellRenderer()));
+						colPos, emailRowAction, true, propName,
+						new StaticFlexiCellRenderer(emailRowAction, new TextFlexiCellRenderer()));
 			} else {
 				col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, true, propName);
 			}

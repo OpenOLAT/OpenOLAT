@@ -19,10 +19,13 @@
  */
 package org.olat.commons.memberlist.ui;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -36,6 +39,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -57,25 +61,31 @@ public class MembersPrintController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final List<UserPropertyHandler> userPropertyPrintHandlers;
 	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private DisplayPortraitManager portraitManager;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	
-	public MembersPrintController(UserRequest ureq, WindowControl wControl, List<UserPropertyHandler> userPropertyHandlers, 
-			Translator translator, List<Member> owners, List<Member> coaches, List<Member> participants, List<Member> waiting, 
-			boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, String title) {
+	public MembersPrintController(UserRequest ureq, WindowControl wControl, Translator translator, List<Member> owners,
+			List<Member> coaches, List<Member> participants, List<Member> waiting, boolean showOwners,
+			boolean showCoaches, boolean showParticipants, boolean showWaiting, String title) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(translator, getTranslator(), getLocale()));
 
-		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members-high-quality", new UserAvatarHQMapper());
-		this.userPropertyHandlers = userPropertyHandlers;
-		
 		mainVC = createVelocityContainer("print");
 		mainVC.contextPut("courseTitle", title);
+
+		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members-high-quality", new UserAvatarHQMapper());
 		mainVC.contextPut("avatarBaseURL", avatarBaseURL);
-		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_LIST_ID, isAdministrativeUser);
+		userPropertyPrintHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_PRINT_ID, isAdministrativeUser);
 		
 		if(showOwners && owners != null && owners.size() > 0) {
 			initFormMemberList("owners", translate("members.owners"), owners);
@@ -100,8 +110,17 @@ public class MembersPrintController extends BasicController {
 		listVC.contextPut("label", label);
 		listVC.contextPut("avatarBaseURL", avatarBaseURL);
 		listVC.contextPut("members", members);
-		listVC.contextPut("userPropertyHandlers", userPropertyHandlers);
 		listVC.contextPut("typecss", "o_" + name);
+
+		listVC.contextPut("userPropertyPrintHandlers", userPropertyPrintHandlers);
+		// add lookup table so the avatar properties can be read out from the member object that contains the full list of attributes
+		Map<String, Integer> handlerLookupMap = new HashMap<String, Integer>();
+		for(int i=userPropertyHandlers.size(); i-->0; ) {
+			UserPropertyHandler handler = userPropertyHandlers.get(i);
+			handlerLookupMap.put(handler.getName(), i);
+		}
+		listVC.contextPut("handlerLookupMap", handlerLookupMap);
+		
 		mainVC.put(name, listVC);
 	}
 

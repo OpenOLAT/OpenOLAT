@@ -55,8 +55,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MembersCourseNodeRunController extends BasicController {
 	
-	public static final String USER_PROPS_ID = MembersCourseNodeRunController.class.getName();
-	
 	private List<Identity> owners, coaches, participants;
 
 	private MembersDisplayRunController membersDisplayRunController;

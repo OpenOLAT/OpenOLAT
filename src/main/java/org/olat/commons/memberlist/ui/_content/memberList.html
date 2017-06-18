@@ -1,7 +1,7 @@
 #foreach($member in $members)
 	<div class="o_cmember col-xs-12 col-sm-6 col-md-4 ">
 		<div class="clearfix">
-			<div class="o_portrait pull-left">
+			<div class="o_portrait">
 				#if($member.isPortraitAvailable())
 					<img src="$r.staticLink("images/transparent.gif")" class="$member.getPortraitCssClass()" style="background-image: url('$avatarBaseURL/$member.getKey()/portrait.jpg')" alt="$r.escapeHtml("$member.getFullName()")" />
 				#else
@@ -13,6 +13,16 @@
 					$r.render($member.getChatComponentName())
 				#end
 				$r.render($member.getIdLink().getComponent().getComponentName())
+				#set ($skipNextBR=false)
+				#foreach($userPropertyHandler in $userPropertyHandlers)
+					#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName") 
+						#set ($prop=$!{member.getIdentityProp($handlerLookupMap.get($userPropertyHandler.name))})			
+						## $prop can contain value of last iteration because when null the value is not assigned to $prop - check again									
+						#if(${member.getIdentityProp($handlerLookupMap.get($userPropertyHandler.name))} && $prop != "" && $prop != "-")
+							<div class="o_prop o_${userPropertyHandler.name}">$prop</div>
+						#end
+					#end					
+				#end
 				#if($r.available($member.getEmailComponentName()))
 					$r.render($member.getEmailComponentName())
 				#end

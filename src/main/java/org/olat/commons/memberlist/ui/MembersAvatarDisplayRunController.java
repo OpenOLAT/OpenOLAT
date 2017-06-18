@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.memberlist.manager.MembersExportManager;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
@@ -63,7 +64,6 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.session.UserSessionManager;
 import org.olat.course.nodes.members.Member;
-import org.olat.course.nodes.members.MembersCourseNodeRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingModule;
@@ -90,9 +90,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author fkiefer
  */
 public class MembersAvatarDisplayRunController extends FormBasicController {
-	
+
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	public static final String USER_PROPS_ID = MembersCourseNodeRunController.class.getName();
+	private final List<UserPropertyHandler> userPropertyAvatarHandlers;
 
 	private final CourseEnvironment courseEnv;
 	private final DisplayPortraitManager portraitManager;
@@ -134,6 +134,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
 	private InstantMessagingModule imModule;
 	@Autowired
 	private InstantMessagingService imService;
@@ -156,7 +158,11 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		this.businessGroup = businessGroup;
 		this.repoEntry = courseEnv != null ? courseEnv.getCourseGroupManager().getCourseEntry() : null;
 
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, false);
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_LIST_ID, isAdministrativeUser);
+		userPropertyAvatarHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_AVATAR_ID, isAdministrativeUser);
+		
 		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(true));
 		portraitManager = DisplayPortraitManager.getInstance();
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
@@ -229,6 +235,15 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 		String page = velocity_root + "/memberList.html";
 		
 		FormLayoutContainer container = FormLayoutContainer.createCustomFormLayout(name, getTranslator(), page);
+		container.contextPut("userPropertyHandlers", userPropertyAvatarHandlers);
+		// add lookup table so the avatar properties can be read out from the member object that contains the full list of attributes
+		Map<String, Integer> handlerLookupMap = new HashMap<String, Integer>();
+		for(int i=userPropertyHandlers.size(); i-->0; ) {
+			UserPropertyHandler handler = userPropertyHandlers.get(i);
+			handlerLookupMap.put(handler.getName(), i);
+		}
+		container.contextPut("handlerLookupMap", handlerLookupMap);
+		
 		formLayout.add(name, container);
 		container.setRootForm(mainForm);
 
@@ -494,7 +509,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
-				return new MembersPrintController(lureq, lwControl, userPropertyHandlers, getTranslator(), ownerList, coachList,
+				return new MembersPrintController(lureq, lwControl, getTranslator(), ownerList, coachList,
 						participantList, waitingtList, showOwners, showCoaches, showParticipants, showWaiting, 
 						courseEnv != null ? courseEnv.getCourseTitle() : businessGroup.getName());
 			}					
