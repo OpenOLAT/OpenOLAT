@@ -69,7 +69,7 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 	
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
-		SubscriptionInfo si = null;
+		SubscriptionInfo si;
 		Publisher p = subscriber.getPublisher();
 		Date latestNews = p.getLatestNewsDate();
 		
@@ -104,7 +104,10 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 					}
 				}
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(),	new TitleItem(title, getCssClassIcon()), items);
-		 	}
+		 	} else {
+				//no news
+				si = notificationsManager.getNoSubscriptionInfo();
+			}
 		} catch (Exception e) {
 			log.error("Unknown Exception", e);
 			si = notificationsManager.getNoSubscriptionInfo();
