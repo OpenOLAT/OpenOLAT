@@ -57,7 +57,6 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.members.Member;
-import org.olat.course.nodes.members.MembersCourseNodeRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
@@ -78,8 +77,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MembersListDisplayRunController extends BasicController {
 	
-	public static final String USER_PROPS_ID = MembersCourseNodeRunController.class.getName();
-	public static final int USER_PROPS_OFFSET = 500;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private Link printLink;
 	private Link allEmailLink;
@@ -104,7 +102,6 @@ public class MembersListDisplayRunController extends BasicController {
 	private final boolean showParticipants;
 	private final boolean showWaiting;
 	
-	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final CourseEnvironment courseEnv;
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry repoEntry;
@@ -143,7 +140,10 @@ public class MembersListDisplayRunController extends BasicController {
 		this.businessGroup = businessGroup;
 		this.repoEntry = courseEnv != null ? courseEnv.getCourseGroupManager().getCourseEntry() : null;
 
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, false);
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_LIST_ID, isAdministrativeUser);
+		
 		// lists
 		this.owners = owners;
 		this.coaches = coaches;
@@ -162,7 +162,6 @@ public class MembersListDisplayRunController extends BasicController {
 		
 		IdentityEnvironment idEnv = ureq.getUserSession().getIdentityEnvironment();
 		Identity ownId = idEnv.getIdentity();
-		Roles roles = idEnv.getRoles();
 		if (editable && (roles.isOLATAdmin() || roles.isGroupManager() || owners.contains(ownId) || coaches.contains(ownId) 
 				|| (canDownload && !waiting.contains(ownId)))) {
 			downloadLink = LinkFactory.createLink(null, "download", "download", "members.download", getTranslator(), mainVC, this, Link.BUTTON);
@@ -326,7 +325,7 @@ public class MembersListDisplayRunController extends BasicController {
 			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
-				return new MembersPrintController(lureq, lwControl, userPropertyHandlers, getTranslator(), ownerList, coachList,
+				return new MembersPrintController(lureq, lwControl, getTranslator(), ownerList, coachList,
 						participantList, waitingtList, showOwners, showCoaches, showParticipants, showWaiting, 
 						courseEnv != null ? courseEnv.getCourseTitle() : businessGroup.getName());
 			}					
