@@ -440,7 +440,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			tools.setI18nKey("header.tools");
 			tools.setElementCssClass("o_sel_course_tools");
 
-			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+			if (uce != null && (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR))) {
 				boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 				boolean readOnly = uce.isCourseReadOnly();
 				editLink = LinkFactory.createToolLink("edit.cmd", translate("command.openeditor"), this, "o_icon_courseeditor");
