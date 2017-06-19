@@ -364,7 +364,11 @@ public class FeedFileStorge {
 		if (itemContainer != null) {
 			VFSLeaf leaf = (VFSLeaf) itemContainer.resolve(ITEM_FILE_NAME);
 			if (leaf != null) {
-				item = (ItemImpl) XStreamHelper.readObject(xstream, leaf.getInputStream());
+				try {
+					item = (ItemImpl) XStreamHelper.readObject(xstream, leaf.getInputStream());
+				} catch (Exception e) {
+					log.error("Item XML-File could not be read. Item container: " + leaf);
+				}
 			} else {
 				log.error("Item XML-File could not be found on file system."
 						+ " Item container: " + itemContainer.getName());
