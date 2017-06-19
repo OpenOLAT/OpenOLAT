@@ -50,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CloseRollCallConfirmationController extends FormBasicController {
 
+	private TextElement blockCommentEl;
 	private SingleSelection effectiveLecturesEl;
 	private SingleSelection effectiveEndReasonEl;
 	private TextElement effectiveEndHourEl, effectiveEndMinuteEl;
@@ -151,6 +152,10 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		if(!found) {
 			effectiveEndReasonEl.select(reasonKeyList.get(0), true);
 		}
+		
+		String blockComment = lectureBlock.getComment();
+		blockCommentEl = uifactory.addTextAreaElement("lecture.block.comment", 4, 72, blockComment, formLayout);
+		blockCommentEl.setEnabled(secCallback.canEdit());
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -166,6 +171,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		lectureBlock.setComment(blockCommentEl.getValue());
 		lectureBlock.setEffectiveLecturesNumber(lectureBlock.getPlannedLecturesNumber());//TODO
 		Date effectiveEndDate = getEffectiveEndDate();
 		if(effectiveEndDate == null) {
@@ -180,7 +186,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 				lectureBlock.setReasonEffectiveEnd(selectedReason);
 			}
 		}
-		
+
 		lectureBlock.setStatus(LectureBlockStatus.done);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
 		lectureBlock = lectureService.save(lectureBlock, null);

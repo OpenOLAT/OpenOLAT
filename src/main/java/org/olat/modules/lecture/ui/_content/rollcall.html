@@ -1,17 +1,20 @@
-$r.render("block")
-$r.render("table")
-<div class="o_button_group">
-	$r.render("cancel")
-	#if($r.available("save"))
-		$r.render("save")
-	#end
-		#if($r.available("cancel.lecture.blocks"))
-		$r.render("cancel.lecture.blocks")
-	#end
-	#if($r.available("close.lecture.blocks"))
-		$r.render("close.lecture.blocks")
-	#end
-	#if($r.available("reopen.lecture.blocks"))
-		$r.render("reopen.lecture.blocks")
-	#end
-</div>
+<fieldset>
+	<legend>$off_title</legend>
+	<div class="o_desc">$off_desc</div>
+	$r.render("table")
+	<div class="o_button_group">
+		$r.render("cancel")
+		#if($r.available("save"))
+			$r.render("save")
+		#end
+			#if($r.available("cancel.lecture.blocks"))
+			$r.render("cancel.lecture.blocks")
+		#end
+		#if($r.available("close.lecture.blocks"))
+			$r.render("close.lecture.blocks")
+		#end
+		#if($r.available("reopen.lecture.blocks"))
+			$r.render("reopen.lecture.blocks")
+		#end
+	</div>
+</fieldset>

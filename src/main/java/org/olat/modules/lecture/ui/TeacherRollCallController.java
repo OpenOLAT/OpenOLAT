@@ -84,7 +84,6 @@ public class TeacherRollCallController extends FormBasicController {
 	
 	private FlexiTableElement tableEl;
 	private TeacherRollCallDataModel tableModel;
-	private TextElement blockCommentEl;
 	private FormSubmit quickSaveButton;
 	private FormLink reopenButton, cancelLectureBlockButton, closeLectureBlocksButton;
 	
@@ -130,32 +129,38 @@ public class TeacherRollCallController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// form for the lecture block
-		FormLayoutContainer blockCont = FormLayoutContainer.createDefaultFormLayout("block", getTranslator());
-		blockCont.setRootForm(mainForm);
-		blockCont.setFormTitle(translate("lecture.block"));
-		formLayout.add("block", blockCont);
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			
+			StringBuilder sb = new StringBuilder();
+			List<Identity> teachers = lectureService.getTeachers(lectureBlock);
+			for(Identity teacher:teachers) {
+				if(sb.length() > 0) sb.append(", ");
+				sb.append(StringHelper.escapeJavaScript(userManager.getUserDisplayName(teacher)));
+			}
+			
+			Formatter formatter = Formatter.getInstance(getLocale());
+			String date = formatter.formatDate(lectureBlock.getStartDate());
+			String startTime = formatter.formatTimeShort(lectureBlock.getStartDate());
+			String endTime = formatter.formatTimeShort(lectureBlock.getEndDate());
+			
+			String[] args = new String[] {
+					lectureBlock.getTitle(),	// {0}	
+					sb.toString(),				// {1}
+					date,						// {2}
+					startTime,					// {3}
+					endTime						// {4}
+			};
 		
-		uifactory.addStaticTextElement("lecture.title", lectureBlock.getTitle(), blockCont);
-		
-		StringBuilder sb = new StringBuilder();
-		List<Identity> teachers = lectureService.getTeachers(lectureBlock);
-		for(Identity teacher:teachers) {
-			if(sb.length() > 0) sb.append(", ");
-			sb.append(userManager.getUserDisplayName(teacher));
+			layoutCont.contextPut("date", date);
+			layoutCont.contextPut("startTime", startTime);
+			layoutCont.contextPut("endTime", endTime);
+			layoutCont.contextPut("teachers", sb.toString());
+			layoutCont.contextPut("lectureBlockTitle", StringHelper.escapeJavaScript(lectureBlock.getTitle()));
+			layoutCont.contextPut("lectureBlockExternaalId", StringHelper.escapeJavaScript(lectureBlock.getExternalId()));
+			layoutCont.setFormTitle(translate("lecture.block", args));
+			layoutCont.setFormDescription(translate("lecture.block.infos", args));
 		}
-		uifactory.addStaticTextElement("lecture.teacher", sb.toString(), blockCont);
-		
-		Formatter formatter = Formatter.getInstance(getLocale());
-		String date = formatter.formatDate(lectureBlock.getStartDate());
-		String startTime = formatter.formatTimeShort(lectureBlock.getStartDate());
-		String endTime = formatter.formatTimeShort(lectureBlock.getEndDate());
-		String startEndTime= translate("lecture.from.to.format", new String[]{ startTime, endTime });
-		uifactory.addStaticTextElement("lecture.date", date + " " + startEndTime, blockCont);
-
-		String blockComment = lectureBlock.getComment();
-		blockCommentEl = uifactory.addTextElement("block.comment", "lecture.block.comment", 256, blockComment, blockCont);
-		blockCommentEl.setEnabled(secCallback.canEdit());
 		
 		// table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -229,7 +234,6 @@ public class TeacherRollCallController extends FormBasicController {
 			}
 		}
 		
-		blockCommentEl.setEnabled(secCallback.canEdit());
 		tableEl.reset(false, false, true);
 	}
 
@@ -459,7 +463,6 @@ public class TeacherRollCallController extends FormBasicController {
 		}
 
 		lectureBlock = lectureService.getLectureBlock(lectureBlock);
-		lectureBlock.setComment(blockCommentEl.getValue());
 		
 		if(lectureBlock.getRollCallStatus() == null) {
 			lectureBlock.setRollCallStatus(LectureRollCallStatus.open);
