@@ -82,6 +82,7 @@ junit and integration tests in OpenOLAT 8
 
 The Selenium tests can be run with different browser but with some limitations:
 - Chrome/Safari cannot do an upload (tests which need an upload are ignored)
+- Firefox works until version 42.
 
 * Execute a single selenium functional integration test in Eclipse
 ------------------------------------------------------------------
