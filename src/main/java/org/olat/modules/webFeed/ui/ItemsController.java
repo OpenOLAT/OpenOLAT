@@ -448,7 +448,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			// Generate new GUID for item, needed for media files that are
 			// stored relative to the GUID
 			currentItem.setGuid(CodeHelper.getGlobalForeverUniqueID());
-			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feedResource);
+			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem);
 			activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
 
 		} else if (editButtons != null && editButtons.contains(source)) {
@@ -460,8 +460,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 				if (lock.isSuccess()) {
 					// reload to prevent stale object, then launch editor
 					currentItem = feedManager.loadItem(currentItem.getKey());
-					itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem,
-							feedResource);
+					itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem);
 					activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
 				} else {
 					String fullName = userManager.getUserDisplayName(lock.getOwner());
@@ -501,7 +500,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			// Generate new GUID for item, needed for media files that are
 			// stored relative to the GUID
 			currentItem.setGuid(CodeHelper.getGlobalForeverUniqueID());
-			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem, feedResource);
+			itemFormCtr = uiFactory.createItemFormController(ureq, getWindowControl(), currentItem);
 			activateModalDialog(itemFormCtr, uiFactory.getTranslator().translate("feed.edit.item"));
 			// do logging
 			ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(),
@@ -683,7 +682,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 						} else {
 							// Write item file
 							currentItem = feedManager.updateItem(currentItem, mediaFile);
-							// Do logging
+							if (itemCtr != null) {
+								displayItemController(ureq, currentItem);
+							}
 							ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_ITEM_EDIT, getClass(),
 									LoggingResourceable.wrap(currentItem));
 						}
@@ -736,6 +737,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 		} else if (source == itemCtr) {
 			if (event == Event.BACK_EVENT) {
 				mainPanel.setContent(vcItems);
+				removeAsListenerAndDispose(itemCtr);
+				itemCtr = null;
 			}
 
 		} else if (source instanceof UserCommentsAndRatingsController) {

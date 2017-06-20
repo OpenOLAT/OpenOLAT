@@ -32,7 +32,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.AbstractFeedCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.Item;
 
@@ -78,7 +77,7 @@ public abstract class FeedUIFactory {
 		return new FeedMainController(ores, ureq, wControl, null, null, this, callback, displayConfig);
 	}
 
-	public abstract FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item currentItem, Feed feed);
+	public abstract FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item currentItem);
 
 	public abstract TabbableController createNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce, UserRequest ureq,
 			WindowControl control);

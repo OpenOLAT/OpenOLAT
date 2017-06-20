@@ -51,12 +51,7 @@ public abstract class FeedManager {
 
 	protected static FeedManager INSTANCE;
 
-	//TODO delete moved to FeedFileStorage
-	public static final String ITEMS_DIR = "items";
-	public static final String FEED_FILE_NAME = "feed.xml";
-	public static final String ITEM_FILE_NAME = "item.xml";
 	public static final String MEDIA_DIR = "media";
-	
 	public static final String RSS_FEED_NAME = "feed.rss";
 	public static final String RESOURCE_NAME = "feed";
 
@@ -64,9 +59,6 @@ public abstract class FeedManager {
 	// noun designating the feed. (See also getFeedKind().)
 	public static final String KIND_PODCAST = "podcast";
 	public static final String KIND_BLOG = "blog";
-
-	// public static final String KIND_PHOTOBLOG = "photoblog";
-	// public static final String KIND_SCREENCAST = "screencast";
 
 	/**
 	 * Use this method instead of any constructor to get the singelton object.
@@ -251,7 +243,7 @@ public abstract class FeedManager {
 	 * @return The media resource (audio or video file of the feed item)
 	 */
 	public abstract MediaResource createItemMediaFile(OLATResourceable feed, String itemId, String fileName);
-
+	
 	/**
 	 * Returns the media file of the feed
 	 * 

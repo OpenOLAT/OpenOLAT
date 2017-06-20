@@ -413,7 +413,8 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	/**
-	 * Save the media file to the file system and get the appropriate Enclosure.
+	 * Save or delete the media file to the file system and get the appropriate
+	 * Enclosure.
 	 * 
 	 * @param item
 	 * @param file
@@ -423,11 +424,18 @@ public class FeedManagerImpl extends FeedManager {
 		Enclosure enclosure = item.getEnclosure();
 		
 		if (file != null) {
-			String saveFileName = feedFileStorage.saveItemMedia(item, file);
-			enclosure = new EnclosureImpl();
-			enclosure.setFileName(saveFileName);
-			enclosure.setLength(file.getUploadSize());
-			enclosure.setType(file.getUploadMimeType());
+			if (file.isUploadSuccess()) {
+				// New uploaded file
+				enclosure = new EnclosureImpl();
+				enclosure.setLength(file.getUploadSize());
+				enclosure.setType(file.getUploadMimeType());
+				String saveFileName = feedFileStorage.saveItemMedia(item, file);
+				enclosure.setFileName(saveFileName);
+			} else if (file.getInitialFile() == null) {
+				// If no or delete initial file, delete the media file
+				feedFileStorage.deleteItemMedia(item);
+				enclosure = null;
+			}
 		}
 		
 		return enclosure;

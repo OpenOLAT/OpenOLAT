@@ -133,17 +133,17 @@ public class FeedPage {
 		By newItemButton = By.className("o_sel_feed_item_new");
 		browser.findElement(newItemButton).click();
 		OOGraphene.waitBusy(browser);
-		By postForm = By.className("o_sel_blog_form");
+		By postForm = By.className("o_sel_feed_form");
 		OOGraphene.waitElement(postForm, 1, browser);
 		return this;
 	}
 	
 	public FeedPage fillPostForm(String title, String summary, String content) {
 		//wait that the popup is available
-		By postFormBy = By.cssSelector("fieldset.o_sel_blog_form");
+		By postFormBy = By.cssSelector("fieldset.o_sel_feed_form");
 		OOGraphene.waitElement(postFormBy, 2, browser);
 
-		By titleBy = By.cssSelector("div.o_sel_blog_title input[type='text']");
+		By titleBy = By.cssSelector("div.o_sel_feed_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
 		OOGraphene.tinymce(summary, browser);
@@ -154,7 +154,7 @@ public class FeedPage {
 	}
 	
 	public FeedPage publishPost() {
-		By publishButton = By.cssSelector(".o_sel_blog_form button.btn-primary");
+		By publishButton = By.cssSelector(".o_sel_feed_form button.btn-primary");
 		browser.findElement(publishButton).click();
 		OOGraphene.waitBusy(browser);
 		return this;

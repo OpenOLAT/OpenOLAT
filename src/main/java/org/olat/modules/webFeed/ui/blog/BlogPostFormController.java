@@ -19,35 +19,14 @@
  */
 package org.olat.modules.webFeed.ui.blog;
 
-import java.util.Calendar;
-import java.util.Date;
-
-import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.vfs.Quota;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.fileresource.types.BlogFileResource;
-import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
-import org.olat.modules.webFeed.manager.FeedManager;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.olat.modules.webFeed.ui.ItemFormController;
 
 /**
  * Form controller for blog posts.
@@ -57,155 +36,35 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author gwassmann
  */
-public class BlogPostFormController extends FormBasicController {
-
-	private Item post;
-	private OLATResourceable feedOres;
+public class BlogPostFormController extends ItemFormController {
 	
-	private VFSContainer baseDir;
-	
-	private TextElement title;
-	private RichTextElement description, content;
-	private DateChooser publishDateChooser;
-	private FormLink draftLink;
-	
-	private boolean currentlyDraft;
-	
-	@Autowired
-	private NotificationsManager notificationManager;
-
-	/**
-	 * @param ureq
-	 * @param control
-	 */
-	public BlogPostFormController(UserRequest ureq, WindowControl control, Item item, Feed feed, Translator translator) {
-		super(ureq, control);
-		this.post = item;
-		this.feedOres = item.getFeed();
-		this.currentlyDraft = item.isDraft();
-		this.baseDir = FeedManager.getInstance().getItemContainer(item);
-		if(baseDir.getLocalSecurityCallback() == null) {
-			Quota quota = FeedManager.getInstance().getQuota(feed);
-			baseDir.setLocalSecurityCallback(new FullAccessWithQuotaCallback(quota));
-		}
-		setTranslator(translator);
-		initForm(ureq);
+	public BlogPostFormController(UserRequest ureq, WindowControl control, Item item, Translator translator) {
+		super(ureq, control, item, translator);
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
+	
 	@Override
-	protected void doDispose() {
-	// nothing to dispose
+	protected String getType() {
+		return BlogFileResource.TYPE_NAME;
 	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
+	
+	@Override 
+	protected boolean hasContent() {
+		return true;
+	}
+	
 	@Override
-	protected void formOK(UserRequest ureq) {
-		// Update post. It is saved by the manager.
-		setValues();
-		Long modifierKey = post.getModifierKey();
-		if(!currentlyDraft || modifierKey != null) {
-			post.setModifierKey(ureq.getIdentity().getKey());
-		} else if(currentlyDraft && !ureq.getIdentity().getKey().equals(post.getAuthorKey())) {
-			post.setModifierKey(ureq.getIdentity().getKey());
-		}
-		post.setDraft(false);
-		fireEvent(ureq, Event.CHANGED_EVENT);
-		notificationManager.markPublisherNews(BlogFileResource.TYPE_NAME, feedOres.getResourceableId().toString(), null, false);
+	protected boolean hasDraftMode() {
+		return true;
+	}
+	
+	@Override
+	protected boolean hasMandatoryMedia() {
+		return false;
 	}
 
-	/**
-	 * 
-	 */
-	private void setValues() {
-		post.setTitle(title.getValue());
-		post.setDescription(description.getValue());
-		post.setContent(content.getValue());
-		// The author is set already
-		post.setLastModified(new Date());
-		post.setPublishDate(publishDateChooser.getDate());
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formCancelled(org.olat.core.gui.UserRequest)
-	 */
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == draftLink) {
-			setValues();
-			Long modifierKey = post.getModifierKey();
-			if(!currentlyDraft ||  modifierKey != null) {
-				post.setModifierKey(ureq.getIdentity().getKey());
-			} else if(currentlyDraft && !ureq.getIdentity().getKey().equals(post.getAuthorKey())) {
-				post.setModifierKey(ureq.getIdentity().getKey());
-			}
-			post.setDraft(true);
-			fireEvent(ureq, Event.CHANGED_EVENT);
-		}
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormContextHelp("Working With Course Elements#_blog_lerner");
-		formLayout.setElementCssClass("o_sel_blog_form");
-
-		title = uifactory.addTextElement("title", "feed.title.label", 256, post.getTitle(), flc);
-		title.setElementCssClass("o_sel_blog_title");
-		title.setMandatory(true);
-		title.setNotEmptyCheck("feed.form.field.is_mandatory");
-
-		// Description
-		description = uifactory.addRichTextElementForStringData("description", "feed.form.description", post.getDescription(), 8, -1,
-				false, baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
-		description.setElementCssClass("o_sel_blog_description");
-		RichTextConfiguration descRichTextConfig = description.getEditorConfiguration();
-		// set upload dir to the media dir
-		descRichTextConfig.setFileBrowserUploadRelPath("media");
-		// disable XSS unsave buttons for movie (no media in standard profile)
-		descRichTextConfig.disableMedia();
-
-		// Content
-		content = uifactory.addRichTextElementForStringData("content", "blog.form.content", post.getContent(), 18, -1, false,
-				baseDir, null, formLayout, ureq.getUserSession(), getWindowControl());
-		content.setElementCssClass("o_sel_blog_content");
-		RichTextConfiguration richTextConfig = content.getEditorConfiguration();
-		// set upload dir to the media dir
-		richTextConfig.setFileBrowserUploadRelPath("media");
-		// disable XSS unsave buttons for movie (no media in standard profile)
-		richTextConfig.disableMedia();
-
-		Calendar cal = Calendar.getInstance(ureq.getLocale());
-		if (post.getPublishDate() != null) {
-			cal.setTime(post.getPublishDate());
-		}
-		publishDateChooser = uifactory.addDateChooser("publishDateChooser", "feed.publish.date", cal.getTime(), formLayout);
-		publishDateChooser.setNotEmptyCheck("feed.publish.date.is.required");
-		publishDateChooser.setValidDateCheck("feed.publish.date.invalid");
-		publishDateChooser.setDateChooserTimeEnabled(true);
-
-		// Submit and cancel buttons
-		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
-		formLayout.add(buttonLayout);
-
-		uifactory.addFormSubmitButton("feed.publish", buttonLayout);
-		draftLink = uifactory.addFormLink("feed.save.as.draft", buttonLayout, Link.BUTTON);
-		draftLink.addActionListener(FormEvent.ONCLICK);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		super.initForm(formLayout, listener, ureq);
 	}
 }

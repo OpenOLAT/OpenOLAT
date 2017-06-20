@@ -60,7 +60,8 @@
 			<div class="o_block_footer">
 				<div class="clearfix">
 					<ul class="o_readmore list-inline pull-right">
-						#if ( $post.getContent() && $post.getContent() != "" )
+						#if ( ($post.getContent() && $post.getContent() != "") 
+							|| ($post.getEnclosure() && $post.getEnclosure() != "" ) )
 							<li>$r.render("link.to.$post.getGuid()")</li>
 						#end
 						#if ($feed.isExternal() && $post.getExternalLink())

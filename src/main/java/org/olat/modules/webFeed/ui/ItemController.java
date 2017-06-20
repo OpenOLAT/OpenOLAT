@@ -45,8 +45,7 @@ import org.olat.modules.webFeed.Item;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
- * This Controller is responsible for displaying a singel blog item for reading
- * (and maybe commenting later).
+ * This Controller is responsible for displaying a single feed item for reading.
  * 
  * <P>
  * Initial Date: Sep 30, 2009 <br>

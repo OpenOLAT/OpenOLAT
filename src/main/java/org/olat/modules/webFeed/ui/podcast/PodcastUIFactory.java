@@ -33,7 +33,6 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.AbstractFeedCourseNode;
 import org.olat.course.nodes.feed.podcast.PodcastNodeEditController;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.ui.FeedMainController;
 import org.olat.modules.webFeed.ui.FeedUIFactory;
@@ -96,8 +95,8 @@ public class PodcastUIFactory extends FeedUIFactory {
 	}
 	
 	@Override
-	public FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item item, Feed feed) {
-		return new EpisodeFormController(ureq, wControl, item, feed, getTranslator());
+	public FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item item) {
+		return new EpisodeFormController(ureq, wControl, item, getTranslator());
 	}
 	
 	@Override
