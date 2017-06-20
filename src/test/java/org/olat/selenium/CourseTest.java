@@ -834,7 +834,7 @@ public class CourseTest {
 		String podcastNodeTitle = "Podcats-1";
 		String podcastTitle = "Podcast - " + UUID.randomUUID();
 		
-		//create a course element of type CP with the CP that we create above
+		//create a course element of type podcast
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
 		courseEditor
@@ -848,7 +848,7 @@ public class CourseTest {
 			.publish()
 			.quickPublish();
 		
-		//open the course and see the CP
+		//open the course and see the podcast
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
@@ -890,7 +890,7 @@ public class CourseTest {
 		String blogNodeTitle = "Blog-1";
 		String blogTitle = "Blog - " + UUID.randomUUID();
 		
-		//create a course element of type CP with the CP that we create above
+		//create a course element of type blog
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
 		courseEditor
@@ -904,7 +904,7 @@ public class CourseTest {
 			.publish()
 			.quickPublish();
 		
-		//open the course and see the CP
+		//open the course and see the blog
 		CoursePageFragment course = courseEditor
 			.clickToolbarBack();
 		course
@@ -929,10 +929,9 @@ public class CourseTest {
 	}
 
 	/**
-	 * An author create a course with a blog, open it, add a post.
-	 * A student open the course, see the blog post. An administrator
-	 * clears the feed cache. The author add a new post, the student
-	 * must see it.
+	 * An author create a course with a blog, open it, add a post. A student
+	 * open the course, see the blog post. The author add a new post, the
+	 * student must see it.
 	 * 
 	 * @param loginPage
 	 * @throws IOException
@@ -940,9 +939,8 @@ public class CourseTest {
 	 */
 	@Test
 	@RunAsClient
-	public void blogWithClearCache(@InitialPage LoginPage loginPage,
-			@Drone @Participant WebDriver participantDrone,
-			@Drone @Administrator WebDriver administratorDrone)
+	public void blogWithMultipleUsers(@InitialPage LoginPage loginPage,
+			@Drone @Participant WebDriver participantDrone)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1008,15 +1006,6 @@ public class CourseTest {
 			.selectWithTitle(blogNodeTitle);
 		FeedPage participantFeed = FeedPage.getFeedPage(participantDrone);
 		participantFeed.assertOnBlogPost(postTitle);
-		
-		//administrator clears the cache
-		administratorDrone.navigate().to(deploymentUrl);
-		LoginPage.getLoginPage(administratorDrone, deploymentUrl)
-			.loginAs("administrator", "openolat")
-			.resume();
-		new NavigationPage(administratorDrone)
-			.openAdministration()
-			.clearCache("FeedManager@feed");
 		
 		//the author publish a second post in its blog
 		String post2Title = "Blog-RW-2-" + UUID.randomUUID();
