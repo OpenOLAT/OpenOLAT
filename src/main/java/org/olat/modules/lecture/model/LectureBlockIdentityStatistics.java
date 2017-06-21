@@ -28,12 +28,18 @@ package org.olat.modules.lecture.model;
  */
 public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 	
+	private final String identityName;
 	private final String[] identityProps;
 	
-	public LectureBlockIdentityStatistics(Long identityKey, String[] identityProps,
+	public LectureBlockIdentityStatistics(Long identityKey, String identityName, String[] identityProps,
 			Long repoKey, String displayName, String externalRef, boolean calculateRate, double requiredRate) {
 		super(identityKey, repoKey, displayName, externalRef, calculateRate, requiredRate);
+		this.identityName = identityName;
 		this.identityProps = identityProps;
+	}
+	
+	public String getIdentityName() {
+		return identityName;
 	}
 	
 	public String[] getIdentityProps() {
@@ -41,7 +47,32 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 	}
 	
 	public String getIdentityProp(int pos) {
-		return identityProps[pos];
+		if(identityProps != null && pos >= 0 && pos < identityProps.length) {
+			return identityProps[pos];
+		}
+		return null;
 	}
-
+	
+	public LectureBlockIdentityStatistics cloneForAggregation() {
+		LectureBlockIdentityStatistics clone
+			= new LectureBlockIdentityStatistics(getIdentityKey(), identityName, identityProps, null, null, null, false, 0.0d);
+		clone.addTotalAbsentLectures(getTotalAbsentLectures());
+		clone.addTotalAttendedLectures(getTotalAttendedLectures());
+		clone.addTotalAuthorizedAbsentLectures(getTotalAuthorizedAbsentLectures());
+		clone.addTotalPlannedLectures(getTotalPlannedLectures());
+		clone.addTotalEffectiveLectures(getTotalEffectiveLectures());		
+		clone.addTotalLectureBlocks(getTotalLectureBlocks());
+		clone.addTotalPersonalPlannedLectures(getTotalPersonalPlannedLectures());
+		return clone;
+	}
+	
+	public void aggregate(LectureBlockIdentityStatistics statistics) {
+		addTotalAbsentLectures(statistics.getTotalAbsentLectures());
+		addTotalAttendedLectures(statistics.getTotalAttendedLectures());
+		addTotalAuthorizedAbsentLectures(statistics.getTotalAuthorizedAbsentLectures());
+		addTotalPlannedLectures(statistics.getTotalPlannedLectures());
+		addTotalEffectiveLectures(statistics.getTotalEffectiveLectures());		
+		addTotalLectureBlocks(statistics.getTotalLectureBlocks());
+		addTotalPersonalPlannedLectures(statistics.getTotalPersonalPlannedLectures());
+	}
 }

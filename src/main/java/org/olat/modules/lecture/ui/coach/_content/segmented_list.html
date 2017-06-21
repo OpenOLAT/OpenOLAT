@@ -1,0 +1,10 @@
+<div class="o_button_group o_button_group_right">
+	$r.render("export")
+</div>
+
+<div class="o_lectures_overviewview clearfix">
+	$r.render("segments")
+	#if($r.available("segmentCmp"))
+	<div class="o_segments_content">$r.render("segmentCmp")</div>
+	#end
+</div>

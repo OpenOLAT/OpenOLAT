@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui;
+package org.olat.modules.lecture.ui.coach;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +39,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
+import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.user.UserManager;
@@ -77,7 +79,7 @@ public class LecturesSearchFormController extends FormBasicController {
 	private RepositoryEntryLifecycleDAO lifecycleDao;
 	
 	public LecturesSearchFormController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		adminProps = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		

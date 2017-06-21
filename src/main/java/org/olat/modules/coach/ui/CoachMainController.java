@@ -44,7 +44,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.lecture.LectureModule;
-import org.olat.modules.lecture.ui.LecturesSearchController;
+import org.olat.modules.lecture.ui.coach.LecturesSearchController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 

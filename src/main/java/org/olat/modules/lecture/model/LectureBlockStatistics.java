@@ -82,7 +82,9 @@ public class LectureBlockStatistics {
 	}
 
 	public void addTotalPlannedLectures(long lectures) {
-		totalPlannedLectures += lectures;
+		if(lectures > 0) {
+			totalPlannedLectures += lectures;
+		}
 	}
 	
 	public long getTotalPersonalPlannedLectures() {
@@ -90,7 +92,9 @@ public class LectureBlockStatistics {
 	}
 	
 	public void addTotalPersonalPlannedLectures(long lectures) {
-		totalPersonalPlannedLectures += lectures;
+		if(lectures > 0) {
+			totalPersonalPlannedLectures += lectures;
+		}
 	}
 
 	public long getTotalEffectiveLectures() {
@@ -98,7 +102,9 @@ public class LectureBlockStatistics {
 	}
 
 	public void addTotalEffectiveLectures(long lectures) {
-		totalEffectiveLectures += lectures;
+		if(lectures > 0) {
+			totalEffectiveLectures += lectures;
+		}
 	}
 
 	public long getTotalAttendedLectures() {
@@ -106,7 +112,9 @@ public class LectureBlockStatistics {
 	}
 
 	public void addTotalAttendedLectures(long lectures) {
-		totalAttendedLectures += lectures;
+		if(lectures > 0) {
+			totalAttendedLectures += lectures;
+		}
 	}
 
 	public long getTotalAbsentLectures() {
@@ -122,7 +130,9 @@ public class LectureBlockStatistics {
 	}
 	
 	public void addTotalAuthorizedAbsentLectures(long lectures) {
-		totalAuthorizedAbsentLectures += lectures;
+		if(lectures > 0) {
+			totalAuthorizedAbsentLectures += lectures;
+		}
 	}
 
 	public long getTotalLectureBlocks() {
@@ -130,7 +140,9 @@ public class LectureBlockStatistics {
 	}
 
 	public void addTotalLectureBlocks(long lectures) {
-		totalLectureBlocks += lectures;
+		if(lectures > 0) {
+			totalLectureBlocks += lectures;
+		}
 	}
 
 	public double getAttendanceRate() {

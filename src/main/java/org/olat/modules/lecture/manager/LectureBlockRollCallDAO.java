@@ -354,7 +354,7 @@ public class LectureBlockRollCallDAO {
 			boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 		
 		StringBuilder sb = new StringBuilder(2048);
-		sb.append("select ident.key as participantKey, ")
+		sb.append("select ident.key as participantKey, ident.name as participantName,")
 		  .append("  call.lecturesAttendedNumber as attendedLectures,")
 		  .append("  call.lecturesAbsentNumber as absentLectures,")
 		  .append("  call.absenceAuthorized as absenceAuthorized,")
@@ -452,6 +452,7 @@ public class LectureBlockRollCallDAO {
 		for(Object[] rawObject:rawObjects) {
 			int pos = 0;//jump roll call key
 			Long identityKey = (Long)rawObject[pos++];
+			String identityName = (String)rawObject[pos++];
 			Long lecturesAttended = PersistenceHelper.extractLong(rawObject, pos++);
 			Long lecturesAbsent = PersistenceHelper.extractLong(rawObject, pos++);
 			Boolean absenceAuthorized = (Boolean)rawObject[pos++];
@@ -493,7 +494,7 @@ public class LectureBlockRollCallDAO {
 					identityProps[i] = (String)rawObject[pos++];
 				}
 				
-				entryStatistics = createIdentityStatistics(identityKey, identityProps,
+				entryStatistics = createIdentityStatistics(identityKey, identityName, identityProps,
 						repoKey, repoDisplayname, repoExternalRef,
 						overrideDefault, repoCalculateRate,  repoRequiredRate,
 						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
@@ -670,14 +671,14 @@ public class LectureBlockRollCallDAO {
 		return new LectureBlockStatistics(identityKey, entryKey, displayName, externalRef, requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
 	}
 	
-	private LectureBlockIdentityStatistics createIdentityStatistics(Long identityKey, String[] identityProps,
+	private LectureBlockIdentityStatistics createIdentityStatistics(Long identityKey, String identityName, String[] identityProps,
 			Long entryKey, String displayName, String externalRef,
 			Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,
 			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 
 		RequiredRate requiredRate = calculateRequiredRate(overrideDefault, repoCalculateRate, repoRequiredRate,
 				persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
-		return new LectureBlockIdentityStatistics(identityKey, identityProps,
+		return new LectureBlockIdentityStatistics(identityKey, identityName, identityProps,
 				entryKey, displayName, externalRef, requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
 	}
 	

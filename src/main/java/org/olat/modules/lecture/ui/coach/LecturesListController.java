@@ -17,22 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui;
+package org.olat.modules.lecture.ui.coach;
 
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Roles;
+import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
-import org.olat.modules.lecture.ui.LecturesListDataModel.StatsCols;
+import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.coach.LecturesListDataModel.StatsCols;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,10 +55,15 @@ public class LecturesListController extends FormBasicController {
 	
 	public static final int USER_PROPS_OFFSET = 500;
 	
+	private FormLink exportButton;
 	private FlexiTableElement tableEl;
 	private LecturesListDataModel tableModel;
 	
+	private final boolean showExport;
+	private final boolean showRepositoryEntry;
+	
 	private final String propsIdentifier;
+	private final boolean isAdministrativeUser;
 	private final boolean authorizedAbsenceEnabled;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<LectureBlockIdentityStatistics> statistics;
@@ -59,23 +72,39 @@ public class LecturesListController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private LectureModule lectureModule;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	
 	public LecturesListController(UserRequest ureq, WindowControl wControl,
 			List<LectureBlockIdentityStatistics> statistics,
-			List<UserPropertyHandler> userPropertyHandlers, String propsIdentifier) {
-		super(ureq, wControl, "lectures_coaching");
+			List<UserPropertyHandler> userPropertyHandlers, String propsIdentifier,
+			boolean showRepositoryEntry, boolean showExport) {
+		super(ureq, wControl, "lectures_coaching", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.statistics = statistics;
 		this.propsIdentifier = propsIdentifier;
+		this.showExport = showExport;
+		this.showRepositoryEntry = showRepositoryEntry;
 		this.userPropertyHandlers = userPropertyHandlers;
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		Roles roles = ureq.getUserSession().getRoles();
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(showExport) {
+			exportButton = uifactory.addFormLink("export", formLayout, Link.BUTTON);
+			exportButton.setIconLeftCSS("o_icon o_icon_download");
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, StatsCols.id));
+		
+		if(isAdministrativeUser) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.username));
+		}
 		
 		int colIndex = USER_PROPS_OFFSET;
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
@@ -85,7 +114,9 @@ public class LecturesListController extends FormBasicController {
 					true, userPropertyHandler.i18nColumnDescriptorLabelKey()));
 		}
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.entry));
+		if(showRepositoryEntry) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.entry));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.plannedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.attendedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.absentLectures));
@@ -107,5 +138,18 @@ public class LecturesListController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == exportButton) {
+			doExportStatistics(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doExportStatistics(UserRequest ureq) {
+		LecturesStatisticsExport export = new LecturesStatisticsExport(statistics, userPropertyHandlers, isAdministrativeUser, getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 }

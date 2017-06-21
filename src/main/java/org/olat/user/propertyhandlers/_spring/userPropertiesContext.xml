@@ -1346,7 +1346,7 @@
 					</bean>
 				</entry>
 				
-				<entry key="org.olat.modules.lecture.ui.LecturesSearchFormController">
+				<entry key="org.olat.modules.lecture.ui.coach.LecturesSearchFormController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Properties used in the user search for lectures of the coaching tool." />
 						<property name="propertyHandlers">

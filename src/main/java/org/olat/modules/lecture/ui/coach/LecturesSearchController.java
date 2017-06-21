@@ -17,9 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui;
+package org.olat.modules.lecture.ui.coach;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -32,9 +37,11 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
+import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,6 +57,7 @@ public class LecturesSearchController extends BasicController implements Activat
 	
 	private LecturesListController listCtrl;
 	private LecturesSearchFormController searchForm;
+	private LecturesListSegmentController multipleUsersCtrl;
 	
 	private final boolean admin;
 	
@@ -57,7 +65,7 @@ public class LecturesSearchController extends BasicController implements Activat
 	private LectureService lectureService;
 	
 	public LecturesSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		this.stackPanel = stackPanel;
 		Roles roles = ureq.getUserSession().getRoles();
 		admin = (roles.isUserManager() || roles.isOLATAdmin());
@@ -86,21 +94,56 @@ public class LecturesSearchController extends BasicController implements Activat
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(searchForm == source) {
 			if(event == Event.DONE_EVENT) {
+				cleanUp();
 				doSearch(ureq);
 			}	
 		} 
 		super.event(ureq, source, event);
 	}
 	
+	private void cleanUp() {
+		removeAsListenerAndDispose(multipleUsersCtrl);
+		removeAsListenerAndDispose(listCtrl);
+		multipleUsersCtrl = null;
+		listCtrl = null;
+	}
+	
 	private void doSearch(UserRequest ureq) {
+		
 		LectureStatisticsSearchParameters params = searchForm.getSearchParameters();
 		List<UserPropertyHandler> userPropertyHandlers = searchForm.getUserPropertyHandlers();
 		List<LectureBlockIdentityStatistics> statistics = lectureService
 				.getLecturesStatistics(params, userPropertyHandlers, getIdentity(), admin);
-		listCtrl = new LecturesListController(ureq, getWindowControl(), statistics,
-				userPropertyHandlers, LecturesSearchFormController.PROPS_IDENTIFIER);
-		listenTo(listCtrl);
+		
+		Set<Long> identities = statistics.stream().map(s -> s.getIdentityKey())
+			     .collect(Collectors.toSet());
+		
+		Controller ctrl;
+		if(identities.size() <= 1) {
+			listCtrl = new LecturesListController(ureq, getWindowControl(), statistics,
+					userPropertyHandlers, LecturesSearchFormController.PROPS_IDENTIFIER, true, true);
+			listenTo(listCtrl);
+			ctrl = listCtrl;
+		} else {
+			multipleUsersCtrl = new LecturesListSegmentController(ureq, getWindowControl(), statistics,
+					userPropertyHandlers, LecturesSearchFormController.PROPS_IDENTIFIER);
+			listenTo(multipleUsersCtrl);
+			ctrl = multipleUsersCtrl;
+		}
+
 		stackPanel.popUpToRootController(ureq);
-		stackPanel.pushController(translate("results"), listCtrl);
+		stackPanel.pushController(translate("results"), ctrl);
+	}
+	
+	protected static List<LectureBlockIdentityStatistics> groupByIdentity(List<LectureBlockIdentityStatistics> statistics) {
+		Map<Long,LectureBlockIdentityStatistics> groupBy = new HashMap<>();
+		for(LectureBlockIdentityStatistics statistic:statistics) {
+			if(groupBy.containsKey(statistic.getIdentityKey())){
+				groupBy.get(statistic.getIdentityKey()).aggregate(statistic);
+			} else {
+				groupBy.put(statistic.getIdentityKey(), statistic.cloneForAggregation());
+			}
+		}
+		return new ArrayList<>(groupBy.values());
 	}
 }

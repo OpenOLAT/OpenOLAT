@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui;
+package org.olat.modules.lecture.ui.coach;
 
 import java.util.List;
 
@@ -61,6 +61,8 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>{
 		if(col >= 0 && col < StatsCols.values().length) {
 			switch(StatsCols.values()[col]) {
 				case id: return row.getIdentityKey();
+				case username: return row.getIdentityName();
+				case externalRef: return row.getExternalRef();
 				case entry: return row.getDisplayName();
 				case plannedLectures: return positive(row.getTotalPersonalPlannedLectures());
 				case attendedLectures: return positive(row.getTotalAttendedLectures());
@@ -84,6 +86,8 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>{
 	
 	public enum StatsCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
+		username("table.header.username"),
+		externalRef("table.header.entry"),
 		entry("table.header.entry"),
 		plannedLectures("table.header.planned.lectures"),
 		attendedLectures("table.header.attended.lectures"),
