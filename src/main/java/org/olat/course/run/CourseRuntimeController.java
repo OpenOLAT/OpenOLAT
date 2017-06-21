@@ -1081,6 +1081,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doEfficiencyStatements(ureq);
 			} else if("Reminders".equalsIgnoreCase(type) || "RemindersLogs".equalsIgnoreCase(type)) {
 				doReminders(ureq);
+			} else if("Lectures".equalsIgnoreCase(type)) {
+				doLectures(ureq);
 			} else if("MembersMgmt".equalsIgnoreCase(type)) {
 				Activateable2 members = doMembers(ureq);
 				if(members != null) {

@@ -60,6 +60,7 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics> {
 	@Override
 	public Object getValueAt(LectureBlockStatistics row, int col) {
 		switch(LecturesCols.values()[col]) {
+			case externalRef: return row.getExternalRef();
 			case entry: return row.getDisplayName();
 			case plannedLectures: return row.getTotalPersonalPlannedLectures();
 			case attendedLectures: return row.getTotalAttendedLectures();
@@ -88,6 +89,7 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics> {
 	}
 	
 	public enum LecturesCols implements FlexiSortableColumnDef {
+		externalRef("table.header.external.ref"),
 		entry("table.header.entry"),
 		plannedLectures("table.header.planned.lectures"),
 		attendedLectures("table.header.attended.lectures"),

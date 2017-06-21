@@ -91,6 +91,7 @@ public class UserSearchForm extends FormBasicController {
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler != null) {
 				FormItem fi = userPropertyHandler.addFormItem(getLocale(), null, getClass().getCanonicalName(), false, formLayout);
+				fi.setMandatory(false);
 				// DO NOT validate email field => see OLAT-3324, OO-155, OO-222
 				if (userPropertyHandler instanceof EmailProperty && fi instanceof TextElement) {
 					TextElement textElement = (TextElement)fi;

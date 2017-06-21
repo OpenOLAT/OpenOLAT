@@ -29,6 +29,7 @@ public class LectureBlockStatistics {
 	
 	private final Long repoKey;
 	private final String displayName;
+	private final String externalRef;
 	private final Long identityKey;
 	
 	private long totalLectureBlocks = 0l;
@@ -43,9 +44,10 @@ public class LectureBlockStatistics {
 	private final boolean calculateRate;
 	private final double requiredRate;
 	
-	public LectureBlockStatistics(Long identityKey, Long repoKey, String displayName, boolean calculateRate, double requiredRate) {
+	public LectureBlockStatistics(Long identityKey, Long repoKey, String displayName, String externalRef, boolean calculateRate, double requiredRate) {
 		this.repoKey = repoKey;
 		this.displayName = displayName;
+		this.externalRef = externalRef;
 		this.identityKey = identityKey;
 		this.calculateRate = calculateRate;
 		this.requiredRate = requiredRate;
@@ -57,6 +59,10 @@ public class LectureBlockStatistics {
 
 	public String getDisplayName() {
 		return displayName;
+	}
+	
+	public String getExternalRef() {
+		return externalRef;
 	}
 	
 	public Long getIdentityKey() {

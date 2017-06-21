@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -45,6 +46,7 @@ public class TeacherRollCallRow extends UserPropertiesRow {
 	private LectureBlockRollCall rollCall;
 	private MultipleSelectionElement[] checks;
 	private MultipleSelectionElement authorizedAbsence;
+	private LectureBlockRollCallStatusItem rollCallStatusEl;
 	private FormLayoutContainer authorizedAbsenceCont;
 	
 	public TeacherRollCallRow(LectureBlockRollCall rollCall, Identity identity, List<UserPropertyHandler> propertyHandlers, Locale locale) {
@@ -123,4 +125,11 @@ public class TeacherRollCallRow extends UserPropertiesRow {
 		this.commentEl = commentEl;
 	}
 
+	public LectureBlockRollCallStatusItem getRollCallStatusEl() {
+		return rollCallStatusEl;
+	}
+
+	public void setRollCallStatusEl(LectureBlockRollCallStatusItem rollCallStatusEl) {
+		this.rollCallStatusEl = rollCallStatusEl;
+	}
 }

@@ -271,6 +271,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  block.endDate as rollCallEndDate,")
 		  .append("  re.key as repoKey,")
 		  .append("  re.displayname as repoDisplayName,")
+		  .append("  re.externalRef as repoExternalRef,")
 		  .append("  config.overrideModuleDefault as overrideDef,")
 		  .append("  config.calculateAttendanceRate as calculateRate,")
 		  .append("  config.requiredAttendanceRate as repoConfigRate,")//rate enabled
@@ -316,6 +317,7 @@ public class LectureBlockRollCallDAO {
 
 			Long repoKey = PersistenceHelper.extractLong(rawObject, pos++);
 			String repoDisplayname = (String)rawObject[pos++];
+			String repoExternalRef = (String)rawObject[pos++];
 
 			Boolean overrideDefault = (Boolean)rawObject[pos++];
 			Boolean repoCalculateRate = (Boolean)rawObject[pos++];
@@ -327,7 +329,7 @@ public class LectureBlockRollCallDAO {
 			if(stats.containsKey(repoKey)) {
 				entryStatistics = stats.get(repoKey);
 			} else {
-				entryStatistics = create(identity.getKey(), repoKey, repoDisplayname,
+				entryStatistics = create(identity.getKey(), repoKey, repoDisplayname, repoExternalRef,
 						overrideDefault, repoCalculateRate,  repoRequiredRate,
 						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
 				stats.put(repoKey, entryStatistics);
@@ -365,6 +367,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  block.endDate as rollCallEndDate,")
 		  .append("  re.key as repoKey,")
 		  .append("  re.displayname as repoDisplayName,")
+		  .append("  re.externalRef as repoExternalRef,")
 		  .append("  config.overrideModuleDefault as overrideDef,")
 		  .append("  config.calculateAttendanceRate as calculateRate,")
 		  .append("  config.requiredAttendanceRate as repoConfigRate,")//rate enabled
@@ -467,6 +470,7 @@ public class LectureBlockRollCallDAO {
 			//entry and config
 			Long repoKey = PersistenceHelper.extractLong(rawObject, pos++);
 			String repoDisplayname = (String)rawObject[pos++];
+			String repoExternalRef = (String)rawObject[pos++];
 			boolean overrideDefault = PersistenceHelper.extractBoolean(rawObject, pos++, false);
 			Boolean repoCalculateRate = (Boolean)rawObject[pos++];
 			Double repoRequiredRate = (Double)rawObject[pos++];
@@ -490,7 +494,7 @@ public class LectureBlockRollCallDAO {
 				}
 				
 				entryStatistics = createIdentityStatistics(identityKey, identityProps,
-						repoKey, repoDisplayname,
+						repoKey, repoDisplayname, repoExternalRef,
 						overrideDefault, repoCalculateRate,  repoRequiredRate,
 						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
 				stats.put(memberKey, entryStatistics);
@@ -613,7 +617,8 @@ public class LectureBlockRollCallDAO {
 			if(stats.containsKey(identityKey)) {
 				entryStatistics = stats.get(identityKey);
 			} else {
-				entryStatistics = create(identityKey, entry.getKey(), entry.getDisplayname(),
+				entryStatistics = create(identityKey,
+						entry.getKey(), entry.getDisplayname(), entry.getExternalRef(),
 						config.isOverrideModuleDefault(), repoCalculateRate,  repoRequiredRate,
 						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
 				stats.put(identityKey, entryStatistics);
@@ -656,23 +661,24 @@ public class LectureBlockRollCallDAO {
 		}
 	}
 	
-	private LectureBlockStatistics create(Long identityKey, Long entryKey, String displayName,
+	private LectureBlockStatistics create(Long identityKey, Long entryKey, String displayName, String externalRef,
 			Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,
 			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 
 		RequiredRate requiredRate = calculateRequiredRate(overrideDefault, repoCalculateRate, repoRequiredRate,
 				persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
-		return new LectureBlockStatistics(identityKey, entryKey, displayName, requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
+		return new LectureBlockStatistics(identityKey, entryKey, displayName, externalRef, requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
 	}
 	
-	private LectureBlockIdentityStatistics createIdentityStatistics(Long identityKey, String[] identityProps, Long entryKey, String displayName,
+	private LectureBlockIdentityStatistics createIdentityStatistics(Long identityKey, String[] identityProps,
+			Long entryKey, String displayName, String externalRef,
 			Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,
 			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 
 		RequiredRate requiredRate = calculateRequiredRate(overrideDefault, repoCalculateRate, repoRequiredRate,
 				persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
 		return new LectureBlockIdentityStatistics(identityKey, identityProps,
-				entryKey, displayName, requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
+				entryKey, displayName, externalRef, requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
 	}
 	
 	private RequiredRate calculateRequiredRate(Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,

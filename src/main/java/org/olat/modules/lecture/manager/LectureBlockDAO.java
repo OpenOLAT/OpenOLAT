@@ -360,7 +360,7 @@ public class LectureBlockDAO {
 				.getResultList();
 	}
 	
-	public List<LectureBlock> loadOpenBlocksBefore(Date endDate) {
+	public List<LectureBlockImpl> loadOpenBlocksBefore(Date endDate) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select block from lectureblock block")
 		  .append(" left join fetch block.reasonEffectiveEnd reason")
@@ -368,7 +368,7 @@ public class LectureBlockDAO {
 		  .append(" where block.endDate<=:endDate and block.rollCallStatusString in ('").append(LectureRollCallStatus.open.name()).append("')");
 
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), LectureBlock.class)
+				.createQuery(sb.toString(), LectureBlockImpl.class)
 				.setParameter("endDate", endDate, TemporalType.TIMESTAMP)
 				.getResultList();
 	}

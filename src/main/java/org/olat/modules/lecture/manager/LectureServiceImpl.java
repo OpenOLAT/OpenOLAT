@@ -46,6 +46,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -209,8 +210,19 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	}
 
 	@Override
-	public void deleteLectureBlock(LectureBlock block) {
-		lectureBlockDao.delete(block);
+	public void deleteLectureBlock(LectureBlock lectureBlock) {
+		//first remove events
+		LectureBlock reloadedBlock = lectureBlockDao.loadByKey(lectureBlock.getKey());
+		RepositoryEntry entry = reloadedBlock.getEntry();
+		RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(entry);
+		if(ConfigurationHelper.isSyncCourseCalendarEnabled(config, lectureModule)) {
+			unsyncCourseCalendar(lectureBlock, entry);
+		}
+		if(ConfigurationHelper.isSyncTeacherCalendarEnabled(config, lectureModule)) {
+			List<Identity> teachers = getTeachers(reloadedBlock);
+			unsyncInternalCalendar(reloadedBlock, teachers);
+		}
+		lectureBlockDao.delete(reloadedBlock);
 	}
 
 	@Override
@@ -289,6 +301,24 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 
 	@Override
 	public List<Identity> startLectureBlock(Identity teacher, LectureBlock lectureBlock) {
+		RepositoryEntry entry = lectureBlock.getEntry();
+		Date now = new Date();
+
+		List<ParticipantAndLectureSummary> participantsAndSummaries = lectureParticipantSummaryDao.getLectureParticipantSummaries(lectureBlock);
+		Set<Identity> participants = new HashSet<>();
+		for(ParticipantAndLectureSummary participantAndSummary:participantsAndSummaries) {
+			if(participants.contains(participantAndSummary.getIdentity())) {
+				continue;
+			}
+			if(participantAndSummary.getSummary() == null) {
+				lectureParticipantSummaryDao.createSummary(entry, participantAndSummary.getIdentity(), now);
+			}
+			participants.add(participantAndSummary.getIdentity());
+		}
+		return new ArrayList<>(participants);
+	}
+	
+	public List<Identity> syncParticipantSummaries(LectureBlock lectureBlock) {
 		RepositoryEntry entry = lectureBlock.getEntry();
 		Date now = new Date();
 
@@ -410,21 +440,22 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 			cal.setTime(now);
 			cal.add(Calendar.DATE, -period);
 			Date endDate = cal.getTime();
-			List<LectureBlock> blocks = lectureBlockDao.loadOpenBlocksBefore(endDate);
-			for(LectureBlock block:blocks) {
+			List<LectureBlockImpl> blocks = lectureBlockDao.loadOpenBlocksBefore(endDate);
+			for(LectureBlockImpl block:blocks) {
 				autoClose(block);
 				dbInstance.commitAndCloseSession();
 			}
 		}
 	}
 	
-	private void autoClose(LectureBlock lectureBlock) {
+	private void autoClose(LectureBlockImpl lectureBlock) {
 		lectureBlock.setStatus(LectureBlockStatus.done);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.autoclosed);
 		if(lectureBlock.getEffectiveLecturesNumber() < 0) {
 			lectureBlock.setEffectiveLecturesNumber(lectureBlock.getPlannedLecturesNumber());
 		}
-		lectureBlock = lectureBlockDao.update(lectureBlock);
+		lectureBlock.setAutoClosedDate(new Date());
+		lectureBlock = (LectureBlockImpl)lectureBlockDao.update(lectureBlock);
 		
 		List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(lectureBlock);
 		Map<Identity,LectureBlockRollCall> rollCallMap = rollCalls.stream().collect(Collectors.toMap(r -> r.getIdentity(), r -> r));
@@ -627,7 +658,13 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 			unsyncTeachersCalendar(entry);
 		}
 		
-		if(ConfigurationHelper.isSyncParticipantCalendarEnabled(config, lectureModule)) {
+		if(ConfigurationHelper.isSyncCourseCalendarEnabled(config, lectureModule)) {
+			fullSyncCourseCalendar(config.getEntry());
+		} else {
+			unsyncInternalCalendar(config.getEntry());
+		}
+		
+		/*if(ConfigurationHelper.isSyncParticipantCalendarEnabled(config, lectureModule)) {
 			List<LectureBlock> blocks = getLectureBlocks(entry);
 			for(LectureBlock block:blocks) {
 				List<Identity> participants = getParticipants(block);
@@ -635,7 +672,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 			}
 		} else {
 			unsyncParticipantsCalendar(entry);
-		}
+		}*/
 	}
 
 	@Override
@@ -648,53 +685,133 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 			List<Identity> teachers = getTeachers(lectureBlock);
 			unsyncInternalCalendar(lectureBlock, teachers);
 		}
+
+		if(ConfigurationHelper.isSyncCourseCalendarEnabled(config, lectureModule)) {
+			syncCourseCalendar(lectureBlock, config.getEntry());
+		} else {
+			unsyncCourseCalendar(lectureBlock, config.getEntry());
+		}
 		
-		if(ConfigurationHelper.isSyncParticipantCalendarEnabled(config, lectureModule)) {
+		/*if(ConfigurationHelper.isSyncParticipantCalendarEnabled(config, lectureModule)) {
 			List<Identity> participants = getParticipants(lectureBlock);
 			syncInternalCalendar(lectureBlock, participants);
 		} else {
 			List<Identity> participants = getParticipants(lectureBlock);
 			unsyncInternalCalendar(lectureBlock, participants);
+		}*/
+	}
+	
+
+	private void syncCourseCalendar(LectureBlock lectureBlock, RepositoryEntry entry) {
+		Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_COURSE, entry.getOlatResource().getResourceableId().toString());
+		syncEvent(lectureBlock, entry, cal);
+	}
+	
+	private void unsyncCourseCalendar(LectureBlock lectureBlock, RepositoryEntry entry) {
+		Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_COURSE, entry.getOlatResource().getResourceableId().toString());
+		unsyncEvent(lectureBlock, entry, cal);
+	}
+	
+	private void fullSyncCourseCalendar(RepositoryEntry entry) {
+		List<LectureBlock> blocks = getLectureBlocks(entry);
+		Map<String, LectureBlock> externalIds = blocks.stream()
+				.collect(Collectors.toMap(b -> generateExternalId(b, entry), b -> b));
+		
+		Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_COURSE, entry.getOlatResource().getResourceableId().toString());
+		String prefix = generateExternalIdPrefix(entry);
+		
+		List<KalendarEvent> events = new ArrayList<>(cal.getEvents());
+		for(KalendarEvent event:events) {
+			String externalId = event.getExternalId();
+			if(StringHelper.containsNonWhitespace(externalId) && externalId.startsWith(prefix)) {
+				if(externalIds.containsKey(externalId)) {
+					if(updateEvent(externalIds.get(externalId), event)) {
+						calendarMgr.updateEventFrom(cal, event);
+					}
+					externalIds.remove(externalId);
+				} else {
+					calendarMgr.removeEventFrom(cal, event);
+				}
+			}
+		}
+		
+		// add new calendar events
+		List<KalendarEvent> eventsToAdd = new ArrayList<>();
+		for(Map.Entry<String, LectureBlock> entryToAdd:externalIds.entrySet()) {
+			eventsToAdd.add(createEvent(entryToAdd.getValue(), entry));
+		}
+		if(eventsToAdd.size() > 0) {
+			calendarMgr.addEventTo(cal, eventsToAdd);
+		}
+	}
+	
+	private void unsyncInternalCalendar(RepositoryEntry entry) {
+		Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_COURSE, entry.getOlatResource().getResourceableId().toString());
+		String prefix = generateExternalIdPrefix(entry);
+		List<KalendarEvent> events = new ArrayList<>(cal.getEvents());
+		for(KalendarEvent event:events) {
+			String externalId = event.getExternalId();
+			if(StringHelper.containsNonWhitespace(externalId) && externalId.startsWith(prefix)) {
+				calendarMgr.removeEventFrom(cal, event);
+			}
 		}
 	}
 	
 	private void syncInternalCalendar(LectureBlock lectureBlock, List<Identity> identities) {
 		RepositoryEntry entry = lectureBlock.getEntry();
-		String eventExternalId = generateExternalId(lectureBlock, entry);
 		for(Identity identity:identities) {
-			boolean updated = false;
-			
 			Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_USER, identity.getName());
-			for(KalendarEvent event:cal.getEvents()) {
-				if(eventExternalId.equals(event.getExternalId())) {
-					if(updateEvent(lectureBlock, event)) {
-						calendarMgr.updateEventFrom(cal, event);
-					}
-					updated = true;
-					break;
-				}
-			}
-			
-			if(!updated) {
-				KalendarEvent newEvent = createEvent(lectureBlock, entry);
-				calendarMgr.addEventTo(cal, newEvent);
-			}
+			syncEvent(lectureBlock, entry, cal);
 			lectureParticipantSummaryDao.updateCalendarSynchronization(entry, identity);
 		}
 	}
 	
+	/**
+	 * Try to update the vent. If there is not an event with
+	 * the right external identifier, it returns false and do nothing.
+	 * 
+	 * @param lectureBlock
+	 * @param eventExternalId
+	 * @param cal
+	 * @return
+	 */
+	private boolean syncEvent(LectureBlock lectureBlock, RepositoryEntry entry, Kalendar cal) {
+		boolean updated = false;
+		String eventExternalId = generateExternalId(lectureBlock, entry);
+		
+		for(KalendarEvent event:cal.getEvents()) {
+			if(eventExternalId.equals(event.getExternalId())) {
+				if(updateEvent(lectureBlock, event)) {
+					calendarMgr.updateEventFrom(cal, event);
+				}
+				return true;
+			}
+		}
+		
+		if(!updated) {
+			KalendarEvent newEvent = createEvent(lectureBlock, entry);
+			calendarMgr.addEventTo(cal, newEvent);
+		}
+		
+		return true;
+	}
+	
 	private void unsyncInternalCalendar(LectureBlock lectureBlock, List<Identity> identities) {
 		RepositoryEntry entry = lectureBlock.getEntry();
-		String externalId = generateExternalId(lectureBlock, entry);
 		for(Identity identity:identities) {
 			Kalendar cal = calendarMgr.getCalendar(CalendarManager.TYPE_USER, identity.getName());
-			List<KalendarEvent> events = new ArrayList<>(cal.getEvents());
-			for(KalendarEvent event:events) {
-				if(externalId.equals(event.getExternalId())) {
-					calendarMgr.removeEventFrom(cal, event);
-				}
-			}
+			unsyncEvent(lectureBlock, entry, cal);
 			lectureParticipantSummaryDao.updateCalendarSynchronization(entry, identity);
+		}
+	}
+	
+	private void unsyncEvent(LectureBlock lectureBlock, RepositoryEntry entry, Kalendar cal) {
+		String externalId = generateExternalId(lectureBlock, entry);
+		List<KalendarEvent> events = new ArrayList<>(cal.getEvents());
+		for(KalendarEvent event:events) {
+			if(externalId.equals(event.getExternalId())) {
+				calendarMgr.removeEventFrom(cal, event);
+			}
 		}
 	}
 	
@@ -703,10 +820,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		unsyncInternalCalendar(entry, teachers);
 	}
 	
+	/*
 	private void unsyncParticipantsCalendar(RepositoryEntry entry) {
 		List<Identity> participants = getParticipants(entry);
 		unsyncInternalCalendar(entry, participants);
 	}
+	*/
 	
 	private void unsyncInternalCalendar(RepositoryEntry entry, List<Identity> identities) {
 		String prefix = generateExternalIdPrefix(entry);

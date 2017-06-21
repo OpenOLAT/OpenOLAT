@@ -41,7 +41,7 @@ public class RepositoryEntryLectureConfigurationVO {
 	private Boolean calculateAttendanceRate;
 	private Double requiredAttendanceRate;
 	private Boolean teacherCalendarSyncEnabled;
-	private Boolean participantCalendarSyncEnabled;
+	private Boolean courseCalendarSyncEnabled;
 	
 	
 	public RepositoryEntryLectureConfigurationVO() {
@@ -55,7 +55,7 @@ public class RepositoryEntryLectureConfigurationVO {
 		calculateAttendanceRate = config.getCalculateAttendanceRate();
 		requiredAttendanceRate = config.getRequiredAttendanceRate();
 		teacherCalendarSyncEnabled = config.getTeacherCalendarSyncEnabled();
-		participantCalendarSyncEnabled = config.getParticipantCalendarSyncEnabled();
+		courseCalendarSyncEnabled = config.getCourseCalendarSyncEnabled();
 	}
 	
 	public Boolean getLectureEnabled() {
@@ -105,12 +105,12 @@ public class RepositoryEntryLectureConfigurationVO {
 	public void setTeacherCalendarSyncEnabled(Boolean teacherCalendarSyncEnabled) {
 		this.teacherCalendarSyncEnabled = teacherCalendarSyncEnabled;
 	}
-	
-	public Boolean getParticipantCalendarSyncEnabled() {
-		return participantCalendarSyncEnabled;
+
+	public Boolean getCourseCalendarSyncEnabled() {
+		return courseCalendarSyncEnabled;
 	}
-	
-	public void setParticipantCalendarSyncEnabled(Boolean participantCalendarSyncEnabled) {
-		this.participantCalendarSyncEnabled = participantCalendarSyncEnabled;
+
+	public void setCourseCalendarSyncEnabled(Boolean courseCalendarSyncEnabled) {
+		this.courseCalendarSyncEnabled = courseCalendarSyncEnabled;
 	}
 }

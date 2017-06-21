@@ -63,4 +63,8 @@ public interface RepositoryEntryLectureConfiguration extends CreateInfo, Modifie
 
 	public void setParticipantCalendarSyncEnabled(Boolean participantCalendarSyncEnabled);
 	
+	public Boolean getCourseCalendarSyncEnabled();
+
+	public void setCourseCalendarSyncEnabled(Boolean courseCalendarSyncEnabled);
+	
 }

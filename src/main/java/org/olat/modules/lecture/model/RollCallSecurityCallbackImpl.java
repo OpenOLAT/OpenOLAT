@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.model;
 
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.RollCallSecurityCallback;
@@ -51,7 +52,7 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 
 	@Override
 	public boolean canEdit() {
-		if(isClosed()) return false;
+		if(isClosed() || isCancelled()) return false;
 		return (repoAdmin || teacher) && isBlockEditable();
 	}
 
@@ -69,7 +70,7 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 
 	@Override
 	public boolean canEditAuthorizedAbsences() {
-		if(isClosed()) return false;
+		if(isClosed() || isCancelled()) return false;
 		boolean autorizedAbsenceAllowed = lectureModule.isAuthorizedAbsenceEnabled();
 		if(autorizedAbsenceAllowed) {
 			if(repoAdmin) {
@@ -82,18 +83,22 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 
 	@Override
 	public boolean canEditAbsences() {
-		if(isClosed()) return false;
+		if(isClosed() || isCancelled()) return false;
 		return repoAdmin || (teacher && isBlockEditable());
 	}
 	
 	@Override
 	public boolean canReopen() {
-		return repoAdmin && isClosed();
+		return repoAdmin && (isClosed() || isCancelled());
 	}
 
 	private boolean isBlockEditable() {
 		return lectureBlock.getRollCallStatus() == LectureRollCallStatus.open
 			|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.reopen;
+	}
+	
+	private boolean isCancelled() {
+		return lectureBlock.getStatus() == LectureBlockStatus.cancelled;
 	}
 	
 	private boolean isClosed() {

@@ -82,6 +82,7 @@ create table o_lecture_block (
   l_planned_lectures_num bigint not null default 0,
   l_effective_lectures_num bigint not null default 0,
   l_effective_lectures varchar(128),
+  l_auto_close_date datetime default null,
   l_status varchar(16) not null,
   l_roll_call_status varchar(16) not null,
   fk_reason bigint,
@@ -180,6 +181,7 @@ create table o_lecture_entry_config (
   l_required_attendance_rate float(65,30) default null,
   l_sync_calendar_teacher bit default null,
   l_sync_calendar_participant bit default null,
+  l_sync_calendar_course bit default null,
   fk_entry bigint not null,
   unique(fk_entry),
   primary key (id)

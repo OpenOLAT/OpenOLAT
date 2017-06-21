@@ -62,6 +62,7 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.ui.TeacherRollCallDataModel.RollCols;
+import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +99,8 @@ public class TeacherRollCallController extends FormBasicController {
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private RollCallSecurityCallback secCallback;
+	private final boolean authorizedAbsenceEnabled;
+	private final boolean absenceDefaultAuthorized;
 	
 	private List<Identity> participants;
 	
@@ -122,6 +125,9 @@ public class TeacherRollCallController extends FormBasicController {
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
+
+		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		
 		initForm(ureq);
 		loadModel();
@@ -158,6 +164,8 @@ public class TeacherRollCallController extends FormBasicController {
 			layoutCont.contextPut("teachers", sb.toString());
 			layoutCont.contextPut("lectureBlockTitle", StringHelper.escapeJavaScript(lectureBlock.getTitle()));
 			layoutCont.contextPut("lectureBlockExternaalId", StringHelper.escapeJavaScript(lectureBlock.getExternalId()));
+			layoutCont.contextPut("lectureBlock",lectureBlock);
+			layoutCont.contextPut("lectureBlockOptional", !lectureBlock.isCompulsory());
 			layoutCont.setFormTitle(translate("lecture.block", args));
 			layoutCont.setFormDescription(translate("lecture.block.infos", args));
 		}
@@ -181,6 +189,8 @@ public class TeacherRollCallController extends FormBasicController {
 		}
 		
 		if(lectureBlock.isCompulsory()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.status));
+			
 			for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
 				FlexiColumnModel col = new DefaultFlexiColumnModel("table.header.lecture." + (i+1), i + CHECKBOX_OFFSET, true, "lecture." + (i+1));
 				columnsModel.addFlexiColumnModel(col);
@@ -274,6 +284,10 @@ public class TeacherRollCallController extends FormBasicController {
 			flc.add(check);
 		}
 		row.setChecks(checks);
+		
+		LectureBlockRollCallStatusItem statusEl = new LectureBlockRollCallStatusItem("status_".concat(Integer.toString(++counter)),
+				row, authorizedAbsenceEnabled, absenceDefaultAuthorized, getTranslator());
+		row.setRollCallStatusEl(statusEl);
 		
 		if(secCallback.canEditAuthorizedAbsences() || secCallback.canViewAuthorizedAbsences()) {
 			String page = velocity_root + "/authorized_absence_cell.html";
@@ -378,21 +392,17 @@ public class TeacherRollCallController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 
-		boolean fullValidation = false;
-		// table
-		if(fullValidation) {
-			for(int i=tableModel.getRowCount(); i-->0; ) {
-				TeacherRollCallRow row = tableModel.getObject(i);
-				row.getAuthorizedAbsence().clearError();
-				
-				if(row.getRollCall() == null) {
-					//??? stop?
-				} else {
-					String reason = row.getRollCall().getAbsenceReason();
-					if(row.getAuthorizedAbsence().isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(reason)) {
-						row.getAuthorizedAbsence().setErrorKey("error.reason.mandatory", null);
-						allOk &= false;
-					}
+		for(int i=tableModel.getRowCount(); i-->0; ) {
+			TeacherRollCallRow row = tableModel.getObject(i);
+			row.getAuthorizedAbsence().clearError();
+			
+			if(row.getRollCall() == null) {
+				//??? stop?
+			} else {
+				String reason = row.getRollCall().getAbsenceReason();
+				if(row.getAuthorizedAbsence().isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(reason)) {
+					row.getAuthorizedAbsence().setErrorKey("error.reason.mandatory", null);
+					allOk &= false;
 				}
 			}
 		}
@@ -422,8 +432,10 @@ public class TeacherRollCallController extends FormBasicController {
 		} else if(reopenButton == source) {
 			doReopen(ureq);
 		} else if(closeLectureBlocksButton == source) {
-			saveLectureBlocks();
-			doConfirmCloseLectureBlock(ureq);
+			if(validateFormLogic(ureq)) {
+				saveLectureBlocks();
+				doConfirmCloseLectureBlock(ureq);
+			}
 		} else if(cancelLectureBlockButton == source) {
 			saveLectureBlocks();
 			doConfirmCancelLectureBlock(ureq);
@@ -493,6 +505,7 @@ public class TeacherRollCallController extends FormBasicController {
 			check.select(onKeys[0], true);
 		}
 		row.setRollCall(rollCall);
+		row.getRollCallStatusEl().getComponent().setDirty(true);
 		tableEl.reloadData();
 		flc.setDirty(true);
 	}
@@ -508,6 +521,7 @@ public class TeacherRollCallController extends FormBasicController {
 			rollCall = lectureService.removeRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), indexList);
 		}
 		row.setRollCall(rollCall);	
+		row.getRollCallStatusEl().getComponent().setDirty(true);
 	}
 	
 	private void doAuthorizedAbsence(TeacherRollCallRow row, MultipleSelectionElement check) {
@@ -523,6 +537,7 @@ public class TeacherRollCallController extends FormBasicController {
 		row.getAuthorizedAbsenceCont().setDirty(true);
 		row.getAuthorizedAbsence().clearError();
 		row.setRollCall(rollCall);
+		row.getRollCallStatusEl().getComponent().setDirty(true);
 	}
 	
 	private void doCalloutReasonAbsence(UserRequest ureq, FormLink link, TeacherRollCallRow row) {

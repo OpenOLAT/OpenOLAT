@@ -129,6 +129,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		}
 	
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.externalRef, "open.course"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.entry, "open.course"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.plannedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.attendedLectures));

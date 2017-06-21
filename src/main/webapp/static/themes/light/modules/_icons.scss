@@ -487,6 +487,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_lectures_pending:before { content: $fa-var-circle; color: $brand-danger; }
 .o_lectures_closed:before { content: $fa-var-circle; }
 
+.o_lectures_rollcall_ok:before { content: $fa-var-circle; color: $brand-success; }
+.o_lectures_rollcall_warning:before { content: $fa-var-adjust; color: $brand-warning; }
+.o_lectures_rollcall_danger:before { content: $fa-var-circle-o; color: $brand-danger; }
+.o_lectures_rollcall_free:before { content: $fa-var-circle; color: #969696; }
+
 /* coaching */
 .o_black_led:before { content: $fa-var-circle; color: $brand-primary; }
 .o_green_led:before { content: $fa-var-circle; color: $brand-success; }

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -61,7 +63,7 @@ import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.ui.ParticipantLectureBlocksDataModel.ParticipantCols;
-import org.olat.modules.lecture.ui.component.CompulsoryStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -145,7 +147,6 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.compulsory, new CompulsoryStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.date, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.entry));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.lectureBlock));
@@ -156,6 +157,8 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		if(authorizedAbsenceEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.authorizedAbsentLectures));
 		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.status,
+				new LectureBlockRollCallStatusCellRenderer(authorizedAbsenceEnabled, absenceDefaultAuthorized)));
 
 		if(appealEnabled && withAppeal && assessedIdentity.equals(getIdentity())) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("appeal", ParticipantCols.appeal.ordinal(), "appeal",
@@ -173,6 +176,11 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		tableEl.setCustomizeColumns(withPrint);
 		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-roll-call-appeal");
 		tableEl.setEmtpyTableMessageKey("empty.repository.entry.lectures");
+		
+		List<FlexiTableFilter> filters = new ArrayList<>();
+		filters.add(new FlexiTableFilter(translate("filter.showAll"), "showAll", true));
+		filters.add(new FlexiTableFilter(translate("filter.mandatory"), "mandatory"));
+		tableEl.setFilters("", filters, false);
 	}
 	
 	private void loadModel() {

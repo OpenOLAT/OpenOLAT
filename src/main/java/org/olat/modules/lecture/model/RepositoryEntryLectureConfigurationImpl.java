@@ -80,6 +80,8 @@ public class RepositoryEntryLectureConfigurationImpl implements Persistable, Rep
 	private Boolean teacherCalendarSyncEnabled;
 	@Column(name="l_sync_calendar_participant", nullable=true, insertable=true, updatable=true)
 	private Boolean participantCalendarSyncEnabled;
+	@Column(name="l_sync_calendar_course", nullable=true, insertable=true, updatable=true)
+	private Boolean courseCalendarSyncEnabled;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_entry", nullable=false, insertable=true, updatable=false, unique=true)
@@ -177,6 +179,16 @@ public class RepositoryEntryLectureConfigurationImpl implements Persistable, Rep
 	@Override
 	public void setParticipantCalendarSyncEnabled(Boolean participantCalendarSyncEnabled) {
 		this.participantCalendarSyncEnabled = participantCalendarSyncEnabled;
+	}
+
+	@Override
+	public Boolean getCourseCalendarSyncEnabled() {
+		return courseCalendarSyncEnabled;
+	}
+
+	@Override
+	public void setCourseCalendarSyncEnabled(Boolean courseCalendarSyncEnabled) {
+		this.courseCalendarSyncEnabled = courseCalendarSyncEnabled;
 	}
 
 	@Override

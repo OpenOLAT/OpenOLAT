@@ -33,15 +33,17 @@ public class LectureBlockRow implements LectureBlockRef {
 	
 	private final String teachers;
 	private final boolean iamTeacher;
+	private final String entryExternalRef;
 	private final String entryDisplayname;
 	private final LectureBlock lectureBlock;
 	
 	private FormLink toolsLink;
 	
-	public LectureBlockRow(LectureBlock lectureBlock, String entryDisplayname, String teachers, boolean iamTeacher) {
+	public LectureBlockRow(LectureBlock lectureBlock, String entryDisplayname, String externalRef, String teachers, boolean iamTeacher) {
 		this.lectureBlock = lectureBlock;
 		this.teachers = teachers;
 		this.iamTeacher = iamTeacher;
+		this.entryExternalRef = externalRef;
 		this.entryDisplayname = entryDisplayname;
 	}
 	
@@ -52,6 +54,10 @@ public class LectureBlockRow implements LectureBlockRef {
 	
 	public boolean isIamTeacher() {
 		return iamTeacher;
+	}
+	
+	public String getEntryExternalRef() {
+		return entryExternalRef;
 	}
 	
 	public String getEntryDisplayname() {

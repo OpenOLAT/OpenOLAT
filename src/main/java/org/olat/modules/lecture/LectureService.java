@@ -194,6 +194,15 @@ public interface LectureService {
 	 */
 	public List<Identity> startLectureBlock(Identity teacher, LectureBlock lectureblock);
 	
+	/**
+	 * Check that every participant of the lecture block has a summary with
+	 * the first admission date set.
+	 * 
+	 * @param lectureBlock The lecture block
+	 * @return The list of participant.
+	 */
+	public List<Identity> syncParticipantSummaries(LectureBlock lectureBlock);
+	
 	
 	public List<LectureBlockRollCall> getRollCalls(LectureBlockRef block);
 	

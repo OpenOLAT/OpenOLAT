@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.ui;
 
+import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -31,7 +32,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
@@ -55,7 +58,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	private TextElement attendanceRateEl;
 	private MultipleSelectionElement enableEl;
 	private MultipleSelectionElement rollCallEnabledEl, calculateAttendanceRateEl;
-	private MultipleSelectionElement teacherCalendarSyncEl, participantCalendarSyncEl;
+	private MultipleSelectionElement teacherCalendarSyncEl, courseCalendarSyncEl;
 	
 	private RepositoryEntry entry;
 	private final boolean lectureConfigManaged;
@@ -85,6 +88,27 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("lecture.course.admin.title");
+		if(lectureConfigManaged) {
+			String flags = entry.getManagedFlagsString() == null ? "" : entry.getManagedFlagsString().trim();
+			String flagsFormatted = null;
+			if (flags.length() > 0) {
+				// use translator from REST admin package to import managed flags context help strings
+				Translator managedTrans = Util.createPackageTranslator(RestapiAdminController.class, getLocale(), getTranslator());
+				StringBuilder flagList = new StringBuilder();
+				flagList.append("<ul>");
+				for (String flag : flags.split(",")) {
+					flagList.append("<li>");
+					flagList.append(managedTrans.translate("managed.flags.course." + flag));
+					flagList.append("</li>");
+				}
+				flagList.append("</ul>");
+				flagsFormatted = flagList.toString();
+				
+			} else {
+				flagsFormatted = flags;
+			}
+			setFormWarning("form.managedflags.intro", new String[]{ flagsFormatted });
+		}
 		
 		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("lecture.admin.enabled", formLayout, onKeys, onValues);
@@ -113,7 +137,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		calculateAttendanceRateEl = uifactory.addCheckboxesHorizontal("config.calculate.attendance.rate", formLayout, onKeys, onValues);
 		attendanceRateEl = uifactory.addTextElement("lecture.attendance.rate.default", "lecture.attendance.rate.default", 4, "", formLayout);
 		teacherCalendarSyncEl = uifactory.addCheckboxesHorizontal("config.sync.teacher.calendar", formLayout, onKeys, onValues);
-		participantCalendarSyncEl = uifactory.addCheckboxesHorizontal("config.sync.participant.calendar", formLayout, onKeys, onValues);
+		courseCalendarSyncEl = uifactory.addCheckboxesHorizontal("config.sync.course.calendar", formLayout, onKeys, onValues);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -126,7 +150,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		updateOverrideElement(rollCallEnabledEl, lectureConfig.getRollCallEnabled(), lectureModule.isRollCallDefaultEnabled());
 		updateOverrideElement(calculateAttendanceRateEl, lectureConfig.getCalculateAttendanceRate(), lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled());
 		updateOverrideElement(teacherCalendarSyncEl, lectureConfig.getTeacherCalendarSyncEnabled(), lectureModule.isTeacherCalendarSyncEnabledDefault());
-		updateOverrideElement(participantCalendarSyncEl, lectureConfig.getParticipantCalendarSyncEnabled(), lectureModule.isParticipantCalendarSyncEnabledDefault());		
+		updateOverrideElement(courseCalendarSyncEl, lectureConfig.getCourseCalendarSyncEnabled(), lectureModule.isCourseCalendarSyncEnabledDefault());		
 	
 		double attendanceRate;
 		if(!overrideModuleDefaults || lectureConfig.getRequiredAttendanceRate() == null) {
@@ -157,7 +181,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		calculateAttendanceRateEl.setVisible(lectureEnabled && rollCallEnabled);
 		attendanceRateEl.setVisible(lectureEnabled && rollCallEnabled);
 		teacherCalendarSyncEl.setVisible(lectureEnabled);
-		participantCalendarSyncEl.setVisible(lectureEnabled);
+		courseCalendarSyncEl.setVisible(lectureEnabled);
 	}
 
 	@Override
@@ -241,14 +265,14 @@ public class LectureRepositorySettingsController extends FormBasicController {
 			}
 
 			lectureConfig.setTeacherCalendarSyncEnabled(teacherCalendarSyncEl.isAtLeastSelected(1));
-			lectureConfig.setParticipantCalendarSyncEnabled(participantCalendarSyncEl.isAtLeastSelected(1));
+			lectureConfig.setCourseCalendarSyncEnabled(courseCalendarSyncEl.isAtLeastSelected(1));
 		} else {
 			lectureConfig.setOverrideModuleDefault(false);
 			lectureConfig.setRollCallEnabled(null);
 			lectureConfig.setCalculateAttendanceRate(null);
 			lectureConfig.setRequiredAttendanceRate(null);
 			lectureConfig.setTeacherCalendarSyncEnabled(null);
-			lectureConfig.setParticipantCalendarSyncEnabled(null);
+			lectureConfig.setCourseCalendarSyncEnabled(null);
 		}
 		
 		lectureConfig = lectureService.updateRepositoryEntryLectureConfiguration(lectureConfig);

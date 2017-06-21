@@ -192,8 +192,8 @@ public class LectureBlocksWebService {
 		if(configuration.getOverrideModuleDefault() != null) {
 			config.setOverrideModuleDefault(configuration.getOverrideModuleDefault());
 		}
-		if(configuration.getParticipantCalendarSyncEnabled() != null) {
-			config.setParticipantCalendarSyncEnabled(configuration.getParticipantCalendarSyncEnabled());
+		if(configuration.getCourseCalendarSyncEnabled() != null) {
+			config.setCourseCalendarSyncEnabled(configuration.getCourseCalendarSyncEnabled());
 		}
 		if(configuration.getRollCallEnabled() != null) {
 			config.setRollCallEnabled(configuration.getRollCallEnabled());

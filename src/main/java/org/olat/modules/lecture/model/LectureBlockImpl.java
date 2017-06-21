@@ -114,6 +114,9 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Column(name="l_effective_lectures", nullable=true, insertable=true, updatable=true)
 	private String effectiveLectures;
 
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="l_auto_close_date", nullable=true, insertable=true, updatable=true)
+	private Date autoClosedDate;
 	@Column(name="l_status", nullable=false, insertable=true, updatable=true)
 	private String statusString;
 	@Column(name="l_roll_call_status", nullable=false, insertable=true, updatable=true)
@@ -310,6 +313,14 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Override
 	public void setEffectiveEndDate(Date effectiveEndDate) {
 		this.effectiveEndDate = effectiveEndDate;
+	}
+
+	public Date getAutoClosedDate() {
+		return autoClosedDate;
+	}
+
+	public void setAutoClosedDate(Date autoClosedDate) {
+		this.autoClosedDate = autoClosedDate;
 	}
 
 	public String getStatusString() {

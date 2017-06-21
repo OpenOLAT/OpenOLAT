@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.model.LectureBlockRow;
 
 /**
@@ -65,20 +64,17 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 			case date: return row.getLectureBlock().getStartDate();
 			case startTime: return row.getLectureBlock().getStartDate();
 			case endTime: return row.getLectureBlock().getEndDate();
+			case externalRef: return row.getEntryExternalRef();
 			case entry: return row.getEntryDisplayname();
 			case lectureBlock: return row.getLectureBlock().getTitle();
 			case teachers: return row.getTeachers();
 			case location: return row.getLectureBlock().getLocation();
-			case status: return row.getLectureBlock().getStatus();
+			case status: return row.getLectureBlock();
 			case details: {
 				Date end = row.getLectureBlock().getEndDate();
 				return end.before(new Date());
 			}
-			case export: {
-				Date start = row.getLectureBlock().getStartDate();
-				LectureBlockStatus status = row.getLectureBlock().getStatus();
-				return new Date().after(start) && (status.equals(LectureBlockStatus.partiallydone) || status.equals(LectureBlockStatus.done));
-			}
+			case tools: return row.getToolsLink();
 			default: return null;
 		}
 	}
@@ -89,16 +85,17 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 	}
 	
 	public enum TeachCols implements FlexiSortableColumnDef {
+		externalRef("table.header.external.ref"),
+		entry("table.header.entry"),
 		date("table.header.date"),
 		startTime("table.header.start.time"),
 		endTime("table.header.end.time"),
-		entry("table.header.entry"),
 		lectureBlock("table.header.lecture.block"),
 		location("table.header.location"),
 		teachers("table.header.teachers"),
 		status("table.header.status"),
 		details("table.header.details"),
-		export("table.header.export");
+		tools("table.header.tools");
 		
 		private final String i18nKey;
 		

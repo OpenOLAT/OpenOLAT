@@ -158,7 +158,7 @@ public class LectureListRepositoryController extends FormBasicController {
 				teachers.append(userManager.getUserDisplayName(teacher));
 			}
 
-			LectureBlockRow row = new LectureBlockRow(b, entry.getDisplayname(), teachers.toString(), false);
+			LectureBlockRow row = new LectureBlockRow(b, entry.getDisplayname(), entry.getExternalRef(), teachers.toString(), false);
 			rows.add(row);
 			
 			String linkName = "tools-" + counter++;
@@ -296,8 +296,9 @@ public class LectureListRepositoryController extends FormBasicController {
 		List<LectureBlock> blocks = new ArrayList<>();
 		for(Integer selection:selections) {
 			LectureBlockRow blockRow = tableModel.getObject(selection);
-			//TODO check managed
-			blocks.add(blockRow.getLectureBlock());
+			if(!LectureBlockManagedFlag.isManaged(blockRow.getLectureBlock(), LectureBlockManagedFlag.delete)) {
+				blocks.add(blockRow.getLectureBlock());
+			}
 		}
 		
 		if(blocks.size() == 0) {
@@ -321,6 +322,8 @@ public class LectureListRepositoryController extends FormBasicController {
 	}
 	
 	private void doDelete(LectureBlockRow row) {
+		if(LectureBlockManagedFlag.isManaged(row.getLectureBlock(), LectureBlockManagedFlag.delete)) return;
+		
 		lectureService.deleteLectureBlock(row.getLectureBlock());
 		showInfo("lecture.deleted");
 	}

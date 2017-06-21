@@ -54,6 +54,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String REQUIRED_ATTENDANCE_RATE_DEFAULT = "lecture.required.attendance.rate.default";
 	private static final String TEACHER_CALENDAR_SYNC_DEFAULT_ENABLED = "lecture.teacher.calendar.sync.default.enabled";
 	private static final String PARTICIPANT_CALENDAR_SYNC_DEFAULT_ENABLED = "lecture.participant.calendar.sync.default.enabed";
+	private static final String COURSE_CALENDAR_SYNC_DEFAULT_ENABLED = "lecture.course.calendar.sync.default.enabed";
 	private static final String ABSENCE_DEFAULT_AUTHORIZED = "lecture.absence.default.authorized";
 	
 	@Value("${lecture.enabled:true}")
@@ -100,6 +101,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean teacherCalendarSyncEnabledDefault;
 	@Value("${lecture.participant.calendar.sync.default.enabled:true}")
 	private boolean participantCalendarSyncEnabledDefault;
+	@Value("${lecture.course.calendar.sync.default.enabled:true}")
+	private boolean courseCalendarSyncEnabledDefault;
 	
 	@Autowired
 	public LectureModule(CoordinatorManager coordinatorManager) {
@@ -191,7 +194,12 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		String participantCalendarSyncDefaultEnabledObj = getStringPropertyValue(PARTICIPANT_CALENDAR_SYNC_DEFAULT_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(participantCalendarSyncDefaultEnabledObj)) {
 			participantCalendarSyncEnabledDefault = "true".equals(participantCalendarSyncDefaultEnabledObj);
-		}	
+		}
+		
+		String courseCalendarSyncDefaultEnabledObj = getStringPropertyValue(COURSE_CALENDAR_SYNC_DEFAULT_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(courseCalendarSyncDefaultEnabledObj)) {
+			courseCalendarSyncEnabledDefault = "true".equals(courseCalendarSyncDefaultEnabledObj);
+		}
 	}
 
 	@Override
@@ -213,8 +221,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		return canOverrideStandardConfiguration;
 	}
 
-	public void setCanOverrideSStandardConfiguration(boolean enable) {
-		this.canOverrideStandardConfiguration = enable;
+	public void setCanOverrideStandardConfiguration(boolean enable) {
+		canOverrideStandardConfiguration = enable;
 		setStringProperty(CAN_OVERRIDE_STANDARD_CONFIGURATION, Boolean.toString(enable), true);
 	}
 
@@ -340,7 +348,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setRollCallCalculateAttendanceRateDefaultEnabled(boolean enable) {
-		this.rollCallCalculateAttendanceRateDefaultEnabled = enable;
+		rollCallCalculateAttendanceRateDefaultEnabled = enable;
 		setStringProperty(CALCULATE_ATTENDANCE_RATE_DEFAULT_ENABLED, Boolean.toString(enable), true);
 	}
 
@@ -349,7 +357,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setRequiredAttendanceRateDefault(double rate) {
-		this.requiredAttendanceRateDefault = rate;
+		requiredAttendanceRateDefault = rate;
 		setStringProperty(REQUIRED_ATTENDANCE_RATE_DEFAULT, Double.toString(rate), true);
 	}
 
@@ -358,7 +366,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setTeacherCalendarSyncEnabledDefault(boolean enable) {
-		this.teacherCalendarSyncEnabledDefault = enable;
+		teacherCalendarSyncEnabledDefault = enable;
 		setStringProperty(TEACHER_CALENDAR_SYNC_DEFAULT_ENABLED, Boolean.toString(enable), true);
 	}
 
@@ -367,7 +375,18 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setParticipantCalendarSyncEnabledDefault(boolean enable) {
-		this.participantCalendarSyncEnabledDefault = enable;
+		participantCalendarSyncEnabledDefault = enable;
 		setStringProperty(PARTICIPANT_CALENDAR_SYNC_DEFAULT_ENABLED, Boolean.toString(enable), true);
 	}
+
+	public boolean isCourseCalendarSyncEnabledDefault() {
+		return courseCalendarSyncEnabledDefault;
+	}
+
+	public void setCourseCalendarSyncEnabledDefault(boolean enable) {
+		courseCalendarSyncEnabledDefault = enable;
+		setStringProperty(COURSE_CALENDAR_SYNC_DEFAULT_ENABLED, Boolean.toString(enable), true);
+	}
+	
+	
 }

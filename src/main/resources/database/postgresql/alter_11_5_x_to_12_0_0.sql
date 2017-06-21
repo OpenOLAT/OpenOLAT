@@ -78,6 +78,7 @@ create table o_lecture_block (
   l_planned_lectures_num int8 not null default 0,
   l_effective_lectures_num int8 not null default 0,
   l_effective_lectures varchar(128),
+  l_auto_close_date timestamp default null,
   l_status varchar(16) not null,
   l_roll_call_status varchar(16) not null,
   fk_reason int8,
@@ -182,6 +183,7 @@ create table o_lecture_entry_config (
   l_required_attendance_rate float(24) default null,
   l_sync_calendar_teacher bool default null,
   l_sync_calendar_participant bool default null,
+  l_sync_calendar_course bool default null,
   fk_entry int8 not null,
   unique(fk_entry),
   primary key (id)

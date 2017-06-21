@@ -57,7 +57,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		appealAbsenceEnableEl, statusEnabledEl,
 		authorizedAbsenceEnableEl, absenceDefaultAuthorizedEl,
 		countAuthorizedAbsenceAsAttendantEl, syncTeachersCalendarEnableEl,
-		syncParticipantsCalendarEnableEl, teacherCanAuthorizeAbsenceEl,
+		syncCourseCalendarEnableEl, teacherCanAuthorizeAbsenceEl,
 		reminderEnableEl, rollCallEnableEl;
 
 	
@@ -118,9 +118,9 @@ public class LectureSettingsAdminController extends FormBasicController {
 		if(lectureModule.isTeacherCalendarSyncEnabledDefault()) {
 			syncTeachersCalendarEnableEl.select(onKeys[0], true);
 		}
-		syncParticipantsCalendarEnableEl = uifactory.addCheckboxesHorizontal("sync.participants.calendar.enabled", courseCont, onKeys, onValues);
-		if(lectureModule.isParticipantCalendarSyncEnabledDefault()) {
-			syncParticipantsCalendarEnableEl.select(onKeys[0], true);
+		syncCourseCalendarEnableEl = uifactory.addCheckboxesHorizontal("sync.course.calendar.enabled", courseCont, onKeys, onValues);
+		if(lectureModule.isCourseCalendarSyncEnabledDefault()) {
+			syncCourseCalendarEnableEl.select(onKeys[0], true);
 		}
 
 		//global configuration
@@ -218,7 +218,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		authorizedAbsenceEnableEl.setVisible(enabled);
 		reminderEnableEl.setVisible(enabled);
 		syncTeachersCalendarEnableEl.setVisible(enabled);
-		syncParticipantsCalendarEnableEl.setVisible(enabled);
+		syncCourseCalendarEnableEl.setVisible(enabled);
 		autoClosePeriodEl.setVisible(enabled);
 		statusEnabledEl.setVisible(enabled);
 		rollCallEnableEl.setVisible(enabled);
@@ -302,6 +302,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		lectureModule.setEnabled(enableEl.isAtLeastSelected(1));
+		lectureModule.setCanOverrideStandardConfiguration(canOverrideStandardConfigEl.isSelected(0));
 		if(enableEl.isAtLeastSelected(1)) {
 			//enabled user tool
 			Set<String> availableTools = userToolsModule.getAvailableUserToolSet();
@@ -345,6 +346,6 @@ public class LectureSettingsAdminController extends FormBasicController {
 		}
 
 		lectureModule.setTeacherCalendarSyncEnabledDefault(syncTeachersCalendarEnableEl.isAtLeastSelected(1));
-		lectureModule.setParticipantCalendarSyncEnabledDefault(syncParticipantsCalendarEnableEl.isAtLeastSelected(1));
+		lectureModule.setCourseCalendarSyncEnabledDefault(syncCourseCalendarEnableEl.isAtLeastSelected(1));
 	}
 }

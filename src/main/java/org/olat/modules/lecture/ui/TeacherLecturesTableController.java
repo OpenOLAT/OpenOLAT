@@ -21,12 +21,15 @@ package org.olat.modules.lecture.ui;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -37,10 +40,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureModule;
@@ -58,16 +67,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeacherLecturesTableController extends FormBasicController {
+public class TeacherLecturesTableController extends FormBasicController implements BreadcrumbPanelAware {
 	
 	private FlexiTableElement tableEl;
+	private BreadcrumbPanel toolbarPanel;
 	private TeacherOverviewDataModel tableModel;
-	private final TooledStackedPanel toolbarPanel;
-	
+
+	private ToolsController toolsCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private TeacherRollCallController rollCallCtrl;
 	
+	private int counter;
 	private final boolean admin;
 	private final String emptyI18nKey;
+	private final boolean withRepositoryEntry, withTeachers;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -75,28 +88,40 @@ public class TeacherLecturesTableController extends FormBasicController {
 	private LectureService lectureService;
 	
 	public TeacherLecturesTableController(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel toolbarPanel, boolean admin, String emptyI18nKey) {
+			boolean admin, String emptyI18nKey,
+			boolean withRepositoryEntry, boolean withTeachers) {
 		super(ureq, wControl, "teacher_view_table");
 		this.admin = admin;
-		this.toolbarPanel = toolbarPanel;
 		this.emptyI18nKey = emptyI18nKey;
+		this.withTeachers = withTeachers;
+		this.withRepositoryEntry = withRepositoryEntry;
 		initForm(ureq);
 	}
-	
+
+	@Override
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
+		this.toolbarPanel = stackPanel;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		if(withRepositoryEntry) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.externalRef, "open.course"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.entry, "open.course"));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.date, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.startTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.endTime, new TimeFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.lectureBlock));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.location));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.teachers));
+		if(withTeachers) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.teachers));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.status, new LectureBlockStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.details.i18nHeaderKey(), TeachCols.details.ordinal(), "details",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.export.i18nHeaderKey(), TeachCols.export.ordinal(), "export",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.export"), "export"), null)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.tools));
 		
 		tableModel = new TeacherOverviewDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
@@ -110,7 +135,21 @@ public class TeacherLecturesTableController extends FormBasicController {
 		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview");
 	}
 	
+	public int getRowCount() {
+		return tableModel.getRowCount();
+	}
+	
+	protected void setTablePageSize(int pageSize) {
+		tableEl.setPageSize(pageSize);
+	}
+	
 	protected void loadModel(List<LectureBlockRow> blocks) {
+		for(LectureBlockRow row:blocks) {
+			FormLink toolsLink = uifactory.addFormLink("tools_" + (counter++), "tools", "", null, null, Link.NONTRANSLATED);
+			toolsLink.setIconLeftCSS("o_icon o_icon-lg o_icon_actions");
+			toolsLink.setUserObject(row);
+			row.setToolsLink(toolsLink);
+		}
 		tableModel.setObjects(blocks);
 		tableEl.reset(true, true, true);
 	}
@@ -125,6 +164,13 @@ public class TeacherLecturesTableController extends FormBasicController {
 		if(source == rollCallCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);
+			}
+		} else if(toolsCalloutCtrl == source) {
+			cleanUp();
+		} else if(toolsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				toolsCalloutCtrl.deactivate();
+				cleanUp();
 			}
 		}
 		super.event(ureq, source, event);
@@ -142,7 +188,17 @@ public class TeacherLecturesTableController extends FormBasicController {
 				} else if("export".equals(cmd)) {
 					LectureBlockRow row = tableModel.getObject(se.getIndex());
 					doExportLectureBlock(ureq, row.getLectureBlock());
+				} else if("open.course".equals(cmd)) {
+					LectureBlockRow row = tableModel.getObject(se.getIndex());
+					doOpenCourse(ureq, row);
 				}
+			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if("tools".equals(cmd)) {
+				LectureBlockRow row = (LectureBlockRow)link.getUserObject();
+				doOpenTools(ureq, row, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -151,6 +207,13 @@ public class TeacherLecturesTableController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
+		toolsCalloutCtrl = null;
+		toolsCtrl = null;
 	}
 	
 	private void doExportLectureBlock(UserRequest ureq, LectureBlock row) {
@@ -167,9 +230,78 @@ public class TeacherLecturesTableController extends FormBasicController {
 		listenTo(rollCallCtrl);
 		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
 	}
-
 	
+	private void doOpenCourse(UserRequest ureq, LectureBlockRow row) {
+		Long repoKey = row.getLectureBlock().getEntry().getKey();
+		String businessPath = "[RepositoryEntry:" + repoKey + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+
+	private void doOpenTools(UserRequest ureq, LectureBlockRow row, FormLink link) {
+		if(toolsCtrl != null) return;
+		
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		LectureBlock block = lectureService.getLectureBlock(row);
+		if(block == null) {
+			tableEl.reloadData();
+			showWarning("lecture.blocks.not.existing");
+		} else {
+			toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+			listenTo(toolsCtrl);
+	
+			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+			listenTo(toolsCalloutCtrl);
+			toolsCalloutCtrl.activate();
+		}
+	}
+
 	private RollCallSecurityCallback getRollCallSecurityCallback(LectureBlock block) {
 		return new RollCallSecurityCallbackImpl(admin, true, block, lectureModule);
+	}
+
+	private class ToolsController extends BasicController {
+		
+		private final LectureBlockRow row;
+
+		public ToolsController(UserRequest ureq, WindowControl wControl, LectureBlockRow row) {
+			super(ureq, wControl);
+			this.row = row;
+			
+			VelocityContainer mainVC = createVelocityContainer("tools");
+			addLink("export", "export", "o_icon o_filetype_xlsx", mainVC);
+			addLink("attendance.list", "attendance.list", "o_icon o_filetype_pdf", mainVC);
+			putInitialPanel(mainVC);
+		}
+		
+		private void addLink(String name, String cmd, String iconCSS, VelocityContainer mainVC) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+			if(iconCSS != null) {
+				link.setIconLeftCSS(iconCSS);
+			}
+			mainVC.put(name, link);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(source instanceof Link) {
+				Link link = (Link)source;
+				String cmd = link.getCommand();
+				if("export".equals(cmd)) {
+					LectureBlock block = lectureService.getLectureBlock(row);
+					doExportLectureBlock(ureq, block);
+				} else if("attendance.list".equals(cmd)) {
+					getWindowControl().setWarning("Not implemented");
+				}
+			}
+		}
+
+		@Override
+		protected void doDispose() {
+			//
+		}
 	}
 }

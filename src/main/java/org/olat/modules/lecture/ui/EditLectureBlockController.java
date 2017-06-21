@@ -26,7 +26,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -47,10 +46,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupOrder;
@@ -127,26 +124,8 @@ public class EditLectureBlockController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(lectureManagementManaged) {
-			String flags = entry.getManagedFlagsString() == null ? "" : entry.getManagedFlagsString().trim();
-			String flagsFormatted = null;
-			if (flags.length() > 0) {
-				// use translator from REST admin package to import managed flags context help strings
-				Translator managedTrans = Util.createPackageTranslator(RestapiAdminController.class, ureq.getLocale());
-				StringBuilder flagList = new StringBuilder();
-				flagList.append("<ul>");
-				for (String flag : flags.split(",")) {
-					flagList.append("<li>");
-					flagList.append(managedTrans.translate("managed.flags.course." + flag));
-					flagList.append("</li>");
-				}
-				flagList.append("</ul>");
-				flagsFormatted = flagList.toString();
-				
-			} else {
-				flagsFormatted = flags;
-			}
-			setFormWarning("form.managedflags.intro", new String[]{ flagsFormatted });
+		if(lectureBlock != null && StringHelper.containsNonWhitespace(lectureBlock.getManagedFlagsString())) {
+			setFormWarning("form.managedflags.intro.short", null);
 		}
 
 		String title = lectureBlock == null ? null : lectureBlock.getTitle();

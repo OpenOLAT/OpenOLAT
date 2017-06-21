@@ -19,14 +19,19 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.ui.ParticipantLectureBlocksController.AppealCallback;
@@ -38,12 +43,14 @@ import org.olat.modules.lecture.ui.ParticipantLectureBlocksController.AppealCall
  *
  */
 public class ParticipantLectureBlocksDataModel extends DefaultFlexiTableDataModel<LectureBlockAndRollCall>
-implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
+implements SortableFlexiTableDataModel<LectureBlockAndRollCall>, FilterableFlexiTableModel {
 	
 	private final Locale locale;
 	private final AppealCallback appealCallback;
 	private final boolean authorizedAbsenceEnabled;
 	private final boolean absenceDefaultAuthorized;
+	
+	private List<LectureBlockAndRollCall> backups;
 	
 	public ParticipantLectureBlocksDataModel(FlexiTableColumnModel columnModel, AppealCallback appealCallback,
 			boolean authorizedAbsenceEnabled, boolean absenceDefaultAuthorized, Locale locale) {
@@ -59,6 +66,24 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 		List<LectureBlockAndRollCall> rows = new ParticipantLectureBlocksSortDelegate(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
+	
+	@Override
+	public void filter(List<FlexiTableFilter> filters) {
+		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
+		if(StringHelper.containsNonWhitespace(key)) {
+			List<LectureBlockAndRollCall> filteredRows;
+			if("mandatory".equals(key)) {
+				filteredRows = backups.stream()
+						.filter(node -> node.isCompulsory())
+						.collect(Collectors.toList());
+			} else {
+				filteredRows = new ArrayList<>(backups);
+			}
+			super.setObjects(filteredRows);
+		} else {
+			super.setObjects(backups);
+		}
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {
@@ -69,7 +94,6 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 	@Override
 	public Object getValueAt(LectureBlockAndRollCall row, int col) {
 		switch(ParticipantCols.values()[col]) {
-			case compulsory: return row;
 			case date: return row.getDate();
 			case entry: return row.getEntryDisplayname();
 			case lectureBlock: return row.getLectureBlockTitle();
@@ -119,6 +143,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 				}
 				return null;
 			}
+			case status: return row;
 			case appeal: {
 				if(LectureBlockStatus.cancelled.equals(row.getStatus())) {
 					return false;
@@ -147,6 +172,12 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 	private int positive(int num) {
 		return num < 0 ? 0 : num;
 	}
+	
+	@Override
+	public void setObjects(List<LectureBlockAndRollCall> objects) {
+		super.setObjects(objects);
+		backups = objects;
+	}
 
 	@Override
 	public DefaultFlexiTableDataModel<LectureBlockAndRollCall> createCopyWithEmptyList() {
@@ -155,7 +186,6 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 	}
 	
 	public enum ParticipantCols implements FlexiSortableColumnDef {
-		compulsory("table.header.compulsory"),
 		date("table.header.date"),
 		entry("table.header.entry"),
 		lectureBlock("table.header.lecture.block"),
@@ -164,6 +194,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall> {
 		attendedLectures("table.header.attended.lectures"),
 		absentLectures("table.header.absent.lectures"),
 		authorizedAbsentLectures("table.header.authorized.absence"),
+		status("table.header.status"),
 		appeal("table.header.appeal");
 		
 		private final String i18nKey;

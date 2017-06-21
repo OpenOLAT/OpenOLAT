@@ -1,6 +1,10 @@
 <fieldset>
 	<legend>$off_title</legend>
+	#if($lectureBlockOptional)
+		<div class="o_warning">$r.translate("info.lecture.block.optional")</div>
+	#end
 	<div class="o_desc">$off_desc</div>
+
 	$r.render("table")
 	<div class="o_button_group">
 		$r.render("cancel")

@@ -122,8 +122,9 @@ public class LectureBlockWebService {
 		List<Group> currentGroups = lectureService.getLectureBlockToGroups(reloadedBlock);
 		if(!currentGroups.contains(defGroup)) {
 			currentGroups.add(defGroup);
-			lectureService.save(reloadedBlock, currentGroups);
+			reloadedBlock = lectureService.save(reloadedBlock, currentGroups);
 		}
+		lectureService.syncParticipantSummaries(reloadedBlock);
 		return Response.ok().build();
 	}
 	

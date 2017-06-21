@@ -235,7 +235,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		configVo.setLectureEnabled(Boolean.TRUE);
 		configVo.setCalculateAttendanceRate(Boolean.TRUE);
 		configVo.setOverrideModuleDefault(Boolean.TRUE);
-		configVo.setParticipantCalendarSyncEnabled(Boolean.TRUE);
+		configVo.setCourseCalendarSyncEnabled(Boolean.TRUE);
 		configVo.setRequiredAttendanceRate(34.0d);
 		configVo.setRollCallEnabled(Boolean.TRUE);
 		configVo.setTeacherCalendarSyncEnabled(Boolean.TRUE);
@@ -253,7 +253,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		Assert.assertEquals(Boolean.TRUE, updateConfigVo.getLectureEnabled());
 		Assert.assertEquals(Boolean.TRUE, updateConfigVo.getCalculateAttendanceRate());
 		Assert.assertEquals(Boolean.TRUE, updateConfigVo.getOverrideModuleDefault());
-		Assert.assertEquals(Boolean.TRUE, updateConfigVo.getParticipantCalendarSyncEnabled());
+		Assert.assertEquals(Boolean.TRUE, updateConfigVo.getCourseCalendarSyncEnabled());
 		Assert.assertEquals(34.0d, updateConfigVo.getRequiredAttendanceRate(), 0000.1);
 		Assert.assertEquals(Boolean.TRUE, updateConfigVo.getRollCallEnabled());
 		Assert.assertEquals(Boolean.TRUE, updateConfigVo.getTeacherCalendarSyncEnabled());
@@ -264,7 +264,7 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		Assert.assertTrue(dbConfig.isLectureEnabled());
 		Assert.assertEquals(Boolean.TRUE, dbConfig.getCalculateAttendanceRate());
 		Assert.assertTrue(dbConfig.isOverrideModuleDefault());
-		Assert.assertEquals(Boolean.TRUE, dbConfig.getParticipantCalendarSyncEnabled());
+		Assert.assertEquals(Boolean.TRUE, dbConfig.getCourseCalendarSyncEnabled());
 		Assert.assertEquals(34.0d, dbConfig.getRequiredAttendanceRate(), 0000.1);
 		Assert.assertEquals(Boolean.TRUE, dbConfig.getRollCallEnabled());
 		Assert.assertEquals(Boolean.TRUE, dbConfig.getTeacherCalendarSyncEnabled());

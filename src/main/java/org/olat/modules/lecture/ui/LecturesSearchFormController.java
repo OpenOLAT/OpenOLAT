@@ -57,7 +57,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class LecturesSearchFormController extends FormBasicController {
 
 	protected static final String PROPS_IDENTIFIER = LecturesSearchFormController.class.getName();
-	private static final String[] dateKeys = new String[]{ "none", "private", "public"};
 	
 	private TextElement login;
 	private TextElement bulkEl;
@@ -96,6 +95,7 @@ public class LecturesSearchFormController extends FormBasicController {
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler != null) {
 				FormItem fi = userPropertyHandler.addFormItem(getLocale(), null, PROPS_IDENTIFIER, false, formLayout);
+				fi.setMandatory(false);
 				// DO NOT validate email field => see OLAT-3324, OO-155, OO-222
 				if (userPropertyHandler instanceof EmailProperty && fi instanceof TextElement) {
 					TextElement textElement = (TextElement)fi;
@@ -108,16 +108,23 @@ public class LecturesSearchFormController extends FormBasicController {
 		
 		bulkEl = uifactory.addTextAreaElement("bulk", 4, 72, "", formLayout);
 		
-		String[] dateValues = new String[] {
-				translate("dates.none"),
-				translate("dates.private"),
-				translate("dates.public")	
-		};
+
+		List<RepositoryEntryLifecycle> cycles = new ArrayList<>();//slifecycleDao.loadPublicLifecycle();
+		
+		String[] dateKeys;
+		String[] dateValues;
+		if(cycles.isEmpty()) {
+			dateKeys = new String[]{ "none", "private"};
+			dateValues = new String[] { translate("dates.none"), translate("dates.private") };
+		} else {
+			dateKeys = new String[]{ "none", "private", "public"};
+			dateValues = new String[] { translate("dates.none"), translate("dates.private"), translate("dates.public")	};
+		}
+
 		dateTypesEl = uifactory.addRadiosVertical("dates", formLayout, dateKeys, dateValues);
 		dateTypesEl.select(dateKeys[0], true);
 		dateTypesEl.addActionListener(FormEvent.ONCHANGE);
 
-		List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
 		List<RepositoryEntryLifecycle> filteredCycles = new ArrayList<>();
 		for(RepositoryEntryLifecycle cycle:cycles) {
 			if(cycle.getValidTo() == null) {
@@ -274,6 +281,35 @@ public class LecturesSearchFormController extends FormBasicController {
 	}
 	
 	private boolean validate() {
-		return true;
+		boolean atLeastOne = false;
+		if(login.isVisible()) {
+			atLeastOne = StringHelper.containsNonWhitespace(login.getValue());
+		}
+				
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			if (userPropertyHandler != null) {
+				FormItem ui = propFormItems.get(userPropertyHandler.getName());
+				String uiValue = userPropertyHandler.getStringValue(ui);
+				if (StringHelper.containsNonWhitespace(uiValue) && !uiValue.equals("-")) {
+					atLeastOne |= true;
+				}
+			}
+		}
+		
+		if(StringHelper.containsNonWhitespace(bulkEl.getValue())) {
+			atLeastOne |= true;
+		}
+		
+		if("public".equals(dateTypesEl.getSelectedKey()) && publicDatesEl.isVisible() && publicDatesEl.isOneSelected()) {
+			atLeastOne |= true;
+		}
+		if("private".equals(dateTypesEl.getSelectedKey()) && (startDateEl.getDate() != null && endDateEl.getDate() != null)) {
+			atLeastOne |= true;
+		}
+		
+		if(!atLeastOne) {
+			showWarning("error.search.form.notempty");
+		}
+		return atLeastOne;
 	}
 }
