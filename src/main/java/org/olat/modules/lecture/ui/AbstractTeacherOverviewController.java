@@ -56,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class AbstractTeacherOverviewController extends BasicController implements BreadcrumbPanelAware {
 	
-	private BreadcrumbPanel stackPanel;
+	protected BreadcrumbPanel stackPanel;
 	protected final VelocityContainer mainVC;
 	private final Link startButton, startWizardButton;
 	protected final Link allTeachersSwitch;
@@ -64,10 +64,10 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	private TeacherRollCallController rollCallCtrl;
 	private TeacherRollCallWizardController rollCallWizardCtrl;
 	
-	protected TeacherLecturesTableController currentLecturesBlockCtrl;
-	protected TeacherLecturesTableController pendingLecturesBlockCtrl;
-	protected TeacherLecturesTableController nextLecturesBlockCtrl;
-	protected TeacherLecturesTableController closedLecturesBlockCtrl;
+	private TeacherLecturesTableController currentLecturesBlockCtrl;
+	private TeacherLecturesTableController pendingLecturesBlockCtrl;
+	private TeacherLecturesTableController nextLecturesBlockCtrl;
+	private TeacherLecturesTableController closedLecturesBlockCtrl;
 	
 	private final boolean admin;
 	private final String switchPrefsId;

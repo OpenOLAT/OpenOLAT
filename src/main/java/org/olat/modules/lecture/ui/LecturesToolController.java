@@ -79,6 +79,7 @@ public class LecturesToolController extends BasicController implements Breadcrum
 	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
 		participantOverviewCtrl.setBreadcrumbPanel(stackPanel);
+		teacherOverviewCtrl.setBreadcrumbPanel(stackPanel);
 	}
 
 	@Override

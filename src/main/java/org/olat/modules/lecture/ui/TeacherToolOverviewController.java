@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -55,5 +57,17 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 			rows.add(new LectureBlockRow(block, entry.getDisplayname(), entry.getExternalRef(), "", true));
 		}
 		return rows;
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		//reload table... first
+		super.event(ureq, source, event);
+		
+		if(source instanceof TeacherLecturesTableController) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
+				stackPanel.popUpToRootController(ureq);
+			}
+		}
 	}
 }

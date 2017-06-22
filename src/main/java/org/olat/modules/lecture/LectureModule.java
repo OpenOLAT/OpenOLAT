@@ -57,7 +57,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String COURSE_CALENDAR_SYNC_DEFAULT_ENABLED = "lecture.course.calendar.sync.default.enabed";
 	private static final String ABSENCE_DEFAULT_AUTHORIZED = "lecture.absence.default.authorized";
 	
-	@Value("${lecture.enabled:true}")
+	@Value("${lecture.enabled:false}")
 	private boolean enabled;
 	@Value("${lecture.managed:true}")
 	private boolean lecturesManaged;
