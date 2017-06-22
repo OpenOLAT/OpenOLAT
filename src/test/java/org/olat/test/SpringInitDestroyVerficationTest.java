@@ -34,6 +34,8 @@ import java.util.Map;
 import org.junit.Test;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.configuration.Initializable;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
@@ -49,6 +51,8 @@ import org.springframework.web.context.support.XmlWebApplicationContext;
  * @author guido
  */
 public class SpringInitDestroyVerficationTest extends OlatTestCase {
+	
+	private static final OLog log = Tracing.createLoggerFor(SpringInitDestroyVerficationTest.class);
 	
 	@Test
 	public void testInitMethodCalls() {
@@ -67,46 +71,35 @@ public class SpringInitDestroyVerficationTest extends OlatTestCase {
 							beanDef.getInitMethodName().equals("init"));
 				}
 			} catch (NoSuchBeanDefinitionException e) {
-				System.out.println("testInitMethodCalls: Error while trying to analyze bean with name: "+beanName +" :"+e);
+				log.error("testInitMethodCalls: Error while trying to analyze bean with name: "+beanName +" :"+e);
 			} catch (Exception e) {
-				System.out.println("testInitMethodCalls: Error while trying to analyze bean with name: "+beanName +" :"+e);
+				log.error("testInitMethodCalls: Error while trying to analyze bean with name: "+beanName +" :"+e);
 			}
 		}
 	}
 		
-		@Test
-		public void testDestroyMethodCalls() {	
-			XmlWebApplicationContext context = (XmlWebApplicationContext)applicationContext;
-			ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
-			
-			
-			Map<String, Destroyable> beans = applicationContext.getBeansOfType(Destroyable.class);
-			for (Iterator<String> iterator = beans.keySet().iterator(); iterator.hasNext();) {
-				String beanName = iterator.next();
-				try {
-					GenericBeanDefinition beanDef = (GenericBeanDefinition)beanFactory.getBeanDefinition(beanName);
-					assertNotNull("Spring Bean ("+beanName+") of type Destroyable does not have the required destroy-method attribute or the method name is not destroy!", 
-							beanDef.getDestroyMethodName());
-					if (beanDef.getDestroyMethodName() != null) {
-						assertTrue("Spring Bean ("+beanName+") of type Destroyable does not have the required destroy-method attribute or the method name is not destroy!", 
-								beanDef.getDestroyMethodName().equals("destroy"));
-					}
-				} catch (NoSuchBeanDefinitionException e) {
-					System.out.println("testDestroyMethodCalls: Error while trying to analyze bean with name: "+beanName +" :"+e);
-				} catch (Exception e) {
-					System.out.println("testDestroyMethodCalls: Error while trying to analyze bean with name: "+beanName +" :"+e);
+	@Test
+	public void testDestroyMethodCalls() {	
+		XmlWebApplicationContext context = (XmlWebApplicationContext)applicationContext;
+		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+		
+		
+		Map<String, Destroyable> beans = applicationContext.getBeansOfType(Destroyable.class);
+		for (Iterator<String> iterator = beans.keySet().iterator(); iterator.hasNext();) {
+			String beanName = iterator.next();
+			try {
+				GenericBeanDefinition beanDef = (GenericBeanDefinition)beanFactory.getBeanDefinition(beanName);
+				assertNotNull("Spring Bean ("+beanName+") of type Destroyable does not have the required destroy-method attribute or the method name is not destroy!", 
+						beanDef.getDestroyMethodName());
+				if (beanDef.getDestroyMethodName() != null) {
+					assertTrue("Spring Bean ("+beanName+") of type Destroyable does not have the required destroy-method attribute or the method name is not destroy!", 
+							beanDef.getDestroyMethodName().equals("destroy"));
 				}
+			} catch (NoSuchBeanDefinitionException e) {
+				log.error("testDestroyMethodCalls: Error while trying to analyze bean with name: "+beanName +" :"+e);
+			} catch (Exception e) {
+				log.error("testDestroyMethodCalls: Error while trying to analyze bean with name: "+beanName +" :"+e);
 			}
 		}
-		
-		@Test
-		public void testAnnotatedInitMethodCalls() {
-			//TODO implement init methods annoteded with postconstruct annotation
-		}
-		
-		@Test
-		public void testAnnotatedDestroyMethodCalls() {
-			//TODO implement destroy methods annoteded with predestroy annotation
-		}
-
+	}
 }
