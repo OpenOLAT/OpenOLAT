@@ -47,6 +47,7 @@ public class RepositoryEntryLectureConfigurationDAO {
 		RepositoryEntryLectureConfigurationImpl config = new RepositoryEntryLectureConfigurationImpl();
 		config.setCreationDate(new Date());
 		config.setLastModified(config.getCreationDate());
+		config.setLectureEnabled(false);
 		config.setOverrideModuleDefault(false);
 		config.setEntry(entry);
 		dbInstance.getCurrentEntityManager().persist(config);

@@ -125,8 +125,8 @@ import org.olat.instantMessaging.OpenInstantMessageEvent;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
-import org.olat.modules.lecture.ui.TeacherOverviewController;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.TeacherOverviewController;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.note.NoteController;
 import org.olat.repository.LeavingStatusList;
@@ -787,8 +787,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(glossary);
 		}
 		
-		if(!assessmentLock && lectureModule.isEnabled() /* && enable for this course */
-				 && lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity())) {
+		if(!assessmentLock && lectureModule.isEnabled()
+				//check the configuration enable the lectures and the user is a teacher 
+				&& lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity())) {
 			lecturesLink = LinkFactory.createToolLink("command.lectures", translate("command.lectures"), this, "o_icon_lecture");
 			toolbarPanel.addTool(lecturesLink);
 		}
@@ -921,6 +922,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				delayedClose = Delayed.pop;
 			} else if(event instanceof PopEvent) {
 				PopEvent pop = (PopEvent)event;
+				if(pop.getController() == lecturesAdminCtrl && lecturesAdminCtrl.hasConfigurationChanges()) {
+					initToolbar();// add/remove lectures link from the toolbar
+				}
 				if(pop.getController() != getRunMainController()) {
 					toolControllerDone(ureq);
 				}
@@ -1374,6 +1378,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				OLATResourceable ores = OresHelper.createOLATResourceableType("lecturesAdmin");
 				WindowControl swControl = addToHistory(ureq, ores, null);
 				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, getRepositoryEntry());
+				listenTo(ctrl);
 				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);
 				setActiveTool(lecturesAdminLink);
 				currentToolCtr = lecturesAdminCtrl;

@@ -282,10 +282,10 @@ public class LectureBlockRollCallDAO {
 		  .append(" inner join block.groups blockToGroup")
 		  .append(" inner join blockToGroup.group bGroup")
 		  .append(" inner join bGroup.members membership")
-		  .append(" left join lectureentryconfig as config on (re.key=config.entry.key)")
+		  .append(" inner join lectureentryconfig as config on (re.key=config.entry.key)")
 		  .append(" left join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
 		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
-		  .append(" where membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("'");
+		  .append(" where config.lectureEnabled=true and membership.identity.key=:identityKey and membership.role='").append(GroupRoles.participant.name()).append("'");
 		
 		//take in account: requiredAttendanceRateDefault, from repo config requiredAttendanceRate
 		//take in account: authorized absence
@@ -383,10 +383,10 @@ public class LectureBlockRollCallDAO {
 		  .append(" inner join bGroup.members membership")
 		  .append(" inner join membership.identity ident")
 		  .append(" inner join ident.user user")
-		  .append(" left join lectureentryconfig as config on (re.key=config.entry.key)")
+		  .append(" inner join lectureentryconfig as config on (re.key=config.entry.key)")
 		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
 		  .append(" left join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
-		  .append(" where membership.role='").append(GroupRoles.participant.name()).append("'");
+		  .append(" where config.lectureEnabled=true and membership.role='").append(GroupRoles.participant.name()).append("'");
 		if(!admin) {
 			sb.append(" and (exists (select rel from repoentrytogroup as rel, bgroupmember as membership ")
 			  .append("     where re.key=rel.entry.key and membership.group.key=rel.group.key and rel.defaultGroup=true and membership.identity.key=:identityKey")

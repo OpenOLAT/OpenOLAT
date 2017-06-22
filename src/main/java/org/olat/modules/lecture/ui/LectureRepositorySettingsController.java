@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -83,6 +84,10 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		initForm(ureq);
 		updateOverride();
 		updateVisibility();
+	}
+	
+	public boolean isLectureEnabled() {
+		return enableEl.isAtLeastSelected(1);
 	}
 
 	@Override
@@ -278,5 +283,6 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		lectureConfig = lectureService.updateRepositoryEntryLectureConfiguration(lectureConfig);
 		dbInstance.commit();
 		lectureService.syncCalendars(entry);
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 }

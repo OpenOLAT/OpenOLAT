@@ -27,6 +27,7 @@ import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -45,10 +46,11 @@ public class LectureRepositoryAdminController extends BasicController {
 	private final Link lecturesLink, settingsLink, participantsLink;
 	
 	private LectureListRepositoryController lecturesCtrl;
-	private LectureRepositorySettingsController settingsCtrl;
+	private final LectureRepositorySettingsController settingsCtrl;
 	private ParticipantListRepositoryController participantsCtrl;
 	
 	private RepositoryEntry entry;
+	private boolean configurationChanges = false;
 	
 	public LectureRepositoryAdminController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
@@ -57,15 +59,29 @@ public class LectureRepositoryAdminController extends BasicController {
 		mainVC = createVelocityContainer("admin_repository");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setDontShowSingleSegment(true);
+
 		lecturesLink = LinkFactory.createLink("repo.lectures.block", mainVC, this);
-		segmentView.addSegment(lecturesLink, true);
 		participantsLink = LinkFactory.createLink("repo.participants", mainVC, this);
-		segmentView.addSegment(participantsLink, false);
 		settingsLink = LinkFactory.createLink("repo.settings", mainVC, this);
-		segmentView.addSegment(settingsLink, false);
 		
-		doOpenLectures(ureq);
+		settingsCtrl = new LectureRepositorySettingsController(ureq, getWindowControl(), entry);
+		listenTo(settingsCtrl);
+		
+		if(settingsCtrl.isLectureEnabled()) {
+			segmentView.addSegment(lecturesLink, true);
+			segmentView.addSegment(participantsLink, false);
+			doOpenLectures(ureq);
+		} else {
+			doOpenSettings();
+		}
+		segmentView.addSegment(settingsLink, !settingsCtrl.isLectureEnabled());
+
 		putInitialPanel(mainVC);
+	}
+	
+	public boolean hasConfigurationChanges() {
+		return configurationChanges;
 	}
 
 	@Override
@@ -83,12 +99,38 @@ public class LectureRepositoryAdminController extends BasicController {
 				if (clickedLink == lecturesLink) {
 					doOpenLectures(ureq);
 				} else if (clickedLink == settingsLink){
-					doOpenSettings(ureq);
+					doOpenSettings();
 				} else if(clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				}
 			}
 		}
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(settingsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				updateSegments();
+				configurationChanges = true;
+			}
+		}
+	}
+	
+	/**
+	 * Update the segment view after a change in the configuration.
+	 */
+	private void updateSegments() {
+		if(settingsCtrl.isLectureEnabled()) {
+			if(segmentView.getSegments().size() == 1) {
+				segmentView.addSegment(0, participantsLink, false);
+				segmentView.addSegment(0, lecturesLink, false);
+			}
+		} else if(segmentView.getSegments().size() > 1) {
+			// remove the unused segments
+			segmentView.removeSegment(lecturesLink);
+			segmentView.removeSegment(participantsLink);
+		}	
 	}
 
 	private void doOpenLectures(UserRequest ureq) {
@@ -99,11 +141,7 @@ public class LectureRepositoryAdminController extends BasicController {
 		mainVC.put("segmentCmp", lecturesCtrl.getInitialComponent());
 	}
 	
-	private void doOpenSettings(UserRequest ureq) {
-		if(settingsCtrl == null) {
-			settingsCtrl = new LectureRepositorySettingsController(ureq, getWindowControl(), entry);
-			listenTo(settingsCtrl);
-		}
+	private void doOpenSettings() {
 		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
 	}
 	

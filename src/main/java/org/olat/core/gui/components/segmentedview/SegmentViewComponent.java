@@ -38,6 +38,7 @@ public class SegmentViewComponent extends AbstractComponent  {
 	private boolean reselect;
 	private boolean allowNoSelection;
 	private boolean allowMultipleSelection;
+	private boolean dontShowSingleSegment;
 	
 	private final Set<Component> selectedSegments = new HashSet<Component>();
 	private final List<Component> segments = new ArrayList<Component>();
@@ -62,6 +63,14 @@ public class SegmentViewComponent extends AbstractComponent  {
 
 	public void setAllowNoSelection(boolean allowNoSelection) {
 		this.allowNoSelection = allowNoSelection;
+	}
+
+	public boolean isDontShowSingleSegment() {
+		return dontShowSingleSegment;
+	}
+
+	public void setDontShowSingleSegment(boolean dontShowSingleSegment) {
+		this.dontShowSingleSegment = dontShowSingleSegment;
 	}
 
 	public boolean isReselect() {
@@ -97,13 +106,41 @@ public class SegmentViewComponent extends AbstractComponent  {
 		setDirty(true);
 	}
 	
+	public void addSegment(int index, Link link) {
+		segments.add(index, link);
+		setDirty(true);
+	}
+	
+	/**
+	 * This is a convenience method which add the class
+	 * to draw a button.
+	 * 
+	 * @param link The link to add in the segment view
+	 * @param selected If the segement is selected or not
+	 */
 	public void addSegment(Link link, boolean selected) {
+		addSegment(-1, link, selected);
+	}
+	
+	/**
+	 * This is a convenience method which add the class
+	 * to draw a button.
+	 * 
+	 * @param position Position in the segment view
+	 * @param link The link to add in the segment view
+	 * @param selected If the segement is selected or not
+	 */
+	public void addSegment(int position, Link link, boolean selected) {
 		if(selected) {
 			link.setCustomEnabledLinkCSS("btn btn-primary");
 		} else {
 			link.setCustomEnabledLinkCSS("btn btn-default");
 		}
-		segments.add(link);
+		if(position >= 0 && position < segments.size()) {
+			segments.add(position, link);
+		} else {
+			segments.add(link);
+		}
 		if(selected) {
 			selectedSegments.add(link);
 		} else {
