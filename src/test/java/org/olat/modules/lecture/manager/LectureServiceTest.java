@@ -133,6 +133,11 @@ public class LectureServiceTest extends OlatTestCase {
 		// add participant to the "course"
 		repositoryEntryRelationDAO.addRole(participant, entry, GroupRole.participant.name());
 		dbInstance.commitAndCloseSession();
+		//enable lectures
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		config.setLectureEnabled(true);
+		lectureService.updateRepositoryEntryLectureConfiguration(config);
+		
 		// add the course to the lecture
 		Group defGroup = repositoryService.getDefaultGroup(entry);
 		lectureBlock = lectureService.save(lectureBlock, Collections.singletonList(defGroup));
@@ -164,6 +169,11 @@ public class LectureServiceTest extends OlatTestCase {
 		repositoryEntryRelationDAO.addRole(participant1, entry, GroupRole.participant.name());
 		repositoryEntryRelationDAO.addRole(participant2, entry, GroupRole.participant.name());
 		dbInstance.commitAndCloseSession();
+		
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		config.setLectureEnabled(true);
+		lectureService.updateRepositoryEntryLectureConfiguration(config);
+		
 		// add the course to the lectures
 		Group defGroup = repositoryService.getDefaultGroup(entry);
 		lectureBlock1 = lectureService.save(lectureBlock1, Collections.singletonList(defGroup));
