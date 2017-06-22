@@ -43,6 +43,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.tabbedpane.TabCreator;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -106,7 +107,7 @@ public class UserAdminController extends BasicController implements Activateable
 
 	// controllers used in tabbed pane
 	private TabbedPane userTabP;
-	private Controller prefsCtr, propertiesCtr, pwdCtr, quotaCtr, policiesCtr, rolesCtr, userShortDescrCtr;
+	private Controller prefsCtr, propertiesCtr, pwdCtr, quotaCtr, rolesCtr, userShortDescrCtr;
 	private DisplayPortraitController portraitCtr;
 	private UserAuthenticationsEditorController authenticationsCtr;
 	private Link backLink;
@@ -150,6 +151,7 @@ public class UserAdminController extends BasicController implements Activateable
 			myContent = createVelocityContainer("udispatcher");
 			backLink = LinkFactory.createLinkBack(myContent, this);
 			userShortDescrCtr = new UserShortDescription(ureq, wControl, identity);
+			listenTo(userShortDescrCtr);
 			myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());
 			
 			setBackButtonEnabled(true); // default
@@ -175,8 +177,6 @@ public class UserAdminController extends BasicController implements Activateable
 				List<ContextEntry> subEntries = entries.subList(2, entries.size());
 				userTabP.activate(ureq, subEntries, state);
 			}
-		} else if (userTabP != null) {
-			userTabP.setSelectedPane(translate(entryPoint));
 		}
 	}
 
@@ -210,12 +210,14 @@ public class UserAdminController extends BasicController implements Activateable
 			if (event.getCommand().equals("PropFound")){
 				PropFoundEvent foundEvent = (PropFoundEvent) event;
 				Property myfoundProperty = foundEvent.getProperty();				
-				this.showInfo(NLS_FOUND_PROPERTY,myfoundProperty.getKey().toString());								
+				showInfo(NLS_FOUND_PROPERTY, myfoundProperty.getKey().toString());								
 			}
 		} else if (source == pwdCtr) {
 			if (event == Event.DONE_EVENT) {
 				// rebuild authentication tab, could be wrong now
-				if (authenticationsCtr != null) authenticationsCtr.rebuildAuthenticationsTableDataModel();
+				if (authenticationsCtr != null) {
+					authenticationsCtr.rebuildAuthenticationsTableDataModel();
+				}
 			}
 		} else if (source == userProfileCtr){
 			if (event == Event.DONE_EVENT){
@@ -302,72 +304,131 @@ public class UserAdminController extends BasicController implements Activateable
 		listenTo(userProfileCtr);
 		userTabP.addTab(translate(NLS_EDIT_UPROFILE), userProfileCtr.getInitialComponent());
 		
-		prefsCtr = new ChangePrefsController(ureq, getWindowControl(), identity);
-		userTabP.addTab(translate(NLS_EDIT_UPREFS), prefsCtr.getInitialComponent());
+		userTabP.addTab(translate(NLS_EDIT_UPREFS), new TabCreator() {
+			@Override
+			public Component create(UserRequest uureq) {
+				prefsCtr = new ChangePrefsController(uureq, getWindowControl(), identity);
+				listenTo(prefsCtr);
+				return prefsCtr.getInitialComponent();
+			}
+		});
 
 		if (isPasswordChangesAllowed(identity)) {
-			pwdCtr =  new UserChangePasswordController(ureq, getWindowControl(), identity);				
-			listenTo(pwdCtr); // listen when finished to update authentications model
-			userTabP.addTab(translate(NLS_EDIT_UPWD), pwdCtr.getInitialComponent());
+			userTabP.addTab(translate(NLS_EDIT_UPWD), new TabCreator() {
+				@Override
+				public Component create(UserRequest uureq) {
+					pwdCtr =  new UserChangePasswordController(uureq, getWindowControl(), identity);				
+					listenTo(pwdCtr); 
+					return pwdCtr.getInitialComponent();
+				}
+			});
 		}
 		
 		Boolean canAuth = BaseSecurityModule.USERMANAGER_ACCESS_TO_AUTH;
 		if (canAuth.booleanValue() || isOlatAdmin) {
-			authenticationsCtr =  new UserAuthenticationsEditorController(ureq, getWindowControl(), identity);
-			userTabP.addTab(translate(NLS_EDIT_UAUTH), authenticationsCtr.getInitialComponent());
+			userTabP.addTab(translate(NLS_EDIT_UAUTH), new TabCreator() {
+				@Override
+				public Component create(UserRequest uureq) {
+					authenticationsCtr =  new UserAuthenticationsEditorController(uureq, getWindowControl(), identity);
+					listenTo(authenticationsCtr);
+					return authenticationsCtr.getInitialComponent();
+				}
+			});
 		}
 		
 		Boolean canProp = BaseSecurityModule.USERMANAGER_ACCESS_TO_PROP;
 		if (canProp.booleanValue() || isOlatAdmin) {
-			propertiesCtr = new UserPropertiesController(ureq, getWindowControl(), identity);			
-			this.listenTo(propertiesCtr);
-			userTabP.addTab(translate(NLS_EDIT_UPROP), propertiesCtr.getInitialComponent());
+			userTabP.addTab(translate(NLS_EDIT_UPROP), new TabCreator() {
+				@Override
+				public Component create(UserRequest uureq) {
+					propertiesCtr = new UserPropertiesController(uureq, getWindowControl(), identity);			
+					listenTo(propertiesCtr);
+					return propertiesCtr.getInitialComponent();
+				}
+			});
 		}
 		
 		Boolean canStartGroups = BaseSecurityModule.USERMANAGER_CAN_START_GROUPS;
-		grpCtr = new GroupOverviewController(ureq, getWindowControl(), identity, canStartGroups);
-		listenTo(grpCtr);
-		userTabP.addTab(translate(NLS_VIEW_GROUPS), grpCtr.getInitialComponent());
+		userTabP.addTab(translate(NLS_VIEW_GROUPS), new TabCreator() {
+			@Override
+			public Component create(UserRequest uureq) {
+				grpCtr = new GroupOverviewController(uureq, getWindowControl(), identity, canStartGroups);
+				listenTo(grpCtr);
+				return grpCtr.getInitialComponent();
+			}
+		});
+
+		userTabP.addTab(translate(NLS_VIEW_COURSES), new TabCreator() {
+			@Override
+			public Component create(UserRequest uureq) {
+				courseCtr = new CourseOverviewController(uureq, getWindowControl(), identity);
+				listenTo(courseCtr);
+				return courseCtr.getInitialComponent();
+			}
+		});
 		
-		courseCtr = new CourseOverviewController(ureq, getWindowControl(), identity);
-		listenTo(courseCtr);
-		userTabP.addTab(translate(NLS_VIEW_COURSES), courseCtr.getInitialComponent());
-		
-		if (isOlatAdmin) {
-			efficicencyCtrl = new CertificateAndEfficiencyStatementListController(ureq, getWindowControl(), identity, true);
-			listenTo(efficicencyCtrl);
-			BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("statements", getTranslator(), efficicencyCtrl);
-			stackPanel.pushController(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl);
-			efficicencyCtrl.setBreadcrumbPanel(stackPanel);
-			stackPanel.setInvisibleCrumb(1);
-			userTabP.addTab(translate(NLS_VIEW_EFF_STATEMENTS), stackPanel);
+		if (isOlatAdmin) {	
+			userTabP.addTab(translate(NLS_VIEW_EFF_STATEMENTS), new TabCreator() {
+				@Override
+				public Component create(UserRequest uureq) {
+					efficicencyCtrl = new CertificateAndEfficiencyStatementListController(uureq, getWindowControl(), identity, true);
+					listenTo(efficicencyCtrl);
+					BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("statements", getTranslator(), efficicencyCtrl);
+					stackPanel.pushController(translate(NLS_VIEW_EFF_STATEMENTS), efficicencyCtrl);
+					efficicencyCtrl.setBreadcrumbPanel(stackPanel);
+					stackPanel.setInvisibleCrumb(1);
+					return stackPanel;
+				}
+			});
 		}
 
 		Boolean canSubscriptions = BaseSecurityModule.USERMANAGER_CAN_MODIFY_SUBSCRIPTIONS;
 		if (canSubscriptions.booleanValue() || isOlatAdmin) {
-			Controller subscriptionsCtr = new NotificationSubscriptionController(ureq, getWindowControl(), identity, true);
-			listenTo(subscriptionsCtr); // auto-dispose
-			userTabP.addTab(translate(NLS_VIEW_SUBSCRIPTIONS), subscriptionsCtr.getInitialComponent());			
+			userTabP.addTab(translate(NLS_VIEW_SUBSCRIPTIONS), new TabCreator() {
+				@Override
+				public Component create(UserRequest uureq) {
+					Controller subscriptionsCtr = new NotificationSubscriptionController(uureq, getWindowControl(), identity, true);
+					listenTo(subscriptionsCtr);
+					return subscriptionsCtr.getInitialComponent();
+				}
+				
+			});			
 		}
 		
-		rolesCtr = new SystemRolesAndRightsController(getWindowControl(), ureq, identity);
-		userTabP.addTab(translate(NLS_EDIT_UROLES), rolesCtr.getInitialComponent());
+		userTabP.addTab(translate(NLS_EDIT_UROLES), new TabCreator() {
+			@Override
+			public Component create(UserRequest uureq) {
+				rolesCtr = new SystemRolesAndRightsController(getWindowControl(), uureq, identity);
+				listenTo(rolesCtr);
+				return rolesCtr.getInitialComponent();
+			}
+		});
 		
 		Boolean canQuota = BaseSecurityModule.USERMANAGER_ACCESS_TO_QUOTA;
 		if (canQuota.booleanValue() || isOlatAdmin) {
-			String relPath = FolderConfig.getUserHomes() + "/" + identity.getName();
-			quotaCtr = QuotaManager.getInstance().getQuotaEditorInstance(ureq, getWindowControl(), relPath, false);
-			userTabP.addTab(translate(NLS_EDIT_UQUOTA), quotaCtr.getInitialComponent());
+			userTabP.addTab(translate(NLS_EDIT_UQUOTA), new TabCreator() {
+				@Override
+				public Component create(UserRequest uureq) {
+					String relPath = FolderConfig.getUserHomes() + "/" + identity.getName();
+					quotaCtr = QuotaManager.getInstance().getQuotaEditorInstance(uureq, getWindowControl(), relPath, false);
+					return quotaCtr.getInitialComponent();
+				}
+			});
 		}
 		
 		if(lectureModule.isEnabled()) {
-			lecturesCtrl = new ParticipantLecturesOverviewController(ureq, getWindowControl(), identity, true, true, true);
-			listenTo(lecturesCtrl);
-			BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("lectures", getTranslator(), lecturesCtrl);
-			stackPanel.pushController(translate(NLS_VIEW_LECTURES), lecturesCtrl);
-			lecturesCtrl.setBreadcrumbPanel(stackPanel);
-			stackPanel.setInvisibleCrumb(1);
-			userTabP.addTab(translate(NLS_VIEW_LECTURES), stackPanel);
+			userTabP.addTab(translate(NLS_VIEW_LECTURES), new TabCreator() {
+				@Override
+				public Component create(UserRequest uureq) {
+					lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), identity, true, true, true);
+					listenTo(lecturesCtrl);
+					BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("lectures", getTranslator(), lecturesCtrl);
+					stackPanel.pushController(translate(NLS_VIEW_LECTURES), lecturesCtrl);
+					lecturesCtrl.setBreadcrumbPanel(stackPanel);
+					stackPanel.setInvisibleCrumb(1);
+					return stackPanel;
+				}
+			});
 		}
 		
 		// now push to velocity
@@ -414,36 +475,6 @@ public class UserAdminController extends BasicController implements Activateable
 	 */
 	@Override
 	protected void doDispose() {
-		//child controllers registered with listenTo get disposed in BasicController
-		if (quotaCtr != null) {
-			quotaCtr.dispose();
-			quotaCtr = null;
-		}
-		if (authenticationsCtr != null) {
-			authenticationsCtr.dispose();
-			authenticationsCtr = null;
-		}
-		if (prefsCtr != null) {
-			prefsCtr.dispose();
-			prefsCtr = null;
-		}			
-		if (policiesCtr != null) {
-			policiesCtr.dispose();
-			policiesCtr = null;
-		}
-		if (rolesCtr != null) {
-			rolesCtr.dispose();
-			rolesCtr = null;
-		}
-		if (portraitCtr != null) {
-			portraitCtr.dispose();
-			portraitCtr = null;
-		}
-		if (userShortDescrCtr!=null) {
-			userShortDescrCtr.dispose();
-			userShortDescrCtr = null;
-		}
+		//
 	}
-
-
 }

@@ -89,7 +89,7 @@ public abstract class ActivateableTabbableDefaultController extends TabbableDefa
 		}
 		if (foundKey) {
 			// it is a tab which we know
-			myTabbedPane.setSelectedPane(translate(tabKey));
+			myTabbedPane.setSelectedPane(ureq, translate(tabKey));
 		} else {
 			// it may be a tab of our children
 			ActivateableTabbableDefaultController[] children = getChildren();

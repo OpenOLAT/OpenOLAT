@@ -32,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.tabbedpane.TabCreator;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -85,6 +86,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 
 	private TabbedPane tabbedPane;
 	private VelocityContainer mainVC;
+	private final TooledStackedPanel toolbarPanel;
 
 	private LockResult lockEntry;
 	private DialogBoxController alreadyLockedDialogController;
@@ -110,6 +112,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	public BusinessGroupEditController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel, BusinessGroup businessGroup) {
 		super(ureq, wControl);
+		this.toolbarPanel = toolbarPanel;
 		
 		// OLAT-4955: setting the stickyActionType here passes it on to any controller defined in the scope of the editor,
 		//            basically forcing any logging action called within the bg editor to be of type 'admin'
@@ -136,13 +139,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				//create some controllers
 				editDetailsController = new BusinessGroupEditDetailsController(ureq, getWindowControl(), businessGroup);
 				listenTo(editDetailsController);
-				
-				collaborationToolsController = new BusinessGroupToolsController(ureq, getWindowControl(), businessGroup);
-				listenTo(collaborationToolsController);
-				
-				membersController = new BusinessGroupMembersController(ureq, getWindowControl(), toolbarPanel, businessGroup);
-				listenTo(membersController);
-				
+
 				tabbedPane = new TabbedPane("bgTabbs", ureq.getLocale());
 				tabbedPane.addListener(this);
 				setAllTabs(ureq);
@@ -181,56 +178,68 @@ public class BusinessGroupEditController extends BasicController implements Cont
 	 */
 	private void setAllTabs(UserRequest ureq) {
 		hasResources = businessGroupService.hasResources(currBusinessGroup);
-		
 		tabAccessCtrl = getAccessController(ureq);
-		
 		int currentSelectedPane = tabbedPane.getSelectedPane();
 
 		tabbedPane.removeAll();
+		
 		editDetailsController.setAllowWaitingList(tabAccessCtrl == null || !tabAccessCtrl.isPaymentMethodInUse());
 		tabbedPane.addTab(translate("group.edit.tab.details"), editDetailsController.getInitialComponent());
-		tabbedPane.addTab(translate("group.edit.tab.collabtools"), collaborationToolsController.getInitialComponent());
-		
-		membersController.updateBusinessGroup(currBusinessGroup);
-		membersTab = tabbedPane.addTab(translate("group.edit.tab.members"), membersController.getInitialComponent());
-		//resources (optional)
-		resourceController = getResourceController(ureq);
-		if(resourceController != null) {
-			tabbedPane.addTab(translate("group.edit.tab.resources"), resourceController.getInitialComponent());
-		}
-		
-		if(tabAccessCtrl != null) {
-			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), tabAccessCtrl.getInitialComponent());
-		}
-		
-		if(currentSelectedPane > 0) {
-			tabbedPane.setSelectedPane(currentSelectedPane);
-		}
-	}
-	
-	/**
-	 * The resources / courses tab is enabled if the user is
-	 * an administrator, a group manager or an author. Or if the group has
-	 * already some resources.
-	 * 
-	 * @param ureq
-	 * @return
-	 */
-	private BusinessGroupEditResourceController getResourceController(UserRequest ureq) {
-		Roles roles = ureq.getUserSession().getRoles();
-		boolean enabled = roles.isOLATAdmin() || roles.isGroupManager() || roles.isAuthor() || hasResources;
-		if(enabled) {
-			if(resourceController == null) {
-				resourceController = new BusinessGroupEditResourceController(ureq, getWindowControl(), currBusinessGroup);
-				listenTo(resourceController);
+		tabbedPane.addTab(translate("group.edit.tab.collabtools"), new TabCreator() {
+			@Override
+			public Component create(UserRequest uureq) {
+				collaborationToolsController = new BusinessGroupToolsController(uureq, getWindowControl(), currBusinessGroup);
+				listenTo(collaborationToolsController);
+				return collaborationToolsController.getInitialComponent();
 			}
-			return resourceController;
+		});
+		
+		membersTab = tabbedPane.addTab(translate("group.edit.tab.members"), new TabCreator() {
+			@Override
+			public Component create(UserRequest uureq) {
+				if(membersController == null) {
+					membersController = new BusinessGroupMembersController(ureq, getWindowControl(), toolbarPanel, currBusinessGroup);
+					listenTo(membersController);
+				} else {
+					membersController.updateBusinessGroup(currBusinessGroup);
+				}
+				return membersController.getInitialComponent();
+			}
+		});
+		
+		//resources (optional)
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean resourceEnabled = roles.isOLATAdmin() || roles.isGroupManager() || roles.isAuthor() || hasResources;
+		if(resourceEnabled) {
+			tabbedPane.addTab(translate("group.edit.tab.resources"), new TabCreator() {
+				@Override
+				public Component create(UserRequest uureq) {
+					if(resourceController == null) {
+						resourceController = new BusinessGroupEditResourceController(uureq, getWindowControl(), currBusinessGroup);
+						listenTo(resourceController);
+					}
+					return resourceController.getInitialComponent();
+				}
+			});
+		} else {
+			removeAsListenerAndDispose(resourceController);
+			resourceController = null;
 		}
-		removeAsListenerAndDispose(resourceController);
-		resourceController = null;
-		return null;
+
+		if(tabAccessCtrl != null) {
+			tabbedPane.addTab(translate("group.edit.tab.accesscontrol"), new TabCreator() {
+				@Override
+				public Component create(UserRequest uureq) {
+					return tabAccessCtrl.getInitialComponent();
+				}
+			});
+		}
+
+		if(currentSelectedPane > 0) {
+			tabbedPane.setSelectedPane(ureq, currentSelectedPane);
+		}
 	}
-	
+
 	private BusinessGroupEditAccessController getAccessController(UserRequest ureq) {
 		if(tabAccessCtrl == null && acModule.isEnabled()) { 
 			tabAccessCtrl = new BusinessGroupEditAccessController(ureq, getWindowControl(), currBusinessGroup);
