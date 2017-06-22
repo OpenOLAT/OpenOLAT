@@ -279,7 +279,7 @@ public class CourseEditorPageFragment {
 		}
 		By changeNodeLinkBy = By.cssSelector("a.o_sel_course_editor_move_node");
 		browser.findElement(changeNodeLinkBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		By targetNodeBy = By.xpath("//div[contains(@class,'o_tree_insert_tool')]//a[contains(@title,'" + targetNodeTitle + "')]");
