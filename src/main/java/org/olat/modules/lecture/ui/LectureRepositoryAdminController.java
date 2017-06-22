@@ -83,6 +83,10 @@ public class LectureRepositoryAdminController extends BasicController {
 	public boolean hasConfigurationChanges() {
 		return configurationChanges;
 	}
+	
+	public void configurationChangesConsumed() {
+		configurationChanges = false;
+	}
 
 	@Override
 	protected void doDispose() {

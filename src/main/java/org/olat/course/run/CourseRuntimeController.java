@@ -921,18 +921,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if(event instanceof VetoPopEvent) {
 				delayedClose = Delayed.pop;
 			} else if(event instanceof PopEvent) {
-				PopEvent pop = (PopEvent)event;
-				if(pop.getController() == lecturesAdminCtrl && lecturesAdminCtrl.hasConfigurationChanges()) {
-					initToolbar();// add/remove lectures link from the toolbar
-				}
-				if(pop.getController() != getRunMainController()) {
-					toolControllerDone(ureq);
-				}
+				processPopEvent(ureq, (PopEvent)event);
 			}
 		} else if(enableGlossaryLink == source) {
 			toggleGlossary(ureq);
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void processPopEvent(UserRequest ureq, PopEvent pop) {
+		if(lecturesAdminCtrl != null && lecturesAdminCtrl.hasConfigurationChanges() && pop.getController() == lecturesAdminCtrl) {
+			lecturesAdminCtrl.configurationChangesConsumed();
+			initToolbar();// add/remove lectures link from the toolbar
+		}
+		if(pop.getController() != getRunMainController()) {
+			toolControllerDone(ureq);
+		}
 	}
 
 	@Override
