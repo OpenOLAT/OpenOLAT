@@ -168,8 +168,7 @@ public class FeedPage {
 	 */
 	public MediaPage addAsMedia() {
 		By addAsMediaBy = By.cssSelector(".o_post .o_portfolio_collector");
-		WebElement addAsmediaButton = browser.findElement(addAsMediaBy);
-		addAsmediaButton.click();
+		browser.findElement(addAsMediaBy).click();
 		OOGraphene.waitBusy(browser);
 		return new MediaPage(browser);
 	}

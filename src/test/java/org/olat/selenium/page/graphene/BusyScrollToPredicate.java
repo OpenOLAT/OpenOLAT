@@ -19,43 +19,31 @@
  */
 package org.olat.selenium.page.graphene;
 
-import org.openqa.selenium.By;
+import java.util.function.Function;
+
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-
-import com.google.common.base.Predicate;
 
 /**
- * Experimental predicate which check if an element is
- * in the viewport.
  * 
- * Initial date: 7 mars 2017<br>
+ * Observe the scrolling flag of the o_scrollToElement method.
+ * 
+ * Initial date: 23.05.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InViewportPredicate implements Predicate<WebDriver> {
+public class BusyScrollToPredicate implements Function<WebDriver,Boolean> {
 	
-	private final By by;
-	
-	public InViewportPredicate(By by) {
-		this.by = by;
-	}
-	
+	private int count = 0;
+
 	@Override
-	public boolean apply(WebDriver driver) {
-		WebElement element = driver.findElement(by);
-		StringBuilder sb = new StringBuilder();
-		sb.append("var rect = arguments[0].getBoundingClientRect();")
-		  .append(" console.log(rect); return (")
-		  .append("  rect.top >= 0 &&")
-		  .append("  rect.left >= 0 &&")
-		  .append("  rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&")
-		  .append("  rect.right <= (window.innerWidth || document.documentElement.clientWidth)")
-		  .append(" );");
-		
-        Object busy = ((JavascriptExecutor)driver)
-        		.executeScript(sb.toString(), element);
-        return Boolean.TRUE.equals(busy);
+	public Boolean apply(WebDriver driver) {
+        Number y = (Number)((JavascriptExecutor)driver).executeScript("return (((typeof window.o_info === 'undefined') || window.o_info.linkbusy) ? -1 : window.pageYOffset);");
+        if(y.intValue() != 0) {
+        	count = 0;
+        } else if(y.intValue() == 0) {
+        	count++;
+        }
+        return count > 2;
     }
 }

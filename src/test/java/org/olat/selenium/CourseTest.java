@@ -153,11 +153,11 @@ public class CourseTest {
 		//publish
 		publisher
 			.assertOnPublisher()
-			.next()
+			.nextSelectNodes()
 			.selectAccess(UserAccess.guest)
-			.next()
+			.nextAccess()
 			.selectCatalog(false)
-			.next() // -> no problem found
+			.nextCatalog() // -> no problem found
 			.finish();
 		
 		//back to the course
@@ -251,9 +251,10 @@ public class CourseTest {
 		
 		courseWizard
 			.selectAllCourseElements()
-			.next()
-			.next()
+			.nextNodes()
+			.nextCatalog()
 			.finish();
+		//OOGraphene.closeErrorBox(browser);//STMP error
 		
 		RepositoryEditDescriptionPage editDescription = new RepositoryEditDescriptionPage(browser);
 		//from description editor, back to details and launch the course
@@ -308,7 +309,7 @@ public class CourseTest {
 			.assertOnNavigationPage()
 			.openAuthoringEnvironment();
 		
-		String title = "Concurrent-Edit-" + UUID.randomUUID().toString();
+		String title = "Coedit-" + UUID.randomUUID();
 		//create course
 		authoringEnv
 			.openCreateDropDown()
@@ -322,10 +323,10 @@ public class CourseTest {
 		members
 			.addMember()
 			.searchMember(coAuthor, true)
-			.next()
-			.next()
+			.nextUsers()
+			.nextOverview()
 			.selectRepositoryEntryRole(true, false, false)
-			.next()
+			.nextPermissions()
 			.finish();
 		//open the editor
 		CoursePageFragment coursePage = members
@@ -348,7 +349,7 @@ public class CourseTest {
 		//try to edit
 		CoursePageFragment coAuthorCourse = new CoursePageFragment(coAuthorBrowser);
 		coAuthorCourse
-			.edit()
+			.tryToEdit()
 			.assertOnWarning();
 		
 		//retry in list
@@ -371,7 +372,7 @@ public class CourseTest {
 		
 		//author try
 		coursePage
-			.edit()
+			.tryToEdit()
 			.assertOnWarning();
 		
 		//co-author close the editor
@@ -1073,12 +1074,12 @@ public class CourseTest {
 			.edit();
 		courseEditor
 			.publish()
-			.next()
+			.nextSelectNodes()
 			.selectAccess(UserAccess.guest)
-			.next()
+			.nextAccess()
 			.selectCatalog(true)
 			.selectCategory(node1, node2_2)
-			.next() // -> no problem found
+			//.nextCatalog() // -> no problem found
 			.finish();
 		
 		//User logs in, go to "My courses", navigate the catalog and start
@@ -1175,9 +1176,10 @@ public class CourseTest {
 		int numOfMessages = infoMsgConfig.countMessages();
 		Assert.assertEquals(3, numOfMessages);
 		
-		//old messages
-		infoMsgConfig.oldMessages();
-		int numOfOldMessages = infoMsgConfig.countMessages();
+		// count old messages
+		int numOfOldMessages = infoMsgConfig
+				.oldMessages()
+				.countMessages();
 		Assert.assertEquals(4, numOfOldMessages);
 		
 		//new messages
@@ -1186,7 +1188,8 @@ public class CourseTest {
 		Assert.assertEquals(3, numOfNewMessages);
 		
 		//edit
-		infoMsgConfig.oldMessages();
+		infoMsgConfig
+			.oldMessages();
 		infoMsgConfig
 			.editMessage("Information 2")
 			.setMessage("The latest information", "A very important info")
@@ -1317,7 +1320,7 @@ public class CourseTest {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithCalendar_alt(@InitialPage LoginPage loginPage)
+	public void createCourseWithCalendar_alt(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -1505,7 +1508,7 @@ public class CourseTest {
 		cal.add(Calendar.DATE, 20);
 		Date validTo = cal.getTime();
 		
-		String title = "Remind-me-" + UUID.randomUUID().toString();
+		String title = "Remind-me-" + UUID.randomUUID();
 		//create course
 		authoringEnv
 			.openCreateDropDown()
@@ -1764,7 +1767,6 @@ public class CourseTest {
 			.getCourseForumPage(kanuBrowser)
 			.openThread("The best anime ever");
 
-		
 		//First user go to the course
 		LoginPage reiLoginPage = LoginPage.getLoginPage(reiBrowser, deploymentUrl);
 		reiLoginPage
@@ -1870,12 +1872,12 @@ public class CourseTest {
 		//publish the course
 		courseEditor
 			.publish()
-			.next()
+			.nextSelectNodes()
 			.selectAccess(UserAccess.guest)
-			.next()
+			.nextAccess()
 			.selectCatalog(true)
 			.selectCategory(null, node1)
-			.next() // -> no problem found
+			.nextCatalog() // -> no problem found
 			.finish();
 		//back in course
 		courseEditor.clickToolbarBack();
@@ -2007,10 +2009,16 @@ public class CourseTest {
 			.selectTabVisibility()
 			.setAssessmentCondition(1)
 			.save();
-
+		
+		OOGraphene.scrollTop(browser);
 		courseEditor
 			.publish()
-			.quickPublish(UserAccess.membersOnly);
+			.nextSelectNodes()
+			.selectAccess(UserAccess.membersOnly)
+			.nextAccess()
+			.selectCatalog(false)
+			.nextCatalog() // -> no problem found
+			.finish();
 		courseEditor
 			.clickToolbarBack();
 		
@@ -2021,10 +2029,10 @@ public class CourseTest {
 		members
 			.addMember()
 			.searchMember(rei, true)
-			.next()
-			.next()
+			.nextUsers()
+			.nextOverview()
 			.selectGroupAsParticipant(groupName)
-			.next()
+			.nextPermissions()
 			.finish();
 		
 		//participant search the course
@@ -2140,18 +2148,18 @@ public class CourseTest {
 			.selectMembers()
 			.addMember()
 			.searchMember(rei, true)
-			.next()
-			.next()
+			.nextUsers()
+			.nextOverview()
 			.selectGroupAsParticipant(groupName)
-			.next()
+			.nextPermissions()
 			.finish();
 		members
 			.addMember()
 			.searchMember(participant, true)
-			.next()
-			.next()
+			.nextUsers()
+			.nextOverview()
 			.selectGroupAsParticipant(groupName)
-			.next()
+			.nextPermissions()
 			.finish();
 		members
 			.clickToolbarBack();

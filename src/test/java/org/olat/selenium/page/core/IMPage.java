@@ -21,14 +21,13 @@ package org.olat.selenium.page.core;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import org.jboss.arquillian.graphene.Graphene;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-import com.google.common.base.Predicate;
 
 /**
  * Drive the chat / instant messaging from OpenOLAT
@@ -84,31 +83,22 @@ public class IMPage {
 	 * @param message
 	 * @return
 	 */
-	public IMPage assertOnMessage(String message) {
-		Graphene.waitModel().withTimeout(10, TimeUnit.SECONDS).until(new MessagePredicate(message));
-		return this;
-	}
-	
-	private static class MessagePredicate implements Predicate<WebDriver> {
+	public IMPage assertOnMessage(final String message) {
+		final By historyBy = By.cssSelector(".o_im_chat_history .o_im_body");
 		
-		private static final By historyBy = By.cssSelector(".o_im_chat_history .o_im_body");
-		
-		private final String message;
-		
-		public MessagePredicate(String message) {
-			this.message = message;
-		}
-
-		@Override
-		public boolean apply(WebDriver browser) {
-			boolean found = false;
-			List<WebElement> history = browser.findElements(historyBy);
-			for(WebElement m:history) {
-				if(m.getText().contains(message)) {
-					found = true;
+		Graphene.waitModel().withTimeout(10, TimeUnit.SECONDS).until(new Function<WebDriver,Boolean>(){
+			@Override
+			public Boolean apply(WebDriver browser) {
+				boolean found = false;
+				List<WebElement> history = browser.findElements(historyBy);
+				for(WebElement m:history) {
+					if(m.getText().contains(message)) {
+						found = true;
+					}
 				}
+				return found;
 			}
-			return found;
-		}
+		});
+		return this;
 	}
 }

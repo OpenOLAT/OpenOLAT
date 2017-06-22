@@ -98,6 +98,7 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 		otherValues[otherValues.length - 1] = translate("column.dontuse");
 
 		FormLayoutContainer choosersCont = FormLayoutContainer.createDefaultFormLayout("choosers", getTranslator());
+		choosersCont.setElementCssClass("o_sel_bulk_assessment_columns");
 		choosersCont.setRootForm(mainForm);
 		formLayout.add(choosersCont);
 

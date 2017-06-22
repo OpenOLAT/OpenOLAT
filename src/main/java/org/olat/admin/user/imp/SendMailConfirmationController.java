@@ -52,6 +52,7 @@ public class SendMailConfirmationController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("step3.send.mail.description");
+		formLayout.setElementCssClass("o_sel_users_import_contact");
 		
 		@SuppressWarnings("unchecked")
 		List<Long> ownGroups = (List<Long>) getFromRunContext("ownerGroups");

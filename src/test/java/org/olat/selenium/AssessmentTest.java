@@ -245,7 +245,10 @@ public class AssessmentTest {
 			.members()
 			.addMember()
 			.searchMember(ryomou, true)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
 		
 		//Ryomou open the course
 		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
@@ -377,7 +380,10 @@ public class AssessmentTest {
 			.members()
 			.addMember()
 			.searchMember(ryomou, true)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
 		
 		//Ryomou open the course
 		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
@@ -619,7 +625,11 @@ public class AssessmentTest {
 		members
 			.addMember()
 			.searchMember(rei, true)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
 		// return to course
 		courseRuntime = members
 				.clickToolbarBack()
@@ -709,7 +719,11 @@ public class AssessmentTest {
 		members
 			.addMember()
 			.searchMember(rei, true)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
 		// return to course
 		courseRuntime = members
 				.clickToolbarBack()
@@ -810,7 +824,10 @@ public class AssessmentTest {
 		members
 			.addMember()
 			.searchMember(ryomou, true)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
 		
 		//efficiency statement is default on
 		//go to the assessment to to set the points
@@ -901,12 +918,14 @@ public class AssessmentTest {
 		
 		URL task1Url = JunitTestHelper.class.getResource("file_resources/task_1_a.txt");
 		File task1File = new File(task1Url.toURI());
-		gtaConfig.uploadTask("Task 1", task1File);
+		String taskName1 = "Task-1";
+		gtaConfig.uploadTask(taskName1, task1File);
 		
 		URL task2Url = JunitTestHelper.class.getResource("file_resources/task_1_b.txt");
 		File task2File = new File(task2Url.toURI());
+		String taskName2 = "Task-2-b";
 		gtaConfig
-			.uploadTask("Task 2 B", task2File)
+			.uploadTask(taskName2, task2File)
 			.saveTasks()
 			.selectSolution();
 		
@@ -931,13 +950,17 @@ public class AssessmentTest {
 		groupPage
 			.addMember()
 			.searchMember(kanu, true)
-			.next().next().next()
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
 			.finish();
 		
 		groupPage
 			.addMember()
 			.searchMember(ryomou, true)
-			.next().next().next()
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
 			.finish();
 		
 		groupPage.close();
@@ -970,7 +993,7 @@ public class AssessmentTest {
 		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
 		ryomouTask
 			.assertAssignmentAvailable()
-			.selectTask(1)
+			.selectTask(taskName2)
 			.assertSubmissionAvailable();
 		
 		//Participant 2 log in
@@ -997,7 +1020,7 @@ public class AssessmentTest {
 		String submittedText = "This is my solution";
 		GroupTaskPage kanuTask = new GroupTaskPage(kanuBrowser);
 		kanuTask
-			.assertTask("Task 2 B")
+			.assertTask(taskName2)
 			.assertSubmissionAvailable()
 			.submitFile(submit1File)
 			.submitText(submittedFilename, submittedText)
@@ -1109,7 +1132,10 @@ public class AssessmentTest {
 		membersPage
 			.importMembers()
 			.setMembers(kanu, ryomou)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
 		
 		//go to the course
 		CoursePageFragment coursePage = membersPage
@@ -1256,7 +1282,10 @@ public class AssessmentTest {
 		members
 			.importMembers()
 			.setMembers(ryomou, kanu)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
 		
 		BulkAssessmentData[] data = new BulkAssessmentData[] {
 			new BulkAssessmentData(ryomou, 8.0f, null, "Well done"),
@@ -1268,9 +1297,9 @@ public class AssessmentTest {
 			.assessmentTool()
 			.bulk()
 			.data(data)
-			.next()
-			.next()
-			.next()
+			.nextData()
+			.nextColumns()
+			.nextValidation()
 			.finish();
 		
 		//Ryomou login

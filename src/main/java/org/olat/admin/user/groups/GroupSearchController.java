@@ -117,6 +117,7 @@ public class GroupSearchController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("group.search.description");
+		formLayout.setElementCssClass("o_sel_groups_search");
 
 		search = uifactory.addTextElement("search.field", "search.field", 100, "", formLayout);
 		

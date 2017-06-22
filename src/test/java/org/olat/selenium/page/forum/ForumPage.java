@@ -118,7 +118,7 @@ public class ForumPage {
 		
 		//save
 		By saveBy = By.cssSelector("div.modal-content form button.btn-primary");
-		browser.findElement(saveBy).click();
+		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitBusy(browser);
 		By messageTitleBy = By.xpath("//div[contains(@class,'o_forum_message')][//h4[contains(text(),'" + title + "')]]");
 		OOGraphene.waitElement(messageTitleBy, 5, browser);
@@ -214,7 +214,7 @@ public class ForumPage {
 		OOGraphene.tinymce(reply, browser);
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_forum_message_form button.btn-primary");
-		browser.findElement(saveBy).click();
+		OOGraphene.click(saveBy, browser);
 		return this;
 	}
 	

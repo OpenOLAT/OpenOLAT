@@ -294,8 +294,7 @@ public class QTI21Page {
 	
 	public QTI21Page endTest() {
 		By endBy = By.cssSelector("a.o_sel_end_testpart");
-		browser.findElement(endBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.clickAndWait(endBy, browser);
 		confirm();
 		return this;
 	}
@@ -443,6 +442,7 @@ public class QTI21Page {
 	 * Yes in a dialog box controller.
 	 */
 	private void confirm() {
+		OOGraphene.waitBusyAndScrollTop(browser);
 		// confirm
 		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-footer a");
 		OOGraphene.waitElement(confirmButtonBy, 5, browser);

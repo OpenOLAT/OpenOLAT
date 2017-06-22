@@ -19,10 +19,10 @@
  */
 package org.olat.selenium.page.graphene;
 
+import java.util.function.Function;
+
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-
-import com.google.common.base.Predicate;
 
 /**
  * Check the navigation bar states, but it's not enough. It needs
@@ -32,10 +32,10 @@ import com.google.common.base.Predicate;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TransitionPredicate implements Predicate<WebDriver> {
+public class TransitionPredicate implements Function<WebDriver,Boolean> {
 	
 	@Override
-	public boolean apply(WebDriver driver) {
+	public Boolean apply(WebDriver driver) {
         Object busy = ((JavascriptExecutor)driver)
         		.executeScript("return (window.OPOL.navbar.state.sitesDirty || window.OPOL.navbar.state.tabsDirty || window.OPOL.navbar.state.toolsDirty)");
         return Boolean.FALSE.equals(busy);

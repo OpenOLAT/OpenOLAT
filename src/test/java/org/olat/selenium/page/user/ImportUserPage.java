@@ -157,17 +157,25 @@ public class ImportUserPage {
 		return this;
 		
 	}
+
+	public ImportUserPage nextData() {
+		OOGraphene.nextStep(browser);
+		//OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_import_users_overview"), browser);
+		return this;
+	}
 	
-	/**
-	 * Next
-	 * @return this
-	 */
-	public ImportUserPage next() {
-		WebElement next = browser.findElement(nextBy);
-		Assert.assertTrue(next.isDisplayed());
-		Assert.assertTrue(next.isEnabled());
-		next.click();
-		OOGraphene.waitBusy(browser);
+	public ImportUserPage nextOverview() {
+		OOGraphene.nextStep(browser);
+		//OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_groups_search"), browser);
+		return this;
+	}
+	
+	public ImportUserPage nextGroups() {
+		OOGraphene.nextStep(browser);
+		//OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_users_import_contact"), browser);
 		return this;
 	}
 	
@@ -176,11 +184,7 @@ public class ImportUserPage {
 	 * @return this
 	 */
 	public ImportUserPage finish() {
-		WebElement finish = browser.findElement(finishBy);
-		Assert.assertTrue(finish.isDisplayed());
-		Assert.assertTrue(finish.isEnabled());
-		finish.click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.finishStep(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		return this;
 	}

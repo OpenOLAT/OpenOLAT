@@ -19,10 +19,10 @@
  */
 package org.olat.selenium.page.graphene;
 
+import java.util.function.Function;
+
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-
-import com.google.common.base.Predicate;
 
 /**
  * Predicate which test if TinyMCE is fully loaded and specifically
@@ -32,7 +32,7 @@ import com.google.common.base.Predicate;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TinyMCELoadedByIdPredicate implements Predicate<WebDriver> {
+public class TinyMCELoadedByIdPredicate implements Function<WebDriver,Boolean> {
 	
 	private final String id;
 	
@@ -41,7 +41,7 @@ public class TinyMCELoadedByIdPredicate implements Predicate<WebDriver> {
 	}
 	
 	@Override
-	public boolean apply(WebDriver driver) {
+	public Boolean apply(WebDriver driver) {
         Object active = ((JavascriptExecutor)driver)
         		.executeScript("return top != null && top.tinymce != null && top.tinymce.activeEditor != null "
         				+ " && top.tinymce.activeEditor.initialized && top.tinymce.editors[0].initialized "

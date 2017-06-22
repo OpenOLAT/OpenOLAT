@@ -1,22 +1,6 @@
 <div class="o_form clearfix">
-	<fieldset>
-		<legend>$r.translate("module.admin.title")</legend>
-		<div class="o_desc">$r.translate("module.admin.desc")</div>
-		$r.render("options")
-	</fieldset>
-	<fieldset>
-		<legend>$r.translate("module.resource.title")</legend>
-		<div class="o_desc">$r.translate("module.resource.desc")</div>
-		$r.render("resourceAssignment")
-	</fieldset>
-	<fieldset>
-		<legend>$r.translate("module.privacy.title")</legend>
-		<div class="o_desc">$r.translate("module.privacy.desc")</div>
-		$r.render("privacy_options")
-	</fieldset>
-	<fieldset>
-		<legend>$r.translate("dedup.members")</legend>
-		<div class="o_desc">$r.translate("dedup.members.desc")</div>
-		$r.render("dedup")
-	</fieldset>
+$r.render("options")
+$r.render("resourceAssignment")
+$r.render("privacy_options")
+$r.render("dedup")
 </div>

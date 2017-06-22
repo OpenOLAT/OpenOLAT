@@ -4,6 +4,8 @@
         http://jboss.org/schema/arquillian
         http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
 
+	<defaultProtocol type="Servlet 3.0" />
+	
 	<engine>
 		<property name="deploymentExportPath">target/arquillianDeployments</property>
 	</engine>
@@ -13,15 +15,23 @@
             <property name="workDir">target/arquillianDeployments</property>
 			<property name="catalinaHome">target/arq-apache-tomcat-8.0.24</property>
 			<property name="catalinaBase">target/arq-apache-tomcat-8.0.24</property>
-			<property name="javaVmArguments">-XX:MaxPermSize=128m -Xmx512m -Xms256m -Djava.awt.headless=true</property>
+			<property name="javaVmArguments">-Xmx512m -Xms256m -Djava.awt.headless=true</property>
 			<!-- debugging arguments for javaVm: -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y -->
         </configuration>
     </container>
    
 	<extension qualifier="webdriver">
-		<property name="browser">firefox</property>
+		<property name="browser">chrome</property>
 		<property name="dimensions">1024x800</property>
+		<!-- 
+		<property name="downloadBinaries">no</property>
+		<property name="chromeDriverBinary">target/drone/e3f9380ecadad5a28982e841b1b31f90/chromedriver</property>
+		<property name="firefoxDriverBinary">target/drone/30f3fdc84d76c53de2916008a889d26f/geckodriver</property>
+		-->
 		<property name="firefoxUserPreferences">src/test/profile/firefox/prefs.js</property>
+		<property name="chromeExperimentalOption">{
+			"prefs":{"credentials_enable_service": false, "profile.password_manager_enabled": false }
+		}</property>
 	</extension>
 
 </arquillian>

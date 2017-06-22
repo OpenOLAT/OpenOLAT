@@ -51,6 +51,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.FlexiAutoCompleterController;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
+import org.olat.core.gui.control.winmgr.ScrollTopCommand;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -345,6 +346,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			}
 		} else if(searchButton == source) {
 			if(validateForm(ureq)) {
+				getWindowControl().getWindowBackOffice().sendCommandTo(new ScrollTopCommand());
 				doSearch();
 			}
 		} else if (tableEl == source) {

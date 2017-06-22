@@ -411,8 +411,9 @@ class ImportStep00 extends BasicStep {
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("title");
+			formLayout.setElementCssClass("o_sel_import_users_data");
 
-			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), this.velocity_root + "/step0.html");
+			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), velocity_root + "/step0.html");
 			formLayout.add(textContainer);
 			textContainer.contextPut("canCreateOLATPassword", canCreateOLATPassword);
 

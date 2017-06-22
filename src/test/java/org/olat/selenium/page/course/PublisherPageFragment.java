@@ -21,14 +21,12 @@ package org.olat.selenium.page.course;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 
 /**
@@ -47,17 +45,18 @@ public class PublisherPageFragment {
 	public static final By selectAccessBy = By.cssSelector("div.o_sel_course_publish_wizard select");
 	public static final By selectCatalogYesNoBy = By.cssSelector("div.o_sel_course_publish_wizard select");
 	
-	@Drone
-	private WebDriver browser;
+	private final WebDriver browser;
 	
-	@FindBy(className="o_sel_course_publish_wizard")
-	private WebElement publishBody;
-	
-	public PublisherPageFragment assertOnPublisher() {
-		Assert.assertTrue(publishBody.isDisplayed());
-		return this;
+	public PublisherPageFragment(WebDriver browser) {
+		this.browser = browser;
 	}
 	
+	public PublisherPageFragment assertOnPublisher() {
+		OOGraphene.waitModalWizard(browser);
+		By publishWizardBy = By.className("o_sel_course_publish_wizard");
+		OOGraphene.waitElement(publishWizardBy, 5, browser);
+		return this;
+	}
 
 	public void quickPublish() {
 		quickPublish(UserAccess.guest);
@@ -65,21 +64,29 @@ public class PublisherPageFragment {
 	
 	public void quickPublish(UserAccess access) {
 		assertOnPublisher()
-			.next()
+			.nextSelectNodes()
 			.selectAccess(access)
-			.next()
+			.nextAccess()
 			.selectCatalog(false)
-			.next() // -> no problem found
+			.nextCatalog() // -> no problem found
 			.finish();
 	}
 	
-	public PublisherPageFragment next() {
-		WebElement next = browser.findElement(nextBy);
-		Assert.assertTrue(next.isDisplayed());
-		Assert.assertTrue(next.isEnabled());
-		next.click();
-		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
+	public PublisherPageFragment nextSelectNodes() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repositoryentry_access"), 5, browser);
+		return this;
+	}
+	
+	public PublisherPageFragment nextAccess() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_course_editor_publish"), 5, browser);
+		return this;
+	}
+	
+	public PublisherPageFragment nextCatalog() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_publish_update"), 5, browser);
 		return this;
 	}
 	
@@ -95,15 +102,19 @@ public class PublisherPageFragment {
 	
 	public PublisherPageFragment selectAccess(UserAccess access) {
 		if(access == UserAccess.none) {
-			By userSwitch = By.cssSelector("#o_cousersSwitch input[type='radio'][value='n']");
-			browser.findElement(userSwitch).click();
+			By labelSwitchBy = By.xpath("//div[@id='o_cousersSwitch']//label[input[@name='usersSwitch'][@type='radio'][@value='n']]");
+			browser.findElement(labelSwitchBy).click();
 			OOGraphene.waitBusy(browser);
 		} else {
-			By userSwitch = By.cssSelector("#o_cousersSwitch input[type='radio'][value='y']");
-			browser.findElement(userSwitch).click();
+			By labelSwitchBy = By.xpath("//div[@id='o_cousersSwitch']//label[input[@name='usersSwitch'][@type='radio'][@value='y']]");
+			browser.findElement(labelSwitchBy).click();
 			OOGraphene.waitBusy(browser);
 			
-			By publishForUserBy = By.cssSelector("#o_fiopublishedForUsers_SELBOX");
+			By accessConfigurationBy = By.cssSelector("fieldset.o_ac_configuration");
+			OOGraphene.waitElement(accessConfigurationBy, 5, browser);
+			
+			By publishForUserBy = By.id("o_fiopublishedForUsers_SELBOX");
+			OOGraphene.scrollTo(publishForUserBy, browser);
 			WebElement publishForUserEl = browser.findElement(publishForUserBy);
 			Select publishForUserSelect = new Select(publishForUserEl);
 			switch(access) {
@@ -118,6 +129,7 @@ public class PublisherPageFragment {
 	}
 	
 	public PublisherPageFragment selectCatalog(boolean access) {
+		OOGraphene.waitElement(selectCatalogYesNoBy, 5, browser);
 		WebElement select = browser.findElement(selectCatalogYesNoBy);
 		new Select(select).selectByValue(access ? "yes" : "no");
 		return this;

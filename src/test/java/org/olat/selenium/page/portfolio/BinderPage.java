@@ -348,7 +348,7 @@ public class BinderPage {
 	protected void confirm() {
 		By confirmButtonBy = By.xpath("//div[contains(@class,'modal-dialo')]//div[contains(@class,'modal-footer')]/a[contains(@onclick,'link_0')]");
 		OOGraphene.waitElement(confirmButtonBy, 5, browser);
-		OOGraphene.waitScrollTop(browser);
+		OOGraphene.waitBusyAndScrollTop(browser);
 		browser.findElement(confirmButtonBy).click();
 		OOGraphene.waitBusy(browser);
 	}

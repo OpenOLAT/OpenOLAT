@@ -57,6 +57,8 @@ public class ScheduleStepForm extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_bulk_assessment_schedule");
+		
 		setFormTitle("schedule.title");
 		setFormDescription("schedule.description");
 		setFormContextHelp("Using Course Tools#bulkassessment_schedule");

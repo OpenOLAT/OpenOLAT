@@ -192,7 +192,10 @@ public class PortfolioV2Test {
 		membersPage
 			.importMembers()
 			.setMembers(ryomou)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
 		
 		//Participant log in
 		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
@@ -472,7 +475,10 @@ public class PortfolioV2Test {
 		members
 			.addMember()
 			.searchMember(ryomou, true)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
 		
 		//efficiency statement is default on
 		//go to the assessment to to set the points
@@ -689,7 +695,10 @@ public class PortfolioV2Test {
 		membersPage
 			.importMembers()
 			.setMembers(rei)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
 		
 		//Participant log in
 		LoginPage reiLoginPage = LoginPage.getLoginPage(reiBrowser, deploymentUrl);
@@ -728,10 +737,10 @@ public class PortfolioV2Test {
 			.openAccessMenu()
 			.addMember()
 			.searchMember(author, false)
-			.next()
-			.next()
+			.nextUsers()
+			.nextOverview()
 			.fillAccessRights(binderTitle, Boolean.TRUE)
-			.next()
+			.nextPermissions()
 			.deSelectEmail()
 			.finish();
 		

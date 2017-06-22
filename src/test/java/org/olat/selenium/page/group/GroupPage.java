@@ -224,8 +224,11 @@ public class GroupPage {
 	}
 	
 	public GroupPage setWaitingList() {
-		By waitingListBy = By.cssSelector(".o_sel_group_edit_waiting_list input[type='checkbox']");
-		browser.findElement(waitingListBy).click();
+		By waitingListBy = By.xpath("//div[contains(@class,'o_sel_group_edit_waiting_list')]//label[input[@type='checkbox']]");
+		By waitingListCheckBy = By.xpath("//div[contains(@class,'o_sel_group_edit_waiting_list')]//input[@type='checkbox']");
+		WebElement waitingListEl = browser.findElement(waitingListBy);
+		WebElement waitingListCheckEl = browser.findElement(waitingListCheckBy);
+		OOGraphene.check(waitingListEl, waitingListCheckEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

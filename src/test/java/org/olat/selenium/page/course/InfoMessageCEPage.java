@@ -84,9 +84,8 @@ public class InfoMessageCEPage {
 	 * @return This page
 	 */
 	public InfoMessageCEPage next() {
-		By nextBy = By.className("o_wizard_button_next");
-		browser.findElement(nextBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.nextStep(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_info_contact"), browser);
 		return this;
 	}
 	
@@ -96,9 +95,7 @@ public class InfoMessageCEPage {
 	 * @return This page
 	 */
 	public InfoMessageCEPage finish() {
-		By finishBy = By.className("o_wizard_button_finish");
-		browser.findElement(finishBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.finishStep(browser);
 		return this;
 	}
 	
@@ -142,6 +139,7 @@ public class InfoMessageCEPage {
 		Assert.assertFalse(editEls.isEmpty());
 		editEls.get(0).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
 	
@@ -206,14 +204,23 @@ public class InfoMessageCEPage {
 		return this;
 	}
 	
+	public InfoMessageCEPage scrollToMessage(String title) {
+		By titleBy = By.xpath("//div[contains(@class,'o_msg')]//div//h3[contains(text(),'" + title + "')]");
+		OOGraphene.scrollTo(titleBy, browser);
+		return this;
+	}
+	
 	/**
 	 * Click the old messages button. Raise an error if the button is not there.
 	 * 
 	 * @return This page
 	 */
 	public InfoMessageCEPage oldMessages() {
-		By oldMessagesBy = By.className("o_sel_course_info_old_msgs");
+		By oldMessagesBy = By.cssSelector("a.o_sel_course_info_old_msgs");
+		OOGraphene.waitElement(oldMessagesBy, browser);
+		OOGraphene.waitingTooLong();// I don't know why
 		browser.findElement(oldMessagesBy).click();
+		OOGraphene.scrollTop(browser);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

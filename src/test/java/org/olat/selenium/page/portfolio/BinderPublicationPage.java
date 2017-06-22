@@ -60,6 +60,7 @@ public class BinderPublicationPage {
 		OOGraphene.waitModalDialog(browser);
 		
 		By emailBy = By.cssSelector(".o_sel_pf_invitation_mail input[type='text']");
+		OOGraphene.waitElement(emailBy, browser);
 		browser.findElement(emailBy).sendKeys(email);
 		
 		//save
@@ -81,8 +82,11 @@ public class BinderPublicationPage {
 	
 	public BinderPublicationPage fillAccessRights(String name, Boolean check) {
 		By checkBy = By.xpath("//div[contains(@class,'o_portfolio_rights')]//table//tr[td[contains(text(),'" + name + "')]]/td//input[@type='checkbox']");
+		By labelCheckBy = By.xpath("//div[contains(@class,'o_portfolio_rights')]//table//tr[td[contains(text(),'" + name + "')]]/td//label[input[@type='checkbox']]");
 		WebElement checkEl = browser.findElement(checkBy);
-		OOGraphene.check(checkEl, check);
+		WebElement labelCheckEl = browser.findElement(labelCheckBy);
+		OOGraphene.scrollTo(labelCheckBy, browser);
+		OOGraphene.check(labelCheckEl, checkEl, check);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

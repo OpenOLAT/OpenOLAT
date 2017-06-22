@@ -96,6 +96,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_user_import_overview");
 		if(notfounds != null && !notfounds.isEmpty()) {
 			String page = velocity_root + "/warn_notfound.html";
 			FormLayoutContainer warnLayout = FormLayoutContainer.createCustomFormLayout("warnNotFounds", getTranslator(), page);

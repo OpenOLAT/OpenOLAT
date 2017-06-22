@@ -152,7 +152,7 @@ public class AuthoringEnvPage {
 		By createBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_wizard");
 		browser.findElement(createBy).click();
 		OOGraphene.waitBusy(browser);
-		return CourseWizardPage.getWizard(browser);
+		return new CourseWizardPage(browser);
 	}
 	
 	/**
@@ -210,6 +210,7 @@ public class AuthoringEnvPage {
 	
 	public void selectResource(String title) {
 		By selectBy = By.xpath("//div[contains(@class,'o_coursetable')]//a[contains(text(),'" + title + "')]");
+		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
 	}

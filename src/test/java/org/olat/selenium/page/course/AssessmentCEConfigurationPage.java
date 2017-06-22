@@ -77,9 +77,7 @@ public class AssessmentCEConfigurationPage {
 		cutValEl.sendKeys(Float.toString(cutVal));
 		
 		By saveBy = By.cssSelector(".o_sel_course_ms_form button.btn.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
-		
+		OOGraphene.click(saveBy, browser);
 		return this;
 	}
 	

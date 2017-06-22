@@ -22,7 +22,6 @@ package org.olat.selenium.page.course;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -218,16 +217,12 @@ public class CourseEditorPageFragment {
 	public CourseEditorPageFragment createNode(String nodeAlias) {
 		OOGraphene.waitElement(createNodeButton, 5, browser);
 		browser.findElement(createNodeButton).click();
-		OOGraphene.waitElement(createNodeModalBy, browser);
 		
 		//modal
-		WebElement createNodeModal = browser.findElement(createNodeModalBy);
-		
-		//create the node
-		By node = By.className("o_sel_course_editor_node-" + nodeAlias);
-		WebElement createNodeLink = createNodeModal.findElement(node);
-		Assert.assertTrue(createNodeLink.isDisplayed());
-		createNodeLink.click();
+		OOGraphene.waitBusyAndScrollTop(browser);
+		OOGraphene.waitModalDialog(browser);
+		By node = By.xpath("//div[@id='o_course_editor_choose_nodetype']//a[contains(@class,'o_sel_course_editor_node-" + nodeAlias + "')]");
+		browser.findElement(node).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -239,8 +234,9 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment nodeTitle(String title) {
-		By shortTitle = By.cssSelector("div.o_sel_node_editor_shorttitle input");
-		WebElement shortTitleEl = browser.findElement(shortTitle);
+		By shortTitleBy = By.cssSelector("div.o_sel_node_editor_shorttitle input[type='text']");
+		OOGraphene.waitElement(shortTitleBy, 5, browser);
+		WebElement shortTitleEl = browser.findElement(shortTitleBy);
 		shortTitleEl.clear();
 		shortTitleEl.sendKeys(title);
 		
@@ -250,9 +246,10 @@ public class CourseEditorPageFragment {
 		titleEl.sendKeys(title);
 		
 		By saveButton = By.cssSelector("button.o_sel_node_editor_submit");
+		OOGraphene.scrollTo(saveButton, browser);
 		browser.findElement(saveButton).click();
 		OOGraphene.waitBusy(browser);
-		
+
 		return this;
 	}
 	
@@ -283,6 +280,7 @@ public class CourseEditorPageFragment {
 		By changeNodeLinkBy = By.cssSelector("a.o_sel_course_editor_move_node");
 		browser.findElement(changeNodeLinkBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		By targetNodeBy = By.xpath("//div[contains(@class,'o_tree_insert_tool')]//a[contains(@title,'" + targetNodeTitle + "')]");
 		browser.findElement(targetNodeBy).click();
@@ -535,11 +533,9 @@ public class CourseEditorPageFragment {
 		WebElement publishButton = browser.findElement(publishButtonBy);
 		Assert.assertTrue(publishButton.isDisplayed());
 		publishButton.click();
-		
-		By modalBy = By.className("modal");
-		OOGraphene.waitElement(modalBy, browser);
-		WebElement modal = browser.findElement(By.className("modal"));
-		return Graphene.createPageFragment(PublisherPageFragment.class, modal);
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_nodes"), 5, browser);
+		return new PublisherPageFragment(browser);
 	}
 	
 	/**

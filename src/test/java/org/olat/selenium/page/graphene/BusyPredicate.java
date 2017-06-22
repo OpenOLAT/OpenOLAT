@@ -19,10 +19,10 @@
  */
 package org.olat.selenium.page.graphene;
 
+import java.util.function.Function;
+
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-
-import com.google.common.base.Predicate;
 
 /**
  * 
@@ -33,10 +33,10 @@ import com.google.common.base.Predicate;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BusyPredicate implements Predicate<WebDriver> {
+public class BusyPredicate implements Function<WebDriver,Boolean> {
 	
 	@Override
-	public boolean apply(WebDriver driver) {
+	public Boolean apply(WebDriver driver) {
         Object busy = ((JavascriptExecutor)driver)
         		.executeScript("return (typeof window.o_info === 'undefined') || window.o_info.linkbusy");
         return Boolean.FALSE.equals(busy);

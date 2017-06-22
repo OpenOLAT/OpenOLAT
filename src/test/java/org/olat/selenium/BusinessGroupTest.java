@@ -150,9 +150,9 @@ public class BusinessGroupTest {
 			.addMember();
 		
 		members.searchMember(participant, false)
-			.next()
-			.next()
-			.next()
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
 			.finish();
 		
 		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
@@ -431,16 +431,16 @@ public class BusinessGroupTest {
 		group.openAdminMembers()
 			.addMember()
 			.searchMember(participant, false)
-			.next()
-			.next()
-			.next()
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
 			.finish();
 		
 		group.addMember()
 			.searchMember(rei, false)
-			.next()
-			.next()
-			.next()
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
 			.finish();
 		
 		//participant login
@@ -513,11 +513,17 @@ public class BusinessGroupTest {
 			.openAdminMembers()
 			.addMember()
 			.searchMember(kanu, true)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
 		//add Ryomou
 		group.addMember()
 			.searchMember(ryomou, true)
-			.next().next().next().finish();
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
 		
 		//Kanu open the group
 		LoginPage kanuLoginPage = LoginPage.getLoginPage(kanuBrowser, deploymentUrl);

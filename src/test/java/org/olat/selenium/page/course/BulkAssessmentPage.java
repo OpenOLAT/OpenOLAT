@@ -19,7 +19,6 @@
  */
 package org.olat.selenium.page.course;
 
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -67,22 +66,36 @@ public class BulkAssessmentPage {
 		return this;
 	}
 	
-	public BulkAssessmentPage next() {
-		WebElement next = browser.findElement(nextBy);
-		Assert.assertTrue(next.isDisplayed());
-		Assert.assertTrue(next.isEnabled());
-		next.click();
-		OOGraphene.waitBusy(browser);
+	public BulkAssessmentPage nextNodes() {
+		OOGraphene.nextStep(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_bulk_assessment_data"), browser);
+		return this;
+	}
+	
+	public BulkAssessmentPage nextData() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_bulk_assessment_columns"), browser);
+		return this;
+	}
+	
+	public BulkAssessmentPage nextColumns() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_bulk_assessment_validation"), browser);
+		return this;
+	}
+	
+	public BulkAssessmentPage nextValidation() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_bulk_assessment_schedule"), browser);
 		return this;
 	}
 	
 	public BulkAssessmentPage finish() {
-		WebElement finish = browser.findElement(finishBy);
-		Assert.assertTrue(finish.isDisplayed());
-		Assert.assertTrue(finish.isEnabled());
-		finish.click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.finishStep(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}

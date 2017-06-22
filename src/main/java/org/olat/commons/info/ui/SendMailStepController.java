@@ -65,6 +65,7 @@ public class SendMailStepController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_info_contact");
 		setFormTitle("wizard.step1.title");
 		setFormDescription("wizard.step1.form_description");
 		sendSelection = uifactory.addCheckboxesVertical("wizard.step1.send_option", formLayout, sendOptionKeys, sendOptionValues, 1);

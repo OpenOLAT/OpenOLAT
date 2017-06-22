@@ -93,7 +93,7 @@ public class UserPreferencesPageFragment {
 		By saveSystemSettingsButton = By.cssSelector("div.o_sel_home_settings_gui_buttons.form-inline button[type='button']");
 		browser.findElement(saveSystemSettingsButton).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitScrollTop(browser);//wait scroll top
+		OOGraphene.waitBusyAndScrollTop(browser);//wait scroll top
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
@@ -110,7 +110,7 @@ public class UserPreferencesPageFragment {
 		By saveSystemSettingsButton = By.cssSelector("div.o_sel_home_settings_gui_buttons.form-inline button[type='button']");
 		browser.findElement(saveSystemSettingsButton).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitScrollTop(browser);
+		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
@@ -123,7 +123,7 @@ public class UserPreferencesPageFragment {
 		WebElement saveButton = browser.findElement(saveSystemPrefsButton);
 		saveButton.click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitScrollTop(browser);
+		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}

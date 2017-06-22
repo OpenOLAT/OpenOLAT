@@ -101,7 +101,7 @@ public class FolderPage {
 		OOGraphene.tinymce(content, browser);
 		
 		By saveAndCloseButton = By.cssSelector("#o_button_saveclose a.btn");
-		browser.findElement(saveAndCloseButton).click();
+		OOGraphene.clickAndWait(saveAndCloseButton, browser);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

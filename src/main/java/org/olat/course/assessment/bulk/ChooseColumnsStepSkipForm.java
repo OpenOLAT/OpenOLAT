@@ -45,6 +45,7 @@ public class ChooseColumnsStepSkipForm extends StepFormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_bulk_assessment_columns");
 		setFormTitle("chooseColumns.title");
 		setFormDescription("chooseColumns.skip.description");
 	}

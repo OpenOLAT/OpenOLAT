@@ -128,11 +128,15 @@ public class NavigationPage {
 		if(links.isEmpty() || !links.get(0).isDisplayed()) {
 			//try to open the more menu
 			openMoreMenu();
-			links = browser.findElements(linkBy);
 		}
 
 		OOGraphene.waitElement(linkBy, browser);
-		browser.findElement(linkBy).click();
+		try {
+			browser.findElement(linkBy).click();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitingTransition(browser);
 	}

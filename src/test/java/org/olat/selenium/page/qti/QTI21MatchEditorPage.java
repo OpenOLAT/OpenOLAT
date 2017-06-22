@@ -86,8 +86,7 @@ public class QTI21MatchEditorPage extends QTI21AssessmentItemEditorPage {
 	
 	public QTI21MatchEditorPage save() {
 		By saveBy = By.cssSelector("div.o_sel_match_save button.btn.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.click(saveBy, browser);
 		return this;
 	}
 	

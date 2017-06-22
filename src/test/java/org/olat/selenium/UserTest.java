@@ -740,10 +740,10 @@ public class UserTest {
 		importWizard.append(username2, "vampire01", "Mizore", "Shirayuki", csv);
 		importWizard
 			.fill(csv.toString())
-			.next() // -> preview
+			.nextData() // -> preview
 			.assertGreen(2)
-			.next() // -> groups
-			.next() // -> emails
+			.nextOverview() // -> groups
+			.nextGroups() // -> emails
 			.finish();
 		
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
@@ -796,13 +796,13 @@ public class UserTest {
 		user1 = importWizard.append(user1, "Aono", "openolat2", csv);
 		importWizard
 			.fill(csv.toString())
-			.next() // -> preview
+			.nextData() // -> preview
 			.assertGreen(1)
 			.assertWarn(1)
 			.updatePasswords()
 			.updateUsers()
-			.next() // -> groups
-			.next() // -> emails
+			.nextOverview() // -> groups
+			.nextGroups() // -> emails
 			.finish();
 		
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);

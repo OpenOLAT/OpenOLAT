@@ -17,35 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.graphene;
+package org.olat.core.gui.control.winmgr;
 
-import java.util.function.Function;
-
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.olat.core.logging.AssertException;
 
 /**
  * 
- * Observe the scrolling flag of the o_scrollToElement method.
- * 
- * Initial date: 23.05.2016<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  *
  */
-public class ScrollToPredicate implements Function<WebDriver,Boolean> {
-	
-	private boolean started = false;
-	
-	@Override
-	public Boolean apply(WebDriver driver) {
-        Object busy = ((JavascriptExecutor)driver)
-        		.executeScript("return (window.o_info.scrolling)");
-        if(started) {
-        	return Boolean.FALSE.equals(busy);
-        }
-        if(Boolean.TRUE.equals(busy)) {
-        	started = true; //start to scroll
-        }
-        return false;
-    }
+public class ScrollTopCommand extends Command {
+
+	/**
+	 * Create a command that executes arbitrary JS code
+	 * @param javaScriptCode
+	 */
+	public ScrollTopCommand() {
+		super(1); // do not change this command id, it is in js also
+		JSONObject subjo = new JSONObject();
+		try {
+			subjo.put("e", "try { o_scrollToElement('#o_top'); } catch(e){ }");
+		} catch (JSONException e) {
+			throw new AssertException("json exception:", e);
+		}
+		setSubJSON(subjo);		
+	}
 }

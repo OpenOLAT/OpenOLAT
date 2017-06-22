@@ -62,8 +62,7 @@ public class QTI21KprimEditorPage extends QTI21AssessmentItemEditorPage {
 	
 	public QTI21KprimEditorPage save() {
 		By saveBy = By.cssSelector("fieldset.o_sel_choices_save button.btn.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.click(saveBy, browser);
 		return this;
 	}
 	

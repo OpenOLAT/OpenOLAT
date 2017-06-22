@@ -101,19 +101,29 @@ public class AdministrationPage {
 	}
 	
 	public AdministrationPage setGroupConfirmationForUser(boolean mandatory) {
-		By membershipConfirmationBy = By.cssSelector("input[name='mandatory.membership'][value='users']");
-		OOGraphene.waitElement(membershipConfirmationBy, 5, browser);
-		WebElement membershipConfirmationEl = browser.findElement(membershipConfirmationBy);
-		OOGraphene.check(membershipConfirmationEl, new Boolean(mandatory));
+		By userConfirmationBy = By.xpath("//label[input[@name='mandatory.membership' and @value='users']]");
+		By userConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='users']");
+		
+		OOGraphene.waitElement(userConfirmationBy, browser);
+		OOGraphene.scrollTo(userConfirmationBy, browser);
+		
+		WebElement userConfirmationEl = browser.findElement(userConfirmationBy);
+		WebElement userConfirmationCheckEl = browser.findElement(userConfirmationCheckBy);
+		OOGraphene.check(userConfirmationEl, userConfirmationCheckEl, new Boolean(mandatory));
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public AdministrationPage setGroupConfirmationForAuthor(boolean mandatory) {
-		By membershipConfirmationBy = By.cssSelector("input[name='mandatory.membership'][value='authors']");
-		OOGraphene.waitElement(membershipConfirmationBy, 5, browser);
-		WebElement membershipConfirmationEl = browser.findElement(membershipConfirmationBy);
-		OOGraphene.check(membershipConfirmationEl, new Boolean(mandatory));
+		By authorConfirmationBy = By.xpath("//label[input[@name='mandatory.membership' and @value='authors']]");
+		By authorConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='authors']");
+		
+		OOGraphene.waitElement(authorConfirmationBy, 5, browser);
+		OOGraphene.scrollTo(authorConfirmationBy, browser);
+		
+		WebElement authorConfirmationEl = browser.findElement(authorConfirmationBy);
+		WebElement authorConfirmationCheckEl = browser.findElement(authorConfirmationCheckBy);
+		OOGraphene.check(authorConfirmationEl, authorConfirmationCheckEl, new Boolean(mandatory));
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

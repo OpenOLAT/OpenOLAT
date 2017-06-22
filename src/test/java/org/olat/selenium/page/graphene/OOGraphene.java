@@ -35,7 +35,6 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 
 /**
  * 
@@ -45,15 +44,27 @@ import org.openqa.selenium.interactions.Actions;
  */
 public class OOGraphene {
 
-	private static final long poolingDuration = 50;//ms
-	private static final long waitTinyDuration = 15;//seconds
+	private static final long poolingDuration = 100;//ms
+	private static final long waitTinyDuration = 50;//seconds
+	private static final long defaultTimeout = 5;//seconds
 
-	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close.o_sel_info_close i.o_icon_close");
+	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close.o_sel_info_close");
+	//private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close.o_sel_info_close i.o_icon_close");
 	private static final By closeModalDialogButtonBy = By.cssSelector("div.modal-dialog div.modal-header button.close");
+	
+	public static final By wizardNextBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_next')]");
+	public static final By wizardFinishBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_finish') and not(contains(@class,'o_disabled'))]");
 	
 	public static void waitModalDialog(WebDriver browser) {
 		By modalBy = By.cssSelector("div.modal-dialog div.modal-body");
-		waitElement(modalBy, 5, browser);
+		Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
+			.pollingEvery(200, TimeUnit.MILLISECONDS).until().element(modalBy).is().visible();
+	}
+	
+	public static void waitModalWizard(WebDriver browser) {
+		By modalBy = By.cssSelector("div.modal-dialog div.modal-body");
+		Graphene.waitModel(browser).withTimeout(defaultTimeout, TimeUnit.SECONDS)
+			.pollingEvery(200, TimeUnit.MILLISECONDS).until().element(modalBy).is().visible();
 	}
 	
 	public static void waitCallout(WebDriver browser) {
@@ -62,7 +73,8 @@ public class OOGraphene {
 	}
 	
 	public static void waitBusy(WebDriver browser) {
-		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
+		Graphene.waitModel(browser).withTimeout(defaultTimeout, TimeUnit.SECONDS)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
 	}
 	
 	public static void waitBusy(WebDriver browser, int timeoutInSeconds) {
@@ -70,8 +82,13 @@ public class OOGraphene {
 			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
 	}
 	
+	/**
+	 * 
+	 * @param element
+	 * @param browser
+	 */
 	public static void waitElement(By element, WebDriver browser) {
-		Graphene.waitModel(browser)
+		Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
 			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
 	}
 	
@@ -88,7 +105,7 @@ public class OOGraphene {
 	}
 	
 	/**
-	 * Wait until the element is present.
+	 * Wait until the element is not present.
 	 * 
 	 * @param element The selector of the element
 	 * @param timeoutInSeconds The timeout in seconds
@@ -111,72 +128,79 @@ public class OOGraphene {
 			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().not().visible();
 	}
 	
-	/**
-	 * Wait until the element is visible.
-	 * 
-	 * @param element The element to be visible
-	 * @param browser The web driver
-	 */
-	public static void waitElement(WebElement element, WebDriver browser) {
-		Graphene.waitModel(browser)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
-	}
-	
-	/**
-	 * Wait until the element is visible.
-	 * 
-	 * @param element The element
-	 * @param timeoutInSeconds The timeout in seconds
-	 * @param browser The web driver
-	 */
-	public static void waitElement(WebElement element, int timeoutInSeconds, WebDriver browser) {
-		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
-	}
-	
-	/**
-	 * Wait until the element is present.
-	 * 
-	 * @param element The selector of the element
-	 * @param browser The web driver
-	 */
-	public static void waitElementPresent(By element, WebDriver browser) {
-		Graphene.waitModel(browser)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().present();
-	}
-	
-	/**
-	 * Wait until the element is present.
-	 * 
-	 * @param element The selector of the element
-	 * @param timeoutInSeconds The timeout in seconds
-	 * @param browser The web driver
-	 */
-	public static void waitElementPresent(By element, int timeoutInSeconds, WebDriver browser) {
-		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().present();
-	}
-	
-	/**
-	 * The method is very, very experimental and not reliable. Only for research purpose.
-	 * 
-	 * @param by
-	 * @param browser
-	 */
-	public static void waitElementInViewport(By by, WebDriver browser) {
-		Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
-			.until(new InViewportPredicate(by));
-	}
-	
 	public static void waitGui(WebDriver browser) {
 		Graphene.waitGui(browser);
 	}
 	
-	public static WebElement moveTo(WebElement element, WebDriver browser) {
-		Actions actions = new Actions(browser);
-		actions.moveToElement(element).perform();
-		return element;
+	public static void nextStep(WebDriver browser) {
+		clickAndWait(wizardNextBy, browser);
+	}
+	
+	public static void finishStep(WebDriver browser) {
+		clickAndWait(wizardFinishBy, browser);
+		OOGraphene.closeBlueMessageWindow(browser);
+	}
+	
+	/**
+	 * Verify the location of the button, scroll
+	 * if needed and click. There is no wait of
+	 * any sort. 
+	 * 
+	 * @param buttonBy The selector
+	 * @param browser The browser
+	 */
+	public static void click(By buttonBy, WebDriver browser) {
+		WebElement buttonEl = browser.findElement(buttonBy);
+		boolean move = buttonEl.getLocation().getY() > 681;
+		if(move) {
+			scrollTo(buttonBy, browser);
+		}
+		browser.findElement(buttonBy).click();
+	}
+	
+	/**
+	 * Check the location of the button. If it's below the visible
+	 * window, it scrolls to the button, waits a little longer and
+	 * click it. After it wait until the window scroll to the top
+	 * and/or make a classic waitBusy
+	 * 
+	 * @param buttonBy
+	 * @param browser
+	 */
+	public static void clickAndWait(By buttonBy, WebDriver browser) {
+		WebElement buttonEl = browser.findElement(buttonBy);
+		boolean move = buttonEl.getLocation().getY() > 669;
+		if(move) {
+			scrollTo(buttonBy, browser);
+		}
+		browser.findElement(buttonBy).click();
+		if(move) {
+			OOGraphene.waitBusyAndScrollTop(browser);
+		} else {
+			OOGraphene.waitBusy(browser);
+		}
+	}
+	
+	/**
+	 * Scroll to the element and wait a little longer.
+	 * @param by
+	 * @param browser
+	 */
+	public static void scrollTo(By by, WebDriver browser) {
+		WebElement el = browser.findElement(by);
+		((JavascriptExecutor)browser).executeScript("return arguments[0].scrollIntoView({behavior:\"instant\", block: \"end\"});", el);
+		OOGraphene.waitingALittleLonger();
+	}
+	
+	/**
+	 * Scroll to the top anchor.
+	 * 
+	 * @param browser
+	 */
+	public static void scrollTop(WebDriver browser) {
+		WebElement el = browser.findElement(By.id("o_top"));
+		((JavascriptExecutor)browser).executeScript("return arguments[0].scrollIntoView({behavior:\"instant\", block: \"end\"});", el);
+		OOGraphene.waitingALittleLonger();
 	}
 	
 	// top.tinymce.get('o_fi1000000416').setContent('<p>Hacked</p>');
@@ -216,6 +240,21 @@ public class OOGraphene {
 		} else {
 			if(checked != null) {
 				checkboxEl.click();
+			}
+		}
+	}
+	
+	public static final void check(WebElement labelEl, WebElement checkboxEl, Boolean val) {
+		if(val == null) return;
+		
+		String checked = checkboxEl.getAttribute("checked");
+		if(Boolean.TRUE.equals(val)) {
+			if(checked == null) {
+				labelEl.click();
+			}
+		} else {
+			if(checked != null) {
+				labelEl.click();
 			}
 		}
 	}
@@ -293,18 +332,36 @@ public class OOGraphene {
 		}
 	}
 	
+	/**
+	 * Wait 5 seconds. Only use it if you lose all hopes.
+	 */
+	public static final void waitingTooLong() {
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static final void uploadFile(By inputBy, File file, WebDriver browser) {
 		WebElement input = browser.findElement(inputBy);
 		input.sendKeys(file.getAbsolutePath());
 	}
 	
-	public static final void waitScrollTop(WebDriver browser) {
+	/**
+	 * This take longer than the standard busy wait because it waits the
+	 * window is stabilized.
+	 * 
+	 * @param browser
+	 */
+	public static final void waitBusyAndScrollTop(WebDriver browser) {
 		try {
-			Graphene.waitModel(browser).ignoring(TimeoutException.class).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
-				.until(new ScrollToPredicate());
-			waitingALittleBit();
+			Graphene.waitModel(browser)
+				.ignoring(TimeoutException.class)
+				.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+				.until(new BusyScrollToPredicate());
 		} catch (Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 	

@@ -20,12 +20,11 @@
 package org.olat.selenium.page.graphene;
 
 import java.util.List;
+import java.util.function.Function;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-import com.google.common.base.Predicate;
 
 /**
  * 
@@ -35,12 +34,12 @@ import com.google.common.base.Predicate;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CloseAlertInfoPredicate implements Predicate<WebDriver> {
+public class CloseAlertInfoPredicate implements Function<WebDriver,Boolean> {
 	
 	private static final By alertBy = By.cssSelector("div.o_alert_info");
 	
 	@Override
-	public boolean apply(WebDriver driver) {
+	public Boolean apply(WebDriver driver) {
 		List<WebElement> closeButtons = driver.findElements(alertBy);
         return closeButtons.isEmpty();
     }

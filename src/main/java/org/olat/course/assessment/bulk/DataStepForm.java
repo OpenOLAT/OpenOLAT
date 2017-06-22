@@ -102,6 +102,8 @@ public class DataStepForm extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_bulk_assessment_data");
+		
 		// hide data input field in case the element does not have any score, passed or comment field enabled
 		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
 		boolean onlyReturnFiles = (!settings.isHasScore() && !settings.isHasPassed() && !settings.isHasUserComment());

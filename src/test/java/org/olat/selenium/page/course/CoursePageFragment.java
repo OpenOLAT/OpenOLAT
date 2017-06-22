@@ -57,7 +57,7 @@ public class CoursePageFragment {
 	public static final By treeContainerBy = By.id("o_main_left_content");
 	public static final By efficiencyStatementsBy = By.className("o_sel_course_options_certificates");
 	
-	private WebDriver browser;
+	private final WebDriver browser;
 	
 	public CoursePageFragment(WebDriver browser) {
 		this.browser = browser;
@@ -183,10 +183,28 @@ public class CoursePageFragment {
 	}
 	
 	/**
-	 * Click the editor link in the tools drop-down
-	 * @return
+	 * Click the editor link in the tools drop-down and
+	 * wait the edit mode.
+	 * 
+	 * @return Itself
 	 */
 	public CourseEditorPageFragment edit() {
+		if(!browser.findElement(toolsMenu).isDisplayed()) {
+			openToolsMenu();
+		}
+		browser.findElement(editCourseBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.xpath("//div[contains(@class,'o_edit_mode')]"), 5, browser);
+		OOGraphene.closeBlueMessageWindow(browser);
+		return new CourseEditorPageFragment(browser);
+	}
+	
+	/**
+	 * Try to edit the course but don't wait the edit mode.
+	 * 
+	 * @return Itself
+	 */
+	public CourseEditorPageFragment tryToEdit() {
 		if(!browser.findElement(toolsMenu).isDisplayed()) {
 			openToolsMenu();
 		}

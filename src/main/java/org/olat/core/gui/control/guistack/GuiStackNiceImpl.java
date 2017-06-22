@@ -37,6 +37,7 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings.CalloutOrientation;
 import org.olat.core.gui.control.util.ZIndexWrapper;
+import org.olat.core.gui.control.winmgr.ScrollTopCommand;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.util.Util;
 
@@ -83,10 +84,14 @@ public class GuiStackNiceImpl implements GuiStack {
 	 * @param title the title of the modal dialog, can be null
 	 * @param content the component to push as modal dialog
 	 */
+	@Override
 	public void pushModalDialog(Component content) {
+		wbo.sendCommandTo(new ScrollTopCommand());
+		
 		// wrap the component into a modal foreground dialog with alpha-blended-background
 		final Panel guiMsgPlace = new Panel("guimsgplace_for_modaldialog");
 		VelocityContainer inset = new VelocityContainer("inset", VELOCITY_ROOT + "/modalDialog.html", null, null) {
+			@Override
 			public void validate(UserRequest ureq, ValidationResult vr) {
 				super.validate(ureq, vr);
 				// just before rendering, we need to tell the windowbackoffice that we are a favorite for accepting gui-messages.

@@ -36,9 +36,6 @@ import org.openqa.selenium.WebElement;
  *
  */
 public class MembersWizardPage {
-
-	public static final By nextBy = By.className("o_wizard_button_next");
-	public static final By finishBy = By.className("o_wizard_button_finish");
 	
 	private WebDriver browser;
 	
@@ -46,23 +43,36 @@ public class MembersWizardPage {
 		this.browser = browser;
 	}
 	
-	public MembersWizardPage next() {
-		WebElement next = browser.findElement(nextBy);
-		Assert.assertTrue(next.isDisplayed());
-		Assert.assertTrue(next.isEnabled());
-		next.click();
-		OOGraphene.waitBusy(browser);
+	public MembersWizardPage nextUsers() {
+		OOGraphene.nextStep(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_user_import_overview"), 5, browser);
+		return this;
+	}
+	
+	public MembersWizardPage nextOverview() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_edit_permissions"), 5, browser);
+		return this;
+	}
+	
+	public MembersWizardPage nextPermissions() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contact_form"), browser);
 		return this;
 	}
 	
 	public MembersWizardPage finish() {
-		WebElement finish = browser.findElement(finishBy);
-		Assert.assertTrue(finish.isDisplayed());
-		Assert.assertTrue(finish.isEnabled());
-		finish.click();
-		OOGraphene.waitBusy(browser);
-		OOGraphene.closeBlueMessageWindow(browser);
+		try {
+			By contactFormBy = By.cssSelector("fieldset.o_sel_contact_form");
+			OOGraphene.waitElement(contactFormBy, 5, browser);
+			OOGraphene.waitBusyAndScrollTop(browser);
+			OOGraphene.finishStep(browser);
+		} catch (Exception e) {
+			OOGraphene.finishStep(browser);
+		}
 		return this;
 	}
 	
@@ -82,19 +92,11 @@ public class MembersWizardPage {
 		searchFields.get(0).sendKeys(search);
 
 		By searchBy = By.cssSelector(".o_sel_usersearch_searchform a.btn-default");
-		WebElement searchButton = browser.findElement(searchBy);
-		searchButton.click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.clickAndWait(searchBy, browser);
 		
-		//check
-		By checkAllBy = By.cssSelector("div.modal div.o_table_wrapper input[type='checkbox']");
-		OOGraphene.waitElement(checkAllBy, 5, browser);
-		List<WebElement> checkAll = browser.findElements(checkAllBy);
-		Assert.assertFalse(checkAll.isEmpty());
-		for(WebElement check:checkAll) {
-			check.click();
-			OOGraphene.waitBusy(browser);
-		}
+		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/label/a[i[contains(@class,'o_icon_check_on')]]");
+		OOGraphene.waitElement(selectAll, 5, browser);
+		browser.findElement(selectAll).click();
 		return this;
 	}
 	
@@ -115,29 +117,29 @@ public class MembersWizardPage {
 			By ownerBy = By.cssSelector("label input[name='repoRights'][type='checkbox'][value='owner']");
 			WebElement ownerEl = browser.findElement(ownerBy);
 			OOGraphene.check(ownerEl, new Boolean(owner));
-			OOGraphene.waitBusy(browser);
+			OOGraphene.waitBusyAndScrollTop(browser);
 		}
 		
 		if(coach) {
 			By coachBy = By.cssSelector("label input[name='repoRights'][type='checkbox'][value='tutor']");
 			WebElement coachEl = browser.findElement(coachBy);
 			OOGraphene.check(coachEl, new Boolean(coach));
-			OOGraphene.waitBusy(browser);
+			OOGraphene.waitBusyAndScrollTop(browser);
 		}
 		
 		if(participant) {
 			By participantBy = By.cssSelector("label input[name='repoRights'][type='checkbox'][value='participant']");
 			WebElement participantEl = browser.findElement(participantBy);
 			OOGraphene.check(participantEl, new Boolean(participant));
-			OOGraphene.waitBusy(browser);
+			OOGraphene.waitBusyAndScrollTop(browser);
 		}
 		return this;
 	}
 	
 	public MembersWizardPage selectGroupAsParticipant(String groupName) {
 		By rolesBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td[text()='" + groupName + "']]//label[contains(@class,'o_sel_role_participant')]/input");
-		List<WebElement> roleEls = browser.findElements(rolesBy);
-		roleEls.get(0).click();
+		OOGraphene.waitElement(rolesBy, 5, browser);
+		browser.findElement(rolesBy).click();
 		return this;
 	}
 }

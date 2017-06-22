@@ -19,10 +19,10 @@
  */
 package org.olat.selenium.page.graphene;
 
+import java.util.function.Function;
+
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-
-import com.google.common.base.Predicate;
 
 /**
  * Observe the boolean flag which is set at the beginning and 
@@ -32,10 +32,10 @@ import com.google.common.base.Predicate;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class NavBarTransitionPredicate implements Predicate<WebDriver> {
+public class NavBarTransitionPredicate implements Function<WebDriver,Boolean> {
 	
 	@Override
-	public boolean apply(WebDriver driver) {
+	public Boolean apply(WebDriver driver) {
         Object busy = ((JavascriptExecutor)driver)
         		.executeScript("return (window.OPOL.navbar.offcanvasTransitioning)");
         return Boolean.FALSE.equals(busy);

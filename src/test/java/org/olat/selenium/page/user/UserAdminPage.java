@@ -137,6 +137,8 @@ public class UserAdminPage {
 		By importBy = By.cssSelector("a.o_sel_id_start_import_user_button.btn-primary");
 		browser.findElement(importBy).click();
 		OOGraphene.waitBusy(browser);
+		By dataBy = By.cssSelector("fieldset.o_sel_import_users_data");
+		OOGraphene.waitElement(dataBy, browser);
 		return new ImportUserPage(browser);
 	}
 	

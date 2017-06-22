@@ -134,6 +134,8 @@ class ImportStep01 extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			formLayout.setElementCssClass("o_sel_import_users_overview");
+			
 			FormLayoutContainer formLayoutVertical = FormLayoutContainer.createVerticalFormLayout("vertical", getTranslator());
 			formLayout.add(formLayoutVertical);
 

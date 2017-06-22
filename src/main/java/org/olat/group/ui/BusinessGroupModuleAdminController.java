@@ -84,6 +84,8 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer optionsContainer = FormLayoutContainer.createDefaultFormLayout("options", getTranslator());
+		optionsContainer.setFormTitle(translate("module.admin.title"));
+		optionsContainer.setFormDescription(translate("module.admin.desc"));
 		formLayout.add(optionsContainer);
 		String[] values = new String[]{
 				translate("user.allow.create"),
@@ -95,6 +97,8 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		allowEl.addActionListener(FormEvent.ONCHANGE);
 
 		FormLayoutContainer resourceAssignmentContainer = FormLayoutContainer.createDefaultFormLayout("resourceAssignment", getTranslator());
+		resourceAssignmentContainer.setFormTitle(translate("module.resource.title"));
+		resourceAssignmentContainer.setFormDescription(translate("module.resource.desc"));
 		formLayout.add(resourceAssignmentContainer);
 		
 		String[] courseValues = new String[]{ translate("module.resource.courses.grant") };
@@ -108,6 +112,8 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		assignGroupsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		FormLayoutContainer privacyOptionsContainer = FormLayoutContainer.createDefaultFormLayout("privacy_options", getTranslator());
+		privacyOptionsContainer.setFormTitle(translate("module.privacy.title"));
+		privacyOptionsContainer.setFormDescription(translate("module.privacy.desc"));
 		formLayout.add(privacyOptionsContainer);
 		String[] enrollmentValues = new String[]{
 				translate("enrolment.email.users"),
@@ -152,6 +158,8 @@ public class BusinessGroupModuleAdminController extends FormBasicController impl
 		allowLeavingGroupsEl.addActionListener(FormEvent.ONCHANGE);
 				
 		FormLayoutContainer dedupCont = FormLayoutContainer.createDefaultFormLayout("dedup", getTranslator());
+		dedupCont.setFormTitle(translate("dedup.members"));
+		dedupCont.setFormDescription(translate("dedup.members.desc"));
 		formLayout.add(dedupCont);
 		dedupLink = uifactory.addFormLink("dedup.members", dedupCont, Link.BUTTON);
 	}

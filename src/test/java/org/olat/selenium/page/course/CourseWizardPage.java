@@ -21,8 +21,6 @@ package org.olat.selenium.page.course;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -39,29 +37,37 @@ import org.openqa.selenium.WebElement;
  */
 public class CourseWizardPage {
 	
-	public static final By nextBy = By.className("o_wizard_button_next");
-	public static final By finishBy = By.className("o_wizard_button_finish");
+	private final WebDriver browser;
 	
-	@Drone
-	private WebDriver browser;
+	public CourseWizardPage(WebDriver browser) {
+		this.browser = browser;
+	}
 	
 	public static CourseWizardPage getWizard(WebDriver browser) {
-		By modalBy = By.className("modal-content");
-		WebElement modal = browser.findElement(modalBy);
-		return Graphene.createPageFragment(CourseWizardPage.class, modal);
+		return new CourseWizardPage(browser);
 	}
 	
 	/**
-	 * Next
-	 * @return this
+	 * Click next on the step which selects the course elements.
+	 * 
+	 * @return Itself
 	 */
-	public CourseWizardPage next() {
-		WebElement next = browser.findElement(nextBy);
-		Assert.assertTrue(next.isDisplayed());
-		Assert.assertTrue(next.isEnabled());
-		next.click();
-		OOGraphene.waitBusy(browser);
+	public CourseWizardPage nextNodes() {
+		OOGraphene.nextStep(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_catalog_chooser_tree"), 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Click next the step which selects a catalog entry.
+	 * 
+	 * @return Itself
+	 */
+	public CourseWizardPage nextCatalog() {
+		OOGraphene.nextStep(browser);
+		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repositoryentry_access"), 5, browser);
 		return this;
 	}
 	
@@ -70,12 +76,7 @@ public class CourseWizardPage {
 	 * @return this
 	 */
 	public CourseWizardPage finish() {
-		WebElement finish = browser.findElement(finishBy);
-		Assert.assertTrue(finish.isDisplayed());
-		Assert.assertTrue(finish.isEnabled());
-		finish.click();
-		OOGraphene.waitBusy(browser);
-		OOGraphene.waitAndCloseBlueMessageWindow(browser);
+		OOGraphene.finishStep(browser);
 		return this;
 	}
 	

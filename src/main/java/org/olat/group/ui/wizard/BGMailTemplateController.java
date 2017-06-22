@@ -156,6 +156,7 @@ public class BGMailTemplateController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_contact_form");
 		if(!mandatoryEmail) {
 			sendMail = uifactory.addCheckboxesVertical("sendmail", "", formLayout, new String[]{"xx"}, new String[]{translate("mailtemplateform.sendMailSwitchElem")}, 1);
 			sendMail.select("xx", true);

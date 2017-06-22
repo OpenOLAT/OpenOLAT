@@ -88,7 +88,8 @@ class PublishStep00a extends BasicStep implements Step {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			//
+			formLayout.setElementCssClass("o_sel_publish_update");
+			
 			if(containsRunContextKey("STEP00.warningMessage")) {
 				uifactory.addStaticTextElement("warnings", null,(String)getFromRunContext("STEP00.warningMessage"), formLayout);
 			} else {

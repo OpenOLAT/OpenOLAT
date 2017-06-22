@@ -1,3 +1,4 @@
+<div class="o_sel_edit_permissions">
 #if($r.available("repoRights"))
 	<fieldset>
 		<legend>$editTitle</legend>
@@ -10,6 +11,7 @@
 		$r.render("groupList")
 	</fieldset>
 #end
+</div>
 #if($r.available("buttonLayout"))
 	<div class="o_button_group">$r.render("buttonLayout")</div>
 #end

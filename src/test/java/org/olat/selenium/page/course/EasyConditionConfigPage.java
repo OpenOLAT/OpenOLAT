@@ -56,7 +56,8 @@ public class EasyConditionConfigPage {
 	public EasyConditionConfigPage createBusinessGroup(String name) {
 		By createBy = By.cssSelector("a.o_sel_condition_create_groups");
 		browser.findElement(createBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitBusyAndScrollTop(browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");
@@ -94,5 +95,4 @@ public class EasyConditionConfigPage {
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
-
 }

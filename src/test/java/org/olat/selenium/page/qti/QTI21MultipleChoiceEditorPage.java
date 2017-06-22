@@ -22,6 +22,7 @@ package org.olat.selenium.page.qti;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -51,8 +52,11 @@ public class QTI21MultipleChoiceEditorPage extends QTI21AssessmentItemEditorPage
 	}
 	
 	public QTI21MultipleChoiceEditorPage setCorrect(int position) {
-		By correctBy = By.xpath("//div[contains(@class,'o_sel_choice_" + position + "')]//input[contains(@id,'oo_correct-')]");
-		browser.findElement(correctBy).click();
+		By correctBy = By.xpath("//div[contains(@class,'o_sel_choice_" + position + "')]//label[input[contains(@id,'oo_correct-')]]");
+		By correctCheckBy = By.xpath("//div[contains(@class,'o_sel_choice_" + position + "')]//input[contains(@id,'oo_correct-')]");
+		WebElement correctEl = browser.findElement(correctBy);
+		WebElement correctCheckEl = browser.findElement(correctCheckBy);
+		OOGraphene.check(correctEl, correctCheckEl, true);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -65,8 +69,7 @@ public class QTI21MultipleChoiceEditorPage extends QTI21AssessmentItemEditorPage
 	
 	public QTI21MultipleChoiceEditorPage save() {
 		By saveBy = By.cssSelector("fieldset.o_sel_choices_save button.btn.btn-primary");
-		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.click(saveBy, browser);
 		return this;
 	}
 	

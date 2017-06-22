@@ -71,8 +71,7 @@ public class AssessmentToolPage {
 	 */
 	public AssessmentToolPage selectUser(UserVO user) {
 		By userLinksBy = By.xpath("//div[contains(@class,'o_table_flexi')]//table//tr//td//a[text()[contains(.,'" + user.getFirstName() + "')]]");
-		WebElement userLink = browser.findElement(userLinksBy);
-		userLink.click();
+		browser.findElement(userLinksBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -160,6 +159,7 @@ public class AssessmentToolPage {
 		By newBy = By.cssSelector("a.o_sel_assessment_tool_new_bulk_assessment");
 		browser.findElement(newBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_bulk_assessment_data"), browser);
 		return new BulkAssessmentPage(browser);
 	}
 	
