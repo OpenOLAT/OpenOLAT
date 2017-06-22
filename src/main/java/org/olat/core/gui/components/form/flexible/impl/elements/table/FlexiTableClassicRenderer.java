@@ -244,4 +244,48 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 		}
 		target.append("</td>");
 	}
+	
+	@Override
+	protected void renderFooter(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
+			URLBuilder ubu, Translator translator, RenderResult renderResult) {
+		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+
+		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
+		if(dataModel instanceof FlexiTableFooterModel) {
+			FlexiTableFooterModel footerDataModel = (FlexiTableFooterModel)dataModel;
+			FlexiTableColumnModel columnsModel = ftE.getTableDataModel().getTableColumnModel();
+			int numOfCols = columnsModel.getColumnCount();
+
+			target.append("<tr id='footer_").append(ftC.getFormDispatchId()).append("' class='o_table_footer'>");		
+			if(ftE.isMultiSelect()) {
+				target.append("<td> </td>");
+			}
+			
+			boolean footerHeader = false;
+					
+			for (int j = 0; j<numOfCols; j++) {
+				FlexiColumnModel fcm = columnsModel.getColumnModel(j);
+				if(ftE.isColumnModelVisible(fcm)) {
+					int alignment = fcm.getAlignment();
+					int columnIndex = fcm.getColumnIndex();
+					Object cellValue = columnIndex >= 0 ? footerDataModel.getFooterValueAt(columnIndex) : null;
+					if(cellValue == null && !footerHeader) {
+						String header = footerDataModel.getFooterHeader();
+						target.append("<th>");
+						if(header != null) {
+							target.append(header);
+						}
+						target.append("</th>");
+						footerHeader = true;
+					} else {
+						String cssClass = (alignment == FlexiColumnModel.ALIGNMENT_LEFT ? "text-left" : (alignment == FlexiColumnModel.ALIGNMENT_RIGHT ? "text-right" : "text-center"));
+						target.append("<td class=\"").append(cssClass).append("\">");
+						fcm.getFooterCellRenderer().render(renderer, target, cellValue, 0, ftC, ubu, translator);
+						target.append("</td>");
+					}
+				}
+			}
+			target.append("</tr>");
+		}
+	}
 }

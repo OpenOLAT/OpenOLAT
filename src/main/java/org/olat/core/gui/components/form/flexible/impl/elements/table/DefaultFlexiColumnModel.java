@@ -49,6 +49,7 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	private final String action;
 	
 	private FlexiCellRenderer cellRenderer;
+	private FlexiCellRenderer footerCellRenderer;
 	
 	public DefaultFlexiColumnModel(FlexiColumnDef def) {
 		this(def.i18nHeaderKey(), def.ordinal(), false, null);
@@ -181,6 +182,7 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 		this.columnKey = headerKey.replace(".", "").toLowerCase();
 		this.alignment = alignment;
 		this.cellRenderer = cellRenderer;
+		footerCellRenderer = new TextFlexiCellRenderer();
 		this.action = action;
 	}
 
@@ -261,20 +263,36 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 		this.sortedKey = sortedKey;
 	}
 
+	@Override
 	public int getAlignment() {
 		return alignment;
 	}
 
+	@Override
 	public void setAlignment(int alignment) {
 		this.alignment = alignment;
 	}
 
+	@Override
+	public FlexiCellRenderer getCellRenderer() {
+		return cellRenderer;
+	}
+
+	@Override
 	public void setCellRenderer(FlexiCellRenderer cellRenderer) {
 		this.cellRenderer = cellRenderer;
 	}
 
-	public FlexiCellRenderer getCellRenderer() {
-		return cellRenderer;
+	@Override
+	public FlexiCellRenderer getFooterCellRenderer() {
+		return footerCellRenderer;
 	}
+
+	@Override
+	public void setFooterCellRenderer(FlexiCellRenderer footerCellRenderer) {
+		this.footerCellRenderer = footerCellRenderer;
+	}
+
+	
 
 }

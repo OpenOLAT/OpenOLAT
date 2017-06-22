@@ -124,10 +124,11 @@ public class LecturesListController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.authorizedAbsenceLectures));
 		}
 		
-		tableModel = new LecturesListDataModel(columnsModel); 
+		tableModel = new LecturesListDataModel(columnsModel, getTranslator()); 
 		tableModel.setObjects(statistics);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
+		tableEl.setFooter(true);
 	}
 
 	@Override

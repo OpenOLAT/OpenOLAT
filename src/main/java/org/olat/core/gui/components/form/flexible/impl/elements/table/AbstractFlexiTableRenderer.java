@@ -81,10 +81,18 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			
 			//render headers
 			renderHeaders(sb, ftC, translator);
+			//render footers
+			if(ftE.isFooter()) {
+				sb.append("<tfoot>");
+				renderFooter(renderer, sb, ftC, ubu, translator, renderResult);
+				sb.append("</tfoot>");
+			}
 			//render body
 			sb.append("<tbody>");
 			renderBody(renderer, sb, ftC, ubu, translator, renderResult);
-			sb.append("</tbody></table>");
+			sb.append("</tbody>");
+			
+			sb.append("</table>");
 			renderFooterButtons(sb, ftC, translator);
 			//draggable
 			if(ftE.getColumnIndexForDragAndDropLabel() > 0) {
@@ -409,6 +417,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	protected abstract void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
 			int row, URLBuilder ubu, Translator translator, RenderResult renderResult);
 
+	protected abstract void renderFooter(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
+			URLBuilder ubu, Translator translator, RenderResult renderResult);
 
 	private void renderPagesLinks(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();

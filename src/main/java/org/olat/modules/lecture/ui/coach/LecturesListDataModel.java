@@ -25,8 +25,10 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 
 /**
@@ -36,10 +38,13 @@ import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
  *
  */
 public class LecturesListDataModel extends DefaultFlexiTableDataModel<LectureBlockIdentityStatistics>
-implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>{
+implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTableFooterModel {
 	
-	public LecturesListDataModel(FlexiTableColumnModel columnModel) {
+	private final Translator translator;
+	
+	public LecturesListDataModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
+		this.translator = translator;
 	}
 
 	@Override
@@ -74,6 +79,52 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>{
 		int propPos = col - LecturesListController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
+	
+	
+
+	@Override
+	public String getFooterHeader() {
+		// TODO Auto-generated method stub
+		return translator.translate("total");
+	}
+
+	@Override
+	public Object getFooterValueAt(int col) {
+		if(col >= 0 && col < StatsCols.values().length) {
+			switch(StatsCols.values()[col]) {
+				case plannedLectures: {
+					int total = 0;
+					for(LectureBlockIdentityStatistics row:getObjects()) {
+						total += positive(row.getTotalPersonalPlannedLectures());
+					}
+					return total;
+				}
+				case attendedLectures: {
+					int total = 0;
+					for(LectureBlockIdentityStatistics row:getObjects()) {
+						total += positive(row.getTotalAttendedLectures());
+					}
+					return total;
+				}
+				case absentLectures: {
+					int total = 0;
+					for(LectureBlockIdentityStatistics row:getObjects()) {
+						total += positive(row.getTotalAbsentLectures());
+					}
+					return total;
+				}
+				case authorizedAbsenceLectures: {
+					int total = 0;
+					for(LectureBlockIdentityStatistics row:getObjects()) {
+						total += positive(row.getTotalAuthorizedAbsentLectures());
+					}
+					return total;
+				}
+				default: return null;
+			}
+		}
+		return null;
+	}
 
 	private static final long positive(long pos) {
 		return pos < 0 ? 0 : pos;
@@ -81,7 +132,7 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>{
 	
 	@Override
 	public DefaultFlexiTableDataModel<LectureBlockIdentityStatistics> createCopyWithEmptyList() {
-		return new LecturesListDataModel(getTableColumnModel());
+		return new LecturesListDataModel(getTableColumnModel(), translator);
 	}
 	
 	public enum StatsCols implements FlexiSortableColumnDef {

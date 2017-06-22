@@ -97,6 +97,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private int currentPage;
 	private int pageSize;
 	private final int defaultPageSize;
+	private boolean footer;
 	private boolean bordered; 
 	private boolean editMode;
 	private boolean exportEnabled;
@@ -259,6 +260,16 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setBordered(boolean bordered) {
 		this.bordered = bordered;
+	}
+
+	@Override
+	public boolean isFooter() {
+		return footer;
+	}
+
+	@Override
+	public void setFooter(boolean footer) {
+		this.footer = footer;
 	}
 
 	@Override

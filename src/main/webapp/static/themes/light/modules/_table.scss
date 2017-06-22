@@ -13,6 +13,9 @@
 		&.o_table_no_margin .table {
 			margin: 0;
 		}
+		tfoot {
+			border-top:solid $table-border-color 2px;
+		}
 	}
 	
 	&.o_table_edit table tbody {
@@ -29,7 +32,7 @@
 
 		.o_table_pagination {
 			text-align: center;
-		}		
+		}
 	}
 	
 	.o_table_rows_infos {

@@ -73,4 +73,8 @@ public interface FlexiColumnModel {
 
 	public void setCellRenderer(FlexiCellRenderer cellRenderer);
 
+	public FlexiCellRenderer getFooterCellRenderer();
+	
+	public void setFooterCellRenderer(FlexiCellRenderer cellRenderer);
+	
 }

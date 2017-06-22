@@ -26,7 +26,9 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 
 /**
@@ -36,13 +38,15 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
  *
  */
 public class ParticipantLecturesDataModel extends DefaultFlexiTableDataModel<LectureBlockStatistics>
-implements SortableFlexiTableDataModel<LectureBlockStatistics> {
+implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooterModel {
 	
 	private final Locale locale;
+	private final Translator translator;
 	
-	public ParticipantLecturesDataModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public ParticipantLecturesDataModel(FlexiTableColumnModel columnModel, Translator translator, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+		this.translator = translator;
 	}
 
 	@Override
@@ -62,10 +66,10 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics> {
 		switch(LecturesCols.values()[col]) {
 			case externalRef: return row.getExternalRef();
 			case entry: return row.getDisplayName();
-			case plannedLectures: return row.getTotalPersonalPlannedLectures();
-			case attendedLectures: return row.getTotalAttendedLectures();
-			case authorizedAbsentLectures: return row.getTotalAuthorizedAbsentLectures();
-			case absentLectures: return row.getTotalAbsentLectures();
+			case plannedLectures: return positive(row.getTotalPersonalPlannedLectures());
+			case attendedLectures: return positive(row.getTotalAttendedLectures());
+			case authorizedAbsentLectures: return positive(row.getTotalAuthorizedAbsentLectures());
+			case absentLectures: return positive(row.getTotalAbsentLectures());
 			case progress: return row;
 			case rateWarning: {
 				if(row.getTotalEffectiveLectures() <= 0) {
@@ -82,10 +86,56 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics> {
 			default: return null;
 		}
 	}
+	
+	
+
+	@Override
+	public String getFooterHeader() {
+		return translator.translate("total");
+	}
+
+	@Override
+	public Object getFooterValueAt(int col) {
+		switch(LecturesCols.values()[col]) {
+			case plannedLectures: {
+				int total = 0;
+				for(LectureBlockStatistics row:getObjects()) {
+					total += positive(row.getTotalPersonalPlannedLectures());
+				}
+				return total;
+			}
+			case attendedLectures: {
+				int total = 0;
+				for(LectureBlockStatistics row:getObjects()) {
+					total += positive(row.getTotalAttendedLectures());
+				}
+				return total;
+			}
+			case authorizedAbsentLectures: {
+				int total = 0;
+				for(LectureBlockStatistics row:getObjects()) {
+					total += positive(row.getTotalAuthorizedAbsentLectures());
+				}
+				return total;
+			}
+			case absentLectures: {
+				int total = 0;
+				for(LectureBlockStatistics row:getObjects()) {
+					total += positive(row.getTotalAbsentLectures());
+				}
+				return total;
+			}
+			default: return null;
+		}
+	}
+	
+	private long positive(long val) {
+		return val < 0 ? 0 : val;
+	}
 
 	@Override
 	public DefaultFlexiTableDataModel<LectureBlockStatistics> createCopyWithEmptyList() {
-		return new ParticipantLecturesDataModel(getTableColumnModel(), locale);
+		return new ParticipantLecturesDataModel(getTableColumnModel(), translator, locale);
 	}
 	
 	public enum LecturesCols implements FlexiSortableColumnDef {

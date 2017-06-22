@@ -144,12 +144,13 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		}
 		
-		tableModel = new ParticipantLecturesDataModel(columnsModel, getLocale()); 
+		tableModel = new ParticipantLecturesDataModel(columnsModel, getTranslator(), getLocale()); 
 		int paging = withPrint ? 20 : -1;
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, paging, false, getTranslator(), formLayout);
 		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-lectures");
 		tableEl.setCustomizeColumns(false);
 		tableEl.setEmtpyTableMessageKey("empty.lectures.list");
+		tableEl.setFooter(true);
 	}
 	
 	private void loadModel() {

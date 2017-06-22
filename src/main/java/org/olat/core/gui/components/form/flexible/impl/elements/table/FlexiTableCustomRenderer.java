@@ -158,4 +158,10 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 
 		sb.append("</div>");
 	}
+
+	@Override
+	protected void renderFooter(Renderer renderer, StringOutput target, FlexiTableComponent ftC, URLBuilder ubu,
+			Translator translator, RenderResult renderResult) {
+		//
+	}
 }
