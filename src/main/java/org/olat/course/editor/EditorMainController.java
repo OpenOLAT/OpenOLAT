@@ -92,7 +92,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModeManager;
-import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -1074,7 +1073,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		 * callback executed in case wizard is finished.
 		 */
 		StepRunnerCallback finish = new StepRunnerCallback(){
-			
+			@Override
 			public Step execute(UserRequest ureq1, WindowControl wControl1, StepsRunContext runContext) {
 				//all information to do now is within the runContext saved
 				boolean hasChanges = false;
@@ -1098,11 +1097,9 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					hasChanges = true;					
 				}
 				
-				if (runContext.containsKey("catalogChoice")) {
-					String choice = (String) runContext.get("catalogChoice");
-					@SuppressWarnings("unchecked")
-					List<CategoryLabel> categories = (List<CategoryLabel>)runContext.get("categories");
-					publishManager.publishToCatalog(choice, categories);
+				CourseCatalog courseCatalog = (CourseCatalog)runContext.get("categories");
+				if(courseCatalog != null) {
+					publishManager.publishToCatalog(courseCatalog.getChoiceValue(), courseCatalog.getCategoryLabels());
 				}
 				
 				if(publishEvents.getPostPublishingEvents().size() > 0) {

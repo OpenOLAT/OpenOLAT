@@ -598,43 +598,41 @@ public class PublishProcess {
 			prop.setStringValue(choiceValue);
 			cpm.updateProperty(prop);
 		}
+
+		CatalogManager cm = CoreSpringFactory.getImpl(CatalogManager.class);
+		List<CatalogEntry> refParentCategories = cm.getCatalogCategoriesFor(repositoryEntry);
 		
-		if("yes".equals(choiceValue) && labels != null) {
-			CatalogManager cm = CoreSpringFactory.getImpl(CatalogManager.class);
-			List<CatalogEntry> refParentCategories = cm.getCatalogCategoriesFor(repositoryEntry);
-			
-			a_a:
-			for(CategoryLabel label:labels) {
-				CatalogEntry category = label.getCategory();
-				CatalogEntry parentCategory = label.getParentCategory();
-				if(label.isDeleted()) {
-					//test
-					if(category.getKey() != null) {
-						List<CatalogEntry> children = cm.getChildrenOf(category);
-						for(CatalogEntry child:children) {
-							if(child.getRepositoryEntry() != null && child.getRepositoryEntry().equalsByPersistableKey(repositoryEntry)) {
-								cm.deleteCatalogEntry(child);
-							}
+		a_a:
+		for(CategoryLabel label:labels) {
+			CatalogEntry category = label.getCategory();
+			CatalogEntry parentCategory = label.getParentCategory();
+			if(label.isDeleted()) {
+				//test
+				if(category.getKey() != null) {
+					List<CatalogEntry> children = cm.getChildrenOf(category);
+					for(CatalogEntry child:children) {
+						if(child.getRepositoryEntry() != null && child.getRepositoryEntry().equalsByPersistableKey(repositoryEntry)) {
+							cm.deleteCatalogEntry(child);
 						}
 					}
-				} else if(category.getKey() == null) {
-					//it's a new entry -> check if not already in catalog at this position
-					for(Iterator<CatalogEntry> refIt=refParentCategories.iterator(); refIt.hasNext(); ) {
-						CatalogEntry refParentCategory = refIt.next();
-						if(refParentCategory.equalsByPersistableKey(parentCategory)) {
-							refIt.remove();
-							break a_a;
-						}
+				}
+			} else if(category.getKey() == null) {
+				//it's a new entry -> check if not already in catalog at this position
+				for(Iterator<CatalogEntry> refIt=refParentCategories.iterator(); refIt.hasNext(); ) {
+					CatalogEntry refParentCategory = refIt.next();
+					if(refParentCategory.equalsByPersistableKey(parentCategory)) {
+						refIt.remove();
+						break a_a;
 					}
-					
-					category.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
-					cm.addCatalogEntry(parentCategory, category);
-				} else {
-					for(Iterator<CatalogEntry> refIt=refParentCategories.iterator(); refIt.hasNext(); ) {
-						CatalogEntry refParentCategory = refIt.next();
-						if(refParentCategory.equalsByPersistableKey(category)) {
-							refIt.remove();
-						}
+				}
+				
+				category.setOwnerGroup(BaseSecurityManager.getInstance().createAndPersistSecurityGroup());
+				cm.addCatalogEntry(parentCategory, category);
+			} else {
+				for(Iterator<CatalogEntry> refIt=refParentCategories.iterator(); refIt.hasNext(); ) {
+					CatalogEntry refParentCategory = refIt.next();
+					if(refParentCategory.equalsByPersistableKey(category)) {
+						refIt.remove();
 					}
 				}
 			}

@@ -38,7 +38,22 @@ public class CourseAccessAndProperties {
 	private boolean canReference;
 	private boolean canDownload;	
 	
-	private List<OfferAccess> offerAccess;	
+	private List<OfferAccess> offerAccess;
+	
+	public CourseAccessAndProperties(RepositoryEntry re) {
+		this.repoEntry = re;
+	}
+	
+	public CourseAccessAndProperties(RepositoryEntry re, RepositoryEntryAllowToLeaveOptions setting, int access,
+			boolean membersOnly, boolean canCopy, boolean canReference, boolean canDownload) {
+		this.repoEntry = re;
+		this.setting = setting;
+		this.access = access;
+		this.membersOnly = membersOnly;
+		this.canCopy = canCopy;
+		this.canReference = canReference;
+		this.canDownload = canDownload;
+	}	
 	
 	public List<OfferAccess> getOfferAccess() {
 		return offerAccess;
@@ -103,23 +118,4 @@ public class CourseAccessAndProperties {
 	public void setCanDownload(boolean canDownload) {
 		this.canDownload = canDownload;
 	}
-
-	public CourseAccessAndProperties(RepositoryEntry re) {
-		super();
-		this.repoEntry = re;
-	}
-
-	public CourseAccessAndProperties(RepositoryEntry re, RepositoryEntryAllowToLeaveOptions setting, int access,
-			boolean membersOnly, boolean canCopy, boolean canReference, boolean canDownload) {
-		super();
-		this.repoEntry = re;
-		this.setting = setting;
-		this.access = access;
-		this.membersOnly = membersOnly;
-		this.canCopy = canCopy;
-		this.canReference = canReference;
-		this.canDownload = canDownload;
-	}			
-	
-	
 }

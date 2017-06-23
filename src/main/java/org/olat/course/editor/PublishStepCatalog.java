@@ -108,12 +108,14 @@ class PublishStepCatalog extends BasicStep {
 	}
 	
 	static class PublishStepCatalogForm extends StepFormBasicController {
+
+		private static final String[] keys = new String[]{"yes","no"};
 		
 		private FormLink addToCatalog;
 		private SingleSelection catalogBox;
 		private CloseableModalController cmc;
 		private Controller catalogAddController;
-		private final List<FormLink> deleteLinks = new ArrayList<FormLink>();;
+		private final List<FormLink> deleteLinks = new ArrayList<>();
 		
 		private final RepositoryEntry repositoryEntry;
 		private final CatalogManager catalogManager;
@@ -148,7 +150,6 @@ class PublishStepCatalog extends BasicStep {
 			fc.setRootForm(mainForm);
 			formLayout.add("catalogSettings", fc);
 			
-			final String[] keys = new String[]{"yes","no"};
 			final String[] values = new String[] {
 					translate("yes"),
 					translate("no")
@@ -291,18 +292,17 @@ class PublishStepCatalog extends BasicStep {
 
 		@Override
 		protected void formOK(UserRequest ureq) {
-			if(catalogBox.isOneSelected()) {
-				String val = catalogBox.getSelectedKey();
-				addToRunContext("catalogChoice", val);
-				
-				List<CategoryLabel> categories = new ArrayList<CategoryLabel>();
-				for(FormLink deletedLink:deleteLinks) {
-					CategoryLabel cat = (CategoryLabel)deletedLink.getUserObject();
-					categories.add(cat);
+			CourseCatalog courseCatalog = new CourseCatalog();
+			courseCatalog.setChoiceValue(catalogBox.getSelectedKey());
+			boolean removeAll = "no".equals(catalogBox.getSelectedKey());
+			for(FormLink deletedLink:deleteLinks) {
+				CategoryLabel cat = (CategoryLabel)deletedLink.getUserObject();
+				if(removeAll) {
+					cat.setDeleted(true);
 				}
-				addToRunContext("categories", categories);
+				courseCatalog.getCategoryLabels().add(cat);
 			}
-			
+			addToRunContext("categories", courseCatalog);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 

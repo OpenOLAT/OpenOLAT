@@ -288,7 +288,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		accessLayout.setFormTitle(translate("accesscontrol.title"));
 		
 		HelpTooltip acMethodsLabelHelp = new HelpTooltip("acMethodsLabelHelp", "Legen Sie fest unter welchen Bedingungen Benutzer diese Ressource buchen können.", "Course Settings#_buchungsmethode", getLocale());
-		((FormLayoutContainer)accessLayout).put("acMethodsLabelHelp", acMethodsLabelHelp);
+		accessLayout.put("acMethodsLabelHelp", acMethodsLabelHelp);
 
 		if(editable) {
 			List<AccessMethod> methods = acService.getAvailableMethods(getIdentity(), ureq.getUserSession().getRoles());
@@ -305,7 +305,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 				addMethods.add(add);
 				accessLayout.add(add.getName(), add);
 			}
-			((FormLayoutContainer)accessLayout).contextPut("methods", addMethods);
+			accessLayout.contextPut("methods", addMethods);
 		}
 		
 		String confPage = velocity_root + "/configuration_list.html";
