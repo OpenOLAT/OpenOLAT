@@ -293,13 +293,13 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		if(editable) {
 			List<AccessMethod> methods = acService.getAvailableMethods(getIdentity(), ureq.getUserSession().getRoles());
 			for(AccessMethod method:methods) {
-				AccessMethodHandler handler = acModule.getAccessMethodHandler(method.getType());
-				if(handler.isPaymentMethod() && !allowPaymentMethod) {
+				AccessMethodHandler methodHandler = acModule.getAccessMethodHandler(method.getType());
+				if(methodHandler.isPaymentMethod() && !allowPaymentMethod) {
 					continue;
 				}
 				
-				String title = handler.getMethodName(getLocale());
-				FormLink add = uifactory.addFormLink("create." + handler.getType(), title, null, accessLayout, Link.LINK | Link.NONTRANSLATED);
+				String title = methodHandler.getMethodName(getLocale());
+				FormLink add = uifactory.addFormLink("create." + methodHandler.getType(), title, null, accessLayout, Link.LINK | Link.NONTRANSLATED);
 				add.setUserObject(method);
 				add.setIconLeftCSS( ("o_icon " + method.getMethodCssClass() + "_icon o_icon-lg").intern());
 				addMethods.add(add);
@@ -324,8 +324,8 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 	protected void loadConfigurations() {
 		List<Offer> offers = acService.findOfferByResource(resource, true, null);
 		for(Offer offer:offers) {
-			List<OfferAccess> offerAccess = acService.getOfferAccess(offer, true);
-			for(OfferAccess access:offerAccess) {
+			List<OfferAccess> offerAccessList = acService.getOfferAccess(offer, true);
+			for(OfferAccess access:offerAccessList) {
 				button_id++;
 				addConfiguration(access);
 			}
@@ -333,8 +333,8 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 	}
 	
 	protected void addConfiguration(OfferAccess link) {
-		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
-		AccessInfo infos = new AccessInfo(handler.getMethodName(getLocale()), handler.isPaymentMethod(), null, link);
+		AccessMethodHandler methodHandler = acModule.getAccessMethodHandler(link.getMethod().getType());
+		AccessInfo infos = new AccessInfo(methodHandler.getMethodName(getLocale()), methodHandler.isPaymentMethod(), null, link);
 		infos.setButtonId(button_id);
 		confControllers.add(infos);
 		
@@ -600,15 +600,15 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		OfferAccess link = infos.getLink();
 		
 		removeAsListenerAndDispose(editMethodCtrl);
-		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
-		if (handler != null) {
-			editMethodCtrl = handler.editConfigurationController(ureq, getWindowControl(), link);
+		AccessMethodHandler methodHandler = acModule.getAccessMethodHandler(link.getMethod().getType());
+		if (methodHandler != null) {
+			editMethodCtrl = methodHandler.editConfigurationController(ureq, getWindowControl(), link);
 		}
 		
 		if(editMethodCtrl != null) {
 			listenTo(editMethodCtrl);
 
-			String title = handler.getMethodName(getLocale());
+			String title = methodHandler.getMethodName(getLocale());
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), editMethodCtrl.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);
@@ -620,14 +620,14 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 		OfferAccess link = acService.createOfferAccess(offer, method);
 		
 		removeAsListenerAndDispose(newMethodCtrl);
-		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
-		if (handler != null) {
-			newMethodCtrl = handler.createConfigurationController(ureq, getWindowControl(), link);
+		AccessMethodHandler methodHandler = acModule.getAccessMethodHandler(link.getMethod().getType());
+		if (methodHandler != null) {
+			newMethodCtrl = methodHandler.createConfigurationController(ureq, getWindowControl(), link);
 		}
 		if(newMethodCtrl != null) {
 			listenTo(newMethodCtrl);
 
-			String title = handler.getMethodName(getLocale());
+			String title = methodHandler.getMethodName(getLocale());
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), newMethodCtrl.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);

@@ -27,6 +27,7 @@ package org.olat.course.editor;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -72,7 +73,7 @@ class PublishStep00a extends BasicStep implements Step {
 	private static class PublishStep00aForm extends StepFormBasicController{
 
 		public PublishStep00aForm(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
-			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
+			super(ureq, control, rootForm, runContext, LAYOUT_CUSTOM, "publish_warnings");
 			initForm(ureq);
 		}
 
@@ -88,14 +89,15 @@ class PublishStep00a extends BasicStep implements Step {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			formLayout.setElementCssClass("o_sel_publish_update");
-			
-			if(containsRunContextKey("STEP00.warningMessage")) {
-				uifactory.addStaticTextElement("warnings", null,(String)getFromRunContext("STEP00.warningMessage"), formLayout);
-			} else {
-				uifactory.addStaticTextElement("warnings", null, translate("publish.nowarnings"), formLayout);
+			if(formLayout instanceof FormLayoutContainer) {
+				FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+				if(containsRunContextKey("STEP00.warningMessage")) {
+					layoutCont.contextPut("hasWarnings", Boolean.TRUE);
+					layoutCont.contextPut("warnings", getFromRunContext("STEP00.warningMessage"));
+				} else {
+					layoutCont.contextPut("hasWarnings", Boolean.FALSE);
+				}
 			}
 		}
-		
 	}
 }

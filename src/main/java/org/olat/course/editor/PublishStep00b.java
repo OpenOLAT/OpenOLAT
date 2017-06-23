@@ -27,6 +27,7 @@ package org.olat.course.editor;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -85,7 +86,7 @@ class PublishStep00b extends BasicStep implements Step {
 	class PublishStep00bForm extends StepFormBasicController {
 
 		public PublishStep00bForm(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
-			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
+			super(ureq, control, rootForm, runContext, LAYOUT_CUSTOM, "publish_confirmation");
 
 			initForm(ureq);
 		}
@@ -104,7 +105,9 @@ class PublishStep00b extends BasicStep implements Step {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			PublishProcess pp = (PublishProcess)getFromRunContext("publishProcess");
 			String confirmMsg= pp.assemblePublishConfirmation();
-			uifactory.addStaticTextElement("message", null, confirmMsg, formLayout);//null > no label
+			if(formLayout instanceof FormLayoutContainer) {
+				((FormLayoutContainer)formLayout).contextPut("message", confirmMsg);
+			}
 		}
 	}
 

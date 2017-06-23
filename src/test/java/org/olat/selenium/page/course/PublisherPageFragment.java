@@ -86,7 +86,7 @@ public class PublisherPageFragment {
 	
 	public PublisherPageFragment nextCatalog() {
 		OOGraphene.nextStep(browser);
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_publish_update"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_warnings"), 5, browser);
 		return this;
 	}
 	

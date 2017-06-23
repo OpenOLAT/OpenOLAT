@@ -515,7 +515,8 @@ public class CourseEditorPageFragment {
 		//back
 		By breadcrumpBackBy = By.cssSelector("#o_main_toolbar li.o_breadcrumb_back a");
 		browser.findElement(breadcrumpBackBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitBusyAndScrollTop(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		//auto publish
 		By autoPublishBy = By.cssSelector("div.modal  a.o_sel_course_quickpublish_auto");
@@ -533,7 +534,7 @@ public class CourseEditorPageFragment {
 		WebElement publishButton = browser.findElement(publishButtonBy);
 		Assert.assertTrue(publishButton.isDisplayed());
 		publishButton.click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitElement(By.cssSelector("div.o_sel_publish_nodes"), 5, browser);
 		return new PublisherPageFragment(browser);
 	}

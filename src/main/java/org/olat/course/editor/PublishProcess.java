@@ -63,6 +63,8 @@ import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeConfiguration;
+import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.RunMainController;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -277,14 +279,12 @@ public class PublishProcess {
 			// there are nodes generating cylces -> error! this is not a publishable
 			// set!
 			StringBuilder sb = new StringBuilder();
-			for (Iterator<String> iter = nodesInCycle.iterator(); iter.hasNext();) {
-				String id = iter.next();
+			for (String id: nodesInCycle) {
 				String title = editorTreeModel.getCourseEditorNodeById(id).getTitle();
-				sb.append("<b>").append(title).append("</b>");
-				sb.append("(id:").append(id).append(")<br />");
+				sb.append("<b>").append(title).append("</b> ").append("(id:").append(id).append(")<br>");
 			}
-			StatusDescription sd = new StatusDescription(ValidationStatus.ERROR, "pbl.error.cycles", "pbl.error.cycles", new String[] { sb
-					.toString() }, PACKAGE);
+			StatusDescription sd = new StatusDescription(ValidationStatus.ERROR, "pbl.error.cycles", "pbl.error.cycles",
+					new String[] { sb.toString() }, PACKAGE);
 			status = new StatusDescription[] { sd };
 		} else {
 			/*
@@ -650,45 +650,38 @@ public class PublishProcess {
 	
 
 	String assemblePublishConfirmation() {
-		List<String> nodeIdsToPublish = this.originalNodeIdsToPublish;
-		
+		List<String> nodeIdsToPublish = originalNodeIdsToPublish;
 		StringBuilder msg = new StringBuilder();
 
 		OLATResourceable courseRunOres = OresHelper.createOLATResourceableInstance(RunMainController.ORES_TYPE_COURSE_RUN, repositoryEntry.getOlatResource().getResourceableId());
 		int cnt = CoordinatorManager.getInstance().getCoordinator().getEventBus().getListeningIdentityCntFor(courseRunOres) -1; // -1: Remove myself from list
-		if (cnt < 0 ) {
-			cnt = 0;// do not show any negative value
-		}
 		if (cnt > 0) {		
 			msg.append(translate("pbl.confirm.users", String.valueOf(cnt)));			
 		} else {
 			msg.append(translator.translate("pbl.confirm"));
 		}
-		msg.append("<ul>");
 		
-		if(nodeIdsToPublish == null){
-			return msg.toString();
-		}
-		
-		CourseEditorTreeModel cetm = course.getEditorTreeModel();
-		for (int i = 0; i < nodeIdsToPublish.size(); i++) {
-			msg.append("<li>");
-			String nodeId = nodeIdsToPublish.get(i);
-			CourseEditorTreeNode cetn = (CourseEditorTreeNode) cetm.getNodeById(nodeId);
-			CourseNode cn = cetm.getCourseNode(nodeId);
-			msg.append(cn.getShortTitle());
-			if (cetn.isDeleted() && !cetn.isNewnode()) {
-				//use locale of this initialized translator.
-				String onDeleteMessage = cn.informOnDelete(translator.getLocale(), course);
-				if (onDeleteMessage != null) {
-					msg.append("<br /><font color=\"red\">");
-					msg.append(onDeleteMessage);
-					msg.append("</font>");
+		if(nodeIdsToPublish != null && nodeIdsToPublish.size() > 0) {
+			msg.append("<ul class='list-unstyled'>");
+
+			CourseEditorTreeModel cetm = course.getEditorTreeModel();
+			for (int i = 0; i < nodeIdsToPublish.size(); i++) {
+				msg.append("<li>");
+				String nodeId = nodeIdsToPublish.get(i);
+				CourseEditorTreeNode cetn = (CourseEditorTreeNode) cetm.getNodeById(nodeId);
+				CourseNode cn = cetm.getCourseNode(nodeId);
+				if (cetn.isDeleted() && !cetn.isNewnode()) {
+					msg.append("<i class='o_icon o_icon_delete_item'> </i> ");
+				} else {
+					CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(cn.getType());
+					if(nodeConfig != null) {
+						msg.append("<i class='o_icon ").append(nodeConfig.getIconCSSClass()).append("'> </i> ");
+					}
 				}
+				msg.append(cn.getShortTitle()).append("</li>");
 			}
-			msg.append("</li>");
+			msg.append("</ul>");
 		}
-		msg.append("</ul>");
 		
 		return msg.toString();
 	}
