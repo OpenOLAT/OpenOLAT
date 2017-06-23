@@ -19,12 +19,16 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.TransformerException;
+
+import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -86,7 +90,8 @@ public class TeacherRollCallController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private TeacherRollCallDataModel tableModel;
 	private FormSubmit quickSaveButton;
-	private FormLink reopenButton, cancelLectureBlockButton, closeLectureBlocksButton;
+	private FormLink exportAttendanceListButton, reopenButton,
+		cancelLectureBlockButton, closeLectureBlocksButton;
 	
 	private ReasonController reasonCtrl;
 	private CloseableModalController cmc;
@@ -212,6 +217,9 @@ public class TeacherRollCallController extends FormBasicController {
 		tableEl.setCustomizeColumns(true);
 		
 		//buttons
+		exportAttendanceListButton = uifactory.addFormLink("attendance.list", formLayout, Link.BUTTON);
+		exportAttendanceListButton.setIconLeftCSS("o_icon o_icon_download");
+		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		quickSaveButton = uifactory.addFormSubmitButton("save", "save.temporary", formLayout);
 		closeLectureBlocksButton = uifactory.addFormLink("close.lecture.blocks", formLayout, Link.BUTTON);
@@ -439,6 +447,8 @@ public class TeacherRollCallController extends FormBasicController {
 		} else if(cancelLectureBlockButton == source) {
 			saveLectureBlocks();
 			doConfirmCancelLectureBlock(ureq);
+		} else if(this.exportAttendanceListButton == source) {
+			doExportAttendanceList(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -591,5 +601,17 @@ public class TeacherRollCallController extends FormBasicController {
 		secCallback.updateLectureBlock(lectureBlock);
 		updateUI();
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doExportAttendanceList(UserRequest ureq) {
+		try {
+			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, getTranslator());
+			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
+			export.setResourceTitle(lectureBlock.getEntry().getDisplayname());
+			export.create(participants);
+			ureq.getDispatchResult().setResultingMediaResource(export);
+		} catch (COSVisitorException | IOException | TransformerException e) {
+			logError("", e);
+		}
 	}
 }

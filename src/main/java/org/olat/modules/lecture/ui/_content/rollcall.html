@@ -3,15 +3,19 @@
 	#if($lectureBlockOptional)
 		<div class="o_warning">$r.translate("info.lecture.block.optional")</div>
 	#end
+	#if($r.available("attendance.list"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("attendance.list")
+	</div>
+	#end
 	<div class="o_desc">$off_desc</div>
-
 	$r.render("table")
 	<div class="o_button_group">
 		$r.render("cancel")
 		#if($r.available("save"))
 			$r.render("save")
 		#end
-			#if($r.available("cancel.lecture.blocks"))
+		#if($r.available("cancel.lecture.blocks"))
 			$r.render("cancel.lecture.blocks")
 		#end
 		#if($r.available("close.lecture.blocks"))

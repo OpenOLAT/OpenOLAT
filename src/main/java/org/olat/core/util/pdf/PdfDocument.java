@@ -112,12 +112,12 @@ public class PdfDocument {
         currentY -= leading; 
     }
 
-    public void addParagraph(String text, float fontSize, float width)
+    public void addParagraph(String text, float fontSize, float paragraphWidth)
     throws IOException {
-    	addParagraph(text, fontSize, false, width);
+    	addParagraph(text, fontSize, false, paragraphWidth);
     }
     	
-    public void addParagraph(String text, float fontSize, boolean bold, float width)
+    public void addParagraph(String text, float fontSize, boolean bold, float paragraphWidth)
     throws IOException {
         float leading = lineHeightFactory * fontSize;
         
@@ -133,7 +133,7 @@ public class PdfDocument {
             } else {
                 String subString = text.substring(0, spaceIndex);
                 float size = fontSize * textFont.getStringWidth(subString) / 1000;
-                if (size > width) {
+                if (size > paragraphWidth) {
                     if (lastSpace < 0) // So we have a word longer than the line... draw it anyways
                         lastSpace = spaceIndex;
                     subString = text.substring(0, lastSpace);
@@ -162,9 +162,9 @@ public class PdfDocument {
     	return fontSize * font.getStringWidth(string) / 1000;
     }
     
-    public void drawLine(float xStart, float yStart, float xEnd, float yEnd, float width) 
+    public void drawLine(float xStart, float yStart, float xEnd, float yEnd, float lineWidth) 
     throws IOException {
-		currentContentStream.setLineWidth(width);
+		currentContentStream.setLineWidth(lineWidth);
 		currentContentStream.drawLine(xStart, yStart, xEnd, yEnd);
     }
     
@@ -248,4 +248,78 @@ public class PdfDocument {
             contentStream.close();
         }
     }
+    
+	/**
+	 * The number 6 was chosen after some trial and errors. It's a good compromise as
+	 * the width of the letter is not fixed. Don't replace ... with ellipsis, it break
+	 * the PDF.
+	 * 
+	 * @param text
+	 * @param maxWidth
+	 * @param fontSize
+	 * @return
+	 * @throws IOException
+	 */
+	protected String[] splitText(String text, float maxWidth, float fontSize) throws IOException {
+		float textWidth = getStringWidth(text, fontSize);
+		if(maxWidth < textWidth) {
+
+			float letterWidth = textWidth / text.length();
+			int maxNumOfLetter = Math.round(maxWidth / letterWidth) - 1;
+			//use space and comma as separator to gentle split the text
+
+			int indexBefore = findBreakBefore(text, maxNumOfLetter);
+			if(indexBefore < (maxNumOfLetter / 2)) {
+				indexBefore = -1;//use more place
+			}
+
+			String one, two;
+			if(indexBefore <= 0) {
+				//one word
+				indexBefore = Math.min(text.length(), maxNumOfLetter - 6);
+				one = text.substring(0, indexBefore) + "...";
+				
+				int indexAfter = findBreakAfter(text, maxNumOfLetter);
+				if(indexAfter <= 0) {
+					two = text.substring(indexBefore);
+				} else {
+					two = text.substring(indexAfter);
+				}
+			} else {
+				one = text.substring(0, indexBefore + 1);
+				two = text.substring(indexBefore + 1);
+			}
+			
+			if(two.length() > maxNumOfLetter) {
+				two = two.substring(0, maxNumOfLetter - 6) + "...";
+			}
+			return new String[] { one.trim(), two.trim() };
+		}
+		return new String[]{ text };
+	}
+	
+	public static int findBreakBefore(String line, int start) {
+		start = Math.min(line.length(), start);
+		for (int i = start; i >= 0; --i) {
+			char c = line.charAt(i);
+			if (Character.isWhitespace(c) || c == '-' || c == ',') {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public static int findBreakAfter(String line, int start) {
+		int len = line.length();
+		for (int i = start; i < len; ++i) {
+			char c = line.charAt(i);
+			if (Character.isWhitespace(c) || c == ',') {
+				if(i + 1 < line.length()) {
+					return i + 1;
+				}
+				return i;
+			}
+		}
+		return -1;
+	}
 }

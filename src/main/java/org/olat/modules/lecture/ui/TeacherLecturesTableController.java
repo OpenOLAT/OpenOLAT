@@ -19,8 +19,12 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.io.IOException;
 import java.util.List;
 
+import javax.xml.transform.TransformerException;
+
+import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
@@ -59,6 +63,7 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -82,6 +87,8 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private final String emptyI18nKey;
 	private final boolean withRepositoryEntry, withTeachers;
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
@@ -223,6 +230,20 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 	
+	private void doExportAttendanceList(UserRequest ureq, LectureBlock row) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		List<Identity> participants = lectureService.getParticipants(lectureBlock);
+		try {
+			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, getTranslator());
+			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
+			export.setResourceTitle(lectureBlock.getEntry().getDisplayname());
+			export.create(participants);
+			ureq.getDispatchResult().setResultingMediaResource(export);
+		} catch (COSVisitorException | IOException | TransformerException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private void doSelectLectureBlock(UserRequest ureq, LectureBlock block) {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
@@ -294,7 +315,8 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 					LectureBlock block = lectureService.getLectureBlock(row);
 					doExportLectureBlock(ureq, block);
 				} else if("attendance.list".equals(cmd)) {
-					getWindowControl().setWarning("Not implemented");
+					LectureBlock block = lectureService.getLectureBlock(row);
+					doExportAttendanceList(ureq, block);
 				}
 			}
 		}
