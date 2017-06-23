@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.manager;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -450,5 +451,42 @@ public class QuestionDAOTest extends OlatTestCase {
 		int count = questionDao.removeFromShares(toDelete);
 		Assert.assertEquals(1, count);
 		dbInstance.commit();//make sure that changes are committed
+	}
+	
+	@Test
+	public void deleteQuestion() {
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		QuestionItem item = questionDao.createAndPersist(null, "To delete 1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		dbInstance.commitAndCloseSession();
+		
+		List<QuestionItem> itemsToDelete = Collections.singletonList(item);
+		questionDao.delete(itemsToDelete);
+		dbInstance.commitAndCloseSession();
+		
+		QuestionItem deletedItem = questionDao.loadById(item.getKey());
+		Assert.assertNull(deletedItem);
+	}
+	
+	@Test
+	public void deleteQuestion_alreadyDeletedQuestions() {
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		QuestionItem item1 = questionDao.createAndPersist(null, "To delete 1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "To delete 2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		dbInstance.commitAndCloseSession();
+		
+		// delete item 1
+		questionDao.delete(Collections.singletonList(item1));
+		dbInstance.commitAndCloseSession();
+		
+		List<QuestionItem> itemsToDelete = new ArrayList<>();
+		itemsToDelete.add(item1);
+		itemsToDelete.add(item2);
+		questionDao.delete(itemsToDelete);
+		dbInstance.commitAndCloseSession();
+		
+		QuestionItem deletedItem1 = questionDao.loadById(item1.getKey());
+		Assert.assertNull(deletedItem1);
+		QuestionItem deletedItem2 = questionDao.loadById(item2.getKey());
+		Assert.assertNull(deletedItem2);
 	}
 }
