@@ -21,8 +21,6 @@ package org.olat.modules.video.ui;
 
 import java.util.Date;
 
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
-
 /**
  * 
  * Initial date: 21.10.2016<br>
@@ -35,9 +33,6 @@ public class VideoChapterTableRow {
 	private String intervals;
 	private Date begin,end;
 
-	protected FormUIFactory uifactory = FormUIFactory.getInstance();
-
-
 	public VideoChapterTableRow(String chapterName, String intervals, Date begin, Date end) {
 		this.chapterName = chapterName;
 		this.intervals = intervals;
@@ -45,7 +40,6 @@ public class VideoChapterTableRow {
 		this.end = end;
 	}
 	
-
 	public String getChapterName() {
 		return chapterName;
 	}
@@ -77,13 +71,4 @@ public class VideoChapterTableRow {
 	public void setEnd(Date end) {
 		this.end = end;
 	}
-
-	public FormUIFactory getUifactory() {
-		return uifactory;
-	}
-
-	public void setUifactory(FormUIFactory uifactory) {
-		this.uifactory = uifactory;
-	}
-	
 }

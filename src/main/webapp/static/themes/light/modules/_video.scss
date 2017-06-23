@@ -116,6 +116,12 @@
 	}
 }
 
+.o_video_chapter_editor {
+	.o_table_wrapper.o_table_flexi .table {
+		margin-top: 0;
+	}
+}
+
 /* beautify source chooser plugin, remove radio button */
 .mejs__controls .mejs__sourcechooser-button > button {
     background: transparent;

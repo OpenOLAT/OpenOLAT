@@ -40,7 +40,9 @@
 			
 			## Callback to communicate with the server
 			success: function (mediaElement, domObject, player) {
-
+		        jQuery('#$r.getId("o_vid")').data('player', player);
+		        jQuery('#$r.getId("o_vid")').data('playerloaded', false);
+		        
 				## listen to play events, fired when movie is finished
 		        mediaElement.addEventListener('play', function(e) {
 		        	if (!o_info.linkbusy) {
@@ -71,14 +73,10 @@
 		        #if($useSourceChooser)
 		        jQuery(jQuery('.mejs__source-chooser-selector input')[$preferredResolution]).prop("checked", true).trigger("click");
 		        #end
-
-		        #if($r.isNotNull($currentTimeAt))
-			        player.play();
-		        	mediaElement.addEventListener('loadedmetadata', function(e) {
-			        	player.setCurrentTime(${currentTimeAt});
-						player.pause();
-			        }, false);
-		        #end
+		        
+		        mediaElement.addEventListener('loadedmetadata', function(e) {
+			        jQuery('#$r.getId("o_vid")').data('playerloaded', true);
+		        }, false);
 			}
 		});
 		// ]]>

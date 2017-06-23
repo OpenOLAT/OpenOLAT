@@ -100,7 +100,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 			if (event instanceof RootEvent || event instanceof PopEvent) {
 				// reload the video, maybe some new transcoded files available
 				VideoDisplayController videoDisplayCtr = (VideoDisplayController)getRuntimeController();
-				videoDisplayCtr.reloadVideo(ureq, null);
+				videoDisplayCtr.reloadVideo(ureq);
 			}
 			// maybe something else needs to be done
 			super.event(ureq, source, event);

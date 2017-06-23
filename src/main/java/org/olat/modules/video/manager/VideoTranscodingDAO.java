@@ -26,7 +26,6 @@ import java.util.List;
 import javax.persistence.EntityNotFoundException;
 
 import org.olat.core.commons.persistence.DB;
-import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.TranscodingCount;
 import org.olat.modules.video.model.VideoTranscodingImpl;
@@ -47,8 +46,6 @@ public class VideoTranscodingDAO {
 
 	@Autowired
 	private DB dbInstance;
-	@Autowired 
-	private VideoManager videoManager;
 
 	/**
 	 * Factory method to create and persist new video transcoding objects for a
