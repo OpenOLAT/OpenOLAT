@@ -861,7 +861,7 @@ public class RichTextConfiguration implements Disposable {
 	public void enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext) {
 		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext);
 		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext");
-		setQuotedConfigValue("extended_valid_elements", "textentryinteraction[*],hottext[*]");
+		setQuotedConfigValue(EXTENDED_VALID_ELEMENTS, "script[src|type|defer],textentryinteraction[*],hottext[*]");
 	}
 
 	/**
