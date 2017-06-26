@@ -412,6 +412,7 @@ public class CoursesWebService {
 			src = RepositoryManager.getInstance().lookupRepositoryEntry(copyFrom, false);
 		}
 		if(src == null) {
+			log.warn("Cannot find course to copy from: " + copyFrom);
 			return null;
 		}
 		OLATResource originalOres = OLATResourceManager.getInstance().findResourceable(src.getOlatResource());
@@ -519,7 +520,6 @@ public class CoursesWebService {
 			String description, String softKey, int access, boolean membersOnly, String authors, String location,
 			String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
 		
-		String learningObjectives = shortTitle + " (Example of creating a new course)";
 		if(!StringHelper.containsNonWhitespace(reDisplayName)) {
 			reDisplayName = shortTitle;
 		}
@@ -552,7 +552,7 @@ public class CoursesWebService {
 			addedEntry = repositoryService.update(addedEntry);
 			
 			// create an empty course
-			CourseFactory.createCourse(addedEntry, shortTitle, longTitle, learningObjectives);
+			CourseFactory.createCourse(addedEntry, shortTitle, longTitle, "");
 
 			return prepareCourse(addedEntry, shortTitle, longTitle, courseConfigVO);
 		} catch (Exception e) {
