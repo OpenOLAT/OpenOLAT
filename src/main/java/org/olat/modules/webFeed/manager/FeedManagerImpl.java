@@ -261,6 +261,7 @@ public class FeedManagerImpl extends FeedManager {
 				|| feed.isUndefined() 
 				|| external.booleanValue() != feed.getExternal().booleanValue()) {
 			itemDAO.removeItems(feed);
+			reloaded.setExternalImageURL(null);
 		}
 		
 		reloaded.setExternal(external);

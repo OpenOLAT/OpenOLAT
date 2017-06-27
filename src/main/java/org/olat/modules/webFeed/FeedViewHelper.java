@@ -64,7 +64,6 @@ public class FeedViewHelper {
 	
 	// display 5 items per default
 	private int itemsPerPage = 5;
-	private Feed helperFeed;
 	private Identity identity;
 	private Translator translator;
 	private Locale locale;
@@ -83,13 +82,12 @@ public class FeedViewHelper {
 	 * @param locale
 	 */
 	public FeedViewHelper(Feed feed, Identity identity, Translator translator, Long courseId, String nodeId) {
-		this.helperFeed = feed;
 		this.identity = identity;
 		this.translator = translator;
 		this.locale = translator.getLocale();
 		this.courseId = courseId;
 		this.nodeId = nodeId;
-		this.setURIs();
+		this.setURIs(feed);
 	}
 
 	/**
@@ -99,33 +97,30 @@ public class FeedViewHelper {
 	 * @param identityKey
 	 */
 	FeedViewHelper(Feed feed, Identity identity, Long courseId, String nodeId) {
-		this.helperFeed = feed;
 		this.identity = identity;
 		
 		this.courseId = courseId;
 		this.nodeId = nodeId;
-		this.setURIs();
+		this.setURIs(feed);
 	}
 
 	/**
 	 * Set the base uri of an internal feed. <br>
 	 * E.g http://my.olat.org/olat/feed/ident/[IDKEY]/token/[TOKEN]/id/[ORESID]
+	 * @param feed 
 	 */
-	public void setURIs() {
+	public void setURIs(Feed feed) {
+		baseUri = FeedManager.getInstance().getFeedBaseUri(feed, identity, courseId, nodeId);
 		// Set feed base URI for internal feeds
-		if (helperFeed.isInternal()) {
-			baseUri = FeedManager.getInstance().getFeedBaseUri(helperFeed, identity, courseId, nodeId);
+		if (feed.isInternal()) {
 			feedUrl = baseUri + "/" + FeedManager.RSS_FEED_NAME;
-		} else if (helperFeed.isExternal()) {
+		} else if (feed.isExternal()) {
 			// The base uri is needed for dispatching the picture
-			baseUri = FeedManager.getInstance().getFeedBaseUri(helperFeed, identity, courseId, nodeId);
-			feedUrl = helperFeed.getExternalFeedUrl();
+			feedUrl = feed.getExternalFeedUrl();
 		} else {
 			// feed is undefined
 			// The base uri is needed for dispatching the picture
-			baseUri = FeedManager.getInstance().getFeedBaseUri(helperFeed, identity, courseId, nodeId);
 			feedUrl = null;
-			helperFeed.setExternalImageURL(null);
 		}
 	}
 
@@ -369,7 +364,7 @@ public class FeedViewHelper {
 		if (item != null) {
 			String description = item.getDescription();
 			if (description != null) {
-				if (helperFeed.isExternal()) {
+				if (item.getFeed().isExternal()) {
 					// Apply xss filter for security reasons. Only necessary for external
 					// feeds (e.g. to not let them execute JS code in our OLAT environment)
 					Filter xssFilter = FilterFactory.getXSSFilter(description.length() + 1);
@@ -401,7 +396,7 @@ public class FeedViewHelper {
 		if (item != null) {
 			String content = item.getContent();
 			if (content != null) {
-				if (helperFeed.isExternal()) {
+				if (item.getFeed().isExternal()) {
 					// Apply xss filter for security reasons. Only necessary for external
 					// feeds (e.g. to not let them execute JS code in our OLAT environment)
 					Filter xssFilter = FilterFactory.getXSSFilter(content.length() + 1);
@@ -471,9 +466,9 @@ public class FeedViewHelper {
 		String file = null;
 		Enclosure enclosure = item.getEnclosure();
 		if (enclosure != null) {
-			if (helperFeed.isExternal()) {
+			if (item.getFeed().isExternal()) {
 				file = item.getEnclosure().getExternalUrl();
-			} else if (helperFeed.isInternal()) {
+			} else if (item.getFeed().isInternal()) {
 				file = this.baseUri + "/" + item.getGuid() + "/" + MEDIA_DIR + "/" + enclosure.getFileName();
 			}
 		}
@@ -496,14 +491,14 @@ public class FeedViewHelper {
 			ces.add(BusinessControlFactory.getInstance().createContextEntry(oresNode));
 			jumpInLink = BusinessControlFactory.getInstance().getAsURIString(ces, false);
 		} else {
-			RepositoryEntry repositoryEntry = resMgr.lookupRepositoryEntry(helperFeed, false);
+			RepositoryEntry repositoryEntry = resMgr.lookupRepositoryEntry(item.getFeed(), false);
 			if (repositoryEntry != null){
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(repositoryEntry);
 				jumpInLink = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
 			} else {
 				// its a liveblog-helperFeed
 				final BusinessControlFactory bCF = BusinessControlFactory.getInstance();
-				String feedBP = LiveBlogArtefactHandler.LIVEBLOG + helperFeed.getResourceableId() + "]";
+				String feedBP = LiveBlogArtefactHandler.LIVEBLOG + item.getFeed().getResourceableId() + "]";
 				final List<ContextEntry> ceList = bCF.createCEListFromString(feedBP);
 				jumpInLink = bCF.getAsURIString(ceList, true);
 			}

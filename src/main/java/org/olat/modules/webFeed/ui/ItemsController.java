@@ -676,7 +676,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 									// Set the base URI of the feed for the
 									// current user. All users
 									// have unique URIs.
-									helper.setURIs();
+									helper.setURIs(currentItem.getFeed());
 								}
 							}
 						} else {

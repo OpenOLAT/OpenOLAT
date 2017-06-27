@@ -274,7 +274,7 @@ public class FeedMainController extends BasicController implements Activateable2
 
 					itemsCtr.resetItems(ureq, feed);	
 					// Set the URIs correctly
-					helper.setURIs();
+					helper.setURIs(feed);
 
 					// Dispose the feedFormCtr
 					removeAsListenerAndDispose(feedFormCtr);
