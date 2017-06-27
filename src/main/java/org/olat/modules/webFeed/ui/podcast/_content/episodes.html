@@ -105,16 +105,14 @@
 					#end
 				</div>
 			</div>
-				
-			#if (( $callback.mayEditItems() || ($callback.mayCreateItems() && $episode.isDraft())) && $feed.isInternal())
+			
+			#if($feed.isInternal())
 			<div class="o_button_group">
-				#if ($r.available("feed.edit.item.$episode.getGuid()"))
-					## special case: this item has been added by another user and thus we 
-					## don't yet have links for this item. But we can still display the content
+				#if ($r.available("feed.edit.item.$episode.getGuid()") && $r.visible("feed.edit.item.$episode.getGuid()"))
 					$r.render("feed.edit.item.$episode.getGuid()")
-					#if ($callback.mayDeleteItems() || ($callback.mayCreateItems() && $episode.isDraft()))
-						$r.render("delete.$episode.getGuid()")
-					#end
+				#end
+				#if ($r.available("delete.$episode.getGuid()") && $r.visible("delete.$episode.getGuid()"))
+					$r.render("delete.$episode.getGuid()")
 				#end
 			</div>
 			#end
