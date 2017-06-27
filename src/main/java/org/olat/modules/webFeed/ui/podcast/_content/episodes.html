@@ -62,7 +62,7 @@
 				 
 				#set($podId = $r.getUniqueId())
 				#if ($!episode.getEnclosure())								
-				<div class="o_block_large_top">
+				<div class="o_block_large_top o_enclosure">
 					<div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($episode.getEnclosure())"></div>
 					
 					<div class="o_block_top">

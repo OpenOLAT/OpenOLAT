@@ -426,6 +426,9 @@ public class FeedManagerImpl extends FeedManager {
 		
 		if (file != null) {
 			if (file.isUploadSuccess()) {
+				if (enclosure != null && enclosure.getFileName() != null) {
+					feedFileStorage.deleteItemMedia(item, enclosure.getFileName());
+				}
 				// New uploaded file
 				enclosure = new EnclosureImpl();
 				enclosure.setLength(file.getUploadSize());
@@ -433,8 +436,10 @@ public class FeedManagerImpl extends FeedManager {
 				String saveFileName = feedFileStorage.saveItemMedia(item, file);
 				enclosure.setFileName(saveFileName);
 			} else if (file.getInitialFile() == null) {
-				// If no or delete initial file, delete the media file
-				feedFileStorage.deleteItemMedia(item);
+				// If no or deleted initial file, delete the media file
+				if (enclosure != null && enclosure.getFileName() != null) {
+					feedFileStorage.deleteItemMedia(item, enclosure.getFileName());
+				}
 				enclosure = null;
 			}
 		}

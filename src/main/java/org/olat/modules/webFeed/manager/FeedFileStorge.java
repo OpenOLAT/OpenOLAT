@@ -486,10 +486,10 @@ public class FeedFileStorge {
 	}
 	
 	/**
-	 * Save the the media (video/audio) of the item. If allready a file is in
-	 * the media container, that file is previously deleted.
-	 * If the media is null, this method will do nothing. It does not delete
-	 * the existing media.
+	 * Save a file (video/audio/image) to the media container of the item.
+	 * <p>
+	 * If the media is null, this method will do nothing. It does not delete the
+	 * existing media files.
 	 * 
 	 * @param item
 	 * @param media
@@ -501,7 +501,6 @@ public class FeedFileStorge {
 		if (media != null) {
 			VFSContainer itemMediaContainer = getOrCreateItemMediaContainer(item);
 			if (itemMediaContainer != null) {
-				deleteItemMedia(item);
 				VFSItem movedItem = media.moveUploadFileTo(itemMediaContainer);
 				saveFileName = Formatter.makeStringFilesystemSave(media.getUploadFileName());
 				movedItem.rename(saveFileName);
@@ -533,16 +532,18 @@ public class FeedFileStorge {
 	}
 	
 	/**
-	 * Delete the the media (video/audio) of the item.
+	 * Delete a file from the media container of an item.
 	 * 
 	 * @param item
+	 * @param fileName
 	 */
-	public void deleteItemMedia(Item item) {
-		VFSContainer itemMediaContainer = getOrCreateItemMediaContainer(item);
-		if (itemMediaContainer != null) {
-			for (VFSItem fileItem : itemMediaContainer.getItems()) {
-				if (!fileItem.getName().startsWith(".")) {
-					fileItem.delete();
+	public void deleteItemMedia(Item item, String fileName) {
+		if (fileName != null) {
+			VFSContainer itemContainer = getOrCreateItemMediaContainer(item);
+			if (itemContainer != null) {
+				VFSLeaf leaf = (VFSLeaf) itemContainer.resolve(fileName);
+				if (leaf != null) {
+					leaf.delete();
 				}
 			}
 		}

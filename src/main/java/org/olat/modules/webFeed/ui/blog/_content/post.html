@@ -30,9 +30,8 @@
 			$!helper.getItemDescriptionForBrowser($item)
 			#set($podId = $r.getUniqueId())
 			#if ($!item.getEnclosure())								
-			<div class="o_block_large_top">
+			<div class="o_block_large_top o_enclosure">
 				<div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($item.getEnclosure())"></div>
-	
 				<script type="text/javascript">
 				/* <![CDATA[ */
 				#if ($!helper.getMediaType($item.getEnclosure()) == "video")

@@ -414,6 +414,9 @@ ul.o_certificates li {
 	.o_content {
 		@include clearfix();
 	}
+	.o_enclosure {
+		clear: both;
+	}
 }
 
 /* Glossary */
