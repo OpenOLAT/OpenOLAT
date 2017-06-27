@@ -40,6 +40,7 @@ import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockRollCallImpl;
@@ -640,7 +641,7 @@ public class LectureBlockRollCallDAO {
 	
 	private void calculateAttendanceRate(List<? extends LectureBlockStatistics> statisticsList, boolean countAuthorizedAbsenceAsAttendant) {
 		for(LectureBlockStatistics statistics:statisticsList) {
-			long totalAttendedLectures = statistics.getTotalEffectiveLectures();
+			long totalAttendedLectures = statistics.getTotalAttendedLectures();
 			long totalAbsentLectures = statistics.getTotalAbsentLectures();
 			if(countAuthorizedAbsenceAsAttendant) {
 				totalAttendedLectures += statistics.getTotalAuthorizedAbsentLectures();
@@ -744,13 +745,53 @@ public class LectureBlockRollCallDAO {
 			}
 		}
 		
-		if(plannedLecturesNumber != null && firstAdmissionDate != null && firstAdmissionDate.before(rollCallEndDate)) {
-			statistics.addTotalPersonalPlannedLectures(plannedLecturesNumber.longValue());
+		if(firstAdmissionDate != null && firstAdmissionDate.before(rollCallEndDate)
+				&& (blockStatus == null || !LectureBlockStatus.cancelled.name().equals(blockStatus))) {
+			// apply the effective lectures number only if the roll call is closed
+			if(effectiveLecturesNumber != null && rollCallStatus != null 
+					&& (LectureRollCallStatus.closed.name().equals(rollCallStatus) || LectureRollCallStatus.autoclosed.name().equals(rollCallStatus))) {
+				statistics.addTotalPersonalPlannedLectures(effectiveLecturesNumber.longValue());
+			} else if(plannedLecturesNumber != null) {
+				statistics.addTotalPersonalPlannedLectures(plannedLecturesNumber.longValue());
+			}
 		}
+	}
+	
+	public AggregatedLectureBlocksStatistics aggregatedStatistics(List<? extends LectureBlockStatistics> statisticsList,
+			boolean countAuthorizedAbsenceAsAttendant) {
+		
+		long totalPersonalPlannedLectures = 0;
+		long totalAttendedLectures = 0;
+		long totalAuthorizedAbsentLectures = 0;
+		long totalAbsentLectures = 0;
+		
+		long attendedForRate = 0;
+		long absentForRate = 0;
 
-		if(plannedLecturesNumber != null) {
-			statistics.addTotalPlannedLectures(plannedLecturesNumber.longValue());
+		for(LectureBlockStatistics statistics:statisticsList) {
+			totalPersonalPlannedLectures += statistics.getTotalPersonalPlannedLectures();
+			totalAuthorizedAbsentLectures += statistics.getTotalAuthorizedAbsentLectures();
+			totalAttendedLectures += statistics.getTotalAttendedLectures();
+			totalAbsentLectures += statistics.getTotalAbsentLectures();
+			
+			attendedForRate += statistics.getTotalAttendedLectures();
+			absentForRate += statistics.getTotalAbsentLectures();
+			if(countAuthorizedAbsenceAsAttendant) {
+				attendedForRate += statistics.getTotalAuthorizedAbsentLectures();
+			} else {
+				absentForRate += statistics.getTotalAuthorizedAbsentLectures();
+			}
 		}
+		
+		long totalLectures = attendedForRate + absentForRate;
+		double rate;
+		if(totalLectures == 0 || attendedForRate == 0) {
+			rate = 0.0d;
+		} else {
+			rate = (double)attendedForRate / (double)totalLectures;
+		}
+		
+		return new AggregatedLectureBlocksStatistics(totalPersonalPlannedLectures, totalAttendedLectures, totalAuthorizedAbsentLectures, totalAbsentLectures, rate);
 	}
 	
 	private static class Membership {

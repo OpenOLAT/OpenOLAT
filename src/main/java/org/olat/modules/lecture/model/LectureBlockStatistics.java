@@ -33,9 +33,9 @@ public class LectureBlockStatistics {
 	private final Long identityKey;
 	
 	private long totalLectureBlocks = 0l;
-	private long totalPlannedLectures = 0l;
-	private long totalPersonalPlannedLectures = 0l;
 	private long totalEffectiveLectures = 0l;
+	private long totalPersonalPlannedLectures = 0l;
+	
 	private long totalAttendedLectures = 0l;
 	private long totalAbsentLectures = 0l;
 	private long totalAuthorizedAbsentLectures = 0l;
@@ -76,17 +76,11 @@ public class LectureBlockStatistics {
 	public double getRequiredRate() {
 		return requiredRate;
 	}
-
-	public long getTotalPlannedLectures() {
-		return totalPlannedLectures;
-	}
-
-	public void addTotalPlannedLectures(long lectures) {
-		if(lectures > 0) {
-			totalPlannedLectures += lectures;
-		}
-	}
 	
+	/**
+	 * The number of lectures the user has followed (or was absent)
+	 * or will follow in the future.
+	 */
 	public long getTotalPersonalPlannedLectures() {
 		return totalPersonalPlannedLectures;
 	}
@@ -97,6 +91,9 @@ public class LectureBlockStatistics {
 		}
 	}
 
+	/**
+	 * The number of lectures the user has followed (or was absent).
+	 */
 	public long getTotalEffectiveLectures() {
 		return totalEffectiveLectures;
 	}
@@ -122,7 +119,9 @@ public class LectureBlockStatistics {
 	}
 
 	public void addTotalAbsentLectures(long lectures) {
-		totalAbsentLectures += lectures;
+		if(lectures > 0) {
+			totalAbsentLectures += lectures;
+		}
 	}
 	
 	public long getTotalAuthorizedAbsentLectures() {

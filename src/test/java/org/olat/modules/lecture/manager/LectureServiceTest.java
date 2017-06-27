@@ -191,7 +191,7 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertNotNull(statistics_1);
 		Assert.assertEquals(1, statistics_1.size());
 		LectureBlockStatistics statistic_1 = statistics_1.get(0);
-		Assert.assertEquals(12, statistic_1.getTotalPlannedLectures());
+		Assert.assertEquals(12, statistic_1.getTotalPersonalPlannedLectures());
 		Assert.assertEquals(2, statistic_1.getTotalAttendedLectures());
 		Assert.assertEquals(6, statistic_1.getTotalAbsentLectures());
 		
@@ -200,7 +200,7 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertNotNull(statistics_2);
 		Assert.assertEquals(1, statistics_2.size());
 		LectureBlockStatistics statistic_2 = statistics_2.get(0);
-		Assert.assertEquals(12, statistic_2.getTotalPlannedLectures());
+		Assert.assertEquals(12, statistic_2.getTotalPersonalPlannedLectures());
 		Assert.assertEquals(1, statistic_2.getTotalAttendedLectures());
 		Assert.assertEquals(7, statistic_2.getTotalAbsentLectures());
 	}
@@ -233,7 +233,8 @@ public class LectureServiceTest extends OlatTestCase {
 		lectureBlock.setStatus(LectureBlockStatus.done);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
 		lectureBlock.setTitle("Hello lecturers");
-		lectureBlock.setPlannedLecturesNumber(4);;
+		lectureBlock.setPlannedLecturesNumber(4);
+		lectureBlock.setEffectiveLecturesNumber(4);
 		return lectureService.save(lectureBlock, null);
 	}
 	

@@ -121,7 +121,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 				}
 				case plannedLectures: {
 					LectureBlockStatistics statistics = getLectureBlockStatistics(entry);
-					return statistics == null ? null : statistics.getTotalPlannedLectures();
+					return statistics == null ? null : statistics.getTotalPersonalPlannedLectures();
 				}
 				case attendedLectures: {
 					LectureBlockStatistics statistics = getLectureBlockStatistics(entry);

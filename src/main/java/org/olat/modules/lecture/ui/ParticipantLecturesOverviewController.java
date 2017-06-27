@@ -45,6 +45,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.ui.ParticipantLecturesDataModel.LecturesCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
@@ -139,7 +140,9 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.progress, new LectureStatisticsCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.rateWarning, new RateWarningCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.rate, new PercentCellRenderer()));
+		DefaultFlexiColumnModel rateColumn = new DefaultFlexiColumnModel(LecturesCols.rate, new PercentCellRenderer());
+		rateColumn.setFooterCellRenderer(new PercentCellRenderer());
+		columnsModel.addFlexiColumnModel(rateColumn);
 		if(withSelect) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		}
@@ -155,7 +158,8 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	
 	private void loadModel() {
 		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(assessedIdentity);
-		tableModel.setObjects(statistics);
+		AggregatedLectureBlocksStatistics total = lectureService.aggregatedStatistics(statistics);
+		tableModel.setObjects(statistics, total);
 		tableEl.reset(true, true, true);
 	}
 	

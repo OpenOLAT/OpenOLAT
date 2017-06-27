@@ -38,6 +38,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.coach.LecturesListDataModel.StatsCols;
@@ -72,6 +74,8 @@ public class LecturesListController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private LectureModule lectureModule;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
@@ -124,8 +128,9 @@ public class LecturesListController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.authorizedAbsenceLectures));
 		}
 		
-		tableModel = new LecturesListDataModel(columnsModel, getTranslator()); 
-		tableModel.setObjects(statistics);
+		tableModel = new LecturesListDataModel(columnsModel, getTranslator());
+		AggregatedLectureBlocksStatistics total = lectureService.aggregatedStatistics(statistics);
+		tableModel.setObjects(statistics, total);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
 		tableEl.setFooter(true);

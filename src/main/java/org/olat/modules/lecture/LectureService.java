@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
@@ -363,6 +364,14 @@ public interface LectureService {
 	 * @return Statistics per user
 	 */
 	public List<LectureBlockStatistics> getParticipantsLecturesStatistics(RepositoryEntry entry);
+	
+	/**
+	 * Aggregated the statistics with business rules based on the different possible settings.
+	 * 
+	 * @param statistics
+	 * @return
+	 */
+	public AggregatedLectureBlocksStatistics aggregatedStatistics(List<? extends LectureBlockStatistics> statistics);
 	
 	/**
 	 * 

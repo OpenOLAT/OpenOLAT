@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 
 /**
@@ -42,6 +43,7 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 	
 	private final Locale locale;
 	private final Translator translator;
+	private AggregatedLectureBlocksStatistics totalStatistics;
 	
 	public ParticipantLecturesDataModel(FlexiTableColumnModel columnModel, Translator translator, Locale locale) {
 		super(columnModel);
@@ -86,8 +88,6 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 			default: return null;
 		}
 	}
-	
-	
 
 	@Override
 	public String getFooterHeader() {
@@ -96,41 +96,25 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 
 	@Override
 	public Object getFooterValueAt(int col) {
+		if(totalStatistics == null) return null;
+		
 		switch(LecturesCols.values()[col]) {
-			case plannedLectures: {
-				int total = 0;
-				for(LectureBlockStatistics row:getObjects()) {
-					total += positive(row.getTotalPersonalPlannedLectures());
-				}
-				return total;
-			}
-			case attendedLectures: {
-				int total = 0;
-				for(LectureBlockStatistics row:getObjects()) {
-					total += positive(row.getTotalAttendedLectures());
-				}
-				return total;
-			}
-			case authorizedAbsentLectures: {
-				int total = 0;
-				for(LectureBlockStatistics row:getObjects()) {
-					total += positive(row.getTotalAuthorizedAbsentLectures());
-				}
-				return total;
-			}
-			case absentLectures: {
-				int total = 0;
-				for(LectureBlockStatistics row:getObjects()) {
-					total += positive(row.getTotalAbsentLectures());
-				}
-				return total;
-			}
+			case plannedLectures: return positive(totalStatistics.getPersonalPlannedLectures());
+			case attendedLectures: return positive(totalStatistics.getAttendedLectures());
+			case authorizedAbsentLectures: return positive(totalStatistics.getAuthorizedAbsentLectures());
+			case absentLectures: return positive(totalStatistics.getAbsentLectures());
+			case rate: return totalStatistics.getRate();
 			default: return null;
 		}
 	}
 	
 	private long positive(long val) {
 		return val < 0 ? 0 : val;
+	}
+	
+	public void setObjects(List<LectureBlockStatistics> objects, AggregatedLectureBlocksStatistics totalStatistics) {
+		super.setObjects(objects);
+		this.totalStatistics = totalStatistics;
 	}
 
 	@Override

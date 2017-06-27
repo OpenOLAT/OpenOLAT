@@ -66,6 +66,7 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockImpl;
@@ -640,6 +641,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		return lectureBlockRollCallDao.getStatistics(params, userPropertyHandlers, identity, admin,
 				absenceDefaultAuthorized, countAuthorizedAbsenceAsAttendant,
 				calculateAttendanceRate, defaultRequiredAttendanceRate);
+	}
+
+	@Override
+	public AggregatedLectureBlocksStatistics aggregatedStatistics(List<? extends LectureBlockStatistics> statistics) {
+		boolean countAuthorizedAbsenceAsAttendant = lectureModule.isCountAuthorizedAbsenceAsAttendant();
+		return lectureBlockRollCallDao.aggregatedStatistics(statistics, countAuthorizedAbsenceAsAttendant);
 	}
 
 	@Override

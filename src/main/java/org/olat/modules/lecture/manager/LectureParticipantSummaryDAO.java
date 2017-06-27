@@ -68,7 +68,7 @@ public class LectureParticipantSummaryDAO {
 			summary.setAbsentLectures(statistics.getTotalAbsentLectures());
 			summary.setAttendedLectures(statistics.getTotalAttendedLectures());
 			summary.setExcusedLectures(0);
-			summary.setPlannedLectures(statistics.getTotalPlannedLectures());
+			summary.setPlannedLectures(statistics.getTotalPersonalPlannedLectures());
 			if(statistics.isCalculateRate()) {
 				summary.setAttendanceRate(statistics.getAttendanceRate());
 			}
@@ -131,7 +131,7 @@ public class LectureParticipantSummaryDAO {
 				.setParameter("identityKey", statistics.getIdentityKey())
 				.setParameter("attendedLectures", statistics.getTotalAttendedLectures())
 				.setParameter("absentLectures", statistics.getTotalAbsentLectures())
-				.setParameter("plannedLectures", statistics.getTotalPlannedLectures())
+				.setParameter("plannedLectures", statistics.getTotalPersonalPlannedLectures())
 				.setParameter("attendanceRate", statistics.getAttendanceRate())
 				.setParameter("now", new Date())
 				.executeUpdate();
