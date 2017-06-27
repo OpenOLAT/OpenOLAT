@@ -21,7 +21,6 @@ package org.olat.selenium.page.course;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -38,13 +37,8 @@ import org.openqa.selenium.support.ui.Select;
  *
  */
 public class RemindersPage {
-	
-	@Drone
-	private WebDriver browser;
-	
-	public RemindersPage() {
-		//
-	}
+
+	private final WebDriver browser;
 	
 	public RemindersPage(WebDriver browser) {
 		this.browser = browser;

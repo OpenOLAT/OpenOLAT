@@ -53,6 +53,7 @@ public class AssessmentSectionExpertOptionsEditorController extends ItemSessionC
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_assessment_section_expert_options");
 		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_section");
 		if(!editable) {
 			setFormWarning("warning.alien.assessment.test");
@@ -67,6 +68,7 @@ public class AssessmentSectionExpertOptionsEditorController extends ItemSessionC
 		//visible
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
 		visibleEl = uifactory.addRadiosHorizontal("visible", "form.section.visible", formLayout, yesnoKeys, yesnoValues);
+		visibleEl.setElementCssClass("o_sel_assessment_section_visible");
 		visibleEl.setEnabled(!restrictedEdit && editable);
 		if (section.getVisible()) {
 			visibleEl.select("y", true);

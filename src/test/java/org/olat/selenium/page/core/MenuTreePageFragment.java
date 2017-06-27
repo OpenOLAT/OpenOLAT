@@ -77,7 +77,6 @@ public class MenuTreePageFragment {
 		Assert.assertTrue("Link not found with title: " + title, found);
 		return this;
 	}
-	
 
 	public MenuTreePageFragment assertWithTitle(String title) {
 		boolean found = false;

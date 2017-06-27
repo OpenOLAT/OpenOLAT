@@ -57,7 +57,6 @@ public class EasyConditionConfigPage {
 		By createBy = By.cssSelector("a.o_sel_condition_create_groups");
 		browser.findElement(createBy).click();
 		OOGraphene.waitModalDialog(browser);
-		OOGraphene.waitBusyAndScrollTop(browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");

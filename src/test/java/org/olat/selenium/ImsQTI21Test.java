@@ -2097,4 +2097,112 @@ public class ImsQTI21Test {
 			.assertOnAssessmentResults()
 			.assertOnDrawing();
 	}
+	
+	/**
+	 * An author make a test with 2 questions and in the expert
+	 * settings of the section, it hides the title. It set the
+	 * access configuration.<br>
+	 * A user search the test, make it, check that the sections
+	 * are not visible, pass the test and check the assessment
+	 * results.
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorHiddenSection(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//customize the section
+		qtiEditor
+			.selectSection()
+			.selectExpertOptions()
+			.sectionTitle(false)
+			.save();
+		
+		//edit the default single choice
+		qtiEditor
+			.selectItem("Single Choice");
+		QTI21SingleChoiceEditorPage scEditor = new QTI21SingleChoiceEditorPage(browser);
+		scEditor
+			.setAnswer(0, "Wrong")
+			.addChoice(1)
+			.setCorrect(1)
+			.setAnswer(1, "Correct")
+			.addChoice(2)
+			.setAnswer(2, "Faux")
+			.save();
+		//add a multiple choice
+		QTI21MultipleChoiceEditorPage mcEditor = qtiEditor
+			.addMultipleChoice();
+		mcEditor
+			.setAnswer(0, "Correct")
+			.setCorrect(0)
+			.addChoice(1)
+			.setCorrect(1)
+			.setAnswer(1, "OkToo")
+			.addChoice(2)
+			.setAnswer(2, "Faux")
+			.addChoice(3)
+			.setAnswer(3, "Falsch")
+			.save();
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.assertHiddenSection()
+			.answerSingleChoice("Correct")
+			.saveAnswer()
+			.answerMultipleChoice("OkToo")
+			.answerMultipleChoice("Correct")
+			.saveAnswer()
+			.endTest()
+		//check the results
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(2)
+			.assertOnAssessmentTestMaxScore(2);
+	}
 }

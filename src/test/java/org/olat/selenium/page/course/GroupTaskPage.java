@@ -22,7 +22,6 @@ package org.olat.selenium.page.course;
 import java.io.File;
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -38,12 +37,7 @@ import org.openqa.selenium.WebElement;
  */
 public class GroupTaskPage {
 
-	@Drone
-	private WebDriver browser;
-	
-	public GroupTaskPage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public GroupTaskPage(WebDriver browser) {
 		this.browser = browser;
@@ -99,7 +93,7 @@ public class GroupTaskPage {
 	
 	private GroupTaskPage uploadFile(String stepId, File file) {
 		By uploadButtonBy = By.cssSelector("#" + stepId + " .o_sel_course_gta_submit_file");
-		OOGraphene.clickAndWait(uploadButtonBy, browser);
+		OOGraphene.clickAndWait(uploadButtonBy, browser);//TODO sel clickAndWait
 		OOGraphene.waitModalDialog(browser);
 		
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
@@ -114,7 +108,7 @@ public class GroupTaskPage {
 	
 	public GroupTaskPage submitText(String filename, String text) {
 		By uploadButtonBy = By.cssSelector("#o_step_submit_content .o_sel_course_gta_create_doc");
-		OOGraphene.clickAndWait(uploadButtonBy, browser);
+		OOGraphene.clickAndWait(uploadButtonBy, browser);//TODO sel clickAndWait
 		OOGraphene.waitModalDialog(browser);
 		
 		By filenameBy = By.cssSelector(".o_sel_course_gta_doc_filename input[type='text']");
@@ -151,7 +145,6 @@ public class GroupTaskPage {
 	 */
 	private GroupTaskPage confirmDialog() {
 		OOGraphene.waitModalDialog(browser);
-		OOGraphene.waitBusyAndScrollTop(browser);
 		
 		By confirmButtonBy = By.cssSelector("div.modal-dialog div.modal-footer a");
 		browser.findElement(confirmButtonBy).click();

@@ -230,7 +230,6 @@ public class BinderPage {
 		//click create button
 		By createBy = By.className("o_sel_pf_new_section");
 		browser.findElement(createBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_section_form");
 		OOGraphene.waitElement(popupBy, 5, browser);
@@ -257,7 +256,6 @@ public class BinderPage {
 		By createBy = By.className("o_sel_pf_new_entry");
 		WebElement createButton = browser.findElement(createBy);
 		createButton.click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_entry_form");
 		OOGraphene.waitElement(popupBy, 5, browser);
@@ -287,7 +285,6 @@ public class BinderPage {
 		Assert.assertEquals(1, newAssignmentButtons.size());
 		newAssignmentButtons.get(0).click();
 		
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_assignment_form");
 		OOGraphene.waitElement(popupBy, 5, browser);

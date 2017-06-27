@@ -22,7 +22,6 @@ package org.olat.selenium.page.course;
 import java.util.Date;
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -40,12 +39,7 @@ import org.openqa.selenium.support.ui.Select;
  */
 public class AssessmentModePage {
 	
-	@Drone
-	private WebDriver browser;
-	
-	public AssessmentModePage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public AssessmentModePage(WebDriver browser) {
 		this.browser = browser;

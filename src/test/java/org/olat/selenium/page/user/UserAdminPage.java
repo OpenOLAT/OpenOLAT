@@ -106,11 +106,13 @@ public class UserAdminPage {
 	public UserAdminPage selectAndDeleteUser(String lastName) {
 		By checkBy = By.cssSelector("fieldset.o_sel_usersearch_searchform table input[type='checkbox']");
 		browser.findElement(checkBy).click();
+		OOGraphene.waitBusy(browser);
 		
 		//select
 		By selectBy = By.cssSelector("fieldset.o_sel_usersearch_searchform div.o_table_wrapper div.o_table_buttons button.btn.btn-default");
 		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		//confirm
 		By usernameBy = By.xpath("//div[contains(@class,'modal-dialog')]//p[text()[contains(.,'" + lastName + "')]]");

@@ -105,7 +105,6 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage confirm() {
-		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitModalDialog(browser);
 		WebElement yesLink = browser.findElement(By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@href,'link_0')]"));
 		yesLink.click();
@@ -174,7 +173,6 @@ public class GroupTaskToCoachPage {
 		} else {
 			buttons.get(0).click();
 		}
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}

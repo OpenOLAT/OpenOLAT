@@ -21,7 +21,6 @@ package org.olat.selenium.page.core;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -37,12 +36,7 @@ import org.openqa.selenium.WebElement;
  */
 public class ContactPage {
 	
-	@Drone
-	private WebDriver browser;
-	
-	public ContactPage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public ContactPage(WebDriver browser) {
 		this.browser = browser;
@@ -54,5 +48,4 @@ public class ContactPage {
 		Assert.assertFalse(calendarToolbarsEl.isEmpty());
 		return this;
 	}
-
 }

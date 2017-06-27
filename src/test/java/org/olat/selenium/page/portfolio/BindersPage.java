@@ -41,11 +41,8 @@ public class BindersPage {
 	public BinderPage createBinder(String title, String summary) {
 		By newBinderBy = By.cssSelector("li.o_tool a.o_sel_pf_new_binder");
 		browser.findElement(newBinderBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
-		OOGraphene.waitBusy(browser);
-		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_binder_form");
 		OOGraphene.waitElement(popupBy, 5, browser);
 		

@@ -54,13 +54,27 @@ public class OOGraphene {
 	public static final By wizardNextBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_next')]");
 	public static final By wizardFinishBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_finish') and not(contains(@class,'o_disabled'))]");
 	
+	/**
+	 * Wait until the busy flag is ok, the browser scrolled
+	 * to the top and that the body of the modal dialog is visible.
+	 * 
+	 * @param The browser
+	 */
 	public static void waitModalDialog(WebDriver browser) {
+		waitBusyAndScrollTop(browser);
 		By modalBy = By.cssSelector("div.modal-dialog div.modal-body");
 		Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
 			.pollingEvery(200, TimeUnit.MILLISECONDS).until().element(modalBy).is().visible();
 	}
 	
+	/**
+	 * Wait until the busy flag is ok, the browser scrolled
+	 * to the top and that the body of the modal dialog is visible.
+	 * 
+	 * @param The browser
+	 */
 	public static void waitModalWizard(WebDriver browser) {
+		waitBusyAndScrollTop(browser);
 		By modalBy = By.cssSelector("div.modal-dialog div.modal-body");
 		Graphene.waitModel(browser).withTimeout(defaultTimeout, TimeUnit.SECONDS)
 			.pollingEvery(200, TimeUnit.MILLISECONDS).until().element(modalBy).is().visible();

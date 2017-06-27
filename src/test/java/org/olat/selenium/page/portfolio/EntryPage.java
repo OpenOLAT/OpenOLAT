@@ -178,7 +178,6 @@ public class EntryPage {
 		By moveToTrashBy = By.cssSelector("a.o_sel_pf_move_page_to_trash");
 		OOGraphene.waitElement(moveToTrashBy, 5, browser);
 		browser.findElement(moveToTrashBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		BinderPage binder = new BinderPage(browser);
@@ -190,7 +189,6 @@ public class EntryPage {
 		By moveToTrashBy = By.cssSelector("a.o_sel_pf_delete_page");
 		OOGraphene.waitElement(moveToTrashBy, 5, browser);
 		browser.findElement(moveToTrashBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		new BinderPage(browser).confirm();

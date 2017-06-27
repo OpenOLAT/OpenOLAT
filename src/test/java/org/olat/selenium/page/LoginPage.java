@@ -60,9 +60,9 @@ public class LoginPage {
 	@Drone
 	private WebDriver browser;
 	
-	public static LoginPage getLoginPage(WebDriver browser, URL deployemntUrl) {
+	public static LoginPage getLoginPage(WebDriver browser, URL deploymentUrl) {
 		LoginPage page = new LoginPage(browser);
-		browser.navigate().to(deployemntUrl);
+		browser.navigate().to(deploymentUrl);
 		return page;
 	}
 	
@@ -199,7 +199,7 @@ public class LoginPage {
 		OOGraphene.waitBusy(browser);
 		
 		By errorMessageby = By.cssSelector("div.modal-body.alert.alert-danger");
-		OOGraphene.waitElement(errorMessageby, 2, browser);
+		OOGraphene.waitElement(errorMessageby, browser);
 		return this;
 	}
 	

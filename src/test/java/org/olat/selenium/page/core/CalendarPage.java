@@ -25,7 +25,6 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.core.util.StringHelper;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -58,12 +57,7 @@ public class CalendarPage {
 			.appendValue(ChronoField.DAY_OF_MONTH, 2)
 			.toFormatter();
 	
-	@Drone
-	private WebDriver browser;
-	
-	public CalendarPage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public CalendarPage(WebDriver browser) {
 		this.browser = browser;
@@ -290,8 +284,4 @@ public class CalendarPage {
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
-	
-
-	
-
 }

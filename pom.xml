@@ -71,7 +71,7 @@
 		<org.infinispan.version>8.2.5.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
 		<version.selenium>3.4.0</version.selenium>
-		<version.drone>2.1.2</version.drone>
+		<version.drone>2.2.0</version.drone>
 		<activemq.version>5.11.1</activemq.version>
 		<qtiworks.version>1.0.4</qtiworks.version>
 

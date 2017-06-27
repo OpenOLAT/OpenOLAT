@@ -19,8 +19,6 @@
  */
 package org.olat.selenium.page.user;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.Graphene;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -38,13 +36,15 @@ public class UserPasswordPage {
 
 	public static final By oldPasswordBy = By.className("o_sel_home_pwd_old");
 	
-	@Drone
-	private WebDriver browser;
+	private final WebDriver browser;
+	
+	private UserPasswordPage(WebDriver browser) {
+		this.browser = browser;
+	}
 	
 	public static UserPasswordPage getUserPasswordPage(WebDriver browser) {
 		OOGraphene.waitElement(oldPasswordBy, browser);
-		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(UserPasswordPage.class, main);
+		return new UserPasswordPage(browser);
 	}
 	
 	public UserPasswordPage setNewPassword(String oldPassword, String newPassword) {

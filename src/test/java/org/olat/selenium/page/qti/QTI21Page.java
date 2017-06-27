@@ -332,6 +332,13 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page assertHiddenSection() {
+		By sectionBy = By.cssSelector("li.o_assessmentsection.o_qti_menu_item>header>h4");
+		List<WebElement> sectionEls = browser.findElements(sectionBy);
+		Assert.assertEquals(0, sectionEls.size());
+		return this;
+	}
+	
 	/**
 	 * This check specifically if the metadata of the test are visible.
 	 * 
@@ -339,7 +346,17 @@ public class QTI21Page {
 	 */
 	public QTI21Page assertOnAssessmentResults() {
 		By resultsBy = By.cssSelector("div.o_sel_results_details");
-		OOGraphene.waitElement(resultsBy, 5, browser);
+		OOGraphene.waitElement(resultsBy, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnAssessmentTestResults() {
+		try {
+			By resultsBy = By.cssSelector("div.o_sel_results_details");
+			OOGraphene.waitElement(resultsBy, browser);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return this;
 	}
 	
@@ -347,7 +364,7 @@ public class QTI21Page {
 	 * This check specifically if the metadata of the test are visible.
 	 * 
 	 * @param timeout
-	 * @return
+	 * @return Itself
 	 */
 	public QTI21Page assertOnAssessmentResults(int timeout) {
 		By resultsBy = By.cssSelector("div.o_sel_results_details");

@@ -22,7 +22,6 @@ package org.olat.selenium.page.course;
 import java.net.URL;
 import java.util.List;
 
-import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.core.BookingPage;
@@ -248,9 +247,7 @@ public class CoursePageFragment {
 		}
 		browser.findElement(assessmentModeBy).click();
 		OOGraphene.waitBusy(browser);
-
-		WebElement main = browser.findElement(By.id("o_main_container"));
-		return Graphene.createPageFragment(AssessmentModePage.class, main);
+		return new AssessmentModePage(browser);
 	}
 	
 	public RepositoryAccessPage accessConfiguration() {
@@ -271,9 +268,7 @@ public class CoursePageFragment {
 		}
 		browser.findElement(efficiencyStatementsBy).click();
 		OOGraphene.waitBusy(browser);
-
-		WebElement main = browser.findElement(By.id("o_main_container"));
-		return Graphene.createPageFragment(EfficiencyStatementConfigurationPage.class, main);
+		return new EfficiencyStatementConfigurationPage(browser);
 	}
 	
 	public BookingPage bookingTool() {

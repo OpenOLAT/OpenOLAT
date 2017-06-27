@@ -54,7 +54,6 @@ public class QTI21EditorPage {
 		
 		By importBy = By.xpath("//ul[contains(@class,'o_sel_qti_elements')]//a[contains(@onclick,'import.table')]");
 		browser.findElement(importBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		return new QTI21CSVImportWizard(browser);
 	}
@@ -66,8 +65,24 @@ public class QTI21EditorPage {
 		return this;
 	}
 	
+	public QTI21SectionEditorPage selectSection() {
+		By firstSectionBy = By.xpath("//div[contains(@class,'o_assessment_test_editor_menu')]//a[i[contains(@class,'o_mi_qtisection')]]");
+		browser.findElement(firstSectionBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.className("o_sel_assessment_section_options"), browser);
+		return new QTI21SectionEditorPage(browser);
+	}
+	
 	public QTI21EditorPage selectNode(String title) {
 		menuTree.selectWithTitle(title);
+		return this;
+	}
+	
+	public QTI21EditorPage selectItem(String title) {
+		By itemBy = By.xpath("//li/div/span[contains(@class,'o_tree_level_label_leaf')]/a[span[contains(text(),'" + title + "')]]");
+		OOGraphene.waitElement(itemBy, browser);
+		browser.findElement(itemBy).click();
+		OOGraphene.waitBusyAndScrollTop(browser);
 		return this;
 	}
 	
@@ -76,7 +91,6 @@ public class QTI21EditorPage {
 		
 		By importBy = By.xpath("//ul[contains(@class,'o_sel_qti_change_node')]//a[contains(@onclick,'tools.delete')]");
 		browser.findElement(importBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		confirm();

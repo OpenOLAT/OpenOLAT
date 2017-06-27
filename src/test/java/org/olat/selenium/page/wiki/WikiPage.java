@@ -21,8 +21,6 @@ package org.olat.selenium.page.wiki;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.MediaPage;
@@ -42,20 +40,15 @@ public class WikiPage {
 	
 	public static final By wikiWrapperBy = By.cssSelector("div.o_wiki_wrapper");
 	
-	@Drone
-	private WebDriver browser;
-	
-	public WikiPage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public WikiPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
 	public static WikiPage getWiki(WebDriver browser) {
-		WebElement main = browser.findElement(By.id("o_main_wrapper"));
-		return Graphene.createPageFragment(WikiPage.class, main);
+		OOGraphene.waitElement(By.id("o_main_wrapper"), browser);
+		return new WikiPage(browser);
 	}
 	
 	public static WikiPage getGroupWiki(WebDriver browser) {
@@ -130,7 +123,6 @@ public class WikiPage {
 		By collectBy = By.cssSelector(".o_wikimod_nav .o_portfolio_collector");
 		OOGraphene.waitElement(collectBy, 5, browser);
 		browser.findElement(collectBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		return new MediaPage(browser);
 	}

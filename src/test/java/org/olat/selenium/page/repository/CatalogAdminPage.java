@@ -21,7 +21,6 @@ package org.olat.selenium.page.repository;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -37,12 +36,7 @@ import org.openqa.selenium.WebElement;
  */
 public class CatalogAdminPage {
 	
-	@Drone
-	private WebDriver browser;
-	
-	public CatalogAdminPage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public CatalogAdminPage(WebDriver browser) {
 		this.browser = browser;
@@ -59,7 +53,6 @@ public class CatalogAdminPage {
 		//click in toolbox
 		By addNodeBy = By.className("o_sel_catalog_add_category");
 		browser.findElement(addNodeBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		//fill the form

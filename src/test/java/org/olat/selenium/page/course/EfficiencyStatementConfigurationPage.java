@@ -19,7 +19,6 @@
  */
 package org.olat.selenium.page.course;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -32,12 +31,7 @@ import org.openqa.selenium.WebDriver;
  */
 public class EfficiencyStatementConfigurationPage {
 	
-	@Drone
-	private WebDriver browser;
-	
-	public EfficiencyStatementConfigurationPage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public EfficiencyStatementConfigurationPage(WebDriver browser) {
 		this.browser = browser;

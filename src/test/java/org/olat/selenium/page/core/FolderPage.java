@@ -21,7 +21,6 @@ package org.olat.selenium.page.core;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -41,12 +40,7 @@ public class FolderPage {
 	
 	public static final By folderBy = By.cssSelector("div.o_briefcase_folder");
 	
-	@Drone
-	private WebDriver browser;
-	
-	public FolderPage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public FolderPage(WebDriver browser) {
 		this.browser = browser;

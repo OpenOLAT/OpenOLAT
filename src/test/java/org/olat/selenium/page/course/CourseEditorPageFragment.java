@@ -217,9 +217,7 @@ public class CourseEditorPageFragment {
 	public CourseEditorPageFragment createNode(String nodeAlias) {
 		OOGraphene.waitElement(createNodeButton, 5, browser);
 		browser.findElement(createNodeButton).click();
-		
-		//modal
-		OOGraphene.waitBusyAndScrollTop(browser);
+
 		OOGraphene.waitModalDialog(browser);
 		By node = By.xpath("//div[@id='o_course_editor_choose_nodetype']//a[contains(@class,'o_sel_course_editor_node-" + nodeAlias + "')]");
 		browser.findElement(node).click();
@@ -279,7 +277,6 @@ public class CourseEditorPageFragment {
 		}
 		By changeNodeLinkBy = By.cssSelector("a.o_sel_course_editor_move_node");
 		browser.findElement(changeNodeLinkBy).click();
-		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		By targetNodeBy = By.xpath("//div[contains(@class,'o_tree_insert_tool')]//a[contains(@title,'" + targetNodeTitle + "')]");
@@ -515,7 +512,6 @@ public class CourseEditorPageFragment {
 		//back
 		By breadcrumpBackBy = By.cssSelector("#o_main_toolbar li.o_breadcrumb_back a");
 		browser.findElement(breadcrumpBackBy).click();
-		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		//auto publish

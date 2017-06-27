@@ -21,7 +21,6 @@ package org.olat.selenium.page.repository;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -41,9 +40,11 @@ public class RepositoryDetailsPage {
 	public static final By launchBy = By.className("o_sel_author_launch");
 	public static final By editBy = By.className("o_sel_author_edit_entry");
 	
-
-	@Drone
-	private WebDriver browser;
+	private final WebDriver browser;
+	
+	public RepositoryDetailsPage(WebDriver browser) {
+		this.browser = browser;
+	}
 	
 	public RepositoryDetailsPage assertOnTitle(String displayName) {
 		List<WebElement> titleList = browser.findElements(By.tagName("h1"));

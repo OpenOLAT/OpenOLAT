@@ -21,7 +21,6 @@ package org.olat.selenium.page.user;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -49,9 +48,11 @@ public class PortalPage {
 	private static final By moveUpBy = By.className("o_portlet_edit_up");
 	private static final By moveDownBy = By.className("o_portlet_edit_down");
 	
-	@Drone
-	private WebDriver browser;
+	private final WebDriver browser;
 	
+	public PortalPage(WebDriver browser) {
+		this.browser = browser;
+	}
 	
 	public PortalPage edit() {
 		By editBy = By.cssSelector(".o_home_portaleditlink a.btn-default");

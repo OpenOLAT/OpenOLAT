@@ -62,6 +62,7 @@ public class AssessmentSectionEditorController extends BasicController {
 		mainVC = createVelocityContainer("assessment_test_editor");
 		mainVC.contextPut("restrictedEdit", restrictedEdit);
 		tabbedPane = new TabbedPane("testTabs", getLocale());
+		tabbedPane.setElementCssClass("o_sel_assessment_section_config");
 		tabbedPane.addListener(this);
 		mainVC.put("tabbedpane", tabbedPane);
 		

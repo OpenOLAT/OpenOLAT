@@ -21,14 +21,12 @@ package org.olat.selenium.page.user;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 
 /**
@@ -48,28 +46,22 @@ public class UserPreferencesPageFragment {
 	public static final By saveSystemPrefsButton = By.xpath("//div[contains(@class,'o_sel_home_settings_prefs_buttons')]//button[@type='button']");
 	public static final By resetPrefsButton = By.xpath("//div[contains(@class,'o_sel_home_settings_reset_sysprefs_buttons')]//button[@type='button']");
 	
+	private static final By resumeFieldsetBy = By.className("o_sel_home_settings_resume");
 	
+	private final WebDriver browser;
 	
-	@Drone
-	private WebDriver browser;
-	
-	@FindBy(className = "o_sel_home_settings_resume")
-	private WebElement resumeFieldset;
-	
-	/**
-	 * @return True if the user's preference panel is displayed.
-	 */
-	public boolean isDisplayed() {
-		return resumeFieldset.isDisplayed();
+	public UserPreferencesPageFragment(WebDriver browser) {
+		this.browser = browser;
 	}
-	
+
 	/**
 	 * Check that the user preferences page is displayed.
 	 * 
 	 * @return The user preferences page fragment
 	 */
 	public UserPreferencesPageFragment assertOnUserPreferences() {
-		Assert.assertTrue(resumeFieldset.isDisplayed());
+		OOGraphene.waitElement(resumeFieldsetBy, browser);
+		Assert.assertTrue(browser.findElement(resumeFieldsetBy).isDisplayed());
 		return this;
 	}
 	
@@ -80,7 +72,7 @@ public class UserPreferencesPageFragment {
 	 * @return
 	 */
 	public UserPreferencesPageFragment setResume(ResumeOption resume) {
-		Assert.assertTrue(resumeFieldset.isDisplayed());
+		OOGraphene.waitElement(resumeFieldsetBy, browser);
 		WebElement radio = null;
 		switch(resume) {
 			case none: radio = browser.findElement(noneRadio); break;

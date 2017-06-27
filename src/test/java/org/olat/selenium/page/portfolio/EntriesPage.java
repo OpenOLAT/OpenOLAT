@@ -47,7 +47,6 @@ public class EntriesPage {
 		By createBy = By.className("o_sel_pf_new_entry");
 		WebElement createButton = browser.findElement(createBy);
 		createButton.click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_entry_form");
 		OOGraphene.waitElement(popupBy, 5, browser);

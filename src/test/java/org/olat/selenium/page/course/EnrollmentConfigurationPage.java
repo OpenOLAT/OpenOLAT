@@ -21,7 +21,6 @@ package org.olat.selenium.page.course;
 
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -37,12 +36,7 @@ import org.openqa.selenium.WebElement;
  */
 public class EnrollmentConfigurationPage {
 	
-	@Drone
-	private WebDriver browser;
-	
-	public EnrollmentConfigurationPage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public EnrollmentConfigurationPage(WebDriver browser) {
 		this.browser = browser;
@@ -83,7 +77,6 @@ public class EnrollmentConfigurationPage {
 		
 		By createGroupBy = By.cssSelector("div.o_button_group_right a");
 		browser.findElement(createGroupBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		//fill the form

@@ -66,9 +66,7 @@ public class GroupsPage {
 	public GroupPage createGroup(String name, String description) {
 		//click create button
 		By createBy = By.className("o_sel_group_create");
-		WebElement createButton = browser.findElement(createBy);
-		createButton.click();
-		OOGraphene.waitBusy(browser);
+		browser.findElement(createBy).click();
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_group_edit_group_form");
 		OOGraphene.waitElement(popupBy, 5, browser);

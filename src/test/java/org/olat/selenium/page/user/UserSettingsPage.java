@@ -19,8 +19,6 @@
  */
 package org.olat.selenium.page.user;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -35,12 +33,7 @@ import org.openqa.selenium.WebElement;
  */
 public class UserSettingsPage {
 
-	@Drone
-	private WebDriver browser;
-	
-	public UserSettingsPage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public UserSettingsPage(WebDriver browser) {
 		this.browser = browser;
@@ -63,11 +56,8 @@ public class UserSettingsPage {
 	 */
 	public UserPreferencesPageFragment openPreferences() {
 		By preferencesSegmentBy = By.className("o_sel_user_settings_prefs");
-		WebElement preferencesSegmentLink = browser.findElement(preferencesSegmentBy);
-		preferencesSegmentLink.click();
+		browser.findElement(preferencesSegmentBy).click();
 		OOGraphene.waitBusy(browser);
-
-		WebElement main = browser.findElement(By.id("o_main"));
-		return Graphene.createPageFragment(UserPreferencesPageFragment.class, main);
+		return new UserPreferencesPageFragment(browser);
 	}
 }

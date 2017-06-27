@@ -22,7 +22,6 @@ package org.olat.selenium.page.course;
 import java.io.File;
 import java.util.List;
 
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
@@ -38,12 +37,7 @@ import org.openqa.selenium.WebElement;
  */
 public class GroupTaskConfigurationPage {
 
-	@Drone
-	private WebDriver browser;
-	
-	public GroupTaskConfigurationPage() {
-		//
-	}
+	private final WebDriver browser;
 	
 	public GroupTaskConfigurationPage(WebDriver browser) {
 		this.browser = browser;
@@ -64,7 +58,6 @@ public class GroupTaskConfigurationPage {
 	public GroupTaskConfigurationPage openBusinessGroupChooser() {
 		By chooseGroupBy = By.cssSelector("a.o_form_groupchooser");
 		browser.findElement(chooseGroupBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
@@ -72,7 +65,6 @@ public class GroupTaskConfigurationPage {
 	public GroupTaskConfigurationPage createBusinessGroup(String name) {
 		By createGroupBy = By.cssSelector("div.o_button_group_right a");
 		browser.findElement(createGroupBy).click();
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		//fill the form
