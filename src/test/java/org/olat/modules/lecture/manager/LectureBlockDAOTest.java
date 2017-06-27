@@ -128,7 +128,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadByEntry() {
+	public void getLectureBlocks() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());
@@ -137,7 +137,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		lectureBlock = lectureBlockDao.update(lectureBlock);
 		dbInstance.commitAndCloseSession();
 		
-		List<LectureBlock> blocks = lectureBlockDao.loadByEntry(entry);
+		List<LectureBlock> blocks = lectureBlockDao.getLectureBlocks(entry);
 		Assert.assertNotNull(blocks);
 		Assert.assertEquals(1, blocks.size());
 		LectureBlock loadedBlock = blocks.get(0);
@@ -324,6 +324,40 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertTrue(participantsBlock2.contains(participant4));
 	}
 	
+
+	@Test
+	public void updateLogLectureBlock() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock block = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+		Long blockKey = block.getKey();
+		
+		String update = "update lectureblock block set block.log=concat(block.log,',',:newLog) where block.key=:blockKey";
+		int rows = dbInstance.getCurrentEntityManager()
+			.createQuery(update)
+			.setParameter("blockKey", blockKey)
+			.setParameter("newLog", "New infos")
+			.executeUpdate();
+		
+		Assert.assertEquals(1, rows);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlock updatedBlock = lectureBlockDao.loadByKey(blockKey);
+		Assert.assertEquals(",New infos", updatedBlock.getLog());
+		
+		int rows2 = dbInstance.getCurrentEntityManager()
+				.createQuery(update)
+				.setParameter("blockKey", blockKey)
+				.setParameter("newLog", "More infos")
+				.executeUpdate();
+		
+		Assert.assertEquals(1, rows2);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlock updated2Block = lectureBlockDao.loadByKey(blockKey);
+		Assert.assertEquals(",New infos,More infos", updated2Block.getLog());
+	}
+	
 	@Test
 	public void deleteLectureBlock() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -345,7 +379,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecturers");
-		lectureBlock.setPlannedLecturesNumber(4);;
+		lectureBlock.setPlannedLecturesNumber(4);
+		lectureBlock.setLog("");
 		return lectureBlockDao.update(lectureBlock);
 	}
 }

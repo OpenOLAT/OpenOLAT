@@ -29,6 +29,7 @@ import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -292,14 +293,14 @@ public interface LectureService {
 	 * @param teacher The teacher to filter with (optional)
 	 * @return
 	 */
-	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry, IdentityRef teacher);
+	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry, IdentityRef teacher, LecturesBlockSearchParameters searchParams);
 
 	/**
 	 * The list of lecture blocks of a specific teacher
 	 * @param teacher The teacher to search with.
 	 * @return A list of lecture blocks.
 	 */
-	public List<LectureBlock> getLectureBlocks(IdentityRef teacher);
+	public List<LectureBlock> getLectureBlocks(IdentityRef teacher, LecturesBlockSearchParameters searchParams);
 	
 	/**
 	 * Returns the lecture block for the specified learning resource

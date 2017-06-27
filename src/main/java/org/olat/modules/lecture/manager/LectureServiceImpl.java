@@ -73,6 +73,7 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
 import org.olat.modules.lecture.ui.ConfigurationHelper;
 import org.olat.modules.lecture.ui.LectureAdminController;
@@ -503,7 +504,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		String startDate = Formatter.getInstance(locale).formatDate(lectureBlock.getStartDate());
 		
 		MailContext context = new MailContextImpl("[RepositoryEntry:" + entry.getKey() + "]");
-		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey() + "/LectureBlock/" + lectureBlock.getKey();
 		String[] args = new String[]{
 				lectureBlock.getTitle(),					//{0}
 				startDate,									//{1}
@@ -535,12 +536,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 
 	@Override
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry) {
-		return lectureBlockDao.loadByEntry(entry);
+		return lectureBlockDao.getLectureBlocks(entry);
 	}
 	
 	@Override
-	public List<LectureBlock> getLectureBlocks(IdentityRef teacher) {
-		return lectureBlockDao.loadByTeacher(teacher);
+	public List<LectureBlock> getLectureBlocks(IdentityRef teacher, LecturesBlockSearchParameters searchParams) {
+		return lectureBlockDao.loadByTeacher(teacher, searchParams);
 	}
 
 	@Override
@@ -552,8 +553,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	 * 
 	 */
 	@Override
-	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry, IdentityRef teacher) {
-		return lectureBlockDao.getLecturesBlockWithTeachers(entry, teacher);
+	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry,
+			IdentityRef teacher, LecturesBlockSearchParameters searchParams) {
+		return lectureBlockDao.getLecturesBlockWithTeachers(entry, teacher, searchParams);
 	}
 
 	@Override

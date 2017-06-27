@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -45,12 +46,12 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 	
 	public TeacherToolOverviewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, false, "Lectures::UserTools", true, false);
-		loadModel();
+		loadModel(null);
 	}
 
 	@Override
-	protected List<LectureBlockRow> getRows() {
-		List<LectureBlock> blocksWithTeachers = lectureService.getLectureBlocks(getIdentity());
+	protected List<LectureBlockRow> getRows(LecturesBlockSearchParameters searchParams) {
+		List<LectureBlock> blocksWithTeachers = lectureService.getLectureBlocks(getIdentity(), searchParams);
 		List<LectureBlockRow> rows = new ArrayList<>(blocksWithTeachers.size());
 		for(LectureBlock block:blocksWithTeachers) {
 			RepositoryEntry entry = block.getEntry();

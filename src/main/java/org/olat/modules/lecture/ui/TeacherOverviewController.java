@@ -34,6 +34,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,7 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 		this.toolbarPanel = toolbarPanel;
 		toolbarPanel.addListener(this);
 		setBreadcrumbPanel(toolbarPanel);
-		loadModel();
+		loadModel(null);
 	}
 
 	@Override
@@ -75,9 +76,10 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 	}
 
 	@Override
-	protected List<LectureBlockRow> getRows() {
+	protected List<LectureBlockRow> getRows(LecturesBlockSearchParameters searchParams) {
 		Identity filterByTeacher = ((Boolean)allTeachersSwitch.getUserObject()).booleanValue() ? null : getIdentity();
-		List<LectureBlockWithTeachers> blocksWithTeachers = lectureService.getLectureBlocksWithTeachers(entry, filterByTeacher);
+		List<LectureBlockWithTeachers> blocksWithTeachers = lectureService
+				.getLectureBlocksWithTeachers(entry, filterByTeacher, searchParams);
 		
 		// only show the start button if 
 		List<LectureBlockRow> rows = new ArrayList<>(blocksWithTeachers.size());

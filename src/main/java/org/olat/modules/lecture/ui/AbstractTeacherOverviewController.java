@@ -45,7 +45,9 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.model.LectureBlockRow;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
+import org.olat.modules.lecture.ui.event.SearchLecturesBlockEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,6 +66,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	private TeacherRollCallController rollCallCtrl;
 	private TeacherRollCallWizardController rollCallWizardCtrl;
 	
+	private TeacherOverviewSearchController searchCtrl;
 	private TeacherLecturesTableController currentLecturesBlockCtrl;
 	private TeacherLecturesTableController pendingLecturesBlockCtrl;
 	private TeacherLecturesTableController nextLecturesBlockCtrl;
@@ -72,6 +75,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	private final boolean admin;
 	private final String switchPrefsId;
 	protected boolean dirtyTables = false;
+	private LecturesBlockSearchParameters currentSearchParams;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -99,6 +103,10 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		} else {
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
 		}
+		
+		searchCtrl = new TeacherOverviewSearchController(ureq, getWindowControl(), withRepositoryEntry);
+		listenTo(searchCtrl);
+		mainVC.put("search", searchCtrl.getInitialComponent());
 		
 		currentLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
 				admin, "empty.table.current.lectures.blocks", withRepositoryEntry, withTeachers);
@@ -139,10 +147,12 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 			+ nextLecturesBlockCtrl.getRowCount() + closedLecturesBlockCtrl.getRowCount();
 	}
 	
-	protected abstract List<LectureBlockRow> getRows();
+	protected abstract List<LectureBlockRow> getRows(LecturesBlockSearchParameters searchParams);
 
-	protected void loadModel() {
-		List<LectureBlockRow> rows = getRows();
+	protected void loadModel(LecturesBlockSearchParameters searchParams) {
+		currentSearchParams = searchParams;
+		
+		List<LectureBlockRow> rows = getRows(searchParams);
 
 		//reset
 		List<LectureBlockRow> currentBlocks = new ArrayList<>();
@@ -207,11 +217,11 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		if(rollCallCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				stackPanel.popController(rollCallCtrl);
-				loadModel();
+				loadModel(currentSearchParams);
 			}
 		} else if(rollCallWizardCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
+				loadModel(currentSearchParams);
 			}
 			getWindowControl().pop();
 			getWindowControl().getWindowBackOffice()
@@ -220,10 +230,16 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		} else if(currentLecturesBlockCtrl == source || pendingLecturesBlockCtrl == source
 				|| nextLecturesBlockCtrl == source ||  closedLecturesBlockCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
-				loadModel();
+				loadModel(currentSearchParams);
 				stackPanel.popUpToController(this);
 			} else if(event == Event.CHANGED_EVENT) {
 				dirtyTables = true;
+			}
+		} else if(searchCtrl == source) {
+			if(event instanceof SearchLecturesBlockEvent) {
+				doSearch((SearchLecturesBlockEvent)event);
+			} else if(event == Event.CANCELLED_EVENT) {
+				loadModel(null);
 			}
 		}
 		super.event(ureq, source, event);
@@ -246,13 +262,21 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 			if(event instanceof PopEvent) {
 				PopEvent popEvent = (PopEvent)event;
 				if(popEvent.getController() instanceof TeacherRollCallController && dirtyTables) {
-					loadModel();
+					loadModel(currentSearchParams);
 				}
 			}
 		} else if(source == allTeachersSwitch) {
 			Boolean val = (Boolean)allTeachersSwitch.getUserObject();
 			doToggleAllTeachersSwitch(ureq, val);
 		}
+	}
+	
+	private void doSearch(SearchLecturesBlockEvent event) {
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setSearchString(event.getSearchString());
+		searchParams.setStartDate(event.getStartDate());
+		searchParams.setEndDate(event.getEndDate());
+		loadModel(searchParams);
 	}
 	
 	//same as above???
@@ -282,7 +306,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	
 	private void doToggleAllTeachersSwitch(UserRequest ureq, Boolean value) {
 		saveAllTeachersSwitch(ureq, !value.booleanValue());
-		loadModel();
+		loadModel(currentSearchParams);
 	}
 	
 	private boolean isAllTeachersSwitch(UserRequest ureq, boolean def) {

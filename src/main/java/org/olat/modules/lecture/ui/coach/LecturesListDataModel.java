@@ -79,12 +79,9 @@ implements SortableFlexiTableDataModel<LectureBlockIdentityStatistics>, FlexiTab
 		int propPos = col - LecturesListController.USER_PROPS_OFFSET;
 		return row.getIdentityProp(propPos);
 	}
-	
-	
 
 	@Override
 	public String getFooterHeader() {
-		// TODO Auto-generated method stub
 		return translator.translate("total");
 	}
 
