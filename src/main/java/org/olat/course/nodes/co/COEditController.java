@@ -86,7 +86,7 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	/** config key: key of the group coaches list */
 	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP_ID 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_GROUP_ID;
 	/** config key: key of the course coaches list */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_ALL 			= "emailto" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_ALL;
+	public static final String CONFIG_KEY_EMAILTOCOACHES_ALL 			= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_ALL;
 	/** config key: email goes to course coaches */
 	public static final String CONFIG_KEY_EMAILTOCOACHES_COURSE 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_COURSE;
 	/** config key: email goes to course owners */
