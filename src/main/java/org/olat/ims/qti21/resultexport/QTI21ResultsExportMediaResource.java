@@ -53,6 +53,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
+import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.id.Identity;
@@ -306,9 +307,10 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		mainVC.contextPut("rootTitle", translator.translate("table.grading"));
 		mainVC.put("results", results);
 		
-		
 		//render VelocityContainer to StringOutPut
-		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new EmptyGlobalSettings()); 
+		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new EmptyGlobalSettings());
+		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb);
+		mainVC.contextPut("r", vrdec);
 		renderer.render(sb, mainVC, null);
 		return sb.toString();
 	}
