@@ -21,6 +21,8 @@ package org.olat.modules.webFeed;
 
 import java.util.Date;
 
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.OLATResourceable;
 
 /**
@@ -31,7 +33,7 @@ import org.olat.core.id.OLATResourceable;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Feed extends OLATResourceable {
+public interface Feed extends OLATResourceable, CreateInfo, ModifiedInfo {
 
 	public Long getKey();
 	
@@ -51,13 +53,7 @@ public interface Feed extends OLATResourceable {
 	@Override
 	public String getResourceableTypeName();
 
-	public Date getCreationDate();
-
 	public void setCreationDate(Date creationDate);
-
-	public Date getLastModified();
-
-	public void setLastModified(Date date);
 
 	public String getTitle();
 

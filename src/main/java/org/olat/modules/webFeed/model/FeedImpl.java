@@ -260,17 +260,21 @@ public class FeedImpl implements Feed, Serializable {
 	public int getModelVersion() {
 		return modelVersion;
 	}
+
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 43254 : getKey().hashCode();
+	}
 	
-	/**
-	 * Overwrite equals method so that different object that actually
-	 * represent the same item are recognized as such.
-	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof FeedImpl)) return false;
-		FeedImpl otherFeed = (FeedImpl) obj;
-		return this.getResourceableId().equals(otherFeed.getResourceableId()) &&
-				this.getResourceableTypeName().equals(otherFeed.getResourceableTypeName());
+		if(this == obj) {
+			return true;
+		} else if(obj instanceof FeedImpl) {
+			FeedImpl feed = (FeedImpl)obj;
+			return getKey() != null && getKey().equals(feed.getKey());
+		}
+		return false;
 	}
 	
 }

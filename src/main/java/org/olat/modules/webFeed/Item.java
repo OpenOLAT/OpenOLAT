@@ -23,6 +23,8 @@ import java.util.Date;
 
 import org.olat.core.commons.controllers.navigation.Dated;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 
 /**
  * 
@@ -30,7 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Item extends Dated {
+public interface Item extends Dated, CreateInfo, ModifiedInfo {
 	
 	public Long getKey();
 	
@@ -39,13 +41,7 @@ public interface Item extends Dated {
 	@Override
 	public Date getDate();
 
-	public Date getCreationDate();
-
 	public void setCreationDate(Date date);
-
-	public Date getLastModified();
-
-	public void setLastModified(Date updatedDate);
 
 	public String getTitle();
 	

@@ -366,21 +366,16 @@ public class ItemImpl implements Item, Serializable {
 	
 	@Override
 	public int hashCode() {
-		return guid == null ? 39745 : guid.hashCode();
+		return getKey() == null ? 39745 : getKey().hashCode();
 	}
 	
-	/**
-	 * Overwrite equals method so that different object that actually
-	 * represent the same item are recognized as such,
-	 * e.g. in the remove method of the feed.
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;
 		} else if(obj instanceof ItemImpl) {
 			ItemImpl item = (ItemImpl)obj;
-			return guid != null && guid.equals(item.guid);
+			return getKey() != null && getKey().equals(item.getKey());
 		}
 		return false;
 	}
