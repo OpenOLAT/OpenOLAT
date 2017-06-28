@@ -246,7 +246,8 @@ public class AssessmentResultController extends FormBasicController {
 					String signatureUrl = signatureMapperUri + "/assessmentResultSignature.xml";
 					layoutCont.contextPut("signatureUrl", signatureUrl);
 				}
-	
+				
+				testResults.setMaxScore(null);//reset max score and aggregate
 				initFormSections(layoutCont, testResults);
 			}
 		}
@@ -285,6 +286,9 @@ public class AssessmentResultController extends FormBasicController {
 				testResults.setNumberOfQuestions(testResults.getNumberOfQuestions() + 1);
 				if(results.sessionStatus == SessionStatus.FINAL) {
 					testResults.setNumberOfAnsweredQuestions(testResults.getNumberOfAnsweredQuestions() + 1);
+				}
+				if(results.hasMaxScore()) {
+					testResults.addMaxScore(results);
 				}
 			}
 		}

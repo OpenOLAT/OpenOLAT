@@ -2019,11 +2019,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					if(assessmentTestScoreValue instanceof FloatValue) {
 						score = ((FloatValue)assessmentTestScoreValue).doubleValue();
 					}
-					Value assessmentTestMaxScoreValue = testSessionController.getTestSessionState()
-							.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER);
-					if(assessmentTestMaxScoreValue instanceof FloatValue) {
-						maxScore = ((FloatValue)assessmentTestMaxScoreValue).doubleValue();
-					}
 					
 					qtiWorksStatus.setScore(score);
 					qtiWorksStatus.setMaxScore(maxScore);
