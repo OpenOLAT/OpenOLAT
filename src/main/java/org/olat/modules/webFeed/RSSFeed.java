@@ -66,10 +66,10 @@ public class RSSFeed extends SyndFeedImpl {
 		// According to the rss specification, the feed channel description is not
 		// (explicitly) allowed to contain html tags.
 		String strippedDescription = FilterFactory.getHtmlTagsFilter().filter(feed.getDescription());
-		strippedDescription = strippedDescription.replaceAll("&nbsp;", " "); // TODO: remove when filter
-		// does it
+		// TODO: remove when filter does it
+		strippedDescription = strippedDescription.replaceAll("&nbsp;", " ");
 		setDescription(strippedDescription);
-		setLink(helper.getJumpInLink(null));
+		setLink(helper.getJumpInLink(feed, null));
 
 		setPublishedDate(feed.getLastModified());
 		// The image
@@ -97,7 +97,7 @@ public class RSSFeed extends SyndFeedImpl {
 			// enclosure, then the enclosure url is used.
 			// Use jump-in link far all entries. This will be overriden if the item
 			// has an enclosure.
-			entry.setLink(helper.getJumpInLink(item));
+			entry.setLink(helper.getJumpInLink(item.getFeed(), item));
 			entry.setPublishedDate(item.getPublishDate());
 			entry.setUpdatedDate(item.getLastModified());
 

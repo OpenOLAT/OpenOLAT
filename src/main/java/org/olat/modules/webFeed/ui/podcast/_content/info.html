@@ -14,33 +14,34 @@
 			<div class="o_author">$r.translate("feed.author"): $r.escapeHtml($feed.getAuthor())</div>
 		#end
 		<div class="o_date">$r.translateWithPackage("org.olat.modules.webFeed.ui.blog","feed.last.change") $!helper.getLastModified($feed)	</div>
-		#if ($feed.getDescription() != "")
-		<div class="o_desc o_info">$!helper.getFeedDescriptionForBrowser($feed)</div>
+		#if ($!feed.getDescription())
+			<div class="o_desc o_info">$!helper.getFeedDescriptionForBrowser($feed)</div>
 		#end
 		
-		#if ( !$feed.isUndefined() && $helper.getFeedUrl() )			
-		<div class="o_subscription">
-			$r.render("feedUrlComponent")
-		</div>
-		<div class="btn-group btn-group-xs">
-			<a href="$!helper.getFeedUrl()" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
-				<i class="o_icon o_icon-fw o_icon_rss"></i> 
-				$r.translate("podcast.subscribe.rss")
-			</a>
-			<a href="$!helper.getITunesUrl("itpc")" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
-				<i class="o_icon o_icon-fw o_icon_apple"></i> 		
-				$r.translate("podcast.subscribe.itunes")
-			</a>
-			<a href="$!helper.getITunesUrl("feed")" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
-				<i class="o_icon o_icon-fw o_icon_mobile"></i> 		
-				$r.translate("podcast.subscribe.feed")
-			</a>
-		</div>
-			#if ($r.available("subscription"))
-				<div class="pull-right">
+		#if ( !$feed.isUndefined() && $helper.getFeedUrl() && $!feed.getDescription() )			
+			<div class="o_subscription">
+				$r.render("feedUrlComponent")
+			</div>
+			<div class="btn-group btn-group-xs">
+				<a href="$!helper.getFeedUrl()" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
+					<i class="o_icon o_icon-fw o_icon_rss"></i> 
+					$r.translate("podcast.subscribe.rss")
+				</a>
+				<a href="$!helper.getITunesUrl("itpc")" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
+					<i class="o_icon o_icon-fw o_icon_apple"></i> 		
+					$r.translate("podcast.subscribe.itunes")
+				</a>
+				<a href="$!helper.getITunesUrl("feed")" class="btn btn-default " target="_blank" title="$r.translateInAttribute("podcast.subscribe.to.this.feed")">
+					<i class="o_icon o_icon-fw o_icon_mobile"></i> 		
+					$r.translate("podcast.subscribe.feed")
+				</a>
+			</div>	
+		#end
+		
+		#if ($r.available("subscription"))
+			<div class="pull-right">
 				$r.render("subscription")
-				</div>
-			#end	
+			</div>
 		#end	
 	</div>
 </div>

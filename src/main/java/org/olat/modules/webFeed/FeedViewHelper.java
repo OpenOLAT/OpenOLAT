@@ -474,12 +474,17 @@ public class FeedViewHelper {
 		}
 		return file;
 	}
-
+	
 	/**
-	 * @param item the target item for the jumpInLink null if not want to refer to a specific post
-	 * @return The jump in link
+	 * 
+	 * @param feed
+	 *            the target feed for the jumpInLink
+	 * @param item
+	 *            the target item for the jumpInLink or null if not want to
+	 *            refer to a specific item
+	 * @return the jump in link
 	 */
-	public String getJumpInLink(Item item) {
+	public String getJumpInLink(Feed feed, Item item) {
 		String jumpInLink = null;
 		RepositoryManager resMgr = RepositoryManager.getInstance();
 		if (courseId != null && nodeId != null) {
@@ -491,14 +496,14 @@ public class FeedViewHelper {
 			ces.add(BusinessControlFactory.getInstance().createContextEntry(oresNode));
 			jumpInLink = BusinessControlFactory.getInstance().getAsURIString(ces, false);
 		} else {
-			RepositoryEntry repositoryEntry = resMgr.lookupRepositoryEntry(item.getFeed(), false);
+			RepositoryEntry repositoryEntry = resMgr.lookupRepositoryEntry(feed, false);
 			if (repositoryEntry != null){
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(repositoryEntry);
 				jumpInLink = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
 			} else {
 				// its a liveblog-helperFeed
 				final BusinessControlFactory bCF = BusinessControlFactory.getInstance();
-				String feedBP = LiveBlogArtefactHandler.LIVEBLOG + item.getFeed().getResourceableId() + "]";
+				String feedBP = LiveBlogArtefactHandler.LIVEBLOG + feed.getResourceableId() + "]";
 				final List<ContextEntry> ceList = bCF.createCEListFromString(feedBP);
 				jumpInLink = bCF.getAsURIString(ceList, true);
 			}
