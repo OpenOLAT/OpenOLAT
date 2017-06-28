@@ -528,7 +528,7 @@ public class CoursesWebService {
 			// create a repository entry
 			RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 			OLATResource resource = OLATResourceManager.getInstance().createOLATResourceInstance(CourseModule.class);
-			RepositoryEntry addedEntry = repositoryService.create(initialAuthor, null, "-", shortTitle, null, resource, 0);
+			RepositoryEntry addedEntry = repositoryService.create(initialAuthor, null, "-", reDisplayName, null, resource, 0);
 			if(StringHelper.containsNonWhitespace(softKey) && softKey.length() <= 30) {
 				addedEntry.setSoftkey(softKey);
 			}
