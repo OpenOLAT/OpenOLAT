@@ -39,6 +39,7 @@ import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
@@ -121,6 +122,8 @@ public class FeedManagerImpl extends FeedManager {
 	private FeedFileStorge feedFileStorage;
 	@Autowired
 	private ExternalFeedFetcher externalFeedFetcher;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	/**
 	 * spring only
@@ -202,7 +205,7 @@ public class FeedManagerImpl extends FeedManager {
 		feed = enrichFeedByRepositoryEntryInfromation(feed);
 		
 		// Update the external feed and the items
-		if (feed != null && feed.isExternal() && StringHelper.containsNonWhitespace(feed.getExternalFeedUrl()) ) {
+		if (feed != null && feed.isExternal() && StringHelper.containsNonWhitespace(feed.getExternalFeedUrl())) {
 			Calendar cal = Calendar.getInstance();
 			cal.setTime(feed.getLastModified());
 			long lastModifiedMillis = cal.getTimeInMillis();
@@ -212,8 +215,10 @@ public class FeedManagerImpl extends FeedManager {
 				// time to update or first load after creation of the feed
 				saveExternalItems(feed);
 				saveExternalFeed(feed);
+				notificationsManager.markPublisherNews(ores.getResourceableTypeName(),
+						feed.getResourceableId().toString(), null, false);
 			}
-			
+
 			feed.setLastModified(new Date());
 			feedDAO.updateFeed(feed);
 		}
@@ -504,24 +509,31 @@ public class FeedManagerImpl extends FeedManager {
 		for (Item externalItem : externalItems) {
 			Item reloaded = itemDAO.loadItemByGuid(feed.getKey(), externalItem.getGuid());
 			if (reloaded == null) {
-				externalItem.setCreationDate(new Date());
+				Date now = new Date();
+				externalItem.setCreationDate(now);
+				// Init the last modified
+				if (externalItem.getLastModified() == null) {
+					externalItem.setLastModified(now);
+				}
+				// published date should never be null because it triggers notifications
+				if (externalItem.getPublishDate() == null) {
+					externalItem.setPublishDate(now);
+				}
 				itemDAO.createItem(feed, externalItem);
 			} else {
+				// Do not overwrite initial values
+				if (externalItem.getLastModified() != null) {
+					reloaded.setLastModified(externalItem.getLastModified());
+				}
+				if (externalItem.getPublishDate() != null) {
+					reloaded.setPublishDate(externalItem.getPublishDate());
+				}
 				reloaded.setAuthor(externalItem.getAuthor());
 				reloaded.setExternalLink(externalItem.getExternalLink());
-				reloaded.setPublishDate(externalItem.getPublishDate());
 				reloaded.setTitle(externalItem.getTitle());
 				reloaded.setDescription(externalItem.getDescription());
 				reloaded.setContent(externalItem.getContent());
 				reloaded.setEnclosure(externalItem.getEnclosure());
-				
-				// last modified should not be null
-				Date lastModified = externalItem.getLastModified();
-				if (lastModified != null) {
-					reloaded.setLastModified(lastModified);
-				} else {
-					reloaded.setLastModified(new Date());
-				}
 				
 				itemDAO.updateItem(reloaded);
 			}

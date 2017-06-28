@@ -129,7 +129,12 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 				items.add(new SubscriptionListItem(desc, urlToSend, businessPath, publishDate, iconCssClass));
 			}
 			
-			if(item.getModifierKey() != null) {
+			// Internal items are modified when the modifier key is present.
+			// External items are modified when the creation date is unequal the
+			// last modified date and the published date is after the last
+			// modified date.
+			if (item.getModifierKey() != null
+					|| (item.getFeed().isExternal() && !item.getCreationDate().equals(item.getLastModified()) && item.getPublishDate().before(item.getLastModified()))) {
 				Date modDate = item.getLastModified();
 				if(compareDate.before(modDate)) {
 					String desc;
