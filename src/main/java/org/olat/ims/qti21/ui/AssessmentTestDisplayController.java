@@ -56,6 +56,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Persistable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLATRuntimeException;
@@ -224,11 +225,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		UserSession usess = ureq.getUserSession();
 		if(usess.getRoles().isGuestOnly() || anonym) {
-			this.anonym = anonym;
+			this.anonym = true;
 			assessedIdentity = null;
 			anonymousIdentifier = getAnonymousIdentifier(usess);
 		} else {
-			this.anonym = anonym;
+			this.anonym = false;
 			assessedIdentity = getIdentity();
 			anonymousIdentifier = null;
 		}
@@ -658,17 +659,19 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			if(anonym) {
 				marks = new InMemoryAssessmentTestMarks(itemRef);
 			} else {
-				marks = qtiService.createMarks(assessedIdentity, entry, subIdent, testEntry, itemRef);
+				marks = qtiService.createMarks(assessedIdentity, entry, subIdent, testEntry, "");
 			}
+		}
+		
+		String currentMarks = marks.getMarks();
+		if(currentMarks == null) {
+			marks.setMarks(itemRef);
+		} else if(currentMarks.indexOf(itemRef) >= 0) {
+			marks.setMarks(currentMarks.replace(itemRef, ""));
 		} else {
-			String currentMarks = marks.getMarks();
-			if(currentMarks == null) {
-				marks.setMarks(itemRef);
-			} else if(currentMarks.indexOf(itemRef) >= 0) {
-				marks.setMarks(currentMarks.replace(itemRef, ""));
-			} else {
-				marks.setMarks(currentMarks + " " + itemRef);
-			}
+			marks.setMarks(currentMarks + " " + itemRef);
+		}
+		if(marks instanceof Persistable) {
 			marks = qtiService.updateMarks(marks);
 		}
 	}
@@ -2015,11 +2018,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 						.getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER);
 					if(assessmentTestScoreValue instanceof FloatValue) {
 						score = ((FloatValue)assessmentTestScoreValue).doubleValue();
-					}
-					Value assessmentTestMaxScoreValue = testSessionController.getTestSessionState()
-							.getOutcomeValue(QTI21Constants.MAXSCORE_IDENTIFIER);
-					if(assessmentTestMaxScoreValue instanceof FloatValue) {
-						maxScore = ((FloatValue)assessmentTestMaxScoreValue).doubleValue();
 					}
 					
 					qtiWorksStatus.setScore(score);
