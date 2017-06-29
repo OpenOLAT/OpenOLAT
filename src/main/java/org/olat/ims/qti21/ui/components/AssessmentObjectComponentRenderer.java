@@ -198,6 +198,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 	protected void renderExploded(StringOutput sb, Translator translator) {
 		sb.append("<div class='o_error'>").append(translator.translate("exploded.msg")).append("</div>");
     }
+	
+	protected void renderMissingItem(StringOutput sb, Translator translator) {
+		sb.append("<div class='o_error'>").append(translator.translate("error.assessment.item.missing")).append("</div>");
+    }
 
     protected void renderTerminated(StringOutput sb, Translator translator) {
 		sb.append("<div class='o_info o_sel_assessment_test_terminated'>").append(translator.translate("terminated.msg")).append("</div>");

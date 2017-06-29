@@ -176,7 +176,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private final boolean survey = false;
 	private final boolean restrictedEdit;
+	
 	private boolean assessmentChanged = false;
+	private boolean deleteAuthorSesssion = false;
 	
 	private LockResult lockEntry;
 	private LockResult activeSessionLock;
@@ -410,7 +412,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		} else if(event instanceof AssessmentItemEvent) {
 			AssessmentItemEvent aie = (AssessmentItemEvent)event;
 			if(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED.equals(aie.getCommand())) {
-				assessmentChanged = true;
+				assessmentChanged();
 				doSaveAssessmentTest(null);
 				doUpdate(aie.getAssessmentItemRef().getIdentifier(), aie.getAssessmentItem().getTitle());
 				doSaveManifest();
@@ -890,7 +892,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		URI testUri = resolvedAssessmentTest.getTestLookup().getSystemId();
 		File testFile = new File(testUri);
 		qtiService.updateAssesmentObject(testFile, resolvedAssessmentTest);
-		assessmentChanged = true;
+		assessmentChanged();
 
 		//reload the test
 		updateTreeModel(false);
@@ -972,7 +974,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	 * @param flyingObjects A list of assessmentItems which are not part of the test but will be.
 	 */
 	private void doSaveAssessmentTest(Map<AssessmentItemRef,AssessmentItem> flyingObjects) {
-		assessmentChanged = true;
+		assessmentChanged();
 		recalculateMaxScoreAssessmentTest(flyingObjects);
 		assessmentTestBuilder.build();
 		URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
@@ -1215,7 +1217,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	
 	private void doForceReloadFiles() {
 		updateTreeModel(true);
-		assessmentChanged = true;
+		assessmentChanged();
 	}
 	
 	private void doConfirmDelete(UserRequest ureq) {
@@ -1326,7 +1328,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			}
 		}
 		if(deleted) {
-			assessmentChanged = true;
+			assessmentChanged();
 		}
 		
 		logAudit(removed + " " + deleted + " removed item ref", null);
@@ -1355,6 +1357,15 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			doDeleteAssessmentSection(section);
 		}
 		testPart.getParent().getTestParts().remove(testPart);
+	}
+	
+	private void assessmentChanged() {
+		assessmentChanged = true;
+		
+		if(!deleteAuthorSesssion) {
+			deleteAuthorSesssion = true;//delete sessions only once
+			qtiService.deleteAuthorAssessmentTestSession(testEntry);
+		}
 	}
 
 	private ResourceType getResourceType(AssessmentItemRef itemRef) {

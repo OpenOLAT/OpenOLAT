@@ -336,6 +336,12 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		URI itemSystemId = itemNode.getItemSystemId();
 		ResolvedAssessmentItem resolvedAssessmentItem = component.getResolvedAssessmentTest()
 				.getResolvedAssessmentItemBySystemIdMap().get(itemSystemId);
+		if(resolvedAssessmentItem == null) {
+			log.error("Missing assessment item: " + itemSystemId);
+			renderMissingItem(sb, translator);
+			return;
+		}
+		
 		final AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 
 		sb.append("<div class='o_assessmentitem_wrapper'>");
