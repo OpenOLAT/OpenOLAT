@@ -110,6 +110,30 @@ public class LearningResourceLoggingAction extends BaseLoggingAction {
 		new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.remove, ActionObject.layout).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
 	public static final ILoggingAction REPOSITORY_ENTRY_PROPERTIES_COURSELAYOUT_CUSTOM_ADDED = 
 		new LearningResourceLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.layout).setTypeList(LEARNING_RESOURCE_OPEN_CLOSE_LIST);
+	
+	// lecture block
+	public static final ILoggingAction LECTURE_BLOCK_CREATED = 
+			new LearningResourceLoggingAction(ActionType.admin, CrudAction.create, ActionVerb.add, ActionObject.lectures).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.lectureBlock));
+	public static final ILoggingAction LECTURE_BLOCK_EDITED = 
+			new CourseLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.lectures).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.lectureBlock));
+	public static final ILoggingAction LECTURE_BLOCK_DELETED = 
+			new CourseLoggingAction(ActionType.admin, CrudAction.delete, ActionVerb.remove, ActionObject.lectures).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.lectureBlock));
+	
+	public static final ILoggingAction LECTURE_BLOCK_ROLL_CALL_STARTED = 
+			new CourseLoggingAction(ActionType.tracking, CrudAction.update, ActionVerb.launch, ActionObject.lecturesRollcall).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.lectureBlock));
+	public static final ILoggingAction LECTURE_BLOCK_ROLL_CALL_CLOSED = 
+			new CourseLoggingAction(ActionType.tracking, CrudAction.update, ActionVerb.close, ActionObject.lecturesRollcall).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.lectureBlock));
+	public static final ILoggingAction LECTURE_BLOCK_ROLL_CALL_CANCELLED = 
+			new CourseLoggingAction(ActionType.tracking, CrudAction.update, ActionVerb.cancel, ActionObject.lecturesRollcall).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.lectureBlock));
+	public static final ILoggingAction LECTURE_BLOCK_ROLL_CALL_REOPENED = 
+			new CourseLoggingAction(ActionType.tracking, CrudAction.update, ActionVerb.reopen, ActionObject.lecturesRollcall).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.lectureBlock));
 
 	/**
 	 * This static constructor's only use is to set the javaFieldIdForDebug

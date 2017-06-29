@@ -95,6 +95,8 @@ public enum ActionObject {
 	tools,
 	toolsempty,
 	waitingperson,
-	bulkassessment;
+	bulkassessment,
+	lectures,
+	lecturesRollcall;
 
 }

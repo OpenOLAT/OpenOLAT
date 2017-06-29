@@ -82,15 +82,17 @@ public enum OlatResourceableType implements ILoggingResourceableType {
 	/**   represents an calendar   **/
 	calendar,
 	
-	/**   reprensents a portfolio map   **/
+	/**   represents a portfolio map   **/
 	portfolio,
 	section,
 	assignment,
 	media,
 	
-	/**   reprensents openmeetings **/
+	/** represents openmeetings **/
 	openmeetings,
 	
 	/** business path component **/
-	businessPath
+	businessPath,
+	/** represents a lecture block of a course */
+	lectureBlock
 }

@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.OLATResourceable;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -31,7 +32,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo {
+public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo, OLATResourceable {
 	
 	public String getExternalId();
 
@@ -76,8 +77,6 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo 
 	public void setEffectiveLecturesNumber(int effectiveLecturesNumber);
 
 	public String getLog();
-
-	public void setLog(String log);
 
 	public Date getStartDate();
 

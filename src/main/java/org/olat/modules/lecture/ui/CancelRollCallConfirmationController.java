@@ -30,6 +30,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -134,6 +138,10 @@ public class CancelRollCallConfirmationController extends FormBasicController {
 		lectureBlock.setEffectiveLecturesNumber(0);
 		lectureBlock = lectureService.save(lectureBlock, null);
 		fireEvent(ureq, Event.DONE_EVENT);
+		
+		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Cancelled");
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_CANCELLED, getClass(),
+				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 	}
 
 	@Override

@@ -56,6 +56,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
@@ -442,10 +446,12 @@ public class TeacherRollCallController extends FormBasicController {
 		} else if(closeLectureBlocksButton == source) {
 			if(validateFormLogic(ureq)) {
 				saveLectureBlocks();
+				lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Save for closing rollcall (not confirmed)");
 				doConfirmCloseLectureBlock(ureq);
 			}
 		} else if(cancelLectureBlockButton == source) {
 			saveLectureBlocks();
+			lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Save for cancelling rollcall (not confirmed)");
 			doConfirmCancelLectureBlock(ureq);
 		} else if(this.exportAttendanceListButton == source) {
 			doExportAttendanceList(ureq);
@@ -463,6 +469,7 @@ public class TeacherRollCallController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		saveLectureBlocks();
+		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Quick save rollcall");
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -601,6 +608,10 @@ public class TeacherRollCallController extends FormBasicController {
 		secCallback.updateLectureBlock(lectureBlock);
 		updateUI();
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		
+		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Reopen");
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_REOPENED, getClass(),
+				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 	}
 	
 	private void doExportAttendanceList(UserRequest ureq) {

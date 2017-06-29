@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -85,6 +86,14 @@ public interface LectureService {
 	 * @return The merged block
 	 */
 	public LectureBlock save(LectureBlock lectureBlock, List<Group> groups);
+	
+	/**
+	 * Append content to the log saved on the lecture block.
+	 * 
+	 * @param lectureBlock The lecture block
+	 * @param log The content to append
+	 */
+	public void appendToLectureBlockLog(LectureBlockRef lectureBlock, Identity user, Identity assessedIdentity, String log);
 	
 	/**
 	 * Reload the lecture block.
@@ -239,13 +248,14 @@ public interface LectureService {
 	public LectureBlockRollCall addRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences);
 	
 	/**
+	 * Add the specified lectures to the ones the identity follows.
 	 * 
-	 * @param identity
-	 * @param lectureBlock
-	 * @param rollCall
-	 * @param comment
-	 * @param absences
-	 * @return
+	 * @param identity The participant of the lecture
+	 * @param lectureBlock The lecture block
+	 * @param rollCall The roll call (optional)
+	 * @param comment A comment
+	 * @param absences The lectures where the participant was absent
+	 * @return The updated roll call
 	 */
 	public LectureBlockRollCall addRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall,
 			String comment, List<Integer> absences);

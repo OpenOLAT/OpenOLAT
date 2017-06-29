@@ -85,6 +85,16 @@ public class LectureBlockDAO {
 		return block;
 	}
 	
+	public boolean appendLog(LectureBlockRef block, String log) {
+		String update = "update lectureblocklog blocklog set blocklog.log=case when blocklog.log is null then :newLog else concat(blocklog.log,'\n',:newLog) end where blocklog.key=:blockKey";
+		int rows = dbInstance.getCurrentEntityManager()
+			.createQuery(update)
+			.setParameter("blockKey", block.getKey())
+			.setParameter("newLog", log)
+			.executeUpdate();
+		return rows > 0;
+	}
+	
 	public LectureBlock loadByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select block from lectureblock block")

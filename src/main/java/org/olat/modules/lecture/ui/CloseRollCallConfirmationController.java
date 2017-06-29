@@ -33,6 +33,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -192,6 +196,10 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		lectureBlock = lectureService.save(lectureBlock, null);
 		lectureService.recalculateSummary(lectureBlock.getEntry());
 		fireEvent(ureq, Event.DONE_EVENT);
+
+		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Closed");
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_CLOSED, getClass(),
+				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 	}
 	
 	@Override

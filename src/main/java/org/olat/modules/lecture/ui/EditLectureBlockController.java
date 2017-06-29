@@ -47,6 +47,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListReceiver;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.group.BusinessGroup;
@@ -336,8 +340,14 @@ public class EditLectureBlockController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		boolean create = false;
+		StringBuilder audit = new StringBuilder();
 		if(lectureBlock == null) {
+			audit.append("Create;");
 			lectureBlock = lectureService.createLectureBlock(entry);
+			create = true;
+		} else {
+			audit.append("Update;");
 		}
 		lectureBlock.setTitle(titleEl.getValue());
 		lectureBlock.setCompulsory(compulsoryEl.isAtLeastSelected(1));
@@ -372,6 +382,7 @@ public class EditLectureBlockController extends FormBasicController {
 				//remove all
 				for(Identity teacher:currentTeachers) {
 					lectureService.removeTeacher(lectureBlock, teacher);
+					audit.append("remove teacher: ").append(userManager.getUserDisplayName(teacher)).append(" (").append(teacher.getKey()).append(");");
 				}
 			} else {
 				//remove deselected
@@ -379,6 +390,7 @@ public class EditLectureBlockController extends FormBasicController {
 					boolean found = selectedTeacherKeys.contains(teacher.getKey().toString());
 					if(!found) {
 						lectureService.removeTeacher(lectureBlock, teacher);
+						audit.append("remove teacher: ").append(userManager.getUserDisplayName(teacher)).append(" (").append(teacher.getKey()).append(");");
 					}
 				}
 				//add new one
@@ -395,6 +407,7 @@ public class EditLectureBlockController extends FormBasicController {
 					if(!found) {
 						Identity teacher = securityManager.loadIdentityByKey(new Long(selectedTeacherKey));
 						lectureService.addTeacher(lectureBlock, teacher);
+						audit.append("add teacher: ").append(userManager.getUserDisplayName(teacher)).append(" (").append(teacher.getKey()).append(");");
 					}
 				}
 			}
@@ -404,6 +417,15 @@ public class EditLectureBlockController extends FormBasicController {
 		updateLocationsPrefs(ureq);
 		lectureService.syncCalendars(lectureBlock);
 		fireEvent(ureq, Event.DONE_EVENT);
+
+		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, audit.toString());
+		if(create) {
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_CREATED, getClass(),
+					CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
+		} else {
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_EDITED, getClass(),
+					CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
+		}
 	}
 
 	@Override

@@ -52,6 +52,10 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
@@ -324,13 +328,21 @@ public class LectureListRepositoryController extends FormBasicController {
 	private void doDelete(LectureBlockRow row) {
 		if(LectureBlockManagedFlag.isManaged(row.getLectureBlock(), LectureBlockManagedFlag.delete)) return;
 		
-		lectureService.deleteLectureBlock(row.getLectureBlock());
+		LectureBlock lectureBlock = row.getLectureBlock();
+		lectureService.deleteLectureBlock(lectureBlock);
 		showInfo("lecture.deleted");
+		logAudit("Lecture block deleted: " + lectureBlock, null);
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_DELETED, getClass(),
+				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
+		
 	}
 	
 	private void doDelete(List<LectureBlock> blocks) {
 		for(LectureBlock block:blocks) {
 			lectureService.deleteLectureBlock(block);
+			logAudit("Lecture block deleted: " + block, null);
+			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_DELETED, getClass(),
+					CoreLoggingResourceable.wrap(block, OlatResourceableType.lectureBlock, block.getTitle()));
 		}
 		showInfo("lecture.deleted");
 	}

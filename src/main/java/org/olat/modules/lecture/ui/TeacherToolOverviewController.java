@@ -65,7 +65,7 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 		//reload table... first
 		super.event(ureq, source, event);
 		
-		if(source instanceof TeacherLecturesTableController) {
+		if(source instanceof TeacherLecturesTableController || source instanceof TeacherRollCallController) {
 			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
 				stackPanel.popUpToRootController(ureq);
 			}

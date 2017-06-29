@@ -92,7 +92,7 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	private String location;
 	@Column(name="l_comment", nullable=true, insertable=true, updatable=true)
 	private String comment;
-	@Column(name="l_log", nullable=true, insertable=true, updatable=true)
+	@Column(name="l_log", nullable=true, insertable=false, updatable=false)
 	private String log;
 	
 	@Temporal(TemporalType.TIMESTAMP)
@@ -160,6 +160,16 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Override
 	public void setLastModified(Date date) {
 		lastModified = date;
+	}
+
+	@Override
+	public String getResourceableTypeName() {
+		return "LectureBlock";
+	}
+
+	@Override
+	public Long getResourceableId() {
+		return key;
 	}
 
 	@Override
@@ -268,11 +278,6 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Override
 	public String getLog() {
 		return log;
-	}
-
-	@Override
-	public void setLog(String log) {
-		this.log = log;
 	}
 
 	@Override
@@ -407,5 +412,15 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("lectureBlock[key=").append(key == null ? "null" : key)
+		  .append(":title=").append(title == null ? "null" : title)
+		  .append(":start=").append(startDate == null ? "null" : startDate)
+		  .append(":end=").append(endDate == null ? "null" : endDate).append("]");
+		return sb.toString();
 	}
 }

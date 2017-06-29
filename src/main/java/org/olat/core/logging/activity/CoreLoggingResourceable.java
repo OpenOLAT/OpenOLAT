@@ -226,6 +226,21 @@ public class CoreLoggingResourceable implements ILoggingResourceable {
 	}
 	
 	/**
+	 * General wrapper for an OlatResourceable - as it's not obvious of what type that 
+	 * OlatResourceable is (in terms of being able to later compare it against the businessPath etc)
+	 * an ILoggingResourceableType needs to be passed to this method as well.
+	 * 
+	 * @param olatResourceable A generic OLATResourceable
+	 * @param type The type of the resource
+	 * @param name The display name of the resource
+	 * @return
+	 */
+	public static CoreLoggingResourceable wrap(OLATResourceable olatResourceable, ILoggingResourceableType type, String name) {
+		return new CoreLoggingResourceable(olatResourceable, type, olatResourceable.getResourceableTypeName(),
+				String.valueOf(olatResourceable.getResourceableId()), name, false);			
+	}
+	
+	/**
 	 * Create unique id.
 	 * @param type
 	 * @param uploadFileName

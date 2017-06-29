@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.manager;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -45,6 +46,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -95,7 +98,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class LectureServiceImpl implements LectureService, UserDataDeletable {
-	
+	private static final OLog log = Tracing.createLoggerFor(LectureServiceImpl.class);
+	private static final SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	private static final CalendarManagedFlag[] CAL_MANAGED_FLAGS = new CalendarManagedFlag[] { CalendarManagedFlag.all };
 
 	@Autowired
@@ -193,6 +197,27 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		}
 		block.getTeacherGroup().getKey();
 		return block;
+	}
+	
+	@Override
+	public void appendToLectureBlockLog(LectureBlockRef lectureBlock, Identity user, Identity assessedIdentity, String audit) {
+		Date now = new Date();
+		String date;
+		synchronized(sdb) {
+			date = sdb.format(now);
+		}
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("Date: ").append(date).append(" \n");
+		if(user != null) {
+			sb.append("User: ").append(userManager.getUserDisplayName(user)).append(" (").append(user.getKey()).append(") \n");
+		}
+		if(assessedIdentity != null) {
+			sb.append("Assessed user: ").append(userManager.getUserDisplayName(assessedIdentity)).append(" (").append(user.getKey()).append(") \n");
+		}
+		sb.append(audit);
+		log.audit(sb.toString());
+		lectureBlockDao.appendLog(lectureBlock, sb.toString());
 	}
 
 	@Override
@@ -478,6 +503,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 				}
 			}
 		}
+	
+		appendToLectureBlockLog(lectureBlock, null, null, "Auto-closed");
 	}
 
 	@Override

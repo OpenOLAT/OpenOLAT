@@ -38,8 +38,13 @@ import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.activity.CoreLoggingResourceable;
+import org.olat.core.logging.activity.LearningResourceLoggingAction;
+import org.olat.core.logging.activity.OlatResourceableType;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
@@ -76,6 +81,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	private final String switchPrefsId;
 	protected boolean dirtyTables = false;
 	private LecturesBlockSearchParameters currentSearchParams;
+	private final boolean withRepositoryEntry;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -87,6 +93,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		super(ureq, wControl);
 		this.admin = admin;
 		this.switchPrefsId = switchPrefsId;
+		this.withRepositoryEntry = withRepositoryEntry;
 		
 		mainVC = createVelocityContainer("teacher_view");
 		
@@ -167,11 +174,11 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 			
 			if(canStartRollCall(row)) {
 				startButton.setVisible(true);
-				startButton.setUserObject(row);
+				startButton.setUserObject(block);
 				startButton.setPrimary(true);
 				
 				startWizardButton.setVisible(true);
-				startWizardButton.setUserObject(row);
+				startWizardButton.setUserObject(block);
 				
 				currentBlocks.add(row);
 			} else if(block.getRollCallStatus() == LectureRollCallStatus.closed || block.getRollCallStatus() == LectureRollCallStatus.autoclosed) {
@@ -196,7 +203,9 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	
 	private boolean canStartRollCall(LectureBlockRow blockWithTeachers) {
 		LectureBlock lectureBlock = blockWithTeachers.getLectureBlock();
-		if(blockWithTeachers.isIamTeacher()) {
+		if(blockWithTeachers.isIamTeacher()
+				&& lectureBlock.getStatus() != LectureBlockStatus.done
+				&& lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
 			Date start = lectureBlock.getStartDate();
 			Date end = lectureBlock.getEndDate();
 			Date now = new Date();
@@ -286,8 +295,15 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
 		RollCallSecurityCallback secCallback = getRollCallSecurityCallback(reloadedBlock, teachers.contains(getIdentity()));
 		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, secCallback);
+		if(withRepositoryEntry) {
+			rollCallCtrl.addLoggingResourceable(CoreLoggingResourceable.wrap(reloadedBlock.getEntry().getOlatResource(),
+					OlatResourceableType.course, reloadedBlock.getEntry().getDisplayname()));
+		}
 		listenTo(rollCallCtrl);
 		stackPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
+
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_STARTED, getClass(),
+				CoreLoggingResourceable.wrap(block, OlatResourceableType.lectureBlock, block.getTitle()));
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -297,11 +313,18 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
 		rollCallWizardCtrl = new TeacherRollCallWizardController(ureq, getWindowControl(), reloadedBlock, participants);
+		if(withRepositoryEntry) {
+			rollCallCtrl.addLoggingResourceable(CoreLoggingResourceable.wrap(reloadedBlock.getEntry().getOlatResource(),
+					OlatResourceableType.course, reloadedBlock.getEntry().getDisplayname()));
+		}
 		listenTo(rollCallWizardCtrl);
 		
 		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
 		cc.getScreenMode().setMode(Mode.full);
 		getWindowControl().pushToMainArea(rollCallWizardCtrl.getInitialComponent());
+		
+		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_STARTED, getClass(),
+				CoreLoggingResourceable.wrap(block, OlatResourceableType.lectureBlock, block.getTitle()));
 	}
 	
 	private void doToggleAllTeachersSwitch(UserRequest ureq, Boolean value) {

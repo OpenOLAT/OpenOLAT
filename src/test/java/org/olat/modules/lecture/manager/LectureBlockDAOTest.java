@@ -324,38 +324,27 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertTrue(participantsBlock2.contains(participant4));
 	}
 	
-
 	@Test
-	public void updateLogLectureBlock() {
+	public void appendLog() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock block = createMinimalLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
-		Long blockKey = block.getKey();
-		
-		String update = "update lectureblock block set block.log=concat(block.log,',',:newLog) where block.key=:blockKey";
-		int rows = dbInstance.getCurrentEntityManager()
-			.createQuery(update)
-			.setParameter("blockKey", blockKey)
-			.setParameter("newLog", "New infos")
-			.executeUpdate();
-		
-		Assert.assertEquals(1, rows);
+
+		//append something
+		boolean ok = lectureBlockDao.appendLog(block, "New infos");
+		Assert.assertTrue(ok);
 		dbInstance.commitAndCloseSession();
 
-		LectureBlock updatedBlock = lectureBlockDao.loadByKey(blockKey);
-		Assert.assertEquals(",New infos", updatedBlock.getLog());
+		LectureBlock updatedBlock = lectureBlockDao.loadByKey(block.getKey());
+		Assert.assertEquals("New infos", updatedBlock.getLog());
 		
-		int rows2 = dbInstance.getCurrentEntityManager()
-				.createQuery(update)
-				.setParameter("blockKey", blockKey)
-				.setParameter("newLog", "More infos")
-				.executeUpdate();
-		
-		Assert.assertEquals(1, rows2);
+		//append more things
+		boolean okToo = lectureBlockDao.appendLog(block, "More infos");
+		Assert.assertTrue(okToo);
 		dbInstance.commitAndCloseSession();
 
-		LectureBlock updated2Block = lectureBlockDao.loadByKey(blockKey);
-		Assert.assertEquals(",New infos,More infos", updated2Block.getLog());
+		LectureBlock updated2Block = lectureBlockDao.loadByKey(block.getKey());
+		Assert.assertEquals("New infos\nMore infos", updated2Block.getLog());
 	}
 	
 	@Test
@@ -380,7 +369,6 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecturers");
 		lectureBlock.setPlannedLecturesNumber(4);
-		lectureBlock.setLog("");
 		return lectureBlockDao.update(lectureBlock);
 	}
 }

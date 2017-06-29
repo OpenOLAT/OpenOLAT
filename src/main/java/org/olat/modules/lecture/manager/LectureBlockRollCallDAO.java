@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -62,6 +63,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class LectureBlockRollCallDAO {
 	
+	private static final SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -90,6 +93,9 @@ public class LectureBlockRollCallDAO {
 	private void addInternalLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences) {
 		if(absences != null) {
 			LectureBlockRollCallImpl call = (LectureBlockRollCallImpl)rollCall;
+			String currentAbsent = call.getLecturesAbsent();
+			String currentAttended = call.getLecturesAttended();
+			
 			List<Integer> currentAbsentList = call.getLecturesAbsentList();
 			for(int i=absences.size(); i-->0; ) {
 				Integer absence = absences.get(i);
@@ -110,8 +116,11 @@ public class LectureBlockRollCallDAO {
 			}
 			call.setLecturesAttendedList(attendedList);
 			call.setLecturesAttendedNumber(plannedLecture - currentAbsentList.size());
+			updateLog(call, currentAbsent, currentAttended);
 		}
 	}
+	
+
 	
 	public LectureBlockRollCall removeLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences) {
 		removeInternalLecture(lectureBlock, rollCall, absences);
@@ -121,6 +130,9 @@ public class LectureBlockRollCallDAO {
 	private void removeInternalLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences) {
 		if(absences != null) {
 			LectureBlockRollCallImpl call = (LectureBlockRollCallImpl)rollCall;
+			String currentAbsent = call.getLecturesAbsent();
+			String currentAttended = call.getLecturesAttended();
+			
 			List<Integer> currentAbsentList = call.getLecturesAbsentList();
 			for(int i=absences.size(); i-->0; ) {
 				currentAbsentList.remove(absences.get(i));
@@ -138,7 +150,21 @@ public class LectureBlockRollCallDAO {
 			}
 			call.setLecturesAttendedList(attendedList);
 			call.setLecturesAttendedNumber(plannedLecture - currentAbsentList.size());
+			updateLog(call, currentAbsent, currentAttended);
 		}
+	}
+	
+	private void updateLog(LectureBlockRollCallImpl call, String currentAbsent, String currentAttended) {
+		String log = call.getLog() == null ? "" : call.getLog();
+		
+		Date now = new Date();
+		String date;
+		synchronized(sdb) {
+			date = sdb.format(now);
+		}
+		log += date + " Absent: " + currentAbsent + "->" + call.getLecturesAbsent() + ";";
+		log += "Attended: " + currentAttended + "->" + call.getLecturesAttended() + " \n";
+		call.setLog(log);
 	}
 	
 	public LectureBlockRollCall loadByKey(Long key) {
