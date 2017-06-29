@@ -105,10 +105,10 @@ public class UserVOFactory {
 			}
 		}
 		
-		HomePageConfig hpc = isAdmin ? null : HomePageConfigManagerImpl.getInstance().loadConfigFor(identity.getName());
 		
 		if(allProperties) {
 			UserManager um = UserManager.getInstance();
+			HomePageConfig hpc = isAdmin ? null : HomePageConfigManagerImpl.getInstance().loadConfigFor(identity.getName());
 			List<UserPropertyHandler> propertyHandlers = um.getUserPropertyHandlersFor(UserWebService.PROPERTY_HANDLER_IDENTIFIER, false);
 			for (UserPropertyHandler propertyHandler : propertyHandlers) {
 				String propName = propertyHandler.getName();
