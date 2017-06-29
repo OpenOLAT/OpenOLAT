@@ -438,8 +438,12 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		} else if (source == groupCreateController) {
 			BusinessGroup group = null;
 			if(event == Event.DONE_EVENT) {
-				group = groupCreateController.getCreatedGroup();
-				if(group != null) {
+				Set<BusinessGroup> groups = groupCreateController.getCreatedGroups();
+				if(groups.size() == 1) {
+					group = groups.iterator().next();
+				}
+	
+				if(groups.size() > 0) {
 					tableEl.deselectAll();
 					reloadModel();
 				}
@@ -633,7 +637,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	 */
 	protected void doCreate(UserRequest ureq, WindowControl wControl, RepositoryEntry re) {				
 		removeAsListenerAndDispose(groupCreateController);
-		groupCreateController = new NewBGController(ureq, wControl, re, false, null);
+		groupCreateController = new NewBGController(ureq, wControl, re, true, null);
 		listenTo(groupCreateController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupCreateController.getInitialComponent(), true, translate("create.form.title"));

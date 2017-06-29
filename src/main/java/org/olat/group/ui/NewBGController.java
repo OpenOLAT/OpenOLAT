@@ -188,8 +188,8 @@ public class NewBGController extends BasicController {
 	 * @return the new groups.
 	 */
 	public Set<BusinessGroup> getCreatedGroups(){
-		Set<BusinessGroup> groupSet = new HashSet<BusinessGroup>(newGroups);
-		if(newGroups == null) {
+		Set<BusinessGroup> groupSet = new HashSet<BusinessGroup>();
+		if(newGroups != null) {
 			groupSet.addAll(newGroups); 
 		}
 		return groupSet;

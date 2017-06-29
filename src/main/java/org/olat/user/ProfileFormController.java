@@ -23,6 +23,7 @@ package org.olat.user;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -602,9 +603,9 @@ public class ProfileFormController extends FormBasicController {
 	private TemporaryKey loadCleanTemporaryKey(String serMailMap) {
 		TemporaryKey tk = rm.loadTemporaryKeyByEmail(serMailMap);
 		if (tk == null) {
-			XStream xml = new XStream();
+			
 			@SuppressWarnings("unchecked")
-			Map<String, String> mails = (Map<String, String>) xml.fromXML(serMailMap);
+			Map<String, String> mails = (Map<String, String>) XStreamHelper.createXStreamInstance().fromXML(serMailMap);
 			String currentEMail = mails.get("currentEMail");
 			List<TemporaryKey> tks = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
 			if (tks != null) {
@@ -612,23 +613,39 @@ public class ProfileFormController extends FormBasicController {
 					tks = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
 					int countCurrentEMail = 0;
 					for (TemporaryKey temporaryKey : tks) {
-						@SuppressWarnings("unchecked")
-						Map<String, String> tkMails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
-						if (tkMails.get("currentEMail").equals(currentEMail)) {
-							if (countCurrentEMail > 0) {
-								// clean
-								rm.deleteTemporaryKeyWithId(temporaryKey.getRegistrationKey());
-							} else {
-								// load
-								tk = temporaryKey;
+						Map<String, String> tkMails = readFromXml(temporaryKey);
+						String tkMail = tkMails.get("currentEMail");
+						if(StringHelper.containsNonWhitespace(tkMail)) {
+							if(tkMail.equals(currentEMail)) {
+								if (countCurrentEMail > 0) {
+									// clean
+									rm.deleteTemporaryKeyWithId(temporaryKey.getRegistrationKey());
+								} else {
+									// load
+									tk = temporaryKey;
+								}
+								countCurrentEMail++;
 							}
-							countCurrentEMail++;
+						} else {
+							rm.deleteTemporaryKeyWithId(temporaryKey.getRegistrationKey());
 						}
 					}
 				}
 			}
 		}
 		return tk;
+	}
+	
+	private Map<String, String> readFromXml(TemporaryKey temporaryKey) {
+		try {
+			XStream xml = XStreamHelper.createXStreamInstance();
+			@SuppressWarnings("unchecked")
+			Map<String, String> tkMails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
+			return tkMails;
+		} catch (Exception e) {
+			logError("", e);
+			return Collections.emptyMap();
+		}
 	}
 
 	/**
