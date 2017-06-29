@@ -54,7 +54,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
@@ -72,7 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeacherLecturesTableController extends FormBasicController implements BreadcrumbPanelAware {
+public class TeacherLecturesTableController extends FormBasicController implements BreadcrumbPanelAware, Activateable2 {
 	
 	private FlexiTableElement tableEl;
 	private BreadcrumbPanel toolbarPanel;
@@ -164,6 +167,24 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("LectureBlock".equals(name)) {
+			Long lectureBlockKey = entries.get(0).getOLATResourceable().getResourceableId();
+			if(tableModel.getRowCount() > 0) {
+				List<LectureBlockRow> rows = tableModel.getObjects();
+				for(LectureBlockRow row:rows) {
+					if(row.getKey().equals(lectureBlockKey)) {
+						doSelectLectureBlock(ureq, row.getLectureBlock());
+					}
+				}
+			}
+		}
 	}
 
 	@Override

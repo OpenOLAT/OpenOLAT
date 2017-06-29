@@ -59,6 +59,8 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LocationHistory;
 import org.olat.repository.RepositoryEntry;
@@ -148,6 +150,12 @@ public class EditLectureBlockController extends FormBasicController {
 				break;
 			}
 		}
+		//freeze it after roll call done
+		boolean plannedLecturesEditable = lectureBlock == null ||
+				(lectureBlock.getStatus() != LectureBlockStatus.done
+					&& lectureBlock.getRollCallStatus() != LectureRollCallStatus.closed
+					&& lectureBlock.getRollCallStatus() != LectureRollCallStatus.autoclosed);
+		plannedLecturesEl.setEnabled(plannedLecturesEditable);
 		
 		String[] onValues = new String[]{ "" };
 		boolean compulsory = lectureBlock == null ? true : lectureBlock.isCompulsory();
@@ -212,6 +220,8 @@ public class EditLectureBlockController extends FormBasicController {
 					groupsEl.select(Integer.toString(i), true);
 				}
 			}
+		} else if(groupKeys.length == 1) {
+			groupsEl.select(groupKeys[0], true);
 		}
 
 		String description = lectureBlock == null ? "" : lectureBlock.getDescription();

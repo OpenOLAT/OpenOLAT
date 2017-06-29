@@ -37,7 +37,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -61,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractTeacherOverviewController extends BasicController implements BreadcrumbPanelAware {
+public abstract class AbstractTeacherOverviewController extends BasicController implements BreadcrumbPanelAware, Activateable2 {
 	
 	protected BreadcrumbPanel stackPanel;
 	protected final VelocityContainer mainVC;
@@ -219,6 +222,19 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("LectureBlock".equals(name)) {
+			currentLecturesBlockCtrl.activate(ureq, entries, state);
+			pendingLecturesBlockCtrl.activate(ureq, entries, state);
+			nextLecturesBlockCtrl.activate(ureq, entries, state);
+			closedLecturesBlockCtrl.activate(ureq, entries, state);
+		}
 	}
 
 	@Override

@@ -1091,6 +1091,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				doReminders(ureq);
 			} else if("Lectures".equalsIgnoreCase(type)) {
 				doLectures(ureq);
+			} else if("LectureBlock".equalsIgnoreCase(type)) {
+				doLectures(ureq).activate(ureq, entries, state);
 			} else if("MembersMgmt".equalsIgnoreCase(type)) {
 				Activateable2 members = doMembers(ureq);
 				if(members != null) {
@@ -1392,7 +1394,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void doLectures(UserRequest ureq) {
+	private TeacherOverviewController doLectures(UserRequest ureq) {
 		if(delayedClose == Delayed.lectures || requestForClose(ureq)) {
 			removeCustomCSS();
 			
@@ -1403,8 +1405,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 			setActiveTool(lecturesLink);
 			currentToolCtr = lecturesCtrl;
+			return lecturesCtrl;
 		} else {
 			delayedClose = Delayed.lectures;
+			return null;
 		}
 	}
 	
