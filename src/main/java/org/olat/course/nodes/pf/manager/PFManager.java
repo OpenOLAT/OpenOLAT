@@ -530,7 +530,9 @@ public class PFManager {
 		Set<Identity> identitySet = new HashSet<>();
 		RepositoryEntry re = courseEnv.getCourseGroupManager().getCourseEntry();
 		if(admin) {
-			return repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.both, GroupRoles.participant.name());
+			List<Identity> participants = repositoryEntryRelationDao.getMembers(re, RepositoryEntryRelationType.both, GroupRoles.participant.name());
+			// deduplicate list (participants from groups and direct course membership)
+			identitySet.addAll(participants);
 		} else {
 			if(repositoryService.hasRole(id, re, GroupRoles.coach.name())) {
 				List<Identity> identities = repositoryService.getMembers(re, GroupRoles.participant.name());
