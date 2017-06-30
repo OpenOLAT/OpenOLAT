@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.poi.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarNotificationManager;

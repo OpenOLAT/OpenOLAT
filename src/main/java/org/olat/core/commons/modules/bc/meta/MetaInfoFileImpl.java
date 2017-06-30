@@ -48,7 +48,7 @@ import java.util.UUID;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.poi.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.basesecurity.BaseSecurityManager;

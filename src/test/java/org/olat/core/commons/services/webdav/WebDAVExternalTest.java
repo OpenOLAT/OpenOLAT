@@ -28,10 +28,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
-import org.apache.poi.util.IOUtils;
 import org.junit.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;

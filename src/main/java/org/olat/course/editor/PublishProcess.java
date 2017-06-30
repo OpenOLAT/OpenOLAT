@@ -36,7 +36,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.poi.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;

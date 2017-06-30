@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.poi.util.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.notifications.NotificationsManager;

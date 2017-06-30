@@ -30,6 +30,7 @@ import java.util.UUID;
 
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -39,7 +40,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
-import org.apache.poi.util.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
