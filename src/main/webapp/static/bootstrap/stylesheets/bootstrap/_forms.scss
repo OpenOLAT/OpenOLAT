@@ -298,6 +298,7 @@ input[type="checkbox"] {
   padding-bottom: ($padding-base-vertical + 1);
   // Remove default margin from `p`
   margin-bottom: 0;
+  word-wrap: break-word;
 
   &.input-lg,
   &.input-sm {
