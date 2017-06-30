@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Media;
@@ -101,9 +100,6 @@ public class CollectArtefactController extends FormBasicController {
 		String date = Formatter.getInstance(getLocale()).formatDate(new Date());
 		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
 
-		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-		uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
-		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
