@@ -131,6 +131,7 @@ public class WeeklyStatisticUpdateManagerTest extends AbstractStatisticUpdateMan
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		StatisticResult updatedResult = weeklyStatisticManager.generateStatisticResult(new SyntheticUserRequest(null, Locale.ENGLISH), course, re.getKey());
 		Map<String,Integer> updatedRootStats = updatedResult.getStatistics(node);
+		Assert.assertNotNull(updatedRootStats);
 		Integer updated_stats_inMemory = getInMemoryStatistics(re, node, date);
 		Integer updated_stats_today = updatedRootStats.get(date);
 		Assert.assertEquals(updated_stats_inMemory, updated_stats_today);

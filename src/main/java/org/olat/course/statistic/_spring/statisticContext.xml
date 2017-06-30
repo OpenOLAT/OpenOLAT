@@ -187,9 +187,6 @@
 							left join o_stat_daily old on (delta.businesspath=old.businesspath and delta.day=old.day)
 						where old.businesspath is null;
 				</value>
-				<value>
-					delete from o_stat_daily where datediff(now(),day)>180;
-				</value>
 			</list>
 		</property>
 		<property name="deleteSQL" value="delete from o_stat_daily;"/>
@@ -225,7 +222,7 @@ insert into o_stat_daily (businesspath, resid, day, value)
 	</bean>
 
 	<bean id="weeklyStatisticUpdater_mysql" class="org.olat.course.statistic.StatisticUpdater">
-		<property name="loggingName" value="weeklyStatisticUpdater"/>
+		<property name="loggingName" value="WeeklyStatisticUpdater"/>
 		<property name="jdbcTemplate" ref="statisticsJdbcTemplate" />
 		<property name="updateSQL">
 			<list>
@@ -248,9 +245,6 @@ insert into o_stat_daily (businesspath, resid, day, value)
 								from o_stat_temptable group by businesspath,week) delta
 							left join o_stat_weekly old on delta.businesspath=old.businesspath and delta.week=old.week
 						where old.businesspath is null;
-				</value>
-				<value>
-					delete from o_stat_weekly where week&lt;concat(year(now() - interval 180 day),'-',lpad(week(now() - interval 180 day,3),2,'0'));
 				</value>
 			</list>
 		</property>
@@ -369,7 +363,6 @@ insert into o_stat_dayofweek (businesspath, resid, day, value)
 								from o_stat_temptable group by businesspath,hour) delta
 							left join o_stat_hourofday old on delta.businesspath=old.businesspath and delta.hour=old.hour
 						where old.businesspath is null;
-				
 				</value>
 			</list>
 		</property>
