@@ -704,8 +704,6 @@ public class PaypalManagerImpl  implements PaypalManager {
 		
 		String returnURL = url.toString() + "/" + trx.getSecureSuccessUUID() + ".html;jsessionid=" + sessionId + "?status=success";
 		String cancelURL = url.toString() + "/" + trx.getSecureCancelUUID() + ".html;jsessionid=" + sessionId + "?status=cancel";
-		
-		System.out.println(returnURL);
 
 		PayRequest payRequest = new PayRequest();
 		payRequest.setCancelUrl(cancelURL);
