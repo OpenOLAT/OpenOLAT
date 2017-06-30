@@ -22,9 +22,12 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.util.Locale;
 
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -86,7 +89,15 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 			preConditionPoster.setExpertMode(false);
 		}
 	}
-	
+
+	@Override
+	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+
+		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(course.getCourseEnvironment(), this);
+		NotificationsManager.getInstance().delete(subsContext);
+	}
+
 	@Override
 	protected void postImportCopyConditions(CourseEnvironmentMapper envMapper) {
 		super.postImportCopyConditions(envMapper);

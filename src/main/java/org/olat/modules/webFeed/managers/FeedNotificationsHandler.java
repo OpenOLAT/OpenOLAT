@@ -40,6 +40,9 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
 import org.olat.modules.webFeed.models.Feed;
 import org.olat.modules.webFeed.models.Item;
 import org.olat.modules.webFeed.ui.FeedMainController;
@@ -85,6 +88,12 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 					}
 					String displayName = re.getDisplayname();
 					if("CourseModule".equals(p.getResName())) {
+						ICourse course = CourseFactory.loadCourse(re);
+						CourseNode node = course.getRunStructure().getNode(p.getSubidentifier());
+						if(node == null) {
+							notificationsManager.deactivate(p);
+							return notificationsManager.getNoSubscriptionInfo();
+						}
 						title = translator.translate(NOTIFICATIONS_HEADER_COURSE,  new String[]{displayName});
 					} else {
 						title = getHeader(translator, displayName);
