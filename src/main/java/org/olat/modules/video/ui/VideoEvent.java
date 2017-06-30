@@ -34,6 +34,7 @@ public class VideoEvent extends Event {
 	public static final String PAUSE = "pause";
 	public static final String SEEKED = "seeked";
 	public static final String ENDED = "ended";
+	public static final String TIMEUPDATE = "timeupdate";
 
 	private final String timeCode;
 	private final String duration;

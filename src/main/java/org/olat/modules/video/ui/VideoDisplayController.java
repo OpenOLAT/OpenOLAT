@@ -145,6 +145,10 @@ public class VideoDisplayController extends BasicController {
 		}
 	}
 	
+	public void setTimeUpdateListener(boolean enable) {
+		mainVC.contextPut("listenTimeUpdate", enable);
+	}
+	
 	private void initMediaElementJs() {
 		// load mediaelementjs player, speed and sourcechooser pluginss
 		String[] cssPath;
@@ -304,7 +308,7 @@ public class VideoDisplayController extends BasicController {
 				String currentTime = ureq.getHttpReq().getParameter("currentTime");
 				String duration = ureq.getHttpReq().getParameter("duration");
 				String src = ureq.getHttpReq().getParameter("src");
-				logDebug(cmd + " " + currentTime + " " + duration + " " + src, null);				
+				//logDebug(cmd + " " + currentTime + " " + duration + " " + src, null);
 				switch(cmd) {
 					case "play":
 						fireEvent(ureq, new VideoEvent(VideoEvent.PLAY, currentTime, duration));
@@ -317,6 +321,9 @@ public class VideoDisplayController extends BasicController {
 						break;
 					case "ended":
 						fireEvent(ureq, new VideoEvent(VideoEvent.ENDED, currentTime, duration));
+						break;
+					case "timeupdate":
+						fireEvent(ureq, new VideoEvent(VideoEvent.TIMEUPDATE, currentTime, duration));
 						break;
 				}
 				updateGUIPreferences(ureq, src);

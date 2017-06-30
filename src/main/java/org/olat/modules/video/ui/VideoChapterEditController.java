@@ -88,6 +88,7 @@ public class VideoChapterEditController extends BasicController {
 		
 		//video preview
 		videoDisplayCtr = new VideoDisplayController(ureq, getWindowControl(), entry, false, false, false, false, null, false, false, null, false);
+		videoDisplayCtr.setTimeUpdateListener(true);
 		listenTo(videoDisplayCtr);	
 		videoDisplayCtr.reloadVideo(ureq);
 		mainVC.put("video", videoDisplayCtr.getInitialComponent());

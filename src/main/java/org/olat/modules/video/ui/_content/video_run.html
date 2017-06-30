@@ -61,6 +61,15 @@
 						$r.openNoResponseJavaScriptCommand("seeked"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
 					}
 		        }, false);
+		        
+		        #if($r.isTrue($listenTimeUpdate))
+		        mediaElement.addEventListener('timeupdate', function(e) {
+		        	if (!o_info.linkbusy) {
+						$r.openNoResponseJavaScriptCommand("timeupdate"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
+					}
+		        }, false);
+		        #end
+		        
 		        ## listen to end events, fired when movie is finished
 		        mediaElement.addEventListener('ended', function(e) {
 		        	if (!o_info.linkbusy) {
