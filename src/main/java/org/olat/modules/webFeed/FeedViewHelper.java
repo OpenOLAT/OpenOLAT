@@ -594,12 +594,11 @@ public class FeedViewHelper {
 	 */
 	public boolean isAuthor(Item item) {
 		boolean isAuthor = false;
-		if (item != null) {
-			Long authorKey = item.getAuthorKey();
-			if (authorKey != null && item.getAuthorKey() == identity.getKey().longValue()) {
-				isAuthor = true;
-			}
+		
+		if (item != null && item.getAuthorKey() != null && item.getAuthorKey().equals(identity.getKey().longValue())) {
+			isAuthor = true;
 		}
+		
 		return isAuthor;
 	}
 

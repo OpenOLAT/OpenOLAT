@@ -389,7 +389,7 @@ public class FeedManagerImpl extends FeedManager {
 					// scheduled items can be seen by everybody who can edit items
 					// (moderators)
 					filteredItems.add(item);
-				} else if (identity.getKey() == item.getAuthorKey()) {
+				} else if (identity.getKey().equals(item.getAuthorKey())) {
 					// scheduled items and drafts of oneself are shown
 					filteredItems.add(item);
 				} else if (item.isDraft()) {
