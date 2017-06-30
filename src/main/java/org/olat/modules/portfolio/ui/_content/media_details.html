@@ -15,6 +15,10 @@
 				<tr><th>$r.translate("artefact.collect.date")</th>
 					<td>$r.escapeHtml($collectionDate)</td></tr>
 				#end
+				#if($r.isNotEmpty($linkOriginal))
+				<tr><th>$r.translate("artefact.collect.link")</th>
+					<td><input type="text" value="$r.escapeHtml($linkOriginal)" style="width:100%;" onclick="this.select();"/></td></tr>
+				#end
 				#if($r.isNotEmpty($media.creators))
 				<tr><th>$r.translate("creators")</th>
 					<td>$r.escapeHtml($media.creators)</td></tr>

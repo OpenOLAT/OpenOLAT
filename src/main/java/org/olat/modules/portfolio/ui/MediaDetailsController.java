@@ -48,6 +48,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
@@ -140,6 +141,11 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			if(media.getCollectionDate() != null) {
 				String collectionDate = Formatter.getInstance(getLocale()).formatDate(media.getCollectionDate());
 				layoutCont.contextPut("collectionDate", collectionDate);
+			}
+			
+			if (media.getBusinessPath() != null) {
+				String linkOriginal = BusinessControlFactory.getInstance().getURLFromBusinessPathString(media.getBusinessPath());
+				layoutCont.contextPut("linkOriginal", linkOriginal);
 			}
 			
 			if(StringHelper.containsNonWhitespace(media.getMetadataXml())) {
