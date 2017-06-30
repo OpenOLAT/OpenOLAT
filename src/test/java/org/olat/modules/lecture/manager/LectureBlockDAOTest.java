@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockToGroupImpl;
 import org.olat.repository.RepositoryEntry;
@@ -325,6 +327,46 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasLecturesAsTeacher() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+		
+		// enable lecture on this entry
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		config.setLectureEnabled(true);
+		config = lectureService.updateRepositoryEntryLectureConfiguration(config);
+
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		boolean isTeacher = lectureBlockDao.hasLecturesAsTeacher(entry, teacher);
+		Assert.assertTrue(isTeacher);
+	}
+	
+	@Test
+	public void getRollCallAsTeacher() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+		
+		// enable lecture on this entry
+		RepositoryEntryLectureConfiguration config = lectureService.getRepositoryEntryLectureConfiguration(entry);
+		config.setLectureEnabled(true);
+		config = lectureService.updateRepositoryEntryLectureConfiguration(config);
+
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		List<LectureBlock> rollcalls = lectureBlockDao.getRollCallAsTeacher(teacher);
+		Assert.assertNotNull(rollcalls);
+		Assert.assertEquals(1, rollcalls.size());
+		Assert.assertEquals(lectureBlock, rollcalls.get(0));
+	}
+	
+	@Test
 	public void appendLog() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock block = createMinimalLectureBlock(entry);
@@ -365,8 +407,11 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
-		lectureBlock.setStartDate(new Date());
-		lectureBlock.setEndDate(new Date());
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.MINUTE, -15);
+		lectureBlock.setStartDate(cal.getTime());
+		cal.add(Calendar.MINUTE, 30);
+		lectureBlock.setEndDate(cal.getTime());
 		lectureBlock.setTitle("Hello lecturers");
 		lectureBlock.setPlannedLecturesNumber(4);
 		return lectureBlockDao.update(lectureBlock);

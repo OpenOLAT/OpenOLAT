@@ -229,12 +229,36 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		if(entries == null || entries.isEmpty()) return;
 		
 		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("LectureBlock".equals(name)) {
-			currentLecturesBlockCtrl.activate(ureq, entries, state);
-			pendingLecturesBlockCtrl.activate(ureq, entries, state);
-			nextLecturesBlockCtrl.activate(ureq, entries, state);
-			closedLecturesBlockCtrl.activate(ureq, entries, state);
+		Long id = entries.get(0).getOLATResourceable().getResourceableId();
+		if("LectureBlock".equalsIgnoreCase(name)) {
+			boolean started = false;
+			if(entries.size() > 1) {
+				String action = entries.get(1).getOLATResourceable().getResourceableTypeName();
+				if("Start".equalsIgnoreCase(action)) {
+					LectureBlockRow row = currentLecturesBlockCtrl.getRow(id);
+					if(row != null && canStartRollCall(row)) {
+						doStartRollCall(ureq, row.getLectureBlock());
+						started = true;
+					}
+				} else if("StartWizard".equalsIgnoreCase(action)) {
+					LectureBlockRow row = currentLecturesBlockCtrl.getRow(id);
+					if(row != null && canStartRollCall(row)) {
+						doStartWizardRollCall(ureq, row.getLectureBlock());
+						started = true;
+					}
+				}
+			} 
+			if(!started) {
+				activateLectureBlockInTable(ureq, entries, state);
+			}
 		}
+	}
+	
+	private void activateLectureBlockInTable(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		currentLecturesBlockCtrl.activate(ureq, entries, state);
+		pendingLecturesBlockCtrl.activate(ureq, entries, state);
+		nextLecturesBlockCtrl.activate(ureq, entries, state);
+		closedLecturesBlockCtrl.activate(ureq, entries, state);
 	}
 
 	@Override

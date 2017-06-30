@@ -37,6 +37,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
+import org.assertj.core.api.Assertions;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Assert;
@@ -170,7 +171,8 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		
 		// check the response
-		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+
 		LectureBlockVO blockVo = conn.parse(response.getEntity().getContent(), LectureBlockVO.class);
 		Assert.assertNotNull(blockVo);
 		Assert.assertEquals(entry.getKey(), blockVo.getRepoEntryKey());

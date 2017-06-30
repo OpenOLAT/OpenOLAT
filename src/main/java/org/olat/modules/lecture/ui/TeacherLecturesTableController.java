@@ -142,11 +142,22 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setEmtpyTableMessageKey(emptyI18nKey);
-		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview");
+		tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview");
 	}
 	
 	public int getRowCount() {
 		return tableModel.getRowCount();
+	}
+	
+	public LectureBlockRow getRow(Long lectureBlockKey) {
+		if(lectureBlockKey == null) return null;
+		
+		for(LectureBlockRow row:tableModel.getObjects()) {
+			if(row.getKey().equals(lectureBlockKey)) {
+				return row;
+			}
+		}
+		return null;
 	}
 	
 	protected void setTablePageSize(int pageSize) {

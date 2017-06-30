@@ -608,6 +608,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	}
 
 	@Override
+	public List<LectureBlock> getRollCallAsTeacher(Identity identity) {
+		return lectureBlockDao.getRollCallAsTeacher(identity);
+	}
+
+	@Override
 	public void addTeacher(LectureBlock lectureBlock, Identity teacher) {
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlock;
 		if(!groupDao.hasRole(block.getTeacherGroup(), teacher, "teacher")) {

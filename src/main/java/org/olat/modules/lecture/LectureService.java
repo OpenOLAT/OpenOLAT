@@ -334,6 +334,14 @@ public interface LectureService {
 	 */
 	public boolean hasLecturesAsTeacher(RepositoryEntryRef entry, Identity identity);
 	
+	/**
+	 * Check if the user has a roll call to do. Now.
+	 * 
+	 * @param identity The teacher
+	 * @return true if a roll call need to be done
+	 */
+	public List<LectureBlock> getRollCallAsTeacher(Identity identity);
+	
 	public List<Identity> getTeachers(LectureBlock block);
 	
 	public List<Identity> getTeachers(RepositoryEntry entry);

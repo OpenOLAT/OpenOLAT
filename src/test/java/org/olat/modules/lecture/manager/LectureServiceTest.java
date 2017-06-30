@@ -65,8 +65,8 @@ public class LectureServiceTest extends OlatTestCase {
 	
 	@Test
 	public void addTeacher() {
-		Identity teacher = JunitTestHelper.createAndPersistIdentityAsUser("teacher-1");
-		Identity notTeacher = JunitTestHelper.createAndPersistIdentityAsUser("teacher-2");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		Identity notTeacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-2");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
@@ -87,7 +87,7 @@ public class LectureServiceTest extends OlatTestCase {
 	
 	@Test
 	public void getLectureBlocks_teacher() {
-		Identity teacher = JunitTestHelper.createAndPersistIdentityAsUser("teacher-3");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-3");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
 		dbInstance.commitAndCloseSession();
@@ -103,8 +103,8 @@ public class LectureServiceTest extends OlatTestCase {
 	
 	@Test
 	public void getParticipants() {
-		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsUser("participant-4-1");
-		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsUser("participant-4-2");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-4-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("participant-4-2");
 		// a lecture block
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry);

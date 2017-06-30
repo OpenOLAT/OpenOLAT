@@ -321,6 +321,27 @@ public class LectureBlockDAO {
 				&& firstKey.get(0) != null && firstKey.get(0).longValue() > 0;
 	}
 	
+	public List<LectureBlock> getRollCallAsTeacher(IdentityRef identity) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select block from lectureblock block")
+		  .append(" inner join block.teacherGroup teacherGroup")
+		  .append(" inner join teacherGroup.members teachers")
+		  .append(" inner join fetch block.entry entry")
+		  .append(" where teachers.identity.key=:identityKey")
+		  .append(" and block.startDate<=:now and block.endDate>=:now")
+		  .append(" and block.statusString not in ('").append(LectureBlockStatus.cancelled.name()).append("','").append(LectureBlockStatus.done.name()).append("')")
+		  .append(" and block.rollCallStatusString not in ('").append(LectureRollCallStatus.closed.name()).append("','").append(LectureRollCallStatus.autoclosed.name()).append("')")
+		  .append(" and exists (select config.key from lectureentryconfig config")
+		  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
+		  .append(" )");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlock.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("now", new Date(), TemporalType.TIMESTAMP)
+				.getResultList();
+	}
+	
 	public List<LectureBlock> getLecturesAsTeacher(RepositoryEntryRef entry, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select block from lectureblock block")

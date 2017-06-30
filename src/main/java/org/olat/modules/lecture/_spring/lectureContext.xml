@@ -49,6 +49,33 @@
 		</property>
 	</bean>
 	
+	<!-- Lectures login interceptor -->
+	<bean id="resume.AfterLogin.Injection" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="afterLoginInterceptionManager" />
+		<property name="targetMethod" value="addAfterLoginControllerConfig" />
+		<property name="arguments">
+			<ref bean="start.lectures.AfterLoginConfig"/>
+		</property>
+	</bean>
+	
+	<bean id="start.lectures.AfterLoginConfig" class="org.olat.login.AfterLoginConfig">
+		<property name="afterLoginControllerList">
+			<list>
+				<map>
+					<entry key="controller">
+						<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+							<property name="className" value="org.olat.modules.lecture.ui.RollCallInterceptorController"/>
+						</bean>
+					</entry>
+					<entry key="forceUser"><value>false</value></entry>
+					<entry key="redoTimeout"><value>0</value></entry>
+					<entry key="size"><value>400x200</value></entry>
+					<entry key="order"><value>100</value></entry>
+				</map>
+			</list>
+		</property>
+	</bean>
+	
 	<!-- Lectures reminder job -->
 	<bean id="reminderLecturesTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail" ref="reminderLecturesJob.${cluster.singleton.services}" />
