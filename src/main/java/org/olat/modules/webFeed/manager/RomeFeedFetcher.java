@@ -21,6 +21,7 @@ package org.olat.modules.webFeed.manager;
 
 import java.io.Reader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,7 +56,15 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 
 	private static final OLog log = Tracing.createLoggerFor(RomeFeedFetcher.class);
 	
-	private SyndFeedInput syndFeedInput = new SyndFeedInput();
+	private final SyndFeedInput syndFeedInput;
+	
+	public RomeFeedFetcher() {
+		this(new SyndFeedInput());
+	}
+	
+	public RomeFeedFetcher(SyndFeedInput syndFeedInput) {
+		this.syndFeedInput = syndFeedInput;
+	}
 	
 	@Override
 	public Feed fetchFeed(Feed feed) {
@@ -89,6 +98,10 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 	@Override
 	public List<Item> fetchItems(Feed feed) {
 		SyndFeed syndFeed = fetchSyndFeed(feed.getExternalFeedUrl());
+		if (syndFeed == null) {
+			return new ArrayList<>();
+		}
+			
 		return syndFeed.getEntries().stream()
 				.map(entry -> convertEntry(feed, entry))
 				.collect(Collectors.toList());

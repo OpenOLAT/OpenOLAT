@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -44,6 +45,8 @@ import com.rometools.rome.feed.synd.SyndEnclosure;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.feed.synd.SyndImage;
+import com.rometools.rome.io.FeedException;
+import com.rometools.rome.io.SyndFeedInput;
 
 /**
  * 
@@ -54,12 +57,14 @@ import com.rometools.rome.feed.synd.SyndImage;
 @RunWith(MockitoJUnitRunner.class)
 public class RomeFeedFetcherTest {
 
-	private RomeFeedFetcher sut = new RomeFeedFetcher();
+	private RomeFeedFetcher sut;
 	
 	@Mock
 	Feed feedMock;
 	@Mock
 	OLATResourceable oresMock;
+	@Mock
+	private SyndFeedInput syndFeedInputMock;
 	@Mock 
 	private SyndFeed syndFeedMock;
 	@Mock 
@@ -70,6 +75,25 @@ public class RomeFeedFetcherTest {
 	private SyndEnclosure syndEnclosureMock;
 	@Mock
 	private SyndContent syndContentMock;
+	
+	@Before
+	public void setUp() {
+		sut = new RomeFeedFetcher(syndFeedInputMock);
+	}
+	
+	@Test
+	public void fetchFeedShouldReturnFeedIfExternalFeedIsNotAvaible() throws IllegalArgumentException, FeedException {
+		Feed feed = sut.fetchFeed(feedMock);
+		
+		assertThat(feed).isEqualTo(feedMock);
+	}
+	
+	@Test
+	public void fetchItemsShouldReturnEmptyListIfExternalFeedIsNotAvaible() throws IllegalArgumentException, FeedException {
+		List<Item> items = sut.fetchItems(feedMock);
+		
+		assertThat(items).isEmpty();
+	}
 	
 	@Test
 	public void justifiyFeed() {
