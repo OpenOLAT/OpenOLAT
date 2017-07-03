@@ -24,9 +24,9 @@
 			$r.render("file_upload_ERROR")
 		</div>
 	#end
-
+#if($r.available("resize_image_wrapper"))
 	$r.render("resize_image_wrapper")
-
+#end
 #if ($showMetadata)
 	$r.render("metadata")
 #end
