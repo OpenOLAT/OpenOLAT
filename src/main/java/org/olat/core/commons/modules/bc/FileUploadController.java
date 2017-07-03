@@ -313,7 +313,9 @@ public class FileUploadController extends FormBasicController {
 				fileEl.reset();
 				fileEl.setDeleteEnabled(false);
 				fileEl.clearError();
-				resizeEl.setVisible(false);
+				if(resizeImg && resizeEl != null) {
+					resizeEl.setVisible(false);
+				}
 			} else  {
 				String filename = fileEl.getUploadFileName();
 				if(metaDataCtr != null) {
@@ -330,12 +332,16 @@ public class FileUploadController extends FormBasicController {
 					metaDataCtr.setFilename(filename);
 				}
 				
-				boolean isImg = false;
-				if(resizeImg && filename != null) {
-					isImg = imageExtPattern.matcher(filename.toLowerCase()).find();
+				if(resizeImg) {
+					boolean isImg = false;
+					if(filename != null) {
+						isImg = imageExtPattern.matcher(filename.toLowerCase()).find();
+					}
+					if(resizeEl != null) {
+						resizeEl.setVisible(isImg);
+						resizeEl.select(resizeKeys[0], true);
+					}
 				}
-				resizeEl.setVisible(isImg);
-				resizeEl.select(resizeKeys[0], true);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
