@@ -224,14 +224,20 @@ public abstract class FeedManager {
 	public abstract Feed loadFeedFromXML(Path feedDir);
 	
 	/**
-	 * Import the feed and all items from an feed XML file.<br>
-	 * The XML File is read and the feed is stored in the database. All XML
-	 * files of the items are read and the items stored in the database.<br>
-	 * At the end the XML Files are deleted.
+	 * In the early days all information about a feed where stored in XML files.
+	 * This method migrates that old feeds from the XML files to the database.
+	 * It first checks it the feed has to be migrated. If it has to, the XML
+	 * files are read, the feed and the items are saved in the database and at
+	 * the end the XML files are deleted. If the Feed is imported from an other
+	 * system the identity keys should be deleted because they do not
+	 * correspondent with the keys in the actual system.
 	 * 
 	 * @param ores
+	 * @param removeIdentityKeys
+	 *            If true, the identity keys of the author and the modifier are
+	 *            set to null.
 	 */
-	public abstract void importFeedFromXML(OLATResource ores);
+	public abstract void importFeedFromXML(OLATResource ores, boolean removeIdentityKeys);
 
 	/**
 	 * Returns the media file of the item

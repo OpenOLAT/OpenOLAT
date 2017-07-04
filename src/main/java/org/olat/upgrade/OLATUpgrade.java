@@ -68,7 +68,7 @@ public abstract class OLATUpgrade {
 	 * still in the init method of the servlet. Here you have full access to the database
 	 * layer and you can savely access every module.
 	 * @param upgradeManager
-	 * @returntrue if anything has been upgraded, false if nothing has been 
+	 * @return true if anything has been upgraded, false if nothing has been 
 	 * upgraded (e.g. since the upgrade is already installed). false does not indicate
 	 * a failure! In case of failure, throw an exception!
 	 */
@@ -97,8 +97,8 @@ public abstract class OLATUpgrade {
 	 * @param dataSource
 	 */
 	public void executePlainSQLDBStatement(String query, DataSource dataSource) {
-    JdbcTemplate template = new JdbcTemplate(dataSource);
-    template.update(query);
+		JdbcTemplate template = new JdbcTemplate(dataSource);
+		template.update(query);
 	}
 
 	

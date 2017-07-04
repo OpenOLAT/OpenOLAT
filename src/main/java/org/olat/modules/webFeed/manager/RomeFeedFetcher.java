@@ -119,7 +119,7 @@ public class RomeFeedFetcher implements ExternalFeedFetcher {
 			syndFeed = syndFeedInput.build(xmlReader);
 			log.info("Read external feed: " + feedURL);
 		} catch (Exception e) {
-			log.warn("Cannot read external feed: : " + feedURL, e);
+			log.warn("Cannot read external feed: : " + feedURL);
 		}
 
 		return syndFeed;

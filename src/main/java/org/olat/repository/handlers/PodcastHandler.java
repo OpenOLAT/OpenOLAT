@@ -113,7 +113,7 @@ public class PodcastHandler implements RepositoryHandler {
 		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
 		File blogRoot = new File(fResourceFileroot, FeedManager.getInstance().getFeedKind(resource));
 		FileResource.copyResource(file, filename, blogRoot);
-		FeedManager.getInstance().importFeedFromXML(resource);
+		FeedManager.getInstance().importFeedFromXML(resource, true);
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
 				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
 		DBFactory.getInstance().commit();

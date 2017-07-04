@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
@@ -81,6 +82,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.rometools.rome.feed.synd.SyndEntry;
@@ -124,6 +126,8 @@ public class FeedManagerImpl extends FeedManager {
 	private ExternalFeedFetcher externalFeedFetcher;
 	@Autowired
 	private NotificationsManager notificationsManager;
+	@Autowired
+	private BaseSecurity securityManager;
 
 	/**
 	 * spring only
@@ -141,28 +145,16 @@ public class FeedManagerImpl extends FeedManager {
 		
 	}
 
-	/**
-	 * 
-	 * @param repositoryManager
-	 */
 	public void setRepositoryManager(RepositoryManager repositoryManager) {
 		this.repositoryManager = repositoryManager;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.modules.webFeed.manager.FeedManager#createPodcastResource()
-	 */
 	@Override
 	public OLATResourceable createPodcastResource() {
 		FeedFileResource podcastResource = new PodcastFileResource();
 		return createFeedResource(podcastResource);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.modules.webFeed.manager.FeedManager#createPodcastResource()
-	 */
 	@Override
 	public OLATResourceable createBlogResource() {
 		FeedFileResource blogResource = new BlogFileResource();
@@ -198,8 +190,6 @@ public class FeedManagerImpl extends FeedManager {
 	 */
 	@Override
 	public Feed loadFeed(OLATResourceable ores) {
-		migrateFeedFromXmlToDb(ores);
-
 		Feed feed = feedDAO.loadFeed(ores);
 		
 		feed = enrichFeedByRepositoryEntryInfromation(feed);
@@ -224,22 +214,6 @@ public class FeedManagerImpl extends FeedManager {
 		}
 		
 		return feed;
-	}
-
-	/**
-	 * In the early days all information about a feed where stored in XML files.
-	 * This method migrates that old feeds from the XML files to the database.
-	 * It first checks it the feed has to be migrated. If it has to the XML
-	 * files are read, the feed and the items are saved to the database and at
-	 * the end the XML files are deleted. 
-	 * 
-	 * @param ores
-	 */
-	private void migrateFeedFromXmlToDb(OLATResourceable ores) {
-		OLATResource resource = resourceManager.findResourceable(ores);
-		if (resource != null) {
-			importFeedFromXML(resource);
-		}
 	}
 
 	@Override
@@ -867,7 +841,7 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	@Override
-	public void importFeedFromXML(OLATResource ores) {
+	public void importFeedFromXML(OLATResource ores, boolean removeIdentityKeys) {
 		Feed feedFromXml = feedFileStorage.loadFeedFromXML(ores);
 		if (feedFromXml == null) return;
 		
@@ -877,20 +851,46 @@ public class FeedManagerImpl extends FeedManager {
 		Feed feed = feedDAO.loadFeed(ores);
 		if (feed == null) {
 			feedFromXml.setResourceableId(ores.getResourceableId());
+			// Use the display name instead of the username
+			if (!removeIdentityKeys && feedFromXml.getAuthor() != null) {
+				String authorName = UserManager.getInstance().getUserDisplayName(feedFromXml.getAuthor());
+				if (authorName != null) {
+					feedFromXml.setAuthor(authorName);
+				}
+			}
 			feed = feedDAO.createFeed(feedFromXml);
+			log.info("Feed imported " + "(" + ores.getResourceableTypeName() + "): " + ores.getResourceableId());
 		}
 		
 		List<Item> itemsFromXml = feedFileStorage.loadItemsFromXML(ores);
 		itemsFromXml = fixFeedVersionIssues(feedFromXml, itemsFromXml);
 		for (Item itemFromXml : itemsFromXml) {
-			// Check if the feed already exits or create it. 
+			// Check if the item already exits or create it. 
 			Item item = itemDAO.loadItemByGuid(feed.getKey(), itemFromXml.getGuid());
 			if (item == null) {
-				itemFromXml.setAuthorKey(null);
-				itemFromXml.setModifierKey(null);
+				if (removeIdentityKeys) {
+					itemFromXml.setAuthorKey(null);
+					itemFromXml.setModifierKey(null);
+				} else {
+					// Check if the identity exists
+					if (itemFromXml.getAuthorKey() != null
+							&& securityManager.loadIdentityShortByKey(itemFromXml.getAuthorKey()) == null) {
+						itemFromXml.setAuthorKey(null);
+					}
+					if (itemFromXml.getModifierKey() != null
+							&& securityManager.loadIdentityShortByKey(itemFromXml.getModifierKey()) == null) {
+						itemFromXml.setModifierKey(null);
+					}
+				}
 				itemDAO.createItem(feed, itemFromXml);
+				log.info("Item imported: " + itemFromXml.getGuid());
 			}
 			feedFileStorage.deleteItemXML(itemFromXml);
+		}
+		
+		if (feed.isExternal()) {
+			saveExternalItems(feed);
+			saveExternalFeed(feed);
 		}
 		
 		feedFileStorage.deleteFeedXML(feed);
@@ -931,9 +931,6 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public LockResult acquireLock(OLATResourceable feed, Identity identity) {
-		// OLATResourceable itemLock =
-		// OresHelper.createOLATResourceableInstance("podcastlock_" +
-		// feed.getResourceableId() + "_meta", item.getId())
 		LockResult lockResult = coordinator.getLocker().acquireLock(feed, identity, null);
 		return lockResult;
 	}
