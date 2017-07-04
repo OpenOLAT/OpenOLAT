@@ -141,7 +141,6 @@ public class EditLectureBlockController extends FormBasicController {
 
 		plannedLecturesEl = uifactory.addDropdownSingleselect("planned.lectures", "planned.lectures", formLayout,
 				plannedLecturesKeys, plannedLecturesKeys, null);
-		plannedLecturesEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.plannedLectures));
 		plannedLecturesEl.setMandatory(true);
 		String plannedlectures = lectureBlock == null ? "4" : Integer.toString(lectureBlock.getPlannedLecturesNumber());
 		for(String plannedLecturesKey:plannedLecturesKeys) {
@@ -151,10 +150,12 @@ public class EditLectureBlockController extends FormBasicController {
 			}
 		}
 		//freeze it after roll call done
-		boolean plannedLecturesEditable = lectureBlock == null ||
+		boolean plannedLecturesEditable = (lectureBlock == null ||
 				(lectureBlock.getStatus() != LectureBlockStatus.done
 					&& lectureBlock.getRollCallStatus() != LectureRollCallStatus.closed
-					&& lectureBlock.getRollCallStatus() != LectureRollCallStatus.autoclosed);
+					&& lectureBlock.getRollCallStatus() != LectureRollCallStatus.autoclosed))
+			&& !lectureManagementManaged
+			&& !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.plannedLectures);
 		plannedLecturesEl.setEnabled(plannedLecturesEditable);
 		
 		String[] onValues = new String[]{ "" };
@@ -352,11 +353,13 @@ public class EditLectureBlockController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		boolean create = false;
 		StringBuilder audit = new StringBuilder();
+		int currentPlannedLectures = -1;
 		if(lectureBlock == null) {
 			audit.append("Create;");
 			lectureBlock = lectureService.createLectureBlock(entry);
 			create = true;
 		} else {
+			currentPlannedLectures = lectureBlock.getPlannedLecturesNumber();
 			audit.append("Update;");
 		}
 		lectureBlock.setTitle(titleEl.getValue());
@@ -424,6 +427,9 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		
 		dbInstance.commit();
+		if(currentPlannedLectures >= 0) {
+			lectureService.adaptRollCalls(lectureBlock);
+		}
 		updateLocationsPrefs(ureq);
 		lectureService.syncCalendars(lectureBlock);
 		fireEvent(ureq, Event.DONE_EVENT);

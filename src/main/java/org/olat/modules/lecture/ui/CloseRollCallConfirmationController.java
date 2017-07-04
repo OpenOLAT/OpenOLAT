@@ -39,8 +39,6 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
-import org.olat.modules.lecture.LectureBlockStatus;
-import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RollCallSecurityCallback;
@@ -176,7 +174,15 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		lectureBlock.setComment(blockCommentEl.getValue());
-		lectureBlock.setEffectiveLecturesNumber(lectureBlock.getPlannedLecturesNumber());//TODO
+		
+		String selectedKey = effectiveLecturesEl.getSelectedKey();
+		int effectiveLectures = lectureBlock.getPlannedLecturesNumber();
+		try {	
+			effectiveLectures = Integer.parseInt(selectedKey);
+		} catch(Exception ex) {
+			logError("", ex);
+		}
+		lectureBlock.setEffectiveLecturesNumber(effectiveLectures);
 		Date effectiveEndDate = getEffectiveEndDate();
 		if(effectiveEndDate == null) {
 			lectureBlock.setReasonEffectiveEnd(null);
@@ -190,11 +196,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 				lectureBlock.setReasonEffectiveEnd(selectedReason);
 			}
 		}
-
-		lectureBlock.setStatus(LectureBlockStatus.done);
-		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
-		lectureBlock = lectureService.save(lectureBlock, null);
-		lectureService.recalculateSummary(lectureBlock.getEntry());
+		lectureBlock = lectureService.close(lectureBlock);
 		fireEvent(ureq, Event.DONE_EVENT);
 
 		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Closed");

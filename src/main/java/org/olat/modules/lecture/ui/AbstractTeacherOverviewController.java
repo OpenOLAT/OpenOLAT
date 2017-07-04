@@ -351,8 +351,10 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		if(rollCallWizardCtrl != null) return;
 		
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
+		List<Identity> teachers = lectureService.getTeachers(reloadedBlock);
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
-		rollCallWizardCtrl = new TeacherRollCallWizardController(ureq, getWindowControl(), reloadedBlock, participants);
+		RollCallSecurityCallback secCallback = getRollCallSecurityCallback(reloadedBlock, teachers.contains(getIdentity()));
+		rollCallWizardCtrl = new TeacherRollCallWizardController(ureq, getWindowControl(), reloadedBlock, participants, secCallback);
 		if(withRepositoryEntry) {
 			rollCallCtrl.addLoggingResourceable(CoreLoggingResourceable.wrap(reloadedBlock.getEntry().getOlatResource(),
 					OlatResourceableType.course, reloadedBlock.getEntry().getDisplayname()));

@@ -52,6 +52,9 @@ public class LectureBlockVO implements LectureBlockRef {
 	private Date endDate;
 	private Boolean compulsory;
 	private int plannedLectures;
+	
+	private String status;
+	private String rollCallStatus;
 
 	private Long repoEntryKey;
 	
@@ -74,6 +77,9 @@ public class LectureBlockVO implements LectureBlockRef {
 		compulsory = block.isCompulsory(); 
 		plannedLectures = block.getPlannedLecturesNumber();
 		this.repoEntryKey = repoEntryKey;
+		
+		status = block.getStatus() == null ? null : block.getStatus().name();
+		rollCallStatus = block.getRollCallStatus() == null ? null : block.getRollCallStatus().name();
 	}
 
 	@Override
@@ -179,5 +185,21 @@ public class LectureBlockVO implements LectureBlockRef {
 
 	public void setPlannedLectures(int plannedLectures) {
 		this.plannedLectures = plannedLectures;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getRollCallStatus() {
+		return rollCallStatus;
+	}
+
+	public void setRollCallStatus(String rollCallStatus) {
+		this.rollCallStatus = rollCallStatus;
 	}
 }

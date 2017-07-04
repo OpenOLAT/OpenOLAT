@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -199,6 +200,35 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		return block;
 	}
 	
+	@Override
+	public LectureBlock close(LectureBlock lectureBlock) {
+		lectureBlock.setStatus(LectureBlockStatus.done);
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
+		LectureBlockImpl block = (LectureBlockImpl)lectureBlockDao.update(lectureBlock);
+		List<LectureBlockRollCall> rollCallList = lectureBlockRollCallDao.getRollCalls(lectureBlock);
+		for(LectureBlockRollCall rollCall:rollCallList) {
+			int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
+			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
+				numOfLectures = lectureBlock.getPlannedLecturesNumber();
+			}
+			lectureBlockRollCallDao.adaptLecture(rollCall, numOfLectures);
+		}
+		dbInstance.commit();
+		recalculateSummary(block.getEntry());
+		return block;
+	}
+
+	@Override
+	public LectureBlock cancel(LectureBlock lectureBlock) {
+		lectureBlock.setStatus(LectureBlockStatus.cancelled);
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
+		lectureBlock.setEffectiveLecturesNumber(0);
+		LectureBlockImpl block = (LectureBlockImpl)lectureBlockDao.update(lectureBlock);
+		dbInstance.commit();
+		recalculateSummary(block.getEntry());
+		return block;
+	}
+
 	@Override
 	public void appendToLectureBlockLog(LectureBlockRef lectureBlock, Identity user, Identity assessedIdentity, String audit) {
 		Date now = new Date();
@@ -431,6 +461,25 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	}
 
 	@Override
+	public void adaptRollCalls(LectureBlock lectureBlock) {
+		LectureBlockStatus status = lectureBlock.getStatus();
+		LectureRollCallStatus rollCallStatus = lectureBlock.getRollCallStatus();
+		if(status == LectureBlockStatus.done || rollCallStatus == LectureRollCallStatus.closed || rollCallStatus == LectureRollCallStatus.autoclosed) {
+			log.warn("Try to adapt roll call of a closed lecture block: " + lectureBlock.getKey());
+			return;
+		}
+
+		List<LectureBlockRollCall> rollCallList = lectureBlockRollCallDao.getRollCalls(lectureBlock);
+		for(LectureBlockRollCall rollCall:rollCallList) {
+			int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
+			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
+				numOfLectures = lectureBlock.getPlannedLecturesNumber();
+			}
+			lectureBlockRollCallDao.adaptLecture(rollCall, lectureBlock.getPlannedLecturesNumber());
+		}
+	}
+
+	@Override
 	public void recalculateSummary(RepositoryEntry entry) {
 		List<LectureBlockStatistics> statistics = getParticipantsLecturesStatistics(entry);
 		int count = 0;
@@ -478,16 +527,15 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	private void autoClose(LectureBlockImpl lectureBlock) {
 		lectureBlock.setStatus(LectureBlockStatus.done);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.autoclosed);
-		if(lectureBlock.getEffectiveLecturesNumber() < 0) {
+		if(lectureBlock.getEffectiveLecturesNumber() <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
 			lectureBlock.setEffectiveLecturesNumber(lectureBlock.getPlannedLecturesNumber());
 		}
 		lectureBlock.setAutoClosedDate(new Date());
 		lectureBlock = (LectureBlockImpl)lectureBlockDao.update(lectureBlock);
+		dbInstance.commit();
 		
 		List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(lectureBlock);
 		Map<Identity,LectureBlockRollCall> rollCallMap = rollCalls.stream().collect(Collectors.toMap(r -> r.getIdentity(), r -> r));
-
-		//TODO absence first admission ???
 		List<ParticipantAndLectureSummary> participantsAndSummaries = lectureParticipantSummaryDao.getLectureParticipantSummaries(lectureBlock);
 		Set<Identity> participants = new HashSet<>();
 		for(ParticipantAndLectureSummary participantAndSummary:participantsAndSummaries) {
@@ -505,6 +553,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		}
 	
 		appendToLectureBlockLog(lectureBlock, null, null, "Auto-closed");
+		dbInstance.commit();
+		
+		recalculateSummary(lectureBlock.getEntry());
 	}
 
 	@Override

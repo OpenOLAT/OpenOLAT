@@ -88,6 +88,24 @@ public interface LectureService {
 	public LectureBlock save(LectureBlock lectureBlock, List<Group> groups);
 	
 	/**
+	 * The method will set the status of the lecture block and 
+	 * the status of the roll call.
+	 * 
+	 * @param lectureBlock The lecture block to close
+	 * @return The updated lecture block
+	 */
+	public LectureBlock close(LectureBlock lectureBlock);
+	
+	/**
+	 * The method will set the status of the lecture block and 
+	 * the status of the roll call.
+	 * 
+	 * @param lectureBlock The lecture block to close
+	 * @return The updated lecture block
+	 */
+	public LectureBlock cancel(LectureBlock lectureBlock);
+	
+	/**
 	 * Append content to the log saved on the lecture block.
 	 * 
 	 * @param lectureBlock The lecture block
@@ -235,6 +253,15 @@ public interface LectureService {
 	 * @return The merge roll call
 	 */
 	public LectureBlockRollCall updateRollCall(LectureBlockRollCall rollCall);
+	
+	/**
+	 * The method will adapt, trim or add lectures to the roll calls of
+	 * the specified lecture block base on the effective lectures or the planned
+	 * lectures.
+	 * 
+	 * @param lectureBlock The lecture block of which roll call need to be adapted
+	 */
+	public void adaptRollCalls(LectureBlock lectureBlock);
 	
 	/**
 	 * Add the specified lectures to the ones the identity follows.

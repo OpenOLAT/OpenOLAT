@@ -154,6 +154,49 @@ public class LectureBlockRollCallDAO {
 		}
 	}
 	
+	public LectureBlockRollCall adaptLecture(LectureBlockRollCall rollCall, int numberOfLectures) {
+		LectureBlockRollCallImpl call = (LectureBlockRollCallImpl)rollCall;
+		List<Integer> currentAbsentList = call.getLecturesAbsentList();
+		List<Integer> currentAttendedList = call.getLecturesAttendedList();
+		
+		if((currentAbsentList != null && currentAbsentList.size() > 0) || (currentAttendedList != null && currentAttendedList.size() > 0)) {
+			int currentLectures = currentAbsentList.size() + currentAttendedList.size();
+			if(currentLectures > numberOfLectures) {
+				// need to reduce
+				List<Integer> absentList = new ArrayList<>();
+				for(Integer absence:currentAbsentList) {
+					if(absence.intValue() < numberOfLectures) {
+						absentList.add(absence);
+					}
+				}
+				call.setLecturesAbsentList(absentList);
+				call.setLecturesAbsentNumber(absentList.size());
+				
+				List<Integer> attendedList = new ArrayList<>();
+				for(Integer attended:currentAttendedList) {
+					if(attended.intValue() < numberOfLectures) {
+						attendedList.add(attended);
+					}
+				}
+				call.setLecturesAttendedList(attendedList);
+				call.setLecturesAttendedNumber(numberOfLectures - absentList.size());
+				call = (LectureBlockRollCallImpl)update(call);
+			} else if(currentLectures < numberOfLectures) {
+				//need to add some lecture
+
+				List<Integer> attendedList = new ArrayList<>(currentAttendedList);
+				for(int i=currentLectures; i<numberOfLectures; i++) {
+					attendedList.add(i);
+				}
+
+				call.setLecturesAttendedList(attendedList);
+				call.setLecturesAttendedNumber(attendedList.size());
+				call = (LectureBlockRollCallImpl)update(call);
+			}
+		}
+		return call;
+	}
+	
 	private void updateLog(LectureBlockRollCallImpl call, String currentAbsent, String currentAttended) {
 		String log = call.getLog() == null ? "" : call.getLog();
 		

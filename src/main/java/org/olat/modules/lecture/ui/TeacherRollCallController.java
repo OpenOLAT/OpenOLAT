@@ -111,6 +111,7 @@ public class TeacherRollCallController extends FormBasicController {
 	private final boolean authorizedAbsenceEnabled;
 	private final boolean absenceDefaultAuthorized;
 	
+	private int numOfLectures;
 	private List<Identity> participants;
 	
 	@Autowired
@@ -130,6 +131,11 @@ public class TeacherRollCallController extends FormBasicController {
 		this.secCallback = secCallback;
 		this.participants = participants;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		
+		numOfLectures = lectureBlock.getEffectiveLecturesNumber();
+		if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
+			numOfLectures = lectureBlock.getPlannedLecturesNumber();
+		}
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -200,7 +206,7 @@ public class TeacherRollCallController extends FormBasicController {
 		if(lectureBlock.isCompulsory()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.status));
 			
-			for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
+			for(int i=0; i<numOfLectures; i++) {
 				FlexiColumnModel col = new DefaultFlexiColumnModel("table.header.lecture." + (i+1), i + CHECKBOX_OFFSET, true, "lecture." + (i+1));
 				columnsModel.addFlexiColumnModel(col);
 			}
@@ -277,7 +283,7 @@ public class TeacherRollCallController extends FormBasicController {
 	private TeacherRollCallRow forgeRow(Identity participant, LectureBlockRollCall rollCall) {
 		TeacherRollCallRow row = new TeacherRollCallRow(rollCall, participant, userPropertyHandlers, getLocale());
 		
-		int numOfChecks = lectureBlock.isCompulsory() ? lectureBlock.getPlannedLecturesNumber() : 0;
+		int numOfChecks = lectureBlock.isCompulsory() ? numOfLectures : 0;
 		MultipleSelectionElement[] checks = new MultipleSelectionElement[numOfChecks];
 		List<Integer> absences = rollCall == null ? Collections.emptyList() : rollCall.getLecturesAbsentList();
 		
@@ -513,8 +519,8 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private void doCheckAllRow(TeacherRollCallRow row) {
-		List<Integer> allIndex = new ArrayList<>(lectureBlock.getPlannedLecturesNumber());
-		for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
+		List<Integer> allIndex = new ArrayList<>(numOfLectures);
+		for(int i=0; i<numOfLectures; i++) {
 			allIndex.add(i);
 		}
 		LectureBlockRollCall rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), null, allIndex);

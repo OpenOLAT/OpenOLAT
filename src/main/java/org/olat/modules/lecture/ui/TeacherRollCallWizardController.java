@@ -37,6 +37,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,17 +53,20 @@ public class TeacherRollCallWizardController extends BasicController {
 	
 	private NextPreviousController nextPreviousCtrl;
 	private SingleParticipantCallController participantCtrl;
-	private TeacherCloseRollCallController closeRollCallCtrl;
+	private CloseRollCallConfirmationController closeRollCallCtrl;
 	
 	private LectureBlock lectureBlock;
 	private List<Identity> participants;
 	private Identity calledIdentity;
+	private RollCallSecurityCallback secCallback;
 	
 	@Autowired
 	private UserManager userManager;
 	
-	public TeacherRollCallWizardController(UserRequest ureq, WindowControl wControl, LectureBlock lectureBlock, List<Identity> participants) {
+	public TeacherRollCallWizardController(UserRequest ureq, WindowControl wControl,
+			LectureBlock lectureBlock, List<Identity> participants, RollCallSecurityCallback secCallback) {
 		super(ureq, wControl);
+		this.secCallback = secCallback;
 		this.lectureBlock = lectureBlock;
 		this.participants = participants;
 		if(participants.size() > 0) {
@@ -112,7 +116,7 @@ public class TeacherRollCallWizardController extends BasicController {
 			removeAsListenerAndDispose(participantCtrl);
 			removeAsListenerAndDispose(closeRollCallCtrl);
 			
-			closeRollCallCtrl = new TeacherCloseRollCallController(ureq, getWindowControl(), lectureBlock);
+			closeRollCallCtrl = new CloseRollCallConfirmationController(ureq, getWindowControl(), lectureBlock, secCallback);
 			listenTo(closeRollCallCtrl);
 			calledIdentity = null;
 

@@ -111,10 +111,13 @@ public class LectureBlocksWebService {
 	
 	private LectureBlock saveLectureBlock(LectureBlockVO blockVo) {
 		LectureBlock block;
+		int currentPlannedLectures;
 		if(blockVo.getKey() != null && blockVo.getKey() > 0) {
 			block = lectureService.getLectureBlock(blockVo);
+			currentPlannedLectures = block.getPlannedLecturesNumber();
 		} else {
 			block = lectureService.createLectureBlock(entry);
+			currentPlannedLectures = -1;
 		}
 		
 		if(blockVo.getExternalId() != null) {
@@ -148,7 +151,11 @@ public class LectureBlocksWebService {
 			block.setManagedFlagsString(blockVo.getManagedFlagsString());
 		}
 		block.setPlannedLecturesNumber(blockVo.getPlannedLectures());
-		return lectureService.save(block, null);
+		LectureBlock savedLectureBlock = lectureService.save(block, null);
+		if(currentPlannedLectures > 0 && currentPlannedLectures != savedLectureBlock.getPlannedLecturesNumber()) {
+			lectureService.adaptRollCalls(savedLectureBlock);
+		}
+		return savedLectureBlock;
 	}
 	
 	@GET

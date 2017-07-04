@@ -46,60 +46,71 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 		AutoCompleterComponent cmp = (AutoCompleterComponent)source;
 		AutoCompleter autoCompleter = cmp.getAutoCompleter();
 		
-		int inputSize = 72;
-		boolean showDisplayKey = false;
+		final int inputSize = 72;
 		String id = autoCompleter.getFormDispatchId();
-		String mapperUri = autoCompleter.getMapperUri();
-		int minLength = autoCompleter.getMinLength();
-		StringOutput command = new StringOutput(64);
-		ubu.createCopyFor(cmp).openXHREvent(command, null, false, false,
-				new NameValuePair(VelocityContainer.COMMAND_ID, "select"));
-		
-		sb.append("<input type='text' class='form-control' size='").append(inputSize).append("' id='").append(id)
-		  .append("' name='").append(id).append("' value=\"");
-		if(StringHelper.containsNonWhitespace(autoCompleter.getValue())) {
-			sb.append(StringHelper.escapeHtml(autoCompleter.getValue()));
-		}
-		sb.append("\" />");
-		sb.append("<script type='text/javascript'>\n")
-		  .append("/* <![CDATA[ */\n")
-		  .append("jQuery(function(){\n")
-		  .append("  var fullNameTypeahead = new Bloodhound({\n")
-		  .append("	   datumTokenizer: function (d) {\n")
-		  .append("	     return Bloodhound.tokenizers.whitespace(d.value);\n")
-		  .append("    },\n")
-		  .append("	   queryTokenizer: Bloodhound.tokenizers.whitespace,\n")
-		  .append("	   remote: {\n")
-		  .append("	    url: '").append(mapperUri).append("/?place=holder&term=%QUERY',\n")//place holder is useless but for tomcat, sometimes it said that the term parameter is corrupted and will not be part of the request send to OpenOLAT
-		  .append("	    wildcard: '%QUERY',\n")
-		  .append("     filter: function ( response ) {\n")
-		  .append("      return jQuery.map(response, function (object) {\n")
-		  .append("		  return {\n")
-		  .append("			value: '' + object.key,\n");
-		if(showDisplayKey) {
-			sb.append("       fullName: object.displayKey + ': ' + object.value\n");
+		if(autoCompleter.isEnabled()) {
+			boolean showDisplayKey = false;
+			String mapperUri = autoCompleter.getMapperUri();
+			int minLength = autoCompleter.getMinLength();
+			StringOutput command = new StringOutput(64);
+			ubu.createCopyFor(cmp).openXHREvent(command, null, false, false,
+					new NameValuePair(VelocityContainer.COMMAND_ID, "select"));
+			
+			sb.append("<input type='text' class='form-control' size='").append(inputSize).append("' id='").append(id)
+			  .append("' name='").append(id).append("' value=\"");
+			if(StringHelper.containsNonWhitespace(autoCompleter.getValue())) {
+				sb.append(StringHelper.escapeHtml(autoCompleter.getValue()));
+			}
+			sb.append("\" />");
+			sb.append("<script type='text/javascript'>\n")
+			  .append("/* <![CDATA[ */\n")
+			  .append("jQuery(function(){\n")
+			  .append("  var fullNameTypeahead = new Bloodhound({\n")
+			  .append("	   datumTokenizer: function (d) {\n")
+			  .append("	     return Bloodhound.tokenizers.whitespace(d.value);\n")
+			  .append("    },\n")
+			  .append("	   queryTokenizer: Bloodhound.tokenizers.whitespace,\n")
+			  .append("	   remote: {\n")
+			  .append("	    url: '").append(mapperUri).append("/?place=holder&term=%QUERY',\n")//place holder is useless but for tomcat, sometimes it said that the term parameter is corrupted and will not be part of the request send to OpenOLAT
+			  .append("	    wildcard: '%QUERY',\n")
+			  .append("     filter: function ( response ) {\n")
+			  .append("      return jQuery.map(response, function (object) {\n")
+			  .append("		  return {\n")
+			  .append("			value: '' + object.key,\n");
+			if(showDisplayKey) {
+				sb.append("       fullName: object.displayKey + ': ' + object.value\n");
+			} else {
+				sb.append("       fullName: object.value\n");
+			}
+			sb.append("         };\n")
+			  .append("       });\n")
+			  .append("     }\n")
+			  .append("   }\n")
+			  .append(" });\n")
+			  .append(" fullNameTypeahead.initialize();\n")
+			  .append(" jQuery('#").append(id).append("').typeahead({\n")
+			  .append("	  hint: false,\n")
+			  .append("	  highlight: false,\n")
+			  .append("	  minLength: ").append(minLength).append("\n")
+			  .append(" },{\n")
+			  .append("	  minLength: ").append(minLength).append(",\n")
+			  .append("	  displayKey: 'fullName',\n")
+			  .append("	  source: fullNameTypeahead.ttAdapter()\n")
+			  .append(" }).on('typeahead:selected', function (e, object) {\n")
+			  .append("	  ").append(command).append(",'key',object.value,'value',object.fullName);\n")
+			  .append(" });\n")
+			  .append("});\n")
+			  .append("/* ]]> */\n")
+			  .append("</script>");
 		} else {
-			sb.append("       fullName: object.value\n");
+			String value = "";
+			if(StringHelper.containsNonWhitespace(autoCompleter.getValue())) {
+				value = autoCompleter.getValue();
+			}
+			sb.append("<input id=\"").append(id).append("\" type=\"test\" disabled=\"disabled\" class=\"form-control o_disabled\" size=\"")
+			  .append(inputSize)
+			  .append("\" value=\"").append(value).append("\" />")
+			  .append("</span>");
 		}
-		sb.append("         };\n")
-		  .append("       });\n")
-		  .append("     }\n")
-		  .append("   }\n")
-		  .append(" });\n")
-		  .append(" fullNameTypeahead.initialize();\n")
-		  .append(" jQuery('#").append(id).append("').typeahead({\n")
-		  .append("	  hint: false,\n")
-		  .append("	  highlight: false,\n")
-		  .append("	  minLength: ").append(minLength).append("\n")
-		  .append(" },{\n")
-		  .append("	  minLength: ").append(minLength).append(",\n")
-		  .append("	  displayKey: 'fullName',\n")
-		  .append("	  source: fullNameTypeahead.ttAdapter()\n")
-		  .append(" }).on('typeahead:selected', function (e, object) {\n")
-		  .append("	  ").append(command).append(",'key',object.value,'value',object.fullName);\n")
-		  .append(" });\n")
-		  .append("});\n")
-		  .append("/* ]]> */\n")
-		  .append("</script>");
 	}
 }
