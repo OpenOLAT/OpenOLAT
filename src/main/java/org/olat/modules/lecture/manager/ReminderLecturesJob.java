@@ -38,7 +38,7 @@ public class ReminderLecturesJob extends JobWithDB {
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
 		LectureModule lectureModule = CoreSpringFactory.getImpl(LectureModule.class);
-		boolean reminderEnabled = lectureModule.isRollCallReminderEnabled();
+		boolean reminderEnabled = lectureModule.isEnabled() && lectureModule.isRollCallReminderEnabled();
 		int reminderPeriod = lectureModule.getRollCallReminderPeriod();
 		if(reminderEnabled && reminderPeriod > 0) {
 			CoreSpringFactory.getImpl(LectureService.class).sendReminders();

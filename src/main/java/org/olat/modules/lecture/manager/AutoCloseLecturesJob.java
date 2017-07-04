@@ -37,9 +37,11 @@ public class AutoCloseLecturesJob extends JobWithDB {
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
 		LectureModule lectureModule = CoreSpringFactory.getImpl(LectureModule.class);
-		int autoClosePeriode = lectureModule.getRollCallAutoClosePeriod();
-		if(autoClosePeriode > 0) {
-			CoreSpringFactory.getImpl(LectureService.class).autoCloseRollCall();
+		if(lectureModule.isEnabled()) {
+			int autoClosePeriode = lectureModule.getRollCallAutoClosePeriod();
+			if(autoClosePeriode > 0) {
+				CoreSpringFactory.getImpl(LectureService.class).autoCloseRollCall();
+			}
 		}
 	}
 }

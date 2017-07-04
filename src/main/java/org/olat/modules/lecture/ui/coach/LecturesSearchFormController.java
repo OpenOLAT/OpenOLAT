@@ -109,9 +109,10 @@ public class LecturesSearchFormController extends FormBasicController {
 		}
 		
 		bulkEl = uifactory.addTextAreaElement("bulk", 4, 72, "", formLayout);
-		
+		bulkEl.setHelpText(translate("bulk.hint"));
+		bulkEl.setExampleKey("bulk.example", null);
 
-		List<RepositoryEntryLifecycle> cycles = new ArrayList<>();//slifecycleDao.loadPublicLifecycle();
+		List<RepositoryEntryLifecycle> cycles = lifecycleDao.loadPublicLifecycle();
 		
 		String[] dateKeys;
 		String[] dateValues;

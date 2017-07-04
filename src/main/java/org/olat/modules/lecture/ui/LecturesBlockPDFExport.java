@@ -133,41 +133,50 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 
 	public void create(List<Identity> rows)
     throws IOException, COSVisitorException, TransformerException {
-    	addPage();
-    	String lectureBlockTitle = lectureBlock.getTitle();
-    	addMetadata(lectureBlockTitle, resourceTitle, teacher);
-
-    	if(StringHelper.containsNonWhitespace(lectureBlockTitle)) {
-    		addParagraph(lectureBlockTitle, 16, true, width);
-    	}
-    	
-    	float cellMargin = 5.0f;
-    	float fontSize = 10.0f;
-    	
-    	String[] content = getRows(rows);
-
-    	int numOfRows = content.length;
-    	for(int offset=0; offset<numOfRows; ) {
-    		offset += drawTable(content, offset, fontSize, cellMargin);
-    		closePage();
-        	if(offset<numOfRows) {
-        		addPage();
-        	}
-    	}
-    	
-    	addPageNumbers(); 
-    }
+	    	addPage();
+	    	String lectureBlockTitle = lectureBlock.getTitle();
+	    	addMetadata(lectureBlockTitle, resourceTitle, teacher);
 	
-	private String[] getRows(List<Identity> rows) {
-		int numOfRows = rows.size();
-
-    	String[] content = new String[numOfRows];
-    	for(int i=0; i<numOfRows; i++) {
-    		Identity row = rows.get(i);
-        	content[i] = getName(row);
-    	}
-    	
-    	return content;
+	    	if(StringHelper.containsNonWhitespace(lectureBlockTitle)) {
+	    		addParagraph(lectureBlockTitle, 16, true, width);
+	    	}
+	
+	    	Formatter formatter = Formatter.getInstance(translator.getLocale());
+		String dates = translator.translate("pdf.table.dates", new String[] {
+			formatter.formatDate(lectureBlock.getStartDate()),
+			formatter.formatTime(lectureBlock.getStartDate()),
+			formatter.formatTime(lectureBlock.getEndDate())
+		});
+	
+	    	addParagraph(dates, 12, true, width);
+	  	
+	    	float cellMargin = 5.0f;
+	    	float fontSize = 10.0f;
+	    	
+	    	String[] content = getRows(rows);
+	
+	    	int numOfRows = content.length;
+	    	for(int offset=0; offset<numOfRows; ) {
+	    		offset += drawTable(content, offset, fontSize, cellMargin);
+	    		closePage();
+	        	if(offset<numOfRows) {
+	        		addPage();
+	        	}
+	    	}
+	    	
+	    	addPageNumbers(); 
+	    }
+		
+		private String[] getRows(List<Identity> rows) {
+			int numOfRows = rows.size();
+	
+	    	String[] content = new String[numOfRows];
+	    	for(int i=0; i<numOfRows; i++) {
+	    		Identity row = rows.get(i);
+	        	content[i] = getName(row);
+	    	}
+	    	
+	    	return content;
 	}
 	
 	private String getName(Identity identity) {

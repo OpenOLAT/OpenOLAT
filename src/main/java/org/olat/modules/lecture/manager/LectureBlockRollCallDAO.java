@@ -443,6 +443,7 @@ public class LectureBlockRollCallDAO {
 			  .append("  or lower(ident.externalId) in (:bulkIdentifiers)")
 			  .append("  or lower(user.email) in (:bulkIdentifiers)")
 			  .append("  or lower(user.institutionalEmail) in (:bulkIdentifiers)")
+			  .append("  or lower(user.institutionalUserIdentifier) in (:bulkIdentifiers)")
 			  .append(")");
 		}
 		

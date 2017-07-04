@@ -55,6 +55,7 @@ public class TeacherOverviewSearchController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		searchEl = uifactory.addTextElement("search.text", "search.form.string", 128, "", formLayout);
+		searchEl.setHelpText(translate("search.form.string.hint"));
 		searchEl.setVisible(withSearchString);
 		startEl = uifactory.addDateChooser("start", "search.form.start", null, formLayout);
 		endEl = uifactory.addDateChooser("end", "search.form.end", null, formLayout);
