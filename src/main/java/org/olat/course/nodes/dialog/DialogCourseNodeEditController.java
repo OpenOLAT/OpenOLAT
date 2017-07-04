@@ -110,8 +110,9 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 		bcNode.setShortTitle(translate("dialog.folder.name"));
 
 		// dialog specific config tab		
-		content = this.createVelocityContainer("edit");
+		content = createVelocityContainer("edit");
 		uploadButton = LinkFactory.createButton("dialog.upload.file", content, this);
+		uploadButton.setElementCssClass("o_sel_dialog_upload");
 		
 		//configure table
 		tableConf = new TableGuiConfiguration();
@@ -121,7 +122,7 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 		initConfigForm(ureq);
 
 		// accessability config tab		
-		accessContent = this.createVelocityContainer("edit_access");
+		accessContent = createVelocityContainer("edit_access");
 
 		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 		// Reader precondition
@@ -145,7 +146,7 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 				AssessmentHelper.getAssessableNodes(editorModel, courseNode));
 		//FIXME:gs: why is firing needed here?
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);		
-		this.listenTo(moderatorCondContr);
+		listenTo(moderatorCondContr);
 		accessContent.put("moderatorCondition", moderatorCondContr.getInitialComponent());
 	}
 
@@ -177,13 +178,15 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == uploadButton) {
 			Forum forum = ForumManager.getInstance().addAForum();
 			OlatRootFolderImpl forumContainer = DialogElementsController.getForumContainer(forum.getKey());
 			
 			removeAsListenerAndDispose(fileUplCtr);
-			fileUplCtr = new FileUploadController(getWindowControl(),forumContainer, ureq, (int)FolderConfig.getLimitULKB(), Quota.UNLIMITED, null, false);			
+			fileUplCtr = new FileUploadController(getWindowControl(),forumContainer, ureq,
+					FolderConfig.getLimitULKB(), Quota.UNLIMITED, null, false);			
 			listenTo(fileUplCtr);
 			
 			recentElement = new DialogElement();

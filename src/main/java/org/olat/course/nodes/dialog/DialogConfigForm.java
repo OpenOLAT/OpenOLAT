@@ -38,9 +38,6 @@ import org.olat.core.logging.AssertException;
 import org.olat.modules.ModuleConfiguration;
 
 /**
- * Description:<br>
- * TODO: guido Class Description for DialogConfigForm
- * <P>
  * Initial Date: 08.11.2005 <br>
  * 
  * @author guido
@@ -99,7 +96,7 @@ public class DialogConfigForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-	
+		
 		if (config == null) throw new AssertException("module configuration is null!");
 		
 		select = uifactory.addCheckboxesHorizontal(

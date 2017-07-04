@@ -146,6 +146,7 @@ public class DialogElementsController extends BasicController {
 		content = createVelocityContainer("dialog");		
 		uploadButton = LinkFactory.createButton("dialog.upload.file", content, this);
 		uploadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
+		uploadButton.setElementCssClass("o_sel_dialog_upload");
 		
 		isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();

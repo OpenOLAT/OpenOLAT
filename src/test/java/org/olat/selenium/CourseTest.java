@@ -57,6 +57,8 @@ import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseWizardPage;
+import org.olat.selenium.page.course.DialogConfigurationPage;
+import org.olat.selenium.page.course.DialogPage;
 import org.olat.selenium.page.course.ForumCEPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.course.MembersPage;
@@ -1203,6 +1205,133 @@ public class CourseTest {
 		
 		int numOfSurvivingMessages = infoMsgConfig.countMessages();
 		Assert.assertEquals(3, numOfSurvivingMessages);
+	}
+	
+	/**
+	 * An author create a course with a dialog course element. It
+	 * add a participant to the course, a file to the dialog in
+	 * the course element configuration and after publishing the course
+	 * in the view of the dialog. It opens the forum of one of the files,
+	 * create a new thread.<br>
+	 * The participant log in, open the course and the dialog element. It
+	 * reads the thread and make a reply. The author answers to the reply.
+	 * 
+	 * @param loginPage
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseWithDialog(@InitialPage LoginPage authorLoginPage,
+			@Drone @Participant WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Course dialog " + UUID.randomUUID();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.clickToolbarBack();
+		
+		//add a participant
+		MembersPage members = new CoursePageFragment(browser)
+			.members();
+		members
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		members
+			.clickToolbarBack();
+
+		String dialogNodeTitle = "Dialog";
+		//open course editor
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment editor = course
+			.assertOnCoursePage()
+			.assertOnTitle(title)
+			.openToolsMenu()
+			.edit()
+			.createNode("dialog")
+			.nodeTitle(dialogNodeTitle);
+		
+		//upload a file in the configuration
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
+		File imageFile = new File(imageUrl.toURI());
+		DialogConfigurationPage dialogConfig = new DialogConfigurationPage(browser);
+		dialogConfig
+			.selectConfiguration()
+			.uploadFile(imageFile);
+		
+		//publish and go to the course element
+		editor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		editor
+			.clickToolbarBack();
+		course
+			.clickTree()
+			.selectWithTitle(dialogNodeTitle);
+		
+		// upload a second file
+		URL imageRunUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
+		File imageRunFile = new File(imageRunUrl.toURI());
+		DialogPage dialog = new DialogPage(browser);
+		dialog
+			.assertOnFile(imageFile.getName())
+			.uploadFile(imageRunFile)
+			.assertOnFile(imageRunFile.getName())
+			.openForum(imageRunFile.getName())
+			.createThread("JPEG vs PNG", "Which is the best format", null);
+		
+		// The participant come in
+		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword())
+			.resume();
+			
+		// The participant find the course
+		NavigationPage participantNavBar = new NavigationPage(participantBrowser);
+		participantNavBar
+			.assertOnNavigationPage()
+			.openMyCourses()
+			.select(title);
+		// And opens the dialog course element
+		CoursePageFragment participantCourse = CoursePageFragment.getCourse(participantBrowser);
+		participantCourse
+			.clickTree()
+			.selectWithTitle(dialogNodeTitle);
+		DialogPage participantDialog = new DialogPage(participantBrowser);
+		participantDialog
+			.assertOnFile(imageRunFile.getName())
+			.openForum(imageRunFile.getName())
+			.openThread("JPEG vs PNG")
+			.replyToMessage("JPEG vs PNG", "PNG for sure", "Not a loosy format");
+		
+		//The author reload the messages
+		dialog
+			.openForum(imageRunFile.getName())
+			.openThread("JPEG vs PNG")
+			.assertMessageBody("Not a loosy format")
+			.replyToMessage("PNG for sure", "JPEG smaller", "JPEG is smaller");
+		
+		//The participant check the reply
+		participantDialog
+			.openForum(imageRunFile.getName())
+			.openThread("JPEG vs PNG")
+			.assertMessageBody("JPEG is smaller");
 	}
 	
 

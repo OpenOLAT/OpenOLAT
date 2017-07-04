@@ -1,3 +1,4 @@
+<div class="o_sel_dialog">
 <div class="clearfix">
     #if ($r.available("subscription"))
 		$r.render("subscription")	
@@ -15,7 +16,7 @@ $r.render("dialogElementsTable")
 	<div class="panel panel-default o_block_large_top">
 		<div class="panel-heading">
 			<h3 class="panel-title">$r.translate("dialog.selected.element"): 
-				<i class="o_icon o_icon-fw $r.getFiletypeIconCss($selectedElement.getFilename())"></i> 
+				<i class="o_icon o_icon-fw $r.getFiletypeIconCss($selectedElement.getFilename())"> </i> 
 				$selectedElement.getFilename()
 			</h3>
 		</div>
@@ -26,3 +27,4 @@ $r.render("dialogElementsTable")
 		</div>
 	</div>
 #end
+</div>

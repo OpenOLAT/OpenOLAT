@@ -135,7 +135,7 @@ public class ForumPage {
 	public ForumPage openThread(String title) {
 		By threadBy = By.xpath("//table[contains(@class,'table')]//tr//a[text()='" + title + "']");
 		OOGraphene.waitElement(threadBy, 5, browser);
-		browser.findElement(threadBy).click();
+		OOGraphene.click(threadBy, browser);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

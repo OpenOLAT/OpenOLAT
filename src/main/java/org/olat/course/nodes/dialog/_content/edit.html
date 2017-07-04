@@ -1,4 +1,4 @@
-<fieldset>
+<fieldset class="o_sel_dialog_settings_upload">
 	<legend>$r.contextHelpWithWrapper("Communication and Collaboration#_dateidiskussion")
 	$r.translate("folder.info")</legend>
 	#if ($overview)
@@ -7,12 +7,10 @@
 			$r.render("dialog.upload.file")
 		</div>
 	#else
-		<div class="o_button_group">
-			$r.render("upload")
-		</div>
+		$r.render("upload")
 	#end
 </fieldset>
-<fieldset>
+<fieldset class="o_sel_dialog_settings_forum">
 	<legend>
 	$r.translate("dialog.forum.popup.config.title")</legend>
 	$r.render("showForumAsPopupConfigForm")

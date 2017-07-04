@@ -238,6 +238,30 @@ public class OOGraphene {
 	}
 	
 	/**
+	 * 
+	 * @param tabsBy The selector for the tabs bar
+	 * @param formBy The selector to found the form
+	 * @param browser The browser
+	 */
+	public static final void selectTab(By tabsBy, By formBy, WebDriver browser) {
+		List<WebElement> tabLinks = browser.findElements(tabsBy);
+
+		boolean found = false;
+		a_a:
+		for(WebElement tabLink:tabLinks) {
+			tabLink.click();
+			OOGraphene.waitBusy(browser);
+			List<WebElement> chooseRepoEntry = browser.findElements(formBy);
+			if(chooseRepoEntry.size() > 0) {
+				found = true;
+				break a_a;
+			}
+		}
+
+		Assert.assertTrue("Found the tab", found);
+	}
+	
+	/**
 	 * Make sure that the checkbox is in the correct state.
 	 * @param checkboxEl
 	 * @param val

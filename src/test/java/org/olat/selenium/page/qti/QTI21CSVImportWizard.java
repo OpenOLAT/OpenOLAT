@@ -60,7 +60,7 @@ public class QTI21CSVImportWizard {
 	public QTI21CSVImportWizard importFile(String filename) {
 		StringBuilder sb = new StringBuilder(32000);
 		try(InputStream inStream = JunitTestHelper.class.getResourceAsStream("file_resources/" + filename)) {
-			String content = IOUtils.toString(inStream);
+			String content = IOUtils.toString(inStream, "UTF-8");
 			String[] lines = content.split("\r?\n");
 			for(String line:lines) {
 				String[] cols = line.split("\t");
