@@ -24,6 +24,8 @@ import java.io.File;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.cyberneko.html.parsers.SAXParser;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -163,8 +166,15 @@ public class FIBEditorController extends FormBasicController {
 	}
 	
 	private void feedbackToTextElement(String responseIdentifier, String solution) {
-		JSCommand jsc = new JSCommand("try { tinymce.activeEditor.execCommand('qtiUpdateTextEntry', false, {\"responseIdentifier\":\"" + responseIdentifier + "\", \"data-qti-solution\": \"" + solution + "\"}); } catch(e){if(window.console) console.log(e) }");
-		getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
+		try {
+			JSONObject jo = new JSONObject();
+			jo.put("responseIdentifier", responseIdentifier);
+			jo.put("data-qti-solution", solution);
+			Command jsc = new JSCommand("try { tinymce.activeEditor.execCommand('qtiUpdateTextEntry', false, " + jo.toString() + "); } catch(e){if(window.console) console.log(e) }");
+			getWindowControl().getWindowBackOffice().sendCommandTo(jsc);
+		} catch (JSONException e) {
+			logError("", e);
+		}
 	}
 	
 	private void cleanUp() {

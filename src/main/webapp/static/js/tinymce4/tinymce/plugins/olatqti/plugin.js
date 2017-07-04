@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.2.6'
+				version : '1.2.7'
 			};
 		},
 
@@ -407,9 +407,8 @@
 			}
 			
 			ed.addCommand('qtiUpdateTextEntry', function (ui, value) {
-				var val = eval(value);
-				var responseIdentifier = val['responseIdentifier'];
-				var solution = val['data-qti-solution'];
+				var responseIdentifier = value['responseIdentifier'];
+				var solution = value['data-qti-solution'];
 				jQuery("span[data-qti-response-identifier='" + responseIdentifier+ "']>span", ed.getBody()).each(function(index, el) {
 					jQuery(el).text(solution);
 				});
