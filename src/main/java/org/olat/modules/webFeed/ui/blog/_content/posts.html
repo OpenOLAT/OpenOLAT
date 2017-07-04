@@ -46,7 +46,7 @@
 				#set ( $info = $helper.getInfo($post) )
 				#if ( $info )
 					$info
-					#if($helper.isModified($post)), 
+					#if($helper.isModified($post))
 						<div class="text-warning">$r.escapeHtml($helper.getModifierInfo($post))</div>
 					#end
 				#end

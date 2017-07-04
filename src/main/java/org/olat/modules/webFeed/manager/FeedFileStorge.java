@@ -291,7 +291,7 @@ public class FeedFileStorge {
 				feed = (FeedImpl) XStreamHelper.readObject(xstream, leaf.getInputStream());
 			}
 		} else {
-			log.error("Feed XML-File could not be found on file system. Feed container: " + feedContainer);
+			log.warn("Feed XML-File could not be found on file system. Feed container: " + feedContainer);
 		}
 		
 		return feed;
@@ -312,7 +312,7 @@ public class FeedFileStorge {
 			try (InputStream in = Files.newInputStream(feedPath)) {
 				feed = (FeedImpl) XStreamHelper.readObject(xstream, in);
 			} catch (IOException e) {
-				log.error("Feed XML-File could not be found on file system. Feed path: " + feedPath, e);
+				log.warn("Feed XML-File could not be found on file system. Feed path: " + feedPath, e);
 			}
 		}
 		
@@ -367,7 +367,7 @@ public class FeedFileStorge {
 				try {
 					item = (ItemImpl) XStreamHelper.readObject(xstream, leaf.getInputStream());
 				} catch (Exception e) {
-					log.error("Item XML-File could not be read. Item container: " + leaf);
+					log.warn("Item XML-File could not be read. Item container: " + leaf);
 				}
 			} else {
 				log.error("Item XML-File could not be found on file system."

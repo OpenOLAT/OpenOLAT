@@ -50,7 +50,7 @@
 				#set ( $info = $helper.getInfo($episode) )
 				#if ( $info )
 					$info
-					#if($helper.isModified($episode)), 
+					#if($helper.isModified($episode))
 						<div class="text-warning">$r.escapeHtml($helper.getModifierInfo($episode))</div>
 					#end
 				#end
