@@ -501,9 +501,8 @@ public class FeedFileStorge {
 		if (media != null) {
 			VFSContainer itemMediaContainer = getOrCreateItemMediaContainer(item);
 			if (itemMediaContainer != null) {
-				VFSItem movedItem = media.moveUploadFileTo(itemMediaContainer);
-				saveFileName = Formatter.makeStringFilesystemSave(media.getUploadFileName());
-				movedItem.rename(saveFileName);
+				media.moveUploadFileTo(itemMediaContainer);
+				saveFileName = media.getUploadFileName();
 			}
 		}
 		

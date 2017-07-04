@@ -278,8 +278,7 @@ public abstract class ItemFormController extends FormBasicController {
 			}
 		}
 		
-		return allOk ;
-//		return allOk & super.validateFormLogic(ureq);
+		return allOk & super.validateFormLogic(ureq);
 	}
 	
 	private boolean validateFilename(String filename) {
