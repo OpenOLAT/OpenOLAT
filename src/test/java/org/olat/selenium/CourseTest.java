@@ -51,6 +51,7 @@ import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.CalendarPage;
+import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
@@ -62,6 +63,7 @@ import org.olat.selenium.page.course.DialogPage;
 import org.olat.selenium.page.course.ForumCEPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
 import org.olat.selenium.page.course.MembersPage;
+import org.olat.selenium.page.course.ParticipantFolderPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.course.RemindersPage;
 import org.olat.selenium.page.forum.ForumPage;
@@ -1334,6 +1336,127 @@ public class CourseTest {
 			.assertMessageBody("JPEG is smaller");
 	}
 	
+	
+	/**
+	 * An author create a course with a participant folder course
+	 * element. It add a participant to the course and upload file
+	 * in the return box of this participant.<br>
+	 * The participant come in and open the course, see the file
+	 * uploaded by the author in its return box and it uploads an
+	 * image in its drop box. The author go the see the image.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseWithParticipantFolder(@InitialPage LoginPage authorLoginPage,
+			@Drone @Participant WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Course partilist " + UUID.randomUUID();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.clickToolbarBack();
+		
+		String participantFolderTitle = "ParticipantList";
+		//open course editor
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment editor = course
+			.assertOnCoursePage()
+			.assertOnTitle(title)
+			.openToolsMenu()
+			.edit()
+			.createNode("pf")
+			.nodeTitle(participantFolderTitle);
+		//publish
+		editor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		editor
+			.clickToolbarBack();
+		
+		//add a participant
+		MembersPage members = new CoursePageFragment(browser)
+			.members();
+		members
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, false, true)
+			.nextPermissions()
+			.finish();
+		members
+			.clickToolbarBack();
+		
+		//go to the course element
+		course
+			.clickTree()
+			.selectWithTitle(participantFolderTitle);
+		// open the return box of the participant and upload a file
+		URL coachImageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
+		File coachImageFile = new File(coachImageUrl.toURI());
+		ParticipantFolderPage folder = new ParticipantFolderPage(browser);
+		folder
+			.assertOnParticipantsList()
+			.assertOnParticipant(participant.getFirstName())
+			.openParticipantFolder(participant.getFirstName());
+		FolderPage directory = folder
+			.openReturnBox()
+			.uploadFile(coachImageFile)
+			.assertOnFile(coachImageFile.getName());
+		
+		// The participant come in
+		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword())
+			.resume();
+		
+		// The participant find the course
+		NavigationPage participantNavBar = new NavigationPage(participantBrowser);
+		participantNavBar
+			.assertOnNavigationPage()
+			.openMyCourses()
+			.select(title);
+		// And opens the participant folder
+		CoursePageFragment participantCourse = CoursePageFragment.getCourse(participantBrowser);
+		participantCourse
+			.clickTree()
+			.selectWithTitle(participantFolderTitle);
+		ParticipantFolderPage participantFolder = new ParticipantFolderPage(participantBrowser);
+		participantFolder
+			.openReturnBox()
+			.assertOnFile(coachImageFile.getName())
+			.selectRootDirectory();
+		// Participant upload a file in its drop box
+		URL participantImageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1482.JPG");
+		File participantImageFile = new File(participantImageUrl.toURI());
+		participantFolder
+			.openDropBox()
+			.uploadFile(participantImageFile)
+			.assertOnFile(participantImageFile.getName());
+		
+		//Author check the image in the participant drop box
+		directory
+			.selectRootDirectory();
+		folder.openDropBox()
+			.assertOnFile(participantImageFile.getName());
+	}
 
 	/**
 	 * Create a course with a calendar element, add a recurring event

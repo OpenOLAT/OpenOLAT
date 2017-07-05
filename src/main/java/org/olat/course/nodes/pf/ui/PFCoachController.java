@@ -191,7 +191,7 @@ public class PFCoachController extends FormBasicController implements Controller
 		} else if(source == dropboxTable) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
-				DropBoxRow currentObject = (DropBoxRow) tableModel.getObject(se.getIndex());
+				DropBoxRow currentObject = tableModel.getObject(se.getIndex());
 				if ("drop.box".equals(se.getCommand())){
 					doSelectParticipantFolder (ureq, currentObject.getIdentity(), PFView.displayDrop);
 				} else if ("return.box".equals(se.getCommand())){
