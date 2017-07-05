@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
@@ -145,7 +146,8 @@ public class ACFrontendManager implements ACService {
 			return new AccessResult(true);
 		}
 		
-		List<Offer> offers = accessManager.findOfferByResource(entry.getOlatResource(), true, new Date());
+		Date now = dateNow();
+		List<Offer> offers = accessManager.findOfferByResource(entry.getOlatResource(), true, now);
 		if(offers.isEmpty()) {
 			if(methodManager.isValidMethodAvailable(entry.getOlatResource(), null)) {
 				//not open for the moment: no valid offer at this date but some methods are defined
@@ -202,8 +204,9 @@ public class ACFrontendManager implements ACService {
 			return new AccessResult(true);
 		}
 		
+		Date now = dateNow();
 		OLATResource resource = OLATResourceManager.getInstance().findResourceable(group);
-		List<Offer> offers = accessManager.findOfferByResource(resource, true, new Date());
+		List<Offer> offers = accessManager.findOfferByResource(resource, true, now);
 		if(offers.isEmpty()) {
 			if(methodManager.isValidMethodAvailable(resource, null)) {
 				//not open for the moment: no valid offer at this date but some methods are defined
@@ -258,7 +261,8 @@ public class ACFrontendManager implements ACService {
 		if(resourceTypes.size() == 1) {
 			resourceType = resourceTypes.iterator().next();
 		}
-		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
+		Date now = dateNow();
+		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, now);
 	}
 
 	@Override
@@ -277,7 +281,8 @@ public class ACFrontendManager implements ACService {
 		if(resourceTypes.size() == 1) {
 			resourceType = resourceTypes.iterator().next();
 		}
-		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
+		Date now = dateNow();
+		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, now);
 	}
 
 	@Override
@@ -707,5 +712,11 @@ public class ACFrontendManager implements ACService {
 		}	
 	}
 	
+	/**
+	 * @return The current date without time
+	 */
+	private Date dateNow() {
+		return CalendarUtils.removeTime(new Date());
+	}
 	
 }
