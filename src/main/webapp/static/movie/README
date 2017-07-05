@@ -2,4 +2,39 @@ The main library is MediaElement.js, there is a fallback the JWPlayer for some
 rtmp streams.
 
 mediaelement-and-player.min.js is slightly modified to support AAC even in flash fallback. 
-This AAC type support is added automatically by the BPlayer code after loading. 
+This AAC type support is added automatically by the BPlayer code after loading.
+
+This is a slightly modified 4.1.2 version. The patch need to be applied against
+mediaelement 4.1.2 and mediaelement need to be compiled with grunt. After that,
+you can copy the mediaelement-and-player.js and mediaelement-and-player.min.js
+in OpenOLAT.
+
+
+diff --git a/src/js/renderers/flv.js b/src/js/renderers/flv.js
+index 1cda6a6..7681114 100644
+--- a/src/js/renderers/flv.js
++++ b/src/js/renderers/flv.js
+@@ -64,6 +64,7 @@
+ 			// To modify more elements from FLV player,
+ 			// see https://github.com/Bilibili/flv.js/blob/master/docs/api.md#config
+ 			cors: true,
++			withCredentials: true,
+ 			debug: false
+ 		}
+ 	},
+@@ -117,6 +118,7 @@
+ 								flvOptions.cors = options.flv.cors;
+ 								flvOptions.debug = options.flv.debug;
+ 								flvOptions.path = options.flv.path;
++								flvOptions.withCredentials = options.flv.withCredentials;
+ 
+ 								flvPlayer.destroy();
+ 								flvPlayer = NativeFlv._createPlayer({
+@@ -184,6 +186,7 @@
+ 		flvOptions.cors = options.flv.cors;
+ 		flvOptions.debug = options.flv.debug;
+ 		flvOptions.path = options.flv.path;
++		flvOptions.withCredentials = options.flv.withCredentials;
+ 
+ 		NativeFlv.load({
+ 			options: flvOptions,

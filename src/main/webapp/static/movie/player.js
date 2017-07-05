@@ -152,7 +152,8 @@ var BPlayer = {
 		        path: mediaElementBaseUrl + 'hls/hls.min.js'
 		    },
 		    flv : {
-		        path: mediaElementBaseUrl + 'flv/flv.min.js'
+		        path: mediaElementBaseUrl + 'flv/flv.min.js',
+		        withCredentials: true
 		    },
 			success: function(mediaElement, originalNode, player) {
 				if(config.autostart) {
