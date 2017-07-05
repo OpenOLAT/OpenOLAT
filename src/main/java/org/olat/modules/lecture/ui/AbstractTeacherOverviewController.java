@@ -356,7 +356,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		RollCallSecurityCallback secCallback = getRollCallSecurityCallback(reloadedBlock, teachers.contains(getIdentity()));
 		rollCallWizardCtrl = new TeacherRollCallWizardController(ureq, getWindowControl(), reloadedBlock, participants, secCallback);
 		if(withRepositoryEntry) {
-			rollCallCtrl.addLoggingResourceable(CoreLoggingResourceable.wrap(reloadedBlock.getEntry().getOlatResource(),
+			rollCallWizardCtrl.addLoggingResourceable(CoreLoggingResourceable.wrap(reloadedBlock.getEntry().getOlatResource(),
 					OlatResourceableType.course, reloadedBlock.getEntry().getDisplayname()));
 		}
 		listenTo(rollCallWizardCtrl);
