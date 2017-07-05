@@ -30,6 +30,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.persistence.DBFactory;
@@ -47,10 +48,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
@@ -109,6 +112,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResourceManager;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserInfoMainController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -645,7 +649,7 @@ public class MessageListController extends BasicController implements GenericEve
 			// Add link with username that is clickable
 			String creatorFullName = StringHelper.escapeHtml(UserManager.getInstance().getUserDisplayName(creator));
 			Link visitingCardLink = LinkFactory.createCustomLink("vc_".concat(keyString), "vc", creatorFullName, Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, this);
-			visitingCardLink.setUserObject(messageView);
+			visitingCardLink.setUserObject(creator);
 			LinkPopupSettings settings = new LinkPopupSettings(800, 600, "_blank");
 			visitingCardLink.setPopup(settings);
 		}
@@ -777,7 +781,6 @@ public class MessageListController extends BasicController implements GenericEve
 			Link link = (Link)source;
 			String command = link.getCommand();
 			Object uobject = link.getUserObject();
-
 			if (command.startsWith("qt")) {
 				doReply(ureq, (MessageView)uobject, true);
 			} else if (command.startsWith("rp")) {
@@ -792,6 +795,8 @@ public class MessageListController extends BasicController implements GenericEve
 				doMoveMessage(ureq, (MessageView)uobject);
 			} else if (command.startsWith("exile")) {
 				doExportForumItem(ureq, (MessageView)uobject);
+			} else if(command.equals("vc")) {
+				doOpenVisitingCard(ureq, (Identity)uobject);
 			}
 		} else if(mainVC == source) {
 			String cmd = event.getCommand();
@@ -1416,6 +1421,19 @@ public class MessageListController extends BasicController implements GenericEve
 		} else {
 			showWarning("may.not.move.message");
 		}
+	}
+	
+	private void doOpenVisitingCard(UserRequest ureq, Identity creator) {
+		ControllerCreator userInfoMainControllerCreator = new ControllerCreator() {
+			@Override
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {
+				return new UserInfoMainController(lureq, lwControl, creator, true, false);
+			}					
+		};
+		//wrap the content controller into a full header layout
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createAuthMinimalPopupLayout(ureq, userInfoMainControllerCreator);
+		PopupBrowserWindow pbw = getWindowControl().getWindowBackOffice().getWindowManager().createNewPopupBrowserWindowFor(ureq, layoutCtrlr);
+		pbw.open(ureq);
 	}
 	
 	public enum LoadMode {
