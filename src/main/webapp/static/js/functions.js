@@ -225,6 +225,34 @@ var BFormatter = {
 		} catch(e) {
 			if (window.console) console.log("error in BFormatter.formatLatexFormulas: ", e);
 		}
+	},
+	// Align columns of different tables with the same column count
+	// Note: it is best to set the width of the fixed sized colums via css 
+	// (e.g. to 1% to make them as small as possible). Table must set to max-size:100% 
+	// to not overflow. New width of table can be larger than before because the largest
+	// width of each column is applied to all tables. With max-size the browsers magically
+	// fix this overflow problem.
+	alignTableColumns : function(tableArray) {
+		try {
+			var cellWidths = new Array();
+			// find all widest cells
+			jQuery(tableArray).each(function() {
+				for(j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
+					var cell = jQuery(this)[0].rows[0].cells[j];
+					if(!cellWidths[j] || cellWidths[j] < cell.clientWidth) {
+						cellWidths[j] = cell.clientWidth;
+					}
+				}
+			});
+			// set same width to columns of all tables
+			jQuery(tableArray).each(function() {
+				for(j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
+					jQuery(this)[0].rows[0].cells[j].style.width = cellWidths[j]+'px';
+				}
+			});
+		} catch(e) {
+			if (window.console) console.log("error in BFormatter.alignTableColumns: ", e);
+		}	
 	}
 };
 
