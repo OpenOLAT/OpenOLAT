@@ -207,12 +207,14 @@ var BPlayer = {
 			config.enablePseudoStreaming = true;
 			if(extension == 'flv') {
 				mimeType = "video/flv";
+				meConfig.renderers = ['flash_video','native_flv'];
 			} else {
 				mimeType = "video/mp4";
 			}
 		} else {
 			if(extension == 'flv') {
 				mimeType = "video/flv";
+				meConfig.renderers = ['flash_video','native_flv'];
 			} else if(extension == 'f4v') {
 				mimeType = "video/flv";
 			} else if(extension == 'mp4') {
@@ -240,6 +242,8 @@ var BPlayer = {
 				alert('Something go badly wrong!' + config.provider + "  " + extension);
 			}
 		}
+		
+		console.log(config);
 
 		var content;
 		var mediaDomId = domId + '_oo' + Math.floor(Math.random() * 1000000) + 'vid';
