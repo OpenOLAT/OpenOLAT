@@ -47,6 +47,7 @@ import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,10 +82,10 @@ public class CalendarDetailsController extends BasicController {
 		if(!isGuestOnly
 				&& !(calendarModule.isManagedCalendars() && CalendarManagedFlag.isManaged(event, CalendarManagedFlag.all))
 				&& calendar.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE) {
-			editButton = LinkFactory.createButton("edit", mainVC, this);
+			editButton = LinkFactory.createButtonSmall("edit", mainVC, this);
 			mainVC.put("edit", editButton);
 		}
-		mainVC.contextPut("date", formatDate());
+		addDateToMainVC();
 		
 		if(!calendar.isPrivateEventsVisible() && event.getClassification() == KalendarEvent.CLASS_X_FREEBUSY) {
 			mainVC.contextPut("subject", "");
@@ -92,7 +93,9 @@ public class CalendarDetailsController extends BasicController {
 			mainVC.contextPut("links", new ArrayList<LinkWrapper>(1));
 		} else {
 			mainVC.contextPut("subject", event.getSubject());
-			mainVC.contextPut("description", event.getDescription());
+			// format line breaks and render links as clickable links
+			StringBuilder description = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(event.getDescription()));
+			mainVC.contextPut("description", description.toString());
 			if(StringHelper.containsNonWhitespace(event.getLocation())) {
 				mainVC.contextPut("location", event.getLocation());
 			}
@@ -101,7 +104,7 @@ public class CalendarDetailsController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
-	private String formatDate() {
+	private String addDateToMainVC() {
 		Locale locale = getLocale();
 		Calendar cal = CalendarUtils.createCalendarInstance(locale);
 		Date begin = calEvent.getBegin();
@@ -110,13 +113,17 @@ public class CalendarDetailsController extends BasicController {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append(StringHelper.formatLocaleDateFull(begin.getTime(), locale));
+		mainVC.contextPut("date", sb.toString());
+
 		if (!calEvent.isAllDayEvent()) {
-			sb.append("<br />").append(StringHelper.formatLocaleTime(begin.getTime(), locale));
+			sb = new StringBuilder();
+			sb.append(StringHelper.formatLocaleTime(begin.getTime(), locale));
 			sb.append(" - ");
 			if (!DateUtils.isSameDay(begin, end)) {
 				sb.append(StringHelper.formatLocaleDateFull(end.getTime(), locale)).append(", ");
 			} 
 			sb.append(StringHelper.formatLocaleTime(end.getTime(), locale));
+			mainVC.contextPut("time", sb.toString());
 		}
 		return sb.toString();
 	}
