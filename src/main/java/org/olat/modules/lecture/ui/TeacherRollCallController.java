@@ -176,13 +176,17 @@ public class TeacherRollCallController extends FormBasicController {
 			layoutCont.contextPut("date", date);
 			layoutCont.contextPut("startTime", startTime);
 			layoutCont.contextPut("endTime", endTime);
+			layoutCont.contextPut("dateAndTime", translate("lecture.block.dateAndTime", args));
 			layoutCont.contextPut("teachers", sb.toString());
 			layoutCont.contextPut("lectureBlockTitle", StringHelper.escapeJavaScript(lectureBlock.getTitle()));
 			layoutCont.contextPut("lectureBlockExternaalId", StringHelper.escapeJavaScript(lectureBlock.getExternalId()));
+			layoutCont.contextPut("lectureBlockDescription", StringHelper.escapeJavaScript(lectureBlock.getDescription()));
+			layoutCont.contextPut("lectureBlockPreparation", StringHelper.escapeJavaScript(lectureBlock.getPreparation()));
+			layoutCont.contextPut("lectureBlockLocation", StringHelper.escapeJavaScript(lectureBlock.getLocation()));
 			layoutCont.contextPut("lectureBlock",lectureBlock);
 			layoutCont.contextPut("lectureBlockOptional", !lectureBlock.isCompulsory());
 			layoutCont.setFormTitle(translate("lecture.block", args));
-			layoutCont.setFormDescription(translate("lecture.block.infos", args));
+			layoutCont.setFormDescription(StringHelper.escapeJavaScript(lectureBlock.getDescription()));
 		}
 		
 		// table
@@ -214,7 +218,7 @@ public class TeacherRollCallController extends FormBasicController {
 			//all button
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("all",
 					RollCols.all.ordinal(), "all",
-					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("all"), "all"), null)));
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("all"), "all", null, null, translate("all.desc")), null)));
 			if(secCallback.canViewAuthorizedAbsences() || secCallback.canEditAuthorizedAbsences()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCols.authorizedAbsence));
 			}

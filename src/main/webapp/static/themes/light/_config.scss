@@ -435,6 +435,11 @@ $o-qti-textEntryInteraction-filled-color			: $o-qti-userselection-color !default
 $o-qti-textEntryInteraction-filled-bg				: $o-qti-userselection-bg !default;
 $o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-color !default;
 
+/* Lecture module */
+$o-lm-current-bg									: $o-toolbar-bg-color !default;
+$o-lm-current-border-color							: transparent !default; 
+$o-lm-current-border-radius							: $border-radius-base !default;
+
 /* Chat and other floating window */
 $o-dialog-window-bg				: #fefefe !default;
 $o-dialog-window-bar-bg			: #eee !default;

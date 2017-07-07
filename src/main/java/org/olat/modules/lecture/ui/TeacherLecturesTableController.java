@@ -129,9 +129,14 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.teachers));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.status, new LectureBlockStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.details.i18nHeaderKey(), TeachCols.details.ordinal(), "details",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.tools));
+		DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(TeachCols.details.i18nHeaderKey(), TeachCols.details.ordinal(), "details",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null));
+		// set sort key even though we do not sort - added as css classes to column headers for styling
+		detailsCol.setSortKey(TeachCols.details.name());
+		columnsModel.addFlexiColumnModel(detailsCol);
+		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(TeachCols.tools);
+		toolsCol.setSortable(false);
+		columnsModel.addFlexiColumnModel(toolsCol);
 		
 		tableModel = new TeacherOverviewDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);

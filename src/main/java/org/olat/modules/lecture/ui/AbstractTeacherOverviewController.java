@@ -201,6 +201,8 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		mainVC.contextPut("nextBlockSize", nextBlocks.size());
 		closedLecturesBlockCtrl.loadModel(closedBlocks);
 		mainVC.contextPut("closedBlockSize", closedBlocks.size());
+		mainVC.contextPut("totalBlockSize", getRowCount());
+
 		dirtyTables = false;
 	}
 	

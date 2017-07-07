@@ -1,15 +1,55 @@
+<div class="o_lectures_rollcall">
 <fieldset>
-	<legend>$off_title</legend>
-	#if($lectureBlockOptional)
-		<div class="o_warning">$r.translate("info.lecture.block.optional")</div>
-	#end
+	<legend>
+		$off_title "$lectureBlockTitle"
+		#if($lectureBlockExternaalId && $lectureBlockExternaalId!= "")
+		<small class="text-muted">
+			$lectureBlockExternaalId
+		</small>
+		#end
+	</legend>
+	
 	#if($r.available("attendance.list"))
-	<div class="o_button_group o_button_group_right">
+	<div class=" pull-right">
 		$r.render("attendance.list")
 	</div>
 	#end
-	<div class="o_desc">$off_desc</div>
-	$r.render("table")
+	<div class="o_lectures_rollcall_meta o_block_bottom">
+		<div class="o_teachers text-muted">
+			<i class="o_icon o_icon-fw o_icon_graduate"> </i>
+			$teachers
+		</div>
+		<div class="o_date text-muted">
+			<i class="o_icon o_icon-fw o_icon_calendar"> </i>
+			$dateAndTime
+		</div>
+		#if($lectureBlockLocation && $lectureBlockLocation != "")
+		<div class="o_date text-muted">
+			<i class="o_icon o_icon-fw o_icon_home"> </i>
+			$lectureBlockLocation
+		</div>
+		#end
+		#if($lectureBlockOptional)
+		<div class="o_optional text-warning">
+			<i class="o_icon o_icon-fw o_icon_warn"> </i>		
+			$r.translate("info.lecture.block.optional")
+		</div>
+		#end
+	</div>
+	
+	#if($lectureBlockDescription && $lectureBlockDescription != "") 
+	<div class="o_desc o_info">
+		$lectureBlockDescription
+	</div>
+	#end
+	#if($lectureBlockPreparation && $lectureBlockPreparation != "")
+	<div class="o_preparation o_note">
+		$lectureBlockPreparation
+	</div>
+	#end
+	<div class="o_rollcall_table o_block_top">
+		$r.render("table")
+	</div>
 	<div class="o_button_group">
 		$r.render("cancel")
 		#if($r.available("save"))
@@ -26,3 +66,4 @@
 		#end
 	</div>
 </fieldset>
+</div>
