@@ -20,7 +20,7 @@
 		#end
 	</div>
 	<div class="col-sm-1">
-		<input type="checkbox" id="oo_correct-${foreach.count}s" name="correct" value="${choice.getIdentifierString()}" #if($restrictedEdit) disabled #end #if(${choice.isCorrect()}) checked #end/>
+		<input type="checkbox" id="oo_correct-${foreach.count}" name="correct" value="${choice.getIdentifierString()}" #if($restrictedEdit) disabled #end #if(${choice.isCorrect()}) checked #end/>
 		$f.appendFlexiFormDirtyForCheckbox("oo_correct-${foreach.count}")
 	</div>
 	<div class="col-sm-10">
