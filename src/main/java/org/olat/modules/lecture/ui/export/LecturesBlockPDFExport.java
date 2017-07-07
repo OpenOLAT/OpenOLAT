@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui;
+package org.olat.modules.lecture.ui.export;
 
 import java.io.IOException;
 import java.io.InputStream;

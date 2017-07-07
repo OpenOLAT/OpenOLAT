@@ -51,6 +51,7 @@ public class OpenXMLWorksheet {
 	}
 	
 	private String id;
+	private String name;
 	private final OpenXMLWorkbook workbook;
 	private final ZipOutputStream zout;
 	private XMLStreamWriter writer;
@@ -72,6 +73,14 @@ public class OpenXMLWorksheet {
 		return id;
 	}
 	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public int getHeaderRows() {
 		return headerRows;
 	}

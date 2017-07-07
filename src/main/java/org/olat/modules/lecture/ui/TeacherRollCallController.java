@@ -71,6 +71,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.ui.TeacherRollCallDataModel.RollCols;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
+import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;

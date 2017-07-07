@@ -308,6 +308,10 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		File sourceDir = new File(sourceRootFile, FileResourceManager.ZIPDIR);
 		File targetDir = new File(targetRootDir, FileResourceManager.ZIPDIR);
 		FileUtils.copyDirContentsToDir(sourceDir, targetDir, false, "Copy");
+		File sourceOptionsFile = new File(sourceRootFile, QTI21Service.PACKAGE_CONFIG_FILE_NAME);
+		if(sourceOptionsFile.exists()) {
+			FileUtils.copyFileToDir(sourceOptionsFile, targetRootDir, "Copy QTI 2.1 Options");
+		}
 		return target;
 	}
 

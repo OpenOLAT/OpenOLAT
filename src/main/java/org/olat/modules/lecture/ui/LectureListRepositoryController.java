@@ -148,7 +148,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), false));
 		tableEl.setSortSettings(options);
-		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "repo-lecture-block-list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "repo-lecture-block-list");
 	}
 	
 	private void loadModel() {

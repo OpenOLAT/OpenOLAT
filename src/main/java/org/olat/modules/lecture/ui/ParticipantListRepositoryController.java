@@ -69,7 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ParticipantListRepositoryController extends FormBasicController {
 	
-	protected static final String USER_PROPS_ID = ParticipantListRepositoryController.class.getCanonicalName();
+	public static final String USER_PROPS_ID = ParticipantListRepositoryController.class.getCanonicalName();
 
 	public static final int USER_PROPS_OFFSET = 500;
 	
