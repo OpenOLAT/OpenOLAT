@@ -5,7 +5,6 @@
 	</div>
 #end
 <div class="clearfix"></div>
-
 #if ($items.size() == 0)
 	<div class="o_blog_no_posts o_important">
 		<p>
@@ -42,7 +41,7 @@
 					</small>
 				#end
 				</h3>
-				<div class="o_meta">				
+				<div class="o_meta">	
 				#set ( $info = $helper.getInfo($post) )
 				#if ( $info )
 					$info
@@ -92,19 +91,30 @@
 	#end
 	
 	<ul class="pagination">
-		#if ( $helper.hasOlderItems($items) )
 		<li>
+			#if ( $helper.hasOlderItems($items) )
+				$r.getComponent("feed.older.items").setEnabled($true)
+			#else
+				$r.getComponent("feed.older.items").setEnabled($false)
+			#end
 			$r.render("feed.older.items")
 		</li>
-		#end
-		#if ( $helper.hasNewerItems() )
 		<li>
+			#if ( $helper.hasNewerItems() )
+				$r.getComponent("feed.startpage").setEnabled($true)
+			#else
+				$r.getComponent("feed.startpage").setEnabled($false)
+			#end
 			$r.render("feed.startpage")
 		</li>
 		<li>
+			#if ( $helper.hasNewerItems() )
+				$r.getComponent("feed.newer.items").setEnabled($true)
+			#else
+				$r.getComponent("feed.newer.items").setEnabled($false)
+			#end
 			$r.render("feed.newer.items")
 		</li>
-		#end
 	</ul>
 #end
 </div>
