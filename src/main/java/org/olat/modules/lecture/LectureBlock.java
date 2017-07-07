@@ -109,6 +109,8 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 	 * @param rollCallStatus Cannot be null
 	 */
 	public void setRollCallStatus(LectureRollCallStatus rollCallStatus);
+	
+	public Date getAutoClosedDate();
 
 	public RepositoryEntry getEntry();
 

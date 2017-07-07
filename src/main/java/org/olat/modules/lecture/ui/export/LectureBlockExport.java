@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui;
+package org.olat.modules.lecture.ui.export;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,6 +40,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.ui.ParticipantListRepositoryController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -86,15 +87,19 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 	protected void generate(OutputStream out) {
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
-			exportSheet.setHeaderRows(3);
-			addHeaders_1(exportSheet);
-			addHeaders_2(exportSheet);
-			addHeaders_3(exportSheet);
-			addContent(exportSheet);
-			addFooter(exportSheet);
+			generate(exportSheet);
 		} catch (IOException e) {
 			log.error("", e);
 		}
+	}
+	
+	protected void generate(OpenXMLWorksheet exportSheet) {
+		exportSheet.setHeaderRows(3);
+		addHeaders_1(exportSheet);
+		addHeaders_2(exportSheet);
+		addHeaders_3(exportSheet);
+		addContent(exportSheet);
+		addFooter(exportSheet);
 	}
 	
 	private void addFooter(OpenXMLWorksheet exportSheet) {
@@ -230,6 +235,4 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 			}
 		}
 	}
-	
-
 }

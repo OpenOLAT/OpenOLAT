@@ -66,6 +66,8 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.export.LectureBlockExport;
+import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -26,11 +26,15 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.stack.TooledController;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.lecture.ui.export.LecturesBlocksEntryExport;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -39,10 +43,12 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureRepositoryAdminController extends BasicController {
+public class LectureRepositoryAdminController extends BasicController implements TooledController {
 	
+	private Link archiveLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
+	private final TooledStackedPanel stackPanel;
 	private final Link lecturesLink, settingsLink, participantsLink;
 	
 	private LectureListRepositoryController lecturesCtrl;
@@ -52,9 +58,11 @@ public class LectureRepositoryAdminController extends BasicController {
 	private RepositoryEntry entry;
 	private boolean configurationChanges = false;
 	
-	public LectureRepositoryAdminController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public LectureRepositoryAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry entry) {
 		super(ureq, wControl);
 		this.entry = entry;
+		this.stackPanel = stackPanel;
 		
 		mainVC = createVelocityContainer("admin_repository");
 		
@@ -94,6 +102,14 @@ public class LectureRepositoryAdminController extends BasicController {
 	}
 
 	@Override
+	public void initTools() {
+		archiveLink = LinkFactory.createToolLink("archive.entry", translate("archive.entry"), this);
+		archiveLink.setIconLeftCSS("o_icon o_icon_archive_tool");
+		archiveLink.setVisible(settingsCtrl.isLectureEnabled());
+		stackPanel.addTool(archiveLink, Align.right);
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
@@ -108,6 +124,8 @@ public class LectureRepositoryAdminController extends BasicController {
 					doOpenParticipants(ureq);
 				}
 			}
+		} else if(archiveLink == source) {
+			doExportArchive(ureq);
 		}
 	}
 	
@@ -155,5 +173,10 @@ public class LectureRepositoryAdminController extends BasicController {
 			listenTo(participantsCtrl);
 		}
 		mainVC.put("segmentCmp", participantsCtrl.getInitialComponent());
+	}
+	
+	private void doExportArchive(UserRequest ureq) {
+		LecturesBlocksEntryExport archive = new LecturesBlocksEntryExport(entry, getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(archive);
 	}
 }
