@@ -25,7 +25,9 @@ import java.util.Date;
 import org.olat.modules.webFeed.Item;
 
 /**
- * Compares the publish date of two items.
+ * Comparator to separate the items in drafts and published items. Inside the
+ * two groups the items are sorted according to the reverse chronological order
+ * of the publish date.
  * <P>
  * Initial Date: Aug 4, 2009 <br>
  * 
@@ -33,17 +35,18 @@ import org.olat.modules.webFeed.Item;
  */
 public class ItemPublishDateComparator implements Comparator<Item> {
 
-	/**
-	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public int compare(Item a, Item b) {
-		// reverse chronological order
-		Date d1 = a.getPublishDate();
-		Date d2 = b.getPublishDate();
-		if(d1 == null) return 1;
-		if(d2 == null) return -1;
-		
-		return d2.compareTo(d1);
+		if (a.isDraft() == b.isDraft()) {
+			Date d1 = a.getPublishDate();
+			Date d2 = b.getPublishDate();
+			if(d1 == null) return 1;
+			if(d2 == null) return -1;
+			return d2.compareTo(d1);
+		}
+		if (b.isDraft()) {
+			return 1;
+		}
+		return -1;
 	}
 }

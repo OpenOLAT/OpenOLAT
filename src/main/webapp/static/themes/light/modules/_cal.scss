@@ -117,6 +117,17 @@ $o-cal-color-width : 20px;
 	top: 0;
 }
 
+.o_cal_wv_event_tooltip_content {
+	.o_cal_description {
+		background-color: $o-cal-desc-background-color;
+		padding: 10px 7px;
+		margin: 10px -7px;
+	}
+	.o_cal_tooltip_buttons {
+		text-align: center;
+		margin-top: 20px;
+	}
+}
 
 /* 
  * fullcalendar bootstrapify
