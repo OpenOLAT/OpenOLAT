@@ -105,6 +105,7 @@ public class MembersConfigForm extends FormBasicController {
 		setFormTitle("pane.tab.membersconfig");
 		setFormInfo("members.info");
 		setFormContextHelp("Communication and Collaboration#_teilnehmerliste");
+		formLayout.setElementCssClass("o_sel_cmembers_settings");
 		// Read Configuration
 		boolean showOwnerConfig = config.getBooleanSafe(MembersCourseNode.CONFIG_KEY_SHOWOWNER);
 

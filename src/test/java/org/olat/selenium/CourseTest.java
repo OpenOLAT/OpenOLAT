@@ -62,6 +62,8 @@ import org.olat.selenium.page.course.DialogConfigurationPage;
 import org.olat.selenium.page.course.DialogPage;
 import org.olat.selenium.page.course.ForumCEPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
+import org.olat.selenium.page.course.MemberListConfigurationPage;
+import org.olat.selenium.page.course.MemberListPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.ParticipantFolderPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
@@ -1336,6 +1338,150 @@ public class CourseTest {
 			.assertMessageBody("JPEG is smaller");
 	}
 	
+
+	/**
+	 * An author create a course with a member list course element.
+	 * It add two participants and a coach. It publish the course and
+	 * check that it sees the authors, coaches and participants.<br>
+	 * After that, it edits the course and change the settins to only
+	 * show the participants. It checks that only the participants are
+	 * visible.<br>
+	 * At least, it changes the settings a second time to only show
+	 * the course coaches.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseWithMemberList(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO coach = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		UserVO participant1 = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Course partilist " + UUID.randomUUID();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.clickToolbarBack();
+		
+		//add 2 participants
+		CoursePageFragment course = new CoursePageFragment(browser);
+		MembersPage members = course
+			.members();
+		members
+			.importMembers()
+			.setMembers(participant1, participant2)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		//add a coach
+		course
+			.members()
+			.addMember()	
+			.searchMember(coach, true)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, true, false)
+			.nextPermissions()
+			.finish();
+		members
+			.clickToolbarBack();
+		
+		String memberListTitle = "MemberList";
+		//open course editor
+		CourseEditorPageFragment editor = course
+			.assertOnCoursePage()
+			.assertOnTitle(title)
+			.openToolsMenu()
+			.edit()
+			.createNode("cmembers")
+			.nodeTitle(memberListTitle);
+		//publish
+		editor
+			.publish()
+			.quickPublish(UserAccess.registred);
+		editor
+			.clickToolbarBack();
+		
+		course
+			.clickTree()
+			.selectWithTitle(memberListTitle);
+		
+		//check the default configuration with authors, coaches and participants
+		MemberListPage memberList = new MemberListPage(browser);
+		memberList
+			.assertOnOwner(author.getFirstName())
+			.assertOnCoach(coach.getFirstName())
+			.assertOnParticipant(participant1.getFirstName())
+			.assertOnParticipant(participant2.getFirstName());
+		
+		//the author is not satisfied with the configuration
+		editor = course
+			.openToolsMenu()
+			.edit()
+			.selectNode(memberListTitle);
+		MemberListConfigurationPage memberListConfig = new MemberListConfigurationPage(browser);
+		memberListConfig
+			.selectSettings()
+			.setOwners(Boolean.FALSE)
+			.setCoaches(Boolean.FALSE)
+			.save();
+		
+		//go check the results
+		course = editor
+			.autoPublish();
+		course
+			.clickTree()
+			.selectWithTitle(memberListTitle);
+		
+		memberList
+			.assertOnMembers()
+			.assertOnNotOwner(author.getFirstName())
+			.assertOnNotCoach(coach.getFirstName())
+			.assertOnParticipant(participant1.getFirstName())
+			.assertOnParticipant(participant2.getFirstName());
+		
+		// perhaps only the coaches
+		editor = course
+			.openToolsMenu()
+			.edit()
+			.selectNode(memberListTitle);
+		memberListConfig = new MemberListConfigurationPage(browser);
+		memberListConfig
+				.selectSettings()
+				.setCoaches(Boolean.TRUE)
+				.setCourseCoachesOnly()
+				.setParticipants(Boolean.FALSE)
+				.save();
+		
+		//go check that we see only the coaches results
+		course = editor
+			.autoPublish();
+		course
+			.clickTree()
+			.selectWithTitle(memberListTitle);
+		
+		memberList
+			.assertOnMembers()
+			.assertOnNotOwner(author.getFirstName())
+			.assertOnCoach(coach.getFirstName())
+			.assertOnNotParticipant(participant1.getFirstName())
+			.assertOnNotParticipant(participant2.getFirstName());
+	}
 	
 	/**
 	 * An author create a course with a participant folder course
