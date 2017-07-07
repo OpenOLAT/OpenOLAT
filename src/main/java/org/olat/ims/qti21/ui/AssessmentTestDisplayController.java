@@ -258,11 +258,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 			/* Handle immediate end of test session */
 	        if (testSessionController.getTestSessionState() != null && testSessionController.getTestSessionState().isEnded()) {
-	        	immediateEndTestSession(ureq);
-	         	mainVC = createVelocityContainer("end");
+	        		immediateEndTestSession(ureq);
+	        		mainVC = createVelocityContainer("end");
 	        } else {
-	        	mainVC = createVelocityContainer("run");
-	        	initQtiWorks(ureq);
+	        		mainVC = createVelocityContainer("run");
+	        		initQtiWorks(ureq);
 	        }
 	        
 	        OLATResourceable sessionOres = OresHelper
@@ -378,10 +378,20 @@ public class AssessmentTestDisplayController extends BasicController implements 
         		.createOLATResourceableInstance(AssessmentTestSession.class, candidateSession.getKey());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, sessionOres);
 	}
-
+	
+	/**
+	 * @return true if the termination time is set.
+	 */
 	@Override
 	public boolean isTerminated() {
 		return candidateSession.getTerminationTime() != null;
+	}
+	
+	/**
+	 * @return true if the termination time or the finished time is set.
+	 */
+	public boolean isEnded() {
+		return candidateSession.getTerminationTime() != null || candidateSession.getFinishTime() != null;
 	}
 
 	@Override
@@ -400,7 +410,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	public boolean isResultsVisible() {
-		return qtiWorksCtrl.isResultsVisible();
+		return qtiWorksCtrl != null && qtiWorksCtrl.isResultsVisible();
 	}
 
 	@Override
@@ -840,7 +850,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 	    /* If we ended the testPart and there are now no more available testParts, then finish the session now */
 	    if (nextItemNode==null && testSessionController.findNextEnterableTestPart()==null) {
-	    	candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
+	    		candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
 	    			requestTimestamp, getDigitalSignatureOptions(), getIdentity());
 	    }
 
@@ -1462,21 +1472,23 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
         final NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
         TestSessionController controller =  createTestSessionController(notificationRecorder);
-        controller.unsuspendTestSession(requestTimestamp);
-       
-        TestSessionState testSessionState = controller.getTestSessionState();
-		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
-		if(currentItemKey != null) {
-			TestPlanNode currentItemNode = testSessionState.getTestPlan().getNode(currentItemKey);
-			ItemProcessingContext itemProcessingContext = controller.getItemProcessingContext(currentItemNode);
-			ItemSessionState itemSessionState = itemProcessingContext.getItemSessionState();
-			if(itemProcessingContext instanceof ItemSessionController
-					&& itemSessionState.isSuspended()) {
-				ItemSessionController itemSessionController = (ItemSessionController)itemProcessingContext;
-				itemSessionController.unsuspendItemSession(requestTimestamp);
-			}
-		}
-		
+        if(!controller.getTestSessionState().isEnded() && !controller.getTestSessionState().isExited()) {
+        		controller.unsuspendTestSession(requestTimestamp);
+            
+            TestSessionState testSessionState = controller.getTestSessionState();
+	    		TestPlanNodeKey currentItemKey = testSessionState.getCurrentItemKey();
+	    		if(currentItemKey != null) {
+	    			TestPlanNode currentItemNode = testSessionState.getTestPlan().getNode(currentItemKey);
+	    			ItemProcessingContext itemProcessingContext = controller.getItemProcessingContext(currentItemNode);
+	    			ItemSessionState itemSessionState = itemProcessingContext.getItemSessionState();
+	    			if(itemProcessingContext instanceof ItemSessionController
+	    					&& itemSessionState.isSuspended()) {
+	    				ItemSessionController itemSessionController = (ItemSessionController)itemProcessingContext;
+	    				itemSessionController.unsuspendItemSession(requestTimestamp);
+	    			}
+	    		}
+        }
+        
         return controller;
 	}
 	

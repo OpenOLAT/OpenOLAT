@@ -570,8 +570,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe, courseNode.getIdent(),
 				deliveryOptions, overrideOptions, true, false, false);
 		listenTo(displayCtrl);
-		if(displayCtrl.isTerminated()) {
-			//do nothing
+		if(displayCtrl.isEnded()) {
+			if(!displayCtrl.isResultsVisible()) {
+				doExitAssessment(ureq, null, true);
+				initAssessment(ureq);
+			}
 		} else {
 			// in case displayController was unable to initialize, a message was set by displayController
 			// this is the case if no more attempts or security check was unsuccessfull
@@ -638,7 +641,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	/**
 	 * Remove the runtime from the GUI stack only.
 	 * @param ureq
-	 * @param event
+	 * @param event The event which triggered the method (optional)
 	 * @param testEnded true if the test was ended and not suspended or cancelled (use to control increment of attempts)
 	 */
 	private void doExitAssessment(UserRequest ureq, Event event, boolean testEnded) {
@@ -662,7 +665,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			incrementAttempts.set(true);
 		}
 		
-		fireEvent(ureq, event);
+		if(event != null) {
+			fireEvent(ureq, event);
+		}
 	}
 	
 	@Override
