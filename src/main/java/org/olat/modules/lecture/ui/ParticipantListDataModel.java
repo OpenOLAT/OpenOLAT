@@ -19,13 +19,20 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 
 /**
  * 
@@ -34,20 +41,36 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  *
  */
 public class ParticipantListDataModel extends DefaultFlexiTableDataModel<ParticipantRow>
-implements SortableFlexiTableDataModel<ParticipantRow> {
+implements SortableFlexiTableDataModel<ParticipantRow>, ExportableFlexiTableDataModel {
 	
 	private final Locale locale;
+	private final Translator translator;
 	
-	public ParticipantListDataModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public ParticipantListDataModel(FlexiTableColumnModel columnModel, Translator translator, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+		this.translator = translator;
 	}
 
 	@Override
 	public void sort(SortKey sortKey) {
 		//
 	}
-	
+
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		FlexiTableColumnModel columnModel = getTableColumnModel();
+		int numOfColumns = columnModel.getColumnCount();
+		List<FlexiColumnModel> columns = new ArrayList<>();
+		for(int i=0; i<numOfColumns; i++) {
+			FlexiColumnModel column = columnModel.getColumnModel(i);
+			if(column.isExportable()) {
+				columns.add(column);
+			}
+		}
+		return new ParticipantListExport().export(ftC, columns, translator);
+	}
+
 	@Override
 	public Object getValueAt(int row, int col) {
 		ParticipantRow participant = getObject(row);
@@ -79,7 +102,7 @@ implements SortableFlexiTableDataModel<ParticipantRow> {
 
 	@Override
 	public DefaultFlexiTableDataModel<ParticipantRow> createCopyWithEmptyList() {
-		return new ParticipantListDataModel(getTableColumnModel(), locale);
+		return new ParticipantListDataModel(getTableColumnModel(), translator, locale);
 	}
 	
 	public enum ParticipantsCols implements FlexiSortableColumnDef {

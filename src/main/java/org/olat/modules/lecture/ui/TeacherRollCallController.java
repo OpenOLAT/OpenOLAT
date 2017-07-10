@@ -179,13 +179,13 @@ public class TeacherRollCallController extends FormBasicController {
 			layoutCont.contextPut("endTime", endTime);
 			layoutCont.contextPut("dateAndTime", translate("lecture.block.dateAndTime", args));
 			layoutCont.contextPut("teachers", sb.toString());
-			layoutCont.contextPut("lectureBlockTitle", StringHelper.escapeJavaScript(lectureBlock.getTitle()));
-			layoutCont.contextPut("lectureBlockExternaalId", StringHelper.escapeJavaScript(lectureBlock.getExternalId()));
+			layoutCont.contextPut("lectureBlockTitle", StringHelper.escapeHtml(lectureBlock.getTitle()));
+			layoutCont.contextPut("lectureBlockExternalId", StringHelper.escapeHtml(lectureBlock.getExternalId()));
 			StringBuilder description = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(lectureBlock.getDescription()));
 			layoutCont.contextPut("lectureBlockDescription", StringHelper.xssScan(description));
 			StringBuilder preparation = Formatter.stripTabsAndReturns(Formatter.formatURLsAsLinks(lectureBlock.getPreparation()));
 			layoutCont.contextPut("lectureBlockPreparation", StringHelper.xssScan(preparation));
-			layoutCont.contextPut("lectureBlockLocation", StringHelper.escapeJavaScript(lectureBlock.getLocation()));
+			layoutCont.contextPut("lectureBlockLocation", StringHelper.escapeHtml(lectureBlock.getLocation()));
 			layoutCont.contextPut("lectureBlock",lectureBlock);
 			layoutCont.contextPut("lectureBlockOptional", !lectureBlock.isCompulsory());
 			layoutCont.setFormTitle(translate("lecture.block", args));

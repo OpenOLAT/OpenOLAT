@@ -2,9 +2,9 @@
 <fieldset>
 	<legend>
 		$off_title "$lectureBlockTitle"
-		#if($lectureBlockExternaalId && $lectureBlockExternaalId!= "")
+		#if($r.isNotEmpty(lectureBlockExternalId))
 		<small class="text-muted">
-			$lectureBlockExternaalId
+			$lectureBlockExternalId
 		</small>
 		#end
 	</legend>
@@ -37,12 +37,12 @@
 		#end
 	</div>
 	
-	#if($lectureBlockDescription && $lectureBlockDescription != "") 
+	#if($r.isNotEmpty($lectureBlockDescription)) 
 	<div class="o_desc o_info">
 		$lectureBlockDescription
 	</div>
 	#end
-	#if($lectureBlockPreparation && $lectureBlockPreparation != "")
+	#if($r.isNotEmpty($lectureBlockPreparation))
 	<div class="o_preparation o_note">
 		$lectureBlockPreparation
 	</div>

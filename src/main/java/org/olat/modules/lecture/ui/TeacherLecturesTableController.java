@@ -88,7 +88,9 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private TeacherRollCallController rollCallCtrl;
 	
 	private int counter;
+	private final String id;
 	private final boolean admin;
+	private final boolean sortAsc;
 	private final String emptyI18nKey;
 	private final boolean withRepositoryEntry, withTeachers;
 	
@@ -100,10 +102,12 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private LectureService lectureService;
 	
 	public TeacherLecturesTableController(UserRequest ureq, WindowControl wControl,
-			boolean admin, String emptyI18nKey,
+			boolean admin, String emptyI18nKey, boolean sortAsc, String id,
 			boolean withRepositoryEntry, boolean withTeachers) {
 		super(ureq, wControl, "teacher_view_table");
+		this.id = id;
 		this.admin = admin;
+		this.sortAsc = sortAsc;
 		this.emptyI18nKey = emptyI18nKey;
 		this.withTeachers = withTeachers;
 		this.withRepositoryEntry = withRepositoryEntry;
@@ -144,12 +148,12 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
-		sortOptions.setDefaultOrderBy(new SortKey(TeachCols.date.name(), false));
+		sortOptions.setDefaultOrderBy(new SortKey(TeachCols.date.name(), sortAsc));
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setEmtpyTableMessageKey(emptyI18nKey);
-		tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview");
+		tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview-".concat(id));
 	}
 	
 	public int getRowCount() {

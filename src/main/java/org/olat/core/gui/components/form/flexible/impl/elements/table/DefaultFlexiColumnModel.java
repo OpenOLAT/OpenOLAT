@@ -26,7 +26,6 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-
 /**
  * 
  * @author Christian Guretzki
@@ -243,7 +242,7 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	public void setExportable(boolean exportable) {
 		this.exportable = exportable;
 	}
-	
+
 	@Override
 	public boolean isDefaultVisible() {
 		return defaultVisible;

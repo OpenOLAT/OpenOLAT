@@ -26,7 +26,6 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-
 /**
  * 
  * @author Christian Guretzki

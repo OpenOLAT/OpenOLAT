@@ -167,10 +167,14 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			if(authorizedAbsenceEnabled) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.authorizedAbsenceLectures));
 			}
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.progress, new LectureStatisticsCellRenderer()));
+			FlexiColumnModel progressCol = new DefaultFlexiColumnModel(ParticipantsCols.progress, new LectureStatisticsCellRenderer());
+			progressCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(progressCol);
 		}
 		if(rateEnabled) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rateWarning, new RateWarningCellRenderer()));
+			FlexiColumnModel warningCol = new DefaultFlexiColumnModel(ParticipantsCols.rateWarning, new RateWarningCellRenderer());
+			warningCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(warningCol);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rate, new PercentCellRenderer()));
 		}
 		
@@ -182,12 +186,12 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(editColumn);
 		}
 		
-		tableModel = new ParticipantListDataModel(columnsModel, getLocale()); 
+		tableModel = new ParticipantListDataModel(columnsModel, getTranslator(), getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(!printView);
 		tableEl.setMultiSelect(!printView);
 		tableEl.setSelectAllEnable(!printView);
-		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry");
+		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry");
 	}
 	
 	private void loadModel() {
