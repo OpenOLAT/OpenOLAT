@@ -48,7 +48,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
@@ -73,6 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MediaDetailsController extends FormBasicController implements Activateable2, TooledController {
 
 	private Link editLink, deleteLink;
+	private Link gotoOriginalLink;
 	private final TooledStackedPanel stackPanel;
 
 	private Controller mediaCtrl;
@@ -144,8 +144,7 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			}
 			
 			if (media.getBusinessPath() != null) {
-				String linkOriginal = BusinessControlFactory.getInstance().getURLFromBusinessPathString(media.getBusinessPath());
-				layoutCont.contextPut("linkOriginal", linkOriginal);
+				gotoOriginalLink = LinkFactory.createLink("goto.original", layoutCont.getFormItemComponent(), this);
 			}
 			
 			if(StringHelper.containsNonWhitespace(media.getMetadataXml())) {
@@ -209,6 +208,8 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			doEdit(ureq);
 		} else if(deleteLink == source) {
 			doConfirmDelete(ureq);
+		} else if(gotoOriginalLink == source) {
+			NewControllerFactory.getInstance().launch(media.getBusinessPath(), ureq, getWindowControl());	
 		}
 		super.event(ureq, source, event);
 	}

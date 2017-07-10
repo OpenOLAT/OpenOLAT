@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
 import org.olat.modules.webFeed.Enclosure;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
@@ -311,6 +312,53 @@ public class ItemDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadItemByGuid_without_feed() {
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Feed feed = feedDao.createFeedForResourcable(resource);
+		dbInstance.commitAndCloseSession();
+
+		// create an item
+		String guid = "guid-123467890";
+		Item tempItem = new ItemImpl(feed);
+		tempItem.setGuid(guid);
+		itemDao.createItem(feed, tempItem);
+		dbInstance.commitAndCloseSession();
+		
+		// reload the item from the database
+		Item item = itemDao.loadItemByGuid(guid);
+
+		//check values
+		assertThat(item).isNotNull();
+		
+		//clean up
+		itemDao.removeItem(item);
+	}
+
+	@Test
+	public void loadItemByGuid_without_feed_multiple_guids() {
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Feed feed = feedDao.createFeedForResourcable(resource);
+		dbInstance.commitAndCloseSession();
+
+		// create an item
+		String guid = "guid-12345";
+		Item tempItem = new ItemImpl(feed);
+		tempItem.setGuid(guid);
+		itemDao.createItem(feed, tempItem);
+		dbInstance.commitAndCloseSession();
+		tempItem = new ItemImpl(feed);
+		tempItem.setGuid(guid);
+		itemDao.createItem(feed, tempItem);
+		dbInstance.commitAndCloseSession();
+		
+		// reload the item from the database
+		Item item = itemDao.loadItemByGuid(guid);
+
+		//check values
+		assertThat(item).isNull();
+	}
+	
+	@Test
 	public void loadItems_Feed() {
 		OLATResource resource = JunitTestHelper.createRandomResource();
 		Feed feed = feedDao.createFeedForResourcable(resource);
@@ -431,6 +479,8 @@ public class ItemDAOTest extends OlatTestCase {
 		Feed feed = feedDao.createFeedForResourcable(resource);
 		dbInstance.commitAndCloseSession();
 		
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("user-1234");
+		
 		Item item = itemDao.createItem(feed);
 		dbInstance.commitAndCloseSession();
 		
@@ -443,7 +493,7 @@ public class ItemDAOTest extends OlatTestCase {
 		item.setExternalLink("https://example.com/");
 		item.setGuid("guid-2");
 		item.setHeight(3);
-		item.setModifierKey(2L);
+		item.setModifierKey(author.getKey());
 		item.setPublishDate(new Date());
 		item.setTitle("tile");
 		item.setWidth(5);

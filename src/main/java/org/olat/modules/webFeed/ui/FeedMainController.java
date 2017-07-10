@@ -326,8 +326,12 @@ public class FeedMainController extends BasicController implements Activateable2
 		String itemId = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(itemId != null && itemId.startsWith("item=")) {
 			itemId = itemId.substring(5, itemId.length());
-			Long itemKey = Long.parseLong(itemId);
-			item = FeedManager.getInstance().loadItem(itemKey);
+			try {
+				Long itemKey = Long.parseLong(itemId);
+				item = FeedManager.getInstance().loadItem(itemKey);
+			} catch (Exception e) {
+				item = FeedManager.getInstance().loadItemByGuid(itemId);
+			}
 		}
 		if (item != null) {
 			itemsCtr.activate(ureq, item);

@@ -151,7 +151,31 @@ public class ItemDAO {
 		
 		return item;
 	}
-
+	
+	/**
+	 * Loads an item by GUID. This method is not safe because a GUID is only
+	 * unique inside a feed. If more then one item have the same GUID, it return
+	 * null.
+	 * 
+	 * @param guid
+	 * @return
+	 */
+	public Item loadItemByGuid(String guid) {
+		if (guid == null) return null;
+		
+		Item item = null;
+		try {
+			item = dbInstance.getCurrentEntityManager()
+					.createNamedQuery("loadItemByGuidWithoutFeed", ItemImpl.class)
+					.setParameter("guid", guid)
+					.getSingleResult();
+		} catch (Exception e) {
+			// nothing to do, return null
+		}
+		
+		return item;
+	}
+	
 	/**
 	 * Loads all items of a feed.
 	 * 

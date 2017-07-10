@@ -384,7 +384,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 				&& getIdentity().getKey().equals(item.getAuthorKey())) {
 			String businessPath = BusinessControlFactory.getInstance()
 					.getAsString(getWindowControl().getBusinessControl());
-			businessPath += "[item=" + item.getGuid() + ":0]";
+			businessPath += "[item=" + item.getKey() + ":0]";
 
 			if (portfolioModule.isEnabled()) {
 				String name = "feed.artefact.item.".concat(guid);
@@ -848,8 +848,12 @@ public class ItemsController extends BasicController implements Activateable2 {
 		String itemId = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(itemId != null && itemId.startsWith("item=")) {
 			itemId = itemId.substring(5, itemId.length());
-			Long itemKey = Long.parseLong(itemId);
-			item = FeedManager.getInstance().loadItem(itemKey);
+			try {
+				Long itemKey = Long.parseLong(itemId);
+				item = FeedManager.getInstance().loadItem(itemKey);
+			} catch (Exception e) {
+				item = FeedManager.getInstance().loadItemByGuid(itemId);
+			}
 		}
 		if (item != null) {
 			activate(ureq, item);
