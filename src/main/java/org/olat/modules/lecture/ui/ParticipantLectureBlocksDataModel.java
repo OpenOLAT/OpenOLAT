@@ -34,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
-import org.olat.modules.lecture.ui.ParticipantLectureBlocksController.AppealCallback;
 
 /**
  * 
@@ -42,28 +41,26 @@ import org.olat.modules.lecture.ui.ParticipantLectureBlocksController.AppealCall
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipantLectureBlocksDataModel extends DefaultFlexiTableDataModel<LectureBlockAndRollCall>
-implements SortableFlexiTableDataModel<LectureBlockAndRollCall>, FilterableFlexiTableModel {
+public class ParticipantLectureBlocksDataModel extends DefaultFlexiTableDataModel<LectureBlockAndRollCallRow>
+implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFlexiTableModel {
 	
 	private final Locale locale;
-	private final AppealCallback appealCallback;
 	private final boolean authorizedAbsenceEnabled;
 	private final boolean absenceDefaultAuthorized;
 	
-	private List<LectureBlockAndRollCall> backups;
+	private List<LectureBlockAndRollCallRow> backups;
 	
-	public ParticipantLectureBlocksDataModel(FlexiTableColumnModel columnModel, AppealCallback appealCallback,
+	public ParticipantLectureBlocksDataModel(FlexiTableColumnModel columnModel,
 			boolean authorizedAbsenceEnabled, boolean absenceDefaultAuthorized, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
-		this.appealCallback = appealCallback;
 		this.authorizedAbsenceEnabled = authorizedAbsenceEnabled;
 		this.absenceDefaultAuthorized = absenceDefaultAuthorized;
 	}
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<LectureBlockAndRollCall> rows = new ParticipantLectureBlocksSortDelegate(orderBy, this, locale).sort();
+		List<LectureBlockAndRollCallRow> rows = new ParticipantLectureBlocksSortDelegate(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
 	
@@ -71,10 +68,10 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall>, FilterableFlexi
 	public void filter(List<FlexiTableFilter> filters) {
 		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
 		if(StringHelper.containsNonWhitespace(key)) {
-			List<LectureBlockAndRollCall> filteredRows;
+			List<LectureBlockAndRollCallRow> filteredRows;
 			if("mandatory".equals(key)) {
 				filteredRows = backups.stream()
-						.filter(node -> node.isCompulsory())
+						.filter(node -> node.getRow().isCompulsory())
 						.collect(Collectors.toList());
 			} else {
 				filteredRows = new ArrayList<>(backups);
@@ -87,55 +84,55 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall>, FilterableFlexi
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		LectureBlockAndRollCall block = getObject(row);
+		LectureBlockAndRollCallRow block = getObject(row);
 		return getValueAt(block, col);
 	}
 
 	@Override
-	public Object getValueAt(LectureBlockAndRollCall row, int col) {
+	public Object getValueAt(LectureBlockAndRollCallRow row, int col) {
 		switch(ParticipantCols.values()[col]) {
-			case date: return row.getDate();
-			case entry: return row.getEntryDisplayname();
-			case lectureBlock: return row.getLectureBlockTitle();
-			case coach: return row.getCoach();
+			case date: return row.getRow().getDate();
+			case entry: return row.getRow().getEntryDisplayname();
+			case lectureBlock: return row.getRow().getLectureBlockTitle();
+			case coach: return row.getRow().getCoach();
 			case plannedLectures: {
-				if(LectureBlockStatus.cancelled.equals(row.getStatus())) {
+				if(LectureBlockStatus.cancelled.equals(row.getRow().getStatus())) {
 					return null;
 				}
-				return row.isCompulsory() ? row.getPlannedLecturesNumber() : null;
+				return row.getRow().isCompulsory() ? row.getRow().getPlannedLecturesNumber() : null;
 			}
 			case attendedLectures: {
-				if(LectureBlockStatus.cancelled.equals(row.getStatus())) {
+				if(LectureBlockStatus.cancelled.equals(row.getRow().getStatus())) {
 					return null;
 				}
-				if(row.isCompulsory()) {
-					return row.getLecturesAttendedNumber() < 0 ? 0 : row.getLecturesAttendedNumber();
+				if(row.getRow().isCompulsory()) {
+					return row.getRow().getLecturesAttendedNumber() < 0 ? 0 : row.getRow().getLecturesAttendedNumber();
 				}
 				return null;
 			}
 			case absentLectures: {
-				if(LectureBlockStatus.cancelled.equals(row.getStatus())) {
+				if(LectureBlockStatus.cancelled.equals(row.getRow().getStatus())) {
 					return null;
 				}
-				if(row.isCompulsory()) {
+				if(row.getRow().isCompulsory()) {
 					long value;
-					if(isAuthorized(row)) {
+					if(isAuthorized(row.getRow())) {
 						value = 0l;
 					} else {
-						value = positive(row.getLecturesAbsentNumber());
+						value = positive(row.getRow().getLecturesAbsentNumber());
 					}
 					return value;
 				}
 				return null;
 			}
 			case authorizedAbsentLectures: {
-				if(LectureBlockStatus.cancelled.equals(row.getStatus())) {
+				if(LectureBlockStatus.cancelled.equals(row.getRow().getStatus())) {
 					return null;
 				}
-				if(row.isCompulsory()) {
+				if(row.getRow().isCompulsory()) {
 					long value;
-					if(isAuthorized(row)) {
-						value = positive(row.getLecturesAbsentNumber());
+					if(isAuthorized(row.getRow())) {
+						value = positive(row.getRow().getLecturesAbsentNumber());
 					} else {
 						value = 0l;
 					}
@@ -144,12 +141,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall>, FilterableFlexi
 				return null;
 			}
 			case status: return row;
-			case appeal: {
-				if(LectureBlockStatus.cancelled.equals(row.getStatus())) {
-					return false;
-				}
-				return row.isCompulsory() && appealCallback.appealAllowed(row);
-			}
+			case appeal: return row.getAppealButton();
 			default: return null;
 		}
 	}
@@ -174,14 +166,14 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCall>, FilterableFlexi
 	}
 	
 	@Override
-	public void setObjects(List<LectureBlockAndRollCall> objects) {
+	public void setObjects(List<LectureBlockAndRollCallRow> objects) {
 		super.setObjects(objects);
 		backups = objects;
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<LectureBlockAndRollCall> createCopyWithEmptyList() {
-		return new ParticipantLectureBlocksDataModel(getTableColumnModel(), appealCallback,
+	public DefaultFlexiTableDataModel<LectureBlockAndRollCallRow> createCopyWithEmptyList() {
+		return new ParticipantLectureBlocksDataModel(getTableColumnModel(),
 				authorizedAbsenceEnabled, absenceDefaultAuthorized, locale);
 	}
 	

@@ -475,7 +475,22 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
 				numOfLectures = lectureBlock.getPlannedLecturesNumber();
 			}
-			lectureBlockRollCallDao.adaptLecture(rollCall, lectureBlock.getPlannedLecturesNumber());
+			lectureBlockRollCallDao.adaptLecture(rollCall, numOfLectures);
+		}
+	}
+	
+	public void adaptAll() {
+		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlocks();
+		for(LectureBlock lectureBlock:lectureBlocks) {
+			List<LectureBlockRollCall> rollCallList = lectureBlockRollCallDao.getRollCalls(lectureBlock);
+			for(LectureBlockRollCall rollCall:rollCallList) {
+				int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
+				if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
+					numOfLectures = lectureBlock.getPlannedLecturesNumber();
+				}
+				lectureBlockRollCallDao.adaptLecture(rollCall, numOfLectures);
+			}
+			dbInstance.commitAndCloseSession();
 		}
 	}
 

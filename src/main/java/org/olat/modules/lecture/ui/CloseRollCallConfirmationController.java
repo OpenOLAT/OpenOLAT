@@ -39,6 +39,7 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RollCallSecurityCallback;
@@ -61,6 +62,8 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 	private final RollCallSecurityCallback secCallback;
 	
 	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
 	private LectureService lectureService;
 	
 	public CloseRollCallConfirmationController(UserRequest ureq, WindowControl wControl,
@@ -78,22 +81,23 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
-		int plannedLectures = lectureBlock.getPlannedLecturesNumber();
-		String[] effectiveKeys = new String[plannedLectures];
-		for(int i=plannedLectures; i-->0; ) {
-			effectiveKeys[i] = Integer.toString(i + 1);
-		}
-		effectiveLecturesEl = uifactory.addDropdownSingleselect("effective.lectures", formLayout, effectiveKeys, effectiveKeys, null);
-		int selectedEffectiveLectures = lectureBlock.getPlannedLecturesNumber();
-		if(lectureBlock.getEffectiveLecturesNumber() > 0) {
-			selectedEffectiveLectures = lectureBlock.getEffectiveLecturesNumber();
-		}
-		String selectedKey = Integer.toString(selectedEffectiveLectures);
-		for(String effectiveKey:effectiveKeys) {
-			if(effectiveKey.equals(selectedKey)) {
-				effectiveLecturesEl.select(effectiveKey, true);
-				break;
+		if(lectureModule.isStatusPartiallyDoneEnabled()) {
+			int plannedLectures = lectureBlock.getPlannedLecturesNumber();
+			String[] effectiveKeys = new String[plannedLectures];
+			for(int i=plannedLectures; i-->0; ) {
+				effectiveKeys[i] = Integer.toString(i + 1);
+			}
+			effectiveLecturesEl = uifactory.addDropdownSingleselect("effective.lectures", formLayout, effectiveKeys, effectiveKeys, null);
+			int selectedEffectiveLectures = lectureBlock.getPlannedLecturesNumber();
+			if(lectureBlock.getEffectiveLecturesNumber() > 0) {
+				selectedEffectiveLectures = lectureBlock.getEffectiveLecturesNumber();
+			}
+			String selectedKey = Integer.toString(selectedEffectiveLectures);
+			for(String effectiveKey:effectiveKeys) {
+				if(effectiveKey.equals(selectedKey)) {
+					effectiveLecturesEl.select(effectiveKey, true);
+					break;
+				}
 			}
 		}
 		
@@ -175,12 +179,14 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		lectureBlock.setComment(blockCommentEl.getValue());
 		
-		String selectedKey = effectiveLecturesEl.getSelectedKey();
 		int effectiveLectures = lectureBlock.getPlannedLecturesNumber();
-		try {	
-			effectiveLectures = Integer.parseInt(selectedKey);
-		} catch(Exception ex) {
-			logError("", ex);
+		if(effectiveLecturesEl != null) {
+			try {
+				String selectedKey = effectiveLecturesEl.getSelectedKey();
+				effectiveLectures = Integer.parseInt(selectedKey);
+			} catch(Exception ex) {
+				logError("", ex);
+			}
 		}
 		lectureBlock.setEffectiveLecturesNumber(effectiveLectures);
 		Date effectiveEndDate = getEffectiveEndDate();
@@ -228,10 +234,12 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		effectiveLecturesEl.clearError();
-		if(!effectiveLecturesEl.isOneSelected()) {
-			effectiveLecturesEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
+		if(effectiveLecturesEl != null) {
+			effectiveLecturesEl.clearError();
+			if(!effectiveLecturesEl.isOneSelected()) {
+				effectiveLecturesEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
 		}
 	
 		return allOk & super.validateFormLogic(ureq);

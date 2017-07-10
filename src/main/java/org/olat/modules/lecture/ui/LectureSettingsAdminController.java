@@ -54,12 +54,12 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private TextElement attendanceRateEl, appealPeriodEl, reminderPeriodEl,
 		autoClosePeriodEl;
 	private MultipleSelectionElement enableEl, calculateAttendanceRateEnableEl,
-		appealAbsenceEnableEl, statusEnabledEl,
+		appealAbsenceEnableEl, statusEnabledEl, partiallyDoneEnabledEl,
 		authorizedAbsenceEnableEl, absenceDefaultAuthorizedEl,
 		countAuthorizedAbsenceAsAttendantEl, syncTeachersCalendarEnableEl,
 		syncCourseCalendarEnableEl, teacherCanAuthorizeAbsenceEl,
 		reminderEnableEl, rollCallEnableEl;
-
+	private FormLayoutContainer globalCont;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -124,21 +124,19 @@ public class LectureSettingsAdminController extends FormBasicController {
 		}
 
 		//global configuration
-		FormLayoutContainer globalCont = FormLayoutContainer.createDefaultFormLayout("global", getTranslator());
+		globalCont = FormLayoutContainer.createDefaultFormLayout("global", getTranslator());
 		globalCont.setFormTitle(translate("lecture.admin.global.title"));
 		globalCont.setRootForm(mainForm);
 		formLayout.add("global", globalCont);
 
-		String[] statusKeys = new String[]{
-				LectureBlockStatus.partiallydone.name(), LectureBlockStatus.cancelled.name()
-			};
-		String[] statusValues = new String[]{
-				translate(LectureBlockStatus.partiallydone.name()), translate(LectureBlockStatus.cancelled.name())
-			};
-		statusEnabledEl = uifactory.addCheckboxesVertical("lecture.status.enabled", globalCont, statusKeys, statusValues, 1);
+		partiallyDoneEnabledEl = uifactory.addCheckboxesVertical("lecture.status.partially.done.enabled", globalCont, onKeys, onValues, 1);
 		if(lectureModule.isStatusPartiallyDoneEnabled()) {
-			statusEnabledEl.select(LectureBlockStatus.partiallydone.name(), true);
+			partiallyDoneEnabledEl.select(onKeys[0], true);
 		}
+
+		String[] statusKeys = new String[]{ LectureBlockStatus.cancelled.name() };
+		String[] statusValues = new String[]{ translate(LectureBlockStatus.cancelled.name()) };
+		statusEnabledEl = uifactory.addCheckboxesVertical("lecture.status.enabled", globalCont, statusKeys, statusValues, 1);
 		if(lectureModule.isStatusCancelledEnabled()) {
 			statusEnabledEl.select(LectureBlockStatus.cancelled.name(), true);
 		}
@@ -212,6 +210,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 	
 	private void updateUI() {
 		boolean enabled = enableEl.isAtLeastSelected(1);
+		canOverrideStandardConfigEl.setVisible(enabled);
 		authorizedAbsenceEnableEl.setVisible(enabled);
 		attendanceRateEl.setVisible(enabled);
 		appealAbsenceEnableEl.setVisible(enabled);
@@ -219,8 +218,12 @@ public class LectureSettingsAdminController extends FormBasicController {
 		reminderEnableEl.setVisible(enabled);
 		syncTeachersCalendarEnableEl.setVisible(enabled);
 		syncCourseCalendarEnableEl.setVisible(enabled);
+		
+		globalCont.setVisible(enabled);
 		autoClosePeriodEl.setVisible(enabled);
 		statusEnabledEl.setVisible(enabled);
+		partiallyDoneEnabledEl.setVisible(enabled);
+		absenceDefaultAuthorizedEl.setVisible(enabled);
 		rollCallEnableEl.setVisible(enabled);
 		calculateAttendanceRateEnableEl.setVisible(enabled);
 		
@@ -292,8 +295,9 @@ public class LectureSettingsAdminController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(enableEl == source || appealAbsenceEnableEl == source || reminderEnableEl == source
-				|| authorizedAbsenceEnableEl == source) {
+		if(enableEl == source) {
+			updateUI();
+		} else if(appealAbsenceEnableEl == source || reminderEnableEl == source || authorizedAbsenceEnableEl == source) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -306,8 +310,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 		if(enableEl.isAtLeastSelected(1)) {
 			//enabled user tool
 			Set<String> availableTools = userToolsModule.getAvailableUserToolSet();
-			if(!availableTools.contains("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.ParticipantLecturesOverviewController")) {
-				availableTools.add("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.ParticipantLecturesOverviewController");
+			if(!availableTools.contains("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.LecturesToolController")) {
+				availableTools.add("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.LecturesToolController");
 			}
 			
 			StringBuilder aTools = new StringBuilder();
@@ -320,6 +324,9 @@ public class LectureSettingsAdminController extends FormBasicController {
 		
 		int autoClosePeriod = Integer.parseInt(autoClosePeriodEl.getValue());
 		lectureModule.setRollCallAutoClosePeriod(autoClosePeriod);
+		
+		lectureModule.setStatusPartiallyDoneEnabled(partiallyDoneEnabledEl.isAtLeastSelected(1));
+		lectureModule.setStatusCancelledEnabled(statusEnabledEl.isAtLeastSelected(1));
 		
 		boolean authorizedAbsenceenabled = authorizedAbsenceEnableEl.isAtLeastSelected(1);
 		lectureModule.setAuthorizedAbsenceEnabled(authorizedAbsenceEnableEl.isAtLeastSelected(1));

@@ -510,11 +510,7 @@ public class TeacherRollCallController extends FormBasicController {
 			lectureBlock.setRollCallStatus(LectureRollCallStatus.open);
 		}
 		if(lectureBlock.getStatus() == null || lectureBlock.getStatus() == LectureBlockStatus.active) {
-			if(lectureModule.isStatusPartiallyDoneEnabled()) {
-				lectureBlock.setStatus(LectureBlockStatus.partiallydone);
-			} else {
-				lectureBlock.setStatus(LectureBlockStatus.active);
-			}
+			lectureBlock.setStatus(LectureBlockStatus.active);
 		}
 		lectureBlock = lectureService.save(lectureBlock, null);
 		lectureService.recalculateSummary(lectureBlock.getEntry());

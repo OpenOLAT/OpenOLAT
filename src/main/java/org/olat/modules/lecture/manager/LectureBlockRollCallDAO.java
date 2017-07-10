@@ -120,8 +120,6 @@ public class LectureBlockRollCallDAO {
 		}
 	}
 	
-
-	
 	public LectureBlockRollCall removeLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences) {
 		removeInternalLecture(lectureBlock, rollCall, absences);
 		return dbInstance.getCurrentEntityManager().merge(rollCall);

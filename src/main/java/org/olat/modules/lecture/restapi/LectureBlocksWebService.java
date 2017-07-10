@@ -244,4 +244,16 @@ public class LectureBlocksWebService {
 		lectureService.syncCalendars(entry);
 		return Response.ok().build();
 	}
+	
+	@GET
+	@Path("adaptation")
+	public Response adapatation(@Context HttpServletRequest httpRequest) {
+		Roles roles = getRoles(httpRequest);
+		if(!roles.isOLATAdmin()) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		
+		lectureService.adaptAll();
+		return Response.ok().build();
+	}
 }

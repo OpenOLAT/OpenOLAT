@@ -264,6 +264,11 @@ public interface LectureService {
 	public void adaptRollCalls(LectureBlock lectureBlock);
 	
 	/**
+	 * adapt all roll call on the database. Use with cautions!
+	 */
+	public void adaptAll();
+	
+	/**
 	 * Add the specified lectures to the ones the identity follows.
 	 * 
 	 * @param identity The participant of the lecture

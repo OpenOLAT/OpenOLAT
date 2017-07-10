@@ -146,6 +146,15 @@ public class LectureBlockDAO {
 		return rows;
 	}
 	
+	public List<LectureBlock> getLectureBlocks() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select block from lectureblock block")
+		  .append(" inner join fetch block.entry entry");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlock.class)
+				.getResultList();
+	}
+	
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry) {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("lectureBlocksByRepositoryEntry", LectureBlock.class)
