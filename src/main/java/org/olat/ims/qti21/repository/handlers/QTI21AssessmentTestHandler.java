@@ -147,7 +147,9 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			qpoolServiceProvider.exportToEditorPackage(repositoryDir, itemToImport.getItems(), locale);
 		} else if(createObject instanceof QTIEditorPackage) {
 			QTIEditorPackage testToConvert = (QTIEditorPackage)createObject;
-			qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir, locale);
+			QTI21DeliveryOptions options = qtiService.getDeliveryOptions(re);
+			qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir, locale, options);
+			qtiService.setDeliveryOptions(re, options);
 		} else if(createObject instanceof OLATResource) {
 			//convert a Onyx test in QTI 2.1
 			OLATResource onyxResource = (OLATResource)createObject;
@@ -156,8 +158,10 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			if(OnyxModule.isOnyxTest((OLATResource)createObject)) {
 				copyOnyxResources(onyxResource, repositoryDir);
 			} else {
+				QTI21DeliveryOptions options = qtiService.getDeliveryOptions(re);
 				QTIEditorPackage testToConvert = TestFileResource.getQTIEditorPackageReader(onyxResource);
-				qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir, locale);
+				qpoolServiceProvider.convertFromEditorPackage(testToConvert, repositoryDir, locale, options);
+				qtiService.setDeliveryOptions(re, options);
 			}
 			copyMetadata(onyxRe, re, repositoryDir);
 		} else {

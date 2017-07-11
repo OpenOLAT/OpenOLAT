@@ -76,6 +76,7 @@ import org.olat.ims.qti.editor.beecom.objects.SelectionOrdering;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTI12HtmlHandler;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
@@ -149,12 +150,12 @@ public class QTI12To21Converter {
 		manifest = ManifestBuilder.createAssessmentTestBuilder();
 	}
 	
-	public AssessmentTest convert(QTIEditorPackage qtiEditorPackage)
+	public AssessmentTest convert(QTIEditorPackage qtiEditorPackage, QTI21DeliveryOptions qti21Options)
 	throws URISyntaxException {
-		return convert(qtiEditorPackage.getBaseDir(), qtiEditorPackage.getQTIDocument());
+		return convert(qtiEditorPackage.getBaseDir(), qtiEditorPackage.getQTIDocument(), qti21Options);
 	}
 	
-	public AssessmentTest convert(VFSContainer originalContainer, QTIDocument doc)
+	public AssessmentTest convert(VFSContainer originalContainer, QTIDocument doc, QTI21DeliveryOptions qti21Options)
 	throws URISyntaxException {
 		Assessment assessment = doc.getAssessment();
 
@@ -172,11 +173,16 @@ public class QTI12To21Converter {
 		TestPart testPart = AssessmentTestFactory.createTestPart(assessmentTest);
 		ItemSessionControl itemSessionControl = testPart.getItemSessionControl();
 		Control tmpControl = QTIEditHelper.getControl(assessment);
-		if(tmpControl.getFeedback() == Control.CTRL_YES) {
-			itemSessionControl.setShowFeedback(Boolean.TRUE);
-		}
 		if(tmpControl.getSolution() == Control.CTRL_YES) {
 			itemSessionControl.setShowSolution(Boolean.TRUE);
+		}
+		
+		if(qti21Options != null) {
+			qti21Options.setHideFeedbacks(false);
+			
+			if(assessment.isInheritControls() && tmpControl.getFeedback() != Control.CTRL_YES) {
+				qti21Options.setHideFeedbacks(true);
+			}
 		}
 
 		AssessmentTestBuilder assessmentTestBuilder = new AssessmentTestBuilder(assessmentTest);
