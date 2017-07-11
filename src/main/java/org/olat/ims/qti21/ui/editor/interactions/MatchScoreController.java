@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui.editor.interactions;
 
+import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
@@ -41,6 +44,8 @@ import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 import org.olat.ims.qti21.model.xml.interactions.MatchAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
+import org.olat.ims.qti21.ui.ResourcesMapper;
+import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -70,15 +75,24 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 	
 	private MatchAssessmentItemBuilder itemBuilder;
 	
+	private int count = 0;
+	private final String mapperUri;
+	private final File itemFileRef;
 	private List<MatchWrapper> sourceWrappers = new ArrayList<>();
 	private List<MatchWrapper> targetWrappers = new ArrayList<>();
 	private Map<DirectedPairValue, MatchScoreWrapper> scoreWrappers = new HashMap<>();
 	
 	public MatchScoreController(UserRequest ureq, WindowControl wControl, MatchAssessmentItemBuilder itemBuilder,
-			AssessmentItemRef itemRef, boolean restrictedEdit) {
+			AssessmentItemRef itemRef, File itemFileRef, boolean restrictedEdit) {
 		super(ureq, wControl, itemRef, restrictedEdit);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
+		this.itemFileRef = itemFileRef;
+		
+		URI assessmentObjectUri = itemFileRef.toURI();
+		mapperUri = registerCacheableMapper(null, "MatchScoreController::" + CodeHelper.getRAMUniqueID(),
+				new ResourcesMapper(assessmentObjectUri));
+		
 		initForm(ureq);
 	}
 
@@ -250,21 +264,31 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 	}
 	
 	private MatchWrapper createMatchWrapper(SimpleAssociableChoice choice) {
-		return new MatchWrapper(choice.getIdentifier(), choice);
+		FlowFormItem summaryEl = new FlowFormItem("summary_" + count++, itemFileRef);
+		summaryEl.setFlowStatics(choice.getFlowStatics());
+		summaryEl.setMapperUri(mapperUri);
+		scoreCont.add(summaryEl);
+		return new MatchWrapper(choice.getIdentifier(), choice, summaryEl);
 	}
 	
 	public static class MatchWrapper {
 
 		private final Identifier choiceIdentifier;
 		private SimpleAssociableChoice choice;
+		private final FlowFormItem summaryEl;
 		
-		public MatchWrapper(Identifier choiceIdentifier, SimpleAssociableChoice choice) {
+		public MatchWrapper(Identifier choiceIdentifier, SimpleAssociableChoice choice, FlowFormItem summaryEl) {
 			this.choiceIdentifier = choiceIdentifier;
 			this.choice = choice;
+			this.summaryEl = summaryEl;
 		}
 		
 		public String getSummary() {
 			return new AssessmentHtmlBuilder().flowStaticString(choice.getFlowStatics());
+		}
+		
+		public FlowFormItem getSummaryEl() {
+			return summaryEl;
 		}
 
 		public Identifier getChoiceIdentifier() {
