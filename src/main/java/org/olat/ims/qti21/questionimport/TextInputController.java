@@ -51,7 +51,6 @@ public class TextInputController extends StepFormBasicController {
 	private String validatedInp;
 	private TextElement inputElement;
 	
-	private List<AssessmentItemAndMetadata> parsedItems;
 	private final AssessmentItemsPackage importedItems;
 	private final ImportOptions options;
 	
@@ -92,8 +91,18 @@ public class TextInputController extends StepFormBasicController {
 		
 		String inp = inputElement.getValue();
 		if(validatedInp == null || !validatedInp.equals(inp)) {
-			boolean errors = convertInputField();
-			allOk &= !errors;
+			CSVToAssessmentItemConverter converter = new CSVToAssessmentItemConverter(options, qtiService.qtiSerializer());
+			try {
+				converter.parse(inputElement.getValue());
+				List<AssessmentItemAndMetadata> items = converter.getItems();
+				if(items == null || items.isEmpty()) {
+					inputElement.setErrorKey("form.mandatory.hover", null);
+					allOk &= false;
+				}
+			} catch (Exception e) {
+				inputElement.setErrorKey("error.at.line", new String[] { Integer.toString(converter.getCurrentLine()) });
+				allOk &= false;
+			}
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
@@ -101,16 +110,10 @@ public class TextInputController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		importedItems.setItems(parsedItems);
-		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-	}
-	
-	private boolean convertInputField() {
-		boolean importDataError = false;
 		CSVToAssessmentItemConverter converter = new CSVToAssessmentItemConverter(options, qtiService.qtiSerializer());
 		converter.parse(inputElement.getValue());
-		parsedItems = converter.getItems();
-		return importDataError;
+		importedItems.setItems(converter.getItems());
+		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 	
 	private static class ExampleMapper implements Mapper {
