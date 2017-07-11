@@ -3,7 +3,7 @@
 		<tr>
 			<th></th>
 			#foreach($targetChoice in $targetChoices)
-				<th>${targetChoice.getSummary()}
+				<th>${r.render($targetChoice.getSummaryEl())}
 			#end
 		</tr>
 	</thead>

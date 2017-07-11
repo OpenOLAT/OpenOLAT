@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui.editor.interactions;
 
+import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -32,7 +34,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
@@ -40,6 +44,8 @@ import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 import org.olat.ims.qti21.model.xml.interactions.ChoiceAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
+import org.olat.ims.qti21.ui.ResourcesMapper;
+import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
@@ -68,18 +74,27 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	private FormLayoutContainer scoreCont;
 	private final List<ChoiceWrapper> wrappers = new ArrayList<>();
 	
+	private int count = 0;
+	private final File itemFileRef;
+	private final String mapperUri;
 	private final ChoiceAssessmentItemBuilder itemBuilder;
 	
 	private int counter = 0;
 	private final String contextHelpUrl;
 	
 	public ChoiceScoreController(UserRequest ureq, WindowControl wControl,
-			ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, boolean restrictedEdit,
-			String contextHelpUrl) {
+			ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, File itemFileRef,
+			boolean restrictedEdit, String contextHelpUrl) {
 		super(ureq, wControl, itemRef, restrictedEdit);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
+		this.itemFileRef = itemFileRef;
 		this.contextHelpUrl = contextHelpUrl;
+		
+		URI assessmentObjectUri = itemFileRef.toURI();
+		mapperUri = registerCacheableMapper(null, "ChoiceScoreController::" + CodeHelper.getRAMUniqueID(),
+				new ResourcesMapper(assessmentObjectUri));
+		
 		initForm(ureq);
 	}
 
@@ -233,6 +248,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		private String summary;
 		private Choice choice;
 		private final TextElement pointsEl;
+		private FlowFormItem summaryEl;
 		
 		public ChoiceWrapper(Choice choice, TextElement pointsEl) {
 			setChoice(choice);
@@ -248,6 +264,10 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			return summary;
 		}
 		
+		public FlowFormItem getSummaryEl() {
+			return summaryEl;
+		}
+		
 		public TextElement getPointsEl() {
 			return pointsEl;
 		}
@@ -259,15 +279,29 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		public void setChoice(Choice choice) {
 			this.choice = choice;
 			if(choice instanceof SimpleChoice) {
-				String answer = new AssessmentHtmlBuilder().flowStaticString(((SimpleChoice)choice).getFlowStatics());
+				SimpleChoice simpleChoice = (SimpleChoice)choice;
+				String answer = new AssessmentHtmlBuilder().flowStaticString(simpleChoice.getFlowStatics());
 				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
 				answer = answer.trim();
 				summary = Formatter.truncate(answer, 128);
+				if(!StringHelper.containsNonWhitespace(summary)) {
+					summaryEl = new FlowFormItem("summary" + count++, itemFileRef);
+					summaryEl.setFlowStatics(simpleChoice.getFlowStatics());
+					summaryEl.setMapperUri(mapperUri);
+					scoreCont.add(summaryEl);
+				}
 			} else if(choice instanceof Hottext) {
-				String answer = new AssessmentHtmlBuilder().inlineStaticString(((Hottext)choice).getInlineStatics());
+				Hottext hottext = (Hottext)choice;
+				String answer = new AssessmentHtmlBuilder().inlineStaticString(hottext.getInlineStatics());
 				answer = FilterFactory.getHtmlTagAndDescapingFilter().filter(answer);
 				answer = answer.trim();
 				summary = Formatter.truncate(answer, 128);
+				if(!StringHelper.containsNonWhitespace(summary)) {
+					summaryEl = new FlowFormItem("summary" + count++, itemFileRef);
+					summaryEl.setInlineStatics(hottext.getInlineStatics());
+					summaryEl.setMapperUri(mapperUri);
+					scoreCont.add(summaryEl);
+				}
 			} else {
 				summary = "";
 			}
