@@ -172,13 +172,13 @@ public class ItemsController extends BasicController implements Activateable2 {
 		vcItems.contextPut("helper", helper);
 
 		olderItemsLink = LinkFactory.createLink("feed.older.items", vcItems, this);
-		olderItemsLink.setCustomDisplayText("&laquo;");
+		olderItemsLink.setCustomDisplayText("&laquo; " + translate("feed.older.items"));
 		olderItemsLink.setCustomEnabledLinkCSS("o_backward");
 		olderItemsLink.setTitle("feed.older.items");
 
 		newerItemsLink = LinkFactory.createLink("feed.newer.items", vcItems, this);
 		newerItemsLink.setCustomEnabledLinkCSS("o_forward");
-		newerItemsLink.setCustomDisplayText("&raquo;");
+		newerItemsLink.setCustomDisplayText(translate("feed.newer.items") + " &raquo;");
 		newerItemsLink.setTitle("feed.newer.items");
 
 		startpageLink = LinkFactory.createLink("feed.startpage", vcItems, this);

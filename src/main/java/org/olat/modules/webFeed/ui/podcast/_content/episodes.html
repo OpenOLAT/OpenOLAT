@@ -119,20 +119,33 @@
 		</div>
 	#end
 	
-	<ul class="pagination">
-		#if ( $helper.hasOlderItems($items) )
-		<li>
-			$r.render("feed.older.items")
-		</li>
-		#end
-		#if ( $helper.hasNewerItems() )
-		<li>
-			$r.render("feed.startpage")
-		</li>
-		<li>
-			$r.render("feed.newer.items")
-		</li>
-		#end
-	</ul>
+	<div class="o_button_group">
+		<ul class="pagination">
+			<li>
+				#if ( $helper.hasOlderItems($items) )
+					$r.getComponent("feed.older.items").setEnabled($true)
+				#else
+					$r.getComponent("feed.older.items").setEnabled($false)
+				#end
+				$r.render("feed.older.items")
+			</li>
+			<li>
+				#if ( $helper.hasNewerItems() )
+					$r.getComponent("feed.startpage").setEnabled($true)
+				#else
+					$r.getComponent("feed.startpage").setEnabled($false)
+				#end
+				$r.render("feed.startpage")
+			</li>
+			<li>
+				#if ( $helper.hasNewerItems() )
+					$r.getComponent("feed.newer.items").setEnabled($true)
+				#else
+					$r.getComponent("feed.newer.items").setEnabled($false)
+				#end
+				$r.render("feed.newer.items")
+			</li>
+		</ul>
+	</div>
 #end
 </div>
