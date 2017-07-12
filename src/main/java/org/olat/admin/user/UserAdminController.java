@@ -420,7 +420,7 @@ public class UserAdminController extends BasicController implements Activateable
 			userTabP.addTab(translate(NLS_VIEW_LECTURES), new TabCreator() {
 				@Override
 				public Component create(UserRequest uureq) {
-					lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), identity, true, true, true);
+					lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), identity, true, true, true, true);
 					listenTo(lecturesCtrl);
 					BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("lectures", getTranslator(), lecturesCtrl);
 					stackPanel.pushController(translate(NLS_VIEW_LECTURES), lecturesCtrl);

@@ -76,8 +76,6 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 
 	public void setEffectiveLecturesNumber(int effectiveLecturesNumber);
 
-	public String getLog();
-
 	public Date getStartDate();
 
 	public void setStartDate(Date startDate);

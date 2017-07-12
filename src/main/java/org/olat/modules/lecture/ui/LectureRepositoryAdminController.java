@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,8 +36,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.lecture.LectureBlockAuditLog;
+import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.export.LecturesBlocksEntryExport;
+import org.olat.modules.lecture.ui.export.RepositoryEntryAuditLogExport;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -45,7 +51,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class LectureRepositoryAdminController extends BasicController implements TooledController {
 	
-	private Link archiveLink;
+	private Link archiveLink, logLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final TooledStackedPanel stackPanel;
@@ -57,6 +63,9 @@ public class LectureRepositoryAdminController extends BasicController implements
 	
 	private RepositoryEntry entry;
 	private boolean configurationChanges = false;
+	
+	@Autowired
+	private LectureService lectureService;
 	
 	public LectureRepositoryAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry entry) {
@@ -107,6 +116,11 @@ public class LectureRepositoryAdminController extends BasicController implements
 		archiveLink.setIconLeftCSS("o_icon o_icon_archive_tool");
 		archiveLink.setVisible(settingsCtrl.isLectureEnabled());
 		stackPanel.addTool(archiveLink, Align.right);
+		
+		logLink = LinkFactory.createToolLink("log", translate("log"), this);
+		logLink.setIconLeftCSS("o_icon o_icon_log");
+		logLink.setVisible(settingsCtrl.isLectureEnabled());
+		stackPanel.addTool(logLink, Align.right);
 	}
 
 	@Override
@@ -126,6 +140,8 @@ public class LectureRepositoryAdminController extends BasicController implements
 			}
 		} else if(archiveLink == source) {
 			doExportArchive(ureq);
+		} else if(logLink == source) {
+			doExportLog(ureq);
 		}
 	}
 	
@@ -177,6 +193,12 @@ public class LectureRepositoryAdminController extends BasicController implements
 	
 	private void doExportArchive(UserRequest ureq) {
 		LecturesBlocksEntryExport archive = new LecturesBlocksEntryExport(entry, getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(archive);
+	}
+	
+	private void doExportLog(UserRequest ureq) {
+		List<LectureBlockAuditLog> auditLog = lectureService.getAuditLog(entry);
+		RepositoryEntryAuditLogExport archive = new RepositoryEntryAuditLogExport(entry, auditLog, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(archive);
 	}
 }

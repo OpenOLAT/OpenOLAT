@@ -144,6 +144,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_lifecycle:before { content: $fa-var-power-off;}
 .o_icon_lifecycle_date:before { content: $fa-var-calendar;}
 .o_icon_locked:before { content: $fa-var-lock;}
+.o_icon_log:before { content: $fa-var-file-text;}
 .o_icon_login:before { content: $fa-var-sign-in;}
 .o_icon_logout:before { content: $fa-var-sign-out;}
 .o_icon_mandatory:before { content: $fa-var-asterisk; color: #f0ad4e;}

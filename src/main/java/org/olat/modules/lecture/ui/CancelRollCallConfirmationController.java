@@ -35,6 +35,7 @@ import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RollCallSecurityCallback;
@@ -127,13 +128,15 @@ public class CancelRollCallConfirmationController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String before = lectureService.toAuditXml(lectureBlock);
 		Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());
 		Reason selectedReason = lectureService.getReason(reasonKey);
 		lectureBlock.setReasonEffectiveEnd(selectedReason);
 		lectureBlock = lectureService.cancel(lectureBlock);
+		String after = lectureService.toAuditXml(lectureBlock);
+		lectureService.auditLog(LectureBlockAuditLog.Action.cancelLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 		
-		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Cancelled");
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_CANCELLED, getClass(),
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 	}

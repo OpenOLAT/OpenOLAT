@@ -28,6 +28,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -35,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.control.Controller;
@@ -43,6 +45,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
@@ -51,6 +54,7 @@ import org.olat.modules.lecture.ui.ParticipantLecturesDataModel.LecturesCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
 import org.olat.modules.lecture.ui.component.PercentCellRenderer;
 import org.olat.modules.lecture.ui.component.RateWarningCellRenderer;
+import org.olat.modules.lecture.ui.export.IdentityAuditLogExport;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -65,10 +69,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ParticipantLecturesOverviewController extends FormBasicController implements BreadcrumbPanelAware {
 	
+	private FormLink logButton;
 	private FlexiTableElement tableEl;
 	private BreadcrumbPanel stackPanel;
 	private ParticipantLecturesDataModel tableModel;
 	
+	private final boolean withLog;
 	private final boolean withPrint;
 	private final boolean withTitle;
 	private final boolean withSelect;
@@ -85,12 +91,13 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private RepositoryService repositoryService;
 	
 	public ParticipantLecturesOverviewController(UserRequest ureq, WindowControl wControl, boolean withTitle) {
-		this(ureq, wControl, ureq.getIdentity(), true, true, withTitle);
+		this(ureq, wControl, ureq.getIdentity(), true, true, false, withTitle);
 	}
 	
 	public ParticipantLecturesOverviewController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, boolean withPrint, boolean withSelect, boolean withTitle) {
+			Identity assessedIdentity, boolean withPrint, boolean withSelect, boolean withLog, boolean withTitle) {
 		super(ureq, wControl, "participant_overview");
+		this.withLog = withLog;
 		this.withPrint = withPrint;
 		this.withTitle = withTitle;
 		this.withSelect = withSelect;
@@ -127,6 +134,11 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 			setFormTitle("lectures.print.title", new String[]{
 					StringHelper.escapeHtml(userManager.getUserDisplayName(assessedIdentity))
 			});
+		}
+		
+		if(withLog) {
+			logButton = uifactory.addFormLink("log", formLayout, Link.BUTTON);
+			logButton.setIconLeftCSS("o_icon o_icon_log");
 		}
 	
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -188,6 +200,8 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 					doOpenCourse(ureq, row);
 				}
 			}
+		} else if(logButton == source) {
+			doExportLog(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -211,7 +225,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_lectures_print");
-				Controller printCtrl = new ParticipantLecturesOverviewController(lureq, lwControl, assessedIdentity, false, false, true);
+				Controller printCtrl = new ParticipantLecturesOverviewController(lureq, lwControl, assessedIdentity, false, false, false, true);
 				listenTo(printCtrl);
 				return printCtrl;
 			}					
@@ -223,5 +237,11 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private void doOpenCourse(UserRequest ureq, LectureBlockStatistics row) {
 		String businessPath = "[RepositoryEntry:" + row.getRepoKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void doExportLog(UserRequest ureq) {
+		List<LectureBlockAuditLog> auditLog = lectureService.getAuditLog(assessedIdentity);
+		IdentityAuditLogExport export = new IdentityAuditLogExport(assessedIdentity, auditLog, getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 }

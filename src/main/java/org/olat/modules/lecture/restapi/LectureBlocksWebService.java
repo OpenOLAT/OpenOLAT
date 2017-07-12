@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.restapi;
 
+import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.ArrayList;
@@ -253,7 +254,7 @@ public class LectureBlocksWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
-		lectureService.adaptAll();
+		lectureService.adaptAll(getIdentity(httpRequest));
 		return Response.ok().build();
 	}
 }

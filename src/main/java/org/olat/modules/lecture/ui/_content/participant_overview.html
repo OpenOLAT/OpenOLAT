@@ -2,8 +2,9 @@
 #if($r.isNotEmpty($off_title))
 	<legend><i class="o_icon o_icon-fw o_icon_lecture"> </i> $off_title</legend>
 #end
-#if($r.isNotNull($withPrint) && $withPrint)
+#if(($r.isNotNull($withPrint) && $withPrint) || $r.available("log"))
 	<div class="o_button_group o_button_group_right">
+	#if($r.isNotNull($withPrint) && $withPrint)
 		<script type="text/javascript">
 /* <![CDATA[ */ 
 function print() {
@@ -17,6 +18,10 @@ function print() {
 /* ]]> */
 		</script>
 		<a class="btn btn-default" href="javascript:print()" title="$r.translate("print")"><i class="o_icon o_icon_print"> </i> $r.translate("print")</a>
+	#end
+	#if($r.available("log"))
+		$r.render("log")
+	#end
 	</div>
 #end
 $r.render("table")

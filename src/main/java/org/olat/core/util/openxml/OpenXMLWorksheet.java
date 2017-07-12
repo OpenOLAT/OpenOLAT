@@ -22,7 +22,9 @@ package org.olat.core.util.openxml;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
 import javax.xml.stream.XMLStreamException;
@@ -51,7 +53,6 @@ public class OpenXMLWorksheet {
 	}
 	
 	private String id;
-	private String name;
 	private final OpenXMLWorkbook workbook;
 	private final ZipOutputStream zout;
 	private XMLStreamWriter writer;
@@ -62,6 +63,7 @@ public class OpenXMLWorksheet {
 	
 	private Row row;
 	private int rowPosition = 0;
+	private Map<Integer,Integer> columnsWidth = new HashMap<>();
 	
 	public OpenXMLWorksheet(String id, OpenXMLWorkbook workbook, ZipOutputStream zout) {
 		this.id = id;
@@ -72,14 +74,6 @@ public class OpenXMLWorksheet {
 	public String getId() {
 		return id;
 	}
-	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public int getHeaderRows() {
 		return headerRows;
@@ -89,6 +83,9 @@ public class OpenXMLWorksheet {
 		this.headerRows = headerRows;
 	}
 	
+	public void setColumnWidth(int pos, int width) {
+		columnsWidth.put(pos, width);
+	}
 	
 	public Row newRow() {
 		if(!opened) {
@@ -224,6 +221,21 @@ public class OpenXMLWorksheet {
 			writer.writeAttribute("defaultRowHeight", "15");
 			writer.writeAttribute("x14ac:dyDescent", "0");
 			writer.writeEndElement();
+			
+			if(columnsWidth != null && columnsWidth.size() > 0) {
+				writer.writeStartElement("cols");
+				for(Map.Entry<Integer, Integer> columnWidth:columnsWidth.entrySet()) {
+					Integer pos = columnWidth.getKey();
+					Integer width = columnWidth.getValue();
+					writer.writeStartElement("col");
+					writer.writeAttribute("min", pos.toString());
+					writer.writeAttribute("max", pos.toString());
+					writer.writeAttribute("width", width.toString());
+					writer.writeAttribute("customWidth", "1");
+					writer.writeEndElement();
+				}
+				writer.writeEndElement();
+			}
 
 			writer.writeStartElement("sheetData");
 		} catch(XMLStreamException e) {

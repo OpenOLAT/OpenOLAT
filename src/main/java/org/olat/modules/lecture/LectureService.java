@@ -92,9 +92,10 @@ public interface LectureService {
 	 * the status of the roll call.
 	 * 
 	 * @param lectureBlock The lecture block to close
+	 * @param author The user which trigger the action
 	 * @return The updated lecture block
 	 */
-	public LectureBlock close(LectureBlock lectureBlock);
+	public LectureBlock close(LectureBlock lectureBlock, Identity author);
 	
 	/**
 	 * The method will set the status of the lecture block and 
@@ -105,13 +106,37 @@ public interface LectureService {
 	 */
 	public LectureBlock cancel(LectureBlock lectureBlock);
 	
+	public String toAuditXml(LectureBlock lectureBlock);
+	
+	public LectureBlock toAuditLectureBlock(String xml);
+	
+	public String toAuditXml(LectureBlockRollCall rollCall);
+	
+	public LectureBlockRollCall toAuditLectureBlockRollCall(String xml);
+
+	
 	/**
 	 * Append content to the log saved on the lecture block.
 	 * 
 	 * @param lectureBlock The lecture block
 	 * @param log The content to append
 	 */
-	public void appendToLectureBlockLog(LectureBlockRef lectureBlock, Identity user, Identity assessedIdentity, String log);
+	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
+			LectureBlockRef lectureBlock, LectureBlockRollCall rollCall,
+			RepositoryEntryRef entry, IdentityRef assessedIdentity, IdentityRef author);
+	
+	public List<LectureBlockAuditLog> getAuditLog(LectureBlockRef lectureBlock);
+	
+	/**
+	 * The audit log of a specific user.
+	 * 
+	 * @param assessedIdentity
+	 * @return A list of roll call changes.
+	 */
+	public List<LectureBlockAuditLog> getAuditLog(IdentityRef assessedIdentity);
+	
+
+	public List<LectureBlockAuditLog> getAuditLog(RepositoryEntryRef entry);
 	
 	/**
 	 * Reload the lecture block.
@@ -264,9 +289,11 @@ public interface LectureService {
 	public void adaptRollCalls(LectureBlock lectureBlock);
 	
 	/**
-	 * adapt all roll call on the database. Use with cautions!
+	 * Adapt all roll call on the database. Use with cautions!
+	 * 
+	 * @param author The user which trigger the action
 	 */
-	public void adaptAll();
+	public void adaptAll(Identity author);
 	
 	/**
 	 * Add the specified lectures to the ones the identity follows.

@@ -1980,8 +1980,7 @@ create table o_lecture_block (
   l_descr text,
   l_preparation text,
   l_location varchar(255),
-  l_comment text, 
-  l_log text,
+  l_comment text,
   l_start_date timestamp not null,
   l_end_date timestamp not null,
   l_compulsory bool default true,
@@ -2009,8 +2008,7 @@ create table o_lecture_block_roll_call (
   id bigserial not null,
   creationdate timestamp not null,
   lastmodified timestamp not null,
-  l_comment text, 
-  l_log text,
+  l_comment text,
   l_lectures_attended varchar(128),
   l_lectures_absent varchar(128),
   l_lectures_attended_num int8 not null default 0,
@@ -2065,6 +2063,21 @@ create table o_lecture_entry_config (
   l_sync_calendar_course bool default null,
   fk_entry int8 not null,
   unique(fk_entry),
+  primary key (id)
+);
+
+create table o_lecture_block_audit_log (
+  id bigserial not null,
+  creationdate timestamp not null,
+  l_action varchar(32),
+  l_val_before text,
+  l_val_after text,
+  l_message text,
+  fk_lecture_block int8,
+  fk_roll_call int8,
+  fk_entry int8,
+  fk_identity int8,
+  fk_author int8,
   primary key (id)
 );
 
@@ -2944,6 +2957,9 @@ create index idx_lec_part_ident_idx on o_lecture_participant_summary(fk_identity
 
 alter table o_lecture_entry_config add constraint lec_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_lec_entry_conf_entry_idx on o_lecture_entry_config(fk_entry);
+
+create index idx_lec_audit_entry_idx on o_lecture_block_audit_log(fk_entry);
+create index idx_lec_audit_ident_idx on o_lecture_block_audit_log(fk_identity);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);

@@ -58,6 +58,7 @@ import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -352,15 +353,20 @@ public class EditLectureBlockController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		boolean create = false;
-		StringBuilder audit = new StringBuilder();
 		int currentPlannedLectures = -1;
+		
+		String beforeXml;
+		LectureBlockAuditLog.Action action;
+		StringBuilder audit = new StringBuilder();
 		if(lectureBlock == null) {
-			audit.append("Create;");
+			beforeXml = null;
+			action = LectureBlockAuditLog.Action.createLectureBlock;
 			lectureBlock = lectureService.createLectureBlock(entry);
 			create = true;
 		} else {
+			beforeXml = lectureService.toAuditXml(lectureBlock);
+			action = LectureBlockAuditLog.Action.createLectureBlock;
 			currentPlannedLectures = lectureBlock.getPlannedLecturesNumber();
-			audit.append("Update;");
 		}
 		lectureBlock.setTitle(titleEl.getValue());
 		lectureBlock.setCompulsory(compulsoryEl.isAtLeastSelected(1));
@@ -425,7 +431,9 @@ public class EditLectureBlockController extends FormBasicController {
 				}
 			}
 		}
-		
+
+		String afterxml = lectureService.toAuditXml(lectureBlock);
+		lectureService.auditLog(action, beforeXml, afterxml, audit.toString(), lectureBlock, null, entry, null, getIdentity());
 		dbInstance.commit();
 		if(currentPlannedLectures >= 0) {
 			lectureService.adaptRollCalls(lectureBlock);
@@ -434,7 +442,6 @@ public class EditLectureBlockController extends FormBasicController {
 		lectureService.syncCalendars(lectureBlock);
 		fireEvent(ureq, Event.DONE_EVENT);
 
-		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, audit.toString());
 		if(create) {
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_CREATED, getClass(),
 					CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));

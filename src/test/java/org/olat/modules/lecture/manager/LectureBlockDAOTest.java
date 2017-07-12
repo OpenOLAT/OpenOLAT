@@ -367,29 +367,6 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void appendLog() {
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock block = createMinimalLectureBlock(entry);
-		dbInstance.commitAndCloseSession();
-
-		//append something
-		boolean ok = lectureBlockDao.appendLog(block, "New infos");
-		Assert.assertTrue(ok);
-		dbInstance.commitAndCloseSession();
-
-		LectureBlock updatedBlock = lectureBlockDao.loadByKey(block.getKey());
-		Assert.assertEquals("New infos", updatedBlock.getLog());
-		
-		//append more things
-		boolean okToo = lectureBlockDao.appendLog(block, "More infos");
-		Assert.assertTrue(okToo);
-		dbInstance.commitAndCloseSession();
-
-		LectureBlock updated2Block = lectureBlockDao.loadByKey(block.getKey());
-		Assert.assertEquals("New infos\nMore infos", updated2Block.getLog());
-	}
-	
-	@Test
 	public void deleteLectureBlock() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock block = createMinimalLectureBlock(entry);

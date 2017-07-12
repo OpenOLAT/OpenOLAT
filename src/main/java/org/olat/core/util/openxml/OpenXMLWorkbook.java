@@ -561,11 +561,7 @@ public class OpenXMLWorkbook implements Closeable {
 			int count = 1;
 			for(OpenXMLWorksheet sheet:worksheets) {
 				writer.writeStartElement("sheet");
-				if(StringHelper.containsNonWhitespace(sheet.getName())) {
-					writer.writeAttribute("name", sheet.getName());
-				} else {
-					writer.writeAttribute("name", "Sheet " + count);
-				}
+				writer.writeAttribute("name", "Sheet " + count);
 				writer.writeAttribute("sheetId", Integer.toString(count++));
 				writer.writeAttribute("r:id", sheet.getId());
 				writer.writeEndElement();

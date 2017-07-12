@@ -17,35 +17,52 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui;
+package org.olat.modules.lecture;
 
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.modules.lecture.model.LectureBlockAndRollCall;
+import java.util.Date;
 
 /**
  * 
- * Initial date: 10 juil. 2017<br>
+ * Initial date: 11 juil. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureBlockAndRollCallRow {
+public interface LectureBlockAuditLog {
 	
-	private final LectureBlockAndRollCall row;
-	private FormLink appealButton;
+	public Date getCreationDate();
 	
-	public LectureBlockAndRollCallRow(LectureBlockAndRollCall row) {
-		this.row = row;
+	public String getAction();
+	
+	public String getBefore();
+
+	public String getAfter();
+	
+	public Long getLectureBlockKey();
+	
+	public Long getRollCallKey();
+	
+	public Long getEntryKey();
+
+	public Long getIdentityKey();
+
+	public Long getAuthorKey();
+	
+	public enum Action {
+		autoclose,
+		saveLectureBlock,
+		createLectureBlock,
+		updateLectureBlock,
+		cancelLectureBlock,
+		closeLectureBlock,
+		reopenLectureBlock,
+
+		createRollCall,
+		addToRollCall,
+		removeFromRollCall,
+		updateAuthorizedAbsence,
+		updateRollCall,
+		adaptRollCall,
+		
 	}
 
-	public LectureBlockAndRollCall getRow() {
-		return row;
-	}
-
-	public FormLink getAppealButton() {
-		return appealButton;
-	}
-
-	public void setAppealButton(FormLink appealButton) {
-		this.appealButton = appealButton;
-	}
 }

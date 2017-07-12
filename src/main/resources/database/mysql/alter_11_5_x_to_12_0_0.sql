@@ -73,8 +73,7 @@ create table o_lecture_block (
   l_descr mediumtext,
   l_preparation mediumtext,
   l_location varchar(255),
-  l_comment mediumtext, 
-  l_log mediumtext,
+  l_comment mediumtext,
   l_start_date datetime not null,
   l_end_date datetime not null,
   l_compulsory bit default 1,
@@ -113,8 +112,7 @@ create table o_lecture_block_roll_call (
   id bigint not null auto_increment,
   creationdate datetime not null,
   lastmodified datetime not null,
-  l_comment mediumtext, 
-  l_log mediumtext,
+  l_comment mediumtext,
   l_lectures_attended varchar(128),
   l_lectures_absent varchar(128),
   l_lectures_attended_num bigint not null default 0,
@@ -191,5 +189,22 @@ alter table o_lecture_entry_config ENGINE = InnoDB;
 alter table o_lecture_entry_config add constraint lec_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
 
+create table o_lecture_block_audit_log (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  l_action varchar(32),
+  l_val_before mediumtext,
+  l_val_after mediumtext,
+  l_message mediumtext,
+  fk_lecture_block bigint,
+  fk_roll_call bigint,
+  fk_entry bigint,
+  fk_identity bigint,
+  fk_author bigint,
+  primary key (id)
+);
+alter table o_lecture_block_audit_log ENGINE = InnoDB;
 
+create index idx_lec_audit_entry_idx on o_lecture_block_audit_log(fk_entry);
+create index idx_lec_audit_ident_idx on o_lecture_block_audit_log(fk_identity);
 

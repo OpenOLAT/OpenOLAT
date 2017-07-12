@@ -39,6 +39,7 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
@@ -177,6 +178,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		String before = lectureService.toAuditXml(lectureBlock);
 		lectureBlock.setComment(blockCommentEl.getValue());
 		
 		int effectiveLectures = lectureBlock.getPlannedLecturesNumber();
@@ -202,10 +204,12 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 				lectureBlock.setReasonEffectiveEnd(selectedReason);
 			}
 		}
-		lectureBlock = lectureService.close(lectureBlock);
+		lectureBlock = lectureService.close(lectureBlock, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 
-		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Closed");
+		String after = lectureService.toAuditXml(lectureBlock);
+		lectureService.auditLog(LectureBlockAuditLog.Action.closeLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
+
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_CLOSED, getClass(),
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 	}

@@ -39,6 +39,7 @@ public class OpenXMLWorkbookStyles {
 	public static final String PERCENT_FORMAT = "10";
 	public static final String DATE_FORMAT = "14";
 	public static final String TIME_FORMAT = "21";
+	public static final String DATE_TIME_FORMAT = "22";
 
 	private List<Font> fonts = new ArrayList<>();
 	private List<Fill> fills = new ArrayList<>();
@@ -57,6 +58,7 @@ public class OpenXMLWorkbookStyles {
 	private final CellStyle borderRightStyle;
 	private final CellStyle dateStyle;
 	private final CellStyle durationStyle;
+	private final CellStyle dateTimeStyle;
 	private final CellStyle headerStyle;
 	private final CellStyle correctStyle;
 	private final CellStyle percentStyle;
@@ -85,6 +87,8 @@ public class OpenXMLWorkbookStyles {
 		cellXfs.add(borderRightStyle);
 		dateStyle = new CellStyle(cellXfs.size(), DATE_FORMAT, standardFont, noneFile, noBorder, null, "1");
 		cellXfs.add(dateStyle);
+		dateTimeStyle = new CellStyle(cellXfs.size(), DATE_TIME_FORMAT, standardFont, noneFile, noBorder, null, "1");
+		cellXfs.add(dateTimeStyle);
 		durationStyle = new CellStyle(cellXfs.size(), TIME_FORMAT, standardFont, noneFile, borderRight, null, "1");
 		cellXfs.add(durationStyle);
 		headerStyle = new CellStyle(cellXfs.size(), "0", boldFont, noneFile, noBorder, null, null);
@@ -109,6 +113,10 @@ public class OpenXMLWorkbookStyles {
 	
 	public CellStyle getTimeStyle() {
 		return dateStyle;
+	}
+	
+	public CellStyle getDateTimeStyle() {
+		return dateTimeStyle;
 	}
 	
 	public CellStyle getDurationStyle() {

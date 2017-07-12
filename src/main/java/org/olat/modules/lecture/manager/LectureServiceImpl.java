@@ -21,7 +21,6 @@
 package org.olat.modules.lecture.manager;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -60,6 +59,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -100,7 +100,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	private static final OLog log = Tracing.createLoggerFor(LectureServiceImpl.class);
-	private static final SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	private static final CalendarManagedFlag[] CAL_MANAGED_FLAGS = new CalendarManagedFlag[] { CalendarManagedFlag.all };
 
 	@Autowired
@@ -121,6 +120,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	private CalendarManager calendarMgr;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
+	@Autowired
+	private LectureBlockAuditLogDAO auditLogDao;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
@@ -201,17 +202,19 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	}
 	
 	@Override
-	public LectureBlock close(LectureBlock lectureBlock) {
+	public LectureBlock close(LectureBlock lectureBlock, Identity author) {
 		lectureBlock.setStatus(LectureBlockStatus.done);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlockDao.update(lectureBlock);
+		
+		int numOfLectures = block.getEffectiveLecturesNumber();
+		if(numOfLectures <= 0 && block.getStatus() != LectureBlockStatus.cancelled) {
+			numOfLectures = block.getPlannedLecturesNumber();
+		}
+		
 		List<LectureBlockRollCall> rollCallList = lectureBlockRollCallDao.getRollCalls(lectureBlock);
 		for(LectureBlockRollCall rollCall:rollCallList) {
-			int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
-				numOfLectures = lectureBlock.getPlannedLecturesNumber();
-			}
-			lectureBlockRollCallDao.adaptLecture(rollCall, numOfLectures);
+			lectureBlockRollCallDao.adaptLecture(block, rollCall, numOfLectures, author);
 		}
 		dbInstance.commit();
 		recalculateSummary(block.getEntry());
@@ -230,24 +233,45 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	}
 
 	@Override
-	public void appendToLectureBlockLog(LectureBlockRef lectureBlock, Identity user, Identity assessedIdentity, String audit) {
-		Date now = new Date();
-		String date;
-		synchronized(sdb) {
-			date = sdb.format(now);
-		}
-		
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("Date: ").append(date).append(" \n");
-		if(user != null) {
-			sb.append("User: ").append(userManager.getUserDisplayName(user)).append(" (").append(user.getKey()).append(") \n");
-		}
-		if(assessedIdentity != null) {
-			sb.append("Assessed user: ").append(userManager.getUserDisplayName(assessedIdentity)).append(" (").append(user.getKey()).append(") \n");
-		}
-		sb.append(audit);
-		log.audit(sb.toString());
-		lectureBlockDao.appendLog(lectureBlock, sb.toString());
+	public String toAuditXml(LectureBlock lectureBlock) {
+		return auditLogDao.toXml(lectureBlock);
+	}
+	
+	@Override
+	public String toAuditXml(LectureBlockRollCall rollCall) {
+		return auditLogDao.toXml(rollCall);
+	}
+	
+	@Override
+	public LectureBlock toAuditLectureBlock(String xml) {
+		return auditLogDao.lectureBlockFromXml(xml);
+	}
+
+	@Override
+	public LectureBlockRollCall toAuditLectureBlockRollCall(String xml) {
+		return auditLogDao.rollCallFromXml(xml);
+	}
+
+	@Override
+	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
+			LectureBlockRef lectureBlock, LectureBlockRollCall rollCall,
+			RepositoryEntryRef entry, IdentityRef assessedIdentity, IdentityRef author) {
+		auditLogDao.auditLog(action, before, after, message, lectureBlock, rollCall, entry, assessedIdentity, author);
+	}
+
+	@Override
+	public List<LectureBlockAuditLog> getAuditLog(LectureBlockRef lectureBlock) {
+		return auditLogDao.getAuditLog(lectureBlock);
+	}
+
+	@Override
+	public List<LectureBlockAuditLog> getAuditLog(IdentityRef assessedIdentity) {
+		return auditLogDao.getAuditLog(assessedIdentity);
+	}
+
+	@Override
+	public List<LectureBlockAuditLog> getAuditLog(RepositoryEntryRef entry) {
+		return auditLogDao.getAuditLog(entry);
 	}
 
 	@Override
@@ -475,11 +499,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
 				numOfLectures = lectureBlock.getPlannedLecturesNumber();
 			}
-			lectureBlockRollCallDao.adaptLecture(rollCall, numOfLectures);
+			lectureBlockRollCallDao.adaptLecture(lectureBlock, rollCall, numOfLectures, null);
 		}
 	}
 	
-	public void adaptAll() {
+	@Override
+	public void adaptAll(Identity author) {
 		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlocks();
 		for(LectureBlock lectureBlock:lectureBlocks) {
 			List<LectureBlockRollCall> rollCallList = lectureBlockRollCallDao.getRollCalls(lectureBlock);
@@ -488,7 +513,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 				if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
 					numOfLectures = lectureBlock.getPlannedLecturesNumber();
 				}
-				lectureBlockRollCallDao.adaptLecture(rollCall, numOfLectures);
+				lectureBlockRollCallDao.adaptLecture(lectureBlock, rollCall, numOfLectures, author);
 			}
 			dbInstance.commitAndCloseSession();
 		}
@@ -540,6 +565,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	}
 	
 	private void autoClose(LectureBlockImpl lectureBlock) {
+		String blockBefore = auditLogDao.toXml(lectureBlock);
 		lectureBlock.setStatus(LectureBlockStatus.done);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.autoclosed);
 		if(lectureBlock.getEffectiveLecturesNumber() <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
@@ -559,15 +585,22 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 			}
 			if(participantAndSummary.getSummary() != null) {
 				LectureBlockRollCall rollCall = rollCallMap.get(participantAndSummary.getIdentity());
+				
+				String before = auditLogDao.toXml(rollCall);
 				if(rollCall == null) {
-					lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, participantAndSummary.getIdentity(), null, null, null, new ArrayList<>());
+					rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, participantAndSummary.getIdentity(), null, null, null, new ArrayList<>());
 				} else if(rollCall.getLecturesAbsentList().isEmpty() && rollCall.getLecturesAttendedList().isEmpty()) {
-					lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, new ArrayList<>());
+					rollCall = lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, new ArrayList<>());
 				}
+
+				String after = auditLogDao.toXml(rollCall);
+				auditLogDao.auditLog(LectureBlockAuditLog.Action.autoclose, before, after, null,
+						lectureBlock, rollCall, lectureBlock.getEntry(), participantAndSummary.getIdentity(), null);
 			}
 		}
-	
-		appendToLectureBlockLog(lectureBlock, null, null, "Auto-closed");
+
+		String blockAfter = auditLogDao.toXml(lectureBlock);
+		auditLogDao.auditLog(LectureBlockAuditLog.Action.autoclose, blockBefore, blockAfter, null, lectureBlock, null, lectureBlock.getEntry(), null, null);
 		dbInstance.commit();
 		
 		recalculateSummary(lectureBlock.getEntry());

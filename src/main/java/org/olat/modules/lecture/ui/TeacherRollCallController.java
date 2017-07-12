@@ -63,6 +63,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
@@ -459,12 +460,10 @@ public class TeacherRollCallController extends FormBasicController {
 		} else if(closeLectureBlocksButton == source) {
 			if(validateFormLogic(ureq)) {
 				saveLectureBlocks();
-				lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Save for closing rollcall (not confirmed)");
 				doConfirmCloseLectureBlock(ureq);
 			}
 		} else if(cancelLectureBlockButton == source) {
 			saveLectureBlocks();
-			lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Save for cancelling rollcall (not confirmed)");
 			doConfirmCancelLectureBlock(ureq);
 		} else if(this.exportAttendanceListButton == source) {
 			doExportAttendanceList(ureq);
@@ -482,11 +481,12 @@ public class TeacherRollCallController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		saveLectureBlocks();
-		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Quick save rollcall");
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void saveLectureBlocks() {
+		String before = lectureService.toAuditXml(lectureBlock);
+		
 		for(int i=tableModel.getRowCount(); i-->0; ) {
 			TeacherRollCallRow row = tableModel.getObject(i);
 			
@@ -514,6 +514,10 @@ public class TeacherRollCallController extends FormBasicController {
 		}
 		lectureBlock = lectureService.save(lectureBlock, null);
 		lectureService.recalculateSummary(lectureBlock.getEntry());
+		
+		String after = lectureService.toAuditXml(lectureBlock);
+		lectureService.auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
+
 	}
 	
 	@Override
@@ -541,10 +545,15 @@ public class TeacherRollCallController extends FormBasicController {
 		List<Integer> indexList = Collections.singletonList(index);
 		
 		LectureBlockRollCall rollCall;
+		String before = lectureService.toAuditXml(row.getRollCall());
 		if(check.isAtLeastSelected(1)) {
 			rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), indexList);
+			lectureService.auditLog(LectureBlockAuditLog.Action.addToRollCall, before, lectureService.toAuditXml(rollCall),
+					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
 		} else {
 			rollCall = lectureService.removeRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), indexList);
+			lectureService.auditLog(LectureBlockAuditLog.Action.removeFromRollCall, before, lectureService.toAuditXml(rollCall),
+					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
 		}
 		row.setRollCall(rollCall);	
 		row.getRollCallStatusEl().getComponent().setDirty(true);
@@ -554,11 +563,17 @@ public class TeacherRollCallController extends FormBasicController {
 		LectureBlockRollCall rollCall = row.getRollCall();
 		boolean authorized = check.isAtLeastSelected(1);
 		if(rollCall == null) {
-			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, authorized, null);		
+			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, authorized, null);
+			lectureService.auditLog(LectureBlockAuditLog.Action.createRollCall, null, lectureService.toAuditXml(rollCall),
+					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
 		} else {
+			String before = lectureService.toAuditXml(rollCall);
 			rollCall.setAbsenceAuthorized(authorized);
 			rollCall = lectureService.updateRollCall(rollCall);
+			lectureService.auditLog(LectureBlockAuditLog.Action.updateAuthorizedAbsence, before, lectureService.toAuditXml(rollCall),
+					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
 		}
+
 		row.getReasonLink().setVisible(authorized);
 		row.getAuthorizedAbsenceCont().setDirty(true);
 		row.getAuthorizedAbsence().clearError();
@@ -579,13 +594,19 @@ public class TeacherRollCallController extends FormBasicController {
 	
 	private void doReason(TeacherRollCallRow row, String reason) {
 		LectureBlockRollCall rollCall = row.getRollCall();
+		String before = lectureService.toAuditXml(rollCall);
 		if(rollCall == null) {
 			row.getAuthorizedAbsence().select(onKeys[0], true);
-			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, true, reason);		
+			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, true, reason);
+			lectureService.auditLog(LectureBlockAuditLog.Action.createRollCall, before, lectureService.toAuditXml(rollCall),
+					reason, lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
 		} else {
 			rollCall.setAbsenceReason(reason);
 			rollCall = lectureService.updateRollCall(rollCall);
+			lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),
+					reason, lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
 		}
+
 		row.setRollCall(rollCall);
 	}
 	
@@ -612,13 +633,15 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private void doReopen(UserRequest ureq) {
+		String before = lectureService.toAuditXml(lectureBlock);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.reopen);
 		lectureBlock = lectureService.save(lectureBlock, null);
 		secCallback.updateLectureBlock(lectureBlock);
 		updateUI();
 		fireEvent(ureq, Event.CHANGED_EVENT);
 		
-		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, "Reopen");
+		String after = lectureService.toAuditXml(lectureBlock);
+		lectureService.auditLog(LectureBlockAuditLog.Action.reopenLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_REOPENED, getClass(),
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 	}

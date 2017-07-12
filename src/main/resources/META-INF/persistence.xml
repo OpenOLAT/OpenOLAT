@@ -159,8 +159,8 @@
 		<class>org.olat.modules.gotomeeting.model.GoToOrganizerImpl</class>
 		<class>org.olat.modules.gotomeeting.model.GoToRegistrantImpl</class>
 		<class>org.olat.modules.lecture.model.ReasonImpl</class>
-		<class>org.olat.modules.lecture.model.LectureBlockLog</class>
 		<class>org.olat.modules.lecture.model.LectureBlockImpl</class>
+		<class>org.olat.modules.lecture.model.LectureBlockAuditLogImpl</class>
 		<class>org.olat.modules.lecture.model.LectureBlockToGroupImpl</class>
 		<class>org.olat.modules.lecture.model.LectureBlockRollCallImpl</class>
 		<class>org.olat.modules.lecture.model.LectureParticipantSummaryImpl</class>

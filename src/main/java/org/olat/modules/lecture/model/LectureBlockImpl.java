@@ -92,8 +92,6 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	private String location;
 	@Column(name="l_comment", nullable=true, insertable=true, updatable=true)
 	private String comment;
-	@Column(name="l_log", nullable=true, insertable=false, updatable=false)
-	private String log;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="l_start_date", nullable=false, insertable=true, updatable=true)
@@ -273,11 +271,6 @@ public class LectureBlockImpl implements Persistable, LectureBlock {
 	@Override
 	public void setEffectiveLecturesNumber(int effectiveLecturesNumber) {
 		this.effectiveLecturesNumber = effectiveLecturesNumber;
-	}
-
-	@Override
-	public String getLog() {
-		return log;
 	}
 
 	@Override

@@ -215,6 +215,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 					if(now.compareTo(beginAppeal) >= 0 && now.compareTo(endAppeal) <= 0) {
 						appealLink = uifactory.addFormLink("appeal_" + count++, "appeal", translate("appeal"), null, flc, Link.LINK | Link.NONTRANSLATED);
 						appealLink.setTitle(translate("appeal.tooltip", new String[] { formatter.formatDate(beginAppeal), formatter.formatDate(endAppeal) }));
+						appealLink.setUserObject(row);
 						//appeal
 					} else if(now.compareTo(endAppeal) > 0) {
 						// appeal closed
@@ -224,7 +225,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 					} else if(now.compareTo(date) >= 0) {
 						// appeal at
 						String appealFrom = translate("appeal.from", new String[]{ formatter.formatDate(beginAppeal) });
-						appealLink = uifactory.addFormLink("appeal_" + count++, "aappeal", appealFrom, null, flc, Link.LINK | Link.NONTRANSLATED);
+						appealLink = uifactory.addFormLink("appeal_" + count++, "appealat", appealFrom, null, flc, Link.LINK | Link.NONTRANSLATED);
 						appealLink.setEnabled(false);
 						appealLink.setDomReplacementWrapperRequired(false);
 					}
@@ -285,6 +286,12 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 			}
 		} else if(openCourseButton == source) {
 			doOpenCourse(ureq);
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("appeal".equals(link.getCmd())) {
+				LectureBlockAndRollCallRow row = (LectureBlockAndRollCallRow)link.getUserObject();
+				doAppeal(ureq, row.getRow());
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

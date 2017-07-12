@@ -38,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
@@ -178,12 +179,15 @@ public class SingleParticipantCallController extends FormBasicController {
 		}
 
 		String comment = commentEl.getValue();
+		String before = lectureService.toAuditXml(rollCall);
 		rollCall = lectureService.addRollCall(calledIdentity, lectureBlock, rollCall, comment, absenceList);
 		if(authorizedAbsencedEl != null && authorizedAbsencedEl.isAtLeastSelected(1)) {
 			rollCall.setAbsenceAuthorized(true);
 			rollCall.setAbsenceReason(absenceReasonEl.getValue());
 			rollCall = lectureService.updateRollCall(rollCall);
 		}
+		lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),
+				Integer.toString(rollCall.getLecturesAttendedNumber()), lectureBlock, rollCall, lectureBlock.getEntry(), calledIdentity, getIdentity());
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

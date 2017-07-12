@@ -58,11 +58,13 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.ui.LectureListRepositoryDataModel.BlockCols;
+import org.olat.modules.lecture.ui.export.LectureBlockAuditLogExport;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.user.UserManager;
@@ -347,6 +349,13 @@ public class LectureListRepositoryController extends FormBasicController {
 		showInfo("lecture.deleted");
 	}
 	
+	private void doExportLog(UserRequest ureq, LectureBlockRow row) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		List<LectureBlockAuditLog> auditLog = lectureService.getAuditLog(row);
+		LectureBlockAuditLogExport export = new LectureBlockAuditLogExport(entry, lectureBlock, auditLog, getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(export);
+	}
+	
 	private void doOpenTools(UserRequest ureq, LectureBlockRow row, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -362,7 +371,7 @@ public class LectureListRepositoryController extends FormBasicController {
 
 	private class ToolsController extends BasicController {
 		
-		private Link deleteLink, copyLink;
+		private Link deleteLink, copyLink, logLink;
 		
 		private final LectureBlockRow row;
 		
@@ -378,6 +387,8 @@ public class LectureListRepositoryController extends FormBasicController {
 				deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
 				deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			}
+			logLink = LinkFactory.createLink("log", "log", getTranslator(), mainVC, this, Link.LINK);
+			logLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log"); 
 			putInitialPanel(mainVC);
 		}
 
@@ -393,6 +404,8 @@ public class LectureListRepositoryController extends FormBasicController {
 				doCopy(row);
 			} else if(deleteLink == source) {
 				doConfirmDelete(ureq, row);
+			} else if(logLink == source) {
+				doExportLog(ureq, row);
 			}
 		}
 	}
