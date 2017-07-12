@@ -49,7 +49,6 @@ public class OOGraphene {
 	private static final long defaultTimeout = 5;//seconds
 
 	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close.o_sel_info_close");
-	private static final By closeModalDialogButtonBy = By.cssSelector("div.modal-dialog div.modal-header button.close");
 	
 	public static final By wizardNextBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_next')]");
 	public static final By wizardFinishBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_finish') and not(contains(@class,'o_disabled'))]");
@@ -78,6 +77,12 @@ public class OOGraphene {
 		By modalBy = By.cssSelector("div.modal-dialog div.modal-body");
 		Graphene.waitModel(browser).withTimeout(defaultTimeout, TimeUnit.SECONDS)
 			.pollingEvery(200, TimeUnit.MILLISECONDS).until().element(modalBy).is().visible();
+	}
+	
+	public static void waitModalDialogDisappears(WebDriver browser) {
+		By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]");
+		Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
+			.pollingEvery(200, TimeUnit.MILLISECONDS).until().element(modalBy).is().not().present();
 	}
 	
 	public static void waitCallout(WebDriver browser) {
@@ -405,11 +410,10 @@ public class OOGraphene {
 	public static final void closeErrorBox(WebDriver browser) {
 		By errorBoxBy = By.cssSelector(".modal-body.alert.alert-danger");
 		waitElement(errorBoxBy, 5, browser);
-		By closeButtonBy = By.cssSelector("div.modal-dialog button.close");
+		By closeButtonBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]//button[@class='close']");
 		waitElement(closeButtonBy, 5, browser);
 		browser.findElement(closeButtonBy).click();
-		By dialogBy = By.cssSelector("div.modal-dialog");
-		OOGraphene.waitElementDisappears(dialogBy, 2, browser);
+		waitModalDialogDisappears(browser);
 	}
 	
 	public static final void waitAndCloseBlueMessageWindow(WebDriver browser) {
@@ -455,6 +459,7 @@ public class OOGraphene {
 	}
 	
 	public static final void closeModalDialogWindow(WebDriver browser) {
+		By closeModalDialogButtonBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]//div[contains(@class,'modal-header')]/button[@class='close']");
 		List<WebElement> closeButtons = browser.findElements(closeModalDialogButtonBy);
 		for(WebElement closeButton:closeButtons) {
 			if(closeButton.isDisplayed()) {
@@ -474,8 +479,7 @@ public class OOGraphene {
 	private static final void clickModalDialogCloseButton(WebDriver browser, WebElement closeButton) {
 		try {
 			closeButton.click();
-			By dialogBy = By.cssSelector("div.modal-dialog");
-			OOGraphene.waitElementDisappears(dialogBy, 2, browser);
+			waitModalDialogDisappears(browser);
 		} catch (ElementNotVisibleException e) {
 			//e.printStackTrace();
 		}

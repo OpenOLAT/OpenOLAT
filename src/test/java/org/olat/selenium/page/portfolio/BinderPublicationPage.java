@@ -101,11 +101,8 @@ public class BinderPublicationPage {
 		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
 		
-		By closeMailErrorBy = By.cssSelector("div.modal-dialog div.modal-header button");
-		OOGraphene.waitElement(closeMailErrorBy, 5, browser);
-		browser.findElement(closeMailErrorBy).click();
-		OOGraphene.waitBusy(browser);
-
+		//close error smtp
+		OOGraphene.closeErrorBox(browser);
 		return this;
 	}
 }
