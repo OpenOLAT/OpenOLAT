@@ -80,8 +80,11 @@
 				##
 		        ## Preselect the preferred source
 		        #if($useSourceChooser)
-		        jQuery(jQuery('.mejs__source-chooser-selector input')[$preferredResolution]).prop("checked", true).trigger("click");
+		        jQuery(jQuery('#' + player.id + '.mejs__source-chooser-selector input')[$preferredResolution]).prop("checked", true).trigger("click");
 		        #end
+		        
+		        ## Preset the duration without loading the video
+		        jQuery('#' + player.id + ' .mejs__duration').html('$duration');
 		        
 		        mediaElement.addEventListener('loadedmetadata', function(e) {
 			        jQuery('#$r.getId("o_vid")').data('playerloaded', true);

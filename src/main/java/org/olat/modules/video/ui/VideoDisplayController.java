@@ -292,6 +292,13 @@ public class VideoDisplayController extends BasicController {
 			
 			// Load video chapter if available
 			mainVC.contextPut("hasChapters", videoManager.hasChapters(entry.getOlatResource()));		
+			
+			// Add duration without preloading video
+			String duration = entry.getExpenditureOfWork();
+			if (!StringHelper.containsNonWhitespace(duration)) {
+				duration = "00:00";
+			}
+			mainVC.contextPut("duration", duration);					
 		}
 	}
 
