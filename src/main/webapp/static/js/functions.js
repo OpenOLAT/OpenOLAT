@@ -1308,12 +1308,41 @@ function o_removeIframe(id) {
 	jQuery('#' + id).remove();
 }
 
+/**
+ * Opens the form-dirty dialog. Use the callback to add code that should be executed in case the user 
+ * presses the "ignore button" (Code that executes the original action the user initiated)
+ */
+function o_showFormDirtyDialog(onIgnoreCallback) {
+	// open our form-dirty dialog
+	jQuery("#o_form_dirty_message").modal('show');
+	jQuery("#o_form_dirty_message .o_form_dirty_ignore").on("click", function() {
+		// Remove dialog and all listeners for dirty button
+		jQuery("#o_form_dirty_message").modal('hide');
+		jQuery("#o_form_dirty_message .o_form_dirty_ignore").off();
+		// Execute the ignore callback with original user action
+		onIgnoreCallback();
+	});
+	return false;
+}
+
 function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirtyCheck, push, submit) {
-	if(dirtyCheck) {
-		if(!o2cl()) return false;
+	if(dirtyCheck && o2c==1) {
+		// Copy function arguments and set the dirtyCheck to false for execution in callback.
+		// Note that the argument list is dynamic, there are potentially more arguments than
+		// listed in the function (e.g. in QTI2)
+		var callbackArguments = Array.prototype.slice.call(arguments);
+		callbackArguments[5] = false; 		
+		var onIgnoreCallback = function() {
+			// fire original event when the "ok, delete anyway" button was pressed
+			o_ffXHREvent.apply(window, callbackArguments);
+		}
+		return o_showFormDirtyDialog(onIgnoreCallback);
 	} else {
 		if(!o2cl_noDirtyCheck()) return false;
-	}
+	}	
+	// Start event execution, start server to prevend concurrent executions of other events. 
+	// o_afterserver() called when AJAX call terminates
+	o_beforeserver();
 	
 	var data = new Object();
 	if(submit) {
@@ -1392,11 +1421,23 @@ function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 }
 
 function o_XHREvent(targetUrl, dirtyCheck, push) {
-	if(dirtyCheck) {
-		if(!o2cl()) return false;
+	if(dirtyCheck && o2c==1) {
+		// Copy function arguments and set the dirtyCheck to false for execution in callback.
+		// Note that the argument list is dynamic, there are potentially more arguments than
+		// listed in the function
+		var callbackArguments = Array.prototype.slice.call(arguments);
+		callbackArguments[1] = false; 		
+		var onIgnoreCallback = function() {
+			// fire original event when the "ok, delete anyway" button was pressed
+			o_XHREvent.apply(window, callbackArguments);
+		}
+		return o_showFormDirtyDialog(onIgnoreCallback);		
 	} else {
 		if(!o2cl_noDirtyCheck()) return false;
 	}
+	// Start event execution, start server to prevend concurrent executions of other events. 
+	// o_afterserver() called when AJAX call terminates
+	o_beforeserver();
 	
 	var data = new Object();
 	if(arguments.length > 3) {

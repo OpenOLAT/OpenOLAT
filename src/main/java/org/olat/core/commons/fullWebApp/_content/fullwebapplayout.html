@@ -25,6 +25,7 @@ o_info.uriprefix="$r.relWinLink()";
 o_info.bc="$o_bc";
 o_info.businessPath="";
 o_info.serverUri="$o_serverUri"
+## Legacy form-dirty message displayed by o2cl()
 o_info.dirty_form = "$r.escapeDoubleQuotes($r.translate("form.dirty"))";
 o_info.locale = "$r.getLanguageCode()";
 o_info.lastClickTime = new Date().getTime();
@@ -327,6 +328,34 @@ $r.render("stickymsg")
 ## IE can't render empty div's properly which results in an ugly white bar.
 $r.render("modalpanel")
 ## ---- END #o_modal ---
+
+## ----- START #o_form_dirty_message ----------
+<div class="modal fade" tabindex="-1" role="dialog" id="o_form_dirty_message">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">$r.translate("form.dirty.title")</h4>
+      </div>
+      <div class="modal-body">
+      	<p class="o_warning">
+			$r.escapeDoubleQuotes($r.translate("form.dirty.intro"))
+		</p>
+      	<p>
+			$r.escapeDoubleQuotes($r.translate("form.dirty.ignore"))
+		</p>
+      	<p>
+			$r.escapeDoubleQuotes($r.translate("form.dirty.back"))
+		</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary pull-left o_form_dirty_back" data-dismiss="modal"><i class="o_icon o_icon-fw o_icon_back"> </i>$r.translate("form.dirty.button.back")</button>
+        <button type="button" class="btn btn btn-danger o_form_dirty_ignore"><i class="o_icon o_icon-fw o_icon_clear_all"> </i>$r.translate("form.dirty.button.ignore")</button>
+      </div>
+    </div>
+  </div>
+</div>
+## ---- END #o_form_dirty_message ---
 
 ## the div for the busy-wait animated-gif
 <div id="o_ajax_busy"><i class="o_icon o_icon_busy o_icon-5x o_icon-spin"></i></div>
