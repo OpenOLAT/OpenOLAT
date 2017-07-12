@@ -6,9 +6,6 @@
 		white-space: nowrap;	
 		.o_icon {
 			color:$brand-warning;
-			&:hover {
-				color: $brand-primary;
-			}		
 		}
 		.o_legend {
 			margin-left: 1em;
@@ -21,6 +18,12 @@
 			}		
 		}
 	}	
+	&.o_rating_personal .o_rating_items {
+		.o_icon {
+			color: $brand-primary;
+		}	
+
+	}
 	.o_rating_explanation {
 		font-size: $font-size-small;
 		color: $text-muted;
