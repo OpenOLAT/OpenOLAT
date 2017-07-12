@@ -410,7 +410,7 @@ public class UserAdminController extends BasicController implements Activateable
 				@Override
 				public Component create(UserRequest uureq) {
 					String relPath = FolderConfig.getUserHomes() + "/" + identity.getName();
-					quotaCtr = QuotaManager.getInstance().getQuotaEditorInstance(uureq, getWindowControl(), relPath, false);
+					quotaCtr = QuotaManager.getInstance().getQuotaEditorInstance(uureq, getWindowControl(), relPath);
 					return quotaCtr.getInitialComponent();
 				}
 			});

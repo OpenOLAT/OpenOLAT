@@ -86,6 +86,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	/**
 	 * @see org.olat.core.util.vfs.QuotaManager#createQuota(java.lang.String, java.lang.Long, java.lang.Long)
 	 */
+	@Override
 	public Quota createQuota(String path, Long quotaKB, Long ulLimitKB) {
 		return new QuotaImpl(path, quotaKB, ulLimitKB);
 	}
@@ -94,6 +95,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * [called by spring]
 	 *
 	 */
+	@Override
 	public void init() {
 		quotaResource = resourceManager.findOrPersistResourceable(OresHelper.lookupType(Quota.class));
 		initDefaultQuotas(); // initialize default quotas
@@ -155,6 +157,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * @param identifyer
 	 * @return
 	 */
+	@Override
 	public Quota getDefaultQuota(String identifyer) {
 		if (defaultQuotas == null) {
 			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
@@ -169,6 +172,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * @param path
 	 * @return Quota object.
 	 */
+	@Override
 	public Quota getCustomQuota(String path) {
 		if (defaultQuotas == null) {
 			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
@@ -200,6 +204,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * 
 	 * @param quota
 	 */
+	@Override
 	public void setCustomQuotaKB(Quota quota) {
 		if (defaultQuotas == null) {
 			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
@@ -224,6 +229,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * @return true if quota successfully deleted or no such quota, false if quota
 	 *         not deleted because it was a default quota that can not be deleted
 	 */
+	@Override
 	public boolean deleteCustomQuota(Quota quota) {
 		if (defaultQuotas == null) {
 			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
@@ -299,6 +305,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * @param identity
 	 * @return
 	 */
+	@Override
 	public Quota getDefaultQuotaDependingOnRole(Identity identity) {
 		if (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_AUTHOR)) { return getDefaultQuotaPowerUsers(); }
 		if (BaseSecurityManager.getInstance().isIdentityPermittedOnResourceable(identity, Constants.PERMISSION_HASROLE, Constants.ORESOURCE_ADMIN)) { return getDefaultQuotaPowerUsers(); }
@@ -312,6 +319,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * @param identity
 	 * @return custom quota or quota depending on role
 	 */
+	@Override
 	public Quota getCustomQuotaOrDefaultDependingOnRole(Identity identity, String relPath) {
 		Quota quota = getCustomQuota(relPath);
 		if (quota == null) { // no custom quota
@@ -361,6 +369,7 @@ public class QuotaManagerImpl extends QuotaManager {
 	 * @param currentContainer2 Upload container (folder)
 	 * @return Upload limit on KB 
 	 */
+	@Override
 	public int getUploadLimitKB(long quotaKB2, long uploadLimitKB2, VFSContainer currentContainer2) {
 		if (quotaKB2 == Quota.UNLIMITED) {
 			if (uploadLimitKB2 == Quota.UNLIMITED) {
@@ -401,16 +410,13 @@ public class QuotaManagerImpl extends QuotaManager {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.QuotaManager#getQuotaEditorInstance(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, java.lang.String, boolean)
-	 */
 	@Override
-	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode) {
+	public Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath) {
 		try {
-			return new GenericQuotaEditController(ureq, wControl, relPath, modalMode);
+			return new GenericQuotaEditController(ureq, wControl, relPath);
 		} catch (OLATSecurityException e) {
 			log.warn("Try to access the quota editor without enough privilege", e);
-			GenericQuotaViewController viewCtrl = new GenericQuotaViewController(ureq, wControl, relPath, modalMode);
+			GenericQuotaViewController viewCtrl = new GenericQuotaViewController(ureq, wControl, relPath);
 			viewCtrl.setNotEnoughPrivilegeMessage();
 			return viewCtrl;
 		}
@@ -418,8 +424,8 @@ public class QuotaManagerImpl extends QuotaManager {
 	
 
 	@Override
-	public Controller getQuotaViewInstance(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode) {
-		return new GenericQuotaViewController(ureq, wControl, relPath, modalMode);
+	public Controller getQuotaViewInstance(UserRequest ureq, WindowControl wControl, String relPath) {
+		return new GenericQuotaViewController(ureq, wControl, relPath);
 	}
 
 	@Override

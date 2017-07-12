@@ -99,24 +99,20 @@ public class QuotaController extends BasicController {
 		putInitialPanel(main);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == addQuotaButton){
 			// clean up old controller first
 			if (quotaEditCtr != null) removeAsListenerAndDispose(quotaEditCtr);
 			// start edit workflow in dedicated quota edit controller
 			removeAsListenerAndDispose(quotaEditCtr);
-			quotaEditCtr = new GenericQuotaEditController(ureq, getWindowControl(), null);
+			quotaEditCtr = new GenericQuotaEditController(ureq, getWindowControl());
 			listenTo(quotaEditCtr);
 			main.setContent(quotaEditCtr.getInitialComponent());
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == quotaEditCtr) {
 			if (event == Event.CHANGED_EVENT) {
@@ -146,17 +142,14 @@ public class QuotaController extends BasicController {
 						tableCtr.setTableDataModel(quotaTableModel);
 						showInfo("qf.deleted", q.getPath());
 					} else {
-						// default quotas can not be qf.cannot.del.default")deleted
+						// default quotas can not be deleted
 						showError("qf.cannot.del.default");
 					}
 				}
 			}
 		}
 
-		/**
-		 * 
-		 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-		 */
+		@Override
 		protected void doDispose() {
 			//
 		}

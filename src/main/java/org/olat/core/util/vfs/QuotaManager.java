@@ -158,17 +158,15 @@ public abstract class QuotaManager {
 	 * The controller must fire the following events:
 	 * <ul> 
 	 * <li>Event.CANCELLED_EVENT</li>
-	 * <li>Event.CHANGED_EVENT</li>
 	 * </ul>
 	 * @param ureq
 	 * @param wControl
 	 * @param relPath
-	 * @param modalMode
 	 * @return
 	 */
-	public abstract Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode);
+	public abstract Controller getQuotaEditorInstance(UserRequest ureq, WindowControl wControl, String relPath);
 	
-	public abstract Controller getQuotaViewInstance(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode);
+	public abstract Controller getQuotaViewInstance(UserRequest ureq, WindowControl wControl, String relPath);
 	
 	/**
 	 * Check if a user has the rights to launch the quota editor tool

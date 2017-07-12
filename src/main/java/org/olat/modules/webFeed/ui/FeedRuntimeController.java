@@ -99,7 +99,7 @@ public class FeedRuntimeController extends RepositoryEntryRuntimeController {
 			RepositoryEntry entry = getRepositoryEntry();
 			OlatRootFolderImpl feedRoot = FileResourceManager.getInstance().getFileResourceRootImpl(entry.getOlatResource());
 			WindowControl bwControl = getSubWindowControl("Quota");
-			Controller quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, bwControl), feedRoot.getRelPath(), false);
+			Controller quotaCtrl = quotaManager.getQuotaEditorInstance(ureq, addToHistory(ureq, bwControl), feedRoot.getRelPath());
 			pushController(ureq, translate("tab.quota.edit"), quotaCtrl);
 			setActiveTool(quotaLink);
 		}
