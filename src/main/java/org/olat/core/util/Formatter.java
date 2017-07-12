@@ -661,6 +661,7 @@ public class Formatter {
 	 * @return text with clickable links
 	 */
 	public static String formatURLsAsLinks(String textFragment) {
+		if(textFragment == null) return "";
 		Matcher matcher = urlPattern.matcher(textFragment); 		
 		
 		StringBuilder sb = new StringBuilder(128);
