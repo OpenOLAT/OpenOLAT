@@ -14,11 +14,11 @@
 			<div class="o_author">$r.translate("feed.author"): $r.escapeHtml($feed.getAuthor())</div>
 		#end
 		<div class="o_date">$r.translate("feed.last.change") $!helper.getLastModified($feed)</div>
-		#if ($feed.getDescription() != "")
+		#if ($!feed.getDescription() && $feed.getDescription() != "")
 			<div class="o_desc o_info">$!helper.getFeedDescriptionForBrowser($feed)</div>
 		#end
 	
-		#if (!$feed.isUndefined() && $!feed.getDescription())
+		#if (!$feed.isUndefined())
 			<div class="o_subscription">
 				<a href="$!helper.getFeedUrl()" class="o_nowrap" target="_blank">
 					<i class="o_icon o_icon-fw o_icon_rss"></i> 
