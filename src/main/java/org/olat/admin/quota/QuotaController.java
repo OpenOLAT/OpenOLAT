@@ -30,6 +30,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.table.ColumnDescriptor;
+import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -83,8 +85,10 @@ public class QuotaController extends BasicController {
 
 		quotaTableModel = new QuotaTableModel();
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.path", 0, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.quota", 1, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.limit", 2, null, getLocale()));
+		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.quota", 1, null, getLocale(),
+				ColumnDescriptor.ALIGNMENT_LEFT, new QuotaByteRenderer()));
+		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.limit", 2, null, getLocale(),
+				ColumnDescriptor.ALIGNMENT_LEFT, new QuotaByteRenderer()));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("qf.edit", "table.action", translate("edit")));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("qf.del", "table.action", translate("delete")));
 		tableCtr.setTableDataModel(quotaTableModel);
