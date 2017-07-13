@@ -237,7 +237,7 @@ public interface QTI21Service {
 	
 	public AssessmentTestSession updateAssessmentTestSession(AssessmentTestSession session);
 
-	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
+	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, List<? extends IdentityRef> identities);
 	
 	public List<AssessmentTestSession> getRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
 	

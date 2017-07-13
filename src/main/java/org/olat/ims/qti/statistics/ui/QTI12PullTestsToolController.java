@@ -70,7 +70,7 @@ public class QTI12PullTestsToolController extends BasicController implements Act
 	
 	private final Link pullButton;
 	private DialogBoxController retrieveConfirmationCtr;
-	
+
 	private final IQTESTCourseNode courseNode;
 	private final CourseEnvironment courseEnv;
 	private final List<Identity> assessedIdentities;
@@ -81,16 +81,16 @@ public class QTI12PullTestsToolController extends BasicController implements Act
 	private UserManager userManager;
 	
 	public QTI12PullTestsToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
-			AssessmentToolOptions asOptions, IQTESTCourseNode courseNode) {
+			AssessmentToolOptions asOptions, IQTESTCourseNode courseNode, boolean enabled) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(QTIResultManager.class, getLocale(), getTranslator()));
-		
 		this.courseEnv = courseEnv;
 		this.courseNode = courseNode;
 		this.assessedIdentities = asOptions.getIdentities();
 		
 		pullButton = LinkFactory.createButton("menu.pull.tests.title", null, this);
 		pullButton.setTranslator(getTranslator());
+		pullButton.setEnabled(enabled);
 		putInitialPanel(pullButton);
 		getInitialComponent().setSpanAsDomReplaceable(true); // override to wrap panel as span to not break link layout 
 	}

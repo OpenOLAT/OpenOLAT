@@ -1,4 +1,5 @@
 /**
+
 * OLAT - Online Learning and Training<br>
 * http://www.olat.org
 * <p>
@@ -251,13 +252,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
 			tools.add(new QTI21StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
 			if(!coachCourseEnv.isCourseReadOnly()) {
-				RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 				QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
-				boolean isRunningSessions = qtiService
-						.isRunningAssessmentTestSession(courseEntry, getIdent(), qtiTestEntry);
-				if(isRunningSessions) {
-					tools.add(new QTI21RetrieveTestsToolController(ureq, wControl, courseEnv, options, this));
-				}
+				tools.add(new QTI21RetrieveTestsToolController(ureq, wControl, courseEnv, options, this));
 				if(options.isAdmin()) {
 					tools.add(new QTI21ResetToolController(ureq, wControl, courseEnv, options, this));
 				}
@@ -274,12 +270,14 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		} else {
 			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
 			if(!coachCourseEnv.isCourseReadOnly() && options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
+				boolean isRunningSessions = false;
 				for(Identity assessedIdentity:options.getIdentities()) {
 					if(isQTI12TestRunning(assessedIdentity, courseEnv)) {
-						tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
+						isRunningSessions = true;
 						break;
 					}
 				}
+				tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this, isRunningSessions));
 			}
 			tools.add(new QTI12ExportResultsReportController(ureq, wControl, courseEnv, options, this));
 		}

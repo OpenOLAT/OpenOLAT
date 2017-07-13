@@ -532,8 +532,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
-	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry) {
-		return testSessionDao.hasRunningTestSessions(entry, subIdent, testEntry);
+	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, List<? extends IdentityRef> identities) {
+		return testSessionDao.hasRunningTestSessions(entry, subIdent, testEntry, identities);
 	}
 
 	@Override
