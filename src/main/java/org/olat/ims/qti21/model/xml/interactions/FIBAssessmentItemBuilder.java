@@ -1023,17 +1023,6 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 		public List<TextEntryAlternative> getAlternatives() {
 			return alternatives;
 		}
-		
-		public String alternativesToString() {
-			StringBuilder sb = new StringBuilder();
-			if(alternatives != null) {
-				for(TextEntryAlternative alternative:alternatives) {
-					if(sb.length() > 0) sb.append(",");
-					sb.append(alternative.getAlternative());
-				}
-			}
-			return sb.toString();
-		}
 
 		public void setAlternatives(List<TextEntryAlternative> alternatives) {
 			this.alternatives = alternatives;

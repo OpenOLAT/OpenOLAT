@@ -19,18 +19,26 @@
  */
 package org.olat.ims.qti21.ui.editor.interactions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntry;
+import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder.TextEntryAlternative;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
 
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -47,10 +55,13 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	
 	private TextElement solutionEl;
 	private TextElement placeholderEl;
-	private TextElement alternativeEl;
 	private TextElement expectedLengthEl;
+	private FormLink addFirstAlternative;
 	private MultipleSelectionElement caseSensitiveEl;
+	private FormLayoutContainer alternativesCont;
+	private final List<AlternativeRow> alternativeRows = new ArrayList<>();
 	
+	private int count = 0;
 	private final boolean restrictedEdit;
 	private final TextEntry interaction;
 	
@@ -74,11 +85,26 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		String placeholder = interaction.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
 		placeholderEl.setEnabled(!restrictedEdit);
-		String alternatives = interaction.alternativesToString();
-		alternativeEl = uifactory.addTextElement("fib.alternative", "fib.alternative", 256, alternatives, formLayout);
-		alternativeEl.setHelpText(translate("fib.alternative.help"));
-		alternativeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_fib");
-		alternativeEl.setEnabled(!restrictedEdit);
+		
+		String alternativesPage = velocity_root + "/fib_alternatives.html";
+		alternativesCont = FormLayoutContainer.createCustomFormLayout("alternatives.list", getTranslator(), alternativesPage);
+		alternativesCont.setRootForm(mainForm);
+		formLayout.add(alternativesCont);
+		alternativesCont.setLabel("fib.alternative", null);
+		alternativesCont.setHelpText(translate("fib.alternative.help"));
+		alternativesCont.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_fib");
+		alternativesCont.contextPut("alternatives", alternativeRows);
+		
+		addFirstAlternative = uifactory.addFormLink("add.first.alternative", "add", "", null, alternativesCont, Link.LINK | Link.NONTRANSLATED);
+		addFirstAlternative.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		addFirstAlternative.setVisible(!restrictedEdit);
+
+		List<TextEntryAlternative> alternatives = interaction.getAlternatives();
+		if(alternatives != null && alternatives.size() > 0) {
+			for(TextEntryAlternative alternative:alternatives) {
+				appendAlternative(alternative, null, false);
+			}
+		}
 		
 		Integer expectedLength = interaction.getExpectedLength();
 		String expectedLengthStr = expectedLength == null ? null : expectedLength.toString();
@@ -100,13 +126,56 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		}
 		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 	}
-	
+
 	public String getSolution() {
 		return interaction.getSolution();
 	}
 	
 	public Identifier getResponseIdentifier() {
 		return interaction.getResponseIdentifier();
+	}
+	
+	private void appendAlternative(TextEntryAlternative alternative, AlternativeRow previousRow, boolean focus) {
+		String text = alternative.getAlternative();
+		TextElement alternativeEl = uifactory.addTextElement("fib.alternative." + count++, "fib.alternative", 256, text, alternativesCont);
+		alternativeEl.setDomReplacementWrapperRequired(false);
+		alternativeEl.setEnabled(!restrictedEdit);
+		
+		if(focus) {
+			solutionEl.setFocus(false);
+			for(AlternativeRow row:alternativeRows) {
+				row.getAlternativeEl().setFocus(false);
+			}
+			alternativeEl.setFocus(true);
+		}
+
+		FormLink addButton = null;
+		if(!restrictedEdit) {
+			addButton = uifactory.addFormLink("add.alternative." + count++, "add", "", null, alternativesCont, Link.NONTRANSLATED);
+			addButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+			addButton.setVisible(!restrictedEdit);
+			alternativesCont.add(addButton);
+		}
+		
+		FormLink removeButton = null;
+		if(!restrictedEdit) {
+			removeButton = uifactory.addFormLink("remove.alternative." + count++, "rm", "", null, alternativesCont, Link.NONTRANSLATED);
+			removeButton.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
+			removeButton.setVisible(!restrictedEdit);
+			alternativesCont.add(removeButton);
+		}
+		
+		AlternativeRow row = new AlternativeRow(alternative, alternativeEl, addButton, removeButton);
+		if(previousRow == null) {
+			alternativeRows.add(row);
+		} else {
+			int index = alternativeRows.indexOf(previousRow) + 1;
+			if(index >= 0 && index < alternativeRows.size()) {
+				alternativeRows.add(index, row);
+			} else {
+				alternativeRows.add(row);
+			}
+		}
 	}
 
 	@Override
@@ -135,12 +204,37 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 
 		return allOk & super.validateFormLogic(ureq);
 	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == addFirstAlternative) {
+			appendAlternative(new TextEntryAlternative(), null, true);
+		} else if(source instanceof FormLink) {
+			for(AlternativeRow alternativeRow:alternativeRows) {
+				if(alternativeRow.getRemoveButton() == source) {
+					alternativeRows.remove(alternativeRow);
+					flc.setDirty(true);
+					break;
+				} else if(alternativeRow.getAddButton() == source) {
+					appendAlternative(new TextEntryAlternative(), alternativeRow, true);
+					break;
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		interaction.setSolution(solutionEl.getValue());
 		interaction.setPlaceholder(placeholderEl.getValue());
-		interaction.stringToAlternatives(alternativeEl.getValue());
+		List<TextEntryAlternative> alternatives = new ArrayList<>(alternativeRows.size());
+		for(AlternativeRow row:alternativeRows) {
+			TextEntryAlternative alternative = row.getAlternative();
+			alternative.setAlternative(row.getAlternativeEl().getValue());
+			alternatives.add(alternative);
+		}
+		interaction.setAlternatives(alternatives);
 		interaction.setCaseSensitive(caseSensitiveEl.isAtLeastSelected(1));
 		if(StringHelper.containsNonWhitespace(expectedLengthEl.getValue())) {
 			interaction.setExpectedLength(new Integer(expectedLengthEl.getValue()));
@@ -153,5 +247,37 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	public class AlternativeRow {
+		
+		private final TextElement alternativeEl;
+		private final FormLink addButton, removeButton;
+		
+		private final TextEntryAlternative alternative;
+		
+		public AlternativeRow(TextEntryAlternative alternative, TextElement alternativeEl,
+				FormLink addButton, FormLink removeButton) {
+			this.addButton = addButton;
+			this.removeButton = removeButton;
+			this.alternative = alternative;
+			this.alternativeEl = alternativeEl;
+		}
+		
+		public TextElement getAlternativeEl() {
+			return alternativeEl;
+		}
+		
+		public TextEntryAlternative getAlternative() {
+			return alternative;
+		}
+
+		public FormLink getAddButton() {
+			return addButton;
+		}
+
+		public FormLink getRemoveButton() {
+			return removeButton;
+		}
 	}
 }

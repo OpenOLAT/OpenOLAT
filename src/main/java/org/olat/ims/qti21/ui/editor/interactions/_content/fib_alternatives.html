@@ -1,0 +1,11 @@
+#if($r.isNotEmpty($alternatives))
+	#foreach($alternative in $alternatives)
+		<div class="form-inline o_qti_gaptext_add_alternative">
+			$r.render(${alternative.getAlternativeEl()})
+			#if($r.isNotNull(${alternative.getAddButton()})) $r.render(${alternative.getAddButton()}) #end
+			#if($r.isNotNull(${alternative.getRemoveButton()})) $r.render(${alternative.getRemoveButton()}) #end
+		</div>
+	#end
+#elseif($r.available("add.first.alternative"))
+	<div class="form-inline o_qti_gaptext_add_first_alternative">$r.render("add.first.alternative")</div>
+#end
