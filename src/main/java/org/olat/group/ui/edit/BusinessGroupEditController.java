@@ -198,7 +198,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 			@Override
 			public Component create(UserRequest uureq) {
 				if(membersController == null) {
-					membersController = new BusinessGroupMembersController(ureq, getWindowControl(), toolbarPanel, currBusinessGroup);
+					membersController = new BusinessGroupMembersController(uureq, getWindowControl(), toolbarPanel, currBusinessGroup);
 					listenTo(membersController);
 				} else {
 					membersController.updateBusinessGroup(currBusinessGroup);
