@@ -291,8 +291,9 @@ public class RepositoryEntryMyCourseQueries {
 		if(StringHelper.containsNonWhitespace(params.getIdRefsAndTitle())) {
 			quickRefs = params.getIdRefsAndTitle();
 			quickText = PersistenceHelper.makeFuzzyQueryString(quickRefs);
-			
-			sb.append(" and (v.externalId=:quickRef or v.externalRef=:quickRef or v.softkey=:quickRef or ");
+			sb.append(" and (v.externalId=:quickRef or ");
+			PersistenceHelper.appendFuzzyLike(sb, "v.externalRef", "quickText", dbInstance.getDbVendor());
+			sb.append(" or v.softkey=:quickRef or ");
 			PersistenceHelper.appendFuzzyLike(sb, "v.displayname", "quickText", dbInstance.getDbVendor());
 			if(StringHelper.isLong(quickRefs)) {
 				try {
