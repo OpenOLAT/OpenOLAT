@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.search.SearchModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -37,13 +38,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LoginAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement guestLoginEl, guestLinkEl, invitationLoginEl;
+	private MultipleSelectionElement guestLoginEl, guestLinkEl, invitationLoginEl, fullTextSearchEl;
 	
 	private static final String[] keys = new String[]{ "on" };
 	private final String[] values;
 	
 	@Autowired
 	private LoginModule loginModule;
+	@Autowired
+	private SearchModule searchModule;
 	
 	public LoginAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -68,6 +71,10 @@ public class LoginAdminController extends FormBasicController {
 		invitationLoginEl = uifactory.addCheckboxesHorizontal("invitation.login", "invitation.login", formLayout, keys, values);
 		invitationLoginEl.select(keys[0], loginModule.isInvitationEnabled());
 		invitationLoginEl.addActionListener(FormEvent.ONCHANGE);
+		
+		fullTextSearchEl = uifactory.addCheckboxesHorizontal("guest.search", "guest.search", formLayout, keys, values);
+		fullTextSearchEl.select(keys[0], searchModule.isGuestEnabled());
+		fullTextSearchEl.addActionListener(FormEvent.ONCHANGE);
 	}
 	
 	@Override
@@ -86,6 +93,9 @@ public class LoginAdminController extends FormBasicController {
 		} else if(invitationLoginEl == source) {
 			boolean enabled = invitationLoginEl.isAtLeastSelected(1);
 			loginModule.setInvitationEnabled(enabled);
+		} else if(fullTextSearchEl == source) {
+			boolean enabled = fullTextSearchEl.isAtLeastSelected(1);
+			searchModule.setGuestEnabled(enabled);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

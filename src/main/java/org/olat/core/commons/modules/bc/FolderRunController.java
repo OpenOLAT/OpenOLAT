@@ -60,6 +60,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -70,6 +71,7 @@ import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.Quota;
@@ -80,10 +82,12 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.search.SearchModule;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.search.ui.SearchInputController;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -112,6 +116,9 @@ public class FolderRunController extends BasicController implements Activateable
 	private FolderCommand folderCommand;
 	private CloseableModalController cmc;
 	private Link editQuotaButton;
+	
+	@Autowired
+	private SearchModule searchModule;
 
 	/**
 	 * Default Constructor, results in showing users personal folder, used by Spring
@@ -282,7 +289,8 @@ public class FolderRunController extends BasicController implements Activateable
 			}
 		}
 		
-		if(!ureq.getUserSession().getRoles().isGuestOnly() && displaySearch) {
+		Roles roles = ureq.getUserSession().getRoles();
+		if(displaySearch && searchModule.isSearchAllowed(roles)) {
 		  SearchServiceUIFactory searchUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
 		  searchC = searchUIFactory.createInputController(ureq, wControl, DisplayOption.STANDARD, null);
 		  listenTo(searchC); // register for auto-dispose
@@ -290,7 +298,7 @@ public class FolderRunController extends BasicController implements Activateable
 		}
 		
 		
-		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
+		boolean isGuest = roles.isGuestOnly();
 		folderComponent = new FolderComponent(ureq, "foldercomp", rootContainer, filter, customLinkTreeModel, externContainerForCopy);
 		folderComponent.setCanMail(isGuest ? false : canMail); // guests can never send mail
 		folderComponent.addListener(this);
@@ -496,12 +504,13 @@ public class FolderRunController extends BasicController implements Activateable
 
 	private void enableDisableQuota(UserRequest ureq) {
 		//prevent a timing condition if the user logout while a thumbnail is generated
-		if (ureq.getUserSession() == null || ureq.getUserSession().getRoles() == null) {
+		UserSession usess = ureq.getUserSession();
+		if (usess == null || usess.getRoles() == null) {
 			return;
 		} 
 		
 		Boolean newEditQuota = Boolean.FALSE;
-		if (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isInstitutionalResourceManager()) {
+		if (usess.getRoles().isOLATAdmin() || usess.getRoles().isInstitutionalResourceManager()) {
 			// Only sys admins or institutonal resource managers can have the quota button
 			Quota q = VFSManager.isTopLevelQuotaContainer(folderComponent.getCurrentContainer());
 			newEditQuota = (q == null)? Boolean.FALSE : Boolean.TRUE;

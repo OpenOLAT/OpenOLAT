@@ -19,6 +19,13 @@
  */
 package org.olat.search.service.indexer.repository.course;
 
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.course.nodes.BasicLTICourseNode;
+import org.olat.course.nodes.CourseNode;
+
 /**
  * 
  * Initial date: 20 mars 2017<br>
@@ -34,5 +41,19 @@ public class BasicLTICourseNodeIndexer extends AbstractCourseNodeIndexer {
 	public BasicLTICourseNodeIndexer() {
 		super(TYPE, SUPPORTED_TYPE_NAME);
 	}
-
+	
+	@Override
+	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
+		if(roles.isGuestOnly()) {
+			if(contextEntry.getTransientState() instanceof CourseNodeEntry) {
+				CourseNode courseNode = ((CourseNodeEntry)contextEntry.getTransientState()).getCourseNode();
+				if(courseNode instanceof BasicLTICourseNode) {
+					BasicLTICourseNode ltiNode = (BasicLTICourseNode)courseNode;
+					return ltiNode.isGuestAllowed();
+				}
+			}
+			return false;
+		}
+		return super.checkAccess(contextEntry, businessControl, identity, roles);
+	}
 }

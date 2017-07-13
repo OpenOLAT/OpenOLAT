@@ -19,32 +19,32 @@
  */
 package org.olat.search.service.indexer.repository.course;
 
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.course.nodes.CourseNode;
 
 /**
+ * Hack to pass the course node to the sub-indexer as a state entry
+ * without reloading the whole course.
  * 
- * Initial date: 20 mars 2017<br>
+ * Initial date: 12 juil. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACourseNodeIndexer extends AbstractCourseNodeIndexer {
-	
-	public static final String TYPE = "type.course.node.gta";
+public class CourseNodeEntry implements StateEntry {
 
-	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.GTACourseNode";
+	private static final long serialVersionUID = 272047155723467386L;
+	private final CourseNode courseNode;
 	
-	public GTACourseNodeIndexer() {
-		super(TYPE, SUPPORTED_TYPE_NAME);
+	public CourseNodeEntry(CourseNode courseNode) {
+		this.courseNode = courseNode;
 	}
 	
+	public CourseNode getCourseNode() {
+		return courseNode;
+	}
+
 	@Override
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		if(roles.isGuestOnly()) {
-			return false;
-		}
-		return super.checkAccess(contextEntry, businessControl, identity, roles);
+	public CourseNodeEntry clone() {
+		return new CourseNodeEntry(courseNode);
 	}
 }

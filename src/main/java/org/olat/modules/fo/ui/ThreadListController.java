@@ -62,6 +62,7 @@ import org.olat.modules.fo.ui.MessageEditController.EditMode;
 import org.olat.modules.fo.ui.ThreadListDataModel.ThreadListCols;
 import org.olat.modules.fo.ui.events.SelectMessageEvent;
 import org.olat.modules.fo.ui.events.SelectUserListEvent;
+import org.olat.search.SearchModule;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.search.ui.SearchInputController;
@@ -87,6 +88,8 @@ public class ThreadListController extends FormBasicController {
 	private final boolean guestOnly;
 	private final ForumCallback foCallback;
 
+	@Autowired
+	private SearchModule searchModule;
 	@Autowired
 	private ForumManager forumManager;
 	@Autowired
@@ -124,6 +127,10 @@ public class ThreadListController extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			SearchServiceUIFactory searchServiceUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
 			searchController = searchServiceUIFactory.createInputController(ureq, getWindowControl(), DisplayOption.STANDARD, mainForm);
+			if(guestOnly && !searchModule.isGuestEnabled()) {
+				searchController.setResourceContextEnable(false);
+			}
+			
 			listenTo(searchController);
 			((FormLayoutContainer)formLayout).add("search_input", searchController.getFormItem());
 		}

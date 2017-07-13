@@ -22,6 +22,10 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
@@ -99,5 +103,13 @@ public class PortfolioCourseNodeIndexer extends DefaultIndexer implements Course
 				indexWriter.addDocument(pDocument);
 			}
 		}
+	}
+	
+	@Override
+	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
+		if(roles.isGuestOnly()) {
+			return false;
+		}
+		return super.checkAccess(contextEntry, businessControl, identity, roles);
 	}
 }

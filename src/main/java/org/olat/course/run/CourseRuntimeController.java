@@ -138,6 +138,7 @@ import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryLifeCycleChangeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.resource.OLATResource;
+import org.olat.search.SearchModule;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.search.service.QuickSearchEvent;
@@ -219,6 +220,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private InstantMessagingModule imModule;
 	@Autowired
 	private CourseDBManager courseDBManager;
+	@Autowired
+	private SearchModule searchModule;
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
@@ -804,7 +807,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		// add course search to toolbox 
-		boolean isSearchEnabled = !assessmentLock && !isGuestOnly;
+		boolean isSearchEnabled = !assessmentLock && searchModule.isSearchAllowed(roles);
 		if (isSearchEnabled) {
 			searchLink = LinkFactory.createToolLink("coursesearch", translate("command.coursesearch"), this, "o_icon_search");
 			searchLink.setVisible(cc.isCourseSearchEnabled());

@@ -110,6 +110,7 @@ import org.olat.modules.wiki.portfolio.WikiMediaHandler;
 import org.olat.modules.wiki.versioning.ChangeInfo;
 import org.olat.modules.wiki.versioning.HistoryTableDateModel;
 import org.olat.portfolio.EPUIFactory;
+import org.olat.search.SearchModule;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -181,6 +182,8 @@ public class WikiMainController extends BasicController implements CloneableCont
 	// indicates if user is already on image-detail-view-page (OLAT-6233)
 	private boolean isImageDetailView = false;
 	@Autowired
+	private SearchModule searchModule;
+	@Autowired
 	private WikiMediaHandler wikiMediaHandler;
 	@Autowired
 	private PortfolioV2Module portfolioModule;
@@ -193,7 +196,6 @@ public class WikiMainController extends BasicController implements CloneableCont
 		this.ores = ores;
 		this.securityCallback = securityCallback;
 		this.subsContext = securityCallback.getSubscriptionContext();
-		boolean guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 
 		WikiPage page = null;
 		Wiki wiki = getWiki();
@@ -273,7 +275,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		content.put("navigation", navigationContent);
 
 		// search
-		if (!guestOnly) {
+		if (searchModule.isSearchAllowed(ureq.getUserSession().getRoles())) {
 			SearchServiceUIFactory searchServiceUIFactory = (SearchServiceUIFactory) CoreSpringFactory
 					.getBean(SearchServiceUIFactory.class);
 			searchCtrl = searchServiceUIFactory.createInputController(ureq, wControl, DisplayOption.STANDARD, null);

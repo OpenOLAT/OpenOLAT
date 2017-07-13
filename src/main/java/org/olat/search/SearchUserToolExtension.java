@@ -63,8 +63,7 @@ public class SearchUserToolExtension extends UserToolExtension {
 		return searchOnlyHasInternalSiteMember;
 	}
 
-	public void setSearchOnlyHasInternalSiteMember(
-			boolean searchOnlyHasInternalSiteMember) {
+	public void setSearchOnlyHasInternalSiteMember(boolean searchOnlyHasInternalSiteMember) {
 		this.searchOnlyHasInternalSiteMember = searchOnlyHasInternalSiteMember;
 	}
 	

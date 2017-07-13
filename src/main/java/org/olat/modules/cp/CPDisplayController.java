@@ -68,10 +68,12 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.ICourse;
+import org.olat.search.SearchModule;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.search.ui.SearchInputController;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -100,6 +102,9 @@ public class CPDisplayController extends BasicController implements Activateable
 	private CPSelectPrintPagesController printController;
 	private CloseableModalController printPopup;
 	
+	@Autowired
+	private SearchModule searchModule;
+	
 	/**
 	 * @param ureq
 	 * @param cpRoot
@@ -119,7 +124,7 @@ public class CPDisplayController extends BasicController implements Activateable
 		myContent = createVelocityContainer("cpcontent");
 		// the cp component, added to the velocity
 		
-		if(!ureq.getUserSession().getRoles().isGuestOnly()) {
+		if(searchModule.isSearchAllowed(ureq.getUserSession().getRoles())) {
 			SearchServiceUIFactory searchServiceUIFactory = (SearchServiceUIFactory)CoreSpringFactory.getBean(SearchServiceUIFactory.class);
 			searchCtrl = searchServiceUIFactory.createInputController(ureq, wControl, DisplayOption.BUTTON, null);
 			myContent.put("search_input", searchCtrl.getInitialComponent());

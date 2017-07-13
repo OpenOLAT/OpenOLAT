@@ -115,7 +115,7 @@ public abstract class AbstractPortfolioMapIndexer extends AbstractHierarchicalIn
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		try {
 			OLATResourceable ores = contextEntry.getOLATResourceable();
-			return frontendManager.isMapVisible(identity, ores) && super.checkAccess(contextEntry, businessControl, identity, roles);
+			return !roles.isGuestOnly() && frontendManager.isMapVisible(identity, ores) && super.checkAccess(contextEntry, businessControl, identity, roles);
 		} catch (Exception e) {
 			logWarn("Couldn't ask if map is visible: " + contextEntry, e);
 			return false;

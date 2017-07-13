@@ -35,6 +35,7 @@ import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -65,10 +66,13 @@ public class SearchModule extends AbstractSpringModule {
 	private static final String CONF_EXCEL_FILE_ENABLED = "excelFileEnabled";
 	private static final String CONF_PDF_FILE_ENABLED = "pdfFileEnabled";
 	private static final String CONF_FILE_BLACK_LIST = "fileBlackList";
-
+	private static final String CONF_GUEST_ENABLED = "search.guest.enabled";
 	
 	@Value("${search.service:enabled}")
 	private String searchService;
+	
+	@Value("${search.guest.enabled:false}")
+	private boolean guestEnabled;
 	
 	@Value("${search.index.tempIndex:/tmp}")
 	private String tempIndexPath;
@@ -196,6 +200,11 @@ public class SearchModule extends AbstractSpringModule {
 			pdfFileEnabled = "true".equals(pdfEnabled);
 		}
 		
+		//guest enabled
+		String guestEnabledObj = getStringPropertyValue(CONF_GUEST_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(guestEnabledObj)) {
+			guestEnabled = "true".equals(guestEnabledObj);
+		}
 	}
 
 	@Override
@@ -418,5 +427,21 @@ public class SearchModule extends AbstractSpringModule {
 
 	public boolean getUseCompoundFile() {
 		return useCompoundFile;
+	}
+	
+	public boolean isGuestEnabled() {
+		return guestEnabled;
+	}
+	
+	public void setGuestEnabled(boolean enabled) {
+		guestEnabled = enabled;
+		setStringProperty(CONF_GUEST_ENABLED, enabled ? "true" : "false", true);
+	}
+	
+	public boolean isSearchAllowed(Roles roles) {
+		if(roles.isGuestOnly()) {
+			return isGuestEnabled();
+		}
+		return true;
 	}
 }

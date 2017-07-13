@@ -210,7 +210,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		return new NodeRunConstructionResult(ctrl);
 	}
 	
-	private boolean isGuestAllowedForQTI21(RepositoryEntry testEntry) {
+	public boolean isGuestAllowedForQTI21(RepositoryEntry testEntry) {
 		OLATResource ores = testEntry.getOlatResource();
 		if(ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName())) {
 			QTI21DeliveryOptions options = CoreSpringFactory.getImpl(QTI21Service.class).getDeliveryOptions(testEntry);

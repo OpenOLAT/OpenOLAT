@@ -120,13 +120,11 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 		ForumManager fom = ForumManager.getInstance();
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 
-  	Property forumKeyProperty = cpm.findCourseNodeProperty(courseNode, null, null, FOCourseNode.FORUM_KEY);
+		Property forumKeyProperty = cpm.findCourseNodeProperty(courseNode, null, null, FOCourseNode.FORUM_KEY);
 		// Check if forum-property exist
 		if (forumKeyProperty != null) {
 		  Long forumKey = forumKeyProperty.getLongValue();
 		  Forum forum = fom.loadForum(forumKey);
-//		  SearchResourceContext forumSearchResourceContext = new SearchResourceContext(parentResourceContext);
-//		  forumSearchResourceContext.setBusinessControlFor(BusinessGroupMainRunController.ORES_TOOLFORUM); // TODO:chg: Must be an other Class e.g. CourseRunMainController 
 		  parentResourceContext.setDocumentType(TYPE);
 		  doIndexAllMessages(parentResourceContext, forum, indexWriter );
 		}
