@@ -26,7 +26,6 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -78,11 +77,6 @@ public class FileQPoolServiceProvider extends AbstractQPoolServiceProvider {
 		return !filename.toLowerCase().endsWith(".xml")
 				&& !filename.toLowerCase().endsWith(".txt")
 				&& !filename.toLowerCase().endsWith(".zip");
-	}
-
-	@Override
-	public boolean isCompatible(String filename, VFSLeaf file) {
-		return isCompatible(filename, (File)null);
 	}
 
 	@Override

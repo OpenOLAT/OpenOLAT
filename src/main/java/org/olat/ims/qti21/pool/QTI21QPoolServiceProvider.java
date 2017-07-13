@@ -176,11 +176,6 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		boolean ok = new AssessmentItemFileResourceValidator().validate(filename, file);
 		return ok;
 	}
-	@Override
-	public boolean isCompatible(String filename, VFSLeaf file) {
-		boolean ok = new AssessmentItemFileResourceValidator().validate(filename, file);
-		return ok;
-	}
 	
 	@Override
 	public boolean isConversionPossible(QuestionItemShort item) {

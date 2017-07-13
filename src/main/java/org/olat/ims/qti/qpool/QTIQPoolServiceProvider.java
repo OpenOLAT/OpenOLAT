@@ -52,6 +52,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.QTI12EditorController;
 import org.olat.ims.qti.QTI12PreviewController;
 import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.QTIEditorMainController;
 import org.olat.ims.qti.editor.QTIEditorPackageImpl;
@@ -61,8 +62,8 @@ import org.olat.ims.qti.editor.beecom.parser.ParserManager;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTI12ItemFactory.Type;
 import org.olat.ims.qti.questionimport.ItemAndMetadata;
-import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.ims.qti21.pool.QTI12And21PoolWordExport;
+import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.ExportFormatOptions.Outcome;
 import org.olat.modules.qpool.QItemFactory;
@@ -100,6 +101,8 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private QTIModule qtiModule;
 	@Autowired
 	private QPoolFileStorage qpoolFileStorage;
 	@Autowired
@@ -143,12 +146,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public boolean isCompatible(String filename, File file) {
-		boolean ok = new ItemFileResourceValidator().validate(filename, file);
-		return ok;
-	}
-	@Override
-	public boolean isCompatible(String filename, VFSLeaf file) {
-		boolean ok = new ItemFileResourceValidator().validate(filename, file);
+		boolean ok = qtiModule.isCreateResourcesEnabled() && new ItemFileResourceValidator().validate(filename, file);
 		return ok;
 	}
 	
@@ -159,12 +157,14 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public List<QItemFactory> getItemfactories() {
-		List<QItemFactory> factories = new ArrayList<QItemFactory>();
-		factories.add(new QTI12ItemFactory(Type.sc));
-		factories.add(new QTI12ItemFactory(Type.mc));
-		factories.add(new QTI12ItemFactory(Type.kprim));
-		factories.add(new QTI12ItemFactory(Type.fib));
-		factories.add(new QTI12ItemFactory(Type.essay));
+		List<QItemFactory> factories = new ArrayList<>();
+		if(qtiModule.isCreateResourcesEnabled()) {
+			factories.add(new QTI12ItemFactory(Type.sc));
+			factories.add(new QTI12ItemFactory(Type.mc));
+			factories.add(new QTI12ItemFactory(Type.kprim));
+			factories.add(new QTI12ItemFactory(Type.fib));
+			factories.add(new QTI12ItemFactory(Type.essay));
+		}
 		return factories;
 	}
 

@@ -55,7 +55,7 @@ public class CSVToQuestionConverterTest {
 		URL importTxtUrl = CSVToQuestionConverterTest.class.getResource("question_import_mc.txt");
 		Assert.assertNotNull(importTxtUrl);
 		File importTxt = new File(importTxtUrl.toURI());
-		String input = FileUtils.readFileToString(importTxt);
+		String input = FileUtils.readFileToString(importTxt, "UTF-8");
 		
 		Translator translator = new KeyTranslator(Locale.ENGLISH);
 		ImportOptions options = new ImportOptions();
@@ -118,7 +118,7 @@ public class CSVToQuestionConverterTest {
 		URL importTxtUrl = CSVToQuestionConverterTest.class.getResource("question_import_fib.txt");
 		Assert.assertNotNull(importTxtUrl);
 		File importTxt = new File(importTxtUrl.toURI());
-		String input = FileUtils.readFileToString(importTxt);
+		String input = FileUtils.readFileToString(importTxt, "UTF-8");
 		
 		Translator translator = new KeyTranslator(Locale.ENGLISH);
 		ImportOptions options = new ImportOptions();
@@ -170,7 +170,7 @@ public class CSVToQuestionConverterTest {
 		URL importTxtUrl = CSVToQuestionConverterTest.class.getResource("question_import_fib_en_metadata.txt");
 		Assert.assertNotNull(importTxtUrl);
 		File importTxt = new File(importTxtUrl.toURI());
-		String input = FileUtils.readFileToString(importTxt);
+		String input = FileUtils.readFileToString(importTxt, "UTF-8");
 		
 		Translator translator = new KeyTranslator(Locale.ENGLISH);
 		ImportOptions options = new ImportOptions();

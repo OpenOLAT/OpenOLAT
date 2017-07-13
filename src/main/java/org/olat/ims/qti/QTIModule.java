@@ -26,11 +26,13 @@
 package org.olat.ims.qti;
 
 import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.ims.qti.repository.handlers.QTISurveyHandler;
 import org.olat.ims.qti.repository.handlers.QTITestHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -38,8 +40,13 @@ import org.springframework.stereotype.Service;
  *
  * @author Mike Stock
  */
-@Service("")
+@Service
 public class QTIModule extends AbstractSpringModule {	
+	
+	private static final String CREATE_RESOURCES_ENABLED = "qti12.create.resources.enabled";
+
+	@Value("${qti12.create.resources.enabled:false}")
+	private boolean createResourcesEnabled;
 
 	@Autowired
 	public QTIModule(CoordinatorManager coordinatorManager) {
@@ -50,11 +57,23 @@ public class QTIModule extends AbstractSpringModule {
 	public void init() {
 		RepositoryHandlerFactory.registerHandler(new QTISurveyHandler(), 10);
 		RepositoryHandlerFactory.registerHandler(new QTITestHandler(), 10);
+		initFromChangedProperties();
 	}
-
 
 	@Override
 	protected void initFromChangedProperties() {
-		//
+		String mathExtensionObj = getStringPropertyValue(CREATE_RESOURCES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(mathExtensionObj)) {
+			createResourcesEnabled = "true".equals(mathExtensionObj);
+		}
+	}
+
+	public boolean isCreateResourcesEnabled() {
+		return createResourcesEnabled;
+	}
+
+	public void setCreateResourcesEnabled(boolean enabled) {
+		createResourcesEnabled = enabled;
+		setStringProperty(CREATE_RESOURCES_ENABLED, enabled ? "true" : "false", true);
 	}
 }
