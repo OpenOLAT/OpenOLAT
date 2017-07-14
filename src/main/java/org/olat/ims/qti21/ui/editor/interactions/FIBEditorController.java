@@ -22,7 +22,6 @@ package org.olat.ims.qti21.ui.editor.interactions;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.cyberneko.html.parsers.SAXParser;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -341,7 +340,7 @@ public class FIBEditorController extends FormBasicController {
 			if("true".equals(solutionEmpty)) {
 				((TextEntry)entry).setSolution("");
 			} else {
-				solution = StringEscapeUtils.unescapeHtml(solution);
+				solution = itemBuilder.unescapeDataQtiSolution(solution);
 				((TextEntry)entry).setSolution(solution);
 			}
 		} else if(entry instanceof NumericalEntry) {
@@ -369,7 +368,7 @@ public class FIBEditorController extends FormBasicController {
 					if("data-qti-solution".equals(name)) {
 						solution = attributes.getValue(i);
 						if(solution != null) {
-							solution = StringEscapeUtils.unescapeHtml(solution);
+							solution = itemBuilder.unescapeDataQtiSolution(solution);
 						}
 					} else if("data-qti-solution-empty".equals(name)) {
 						solutionEmpty = attributes.getValue(i);
