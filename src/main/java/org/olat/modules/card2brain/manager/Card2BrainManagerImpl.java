@@ -66,13 +66,15 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 		boolean setOfFlashcardExists = false;
 
 		String url = String.format(card2brainModule.getPeekViewUrl(), alias);
+		try {
+			HttpGet request = new HttpGet(url);
 		
-		HttpGet request = new HttpGet(url);
-		try(CloseableHttpClient httpclient = HttpClients.createDefault();
-				CloseableHttpResponse response = httpclient.execute(request);) {
-			setOfFlashcardExists = isSetOfFlashcardExisting(response);
+			try(CloseableHttpClient httpclient = HttpClients.createDefault();
+					CloseableHttpResponse response = httpclient.execute(request);) {
+				setOfFlashcardExists = isSetOfFlashcardExisting(response);
+			}
 		} catch(Exception e) {
-			log.error("", e);
+			// nothing to do: setOffFlashcardExists is false.
 		}
 		
 		log.info(new StringBuilder("Check card2brain set of flaschcards (").append(url).append("): ").append(setOfFlashcardExists).toString());
@@ -114,4 +116,11 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 		return card2BrainValidationResult;
 	}
 
+	@Override
+	public String parseAlias(String alias) {
+		String parsedString = alias.endsWith("/editor")? alias.substring(0, alias.length()-7): alias;
+		parsedString = parsedString.replace("https://card2brain.ch/box/", "");
+		parsedString = parsedString.replace(" ", "_");
+		return parsedString;
+	}
 }
