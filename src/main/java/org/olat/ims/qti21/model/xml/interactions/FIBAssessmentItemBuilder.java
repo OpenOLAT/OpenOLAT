@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.DoubleAdder;
 
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -201,7 +202,7 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 						String marker = "responseIdentifier=\"" + interaction.getResponseIdentifier().toString() + "\"";
 						question = question.replace(marker, marker + " openolatType=\"string\"");
 						if(StringHelper.containsNonWhitespace(textEntry.getSolution())) {
-							question = question.replace(marker, marker + " data-qti-solution=\"" + StringHelper.escapeHtml(textEntry.getSolution()) + "\"");
+							question = question.replace(marker, marker + " data-qti-solution=\"" + escapeForDataQtiSolution(textEntry.getSolution()) + "\"");
 						}
 						entry = textEntry;
 						
@@ -389,6 +390,14 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			textEntry.setCaseSensitive(caseSensitive);
 			textEntry.setAlternatives(alternatives);
 		}
+	}
+	
+	public String escapeForDataQtiSolution(String solution) {
+		return StringHelper.escapeHtml(solution).replace("/", "\u2215");
+	}
+	
+	public String unescapeDataQtiSolution(String solution) {
+		return StringEscapeUtils.unescapeHtml(solution).replace("\u2215", "/");
 	}
 
 	@Override
