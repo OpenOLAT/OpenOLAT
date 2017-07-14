@@ -36,6 +36,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.Item;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
 /**
@@ -104,6 +105,14 @@ public abstract class FeedManager {
 	 * @param feed
 	 */
 	public abstract boolean copy(OLATResource source, OLATResource target);
+	
+	/**
+	 * Update the feed  with the properties in the repository entry.
+	 * 
+	 * @param feed
+	 * @param entry
+	 */
+	public abstract Feed enrichFeedByRepositoryEntry(Feed feed, RepositoryEntry entry);
 
 	/**
 	 * Create the given Item and saves the appropriate file (podcast, video etc.)

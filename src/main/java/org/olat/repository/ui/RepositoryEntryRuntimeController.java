@@ -573,6 +573,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		} else if(descriptionCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				refreshRepositoryEntry(descriptionCtrl.getEntry());
+				handler.onDescriptionChanged(descriptionCtrl.getEntry());
 			} else if(event == Event.CLOSE_EVENT) {
 				doClose(ureq);
 			}

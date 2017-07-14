@@ -37,7 +37,6 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -192,8 +191,6 @@ public class FeedManagerImpl extends FeedManager {
 	public Feed loadFeed(OLATResourceable ores) {
 		Feed feed = feedDAO.loadFeed(ores);
 		
-		feed = enrichFeedByRepositoryEntryInfromation(feed);
-		
 		// Update the external feed and the items
 		if (feed != null && feed.isExternal() && StringHelper.containsNonWhitespace(feed.getExternalFeedUrl())) {
 			Calendar cal = Calendar.getInstance();
@@ -223,7 +220,6 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public Feed updateFeed(Feed feed) {
-		enrichRepositoryEntryByFeedInformation(feed);
 		return feedDAO.updateFeed(feed);
 	}
 
@@ -518,79 +514,24 @@ public class FeedManagerImpl extends FeedManager {
 			}
 		}
 	}
-
-	/**
-	 * Update the repository entry with the latest set properties in the feed
-	 * resource.
-	 * <p>
-	 * Properties are:
-	 * <ul>
-	 * <li>Title
-	 * <li>Author
-	 * <li>Descripion (wiki style in repository)
-	 * <li>Image
-	 * </ul>
-	 * 
-	 * @param feed
-	 */
-	private void enrichRepositoryEntryByFeedInformation(Feed feed) {
-		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(feed, false);
-		if (entry != null && feed != null) {
-			Date whenTheFeedWasLastModified = feed.getLastModified();
-			if (whenTheFeedWasLastModified != null && entry.getLastModified().before(whenTheFeedWasLastModified)) {
-				// feed is newer than repository entry, update repository entry
-				String saveTitle = PersistenceHelper.truncateStringDbSave(feed.getTitle(), 100, true);
-				entry.setDisplayname(saveTitle);
-				String saveDesc = PersistenceHelper.truncateStringDbSave(feed.getDescription(), 16777210, true);
-				entry.setDescription(saveDesc);
-				// Update the image
-				VFSLeaf oldEntryImage = repositoryManager.getImage(entry);
-				if (oldEntryImage != null) {
-					// Delete the old File
-					oldEntryImage.delete();
-				}
-				// Copy the feed image to the repository home folder
-				VFSItem newImage = feedFileStorage.loadFeedMedia(feed);
-				if (newImage == null) {
-					// huh? image defined but not found on disk - remove
-					// image from feed
-					feed.setImageName(null);
-				} else {
-					repositoryManager.setImage((VFSLeaf) newImage, entry);
-				}
-			}
-		}
-	}
 	
-	/**
-	 * Update the feed resource with the latest set properties in the repository
-	 * entry.
-	 * <p>
-	 * Properties are:
-	 * <ul>
-	 * <li>Title (if not already set)
-	 * <li>Author
-	 * </ul>
-	 * 
-	 * @param feed
-	 */
-	private Feed enrichFeedByRepositoryEntryInfromation(Feed feed) {
-		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(feed, false);
-		if (entry != null && feed != null) {
-			Date whenTheFeedWasLastModified = feed.getLastModified();
-			if (feed.getTitle() == null || whenTheFeedWasLastModified == null || entry.getLastModified().after(whenTheFeedWasLastModified)) {
-				// Copy the title (only) initially
-				if (feed.getTitle() == null) {
-					feed.setTitle(entry.getDisplayname());
-				}
-				if (StringHelper.containsNonWhitespace(entry.getAuthors())) {
-					feed.setAuthor(entry.getAuthors());
-				} else {
-					feed.setAuthor(null);
-				}
-				feed = updateFeed(feed);
-			}
+	@Override
+	public Feed enrichFeedByRepositoryEntry(Feed feed, RepositoryEntry entry) {
+		// copy the metadata
+		feed.setTitle(entry.getDisplayname());
+		feed.setDescription(entry.getDescription());
+		
+		// Some old feeds have an author but it is not in the RespositoryEntry.
+		// Keep the author of the feed in this case.
+		if (entry.getAuthors() != null) {
+			feed.setAuthor(entry.getAuthors());
 		}
+		
+		// copy the image
+		VFSLeaf image = repositoryManager.getImage(entry);
+		String imageName = feedFileStorage.saveFeedMedia(feed, image);
+		feed.setImageName(imageName);
+
 		return feed;
 	}
 

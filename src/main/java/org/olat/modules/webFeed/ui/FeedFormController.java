@@ -231,7 +231,6 @@ class FeedFormController extends FormBasicController {
 		description = uifactory.addRichTextElementForStringDataMinimalistic("description", "feed.form.description", feed
 				.getDescription(), 5, -1, formLayout, getWindowControl());
 		description.setMaxLength(4000);
-		description.setNotEmptyCheck("feed.form.field.is_mandatory");
 		RichTextConfiguration richTextConfig = description.getEditorConfiguration();
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");

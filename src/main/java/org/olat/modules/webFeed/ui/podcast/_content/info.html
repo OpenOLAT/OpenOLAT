@@ -1,5 +1,5 @@
 <div class="o_podcast_info">
-	#if ($callback.mayEditMetadata())
+	#if ($r.available("feed.edit"))
 		<div class="o_feed_edit pull-right">$r.render("feed.edit")</div>
 	#end
 	<h2>	

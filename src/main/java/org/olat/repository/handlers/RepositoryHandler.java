@@ -199,7 +199,7 @@ public interface RepositoryHandler {
 	/**
 	 * Called if the repository entry referencing the given Resourceable will be deleted
 	 * from the repository. Do any necessary cleanup work specific to this handler's type.
-	 * The handler is responsible for deleting the resourceable aswell.
+	 * The handler is responsible for deleting the resourceable as well.
 	 * @param res
 	 * @param ureq
 	 * @param wControl
@@ -209,7 +209,7 @@ public interface RepositoryHandler {
 
 	/**
 	 * Called if the repository entry referencing the given Resourceable will be deleted
-	 * from the repository. Return status wether to proceed with the delete action. If
+	 * from the repository. Return status whether to proceed with the delete action. If
 	 * this method returns false, the entry will not be deleted.
 	 * @param res
 	 * @param identity
@@ -241,5 +241,13 @@ public interface RepositoryHandler {
 	 * @return
 	 */
 	public boolean isLocked(OLATResourceable ores); 
+	
+	/**
+	 * Called when the repository entry of that Resourceable changed.
+	 * @param entry 
+	 */
+	default public void onDescriptionChanged(RepositoryEntry entry) {
+		// nothing to do
+	}
 	
 }

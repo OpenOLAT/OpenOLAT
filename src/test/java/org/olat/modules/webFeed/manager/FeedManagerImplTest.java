@@ -25,6 +25,7 @@
 */
 package org.olat.modules.webFeed.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -46,6 +47,9 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.webFeed.ExternalFeedFetcher;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
+import org.olat.modules.webFeed.model.FeedImpl;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -75,6 +79,8 @@ public class FeedManagerImplTest {
 	@Mock
 	private Coordinator coordinaterMock;
 	@Mock
+	private RepositoryManager repostoryManager;
+	@Mock
 	OLATResource resourceDummy;
 	@Mock
 	Feed feedDummy;
@@ -96,7 +102,7 @@ public class FeedManagerImplTest {
 		ReflectionTestUtils.setField(sut, "itemDAO", itemDAOMock);
 		ReflectionTestUtils.setField(sut, "feedFileStorage", feedFileStorageMock);
 		ReflectionTestUtils.setField(sut, "externalFeedFetcher", feedFetcherMock);
-		
+		ReflectionTestUtils.setField(sut, "repositoryManager", repostoryManager);
 	}
 	
 	@Test
@@ -254,4 +260,21 @@ public class FeedManagerImplTest {
 		verify(feedFileStorageMock, times(3)).deleteItemXML(itemDummy);
 	}
 	
+	@Test
+	public void enrichFeedFromrepositoryEntryShouldTransferAtributes() {
+		Feed feed = new FeedImpl(resourceDummy);
+		RepositoryEntry entry = new RepositoryEntry();
+		String title = "Title";
+		entry.setDisplayname(title);
+		String description = "Description";
+		entry.setDescription(description);
+		String authors = "Author";
+		entry.setAuthors(authors);
+		
+		Feed enrichedFeed = sut.enrichFeedByRepositoryEntry(feed, entry);
+		
+		assertThat(enrichedFeed.getTitle()).isEqualTo(title);
+		assertThat(enrichedFeed.getDescription()).isEqualTo(description);
+		assertThat(enrichedFeed.getAuthor()).isEqualTo(authors);
+	}
 }

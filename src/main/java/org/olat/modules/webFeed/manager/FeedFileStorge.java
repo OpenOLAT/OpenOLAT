@@ -40,6 +40,7 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -419,10 +420,9 @@ public class FeedFileStorge {
 	}
 	
 	/**
-	 * Save the the media element of the feed. If allready a file is in
-	 * the media container, that file is previously deleted.
-	 * If the media is null, this method will do nothing. It does not delete
-	 * the existing media.
+	 * Save the media element of the feed. If already a file is in the media
+	 * container, that file is previously deleted. If the media is null, this
+	 * method will do nothing. It does not delete the existing media.
 	 * 
 	 * @param feed
 	 * @param media
@@ -444,6 +444,29 @@ public class FeedFileStorge {
 				// Make file system save
 				saveFileName = Formatter.makeStringFilesystemSave(media.getUploadFileName());
 				imageLeaf.rename(saveFileName);
+			}
+		}
+		
+		return saveFileName;
+	}
+	
+	/**
+	 * Save a file as the media element of the feed. If already a file is in
+	 * the media container, that file is previously deleted.
+	 * 
+	 * @param feed
+	 * @param media
+	 * @return the file name which is save for the file system
+	 */
+	public String saveFeedMedia(Feed feed, VFSLeaf media) {
+		String saveFileName = null;
+		
+		VFSContainer feedMediaContainer = getOrCreateFeedMediaContainer(feed);
+		if (feedMediaContainer != null) {
+			deleteFeedMedia(feed);
+			if (media != null) {
+				VFSManager.copyContent(media, feedMediaContainer.createChildLeaf(media.getName()));
+				saveFileName = media.getName();
 			}
 		}
 		
