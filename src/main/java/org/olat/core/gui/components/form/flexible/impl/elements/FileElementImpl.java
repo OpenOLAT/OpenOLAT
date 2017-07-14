@@ -54,6 +54,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
@@ -122,6 +123,7 @@ public class FileElementImpl extends FormItemImpl
 		super(name);
 		this.wControl = wControl;
 		component = new FileElementComponent(this);
+		setElementCssClass(null); // trigger default css 
 	}
 
 	/**
@@ -197,7 +199,8 @@ public class FileElementImpl extends FormItemImpl
 	}
 
 	private void doConfirmDelete(UserRequest ureq) {
-		Translator fileTranslator = Util.createPackageTranslator(FileElementImpl.class, ureq.getLocale(), getTranslator());
+		Translator fileTranslator = Util.createPackageTranslator(FileElementImpl.class, ureq.getLocale(),
+				getTranslator());
 		String title = fileTranslator.translate("confirm.delete.file.title");
 		String text = fileTranslator.translate("confirm.delete.file");
 		dialogCtr = DialogBoxUIFactory.createOkCancelDialog(ureq, wControl, title, text);
@@ -208,7 +211,7 @@ public class FileElementImpl extends FormItemImpl
 	@Override
 	public Iterable<FormItem> getFormItems() {
 		if (previewEl != null) {
-			return Collections.<FormItem> singletonList(previewEl);
+			return Collections.<FormItem>singletonList(previewEl);
 		}
 		return Collections.emptyList();
 	}
@@ -339,15 +342,15 @@ public class FileElementImpl extends FormItemImpl
 
 	@Override
 	public String getExampleText() {
-		if(fileExampleKey != null) {
-			if(fileExampleParams != null) {
+		if (fileExampleKey != null) {
+			if (fileExampleParams != null) {
 				return translator.translate(fileExampleKey, fileExampleParams);
 			}
 			return translator.translate(fileExampleKey);
 		}
 		return null;
 	}
-	
+
 	@Override
 	public void setExampleKey(String exampleKey, String[] params) {
 		this.fileExampleKey = exampleKey;
@@ -464,7 +467,7 @@ public class FileElementImpl extends FormItemImpl
 	public String getUploadFileName() {
 		return uploadFilename;
 	}
-	
+
 	@Override
 	public void setUploadFileName(String uploadFileName) {
 		this.uploadFilename = uploadFileName;
@@ -599,6 +602,17 @@ public class FileElementImpl extends FormItemImpl
 		}
 		return targetLeaf;
 
+	}
+
+	@Override
+	public void setElementCssClass(String elementCssClass) {
+		// make sure the o_fileElement class is always set to trigger special
+		// rendering for all file elements (error handling)
+		if (StringHelper.containsNonWhitespace(elementCssClass)) {
+			super.setElementCssClass(elementCssClass + " o_fileElement");
+		} else {
+			super.setElementCssClass("o_fileElement");
+		}
 	}
 
 	/**

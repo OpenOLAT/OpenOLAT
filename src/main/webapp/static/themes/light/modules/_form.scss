@@ -104,9 +104,9 @@
 			right: 38px;
 		}
 	}
-	
-	.has-feedback.has-error .o_fileinput .o_fakechooser {
-		margin-right:30px;
+	/* hide error icon for file element - clash with file element controls */
+	.o_fileElement.has-error .o_icon_error.form-control-feedback {
+		display: none;
 	}
 	
 	/* disabled text areas are rendered in div's for improved printing and layouting features */
