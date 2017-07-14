@@ -46,4 +46,15 @@ public interface Card2BrainManager {
 	 */
 	public Card2BrainVerificationResult checkEnterpriseLogin(String url, String key, String secret);
 
+	/**
+	 * Parse the alias of the set of flashcards. Remove the unnecessary part
+	 * if someone inserts the whole weblink from the card2brain website e.g.
+	 * https://card2brain.ch/box/20170420_02_chemie_und_werkstoffe.
+	 * 
+	 * @param alias
+	 *            the original alias value
+	 * @return the parsed String
+	 */
+	public String parseAlias(String alias);
+	
 }

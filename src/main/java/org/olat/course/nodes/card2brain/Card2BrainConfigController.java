@@ -148,7 +148,7 @@ public class Card2BrainConfigController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		allOk &= validateFlashcardAlias(parseAlias(flashcardAliasEl.getValue()));
+		allOk &= validateFlashcardAlias(card2BrainManager.parseAlias(flashcardAliasEl.getValue()));
 		allOk &= validateLogin();
 
 		// Show the preview button only when the configuration is valid.
@@ -232,7 +232,7 @@ public class Card2BrainConfigController extends FormBasicController {
 	}
 
 	protected ModuleConfiguration getUpdatedConfig() {
-		config.set(Card2BrainCourseNode.CONFIG_FLASHCARD_ALIAS, parseAlias(flashcardAliasEl.getValue()));
+		config.set(Card2BrainCourseNode.CONFIG_FLASHCARD_ALIAS, card2BrainManager.parseAlias(flashcardAliasEl.getValue()));
 		if (isPrivateLoginActivated()) {
 			config.set(Card2BrainCourseNode.CONFIG_ENABLE_PRIVATE_LOGIN, Boolean.toString(true));
 			config.set(Card2BrainCourseNode.CONFIG_PRIVATE_KEY, privateKeyEl.getValue());
@@ -262,20 +262,6 @@ public class Card2BrainConfigController extends FormBasicController {
 		}
 
 		return isPrivateLoginActivated;
-	}
-
-	/**
-	 * Parse the alias of the set of flashcards.<br>
-	 * Remove the unnecessary part if someone inserts the whole weblink from the
-	 * card2brain website e.g.
-	 * https://card2brain.ch/box/20170420_02_chemie_und_werkstoffe.
-	 * 
-	 * @param alias
-	 *            the original alias value
-	 * @return the parsed String
-	 */
-	private String parseAlias(String alias) {
-		return alias.replace("https://card2brain.ch/box/", "");
 	}
 
 }
