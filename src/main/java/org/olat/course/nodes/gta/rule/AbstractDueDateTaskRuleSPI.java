@@ -209,11 +209,13 @@ public abstract class AbstractDueDateTaskRuleSPI implements IdentitiesProviderRu
 	}
 	
 	protected List<Identity> getGroupsToRemind(TaskList taskList, GTACourseNode gtaNode) {
-		List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
 		Set<BusinessGroup> doneTasks = new HashSet<BusinessGroup>();
-		for(Task task:tasks) {
-			if(task.getBusinessGroup() != null) {
-				doneTasks.add(task.getBusinessGroup());
+		if(taskList != null) {
+			List<Task> tasks = gtaManager.getTasks(taskList, gtaNode);
+			for(Task task:tasks) {
+				if(task.getBusinessGroup() != null) {
+					doneTasks.add(task.getBusinessGroup());
+				}
 			}
 		}
 
