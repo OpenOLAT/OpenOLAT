@@ -94,7 +94,6 @@ import org.olat.ims.qti.export.QTIExportSCQItemFormatConfig;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
-import org.olat.ims.qti.resultexport.QTI12ExportResultsReportController;
 import org.olat.ims.qti.resultexport.QTI12ResultsExportMediaResource;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
@@ -273,15 +272,9 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 
 		} else {
 			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
-			if(!coachCourseEnv.isCourseReadOnly() && options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
-				for(Identity assessedIdentity:options.getIdentities()) {
-					if(isQTI12TestRunning(assessedIdentity, courseEnv)) {
-						tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
-						break;
-					}
-				}
+			if(!coachCourseEnv.isCourseReadOnly()) {
+				tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
 			}
-			tools.add(new QTI12ExportResultsReportController(ureq, wControl, courseEnv, options, this));
 		}
 		return tools;
 	}
