@@ -79,7 +79,7 @@ public class FeedManagerImplTest {
 	@Mock
 	private Coordinator coordinaterMock;
 	@Mock
-	private RepositoryManager repostoryManager;
+	private RepositoryManager repositoryManager;
 	@Mock
 	OLATResource resourceDummy;
 	@Mock
@@ -102,7 +102,7 @@ public class FeedManagerImplTest {
 		ReflectionTestUtils.setField(sut, "itemDAO", itemDAOMock);
 		ReflectionTestUtils.setField(sut, "feedFileStorage", feedFileStorageMock);
 		ReflectionTestUtils.setField(sut, "externalFeedFetcher", feedFetcherMock);
-		ReflectionTestUtils.setField(sut, "repositoryManager", repostoryManager);
+		ReflectionTestUtils.setField(sut, "repositoryManager", repositoryManager);
 	}
 	
 	@Test
@@ -260,8 +260,9 @@ public class FeedManagerImplTest {
 		verify(feedFileStorageMock, times(3)).deleteItemXML(itemDummy);
 	}
 	
+
 	@Test
-	public void enrichFeedFromrepositoryEntryShouldTransferAtributes() {
+	public void enrichFeedFromRepositoryEntryShouldTransferAtributes() {
 		Feed feed = new FeedImpl(resourceDummy);
 		RepositoryEntry entry = new RepositoryEntry();
 		String title = "Title";
@@ -276,5 +277,33 @@ public class FeedManagerImplTest {
 		assertThat(enrichedFeed.getTitle()).isEqualTo(title);
 		assertThat(enrichedFeed.getDescription()).isEqualTo(description);
 		assertThat(enrichedFeed.getAuthor()).isEqualTo(authors);
+	}
+
+
+	@Test
+	public void enrichFeedFromRepositoryEntryShouldReturnUnchangedFeedIfRepositoryIsNull() {
+		Feed feed = new FeedImpl(resourceDummy);
+		String title = "Title";
+		feed.setTitle(title);
+		String description = "Description";
+		feed.setDescription(description);
+		String authors = "Author";
+		feed.setAuthor(authors);
+		
+		Feed enrichedFeed = sut.enrichFeedByRepositoryEntry(feed, null);
+		
+		assertThat(enrichedFeed).isEqualTo(feed);
+		assertThat(enrichedFeed.getTitle()).isEqualTo(title);
+		assertThat(enrichedFeed.getDescription()).isEqualTo(description);
+		assertThat(enrichedFeed.getAuthor()).isEqualTo(authors);
+	}
+
+	@Test
+	public void enrichFeedFromRepositoryEntryShouldReturnNullIfFeedIsNull() {
+		RepositoryEntry entry = new RepositoryEntry();
+		
+		Feed enrichedFeed = sut.enrichFeedByRepositoryEntry(null, entry);
+		
+		assertThat(enrichedFeed).isNull();
 	}
 }

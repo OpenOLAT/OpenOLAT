@@ -242,10 +242,7 @@ public class BlogHandler implements RepositoryHandler {
 
 	@Override
 	public void onDescriptionChanged(RepositoryEntry entry) {
-		FeedManager feedManager = FeedManager.getInstance();
-		Feed feed = feedManager.loadFeed(entry.getOlatResource());
-		feed = feedManager.enrichFeedByRepositoryEntry(feed, entry);
-		feedManager.updateFeed(feed);
+		Feed feed = FeedManager.getInstance().updateFeedWithRepositoryEntry(entry);
 		DBFactory.getInstance().commitAndCloseSession();
 
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()

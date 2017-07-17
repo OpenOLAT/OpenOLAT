@@ -107,12 +107,22 @@ public abstract class FeedManager {
 	public abstract boolean copy(OLATResource source, OLATResource target);
 	
 	/**
-	 * Update the feed  with the properties in the repository entry.
+	 * Enrich the feed with the properties in the RepositoryEntry.
 	 * 
 	 * @param feed
 	 * @param entry
+	 * @return the same Feed object with actualized attributes
 	 */
 	public abstract Feed enrichFeedByRepositoryEntry(Feed feed, RepositoryEntry entry);
+	
+	/**
+	 * Update the feed with the properties in the RepositoryEntry and save it
+	 * in the database.
+	 * 
+	 * @param entry
+	 * @return a new updated Feed object
+	 */
+	public abstract Feed updateFeedWithRepositoryEntry(RepositoryEntry entry);
 
 	/**
 	 * Create the given Item and saves the appropriate file (podcast, video etc.)
