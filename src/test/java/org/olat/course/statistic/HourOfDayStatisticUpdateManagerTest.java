@@ -70,8 +70,8 @@ public class HourOfDayStatisticUpdateManagerTest extends AbstractStatisticUpdate
 		
 		cleanUpLog();
 		for(int i=0; i<12; i++) {
-			addLogEntry(re1, rootNode1, ref, 0, ref.get(Calendar.HOUR_OF_DAY), 1, i + 1);
-			addLogEntry(re2, firstNode2, ref, 0, ref.get(Calendar.HOUR_OF_DAY), 1, i + 1);
+			addLogEntry(re1, rootNode1, ref, 0, getSecuredNowRef(ref, 1, i + 1), 1, i + 1);
+			addLogEntry(re2, firstNode2, ref, 0, getSecuredNowRef(ref, 1, i + 1), 1, i + 1);
 		}
 		for(int i=0; i<7; i++) {
 			addLogEntry(re1, rootNode1, ref, 1, 3 + i, 1, 1);
@@ -115,6 +115,23 @@ public class HourOfDayStatisticUpdateManagerTest extends AbstractStatisticUpdate
 		checkStatistics(course2, firstNode2, date);
 	}
 	
+	/**
+	 * Prevent date in future.
+	 * @param now
+	 * @return
+	 */
+	private int getSecuredNowRef(Calendar now, int minute, int secondes) {
+		int hour = now.get(Calendar.HOUR_OF_DAY);
+		if(now.get(Calendar.MINUTE) < minute) {
+			hour--;
+		} else if(now.get(Calendar.MINUTE) == minute) {
+			if(now.get(Calendar.SECOND) < secondes) {
+				hour--;
+			}
+		}
+		return hour < 0 ? 0 : hour;
+	}
+	
 	private void checkStatistics(ICourse course, CourseNode node, String date) {
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		StatisticResult updatedResult = hourOfDayStatisticManager.generateStatisticResult(new SyntheticUserRequest(null, Locale.ENGLISH), course, re.getKey());
@@ -132,8 +149,8 @@ public class HourOfDayStatisticUpdateManagerTest extends AbstractStatisticUpdate
 	protected String addLogEntry(RepositoryEntry repositoryEntry, CourseNode courseNode, Calendar start,
 			int dayInPast, int hour, int minute, int second) {
 		Calendar cal = addLog(repositoryEntry.getKey(), courseNode.getIdent(), start, dayInPast, hour, minute, second);
-		String week = getHourOfDay(cal);
-		incrementInMemoryStatistics(repositoryEntry.getKey(), courseNode.getIdent(), week);
-		return week;
+		String hourOfDay = getHourOfDay(cal);
+		incrementInMemoryStatistics(repositoryEntry.getKey(), courseNode.getIdent(), hourOfDay);
+		return hourOfDay;
 	}
 }

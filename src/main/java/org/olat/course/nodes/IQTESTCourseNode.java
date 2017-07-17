@@ -269,15 +269,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 
 		} else {
 			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
-			if(!coachCourseEnv.isCourseReadOnly() && options.getGroup() == null && options.getIdentities() != null && options.getIdentities().size() > 0) {
-				boolean isRunningSessions = false;
-				for(Identity assessedIdentity:options.getIdentities()) {
-					if(isQTI12TestRunning(assessedIdentity, courseEnv)) {
-						isRunningSessions = true;
-						break;
-					}
-				}
-				tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this, isRunningSessions));
+			if(!coachCourseEnv.isCourseReadOnly()) {
+				tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
 			}
 			tools.add(new QTI12ExportResultsReportController(ureq, wControl, courseEnv, options, this));
 		}
