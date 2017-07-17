@@ -146,6 +146,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		tableEl.setExportEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
+		tableEl.setEmtpyTableMessageKey("empty.table.lectures.blocks.admin");
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		options.setDefaultOrderBy(new SortKey(BlockCols.date.name(), false));
@@ -176,6 +177,8 @@ public class LectureListRepositoryController extends FormBasicController {
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+		
+		deleteLecturesButton.setVisible(rows.size() > 0);
 	}
 	
 	@Override

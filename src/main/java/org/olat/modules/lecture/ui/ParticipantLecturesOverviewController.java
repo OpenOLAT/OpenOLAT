@@ -142,8 +142,8 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		}
 	
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.externalRef, "open.course"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.entry, "open.course"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.externalRef, "details"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.entry, "details"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.plannedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.attendedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.absentLectures));
@@ -151,12 +151,12 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.authorizedAbsentLectures));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.progress, new LectureStatisticsCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.rateWarning, new RateWarningCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.rateWarning, new RateWarningCellRenderer(getTranslator())));
 		DefaultFlexiColumnModel rateColumn = new DefaultFlexiColumnModel(LecturesCols.rate, new PercentCellRenderer());
 		rateColumn.setFooterCellRenderer(new PercentCellRenderer());
 		columnsModel.addFlexiColumnModel(rateColumn);
 		if(withSelect) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "details"));
 		}
 		
 		tableModel = new ParticipantLecturesDataModel(columnsModel, getTranslator(), getLocale()); 
@@ -194,7 +194,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				LectureBlockStatistics row = tableModel.getObject(se.getIndex());
-				if("select".equals(cmd)) {
+				if("details".equals(cmd)) {
 					doSelect(ureq, row);
 				} else if("open.course".equals(cmd)) {
 					doOpenCourse(ureq, row);

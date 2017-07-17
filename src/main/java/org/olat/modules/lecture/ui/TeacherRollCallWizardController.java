@@ -100,7 +100,7 @@ public class TeacherRollCallWizardController extends BasicController {
 				doClose(ureq);
 			}
 		} else if(closeRollCallCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
 				doClose(ureq);
 			}
 		}
@@ -207,13 +207,15 @@ public class TeacherRollCallWizardController extends BasicController {
 		protected void updateNextPrevious(Identity callIdentity) {
 			if(callIdentity == null) {
 				//last step
-				nextLink.setEnabled(false);
+				nextLink.setVisible(false);
+				participantsEl.setVisible(false);
 				previousLink.setEnabled(true);
 			} else {
 				int index = participants.indexOf(callIdentity);
+				nextLink.setVisible(true);
 				nextLink.setEnabled(index >= 0 && index + 1 <= participants.size());
 				previousLink.setEnabled(index > 0);
-				
+				participantsEl.setVisible(true);
 				String calledIdentityKey = callIdentity.getKey().toString();
 				for(String participantKey:participantKeys) {
 					if(participantKey.equals(calledIdentityKey)) {

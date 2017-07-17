@@ -55,6 +55,14 @@ public interface LectureService {
 	public RepositoryEntryLectureConfiguration getRepositoryEntryLectureConfiguration(RepositoryEntry entry);
 	
 	/**
+	 * 
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	public boolean isRepositoryEntryLectureEnabled(RepositoryEntryRef entry);
+	
+	/**
 	 * Update the specified configuration
 	 * @param config The configuration to merge
 	 * @return A merged configuration

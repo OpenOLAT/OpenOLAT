@@ -74,13 +74,13 @@ implements SortableFlexiTableDataModel<LectureBlockStatistics>, FlexiTableFooter
 			case absentLectures: return positive(row.getTotalAbsentLectures());
 			case progress: return row;
 			case rateWarning: {
-				if(row.getTotalEffectiveLectures() <= 0) {
+				if(!row.isCalculateRate() || row.getTotalEffectiveLectures() <= 0) {
 					return null;
 				}
 				return row;
 			}
 			case rate: {
-				if(row.getTotalEffectiveLectures() <= 0) {
+				if(!row.isCalculateRate() || row.getTotalEffectiveLectures() <= 0) {
 					return null;
 				}
 				return row.getAttendanceRate();

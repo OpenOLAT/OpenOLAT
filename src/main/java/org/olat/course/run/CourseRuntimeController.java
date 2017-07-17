@@ -790,9 +790,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(glossary);
 		}
 		
-		if(!assessmentLock && lectureModule.isEnabled()
-				//check the configuration enable the lectures and the user is a teacher 
-				&& lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity())) {
+		if(!assessmentLock && isLecturesLinkEnabled()) {
 			lecturesLink = LinkFactory.createToolLink("command.lectures", translate("command.lectures"), this, "o_icon_lecture");
 			toolbarPanel.addTool(lecturesLink);
 		}
@@ -813,7 +811,19 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			searchLink.setVisible(cc.isCourseSearchEnabled());
 			toolbarPanel.addTool(searchLink);
 		}
-		
+	}
+	
+	//check the configuration enable the lectures and the user is a teacher 
+	private boolean isLecturesLinkEnabled() {
+		if(lectureModule.isEnabled()) {
+			if(reSecurity.isEntryAdmin()) {
+				return lectureService.isRepositoryEntryLectureEnabled(getRepositoryEntry());
+			} else {
+				//check the configuration enable the lectures and the user is a teacher 
+				return lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity());
+			}
+		}
+		return false;
 	}
 
 	@Override

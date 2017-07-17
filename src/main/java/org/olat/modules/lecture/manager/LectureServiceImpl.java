@@ -151,6 +151,14 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	}
 	
 	@Override
+	public boolean isRepositoryEntryLectureEnabled(RepositoryEntryRef entry) {
+		if(!lectureModule.isEnabled()) {
+			return false;
+		}
+		return lectureConfigurationDao.isConfigurationEnabledFor(entry);
+	}
+
+	@Override
 	public RepositoryEntryLectureConfiguration copyRepositoryEntryLectureConfiguration(RepositoryEntry sourceEntry, RepositoryEntry targetEntry) {
 		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.getConfiguration(sourceEntry);
 		if(config != null) {
@@ -987,7 +995,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		KalendarEvent event = new KalendarEvent(eventId, null, title, lectureBlock.getStartDate(), lectureBlock.getEndDate());
 		event.setExternalId(generateExternalId(lectureBlock, entry));
 		event.setLocation(lectureBlock.getLocation());
-		event.setDescription(lectureBlock.getDescription());
+		updateEventDescription(lectureBlock, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 		return event;
 	}
@@ -995,11 +1003,23 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	private boolean updateEvent(LectureBlock lectureBlock, KalendarEvent event) {
 		event.setSubject(lectureBlock.getTitle());
 		event.setLocation(lectureBlock.getLocation());
-		event.setDescription(lectureBlock.getDescription());
+		updateEventDescription(lectureBlock, event);
 		event.setBegin(lectureBlock.getStartDate());
 		event.setEnd(lectureBlock.getEndDate());
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 		return true;
+	}
+	
+	private void updateEventDescription(LectureBlock lectureBlock, KalendarEvent event) {
+		StringBuilder descr = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(lectureBlock.getDescription())) {
+			descr.append(lectureBlock.getDescription());
+		}
+		if(StringHelper.containsNonWhitespace(lectureBlock.getPreparation())) {
+			if(descr.length() > 0) descr.append("\n");
+			descr.append(lectureBlock.getPreparation());
+		}
+		event.setDescription(descr.toString());
 	}
 	
 	private String generateExternalIdPrefix(RepositoryEntry entry) {

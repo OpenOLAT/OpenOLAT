@@ -19,5 +19,11 @@ function print() {
 	</div>
 #end
 </div>
-
 $r.render("table")
+<ul class="list-unstyled">
+	<li><i class="o_icon o_lectures_rollcall_ok"> </i> $r.translate("table.legend.attended")</li>
+	<li><i class="o_icon o_lectures_rollcall_warning"> </i> $r.translate("table.legend.authorized")</li>
+	<li><i class="o_icon o_lectures_rollcall_danger"> </i> $r.translate("table.legend.absent")</li>
+	<li><i class="o_icon o_lectures_rollcall_free" $r.translate("table.legend.free")</li>
+	<li>(*) $r.translate("table.legend.free")</li>
+</ul>

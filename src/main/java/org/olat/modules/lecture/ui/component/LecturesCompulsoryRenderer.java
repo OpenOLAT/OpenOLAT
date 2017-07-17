@@ -25,40 +25,32 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.lecture.model.LectureBlockStatistics;
+import org.olat.modules.lecture.ui.LectureBlockAndRollCallRow;
 
 /**
  * 
- * Initial date: 10 avr. 2017<br>
+ * Initial date: 17 juil. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RateWarningCellRenderer implements FlexiCellRenderer {
-	
-	private final Translator translator;
-	
-	public RateWarningCellRenderer(Translator translator) {
-		this.translator = translator;
-	}
+public class LecturesCompulsoryRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator trans) {
-		
-		if(cellValue instanceof LectureBlockStatistics) {
-			LectureBlockStatistics stats = (LectureBlockStatistics)cellValue;
-			if(stats.isCalculateRate() && stats.getTotalPersonalPlannedLectures() > 0 &&
-					(stats.getTotalAbsentLectures() > 0 || stats.getTotalAttendedLectures() > 0 || stats.getTotalAuthorizedAbsentLectures() > 0)) {
-				double attendanceRate = stats.getAttendanceRate();
-				double requiredRate = stats.getRequiredRate();
-				
-				if(requiredRate > attendanceRate) {
-					String title = translator.translate("rate.error.title");
-					target.append("<i class='o_icon o_icon-lg o_icon_error' title='").append(title).append("'> </i>");
-				} else if(attendanceRate - requiredRate < 0.05) {// less than 5%
-					String title = translator.translate("rate.warning.title");
-					target.append("<i class='o_icon o_icon-lg o_icon_warning' title='").append(title).append("'> </i>");	
+			URLBuilder ubu, Translator translator) {
+		if(cellValue != null) {
+			Object obj = source.getFlexiTableElement().getTableDataModel().getObject(row);
+			if(obj instanceof LectureBlockAndRollCallRow) {
+				LectureBlockAndRollCallRow rollCallRow = (LectureBlockAndRollCallRow)obj;
+				if(!rollCallRow.getRow().isCompulsory()) {
+					target.append("<span class='o_lecture_free'>")
+					      .append(cellValue.toString())
+					      .append(" *</span>");
+				} else {
+					target.append(cellValue.toString());
 				}
+			} else {
+				target.append(cellValue.toString());
 			}
 		}
 	}

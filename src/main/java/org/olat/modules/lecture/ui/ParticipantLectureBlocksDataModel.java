@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 
 /**
@@ -99,10 +100,10 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 				if(LectureBlockStatus.cancelled.equals(row.getRow().getStatus())) {
 					return null;
 				}
-				return row.getRow().isCompulsory() ? row.getRow().getPlannedLecturesNumber() : null;
+				return row.getRow().getPlannedLecturesNumber();
 			}
 			case attendedLectures: {
-				if(LectureBlockStatus.cancelled.equals(row.getRow().getStatus())) {
+				if(!isDataVisible(row.getRow())) {
 					return null;
 				}
 				if(row.getRow().isCompulsory()) {
@@ -111,7 +112,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 				return null;
 			}
 			case absentLectures: {
-				if(LectureBlockStatus.cancelled.equals(row.getRow().getStatus())) {
+				if(!isDataVisible(row.getRow())) {
 					return null;
 				}
 				if(row.getRow().isCompulsory()) {
@@ -126,7 +127,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 				return null;
 			}
 			case authorizedAbsentLectures: {
-				if(LectureBlockStatus.cancelled.equals(row.getRow().getStatus())) {
+				if(!isDataVisible(row.getRow())) {
 					return null;
 				}
 				if(row.getRow().isCompulsory()) {
@@ -144,6 +145,16 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 			case appeal: return row.getAppealButton();
 			default: return null;
 		}
+	}
+	
+	private boolean isDataVisible(LectureBlockAndRollCall row) {
+		LectureBlockStatus status = row.getStatus();
+		if(LectureBlockStatus.cancelled.equals(status)) {
+			return false;
+		}
+		LectureRollCallStatus rollCallStatus = row.getRollCallStatus();
+		return status == LectureBlockStatus.done
+			&& (rollCallStatus == LectureRollCallStatus.closed || rollCallStatus == LectureRollCallStatus.autoclosed);
 	}
 	
 	private boolean isAuthorized(LectureBlockAndRollCall row) {

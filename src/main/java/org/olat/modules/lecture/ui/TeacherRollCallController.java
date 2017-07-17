@@ -19,16 +19,12 @@
  */
 package org.olat.modules.lecture.ui;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.transform.TransformerException;
-
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -72,7 +68,6 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.ui.TeacherRollCallDataModel.RollCols;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
-import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,8 +91,7 @@ public class TeacherRollCallController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private TeacherRollCallDataModel tableModel;
 	private FormSubmit quickSaveButton;
-	private FormLink exportAttendanceListButton, reopenButton,
-		cancelLectureBlockButton, closeLectureBlocksButton;
+	private FormLink reopenButton, cancelLectureBlockButton, closeLectureBlocksButton;
 	
 	private ReasonController reasonCtrl;
 	private CloseableModalController cmc;
@@ -235,9 +229,6 @@ public class TeacherRollCallController extends FormBasicController {
 		tableEl.setCustomizeColumns(true);
 		
 		//buttons
-		exportAttendanceListButton = uifactory.addFormLink("attendance.list", formLayout, Link.BUTTON);
-		exportAttendanceListButton.setIconLeftCSS("o_icon o_icon_download");
-		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		quickSaveButton = uifactory.addFormSubmitButton("save", "save.temporary", formLayout);
 		closeLectureBlocksButton = uifactory.addFormLink("close.lecture.blocks", formLayout, Link.BUTTON);
@@ -338,7 +329,8 @@ public class TeacherRollCallController extends FormBasicController {
 			flc.add(authorizedAbsencedEl);
 
 			String reasonId = "abs_reason_".concat(Integer.toString(++counter));
-			FormLink reasonLink = uifactory.addFormLink(reasonId, "reason", null, absenceCont, Link.BUTTON_XSMALL);
+			FormLink reasonLink = uifactory.addFormLink(reasonId, "", null, absenceCont, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
+			reasonLink.setTitle(translate("reason"));
 			reasonLink.setDomReplacementWrapperRequired(false);
 			reasonLink.setIconLeftCSS("o_icon o_icon_notes");
 			reasonLink.setVisible(hasAuthorization);
@@ -452,6 +444,9 @@ public class TeacherRollCallController extends FormBasicController {
 			TeacherRollCallRow row = (TeacherRollCallRow)check.getUserObject();
 			if(row.getAuthorizedAbsence() == check) {
 				doAuthorizedAbsence(row, check);
+				if(check.isAtLeastSelected(1)) {
+					doCalloutReasonAbsence(ureq, check.getFormDispatchId() + "_C_0", row);
+				}
 			} else {
 				doCheckRow(row, check);
 			}
@@ -465,14 +460,12 @@ public class TeacherRollCallController extends FormBasicController {
 		} else if(cancelLectureBlockButton == source) {
 			saveLectureBlocks();
 			doConfirmCancelLectureBlock(ureq);
-		} else if(this.exportAttendanceListButton == source) {
-			doExportAttendanceList(ureq);
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if(cmd != null && cmd.startsWith("abs_reason_")) {
 				TeacherRollCallRow row = (TeacherRollCallRow)link.getUserObject();
-				doCalloutReasonAbsence(ureq, link, row);
+				doCalloutReasonAbsence(ureq, link.getFormDispatchId(), row);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -581,13 +574,13 @@ public class TeacherRollCallController extends FormBasicController {
 		row.getRollCallStatusEl().getComponent().setDirty(true);
 	}
 	
-	private void doCalloutReasonAbsence(UserRequest ureq, FormLink link, TeacherRollCallRow row) {
+	private void doCalloutReasonAbsence(UserRequest ureq, String elementId, TeacherRollCallRow row) {
 		boolean canEdit = secCallback.canEdit() && secCallback.canEditAuthorizedAbsences();
 		reasonCtrl = new ReasonController(ureq, getWindowControl(), row, canEdit);
 		listenTo(reasonCtrl);
 
 		reasonCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				reasonCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+				reasonCtrl.getInitialComponent(), elementId, "", true, "");
 		listenTo(reasonCalloutCtrl);
 		reasonCalloutCtrl.activate();
 	}
@@ -644,17 +637,5 @@ public class TeacherRollCallController extends FormBasicController {
 		lectureService.auditLog(LectureBlockAuditLog.Action.reopenLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_REOPENED, getClass(),
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
-	}
-	
-	private void doExportAttendanceList(UserRequest ureq) {
-		try {
-			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, getTranslator());
-			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
-			export.setResourceTitle(lectureBlock.getEntry().getDisplayname());
-			export.create(participants);
-			ureq.getDispatchResult().setResultingMediaResource(export);
-		} catch (COSVisitorException | IOException | TransformerException e) {
-			logError("", e);
-		}
 	}
 }

@@ -39,11 +39,13 @@
 	
 	#if($r.isNotEmpty($lectureBlockDescription)) 
 	<div class="o_desc o_info">
+		<h5>$r.translate("lecture.descr")</h5>
 		$lectureBlockDescription
 	</div>
 	#end
 	#if($r.isNotEmpty($lectureBlockPreparation))
 	<div class="o_preparation o_note">
+		<h5>$r.translate("lecture.preparation")</h5>
 		$lectureBlockPreparation
 	</div>
 	#end

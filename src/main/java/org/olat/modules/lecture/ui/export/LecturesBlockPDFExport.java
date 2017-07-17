@@ -111,8 +111,8 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 			Formatter formatter = Formatter.getInstance(translator.getLocale());
 			String filename = lectureBlock.getTitle()
 					+ "_" + formatter.formatDate(lectureBlock.getStartDate())
-					+ "_" + formatter.formatTime(lectureBlock.getStartDate())
-					+ "-" + formatter.formatTime(lectureBlock.getEndDate())
+					+ "_" + formatter.formatTimeShort(lectureBlock.getStartDate())
+					+ "-" + formatter.formatTimeShort(lectureBlock.getEndDate())
 					+ ".pdf";
 			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(filename));			
 			hres.setHeader("Content-Description",StringHelper.urlEncodeUTF8(filename));
@@ -144,8 +144,8 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 	    	Formatter formatter = Formatter.getInstance(translator.getLocale());
 		String dates = translator.translate("pdf.table.dates", new String[] {
 			formatter.formatDate(lectureBlock.getStartDate()),
-			formatter.formatTime(lectureBlock.getStartDate()),
-			formatter.formatTime(lectureBlock.getEndDate())
+			formatter.formatTimeShort(lectureBlock.getStartDate()),
+			formatter.formatTimeShort(lectureBlock.getEndDate())
 		});
 	
 	    	addParagraph(dates, 12, true, width);

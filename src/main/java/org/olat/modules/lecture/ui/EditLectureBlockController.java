@@ -127,6 +127,7 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -163,6 +164,7 @@ public class EditLectureBlockController extends FormBasicController {
 		boolean compulsory = lectureBlock == null ? true : lectureBlock.isCompulsory();
 		compulsoryEl = uifactory.addCheckboxesVertical("compulsory", "lecture.compulsory", formLayout, onKeys, onValues, 1);
 		compulsoryEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.compulsory));
+		compulsoryEl.addActionListener(FormEvent.ONCHANGE);
 		if(compulsory) {
 			compulsoryEl.select(onKeys[0], true);
 		}
@@ -176,7 +178,7 @@ public class EditLectureBlockController extends FormBasicController {
 			teacherValues[i] = userManager.getUserDisplayName(coach);
 		}
 		teacherKeys[0] = "-";
-		teacherValues[0] = "-";
+		teacherValues[0] = translate("no.teachers");
 		
 		teacherEl = uifactory.addCheckboxesVertical("teacher", "lecture.teacher", formLayout, teacherKeys, teacherValues, 2);
 		teacherEl.setMandatory(true);
@@ -277,6 +279,14 @@ public class EditLectureBlockController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
+	
+	private void updateUI() {
+		if(compulsoryEl.isAtLeastSelected(1)) {
+			setFormWarning(null);
+		} else {
+			setFormWarning("warning.edit.lecture");
+		}
+	}
 
 	@Override
 	protected void doDispose() {
@@ -347,6 +357,9 @@ public class EditLectureBlockController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(compulsoryEl == source) {
+			updateUI();
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 

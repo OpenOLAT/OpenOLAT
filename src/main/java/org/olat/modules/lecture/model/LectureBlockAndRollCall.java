@@ -25,6 +25,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
 
 /**
  * 
@@ -43,6 +44,7 @@ public class LectureBlockAndRollCall {
 	private final Date startDate;
 	private final boolean compulsory;
 	private final LectureBlockStatus status;
+	private final LectureRollCallStatus rollCallStatus;
 	
 	private final Long rollCallKey;
 	private final int lecturesAbsentNumber;
@@ -61,6 +63,7 @@ public class LectureBlockAndRollCall {
 		effectiveLectures = lectureBlock.getEffectiveLecturesNumber();
 		compulsory = lectureBlock.isCompulsory();
 		status = lectureBlock.getStatus();
+		rollCallStatus = lectureBlock.getRollCallStatus();
 		
 		if(rollCall == null) {
 			rollCallKey = null;
@@ -71,7 +74,7 @@ public class LectureBlockAndRollCall {
 			rollCallKey = rollCall.getKey();
 			lecturesAttendedNumber = rollCall.getLecturesAttendedNumber();
 			lecturesAbsentNumber = rollCall.getLecturesAbsentNumber();
-			lecturesAuthorizedAbsent = rollCall.getAbsenceAuthorized();
+			lecturesAuthorizedAbsent = rollCall.getAbsenceAuthorized();	
 		}
 	}
 
@@ -92,7 +95,11 @@ public class LectureBlockAndRollCall {
 	}
 	
 	public LectureBlockStatus getStatus() {
-		return status;
+		return status == null ? LectureBlockStatus.active : status;
+	}
+	
+	public LectureRollCallStatus getRollCallStatus() {
+		return rollCallStatus == null ? LectureRollCallStatus.open : rollCallStatus;
 	}
 	
 	public boolean isRollCalled() {

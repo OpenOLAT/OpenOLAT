@@ -100,9 +100,9 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		
 		mainVC = createVelocityContainer("teacher_view");
 		
-		startButton = LinkFactory.createButton("start", mainVC, this);
+		startButton = LinkFactory.createButton("start.desktop", mainVC, this);
 		startButton.setVisible(false);
-		startWizardButton = LinkFactory.createButton("start.wizard", mainVC, this);
+		startWizardButton = LinkFactory.createButton("start.mobile", mainVC, this);
 		startWizardButton.setVisible(false);
 		
 		allTeachersSwitch = LinkFactory.createToolLink("all.teachers.switch", translate("all.teachers.switch"), this);
@@ -110,8 +110,10 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		allTeachersSwitch.setUserObject(all);
 		if(all) {
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
+			allTeachersSwitch.setTooltip(translate("all.teachers.switch.tooltip.on"));
 		} else {
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
+			allTeachersSwitch.setTooltip(translate("all.teachers.switch.tooltip.off"));
 		}
 		
 		searchCtrl = new TeacherOverviewSearchController(ureq, getWindowControl(), withRepositoryEntry);
@@ -389,8 +391,10 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		}
 		if(newValue) {
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
+			allTeachersSwitch.setTooltip(translate("all.teachers.switch.tooltip.on"));
 		} else {
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
+			allTeachersSwitch.setTooltip(translate("all.teachers.switch.tooltip.off"));
 		}
 		allTeachersSwitch.setUserObject(newValue);
 	}

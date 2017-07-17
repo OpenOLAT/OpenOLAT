@@ -78,6 +78,18 @@ public class RepositoryEntryLectureConfigurationDAO {
 		return configs == null || configs.isEmpty() ? null : configs.get(0);
 	}
 	
+	public boolean isConfigurationEnabledFor(RepositoryEntryRef entry) {
+		String query = "select config.key from lectureentryconfig config where config.entry.key=:entryKey and config.lectureEnabled=true";
+
+		List<Long> configs = dbInstance.getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("entryKey", entry.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return configs != null && configs.size() > 0 && configs.get(0).intValue() > 0;
+	}
+	
 	public RepositoryEntryLectureConfiguration getConfiguration(LectureBlockRef entry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select config from lectureentryconfig config")

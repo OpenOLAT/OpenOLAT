@@ -172,7 +172,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(progressCol);
 		}
 		if(rateEnabled) {
-			FlexiColumnModel warningCol = new DefaultFlexiColumnModel(ParticipantsCols.rateWarning, new RateWarningCellRenderer());
+			FlexiColumnModel warningCol = new DefaultFlexiColumnModel(ParticipantsCols.rateWarning, new RateWarningCellRenderer(getTranslator()));
 			warningCol.setExportable(false);
 			columnsModel.addFlexiColumnModel(warningCol);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rate, new PercentCellRenderer()));
@@ -189,8 +189,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		tableModel = new ParticipantListDataModel(columnsModel, getTranslator(), getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(!printView);
-		tableEl.setMultiSelect(!printView);
-		tableEl.setSelectAllEnable(!printView);
+		tableEl.setEmtpyTableMessageKey("empty.table.participant.list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry");
 	}
 	

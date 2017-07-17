@@ -8,13 +8,14 @@
 		<fieldset>
 			<legend><i class="o_icon o_lectures_current"> </i> $r.translate("lectures.table.current")</legend>
 			$r.render("currentLectures")
-			#if($r.visible("start") || $r.visible("start.wizard"))
+			#if($r.visible("start.mobile") || $r.visible("start.desktop"))
 			<div class="o_button_group">
-				#if($r.visible("start"))
-					$r.render("start")
+				<span class="o_lecture_start">$r.translate("start.label")</span>
+				#if($r.visible("start.desktop"))
+					$r.render("start.desktop")
 				#end
-				#if($r.visible("start.wizard"))
-					$r.render("start.wizard")
+				#if($r.visible("start.mobile"))
+					$r.render("start.mobile")
 				#end
 			</div>
 			#end

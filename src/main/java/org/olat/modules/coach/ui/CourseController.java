@@ -31,6 +31,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -89,7 +90,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseController extends FormBasicController implements Activateable2, GenericEventListener, TooledController {
 	
-	private final Link openCourse;
+	private FormLink openCourse;
 	private Link nextCourse, detailsCourseCmp, previousCourse;
 
 	private FlexiTableElement tableEl;
@@ -138,10 +139,6 @@ public class CourseController extends FormBasicController implements Activateabl
 		initForm(ureq);
 		loadModel();
 		
-		openCourse = LinkFactory.createButton("open", flc.getFormItemComponent(), this);
-		openCourse.setIconLeftCSS("o_icon o_CourseModule_icon");
-		flc.getFormItemComponent().put("open.group", openCourse);
-		
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
@@ -171,6 +168,9 @@ public class CourseController extends FormBasicController implements Activateabl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		openCourse = uifactory.addFormLink("open.course", formLayout, Link.BUTTON);
+		openCourse.setIconLeftCSS("o_icon o_CourseModule_icon");
+		
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("courseName", StringHelper.escapeHtml(course.getDisplayname()));
@@ -275,7 +275,9 @@ public class CourseController extends FormBasicController implements Activateabl
 					doSelectDetails(ureq, selectedRow);
 				}
 			}
-		} 
+		} else if (source == openCourse) {
+			doOpenCourse(ureq);
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -290,8 +292,6 @@ public class CourseController extends FormBasicController implements Activateabl
 					reloadModel();
 				}
 			}
-		} else if (source == openCourse) {
-			doOpenCourse(ureq);
 		}
 		super.event(ureq, source, event);
 	}

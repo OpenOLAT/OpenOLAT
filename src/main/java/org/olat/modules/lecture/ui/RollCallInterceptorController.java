@@ -72,7 +72,7 @@ public class RollCallInterceptorController extends FormBasicController implement
 				lectureBlockToStart = lectureBlocks.get(0);
 				String[] args = new String[] {
 						lectureBlockToStart.getEntry().getDisplayname(),
-						lectureBlockToStart.getEntry().getExternalRef(),
+						lectureBlockToStart.getEntry().getExternalRef() == null ? "" : lectureBlockToStart.getEntry().getExternalRef(),
 						lectureBlockToStart.getTitle(),
 						(lectureBlockToStart.getStartDate() == null ? "" : format.formatDate(lectureBlockToStart.getStartDate())),
 						(lectureBlockToStart.getStartDate() == null ? "" : format.formatTimeShort(lectureBlockToStart.getStartDate())),

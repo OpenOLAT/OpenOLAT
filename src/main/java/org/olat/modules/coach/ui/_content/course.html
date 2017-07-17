@@ -1,7 +1,7 @@
 <div class="o_header_with_buttons">
 	<h3><i class="o_icon o_CourseModule_icon"> </i> $courseName</h3>
-	#if($r.available("open"))
-		<div class="o_button_group">$r.render("open")</div>
+	#if($r.available("open.course"))
+		<div class="o_button_group">$r.render("open.course")</div>
 	#end
 </div>
 $r.render("table")
