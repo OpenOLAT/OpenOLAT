@@ -19,6 +19,7 @@
  */
 package org.olat.modules.webFeed.ui;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -355,6 +356,7 @@ public class FeedMainController extends BasicController implements Activateable2
 			FeedChangedEvent fce = (FeedChangedEvent) event;
 			if (fce.getFeedKey().equals(feed.getKey())) {
 				feed = feedManager.loadFeed(feed);
+				vcInfo.contextPut("supressCache", "&" + ZonedDateTime.now().toInstant().toEpochMilli());
 				vcInfo.contextPut("feed", feed);
 				vcInfo.setDirty(true);
 			}
