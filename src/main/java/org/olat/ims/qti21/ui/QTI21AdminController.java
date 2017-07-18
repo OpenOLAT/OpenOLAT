@@ -90,12 +90,15 @@ public class QTI21AdminController extends FormBasicController {
 			createQTI12resourcesEl.select(onKeys[0], true);
 		}
 		
-		validationButton = uifactory.addFormLink("validate.xml.signature", formLayout, Link.BUTTON);
 		
 		FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("options", getTranslator());
 		layoutCont.setRootForm(mainForm);
 		formLayout.add("options", layoutCont);
 		layoutCont.setFormTitle(translate("admin.title"));
+
+		validationButton = uifactory.addFormLink("validate.xml.signature", layoutCont, Link.BUTTON);
+		validationButton.setCustomEnabledLinkCSS("btn btn-default pull-right");
+		validationButton.getComponent().setSuppressDirtyFormWarning(true);
 		
 		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature", layoutCont,
 				onKeys, onValues);
@@ -182,6 +185,13 @@ public class QTI21AdminController extends FormBasicController {
 		}
 		
 		return allOk;
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
+		if(source != this.validationButton) {
+			super.propagateDirtinessToContainer(source, fe);
+		}
 	}
 
 	@Override
