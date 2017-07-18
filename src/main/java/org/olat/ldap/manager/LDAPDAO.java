@@ -30,6 +30,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.SizeLimitExceededException;
 import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
@@ -37,8 +38,6 @@ import javax.naming.ldap.Control;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.PagedResultsControl;
 import javax.naming.ldap.PagedResultsResponseControl;
-
-import net.fortuna.ical4j.util.TimeZones;
 
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -50,6 +49,8 @@ import org.olat.ldap.model.LDAPGroup;
 import org.olat.ldap.model.LDAPUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import net.fortuna.ical4j.util.TimeZones;
 
 /**
  * 
@@ -86,6 +87,30 @@ public class LDAPDAO {
 			LDAPGroupVisitor visitor = new LDAPGroupVisitor();
 			search(visitor, groupDN, filter, groupAttributes, ctx);
 			ldapGroups.addAll(visitor.getGroups());
+		}
+		return ldapGroups;
+	}
+	
+	public List<LDAPGroup> searchGroups(LdapContext ctx, List<String> groupDNs, String filter) {
+		final List<LDAPGroup> ldapGroups = new ArrayList<>();
+		String[] groupAttributes = new String[]{ "cn" };
+		for(String groupDN:groupDNs) {
+			LDAPVisitor visitor = new LDAPVisitor() {
+				@Override
+				public void visit(SearchResult searchResult) throws NamingException {
+					Attributes resAttributes = searchResult.getAttributes();
+					Attribute cnAttr = resAttributes.get("cn");
+
+					Object cn = cnAttr.get();
+					if(cn instanceof String) {
+						LDAPGroup group = new LDAPGroup();
+						group.setCommonName((String)cn);
+						ldapGroups.add(group);
+					}
+				}
+				
+			};
+			search(visitor, groupDN, filter, groupAttributes, ctx);
 		}
 		return ldapGroups;
 	}
@@ -217,7 +242,7 @@ public class LDAPDAO {
 		return userDN;
 	}
 	
-	private String buildSearchUserFilter(String attribute, String uid) {
+	protected String buildSearchUserFilter(String attribute, String uid) {
 		String ldapUserFilter = syncConfiguration.getLdapUserFilter();
 		StringBuilder filter = new StringBuilder();
 		if (ldapUserFilter != null) {

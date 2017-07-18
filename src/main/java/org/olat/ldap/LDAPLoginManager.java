@@ -53,6 +53,8 @@ public interface LDAPLoginManager {
 	
 	public void syncUser(Map<String,String> olatPropertyMap, Identity identity);
 	
+	public void syncUserGroups(Identity identity);
+	
 	public void deletIdentities(List<Identity> identityList);
 
 	public boolean doBatchSync(LDAPError errors, boolean full);
