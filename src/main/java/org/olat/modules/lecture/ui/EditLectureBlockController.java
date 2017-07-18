@@ -85,9 +85,10 @@ public class EditLectureBlockController extends FormBasicController {
 	private TextElement descriptionEl;
 	private TextElement preparationEl;
 	private AutoCompleter locationEl;
-	private DateChooser startDateEl;
+	private DateChooser dateEl;
 	private SingleSelection plannedLecturesEl;
 	private TextElement endHourEl, endMinuteEl;
+	private TextElement startHourEl, startMinuteEl;
 	private MultipleSelectionElement groupsEl, teacherEl, compulsoryEl;
 	
 	private RepositoryEntry entry;
@@ -241,16 +242,25 @@ public class EditLectureBlockController extends FormBasicController {
 		locationEl.setMinLength(1);
 
 		Date startDate = lectureBlock == null ? null : lectureBlock.getStartDate();
-		startDateEl = uifactory.addDateChooser("lecture.start", startDate, formLayout);
-		startDateEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
-		startDateEl.setDomReplacementWrapperRequired(false);
-		startDateEl.setDateChooserTimeEnabled(true);
-		startDateEl.setMandatory(true);
+		dateEl = uifactory.addDateChooser("lecture.date", startDate, formLayout);
+		dateEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
+		dateEl.setDomReplacementWrapperRequired(false);
+		dateEl.setMandatory(true);
 		
 		String datePage = velocity_root + "/date_start_end.html";
 		FormLayoutContainer dateCont = FormLayoutContainer.createCustomFormLayout("start_end", getTranslator(), datePage);
-		dateCont.setLabel("lecture.end", null);
+		dateCont.setLabel("lecture.time", null);
 		formLayout.add(dateCont);
+		
+		startHourEl = uifactory.addTextElement("lecture.start.hour", null, 2, "", dateCont);
+		startHourEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
+		startHourEl.setDomReplacementWrapperRequired(false);
+		startHourEl.setDisplaySize(2);
+		startHourEl.setMandatory(true);
+		startMinuteEl = uifactory.addTextElement("lecture.start.minute", null, 2, "", dateCont);
+		startMinuteEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
+		startMinuteEl.setDomReplacementWrapperRequired(false);
+		startMinuteEl.setDisplaySize(2);
 		
 		endHourEl = uifactory.addTextElement("lecture.end.hour", null, 2, "", dateCont);
 		endHourEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
@@ -261,23 +271,39 @@ public class EditLectureBlockController extends FormBasicController {
 		endMinuteEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
 		endMinuteEl.setDomReplacementWrapperRequired(false);
 		endMinuteEl.setDisplaySize(2);
-		
-		if(lectureBlock != null && lectureBlock.getEndDate() != null) {
+
+		if(lectureBlock != null) {
 			Calendar cal = Calendar.getInstance();
-			cal.setTime(lectureBlock.getEndDate());
-			int hour = cal.get(Calendar.HOUR_OF_DAY);
-			int minute = cal.get(Calendar.MINUTE);
-			endHourEl.setValue(Integer.toString(hour));
-			endMinuteEl.setValue(Integer.toString(minute));
-		} else {
-			endHourEl.setValue("00");
-			endMinuteEl.setValue("00");
+			if(lectureBlock.getStartDate() != null) {
+				cal.setTime(lectureBlock.getStartDate());
+				int hour = cal.get(Calendar.HOUR_OF_DAY);
+				int minute = cal.get(Calendar.MINUTE);
+				startHourEl.setValue(Integer.toString(hour));
+				startMinuteEl.setValue(formatMinute(minute));
+			}
+			if(lectureBlock.getEndDate() != null) {
+				cal.setTime(lectureBlock.getEndDate());
+				int hour = cal.get(Calendar.HOUR_OF_DAY);
+				int minute = cal.get(Calendar.MINUTE);
+				endHourEl.setValue(Integer.toString(hour));
+				endMinuteEl.setValue(formatMinute(minute));
+			}
 		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
+	
+	private String formatMinute(int minute) {
+		if(minute < 0) {
+			return "";
+		}
+		if(minute < 10) {
+			return "0" + minute;
+		}
+		return Integer.toString(minute);
 	}
 	
 	private void updateUI() {
@@ -321,12 +347,14 @@ public class EditLectureBlockController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		startDateEl.clearError();
-		if(startDateEl.getDate() == null) {
-			startDateEl.setErrorKey("form.legende.mandatory", null);
+		dateEl.clearError();
+		if(dateEl.getDate() == null) {
+			dateEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
-		
+
+		allOk &= validateInt(startHourEl, 24);
+		allOk &= validateInt(startMinuteEl, 60);
 		allOk &= validateInt(endHourEl, 24);
 		allOk &= validateInt(endMinuteEl, 60);
 		return allOk & super.validateFormLogic(ureq);
@@ -386,10 +414,12 @@ public class EditLectureBlockController extends FormBasicController {
 		lectureBlock.setDescription(descriptionEl.getValue());
 		lectureBlock.setPreparation(preparationEl.getValue());
 		lectureBlock.setLocation(locationEl.getValue());
-		lectureBlock.setStartDate(startDateEl.getDate());
 		
 		Calendar cal = Calendar.getInstance();
-		cal.setTime(startDateEl.getDate());
+		cal.setTime(dateEl.getDate());
+		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(startHourEl.getValue()));
+		cal.set(Calendar.MINUTE, Integer.parseInt(startMinuteEl.getValue()));
+		lectureBlock.setStartDate(cal.getTime());
 		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(endHourEl.getValue()));
 		cal.set(Calendar.MINUTE, Integer.parseInt(endMinuteEl.getValue()));
 		lectureBlock.setEndDate(cal.getTime());

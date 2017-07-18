@@ -54,6 +54,7 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.ui.ParticipantListDataModel.ParticipantsCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
+import org.olat.modules.lecture.ui.component.ParticipantInfosRenderer;
 import org.olat.modules.lecture.ui.component.PercentCellRenderer;
 import org.olat.modules.lecture.ui.component.RateWarningCellRenderer;
 import org.olat.repository.RepositoryEntry;
@@ -177,6 +178,8 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(warningCol);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rate, new PercentCellRenderer()));
 		}
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.infos, new ParticipantInfosRenderer(getTranslator(), defaultRate)));
 		
 		if(!printView) {
 			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",

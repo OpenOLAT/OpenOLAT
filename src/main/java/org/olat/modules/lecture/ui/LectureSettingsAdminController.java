@@ -353,9 +353,12 @@ public class LectureSettingsAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		lectureModule.setEnabled(enableEl.isAtLeastSelected(1));
-		lectureModule.setCanOverrideStandardConfiguration(canOverrideStandardConfigEl.isSelected(0));
-		if(enableEl.isAtLeastSelected(1)) {
+		boolean enabled = enableEl.isAtLeastSelected(1);
+		lectureModule.setEnabled(enabled);
+		
+		if(enabled) {
+			lectureModule.setCanOverrideStandardConfiguration(canOverrideStandardConfigEl.isSelected(0));
+
 			//enabled user tool
 			Set<String> availableTools = userToolsModule.getAvailableUserToolSet();
 			if(!availableTools.contains("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.LecturesToolController")) {
@@ -368,41 +371,41 @@ public class LectureSettingsAdminController extends FormBasicController {
 				aTools.append(selectedKey);
 			}
 			userToolsModule.setAvailableUserTools(aTools.toString());
+			
+			lectureModule.setRollCallDefaultEnabled(rollCallEnableEl.isAtLeastSelected(1));
+			
+			int autoClosePeriod = Integer.parseInt(autoClosePeriodEl.getValue());
+			lectureModule.setRollCallAutoClosePeriod(autoClosePeriod);
+			
+			lectureModule.setStatusPartiallyDoneEnabled(partiallyDoneEnabledEl.isAtLeastSelected(1));
+			lectureModule.setStatusCancelledEnabled(statusEnabledEl.isAtLeastSelected(1));
+			
+			boolean authorizedAbsenceenabled = authorizedAbsenceEnableEl.isAtLeastSelected(1);
+			lectureModule.setAuthorizedAbsenceEnabled(authorizedAbsenceEnableEl.isAtLeastSelected(1));
+			lectureModule.setCountAuthorizedAbsenceAsAttendant(authorizedAbsenceenabled && countAuthorizedAbsenceAsAttendantEl.isAtLeastSelected(1));
+			lectureModule.setTeacherCanAuthorizedAbsence(authorizedAbsenceenabled && teacherCanAuthorizeAbsenceEl.isAtLeastSelected(1));
+			
+			lectureModule.setAbsenceAppealEnabled(appealAbsenceEnableEl.isAtLeastSelected(1));
+			if(appealAbsenceEnableEl.isAtLeastSelected(1)) {
+				int period = Integer.parseInt(appealPeriodEl.getValue());
+				lectureModule.setAbsenceAppealPeriod(period);
+			}
+			
+			lectureModule.setRollCallReminderEnabled(reminderEnableEl.isAtLeastSelected(1));
+			if(reminderEnableEl.isAtLeastSelected(1)) {
+				int period = Integer.parseInt(reminderPeriodEl.getValue());
+				lectureModule.setRollCallReminderPeriod(period);
+			}
+			
+			lectureModule.setRollCallCalculateAttendanceRateDefaultEnabled(calculateAttendanceRateEnableEl.isAtLeastSelected(1));
+			String attendanceRateInPercent = attendanceRateEl.getValue();
+			if(StringHelper.containsNonWhitespace(attendanceRateInPercent)) {
+				double val = Double.parseDouble(attendanceRateInPercent) / 100.0d;
+				lectureModule.setRequiredAttendanceRateDefault(val);
+			}
+	
+			lectureModule.setTeacherCalendarSyncEnabledDefault(syncTeachersCalendarEnableEl.isAtLeastSelected(1));
+			lectureModule.setCourseCalendarSyncEnabledDefault(syncCourseCalendarEnableEl.isAtLeastSelected(1));
 		}
-		
-		lectureModule.setRollCallDefaultEnabled(rollCallEnableEl.isAtLeastSelected(1));
-		
-		int autoClosePeriod = Integer.parseInt(autoClosePeriodEl.getValue());
-		lectureModule.setRollCallAutoClosePeriod(autoClosePeriod);
-		
-		lectureModule.setStatusPartiallyDoneEnabled(partiallyDoneEnabledEl.isAtLeastSelected(1));
-		lectureModule.setStatusCancelledEnabled(statusEnabledEl.isAtLeastSelected(1));
-		
-		boolean authorizedAbsenceenabled = authorizedAbsenceEnableEl.isAtLeastSelected(1);
-		lectureModule.setAuthorizedAbsenceEnabled(authorizedAbsenceEnableEl.isAtLeastSelected(1));
-		lectureModule.setCountAuthorizedAbsenceAsAttendant(authorizedAbsenceenabled && countAuthorizedAbsenceAsAttendantEl.isAtLeastSelected(1));
-		lectureModule.setTeacherCanAuthorizedAbsence(authorizedAbsenceenabled && teacherCanAuthorizeAbsenceEl.isAtLeastSelected(1));
-		
-		lectureModule.setAbsenceAppealEnabled(appealAbsenceEnableEl.isAtLeastSelected(1));
-		if(appealAbsenceEnableEl.isAtLeastSelected(1)) {
-			int period = Integer.parseInt(appealPeriodEl.getValue());
-			lectureModule.setAbsenceAppealPeriod(period);
-		}
-		
-		lectureModule.setRollCallReminderEnabled(reminderEnableEl.isAtLeastSelected(1));
-		if(reminderEnableEl.isAtLeastSelected(1)) {
-			int period = Integer.parseInt(reminderPeriodEl.getValue());
-			lectureModule.setRollCallReminderPeriod(period);
-		}
-		
-		lectureModule.setRollCallCalculateAttendanceRateDefaultEnabled(calculateAttendanceRateEnableEl.isAtLeastSelected(1));
-		String attendanceRateInPercent = attendanceRateEl.getValue();
-		if(StringHelper.containsNonWhitespace(attendanceRateInPercent)) {
-			double val = Double.parseDouble(attendanceRateInPercent) / 100.0d;
-			lectureModule.setRequiredAttendanceRateDefault(val);
-		}
-
-		lectureModule.setTeacherCalendarSyncEnabledDefault(syncTeachersCalendarEnableEl.isAtLeastSelected(1));
-		lectureModule.setCourseCalendarSyncEnabledDefault(syncCourseCalendarEnableEl.isAtLeastSelected(1));
 	}
 }

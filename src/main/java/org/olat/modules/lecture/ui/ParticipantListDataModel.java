@@ -89,6 +89,7 @@ implements SortableFlexiTableDataModel<ParticipantRow>, ExportableFlexiTableData
 				case authorizedAbsenceLectures: return positive(row.getStatistics().getTotalAuthorizedAbsentLectures());
 				case rateWarning: return row.getStatistics();
 				case rate: return row.getStatistics().getAttendanceRate();
+				case infos: return row;
 				default: return null;
 			}
 		}
@@ -113,7 +114,8 @@ implements SortableFlexiTableDataModel<ParticipantRow>, ExportableFlexiTableData
 		authorizedAbsenceLectures("table.header.authorized.absence"),
 		progress("table.header.progress"),
 		rateWarning("table.header.rate.warning"),
-		rate("table.header.rate");
+		rate("table.header.rate"),
+		infos("table.header.infos");
 		
 		private final String i18nKey;
 		
