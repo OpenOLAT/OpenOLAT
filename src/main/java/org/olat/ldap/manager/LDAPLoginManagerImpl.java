@@ -40,6 +40,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.Control;
 import javax.naming.ldap.InitialLdapContext;
@@ -637,6 +638,89 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		} catch (NamingException e) {
 			log.error("NamingException when trying to get attribute value for attribute::" + attribute, e);
 			return null;
+		}
+	}
+
+	/**
+	 * The method search in LDAP the user, search the groups
+	 * of which it is member of, and sync the groups.
+	 * 
+	 * @param identity The identity to sync
+	 */
+	@Override
+	public void syncUserGroups(Identity identity) {	
+		LdapContext ctx = bindSystem();
+		if (ctx == null) {
+			log.error("could not bind to ldap", null);
+		}
+			
+		String ldapUserIDAttribute = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
+		String filter = ldapDao.buildSearchUserFilter(ldapUserIDAttribute, identity.getName());
+
+		boolean withCoacheOfGroups = StringHelper.containsNonWhitespace(syncConfiguration.getCoachedGroupAttribute());
+		List<String> ldapBases = syncConfiguration.getLdapBases();
+		String[] searchAttr;
+		if(withCoacheOfGroups) {
+			searchAttr = new String[]{ "dn", syncConfiguration.getCoachedGroupAttribute() };
+		} else {
+			searchAttr = new String[]{ "dn" };
+		}
+
+		SearchControls ctls = new SearchControls();
+		ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+		ctls.setReturningAttributes(searchAttr);
+
+		String userDN = null;
+		List<String> groupList = null;
+		for (String ldapBase : ldapBases) {
+			try {
+				NamingEnumeration<SearchResult> enm = ctx.search(ldapBase, filter, ctls);
+				while (enm.hasMore()) {
+					SearchResult result = enm.next();
+					userDN = result.getNameInNamespace();
+					
+					if(withCoacheOfGroups) {
+						Attributes resAttributes = result.getAttributes();
+						Attribute coachOfGroupsAttr = resAttributes.get(syncConfiguration.getCoachedGroupAttribute());
+						if(coachOfGroupsAttr != null && coachOfGroupsAttr.get() instanceof String) {
+							String groupString = (String)coachOfGroupsAttr.get();
+							if(!"-".equals(groupString)) {
+								String[] groupArr = groupString.split(syncConfiguration.getCoachedGroupAttributeSeparator());
+								groupList = new ArrayList<>(groupArr.length);
+								for(String group:groupArr) {
+									groupList.add(group);
+								}
+							}
+						}
+					}
+				}
+				if (userDN != null) {
+					break;
+				}
+			} catch (NamingException e) {
+				log.error("NamingException when trying to bind user with username::" + identity.getName() + " on ldapBase::" + ldapBase, e);
+			}
+		}
+
+		// get the potential groups
+		if(userDN != null) {
+			List<String> groupDNs = syncConfiguration.getLdapGroupBases();
+			String groupFilter = "(&(objectClass=groupOfNames)(member=" + userDN + "))";
+			List<LDAPGroup> groups = ldapDao.searchGroups(ctx, groupDNs, groupFilter);
+			for(LDAPGroup group:groups) {
+				BusinessGroup managedGroup = getManagerBusinessGroup(group.getCommonName());
+				if(managedGroup != null) {
+					List<String> roles = businessGroupRelationDao.getRoles(identity, managedGroup);
+					if(roles.isEmpty()) {
+						boolean coach = groupList != null && groupList.contains(group.getCommonName());
+						if(coach) {
+							businessGroupRelationDao.addRole(identity, managedGroup, GroupRoles.coach.name());
+						} else {
+							businessGroupRelationDao.addRole(identity, managedGroup, GroupRoles.participant.name());
+						}
+					}
+				}
+			}
 		}
 	}
 
