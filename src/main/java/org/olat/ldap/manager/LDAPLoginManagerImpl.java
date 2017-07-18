@@ -483,6 +483,24 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		userManager.updateUser(user);
 	}
 
+	@Override
+	public Identity createAndPersistUser(String uid) {
+		String ldapUserIDAttribute = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
+		String filter = ldapDao.buildSearchUserFilter(ldapUserIDAttribute, uid);
+		LdapContext ctx = bindSystem();
+		String userDN = ldapDao.searchUserDNByUid(uid, ctx);
+		LDAPUserVisitor visitor = new LDAPUserVisitor(syncConfiguration);	
+		ldapDao.search(visitor, userDN, filter, syncConfiguration.getUserAttributes(), ctx);
+
+		Identity newIdentity = null;
+		List<LDAPUser> ldapUser = visitor.getLdapUserList();
+		if(ldapUser != null && ldapUser.size() > 0) {
+			Attributes userAttributes = ldapUser.get(0).getAttributes();
+			newIdentity = createAndPersistUser(userAttributes);
+		}
+		return newIdentity;
+	}
+
 	/**
 	 * Creates User in OLAT and ads user to LDAP securityGroup Required Attributes
 	 * have to be checked before this method.
