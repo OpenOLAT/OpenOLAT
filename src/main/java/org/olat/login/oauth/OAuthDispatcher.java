@@ -149,6 +149,14 @@ public class OAuthDispatcher implements Dispatcher {
 
 			OAuthRegistration registration = new OAuthRegistration(provider.getProviderName(), infos);
 			login(infos, registration);
+
+			if(registration.getIdentity() == null && provider instanceof OAuthUserCreator) {
+				OAuthUserCreator userCreator = (OAuthUserCreator)provider;
+				Identity newIdentity = userCreator.createUser(infos);
+				if(newIdentity != null) {
+					registration.setIdentity(newIdentity);
+				}
+			}
 			
 			if(registration.getIdentity() == null) {
 				if(CoreSpringFactory.getImpl(OAuthLoginModule.class).isAllowUserCreation()) {

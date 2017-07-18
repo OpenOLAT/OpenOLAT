@@ -43,6 +43,9 @@ public interface LDAPLoginManager {
 
 	public boolean changePassword(Identity identity, String pwd, LDAPError errors);
 	
+
+	public Identity createAndPersistUser(String uid);
+	
 	public Identity createAndPersistUser(Attributes userAttributes);
 	
 	public Map<String,String> prepareUserPropertyForSync(Attributes attributes, Identity identity);
