@@ -367,6 +367,8 @@ public interface BaseSecurity {
 	 */
 	public Authentication findAuthentication(IdentityRef identity, String provider);
 	
+	public List<Authentication> findAuthentications(IdentityRef identity, List<String> providers);
+	
 	public String findAuthenticationName(IdentityRef identity, String provider);
 	
 	
@@ -526,6 +528,9 @@ public interface BaseSecurity {
 	 *         found
 	 */
 	public Authentication findAuthenticationByAuthusername(String authusername, String provider);
+	
+
+	public List<Authentication> findAuthenticationByAuthusername(String authusername, List<String> providers);
 
 
 	/**

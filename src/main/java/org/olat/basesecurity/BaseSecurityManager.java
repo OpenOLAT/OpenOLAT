@@ -1,4 +1,5 @@
 /**
+
 * OLAT - Online Learning and Training<br>
 * http://www.olat.org
 * <p>
@@ -1385,6 +1386,18 @@ public class BaseSecurityManager implements BaseSecurity {
 	}
 	
 	@Override
+	public List<Authentication> findAuthentications(IdentityRef identity, List<String> providers) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName())
+		  .append(" as auth where auth.identity.key=:identityKey and auth.provider in (:providers)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("providers", providers)
+				.getResultList();
+	}
+
+	@Override
 	public String findAuthenticationName(IdentityRef identity, String provider) {
 		if (identity==null) {
 			throw new IllegalArgumentException("identity must not be null");
@@ -1517,6 +1530,19 @@ public class BaseSecurityManager implements BaseSecurity {
 			throw new AssertException("more than one entry for the a given authusername and provider, should never happen (even db has a unique constraint on those columns combined) ");
 		}
 		return results.get(0);
+	}
+	
+	@Override
+	public List<Authentication> findAuthenticationByAuthusername(String authusername, List<String> providers) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join fetch auth.identity ident")
+		  .append(" where auth.provider in (:providers) and auth.authusername=:authusername");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("providers", providers)
+				.setParameter("authusername", authusername)
+				.getResultList();
 	}
 
 	/**

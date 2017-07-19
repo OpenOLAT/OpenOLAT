@@ -87,7 +87,16 @@ public class WebDAVPasswordController extends FormBasicController {
 			
 			accessDataFlc = FormLayoutContainer.createDefaultFormLayout("flc_access_data", getTranslator());
 			layoutContainer.add(accessDataFlc);
-			uifactory.addStaticTextElement("pwdav.username", "pwdav.username", ureq.getIdentity().getName(), accessDataFlc);
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(getIdentity().getName());
+			if(StringHelper.containsNonWhitespace(getIdentity().getUser().getEmail())) {
+				sb.append(", ").append(getIdentity().getUser().getEmail());
+			}
+			if(StringHelper.containsNonWhitespace(getIdentity().getUser().getInstitutionalEmail())) {
+				sb.append(", ").append(getIdentity().getUser().getInstitutionalEmail());
+			}
+			uifactory.addStaticTextElement("pwdav.username", "pwdav.username", sb.toString(), accessDataFlc);
 
 			boolean hasOlatToken = false;
 			boolean hasWebDAVToken = false;

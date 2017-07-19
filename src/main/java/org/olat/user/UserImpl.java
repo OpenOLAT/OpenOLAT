@@ -318,6 +318,7 @@ public class UserImpl implements Persistable, User {
 		this.firstName = firstName;
 	}
 
+	@Override
 	public String getLastName() {
 		return lastName;
 	}
@@ -326,12 +327,22 @@ public class UserImpl implements Persistable, User {
 		this.lastName = lastName;
 	}
 
+	@Override
 	public String getEmail() {
 		return email;
 	}
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+	
+	@Override
+	public String getInstitutionalEmail() {
+		return institutionalEmail;
+	}
+	
+	public void setInstitutionalEmail(String institutionalEmail) {
+		this.institutionalEmail = institutionalEmail;
 	}
 	
 	public boolean isWebdav() {

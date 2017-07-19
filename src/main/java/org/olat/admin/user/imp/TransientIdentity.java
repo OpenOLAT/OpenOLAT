@@ -85,6 +85,11 @@ public class TransientIdentity implements Identity, User {
 		return properties.get(UserConstants.EMAIL);
 	}
 
+	@Override
+	public String getInstitutionalEmail() {
+		return properties.get(UserConstants.INSTITUTIONALEMAIL);
+	}
+
 	public String getPassword() {
 		return password;
 	}

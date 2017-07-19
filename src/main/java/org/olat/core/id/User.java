@@ -49,6 +49,8 @@ public interface User extends CreateInfo, Persistable {
 	public String getLastName();
 	
 	public String getEmail();
+	
+	public String getInstitutionalEmail();
 
 	/**
 	 * Get the users prefereces object
