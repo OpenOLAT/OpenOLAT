@@ -60,6 +60,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
 /**
  * 
@@ -78,15 +79,17 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 	private final QTI21StatisticSearchParams searchParams;
 	private final QTI21StatisticResourceResult resourceResult;
 	
+	private final QTI21ItemBodyController itemBodyCtrl;
+	
 	@Autowired
 	private QTI21StatisticsManager qtiStatisticsManager;
 	
 	public QTI21AssessmentItemStatisticsController(UserRequest ureq, WindowControl wControl,
-			AssessmentItemRef itemRef, AssessmentItem item, String sectionTitle, QTI21StatisticResourceResult resourceResult,
+			AssessmentItemRef itemRef, ResolvedAssessmentItem resolvedAssessmentItem, String sectionTitle, QTI21StatisticResourceResult resourceResult,
 			boolean withFilter, boolean printMode) {
 		super(ureq, wControl);
 		
-		this.item = item;
+		item = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
 		this.itemRef = itemRef;
 		this.resourceResult = resourceResult;
 		searchParams = resourceResult.getSearchParams();
@@ -113,6 +116,10 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 			listenTo(filterCtrl);
 			mainVC.put("filter", filterCtrl.getInitialComponent());
 		}
+		
+		itemBodyCtrl = new QTI21ItemBodyController(ureq, getWindowControl(), itemRef, resolvedAssessmentItem, resourceResult);
+		listenTo(itemBodyCtrl);
+		mainVC.put("question", itemBodyCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
 		updateData(ureq);
