@@ -37,7 +37,6 @@ import org.olat.course.nodes.MembersCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupService;
-import org.olat.modules.IModuleConfiguration;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -85,8 +84,6 @@ public class MembersCourseNodeRunController extends BasicController {
 		String downloadFct = config.getStringValue(MembersCourseNode.CONFIG_KEY_DOWNLOAD_FUNCTION, MembersCourseNode.EMAIL_FUNCTION_COACH_ADMIN);
 		boolean canDownload = MembersCourseNode.EMAIL_FUNCTION_ALL.equals(downloadFct) || userCourseEnv.isAdmin() || userCourseEnv.isCoach();
 		
-		IModuleConfiguration membersFrag = IModuleConfiguration.fragment("members", config);
-		
 		if(showOwners) {
 			RepositoryEntry courseRepositoryEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 			owners = MembersHelpers.getOwners(repositoryService, courseRepositoryEntry);
@@ -95,21 +92,21 @@ public class MembersCourseNodeRunController extends BasicController {
 		}
 		
 		boolean showCoaches = false;
-		if(membersFrag.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL, MembersCourseNode.CONFIG_KEY_COACHES_COURSE)		
-				|| membersFrag.hasAnyOf(MembersCourseNode.CONFIG_KEY_COACHES_GROUP, MembersCourseNode.CONFIG_KEY_COACHES_AREA)) {
+		if(config.anyTrue(MembersCourseNode.CONFIG_KEY_COACHES_ALL, MembersCourseNode.CONFIG_KEY_COACHES_COURSE)		
+				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_COACHES_GROUP, MembersCourseNode.CONFIG_KEY_COACHES_AREA)) {
 			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			MembersHelpers.addCoaches(membersFrag, cgm, businessGroupService, coaches);
+			MembersHelpers.addCoaches(config, cgm, businessGroupService, coaches);
 			
 			showCoaches = true;
 		}
 		
 		boolean showParticipants = false;
-		if(membersFrag.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE)
-				|| membersFrag.hasAnyOf(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA)) {
+		if(config.anyTrue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_ALL, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_COURSE)
+				|| config.hasAnyOf(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP, MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA)) {
 			
 			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
-			MembersHelpers.addParticipants(membersFrag, cgm, businessGroupService, participants);
+			MembersHelpers.addParticipants(config, cgm, businessGroupService, participants);
 			
 			showParticipants = true;
 		}
@@ -122,14 +119,11 @@ public class MembersCourseNodeRunController extends BasicController {
 		putInitialPanel(membersDisplayRunController.getInitialComponent());
 	}
 	
-
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 	
-
-
 	@Override
 	protected void doDispose() {
 		// nothing to dispose		

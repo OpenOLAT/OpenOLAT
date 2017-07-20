@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.editor.formfragments;
+package org.olat.course.nodes.members.ui.group;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,18 +25,18 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
-import org.olat.core.gui.components.form.flexible.impl.BasicFormFragment;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.IFormFragment;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.editor.CourseEditorEnv;
@@ -44,7 +44,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
-import org.olat.modules.IModuleConfiguration;
+import org.olat.modules.ModuleConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -52,26 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * <p>Initial date: May 6, 2016<br>
  * @author lmihalkovic, http://www.frentix.com
- * @see IFormFragment
  */
-public class MembersSelectorFormFragment extends BasicFormFragment {
-		
-	public static final String CONFIG_KEY_COACHES_GROUP 		= "GroupCoaches";
-	public static final String CONFIG_KEY_COACHES_AREA 			= "AreaCoaches";
-	public static final String CONFIG_KEY_COACHES_GROUP_ID 		= "GroupCoachesIds";
-	public static final String CONFIG_KEY_COACHES_AREA_IDS 		= "AreaCoachesIds";
-	public static final String CONFIG_KEY_COACHES_COURSE 		= "CourseCoaches";
-	public static final String CONFIG_KEY_COACHES_ALL 			= "CoachesAll";
-	
-	public static final String CONFIG_KEY_PARTICIPANTS_GROUP 	= "GroupParticipants";
-	public static final String CONFIG_KEY_PARTICIPANTS_AREA 	= "AreaParticipants";
-	public static final String CONFIG_KEY_PARTICIPANTS_GROUP_ID = "GroupParticipantsIds";
-	public static final String CONFIG_KEY_PARTICIPANTS_AREA_ID 	= "AreaParticipantsIds";
-	public static final String CONFIG_KEY_PARTICIPANTS_COURSE 	= "CourseParticipants";
-	public static final String CONFIG_KEY_PARTICIPANTS_ALL 		= "ParticipantsAll";
-	
-	
-	private final CourseEditorEnv cev;
+public abstract class MembersSelectorFormFragment extends FormBasicController {
 
 	// Coaches
 	private SelectionElement wantCoaches;
@@ -99,49 +81,58 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 
 	// Popup form
 	private CloseableModalController cmc;
-
-	
 	
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+
+	private final CourseEditorEnv cev;
+	protected final ModuleConfiguration config;
 	
-	public MembersSelectorFormFragment(CourseEditorEnv cev) {
+	public MembersSelectorFormFragment(UserRequest ureq, WindowControl wControl,
+			CourseEditorEnv cev, ModuleConfiguration config) {
+		super(ureq, wControl, Util.createPackageTranslator(MembersSelectorFormFragment.class, ureq.getLocale()));
 		this.cev = cev;
+		this.config = config;
+		initForm(ureq);
+		validateFormLogic(ureq);
 	}
 	
 	@Override
-	protected void initFormFragment(FormItemContainer formLayout, Controller listener, UserRequest ureq, IModuleConfiguration config) {
-		FormUIFactory uifactory = uifactory();
-		
-		// ----------------------------------------------------------------------
-//		Boolean ownerSelection = config.getBooleanSafe(CONFIG_KEY_OWNERS);
-		Boolean coacheSelection = config.getBooleanSafe(CONFIG_KEY_COACHES_ALL) || config.getBooleanSafe(CONFIG_KEY_COACHES_COURSE) || config.get(CONFIG_KEY_COACHES_GROUP) != null || config.get(CONFIG_KEY_COACHES_AREA) != null;
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		
+		Boolean coacheSelection = config.getBooleanSafe(getConfigKeyCoachesAll())
+				|| config.getBooleanSafe(getConfigKeyCoachesCourse())
+				|| config.get(getConfigKeyCoachesGroup()) != null
+				|| config.get(getConfigKeyCoachesArea()) != null;
+
 		// COACHES: from course or groups
 		wantCoaches = uifactory.addCheckboxesHorizontal("coaches", "message.want.coaches", formLayout, new String[]{"xx"},new String[]{null});
-		wantCoaches.setTranslator(host.getFragmentTranslator());
-		if(coacheSelection != null && coacheSelection) wantCoaches.select("xx", true);
-
+		if(coacheSelection != null && coacheSelection) {
+			wantCoaches.select("xx", true);
+		}
 		wantCoaches.addActionListener(FormEvent.ONCLICK);
 		
 		
-		coachesChoice = uifactory.addRadiosVertical(
-				"coachesChoice", null, formLayout, 
+		coachesChoice = uifactory.addRadiosVertical("coachesChoice", null, formLayout, 
 				new String[]{"all", "course", "group"},
-				new String[]{host.getFragmentTranslator().translate("form.message.coaches.all"), host.getFragmentTranslator().translate("form.message.coaches.course"), host.getFragmentTranslator().translate("form.message.coaches.group")}
+				new String[]{ translate("form.message.coaches.all"), translate("form.message.coaches.course"), translate("form.message.coaches.group")}
 		);
-		if(config.getBooleanSafe(CONFIG_KEY_COACHES_ALL)) coachesChoice.select("all", true);
-		if(config.getBooleanSafe(CONFIG_KEY_COACHES_COURSE)) coachesChoice.select("course", true);
-		if(config.get(CONFIG_KEY_COACHES_GROUP) != null || config.get(CONFIG_KEY_COACHES_AREA) != null) coachesChoice.select("group", true);
+		if(config.getBooleanSafe(getConfigKeyCoachesAll())) {
+			coachesChoice.select("all", true);
+		}
+		if(config.getBooleanSafe(getConfigKeyCoachesCourse())) {
+			coachesChoice.select("course", true);
+		}
+		if(config.get(getConfigKeyCoachesGroup()) != null || config.get(getConfigKeyCoachesArea()) != null) {
+			coachesChoice.select("group", true);
+		}
 		coachesChoice.addActionListener(FormEvent.ONCLICK);
 		coachesChoice.setVisible(false);
 		
 		
 		chooseGroupCoachesLink = uifactory.addFormLink("groupCoachesChoose", formLayout, "btn btn-default o_xsmall o_form_groupchooser");
-		chooseGroupCoachesLink.setTranslator(host.getFragmentTranslator());		
 		chooseGroupCoachesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		chooseGroupCoachesLink.setVisible(false);
 		chooseGroupCoachesLink.setLabel("form.message.group", null);
@@ -152,23 +143,20 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 		chooseGroupCoachesLink.setElementCssClass("o_omit_margin");
 
 		String groupCoachesInitVal;
-		@SuppressWarnings("unchecked")
-		List<Long> groupCoachesKeys = (List<Long>)config.get(CONFIG_KEY_COACHES_GROUP_ID);
+		List<Long> groupCoachesKeys = config.getList(getConfigKeyCoachesGroupIds(), Long.class);
 		if(groupCoachesKeys == null) {
-			groupCoachesInitVal = config.getAs(CONFIG_KEY_COACHES_GROUP);
+			groupCoachesInitVal = config.getStringValue(getConfigKeyCoachesGroup());
 			groupCoachesKeys = businessGroupService.toGroupKeys(groupCoachesInitVal, cev.getCourseGroupManager().getCourseEntry());
 		}
 		groupCoachesInitVal = getGroupNames(groupCoachesKeys);
 
 		easyGroupCoachSelectionList = uifactory.addStaticTextElement("groupCoaches", null, groupCoachesInitVal, formLayout);
-		easyGroupCoachSelectionList.setTranslator(host.getFragmentTranslator());		
 		easyGroupCoachSelectionList.setUserObject(groupCoachesKeys);		
 		easyGroupCoachSelectionList.setVisible(false);
 		easyGroupCoachSelectionList.setElementCssClass("text-muted");
 		
 				
 		chooseAreasCoachesLink = uifactory.addFormLink("areaCoachesChoose", formLayout, "btn btn-default o_xsmall o_form_areachooser");
-		chooseAreasCoachesLink.setTranslator(host.getFragmentTranslator());
 		chooseAreasCoachesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_courseareas");
 		chooseAreasCoachesLink.setLabel("form.message.area", null);
 		chooseAreasCoachesLink.setElementCssClass("o_omit_margin");
@@ -177,42 +165,47 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 		}
 		
 		String areaCoachesInitVal;
-		@SuppressWarnings("unchecked")
-		List<Long> areaCoachesKeys = (List<Long>)config.get(CONFIG_KEY_COACHES_AREA_IDS);
+		List<Long> areaCoachesKeys = config.getList(getConfigKeyCoachesAreaIds(), Long.class);
 		if(areaCoachesKeys == null) {
-			areaCoachesInitVal = (String)config.get(CONFIG_KEY_COACHES_AREA);
+			areaCoachesInitVal = (String)config.get(getConfigKeyCoachesArea());
 			areaCoachesKeys = areaManager.toAreaKeys(areaCoachesInitVal, cev.getCourseGroupManager().getCourseResource());
 		}
 		areaCoachesInitVal = getAreaNames(areaCoachesKeys);
 
 		easyAreaCoachSelectionList = uifactory.addStaticTextElement("areaCoaches", null, areaCoachesInitVal, formLayout);
-		easyAreaCoachSelectionList.setTranslator(host.getFragmentTranslator());		
 		easyAreaCoachSelectionList.setUserObject(areaCoachesKeys);
 		easyAreaCoachSelectionList.setVisible(false);
 		easyAreaCoachSelectionList.setElementCssClass("text-muted");
 				
 		
 		// PARTICIPANTS: from course or groups
-		Boolean particiapntSelection = config.getBooleanSafe(CONFIG_KEY_PARTICIPANTS_ALL) || config.getBooleanSafe(CONFIG_KEY_PARTICIPANTS_COURSE) || config.get(CONFIG_KEY_PARTICIPANTS_GROUP) != null || config.get(CONFIG_KEY_PARTICIPANTS_AREA) != null;
+		Boolean particiapntSelection = config.getBooleanSafe(getConfigKeyParticipantsAll())
+				|| config.getBooleanSafe(getConfigKeyParticipantsCourse())
+				|| config.get(getConfigKeyParticipantsGroup()) != null
+				|| config.get(getConfigKeyParticipantsArea()) != null;
 		
 		wantParticipants = uifactory.addCheckboxesHorizontal("participants", "message.want.participants", formLayout, new String[]{"xx"},new String[]{null});
-		wantParticipants.setTranslator(host.getFragmentTranslator());
 		if(particiapntSelection != null && particiapntSelection) wantParticipants.select("xx", true);
 		wantParticipants.addActionListener(FormEvent.ONCLICK);
 		
 		participantsChoice = uifactory.addRadiosVertical(
 				"participantsChoice", null, formLayout, 
-				new String[]{"all", "course", "group"},
-				new String[]{host.getFragmentTranslator().translate("form.message.participants.all"), host.getFragmentTranslator().translate("form.message.participants.course"), host.getFragmentTranslator().translate("form.message.participants.group")}
+				new String[]{ "all", "course", "group" },
+				new String[]{ translate("form.message.participants.all"), translate("form.message.participants.course"), translate("form.message.participants.group")}
 		);
-		if(config.getBooleanSafe(CONFIG_KEY_PARTICIPANTS_ALL)) participantsChoice.select("all", true);
-		if(config.getBooleanSafe(CONFIG_KEY_PARTICIPANTS_COURSE)) participantsChoice.select("course", true);
-		if(config.get(CONFIG_KEY_PARTICIPANTS_GROUP) != null || config.get(CONFIG_KEY_PARTICIPANTS_AREA) != null) participantsChoice.select("group", true);
+		if(config.getBooleanSafe(getConfigKeyParticipantsAll())) {
+			participantsChoice.select("all", true);
+		}
+		if(config.getBooleanSafe(getConfigKeyParticipantsCourse())) {
+			participantsChoice.select("course", true);
+		}
+		if(config.get(getConfigKeyParticipantsGroup()) != null || config.get(getConfigKeyParticipantsArea()) != null) {
+			participantsChoice.select("group", true);
+		}
 		participantsChoice.addActionListener(FormEvent.ONCLICK);
 		participantsChoice.setVisible(false); 
 		
 		chooseGroupParticipantsLink = uifactory.addFormLink("groupParticipantsChoose", formLayout, "btn btn-default o_xsmall o_form_groupchooser");
-		chooseGroupParticipantsLink.setTranslator(host.getFragmentTranslator());		
 		chooseGroupParticipantsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
 		chooseGroupParticipantsLink.setVisible(false);
 		chooseGroupParticipantsLink.setLabel("form.message.group", null);
@@ -223,23 +216,20 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 		}
 		
 		String groupParticipantsInitVal;
-		@SuppressWarnings("unchecked")
-		List<Long> groupParticipantsKeys = (List<Long>)config.get(CONFIG_KEY_PARTICIPANTS_GROUP_ID);
+		List<Long> groupParticipantsKeys = config.getList(getConfigKeyParticipantsGroupIds(), Long.class);
 		if(groupParticipantsKeys == null) {
-			groupParticipantsInitVal = (String)config.get(CONFIG_KEY_PARTICIPANTS_GROUP);
+			groupParticipantsInitVal = (String)config.get(getConfigKeyParticipantsGroup());
 			groupParticipantsKeys = businessGroupService.toGroupKeys(groupParticipantsInitVal, cev.getCourseGroupManager().getCourseEntry());
 		}
 		groupParticipantsInitVal = getGroupNames(groupParticipantsKeys);
 
 		easyGroupParticipantsSelectionList = uifactory.addStaticTextElement("groupParticipants", null, groupParticipantsInitVal, formLayout);
-		easyGroupParticipantsSelectionList.setTranslator(host.getFragmentTranslator());		
 		easyGroupParticipantsSelectionList.setUserObject(groupParticipantsKeys);
 		easyGroupParticipantsSelectionList.setVisible(false);
 		easyGroupParticipantsSelectionList.setElementCssClass("text-muted");
 		
 		
 		chooseAreasParticipantsLink = uifactory.addFormLink("areaParticipantsChoose", formLayout, "btn btn-default o_xsmall o_form_areachooser");
-		chooseAreasParticipantsLink.setTranslator(host.getFragmentTranslator());
 		chooseAreasParticipantsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_courseareas");
 		chooseAreasParticipantsLink.setVisible(false);
 		chooseAreasParticipantsLink.setLabel("form.message.area", null);
@@ -250,31 +240,22 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 		}
 		
 		String areaParticipantsInitVal;
-		@SuppressWarnings("unchecked")
-		List<Long> areaParticipantsKeys = (List<Long>)config.get(CONFIG_KEY_PARTICIPANTS_AREA_ID);
+		List<Long> areaParticipantsKeys = config.getList(getConfigKeyParticipantsAreaIds(), Long.class);
 		if(areaParticipantsKeys == null) {
-			areaParticipantsInitVal = (String)config.get(CONFIG_KEY_PARTICIPANTS_AREA);
+			areaParticipantsInitVal = (String)config.get(getConfigKeyParticipantsArea());
 			areaParticipantsKeys = areaManager.toAreaKeys(areaParticipantsInitVal, cev.getCourseGroupManager().getCourseResource());
 		}
 		areaParticipantsInitVal = getAreaNames(areaParticipantsKeys);
 
 		easyAreaParticipantsSelectionList = uifactory.addStaticTextElement("areaParticipants", null, areaParticipantsInitVal, formLayout);
-		easyAreaParticipantsSelectionList.setTranslator(host.getFragmentTranslator());		
 		easyAreaParticipantsSelectionList.setUserObject(areaParticipantsKeys);
 		easyAreaParticipantsSelectionList.setVisible(false);
 		easyAreaParticipantsSelectionList.setElementCssClass("text-muted");
 	
-		uifactory.addSpacerElement("s4", formLayout, false);
-				
-//		update();			
-	}
-
-	@Override
-	public void refreshContents() {
-		update();
+		uifactory.addSpacerElement("s4", formLayout, false);		
 	}
 	
-	private void update () {
+	protected void update() {
 		coachesChoice.setVisible(wantCoaches.isSelected(0));
 		chooseGroupCoachesLink.setVisible(coachesChoice.isSelected(2) && wantCoaches.isSelected(0));
 		chooseAreasCoachesLink.setVisible(coachesChoice.isSelected(2) && wantCoaches.isSelected(0));
@@ -295,11 +276,11 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 		coachesChoice.clearError();
 		participantsChoice.clearError();
 		
-		container.setNeedsLayout();
+		setNeedsLayout();
 	}
 	
 	@Override
-	public boolean validateFormLogic(UserRequest ureq) {
+	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isOK = true;
 
 		if(sendToCoaches()){
@@ -336,6 +317,12 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 		return isOK;
 	}
 
+	@Override
+	protected final void formOK(UserRequest ureq) {
+		storeConfiguration(config);
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
 	private String getGroupNames(List<Long> keys) {
 		StringBuilder sb = new StringBuilder();
 		List<BusinessGroupShort> groups = businessGroupService.loadShortBusinessGroups(keys);
@@ -359,96 +346,90 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 	}
 
 	@Override
-	public void dispose() {
+	protected void doDispose() {
 		// nothing at the moment
 	}
 
 	@Override
-	public boolean processFormEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		boolean processed = false;
-		
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == chooseGroupCoachesLink) {
-			host.getFragmentController().removeAsListenerAndDispose(cmc);
-			host.getFragmentController().removeAsListenerAndDispose(groupChooseCoaches);
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(groupChooseCoaches);
 
-			groupChooseCoaches = new GroupSelectionController(ureq, host.getFragmentController().getWindowControl(), true,
+			groupChooseCoaches = new GroupSelectionController(ureq, getWindowControl(), true,
 					cev.getCourseGroupManager(), getKeys(easyGroupCoachSelectionList));
-			host.getFragmentController().listenTo(groupChooseCoaches);
+			listenTo(groupChooseCoaches);
 			
 			String title = chooseGroupCoachesLink.getLinkTitleText();
-			cmc = new CloseableModalController(host.getFragmentController().getWindowControl(), "close", groupChooseCoaches.getInitialComponent(), true, title);
-			host.getFragmentController().listenTo(cmc);
+			cmc = new CloseableModalController(getWindowControl(), "close", groupChooseCoaches.getInitialComponent(), true, title);
+			listenTo(cmc);
 			cmc.activate();
-			host.getFragmentController().setFormCanSubmit(false);
-			processed = true;
+			setFormCanSubmit(false);
 		} else if(source == chooseGroupParticipantsLink){
-			host.getFragmentController().removeAsListenerAndDispose(cmc);
-			host.getFragmentController().removeAsListenerAndDispose(groupChooseParticipants);
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(groupChooseParticipants);
 			
-			groupChooseParticipants = new GroupSelectionController(ureq, host.getFragmentController().getWindowControl(), true,
+			groupChooseParticipants = new GroupSelectionController(ureq, getWindowControl(), true,
 					cev.getCourseGroupManager(), getKeys(easyGroupParticipantsSelectionList));
-			host.getFragmentController().listenTo(groupChooseParticipants);
+			listenTo(groupChooseParticipants);
 			
 			String title = chooseGroupParticipantsLink.getLabelText();
-			cmc = new CloseableModalController(host.getFragmentController().getWindowControl(), "close", groupChooseParticipants.getInitialComponent(), true, title);
-			host.getFragmentController().listenTo(cmc);
+			cmc = new CloseableModalController(getWindowControl(), "close", groupChooseParticipants.getInitialComponent(), true, title);
+			listenTo(cmc);
 			cmc.activate();
-			host.getFragmentController().setFormCanSubmit(false);
-			processed = true;
+			setFormCanSubmit(false);
 		} else if (source == chooseAreasCoachesLink) {
 			// already areas -> choose areas
-			host.getFragmentController().removeAsListenerAndDispose(cmc);
-			host.getFragmentController().removeAsListenerAndDispose(areaChooseCoaches);
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(areaChooseCoaches);
 			
-			areaChooseCoaches = new AreaSelectionController (ureq, host.getFragmentController().getWindowControl(), true,
+			areaChooseCoaches = new AreaSelectionController (ureq, getWindowControl(), true,
 					cev.getCourseGroupManager(), getKeys(easyAreaCoachSelectionList));
-			host.getFragmentController().listenTo(areaChooseCoaches);
+			listenTo(areaChooseCoaches);
 
 			String title = chooseAreasCoachesLink.getLinkTitleText();
-			cmc = new CloseableModalController(host.getFragmentController().getWindowControl(), "close", areaChooseCoaches.getInitialComponent(), true, title);
-			host.getFragmentController().listenTo(cmc);
+			cmc = new CloseableModalController(getWindowControl(), "close", areaChooseCoaches.getInitialComponent(), true, title);
+			listenTo(cmc);
 			cmc.activate();
-			host.getFragmentController().setFormCanSubmit(false);
-			processed = true;
+			setFormCanSubmit(false);
 		} else if (source == chooseAreasParticipantsLink){
 			// already areas -> choose areas
-			host.getFragmentController().removeAsListenerAndDispose(cmc);
-			host.getFragmentController().removeAsListenerAndDispose(areaChooseParticipants);
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(areaChooseParticipants);
 			
-			areaChooseParticipants = new AreaSelectionController (ureq, host.getFragmentController().getWindowControl(), true,
+			areaChooseParticipants = new AreaSelectionController (ureq, getWindowControl(), true,
 					cev.getCourseGroupManager(), getKeys(easyAreaParticipantsSelectionList));
-			host.getFragmentController().listenTo(areaChooseParticipants);
+			listenTo(areaChooseParticipants);
 
 			String title = chooseAreasParticipantsLink.getLabelText();
-			cmc = new CloseableModalController(host.getFragmentController().getWindowControl(), "close", areaChooseParticipants.getInitialComponent(), true, title);
-			host.getFragmentController().listenTo(cmc);
+			cmc = new CloseableModalController(getWindowControl(), "close", areaChooseParticipants.getInitialComponent(), true, title);
+			listenTo(cmc);
 			cmc.activate();
-			host.getFragmentController().setFormCanSubmit(false);
-			processed = true;
-		} 
-
-		return processed;
-	}
-
-	protected void cleanUp() {
-		host.getFragmentController().removeAsListenerAndDispose(cmc);
-		host.getFragmentController().removeAsListenerAndDispose(areaChooseParticipants);
-		host.getFragmentController().removeAsListenerAndDispose(areaChooseCoaches);
-		host.getFragmentController().removeAsListenerAndDispose(groupChooseCoaches);			
+			setFormCanSubmit(false);
+		}
 	}
 	
-	@Override
-	public boolean processEvent(UserRequest ureq, Controller source, Event event) {
+	protected abstract void setFormCanSubmit(boolean enable);
 
-		host.getFragmentController().setFormCanSubmit(true);
-//		subm.setEnabled(true);
+	protected void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(areaChooseParticipants);
+		removeAsListenerAndDispose(areaChooseCoaches);
+		removeAsListenerAndDispose(groupChooseCoaches);			
+	}
+	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		setFormCanSubmit(true);
+
 		if (source == groupChooseCoaches) {
 			if (event == Event.DONE_EVENT) {
 				cmc.deactivate();
 				easyGroupCoachSelectionList.setValue(getGroupNames(groupChooseCoaches.getSelectedKeys()));
 				easyGroupCoachSelectionList.setUserObject(groupChooseCoaches.getSelectedKeys());
 				chooseGroupCoachesLink.setI18nKey("groupCoachesChoose");
-				container.setNeedsLayout();
+				setNeedsLayout();
 			} else if (Event.CANCELLED_EVENT == event) {
 				cmc.deactivate();
 			}
@@ -458,7 +439,7 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 				easyAreaCoachSelectionList.setValue(getAreaNames(areaChooseCoaches.getSelectedKeys()));
 				easyAreaCoachSelectionList.setUserObject(areaChooseCoaches.getSelectedKeys());
 				chooseAreasCoachesLink.setI18nKey("areaCoachesChoose");
-				container.setNeedsLayout();
+				setNeedsLayout();
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 			}
@@ -468,7 +449,7 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 				easyGroupParticipantsSelectionList.setValue(getGroupNames(groupChooseParticipants.getSelectedKeys()));
 				easyGroupParticipantsSelectionList.setUserObject(groupChooseParticipants.getSelectedKeys());
 				chooseGroupParticipantsLink.setI18nKey("groupParticipantsChoose");
-				container.setNeedsLayout();
+				setNeedsLayout();
 			} else if (Event.CANCELLED_EVENT == event) {
 				cmc.deactivate();
 			}
@@ -478,13 +459,11 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 				easyAreaParticipantsSelectionList.setValue(getAreaNames(areaChooseParticipants.getSelectedKeys()));
 				easyAreaParticipantsSelectionList.setUserObject(areaChooseParticipants.getSelectedKeys());
 				chooseAreasParticipantsLink.setI18nKey("areaParticipantsChoose");
-				container.setNeedsLayout();
+				setNeedsLayout();
 			} else if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 			}
 		}
-		
-		return false;
 	}
 	
 	private List<Long> getKeys(StaticTextElement element) {
@@ -564,7 +543,7 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 	}
 	
 	protected boolean sendToCoachesAll(){
-		return coachesChoice.isSelected(0)&& wantCoaches.isSelected(0);
+		return coachesChoice.isSelected(0) && wantCoaches.isSelected(0);
 	}
 	
 	protected boolean sendToCoachesGroup(){
@@ -572,11 +551,11 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 	}
 	
 	protected boolean sendToParticipantsCourse(){
-		return participantsChoice.isSelected(1)&& wantParticipants.isSelected(0);
+		return participantsChoice.isSelected(1) && wantParticipants.isSelected(0);
 	}
 	
 	protected boolean sendToParticipantsAll(){
-		return participantsChoice.isSelected(0)&& wantParticipants.isSelected(0);
+		return participantsChoice.isSelected(0) && wantParticipants.isSelected(0);
 	}
 	
 	protected boolean sendToParticipantsGroup(){
@@ -598,22 +577,37 @@ public class MembersSelectorFormFragment extends BasicFormFragment {
 		return false;
 	}
 	
-	@Override
-	public void storeConfiguration(UserRequest ureq, IModuleConfiguration moduleConfiguration) {
-		MembersSelectorFormFragment configForm = this;
-		moduleConfiguration.set(CONFIG_KEY_COACHES_GROUP, configForm.getGroupCoaches());
-		moduleConfiguration.set(CONFIG_KEY_COACHES_GROUP_ID, configForm.getGroupCoachesIds());
-		moduleConfiguration.set(CONFIG_KEY_COACHES_AREA, configForm.getCoachesAreas());
-		moduleConfiguration.set(CONFIG_KEY_COACHES_AREA_IDS, configForm.getCoachesAreaIds());
-		moduleConfiguration.setBooleanEntry(CONFIG_KEY_COACHES_ALL, configForm.sendToCoachesAll());
-		moduleConfiguration.setBooleanEntry(CONFIG_KEY_COACHES_COURSE, configForm.sendToCoachesCourse());
+	protected void storeConfiguration(ModuleConfiguration config) {
+		config.set(getConfigKeyCoachesGroup(), getGroupCoaches());
+		config.set(getConfigKeyCoachesGroupIds(), getGroupCoachesIds());
+		config.set(getConfigKeyCoachesArea(), getCoachesAreas());
+		config.set(getConfigKeyCoachesAreaIds(), getCoachesAreaIds());
+		config.setBooleanEntry(getConfigKeyCoachesAll(), sendToCoachesAll());
+		config.setBooleanEntry(getConfigKeyCoachesCourse(), sendToCoachesCourse());
 		
-		moduleConfiguration.set(CONFIG_KEY_PARTICIPANTS_GROUP, configForm.getGroupParticipants());
-		moduleConfiguration.set(CONFIG_KEY_PARTICIPANTS_GROUP_ID, configForm.getGroupParticipantsIds());
-		moduleConfiguration.set(CONFIG_KEY_PARTICIPANTS_AREA, configForm.getParticipantsAreas());
-		moduleConfiguration.set(CONFIG_KEY_PARTICIPANTS_AREA_ID, configForm.getParticipantsAreaIds());
-		moduleConfiguration.setBooleanEntry(CONFIG_KEY_PARTICIPANTS_ALL, configForm.sendToParticipantsAll());
-		moduleConfiguration.setBooleanEntry(CONFIG_KEY_PARTICIPANTS_COURSE, configForm.sendToParticipantsCourse());
+		config.set(getConfigKeyParticipantsGroup(), getGroupParticipants());
+		config.set(getConfigKeyParticipantsGroupIds(), getGroupParticipantsIds());
+		config.set(getConfigKeyParticipantsArea(), getParticipantsAreas());
+		config.set(getConfigKeyParticipantsAreaIds(), getParticipantsAreaIds());
+		config.setBooleanEntry(getConfigKeyParticipantsAll(), sendToParticipantsAll());
+		config.setBooleanEntry(getConfigKeyParticipantsCourse(), sendToParticipantsCourse());
 	}
+	
+	protected abstract String getConfigKeyCoachesGroup();
+	protected abstract String getConfigKeyCoachesGroupIds();
+	
+	protected abstract String getConfigKeyCoachesArea();
+	protected abstract String getConfigKeyCoachesAreaIds();
+	
+	protected abstract String getConfigKeyCoachesCourse();
+	protected abstract String getConfigKeyCoachesAll();
 
+	protected abstract String getConfigKeyParticipantsGroup();
+	protected abstract String getConfigKeyParticipantsArea();
+	
+	protected abstract String getConfigKeyParticipantsGroupIds();
+	protected abstract String getConfigKeyParticipantsAreaIds();
+	
+	protected abstract String getConfigKeyParticipantsCourse();
+	protected abstract String getConfigKeyParticipantsAll();
 }

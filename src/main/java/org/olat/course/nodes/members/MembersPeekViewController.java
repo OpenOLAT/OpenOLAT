@@ -40,7 +40,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupService;
-import org.olat.modules.IModuleConfiguration;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -105,12 +104,9 @@ public class MembersPeekViewController extends BasicController {
 		});
 		
 		putInitialPanel(tableController.getInitialComponent());
-	
 	}
 	
 	protected void readFormData(ModuleConfiguration config) {
-		IModuleConfiguration membersFrag = IModuleConfiguration.fragment("members", config);
-
 		CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 		
 		
@@ -118,10 +114,10 @@ public class MembersPeekViewController extends BasicController {
 		List<Identity> owners = MembersHelpers.getOwners(repositoryService, courseRepositoryEntry);
 		
 		List<Identity> coaches = new ArrayList<>();
-		MembersHelpers.addCoaches(membersFrag, cgm, businessGroupService, coaches);
+		MembersHelpers.addCoaches(config, cgm, businessGroupService, coaches);
 		
 		List<Identity> participants = new ArrayList<>();
-		MembersHelpers.addParticipants(membersFrag, cgm, businessGroupService, participants);
+		MembersHelpers.addParticipants(config, cgm, businessGroupService, participants);
 		
 		Set<Long> duplicateCatcher = new HashSet<Long>();
 		List<Identity> filteredOwners = owners.stream()
@@ -154,9 +150,9 @@ public class MembersPeekViewController extends BasicController {
 				})
 				.collect(Collectors.toList());
 		
-		entries.add(new Row(translate("members.owners"), 		Integer.toString(filteredOwners.size())));
-		entries.add(new Row(translate("members.coaches"), 		Integer.toString(filteredCoaches.size())));
-		entries.add(new Row(translate("members.participants"), 	Integer.toString(filteredParticipants.size())));
+		entries.add(new Row(translate("members.owners"), Integer.toString(filteredOwners.size())));
+		entries.add(new Row(translate("members.coaches"), Integer.toString(filteredCoaches.size())));
+		entries.add(new Row(translate("members.participants"), Integer.toString(filteredParticipants.size())));
 	}
 
 	@Override
@@ -170,8 +166,8 @@ public class MembersPeekViewController extends BasicController {
 	}
 	
 	private static class Row {
-		String col1;
-		String col2;
+		private String col1;
+		private String col2;
 		public Row(String col1, String col2) {
 			this.col1 = col1;
 			this.col2 = col2;

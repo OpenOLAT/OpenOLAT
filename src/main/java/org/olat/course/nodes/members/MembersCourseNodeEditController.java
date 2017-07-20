@@ -21,7 +21,6 @@ package org.olat.course.nodes.members;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -49,7 +48,7 @@ public class MembersCourseNodeEditController extends ActivateableTabbableDefault
 
 	private TabbedPane myTabbedPane;
 
-	private FormBasicController membersConfigForm;
+	private MembersConfigForm membersConfigForm;
 
 	public MembersCourseNodeEditController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment euce, ModuleConfiguration config) {
 		super(ureq,wControl);
@@ -83,7 +82,6 @@ public class MembersCourseNodeEditController extends ActivateableTabbableDefault
 	public void event(UserRequest urequest, Controller source, Event event) {
 		super.event(urequest, source, event);
 		if(source == membersConfigForm && event == Event.DONE_EVENT) {
-			membersConfigForm.storeFormData(urequest);
 			fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 	}
