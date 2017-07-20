@@ -1103,9 +1103,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if("Reminders".equalsIgnoreCase(type) || "RemindersLogs".equalsIgnoreCase(type)) {
 				doReminders(ureq);
 			} else if("Lectures".equalsIgnoreCase(type)) {
-				doLectures(ureq);
+				Activateable2 lectures = doLectures(ureq);
+				if(lectures != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					lectures.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
 			} else if("LectureBlock".equalsIgnoreCase(type)) {
-				doLectures(ureq).activate(ureq, entries, state);
+				Activateable2 lectures = doLectures(ureq);
+				if(lectures != null) {
+					lectures.activate(ureq, entries, state);
+				}
+			} else if("LecturesAdmin".equalsIgnoreCase(type)) {
+				Activateable2 lecturesAdmin = doLecturesAdmin(ureq);
+				if(lecturesAdmin != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					lecturesAdmin.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
 			} else if("MembersMgmt".equalsIgnoreCase(type)) {
 				Activateable2 members = doMembers(ureq);
 				if(members != null) {
@@ -1389,21 +1402,25 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void doLecturesAdmin(UserRequest ureq) {
+	private LectureRepositoryAdminController doLecturesAdmin(UserRequest ureq) {
 		if(delayedClose == Delayed.lecturesAdmin || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				removeCustomCSS();
 
-				OLATResourceable ores = OresHelper.createOLATResourceableType("lecturesAdmin");
+				OLATResourceable ores = OresHelper.createOLATResourceableType("LecturesAdmin");
 				WindowControl swControl = addToHistory(ureq, ores, null);
 				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, getRepositoryEntry());
 				listenTo(ctrl);
 				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);
 				setActiveTool(lecturesAdminLink);
 				currentToolCtr = lecturesAdminCtrl;
+				return lecturesAdminCtrl;
+			} else {
+				return null;
 			}
 		} else {
 			delayedClose = Delayed.lecturesAdmin;
+			return null;
 		}
 	}
 	

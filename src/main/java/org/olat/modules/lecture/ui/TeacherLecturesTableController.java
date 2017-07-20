@@ -56,8 +56,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
@@ -123,8 +125,8 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(withRepositoryEntry) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.externalRef, "open.course"));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.entry, "open.course"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.externalRef, "details"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.entry, "details"));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.date, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.startTime, new TimeFlexiCellRenderer(getLocale())));
@@ -290,7 +292,9 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private void doSelectLectureBlock(UserRequest ureq, LectureBlock block) {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
-		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock));
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("LectureBlock", block.getKey());
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		rollCallCtrl = new TeacherRollCallController(ureq, swControl, reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock));
 		listenTo(rollCallCtrl);
 		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
 	}

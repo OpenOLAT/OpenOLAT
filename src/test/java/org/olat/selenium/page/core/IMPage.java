@@ -88,9 +88,9 @@ public class IMPage {
 		
 		Graphene.waitModel().withTimeout(10, TimeUnit.SECONDS).until(new Function<WebDriver,Boolean>(){
 			@Override
-			public Boolean apply(WebDriver browser) {
+			public Boolean apply(WebDriver bbrowser) {
 				boolean found = false;
-				List<WebElement> history = browser.findElements(historyBy);
+				List<WebElement> history = bbrowser.findElements(historyBy);
 				for(WebElement m:history) {
 					if(m.getText().contains(message)) {
 						found = true;

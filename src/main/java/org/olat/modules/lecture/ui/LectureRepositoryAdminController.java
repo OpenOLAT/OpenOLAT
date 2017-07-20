@@ -36,6 +36,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.export.LecturesBlocksEntryExport;
@@ -49,7 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureRepositoryAdminController extends BasicController implements TooledController {
+public class LectureRepositoryAdminController extends BasicController implements TooledController, Activateable2 {
 	
 	private Link archiveLink, logLink;
 	private final VelocityContainer mainVC;
@@ -82,7 +87,8 @@ public class LectureRepositoryAdminController extends BasicController implements
 		participantsLink = LinkFactory.createLink("repo.participants", mainVC, this);
 		settingsLink = LinkFactory.createLink("repo.settings", mainVC, this);
 		
-		settingsCtrl = new LectureRepositorySettingsController(ureq, getWindowControl(), entry);
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Settings"), null);
+		settingsCtrl = new LectureRepositorySettingsController(ureq, swControl, entry);
 		listenTo(settingsCtrl);
 		
 		if(settingsCtrl.isLectureEnabled()) {
@@ -90,7 +96,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 			segmentView.addSegment(participantsLink, false);
 			doOpenLectures(ureq);
 		} else {
-			doOpenSettings();
+			doOpenSettings(ureq);
 		}
 		segmentView.addSegment(settingsLink, !settingsCtrl.isLectureEnabled());
 
@@ -124,6 +130,23 @@ public class LectureRepositoryAdminController extends BasicController implements
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("LectureBlocks".equalsIgnoreCase(name)) {
+			doOpenLectures(ureq);
+			segmentView.select(lecturesLink);
+		} else if("Participants".equalsIgnoreCase(name)) {
+			doOpenParticipants(ureq);
+			segmentView.select(participantsLink);
+		} else if("Settings".equalsIgnoreCase(name)) {
+			doOpenSettings(ureq);
+			segmentView.select(settingsLink);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
@@ -133,7 +156,7 @@ public class LectureRepositoryAdminController extends BasicController implements
 				if (clickedLink == lecturesLink) {
 					doOpenLectures(ureq);
 				} else if (clickedLink == settingsLink){
-					doOpenSettings();
+					doOpenSettings(ureq);
 				} else if(clickedLink == participantsLink) {
 					doOpenParticipants(ureq);
 				}
@@ -173,20 +196,29 @@ public class LectureRepositoryAdminController extends BasicController implements
 
 	private void doOpenLectures(UserRequest ureq) {
 		if(lecturesCtrl == null) {
-			lecturesCtrl = new LectureListRepositoryController(ureq, getWindowControl(), entry);
+			OLATResourceable ores = OresHelper.createOLATResourceableType("LectureBlocks");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			lecturesCtrl = new LectureListRepositoryController(ureq, swControl, entry);
 			listenTo(lecturesCtrl);
+		} else {
+			addToHistory(ureq, lecturesCtrl);
 		}
 		mainVC.put("segmentCmp", lecturesCtrl.getInitialComponent());
 	}
 	
-	private void doOpenSettings() {
+	private void doOpenSettings(UserRequest ureq) {
 		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
+		addToHistory(ureq, settingsCtrl);
 	}
 	
 	private void doOpenParticipants(UserRequest ureq) {
 		if(participantsCtrl == null) {
-			participantsCtrl = new ParticipantListRepositoryController(ureq, getWindowControl(), entry, false, true);
+			OLATResourceable ores = OresHelper.createOLATResourceableType("Participants");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			participantsCtrl = new ParticipantListRepositoryController(ureq, swControl, entry, false, true);
 			listenTo(participantsCtrl);
+		} else {
+			addToHistory(ureq, participantsCtrl);
 		}
 		mainVC.put("segmentCmp", participantsCtrl.getInitialComponent());
 	}

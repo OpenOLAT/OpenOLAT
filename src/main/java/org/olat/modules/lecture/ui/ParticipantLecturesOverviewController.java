@@ -43,8 +43,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
@@ -67,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipantLecturesOverviewController extends FormBasicController implements BreadcrumbPanelAware {
+public class ParticipantLecturesOverviewController extends FormBasicController implements BreadcrumbPanelAware, Activateable2 {
 	
 	private FormLink logButton;
 	private FlexiTableElement tableEl;
@@ -180,6 +184,22 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("RepositoryEntry".equalsIgnoreCase(type)) {
+			Long repoEntryKey = entries.get(0).getOLATResourceable().getResourceableId();
+			for(LectureBlockStatistics row: tableModel.getObjects()) {
+				if(row.getRepoKey().equals(repoEntryKey)) {
+					doSelect(ureq, row);
+					break;
+				}
+			}
+		}
+	}
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(flc.getFormItemComponent() == source && "print".equals(event.getCommand())) {
 			doPrint(ureq);
@@ -215,7 +235,8 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		removeAsListenerAndDispose(lectureBlocksCtrl);
 		
 		RepositoryEntry entry = repositoryService.loadByKey(statistics.getRepoKey());
-		lectureBlocksCtrl = new ParticipantLectureBlocksController(ureq, getWindowControl(), entry, assessedIdentity);
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey()), null);
+		lectureBlocksCtrl = new ParticipantLectureBlocksController(ureq, swControl, entry, assessedIdentity);
 		listenTo(lectureBlocksCtrl);
 		stackPanel.pushController(entry.getDisplayname(), lectureBlocksCtrl);
 	}
