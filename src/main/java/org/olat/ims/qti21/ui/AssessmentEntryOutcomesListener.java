@@ -51,14 +51,20 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 	private AssessmentEntry assessmentEntry;
 	private final AssessmentService assessmentService;
 	
+	private final RepositoryEntry entry;
+	private final RepositoryEntry testEntry;
+	
 	private final boolean authorMode;
 	private final boolean needManualCorrection;
 
 	private AtomicBoolean start = new AtomicBoolean(true);
 	private AtomicBoolean close = new AtomicBoolean(true);
 	
-	public AssessmentEntryOutcomesListener(AssessmentEntry assessmentEntry, boolean needManualCorrection,
+	public AssessmentEntryOutcomesListener(RepositoryEntry entry, RepositoryEntry testEntry,
+			AssessmentEntry assessmentEntry, boolean needManualCorrection,
 			AssessmentService assessmentService, boolean authorMode) {
+		this.entry = entry;
+		this.testEntry = testEntry;
 		this.assessmentEntry = assessmentEntry;
 		this.assessmentService = assessmentService;
 		this.authorMode = authorMode;
@@ -67,10 +73,11 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 
 	@Override
 	public void decorateConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Date timestamp, Locale locale) {
-		decorateResourceConfirmation(candidateSession, options, timestamp, locale);
+		decorateResourceConfirmation(entry, testEntry, candidateSession, options, timestamp, locale);
 	}
 	
-	public static void decorateResourceConfirmation(AssessmentTestSession candidateSession, DigitalSignatureOptions options, Date timestamp, Locale locale) {
+	public static void decorateResourceConfirmation(RepositoryEntry entry, RepositoryEntry testEntry, AssessmentTestSession candidateSession,
+			DigitalSignatureOptions options, Date timestamp, Locale locale) {
 		MailBundle bundle = new MailBundle();
 		bundle.setToId(candidateSession.getIdentity());
 		String fullname = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(candidateSession.getIdentity());
@@ -78,8 +85,6 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 
 		
 		Translator translator = Util.createPackageTranslator(QTI21RuntimeController.class, locale);
-		RepositoryEntry entry = candidateSession.getRepositoryEntry();
-		RepositoryEntry testEntry = candidateSession.getTestEntry();
 		String[] args = new String[] {
 				entry.getDisplayname(),		// {0}
 				entry.getKey().toString(),	// {1}

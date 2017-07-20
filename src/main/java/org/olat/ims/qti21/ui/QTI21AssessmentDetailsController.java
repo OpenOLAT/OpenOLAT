@@ -434,7 +434,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		DigitalSignatureOptions options = new DigitalSignatureOptions(digitalSignature, sendMail, entry, testEntry);
 		if(digitalSignature) {
 			if(courseNode == null) {
-				 AssessmentEntryOutcomesListener.decorateResourceConfirmation(session, options, null, getLocale());
+				 AssessmentEntryOutcomesListener.decorateResourceConfirmation(entry, testEntry, session, options, null, getLocale());
 			} else {
 				CourseEnvironment courseEnv = CourseFactory.loadCourse(entry).getCourseEnvironment();
 				QTI21AssessmentRunController.decorateCourseConfirmation(session, options, courseEnv, courseNode, sessionTestEntry, null, getLocale());
