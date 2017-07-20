@@ -310,7 +310,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, testEntry);
 		if(outcomesListener == null) {
 			boolean manualCorrections = AssessmentTestHelper.needManualCorrection(resolvedAssessmentTest);
-			outcomesListener = new AssessmentEntryOutcomesListener(assessmentEntry, manualCorrections, assessmentService, authorMode);
+			outcomesListener = new AssessmentEntryOutcomesListener(entry, testEntry, assessmentEntry, manualCorrections, assessmentService, authorMode);
 		}
 
 		AssessmentTestSession lastSession = qtiService.getResumableAssessmentTestSession(assessedIdentity, anonymousIdentifier, entry, subIdent, testEntry, authorMode);
