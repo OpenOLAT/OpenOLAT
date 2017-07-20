@@ -56,8 +56,8 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 	private static final ComponentRenderer RENDERER = new RichTextElementRenderer();
 
 	private final RichTextElementImpl element;
-	private int cols;
-	private int rows;
+	private int cols, rows;
+	private TextMode currentTextMode;
 
 	/**
 	 * Constructor for a text area element
@@ -103,6 +103,14 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 
 	public void setRows(int rows) {
 		this.rows = rows;
+	}
+
+	protected TextMode getCurrentTextMode() {
+		return currentTextMode;
+	}
+
+	protected void setCurrentTextMode(TextMode currentTextMode) {
+		this.currentTextMode = currentTextMode;
 	}
 
 	@Override

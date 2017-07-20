@@ -150,10 +150,8 @@ public class RichTextConfiguration implements Disposable {
 	private String linkBrowserAbsolutFilePath;
 	private boolean relativeUrls = true;
 	private boolean removeScriptHost = true;
-	private boolean statusBar = true;
 	private boolean pathInStatusBar = true;
 	private boolean allowCustomMediaFactory = true;
-	private boolean inline = false;
 	private boolean sendOnBlur;
 	private boolean readOnly;
 	private boolean filenameUriValidation = false;
@@ -166,6 +164,7 @@ public class RichTextConfiguration implements Disposable {
 	private final Locale locale;
 	private TinyConfig tinyConfig;
 	
+	private List<TextMode> textModes = Collections.singletonList(TextMode.formatted);
 	private RichTextConfigurationDelegate additionalConfiguration;
 	
 	public RichTextConfiguration(Locale locale) {
@@ -414,14 +413,6 @@ public class RichTextConfiguration implements Disposable {
 		this.allowCustomMediaFactory = allowCustomMediaFactory;
 	}
 
-	public boolean isInline() {
-		return inline;
-	}
-
-	public void setInline(boolean inline) {
-		this.inline = inline;
-	}
-
 	public boolean isSendOnBlur() {
 		return sendOnBlur;
 	}
@@ -432,21 +423,6 @@ public class RichTextConfiguration implements Disposable {
 	 */
 	public void setSendOnBlur(boolean sendOnBlur) {
 		this.sendOnBlur = sendOnBlur;
-	}
-
-	public boolean isStatusBar() {
-		return statusBar;
-	}
-
-	/**
-	 * Allow to remove the status bar
-	 * 
-	 * @see https://www.tinymce.com/docs/configure/editor-appearance/#statusbar
-	 * 
-	 * @param statusBar
-	 */
-	public void setStatusBar2(boolean statusBar) {
-		this.statusBar = statusBar;
 	}
 
 	public boolean isPathInStatusBar() {
@@ -464,6 +440,22 @@ public class RichTextConfiguration implements Disposable {
 
 	public void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
+	}
+
+	public List<TextMode> getTextModes() {
+		return new ArrayList<>(textModes);
+	}
+
+	public void setSimplestTextModeAllowed(TextMode textMode) {
+		if(textMode != null) {
+			List<TextMode> newModes = new ArrayList<>(3);
+			for(int i=textMode.ordinal(); i<=TextMode.formatted.ordinal(); i++) {
+				newModes.add(TextMode.values()[i]);
+			}
+			textModes = newModes;
+		} else {
+			textModes = Collections.singletonList(TextMode.formatted);
+		}
 	}
 
 	public RichTextConfigurationDelegate getAdditionalConfiguration() {
@@ -1007,7 +999,6 @@ public class RichTextConfiguration implements Disposable {
  		  .append("image_advtab:true,\n")
 		  .append("relative_urls:").append(isRelativeUrls()).append(",\n")
 		  .append("remove_script_host:").append(isRemoveScriptHost()).append(",\n")
-		  .append("inline:").append(isInline()).append(",\n")
 		  .append("statusbar:").append(true).append(",\n")
 		  .append("resize:").append(true).append(",\n")
 		  .append("menubar:").append(tinyConfig.hasMenu()).append(",\n");

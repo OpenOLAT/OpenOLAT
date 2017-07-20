@@ -318,6 +318,7 @@ import org.junit.runners.Suite;
 	/**
 	 * Pure JUnit test without need of framework
 	 */
+	org.olat.core.gui.components.form.flexible.impl.elements.richText.TextModeTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.TextElementRendererTest.class,
 	org.olat.modules.card2brain.manager.Card2BrainManagerImplTest.class,
 	org.olat.modules.fo.WordCountTest.class,

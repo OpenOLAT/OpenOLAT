@@ -62,8 +62,14 @@ public class QTI21MultipleChoiceEditorPage extends QTI21AssessmentItemEditorPage
 	}
 	
 	public QTI21MultipleChoiceEditorPage setAnswer(int position, String answer) {
-		String containerCssSelector = "div.o_sel_choice_" + position;
-		OOGraphene.tinymce(answer, containerCssSelector, browser);
+		By oneLineInputBy = By.cssSelector("div.o_sel_choice_" + position + " input[type='text']");
+		OOGraphene.waitElement(oneLineInputBy, browser);
+		WebElement oneLineInputEl = browser.findElement(oneLineInputBy);
+		oneLineInputEl.clear();
+		oneLineInputEl.sendKeys(answer);
+		
+		//String containerCssSelector = "div.o_sel_choice_" + position;
+		//OOGraphene.tinymce(answer, containerCssSelector, browser);
 		return this;
 	}
 	

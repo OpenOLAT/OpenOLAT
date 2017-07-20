@@ -20,6 +20,8 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
@@ -32,6 +34,8 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 
@@ -52,6 +56,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	private static final OLog log = Tracing.createLoggerFor(RichTextElementImpl.class);
 	private final RichTextElementComponent component;
 	private RichTextConfiguration configuration;
+	private TextMode renderingMode;
 	
 	/**
 	 * Constructor for specialized TextElements, i.e. IntegerElementImpl.
@@ -88,6 +93,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		super(name);
 		// initialize the component
 		component = new RichTextElementComponent(this, rows, cols);
+		component.setTranslator(Util.createPackageTranslator(RichTextElementImpl.class, locale));
 		// configure tiny (must be after component initialization)
 		// init editor on our form element
 		configuration = new RichTextConfiguration(getFormDispatchId(), rootForm.getDispatchFieldId(), locale);
@@ -121,6 +127,51 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	public void setDomReplacementWrapperRequired(boolean required) {
 		component.setDomReplacementWrapperRequired(required);
 	}
+	
+	protected void setRenderingMode(TextMode mode) {
+		renderingMode = mode;
+	}
+
+	/**
+	 * @return The list of text modes available based on the configuration and
+	 * 		the content of the editor.
+	 */
+	public TextModeState getAvailableTextModes() {
+		List<TextMode> textModes = configuration.getTextModes();
+		if(textModes.size() == 1) {
+			return new TextModeState(TextMode.formatted, textModes);
+		}
+		
+		TextMode minimalMode = TextMode.guess(getRawValue());
+		for(Iterator<TextMode> it=textModes.iterator(); it.hasNext(); ) {
+			if(it.next().ordinal() < minimalMode.ordinal()) {
+				it.remove();
+			}
+		}
+		
+		if(minimalMode.ordinal() < textModes.get(0).ordinal()) {
+			minimalMode = textModes.get(0);
+		}
+		
+		TextMode currentMode = minimalMode;
+		if(component.getCurrentTextMode() != null
+				&& component.getCurrentTextMode().ordinal() > currentMode.ordinal()) {
+			currentMode = component.getCurrentTextMode();
+		} else if(component.getCurrentTextMode() == null) {
+			component.setCurrentTextMode(currentMode); 
+		}
+		return new TextModeState(currentMode, textModes);
+	}
+	
+	protected String getRawValue(TextMode mode) {
+		String raw = getRawValue();
+		if(mode == TextMode.oneLine) {
+			raw = TextMode.toOneLine(raw);
+		} else if(mode == TextMode.multiLine) {
+			raw = TextMode.toMultiLine(raw);
+		}
+		return raw;
+	}
 
 	/**
 	 * This apply a filter to remove some buggy conditional comment
@@ -144,6 +195,15 @@ public class RichTextElementImpl extends AbstractTextElement implements
 		String paramId = component.getFormDispatchId();
 		String cmd = getRootForm().getRequestParameter("cmd");
 		String submitValue = getRootForm().getRequestParameter(paramId);
+		if(StringHelper.containsNonWhitespace(submitValue)) {
+			if(renderingMode == TextMode.oneLine) {
+				submitValue = TextMode.fromOneLine(submitValue); 
+			} else if(renderingMode == TextMode.multiLine) {
+				submitValue = TextMode.fromMultiLine(submitValue);
+			}
+		}
+		
+		String dispatchUri = getRootForm().getRequestParameter("dispatchuri");
 		if("saveinlinedtiny".equals(cmd)) {
 			if(submitValue != null) {
 				setValue(submitValue);
@@ -153,9 +213,19 @@ public class RichTextElementImpl extends AbstractTextElement implements
 			setValue(submitValue);
 			// don't re-render component, value in GUI already correct
 			component.setDirty(false);
-		}  else if(cmd != null) {
+		}  else if(cmd != null && !cmd.equals("multiline") && !cmd.equals("formatted")) {
 			getRootForm().fireFormEvent(ureq, new FormEvent(cmd, this, FormEvent.ONCLICK));
 			component.setDirty(false);
+		}
+
+		if(paramId.equals(dispatchUri)) {
+			if(TextMode.formatted.name().equals(cmd)) {
+				component.setCurrentTextMode(TextMode.formatted);
+			} else if(TextMode.multiLine.name().equals(cmd)) {
+				component.setCurrentTextMode(TextMode.multiLine);
+			}  else if(TextMode.oneLine.name().equals(cmd)) {
+				component.setCurrentTextMode(TextMode.oneLine);
+			}
 		}
 	}
 
@@ -210,6 +280,25 @@ public class RichTextElementImpl extends AbstractTextElement implements
 					"As the onchange event is only tiggered when you click outside a field or navigate with the tab to the next element " +
 					"it will suppress the first attempt to the submit click as by clicking " +
 					"the submit button first the onchange event will be triggered and you have to click twice to submit the data. ");
+		}
+	}
+	
+	public static class TextModeState {
+		
+		private final TextMode currentMode;
+		private final List<TextMode> availableTextModes;
+		
+		public TextModeState(TextMode currentMode, List<TextMode> availableTextModes) {
+			this.currentMode = currentMode;
+			this.availableTextModes = availableTextModes;
+		}
+
+		public TextMode getCurrentMode() {
+			return currentMode;
+		}
+
+		public List<TextMode> getAvailableTextModes() {
+			return availableTextModes;
 		}
 	}
 }

@@ -188,6 +188,16 @@ label.mce-label {
 	}
 }
 
+.o_richtext_mce>.o_richtext_mce_modes {
+	text-align: right;
+	padding-right: $input-border-radius;
+	a {
+		border-bottom: none;
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+}
+
 i.mce-ico.mce-i-media, i.mce-ico.mce-i-movie, i.mce-ico.mce-i-help, i.mce-ico.mce-i-gaptext,i.mce-ico.mce-i-gapnumerical,i.mce-ico.mce-i-hottext, i.mce-ico.mce-i-edit {
 	display: inline-block;
 	font: normal normal normal #{$fa-font-size-base}/1 FontAwesome; // shortening font declaration
