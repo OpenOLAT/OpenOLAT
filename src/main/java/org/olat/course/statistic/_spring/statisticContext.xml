@@ -6,38 +6,6 @@
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- 
-		
-		Configuration for the Export Manager
-		
-		
-		There are currently three different implementations for exporting log files:
-		
-		 a) SimpleLogExporter
-		    .................
-		    a generic hibernate version which does a plain select and writes the resulting
-		    LoggingObject list into a csv file.
-		    
-		    This version runs on all standard OLAT deployments where the o_loggingtable
-		    resides in the normal DB
-		    
-		    The downside of this version is that it is slow with big tables and result sets
-		    
-		 b) SQLLogExporter
-		    ..............
-		    an optimized sql-export version which leaves the job to export the selected
-		    o_loggingtable rows into a csv file to the database.
-		    
-		    This version requires database specific SQL to be configured in this file.
-		    
-		    This version should be performant since it leaves the job to the database
-		    to export and doesn't read the result into the JVM.
-		    
-		    The downside of this version is that it requires 'FILE' permissions for
-		    the database user executing the 'SELECT INTO OUTFILE' statement. This FILE
-		    permission is a security risk and hence a possible concern.	
-	-->
-	
-	<!-- 
 	.........................................................
 	Configuration of ExportManager - required for any version
 	.........................................................
@@ -61,20 +29,12 @@
 		<property name="concurrentExportsPerNode" value="2"/>
 	</bean>
 
-	<!-- 
-	.............................................................
-	Configuration of DataSource - required for versions b) and c)
-	.............................................................
-	 -->
-	
-
 
 	<!-- 
 	........................................................................
-	Sample remaining configuration for SimpleLogExporter or version a) above
+	Sample remaining configuration for SimpleLogExporter
 	........................................................................
 	 -->
-	
 	<bean id="courseLogExporter" class="org.olat.course.statistic.export.SimpleLogExporter">
 		<property name="dbInstance" ref="database"/>
 		<property name="logLineConverter" ref="logLineConverter"/>
