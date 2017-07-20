@@ -160,7 +160,7 @@ public class RepositoryEntryResource {
   
 	/**
 	 * To get the web service for the lecture blocks of a specific learning resource.
-	 * 
+	 * @response.representation.200.doc A web service to manage the lecture blocks
 	 * @param repoEntryKey The primary key of the learning resource 
 	 * @return The web service for lecture blocks.
 	 */
@@ -172,8 +172,6 @@ public class RepositoryEntryResource {
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}
-  
-  //get put/post delete add owner
   
 	/**
 	 * Returns the list of owners of the repository entry specified by the groupKey.

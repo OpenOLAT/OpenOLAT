@@ -64,12 +64,18 @@ public class LectureBlocksWebService {
 	}
 	
 	/**
-	 * Return the lecture block.
-	 * 
+	 * Return the lecture blocks of the specified course or repository entry.
+	 * @response.representation.200.qname {http://www.example.com}lectureBlocksVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc An array of lecture blocks
+	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_LECTUREBLOCKVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
 	 * @param httpRequest The HTTP request
-	 * @return The web service for a single lecture block.
+	 * @return The lecture blocks
 	 */
 	@GET
+	@Path("")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getLectureBlocks(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
@@ -86,7 +92,20 @@ public class LectureBlocksWebService {
 		return Response.ok(voes).build();
 	}
 
+	/**
+	 * Create or update a lecture block.
+	 * @response.representation.200.qname {http://www.example.com}lectureBlocksVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The updated configuration
+	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_LECTUREBLOCKVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param block The lecture block
+	 * @param request The HTTP request
+	 * @return It returns the updated / created lecture block.
+	 */
 	@PUT
+	@Path("")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putLectureBlocks(LectureBlockVO block, @Context HttpServletRequest httpRequest) {
@@ -98,7 +117,20 @@ public class LectureBlocksWebService {
 		return Response.ok(new LectureBlockVO(updatedBlock, entry.getKey())).build();
 	}
 	
+	/**
+	 * Create or update a lecture block.
+	 * @response.representation.200.qname {http://www.example.com}lectureBlocksVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The updated configuration
+	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_LECTUREBLOCKVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param block The lecture block
+	 * @param request The HTTP request
+	 * @return It returns the updated / created lecture block.
+	 */
 	@POST
+	@Path("")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postLectureBlocks(LectureBlockVO block, @Context HttpServletRequest httpRequest) {
@@ -159,6 +191,17 @@ public class LectureBlocksWebService {
 		return savedLectureBlock;
 	}
 	
+	/**
+	 * Return the configuration of the specified course or repository entry.
+	 * @response.representation.200.qname {http://www.example.com}repositoryEntryLectureConfigurationVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The configuration of the lecture's feature
+	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_REPOSITORYENTRYLECTURECONFIGURATIONVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param httpRequest The HTTP request
+	 * @return The configuration
+	 */
 	@GET
 	@Path("configuration")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -178,6 +221,19 @@ public class LectureBlocksWebService {
 		return Response.ok(configVo).build();
 	}
 	
+	/**
+	 * Update the configuration of the lecture's feature of a specified
+	 * course or repository entry.
+	 * @response.representation.200.qname {http://www.example.com}repositoryEntryLectureConfigurationVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The updated configuration
+	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_REPOSITORYENTRYLECTURECONFIGURATIONVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @param configuration The configuration
+	 * @param request The HTTP request
+	 * @return It returns the updated configuration.
+	 */
 	@POST
 	@Path("configuration")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -215,7 +271,6 @@ public class LectureBlocksWebService {
 
 	/**
 	 * To get the web service for a specific lecture block.
-	 * 
 	 * @param lectureBlockKey The primary key of the lecture block
 	 * @param httpRequest The HTTP request
 	 * @return The web service for a single lecture block.
@@ -234,10 +289,9 @@ public class LectureBlocksWebService {
 	}
 	
 	/**
-	 * Synchronize the calendars based on the lecture block.
-	 * 
+	 * Synchronize the calendars based on the lecture blocks.
 	 * @response.representation.200.doc The calendar is successfully synchronized
-	 * @return 200 if all ok
+	 * @return 200 if the calendar is successfully synchronized
 	 */
 	@POST
 	@Path("sync/calendar")
@@ -246,6 +300,12 @@ public class LectureBlocksWebService {
 		return Response.ok().build();
 	}
 	
+	/**
+	 * Adapt all roll call to the effective number of lectures. Use with caution!
+	 * @response.representation.200.doc The adaptation is successful
+	 * @param httpRequest The HTTP request
+	 * @return 200 if the adaptation is successful
+	 */
 	@GET
 	@Path("adaptation")
 	public Response adapatation(@Context HttpServletRequest httpRequest) {

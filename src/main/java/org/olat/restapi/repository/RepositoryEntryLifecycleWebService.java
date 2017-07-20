@@ -51,9 +51,9 @@ public class RepositoryEntryLifecycleWebService {
 	/**
 	 * List all public lifecycles
 	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
-   * @response.representation.200.mediaType text/plain, text/html, application/xml, application/json
-   * @response.representation.200.doc List all entries in the repository
-   * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVOes}
+	 * @response.representation.200.mediaType text/plain, text/html, application/xml, application/json
+	 * @response.representation.200.doc List all entries in the repository
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVOes}
 	 * @param uriInfo The URI information
 	 * @param httpRequest The HTTP request
 	 * @return
