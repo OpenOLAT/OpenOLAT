@@ -186,7 +186,9 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 				startWizardButton.setUserObject(block);
 				
 				currentBlocks.add(row);
-			} else if(block.getRollCallStatus() == LectureRollCallStatus.closed || block.getRollCallStatus() == LectureRollCallStatus.autoclosed) {
+			} else if(block.getStatus() == LectureBlockStatus.cancelled
+					|| block.getRollCallStatus() == LectureRollCallStatus.closed
+					|| block.getRollCallStatus() == LectureRollCallStatus.autoclosed) {
 				closedBlocks.add(row);
 			} else if(block.getStartDate() != null && block.getStartDate().after(now)) {
 				nextBlocks.add(row);

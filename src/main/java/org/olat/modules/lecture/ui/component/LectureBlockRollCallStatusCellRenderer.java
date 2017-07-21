@@ -65,13 +65,18 @@ public class LectureBlockRollCallStatusCellRenderer implements FlexiCellRenderer
 			LectureBlockStatus status = rollCall.getStatus();
 			LectureRollCallStatus rollCallStatus = rollCall.getRollCallStatus();
 			if(status == LectureBlockStatus.cancelled) {
-				target.append(translator.translate("cancelled"));
+				String title = translator.translate("cancelled");
+				target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg o_icon_cancelled'> </i></span>");
 			} else if(status == LectureBlockStatus.done
 					&& (rollCallStatus == LectureRollCallStatus.closed || rollCallStatus == LectureRollCallStatus.autoclosed)) {
 				renderClosed(target, rollCall);	
 			} else {
-				target.append(translator.translate("in.progress"));
+				String title = translator.translate("in.progress");
+				target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg o_icon_status_in_review'> </i></span>");
 			}
+		} else if(!rollCall.isCompulsory()) {
+			String title = translator.translate("rollcall.tooltip.free");
+			target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg o_lectures_rollcall_free'> </i></span>");
 		}
 	}
 	

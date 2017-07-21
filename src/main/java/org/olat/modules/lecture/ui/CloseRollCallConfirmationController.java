@@ -102,7 +102,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 			}
 		}
 		
-		String datePage = velocity_root + "/date_start_end.html";
+		String datePage = velocity_root + "/date_end.html";
 		FormLayoutContainer dateCont = FormLayoutContainer.createCustomFormLayout("start_end", getTranslator(), datePage);
 		dateCont.setLabel("lecture.block.effective.end", null);
 		formLayout.add(dateCont);
