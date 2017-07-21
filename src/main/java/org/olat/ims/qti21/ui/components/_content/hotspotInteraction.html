@@ -1,6 +1,7 @@
 #set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($qtiContainerId = "oc_" + $responseIdentifier)
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
+#set($isResponsive = $r.hasCssClass($interaction, "interaction-responsive"))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName">
@@ -12,8 +13,8 @@
 	<div class="o_error badResponse">$r.translate("error.as.directed")</div>
 	#end
 	
-	<div id="${qtiContainerId}" style="width:${interaction.object.width}px; height:${interaction.object.height}px">
-		<img id="${qtiContainerId}_img" width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${qtiContainerId}_map"></img>
+	<div id="${qtiContainerId}" #if($r.isFalse($isResponsive)) style="width:${interaction.object.width}px; height:${interaction.object.height}px" #end>
+		<img id="${qtiContainerId}_img" #if($r.isTrue($isResponsive)) class="o_hotspot_responsive" #end width="${interaction.object.width}" height="${interaction.object.height}" src="${r.convertLinkFull($interaction.object.data)}" usemap="#${qtiContainerId}_map"></img>
 		<map name="${qtiContainerId}_map">
 		#foreach($hotspotChoice in $interaction.getHotspotChoices())
             <!-- Match group, label -->
@@ -23,15 +24,21 @@
 		</map>
 	</div>
 	<script type="text/javascript">
+	/* <![CDATA[ */ 
 	jQuery(function() {
-		jQuery('#${qtiContainerId}_img').maphilight({
-			fillColor: 'bbbbbb',
-        	fillOpacity: 0.5,
-			strokeColor: '666666',
-			strokeOpacity: 0.8,
-			strokeWidth: 3,
-			alwaysOn: true
-		});
+		#if($r.isTrue($isResponsive))
+			//rwdImageMaps make maphilight onload
+			jQuery('#${qtiContainerId}_img').rwdImageMaps();
+		#else
+			jQuery('#${qtiContainerId}_img').maphilight({
+				fillColor: 'bbbbbb',
+				fillOpacity: 0.5,
+				strokeColor: '666666',
+				strokeOpacity: 0.8,
+				strokeWidth: 3,
+				alwaysOn: true
+			});
+		#end
 
 		jQuery('#${qtiContainerId}').hotspotInteraction({
 			responseIdentifier: '$responseIdentifier',
@@ -41,5 +48,6 @@
 			opened: $isItemSessionOpen
 		});
 	});
+	/* ]]> */
 	</script>
 </div>

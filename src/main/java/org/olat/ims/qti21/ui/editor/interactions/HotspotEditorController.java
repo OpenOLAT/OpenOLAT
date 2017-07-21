@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -51,6 +52,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
@@ -76,6 +78,8 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class HotspotEditorController extends FormBasicController {
 	
+	private static final String[] onKeys = new String[] { "on" };
+	
 	private static final Set<String> mimeTypes = new HashSet<>();
 	static {
 		mimeTypes.add("image/gif");
@@ -87,7 +91,9 @@ public class HotspotEditorController extends FormBasicController {
 	private TextElement titleEl;
 	private RichTextElement textEl;
 	private FileElement backgroundEl;
+	private SingleSelection resizeEl;
 	private FormLayoutContainer hotspotsCont;
+	private MultipleSelectionElement responsiveEl;
 	private FormLink newCircleButton, newRectButton;
 	private MultipleSelectionElement correctHotspotsEl;
 	
@@ -137,6 +143,12 @@ public class HotspotEditorController extends FormBasicController {
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
 		
+		responsiveEl = uifactory.addCheckboxesHorizontal("form.imd.responsive", formLayout, onKeys, new String[] {""});
+		responsiveEl.setHelpText(translate("form.imd.responsive.hint"));
+		if(itemBuilder.isResponsive()) {
+			responsiveEl.select(onKeys[0], true);
+		}
+		
 		initialBackgroundImage = getCurrentBackground();
 		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
 		backgroundEl.setEnabled(!restrictedEdit);
@@ -146,6 +158,15 @@ public class HotspotEditorController extends FormBasicController {
 		backgroundEl.addActionListener(FormEvent.ONCHANGE);
 		backgroundEl.setDeleteEnabled(true);
 		backgroundEl.limitToMimeType(mimeTypes, "error.mimetype", new String[]{ mimeTypes.toString() });
+
+		String[] resizeKeys = new String[] { "no" };
+		String[] resizeValues = new String[] { translate("form.imd.background.resize.no") };
+		resizeEl = uifactory.addRadiosHorizontal("form.imd.background.resize", formLayout, resizeKeys, resizeValues);
+		resizeEl.setVisible(false);
+		if(initialBackgroundImage != null) {
+			Size size = imageService.getSize(new LocalFileImpl(initialBackgroundImage), null);
+			optimizeResizeEl(size, false);
+		}
 
 		//responses
 		String page = velocity_root + "/hotspots.html";
@@ -259,6 +280,11 @@ public class HotspotEditorController extends FormBasicController {
 				if(status.isEmpty()) {
 					flc.setDirty(true);
 					backgroundImage = backgroundEl.moveUploadFileTo(itemFile.getParentFile());
+					Size size = imageService.getSize(new LocalFileImpl(backgroundImage), null);
+					if(size.getHeight() > 480 || size.getWidth() > 480) {
+						optimizeResizeEl(size, true);
+						resizeEl.setVisible(true);
+					}
 				}
 			}
 			Size backgroundSize = updateBackground();
@@ -347,22 +373,29 @@ public class HotspotEditorController extends FormBasicController {
 			String filename = objectImg.getName();
 			size = imageService.getSize(new LocalFileImpl(objectImg), null);
 			hotspotsCont.contextPut("filename", filename);
-			if(size != null) {
-				if(size.getHeight() > 0) {
-					hotspotsCont.contextPut("height", Integer.toString(size.getHeight()));
-				} else {
-					hotspotsCont.contextRemove("height");
-				}
-				if(size.getWidth() > 0) {
-					hotspotsCont.contextPut("width", Integer.toString(size.getWidth()));
-				} else {
-					hotspotsCont.contextRemove("width");
-				}
-			}
+			setBackgroundSize(size);
 		} else {
 			hotspotsCont.contextRemove("filename");
 		}
 		return size;
+	}
+
+	private void setBackgroundSize(Size size) {
+		if(size == null) {
+			hotspotsCont.contextRemove("height");
+			hotspotsCont.contextRemove("width");
+		} else {
+			if(size.getHeight() > 0) {
+				hotspotsCont.contextPut("height", Integer.toString(size.getHeight()));
+			} else {
+				hotspotsCont.contextRemove("height");
+			}
+			if(size.getWidth() > 0) {
+				hotspotsCont.contextPut("width", Integer.toString(size.getWidth()));
+			} else {
+				hotspotsCont.contextRemove("width");
+			}
+		}
 	}
 	
 	@Override
@@ -371,6 +404,7 @@ public class HotspotEditorController extends FormBasicController {
 		//set the question with the text entries
 		String questionText = textEl.getRawValue();
 		itemBuilder.setQuestion(questionText);
+		itemBuilder.setResponsive(responsiveEl.isAtLeastSelected(1));
 		
 		File objectImg = null;
 		if(backgroundImage != null) {
@@ -383,6 +417,14 @@ public class HotspotEditorController extends FormBasicController {
 			String filename = objectImg.getName();
 			String mimeType = WebappHelper.getMimeType(filename);
 			Size size = imageService.getSize(new LocalFileImpl(objectImg), null);
+			if(resizeEl.isVisible() && !resizeEl.isSelected(0)) {
+				int maxSize = Integer.parseInt(resizeEl.getSelectedKey());
+				String extension = FileUtils.getFileSuffix(filename);
+				size = imageService.scaleImage(objectImg, extension, objectImg, maxSize, maxSize, false);
+				setBackgroundSize(size);
+				optimizeResizeEl(size, false);
+			}
+
 			int height = -1;
 			int width = -1;
 			if(size != null) {
@@ -394,6 +436,27 @@ public class HotspotEditorController extends FormBasicController {
 		updateHotspots(ureq);
 		
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.hotspot));
+	}
+	
+	private void optimizeResizeEl(Size size, boolean selectSize) {
+		List<String> keys = new ArrayList<>();
+		List<String> values = new ArrayList<>();
+		keys.add("no");
+		values.add(translate("form.imd.background.resize.no"));
+		for(BackgroundSize availableSize:BackgroundSize.values()) {
+			if(availableSize.size() < size.getHeight() || availableSize.size() < size.getWidth()) {
+				String s = Integer.toString(availableSize.size());
+				keys.add(s);
+				values.add(s + " x " + s);
+			}
+		}
+		resizeEl.setKeysAndValues(keys.toArray(new String[keys.size()]), values.toArray(new String[values.size()]), null);
+		if(selectSize && keys.size() > 1) {
+			resizeEl.select(keys.get(1), true);
+		} else {
+			resizeEl.select(keys.get(0), true);
+		}
+		resizeEl.setVisible(keys.size() > 1);
 	}
 	
 	private void updateHotspots(UserRequest ureq) {
@@ -503,6 +566,22 @@ public class HotspotEditorController extends FormBasicController {
 		if(translateY > 0) {
 			coords.set(1, (topY - translateY));
 			coords.set(3, (bottomY - translateY));
+		}
+	}
+	
+	public enum BackgroundSize {
+		s1024(1024),
+		s800(800),
+		s480(480);
+		
+		private final int size;
+		
+		private BackgroundSize(int size) {
+			this.size = size;
+		}
+		
+		public int size() {
+			return size;
 		}
 	}
 }

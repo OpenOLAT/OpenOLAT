@@ -208,6 +208,7 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.match_dnd.js");
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.gapMatch.js");
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.hotspot.js");
+		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.hotspot.responsive.js");
 
 	}
 	

@@ -275,6 +275,27 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 		this.question = question;
 	}
 	
+	public boolean isResponsive() {
+		List<String> cssClasses = hotspotInteraction.getClassAttr();
+		return cssClasses != null && cssClasses.size() > 0
+				&& cssClasses.contains(QTI21Constants.CSS_INTERACTION_RESPONSIVE); 
+	}
+	
+	public void setResponsive(boolean responsive) {
+		List<String> cssClasses = hotspotInteraction.getClassAttr();
+		if(cssClasses == null) {
+			cssClasses = new ArrayList<>();
+		}
+		if(responsive) {
+			if(!cssClasses.contains(QTI21Constants.CSS_INTERACTION_RESPONSIVE)) {
+				cssClasses.add(QTI21Constants.CSS_INTERACTION_RESPONSIVE);
+			}
+		} else {
+			cssClasses.remove(QTI21Constants.CSS_INTERACTION_RESPONSIVE);
+		}
+		hotspotInteraction.setClassAttr(cssClasses);
+	}
+	
 	public HotspotChoice getHotspotChoice(String identifier) {
 		List<HotspotChoice> choices = getHotspotChoices();
 		for(HotspotChoice choice:choices) {

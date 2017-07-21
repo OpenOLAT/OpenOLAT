@@ -130,6 +130,12 @@ div.hotspotInteraction {
 	overflow-x: auto;
 }
 
+img.o_hotspot_responsive[usemap] {
+	max-width: 100%;
+	width: auto;
+	height: auto;
+}
+
 /* Gap text / FIB */
 .form-inline.o_qti_gaptext_add_first_alternative {
 	padding: 9px 0 3px 0;

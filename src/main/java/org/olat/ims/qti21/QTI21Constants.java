@@ -145,7 +145,7 @@ public class QTI21Constants {
 	
 	public static final String CSS_MATCH_SOURCE_BOTTOM = "source-bottom";
 	
-	
+	public static final String CSS_INTERACTION_RESPONSIVE = "interaction-responsive";
 	
 
 }
