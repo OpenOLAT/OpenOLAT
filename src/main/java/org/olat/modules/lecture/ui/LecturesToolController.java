@@ -80,8 +80,6 @@ public class LecturesToolController extends BasicController implements Breadcrum
 			doOpenTeacherView(ureq);
 		} else if(participantOverviewCtrl.getRowCount() > 0) {
 			doOpenParticipantView(ureq);
-		} else {
-			
 		}
 		putInitialPanel(mainVC);
 	}
@@ -145,12 +143,14 @@ public class LecturesToolController extends BasicController implements Breadcrum
 	
 	private Activateable2 doOpenTeacherView(UserRequest ureq) {
 		mainVC.put("segmentCmp", teacherOverviewCtrl.getInitialComponent());
+		mainVC.put("teacherView", teacherOverviewCtrl.getInitialComponent());
 		addToHistory(ureq, teacherOverviewCtrl);
 		return teacherOverviewCtrl;
 	}
 	
 	private Activateable2 doOpenParticipantView(UserRequest ureq) {
 		mainVC.put("segmentCmp", participantOverviewCtrl.getInitialComponent());
+		mainVC.put("participantView", participantOverviewCtrl.getInitialComponent());
 		addToHistory(ureq, participantOverviewCtrl);
 		return participantOverviewCtrl;
 	}
