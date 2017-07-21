@@ -20,7 +20,7 @@
 * <a href="http://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.  
+* under the Apache 2.0 license as the original file.
 * <p>
 */
 package org.olat.test;
@@ -40,7 +40,7 @@ package org.olat.test;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
- 
+
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 	org.olat.core.util.i18n.I18nTest.class,
@@ -324,12 +324,16 @@ import org.junit.runners.Suite;
 	org.olat.modules.fo.WordCountTest.class,
 	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.modules.webFeed.manager.RomeFeedFetcherTest.class,
+	org.olat.shibboleth.manager.ShibbolethManagerImplTest.class,
+	org.olat.shibboleth.handler.DoNothingHandlerTest.class,
+	org.olat.shibboleth.handler.FirstValueHandlerTest.class,
+	org.olat.shibboleth.handler.SchacGenderHandlerTest.class,
 	/**
-	 * 
+	 *
 	 * Place tests which load their own Spring context
-	 * with @ContextConfiguration below the others as they may taint the 
+	 * with @ContextConfiguration below the others as they may taint the
 	 * cached Spring context
-	 * 
+	 *
 	 * IMPORTANT: If you create mock spring contexts in the test source tree of olatcore and
 	 * you like to use them in olat3 you have to copy them to the test source tree of olat3
 	 * as well as the tests on hudson run agains a jar version of olatcore where the test source

@@ -35,8 +35,6 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
-import org.olat.basesecurity.Constants;
-import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.chiefcontrollers.LanguageChangedEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -66,7 +64,6 @@ import org.olat.registration.LanguageChooserController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
 import org.olat.registration.UserNameCreationInterceptor;
-import org.olat.shibboleth.util.ShibbolethHelper;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  09.08.2004
  *
  * @author Mike Stock
- * 
+ *
  * Comment:
  * User wants ShibbolethAuthentication
  * - Basic flow:
@@ -84,7 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 		- System asks for emailaddress (no institutionalEmail is set !!!)
  * 2. no email in shibbolethAttributesMap and User already exists in System
  * 		- System asks for password (no institutionalEmail is set !!!)
- * 		
+ *
  */
 
 public class ShibbolethRegistrationController extends DefaultController implements ControllerEventListener {
@@ -92,35 +89,38 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(ShibbolethModule.class);
 	private static final String KEY_SHIBATTRIBUTES = "shibattr";
 	private static final String KEY_SHIBUNIQUEID = "shibuid";
-	
+
 	private VelocityContainer mainContainer;
 	private ShibbolethRegistrationForm regForm;
 	private ShibbolethMigrationForm migrationForm;
 	private ShibbolethRegistrationWithEmailForm regWithEmailForm;
 	private DisclaimerController dclController;
 	private LanguageChooserController languageChooserController;
-	
+
 	private Translator translator;
 	private Map<String,String> shibbolethAttributesMap;
 	private String shibbolethUniqueID;
-	
+
 	private int state = STATE_UNDEFINED;
 	private static final int STATE_UNDEFINED = 0;
 	private static final int STATE_NEW_SHIB_USER = 1;
 	private static final int STATE_MIGRATED_SHIB_USER = 2;
 	private String proposedUsername;
-	
+	Locale locale;
+
 	private boolean hasEmailInShibAttr;
-	
+
 	@Autowired
 	private ShibbolethModule shibbolethModule;
 	@Autowired
+	private ShibbolethManager shibbolethManager;
+	@Autowired
 	private RegistrationModule registrationModule;
-	
+
 	/**
 	 * Implements the shibboleth registration workflow.
 	 * @param ureq
-	 * @param wControl 
+	 * @param wControl
 	 */
 	public ShibbolethRegistrationController(UserRequest ureq, WindowControl wControl) {
 		super(wControl);
@@ -128,8 +128,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		translator = Util.createPackageTranslator(ShibbolethModule.class, ureq.getLocale());
 		shibbolethAttributesMap = (Map<String,String>)ureq.getUserSession().getEntry(KEY_SHIBATTRIBUTES);
 		shibbolethUniqueID = (String)ureq.getUserSession().getEntry(KEY_SHIBUNIQUEID);
-		
-		if (shibbolethUniqueID == null) {			
+
+		if (shibbolethUniqueID == null) {
 			ChiefController msgcc = MessageWindowController.createMessageChiefController(ureq,
 					new AssertException("ShibbolethRegistrationController was unable to fetch ShibbolethUniqueID from session."), translator.translate("error.shibboleth.generic"), null);
 			msgcc.getWindow().dispatchRequest(ureq, true);
@@ -139,11 +139,11 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		if (shibbolethAttributesMap == null)
 			throw new AssertException("ShibbolethRegistrationController was unable to fetch ShibbolethAttribuitesMap from session.");
 
-		hasEmailInShibAttr = (shibbolethModule.getEMail() == null) ? false : true;
-		
-		Locale locale = (Locale)ureq.getUserSession().getEntry(LocaleNegotiator.NEGOTIATED_LOCALE);
+		hasEmailInShibAttr = (shibbolethModule.getShibbolethAttributeName(UserConstants.EMAIL) == null) ? false : true;
+
+		locale = (Locale)ureq.getUserSession().getEntry(LocaleNegotiator.NEGOTIATED_LOCALE);
 		if(locale == null) {
-			String preferedLanguage = shibbolethModule.getPreferedLanguage();
+			String preferedLanguage = shibbolethAttributesMap.get(shibbolethModule.getPreferredLanguageAttribute());
 			if(preferedLanguage == null) {
 				locale = LocaleNegotiator.getPreferedLocale(ureq);
 			} else {
@@ -156,15 +156,15 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		ureq.getUserSession().setLocale(locale);
 		I18nManager.updateLocaleInfoToThread(ureq.getUserSession());
 		ureq.getUserSession().putEntry(LocaleNegotiator.NEGOTIATED_LOCALE, locale);
-		
+
 		translator = Util.createPackageTranslator(ShibbolethModule.class, ureq.getLocale());
 		mainContainer = new VelocityContainer("main", VELOCITY_ROOT + "/langchooser.html", translator, this);
-	
+
 		languageChooserController = new LanguageChooserController(ureq, wControl, false);
 		languageChooserController.addControllerListener(this);
 		mainContainer.put("select.language", languageChooserController.getInitialComponent());
 		mainContainer.contextPut("languageCode", locale.getLanguage());
-		
+
 		if(registrationModule.getUsernamePresetBean() != null) {
 			UserNameCreationInterceptor interceptor = registrationModule.getUsernamePresetBean();
 			proposedUsername = interceptor.getUsernameFor(shibbolethAttributesMap);
@@ -193,7 +193,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						regWithEmailForm.addControllerListener(this);
 						//mainContainer.put("regWithEmailForm", regWithEmailForm);
 						mainContainer.setPage(VELOCITY_ROOT + "/registerwithemail.html");
-					}	
+					}
 				}
 			}
 		} else {
@@ -203,25 +203,25 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		dclController = new DisclaimerController(ureq, getWindowControl());
 		dclController.addControllerListener(this);
 		mainContainer.put("dclComp", dclController.getInitialComponent());
-		
+
 		// load view in layout
 		LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, mainContainer, null);
 		setInitialComponent(layoutCtr.getInitialComponent());
 	}
-	
+
 	private void setErrorPage(String errorKey, WindowControl wControl) {
 		String error = translator.translate(errorKey);
 		wControl.setError(error);
 		mainContainer.contextPut("error_msg", error);
 		mainContainer.setPage(VELOCITY_ROOT + "/error.html");
 	}
-	
+
 	private void setRegistrationForm(UserRequest ureq, WindowControl wControl, String proposedUsername) {
 		regForm = new ShibbolethRegistrationForm(ureq, wControl, proposedUsername);
 		regForm.addControllerListener(this);
 		mainContainer.put("regForm", regForm.getInitialComponent());
 	}
-	
+
 	/**
 	 * Put shibboleth attributes map in reqest for later usage.
 	 * @param req
@@ -230,7 +230,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	public static final void putShibAttributes(HttpServletRequest req, Map<String,String> attributes) {
 		CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(req).putEntry(KEY_SHIBATTRIBUTES, attributes);
 	}
-	
+
 	/**
 	 * Put shibboleth unique identifier in request for later usage.
 	 * @param req
@@ -240,9 +240,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(req).putEntry(KEY_SHIBUNIQUEID, uniqueID);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event instanceof LocaleChangedEvent) {
 			LocaleChangedEvent lce = (LocaleChangedEvent)event;
@@ -252,9 +250,6 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == migrationForm) {
@@ -270,14 +265,14 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 			} else if (event == Event.DONE_EVENT) {
 				state = STATE_NEW_SHIB_USER;
 				mainContainer.setPage(VELOCITY_ROOT + "/disclaimer.html");
-			}		
+			}
 		} else if (source == regForm) {
 			if (event == Event.DONE_EVENT) {
 				String choosenLogin = regForm.getLogin();
 				BaseSecurity secMgr = BaseSecurityManager.getInstance();
 				Identity identity = secMgr.findIdentityByName(choosenLogin);
 
-				
+
 				if (identity == null) { // ok, create new user
 					if (!hasEmailInShibAttr){
 						regWithEmailForm = new ShibbolethRegistrationWithEmailForm(ureq, getWindowControl(), choosenLogin);
@@ -289,7 +284,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						mainContainer.setPage(VELOCITY_ROOT + "/disclaimer.html");
 					}
 				} else { // offer identity migration, if OLAT provider exists
-					Authentication auth = secMgr.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());					
+					Authentication auth = secMgr.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 					if (auth == null) { // no OLAT provider, migration not possible...
 						getWindowControl().setError(translator.translate("sr.error.loginexists", new String[] {WebappHelper.getMailConfig("mailSupport")}));
 					}	else { // OLAT provider exists, offer migration...
@@ -318,7 +313,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					} else {
 						choosenLogin = regForm.getLogin();
 					}
-					
+
 					// check if login has been taken by another user in the meantime...
 					BaseSecurity secMgr = BaseSecurityManager.getInstance();
 
@@ -331,19 +326,19 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						return;
 					}
 
-					String email;
 					if(!hasEmailInShibAttr){
-						email = regWithEmailForm.getEmail();
-					} else {
-						email = ShibbolethHelper.getFirstValueOf(shibbolethModule.getEMail(), shibbolethAttributesMap);
+						shibbolethAttributesMap.put(shibbolethModule.getShibbolethAttributeName(UserConstants.EMAIL), regWithEmailForm.getEmail());
 					}
+					String emailAttributeName = shibbolethModule.getShibbolethAttributeName(UserConstants.EMAIL);
+					String emailAttributeValue = shibbolethAttributesMap.get(emailAttributeName);
+					String email = shibbolethManager.parseShibbolethAttribute(emailAttributeName, emailAttributeValue);
 
 					User user = null;
 					Identity id = UserManager.getInstance().findIdentityByEmail(email);
 					if (id != null) {
 						user = id.getUser();
 					}
-					
+
 					if (user != null) {
 						// error, email already exists. should actually not happen if OLAT Authenticator has
 						// been set after removing shibboleth authenticator
@@ -353,25 +348,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						return;
 					}
 
-					String firstName = shibbolethAttributesMap.get(shibbolethModule.getFirstName());
-					String lastName = shibbolethAttributesMap.get(shibbolethModule.getLastName());
-					user = UserManager.getInstance().createUser(firstName, lastName, email);
-					user.setProperty(UserConstants.INSTITUTIONALNAME, shibbolethAttributesMap.get(shibbolethModule.getInstitutionalName()));
-					if(hasEmailInShibAttr){
-						String institutionalEmail = ShibbolethHelper.getFirstValueOf(shibbolethModule.getInstitutionalEMail(), shibbolethAttributesMap);
-						user.setProperty(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
-					}
-					user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, shibbolethAttributesMap.get(shibbolethModule.getInstitutionalUserIdentifier()));
-					// Optional organization unit property
-					String orgUnitIdent = shibbolethModule.getOrgUnit();
-					if(orgUnitIdent != null) {
-						String s = ShibbolethHelper.getFirstValueOf(orgUnitIdent, shibbolethAttributesMap);
-						if (s != null) user.setProperty(UserConstants.ORGUNIT, s);
-					}
+					identity = shibbolethManager.createAndPersistUser(choosenLogin, shibbolethUniqueID, locale.getLanguage(), shibbolethAttributesMap);
 
-					identity = secMgr.createAndPersistIdentityAndUser(choosenLogin, null, user, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID);
-					SecurityGroup olatUserGroup = secMgr.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-					secMgr.addIdentityToSecurityGroup(identity, olatUserGroup);
 					// tell system that this user did accept the disclaimer
 					CoreSpringFactory.getImpl(RegistrationManager.class).setHasConfirmedDislaimer(identity);
 					doLogin(identity, ureq);
@@ -382,27 +360,10 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					Identity authenticationedIdentity = auth.getIdentity();
 					BaseSecurity secMgr = BaseSecurityManager.getInstance();
 					secMgr.createAndPersistAuthentication(authenticationedIdentity, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID, null, null);
-					
+
 					// update user profile
-					User user = authenticationedIdentity.getUser();
-					String s = shibbolethAttributesMap.get(shibbolethModule.getFirstName());
-					if (s != null) user.setProperty(UserConstants.FIRSTNAME, s);
-					s = shibbolethAttributesMap.get(shibbolethModule.getLastName());
-					if (s != null) user.setProperty(UserConstants.LASTNAME, s);
-					s = shibbolethAttributesMap.get(shibbolethModule.getInstitutionalName());
-					if (s != null) user.setProperty(UserConstants.INSTITUTIONALNAME, s);		
-					s = ShibbolethHelper.getFirstValueOf(shibbolethModule.getInstitutionalEMail(), shibbolethAttributesMap);
-					if (s != null) user.setProperty(UserConstants.INSTITUTIONALEMAIL, s);
-					s = shibbolethAttributesMap.get(shibbolethModule.getInstitutionalUserIdentifier());
-					if (s != null) user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, s);
-					// Optional organization unit property
-					String orgUnitIdent = shibbolethModule.getOrgUnit();
-					if(orgUnitIdent != null) {
-						s = ShibbolethHelper.getFirstValueOf(orgUnitIdent, shibbolethAttributesMap);
-						if (s != null) user.setProperty(UserConstants.ORGUNIT, s);
-					}
-						
-					UserManager.getInstance().updateUser(user);
+					shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttributesMap);
+
 					doLogin(authenticationedIdentity, ureq);
 					return;
 				}
@@ -428,17 +389,18 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		ureq.getUserSession().getIdentityEnvironment().addAttributes(
 				shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttributesMap));
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		if (dclController != null) {
 			dclController.dispose();
 			dclController = null;
 		}
-		
+
 		if (languageChooserController != null) {
 			languageChooserController.dispose();
 			languageChooserController = null;

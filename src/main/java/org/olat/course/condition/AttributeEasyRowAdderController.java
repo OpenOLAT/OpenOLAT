@@ -64,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * A subform that implement the shibboleth easy mode config rows.
  * <P>
  * Initial Date: 23.10.2006 <br>
- * 
+ *
  * @author Lars Eberle (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  * @author Florian Gnägi (<a href="http://www.frentix.com/">frentix GmbH</a>)
  */
@@ -96,13 +96,13 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 	private int rowCreationCounter = 0;
 	//
 	private boolean isinit = false;
-	
+
 	@Autowired
 	private ShibbolethModule shibbolethModule;
 
 	/**
 	 * Constructor for a shibboleth attribute rule creator form.
-	 * 
+	 *
 	 * @param ureq
 	 * @param wControl
 	 * @param parentForm
@@ -113,7 +113,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(ShibbolethModule.class, ureq.getLocale(), getTranslator()));
 		attributeTranslator = shibbolethModule.getAttributeTranslator();
 		attrKeys = getShibAttributes();
-		preselectedAttribute = shibbolethModule.getPreselectedAttributeKey(ShibbolethModule.CONF_OLATUSERMAPPING_INSTITUTIONALNAME);
+		preselectedAttribute = shibbolethModule.getPreselectedAttributeKey(shibbolethModule.getShibbolethAttributeName(UserConstants.INSTITUTIONALNAME));
 		preselectedAttributeValue = ureq.getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALNAME, getLocale());
 		operatorKeys = OperatorManager.getRegisteredOperatorKeys(shibbolethModule.getOperatorKeys());
 		this.init();
@@ -121,7 +121,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 
 	/**
 	 * Constructor for a log attribute rule creator form.
-	 * 
+	 *
 	 * @param ureq
 	 * @param wControl
 	 * @param parentForm
@@ -262,7 +262,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 
 	/**
 	 * Internal helper to get the current row count
-	 * 
+	 *
 	 * @return
 	 */
 	private int getRowCount() {
@@ -275,7 +275,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 
 	/**
 	 * Method to get a list of extended conditions represented in this form
-	 * 
+	 *
 	 * @return
 	 */
 	public List<ExtendedCondition> getAttributeConditions() {
@@ -307,7 +307,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 
 	/**
 	 * Method to initialize this form with the given extended conditions
-	 * 
+	 *
 	 * @param cond
 	 */
 	public void setAttributeConditions(final List<ExtendedCondition> cond) {
@@ -339,7 +339,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 
 	/**
 	 * Internal method to add a new row at the given position
-	 * 
+	 *
 	 * @param i
 	 */
 	private void addRowAt(final int rowPos) {
@@ -437,7 +437,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 
 	/**
 	 * Internal method to remove the row at the given position.
-	 * 
+	 *
 	 * @param clickPos The row to be removed
 	 */
 	private void removeRowAt(final int clickPos) {
@@ -475,7 +475,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 	/**
 	 * Internal method to update a row's value element. This can be a text input box or a selection drop down depending on the shibboleth module configuration and the selected attribute. The method
 	 * will set the given value as the users selected / inputed value
-	 * 
+	 *
 	 * @param attribute The attribute key. Must not be NULL
 	 * @param row the row ID
 	 * @param value The value that should be selected / used in the text input field. Can be NULL.
@@ -558,7 +558,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 
 	/**
 	 * Internal helper to create a sting array that contains all shibboleth attributes that can be selected in the drop down
-	 * 
+	 *
 	 * @return String[] - will never returh null
 	 */
 	private String[] getShibAttributes() {
@@ -578,7 +578,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 
 	/**
 	 * Checks if this form produces an error
-	 * 
+	 *
 	 * @return true: has an error; false: is valid
 	 */
 	public boolean hasError() {
@@ -592,7 +592,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 
 	/**
 	 * Get the form item that forms this subform
-	 * 
+	 *
 	 * @return
 	 */
 	public FormItem getFormItem() {

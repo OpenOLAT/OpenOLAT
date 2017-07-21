@@ -3,18 +3,18 @@
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
-  http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/beans
   http://www.springframework.org/schema/beans/spring-beans.xsd
-  http://www.springframework.org/schema/context 
+  http://www.springframework.org/schema/context
   http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:component-scan base-package="org.olat.shibboleth" />
-	
+
 	<!-- Shibboleth admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.syscfg.shibbolethcfg" init-method="initExtensionPoints">
 		<property name="order" value="8830" />
 		<property name="enabled" value="${shibboleth.enable}" />
-		<property name="actionController">	
+		<property name="actionController">
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.shibboleth.ShibbolethAdminController"/>
 			</bean>
@@ -24,11 +24,11 @@
 		<property name="i18nDescriptionKey" value="admin.menu.shibboleth.desc"/>
 		<property name="translationPackage" value="org.olat.shibboleth"/>
 		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
+			<list>
+				<value>org.olat.admin.SystemAdminMainController</value>
 			</list>
 		</property>
-		<property name="parentTreeNodeIdentifier" value="loginAndSecurityParent" /> 
+		<property name="parentTreeNodeIdentifier" value="loginAndSecurityParent" />
 	</bean>
 
 	<bean name="shibbolethOperators" class="java.util.ArrayList" scope="prototype" >
@@ -43,18 +43,66 @@
 			</list>
 	    </constructor-arg>
 	</bean>
-	
+
 	<bean name="shibbolethUserMapping" class="java.util.HashMap" scope="prototype" >
+		<constructor-arg>
+			<map key-type="java.lang.String" value-type="java.lang.String">
+				<!-- These attributes are mandatory -->
+				<entry key='${shibboleth.user.mapping.shib.email}' value="email" />
+				<entry key='${shibboleth.user.mapping.shib.first.name}' value="firstName" />
+				<entry key='${shibboleth.user.mapping.shib.last.name}' value="lastName" />
+
+				<!-- All other attributes are optional -->
+				<entry key='${shibboleth.user.mapping.shib.key1}' value='${shibboleth.user.mapping.olat.key1}' />
+				<entry key='${shibboleth.user.mapping.shib.key2}' value='${shibboleth.user.mapping.olat.key2}' />
+				<entry key='${shibboleth.user.mapping.shib.key3}' value='${shibboleth.user.mapping.olat.key3}' />
+				<entry key='${shibboleth.user.mapping.shib.key4}' value='${shibboleth.user.mapping.olat.key4}' />
+				<entry key='${shibboleth.user.mapping.shib.key5}' value='${shibboleth.user.mapping.olat.key5}' />
+				<entry key='${shibboleth.user.mapping.shib.key6}' value='${shibboleth.user.mapping.olat.key6}' />
+				<entry key='${shibboleth.user.mapping.shib.key7}' value='${shibboleth.user.mapping.olat.key7}' />
+				<entry key='${shibboleth.user.mapping.shib.key8}' value='${shibboleth.user.mapping.olat.key8}' />
+				<entry key='${shibboleth.user.mapping.shib.key9}' value='${shibboleth.user.mapping.olat.key9}' />
+				<entry key='${shibboleth.user.mapping.shib.key10}' value='${shibboleth.user.mapping.olat.key10}' />
+				<entry key='${shibboleth.user.mapping.shib.key11}' value='${shibboleth.user.mapping.olat.key11}' />
+				<entry key='${shibboleth.user.mapping.shib.key12}' value='${shibboleth.user.mapping.olat.key12}' />
+				<entry key='${shibboleth.user.mapping.shib.key13}' value='${shibboleth.user.mapping.olat.key13}' />
+				<entry key='${shibboleth.user.mapping.shib.key14}' value='${shibboleth.user.mapping.olat.key14}' />
+				<entry key='${shibboleth.user.mapping.shib.key15}' value='${shibboleth.user.mapping.olat.key15}' />
+				<entry key='${shibboleth.user.mapping.shib.key16}' value='${shibboleth.user.mapping.olat.key16}' />
+				<entry key='${shibboleth.user.mapping.shib.key17}' value='${shibboleth.user.mapping.olat.key17}' />
+				<entry key='${shibboleth.user.mapping.shib.key18}' value='${shibboleth.user.mapping.olat.key18}' />
+				<entry key='${shibboleth.user.mapping.shib.key19}' value='${shibboleth.user.mapping.olat.key19}' />
+				<entry key='${shibboleth.user.mapping.shib.key20}' value='${shibboleth.user.mapping.olat.key20}' />
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<bean name="shibbolethAttributeHandler" class="java.util.HashMap" scope="prototype" >
 	    <constructor-arg>
 	        <map key-type="java.lang.String" value-type="java.lang.String">
-	            <entry key="FirstName" value="Shib-InetOrgPerson-givenName" />
-				<entry key="LastName" value="Shib-Person-surname" />
-				<entry key="EMail" value="Shib-InetOrgPerson-mail" />
-				<entry key="InstitutionalName" value="Shib-SwissEP-HomeOrganization" />
-				<entry key="InstitutionalEMail" value="Shib-InetOrgPerson-mail" />
-				<entry key="InstitutionalUserIdentifier" value="Shib-InetOrgPerson-employeeNumber" />
-				<!-- <entry key="OrgUnit" value="" /> -->
-				<!-- <entry key="PreferedLanguage" value="" /> -->
+	            <entry key='${shibboleth.user.mapping.shib.email}' value='${shibboleth.user.mapping.handler.email}' />
+	            <entry key='${shibboleth.user.mapping.shib.first.name}' value='${shibboleth.user.mapping.handler.first.name}' />
+	            <entry key='${shibboleth.user.mapping.shib.last.name}' value='${shibboleth.user.mapping.handler.last.name}' />
+    			<entry key='${shibboleth.user.mapping.shib.key1}' value='${shibboleth.user.mapping.handler.key1}' />
+    			<entry key='${shibboleth.user.mapping.shib.key2}' value='${shibboleth.user.mapping.handler.key2}' />
+    			<entry key='${shibboleth.user.mapping.shib.key3}' value='${shibboleth.user.mapping.handler.key3}' />
+    			<entry key='${shibboleth.user.mapping.shib.key4}' value='${shibboleth.user.mapping.handler.key4}' />
+    			<entry key='${shibboleth.user.mapping.shib.key5}' value='${shibboleth.user.mapping.handler.key5}' />
+    			<entry key='${shibboleth.user.mapping.shib.key6}' value='${shibboleth.user.mapping.handler.key6}' />
+    			<entry key='${shibboleth.user.mapping.shib.key7}' value='${shibboleth.user.mapping.handler.key7}' />
+    			<entry key='${shibboleth.user.mapping.shib.key8}' value='${shibboleth.user.mapping.handler.key8}' />
+    			<entry key='${shibboleth.user.mapping.shib.key9}' value='${shibboleth.user.mapping.handler.key9}' />
+    			<entry key='${shibboleth.user.mapping.shib.key10}' value='${shibboleth.user.mapping.handler.key10}' />
+    			<entry key='${shibboleth.user.mapping.shib.key11}' value='${shibboleth.user.mapping.handler.key11}' />
+    			<entry key='${shibboleth.user.mapping.shib.key12}' value='${shibboleth.user.mapping.handler.key12}' />
+    			<entry key='${shibboleth.user.mapping.shib.key13}' value='${shibboleth.user.mapping.handler.key13}' />
+    			<entry key='${shibboleth.user.mapping.shib.key14}' value='${shibboleth.user.mapping.handler.key14}' />
+    			<entry key='${shibboleth.user.mapping.shib.key15}' value='${shibboleth.user.mapping.handler.key15}' />
+    			<entry key='${shibboleth.user.mapping.shib.key16}' value='${shibboleth.user.mapping.handler.key16}' />
+    			<entry key='${shibboleth.user.mapping.shib.key17}' value='${shibboleth.user.mapping.handler.key17}' />
+    			<entry key='${shibboleth.user.mapping.shib.key18}' value='${shibboleth.user.mapping.handler.key18}' />
+    			<entry key='${shibboleth.user.mapping.shib.key19}' value='${shibboleth.user.mapping.handler.key19}' />
+    			<entry key='${shibboleth.user.mapping.shib.key20}' value='${shibboleth.user.mapping.handler.key20}' />
 	        </map>
 	    </constructor-arg>
 	</bean>
@@ -65,15 +113,15 @@
 		<!--
 				Attributes to translate for easier reading/handling within OLAT.
 				Attributes will be available by their translated name (value) within OLAT.
-				
-				As an option, for each attribute predefined selectable values can be added as 
+
+				As an option, for each attribute predefined selectable values can be added as
 				in the example below. These are used in the course editors easy mode to display
 				a list of items to choose from instead of a text input field.
-				
-				All attributes value and all selectableValue can be translated in the 
-				ShibbolethModule package or the default package. When not translation is found, 
+
+				All attributes value and all selectableValue can be translated in the
+				ShibbolethModule package or the default package. When not translation is found,
 				the keys defined in this file will be displayed.
-				
+
 				Example:
 				To make a GUI translation of the attribute "urn:mace:switch.ch:attribute-def:swissEduPersonHomeOrganization"
 				you must define an value="swissEduPersonHomeOrganization" and add some selectable values. Now in the i18n
@@ -97,11 +145,11 @@
 			<entry key="Shib-SwissEP-StudyLevel" value="swissEduPersonStudyLevel" />
 			<entry key="Shib-SwissEP-StaffCategory" value="swissEduPersonStaffCategory" />
 			<!-- Is anyone using these attributes? it's not in the attribute-map.xml
-			<entry key="urn:mace:switch.ch:attribute-def:eduPersonOrgUnitDN" value="eduPersonOrgUnitDN" />		
-			<entry key="urn:mace:dir:attribute-def:eduPersonScopedAffiliation" value="eduPersonScopedAffiliation" /> 
+			<entry key="urn:mace:switch.ch:attribute-def:eduPersonOrgUnitDN" value="eduPersonOrgUnitDN" />
+			<entry key="urn:mace:dir:attribute-def:eduPersonScopedAffiliation" value="eduPersonScopedAffiliation" />
 			<entry key="urn:mace:dir:attribute-def:swissEduPersonGender" value="swissEduPersonGender" />
 			-->
-			<entry key="Shib-OrgPerson-postalAddress" value="postalAddress" />			
+			<entry key="Shib-OrgPerson-postalAddress" value="postalAddress" />
 			<entry key="Shib-InetOrgPerson-employeeNumber" value="employeeNumber" />
 			<entry key="Shib-Person-ou" value="organizationalUnit" />
 			<entry key="Shib-InetOrgPerson-preferredLanguage" value="PreferedLanguage" />
@@ -220,7 +268,7 @@
 				<value>81</value>
 				<value>82</value>
 				<value>83</value>
-				<value>84</value>			
+				<value>84</value>
 				<!-- University of Applied Sciences -->
 				<value>10101</value>
 				<value>10102</value>
@@ -546,22 +594,22 @@
 				<value>304</value>
 				<value>305</value>
 				<value>306</value>
-				<value>307</value>			
-				<value>308</value>	
+				<value>307</value>
+				<value>308</value>
 				</list>
 			</entry>
 		</map>
 	</property>
 </bean>
 
-	<bean id="switchShibbolethAuthenticationConfigurator" class="org.olat.shibboleth.SwitchShibbolethAuthenticationConfigurator">		
-		<property name="wayfSPEntityID" value="${shibboleth.wayfSPEntityID}" />	
+	<bean id="switchShibbolethAuthenticationConfigurator" class="org.olat.shibboleth.SwitchShibbolethAuthenticationConfigurator">
+		<property name="wayfSPEntityID" value="${shibboleth.wayfSPEntityID}" />
 		<property name="wayfSPHandlerURL" value="${shibboleth.wayfSPHandlerURL}" />
 		<property name="wayfSPSamlDSURL" value="${shibboleth.wayfSPSamlDSURL}" />
 		<property name="wayfReturnUrl" value="${shibboleth.wayfReturnUrl}" />
 		<property name="wayfReturnMobileUrl" value="${shibboleth.wayfReturnMobileUrl}" />
-		<property name="additionalIdentityProviders" value="${shibboleth.wayf.additionalIDPs}" />	
-	</bean>	
+		<property name="additionalIdentityProviders" value="${shibboleth.wayf.additionalIDPs}" />
+	</bean>
 
 	<bean id="registrationPresetUsername.byShibbolethAttribute"
 		class="org.olat.shibboleth.ShibbolethUserNameFromAttributeUserNameCreationInterceptor" lazy-init="true">
