@@ -255,13 +255,13 @@ public class CourseEditorPageFragment {
 		By openerBy = By.cssSelector("a.o_opener");
 		browser.findElement(openerBy).click();
 
-		By urlBy = By.cssSelector("div.o_copy_code");
+		By urlBy = By.cssSelector("div.o_copy_code input");
 		OOGraphene.waitElement(urlBy, browser);
 		
 		String url = null;
 		List<WebElement> urlEls = browser.findElements(urlBy);
 		for(WebElement urlEl:urlEls) {
-			String text = urlEl.getText();
+			String text = urlEl.getAttribute("value");
 			if(text.contains("http")) {
 				url = text.trim();
 				break;
