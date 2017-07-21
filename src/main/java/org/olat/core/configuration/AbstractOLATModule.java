@@ -66,7 +66,7 @@ import org.olat.core.util.event.GenericEventListener;
  * other configuration.
  * <p>
  * To work properly in a cluster environment, the module will fire a
- * ModuleConfiguratoinChangedEvent at the end of each save cycle. This event is
+ * ModuleConfigurationChangedEvent at the end of each save cycle. This event is
  * catched automatically and the abstract method initFromChangedProperties() is
  * called.
  * <p>
