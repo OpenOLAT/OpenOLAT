@@ -275,19 +275,25 @@
 
 /* link or other copy&paste code blocks that might be to long for the screen (creates a scrollbar) */
 .o_copy_code, %o_copy_code {
-	overflow-x: auto;  
-	overflow-y: auto;
   	font-family: $font-family-monospace;
   	padding: 2px 4px;
   	font-size: 90%;
   	color: $code-color;
  	background-color: $code-bg;
   	border-radius: $border-radius-base;
+  	
+  	input,textarea {
+  		border: 0;
+  		width: 100%;
+  		background: transparent;
+  	}
 }
 
 /* text that should be on one line, e.g. in tables */
 .o_nowrap, %o_nowrap {
 	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }	
 
 /* titles with subtitles */
