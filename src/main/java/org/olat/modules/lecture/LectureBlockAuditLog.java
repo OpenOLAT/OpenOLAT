@@ -37,6 +37,8 @@ public interface LectureBlockAuditLog {
 
 	public String getAfter();
 	
+	public String getMessage();
+	
 	public Long getLectureBlockKey();
 	
 	public Long getRollCallKey();

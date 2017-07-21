@@ -80,6 +80,7 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 		return key;
 	}
 
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -88,6 +89,7 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 		this.creationDate = creationDate;
 	}
 
+	@Override
 	public String getAction() {
 		return action;
 	}
@@ -96,6 +98,7 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 		this.action = action;
 	}
 
+	@Override
 	public String getBefore() {
 		return before;
 	}
@@ -104,6 +107,7 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 		this.before = before;
 	}
 
+	@Override
 	public String getAfter() {
 		return after;
 	}
@@ -112,6 +116,7 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 		this.after = after;
 	}
 
+	@Override
 	public String getMessage() {
 		return message;
 	}
@@ -120,6 +125,7 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 		this.message = message;
 	}
 
+	@Override
 	public Long getLectureBlockKey() {
 		return lectureBlockKey;
 	}
@@ -128,6 +134,7 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 		this.lectureBlockKey = lectureBlockKey;
 	}
 
+	@Override
 	public Long getRollCallKey() {
 		return rollCallKey;
 	}
@@ -136,6 +143,7 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 		this.rollCallKey = rollCallKey;
 	}
 
+	@Override
 	public Long getEntryKey() {
 		return entryKey;
 	}
@@ -144,6 +152,7 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 		this.entryKey = entryKey;
 	}
 
+	@Override
 	public Long getIdentityKey() {
 		return identityKey;
 	}
@@ -152,6 +161,7 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 		this.identityKey = identityKey;
 	}
 
+	@Override
 	public Long getAuthorKey() {
 		return authorKey;
 	}

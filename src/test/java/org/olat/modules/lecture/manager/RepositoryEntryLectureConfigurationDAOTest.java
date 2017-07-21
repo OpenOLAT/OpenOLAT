@@ -106,5 +106,69 @@ public class RepositoryEntryLectureConfigurationDAOTest extends OlatTestCase {
 		RepositoryEntryLectureConfiguration reloadedConfig = lectureConfigurationDao.getConfiguration(lectureBlock);
 		Assert.assertEquals(config, reloadedConfig);
 	}
-
+	
+	@Test
+	public void cloneConfigureLectureConfiguration() {
+		//create a configuration
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry cloneEntry = JunitTestHelper.createAndPersistRepositoryEntry();	
+		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.createConfiguration(entry);
+		config.setLectureEnabled(true);
+		config.setOverrideModuleDefault(true);
+		config.setCalculateAttendanceRate(Boolean.TRUE);
+		config.setRequiredAttendanceRate(0.75d);
+		config.setParticipantCalendarSyncEnabled(Boolean.TRUE);
+		config.setTeacherCalendarSyncEnabled(Boolean.TRUE);
+		RepositoryEntryLectureConfiguration mergedConfig = lectureConfigurationDao.update(config);
+		dbInstance.commitAndCloseSession();
+		
+		//clone it
+		RepositoryEntryLectureConfiguration clonedConfig = lectureConfigurationDao.cloneConfiguration(mergedConfig, cloneEntry);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(clonedConfig);
+		
+		
+		RepositoryEntryLectureConfiguration reloadedClonedConfig = lectureConfigurationDao.getConfiguration(cloneEntry);
+		Assert.assertEquals(clonedConfig, reloadedClonedConfig);
+		Assert.assertEquals(true, reloadedClonedConfig.isLectureEnabled());
+		Assert.assertEquals(true, reloadedClonedConfig.isOverrideModuleDefault());
+		Assert.assertEquals(Boolean.TRUE, reloadedClonedConfig.getCalculateAttendanceRate());
+		Assert.assertEquals(0.75d, reloadedClonedConfig.getRequiredAttendanceRate(), 0.0001);
+		Assert.assertEquals(Boolean.TRUE, reloadedClonedConfig.getParticipantCalendarSyncEnabled());
+		Assert.assertEquals(Boolean.TRUE, reloadedClonedConfig.getTeacherCalendarSyncEnabled());
+	}
+	
+	@Test
+	public void isConfigurationEnabledFor() {
+		//create a configuration
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();	
+		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.createConfiguration(entry);
+		config.setLectureEnabled(true);
+		RepositoryEntryLectureConfiguration mergedConfig = lectureConfigurationDao.update(config);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mergedConfig);
+		
+		//check that the configuration enables the lectures feature
+		boolean enabled = lectureConfigurationDao.isConfigurationEnabledFor(entry);
+		Assert.assertTrue(enabled);
+	}
+	
+	@Test
+	public void deleteConfiguration_byRepositoryEntry() {
+		//create a configuration
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();	
+		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.createConfiguration(entry);
+		config.setLectureEnabled(true);
+		RepositoryEntryLectureConfiguration mergedConfig = lectureConfigurationDao.update(config);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mergedConfig);
+		
+		//delete the configuration
+		lectureConfigurationDao.deleteConfiguration(entry);
+		dbInstance.commitAndCloseSession();
+		
+		//check that the configuration is really deleted
+		RepositoryEntryLectureConfiguration deletedConfig = lectureConfigurationDao.getConfiguration(entry);
+		Assert.assertNull(deletedConfig);
+	}
 }

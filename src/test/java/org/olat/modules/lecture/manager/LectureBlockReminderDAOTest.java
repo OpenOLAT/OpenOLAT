@@ -101,6 +101,35 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 		Assert.assertFalse(hasTeacher1);
 	}
 	
+	@Test
+	public void deleteReminder() {
+		//create a reminder
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("reminder-to-delete-1");
+		LectureBlock lectureBlock = createMinimalLectureBlock(2);
+		LectureBlockReminderImpl reminder = lectureBlockReminderDao.createReminder(lectureBlock, id, "Delete it");
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(reminder);
+		
+		//delete the reminders
+		int deletedRows = lectureBlockReminderDao.deleteReminders(id);
+		Assert.assertEquals(1, deletedRows);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -3);
+		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime());
+		
+		boolean hasId = false;
+		for(LectureBlockToTeacher remind:toRemind) {
+			if(remind.getLectureBlock().equals(lectureBlock)) {
+				if(remind.getTeacher().equals(id)) {
+					hasId = true;
+				}
+			}
+		}
+		
+		Assert.assertFalse(hasId);
+	}
 	
 	private LectureBlock createMinimalLectureBlock(int dayInThePast) {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -114,5 +143,4 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 		lectureBlock.setTitle("Hello lecturers");
 		return lectureBlockDao.update(lectureBlock);
 	}
-
 }
