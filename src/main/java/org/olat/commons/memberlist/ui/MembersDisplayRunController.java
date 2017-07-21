@@ -33,7 +33,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.prefs.Preferences;
-import org.olat.course.nodes.members.MembersCourseNodeRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 
@@ -44,7 +43,7 @@ import org.olat.group.BusinessGroup;
 public class MembersDisplayRunController extends BasicController {
 	// User property context ID's used in all the child controllers defined here 
 	static final String USER_PROPS_LIST_ID = MembersTableController.class.getName();
-	static final String USER_PROPS_PRINT_ID = MembersCourseNodeRunController.class.getName(); //MembersPrintController.class.getName(); //MembersCourseNodeRunController
+	static final String USER_PROPS_PRINT_ID = MembersPrintController.class.getName();
 	static final String USER_PROPS_AVATAR_ID = MembersAvatarDisplayRunController.class.getName();
 
 	private static final String GUIPREF_KEY_GROUPMEMBER = "groupmemberdisplay";

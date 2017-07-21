@@ -19,10 +19,18 @@
  */
 package org.olat.upgrade;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.manager.FeedManager;
@@ -40,6 +48,7 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_12.0.0";
 	private static final String FEED_XML_TO_DB = "FEED XML TO DB";
+	private static final String USER_PROPERTY_CONTEXT_RENAME = "USER PROPERTY CONTEXT RENAME";
 	
 	@Autowired
 	private DB dbInstance;
@@ -71,8 +80,11 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 		}
 		
 		boolean allOk = true;
+		// migrate all blogs and podcasts from xml to database data structure
 		allOk &= upgradeBlogXmlToDb(upgradeManager, uhd);
-
+		// rename a user property context name to a more suitable name
+		allOk &= changeUserPropertyContextName(upgradeManager, uhd);
+		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
@@ -102,6 +114,69 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 			}
 			
 			uhd.setBooleanDataValue(FEED_XML_TO_DB, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	/**
+	 * Copy existing user property configuration to the new user property
+	 * context handler name. The handler was renamed because it is now not only
+	 * used in the course but also in the group.
+	 * 
+	 * @param upgradeManager
+	 * @param uhd
+	 * @return
+	 */
+	private boolean changeUserPropertyContextName(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(USER_PROPERTY_CONTEXT_RENAME)) {		
+			// Load configured properties from properties file		
+			String userDataDirectory = WebappHelper.getUserDataRoot();
+			File configurationPropertiesFile = Paths.get(userDataDirectory, "system", "configuration", "com.frentix.olat.admin.userproperties.UsrPropCfgManager.properties").toFile();
+			if (configurationPropertiesFile.exists()) {
+				InputStream is = null;
+				OutputStream fileStream = null;
+				try {
+					is = new FileInputStream(configurationPropertiesFile);
+					Properties configuredProperties = new Properties();
+					configuredProperties.load(is);
+					is.close();
+					boolean dirty = false;
+					// list of possible user property appendices
+					List<String> appendices = Arrays.asList("", "_hndl_", "_hndl_mandatory", "_hndl_usrreadonly", "_hndl_adminonly");
+					for (String appendix : appendices) {
+						String oldKey = "org.olat.course.nodes.members.MembersCourseNodeRunController" + appendix;
+						String existingConfig = configuredProperties.getProperty(oldKey);
+						String newKey = "org.olat.commons.memberlist.ui.MembersPrintController" + appendix;
+						String existingNewConfig = configuredProperties.getProperty(newKey);
+						if (existingConfig != null && existingNewConfig == null) {
+							configuredProperties.setProperty("org.olat.commons.memberlist.ui.MembersPrintController" + appendix, existingConfig);
+							dirty = true;
+							log.info("Migrated user property context handler config from::" + oldKey + " to::" + newKey);
+						}						
+					}
+					if (dirty) {
+						fileStream = new FileOutputStream(configurationPropertiesFile);
+						configuredProperties.store(fileStream, null);
+						// Flush and close before sending events to other nodes to make changes appear on other node
+						fileStream.flush();
+					}
+				} catch (Exception e) {
+					log.error("Error when reading / writing user properties config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
+					allOk &= false;
+				} finally {
+					try {
+						if (is != null ) is.close();
+						if (fileStream != null ) fileStream.close();
+					} catch (Exception e) {
+						log.error("Could not close stream after storing config to file::" + configurationPropertiesFile.getAbsolutePath(), e);
+						allOk &= false;
+					}
+				}
+			}
+			
+			uhd.setBooleanDataValue(USER_PROPERTY_CONTEXT_RENAME, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
