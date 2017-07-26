@@ -1314,6 +1314,7 @@ function o_removeIframe(id) {
  */
 function o_showFormDirtyDialog(onIgnoreCallback) {
 	// open our form-dirty dialog
+	o_scrollToElement('#o_top');
 	jQuery("#o_form_dirty_message").modal('show');
 	jQuery("#o_form_dirty_message .o_form_dirty_ignore").on("click", function() {
 		// Remove dialog and all listeners for dirty button
