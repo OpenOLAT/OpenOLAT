@@ -572,8 +572,21 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		} else if(descriptionCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				refreshRepositoryEntry(descriptionCtrl.getEntry());
-				handler.onDescriptionChanged(descriptionCtrl.getEntry());
+				RepositoryEntry entry = descriptionCtrl.getEntry();
+				refreshRepositoryEntry(entry);
+				handler.onDescriptionChanged(entry);
+				// update name of root bread crumb and opened tabs in top nav in case the title has been modified
+				if (toolbarPanel.getBreadCrumbs().size() > 0) {					
+					String newTitle = entry.getDisplayname();
+					String oldTitle = toolbarPanel.getBreadCrumbs().get(0).getCustomDisplayText();
+					if (!newTitle.equals(oldTitle)) {						
+						// 1: update breadcrumb in toolbar
+						toolbarPanel.getBreadCrumbs().get(0).setCustomDisplayText(newTitle);
+						// 2: update dynamic tab in topnav
+						OLATResourceable reOres = OresHelper.clone(entry);
+						getWindowControl().getWindowBackOffice().getWindow().getDTabs().updateDTabTitle(reOres, newTitle);
+					}
+				}
 			} else if(event == Event.CLOSE_EVENT) {
 				doClose(ureq);
 			}

@@ -1198,6 +1198,23 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		return true;
 	}
 	
+	@Override
+	public void updateDTabTitle(OLATResourceable ores, String newTitle) {
+		DTab dTab = getDTab(ores);
+		if (dTab != null) {
+			dTab.getNavElement().setTitle(newTitle);
+			// search all dtab links and find the one with the correct dtab as user object
+			for (int i = 0; i <= dtabCreateCounter; i++) {
+				Link link = (Link)navTabsVc.getComponent("a" + i);
+				if (link != null && dTab.equals(link.getUserObject())) {
+					// correct link found - updte titel and we are done
+					link.setCustomDisplayText(newTitle);
+					return;
+				}				
+			}			
+		}
+	}
+	
 	/**
 	 * Activating a tab is like focusing a new window - we need to adjust the
 	 * guipath since e.g. the button triggering the activation is not

@@ -43,7 +43,14 @@ public interface NavElement {
 	 * @return
 	 */
 	public String getTitle();
-	
+
+	/**
+	 * Set a new title for the navigation, e.g. when a resource has been renamed
+	 * 
+	 * @param title
+	 */
+	public void setTitle(String title);
+
 	/**[used by velocity]
 	 * @return
 	 */
