@@ -35,6 +35,7 @@ public class ImportExportReminder implements Serializable {
 	
 	private String description;
 	private String configuration;
+	private String emailSubject;	// added in OO 12.0
 	private String emailBody;
 	
 	public ImportExportReminder() {
@@ -44,6 +45,7 @@ public class ImportExportReminder implements Serializable {
 	public ImportExportReminder(Reminder reminder) {
 		description = reminder.getDescription();
 		configuration = reminder.getConfiguration();
+		emailSubject = reminder.getEmailSubject();
 		emailBody = reminder.getEmailBody();
 	}
 	
@@ -63,6 +65,14 @@ public class ImportExportReminder implements Serializable {
 		this.configuration = configuration;
 	}
 	
+	public String getEmailSubject() {
+		return emailSubject;
+	}
+	
+	public void setEmailSubject(String emailSubject) {
+		this.emailSubject = emailSubject;
+	}
+
 	public String getEmailBody() {
 		return emailBody;
 	}

@@ -1940,6 +1940,7 @@ public class CourseTest {
 		reminders
 			.addReminder()
 			.setDescription(reminderTitle)
+			.setSubject(reminderTitle)
 			.setTimeBasedRule(1, "RepositoryEntryLifecycleAfterValidFromRuleSPI", 5, "day")
 			.addRule(1)
 			.setRoleBasedRule(2, "RepositoryEntryRoleRuleSPI", "participant")

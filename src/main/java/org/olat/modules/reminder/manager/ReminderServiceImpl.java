@@ -210,6 +210,7 @@ public class ReminderServiceImpl implements ReminderService {
 					Reminder reminder = reminderDao.createReminder(newEntry, creator);
 					reminder.setDescription(importReminder.getDescription());
 					reminder.setEmailBody(importReminder.getEmailBody());	
+					reminder.setEmailSubject(importReminder.getEmailSubject() == null ? importReminder.getDescription() : importReminder.getEmailSubject());
 					reminder.setConfiguration(importReminder.getConfiguration());
 					reminders.add(reminder);
 				}
@@ -243,8 +244,13 @@ public class ReminderServiceImpl implements ReminderService {
 		
 		MailContext context = new MailContextImpl("[RepositoryEntry:" + entry.getKey() + "]");
 		Translator trans = Util.createPackageTranslator(ReminderAdminController.class, I18nModule.getDefaultLocale());
-		String subject = trans.translate("reminder.subject");
+		String subject = reminder.getEmailSubject();
 		String body = reminder.getEmailBody();
+		if (body.contains("$courseurl")) {
+			body = body.replace("$courseurl", "<a href=\"$courseurl\">$courseurl</a>");
+		} else {			
+			body = body + "<p>---<br />" + trans.translate("reminder.from.course", new String[] {"<a href=\"$courseurl\">$coursename</a>"}) + "</p>";
+		}
 		String metaId = UUID.randomUUID().toString();
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 

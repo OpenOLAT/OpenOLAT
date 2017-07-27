@@ -1866,6 +1866,7 @@ create table o_rem_reminder (
    r_start timestamp,
    r_sendtime varchar(16),
    r_configuration text,
+   r_email_subject varchar(255),
    r_email_body text,
    fk_creator int8 not null,
    fk_entry int8 not null,

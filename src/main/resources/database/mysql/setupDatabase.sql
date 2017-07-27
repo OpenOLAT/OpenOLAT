@@ -1869,6 +1869,7 @@ create table o_rem_reminder (
    r_start datetime,
    r_sendtime varchar(16),
    r_configuration mediumtext,
+   r_email_subject varchar(255),
    r_email_body mediumtext,
    fk_creator bigint not null,
    fk_entry bigint not null,

@@ -163,6 +163,12 @@ public class RemindersPage {
 		browser.findElement(descBy).sendKeys(text);
 		return this;
 	}
+
+	public RemindersPage setSubject(String text) {
+		By subjectBy = By.cssSelector(".o_sel_course_reminder_subject input[type='text']");
+		browser.findElement(subjectBy).sendKeys(text);
+		return this;
+	}
 	
 	public RemindersPage setTimeBasedRule(int pos, String type, int time, String unit) {
 		//select type
