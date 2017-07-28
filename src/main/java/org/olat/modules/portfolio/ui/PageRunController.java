@@ -285,7 +285,10 @@ public class PageRunController extends BasicController implements TooledControll
 				doConfirmClose(ureq);
 			} else if(event instanceof ReopenPageEvent) {
 				doConfirmReopen(ureq);
-			}	
+			} else if(event == Event.CHANGED_EVENT) {
+				// categories modified, just propagate
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
 		} else if(restorePageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadMeta(ureq);

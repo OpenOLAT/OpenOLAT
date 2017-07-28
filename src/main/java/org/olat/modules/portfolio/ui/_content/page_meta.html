@@ -12,16 +12,20 @@
 			 $r.translate("meta.last.modified", $r.formatDateAndTime($lastModified))
 		</span>
 		
-		#if($r.isNotEmpty($pageCategories))
+	#if($r.isNotEmpty($pageCategories) || $r.available("pageCategoriesCtr"))
 		<span class="o_portfolio_categories text-muted o_small">
+		#if ($r.available("pageCategoriesCtr"))
+			$r.render("pageCategoriesCtr")
+		#else
 			<i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 			 #foreach($category in $pageCategories)
 			 	<span class="tag label label-info">
 				 	$category
 			 	</span>
 			 #end
-		</span>
 		#end
+		</span>
+	#end
 		
 	</div>
 	#if($r.available("poster") || $r.isNotEmpty($pageSummary))

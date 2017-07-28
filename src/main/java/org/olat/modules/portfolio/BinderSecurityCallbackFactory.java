@@ -402,6 +402,14 @@ public class BinderSecurityCallbackFactory {
 			}
 			return false;
 		}
+		
+		/**
+		 * Owner can always edit page categories, regardless of the page state
+		 */
+		@Override
+		public boolean canEditCategories(Page page) {
+			return owner;
+		}
 
 		@Override
 		public boolean canPublish(Page page) {
@@ -699,7 +707,12 @@ public class BinderSecurityCallbackFactory {
 		public boolean canEditPageMetadata(Page page, List<Assignment> assignments) {
 			return false;
 		}
-
+		
+		@Override
+		public boolean canEditCategories(Page page) {
+			return false;
+		}
+		
 		@Override
 		public boolean canPublish(Page page) {
 			return false;

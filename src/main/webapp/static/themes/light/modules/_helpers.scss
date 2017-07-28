@@ -156,6 +156,14 @@
 	margin-bottom: 0;
 }
 
+/* minimized text-style buttons */
+.o_button_textstyle {
+	&:before {content:'['}
+	&:after {content:']'}
+}
+
+
+
 .panel-imagebg {
 	background-repeat:no-repeat;
 	background-position: center;

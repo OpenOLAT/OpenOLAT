@@ -205,6 +205,17 @@
 		font-size: 80%;
 		font-weight: normal;
 	}
+	/* the categories edit form */
+	div, form {
+		display: inline-block;
+	}
+}
+
+.o_portfolio_categories_edit {
+	.bootstrap-tagsinput {
+		margin-bottom: 0;
+		padding: 0px 4px;
+	}
 }
 .o_portfolio_last_modified + .o_portfolio_categories, 
 .o_portfolio_page_meta + .o_portfolio_categories  {
