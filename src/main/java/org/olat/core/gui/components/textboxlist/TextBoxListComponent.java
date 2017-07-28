@@ -153,9 +153,10 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	}
 	
 	public void setCmd(UserRequest ureq, String cmd) {
-		if(!StringHelper.containsNonWhitespace(cmd)) {
+		if(cmd == null) {
 			return;
 		}
+		// empty string is ok = empty text box
 		
 		String[] splitted = cmd.split(",");
 		List<String> cleanedItemValues = new ArrayList<String>();
@@ -434,12 +435,13 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	}
 
 	/**
-	 * returns a the initialItems as comma-separated list.<br />
+	 * returns a the current items as comma-separated list.<br />
 	 * 
 	 * @return An HTML escaped list of item
 	 */
-	protected String getInitialItemsAsString() {
-		Map<String, String> content = getInitialItems();
+	protected String getItemsAsString() {
+		Map<String, String> content = getCurrentItems();
+		
 		if (content != null && content.size() != 0) {
 			//antisamy + escaping to prevent issue with the javascript code
 			OWASPAntiSamyXSSFilter filter = new OWASPAntiSamyXSSFilter();
