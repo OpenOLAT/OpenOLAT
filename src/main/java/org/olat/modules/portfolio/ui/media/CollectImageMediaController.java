@@ -147,7 +147,6 @@ public class CollectImageMediaController extends FormBasicController implements 
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setMaxUploadSizeKB(10000, null, null);
 		fileEl.setPreview(ureq.getUserSession(), true);
-		fileEl.setDeleteEnabled(true);
 		if(mediaReference != null) {
 			fileEl.setEnabled(false);
 			VFSItem item = fileHandler.getImage(mediaReference);
