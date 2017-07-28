@@ -256,6 +256,11 @@
 .o_deleted, %o_deleted { 
 	text-decoration: line-through;
 }	
+/* highlight a row on hover event */
+.o_highlight_on_hover:hover { 
+	background-color: $table-bg-hover;
+}
+	
 /* clickable elements that should indicate this with a cursor change */
 .o_clickable, %o_clickable {
 	cursor: pointer;
