@@ -95,21 +95,26 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("'>");
 			//switches
-			TextModeState textModeState = te.getAvailableTextModes();
-			TextMode currentTextMode = textModeState.getCurrentMode();
-			List<TextMode> modes = textModeState.getAvailableTextModes();
-			if(modes.size() > 1) {
-				Form form = te.getRootForm();
-				sb.append("<div class='o_richtext_mce_modes'><div class='btn-group'>");
-				for(TextMode mode:modes) {
-					sb.append("<a href='javascript:;' class='btn btn-default btn-xs")
-					  .append(" active", currentTextMode == mode).append("'")
-					  .append(" onclick=\"").append(FormJSHelper.getXHRFnCallFor(form, teC.getFormDispatchId(), 1, false, false, true,
-							new NameValuePair("cmd", mode.name()))).append("\">")
-					  .append(source.getTranslator().translate(mode.name()))
-					  .append("</a>");
+			TextMode currentTextMode;
+			if(te.getEditorConfiguration().getTextModes().size() > 1) {
+				TextModeState textModeState = te.getAvailableTextModes();
+				currentTextMode = textModeState.getCurrentMode();
+				List<TextMode> modes = textModeState.getAvailableTextModes();
+				if(modes.size() > 0) {
+					Form form = te.getRootForm();
+					sb.append("<div class='o_richtext_mce_modes'><div class='btn-group'>");
+					for(TextMode mode:modes) {
+						sb.append("<a href='javascript:;' class='btn btn-default btn-xs")
+						  .append(" active", currentTextMode == mode).append("'")
+						  .append(" onclick=\"").append(FormJSHelper.getXHRFnCallFor(form, teC.getFormDispatchId(), 1, false, false, true,
+								new NameValuePair("cmd", mode.name()))).append("\">")
+						  .append(source.getTranslator().translate(mode.name()))
+						  .append("</a>");
+					}
+					sb.append("</div></div>");
 				}
-				sb.append("</div></div>");
+			} else {
+				currentTextMode = TextMode.formatted;
 			}
 			
 			switch(currentTextMode) {
