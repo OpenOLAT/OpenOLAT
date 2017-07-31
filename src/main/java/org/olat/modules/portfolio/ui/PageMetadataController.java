@@ -69,8 +69,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PageMetadataController extends BasicController {
 	
-	public static final int PICTURE_WIDTH = 300;
-	public static final int PICTURE_HEIGHT = (PICTURE_WIDTH / 3) * 2;//max-height=200px is defined in css
+	public static final int PICTURE_WIDTH = 970 * 2;	// max width for large images: 1294 * 75% , x2 for high res displays
+	public static final int PICTURE_HEIGHT = 300 * 2 ; 	// max size for large images, see CSS, x2 for high res displays
 	
 	private Link publishButton, revisionButton, closeButton, reopenButton;
 	private ImageComponent imageCmp;

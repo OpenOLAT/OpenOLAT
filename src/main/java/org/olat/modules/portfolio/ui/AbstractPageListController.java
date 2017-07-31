@@ -106,8 +106,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractPageListController extends FormBasicController
 implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
-	public static final int PICTURE_WIDTH = 265;
-	public static final int PICTURE_HEIGHT = (PICTURE_WIDTH / 3) * 2;
+	public static final int PICTURE_WIDTH = 970 * 2;	// max width for large images: 1294 * 75% , x2 for high res displays
+	public static final int PICTURE_HEIGHT = 230 * 2 ; 	// max size for large images, see CSS, x2 for high res displays
 
 	protected TimelineElement timelineEl;
 	private FormLink timelineSwitchOnButton, timelineSwitchOffButton;
