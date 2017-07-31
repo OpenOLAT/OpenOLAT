@@ -1546,6 +1546,30 @@ function o_toggleMark(el) {
 	}
 }
 
+//try to mimic the FileUtils.normalizeFilename method
+function o_normalizeFilename(filename) {
+	filename = filename.replace(/\s/g, "_")
+	var replaceByUnderscore = [ "/", ",", ":", "(", ")" ];
+	for(var i=replaceByUnderscore.length; i-->0; ) {
+		filename = filename.split(replaceByUnderscore[i]).join("_");
+	}
+
+	var beautifyGermanUnicode = [ "\u00C4", "\u00D6", "\u00DC", "\u00E4", "\u00F6", "\u00E6", "\u00FC", "\u00DF", "\u00F8", "\u2205" ],
+		beautifyGermanReplacement = [ "Ae", "Oe",     "Ue",     "ae",     "oe",     "ae",     "ue",     "ss",     "o",      "o" ];
+	for(var i=beautifyGermanUnicode.length; i-->0; ) {
+		filename = filename.split(beautifyGermanUnicode[i]).join(beautifyGermanReplacement[i]);
+	}
+
+	try {//if something is not supported by the browser
+		filename = filename.normalize('NFKD');
+		filename = filename.replace("/\p{InCombiningDiacriticalMarks}+/g","");
+		filename = filename.replace("/\W+/g", "");
+	} catch(e) {
+		if(window.console) console.log(e);
+	}
+	return filename;
+}
+
 //
 // param formId a String with flexi form id
 function setFlexiFormDirtyByListener(e){

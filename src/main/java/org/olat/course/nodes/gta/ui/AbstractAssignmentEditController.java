@@ -311,8 +311,9 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	private void doCreateTask(UserRequest ureq) {
 		newTaskCtrl = new NewTaskController(ureq, getWindowControl(), tasksContainer);
 		listenTo(newTaskCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", newTaskCtrl.getInitialComponent());
+
+		String title = translate("create.task");
+		cmc = new CloseableModalController(getWindowControl(), "close", newTaskCtrl.getInitialComponent(), true, title, false);
 		listenTo(cmc);
 		cmc.activate();
 	}
