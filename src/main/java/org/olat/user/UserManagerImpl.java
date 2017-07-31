@@ -159,7 +159,7 @@ public class UserManagerImpl extends UserManager {
 	}
 	
 	@Override
-	public Identity findIdentityKeyWithProperty(String propName, String propValue) {
+	public List<Identity> findIdentitiesWithProperty(String propName, String propValue) {
 		StringBuilder sb = new StringBuilder("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
 			.append(" inner join fetch identity.user user ")
 			.append(" where user.").append(propName).append("=:propValue");
@@ -170,7 +170,7 @@ public class UserManagerImpl extends UserManager {
 		if(userKeys.isEmpty()) {
 			return null;
 		}
-		return userKeys.get(0);
+		return userKeys;
 	}
 
 	/**

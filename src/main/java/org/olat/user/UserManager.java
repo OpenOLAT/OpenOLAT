@@ -84,9 +84,25 @@ public abstract class UserManager extends BasicManager {
 	 */
 	public abstract User createUser(String firstName, String lastName, String eMail);
 
+	/**
+	 * Find all user database keys where the given property name matches the property
+	 * value (exact match)
+	 * 
+	 * @param propName
+	 * @param propValue
+	 * @return
+	 */
 	public abstract List<Long> findUserKeyWithProperty(String propName, String propValue);
 	
-	public abstract Identity findIdentityKeyWithProperty(String propName, String propValue);
+	/**
+	 * Find all identities where the given property name matches the property
+	 * value (exact match)
+	 * 
+	 * @param propName
+	 * @param propValue
+	 * @return The list of identities or NULL if nothing found
+	 */
+	public abstract List<Identity> findIdentitiesWithProperty(String propName, String propValue);
 
 	/**
 	 * Find the identity (and the user) that match the given email address. The

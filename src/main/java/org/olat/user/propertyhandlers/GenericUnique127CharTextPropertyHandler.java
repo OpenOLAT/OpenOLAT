@@ -47,10 +47,15 @@ public class GenericUnique127CharTextPropertyHandler extends Generic127CharTextP
 		if(formItem instanceof TextElement) {
 			String value = ((TextElement)formItem).getValue();
 			if(!isUnique(user, value)) {
-				Identity propId = UserManager.getInstance().findIdentityKeyWithProperty(getName(), value);
-				String email = propId.getUser().getProperty(UserConstants.EMAIL, null);
-				formItem.setErrorKey("general.error.unique", new String[]{ email });
-				allOk &= false;
+				List<Identity> found = UserManager.getInstance().findIdentitiesWithProperty(getName(), value);
+				Identity propId = null;
+				if(found.size() > 0) {
+					// only display first one 
+					propId = found.get(0);
+					String email = propId.getUser().getProperty(UserConstants.EMAIL, null);
+					formItem.setErrorKey("general.error.unique", new String[]{ email });
+					allOk &= false;
+				}
 			}
 		}
 
@@ -62,11 +67,16 @@ public class GenericUnique127CharTextPropertyHandler extends Generic127CharTextP
 		boolean allOk = super.isValidValue(user, value, validationError, locale);
 
 		if(!isUnique(user, value)) {
-			Identity propId = UserManager.getInstance().findIdentityKeyWithProperty(getName(), value);
-			String email = propId.getUser().getProperty(UserConstants.EMAIL, null);
-			validationError.setErrorKey("general.error.unique");
-			validationError.setArgs(new String[]{ email });
-			allOk &= false;
+			List<Identity> found = UserManager.getInstance().findIdentitiesWithProperty(getName(), value);
+			Identity propId = null;
+			if(found.size() > 0) {
+				// only display first one 
+				propId = found.get(0);
+				String email = propId.getUser().getProperty(UserConstants.EMAIL, null);
+				validationError.setErrorKey("general.error.unique");
+				validationError.setArgs(new String[]{ email });
+				allOk &= false;
+			}
 		}
 		
 		return allOk;
