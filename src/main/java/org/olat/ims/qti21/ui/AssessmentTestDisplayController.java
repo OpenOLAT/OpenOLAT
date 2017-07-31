@@ -661,17 +661,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			case mark:
 				toogleMark(qe.getSubCommand());
 				break;
+			case rubric:
+				toogleRubric(qe.getSubCommand());
+				break;
 		}
 	}
 	
 	private void toogleMark(String itemRef) {
-		if(marks == null) {
-			if(anonym) {
-				marks = new InMemoryAssessmentTestMarks(itemRef);
-			} else {
-				marks = qtiService.createMarks(assessedIdentity, entry, subIdent, testEntry, "");
-			}
-		}
+		marks = getMarkerObject();
 		
 		String currentMarks = marks.getMarks();
 		if(currentMarks == null) {
@@ -686,10 +683,43 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 	}
 	
+	private void toogleRubric(String sectionRef) {
+		marks = getMarkerObject();
+		
+		String hiddenRubrics = marks.getHiddenRubrics();
+		if(hiddenRubrics == null) {
+			marks.setHiddenRubrics(sectionRef);
+		} else if(hiddenRubrics.indexOf(sectionRef) >= 0) {
+			marks.setHiddenRubrics(hiddenRubrics.replace(sectionRef, ""));
+		} else {
+			marks.setHiddenRubrics(hiddenRubrics + " " + sectionRef);
+		}
+		if(marks instanceof Persistable) {
+			marks = qtiService.updateMarks(marks);
+		}
+	}
+	
+	private final AssessmentTestMarks getMarkerObject() {
+		if(marks == null) {
+			if(anonym) {
+				marks = new InMemoryAssessmentTestMarks();
+			} else {
+				marks = qtiService.createMarks(assessedIdentity, entry, subIdent, testEntry, "");
+			}
+		}
+		return marks;
+	}
+	
 	@Override
 	public boolean isMarked(String itemKey) {
 		if(marks == null || marks.getMarks() == null) return false;
 		return marks.getMarks().indexOf(itemKey) >= 0;
+	}
+	
+	@Override
+	public boolean isRubricHidden(Identifier sectionKey) {
+		if(marks == null || marks.getHiddenRubrics() == null || sectionKey == null) return false;
+		return marks.getHiddenRubrics().indexOf(sectionKey.toString()) >= 0;
 	}
 
 	private void processSelectItem(UserRequest ureq, String key) {
@@ -1887,7 +1917,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		@Override
 		protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-			if(!"mark".equals(fe.getCommand())) {
+			if(!"mark".equals(fe.getCommand()) && !"rubric".equals(fe.getCommand())) {
 				super.propagateDirtinessToContainer(fiSrc, fe);
 			}
 		}

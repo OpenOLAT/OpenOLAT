@@ -214,3 +214,5 @@ alter table o_rem_reminder add r_email_subject varchar2(255 char);
 update o_rem_reminder set r_email_subject=r_description;
 
 
+alter table o_qti_assessment_marks add q_hidden_rubrics clob default null;
+

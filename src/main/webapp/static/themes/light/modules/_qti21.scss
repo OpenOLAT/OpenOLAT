@@ -258,6 +258,20 @@ img.o_hotspot_responsive[usemap] {
 
 .o_info.o_assessmentsection_rubrics {
 	margin:0 0 0.5em 0;
+	position: relative;
+	
+	&.o_hide {
+		display: none;
+	}
+	&.o_show {
+		display: block;
+	}
+	
+	a.o_hide {
+		position: absolute;
+		bottom: 0.5em;
+		right: 1em;
+	}
 }
 
 .o_assessmentitem{

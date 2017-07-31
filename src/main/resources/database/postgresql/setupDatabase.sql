@@ -1482,6 +1482,7 @@ create table o_qti_assessment_marks (
    creationdate timestamp not null,
    lastmodified timestamp not null,
    q_marks text default null,
+   q_hidden_rubrics text default null,
    fk_reference_entry int8 not null,
    fk_entry int8,
    q_subident varchar(64),

@@ -1483,6 +1483,7 @@ create table o_qti_assessment_marks (
    creationdate datetime not null,
    lastmodified datetime not null,
    q_marks mediumtext default null,
+   q_hidden_rubrics mediumtext default null,
    fk_reference_entry bigint not null,
    fk_entry bigint,
    q_subident varchar(64),

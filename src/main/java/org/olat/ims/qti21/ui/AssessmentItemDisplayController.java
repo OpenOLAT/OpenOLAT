@@ -242,6 +242,11 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	}
 
 	@Override
+	public boolean isRubricHidden(Identifier sectionKey) {
+		return false;
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		currentRequestTimestamp = ureq.getRequestTimestamp();
 		//

@@ -24,6 +24,8 @@ import java.util.Date;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
+
 /**
  * 
  * Initial date: 04.03.2016<br>
@@ -41,6 +43,8 @@ public interface CandidateSessionContext {
 	public Date getCurrentRequestTimestamp();
 	
 	public boolean isMarked(String itemKey);
+	
+	public boolean isRubricHidden(Identifier sectionKey);
 
 
 }

@@ -33,4 +33,8 @@ public interface AssessmentTestMarks extends CreateInfo, ModifiedInfo {
 	public String getMarks();
 	
 	public void setMarks(String marks);
+	
+	public String getHiddenRubrics();
+	
+	public void setHiddenRubrics(String rubrics);
 }

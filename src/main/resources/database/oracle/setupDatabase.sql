@@ -1510,6 +1510,7 @@ create table o_qti_assessment_marks (
    creationdate date not null,
    lastmodified date not null,
    q_marks clob default null,
+   q_hidden_rubrics clob default null,
    fk_reference_entry number(20) not null,
    fk_entry number(20),
    q_subident varchar2(64 char),

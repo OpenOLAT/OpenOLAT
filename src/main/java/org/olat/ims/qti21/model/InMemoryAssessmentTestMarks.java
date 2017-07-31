@@ -32,13 +32,10 @@ import org.olat.ims.qti21.AssessmentTestMarks;
 public class InMemoryAssessmentTestMarks implements AssessmentTestMarks {
 
 	private String marks;
+	private String hiddenRubrics;
 	
 	public InMemoryAssessmentTestMarks() {
 		//
-	}
-	
-	public InMemoryAssessmentTestMarks(String marks) {
-		this.marks = marks;
 	}
 	
 	@Override
@@ -64,5 +61,15 @@ public class InMemoryAssessmentTestMarks implements AssessmentTestMarks {
 	@Override
 	public void setMarks(String marks) {
 		this.marks = marks;
+	}
+
+	@Override
+	public String getHiddenRubrics() {
+		return hiddenRubrics;
+	}
+
+	@Override
+	public void setHiddenRubrics(String rubrics) {
+		this.hiddenRubrics = rubrics;
 	}
 }
