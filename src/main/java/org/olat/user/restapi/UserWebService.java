@@ -22,6 +22,7 @@ package org.olat.user.restapi;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getLocale;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
+import static org.olat.restapi.security.RestSecurityHelper.isAuthor;
 import static org.olat.restapi.security.RestSecurityHelper.isUserManager;
 import static org.olat.user.restapi.UserVOFactory.formatDbUserProperty;
 import static org.olat.user.restapi.UserVOFactory.get;
@@ -130,17 +131,19 @@ public class UserWebService {
 	 * Don't forget the right escaping in the URL!<br>
 	 * You can make a search with the user properties like this:<br>
 	 * users?telMobile=39847592&login=test
+	 * <br >/ The lookup is possible for authors, usermanagers and system administrators. Normal
+	 * users are not allowed to use the lookup service.
 	 * 
 	 * @response.representation.200.qname {http://www.example.com}userVO
-   * @response.representation.200.mediaType application/xml, application/json
-   * @response.representation.200.doc The list of all users in the OLAT system
-   * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The list of all users in the OLAT system
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_USERVOes}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param login The login (search with like)
 	 * @param authProvider An authentication provider (optional)
 	 * @param authUsername An specific username from the authentication provider
-   * @param uriInfo The URI infos
-   * @param httpRequest The HTTP request
+	 * @param uriInfo The URI infos
+	 * @param httpRequest The HTTP request
 	 * @return An array of users
 	 */
 	@GET
@@ -149,8 +152,12 @@ public class UserWebService {
 			@QueryParam("authProvider") String authProvider, @QueryParam("authUsername") String authUsername,
 			@QueryParam("statusVisibleLimit") String statusVisibleLimit,
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) {
-		
-		if(!isUserManager(httpRequest)) {
+
+		// User lookup allowd for authors, usermanagers and admins. For
+		// usernamanger and up are considered "administrative" when it comes to
+		// lookup of the user properties
+		boolean isAdministrativeUser = isUserManager(httpRequest);
+		if(!isAdministrativeUser && !isAuthor(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		
@@ -175,7 +182,7 @@ public class UserWebService {
 			if(!params.isEmpty()) {
 				UserManager um = UserManager.getInstance();
 				Locale locale = getLocale(httpRequest);
-				List<UserPropertyHandler> propertyHandlers = um.getUserPropertyHandlersFor(PROPERTY_HANDLER_IDENTIFIER, false);
+				List<UserPropertyHandler> propertyHandlers = um.getUserPropertyHandlersFor(PROPERTY_HANDLER_IDENTIFIER, isAdministrativeUser);
 				for(UserPropertyHandler handler:propertyHandlers) {
 					if(!params.containsKey(handler.getName())) continue;
 					
@@ -188,7 +195,7 @@ public class UserWebService {
 			}
 			
 			Integer status = Identity.STATUS_VISIBLE_LIMIT;
-			if("all".equalsIgnoreCase(statusVisibleLimit)) {
+			if(isAdministrativeUser && "all".equalsIgnoreCase(statusVisibleLimit)) {
 				status = null;
 			}
 			identities = BaseSecurityManager.getInstance().getIdentitiesByPowerSearch(login, userProps, true, null, null, authProviders, null, null, null, null, status);
