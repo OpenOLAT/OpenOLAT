@@ -71,7 +71,7 @@
 		<org.infinispan.version>8.2.5.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
 		<version.selenium>3.4.0</version.selenium>
-		<version.drone>2.2.0</version.drone>
+		<version.drone>2.3.1</version.drone>
 		<activemq.version>5.11.1</activemq.version>
 		<qtiworks.version>1.0.4</qtiworks.version>
 
@@ -1298,7 +1298,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
+				<version>1.8</version>
 				<executions>
 					<!-- Copy the notice.txt file -->
 					<execution>
@@ -1316,18 +1316,18 @@
 					</execution>
 					<!-- Download tomcat for integration test -->
 					<execution>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                        	<goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <mkdir dir="${project.build.directory}/downloads" />
-                                <get src="http://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/8.0.24/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
-                                <unzip src="${project.build.directory}/downloads/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/arq-apache-tomcat-8.0.24" />
-                            </tasks>
-                        </configuration>
-                    </execution> 
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<mkdir dir="${project.build.directory}/downloads" />
+								<get src="https://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/8.0.24/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
+								<unzip src="${project.build.directory}/downloads/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/arq-apache-tomcat-8.0.24" />
+							</target>
+						</configuration>
+					</execution> 
 				</executions>
 			</plugin>
             <!-- Unit tests -->
@@ -2574,7 +2574,7 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.graphene</groupId>
 			<artifactId>graphene-webdriver</artifactId>
-			<version>2.2.1</version>
+			<version>2.3.0</version>
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
