@@ -86,7 +86,7 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		ContextEntry ce = businessControl.popLauncherContextEntry();
 		if(ce == null || ce.getOLATResourceable() == null || ce.getOLATResourceable().getResourceableId() == null) {
-			return false;
+			return true;//it's the node itself
 		}
 		
 		Long resourceableId = ce.getOLATResourceable().getResourceableId();
