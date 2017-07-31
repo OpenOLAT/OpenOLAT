@@ -297,7 +297,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 		
 		if(writeRubrics) {
-			sb.append("<div class='o_info o_assessmentsection_rubrics'>");
+			sb.append("<div class='o_info o_assessmentsection_rubrics clearfix'>");
 			//write the titles first
 			if(writeTitles) {
 				sb.append("<h4>");
@@ -316,7 +316,6 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				sb.append("</h4>");
 			}
 			
-
 			for(int i=sectionParentLine.size(); i-->0; ) {
 				AssessmentSection selectedSection = sectionParentLine.get(i);
 				for(RubricBlock rubricBlock:selectedSection.getRubricBlocks()) {

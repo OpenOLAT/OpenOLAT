@@ -21,6 +21,7 @@ package org.olat.ims.qti21.model.xml;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.filter.impl.NekoHTMLFilter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -41,6 +42,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.exception.QtiModelException;
@@ -76,7 +78,24 @@ public class AssessmentHtmlBuilder {
 	}
 	
 	public boolean containsSomething(String html) {
-		return StringHelper.containsNonWhitespace(FilterFactory.getHtmlTagsFilter().filter(html));
+		if(!StringHelper.containsNonWhitespace(html)) return false;
+
+		try {
+			SAXParser parser = new SAXParser();
+			ContentDetectionHandler contentHandler = new ContentDetectionHandler();
+			parser.setContentHandler(contentHandler);
+			parser.parse(new InputSource(new StringReader(html)));
+			return contentHandler.isContentAvailable();
+		} catch (SAXException e) {
+			log.error("", e);
+			return false;
+		} catch (IOException e) {
+			log.error("", e);
+			return false;
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
 	}
 	
 	public String flowStaticString(List<? extends FlowStatic> statics) {
@@ -495,6 +514,46 @@ public class AssessmentHtmlBuilder {
 		@Override
 		public void modelBuildingError(QtiModelException exception, Node badNode) {
 			//
+		}
+	}
+	
+	private static class ContentDetectionHandler extends DefaultHandler {
+		
+		private boolean collect = false;
+		private boolean content = false;
+		
+		public boolean isContentAvailable() {
+			return content;
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+			String elem = localName.toLowerCase();
+			if("script".equals(elem)) {
+				collect = false;
+			} else if(!NekoHTMLFilter.blockTags.contains(localName)) {
+				content = true;
+			}
+		}
+		
+		@Override
+		public void characters(char[] chars, int offset, int length) {
+			if(!content && collect && offset >= 0 && length > 0) {
+				String text = new String(chars, offset, length);
+				if(text.trim().length() > 0) {
+					content = true;
+				}
+			}
+		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName) {
+			String elem = localName.toLowerCase();
+			if("script".equals(elem)) {
+				collect = true;
+			} else if(!NekoHTMLFilter.blockTags.contains(localName)) {
+				content = true;
+			}
 		}
 	}
 }

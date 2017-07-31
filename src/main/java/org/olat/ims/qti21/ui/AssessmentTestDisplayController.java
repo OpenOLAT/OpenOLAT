@@ -367,8 +367,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	
 	private void initQtiWorks(UserRequest ureq) {
 		qtiWorksCtrl = new QtiWorksController(ureq, getWindowControl());
-    	listenTo(qtiWorksCtrl);
-    	mainVC.put("qtirun", qtiWorksCtrl.getInitialComponent());
+		listenTo(qtiWorksCtrl);
+		mainVC.put("qtirun", qtiWorksCtrl.getInitialComponent());
 	}
 	
 	@Override

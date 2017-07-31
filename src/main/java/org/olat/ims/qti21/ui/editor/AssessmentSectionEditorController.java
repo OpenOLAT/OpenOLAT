@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui.editor;
 
+import java.io.File;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
@@ -28,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
 
@@ -44,6 +47,10 @@ public class AssessmentSectionEditorController extends BasicController {
 	private final TabbedPane tabbedPane;
 	private final VelocityContainer mainVC;
 	
+	private final File testFile;
+	private final File rootDirectory;
+	private final VFSContainer rootContainer;
+	
 	private final AssessmentSection section;
 	
 	private final boolean editable;
@@ -53,10 +60,14 @@ public class AssessmentSectionEditorController extends BasicController {
 	private AssessmentSectionExpertOptionsEditorController expertOptionsCtrl;
 	
 	public AssessmentSectionEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentSection section, boolean restrictedEdit, boolean editable) {
+			AssessmentSection section, File rootDirectory, VFSContainer rootContainer, File testFile,
+			boolean restrictedEdit, boolean editable) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.section = section;
 		this.editable = editable;
+		this.testFile = testFile;
+		this.rootDirectory = rootDirectory;
+		this.rootContainer = rootContainer;
 		this.restrictedEdit = restrictedEdit;
 		
 		mainVC = createVelocityContainer("assessment_test_editor");
@@ -71,7 +82,7 @@ public class AssessmentSectionEditorController extends BasicController {
 	}
 
 	private void initSectionEditor(UserRequest ureq) {
-		optionsCtrl = new AssessmentSectionOptionsEditorController(ureq, getWindowControl(), section, restrictedEdit, editable);
+		optionsCtrl = new AssessmentSectionOptionsEditorController(ureq, getWindowControl(), section, rootDirectory, rootContainer, testFile, restrictedEdit, editable);
 		listenTo(optionsCtrl);
 		expertOptionsCtrl = new AssessmentSectionExpertOptionsEditorController(ureq, getWindowControl(), section, restrictedEdit, editable);
 		listenTo(expertOptionsCtrl);
