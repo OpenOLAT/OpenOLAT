@@ -281,10 +281,7 @@ public class HotspotEditorController extends FormBasicController {
 					flc.setDirty(true);
 					backgroundImage = backgroundEl.moveUploadFileTo(itemFile.getParentFile());
 					Size size = imageService.getSize(new LocalFileImpl(backgroundImage), null);
-					if(size.getHeight() > 480 || size.getWidth() > 480) {
-						optimizeResizeEl(size, true);
-						resizeEl.setVisible(true);
-					}
+					optimizeResizeEl(size, true);
 				}
 			}
 			Size backgroundSize = updateBackground();
@@ -413,16 +410,23 @@ public class HotspotEditorController extends FormBasicController {
 			objectImg = initialBackgroundImage;
 		}
 		
+		boolean updateHotspot = true;
+		
 		if(objectImg != null) {
 			String filename = objectImg.getName();
 			String mimeType = WebappHelper.getMimeType(filename);
-			Size size = imageService.getSize(new LocalFileImpl(objectImg), null);
+			Size currentSize = imageService.getSize(new LocalFileImpl(objectImg), null);
+			Size size = currentSize;
 			if(resizeEl.isVisible() && !resizeEl.isSelected(0)) {
 				int maxSize = Integer.parseInt(resizeEl.getSelectedKey());
-				String extension = FileUtils.getFileSuffix(filename);
-				size = imageService.scaleImage(objectImg, extension, objectImg, maxSize, maxSize, false);
-				setBackgroundSize(size);
-				optimizeResizeEl(size, false);
+				if(maxSize < currentSize.getHeight() || maxSize < currentSize.getWidth()) {
+					String extension = FileUtils.getFileSuffix(filename);
+					size = imageService.scaleImage(objectImg, extension, objectImg, maxSize, maxSize, false);
+					setBackgroundSize(size);
+					scaleHotspot(currentSize, size);
+					optimizeResizeEl(size, false);
+					updateHotspot = false;
+				}
 			}
 
 			int height = -1;
@@ -433,7 +437,10 @@ public class HotspotEditorController extends FormBasicController {
 			}
 			itemBuilder.setBackground(filename, mimeType, height, width);
 		}
-		updateHotspots(ureq);
+		
+		if(updateHotspot) {
+			updateHotspots(ureq);
+		}
 		
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.hotspot));
 	}
@@ -441,22 +448,39 @@ public class HotspotEditorController extends FormBasicController {
 	private void optimizeResizeEl(Size size, boolean selectSize) {
 		List<String> keys = new ArrayList<>();
 		List<String> values = new ArrayList<>();
-		keys.add("no");
-		values.add(translate("form.imd.background.resize.no"));
+
+		String selectedSize = null;
 		for(BackgroundSize availableSize:BackgroundSize.values()) {
-			if(availableSize.size() < size.getHeight() || availableSize.size() < size.getWidth()) {
+			int proposedSize = availableSize.size();
+			if(proposedSize <= size.getHeight() || proposedSize <= size.getWidth()) {
 				String s = Integer.toString(availableSize.size());
 				keys.add(s);
 				values.add(s + " x " + s);
+				if((proposedSize == size.getHeight() && proposedSize >= size.getWidth())
+						|| (proposedSize == size.getWidth() && proposedSize >= size.getHeight())) {
+					selectedSize = s;
+				}
 			}
 		}
-		resizeEl.setKeysAndValues(keys.toArray(new String[keys.size()]), values.toArray(new String[values.size()]), null);
-		if(selectSize && keys.size() > 1) {
-			resizeEl.select(keys.get(1), true);
-		} else {
-			resizeEl.select(keys.get(0), true);
+		if(selectedSize == null) {
+			keys.add(0, "no");
+			values.add(0, translate("form.imd.background.resize.no"));
 		}
-		resizeEl.setVisible(keys.size() > 1);
+		resizeEl.setKeysAndValues(keys.toArray(new String[keys.size()]), values.toArray(new String[values.size()]), null);
+
+		if(keys.size() == 1) {
+			resizeEl.select(keys.get(0), true);
+			resizeEl.setVisible(false);
+		} else {
+			if(selectedSize != null) {
+				resizeEl.select(selectedSize, true);
+			} else if(selectSize && keys.size() > 1 && keys.get(1).equals(Integer.toString(BackgroundSize.s1024.size))) {
+				resizeEl.select(Integer.toString(BackgroundSize.s1024.size), true);
+			} else {
+				resizeEl.select(keys.get(0), true);
+			}
+			resizeEl.setVisible(true);
+		}
 	}
 	
 	private void updateHotspots(UserRequest ureq) {
@@ -484,6 +508,69 @@ public class HotspotEditorController extends FormBasicController {
 		}
 	}
 	
+	private void scaleHotspot(Size oldSize, Size newSize) {
+		if(oldSize == null || newSize == null || choiceWrappers.isEmpty()) return;
+		int oldWidth = oldSize.getWidth();
+		int newWidth = newSize.getWidth();
+		int oldHeight = oldSize.getHeight();
+		int newHeight = newSize.getHeight();
+		if(oldWidth <= 0 || oldHeight <= 0 || newWidth <= 0 || newHeight <= 0) return;
+		
+		double widthFactor = ((double)oldWidth / newWidth);
+		double heightFactor = ((double)oldHeight / newHeight);
+		
+		for(HotspotWrapper wrapper:choiceWrappers) {
+			HotspotChoice choice = wrapper.getChoice();
+			if(choice != null) {
+				if(Shape.CIRCLE.equals(choice.getShape())) {
+					scaleCircle(choice.getCoords(), widthFactor, heightFactor);
+				} else if(Shape.RECT.equals(choice.getShape())) {
+					scaleRect(choice.getCoords(), widthFactor, heightFactor);
+				}
+			}
+		}
+	}
+	
+	private void scaleCircle(List<Integer> coords, double widthFactor, double heightFactor) {
+		if(coords.size() != 3) return;
+		
+		int centerX = coords.get(0);
+		int centerY = coords.get(1);
+		int radius = coords.get(2);
+		
+		if(centerX > 0) {
+			coords.set(0, (int)Math.round(centerX / widthFactor));
+		}
+		if(centerY > 0) {
+			coords.set(1, (int)Math.round(centerY / heightFactor));
+		}
+		if(radius > 0) {
+			coords.set(2, (int)Math.round(radius / widthFactor));
+		}
+	}
+	
+	private void scaleRect(List<Integer> coords, double widthFactor, double heightFactor) {
+		if(coords.size() != 4) return;
+		
+		int leftX = coords.get(0);
+		int topY = coords.get(1);
+		int rightX = coords.get(2);
+		int bottomY = coords.get(3);
+
+		if(leftX > 0) {
+			coords.set(0, (int)Math.round(leftX / widthFactor));
+		}
+		if(topY > 0) {
+			coords.set(1, (int)Math.round(topY / heightFactor));
+		}
+		if(rightX > 0) {
+			coords.set(2, (int)Math.round(rightX / widthFactor));
+		}
+		if(bottomY > 0) {
+			coords.set(3, (int)Math.round(bottomY / heightFactor));
+		}
+	}
+	
 	/**
 	 * If the image is too small, translate the hotspots to match
 	 * approximatively the new image.
@@ -505,7 +592,7 @@ public class HotspotEditorController extends FormBasicController {
 					translateRect(choice.getCoords(), width, height);
 				}
 			}
-		}	
+		}
 	}
 
 	private void translateCircle(List<Integer> coords, int width, int height) {
