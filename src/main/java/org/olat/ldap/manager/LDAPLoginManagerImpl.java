@@ -489,6 +489,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		String filter = ldapDao.buildSearchUserFilter(ldapUserIDAttribute, uid);
 		LdapContext ctx = bindSystem();
 		String userDN = ldapDao.searchUserDNByUid(uid, ctx);
+		log.info("create and persist user identifier by userDN: " + userDN + " with filter: " + filter);
 		LDAPUserVisitor visitor = new LDAPUserVisitor(syncConfiguration);	
 		ldapDao.search(visitor, userDN, filter, syncConfiguration.getUserAttributes(), ctx);
 
