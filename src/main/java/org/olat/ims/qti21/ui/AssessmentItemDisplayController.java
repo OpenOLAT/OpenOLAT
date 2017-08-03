@@ -72,6 +72,7 @@ import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.running.ItemSessionControllerSettings;
 import uk.ac.ed.ph.jqtiplus.state.ItemProcessingMap;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
 import uk.ac.ed.ph.jqtiplus.types.FileResponseData;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.types.ResponseData;
@@ -244,6 +245,11 @@ public class AssessmentItemDisplayController extends BasicController implements 
 	@Override
 	public boolean isRubricHidden(Identifier sectionKey) {
 		return false;
+	}
+
+	@Override
+	public int getNumber(TestPlanNode node) {
+		return 1;
 	}
 
 	@Override

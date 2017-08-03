@@ -45,11 +45,20 @@ public class AssessmentTreeComponent extends AssessmentObjectComponent {
 	private TestSessionController testSessionController;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	
+	private boolean showTitles;
 	private final AssessmentTreeFormItem qtiItem;
 	
 	public AssessmentTreeComponent(String name, AssessmentTreeFormItem qtiItem) {
 		super(name);
 		this.qtiItem = qtiItem;
+	}
+	
+	public boolean isShowTitles() {
+		return showTitles;
+	}
+
+	public void setShowTitles(boolean showTitles) {
+		this.showTitles = showTitles;
 	}
 	
 	@Override

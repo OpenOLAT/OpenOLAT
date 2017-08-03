@@ -404,7 +404,15 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		//title + status
 		sb.append("<h4 class='itemTitle'>");
 		renderItemStatus(sb, itemSessionState, options, translator);
-		sb.append(StringHelper.escapeHtml(itemNode.getSectionPartTitle()), component.isShowTitles())
+		
+		String title;
+		if(component.isShowTitles()) {
+			title = StringHelper.escapeHtml(itemNode.getSectionPartTitle());
+		} else {
+			int num = component.getCandidateSessionContext().getNumber(itemNode);
+			title = translator.translate("question.title", new String[] { Integer.toString(num) });
+		}
+		sb.append(title)
 		  .append("</h4>")
 		  .append("<div id='itemBody' class='clearfix'>");
 

@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -176,6 +177,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private AssessmentTestSession candidateSession;
 	private ResolvedAssessmentTest resolvedAssessmentTest;
 	private AssessmentTestMarks marks;
+	private final Map<TestPlanNode, Integer> numbering = new HashMap<>();
 	
 	private RepositoryEntry testEntry;
 	private RepositoryEntry entry;
@@ -244,7 +246,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(fUnzippedDirRoot, false, false);
 		if(resolvedAssessmentTest == null || resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful() == null) {
-        	mainVC = createVelocityContainer("error");
+			mainVC = createVelocityContainer("error");
 		} else {
 			currentRequestTimestamp = ureq.getRequestTimestamp();
 			
@@ -263,6 +265,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	        } else {
 	        		mainVC = createVelocityContainer("run");
 	        		initQtiWorks(ureq);
+	        		if(!deliveryOptions.isShowTitles()) {
+	        			initNumbering();
+	        		}
 	        }
 	        
 	        OLATResourceable sessionOres = OresHelper
@@ -271,6 +276,18 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
         
         mainPanel = putInitialPanel(mainVC);
+	}
+	
+	private void initNumbering() {
+		AtomicInteger number = new AtomicInteger(0);
+		List<TestPlanNode> nodes = testSessionController.getTestSessionState().getTestPlan().getTestPlanNodeList();
+		for(TestPlanNode node:nodes) {
+			if(node.getTestNodeType() == TestNodeType.ASSESSMENT_ITEM_REF) {
+				numbering.put(node, number.incrementAndGet());
+			} else if(node.getTestNodeType() == TestNodeType.TEST_PART) {
+				number.set(0);
+			}
+		}
 	}
 	
 	private void immediateEndTestSession(UserRequest ureq) {
@@ -720,6 +737,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	public boolean isRubricHidden(Identifier sectionKey) {
 		if(marks == null || marks.getHiddenRubrics() == null || sectionKey == null) return false;
 		return marks.getHiddenRubrics().indexOf(sectionKey.toString()) >= 0;
+	}
+
+	@Override
+	public int getNumber(TestPlanNode node) {
+		Integer number =  numbering.get(node);
+		return number == null ? -1 : number.intValue(); 
 	}
 
 	private void processSelectItem(UserRequest ureq, String key) {
@@ -1730,6 +1753,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			qtiTreeEl.setAssessmentObjectUri(qtiService.createAssessmentTestUri(fUnzippedDirRoot));
 			qtiTreeEl.setCandidateSessionContext(AssessmentTestDisplayController.this);
 			qtiTreeEl.setMapperUri(mapperUri);
+			qtiTreeEl.setShowTitles(deliveryOptions.isShowTitles());
 			
 			if(formLayout instanceof FormLayoutContainer) {
 				FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;

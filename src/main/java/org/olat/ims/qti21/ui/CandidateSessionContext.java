@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 
 /**
@@ -46,5 +47,5 @@ public interface CandidateSessionContext {
 	
 	public boolean isRubricHidden(Identifier sectionKey);
 
-
+	public int getNumber(TestPlanNode node);
 }

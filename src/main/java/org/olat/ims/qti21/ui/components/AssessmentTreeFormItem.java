@@ -52,6 +52,14 @@ public class AssessmentTreeFormItem extends AssessmentObjectFormItem {
 	public AssessmentTreeComponent getComponent() {
 		return component;
 	}
+	
+	public boolean getShowTitles() {
+		return component.isShowTitles();
+	}
+	
+	public void setShowTitles(boolean showTitles) {
+		component.setShowTitles(showTitles);
+	}
 
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {
 		return component.getResolvedAssessmentTest();
