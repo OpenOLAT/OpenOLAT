@@ -982,15 +982,17 @@ public class VelocityRenderDecorator implements Closeable {
 	}
 	
 	public Languages getLanguages() {
-		I18nManager i18nMgr = I18nManager.getInstance();
-		Collection<String> enabledKeysSet = I18nModule.getEnabledLanguageKeys();
+		I18nManager i18nMgr = CoreSpringFactory.getImpl(I18nManager.class);
+		I18nModule i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
+		
+		Collection<String> enabledKeysSet = i18nModule.getEnabledLanguageKeys();
 		Map<String, String> langNames = new HashMap<String, String>();
 		Map<String, String> langTranslators = new HashMap<String, String>();
 		String[] enabledKeys = ArrayHelper.toArray(enabledKeysSet);
 		String[] names = new String[enabledKeys.length];
 		for (int i = 0; i < enabledKeys.length; i++) {
 			String key = enabledKeys[i];
-			String langName = i18nMgr.getLanguageInEnglish(key, I18nModule.isOverlayEnabled());
+			String langName = i18nMgr.getLanguageInEnglish(key, i18nModule.isOverlayEnabled());
 			langNames.put(key, langName);
 			names[i] = langName;
 			String author = i18nMgr.getLanguageAuthor(key);

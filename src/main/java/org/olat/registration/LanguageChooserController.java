@@ -41,12 +41,10 @@ import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.dispatcher.LocaleNegotiator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
- * Description:<br>
- * TODO: srosse Class Description for LanguageChooserController
- * 
  * <P>
  * Initial Date:  17 nov. 2009 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
@@ -59,6 +57,8 @@ public class LanguageChooserController extends FormBasicController {
 	
 	private boolean fireStandardEvent = true;
 	
+	@Autowired
+	private I18nManager i18nManager;
 	
 	/**
 	 * @param ureq
@@ -94,7 +94,7 @@ public class LanguageChooserController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == langs) {
-			Locale loc = I18nManager.getInstance().getLocaleOrDefault(getSelectedLanguage());
+			Locale loc = i18nManager.getLocaleOrDefault(getSelectedLanguage());
 			MultiUserEvent mue = new LanguageChangedEvent(loc, ureq);
 			setLocale(loc, true);
 			ureq.getUserSession().setLocale(loc);
@@ -124,7 +124,7 @@ public class LanguageChooserController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, final UserRequest ureq) {
-		Map<String, String> languages = I18nManager.getInstance().getEnabledLanguagesTranslated();
+		Map<String, String> languages = i18nManager.getEnabledLanguagesTranslated();
 		String[] langKeys = StringHelper.getMapKeysAsStringArray(languages);
 		String[] langValues = StringHelper.getMapValuesAsStringArray(languages);
 		ArrayHelper.sort(langKeys, langValues, false, true, false);

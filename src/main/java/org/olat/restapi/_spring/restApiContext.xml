@@ -51,7 +51,7 @@
 		</property>
 	</bean>
 	
-	<bean id="systemSamplerTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="systemSamplerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 	    <property name="jobDetail" ref="systemSamplerJob" />
 	    <!-- adjust cron style syntax for your needs 
 	    A "Cron-Expression" is a string comprised of 6 or 7 fields separated by white space. The 6 mandatory and 1 optional fields are as follows:
@@ -71,32 +71,32 @@
 	    <property name="startDelay" value="60000" />
 	</bean>
 	
-	<bean id="systemSamplerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+	<bean id="systemSamplerJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 	  <property name="jobClass" value="org.olat.restapi.system.SamplerJob" />
 	</bean>
 	
-	<bean id="procSamplerTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="procSamplerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 	    <property name="jobDetail" ref="procSamplerJob" />
 	    <property name="cronExpression" value="5 3,8,13,18,23,28,33,38,43,48,53,58 * * * ?" />
 	    <property name="startDelay" value="30000" />
 	</bean>
 	
-	<bean id="procSamplerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+	<bean id="procSamplerJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 	  <property name="jobClass" value="org.olat.restapi.system.ProcSamplerJob" />
 	</bean>
 	
 	
 	<!-- Deadline Job -->
-	<bean id="restTokenTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="restTokenTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="restTokenJob.${cluster.singleton.services}" />
   	<!--  every day at 1:21 -->
 		<property name="cronExpression" value="0 21 1 * * ?" />
 		<property name="startDelay" value="60000" />
 	</bean>
-	<bean id="restTokenJob.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	<bean id="restTokenJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.restapi.security.RestTokenJob" />
 	</bean>
-	<bean id="restTokenJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+	<bean id="restTokenJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 

@@ -24,6 +24,7 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.util.i18n.I18nModule;
 
@@ -98,8 +99,9 @@ public class LocaleNegotiator {
  * match language and country and the final ty it with language only
  */
 	public static Locale getNegotiatedLocale(Locale loc) {
-		Map<String,Locale> allLocales = I18nModule.getAllLocales();
-		Collection<String> enabledLanguageKeys = I18nModule.getEnabledLanguageKeys();
+		I18nModule i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
+		Map<String,Locale> allLocales = i18nModule.getAllLocales();
+		Collection<String> enabledLanguageKeys = i18nModule.getEnabledLanguageKeys();
 		
 		String lang = loc.getLanguage();
 		//search a direct match first de_CH_bs...

@@ -46,6 +46,7 @@ import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> This controller can be used to edit one or more
@@ -83,7 +84,10 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	// true when the overlay files are edited and not the language files itself
 	private boolean customizingMode = false;
 	
-	private final I18nManager i18nMgr;
+	@Autowired
+	private I18nManager i18nMgr;
+	@Autowired
+	private I18nModule i18nModule;
 
 	/**
 	 * Constructor for the item edit controller. Use the
@@ -101,12 +105,11 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	public TranslationToolI18nItemEditCrumbController(UserRequest ureq, WindowControl control, List<I18nItem> i18nItems,
 			Locale referenceLocale, boolean customizingMode) {
 		super(ureq, control, "translationToolI18nItemEdit");
-		i18nMgr = I18nManager.getInstance();
 		this.customizingMode = customizingMode;
 		this.i18nItems = i18nItems;
 		if(referenceLocale == null) {
 			Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
-			List<String> referenceLangs = I18nModule.getTransToolReferenceLanguages();
+			List<String> referenceLangs = i18nModule.getTransToolReferenceLanguages();
 			String referencePrefs = (String)guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_REFERENCE_LANG, referenceLangs.get(0));
 			this.referenceLocale = i18nMgr.getLocaleOrNull(referencePrefs);
 			if(this.referenceLocale == null) {
@@ -200,7 +203,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		flc.contextPut("compareSwitchEnabled", compareEnabledPrefs);
 		
 		// Add compare language selection
-		Set<String> availableLangKeys = I18nModule.getAvailableLanguageKeys();
+		Set<String> availableLangKeys = i18nModule.getAvailableLanguageKeys();
 		String[] comparelangKeys = ArrayHelper.toArray(availableLangKeys);
 		String[] compareLangValues = new String[comparelangKeys.length];
 		for (int i = 0; i < comparelangKeys.length; i++) {
@@ -218,14 +221,14 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		if (compareLocale == null) compareLocale = I18nModule.getDefaultLocale();
 		compareLangSelection = uifactory.addDropdownSingleselect("compareLangSelection", flc, comparelangKeys, compareLangValues, null);
 		compareLangSelection.setDomReplacementWrapperRequired(false);
-		compareLangSelection.select(i18nMgr.getLocaleKey(compareLocale), true);
-		flc.contextPut("compareLanguageKey", i18nMgr.getLocaleKey(compareLocale));
+		compareLangSelection.select(i18nModule.getLocaleKey(compareLocale), true);
+		flc.contextPut("compareLanguageKey", i18nModule.getLocaleKey(compareLocale));
 		compareLangSelection.addActionListener(FormEvent.ONCHANGE);
 		compareLangSelection.setEnabled(compareEnabledPrefs.booleanValue());
 		
 		// Add target box
-		flc.contextPut("targetLanguageKey", i18nMgr.getLocaleKey(currentItem.getLocale()));
-		flc.contextPut("targetLanguage", i18nMgr.getLanguageTranslated(i18nMgr.getLocaleKey(currentItem.getLocale()), false));			
+		flc.contextPut("targetLanguageKey", i18nModule.getLocaleKey(currentItem.getLocale()));
+		flc.contextPut("targetLanguage", i18nMgr.getLanguageTranslated(i18nModule.getLocaleKey(currentItem.getLocale()), false));			
 		targetArea = uifactory.addTextAreaElement("targetArea", "edit.targetArea", -1, 5, -1, true, null, flc);
 		// Add annotation box
 		annotationArea = uifactory.addTextAreaElement("annotationArea", "edit.annotationArea", -1, 1, -1, true, null, flc);
@@ -254,11 +257,11 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 			// don't edit annotations in customizing mode
 			annotationArea.setEnabled(false);
 			// target lang flags and lang name		
-			Locale origLocale = I18nModule.getAllLocales().get(i18nMgr.createOrigianlLocaleKeyForOverlay(currentItem.getLocale()));
+			Locale origLocale = i18nModule.getAllLocales().get(i18nMgr.createOrigianlLocaleKeyForOverlay(currentItem.getLocale()));
 			if(origLocale == null) {
 				origLocale = currentItem.getLocale();
 			}
-			String localeKey = i18nMgr.getLocaleKey(origLocale);
+			String localeKey = i18nModule.getLocaleKey(origLocale);
 			flc.contextPut("targetLanguageKey", localeKey);			
 			flc.contextPut("targetLanguage", i18nMgr.getLanguageTranslated(localeKey, true));		
 		}

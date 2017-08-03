@@ -33,9 +33,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +48,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -59,27 +61,20 @@ import org.olat.core.util.i18n.I18nModule;
  * 
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
+@Service("translationDevManager")
 public class TranslationDevManager extends BasicManager {
-
-	private static TranslationDevManager INSTANCE;
 	private static final OLog log = Tracing.createLoggerFor(TranslationDevManager.class);
-	I18nManager i18nMgr;
+
 	private StringBuffer logText = new StringBuffer();
-
-	/**
-	 * [spring]
-	 */
-	private TranslationDevManager(I18nManager i18nManager) {
-		this.i18nMgr = i18nManager;
-		INSTANCE = this;
-	}
-
-	public static TranslationDevManager getInstance() {
-		return INSTANCE;
-	}
+	
+	@Autowired
+	private 	I18nManager i18nMgr;
+	@Autowired
+	private I18nModule i18nModule;
+	
 
 	protected Set<String> getAllLanguages() {
-		return I18nModule.getAvailableLanguageKeys();
+		return i18nModule.getAvailableLanguageKeys();
 	}
 
 	protected void renameKeyTask(String bundleName, String origKey, String targetKey) {
@@ -124,7 +119,7 @@ public class TranslationDevManager extends BasicManager {
 		int counter = 0;
 		Pattern resolvingKeyPattern = Pattern.compile("\\$\\{?("+originBundleName+")+:([\\w\\.\\-]*[\\w\\-])\\}?");
 		
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		Set<String> allLangs = getAllLanguages();
 		for (String langKey : allLangs) {
 	    Locale locale = i18nMgr.getLocaleOrNull(langKey);
@@ -163,7 +158,7 @@ public class TranslationDevManager extends BasicManager {
 							lastPos = matcher.end();
 							newValue.append(value.substring(lastPos));
 							log.info("Key:: " + key + " should get changed to value:: " + newValue.toString());
-							logText.append(i18nMgr.getPropertiesFile(locale, bundleName, I18nModule.getPropertyFilesBaseDir(locale, bundleName)) + 
+							logText.append(i18nMgr.getPropertiesFile(locale, bundleName, i18nModule.getPropertyFilesBaseDir(locale, bundleName)) + 
 									" update reference in lang::" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key + " value::" + value + " \n\t to new value:: " + newValue.toString() + "\n");	
 							counter ++;
 //					changeValueForSingleKey(locale, bundleName, key, newValue.toString());	
@@ -194,7 +189,6 @@ public class TranslationDevManager extends BasicManager {
 		i18nMgr.saveOrUpdateProperties(tempProp, locale, bundleName);
 		
 		checkForEmptyPropertyAndDelete(locale, bundleName);
-		checkForEmptyBundleAndDelete(bundleName);
 	}
 
 	protected void addKey(Locale locale, String bundleName, String key, String value) {
@@ -208,12 +202,6 @@ public class TranslationDevManager extends BasicManager {
 			i18nMgr.deleteProperties(locale, bundleName);
 			// TODO: RH: .cvs anpassen!
 		}
-	}
-
-	private void checkForEmptyBundleAndDelete(String bundleName) {
-	// if _i18n is empty:
-	// TODO: RH: remove dir, remove .cvs
-	// deletePackage(bundleName);
 	}
 
 	public void movePackageTask(String originBundleName, String targetBundleName) {
@@ -232,7 +220,7 @@ public class TranslationDevManager extends BasicManager {
 	}
 	
 	public void movePackageByMovingSingleKeysTask(String originBundleName, String targetBundleName) {
-		Properties properties = i18nMgr.getPropertiesWithoutResolvingRecursively(I18nModule.getFallbackLocale(), originBundleName);
+		Properties properties = i18nMgr.getPropertiesWithoutResolvingRecursively(i18nModule.getFallbackLocale(), originBundleName);
 		Set<Object> keys = properties.keySet();		
 		for (Object keyObj : keys) {
 			String key = (String) keyObj;
@@ -272,7 +260,7 @@ public class TranslationDevManager extends BasicManager {
 	public void renameLanguageTask(Locale sourceLocale, Locale targetLocale){
 	
 		//check if targetLocale exists already
-		Set<String> allLangKeys = I18nModule.getAvailableLanguageKeys();
+		Set<String> allLangKeys = i18nModule.getAvailableLanguageKeys();
 		if (allLangKeys.contains(targetLocale.getLanguage())){
 			log.error("Target Language " + targetLocale.getLanguage() + " already exists! ");
 		}
@@ -301,7 +289,7 @@ public class TranslationDevManager extends BasicManager {
 	 * @param reallyRemoveIt true: really remove it; false: dry run, only produce logging
 	 */
 	public void removeXKeysTask(boolean reallyRemoveIt){
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		Set<String> allLangs = getAllLanguages();
 		int counter = 0;
 		for (String langKey : allLangs) {
@@ -320,7 +308,7 @@ public class TranslationDevManager extends BasicManager {
 							}
 						}
 						log.info("XKEY detected in lang::" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key);
-						File propertyFileDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+						File propertyFileDir = i18nModule.getPropertyFilesBaseDir(locale, bundleName);
 						if(propertyFileDir != null) {
 							File propertyFile = i18nMgr.getPropertiesFile(locale, bundleName, propertyFileDir);
 							logText.append(propertyFile + " XKEY detected in lang::" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key + " value::" + value + "\n");		
@@ -339,7 +327,7 @@ public class TranslationDevManager extends BasicManager {
 	}
 
 	public void sortKeysTask(boolean reallySortIt){
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		Set<String> allLangs = getAllLanguages();
 		int counter = 0;
 		for (String langKey : allLangs) {
@@ -366,7 +354,7 @@ public class TranslationDevManager extends BasicManager {
 	 * @param reallyRemoveIt true: really remove it; false: dry run, only produce logging
 	 */
 	public void removeTodoKeysTask(boolean reallyRemoveIt) {
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		Set<String> allLangs = getAllLanguages();
 		int counter = 0;
 		String[] comparisonStrings = {"TODO"};
@@ -385,7 +373,7 @@ public class TranslationDevManager extends BasicManager {
 							if (value.length() > comparisonStrings[i].length()+1) {
 								log.warn("this is a TODO-Key WITH TEXT::" + value.substring(comparisonStrings[i].length()) + "::");
 							} else {
-								logText.append(i18nMgr.getPropertiesFile(locale, bundleName, I18nModule.getPropertyFilesBaseDir(locale, bundleName)) + 
+								logText.append(i18nMgr.getPropertiesFile(locale, bundleName, i18nModule.getPropertyFilesBaseDir(locale, bundleName)) + 
 										" TODO-Key detected in lang::" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key + " value::" + value + "\n");
 								if (reallyRemoveIt) {
 									deleteKey(locale, bundleName, key);
@@ -405,7 +393,7 @@ public class TranslationDevManager extends BasicManager {
 	 * @param reallyRemoveIt true: really remove it; false: dry run, only produce logging
 	 */
 	public void removeEmptyKeysTask(boolean reallyRemoveIt) {
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		int counter = 0;
 		Set<String> allLangs = getAllLanguages();
 		for (String langKey : allLangs) {
@@ -418,7 +406,7 @@ public class TranslationDevManager extends BasicManager {
 					String value = properties.getProperty(key);
 					if (!StringHelper.containsNonWhitespace(value) ) {
 						log.info("empty Key detected in lang::" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key + " value::" + value);
-						File propertyFileDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+						File propertyFileDir = i18nModule.getPropertyFilesBaseDir(locale, bundleName);
 						if(propertyFileDir != null) {
 							File propertyFile = i18nMgr.getPropertiesFile(locale, bundleName, propertyFileDir);
 							logText.append(propertyFile + " empty Key detected in lang" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key + " value::" + value + "\n");						
@@ -447,7 +435,7 @@ public class TranslationDevManager extends BasicManager {
 		// first get all available keys from de and en language
 		Set<String> validCombinedKeys = new HashSet<String>();
 		//copy list to prevent concurrent modification exception
-		List<String> allBundles = new ArrayList<String>(I18nModule.getBundleNamesContainingI18nFiles());
+		List<String> allBundles = new ArrayList<String>(i18nModule.getBundleNamesContainingI18nFiles());
 		for (String bundleName : allBundles) {
 			for (String refLangKey : referenceLanguages) {
 				Properties properties = i18nMgr.getPropertiesWithoutResolvingRecursively(i18nMgr.getLocaleOrNull(refLangKey), bundleName);
@@ -520,7 +508,7 @@ public class TranslationDevManager extends BasicManager {
 	 * reallyCopy: set to true to create Props/keys in Head, false: only log them
 	 */
 	public void getLostTranslationsFromBranch(boolean reallyCopy, String[] referenceLanguages, String pathToOlatBranch, String pathToCoreBranch){
-		List<String> allBundles = new ArrayList<String>(I18nModule.getBundleNamesContainingI18nFiles());
+		List<String> allBundles = new ArrayList<String>(i18nModule.getBundleNamesContainingI18nFiles());
 		
 		Set<String> allLangs = getAllLanguages();
 		//loop over all langs
@@ -626,12 +614,12 @@ public class TranslationDevManager extends BasicManager {
 	 * false: dry run, only produce logging
 	 */
 	public void removeReferenceLanguageCopiesTask(boolean reallyRemoveIt){
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		// don't remove EN and DE here, this is a shared Map!!		
 		int counter = 0;
 		int aliasCounter = 0;
 		//prepare exclusion list
-		String exKeys = FileUtils.load(new File(I18nModule.getTransToolApplicationLanguagesSrcDir() + "/org/olat/core/util/i18n/devtools/exclusionKeys.txt"), "UTF-8");
+		String exKeys = FileUtils.load(new File(i18nModule.getTransToolApplicationLanguagesSrcDir() + "/org/olat/core/util/i18n/devtools/exclusionKeys.txt"), "UTF-8");
 		String[] exArray = exKeys.split("\n");
 		List<String> exList = new ArrayList<String>(Arrays.asList(exArray));
 
@@ -675,7 +663,7 @@ public class TranslationDevManager extends BasicManager {
 						}
 						if (readyToDelete) {
 							counter++;
-							logText.append(i18nMgr.getPropertiesFile(locale, bundleName, I18nModule.getPropertyFilesBaseDir(locale, bundleName)) + 
+							logText.append(i18nMgr.getPropertiesFile(locale, bundleName, i18nModule.getPropertyFilesBaseDir(locale, bundleName)) + 
 									" value of key found in reference -> remove lang::" + locale.getLanguage() + " bundle::" + bundleName + " key::" + key + " value::" + value + "\n");			
 						}
 					}
@@ -689,9 +677,9 @@ public class TranslationDevManager extends BasicManager {
 	
 	// do this only for reference language!
 	public List<I18nItem> getDouplicateKeys(){
-		Locale refLocale = I18nModule.getDefaultLocale();
+		Locale refLocale = i18nModule.getDefaultLocale();
 		List<I18nItem> doupList = new ArrayList<I18nItem>();
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		Map<String, String> tempKeyMap = new HashMap<String, String>();
 		
 		for (String bundleName : allBundles) {
@@ -716,9 +704,9 @@ public class TranslationDevManager extends BasicManager {
 	
 	//do this only for reference language!
 	public List<I18nItem> getDouplicateValues(){
-		Locale refLocale = I18nModule.getDefaultLocale();
+		Locale refLocale = i18nModule.getDefaultLocale();
 		List<I18nItem> doupList = new ArrayList<I18nItem>();
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		Map<String, String> tempKeyMap = new HashMap<String, String>();
 		
 		for (String bundleName : allBundles) {
@@ -755,10 +743,10 @@ public class TranslationDevManager extends BasicManager {
 	}
 
 	private File getBundlePath(String bundleName){
-		Locale locale = I18nModule.getAllLocales().get("de");
-		File baseDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+		Locale locale = i18nModule.getAllLocales().get("de");
+		File baseDir = i18nModule.getPropertyFilesBaseDir(locale, bundleName);
 		if (baseDir != null) {
-			File deFile = I18nManager.getInstance().getPropertiesFile(locale, bundleName, baseDir);
+			File deFile = i18nMgr.getPropertiesFile(locale, bundleName, baseDir);
 			return deFile.getParentFile();
 		}
 		return null;
@@ -800,43 +788,4 @@ public class TranslationDevManager extends BasicManager {
 			out.close();
 		}
 	}
-	
-	public void logToFile(String fname){
-//		FileUtils.save(new File("/Users/rhaag/Desktop/devtoolsoutput/"+fname+".txt"), logText.toString(), "UTF-8");
-//		logText = new StringBuffer();
-	}
-	
-	
-//		String srcPath;
-//		if (bundleName.startsWith("org.olat.core")) {
-//			srcPath = I18nModule.getTransToolCoreLanguagesSrcDir().getAbsolutPath();
-//			if (srcPath == null) {
-//				log.error("Can not add bundle priority to core while olatcore source path is not configured! Check olatcore.src in olat.properties");
-//				return;
-//			}			
-//		} else {
-//			srcPath = I18nModule.getTransToolApplicationLanguagesSrcDir().getAbsolutPath();
-//		}
-//		File baseDir = new File(srcPath + bundleName.replace(".", "/"));
-//		if (baseDir.exists()) {
-//			addMissingBundlePriority(baseDir, priority);			
-//		} else {
-//			log.error("Can not add priority to bundle::" + bundleName + " - invalid source path::" + baseDir.getAbsolutePath());
-//		}
-//	}
-//	
-//	private void addMissingBundlePriority(File dir, int priority) {
-//		File[] files = dir.listFiles(DirectoryFilter.DIRECTORY_FILTER);
-//		for (File childDir : files) {
-//			if (childDir.getName().equals(I18nManager.I18N_DIRNAME )) {
-//				// add priority to file
-//				int bundle1Prio = getBundlePriority(metadata1, bundle1);
-//				
-//			} else {
-//				// do it recursively
-//				addMissingBundlePriority(childDir, priority);
-//			}
-//		}
-//	}
-
 }

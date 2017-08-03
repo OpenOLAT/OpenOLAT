@@ -50,6 +50,7 @@ import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> This is the start controller for the translation tool
@@ -112,6 +113,12 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 	private Locale targetLocale;
 	// true when the overlay files are edited and not the language files itself
 	private boolean customizingMode = false;
+	
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nManager;
+	
 	/**
 	 * Constructor for the start crumb controller
 	 * 
@@ -135,12 +142,12 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormUIFactory formFactory = FormUIFactory.getInstance();
-		I18nManager i18nMgr = I18nManager.getInstance();
-		List<String> bundleNames = I18nModule.getBundleNamesContainingI18nFiles();
+
+		List<String> bundleNames = i18nModule.getBundleNamesContainingI18nFiles();
 		String[] bundlesKeys = buildBundleArrayKeys(bundleNames, true);
 		String[] bundlesValues = buildBundleArrayValues(bundleNames, true);
 		// call init methods for each form part
-		initLanguageSelectorElements(ureq.getUserSession(), formFactory, i18nMgr, formLayout);
+		initLanguageSelectorElements(ureq.getUserSession(), formFactory, formLayout);
 		initMissingItemsElements(formFactory, formLayout, bundlesKeys, bundlesValues);
 		initExistingItemsElements(formFactory, formLayout, bundlesKeys, bundlesValues);
 		initAllItemsElements(formFactory, formLayout, bundlesKeys, bundlesValues);
@@ -155,22 +162,22 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		this.flc.contextPut("customizingPrefix", (customizingMode ? "customize." : ""));
 	}
 
-	private void initLanguageSelectorElements(UserSession usess, FormUIFactory formFactory, I18nManager i18nMgr,
+	private void initLanguageSelectorElements(UserSession usess, FormUIFactory formFactory,
 			FormItemContainer formLayout) {
 		// Add language selection as a subform
 		List<String> referenceLangs;
 		if (customizingMode) {
 			// Add all enabled languages that can be customized
-			referenceLangs = new ArrayList<String>(I18nModule.getEnabledLanguageKeys());
+			referenceLangs = new ArrayList<>(i18nModule.getEnabledLanguageKeys());
 		} else {
 			// Add configured reference languages in translation mode
-			referenceLangs = I18nModule.getTransToolReferenceLanguages();
+			referenceLangs = i18nModule.getTransToolReferenceLanguages();
 		}
 		String[] referencelangKeys = ArrayHelper.toArray(referenceLangs);
 		String[] referenceLangValues = new String[referencelangKeys.length];
 		for (int i = 0; i < referencelangKeys.length; i++) {
 			String key = referencelangKeys[i];
-			String explLang = i18nMgr.getLanguageInEnglish(key, false);
+			String explLang = i18nManager.getLanguageInEnglish(key, false);
 			String all = explLang;
 			if (explLang != null && !explLang.equals(key)) all += " (" + key + ")";
 			referenceLangValues[i] = all;
@@ -178,13 +185,13 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		ArrayHelper.sort(referencelangKeys, referenceLangValues, false, true, false);
 		// Build css classes for reference languages
 		// Use first reference locale as default
-		referenceLocale = i18nMgr.getLocaleOrNull(referenceLangs.get(0));
+		referenceLocale = i18nManager.getLocaleOrNull(referenceLangs.get(0));
 		// Override with user preset
 		Preferences guiPrefs = usess.getGuiPreferences();
 		String referencePrefs = (String) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_REFERENCE_LANG, referenceLangs.get(0));
 		for (String refLang : referencelangKeys) {
 			if (referencePrefs.equals(refLang)) {
-				referenceLocale = i18nMgr.getLocaleOrNull(referencePrefs);
+				referenceLocale = i18nManager.getLocaleOrNull(referencePrefs);
 				break;
 			}
 		}
@@ -197,10 +204,10 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		Set<String> translatableKeys;	
 		if (customizingMode) {
 			// Use all enabled languages in customizing mode
-			translatableKeys = I18nModule.getOverlayLanguageKeys();
+			translatableKeys = i18nModule.getOverlayLanguageKeys();
 		} else {
 			// Allow translators to also translate other languages if they really desire. Show all languages.
-			translatableKeys = I18nModule.getTranslatableLanguageKeys();
+			translatableKeys = i18nModule.getTranslatableLanguageKeys();
 		}
 		String[] targetlangKeys = ArrayHelper.toArray(translatableKeys);
 		String[] targetLangValues = new String[targetlangKeys.length];
@@ -211,10 +218,10 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 			// overlay enabled, this would double the customizing extension to the key
 			String explLang;
 			if (customizingMode) {
-				String origKey = i18nMgr.createOrigianlLocaleKeyForOverlay(I18nModule.getAllLocales().get(key));
-				explLang = i18nMgr.getLanguageInEnglish(origKey, true);
+				String origKey = i18nManager.createOrigianlLocaleKeyForOverlay(i18nModule.getAllLocales().get(key));
+				explLang = i18nManager.getLanguageInEnglish(origKey, true);
 			} else {
-				explLang = i18nMgr.getLanguageInEnglish(key, false);
+				explLang = i18nManager.getLanguageInEnglish(key, false);
 			}
 			String all = explLang;
 			if (explLang != null && !explLang.equals(key)) all += "   (" + key + ")";
@@ -226,26 +233,26 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		// Select current language if in list or the first one in the menu
 		if (customizingMode) {
 			// Use same as reference language in customizing mode
-			targetLocale = I18nModule.getOverlayLocales().get(referenceLocale);	
+			targetLocale = i18nModule.getOverlayLocales().get(referenceLocale);	
 			// Disable target lang selection - user should only choose reference language, target is updated automatically
 			targetLangSelection.setEnabled(false);
 		} else {			
 			// Use users current language in translation mode
 			targetLocale = getTranslator().getLocale();
-			if (!Arrays.asList(targetlangKeys).contains(i18nMgr.getLocaleKey(targetLocale))) {
-				targetLocale = i18nMgr.getLocaleOrNull(targetlangKeys[0]);
+			if (!Arrays.asList(targetlangKeys).contains(i18nModule.getLocaleKey(targetLocale))) {
+				targetLocale = i18nManager.getLocaleOrNull(targetlangKeys[0]);
 			}
 		}
-		targetLangSelection.select(i18nMgr.getLocaleKey(targetLocale), true);
+		targetLangSelection.select(i18nModule.getLocaleKey(targetLocale), true);
 		// Add lang key for image - don't use customizing lang key
 		if (customizingMode) {
-			this.flc.contextPut("targetLangKey", i18nMgr.createOrigianlLocaleKeyForOverlay(targetLocale));
+			this.flc.contextPut("targetLangKey", i18nManager.createOrigianlLocaleKeyForOverlay(targetLocale));
 		} else {
 			this.flc.contextPut("targetLangKey", targetLocale.toString());
 		}
 		targetLangSelection.addActionListener(FormEvent.ONCHANGE);
 		// Add progress bar as normal component (not a form element)
-		int bundlesCount = i18nMgr.countBundles(null, true);
+		int bundlesCount = i18nManager.countBundles(null, true);
 		progressBar = new ProgressBar("progressBar", 300, 0, 0, translate("start.progressBar.unitLabel", bundlesCount + ""));
 		this.flc.put("progressBar", progressBar);
 	}
@@ -389,10 +396,9 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 	 * 
 	 */
 	private void updateStatistics() {
-		I18nManager i18nMgr = I18nManager.getInstance();
 		// update progress bar with all package values
-		int toTranslateCount = i18nMgr.countI18nItems(referenceLocale, null, true);
-		int translatedCount = i18nMgr.countI18nItems(targetLocale, null, true);
+		int toTranslateCount = i18nManager.countI18nItems(referenceLocale, null, true);
+		int translatedCount = i18nManager.countI18nItems(targetLocale, null, true);
 		progressBar.setMax(toTranslateCount);
 		progressBar.setActual(translatedCount);
 		// calculate package dependent values for missing keys display
@@ -400,9 +406,9 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		if (missingBundle.equals(ALL_BUNDLES_IDENTIFYER)) {
 			this.flc.contextPut("missingCount", (toTranslateCount - translatedCount));
 		} else {
-			int missingToTranslateCount = i18nMgr.countI18nItems(referenceLocale, missingBundle, missingBundlesIncludeBundlesChildrenSwitch
+			int missingToTranslateCount = i18nManager.countI18nItems(referenceLocale, missingBundle, missingBundlesIncludeBundlesChildrenSwitch
 					.isSelected(0));
-			int missingTranslatedCount = i18nMgr.countI18nItems(targetLocale, missingBundle, missingBundlesIncludeBundlesChildrenSwitch
+			int missingTranslatedCount = i18nManager.countI18nItems(targetLocale, missingBundle, missingBundlesIncludeBundlesChildrenSwitch
 					.isSelected(0));
 			this.flc.contextPut("missingCount", (missingToTranslateCount - missingTranslatedCount));
 		}
@@ -410,7 +416,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		if (existingBundle.equals(ALL_BUNDLES_IDENTIFYER)) {
 			this.flc.contextPut("existingCount", translatedCount);
 		} else {
-			int existingTranslateCount = i18nMgr.countI18nItems(referenceLocale, existingBundle, existingBundlesIncludeBundlesChildrenSwitch.isSelected(0));
+			int existingTranslateCount = i18nManager.countI18nItems(referenceLocale, existingBundle, existingBundlesIncludeBundlesChildrenSwitch.isSelected(0));
 			this.flc.contextPut("existingCount", existingTranslateCount);
 		}
 		// calculate package dependent values for all keys display
@@ -418,7 +424,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 		if (allBundle.equals(ALL_BUNDLES_IDENTIFYER)) {
 			this.flc.contextPut("allCount", toTranslateCount);
 		} else {
-			int allToTranslateCount = i18nMgr.countI18nItems(referenceLocale, allBundle, allBundlesIncludeBundlesChildrenSwitch.isSelected(0));
+			int allToTranslateCount = i18nManager.countI18nItems(referenceLocale, allBundle, allBundlesIncludeBundlesChildrenSwitch.isSelected(0));
 			this.flc.contextPut("allCount", allToTranslateCount);
 		}
 	}
@@ -428,10 +434,9 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 	 * instead of the translation texts
 	 */
 	private void setCustomizingTextLabels() {
-		I18nManager i18nMgr = I18nManager.getInstance();
 		referenceLangSelection.setLabel("start.customize.referenceLangSelection", null);
 		targetLangSelection.setLabel("start.customize.targetLangSelection", null);		
-		int bundlesCount = i18nMgr.countBundles(null, true);
+		int bundlesCount = i18nManager.countBundles(null, true);
 		progressBar.setUnitLabel(translate("start.customize.progressBar.unitLabel", bundlesCount + ""));
 		missingTranslateButton.setI18nKey("generic.customize.translateButton");
 		allTranslateButton.setI18nKey("generic.customize.translateButton");
@@ -448,13 +453,12 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 	 * org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		I18nManager i18nMgr = I18nManager.getInstance();
 		if (source == targetLangSelection) {
 			String langKey = targetLangSelection.getSelectedKey();
-			targetLocale = i18nMgr.getLocaleOrNull(langKey);
+			targetLocale = i18nManager.getLocaleOrNull(langKey);
 			// Add lang key for image - don't use customizing lang key
 			if (customizingMode) {
-				this.flc.contextPut("targetLangKey", i18nMgr.createOrigianlLocaleKeyForOverlay(targetLocale));
+				this.flc.contextPut("targetLangKey", i18nManager.createOrigianlLocaleKeyForOverlay(targetLocale));
 			} else {
 				this.flc.contextPut("targetLangKey", targetLocale.toString());
 			}
@@ -462,17 +466,17 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 
 		} else if (source == referenceLangSelection) {
 			String langKey = referenceLangSelection.getSelectedKey();
-			referenceLocale = i18nMgr.getLocaleOrNull(langKey);
+			referenceLocale = i18nManager.getLocaleOrNull(langKey);
 			// update in gui prefs
 			Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 			guiPrefs.putAndSave(I18nModule.class, I18nModule.GUI_PREFS_PREFERRED_REFERENCE_LANG, referenceLocale.toString());
 			// update GUI
-			this.flc.contextPut("referenceLangKey", i18nMgr.getLocaleKey(referenceLocale));
+			this.flc.contextPut("referenceLangKey", i18nModule.getLocaleKey(referenceLocale));
 			// Set target language to reference language when in customizing mode
 			if (customizingMode) {
-				targetLocale = I18nModule.getOverlayLocales().get(referenceLocale);	
-				targetLangSelection.select(i18nMgr.getLocaleKey(targetLocale), true);
-				this.flc.contextPut("targetLangKey", i18nMgr.getLocaleKey(referenceLocale));
+				targetLocale = i18nModule.getOverlayLocales().get(referenceLocale);	
+				targetLangSelection.select(i18nModule.getLocaleKey(targetLocale), true);
+				this.flc.contextPut("targetLangKey", i18nModule.getLocaleKey(referenceLocale));
 			}
 			updateStatistics();
 
@@ -481,10 +485,10 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 			if (bundle.equals(ALL_BUNDLES_IDENTIFYER)) bundle = null;
 			boolean includeBundlesChildren = missingBundlesIncludeBundlesChildrenSwitch.isSelected(0);
 			// use the fallback locale because it won't find the key if not already translated in the searchLocale
-			List<I18nItem> i18nItems = i18nMgr.findMissingI18nItems(referenceLocale, targetLocale, bundle,
+			List<I18nItem> i18nItems = i18nManager.findMissingI18nItems(referenceLocale, targetLocale, bundle,
 					includeBundlesChildren);
 			boolean prioSortEnabled = missingBundlesPrioritySortSwitch.isSelected(0);
-			i18nMgr.sortI18nItems(i18nItems, prioSortEnabled, prioSortEnabled);
+			i18nManager.sortI18nItems(i18nItems, prioSortEnabled, prioSortEnabled);
 			deactivateAndDisposeChildCrumbController();
 			// first the list controller
 			TranslationToolI18nItemListCrumbController i18nItemlistCrumbCtr = new TranslationToolI18nItemListCrumbController(ureq,
@@ -501,9 +505,9 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 			String bundle = existingBundlesSelection.getSelectedKey();
 			if (bundle.equals(ALL_BUNDLES_IDENTIFYER)) bundle = null;
 			boolean includeBundlesChildren = existingBundlesIncludeBundlesChildrenSwitch.isSelected(0);
-			List<I18nItem> i18nItems = i18nMgr.findExistingI18nItems(targetLocale, bundle, includeBundlesChildren);
+			List<I18nItem> i18nItems = i18nManager.findExistingI18nItems(targetLocale, bundle, includeBundlesChildren);
 			boolean prioSortEnabled = existingBundlesPrioritySortSwitch.isSelected(0);
-			i18nMgr.sortI18nItems(i18nItems, prioSortEnabled, prioSortEnabled);
+			i18nManager.sortI18nItems(i18nItems, prioSortEnabled, prioSortEnabled);
 			deactivateAndDisposeChildCrumbController();
 			// first the list controller
 			TranslationToolI18nItemListCrumbController i18nItemlistCrumbCtr = new TranslationToolI18nItemListCrumbController(ureq,
@@ -520,10 +524,10 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 			String bundle = allBundlesSelection.getSelectedKey();
 			if (bundle.equals(ALL_BUNDLES_IDENTIFYER)) bundle = null;
 			boolean includeBundlesChildren = allBundlesIncludeBundlesChildrenSwitch.isSelected(0);
-			List<I18nItem> i18nItems = i18nMgr.findExistingAndMissingI18nItems(referenceLocale, targetLocale, bundle,
+			List<I18nItem> i18nItems = i18nManager.findExistingAndMissingI18nItems(referenceLocale, targetLocale, bundle,
 					includeBundlesChildren);
 			boolean prioSortEnabled = allBundlesPrioritySortSwitch.isSelected(0);
-			i18nMgr.sortI18nItems(i18nItems, prioSortEnabled, prioSortEnabled);
+			i18nManager.sortI18nItems(i18nItems, prioSortEnabled, prioSortEnabled);
 			deactivateAndDisposeChildCrumbController();
 			// first the list controller
 			TranslationToolI18nItemListCrumbController i18nItemlistCrumbCtr = new TranslationToolI18nItemListCrumbController(ureq,
@@ -545,14 +549,14 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 			Locale searchLocale = (searchReferenceTargetSelection.getSelectedKey().equals(KEYS_REFERENCE) ? referenceLocale : targetLocale);
 			if (searchKeyValueSelection.getSelectedKey().equals(KEYS_KEY)) {
 				// use the fallback locale because it won't find the key if not already translated in the searchLocale
-				i18nItems = i18nMgr.findI18nItemsByKeySearch(searchString, I18nModule.getFallbackLocale(), targetLocale, bundle,
+				i18nItems = i18nManager.findI18nItemsByKeySearch(searchString, i18nModule.getFallbackLocale(), targetLocale, bundle,
 						includeBundlesChildren);
 			} else {
-				i18nItems = i18nMgr.findI18nItemsByValueSearch(searchString, searchLocale, targetLocale, bundle,
+				i18nItems = i18nManager.findI18nItemsByValueSearch(searchString, searchLocale, targetLocale, bundle,
 						includeBundlesChildren);
 			}
 			boolean prioSortEnabled = searchBundlesPrioritySortSwitch.isSelected(0);
-			I18nManager.getInstance().sortI18nItems(i18nItems, prioSortEnabled, prioSortEnabled);
+			i18nManager.sortI18nItems(i18nItems, prioSortEnabled, prioSortEnabled);
 			deactivateAndDisposeChildCrumbController();
 			// first the list controller
 			TranslationToolI18nItemListCrumbController i18nItemlistCrumbCtr = new TranslationToolI18nItemListCrumbController(ureq,
@@ -607,28 +611,28 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 
 		} else if (source == missingBundlesPrioritySortSwitch) {
 			boolean enabled = missingBundlesPrioritySortSwitch.isSelected(0);
-			List<String> bundleNames = I18nModule.getBundleNamesContainingI18nFiles();
+			List<String> bundleNames = i18nModule.getBundleNamesContainingI18nFiles();
 			String[] bundlesKeys = buildBundleArrayKeys(bundleNames, enabled);
 			String[] bundlesValues = buildBundleArrayValues(bundleNames, enabled);
 			missingBundlesSelection.setKeysAndValues(bundlesKeys, bundlesValues, null);
 
 		} else if (source == existingBundlesPrioritySortSwitch) {
 			boolean enabled = existingBundlesPrioritySortSwitch.isSelected(0);
-			List<String> bundleNames = I18nModule.getBundleNamesContainingI18nFiles();
+			List<String> bundleNames = i18nModule.getBundleNamesContainingI18nFiles();
 			String[] bundlesKeys = buildBundleArrayKeys(bundleNames, enabled);
 			String[] bundlesValues = buildBundleArrayValues(bundleNames, enabled);
 			existingBundlesSelection.setKeysAndValues(bundlesKeys, bundlesValues, null);
 
 		} else if (source == allBundlesPrioritySortSwitch) {
 			boolean enabled = allBundlesPrioritySortSwitch.isSelected(0);
-			List<String> bundleNames = I18nModule.getBundleNamesContainingI18nFiles();
+			List<String> bundleNames = i18nModule.getBundleNamesContainingI18nFiles();
 			String[] bundlesKeys = buildBundleArrayKeys(bundleNames, enabled);
 			String[] bundlesValues = buildBundleArrayValues(bundleNames, enabled);
 			allBundlesSelection.setKeysAndValues(bundlesKeys, bundlesValues, null);
 
 		} else if (source == searchBundlesPrioritySortSwitch) {
 			boolean enabled = searchBundlesPrioritySortSwitch.isSelected(0);
-			List<String> bundleNames = I18nModule.getBundleNamesContainingI18nFiles();
+			List<String> bundleNames = i18nModule.getBundleNamesContainingI18nFiles();
 			String[] bundlesKeys = buildBundleArrayKeys(bundleNames, enabled);
 			String[] bundlesValues = buildBundleArrayValues(bundleNames, enabled);
 			searchBundlesSelection.setKeysAndValues(bundlesKeys, bundlesValues, null);
@@ -675,7 +679,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 			for (String bundle : bundleNames) {
 				copy.add(bundle);
 			}
-			I18nManager.getInstance().sortBundles(copy, true);
+			i18nManager.sortBundles(copy, true);
 			bundlesListKeys.addAll(copy);
 		} else {
 			bundlesListKeys.addAll(bundleNames);
@@ -700,7 +704,7 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 			for (String bundle : bundleNames) {
 				copy.add(bundle);
 			}
-			I18nManager.getInstance().sortBundles(copy, true);
+			i18nManager.sortBundles(copy, true);
 			bundlesListValues.addAll(copy);
 		} else {
 			bundlesListValues.addAll(bundleNames);

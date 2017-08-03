@@ -6,7 +6,7 @@
   http://www.springframework.org/schema/beans/spring-beans.xsd">
   
   
-	<bean id="videoTranscodingTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="videoTranscodingTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 	    <property name="jobDetail" ref="videoTranscodingJobDetail" />
 	    <!-- adjust cron style syntax for your notification needs 
 	    	"0 10 0 * *"  e.g. 10 minutes after midnight
@@ -30,7 +30,7 @@
 	    <property name="startDelay" value="350000" />
 	</bean>
 	
-	<bean id="videoTranscodingJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+	<bean id="videoTranscodingJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 	  <property name="jobClass" value="org.olat.modules.video.manager.VideoTranscodingJob" />
 	</bean>
 

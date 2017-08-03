@@ -10,7 +10,7 @@
   
 	<context:component-scan base-package="org.olat.commons.calendar" />
   
-	<bean id="calendarImportTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="calendarImportTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 	    <property name="jobDetail" ref="calendarImportJob" />
 	    <!-- adjust cron style syntax for your needs 
 	    A "Cron-Expression" is a string comprised of 6 or 7 fields separated by white space. The 6 mandatory and 1 optional fields are as follows:
@@ -30,7 +30,7 @@
 	    <property name="startDelay" value="40000" />
 	</bean>
 	
-	<bean id="calendarImportJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+	<bean id="calendarImportJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 	  <property name="jobClass" value="org.olat.commons.calendar.ImportCalendarJob" />
 	</bean>
 	

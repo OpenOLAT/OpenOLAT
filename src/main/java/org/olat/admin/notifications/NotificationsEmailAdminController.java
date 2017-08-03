@@ -24,6 +24,8 @@
 */
 package org.olat.admin.notifications;
 
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -33,10 +35,12 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.quartz.JobDetail;
+import org.quartz.CronTrigger;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.springframework.scheduling.quartz.CronTriggerBean;
+import org.quartz.Trigger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -49,20 +53,26 @@ import org.springframework.scheduling.quartz.CronTriggerBean;
  */
 public class NotificationsEmailAdminController extends BasicController {
 	private static final String TRIGGER_NOTIFY = "notification.start.button";
+	
+	private final JobKey notificationsJobKey = new JobKey("org.olat.notifications.job.enabled", Scheduler.DEFAULT_GROUP);
 
-	private VelocityContainer content;
 	private Link startNotifyButton;
+	
+	@Autowired
+	private Scheduler scheduler;
 
 	public NotificationsEmailAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		content = createVelocityContainer("index");
+		VelocityContainer content = createVelocityContainer("index");
 		boolean enabled;
 		String cronExpression = "";
 		try {
 			CoreSpringFactory.getBean("org.olat.notifications.job.enabled");
 			enabled = true;
-			CronTriggerBean bean = (CronTriggerBean)CoreSpringFactory.getBean("sendNotificationsEmailTrigger");
-			cronExpression = bean.getCronExpression();
+			List<? extends Trigger> triggers = scheduler.getTriggersOfJob(notificationsJobKey);
+			if(triggers.size() == 1 && triggers.get(0) instanceof CronTrigger) {
+				cronExpression = ((CronTrigger)triggers.get(0)).getCronExpression();
+			}
 		} catch (Exception e) {
 			enabled = false;
 		}
@@ -71,31 +81,20 @@ public class NotificationsEmailAdminController extends BasicController {
 		putInitialPanel(content);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == startNotifyButton) {
 			//trigger the cron job
 			try {
-				Scheduler scheduler = CoreSpringFactory.getImpl(Scheduler.class);
-				JobDetail detail = scheduler.getJobDetail("org.olat.notifications.job.enabled", Scheduler.DEFAULT_GROUP);
-				scheduler.triggerJob(detail.getName(), detail.getGroup());
+				CoreSpringFactory.getImpl(Scheduler.class).triggerJob(notificationsJobKey);
 			} catch (SchedulerException e) {
 				logError("", e);
 			}
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//nothing to do
 	}
-
 }

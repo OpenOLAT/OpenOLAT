@@ -19,8 +19,11 @@
  */
 package org.olat.modules.vitero;
 
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
+
 import java.net.URI;
-import java.text.ParseException;
 import java.util.Calendar;
 
 import javax.ws.rs.core.UriBuilder;
@@ -32,10 +35,10 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.modules.vitero.manager.ViteroZombieSlayerJob;
-import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.TriggerKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -146,20 +149,25 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private void initCronJob() {
 		try {
-			if(scheduler.getTrigger("Vitero_Cleaner_Cron_Trigger", Scheduler.DEFAULT_GROUP) == null) {
-				JobDetail jobDetail = new JobDetail("Vitero_Cleaner_Cron_Job", Scheduler.DEFAULT_GROUP, ViteroZombieSlayerJob.class);
-				CronTrigger trigger = new CronTrigger();
+			TriggerKey triggerKey = new TriggerKey("Vitero_Cleaner_Cron_Trigger", Scheduler.DEFAULT_GROUP);
+			if(scheduler.getTrigger(triggerKey) == null) {
+				
+				// Create job with cron trigger configuration
+				JobDetail jobDetail = newJob(ViteroZombieSlayerJob.class)
+						.withIdentity("Vitero_Cleaner_Cron_Job", Scheduler.DEFAULT_GROUP)
+						.build();
 				
 				Calendar cal = Calendar.getInstance();
 				cal.add(Calendar.SECOND, 30);
-				trigger.setStartTime(cal.getTime());
-				trigger.setName("Vitero_Cleaner_Cron_Trigger");
-				trigger.setCronExpression(cronExpression);
+				Trigger trigger = newTrigger()
+					    .withIdentity("Vitero_Cleaner_Cron_Trigger")
+					    .withSchedule(cronSchedule(cronExpression))
+					    .startAt(cal.getTime())
+					    .build();
+
 				scheduler.scheduleJob(jobDetail, trigger);
 			}
-		} catch (ParseException e) {
-			log.error("Cannot start the Quartz Job which clean the Vitero rooms", e);
-		} catch (SchedulerException e) {
+		} catch (Exception e) {
 			log.error("Cannot start the Quartz Job which clean the Vitero rooms", e);
 		}
 	}

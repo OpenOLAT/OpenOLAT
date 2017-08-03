@@ -5,9 +5,6 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-<bean id="translationDevManager" class="org.olat.core.util.i18n.devtools.TranslationDevManager">
-	<constructor-arg ref="I18nManager" />
-</bean>
 	<!-- Devel / snoop user session -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
 			<property name="order" value="15120" />

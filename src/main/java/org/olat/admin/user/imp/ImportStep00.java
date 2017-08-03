@@ -60,7 +60,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
@@ -124,6 +123,8 @@ class ImportStep00 extends BasicStep {
 		@Autowired
 		private UserManager um;
 		@Autowired
+		private I18nModule i18nModule;
+		@Autowired
 		private BaseSecurity securityManager;
 		@Autowired
 		private ShibbolethModule shibbolethModule;
@@ -165,7 +166,7 @@ class ImportStep00 extends BasicStep {
 				return true;
 			}
 
-			String defaultlang = I18nModule.getDefaultLocale().toString();
+			String defaultlang = i18nModule.getDefaultLocale().toString();
 			List<String> importedEmails = new ArrayList<String>();
 
 			boolean importDataError = false;
@@ -184,7 +185,7 @@ class ImportStep00 extends BasicStep {
 			// org.olat.admin.user.imp.UserImportController
 			// are required and have to be submitted in the right order
 			// - pwd can be enabled / disabled by configuration
-			Collection<String> languages = I18nModule.getEnabledLanguageKeys();
+			Collection<String> languages = i18nModule.getEnabledLanguageKeys();
 			String[] lines = inp.split("\r?\n");
 			for (int i = 0; i < lines.length; i++) {
 				if(i % 25 == 0) {
@@ -449,7 +450,7 @@ class ImportStep00 extends BasicStep {
 		private Mapper createMapper(UserRequest ureq) {
 			final String charset = UserManager.getInstance().getUserCharset(ureq.getIdentity());
 			Mapper m = new Mapper() {
-				@SuppressWarnings({"synthetic-access" })
+				@Override
 				public MediaResource handle(String relPath, HttpServletRequest request) {
 					setTranslator(UserManager.getInstance().getPropertyHandlerTranslator(getTranslator()));
 					String headerLine = translate("table.user.login") + " *";
@@ -459,7 +460,7 @@ class ImportStep00 extends BasicStep {
 						dataLine += "\t" + "olat4you";
 					}
 					headerLine += "\t" + translate("table.user.lang");
-					dataLine += "\t" + I18nManager.getInstance().getLocaleKey(getLocale());
+					dataLine += "\t" + i18nModule.getLocaleKey(getLocale());
 					UserPropertyHandler userPropertyHandler;
 					for (int i = 0; i < userPropertyHandlers.size(); i++) {
 						userPropertyHandler = userPropertyHandlers.get(i);

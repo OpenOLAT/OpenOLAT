@@ -35,6 +35,7 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> This controller offers a panel for translators. On the
@@ -52,6 +53,9 @@ import org.olat.core.util.prefs.Preferences;
 public class TranslationToolLauncherController extends BasicController {
 	private VelocityContainer translationToolLauncherVC;
 	private Link startTranslationToolLink, enableInlineTranslationLink, disableInlineTranslationLink, cacheFlushLink;
+	
+	@Autowired
+	private I18nModule i18nModule;
 
 	/**
 	 * Constructor for the translation tool start panel controller
@@ -66,7 +70,7 @@ public class TranslationToolLauncherController extends BasicController {
 		startTranslationToolLink = LinkFactory.createButton("start", translationToolLauncherVC, this);
 		startTranslationToolLink.setTarget("_transtool");
 		// Add link to flush the cache
-		if (I18nManager.getInstance().isCachingEnabled()) {
+		if (i18nModule.isCachingEnabled()) {
 			cacheFlushLink = LinkFactory.createButton("cache.flush", translationToolLauncherVC, this);
 		}
 		// Add inline translation status and link
@@ -74,11 +78,11 @@ public class TranslationToolLauncherController extends BasicController {
 		updateInlineTranslationStatusAndLink(guiPrefs);
 		putInitialPanel(translationToolLauncherVC);
 		// Enable or disable entire translation tool
-		boolean isTranslationToolEnabled = I18nModule.isTransToolEnabled();
+		boolean isTranslationToolEnabled = i18nModule.isTransToolEnabled();
 		translationToolLauncherVC.contextPut("transToolEnabled", Boolean.valueOf(isTranslationToolEnabled));
 		// Enable or disable customizing tool. The customzing tool is only enabled
 		// when not configured as translation tool server
-		translationToolLauncherVC.contextPut("customizingToolEnabled", Boolean.valueOf(!isTranslationToolEnabled && I18nModule.isOverlayEnabled()));
+		translationToolLauncherVC.contextPut("customizingToolEnabled", Boolean.valueOf(!isTranslationToolEnabled && i18nModule.isOverlayEnabled()));
 	}
 
 	/*
@@ -93,8 +97,9 @@ public class TranslationToolLauncherController extends BasicController {
 		if (source == startTranslationToolLink) {
 			// wrap the content controller into a full header layout
 			ControllerCreator controllerCreator = new ControllerCreator() {
+				@Override
 				public Controller createController(UserRequest uureq, WindowControl wControl) {
-					return new TranslationToolMainController(uureq, wControl, !I18nModule.isTransToolEnabled());
+					return new TranslationToolMainController(uureq, wControl, !i18nModule.isTransToolEnabled());
 				}
 			};
 			// no need for later disposal, opens in popup window and will be disposed
@@ -112,7 +117,7 @@ public class TranslationToolLauncherController extends BasicController {
 
 		} else if (source == cacheFlushLink) {
 			// clear i18n cache
-			I18nModule.reInitializeAndFlushCache();
+			i18nModule.reInitializeAndFlushCache();
 			showInfo("cache.flush.ok");
 		}
 	}

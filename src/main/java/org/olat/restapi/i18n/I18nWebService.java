@@ -31,6 +31,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -83,7 +84,8 @@ public class I18nWebService {
 	@Path("{package}/{key}")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getTranslation(@PathParam("package") String packageName, @PathParam("key") String key, @QueryParam("locale") String localeKey, @Context HttpServletRequest request) {
-		I18nManager i18n = I18nManager.getInstance();
+		I18nManager i18n = CoreSpringFactory.getImpl(I18nManager.class);
+		I18nModule i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
 		
 		Locale locale = null;
 		if(StringHelper.containsNonWhitespace(localeKey)) {
@@ -96,10 +98,10 @@ public class I18nWebService {
 		}
 		
 		if(locale == null) {
-			locale = I18nModule.getDefaultLocale();
+			locale = i18nModule.getDefaultLocale();
 		}
 		
-		boolean overlayEnabled = I18nModule.isOverlayEnabled();
+		boolean overlayEnabled = i18nModule.isOverlayEnabled();
 		String val = i18n.getLocalizedString(packageName, key, EMPTY_ARRAY, locale, overlayEnabled, true);
 		return Response.ok(val).build();
 	}

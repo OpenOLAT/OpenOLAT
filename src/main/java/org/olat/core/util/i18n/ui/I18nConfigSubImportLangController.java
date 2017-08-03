@@ -41,6 +41,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> This form allows the user to import languages from a
@@ -61,6 +62,11 @@ class I18nConfigSubImportLangController extends FormBasicController {
 	private FileElement importFile;
 	private FormLink cancelButton;
 	private MultipleSelectionElement importKeys;
+	
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nManager;
 
 	public I18nConfigSubImportLangController(UserRequest ureq, WindowControl control) {
 		super(ureq, control, LAYOUT_VERTICAL);
@@ -71,7 +77,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// A title, displayed in fieldset
 		setFormTitle("configuration.management.package.import.title");
-		if (I18nModule.isTransToolEnabled()) {
+		if (i18nModule.isTransToolEnabled()) {
 			setFormDescription("configuration.management.package.import.description.transserver");			
 		} else {
 			setFormDescription("configuration.management.package.import.description");						
@@ -108,15 +114,15 @@ class I18nConfigSubImportLangController extends FormBasicController {
 			Collection<String> importLangKeys = importKeys.getSelectedKeys();			
 			Set<String> alreadyInstalledLangs = new HashSet<String>();
 			for (String langKey : importLangKeys) {
-				if (I18nModule.getAvailableLanguageKeys().contains(langKey)) {
+				if (i18nModule.getAvailableLanguageKeys().contains(langKey)) {
 					alreadyInstalledLangs.add(langKey);
 				}
 			}
-			if (I18nModule.isTransToolEnabled()) {
+			if (i18nModule.isTransToolEnabled()) {
 				// In translation mode importing will copy the language package
 				// over an existing language or create a new language
 				File tmpJar = importFile.getUploadFile();
-				I18nManager.getInstance().copyLanguagesFromJar(tmpJar, importLangKeys);
+				i18nManager.copyLanguagesFromJar(tmpJar, importLangKeys);
 				logAudit("Uploaded languages from jar::" + importFile.getUploadFileName(), null);
 				showInfo("configuration.management.package.import.success", importLangKeys.toString());
 				
@@ -139,7 +145,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 				}
 			}
 			// Reset i18n system
-			I18nModule.reInitializeAndFlushCache();
+			i18nModule.reInitializeAndFlushCache();
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
@@ -153,7 +159,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 		} else if (source == importFile) {
 			if (importFile.isUploadSuccess()) {
 				File tmpJar = importFile.getUploadFile();
-				Set<String> importLangKeys = I18nManager.getInstance().sarchForAvailableLanguagesInJarFile(tmpJar, true);
+				Set<String> importLangKeys = i18nManager.sarchForAvailableLanguagesInJarFile(tmpJar, true);
 				if (importLangKeys.size() == 0) {
 					showError("configuration.management.package.import.failure.empty");
 					return;

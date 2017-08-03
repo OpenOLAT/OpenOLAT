@@ -8,12 +8,11 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
   
-	<context:component-scan base-package="org.olat.core.dispatcher.mapper,org.olat.core.id.context,org.olat.core.commons.controllers.impressum,org.olat.core.gui.render.velocity" />
+	<context:component-scan base-package="org.olat.core.dispatcher.mapper,org.olat.core.id.context,org.olat.core.commons.controllers.impressum,org.olat.core.helpers,org.olat.core.gui.render.velocity" />
 
 	<bean id="coreSpringFactory" class="org.olat.core.CoreSpringFactory" />
 	
 	<import resource="classpath:/org/olat/core/util/vfs/version/_spring/versioningCorecontext.xml"/>
-	<import resource="classpath:/org/olat/core/util/i18n/_spring/i18nCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/util/_spring/utilCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/util/i18n/devtools/_spring/devtoolsCorecontext.xml"/>
 	<import resource="classpath:/org/olat/core/util/event/_spring/frameworkStartedEventCorecontext.xml"/>
@@ -41,13 +40,13 @@
 	    <property name="parserPoolSize" value="${velocity.parser.pool.size}" />	
 	</bean>
 
-	<bean id="mapperSlayerTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="mapperSlayerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 	    <property name="jobDetail" ref="mapperSlayerJob" />
 	    <property name="cronExpression" value="0 5 0/1 * * ?" />
 		<property name="startDelay" value="200000" />
 	</bean>
 	
-	<bean id="mapperSlayerJob" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	<bean id="mapperSlayerJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 	  <property name="jobClass" value="org.olat.core.dispatcher.mapper.manager.MapperZombieSlayerJob" />
 	</bean>
 

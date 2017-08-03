@@ -33,8 +33,8 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.restapi.system.vo.NotificationsStatus;
-import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
@@ -45,6 +45,8 @@ import org.quartz.SchedulerException;
 public class NotificationsAdminWebService {
 	
 	private static final OLog log = Tracing.createLoggerFor(NotificationsAdminWebService.class);
+	
+	private final JobKey notificationsJobKey = new JobKey("org.olat.notifications.job.enabled", Scheduler.DEFAULT_GROUP);
 	
 	/**
 	 * Return the status of the notifications job: running, stopped
@@ -77,10 +79,9 @@ public class NotificationsAdminWebService {
 	private String getJobStatus() {
 		try {
 			Scheduler scheduler = CoreSpringFactory.getImpl(Scheduler.class);
-			@SuppressWarnings("unchecked")
 			List<JobExecutionContext> jobs = scheduler.getCurrentlyExecutingJobs();
 			for(JobExecutionContext job:jobs) {
-				if("org.olat.notifications.job.enabled".equals(job.getJobDetail().getName())) {
+				if("org.olat.notifications.job.enabled".equals(job.getJobDetail().getKey().getName())) {
 					return "running";
 				}
 			}
@@ -103,9 +104,7 @@ public class NotificationsAdminWebService {
 	public Response setStatus(@FormParam("status") String status) {
 		if("running".equals(status)) {
 			try {
-				Scheduler scheduler = CoreSpringFactory.getImpl(Scheduler.class);
-				JobDetail detail = scheduler.getJobDetail("org.olat.notifications.job.enabled", Scheduler.DEFAULT_GROUP);
-				scheduler.triggerJob(detail.getName(), detail.getGroup());
+				CoreSpringFactory.getImpl(Scheduler.class).triggerJob(notificationsJobKey);
 			} catch (SchedulerException e) {
 				log.error("", e);
 			}

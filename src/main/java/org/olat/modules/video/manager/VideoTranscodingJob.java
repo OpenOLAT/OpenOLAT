@@ -41,7 +41,6 @@ import org.olat.modules.video.VideoTranscoding;
 import org.olat.resource.OLATResource;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.StatefulJob;
 
 /**
  * 
@@ -49,7 +48,7 @@ import org.quartz.StatefulJob;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VideoTranscodingJob extends JobWithDB implements StatefulJob {
+public class VideoTranscodingJob extends JobWithDB {
 
 	/**
 	 * 

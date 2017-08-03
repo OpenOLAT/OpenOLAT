@@ -114,6 +114,7 @@ import org.olat.course.assessment.ui.mode.AssessmentModeGuardController;
 import org.olat.course.assessment.ui.mode.ChooseAssessmentModeEvent;
 import org.olat.gui.control.UserToolsMenuController;
 import org.olat.home.HomeSite;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -184,6 +185,11 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	
 	private final boolean isAdmin;
 	private final int maxTabs = 20;
+	
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nManager;
 	
 	public BaseFullWebappController(UserRequest ureq, BaseFullWebappControllerParts baseFullWebappControllerParts) {
 		// only-use-in-super-call, since we define our own
@@ -350,14 +356,15 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		// will start the translation tool in translation mode, if the overlay
 		// feature is enabled it will start in customizing mode
 		// fxdiff: allow user-managers to use the inline translation also.
-		if (ureq.getUserSession().isAuthenticated()
-				&& (ureq.getUserSession().getRoles().isOLATAdmin() || ureq.getUserSession().getRoles().isUserManager())
-				&& (I18nModule.isTransToolEnabled() || I18nModule.isOverlayEnabled())) {
+		UserSession usess = ureq.getUserSession();
+		if (usess.isAuthenticated()
+				&& (usess.getRoles().isOLATAdmin() || usess.getRoles().isUserManager())
+				&& (i18nModule.isTransToolEnabled() || i18nModule.isOverlayEnabled())) {
 			inlineTranslationC = wbo.createInlineTranslationDispatcherController(ureq, getWindowControl());
 			Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 			Boolean isInlineTranslationEnabled = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_INLINE_TRANSLATION_ENABLED,
 					Boolean.FALSE);
-			I18nManager.getInstance().setMarkLocalizedStringsEnabled(ureq.getUserSession(), isInlineTranslationEnabled);
+			i18nManager.setMarkLocalizedStringsEnabled(ureq.getUserSession(), isInlineTranslationEnabled);
 			mainVc.put("inlineTranslation", inlineTranslationC.getInitialComponent());
 		}
 

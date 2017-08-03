@@ -80,6 +80,7 @@ import org.olat.search.service.indexer.MainIndexer;
 import org.olat.search.service.searcher.JmsSearchProvider;
 import org.olat.search.service.spell.SearchSpellChecker;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
@@ -89,6 +90,8 @@ import org.quartz.SchedulerException;
  */
 public class SearchServiceImpl implements SearchService, GenericEventListener {
 	private static final OLog log = Tracing.createLoggerFor(SearchServiceImpl.class);
+	
+	private final JobKey indexerJobKey = new JobKey("org.olat.search.job.enabled", Scheduler.DEFAULT_GROUP);
 	
 	private Index indexer;	
 	private SearchModule searchModuleConfig;
@@ -180,13 +183,13 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		if (indexer==null) throw new AssertException ("Try to call startIndexing() but indexer is null");
 		
 		try {
-			JobDetail detail = scheduler.getJobDetail("org.olat.search.job.enabled", Scheduler.DEFAULT_GROUP);
+			JobDetail detail = scheduler.getJobDetail(indexerJobKey);
 			if(detail == null) {
 				if("disabled".equals(indexerCron)) {
 					indexer.startFullIndex();
 				}
 			} else {
-				scheduler.triggerJob(detail.getName(), detail.getGroup());
+				scheduler.triggerJob(indexerJobKey);
 			}
 			log.info("startIndexing...");
 		} catch (SchedulerException e) {
@@ -202,13 +205,13 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		if (indexer==null) throw new AssertException ("Try to call stopIndexing() but indexer is null");
 
 		try {
-			JobDetail detail = scheduler.getJobDetail("org.olat.search.job.enabled", Scheduler.DEFAULT_GROUP);
+			JobDetail detail = scheduler.getJobDetail(indexerJobKey);
 			if(detail == null) {
 				if("disabled".equals(indexerCron)) {
 					indexer.stopFullIndex();
 				}
 			} else {
-				scheduler.interrupt(detail.getName(), detail.getGroup());
+				scheduler.interrupt(indexerJobKey);
 			}
 			log.info("stopIndexing.");
 		} catch (SchedulerException e) {
@@ -243,8 +246,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 
 		if (startingFullIndexingAllowed()) {
 			try {
-				JobDetail detail = scheduler.getJobDetail("org.olat.search.job.enabled", Scheduler.DEFAULT_GROUP);
-				scheduler.triggerJob(detail.getName(), detail.getGroup());
+				scheduler.triggerJob(indexerJobKey);
 			} catch (SchedulerException e) {
 				log.error("", e);
 			}

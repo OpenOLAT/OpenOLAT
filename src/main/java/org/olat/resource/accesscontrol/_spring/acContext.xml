@@ -73,14 +73,14 @@
 		<property name="order" value="7220" />
 	</bean>
 	
-	<bean id="acReservationCleanupJob" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+	<bean id="acReservationCleanupJob" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
     	<property name="jobDetail" ref="acReservationCleanupJobDetail"/>
     	<!-- 60 seconds -->
   		<property name="repeatInterval" value="60000"/>
     	<property name="startDelay" value="30000" />
 	</bean>
 	
-	<bean id="acReservationCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+	<bean id="acReservationCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 		<property name="jobClass" value="org.olat.resource.accesscontrol.manager.ReservationsJob" />
 	</bean>
 	

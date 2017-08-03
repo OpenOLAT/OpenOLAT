@@ -77,6 +77,8 @@ public class I18nTest extends OlatTestCase {
 	@Autowired
 	private I18nManager i18nMgr;
 	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
 	private TranslationDevManager tDMgr;
 	private static final String testSourceBundle =  "org.olat.core.util.i18n.junittestdata.devtools.source";
 	private static final String testTargetBundle =  "org.olat.core.util.i18n.junittestdata.devtools.target";
@@ -95,7 +97,7 @@ public class I18nTest extends OlatTestCase {
 	public void tearDown() throws Exception {
 		String testNewBundle =  "org.olat.core.util.i18n.junittestdata.new";
 		Locale testLocale = i18nMgr.getLocaleOrDefault("de");
-		File baseDir = I18nModule.getPropertyFilesBaseDir(testLocale, testNewBundle);
+		File baseDir = i18nModule.getPropertyFilesBaseDir(testLocale, testNewBundle);
 		// only delete files when basedir available
 		if (baseDir == null) return;
 		File testFile = i18nMgr.getPropertiesFile(testLocale, testNewBundle, baseDir);
@@ -129,17 +131,17 @@ public class I18nTest extends OlatTestCase {
 		Locale testLocale = i18nMgr.getLocaleOrDefault("de");
 		// cleanup devtools source/target files
 		// 1) source files
-		File baseDir = I18nModule.getPropertyFilesBaseDir(testLocale, testSourceBundle);
+		File baseDir = i18nModule.getPropertyFilesBaseDir(testLocale, testSourceBundle);
 		File testSFile = i18nMgr.getPropertiesFile(testLocale, testSourceBundle, baseDir);
 		File sourcePath = testSFile.getParentFile().getParentFile();
 		FileUtils.deleteDirsAndFiles(sourcePath, true, true);
 		// 2) target files
-		baseDir = I18nModule.getPropertyFilesBaseDir(testLocale, testTargetBundle);
+		baseDir = i18nModule.getPropertyFilesBaseDir(testLocale, testTargetBundle);
 		File testTFile = i18nMgr.getPropertiesFile(testLocale, testTargetBundle, baseDir);
 		File targetPath = testTFile.getParentFile().getParentFile();
 		FileUtils.deleteDirsAndFiles(targetPath, true, true);
 		// 3) move target files
-		baseDir = I18nModule.getPropertyFilesBaseDir(testLocale, testMoveTargetBundle);
+		baseDir = i18nModule.getPropertyFilesBaseDir(testLocale, testMoveTargetBundle);
 		File testMFile = i18nMgr.getPropertiesFile(testLocale, testMoveTargetBundle, baseDir);
 		File movePath = testMFile.getParentFile().getParentFile().getParentFile();
 		FileUtils.deleteDirsAndFiles(movePath, true, true);
@@ -150,7 +152,7 @@ public class I18nTest extends OlatTestCase {
 		// set languages that is used as reference: all keys there are the keys should not to be deleted
 		String[] referenceLanguages = new String[]{"de", "en"};
 		// set the languages that should be cleaned up
-		Set<String> targetLanguages = I18nModule.getTranslatableLanguageKeys();
+		Set<String> targetLanguages = i18nModule.getTranslatableLanguageKeys();
 		//Set<String> targetLanguages = new HashSet<String>();
 		//targetLanguages.add("en");
 		tDMgr.removeDeletedKeys(false, referenceLanguages, targetLanguages);		
@@ -158,7 +160,7 @@ public class I18nTest extends OlatTestCase {
 	
 
 	@Test public void testMoveKeyTask() {
-		if (I18nModule.isTransToolEnabled()) {
+		if (i18nModule.isTransToolEnabled()) {
 			prepareDevToolTests();
 			Locale testLocale = i18nMgr.getLocaleOrDefault("de");
 			String ktm = "key.to.move";
@@ -182,38 +184,35 @@ public class I18nTest extends OlatTestCase {
 			//check for changed references in value
 			//if correctly done, should still be resolvable
 			assertTrue(sourcePropResolved.getProperty("key.to.stay2").indexOf(matchString)!=-1);
-			tDMgr.logToFile("moveKey");
 		}
 	}
 	
 	@Test public void testMovePackageTask(){
-		if (I18nModule.isTransToolEnabled()) {
+		if (i18nModule.isTransToolEnabled()) {
 			prepareDevToolTests();
 			tDMgr.movePackageTask(testSourceBundle, testTargetBundle);
 			i18nMgr.clearCaches();
 			Properties sourceProp = i18nMgr.getPropertiesWithoutResolvingRecursively(null, testSourceBundle);
 			assertTrue(sourceProp.isEmpty());
 			Properties targetProp = i18nMgr.getPropertiesWithoutResolvingRecursively(null, testTargetBundle);
-			assertFalse(targetProp.isEmpty());		
-			tDMgr.logToFile("movePackage");
+			assertFalse(targetProp.isEmpty());
 		}
 	}
 	
 	@Test public void testMovePackageByMovingSingleKeysTask(){
-		if (I18nModule.isTransToolEnabled()) {
+		if (i18nModule.isTransToolEnabled()) {
 			prepareDevToolTests();
 			tDMgr.movePackageByMovingSingleKeysTask(testSourceBundle, testTargetBundle);
 			i18nMgr.clearCaches();
 			Properties sourceProp = i18nMgr.getPropertiesWithoutResolvingRecursively(null, testSourceBundle);
 			assertTrue(sourceProp.isEmpty());
 			Properties targetProp = i18nMgr.getPropertiesWithoutResolvingRecursively(null, testTargetBundle);
-			assertFalse(targetProp.isEmpty());		
-			tDMgr.logToFile("movePackageSingle");
+			assertFalse(targetProp.isEmpty());
 		}
 	}
 	
 	@Test public void testMergePackageTask(){
-		if (I18nModule.isTransToolEnabled()) {
+		if (i18nModule.isTransToolEnabled()) {
 			prepareDevToolTests();
 			tDMgr.mergePackageTask(testSourceBundle, testTargetBundle);
 			i18nMgr.clearCaches();
@@ -224,7 +223,7 @@ public class I18nTest extends OlatTestCase {
 	}
 	
 	@Test public void testRenameLanguageTask(){
-		if (I18nModule.isTransToolEnabled()) {
+		if (i18nModule.isTransToolEnabled()) {
 			prepareDevToolTests();
 			// create source
 			Locale xxLocale = new Locale("xx");		
@@ -256,9 +255,9 @@ public class I18nTest extends OlatTestCase {
 	}
 	
 	@Test public void testMoveLanguageTask(){
-		if (I18nModule.isTransToolEnabled()) {
+		if (i18nModule.isTransToolEnabled()) {
 			prepareDevToolTests();
-			String srcPath = I18nModule.getTransToolApplicationLanguagesSrcDir().getAbsolutePath() + "/../../test/java/org/olat/core/util/i18n/junittestdata/devtools";
+			String srcPath = i18nModule.getTransToolApplicationLanguagesSrcDir().getAbsolutePath() + "/../../test/java/org/olat/core/util/i18n/junittestdata/devtools";
 			String targetPath = srcPath + "/../movetarget";
 			//only copy: target should exist
 			Locale mvLocale = i18nMgr.getLocaleOrDefault("de");
@@ -287,30 +286,26 @@ public class I18nTest extends OlatTestCase {
 	//remove after execution!
 	@Test
 	public void testRemoveXKeyTask(){
-		tDMgr.removeXKeysTask(false);		
-		tDMgr.logToFile("XKeys");
+		tDMgr.removeXKeysTask(false);
 	}
 	
 	//remove after execution!
 	@Test
 	public void testRemoveTodoKeyTask(){
 		tDMgr.removeTodoKeysTask(false);
-		tDMgr.logToFile("todoKeys");
 	}
 	
 	//remove after execution!
 	@Test
 	public void testRemoveEmptyKeysTask(){
 		tDMgr.removeEmptyKeysTask(false);
-		tDMgr.logToFile("emptyKeys");
 	}
 	
 	//remove after execution!	
 	@Test
 	public void testRemoveReferenceLanguageCopiesTask(){
-		if (I18nModule.isTransToolEnabled()) {
-			tDMgr.removeReferenceLanguageCopiesTask(false);
-			tDMgr.logToFile("refLangCopied");			
+		if (i18nModule.isTransToolEnabled()) {
+			tDMgr.removeReferenceLanguageCopiesTask(false);		
 		}
 	}
 
@@ -318,11 +313,11 @@ public class I18nTest extends OlatTestCase {
 	 * Test method i18nManager.searchForAvailableLanguages()
 	 */
 	@Test public void testSearchForAvailableLanguages() {
-		if (I18nModule.isTransToolEnabled()) {
+		if (i18nModule.isTransToolEnabled()) {
 			// Try to load i18n files and a jar from the testdata dir
-			File testDataDir = new File(I18nModule.getTransToolApplicationLanguagesSrcDir(), "/../../test/java/org/olat/core/util/i18n/junittestdata/");
+			File testDataDir = new File(i18nModule.getTransToolApplicationLanguagesSrcDir(), "/../../test/java/org/olat/core/util/i18n/junittestdata/");
 			assertTrue(testDataDir.exists());
-			Set<String> foundLanguages = i18nMgr.searchForAvailableLanguages(testDataDir);
+			Set<String> foundLanguages = i18nModule.searchForAvailableLanguages(testDataDir);
 			// Set must contain some LocalStrings file:
 			assertTrue(foundLanguages.contains("de"));
 			assertTrue(foundLanguages.contains("en"));
@@ -333,7 +328,7 @@ public class I18nTest extends OlatTestCase {
 			// Final check
 			assertEquals(6, foundLanguages.size());
 		} else {
-			Set<String> foundLanguages = I18nModule.getAvailableLanguageKeys();
+			Set<String> foundLanguages = i18nModule.getAvailableLanguageKeys();
 			// Set must contain some LocaleStrings from the jar package
 			assertTrue(foundLanguages.contains("fr"));
 			assertTrue(foundLanguages.contains("zh_CN"));			
@@ -345,7 +340,7 @@ public class I18nTest extends OlatTestCase {
 	 */
 	@Test public void testSearchForBundleNamesContainingI18nFiles() {
 		long start = System.currentTimeMillis();
-		List<String> foundBundles = i18nMgr.searchForBundleNamesContainingI18nFiles();
+		List<String> foundBundles = i18nModule.searchForBundleNamesContainingI18nFiles();
 		long end = System.currentTimeMillis();
 		log.info("Searching for " + foundBundles.size() + " bundles on OLAT source path took me " + (end-start) + "ms", "testSearchForBundleNamesContainingI18nFiles");
 		// Must contain packages from core
@@ -361,7 +356,7 @@ public class I18nTest extends OlatTestCase {
 	 * Test method i18nManager.buildI18nFilename()
 	 */
 	@Test public void testBuildI18nFilename() {
-		String overlay = I18nModule.getOverlayName();
+		String overlay = i18nModule.getOverlayName();
 		String testFileName = i18nMgr.buildI18nFilename(new Locale("de"));
 		assertEquals("LocalStrings_de.properties", testFileName);
 		testFileName = i18nMgr.buildI18nFilename(new Locale("de","","__" + overlay));
@@ -386,9 +381,9 @@ public class I18nTest extends OlatTestCase {
 		locale = i18nMgr.getLocaleOrDefault("xy");
 		assertEquals(I18nModule.getDefaultLocale(), locale);		
 		// Test trying to get overlay via getLocale method which should not return the overlay
-		Locale overlay = i18nMgr.getLocaleOrDefault("de__" + I18nModule.getOverlayName());
+		Locale overlay = i18nMgr.getLocaleOrDefault("de__" + i18nModule.getOverlayName());
 		assertEquals(I18nModule.getDefaultLocale(), overlay);
-		overlay = i18nMgr.getLocaleOrDefault("zh_CN__" + I18nModule.getOverlayName());
+		overlay = i18nMgr.getLocaleOrDefault("zh_CN__" + i18nModule.getOverlayName());
 		assertEquals(I18nModule.getDefaultLocale(), overlay);
 	}
 
@@ -397,25 +392,25 @@ public class I18nTest extends OlatTestCase {
 	 */	
 	@Test public void testCreateLocale() {
 		// standard locale
-		Locale loc = i18nMgr.createLocale("de");
+		Locale loc = i18nModule.createLocale("de");
 		assertNotNull(loc);
 		assertEquals("de",loc.getLanguage());
 		assertEquals("",loc.getCountry());
 		assertEquals("",loc.getVariant());
 		// with country
-		loc = i18nMgr.createLocale("de_CH");
+		loc = i18nModule.createLocale("de_CH");
 		assertNotNull(loc);
 		assertEquals("de", loc.getLanguage());
 		assertEquals("CH", loc.getCountry());
 		assertEquals("", loc.getVariant());
 		// with variant
-		loc = i18nMgr.createLocale("de_CH_ZH");
+		loc = i18nModule.createLocale("de_CH_ZH");
 		assertNotNull(loc);
 		assertEquals("de", loc.getLanguage());
 		assertEquals("CH", loc.getCountry());
 		assertEquals("ZH", loc.getVariant());
 		// with variant but no country
-		loc = i18nMgr.createLocale("de__VENDOR");
+		loc = i18nModule.createLocale("de__VENDOR");
 		assertNotNull(loc);
 		assertEquals("de", loc.getLanguage());
 		assertEquals("", loc.getCountry());
@@ -423,21 +418,21 @@ public class I18nTest extends OlatTestCase {
 		//
 		// With overlay
 		// with language
-		String overlay = I18nModule.getOverlayName();
-		loc = i18nMgr.createLocale("de");
-		Locale over = i18nMgr.createOverlay(loc);
+		String overlay = i18nModule.getOverlayName();
+		loc = i18nModule.createLocale("de");
+		Locale over = i18nModule.createOverlay(loc);
 		assertEquals("de____" + overlay, over.toString()); 
-		assertEquals(i18nMgr.createOverlayKeyForLanguage(loc.toString()), i18nMgr.getLocaleKey(over)); 
+		assertEquals(i18nModule.createOverlayKeyForLanguage(loc.toString()), i18nModule.getLocaleKey(over)); 
 		// with country
-		loc = i18nMgr.createLocale("de_CH");
-		over = i18nMgr.createOverlay(loc);
+		loc = i18nModule.createLocale("de_CH");
+		over = i18nModule.createOverlay(loc);
 		assertEquals("de_CH___" + overlay, over.toString()); 
-		assertEquals(i18nMgr.createOverlayKeyForLanguage(loc.toString()), i18nMgr.getLocaleKey(over)); 
+		assertEquals(i18nModule.createOverlayKeyForLanguage(loc.toString()), i18nModule.getLocaleKey(over)); 
 		// with variant
-		loc = i18nMgr.createLocale("de_CH_ZH");
-		over = i18nMgr.createOverlay(loc);
+		loc = i18nModule.createLocale("de_CH_ZH");
+		over = i18nModule.createOverlay(loc);
 		assertEquals("de_CH_ZH__" + overlay, over.toString()); 
-		assertEquals(i18nMgr.createOverlayKeyForLanguage(loc.toString()), i18nMgr.getLocaleKey(over)); 
+		assertEquals(i18nModule.createOverlayKeyForLanguage(loc.toString()), i18nModule.getLocaleKey(over)); 
 	}
 	
 	/**
@@ -454,8 +449,8 @@ public class I18nTest extends OlatTestCase {
 	 * Test methods i18nManager.getLanguageTranslated() i18nManager.getLanguageInEnglish()
 	 */
 	@Test public void testGetPropertyFile() {
-		if (I18nModule.isTransToolEnabled()) {
-			File baseDir = I18nModule.getPropertyFilesBaseDir(i18nMgr.getLocaleOrDefault("de"), "org.olat.core");
+		if (i18nModule.isTransToolEnabled()) {
+			File baseDir = i18nModule.getPropertyFilesBaseDir(i18nMgr.getLocaleOrDefault("de"), "org.olat.core");
 			assertNotNull(baseDir);
 			File file = i18nMgr.getPropertiesFile(i18nMgr.getLocaleOrDefault("de"), "org.olat.core", baseDir);
 			assertTrue(file.exists());
@@ -486,7 +481,7 @@ public class I18nTest extends OlatTestCase {
 		// test with non existing files
 		String testNewBundle =  "org.olat.core.util.i18n.junittestdata.new";
 		Locale testLocale = i18nMgr.getLocaleOrDefault("de");
-		File baseDir = I18nModule.getPropertyFilesBaseDir(testLocale, testNewBundle);
+		File baseDir = i18nModule.getPropertyFilesBaseDir(testLocale, testNewBundle);
 		File testFile = i18nMgr.getPropertiesFile(testLocale, testNewBundle, baseDir);
 		// clean first existing files from previous broken testcase
 		if (testFile.exists()) {
@@ -580,11 +575,11 @@ public class I18nTest extends OlatTestCase {
 	 */
 	@Ignore
 	@Test public void testCountI18nItemsAndBundles() {
-		I18nModule.initBundleNames(); // remove dirty stuff from previous tests
-		int bundleCounter = I18nModule.getBundleNamesContainingI18nFiles().size();
+		i18nModule.initBundleNames(); // remove dirty stuff from previous tests
+		int bundleCounter = i18nModule.getBundleNamesContainingI18nFiles().size();
 		String testNewBundle =  "org.olat.core.util.i18n.junittestdata.new";
 		Locale testLocale = i18nMgr.getLocaleOrDefault("de");
-		File baseDir = I18nModule.getPropertyFilesBaseDir(testLocale, testNewBundle);
+		File baseDir = i18nModule.getPropertyFilesBaseDir(testLocale, testNewBundle);
 		File testFile = i18nMgr.getPropertiesFile(testLocale, testNewBundle, baseDir);
 		// clean first existing files from previous broken testcase
 		if (testFile.exists()) {
@@ -598,7 +593,7 @@ public class I18nTest extends OlatTestCase {
 		i18nMgr.saveOrUpdateProperties(props, testLocale, testNewBundle);
 		assertEquals(2, i18nMgr.countI18nItems(testLocale, testNewBundle, false));
 		assertEquals(0, i18nMgr.countI18nItems(i18nMgr.getLocaleOrDefault("en"), testNewBundle, false));
-		assertEquals(bundleCounter + 1, I18nModule.getBundleNamesContainingI18nFiles().size());
+		assertEquals(bundleCounter + 1, i18nModule.getBundleNamesContainingI18nFiles().size());
 		// test all bundles
 		int allCount = i18nMgr.countI18nItems(testLocale, null, true);
 		assertEquals(allCount, i18nMgr.countI18nItems(testLocale, null, false));
@@ -607,7 +602,7 @@ public class I18nTest extends OlatTestCase {
 		assertEquals(allCount-1, i18nMgr.countI18nItems(testLocale, null, false));
 		i18nMgr.deleteProperties(testLocale, testNewBundle);
 		assertEquals(allCount-2, i18nMgr.countI18nItems(testLocale, null, false));
-		assertEquals(bundleCounter, I18nModule.getBundleNamesContainingI18nFiles().size());
+		assertEquals(bundleCounter, i18nModule.getBundleNamesContainingI18nFiles().size());
 		// count bundles tests
 		assertEquals(0, i18nMgr.countBundles("org.olat.core.util.i18n.nonexisting", true));
 		assertEquals(1, i18nMgr.countBundles("org.olat.core.util.i18n.ui", true));

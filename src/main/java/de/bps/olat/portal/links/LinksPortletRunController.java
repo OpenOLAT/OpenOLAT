@@ -38,8 +38,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.UserConstants;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -57,6 +57,9 @@ public class LinksPortletRunController extends BasicController {
 	private CloseableModalController cmc;
 	private Link backLink;
 	private DialogBoxController delLinkCtrl;
+	
+	@Autowired
+	private I18nModule i18nModule;
 	
 	protected LinksPortletRunController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -76,9 +79,9 @@ public class LinksPortletRunController extends BasicController {
 	}
 	
 	private void initOrUpdatePortletView(UserRequest ureq){
-		String lang = I18nManager.getInstance().getLocaleKey(ureq.getLocale());
+		String lang = i18nModule.getLocaleKey(ureq.getLocale());
 		if (lang == null) {
-			lang = I18nManager.getInstance().getLocaleKey(I18nModule.getDefaultLocale());
+			lang = i18nModule.getLocaleKey(I18nModule.getDefaultLocale());
 		}
 		// fxdiff: compare with language-base not with variant...
 		int underlinePos = lang.indexOf("_");
@@ -199,7 +202,7 @@ public class LinksPortletRunController extends BasicController {
 				}
 			} else if (linkName.contains(LINKADD)){
 				// add a link to institution:
-				PortletLink newLink = new PortletLink("", "", "", I18nManager.getInstance().getLocaleKey(ureq.getLocale()), "", null);
+				PortletLink newLink = new PortletLink("", "", "", i18nModule.getLocaleKey(ureq.getLocale()), "", null);
 				// find institution and port in link!
 				String institution = link.getCommand().substring(LINKADD.length());
 				PortletInstitution inst = LinksPortlet.getContent().get(institution);

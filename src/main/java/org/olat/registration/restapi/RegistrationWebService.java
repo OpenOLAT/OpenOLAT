@@ -45,7 +45,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
-import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
@@ -126,7 +126,7 @@ public class RegistrationWebService {
 			String[] bodyAttrs = new String[] {
 					serverpath,
 					tk.getRegistrationKey(),
-					I18nManager.getInstance().getLocaleKey(locale)
+					CoreSpringFactory.getImpl(I18nModule.class).getLocaleKey(locale)
 			};
 			String[] whereFromAttrs = new String [] { serverpath, today, ip };
 			String body = translator.translate("reg.body", bodyAttrs) + SEPARATOR + translator.translate("reg.wherefrom", whereFromAttrs);

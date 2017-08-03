@@ -52,7 +52,7 @@ import org.olat.core.id.context.HistoryModule;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesFactory;
 import org.olat.core.util.session.UserSessionManager;
@@ -296,11 +296,13 @@ class UserPrefsResetForm extends FormBasicController {
 	private MultipleSelectionElement resetElements;
 	private String[] keys, values;
 
-	private final UserSessionManager sessionManager;
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private UserSessionManager sessionManager;
 	
 	public UserPrefsResetForm(UserRequest ureq, WindowControl wControl, Identity changeableIdentity) {
 		super(ureq, wControl);
-		sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		tobeChangedIdentity = changeableIdentity;
 		initForm(ureq);
 	}
@@ -363,7 +365,7 @@ class UserPrefsResetForm extends FormBasicController {
 			
 			if(logout) {
 				//if logout, need a redirect to the login page
-				String lang = I18nManager.getInstance().getLocaleKey(ureq.getLocale());
+				String lang = i18nModule.getLocaleKey(ureq.getLocale());
 				ureq.getDispatchResult().setResultingMediaResource(
 						new RedirectMediaResource(WebappHelper.getServletContextPath() + "/dmz/?lang=" + lang + "&logout=true"));
 			}

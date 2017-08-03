@@ -16,8 +16,8 @@ to the MBeanExporter Bean at the end.
 How to add a new job:
 1. Create you class which extends from QuartzJobBean see ChangePresenceJob as example
 2. Create a file called "olatextconfig.xml" with your own beans and place it in the same directory as this file. It will be loaded automatically.
-3. Add a bean definition where your job is created like ="<bean id="changePresenceJob" class="org.springframework.scheduling.quartz.JobDetailBean">"
-4. Create a scheduler for your definded bean: Either an SimpleTriggerBean or an CronTriggerBean
+3. Add a bean definition where your job is created like ="<bean id="changePresenceJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">"
+4. Create a scheduler for your definded bean: Either an SimpleTriggerFactoryBean or an CronTriggerFactoryBean
 5. Add your trigger bean to the SchedulerFactoryBean list.
 -->
 
@@ -61,7 +61,7 @@ How to add a new job:
 <!-- add referenced schedulers here -->
 
 <!-- Only needed in cluster mode, dumps jmx info to disc --> 
-<bean id="dumpJMXJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+<bean id="dumpJMXJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
     <property name="jobDetail" ref="dumpJMXJob" />
     <!-- 5 minute -->
     <property name="startDelay" value="300000" />
@@ -72,7 +72,7 @@ How to add a new job:
 <!-- Example bean for cron style scheduling--> 
 <!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
 <!--
-<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
     <property name="jobDetail" ref="exampleJob" />
     <property name="cronExpression" value="0 0 6 * * ?" />
     <property name="startDelay" value="300000" />
@@ -81,7 +81,7 @@ How to add a new job:
 
 
 <!--  job definition  -->
-<bean id="dumpJMXJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+<bean id="dumpJMXJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 	<property name="jobClass" value="org.olat.admin.jmx.DumpJMXJob"/>
 	<property name="jobDataAsMap">
     <map>
@@ -103,7 +103,7 @@ How to add a new job:
 
 	<!-- SEARCH INDEXING CONFIGURATION -->
 
-	<bean id="searchIndexingTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="searchIndexingTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 	    <property name="jobDetail" ref="org.olat.search.job.${search.indexing.cronjob}" />
 	    <property name="cronExpression" ref="searchIndexCronGenerator" />
 		<!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
@@ -116,12 +116,12 @@ How to add a new job:
 		<property name="cronExpression" value="${search.indexing.cronjob.expression}" />
 	</bean>
 	
-	<bean id="org.olat.search.job.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	<bean id="org.olat.search.job.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 	  <property name="jobClass" value="org.olat.search.service.indexer.SearchIndexingJob"/>
 	</bean>
 	
 	<!-- dummy bean -->
-	<bean id="org.olat.search.job.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+	<bean id="org.olat.search.job.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
 		<!-- NOTE: reusing the notifications.DummyJob here -->
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>

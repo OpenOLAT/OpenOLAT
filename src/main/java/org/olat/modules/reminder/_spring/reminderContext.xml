@@ -25,12 +25,12 @@
 		</property>
 	</bean>
 	
-	<bean id="reminderTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="reminderTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
     	<property name="jobDetail" ref="reminderJobDetail" />
     	<property name="cronExpression" value="0 0 9 * * ?" />
 	</bean>
 	
-	<bean id="reminderJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	<bean id="reminderJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.modules.reminder.manager.ReminderJob"/>
 	</bean>
 	

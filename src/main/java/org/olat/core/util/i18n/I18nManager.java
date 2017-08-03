@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -71,9 +70,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
-import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.AlwaysEmptyMap;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -83,8 +80,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.session.UserSessionManager;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -96,12 +93,14 @@ import org.springframework.core.io.Resource;
  * 
  * @author Felix Jost
  */
+@Service("I18nManager")
+public class I18nManager {
 
-public class I18nManager extends BasicManager {
+	private static final OLog log = Tracing.createLoggerFor(I18nManager.class);
+	
 	private static final String BUNDLE_INLINE_TRANSLATION_INTERCEPTOR = "org.olat.core.util.i18n.ui";
 	private static final String BUNDLE_EXCEPTION = "org.olat.core.gui.exception";
 	private static I18nManager INSTANCE;
-	private static final OLog log = Tracing.createLoggerFor(I18nManager.class);
 	public static final String FILE_NOT_FOUND_ERROR_PREFIX = ":::file not found";
 	public static final String USESS_KEY_I18N_MARK_LOCALIZED_STRINGS = "I18N_MARK_LOCALIZED_STRINGS";
 
@@ -139,17 +138,16 @@ public class I18nManager extends BasicManager {
 	private ConcurrentMap<String, Properties> cachedBundles = new ConcurrentHashMap<String, Properties>();
 	private ConcurrentMap<String, String> cachedJSTranslatorData = new ConcurrentHashMap<String, String>();
 	private ConcurrentMap<String, Deque<String>> referencingBundlesIndex = new ConcurrentHashMap<String, Deque<String>>();
-	private static final ConcurrentMap<Locale,String> localeToLocaleKey = new ConcurrentHashMap<>();
 	private boolean cachingEnabled = true;
+	
+	private final I18nModule i18nModule;
 
-	private static FilenameFilter i18nFileFilter = new FilenameFilter() {
-		public boolean accept(File dir, String name) {
-			// don't add overlayLocales as selectable availableLanguages
-			// (LocaleStrings_de__VENDOR.properties)
-			if (name.startsWith(I18nModule.LOCAL_STRINGS_FILE_PREFIX) && name.indexOf("_") != 0 && name.endsWith(I18nModule.LOCAL_STRINGS_FILE_POSTFIX)) { return true; }
-			return false;
-		}
-	};
+	@Autowired
+	public I18nManager(I18nModule i18nModule) {
+		this.i18nModule = i18nModule;
+		setCachingEnabled(i18nModule.isCachingEnabled());
+		INSTANCE = this;
+	}
 
 	/**
 	 * @return the manager
@@ -217,7 +215,7 @@ public class I18nManager extends BasicManager {
 		// file
 		if (overlayEnabled) {
 
-			Locale overlayLocale = I18nModule.getOverlayLocales().get(locale);
+			Locale overlayLocale = i18nModule.getOverlayLocales().get(locale);
 			if (overlayLocale != null) {
 				properties = getProperties(overlayLocale, bundleName, resolveRecursively, recursionLevel);
 				if (properties != null) {
@@ -257,7 +255,7 @@ public class I18nManager extends BasicManager {
 			// 1. Check on variant
 			String variant = locale.getVariant();
 			if (!variant.equals("")) {
-				Locale newLoc = I18nModule.getAllLocales().get(locale.getLanguage() + "_" + locale.getCountry());
+				Locale newLoc = i18nModule.getAllLocales().get(locale.getLanguage() + "_" + locale.getCountry());
 				if (newLoc != null) msg = getLocalizedString(bundleName, key, args, newLoc, overlayEnabled, false, fallBackToFallbackLocale, resolveRecursively,
 						recursionLevel);
 			}
@@ -265,7 +263,7 @@ public class I18nManager extends BasicManager {
 				// 2. Check on country
 				String country = locale.getCountry();
 				if (!country.equals("")) {
-					Locale newLoc = I18nModule.getAllLocales().get(locale.getLanguage());
+					Locale newLoc = i18nModule.getAllLocales().get(locale.getLanguage());
 					if (newLoc != null) msg = getLocalizedString(bundleName, key, args, newLoc, overlayEnabled, false, fallBackToFallbackLocale, resolveRecursively,
 							recursionLevel);
 				}
@@ -280,16 +278,16 @@ public class I18nManager extends BasicManager {
 			// no: return null to indicate nothing was found so that callers may
 			// use fallbacks
 			if (fallBackToDefaultLocale) {
-				return getLocalizedString(bundleName, key, args, I18nModule.getDefaultLocale(), overlayEnabled, false, fallBackToFallbackLocale,
+				return getLocalizedString(bundleName, key, args, i18nModule.getDefaultLocale(), overlayEnabled, false, fallBackToFallbackLocale,
 						resolveRecursively, recursionLevel);
 			} else {
 				if (fallBackToFallbackLocale) {
 					// fallback to fallback locale
-					Locale fallbackLocale = I18nModule.getFallbackLocale();
+					Locale fallbackLocale = i18nModule.getFallbackLocale();
 					if (fallbackLocale.equals(locale)) {
 						// finish when when already in fallback locale
-						if (isLogDebugEnabled()) {
-							logWarn("Could not find translation for bundle::" + bundleName + " and key::" + key
+						if (log.isDebug()) {
+							log.warn("Could not find translation for bundle::" + bundleName + " and key::" + key
 									+ " ; not even in default or fallback packages", null);
 						}
 						return null;
@@ -374,7 +372,7 @@ public class I18nManager extends BasicManager {
 	 * @return List of i18n items
 	 */
 	public List<I18nItem> findExistingI18nItems(Locale targetLocale, String limitToBundleName, boolean includeBundlesChildren) {
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		List<I18nItem> foundTranslationItems = new LinkedList<I18nItem>();
 		for (String bundleName : allBundles) {
 			if (limitToBundleName == null || limitToBundleName.equals(bundleName)
@@ -411,7 +409,7 @@ public class I18nManager extends BasicManager {
 	 */
 	public List<I18nItem> findMissingI18nItems(Locale referenceLocale, Locale targetLocale, String limitToBundleName,
 			boolean includeBundlesChildren) {
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		List<I18nItem> foundTranslationItems = new LinkedList<I18nItem>();
 		for (String bundleName : allBundles) {
 			if (limitToBundleName == null || limitToBundleName.equals(bundleName)
@@ -450,7 +448,7 @@ public class I18nManager extends BasicManager {
 	 */
 	public List<I18nItem> findExistingAndMissingI18nItems(Locale referenceLocale, Locale targetLocale, String limitToBundleName,
 			boolean includeBundlesChildren) {
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		List<I18nItem> foundTranslationItems = new LinkedList<I18nItem>();
 		for (String bundleName : allBundles) {
 			if (limitToBundleName == null || limitToBundleName.equals(bundleName)
@@ -504,7 +502,7 @@ public class I18nManager extends BasicManager {
 	 */
 	public List<I18nItem> findI18nItemsByValueSearch(String searchString, Locale searchLocale, Locale targetLocale, String limitToBundleName,
 			boolean includeBundlesChildren) {
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		List<I18nItem> foundTranslationItems = new LinkedList<I18nItem>();
 		searchString = searchString.toLowerCase();
 		String[] parts = searchString.split("\\*");
@@ -553,7 +551,7 @@ public class I18nManager extends BasicManager {
 	 */
 	public List<I18nItem> findI18nItemsByKeySearch(String searchString, Locale searchLocale, Locale targetLocale, String limitToBundleName,
 			boolean includeBundlesChildren) {
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		List<I18nItem> foundTranslationItems = new LinkedList<I18nItem>();
 		searchString = searchString.toLowerCase();
 		for (String bundleName : allBundles) {
@@ -674,17 +672,17 @@ public class I18nManager extends BasicManager {
 	public void saveOrUpdateI18nItem(I18nItem i18nItem, String value) {
 		Properties properties = getPropertiesWithoutResolvingRecursively(i18nItem.getLocale(), i18nItem.getBundleName());
 		// Add logging block to find bogus save issues
-		if (isLogDebugEnabled()) {
+		if (log.isDebug()) {
 			String itemIdent = i18nItem.getLocale() + ":" + buildI18nItemIdentifyer(i18nItem.getBundleName(), i18nItem.getKey());
 			if (properties.containsKey(i18nItem.getKey())) {
 				if (StringHelper.containsNonWhitespace(value)) {
-					logDebug("Updating i18n item::" + itemIdent + " with new value::" + value, null);					
+					log.debug("Updating i18n item::" + itemIdent + " with new value::" + value, null);					
 				} else {
-					logDebug("Deleting i18n item::" + itemIdent + " because new value is emty", null);
+					log.debug("Deleting i18n item::" + itemIdent + " because new value is emty", null);
 				}
 			} else {
 				if (StringHelper.containsNonWhitespace(value)) {
-					logDebug("Creating i18n item::" + itemIdent + " with new value::" + value, null);		
+					log.debug("Creating i18n item::" + itemIdent + " with new value::" + value, null);		
 				}				
 			}
 		}
@@ -731,7 +729,7 @@ public class I18nManager extends BasicManager {
 	 * @return
 	 */
 	public int countI18nItems(Locale locale, String limitToBundleName, boolean includeBundlesChildren) {
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		int counter = 0;
 		for (String bundleName : allBundles) {
 			if (limitToBundleName == null || limitToBundleName.equals(bundleName)
@@ -755,7 +753,7 @@ public class I18nManager extends BasicManager {
 	 * @return
 	 */
 	public int countBundles(String limitToBundleName, boolean includeBundlesChildren) {
-		List<String> allBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		if (limitToBundleName == null) {
 			return allBundles.size();
 		} else if (!includeBundlesChildren) { return (allBundles.contains(limitToBundleName) ? 1 : 0); }
@@ -799,7 +797,7 @@ public class I18nManager extends BasicManager {
 			// Try to resolve all keys within this properties and add to
 			// cache
 			if (resolveRecursively) {
-				resolvePropertiesInternalKeys(locale, bundleName, props, I18nModule.isOverlayEnabled(), recursionLevel);
+				resolvePropertiesInternalKeys(locale, bundleName, props, i18nModule.isOverlayEnabled(), recursionLevel);
 				cachedBundles.put(key, props);
 			}
 			if (locale == null) {
@@ -819,14 +817,14 @@ public class I18nManager extends BasicManager {
 			//
 			// 1) Try to load the bundle from a configured source path
 			// This is also used to load the overlay properties
-			File baseDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+			File baseDir = i18nModule.getPropertyFilesBaseDir(locale, bundleName);
 			if (baseDir != null) {
 				File f = getPropertiesFile(locale, bundleName, baseDir);
 				// if file exists load properties from file, otherwise
 				// proceed with 2)
 				if (f.exists()) {
 					is = new FileInputStream(f);
-					if (logDebug) logDebug("loading LocalStrings from file::" + f.getAbsolutePath(), null);
+					if (logDebug) log.debug("loading LocalStrings from file::" + f.getAbsolutePath(), null);
 				}
 			}
 			//
@@ -838,7 +836,7 @@ public class I18nManager extends BasicManager {
 				String relPath = bundleName.replace('.', '/') + "/" + I18N_DIRNAME + "/" + fileName;
 				ClassLoader classLoader = this.getClass().getClassLoader();
 				is = classLoader.getResourceAsStream(relPath);
-				if (logDebug && is != null) logDebug("loading LocalStrings from classpath relpath::" + relPath, null);
+				if (logDebug && is != null) log.debug("loading LocalStrings from classpath relpath::" + relPath, null);
 			}
 			// Now load the properties from resource (file, classpath or
 			// langpacks)
@@ -974,10 +972,10 @@ public class I18nManager extends BasicManager {
 	 */
 	public void saveOrUpdateProperties(Properties properties, Locale locale, String bundleName) {
 		String key = calcPropertiesFileKey(locale, bundleName);
-		if (isLogDebugEnabled()) logDebug("saveOrUpdateProperties for key::" + key, null);
+		if (log.isDebug()) log.debug("saveOrUpdateProperties for key::" + key, null);
 
 		// 1) Save file to disk
-		File baseDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+		File baseDir = i18nModule.getPropertyFilesBaseDir(locale, bundleName);
 		if (baseDir == null) { throw new AssertException("Can not save or update properties file for bundle::" + bundleName
 				+ " and language::" + locale.toString() + " - no base directory found, probably loaded from jar!"); }
 		File propertiesFile = getPropertiesFile(locale, bundleName, baseDir);
@@ -999,11 +997,11 @@ public class I18nManager extends BasicManager {
 			try {
 				if (fileStream != null) fileStream.close();
 			} catch (IOException e) {
-				logError("Could not close stream after save or update to file::" + propertiesFile.getAbsolutePath(), e);
+				log.error("Could not close stream after save or update to file::" + propertiesFile.getAbsolutePath(), e);
 			}
 		}
 		// 2) Check if bundle was already in list of known bundles, add it
-		List<String> knownBundles = I18nModule.getBundleNamesContainingI18nFiles();
+		List<String> knownBundles = i18nModule.getBundleNamesContainingI18nFiles();
 		if (!knownBundles.contains(bundleName)) {
 			knownBundles.add(bundleName);
 			Collections.sort(knownBundles);
@@ -1038,7 +1036,7 @@ public class I18nManager extends BasicManager {
 	 */
 	public void deleteProperties(Locale locale, String bundleName) {
 		String key = calcPropertiesFileKey(locale, bundleName);
-		if (isLogDebugEnabled()) logDebug("deleteProperties for key::" + key, null);
+		if (log.isDebug()) log.debug("deleteProperties for key::" + key, null);
 
 		if (locale != null) { // metadata files are not in cache
 			// 1) Remove from cache first
@@ -1050,7 +1048,7 @@ public class I18nManager extends BasicManager {
 			}
 		}
 		// 2) Remove from filesystem
-		File baseDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+		File baseDir = i18nModule.getPropertyFilesBaseDir(locale, bundleName);
 		if (baseDir == null) {
 			if (baseDir == null) { throw new AssertException("Can not delete properties file for bundle::" + bundleName + " and language::"
 					+ locale.toString() + " - no base directory found, probably loaded from jar!"); }
@@ -1060,8 +1058,8 @@ public class I18nManager extends BasicManager {
 		// 3) Check if for this bundle any other language file exists, if
 		// not remove
 		// the bundle from the list of translatable bundles
-		List<String> knownBundles = I18nModule.getBundleNamesContainingI18nFiles();
-		Set<String> knownLangs = I18nModule.getAvailableLanguageKeys();
+		List<String> knownBundles = i18nModule.getBundleNamesContainingI18nFiles();
+		Set<String> knownLangs = i18nModule.getAvailableLanguageKeys();
 		boolean foundOther = false;
 		for (String lang : knownLangs) {
 			f = getPropertiesFile(getLocaleOrDefault(lang), bundleName, baseDir);
@@ -1102,13 +1100,13 @@ public class I18nManager extends BasicManager {
 			StringBuilder data = new StringBuilder();
 			// we build an js object with key-value pairs
 			data.append("var transData = {");
-			Locale referenceLocale = I18nModule.getFallbackLocale();
+			Locale referenceLocale = i18nModule.getFallbackLocale();
 			Properties properties = getPropertiesWithoutResolvingRecursively(referenceLocale, bundleName);
 			Set<Object> keys = properties.keySet();
 			boolean addComma = false;
 			for (Object keyObject : keys) {
 				String key = (String) keyObject;
-				String value = getLocalizedString(bundleName, key, null, locale, I18nModule.isOverlayEnabled(), true);
+				String value = getLocalizedString(bundleName, key, null, locale, i18nModule.isOverlayEnabled(), true);
 				if (value == null) {
 					// use bundlename:key as value in case the key can't be
 					// translated
@@ -1133,12 +1131,12 @@ public class I18nManager extends BasicManager {
 	
 	public JSONObject getJSONTranslatorData(Locale locale, String bundleName) {
 		JSONObject array = new JSONObject();
-		Locale referenceLocale = I18nModule.getFallbackLocale();
+		Locale referenceLocale = i18nModule.getFallbackLocale();
 		Properties properties = getPropertiesWithoutResolvingRecursively(referenceLocale, bundleName);
 		Set<Object> keys = properties.keySet();
 		for (Object keyObject : keys) {
 			String key = (String) keyObject;
-			String value = getLocalizedString(bundleName, key, null, locale, I18nModule.isOverlayEnabled(), true);
+			String value = getLocalizedString(bundleName, key, null, locale, i18nModule.isOverlayEnabled(), true);
 			if (value == null) {
 				// use bundlename:key as value in case the key can't be
 				// translated
@@ -1151,7 +1149,7 @@ public class I18nManager extends BasicManager {
 			try {
 				array.put(key, value);
 			} catch (JSONException e) {
-				logError("", e);
+				log.error("", e);
 			}
 		}
 		return array;
@@ -1165,7 +1163,7 @@ public class I18nManager extends BasicManager {
 	 * @return
 	 */
 	public Long getLastModifiedDate(Locale locale, String bundleName) {
-		File baseDir = I18nModule.getPropertyFilesBaseDir(locale, bundleName);
+		File baseDir = i18nModule.getPropertyFilesBaseDir(locale, bundleName);
 		if (baseDir != null) {
 			File propertyFile = getPropertiesFile(locale, bundleName, baseDir);
 			return (propertyFile.lastModified());
@@ -1188,9 +1186,11 @@ public class I18nManager extends BasicManager {
 	 *         method, or the default locale if the language was not found
 	 */
 	public Locale getLocaleOrDefault(String localeKey) {
-		if (localeKey == null || !I18nModule.getAvailableLanguageKeys().contains(localeKey)) { return I18nModule.getDefaultLocale(); }
-		Locale loc = I18nModule.getAllLocales().get(localeKey);
-		if (loc == null) loc = I18nModule.getDefaultLocale();
+		if (localeKey == null || !i18nModule.getAvailableLanguageKeys().contains(localeKey)) {
+			return i18nModule.getDefaultLocale();
+		}
+		Locale loc = i18nModule.getAllLocales().get(localeKey);
+		if (loc == null) loc = i18nModule.getDefaultLocale();
 		return loc;
 	}
 
@@ -1206,8 +1206,10 @@ public class I18nManager extends BasicManager {
 	 *         method, or if no language was found
 	 */
 	public Locale getLocaleOrNull(String localeKey) {
-		if (localeKey == null || (!I18nModule.getAvailableLanguageKeys().contains(localeKey) && !I18nModule.getOverlayLanguageKeys().contains(localeKey))) { return null; }
-		Locale loc = I18nModule.getAllLocales().get(localeKey);
+		if (localeKey == null || (!i18nModule.getAvailableLanguageKeys().contains(localeKey) && !i18nModule.getOverlayLanguageKeys().contains(localeKey))) {
+			return null;
+		}
+		Locale loc = i18nModule.getAllLocales().get(localeKey);
 		return loc;
 	}
 
@@ -1223,9 +1225,9 @@ public class I18nManager extends BasicManager {
 	public String getLanguageTranslated(String languageKey, boolean overlayEnabled) {
 		// Load it from package without fallback
 		String translated = null;
-		Locale locale = I18nModule.getAllLocales().get(languageKey);
+		Locale locale = i18nModule.getAllLocales().get(languageKey);
 		if(locale != null) {
-			translated = getLocalizedString(I18nModule.getCoreFallbackBundle(), "this.language.translated", null, locale, overlayEnabled, false, false, false, 0);
+			translated = getLocalizedString(i18nModule.getCoreFallbackBundle(), "this.language.translated", null, locale, overlayEnabled, false, false, false, 0);
 		}
 		if (translated == null) {
 			// Use the english version as callback
@@ -1242,12 +1244,12 @@ public class I18nManager extends BasicManager {
 	 * @return
 	 */
 	public Map<String, String> getEnabledLanguagesTranslated() {
-		Collection<String> enabledLangs = I18nModule.getEnabledLanguageKeys();
+		Collection<String> enabledLangs = i18nModule.getEnabledLanguageKeys();
 		Map<String, String> translatedLangs = new HashMap<String, String>(11);
 		for (String langKey : enabledLangs) {
 			String translated = cachedLangTranslated.get(langKey);
 			if(translated == null) {
-				String newTranslated = getLanguageTranslated(langKey, I18nModule.isOverlayEnabled());
+				String newTranslated = getLanguageTranslated(langKey, i18nModule.isOverlayEnabled());
 				translated = cachedLangTranslated.putIfAbsent(langKey, newTranslated);
 				if(translated == null) {
 					translated = newTranslated;
@@ -1268,7 +1270,7 @@ public class I18nManager extends BasicManager {
 	 */
 	public String getLanguageInEnglish(String languageKey, boolean overlayEnabled) {
 		// Load it from package without fallback
-		String inEnglish = getLocalizedString(I18nModule.getCoreFallbackBundle(), "this.language.in.english", null, I18nModule
+		String inEnglish = getLocalizedString(i18nModule.getCoreFallbackBundle(), "this.language.in.english", null, i18nModule
 				.getAllLocales().get(languageKey), overlayEnabled, false, false, false, 0);
 		if (inEnglish == null) {
 			// use key as fallback
@@ -1287,7 +1289,7 @@ public class I18nManager extends BasicManager {
 	 */
 	public String getLanguageAuthor(String languageKey) {
 		// Load it from package without fallback
-		String authors = getLocalizedString(I18nModule.getCoreFallbackBundle(), "this.language.translator.names", null, I18nModule
+		String authors = getLocalizedString(i18nModule.getCoreFallbackBundle(), "this.language.translator.names", null, i18nModule
 				.getAllLocales().get(languageKey), false, false, false, false, 0);
 		if (authors == null) { return "-"; }
 		return authors;
@@ -1322,21 +1324,18 @@ public class I18nManager extends BasicManager {
 	public static void attachI18nInfoToThread(HttpServletRequest hreq) {
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(hreq);
 		if (threadLocalLocale == null) {
-			I18nManager.getInstance().logError("can't attach i18n info to thread: threadLocalLocale is null", null);
+			log.error("can't attach i18n info to thread: threadLocalLocale is null", null);
 		} else {
 			if (threadLocalLocale.getThreadLocale() != null) {
-				I18nManager.getInstance().logWarn(
-						"try to attach i18n info to thread, but threadLocalLocale is not null - a thread forgot to remove it!", new Exception("attachI18nInfoToThread"));
+				log.warn("try to attach i18n info to thread, but threadLocalLocale is not null - a thread forgot to remove it!", new Exception("attachI18nInfoToThread"));
 			}
 			threadLocalLocale.setThredLocale(usess.getLocale());
 		}
 		if (threadLocalIsMarkLocalizedStringsEnabled == null) {
-			I18nManager.getInstance().logError("can't attach i18n info to thread: threadLocalIsMarkLocalizedStringsEnabled is null", null);
+			log.error("can't attach i18n info to thread: threadLocalIsMarkLocalizedStringsEnabled is null", null);
 		} else {
 			if (threadLocalIsMarkLocalizedStringsEnabled.isMarkLocalizedStringsEnabled() != null) {
-				I18nManager.getInstance().logWarn(
-						"try to attach i18n info to thread, but threadLocalIsMarkLocalizedStringsEnabled is not null - a thread forgot to remove it!",
-						null);
+				log.warn("try to attach i18n info to thread, but threadLocalIsMarkLocalizedStringsEnabled is not null - a thread forgot to remove it!", null);
 			}
 			Boolean isMarkLocalizedStringsEnabled = (Boolean) usess.getEntry(USESS_KEY_I18N_MARK_LOCALIZED_STRINGS);
 			if (isMarkLocalizedStringsEnabled != null) {
@@ -1347,7 +1346,7 @@ public class I18nManager extends BasicManager {
 	
 	public static void updateLocaleInfoToThread(UserSession usess) {
 		if (threadLocalLocale == null) {
-			I18nManager.getInstance().logError("can't attach i18n info to thread: threadLocalLocale is null", null);
+			log.error("can't attach i18n info to thread: threadLocalLocale is null", null);
 		} else {
 			threadLocalLocale.setThredLocale(usess.getLocale());
 		}
@@ -1377,7 +1376,7 @@ public class I18nManager extends BasicManager {
 			Locale locale = threadLocalLocale.getThreadLocale();
 			if (locale != null) return threadLocalLocale.getThreadLocale();
 		}
-		return I18nModule.getDefaultLocale();
+		return i18nModule.getDefaultLocale();
 	}
 
 	/**
@@ -1431,7 +1430,7 @@ public class I18nManager extends BasicManager {
 			try {
 				return (Integer.parseInt(bundlePrioValue.trim()));
 			} catch (NumberFormatException e) {
-				logWarn("Can not parse metadata priority for bundle::" + bundleName, e);
+				log.warn("Can not parse metadata priority for bundle::" + bundleName, e);
 			}
 		}
 		// 2) Not found, try with parent bundle
@@ -1459,7 +1458,7 @@ public class I18nManager extends BasicManager {
 			try {
 				keyPriority = Integer.parseInt(keyPriorityValue.trim());
 			} catch (NumberFormatException e) {
-				logWarn("Can not parse metadata priority for key::" + bundleName + ":" + key, e);
+				log.warn("Can not parse metadata priority for key::" + bundleName + ":" + key, e);
 			}
 		}
 		return keyPriority;
@@ -1596,7 +1595,7 @@ public class I18nManager extends BasicManager {
 			cachedJSTranslatorData = new AlwaysEmptyMap<String, String>();
 			referencingBundlesIndex = new AlwaysEmptyMap<String, Deque<String>>();
 		}
-		this.cachingEnabled = useCache;
+		cachingEnabled = useCache;
 	}
 
 	/**
@@ -1604,74 +1603,7 @@ public class I18nManager extends BasicManager {
 	 *         filesystem
 	 */
 	public boolean isCachingEnabled() {
-		return this.cachingEnabled;
-	}
-
-	/**
-	 * Helper method to create a locale from a given locale key ('de', 'de_CH',
-	 * 'de_CH_ZH')
-	 * 
-	 * @param localeKey
-	 * @return the locale or NULL if no locale could be generated from this string
-	 */
-	Locale createLocale(String localeKey) {
-		Locale aloc = null;
-		// de
-		// de_CH
-		// de_CH_zueri
-		String[] parts = localeKey.split("_");
-		switch (parts.length) {
-			case 1:
-				aloc = new Locale(parts[0]);
-				break;
-			case 2:
-				aloc = new Locale(parts[0], parts[1]);
-				break;
-			case 3:
-				String lastPart = parts[2];
-				// Add all remaining parts to variant, variant can contain
-				// underscores according to Locale spec
-				for (int i = 3; i < parts.length; i++) {
-					String part = parts[i];
-					lastPart = lastPart + "_" + part;
-				}
-				aloc = new Locale(parts[0], parts[1], lastPart);
-				break;
-			default:
-				return null;
-		}
-		// Test if the locale has been constructed correctly. E.g. when the
-		// language part is not existing in the ISO chart, the locale can
-		// convert to something else.
-		// E.g. he_HE_HE will convert automatically to iw_HE_HE
-		if (aloc.toString().equals(localeKey)) {
-			return aloc;
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Create a local that represents the overlay locale for the given locale
-	 * 
-	 * @param locale The original locale
-	 * @return The overlay locale
-	 */
-	Locale createOverlay(Locale locale) {
-		String lang = locale.getLanguage();
-		String country = (locale.getCountry() == null ? "" : locale.getCountry());
-		String variant = createOverlayKeyForLanguage(locale.getVariant() == null ? "" : locale.getVariant());
-		Locale overlay = new Locale(lang, country, variant);
-		return overlay;
-	}
-
-	/**
-	 * Add the overlay postfix to the given language key
-	 * @param langKey
-	 * @return
-	 */
-	String createOverlayKeyForLanguage(String langKey) {
-		return langKey + "__" + I18nModule.getOverlayName();
+		return cachingEnabled;
 	}
 		
 	/**
@@ -1686,47 +1618,8 @@ public class I18nManager extends BasicManager {
 	 * @return
 	 */
 	public String buildI18nFilename(Locale locale) {
-		String langKey = getLocaleKey(locale);
+		String langKey = i18nModule.getLocaleKey(locale);
 		return I18nModule.LOCAL_STRINGS_FILE_PREFIX + langKey + I18nModule.LOCAL_STRINGS_FILE_POSTFIX;
-	}
-
-	/**
-	 * Calculate the locale key that identifies the given locale. Adds support for
-	 * the overlay mechanism.
-	 * 
-	 * @param locale
-	 * @return
-	 */
-	public String getLocaleKey(Locale locale) {
-		String key = localeToLocaleKey.get(locale);
-		if(key == null) {
-			String langKey = locale.getLanguage();
-			String country = locale.getCountry();
-			// Only add country when available - in case of an overlay country is
-			// set to
-			// an empty value
-			if (StringHelper.containsNonWhitespace(country)) {
-				langKey = langKey + "_" + country;
-			}
-			String variant = locale.getVariant();
-			// Only add the _ separator if the variant contains something in
-			// addition to
-			// the overlay, otherways use the __ only
-			if (StringHelper.containsNonWhitespace(variant)) {
-				if (variant.startsWith("__" + I18nModule.getOverlayName())) {
-					langKey += variant;
-				} else {
-					langKey = langKey + "_" + variant;
-				}
-			}
-			
-			key = localeToLocaleKey.putIfAbsent(locale, langKey);
-			if(key == null) {
-				key = langKey;
-			}
-			
-		}
-		return key;
 	}
 
 	/**
@@ -1737,11 +1630,11 @@ public class I18nManager extends BasicManager {
 	 * @return The original language key or NULL if not found
 	 */
 	public String createOrigianlLocaleKeyForOverlay(Locale overlay) {
-		Map<Locale,Locale> overlaysLooup = I18nModule.getOverlayLocales();
+		Map<Locale,Locale> overlaysLooup = i18nModule.getOverlayLocales();
 		Set<Map.Entry<Locale, Locale>> entries = overlaysLooup.entrySet();
 		for (Map.Entry<Locale, Locale> entry : entries) {
-			if (getLocaleKey(entry.getValue()).equals(getLocaleKey(overlay))) {
-				return getLocaleKey(entry.getKey());
+			if (i18nModule.getLocaleKey(entry.getValue()).equals(i18nModule.getLocaleKey(overlay))) {
+				return i18nModule.getLocaleKey(entry.getKey());
 			}
 		}
 		return null;
@@ -1756,79 +1649,6 @@ public class I18nManager extends BasicManager {
 	 */
 	public String buildI18nItemIdentifyer(String bundleName, String key) {
 		return bundleName + ":" + key;
-	}
-
-	/**
-	 * Search in all packages on the source patch for packages that contain an
-	 * _i18n directory that can be used to store olatcore localization files
-	 * 
-	 * @return set of bundles that contain olatcore i18n compatible localization
-	 *         files
-	 */
-	List<String> searchForBundleNamesContainingI18nFiles() {
-		List<String> foundBundles;
-		// 1) First search on normal source path of application
-		String srcPath = null; 
-		File applicationDir = I18nModule.getTransToolApplicationLanguagesSrcDir();
-		if (applicationDir != null) {
-			srcPath = applicationDir.getAbsolutePath();
-		} else {
-			// Fall back to compiled classes
-			srcPath = WebappHelper.getBuildOutputFolderRoot();
-		}
-		if(StringHelper.containsNonWhitespace(srcPath)) {
-			I18nDirectoriesVisitor srcVisitor = new I18nDirectoriesVisitor(srcPath);
-			FileUtils.visitRecursively(new File(srcPath), srcVisitor);
-			foundBundles = srcVisitor.getBundlesContainingI18nFiles();
-			// 3) For jUnit tests, add also the I18n test dir
-			if (Settings.isJUnitTest()) {
-				Resource testres = new ClassPathResource("olat.local.properties");
-				String jUnitSrcPath = null;
-				try {
-					jUnitSrcPath = testres.getFile().getAbsolutePath();
-				} catch (IOException e) {
-					throw new StartupException("Could not find classpath resource for: test-classes/olat.local.property ", e);
-	  			}
-	
-	
-				I18nDirectoriesVisitor juniSrcVisitor = new I18nDirectoriesVisitor(jUnitSrcPath);
-				FileUtils.visitRecursively(new File(jUnitSrcPath), juniSrcVisitor);
-				foundBundles.addAll(juniSrcVisitor.getBundlesContainingI18nFiles());
-			}
-			// Sort alphabetically
-			Collections.sort(foundBundles);
-		} else {
-			foundBundles = new ArrayList<String>();
-		}
-		return foundBundles;
-	}
-
-	/**
-	 * Search for available languages in the given directory. The translation
-	 * files must start with 'LocalStrings_' and end with '.properties'.
-	 * Everything in between is considered a language key.
-	 * <p>
-	 * If the directory contains jar files, those files are opened and searched
-	 * for languages files as well. In this case, the algorythm only looks for
-	 * translation files that are in the org/olat/core/_i18n package
-	 * 
-	 * @param i18nDir
-	 * @return set of language keys the system will find translations for
-	 */
-	Set<String> searchForAvailableLanguages(File i18nDir) {
-		Set<String> foundLanguages = new TreeSet<String>();
-		i18nDir = new File(i18nDir.getAbsolutePath()+"/org/olat/_i18n");
-		if (i18nDir.exists()) {
-			// First check for locale files
-			String[] langFiles = i18nDir.list(i18nFileFilter);
-			for (String langFileName : langFiles) {
-				String lang = langFileName.substring(I18nModule.LOCAL_STRINGS_FILE_PREFIX.length(), langFileName.lastIndexOf("."));
-				foundLanguages.add(lang);
-				if (isLogDebugEnabled()) logDebug("Adding lang::" + lang + " from filename::" + langFileName + " from dir::"
-						+ i18nDir.getAbsolutePath(), null);
-			}
-		}
-		return foundLanguages;
 	}
 
 	/**
@@ -1852,15 +1672,14 @@ public class I18nManager extends BasicManager {
 				// check for executables
 				if (checkForExecutables && (jarEntryName.endsWith("java") || jarEntryName.endsWith("class"))) { return new TreeSet<String>(); }
 				// search for core util in jar
-				if (jarEntryName.indexOf(I18nModule.getCoreFallbackBundle().replace(".", "/") + "/" + I18N_DIRNAME) != -1) {
+				if (jarEntryName.indexOf(i18nModule.getCoreFallbackBundle().replace(".", "/") + "/" + I18N_DIRNAME) != -1) {
 					// don't add overlayLocales as selectable
 					// availableLanguages
 					if (jarEntryName.indexOf("__") == -1 && jarEntryName.indexOf(I18nModule.LOCAL_STRINGS_FILE_PREFIX) != -1) {
 						String lang = jarEntryName.substring(jarEntryName.indexOf(I18nModule.LOCAL_STRINGS_FILE_PREFIX)
 								+ I18nModule.LOCAL_STRINGS_FILE_PREFIX.length(), jarEntryName.lastIndexOf("."));
 						foundLanguages.add(lang);
-						if (isLogDebugEnabled()) logDebug("Adding lang::" + lang + " from filename::" + jarEntryName + " in jar::" + jar.getName(),
-								null);
+						if (log.isDebug()) log.debug("Adding lang::" + lang + " from filename::" + jarEntryName + " in jar::" + jar.getName(), null);
 					}
 				}
 			}
@@ -1881,7 +1700,7 @@ public class I18nManager extends BasicManager {
 	 * @param toCopyI18nKeys
 	 */
 	public void copyLanguagesFromJar(File jarFile, Collection<String> toCopyI18nKeys) {
-		if (!I18nModule.isTransToolEnabled()) {
+		if (!i18nModule.isTransToolEnabled()) {
 			throw new AssertException("Programming error - can only copy i18n files from a language pack to the source when in translation mode");
 		}
 		JarFile jar = null;
@@ -1896,9 +1715,9 @@ public class I18nManager extends BasicManager {
 					if (jarEntryName.endsWith(I18N_DIRNAME + "/" + I18nModule.LOCAL_STRINGS_FILE_PREFIX + i18nKey + I18nModule.LOCAL_STRINGS_FILE_POSTFIX)) {
 						File targetBaseDir;
 						if (i18nKey.equals("de") || i18nKey.equals("en")) {
-							targetBaseDir = I18nModule.getTransToolApplicationLanguagesSrcDir();
+							targetBaseDir = i18nModule.getTransToolApplicationLanguagesSrcDir();
 						} else {
-							targetBaseDir = I18nModule.getTransToolApplicationOptLanguagesSrcDir();
+							targetBaseDir = i18nModule.getTransToolApplicationOptLanguagesSrcDir();
 						}
 						// Copy file
 						File targetFile = new File(targetBaseDir, jarEntryName);
@@ -1948,18 +1767,18 @@ public class I18nManager extends BasicManager {
 		String relPath = "/" + bundleName + "/" + I18N_DIRNAME + "/" + fileName;
 		// Load file from path
 		File f = new File(sourceDir, relPath);
-		if (f.exists() || I18nModule.isTransToolEnabled()) { return f; }
+		if (f.exists() || i18nModule.isTransToolEnabled()) { return f; }
 		return f;
 	}
 
 	public boolean createNewLanguage(String localeKey, String languageInEnglish, String languageTranslated, String authors) {
-		if (!I18nModule.isTransToolEnabled()) { throw new AssertException(
+		if (!i18nModule.isTransToolEnabled()) { throw new AssertException(
 				"Can not create a new language when the translation tool is not enabled and the transtool source pathes are not configured! Check your olat.properties files"); }
-		if (I18nModule.getAvailableLanguageKeys().contains(localeKey)) { return false; }
+		if (i18nModule.getAvailableLanguageKeys().contains(localeKey)) { return false; }
 		// Create new property file in the brasato bundle and re-initialize
 		// everything
-		String coreFallbackBundle = I18nModule.getApplicationFallbackBundle();
-		File transToolCoreLanguagesDir = I18nModule.getTransToolApplicationOptLanguagesSrcDir();
+		String coreFallbackBundle = i18nModule.getApplicationFallbackBundle();
+		File transToolCoreLanguagesDir = i18nModule.getTransToolApplicationOptLanguagesSrcDir();
 		String i18nDirRelPath = "/" + coreFallbackBundle.replace(".", "/") + "/" + I18nManager.I18N_DIRNAME;
 		File transToolCoreLanguagesDir_I18n = new File(transToolCoreLanguagesDir, i18nDirRelPath);
 		File newPropertiesFile = new File(transToolCoreLanguagesDir_I18n, I18nModule.LOCAL_STRINGS_FILE_PREFIX + localeKey
@@ -1987,12 +1806,12 @@ public class I18nManager extends BasicManager {
 			newProperties.store(fileStream, null);
 			fileStream.flush();
 			// Now set new language as enabled to allow user to translate the language. 
-			Collection<String> enabledLangKeys = I18nModule.getEnabledLanguageKeys();
+			Collection<String> enabledLangKeys = i18nModule.getEnabledLanguageKeys();
 			enabledLangKeys.add(localeKey);
 			// Reinitialize languages with new language
-			I18nModule.reInitializeAndFlushCache();
+			i18nModule.reInitializeAndFlushCache();
 			// Now add new language as new language (will re-initialize everything a second time)
-			I18nModule.setEnabledLanguageKeys(enabledLangKeys);
+			i18nModule.setEnabledLanguageKeys(enabledLangKeys);
 			return true;
 			
 		} catch (FileNotFoundException e) {
@@ -2004,7 +1823,7 @@ public class I18nManager extends BasicManager {
 			try {
 				if (fileStream != null) fileStream.close();
 			} catch (IOException e) {
-				logError("Could not close stream after creating new language file::" + newPropertiesFile.getAbsolutePath(), e);
+				log.error("Could not close stream after creating new language file::" + newPropertiesFile.getAbsolutePath(), e);
 			}
 		}
 	}
@@ -2017,22 +1836,22 @@ public class I18nManager extends BasicManager {
 	 *        logging
 	 */
 	public void deleteLanguage(String deleteLangKey, boolean reallyDeleteIt) {
-		Locale deleteLoclae = I18nModule.getAllLocales().get(deleteLangKey);
+		Locale deleteLoclae = i18nModule.getAllLocales().get(deleteLangKey);
 		// copy bundles list to prevent concurrent modification exception
 		List<String> bundlesCopy = new ArrayList<String>();
-		bundlesCopy.addAll(I18nModule.getBundleNamesContainingI18nFiles());
+		bundlesCopy.addAll(i18nModule.getBundleNamesContainingI18nFiles());
 		for (String bundleName : bundlesCopy) {
 			if (reallyDeleteIt) {
 				deleteProperties(deleteLoclae, bundleName);
-				logDebug("Deleted bundle::" + bundleName + " and lang::" + deleteLangKey, null);
+				log.debug("Deleted bundle::" + bundleName + " and lang::" + deleteLangKey, null);
 			} else {
 				// just log
-				logInfo("Dry-run-delete of bundle::" + bundleName + " and lang::" + deleteLangKey, null);
+				log.info("Dry-run-delete of bundle::" + bundleName + " and lang::" + deleteLangKey, null);
 			}
 		}
 		// Now reinitialize everything
 		if (reallyDeleteIt) {
-			I18nModule.reInitializeAndFlushCache();
+			i18nModule.reInitializeAndFlushCache();
 		}
 	}
 
@@ -2065,7 +1884,7 @@ public class I18nManager extends BasicManager {
 			for (String langKey : languageKeys) {
 				Locale locale = getLocaleOrNull(langKey);
 				// Add all bundles in the current language
-				for (String bundleName : I18nModule.getBundleNamesContainingI18nFiles()) {
+				for (String bundleName : i18nModule.getBundleNamesContainingI18nFiles()) {
 					Properties propertyFile = getPropertiesWithoutResolvingRecursively(locale, bundleName);
 					String entryFileName = bundleName.replace(".", "/") + "/" + I18N_DIRNAME + "/" + buildI18nFilename(locale);
 					// Create jar entry for this path, name and last modified
@@ -2074,21 +1893,21 @@ public class I18nManager extends BasicManager {
 					// Write properties to jar file
 					out.putNextEntry(jarEntry);
 					propertyFile.store(out, null);
-					if (isLogDebugEnabled()) {
-						logDebug("Adding file::" + entryFileName + " + to jar", null);
+					if (log.isDebug()) {
+						log.debug("Adding file::" + entryFileName + " + to jar", null);
 					}
 				}
 			}
-			logDebug("Finished writing jar file::" + file.getAbsolutePath(), null);
+			log.debug("Finished writing jar file::" + file.getAbsolutePath(), null);
 		} catch (Exception e) {
-			logError("Could not write jar file", e);
+			log.error("Could not write jar file", e);
 			return null;
 		} finally {
 			try {
 				out.close();
 				stream.close();
 			} catch (IOException e) {
-				logError("Could not close stream of jar file", e);
+				log.error("Could not close stream of jar file", e);
 				return null;
 			}
 		}
@@ -2099,12 +1918,6 @@ public class I18nManager extends BasicManager {
 	 * Private helper methods
 	 *************************/
 
-	/**
-	 * [used by spring]
-	 */
-	private I18nManager() {
-		INSTANCE = this;
-	}
 
 	/**
 	 * Helper method to create a key that uniquely identifies a property file
@@ -2119,7 +1932,7 @@ public class I18nManager extends BasicManager {
 		if (locale == null) {
 			return bundleName + ":" + METADATA_KEY;
 		} else {
-			return bundleName + ":" + getLocaleKey(locale);
+			return bundleName + ":" + i18nModule.getLocaleKey(locale);
 		}
 	}
 

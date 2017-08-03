@@ -86,7 +86,7 @@ import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
-import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,6 +116,8 @@ public class VideoManagerImpl implements VideoManager {
 	
 	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 	private static final SimpleDateFormat vttDateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
+	
+	private final JobKey videoJobKey = new JobKey("videoTranscodingJobDetail", Scheduler.DEFAULT_GROUP);
 
 	@Autowired
 	private MovieService movieService;
@@ -427,8 +429,7 @@ public class VideoManagerImpl implements VideoManager {
 		// 3) Start transcoding immediately, force job execution
 		if (videoModule.isTranscodingLocal()) {
 			try {
-				JobDetail detail = scheduler.getJobDetail("videoTranscodingJobDetail", Scheduler.DEFAULT_GROUP);
-				scheduler.triggerJob(detail.getName(), detail.getGroup());
+				scheduler.triggerJob(videoJobKey);
 			} catch (SchedulerException e) {
 				log.error("Error while starting video transcoding job", e);
 			}			

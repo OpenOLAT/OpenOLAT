@@ -10,13 +10,13 @@
 
 	<context:component-scan base-package="org.olat.course.assessment" />
 	
-	<bean id="assessmentNotificationsTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="assessmentNotificationsTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 	    <property name="jobDetail" ref="assessmentNotificationsJob" />
 	    <property name="cronExpression" value="1 * * * * ?" />
 	    <property name="startDelay" value="55000" />
 	</bean>
 	
-	<bean id="assessmentNotificationsJob" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	<bean id="assessmentNotificationsJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.course.assessment.manager.AssessmentModeNotificationJob" />
 	</bean>
 	

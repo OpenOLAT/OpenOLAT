@@ -26,17 +26,17 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.util.i18n.I18nModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Description:<br>
- * TODO: rhaag Class Description for TranslationDevMainController
- * 
  * <P>
  * Initial Date:  23.09.2008 <br>
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
 public class TranslationDevMainController extends MainLayoutBasicController {
-	private final VelocityContainer vc;
+	
+	@Autowired
+	private I18nModule i18nModule;
 	
 	/**
 	 * @param ureq
@@ -44,18 +44,12 @@ public class TranslationDevMainController extends MainLayoutBasicController {
 	 */
 	public TranslationDevMainController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
-		vc = createVelocityContainer("translationdev");
-		String srcPath = I18nModule.getTransToolApplicationLanguagesSrcDir().getAbsolutePath();
+		VelocityContainer vc = createVelocityContainer("translationdev");
+		String srcPath = i18nModule.getTransToolApplicationLanguagesSrcDir().getAbsolutePath();
 		vc.contextPut("srcPath", srcPath);
-		//TODO RH: check for enabled debug-mode in order to prevent caching! 
-//		vc.contextPut("cachingDisabled", I18nModule.isCachingEnabled());
-		
-//		formFactory.addTextElement(name, maxLen, initialValue, i18nLabel, formItemContainer)
 		putInitialPanel(vc);
 	}
 
-	
-	
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose()
 	 */
