@@ -98,6 +98,10 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		tableEl.setShowAllRowsEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-groups");
 	}
+
+	public List<BusinessGroup> getCoachedGroups() {
+		return coachedGroups;
+	}
 	
 	protected void updateModel() {
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();

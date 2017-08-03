@@ -36,7 +36,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
@@ -47,6 +49,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,7 +64,7 @@ public class GTACoachSelectionController extends BasicController {
 	private GTACoachedGroupListController groupListCtrl;
 	private GTACoachedParticipantListController participantListCtrl;
 	
-	private final Link backLink;
+	private final Link backLink, downloadButton;
 	private final VelocityContainer mainVC;
 	
 	private final GTACourseNode gtaNode;
@@ -85,6 +88,9 @@ public class GTACoachSelectionController extends BasicController {
 		
 		mainVC = createVelocityContainer("coach_selection");
 		backLink = LinkFactory.createLinkBack(mainVC, this);
+		
+		downloadButton = LinkFactory.createButton("bulk.download.title", mainVC, this);
+		downloadButton.setTranslator(getTranslator());
 		
 		publisherData = gtaManager.getPublisherData(courseEnv, gtaNode);
 		subsContext = gtaManager.getSubscriptionContext(courseEnv, gtaNode);
@@ -154,6 +160,8 @@ public class GTACoachSelectionController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(backLink == source) {
 			back();
+		} else if(downloadButton == source) {
+			doBulkDownload(ureq);
 		}
 	}
 	
@@ -169,7 +177,20 @@ public class GTACoachSelectionController extends BasicController {
 		} 
 		if (groupListCtrl != null) {
 			groupListCtrl.updateModel();
-			
+		}
+	}
+	
+	private void doBulkDownload(UserRequest ureq) {
+		if (participantListCtrl != null) {
+			ArchiveOptions asOptions = new ArchiveOptions();
+			asOptions.setIdentities(participantListCtrl.getAssessableIdentities());
+			OLATResource ores = courseEnv.getCourseGroupManager().getCourseResource();
+			ArchiveResource resource = new ArchiveResource(gtaNode, ores, asOptions, getLocale());
+			ureq.getDispatchResult().setResultingMediaResource(resource);
+		} else if (groupListCtrl != null) {
+			OLATResource ores = courseEnv.getCourseGroupManager().getCourseResource();
+			GroupBulkDownloadResource resource = new GroupBulkDownloadResource(gtaNode, ores, groupListCtrl.getCoachedGroups(), getLocale());
+			ureq.getDispatchResult().setResultingMediaResource(resource);
 		}
 	}
 	

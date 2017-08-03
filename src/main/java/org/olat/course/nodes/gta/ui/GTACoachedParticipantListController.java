@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
@@ -74,8 +75,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private FlexiTableElement tableEl;
 	private CoachParticipantsTableModel tableModel;
 
-
 	private List<UserPropertiesRow> assessableIdentities;
+	private final UserCourseEnvironmentImpl coachCourseEnv;
 	
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -99,18 +100,41 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(GTACoachedGroupGradingController.USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		
-		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		UserCourseEnvironmentImpl coachCourseEnv = (UserCourseEnvironmentImpl)userCourseEnv;
+		coachCourseEnv = (UserCourseEnvironmentImpl)userCourseEnv;
 
-		boolean admin = userCourseEnv.isAdmin();
-
-		Set<Identity> duplicateKiller = new HashSet<>();
 		assessableIdentities = new ArrayList<>();
+		collectIdentities(new Consumer<Identity>() {
+			@Override
+			public void accept(Identity participant) {
+				assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale()));
+			}
+		});
+		
+		initForm(ureq);
+		updateModel();
+	}
+	
+	public List<Identity> getAssessableIdentities() {
+		List<Identity> identities = new ArrayList<>();
+		collectIdentities(new Consumer<Identity>() {
+			@Override
+			public void accept(Identity participant) {
+				identities.add(participant);
+			}
+		});
+		return identities;
+	}
+	
+	private void collectIdentities(Consumer<Identity> participantCollector) {
+		Set<Identity> duplicateKiller = new HashSet<>();
+		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		boolean admin = coachCourseEnv.isAdmin();
+		
 		List<BusinessGroup> coachedGroups = admin ? cgm.getAllBusinessGroups() : coachCourseEnv.getCoachedGroups();
 		List<Identity> participants = businessGroupService.getMembers(coachedGroups, GroupRoles.participant.name());
 		for(Identity participant:participants) {
 			if(!duplicateKiller.contains(participant)) {
+				participantCollector.accept(participant);
 				assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale()));
 				duplicateKiller.add(participant);
 			}
@@ -122,14 +146,11 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			List<Identity> courseParticipants = repositoryService.getMembers(re, GroupRoles.participant.name());
 			for(Identity participant:courseParticipants) {
 				if(!duplicateKiller.contains(participant)) {
-					assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale()));
+					participantCollector.accept(participant);
 					duplicateKiller.add(participant);
 				}
 			}
 		}
-		
-		initForm(ureq);
-		updateModel();
 	}
 
 	@Override
