@@ -1342,6 +1342,7 @@
 					<systemPropertyVariables>
 						<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
 					</systemPropertyVariables>
+					<trimStackTrace>false</trimStackTrace>
 					<testNGArtifactName>none:none</testNGArtifactName>
 					<includes>
 						<include>org/olat/test/AllTestsJunit4.java</include>
@@ -1360,7 +1361,7 @@
 					<skipTests>${skipSeleniumTests}</skipTests>
 					<reuseForks>false</reuseForks>
 					<argLine>-Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
-					
+					<trimStackTrace>false</trimStackTrace>
 					<systemPropertyVariables>
 						<profile>${test.env}</profile>
 						<test.env.db.name>${test.env.db.name}</test.env.db.name>
@@ -2574,7 +2575,7 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.graphene</groupId>
 			<artifactId>graphene-webdriver</artifactId>
-			<version>2.3.0</version>
+			<version>2.3.1</version>
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
@@ -2644,7 +2645,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>2.19.1</version>
+				<version>2.20</version>
 			</plugin>
 		</plugins>
 	</reporting>
