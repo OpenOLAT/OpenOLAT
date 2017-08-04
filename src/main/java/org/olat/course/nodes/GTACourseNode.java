@@ -152,6 +152,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public static final String GTASK_SUBMISSION_TEXT = "grouptask.submission.text";
 	public static final String GTASK_SUBMISSION_MAIL_CONFIRMATION = "grouptask.submission.mail.confirmation";
 	
+	public static final String GTASK_MAX_REVISED_DOCS = "grouptask.max.revised.docs";
+	
 	public static final String GTASK_SOLUTIONS = "grouptask.solutions";
 	
 

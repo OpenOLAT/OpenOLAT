@@ -52,17 +52,20 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	public static final String PANE_TAB_WORKLOW = "pane.tab.workflow";
 	public static final String PANE_TAB_ASSIGNMENT = "pane.tab.assignment";
 	public static final String PANE_TAB_SUBMISSION = "pane.tab.submission";
+	public static final String PANE_TAB_REVIEW_AND_CORRECTIONS = "pane.tab.review";
 	public static final String PANE_TAB_GRADING = "pane.tab.grading";
 	public static final String PANE_TAB_SOLUTIONS = "pane.tab.solutions";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	public static final String[] paneKeys = {
 		PANE_TAB_ACCESSIBILITY, PANE_TAB_WORKLOW, PANE_TAB_ASSIGNMENT,
-		PANE_TAB_SUBMISSION, PANE_TAB_GRADING, PANE_TAB_SOLUTIONS
+		PANE_TAB_SUBMISSION, PANE_TAB_REVIEW_AND_CORRECTIONS, PANE_TAB_GRADING,
+		PANE_TAB_SOLUTIONS
 	};
-	private int workflowPos, assignmentPos, submissionPos, gradingPos, solutionsPos, highScoreTabPosition;
+	private int workflowPos, assignmentPos, submissionPos, revisionPos, gradingPos, solutionsPos, highScoreTabPosition;
 	
 	private TabbedPane myTabbedPane;
 	private GTAWorkflowEditController workflowCtrl;
+	private GTARevisionAndCorrectionEditController revisionCtrl;
 	private GTAAssignmentEditController assignmentCtrl;
 	private GTASubmissionEditController submissionCtrl;
 	private MSEditFormController manualAssessmentCtrl;
@@ -99,6 +102,9 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		//submission
 		submissionCtrl = new GTASubmissionEditController(ureq, getWindowControl(), config);
 		listenTo(submissionCtrl);
+		//revision
+		revisionCtrl = new GTARevisionAndCorrectionEditController(ureq, getWindowControl(), config);
+		listenTo(revisionCtrl);
 		//grading
 		manualAssessmentCtrl = new MSEditFormController(ureq, getWindowControl(), config);
 		listenTo(manualAssessmentCtrl);
@@ -125,6 +131,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		workflowPos = tabbedPane.addTab(translate(PANE_TAB_WORKLOW), workflowCtrl.getInitialComponent());
 		assignmentPos = tabbedPane.addTab(translate(PANE_TAB_ASSIGNMENT), assignmentCtrl.getInitialComponent());
 		submissionPos = tabbedPane.addTab(translate(PANE_TAB_SUBMISSION), submissionCtrl.getInitialComponent());
+		revisionPos = tabbedPane.addTab(translate(PANE_TAB_REVIEW_AND_CORRECTIONS), revisionCtrl.getInitialComponent());
 		gradingPos = tabbedPane.addTab(translate(PANE_TAB_GRADING), manualAssessmentCtrl.getInitialComponent());
 		solutionsPos = tabbedPane.addTab(translate(PANE_TAB_SOLUTIONS), solutionsCtrl.getInitialComponent());
 		highScoreTabPosition = myTabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
@@ -134,6 +141,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private void updateEnabledDisabledTabs() {
 		myTabbedPane.setEnabled(assignmentPos, config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT));
 		myTabbedPane.setEnabled(submissionPos, config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT));
+		myTabbedPane.setEnabled(revisionPos, config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION));
 		myTabbedPane.setEnabled(gradingPos, config.getBooleanSafe(GTACourseNode.GTASK_GRADING));
 		myTabbedPane.setEnabled(solutionsPos, config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION));
 		myTabbedPane.setEnabled(highScoreTabPosition, config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD));
@@ -189,6 +197,15 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				submissionCtrl = new GTASubmissionEditController(ureq, getWindowControl(), config);
 				listenTo(submissionCtrl);
 				myTabbedPane.replaceTab(submissionPos, submissionCtrl.getInitialComponent());
+			}
+		} else if(revisionCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			} else if(event == Event.CANCELLED_EVENT) {
+				removeAsListenerAndDispose(revisionCtrl);
+				revisionCtrl = new GTARevisionAndCorrectionEditController(ureq, getWindowControl(), config);
+				listenTo(revisionCtrl);
+				myTabbedPane.replaceTab(revisionPos, revisionCtrl.getInitialComponent());
 			}
 		} else if(manualAssessmentCtrl == source) {
 			if (event == Event.DONE_EVENT){
