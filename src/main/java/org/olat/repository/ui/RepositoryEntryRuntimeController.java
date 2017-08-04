@@ -500,10 +500,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected void processEntryChangedEvent(EntryChangedEvent repoEvent) {
 		if(repoEvent.isMe(getIdentity()) &&
 				(repoEvent.getChange() == Change.addBookmark || repoEvent.getChange() == Change.removeBookmark)) {
-			boolean marked = markManager.isMarked(OresHelper.clone(re), getIdentity(), null);
-			String css = "o_icon " + (marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON);
-			bookmarkLink.setIconLeftCSS(css);
-			bookmarkLink.setTitle( translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+			if(bookmarkLink != null) {
+				boolean marked = markManager.isMarked(OresHelper.clone(re), getIdentity(), null);
+				String css = "o_icon " + (marked ? Mark.MARK_CSS_ICON : Mark.MARK_ADD_CSS_ICON);
+				bookmarkLink.setIconLeftCSS(css);
+				bookmarkLink.setTitle( translate(marked ? "details.bookmark.remove" : "details.bookmark"));
+			}
 		}
 	}
 
