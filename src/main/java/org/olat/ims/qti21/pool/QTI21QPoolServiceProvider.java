@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -211,6 +212,10 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			VFSItem file = container.resolve(item.getRootFilename());
 			if(file instanceof VFSLeaf) {
 				VFSLeaf leaf = (VFSLeaf)file;
+				if(leaf.getSize() <= 0l) {
+					return "";
+				}
+				
 				QTI21SAXHandler handler = new QTI21SAXHandler();
 				try(InputStream is = leaf.getInputStream()) {
 					XMLReader parser = XMLReaderFactory.createXMLReader();
@@ -219,7 +224,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 					parser.setFeature("http://xml.org/sax/features/validation", false);
 					parser.parse(new InputSource(is));
 				} catch (Exception e) {
-					log.error("", e);
+					log.error("Cannot read the XML file of the question item: " + leaf, e);
 				}
 				return handler.toString();
 			}

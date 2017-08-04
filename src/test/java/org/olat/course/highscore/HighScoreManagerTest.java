@@ -24,6 +24,12 @@
 * <p>
 */
 package org.olat.course.highscore;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
 /**
  * Description:<br>
  * HighScoreManagerTest
@@ -31,11 +37,6 @@ package org.olat.course.highscore;
  * @author fkiefer
  */
 import java.util.List;
-
-import static org.junit.Assert.*;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -48,35 +49,19 @@ import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class HighScoreManagerTest extends OlatTestCase {
 	
-	private List<HighScoreTableEntry> allMembers, ownIdMembers;
-	private List<List<HighScoreTableEntry>> allPodium;
-	private List<Integer> ownIdIndices;
-	
-	@Autowired
-	private HighScoreManager highScoreManager;
-	@Autowired
-	private UserManager userManager;
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private HighScoreManager highScoreManager;
+	@Autowired
 	private AssessmentEntryDAO courseNodeAssessmentDao;
-	
-	@Test 
-	public void springtest() {
-		assertNotNull(highScoreManager);
-		assertNotNull(userManager);
-		assertNotNull(dbInstance);
-		assertNotNull(courseNodeAssessmentDao);
-	}
 
 	@Test
 	public void highscoreTest() {
-		
 		List<AssessmentEntry> assessEntries = new ArrayList<>();
 		int[] scores = {1,23,10};
 		Identity assessedIdentity = null;
@@ -92,17 +77,17 @@ public class HighScoreManagerTest extends OlatTestCase {
 			AssessmentEntry reloadedAssessment = courseNodeAssessmentDao.loadAssessmentEntryById(nodeAssessment.getKey());
 			assessEntries.add(reloadedAssessment);
 		}
-		
-		ownIdIndices = new ArrayList<>();
-		allMembers = new ArrayList<>();
-		ownIdMembers = new ArrayList<>();
-		allPodium = new ArrayList<>();
+
+		List<Integer> ownIdIndices = new ArrayList<>();
+		List<HighScoreTableEntry> allMembers = new ArrayList<>();
+		List<HighScoreTableEntry> ownIdMembers = new ArrayList<>();
+		List<List<HighScoreTableEntry>> allPodium = new ArrayList<>();
 		allPodium.add(new ArrayList<>());
 		allPodium.add(new ArrayList<>());
 		allPodium.add(new ArrayList<>());
 		
 		double[] allScores = highScoreManager.sortRankByScore(assessEntries, allMembers, ownIdMembers, allPodium,
-				ownIdIndices, 5, JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-2"), userManager)
+				ownIdIndices, 5, JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-2"))
 				.getScores();
 		
 		assertNotNull(allScores);
@@ -115,7 +100,5 @@ public class HighScoreManagerTest extends OlatTestCase {
 
 		long classwidth = highScoreManager.processHistogramData(allScores, 0F, 30F).getClasswidth();
 		assertEquals(2L, classwidth);
-		
 	}
-
 }
