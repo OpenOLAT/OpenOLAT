@@ -142,7 +142,6 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		for(Identity participant:participants) {
 			if(!duplicateKiller.contains(participant)) {
 				participantCollector.accept(participant);
-				assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale()));
 				duplicateKiller.add(participant);
 			}
 		}
