@@ -1,5 +1,6 @@
 /**
 
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -524,7 +525,7 @@ public class GTAParticipantController extends GTAAbstractController {
 		if(visible) {
 			File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
 			VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
-			if((!availableDate.isRelative() && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false))
+			if((availableDate != null && !availableDate.isRelative() && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false))
 					|| TaskHelper.hasDocuments(documentsDir)) {
 				solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer, "run.solutions.description", "bulk.solutions", "solutions");
 				listenTo(solutionsCtrl);
