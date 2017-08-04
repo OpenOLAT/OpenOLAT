@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.gta.ui;
+package org.olat.course.nodes.gta.ui.component;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

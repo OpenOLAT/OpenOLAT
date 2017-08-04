@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.util.Date;
+
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.user.UserPropertiesRow;
@@ -29,24 +31,53 @@ import org.olat.user.UserPropertiesRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CoachedIdentityRow {
+public class CoachedIdentityRow implements CoachedElementRow {
 
 	private final TaskLight task;
+	private final Date submissionDueDate;
 	private final UserPropertiesRow identity;
 	
-	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task) {
+	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, Date submissionDueDate) {
 		this.identity = identity;
 		this.task = task;
+		this.submissionDueDate = submissionDueDate;
 	}
-	
+
+	@Override
 	public String getTaskName() {
 		return task == null ? null : task.getTaskName();
 	}
 	
+	@Override
 	public TaskProcess getTaskStatus() {
 		return task == null ? null : task.getTaskStatus();
 	}
+
+	@Override
+	public Date getSubmissionDate() {
+		return task == null ? null : task.getSubmissionDate();
+	}
+
+	@Override
+	public Date getSubmissionDueDate() {
+		return submissionDueDate;
+	}
+
+	@Override
+	public Date getSubmissionRevisionsDate() {
+		return task == null ? null : task.getSubmissionRevisionsDate();
+	}
+
+	@Override
+	public Date getCollectionDate() {
+		return task == null ? null : task.getCollectionDate();
+	}
 	
+	@Override
+	public TaskLight getTask() {
+		return task;
+	}
+
 	public UserPropertiesRow getIdentity() {
 		return identity;
 	}

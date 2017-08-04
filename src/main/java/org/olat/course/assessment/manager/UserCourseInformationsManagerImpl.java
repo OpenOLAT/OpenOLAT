@@ -30,6 +30,7 @@ import java.util.Set;
 import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -42,7 +43,9 @@ import org.olat.core.util.coordinate.SyncerExecutor;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.UserCourseInformations;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
+import org.olat.group.BusinessGroupRef;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -204,9 +207,59 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			}
 			return infoList.get(0);
 		} catch (Exception e) {
-			log.error("Cannot retrieve course informations for: " + resource.getResourceableId(), e);
+			log.error("Cannot retrieve course informations for resource: " + resource.getResourceableId(), e);
 			return null;
 		}
+	}
+	
+	@Override
+	public Date getInitialLaunchDate(RepositoryEntryRef entry, IdentityRef identity) {
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select infos.initialLaunch from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
+			  .append(" inner join infos.resource as resource")
+			  .append(" inner join repositoryentry as entry on (resource.key=entry.olatResource.key)")
+			  .append(" where infos.identity.key=:identityKey and entry.key=:entryKey");
+
+			List<Date> infoList = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Date.class)
+					.setParameter("identityKey", identity.getKey())
+					.setParameter("entryKey", entry.getKey())
+					.getResultList();
+
+			if(infoList.isEmpty()) {
+				return null;
+			}
+			return infoList.get(0);
+		} catch (Exception e) {
+			log.error("Cannot retrieve course informations for entry: " + entry.getKey(), e);
+			return null;
+		}
+	}
+
+	@Override
+	public Date getInitialParticipantLaunchDate(RepositoryEntryRef entry, BusinessGroupRef businessGroup) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select min(infos.initialLaunch) from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
+		  .append(" inner join infos.resource as resource")
+		  .append(" inner join repositoryentry as entry on (resource.key=entry.olatResource.key and entry.key=:entryKey)")
+		  .append(" inner join entry.groups as relGroup on relGroup.defaultGroup=false")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join businessgroup as bg on (relGroup.group.key=bg.baseGroup.key and bg.key=:groupKey)")
+		  .append(" inner join baseGroup.members as memberships on (memberships.role = '").append(GroupRoles.participant.name()).append("')")
+		  .append(" inner join memberships.identity as ident")
+		  .append(" where infos.identity.key=memberships.identity.key");
+
+		List<Date> infoList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Date.class)
+				.setParameter("groupKey", businessGroup.getKey())
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+
+		if(infoList.isEmpty()) {
+			return null;
+		}
+		return infoList.get(0);
 	}
 
 	/**

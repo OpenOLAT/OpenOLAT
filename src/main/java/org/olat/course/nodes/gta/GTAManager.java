@@ -28,6 +28,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.Membership;
 import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.model.TaskDefinition;
@@ -289,13 +290,34 @@ public interface GTAManager {
 
 	public AssignmentResponse assignTaskAutomatically(TaskList taskList, Identity assessedIdentity, CourseEnvironment courseEnv, GTACourseNode cNode);
 
+	public DueDate getSubmissionDueDate(TaskRef assignedTask,
+			IdentityRef assessedIdentity, BusinessGroup assessedGroup, GTACourseNode cNode, RepositoryEntry courseEntry);
+	
+	/**
+	 * Calculated a reference date relative to the specified parameters
+	 * 
+	 * @param numOfDays
+	 * @param relativeTo
+	 * @param assignedTask
+	 * @param entry
+	 * @return
+	 */
+	public DueDate getReferenceDate(int numOfDays, String relativeTo, TaskRef assignedTask,
+			IdentityRef assessedIdentity, BusinessGroup assessedGroup, RepositoryEntry entry);
+	
 	public TaskProcess firstStep(GTACourseNode cNode);
 
 	public TaskProcess previousStep(TaskProcess currentStep, GTACourseNode cNode);
 	
 	public TaskProcess nextStep(TaskProcess currentStep, GTACourseNode cNode);
+
+	public Task collectTask(Task task, GTACourseNode cNode);
 	
 	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode);
+	
+	public Task submitTask(Task task, GTACourseNode cNode);
+	
+	public Task submitRevisions(Task task, GTACourseNode cNode);
 	
 	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode);
 	

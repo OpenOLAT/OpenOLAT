@@ -26,7 +26,9 @@ import java.util.Map;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserCourseInformations;
+import org.olat.group.BusinessGroupRef;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
 
 /**
@@ -42,6 +44,10 @@ public interface UserCourseInformationsManager {
 	public void updateUserCourseInformations(OLATResource courseResource, Identity identity);
 	
 	public Date getInitialLaunchDate(OLATResource resource, IdentityRef identity);
+	
+	public Date getInitialLaunchDate(RepositoryEntryRef entry, IdentityRef identity);
+	
+	public Date getInitialParticipantLaunchDate(RepositoryEntryRef entry, BusinessGroupRef businessGroup);
 	
 	public Date getRecentLaunchDate(OLATResource resource, IdentityRef identity);
 	

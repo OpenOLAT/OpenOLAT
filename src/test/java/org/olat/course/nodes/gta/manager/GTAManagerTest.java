@@ -21,6 +21,7 @@ package org.olat.course.nodes.gta.manager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
@@ -369,6 +370,26 @@ public class GTAManagerTest extends OlatTestCase {
 		Task assignedTaskRefToId1 = gtaManager.getTask(id1, taskListRef);
 		Assert.assertNotNull(assignedTaskRefToId1);
 		Assert.assertEquals("work_1.txt", assignedTaskRefToId1.getTaskName());
+	}
+	
+	@Test
+	public void getEnrollmentDate() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-20");
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		dbInstance.commit();
+		
+		//no participant enrolled
+		Date noEnrollmentDate = gtaManager.getEnrollmentDate(businessGroup);
+		Assert.assertNull(noEnrollmentDate);
+		
+		//add participant
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-21");
+		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
+		dbInstance.commit();
+		
+		// there is a participant enrolled
+		Date enrollmentDate = gtaManager.getEnrollmentDate(businessGroup);
+		Assert.assertNotNull(enrollmentDate);
 	}
 	
 	@Test

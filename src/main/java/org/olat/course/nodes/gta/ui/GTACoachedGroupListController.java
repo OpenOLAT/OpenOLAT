@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskLight;
+import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.CoachGroupsTableModel.CGCols;
+import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
+import org.olat.course.nodes.gta.ui.component.TaskStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SelectBusinessGroupEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -91,6 +96,8 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus.i18nKey(), CGCols.taskStatus.ordinal(),
 				true, CGCols.taskStatus.name(), new TaskStatusCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate.i18nKey(), CGCols.submissionDate.ordinal(),
+				true, CGCols.submissionDate.name(), new SubmissionDateCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		tableModel = new CoachGroupsTableModel(columnsModel);
 
@@ -116,7 +123,14 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		List<CoachedGroupRow> rows = new ArrayList<>(coachedGroups.size());
 		for(BusinessGroup group:coachedGroups) {
 			TaskLight task = groupToTasks.get(group.getKey());
-			rows.add(new CoachedGroupRow(group, task));
+			Date submissionDueDate = null;
+			if(task == null || task.getTaskStatus() == null || task.getTaskStatus() == TaskProcess.assignment) {
+				DueDate dueDate = gtaManager.getSubmissionDueDate(task, null, group, gtaNode, entry);
+				if(dueDate != null) {
+					submissionDueDate = dueDate.getDueDate();
+				}
+			}
+			rows.add(new CoachedGroupRow(group, task, submissionDueDate));
 		}
 		
 		tableModel.setObjects(rows);

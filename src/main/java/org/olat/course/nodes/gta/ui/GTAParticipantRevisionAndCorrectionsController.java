@@ -288,7 +288,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	}
 	
 	private void doSubmitRevisions() {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.correction, gtaNode);
+		assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode);
 		gtaManager.log("Revision", "revision submitted", assignedTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUBMIT_REVISION,

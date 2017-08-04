@@ -216,3 +216,8 @@ update o_rem_reminder set r_email_subject=r_description;
 
 alter table o_qti_assessment_marks add column q_hidden_rubrics text default null;
 
+
+alter table o_gta_task add column g_submission_date timestamp default null;
+alter table o_gta_task add column g_submission_revisions_date timestamp default null;
+alter table o_gta_task add column g_collection_date timestamp default null;
+

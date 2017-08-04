@@ -30,7 +30,7 @@ import org.olat.group.BusinessGroup;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Task {
+public interface Task extends TaskRef {
 	
 	public Long getKey();
 	
@@ -49,6 +49,12 @@ public interface Task {
 	public String getTaskName();
 	
 	public Date getAssignmentDate();
+	
+	public Date getSubmissionDate();
+	
+	public Date getSubmissionRevisionsDate();
+	
+	public Date getCollectionDate();
 	
 	public TaskList getTaskList();
 	

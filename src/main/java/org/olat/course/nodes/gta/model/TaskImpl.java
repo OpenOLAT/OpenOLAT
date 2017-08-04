@@ -90,6 +90,15 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_assignment_date", nullable=true, insertable=true, updatable=true)
 	private Date assignmentDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_submission_date", nullable=true, insertable=true, updatable=true)
+	private Date submissionDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_submission_revisions_date", nullable=true, insertable=true, updatable=true)
+	private Date submissionRevisionsDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_collection_date", nullable=true, insertable=true, updatable=true)
+	private Date collectionDate;
 	
 	@Column(name="g_status", nullable=false, insertable=true, updatable=true)
 	private String status;
@@ -178,6 +187,33 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 
 	public void setAssignmentDate(Date assignmentDate) {
 		this.assignmentDate = assignmentDate;
+	}
+	
+	@Override
+	public Date getSubmissionDate() {
+		return submissionDate;
+	}
+	
+	public void setSubmissionDate(Date submissionDate) {
+		this.submissionDate = submissionDate;
+	}
+
+	@Override
+	public Date getSubmissionRevisionsDate() {
+		return submissionRevisionsDate;
+	}
+
+	public void setSubmissionRevisionsDate(Date submissionRevisionsDate) {
+		this.submissionRevisionsDate = submissionRevisionsDate;
+	}
+
+	@Override
+	public Date getCollectionDate() {
+		return collectionDate;
+	}
+
+	public void setCollectionDate(Date collectionDate) {
+		this.collectionDate = collectionDate;
 	}
 
 	@Override

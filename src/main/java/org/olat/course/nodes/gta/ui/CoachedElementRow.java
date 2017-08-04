@@ -17,44 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.gta;
+package org.olat.course.nodes.gta.ui;
 
 import java.util.Date;
 
+import org.olat.course.nodes.gta.TaskLight;
+import org.olat.course.nodes.gta.TaskProcess;
+
 /**
+ * Common interface for CoachedIdentityRow and CoachedGroupRow
  * 
- * Initial date: 12.05.2015<br>
+ * Initial date: 3 août 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface TaskLight extends TaskRef {
-	
-	public Long getKey();
-	
-	public Date getCreationDate();
-	
-	public Date getLastModified();
-	
-	public TaskProcess getTaskStatus();
-	
-	/**
-	 * Iteration of the revision / correction process. Start with 1.
-	 * @return
-	 */
-	public int getRevisionLoop();
+public interface CoachedElementRow {
 	
 	public String getTaskName();
 	
-	public Date getAssignmentDate();
+	public TaskProcess getTaskStatus();
 	
 	public Date getSubmissionDate();
+	
+	/**
+	 * @return Date only if there is a due date and the task is not submitted.
+	 */
+	public Date getSubmissionDueDate();
 	
 	public Date getSubmissionRevisionsDate();
 	
 	public Date getCollectionDate();
 	
-	public Long getIdentityKey();
-	
-	public Long getBusinessGroupKey();
+	public TaskLight getTask();
 
 }

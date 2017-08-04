@@ -17,33 +17,46 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.gta.ui;
+package org.olat.course.nodes.gta.model;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.gui.translator.Translator;
+import java.util.Date;
 
 /**
  * 
- * Initial date: 21.11.2013<br>
+ * Initial date: 3 août 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PassedCellRenderer implements FlexiCellRenderer {
-
-	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue,
-			int row, FlexiTableComponent source, URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof Boolean) {
-			Boolean passed = (Boolean)cellValue;
-			if(passed.booleanValue()) {
-				target.append(translator.translate("passed.true"));
-			} else {
-				target.append(translator.translate("passed.false"));
-			}	
-		}
+public class DueDate {
+	
+	private final Date dueDate;
+	private final String messageKey;
+	private final String messageArg;
+	
+	public DueDate(String messageKey, String messageArg) {
+		this(null, messageKey, messageArg);
 	}
+	
+	public DueDate(Date dueDate) {
+		this(dueDate, null, null);
+	}
+	
+	public DueDate(Date dueDate, String messageKey, String messageArg) {
+		this.dueDate = dueDate;
+		this.messageKey = messageKey;
+		this.messageArg = messageArg;
+	}
+
+	public Date getDueDate() {
+		return dueDate;
+	}
+
+	public String getMessageKey() {
+		return messageKey;
+	}
+	
+	public String getMessageArg() {
+		return messageArg;
+	}
+
 }

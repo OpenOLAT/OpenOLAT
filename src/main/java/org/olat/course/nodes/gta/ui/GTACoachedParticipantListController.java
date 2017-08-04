@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +30,8 @@ import java.util.function.Consumer;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -51,7 +54,11 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskLight;
+import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.CoachParticipantsTableModel.CGCols;
+import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
+import org.olat.course.nodes.gta.ui.component.TaskStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -190,6 +197,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus.i18nKey(), CGCols.taskStatus.ordinal(),
 				true, CGCols.taskStatus.name(), new TaskStatusCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate.i18nKey(), CGCols.submissionDate.ordinal(),
+				true, CGCols.submissionDate.name(), new SubmissionDateCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		tableModel = new CoachParticipantsTableModel(userPropertyHandlers, getLocale(), columnsModel);
 
@@ -211,7 +220,15 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		List<CoachedIdentityRow> rows = new ArrayList<>(assessableIdentities.size());
 		for(UserPropertiesRow assessableIdentity:assessableIdentities) {
 			TaskLight task = identityToTasks.get(assessableIdentity.getIdentityKey());
-			rows.add(new CoachedIdentityRow(assessableIdentity, task));
+			Date submissionDueDate = null;
+			if(task == null || task.getTaskStatus() == null || task.getTaskStatus() == TaskProcess.assignment) {
+				IdentityRef identityRef = new IdentityRefImpl(assessableIdentity.getIdentityKey());
+				DueDate dueDate = gtaManager.getSubmissionDueDate(task, identityRef, null, gtaNode, entry);
+				if(dueDate != null) {
+					submissionDueDate = dueDate.getDueDate();
+				}
+			}
+			rows.add(new CoachedIdentityRow(assessableIdentity, task, submissionDueDate));
 		}
 		
 		tableModel.setObjects(rows);

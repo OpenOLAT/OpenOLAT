@@ -22,12 +22,13 @@ package org.olat.course.nodes.gta;
 import java.util.Date;
 
 /**
+ * Common interface for Task and TaskLight
  * 
- * Initial date: 12.05.2015<br>
+ * Initial date: 3 août 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface TaskLight extends TaskRef {
+public interface TaskRef {
 	
 	public Long getKey();
 	
@@ -46,15 +47,5 @@ public interface TaskLight extends TaskRef {
 	public String getTaskName();
 	
 	public Date getAssignmentDate();
-	
-	public Date getSubmissionDate();
-	
-	public Date getSubmissionRevisionsDate();
-	
-	public Date getCollectionDate();
-	
-	public Long getIdentityKey();
-	
-	public Long getBusinessGroupKey();
 
 }
