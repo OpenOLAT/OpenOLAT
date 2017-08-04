@@ -485,7 +485,7 @@ public class LectureBlockRollCallDAO {
 		}
 		
 		Map<String,Object> queryParams = new HashMap<>();
-		appendUsersStatisticsSearchParams(params, queryParams, sb);
+		appendUsersStatisticsSearchParams(params, queryParams, userPropertyHandlers, sb);
 
 		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
@@ -579,7 +579,8 @@ public class LectureBlockRollCallDAO {
 		return statisticsList;
 	}
 	
-	private void appendUsersStatisticsSearchParams(LectureStatisticsSearchParameters params, Map<String,Object> queryParams, StringBuilder sb) {
+	private void appendUsersStatisticsSearchParams(LectureStatisticsSearchParameters params, Map<String,Object> queryParams,
+			List<UserPropertyHandler> userPropertyHandlers, StringBuilder sb) {
 		if(StringHelper.containsNonWhitespace(params.getLogin())) {
 			String login = PersistenceHelper.makeFuzzyQueryString(params.getLogin());
 			if (login.contains("_") && dbInstance.isOracle()) {
@@ -603,6 +604,14 @@ public class LectureBlockRollCallDAO {
 				String qName = "p_" + ++count;
 				
 				UserPropertyHandler handler = userManager.getUserPropertiesConfig().getPropertyHandler(propName);
+				if(handler == null) {// fallback if the haandler is disabled
+					for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+						if(propName.equals(userPropertyHandler.getName())) {
+							handler = userPropertyHandler;
+						}
+					}
+				}
+				
 				if(dbInstance.isMySQL()) {
 					sb.append(" and user.").append(handler.getName()).append(" like :").append(qName);
 				} else {
