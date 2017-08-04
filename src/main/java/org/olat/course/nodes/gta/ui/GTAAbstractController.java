@@ -348,7 +348,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 					assignmentDueDate = gtaManager.getReferenceDate(numOfDays, relativeTo, task, assessedIdentity, assessedGroup, courseEntry);
 				}
 			} else if(dueDate != null) {
-				assignmentDueDate = new DueDate(dueDate);
+				assignmentDueDate = new DueDate(false, dueDate);
 			}
 		}
 		return assignmentDueDate;
@@ -419,7 +419,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 					solutionDueDate = gtaManager.getReferenceDate(numOfDays, relativeTo, assignedTask, assessedIdentity, assessedGroup, courseEntry);
 				}
 			} else if(dueDate != null) {
-				solutionDueDate = new DueDate(dueDate);
+				solutionDueDate = new DueDate(false, dueDate);
 			}
 		}
 		return solutionDueDate;

@@ -85,6 +85,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private FormLayoutContainer stepsCont, assignmentRelDeadlineCont, submissionRelDeadlineCont, solutionVisibleRelCont;
 	private TextElement assignementDeadlineDaysEl, submissionDeadlineDaysEl, solutionVisibleRelDaysEl;
 	private SingleSelection assignementDeadlineRelToEl, submissionDeadlineRelToEl, solutionVisibleRelToEl;
+	private MultipleSelectionElement solutionVisibleToAllEl;
 	
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
@@ -328,6 +329,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		solutionVisibleAfterEl = uifactory.addDateChooser("visibleafter", "sample.solution.visible.after", solutionVisibleAfter, stepsCont);
 		solutionVisibleAfterEl.setDateChooserTimeEnabled(true);
 		solutionVisibleAfterEl.setVisible(sample && !useRelativeDates);
+		solutionVisibleAfterEl.addActionListener(FormEvent.ONCHANGE);
 
 		//relative deadline
 		String solutionPage = velocity_root + "/solution_relative_date.html";
@@ -359,6 +361,14 @@ public class GTAWorkflowEditController extends FormBasicController {
 		}
 		if(!found) {
 			solutionVisibleRelToEl.select(solutionKeysAndValues.getKeys()[0], true);
+		}
+		
+		boolean solutionVisibleRelToAll = config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false);
+		String[] solutionVisibleToAllValues = new String[] { translate("sample.solution.visible.all") };
+		solutionVisibleToAllEl = uifactory.addCheckboxesHorizontal("visibleall", null, stepsCont, onKeys, solutionVisibleToAllValues);
+		solutionVisibleToAllEl.setVisible(sample && !useRelativeDates && solutionVisibleAfter != null);
+		if(solutionVisibleRelToAll) {
+			solutionVisibleToAllEl.select(onKeys[0], true);
 		}
 		
 		uifactory.addSpacerElement("s5", stepsCont, true);
@@ -514,11 +524,14 @@ public class GTAWorkflowEditController extends FormBasicController {
 			if(relativeDates) {
 				setRelativeDates(solutionVisibleRelDaysEl, GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE,
 						solutionVisibleRelToEl, GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO);
+				config.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL);
 			} else {
 				config.setDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER, solutionVisibleAfterEl.getDate());
+				config.setBooleanEntry(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, solutionVisibleToAllEl.isAtLeastSelected(1));
 			}
 		} else {
 			config.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
+			config.remove(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL);
 		}
 
 		config.setBooleanEntry(GTACourseNode.GTASK_GRADING, gradingEl.isAtLeastSelected(1));
@@ -549,6 +562,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 		} else if(relativeDatesEl == source) {
 			updateAssignmentDeadline();
 			updateSubmissionDeadline();
+			updateSolutionDeadline();
+		} else if(solutionVisibleAfterEl == source) {
 			updateSolutionDeadline();
 		} else if (reviewEl == source) {
 			updateRevisions();
@@ -583,6 +598,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		solutionVisibleAfterEl.setVisible(solution && !useRelativeDate);
 		solutionVisibleRelCont.setVisible(solution && useRelativeDate);
 		updateDeadline(solutionVisibleRelToEl, false);
+		solutionVisibleToAllEl.setVisible(solution && !useRelativeDate && solutionVisibleAfterEl.getDate() != null);
 	}
 	
 	private void updateDeadline(SingleSelection selectionEl, boolean excludeAssignment) {

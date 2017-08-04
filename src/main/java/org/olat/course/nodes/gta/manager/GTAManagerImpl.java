@@ -1063,7 +1063,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				submissionDueDate = getReferenceDate(numOfDays, relativeTo, assignedTask, assessedIdentity, assessedGroup, courseEntry);
 			}
 		} else if(dueDate != null) {
-			submissionDueDate = new DueDate(dueDate);
+			submissionDueDate = new DueDate(false, dueDate);
 		}
 		return submissionDueDate;
 	}
@@ -1119,9 +1119,9 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(referenceDate);
 				cal.add(Calendar.DATE, numOfDays);
-				dueDate = new DueDate(cal.getTime());
+				dueDate = new DueDate(true, cal.getTime());
 			} else if(messageKey != null) {
-				dueDate = new DueDate(messageKey, messageArg);
+				dueDate = new DueDate(true, messageKey, messageArg);
 			}
 		}
 		return dueDate;

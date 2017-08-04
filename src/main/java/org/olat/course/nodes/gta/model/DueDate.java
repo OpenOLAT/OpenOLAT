@@ -30,25 +30,31 @@ import java.util.Date;
 public class DueDate {
 	
 	private final Date dueDate;
+	private final boolean relative; 
 	private final String messageKey;
 	private final String messageArg;
 	
-	public DueDate(String messageKey, String messageArg) {
-		this(null, messageKey, messageArg);
+	public DueDate(boolean relative, String messageKey, String messageArg) {
+		this(relative, null, messageKey, messageArg);
 	}
 	
-	public DueDate(Date dueDate) {
-		this(dueDate, null, null);
+	public DueDate(boolean relative, Date dueDate) {
+		this(relative, dueDate, null, null);
 	}
 	
-	public DueDate(Date dueDate, String messageKey, String messageArg) {
+	public DueDate(boolean relative, Date dueDate, String messageKey, String messageArg) {
 		this.dueDate = dueDate;
+		this.relative = relative;
 		this.messageKey = messageKey;
 		this.messageArg = messageArg;
 	}
 
 	public Date getDueDate() {
 		return dueDate;
+	}
+	
+	public boolean isRelative() {
+		return relative;
 	}
 
 	public String getMessageKey() {

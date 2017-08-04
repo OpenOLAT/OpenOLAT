@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -493,7 +494,11 @@ public class GTAParticipantController extends GTAAbstractController {
 			if(assignedTask == null || assignedTask.getTaskStatus() == TaskProcess.assignment || assignedTask.getTaskStatus() == TaskProcess.submit
 					|| assignedTask.getTaskStatus() == TaskProcess.review || assignedTask.getTaskStatus() == TaskProcess.correction
 					|| assignedTask.getTaskStatus() == TaskProcess.revision) {
-				mainVC.contextPut("solutionCssClass", "");
+				if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false)) {
+					setSolutions(ureq, assignedTask);
+				} else {
+					mainVC.contextPut("solutionCssClass", "");
+				}
 			} else if(assignedTask.getTaskStatus() == TaskProcess.solution) {
 				mainVC.contextPut("solutionCssClass", "o_active");
 				setSolutions(ureq, assignedTask);
@@ -519,7 +524,8 @@ public class GTAParticipantController extends GTAAbstractController {
 		if(visible) {
 			File documentsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
 			VFSContainer documentsContainer = gtaManager.getSolutionsContainer(courseEnv, gtaNode);
-			if(TaskHelper.hasDocuments(documentsDir)) {
+			if((!availableDate.isRelative() && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_ALL, false))
+					|| TaskHelper.hasDocuments(documentsDir)) {
 				solutionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer, "run.solutions.description", "bulk.solutions", "solutions");
 				listenTo(solutionsCtrl);
 				mainVC.put("solutions", solutionsCtrl.getInitialComponent());
