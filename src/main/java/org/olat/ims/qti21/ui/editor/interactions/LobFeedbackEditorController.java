@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.RichTextConfiguration;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -90,6 +91,7 @@ public class LobFeedbackEditorController extends FormBasicController {
 			String hintText = hint == null ? "" : hint.getText();
 			hintTextEl = uifactory.addRichTextElementForQTI21("hintText", "form.imd.hint.text", hintText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
+			hintTextEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 			hintTextEl.setElementCssClass("o_sel_assessment_item_hint");
 			hintTextEl.setEnabled(!restrictedEdit);
 			hintTextEl.setHelpTextKey("feedback.hint.help", null);
@@ -108,6 +110,7 @@ public class LobFeedbackEditorController extends FormBasicController {
 			String correctSolutionText = correctSolutionFeedback == null ? "" : correctSolutionFeedback.getText();
 			feedbackCorrectSolutionTextEl = uifactory.addRichTextElementForQTI21("correctSolutionText", "form.imd.correct.solution.text.word", correctSolutionText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackCorrectSolutionTextEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 			feedbackCorrectSolutionTextEl.setEnabled(!restrictedEdit);
 			feedbackCorrectSolutionTextEl.setHelpTextKey("feedback.correctsolution.help", null);
 			feedbackCorrectSolutionTextEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
@@ -126,6 +129,7 @@ public class LobFeedbackEditorController extends FormBasicController {
 			String correctText = answeredFeedback == null ? "" : answeredFeedback.getText();
 			feedbackTextEl = uifactory.addRichTextElementForQTI21("answeredText", "form.imd.answered.text", correctText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackTextEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 			feedbackTextEl.setEnabled(!restrictedEdit);
 			feedbackTextEl.setElementCssClass("o_sel_assessment_item_answered_feedback");
 			RichTextConfiguration richTextConfig = feedbackTextEl.getEditorConfiguration();
@@ -142,6 +146,7 @@ public class LobFeedbackEditorController extends FormBasicController {
 			String emptyText = emptyFeedback == null ? "" : emptyFeedback.getText();
 			feedbackEmptyTextEl = uifactory.addRichTextElementForQTI21("emptyText", "form.imd.empty.text", emptyText, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
+			feedbackEmptyTextEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 			feedbackEmptyTextEl.setEnabled(!restrictedEdit);
 			feedbackEmptyTextEl.setElementCssClass("o_sel_assessment_item_empty_feedback");
 			RichTextConfiguration emptyTextConfig = feedbackEmptyTextEl.getEditorConfiguration();

@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -84,6 +85,7 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		String passedText = passedFeedback == null ? "" : passedFeedback.getText();
 		feedbackPassedTextEl = uifactory.addRichTextElementForQTI21("correctText", "form.test.correct.text", passedText, 8, -1,
 				itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
+		feedbackPassedTextEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 		feedbackPassedTextEl.setEnabled(!restrictedEdit);
 		feedbackPassedTextEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 
@@ -96,6 +98,7 @@ public class AssessmentTestFeedbackEditorController extends FormBasicController 
 		String fialedText = failedFeedback == null ? "" : failedFeedback.getText();
 		feedbackFailedTextEl = uifactory.addRichTextElementForQTI21("incorrectText", "form.test.incorrect.text", fialedText, 8, -1,
 				itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
+		feedbackFailedTextEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 		feedbackFailedTextEl.setEnabled(!restrictedEdit);
 		feedbackFailedTextEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 	
