@@ -163,7 +163,7 @@
 	line-height: $o-toggle-size;
 	font-size: $o-toggle-size;
 	text-align: left;
-	padding: 0 0.5em 0 0;
+	padding: 0 0.5em 0 1px;
 	margin: 0;
 	@extend %o_undecorated;
 	
@@ -180,7 +180,7 @@
 	}
 	&.o_on {
 		text-align: right;
-		padding: 0 0 0 0.5em;
+		padding: 0 1px 0 0.5em;
 		i {
 			color: $o-toggle-on-color;
 			text-shadow: -1px 0 2px rgba(0,0,0,.25);

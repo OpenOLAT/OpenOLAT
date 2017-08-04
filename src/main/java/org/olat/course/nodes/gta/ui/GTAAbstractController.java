@@ -339,17 +339,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 	
 	protected DueDate getAssignementDueDate(Task task) {
 		if(assignmentDueDate == null) {
-			Date dueDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
-			boolean relativeDate = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
-			if(relativeDate) {
-				int numOfDays = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, -1);
-				String relativeTo = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO);
-				if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
-					assignmentDueDate = gtaManager.getReferenceDate(numOfDays, relativeTo, task, assessedIdentity, assessedGroup, courseEntry);
-				}
-			} else if(dueDate != null) {
-				assignmentDueDate = new DueDate(false, dueDate);
-			}
+			assignmentDueDate = gtaManager.getAssignmentDueDate(task, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
 		}
 		return assignmentDueDate;
 	}
@@ -380,7 +370,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 	
 	protected DueDate getSubmissionDueDate(Task assignedTask) {
 		if(submissionDueDate == null) {
-			submissionDueDate = gtaManager.getSubmissionDueDate(assignedTask, assessedIdentity, assessedGroup, gtaNode, courseEntry);
+			submissionDueDate = gtaManager.getSubmissionDueDate(assignedTask, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
 		}
 		return submissionDueDate;
 	}
@@ -390,6 +380,17 @@ public abstract class GTAAbstractController extends BasicController implements G
 	}
 	
 	protected Task stepRevision(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
+		if(assignedTask != null && assignedTask.getRevisionsDueDate() != null) {
+			Date date =  assignedTask.getRevisionsDueDate();
+			String dateAsString = formatDueDate(new DueDate(false, date), false);
+			mainVC.contextPut("revisionDueDate", dateAsString);	
+			if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.revision
+					&& date.compareTo(new Date()) < 0) {
+				//push to the next step
+				assignedTask = gtaManager.nextStep(assignedTask, gtaNode);
+				doUpdateAttempts();
+			}
+		}
 		return assignedTask;
 	}
 	
@@ -410,17 +411,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 	
 	protected DueDate getSolutionDueDate(Task assignedTask) {
 		if(solutionDueDate == null) {
-			boolean relativeDate = gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
-			Date dueDate = gtaNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
-			if(relativeDate) {
-				int numOfDays = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE, -1);
-				String relativeTo = gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO);
-				if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
-					solutionDueDate = gtaManager.getReferenceDate(numOfDays, relativeTo, assignedTask, assessedIdentity, assessedGroup, courseEntry);
-				}
-			} else if(dueDate != null) {
-				solutionDueDate = new DueDate(false, dueDate);
-			}
+			solutionDueDate = gtaManager.getSolutionDueDate(assignedTask, assessedIdentity, assessedGroup, gtaNode, courseEntry, true);
 		}
 		return solutionDueDate;
 	}

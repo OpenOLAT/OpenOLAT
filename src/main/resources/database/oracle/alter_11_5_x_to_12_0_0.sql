@@ -216,3 +216,13 @@ update o_rem_reminder set r_email_subject=r_description;
 
 alter table o_qti_assessment_marks add q_hidden_rubrics clob default null;
 
+
+alter table o_gta_task add g_submission_date date default null;
+alter table o_gta_task add g_submission_revisions_date date default null;
+alter table o_gta_task add g_collection_date date default null;
+
+alter table o_gta_task add g_assignment_due_date date default null;
+alter table o_gta_task add g_submission_due_date date default null;
+alter table o_gta_task add g_revisions_due_date date default null;
+alter table o_gta_task add g_solution_due_date date default null;
+

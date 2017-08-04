@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
@@ -70,9 +71,12 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private Link returnToRevisionsButton, closeRevisionsButton, collectButton;
+	
+	private CloseableModalController cmc;
 	private DirectoryController revisionsCtrl, correctionsCtrl;
 	private SubmitDocumentsController uploadCorrectionsCtrl;
-	private DialogBoxController confirmCloseRevisionProcessCtrl, confirmReturnToRevisionsCtrl, confirmCollectCtrl;
+	private ConfirmRevisionsController confirmReturnToRevisionsCtrl;
+	private DialogBoxController confirmCloseRevisionProcessCtrl, confirmCollectCtrl;
 	
 	private Task assignedTask;
 	private final int currentIteration;
@@ -264,10 +268,12 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 				gtaManager.log("Corrections", (SubmitEvent)event, aTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 			}
 		} else if(confirmReturnToRevisionsCtrl == source) {
-			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
-				doReturnToRevisions();
+			if(event == Event.DONE_EVENT) {
+				doReturnToRevisions(confirmReturnToRevisionsCtrl.getTask());
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(confirmCloseRevisionProcessCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				doCloseRevisionProcess();
@@ -278,8 +284,15 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 				doCollect();
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
+		} else if(cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		cmc = null;
 	}
 
 	@Override
@@ -294,25 +307,16 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	}
 	
 	private void doConfirmReturnToRevisions(UserRequest ureq) {
-		String title = translate("coach.revisions.confirm.title");
-		String text = translate("coach.revisions.confirm.text");
+		if(confirmReturnToRevisionsCtrl != null) return;
 		
-		File documentsDir;
-		int iteration = assignedTask.getRevisionLoop();
-		if(businessGroupTask) {
-			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
-		} else {
-			documentsDir = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, gtaNode, iteration, assessedIdentity);
-		}
-		
-		boolean hasDocument = TaskHelper.hasDocuments(documentsDir);
-		if(!hasDocument) {
-			String warning = translate("coach.revisions.confirm.text.warn");
-			text = "<div class='o_warning'>" + warning + "</div>" + text;
-		}
-
-		confirmReturnToRevisionsCtrl = activateOkCancelDialog(ureq, title, text, confirmReturnToRevisionsCtrl);	
+		confirmReturnToRevisionsCtrl = new ConfirmRevisionsController(ureq, getWindowControl(), assignedTask,
+				assessedIdentity, assessedGroup, gtaNode, courseEnv);
 		listenTo(confirmReturnToRevisionsCtrl);
+		
+		String title = translate("coach.revisions.confirm.title"); // same title as link button
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmReturnToRevisionsCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doConfirmCollect(UserRequest ureq) {
@@ -369,8 +373,8 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 			.fireEventToListenersOf(event, taskListEventResource);
 	}
 	
-	private void doReturnToRevisions() {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.revision, currentIteration + 1, gtaNode);
+	private void doReturnToRevisions(Task task) {
+		assignedTask = gtaManager.updateTask(task, TaskProcess.revision, currentIteration + 1, gtaNode);
 		gtaManager.log("Revision", "need another revision", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 	}
 	

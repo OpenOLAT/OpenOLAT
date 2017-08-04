@@ -47,5 +47,13 @@ public interface TaskRef {
 	public String getTaskName();
 	
 	public Date getAssignmentDate();
+	
+	public Date getAssignmentDueDate();
+
+	public Date getSubmissionDueDate();
+
+	public Date getRevisionsDueDate();
+
+	public Date getSolutionDueDate();
 
 }

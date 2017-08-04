@@ -221,3 +221,15 @@ alter table o_gta_task add column g_submission_date timestamp default null;
 alter table o_gta_task add column g_submission_revisions_date timestamp default null;
 alter table o_gta_task add column g_collection_date timestamp default null;
 
+alter table o_gta_task add column g_assignment_due_date timestamp default null;
+alter table o_gta_task add column g_submission_due_date timestamp default null;
+alter table o_gta_task add column g_revisions_due_date timestamp default null;
+alter table o_gta_task add column g_solution_due_date timestamp default null;
+
+
+
+
+
+
+
+

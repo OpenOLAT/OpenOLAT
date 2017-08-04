@@ -21,27 +21,21 @@ package org.olat.course.nodes.gta;
 
 import java.util.Date;
 
-import org.olat.core.id.Identity;
-import org.olat.group.BusinessGroup;
-
 /**
  * 
- * Initial date: 25.02.2015<br>
+ * 
+ * Initial date: 4 août 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Task extends TaskRef {
+public interface TaskDueDate extends Task {
 	
-	public Date getSubmissionDate();
-	
-	public Date getSubmissionRevisionsDate();
-	
-	public Date getCollectionDate();
-	
-	public TaskList getTaskList();
-	
-	public Identity getIdentity();
-	
-	public BusinessGroup getBusinessGroup();
+	public void setAssignmentDueDate(Date assignmentDueDate);
+
+	public void setSubmissionDueDate(Date submissionDueDate);
+
+	public void setRevisionsDueDate(Date revisionsDueDate);
+
+	public void setSolutionDueDate(Date solutionDueDate);
 
 }

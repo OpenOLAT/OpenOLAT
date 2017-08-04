@@ -88,6 +88,19 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 	@Column(name="g_collection_date", nullable=true, insertable=true, updatable=true)
 	private Date collectionDate;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_assignment_due_date", nullable=true, insertable=true, updatable=false)
+	private Date assignmentDueDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_submission_due_date", nullable=true, insertable=true, updatable=false)
+	private Date submissionDueDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_revisions_due_date", nullable=true, insertable=true, updatable=false)
+	private Date revisionsDueDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_solution_due_date", nullable=true, insertable=true, updatable=false)
+	private Date solutionDueDate;
+	
 	@Column(name="g_status", nullable=false, insertable=false, updatable=false)
 	private String status;
 	
@@ -208,6 +221,42 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 
 	public void setCollectionDate(Date collectionDate) {
 		this.collectionDate = collectionDate;
+	}
+
+	@Override
+	public Date getAssignmentDueDate() {
+		return assignmentDueDate;
+	}
+
+	public void setAssignmentDueDate(Date assignmentDueDate) {
+		this.assignmentDueDate = assignmentDueDate;
+	}
+
+	@Override
+	public Date getSubmissionDueDate() {
+		return submissionDueDate;
+	}
+
+	public void setSubmissionDueDate(Date submissionDueDate) {
+		this.submissionDueDate = submissionDueDate;
+	}
+
+	@Override
+	public Date getRevisionsDueDate() {
+		return revisionsDueDate;
+	}
+
+	public void setRevisionsDueDate(Date revisionsDueDate) {
+		this.revisionsDueDate = revisionsDueDate;
+	}
+
+	@Override
+	public Date getSolutionDueDate() {
+		return solutionDueDate;
+	}
+
+	public void setSolutionDueDate(Date solutionDueDate) {
+		this.solutionDueDate = solutionDueDate;
 	}
 
 	@Override

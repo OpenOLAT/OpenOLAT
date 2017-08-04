@@ -219,3 +219,9 @@ alter table o_qti_assessment_marks add column q_hidden_rubrics mediumtext defaul
 alter table o_gta_task add column g_submission_date datetime default null;
 alter table o_gta_task add column g_submission_revisions_date datetime default null;
 alter table o_gta_task add column g_collection_date datetime default null;
+
+alter table o_gta_task add column g_assignment_due_date datetime default null;
+alter table o_gta_task add column g_submission_due_date datetime default null;
+alter table o_gta_task add column g_revisions_due_date datetime default null;
+alter table o_gta_task add column g_solution_due_date datetime default null;
+

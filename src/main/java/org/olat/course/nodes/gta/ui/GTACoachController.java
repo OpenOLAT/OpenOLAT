@@ -79,7 +79,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private GTACoachedGroupGradingController groupGradingCtrl;
 	private GTACoachedParticipantGradingController participantGradingCtrl;
 	private GTACoachRevisionAndCorrectionsController revisionDocumentsCtrl;
-	private DialogBoxController confirmRevisionsCtrl, confirmReviewDocumentCtrl, confirmCollectCtrl, confirmBackToSubmissionCtrl;
+	private ConfirmRevisionsController confirmRevisionsCtrl;
+	private DialogBoxController confirmReviewDocumentCtrl, confirmCollectCtrl, confirmBackToSubmissionCtrl;
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
 
@@ -523,10 +524,11 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				doReviewedDocument(ureq, assignedTask);
 			}
 		} else if(confirmRevisionsCtrl == source) {
-			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
-				Task assignedTask = (Task)confirmRevisionsCtrl.getUserObject();
-				doRevisions(ureq, assignedTask);
+			if(event == Event.DONE_EVENT) {
+				doRevisions(ureq, confirmRevisionsCtrl.getTask());
 			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(confirmCollectCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				Task assignedTask = (Task)confirmCollectCtrl.getUserObject();
@@ -543,6 +545,13 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			doCloseMailForm(true);
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmRevisionsCtrl);
+		removeAsListenerAndDispose(cmc);
+		confirmRevisionsCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -603,25 +612,14 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	}
 	
 	private void doConfirmRevisions(UserRequest ureq, Task task) {
-		String title = translate("coach.revisions.confirm.title");
-		String text = translate("coach.revisions.confirm.text");
-
-		File documentsDir;
-		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, assessedGroup);
-		} else {
-			documentsDir = gtaManager.getCorrectionDirectory(courseEnv, gtaNode, assessedIdentity);
-		}
-
-		boolean hasDocument = TaskHelper.hasDocuments(documentsDir);
-		if(!hasDocument) {
-			String warning = translate("coach.revisions.confirm.text.warn");
-			text = "<div class='o_warning'>" + warning + "</div>" + text;
-		}
-
-		confirmRevisionsCtrl = activateOkCancelDialog(ureq, title, text, confirmRevisionsCtrl);	
+		confirmRevisionsCtrl = new ConfirmRevisionsController(ureq, getWindowControl(), task,
+				assessedIdentity, assessedGroup, gtaNode, courseEnv);
 		listenTo(confirmRevisionsCtrl);
-		confirmRevisionsCtrl.setUserObject(task);
+		
+		String title = translate("coach.revisions.confirm.title"); // same title as link button
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmRevisionsCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doRevisions(UserRequest ureq, Task task) {

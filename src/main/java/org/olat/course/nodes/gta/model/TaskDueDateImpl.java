@@ -42,7 +42,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
-import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskDueDate;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.group.BusinessGroup;
@@ -50,20 +50,18 @@ import org.olat.group.BusinessGroupImpl;
 
 /**
  * 
+ * Only to update the due dates.
+ * 
  * Initial date: 25.02.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-
-@Entity(name="gtatask")
+@Entity(name="gtataskduedate")
 @Table(name="o_gta_task")
 @NamedQueries({
-	@NamedQuery(name="countTaskByNameAndTaskList", query="select count(task) from gtatask task where task.taskList.key=:taskListKey and task.taskName=:taskName"),
-	@NamedQuery(name="tasksByTaskList", query="select task.taskName from gtatask task where task.taskList.key=:taskListKey"),
-	@NamedQuery(name="isTaskInProcess", query="select count(task) from gtatask task inner join task.taskList tasklist where task.taskName=:taskName and tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent"),
-	@NamedQuery(name="isTasksInProcess", query="select count(task) from gtatask task inner join task.taskList tasklist where tasklist.entry.key=:entryKey and tasklist.courseNodeIdent=:courseNodeIdent")
+	@NamedQuery(name="dueDateTaskByTask", query="select duedates from gtataskduedate duedates where duedates.key=:taskKey"),
 })
-public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
+public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, ModifiedInfo {
 
 	private static final long serialVersionUID = 4202873369981813454L;
 
@@ -88,38 +86,38 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	private Date lastModified;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_assignment_date", nullable=true, insertable=true, updatable=true)
+	@Column(name="g_assignment_date", nullable=true, insertable=true, updatable=false)
 	private Date assignmentDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_submission_date", nullable=true, insertable=true, updatable=true)
+	@Column(name="g_submission_date", nullable=true, insertable=true, updatable=false)
 	private Date submissionDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_submission_revisions_date", nullable=true, insertable=true, updatable=true)
+	@Column(name="g_submission_revisions_date", nullable=true, insertable=true, updatable=false)
 	private Date submissionRevisionsDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_collection_date", nullable=true, insertable=true, updatable=true)
+	@Column(name="g_collection_date", nullable=true, insertable=true, updatable=false)
 	private Date collectionDate;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_assignment_due_date", nullable=true, insertable=true, updatable=false)
+	@Column(name="g_assignment_due_date", nullable=true, insertable=true, updatable=true)
 	private Date assignmentDueDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_submission_due_date", nullable=true, insertable=true, updatable=false)
+	@Column(name="g_submission_due_date", nullable=true, insertable=true, updatable=true)
 	private Date submissionDueDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_revisions_due_date", nullable=true, insertable=true, updatable=false)
+	@Column(name="g_revisions_due_date", nullable=true, insertable=true, updatable=true)
 	private Date revisionsDueDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_solution_due_date", nullable=true, insertable=true, updatable=false)
+	@Column(name="g_solution_due_date", nullable=true, insertable=true, updatable=true)
 	private Date solutionDueDate;
 	
-	@Column(name="g_status", nullable=false, insertable=true, updatable=true)
+	@Column(name="g_status", nullable=false, insertable=true, updatable=false)
 	private String status;
 	
-	@Column(name="g_rev_loop", nullable=false, insertable=true, updatable=true)
+	@Column(name="g_rev_loop", nullable=false, insertable=true, updatable=false)
 	private int revisionLoop;
 	
-	@Column(name="g_taskname", nullable=true, insertable=true, updatable=true)
+	@Column(name="g_taskname", nullable=true, insertable=true, updatable=false)
 	private String taskName;
 
 	@ManyToOne(targetEntity=TaskListImpl.class,fetch=FetchType.LAZY,optional=false)
@@ -309,8 +307,8 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof TaskImpl) {
-			TaskImpl task = (TaskImpl)obj;
+		if(obj instanceof TaskDueDateImpl) {
+			TaskDueDateImpl task = (TaskDueDateImpl)obj;
 			return key != null && key.equals(task.getKey());
 		}
 		return false;

@@ -253,11 +253,17 @@ public interface GTAManager {
 	
 	public Membership getMembership(IdentityRef identity, RepositoryEntryRef entry, GTACourseNode cNode);
 	
+	public Task getTask(TaskRef task);
+	
+	public TaskDueDate getDueDatesTask(TaskRef task);
+	
 	public Task getTask(IdentityRef identity, TaskList taskList);
 	
 	public Task getTask(BusinessGroupRef businessGroup, TaskList taskList);
 	
 	public Task createTask(String taskName, TaskList taskList, TaskProcess status, BusinessGroup assessedGroup, Identity assessedIdentity, GTACourseNode cNode);
+	
+	public Task createAndPersistTask(String taskName, TaskList taskList, TaskProcess status, BusinessGroup assessedGroup, Identity assessedIdentity, GTACourseNode cNode);
 	
 	public Task nextStep(Task task, GTACourseNode cNode);
 	
@@ -290,8 +296,16 @@ public interface GTAManager {
 
 	public AssignmentResponse assignTaskAutomatically(TaskList taskList, Identity assessedIdentity, CourseEnvironment courseEnv, GTACourseNode cNode);
 
-	public DueDate getSubmissionDueDate(TaskRef assignedTask,
-			IdentityRef assessedIdentity, BusinessGroup assessedGroup, GTACourseNode cNode, RepositoryEntry courseEntry);
+	public boolean isDueDateEnabled(GTACourseNode cNode);
+	
+	public DueDate getAssignmentDueDate(TaskRef task, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode gtaNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
+	
+	public DueDate getSubmissionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
+	
+	public DueDate getSolutionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate);
 	
 	/**
 	 * Calculated a reference date relative to the specified parameters
@@ -314,6 +328,8 @@ public interface GTAManager {
 	public Task collectTask(Task task, GTACourseNode cNode);
 	
 	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode);
+	
+	public TaskDueDate updateTaskDueDate(TaskDueDate taskDueDate);
 	
 	public Task submitTask(Task task, GTACourseNode cNode);
 	
