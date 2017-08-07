@@ -40,28 +40,36 @@ public class QTI21FeedbacksEditorPage {
 	public QTI21FeedbacksEditorPage setHint(String title, String hint) {
 		By titleBy = By.cssSelector("div.o_sel_assessment_item_hint_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
-		OOGraphene.tinymce(hint, "div.o_sel_assessment_item_hint", browser);
+		
+		By hintBy = By.cssSelector("div.o_sel_assessment_item_hint input[type='text']");
+		browser.findElement(hintBy).sendKeys(hint);
 		return this;
 	}
 	
 	public QTI21FeedbacksEditorPage setCorrectSolution(String title, String correctSolution) {
 		By titleBy = By.cssSelector("div.o_sel_assessment_item_correct_solution_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
-		OOGraphene.tinymce(correctSolution, "div.o_sel_assessment_item_correct_solution", browser);
+
+		By correctBy = By.cssSelector("div.o_sel_assessment_item_correct_solution input[type='text']");
+		browser.findElement(correctBy).sendKeys(correctSolution);
 		return this;
 	}
 	
 	public QTI21FeedbacksEditorPage setCorrectFeedback(String title, String feedback) {
 		By titleBy = By.cssSelector("div.o_sel_assessment_item_correct_feedback_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
-		OOGraphene.tinymce(feedback, "div.o_sel_assessment_item_correct_feedback", browser);
+		
+		By correctBy = By.cssSelector("div.o_sel_assessment_item_correct_feedback input[type='text']");
+		browser.findElement(correctBy).sendKeys(feedback);
 		return this;
 	}
 	
 	public QTI21FeedbacksEditorPage setIncorrectFeedback(String title, String feedback) {
 		By titleBy = By.cssSelector("div.o_sel_assessment_item_incorrect_feedback_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
-		OOGraphene.tinymce(feedback, "div.o_sel_assessment_item_incorrect_feedback", browser);
+		
+		By correctBy = By.cssSelector("div.o_sel_assessment_item_incorrect_feedback input[type='text']");
+		browser.findElement(correctBy).sendKeys(feedback);
 		return this;
 	}
 
