@@ -115,9 +115,9 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 			accessControlByAttributes = "true".equals(accessControlByAttributesObj);
 		}
 
-		if (!checkShibboletAttributeNameIsNotEmpty(UserConstants.EMAIL)) return;
-		if (!checkShibboletAttributeNameIsNotEmpty(UserConstants.FIRSTNAME)) return;
-		if (!checkShibboletAttributeNameIsNotEmpty(UserConstants.LASTNAME)) return;
+		checkShibboletAttributeNameIsNotEmpty(UserConstants.EMAIL);
+		checkShibboletAttributeNameIsNotEmpty(UserConstants.FIRSTNAME);
+		checkShibboletAttributeNameIsNotEmpty(UserConstants.LASTNAME);
 
 		String attribute1Obj = getStringPropertyValue("attribute1", true);
 		if(StringHelper.containsNonWhitespace(attribute1Obj)) {
@@ -145,22 +145,12 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		init();
 	}
 
-	/**
-	 * Internal helper to check for empty configuration variables
-	 *
-	 * @param param
-	 * @return true: not empty; false: empty or null
-	 */
-	private boolean checkShibboletAttributeNameIsNotEmpty(String userProperty) {
+	private void checkShibboletAttributeNameIsNotEmpty(String userProperty) {
 		String attributeName = getShibbolethAttributeName(userProperty);
 		if (StringHelper.containsNonWhitespace(attributeName)) {
-			return true;
-		}
-
-		log.error("Missing configuration for user property '" + userProperty
+			log.warn("Missing configuration for user property '" + userProperty
 					+ "'. Add this configuration to olat.local.properties first. Disabling Shibboleth.");
-		enableShibbolethLogins = false;
-		return false;
+		}
 	}
 
 	/**
@@ -271,6 +261,10 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		return userMapping;
 	}
 
+	public Map<String, String> getAttributeHandlerNames() {
+		return attributeHandler;
+	}
+
 	/**
 	 * Returns the name of a Shibboleth attribute for a given user property name
 	 * of null if not found.
@@ -285,21 +279,6 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	        }
 	    }
 	    return null;
-	}
-
-	/**
-	 * Returns the name of the ShibbolethAttributeHandler for the name of a
-	 * Shibboleth attribute.
-	 *
-	 * @param attributeName
-	 * @return
-	 */
-	public String getShibbolethAttributeHandlerName(String attributeName) {
-		String attributeHandlerName = attributeHandler.get(attributeName);
-		if (!StringHelper.containsNonWhitespace(attributeHandlerName)) {
-			attributeHandlerName = DEFAULT_ATTRIBUTE_HANDLER;
-		}
-		return attributeHandlerName;
 	}
 
 }

@@ -64,6 +64,7 @@ import org.olat.registration.LanguageChooserController;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
 import org.olat.registration.UserNameCreationInterceptor;
+import org.olat.shibboleth.manager.ShibbolethAttributes;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -329,9 +330,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					if(!hasEmailInShibAttr){
 						shibbolethAttributesMap.put(shibbolethModule.getShibbolethAttributeName(UserConstants.EMAIL), regWithEmailForm.getEmail());
 					}
-					String emailAttributeName = shibbolethModule.getShibbolethAttributeName(UserConstants.EMAIL);
-					String emailAttributeValue = shibbolethAttributesMap.get(emailAttributeName);
-					String email = shibbolethManager.parseShibbolethAttribute(emailAttributeName, emailAttributeValue);
+					ShibbolethAttributes shibbolethAttributes = new ShibbolethAttributes(shibbolethAttributesMap);
+					String email = shibbolethAttributes.getValueForUserPropertyName(UserConstants.EMAIL);
 
 					User user = null;
 					Identity id = UserManager.getInstance().findIdentityByEmail(email);
@@ -348,7 +348,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						return;
 					}
 
-					identity = shibbolethManager.createAndPersistUser(choosenLogin, shibbolethUniqueID, locale.getLanguage(), shibbolethAttributesMap);
+					identity = shibbolethManager.createAndPersistUser(choosenLogin, shibbolethUniqueID, locale.getLanguage(), shibbolethAttributes);
 
 					// tell system that this user did accept the disclaimer
 					CoreSpringFactory.getImpl(RegistrationManager.class).setHasConfirmedDislaimer(identity);
@@ -362,7 +362,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					secMgr.createAndPersistAuthentication(authenticationedIdentity, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID, null, null);
 
 					// update user profile
-					shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttributesMap);
+					ShibbolethAttributes shibbolethAttributes = new ShibbolethAttributes(shibbolethAttributesMap);
+					shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttributes);
 
 					doLogin(authenticationedIdentity, ureq);
 					return;

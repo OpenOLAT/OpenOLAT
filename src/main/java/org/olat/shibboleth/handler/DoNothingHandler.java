@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component("DoNothing")
-public class DoNothingHandler implements ShibbolethAttributeHandler {
+class DoNothingHandler implements ShibbolethAttributeHandler {
 
 	@Override
 	public String parse(String shibbolethAttributeValue) {

@@ -19,30 +19,19 @@
  */
 package org.olat.shibboleth.handler;
 
-import org.springframework.stereotype.Component;
-
 /**
- * Handles the values from SchacGender (http://macedir.org/ontologies/attribute/2012-11-10/attributeOntologyDoc/schacgender.html)
  *
- * Initial date: 21.07.2017<br>
+ * Initial date: 05.08.2017<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Component("SchacGender")
-class SchacGenderHandler implements ShibbolethAttributeHandler {
+public interface ShibbolethAttributeHandlerFactory {
 
-	@Override
-	public String parse(String shibbolethAttributeValue) {
-		if (shibbolethAttributeValue == null) return null;
-
-		switch(shibbolethAttributeValue) {
-			case "1":
-				return "male";
-			case "2":
-				return "female";
-			default:
-				return "-";
-		}
-	}
-
+	/**
+	 *
+	 * @param handlerName
+	 * @return the appropriate handler or a default handler if no handler was
+	 *         found.
+	 */
+	public ShibbolethAttributeHandler getHandler(String handlerName);
 }

@@ -19,10 +19,8 @@
  */
 package org.olat.shibboleth;
 
-import java.util.Map;
-
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
+import org.olat.shibboleth.manager.ShibbolethAttributes;
 
 /**
  * This manager handles the interaction between Shibboleth and OpenOLAT.
@@ -44,7 +42,7 @@ public interface ShibbolethManager {
 	 * @param shibbolethAttributes
 	 * @return
 	 */
-	public Identity createAndPersistUser(String username, String shibbolethUniqueID, String language, Map<String, String> shibbolethAttributes);
+	public Identity createAndPersistUser(String username, String shibbolethUniqueID, String language, ShibbolethAttributes shibbolethAttributes);
 
 	/**
 	 * Synchronize the Shibboleth user attributes to the OpenOLAT user
@@ -53,28 +51,6 @@ public interface ShibbolethManager {
 	 * @param identity
 	 * @param shibbolethAttributes
 	 */
-	public void syncUser(Identity identity, Map<String, String> shibbolethAttributes);
-
-	/**
-	 * Synchronize the Shibboleth attributes to the user properties. The
-	 * attribute mapping is defined in the ShibboletModule. Attributes are added
-	 * and overwritten, if Shibboleth delivers data. If Shibboleth delivers no
-	 * value for an attribute the appropriate user property will be deleted.
-	 *
-	 * @param user
-	 * @param shibboletAttributes
-	 * @return
-	 */
-	public User syncAttributes(User user, Map<String, String> shibboiethAttributes);
-
-	/**
-	 * This methods gets the ShibbolethAttributeHandler for the attribute with
-	 * the given attributeName and parses the attributeValue.
-	 *
-	 * @param attributeName
-	 * @param attributeValue
-	 * @return
-	 */
-	public String parseShibbolethAttribute(String attributeName, String attributeValue);
+	public void syncUser(Identity identity, ShibbolethAttributes shibbolethAttributes);
 
 }

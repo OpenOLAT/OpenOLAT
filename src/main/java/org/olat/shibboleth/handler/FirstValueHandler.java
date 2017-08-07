@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component("FirstValue")
-public class FirstValueHandler implements ShibbolethAttributeHandler {
+class FirstValueHandler implements ShibbolethAttributeHandler {
 
 	@Override
 	public String parse(String shibbolethAttributeValue) {

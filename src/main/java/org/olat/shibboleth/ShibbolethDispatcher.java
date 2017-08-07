@@ -63,6 +63,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.restapi.security.RestSecurityBean;
+import org.olat.shibboleth.manager.ShibbolethAttributes;
 import org.olat.shibboleth.util.ShibbolethAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -206,7 +207,8 @@ public class ShibbolethDispatcher implements Dispatcher{
 		// Successful login
 		Identity authenticationedIdentity = ureq.getIdentity();
 		userDeletionManager.setIdentityAsActiv(authenticationedIdentity);
-		shibbolethManager.syncUser(authenticationedIdentity, attributesMap);
+		ShibbolethAttributes shibbolethAttriutes = new ShibbolethAttributes(attributesMap);
+		shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttriutes);
 		ureq.getUserSession().getIdentityEnvironment().addAttributes(
 				shibbolethModule.getAttributeTranslator().translateAttributesMap(attributesMap));
 
