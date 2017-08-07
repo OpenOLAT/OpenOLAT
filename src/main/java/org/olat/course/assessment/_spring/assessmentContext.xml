@@ -28,7 +28,7 @@
 				<property name="className" value="org.olat.course.assessment.ui.mode.AssessmentModeAdminController"/>
 			</bean>
 		</property>
-		<property name="navigationKey" value="certificates" />
+		<property name="navigationKey" value="assessmentMode" />
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.course.assessment.ui.mode"/>

@@ -51,7 +51,7 @@
 				<property name="className" value="org.olat.modules.card2brain.ui.Card2BrainAdminController"/>
 			</bean>
 		</property>
-		<property name="navigationKey" value="gotomeeting" />
+		<property name="navigationKey" value="card2brain" />
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.modules.card2brain.ui"/>
