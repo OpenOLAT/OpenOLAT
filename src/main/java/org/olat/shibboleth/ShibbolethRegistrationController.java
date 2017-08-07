@@ -330,7 +330,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					if(!hasEmailInShibAttr){
 						shibbolethAttributesMap.put(shibbolethModule.getShibbolethAttributeName(UserConstants.EMAIL), regWithEmailForm.getEmail());
 					}
-					ShibbolethAttributes shibbolethAttributes = new ShibbolethAttributes(shibbolethAttributesMap);
+					ShibbolethAttributes shibbolethAttributes = CoreSpringFactory.getImpl(ShibbolethAttributes.class);
+					shibbolethAttributes.setAttributesMap(shibbolethAttributesMap);
 					String email = shibbolethAttributes.getValueForUserPropertyName(UserConstants.EMAIL);
 
 					User user = null;
@@ -362,7 +363,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					secMgr.createAndPersistAuthentication(authenticationedIdentity, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID, null, null);
 
 					// update user profile
-					ShibbolethAttributes shibbolethAttributes = new ShibbolethAttributes(shibbolethAttributesMap);
+					ShibbolethAttributes shibbolethAttributes = CoreSpringFactory.getImpl(ShibbolethAttributes.class);
+					shibbolethAttributes.setAttributesMap(shibbolethAttributesMap);
 					shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttributes);
 
 					doLogin(authenticationedIdentity, ureq);

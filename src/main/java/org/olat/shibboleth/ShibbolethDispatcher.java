@@ -41,6 +41,7 @@ import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
@@ -207,7 +208,8 @@ public class ShibbolethDispatcher implements Dispatcher{
 		// Successful login
 		Identity authenticationedIdentity = ureq.getIdentity();
 		userDeletionManager.setIdentityAsActiv(authenticationedIdentity);
-		ShibbolethAttributes shibbolethAttriutes = new ShibbolethAttributes(attributesMap);
+		ShibbolethAttributes shibbolethAttriutes = CoreSpringFactory.getImpl(ShibbolethAttributes.class);
+		shibbolethAttriutes.setAttributesMap(attributesMap);
 		shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttriutes);
 		ureq.getUserSession().getIdentityEnvironment().addAttributes(
 				shibbolethModule.getAttributeTranslator().translateAttributesMap(attributesMap));

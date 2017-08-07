@@ -22,6 +22,7 @@ package org.olat.shibboleth.handler;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.springframework.stereotype.Component;
 
 /**
@@ -43,7 +44,7 @@ public class SpringShibbolethAttributeHandlerFactory implements ShibbolethAttrib
 		try {
 			shibbolethAttributeHandler = getHandlerByName(handlerName);
 		} catch (Exception e) {
-			if (handlerName != null) {
+			if (StringHelper.containsNonWhitespace(handlerName)) {
 				log.warn("ShibbolethAttributeHandler '" + handlerName
 						+ "' does not exist. Using the Default ShibbolethAttributeHandler '" + DEFAULT_HANDLER_NAME
 						+ "'.");

@@ -28,6 +28,8 @@ import org.olat.shibboleth.ShibbolethModule;
 import org.olat.shibboleth.handler.ShibbolethAttributeHandler;
 import org.olat.shibboleth.handler.ShibbolethAttributeHandlerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
  *
@@ -35,6 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
+@Component
+@Scope("prototype")
 public class ShibbolethAttributes {
 
 	private Map<String, String> shibbolethMap;
@@ -44,8 +48,8 @@ public class ShibbolethAttributes {
 	@Autowired
 	private ShibbolethAttributeHandlerFactory shibbolethAttributeHandlerFactory;
 
-	public ShibbolethAttributes(Map<String, String> shibbolethMap) {
-		this.shibbolethMap = shibbolethMap;
+	public void setAttributesMap(Map<String, String> attributesMap) {
+		this.shibbolethMap = attributesMap;
 	}
 
 	public String getValueForAttributeName(String attributeName) {
@@ -105,4 +109,5 @@ public class ShibbolethAttributes {
 	private Set<Entry<String, String>> getUserMappingEntrySet() {
 		return shibbolethModule.getUserMapping().entrySet();
 	}
+
 }

@@ -81,7 +81,8 @@ public class ShibbolethAttributesTest {
 		when(shibbolethModuleMock.getUserMapping()).thenReturn(shibbolethUserMapping);
 
 		Map<String, String> shibbolethKeysValues = initShibbolethMap();
-		sut = new ShibbolethAttributes(shibbolethKeysValues);
+		sut = new ShibbolethAttributes();
+		sut.setAttributesMap(shibbolethKeysValues);
 
 		ReflectionTestUtils.setField(sut, "shibbolethModule", shibbolethModuleMock);
 
