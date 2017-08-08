@@ -19,6 +19,7 @@
  */
 package org.olat.shibboleth.manager;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -41,7 +42,7 @@ import org.springframework.stereotype.Component;
 @Scope("prototype")
 public class ShibbolethAttributes {
 
-	private Map<String, String> shibbolethMap;
+	private Map<String, String> shibbolethMap = new HashMap<>(0);
 
 	@Autowired
 	private ShibbolethModule shibbolethModule;
@@ -78,6 +79,15 @@ public class ShibbolethAttributes {
 	        }
 	    }
 	    return null;
+	}
+
+	public boolean isAuthor() {
+		try {
+			String attributeValue = getValueForAttributeName(shibbolethModule.getAuthorMappingAttributeName());
+			return attributeValue.contains(shibbolethModule.getAuthorMappingContains());
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	public User syncUser(User user) {

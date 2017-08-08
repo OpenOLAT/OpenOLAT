@@ -264,6 +264,37 @@ public class ShibbolethAttributesTest {
 		assertThat(syncedUser.getProperty(USER_CITY_KEY, null)).isEqualTo(SHIB_CITY_VALUE);
 	}
 
+	@Test
+	public void shouldNotBeAnAuthorIfAuthorMappingIsDisabled() {
+		when(shibbolethModuleMock.isAuthorMappingEnabled()).thenReturn(false);
+
+		boolean isAuthor = sut.isAuthor();
+
+		assertThat(isAuthor).isFalse();
+	}
+
+	@Test
+	public void shouldNotBeAnAuthorIfAttributeDoesNotContainValue() {
+		when(shibbolethModuleMock.isAuthorMappingEnabled()).thenReturn(true);
+		when(shibbolethModuleMock.getAuthorMappingAttributeName()).thenReturn(SHIB_NAME_KEY);
+		when(shibbolethModuleMock.getAuthorMappingContains()).thenReturn("notContained");
+
+		boolean isAuthor = sut.isAuthor();
+
+		assertThat(isAuthor).isFalse();
+	}
+
+	@Test
+	public void shouldBeAnAuthorIfAttributeContainsValue() {
+		when(shibbolethModuleMock.isAuthorMappingEnabled()).thenReturn(true);
+		when(shibbolethModuleMock.getAuthorMappingAttributeName()).thenReturn(SHIB_NAME_KEY);
+		when(shibbolethModuleMock.getAuthorMappingContains()).thenReturn("mi");
+
+		boolean isAuthor = sut.isAuthor();
+
+		assertThat(isAuthor).isTrue();
+	}
+
 	@SuppressWarnings("serial")
 	private class TestableUser extends UserImpl {
 

@@ -50,19 +50,43 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 	}
 
 	@Override
-	public Identity createAndPersistUser(String username, String shibbolethUniqueID, String language, ShibbolethAttributes shibbolethAttributes) {
+	public Identity createUser(String username, String shibbolethUniqueID, String language, ShibbolethAttributes shibbolethAttributes) {
 		if (shibbolethAttributes == null) return null;
 
+		Identity identity = createUserAndPersist(username, shibbolethUniqueID, language, shibbolethAttributes);
+		addToUsersGroup(identity);
+		addToAuthorsGroup(identity, shibbolethAttributes);
+
+		return identity;
+	}
+
+	private Identity createUserAndPersist(String username, String shibbolethUniqueID, String language, ShibbolethAttributes shibbolethAttributes) {
 		User user = userManager.createUser(null, null, null);
 		user = shibbolethAttributes.syncUser(user);
 		user.getPreferences().setLanguage(language);
-		Identity identity = securityManager.createAndPersistIdentityAndUser(username, null, user,
-				ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID);
+		return securityManager.createAndPersistIdentityAndUser(username, null, user, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID);
+	}
 
-		SecurityGroup olatUserGroup = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-		securityManager.addIdentityToSecurityGroup(identity, olatUserGroup);
+	private void addToUsersGroup(Identity identity) {
+		securityManager.addIdentityToSecurityGroup(identity, getUsersSecurityGroup());
+	}
 
-		return identity;
+	private void addToAuthorsGroup(Identity identity, ShibbolethAttributes shibbolethAttributes) {
+		if (shibbolethAttributes.isAuthor() && isNotInAuthorsGroup(identity)) {
+			securityManager.addIdentityToSecurityGroup(identity, getAuthorsSecurityGroup());
+		}
+	}
+
+	private boolean isNotInAuthorsGroup(Identity identity) {
+		return !securityManager.isIdentityInSecurityGroup(identity, getAuthorsSecurityGroup());
+	}
+
+	private SecurityGroup getUsersSecurityGroup() {
+		return securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
+	}
+
+	private SecurityGroup getAuthorsSecurityGroup() {
+		return securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
 	}
 
 	@Override
@@ -72,9 +96,14 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 		}
 
 		User user = identity.getUser();
+		syncAndPersistUser(user, shibbolethAttributes);
+		addToAuthorsGroup(identity, shibbolethAttributes);
+	}
+
+	private void syncAndPersistUser(User user, ShibbolethAttributes shibbolethAttributes) {
 		if (shibbolethAttributes.hasDifference(user)) {
-			user = shibbolethAttributes.syncUser(user);
-			userManager.updateUser(user);
+			User syncedUser = shibbolethAttributes.syncUser(user);
+			userManager.updateUser(syncedUser);
 		}
 	}
 

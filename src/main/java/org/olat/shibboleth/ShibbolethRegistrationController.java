@@ -349,7 +349,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						return;
 					}
 
-					identity = shibbolethManager.createAndPersistUser(choosenLogin, shibbolethUniqueID, locale.getLanguage(), shibbolethAttributes);
+					identity = shibbolethManager.createUser(choosenLogin, shibbolethUniqueID, locale.getLanguage(), shibbolethAttributes);
 
 					// tell system that this user did accept the disclaimer
 					CoreSpringFactory.getImpl(RegistrationManager.class).setHasConfirmedDislaimer(identity);

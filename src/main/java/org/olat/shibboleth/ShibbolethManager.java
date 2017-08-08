@@ -34,7 +34,8 @@ public interface ShibbolethManager {
 	/**
 	 * Create and persist an OpenOLAT user and synchronize the Shibboleth user
 	 * attribute with the OpenOLAT user properties. The new user is added with
-	 * the role user. Required Attributes have to be checked before this method.
+	 * the role user. The new user is added to the role authors if this function
+	 * is enabled. Required Attributes have to be checked before this method.
 	 *
 	 * @param username
 	 * @param shibbolethUniqueID
@@ -42,7 +43,7 @@ public interface ShibbolethManager {
 	 * @param shibbolethAttributes
 	 * @return
 	 */
-	public Identity createAndPersistUser(String username, String shibbolethUniqueID, String language, ShibbolethAttributes shibbolethAttributes);
+	public Identity createUser(String username, String shibbolethUniqueID, String language, ShibbolethAttributes shibbolethAttributes);
 
 	/**
 	 * Synchronize the Shibboleth user attributes to the OpenOLAT user

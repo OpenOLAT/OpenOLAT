@@ -85,6 +85,12 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	@Autowired @Qualifier("shibbolethAttributeHandler")
 	private HashMap<String, String> attributeHandler;
 
+	@Value("${shibboleth.role.mapping.author.enable:false}")
+	private boolean authorMappingEnabled;
+	@Value("${shibboleth.role.mapping.author.shib}")
+	private String authorMappingAttributeName;
+	@Value("${shibboleth.role.mapping.author.contains}")
+	private String authorMappingContains;
 	@Value("${shibboleth.ac.byAttributes:false}")
 	private boolean accessControlByAttributes;
 	@Value("${shibboleth.ac.attribute1:#{null}}")
@@ -279,6 +285,18 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	        }
 	    }
 	    return null;
+	}
+
+	public boolean isAuthorMappingEnabled() {
+		return authorMappingEnabled;
+	}
+
+	public String getAuthorMappingAttributeName() {
+		return authorMappingAttributeName;
+	}
+
+	public String getAuthorMappingContains() {
+		return authorMappingContains;
 	}
 
 }

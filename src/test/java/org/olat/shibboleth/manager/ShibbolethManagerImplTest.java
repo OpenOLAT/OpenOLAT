@@ -56,6 +56,8 @@ public class ShibbolethManagerImplTest {
 	@Mock
 	private SecurityGroup securityGroupOlatusersMock;
 	@Mock
+	private SecurityGroup securityGroupAuthorMock;
+	@Mock
 	private UserManager userManagerMock;
 	@Mock
 	private Identity identityMock;
@@ -76,6 +78,8 @@ public class ShibbolethManagerImplTest {
 
 		when(securityManagerMock.findSecurityGroupByName(Constants.GROUP_OLATUSERS))
 				.thenReturn(securityGroupOlatusersMock);
+		when(securityManagerMock.findSecurityGroupByName(Constants.GROUP_AUTHORS))
+				.thenReturn(securityGroupAuthorMock);
 		when(securityManagerMock.createAndPersistIdentityAndUser(anyString(), isNull(), any(User.class), anyString(), anyString()))
 				.thenReturn(identityMock);
 		when(userManagerMock.createUser(null, null, null)).thenReturn(userMock);
@@ -86,7 +90,7 @@ public class ShibbolethManagerImplTest {
 
 	@Test
 	public void shouldCreateAndPersistNewUser() {
-		sut.createAndPersistUser(anyString(), anyString(), anyString(), attributesMock);
+		sut.createUser(anyString(), anyString(), anyString(), attributesMock);
 
 		verify(securityManagerMock).createAndPersistIdentityAndUser(
 				anyString(), eq(null), eq(userMock), eq(ShibbolethDispatcher.PROVIDER_SHIB), anyString());
@@ -94,9 +98,36 @@ public class ShibbolethManagerImplTest {
 
 	@Test
 	public void shouldAddNewUserToUsersGroup() {
-		sut.createAndPersistUser(anyString(), anyString(), anyString(), attributesMock);
+		sut.createUser(anyString(), anyString(), anyString(), attributesMock);
 
 		verify(securityManagerMock).addIdentityToSecurityGroup(identityMock, securityGroupOlatusersMock);
+	}
+
+	@Test
+	public void shouldAddUserToAuthorGroupIfIsAuthorWhenCreating() {
+		when(attributesMock.isAuthor()).thenReturn(true);
+
+		sut.createUser(anyString(), anyString(), anyString(), attributesMock);
+
+		verify(securityManagerMock).addIdentityToSecurityGroup(identityMock, securityGroupAuthorMock);
+	}
+
+	@Test
+	public void shouldAddUserToAuthorGroupIfIsAuthorWhenSyncing() {
+		when(attributesMock.isAuthor()).thenReturn(true);
+
+		sut.syncUser(identityMock, attributesMock);
+
+		verify(securityManagerMock).addIdentityToSecurityGroup(identityMock, securityGroupAuthorMock);
+	}
+
+	@Test
+	public void shouldNotRemoveFromAuthorGroupIfIsNotAuthor() {
+		when(attributesMock.isAuthor()).thenReturn(true);
+
+		sut.syncUser(identityMock, attributesMock);
+
+		verify(securityManagerMock, never()).removeIdentityFromSecurityGroup(identityMock, securityGroupAuthorMock);
 	}
 
 	@Test
