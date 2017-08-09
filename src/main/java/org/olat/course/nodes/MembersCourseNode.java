@@ -147,23 +147,8 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return new MembersPeekViewController(ureq, wControl, userCourseEnv, this.getModuleConfiguration());
-		
-		//TODO check if this is the desired 
-//		updateModuleConfigDefaults(false);
-//		
-//		// Use normal view as peekview
-//		Controller controller;
-//		Roles roles = ureq.getUserSession().getRoles();
-//		if (roles.isGuestOnly()) {
-//			Translator trans = Util.createPackageTranslator(CourseNode.class, ureq.getLocale());
-//			String title = trans.translate("guestnoaccess.title");
-//			String message = trans.translate("guestnoaccess.message");
-//			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-//		} else {
-//			controller = new MembersCourseNodeRunController(ureq, wControl, userCourseEnv, this.getModuleConfiguration());
-//		}
-//		return controller;
+		updateModuleConfigDefaults(false);
+		return new MembersPeekViewController(ureq, wControl, userCourseEnv, getModuleConfiguration());
 	}
 	
 	@Override
