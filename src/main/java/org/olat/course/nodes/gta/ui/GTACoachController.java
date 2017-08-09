@@ -34,9 +34,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.mail.ContactList;
@@ -68,8 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACoachController extends GTAAbstractController implements AssessmentFormCallback {
-
+public class GTACoachController extends GTAAbstractController implements AssessmentFormCallback, Activateable2 {
 
 	private DirectoryController solutionsCtrl;
 	private DirectoryController correctionsCtrl;
@@ -479,6 +481,23 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			process(ureq);
 		}
 	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.size() <= 1) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Submit".equalsIgnoreCase(type)) {
+			if(submittedDocCtrl != null) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				submittedDocCtrl.activate(ureq, subEntries, null);
+			}	
+		} else if("Revision".equalsIgnoreCase(type)) {
+			if(revisionDocumentsCtrl != null) {
+				revisionDocumentsCtrl.activate(ureq, entries, null);
+			}
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -602,8 +621,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	private void doReviewedDocument(UserRequest ureq, Task task) {
 		//go to solution, grading or graded
-		TaskProcess nextStep = gtaManager.nextStep(TaskProcess.correction, gtaNode);
-		gtaManager.updateTask(task, nextStep, gtaNode);
+		gtaManager.reviewedTask(task, gtaNode);
 		showInfo("coach.documents.successfully.reviewed");
 		gtaManager.log("Review", "documents reviewed", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 		

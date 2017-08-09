@@ -29,6 +29,7 @@ import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -37,15 +38,20 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
+import org.olat.course.nodes.gta.ui.component.DownloadDocumentMapper;
 import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,11 +62,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DirectoryController extends BasicController {
+public class DirectoryController extends BasicController implements Activateable2 {
 	
 	private Link bulkReviewLink;
+	private final VelocityContainer mainVC;
+	private final DisplayOrDownloadComponent download;
+	
 	
 	private final String zipName;
+	private final String mapperUri;
 	private final File documentsDir;
 	private final VFSContainer documentsContainer;
 	
@@ -87,8 +97,12 @@ public class DirectoryController extends BasicController {
 		
 		format = Formatter.getInstance(ureq.getLocale());
 		
-		VelocityContainer mainVC = createVelocityContainer("documents_readonly");
+		mainVC = createVelocityContainer("documents_readonly");
 		mainVC.contextPut("description", translate(i18nDescription));
+		
+		mapperUri = registerMapper(ureq, new DownloadDocumentMapper(documentsDir));
+		download = new DisplayOrDownloadComponent("download", null);
+		mainVC.put("download", download);
 		
 		if(StringHelper.containsNonWhitespace(i18nBulkDownload)) {
 			bulkReviewLink = LinkFactory.createCustomLink("bulk", "bulk", null, Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
@@ -133,6 +147,18 @@ public class DirectoryController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+		File document = new File(documentsDir, path);
+		if(document.exists()) {
+			String url = mapperUri + "/" + document.getName();
+			download.triggerFileDownload(url);
+		}
 	}
 
 	@Override

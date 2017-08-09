@@ -225,3 +225,24 @@ alter table o_gta_task add column g_submission_due_date datetime default null;
 alter table o_gta_task add column g_revisions_due_date datetime default null;
 alter table o_gta_task add column g_solution_due_date datetime default null;
 
+alter table o_gta_task add column g_acceptation_date datetime default null;
+alter table o_gta_task add column g_solution_date datetime default null;
+alter table o_gta_task add column g_graduation_date datetime default null;
+
+create table o_gta_task_revision_date (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  g_status varchar(36) not null,
+  g_rev_loop bigint not null,
+  g_date datetime not null,
+  fk_task bigint not null,
+  primary key (id)
+);
+alter table o_gta_task_revision_date ENGINE = InnoDB;
+
+alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
+
+
+
+
+

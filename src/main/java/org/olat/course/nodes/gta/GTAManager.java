@@ -272,6 +272,8 @@ public interface GTAManager {
 	public List<Task> getTasks(TaskList taskList, GTACourseNode gtaNode);
 	
 	public List<TaskLight> getTasksLight(RepositoryEntryRef entry, GTACourseNode gtaNode);
+	
+	public List<TaskRevisionDate> getTaskRevisions(Task task);
 
 	
 	/**
@@ -326,6 +328,14 @@ public interface GTAManager {
 	public TaskProcess nextStep(TaskProcess currentStep, GTACourseNode cNode);
 
 	public Task collectTask(Task task, GTACourseNode cNode);
+	
+	/**
+	 * Task is reviewed and accepted.
+	 * @param task
+	 * @param cNode
+	 * @return
+	 */
+	public Task reviewedTask(Task task, GTACourseNode cNode);
 	
 	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode);
 	

@@ -1855,6 +1855,9 @@ create table o_gta_task (
    g_submission_date timestamp,
    g_submission_revisions_date timestamp,
    g_collection_date timestamp,
+   g_acceptation_date timestamp,
+   g_solution_date timestamp,
+   g_graduation_date timestamp,
    g_assignment_due_date timestamp,
    g_submission_due_date timestamp,
    g_revisions_due_date timestamp,
@@ -1864,6 +1867,16 @@ create table o_gta_task (
    fk_identity int8,
    fk_businessgroup int8,
    primary key (id)
+);
+
+create table o_gta_task_revision_date (
+  id bigserial not null,
+  creationdate timestamp not null,
+  g_status varchar(36) not null,
+  g_rev_loop int8 not null,
+  g_date timestamp not null,
+  fk_task int8 not null,
+  primary key (id)
 );
 
 create table o_rem_reminder (
@@ -2541,6 +2554,9 @@ create index idx_gtask_to_bgroup_idx on o_gta_task (fk_businessgroup);
 
 alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_gta_list_to_repo_entry_idx on o_gta_task_list (fk_entry);
+
+alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
+create index idx_gtaskrev_to_task_idx on o_gta_task_revision_date (fk_task);
 
 -- reminders
 alter table o_rem_reminder add constraint rem_reminder_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

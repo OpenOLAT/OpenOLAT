@@ -87,6 +87,15 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		initForm(ureq);
 		updateModel();
 	}
+	
+	public BusinessGroup getBusinessGroup(Long key) {
+		for(BusinessGroup group:coachedGroups) {
+			if(group.getKey().equals(key)) {
+				return group;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {

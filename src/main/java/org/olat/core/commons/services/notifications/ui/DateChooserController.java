@@ -80,8 +80,7 @@ public class DateChooserController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		dateChooser = uifactory.addDateChooser("news.since", null, formLayout);
-		//FIXME: Can't use time format for now, only date format due to bug OLAT-4736
-		// dateChooser.setDateChooserTimeEnabled(true);
+
 		dateChooser.setDate(initDate);
 		dateChooser.addActionListener(FormEvent.ONCHANGE);
 		

@@ -39,9 +39,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.io.SystemFilenameFilter;
@@ -75,7 +78,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTAParticipantController extends GTAAbstractController {
+public class GTAParticipantController extends GTAAbstractController implements Activateable2 {
 	
 	private Link submitButton, openGroupButton, changeGroupLink;
 
@@ -105,7 +108,6 @@ public class GTAParticipantController extends GTAAbstractController {
 	protected void initContainer(UserRequest ureq) {
 		mainVC = createVelocityContainer("run");
 		putInitialPanel(mainVC);
-		
 		initFlow() ;
 	}
 
@@ -411,7 +413,7 @@ public class GTAParticipantController extends GTAAbstractController {
 			documentsContainer = gtaManager.getCorrectionContainer(courseEnv, gtaNode, getIdentity());
 		}
 		
-		if(TaskHelper.hasDocuments(documentsDir)) {
+		if(!waiting && TaskHelper.hasDocuments(documentsDir)) {
 			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
 					"run.corrections.description", "bulk.review", "review");
 			listenTo(correctionsCtrl);
@@ -628,6 +630,34 @@ public class GTAParticipantController extends GTAAbstractController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Correction".equalsIgnoreCase(type)) {
+			int revisionLoop = entries.get(0).getOLATResourceable().getResourceableId().intValue();
+			if(revisionLoop == 0) {
+				if(correctionsCtrl != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					correctionsCtrl.activate(ureq, subEntries, null);
+				}
+			} else if(revisionDocumentsCtrl != null) {
+				revisionDocumentsCtrl.activate(ureq, entries, null);
+			}
+		} else if("Solution".equalsIgnoreCase(type)) {
+			if(solutionsCtrl != null) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				solutionsCtrl.activate(ureq, subEntries, null);
+			}
+		} else if("Assessment".equalsIgnoreCase(type)) {
+			if(gradingCtrl != null) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				gradingCtrl.activate(ureq, subEntries, null);
+			}
+		}
 	}
 
 	@Override

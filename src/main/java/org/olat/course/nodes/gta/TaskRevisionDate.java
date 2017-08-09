@@ -21,33 +21,22 @@ package org.olat.course.nodes.gta;
 
 import java.util.Date;
 
-import org.olat.core.id.Identity;
-import org.olat.group.BusinessGroup;
-
 /**
  * 
- * Initial date: 25.02.2015<br>
+ * Initial date: 7 août 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Task extends TaskRef {
+public interface TaskRevisionDate {
 	
-	public Date getSubmissionDate();
+	public Long getKey();
 	
-	public Date getSubmissionRevisionsDate();
-	
-	public Date getCollectionDate();
-	
-	public Date getAcceptationDate();
-	
-	public Date getSolutionDate();
-	
-	public Date getGraduationDate();
-	
-	public TaskList getTaskList();
-	
-	public Identity getIdentity();
-	
-	public BusinessGroup getBusinessGroup();
+	public TaskProcess getTaskStatus();
+
+	public int getRevisionLoop();
+
+	public Date getDate();
+
+	public Task getTask();
 
 }

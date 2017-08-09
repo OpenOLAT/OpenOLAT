@@ -1858,6 +1858,9 @@ create table o_gta_task (
    g_submission_date datetime,
    g_submission_revisions_date datetime,
    g_collection_date datetime,
+   g_acceptation_date datetime,
+   g_solution_date datetime,
+   g_graduation_date datetime,
    g_assignment_due_date datetime,
    g_submission_due_date datetime,
    g_revisions_due_date datetime,
@@ -1867,6 +1870,16 @@ create table o_gta_task (
    fk_identity bigint,
    fk_businessgroup bigint,
    primary key (id)
+);
+
+create table o_gta_task_revision_date (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  g_status varchar(36) not null,
+  g_rev_loop bigint not null,
+  g_date datetime not null,
+  fk_task bigint not null,
+  primary key (id)
 );
 
 create table o_rem_reminder (
@@ -2400,6 +2413,7 @@ alter table o_cl_checkbox ENGINE = InnoDB;
 alter table o_cl_check ENGINE = InnoDB;
 alter table o_gta_task_list ENGINE = InnoDB;
 alter table o_gta_task ENGINE = InnoDB;
+alter table o_gta_task_revision_date ENGINE = InnoDB;
 alter table o_cer_template ENGINE = InnoDB;
 alter table o_cer_certificate ENGINE = InnoDB;
 alter table o_rem_reminder ENGINE = InnoDB;
@@ -2621,6 +2635,8 @@ alter table o_gta_task add constraint gtask_to_identity_idx foreign key (fk_iden
 alter table o_gta_task add constraint gtask_to_bgroup_idx foreign key (fk_businessgroup) references o_gp_business (group_id);
 
 alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
+alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
 
 -- reminders
 alter table o_rem_reminder add constraint rem_reminder_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

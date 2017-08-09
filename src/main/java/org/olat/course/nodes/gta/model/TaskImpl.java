@@ -101,6 +101,16 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	private Date collectionDate;
 	
 	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_acceptation_date", nullable=true, insertable=true, updatable=true)
+	private Date acceptationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_solution_date", nullable=true, insertable=true, updatable=true)
+	private Date solutionDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_graduation_date", nullable=true, insertable=true, updatable=true)
+	private Date graduationDate;
+	
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_assignment_due_date", nullable=true, insertable=true, updatable=false)
 	private Date assignmentDueDate;
 	@Temporal(TemporalType.TIMESTAMP)
@@ -227,6 +237,33 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 
 	public void setCollectionDate(Date collectionDate) {
 		this.collectionDate = collectionDate;
+	}
+
+	@Override
+	public Date getAcceptationDate() {
+		return acceptationDate;
+	}
+
+	public void setAcceptationDate(Date acceptationDate) {
+		this.acceptationDate = acceptationDate;
+	}
+	
+	@Override
+	public Date getSolutionDate() {
+		return solutionDate;
+	}
+
+	public void setSolutionDate(Date solutionDate) {
+		this.solutionDate = solutionDate;
+	}
+
+	@Override
+	public Date getGraduationDate() {
+		return graduationDate;
+	}
+
+	public void setGraduationDate(Date graduationDate) {
+		this.graduationDate = graduationDate;
 	}
 
 	@Override
