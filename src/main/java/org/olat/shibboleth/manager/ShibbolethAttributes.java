@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
 import org.olat.shibboleth.ShibbolethModule;
 import org.olat.shibboleth.handler.ShibbolethAttributeHandler;
 import org.olat.shibboleth.handler.ShibbolethAttributeHandlerFactory;
@@ -49,20 +50,32 @@ public class ShibbolethAttributes {
 	@Autowired
 	private ShibbolethAttributeHandlerFactory shibbolethAttributeHandlerFactory;
 
-	public void setAttributesMap(Map<String, String> attributesMap) {
-		this.shibbolethMap = attributesMap;
-	}
-
-	public String getValueForAttributeName(String attributeName) {
-		String attributeValue = shibbolethMap.get(attributeName);
-		ShibbolethAttributeHandler handler = getAttributeHandler(attributeName);
-		return handler.parse(attributeValue);
+	public void init(Map<String, String> attributes) {
+		shibbolethMap = new HashMap<>(attributes.size());
+		for (Entry<String, String> attribute : attributes.entrySet()) {
+			String attributeName = attribute.getKey();
+			String attributeValue = attribute.getValue();
+			ShibbolethAttributeHandler handler = getAttributeHandler(attributeName);
+			String parsedValue = handler.parse(attributeValue);
+			shibbolethMap.put(attributeName, parsedValue);
+		}
 	}
 
 	private ShibbolethAttributeHandler getAttributeHandler(String attributeName) {
 		Map<String, String> handlerNames = shibbolethModule.getAttributeHandlerNames();
 		String handlerName = handlerNames.get(attributeName);
 		return shibbolethAttributeHandlerFactory.getHandler(handlerName);
+	}
+
+	public String getValueForAttributeName(String attributeName) {
+		return shibbolethMap.get(attributeName);
+	}
+
+	public void setValueForUserPropertyName(String propertyName, String value) {
+		String attributeName = getShibbolethAttributeName(propertyName);
+		if (StringHelper.containsNonWhitespace(attributeName)) {
+			shibbolethMap.put(attributeName, value);
+		}
 	}
 
 	public String getValueForUserPropertyName(String propertyName) {
@@ -79,6 +92,10 @@ public class ShibbolethAttributes {
 	        }
 	    }
 	    return null;
+	}
+
+	public Map<String, String> toMap() {
+		return new HashMap<>(shibbolethMap);
 	}
 
 	public boolean isAuthor() {

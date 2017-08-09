@@ -52,7 +52,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
@@ -157,12 +156,14 @@ public class ShibbolethDispatcher implements Dispatcher{
 		uri = uri.substring(uriPrefix.length()); // guaranteed to exist by DispatcherAction
 
 		Map<String, String> attributesMap = getShibbolethAttributesFromRequest(req);
-		String uniqueID = getUniqueIdentifierFromRequest(req, resp, attributesMap);
+		ShibbolethAttributes shibbolethAttriutes = CoreSpringFactory.getImpl(ShibbolethAttributes.class);
+		shibbolethAttriutes.init(attributesMap);
+		String uniqueID = getUniqueIdentifierFromRequest(req, resp, shibbolethAttriutes);
 		if(uniqueID == null) {
 			return;
 		}
 
-		if(!authorization(req, resp, attributesMap)) {
+		if(!authorization(req, resp, shibbolethAttriutes)) {
 			return;
 		}
 
@@ -186,7 +187,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 
 		Authentication auth = securityManager.findAuthenticationByAuthusername(uniqueID, PROVIDER_SHIB);
 		if (auth == null) { // no matching authentication...
-			ShibbolethRegistrationController.putShibAttributes(req, attributesMap);
+			ShibbolethRegistrationController.putShibAttributes(req, shibbolethAttriutes);
 			ShibbolethRegistrationController.putShibUniqueID(req, uniqueID);
 			redirectToShibbolethRegistration(resp);
 			return;
@@ -208,11 +209,9 @@ public class ShibbolethDispatcher implements Dispatcher{
 		// Successful login
 		Identity authenticationedIdentity = ureq.getIdentity();
 		userDeletionManager.setIdentityAsActiv(authenticationedIdentity);
-		ShibbolethAttributes shibbolethAttriutes = CoreSpringFactory.getImpl(ShibbolethAttributes.class);
-		shibbolethAttriutes.setAttributesMap(attributesMap);
 		shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttriutes);
 		ureq.getUserSession().getIdentityEnvironment().addAttributes(
-				shibbolethModule.getAttributeTranslator().translateAttributesMap(attributesMap));
+				shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttriutes.toMap()));
 
 		if(mobile) {
 			String token = restSecurityBean.generateToken(ureq.getIdentity(), ureq.getHttpReq().getSession(true));
@@ -233,15 +232,11 @@ public class ShibbolethDispatcher implements Dispatcher{
 		}
 	}
 
-	private String getUniqueIdentifierFromRequest(HttpServletRequest req, HttpServletResponse resp, Map<String, String> attributesMap) {
+	private String getUniqueIdentifierFromRequest(HttpServletRequest req, HttpServletResponse resp, ShibbolethAttributes shibbolethAttributes) {
 
-		String uniqueID = attributesMap.get(shibbolethModule.getDefaultUIDAttribute());
+		String uniqueID = shibbolethAttributes.getValueForAttributeName(shibbolethModule.getDefaultUIDAttribute());
 		if (uniqueID == null) {
 			handleException(new ShibbolethException(ShibbolethException.UNIQUE_ID_NOT_FOUND,"Unable to get unique identifier for subject. Make sure you are listed in the metadata.xml file and your resources your are trying to access are available and your are allowed to see them. (Resourceregistry). "),
-					req, resp, translator);
-			return null;
-		} else if (!checkAttributes(attributesMap)) {
-			handleException(new ShibbolethException(ShibbolethException.INSUFFICIENT_ATTRIBUTES,"Insufficient shibboleth attributes!"),
 					req, resp, translator);
 			return null;
 		}
@@ -271,30 +266,6 @@ public class ShibbolethDispatcher implements Dispatcher{
 		return attributesMap;
 	}
 
-	/**
-	 * Check if all required attributes are here.
-	 * @param attributesMap
-	 * @return true if all required attributes are present, false otherwise.
-	 */
-	private boolean checkAttributes(Map<String, String>  attributesMap) {
-		if(attributesMap.keySet().size()==1) {
-			return false;
-		}
-		try {
-			String lastname = attributesMap.get(shibbolethModule.getShibbolethAttributeName(UserConstants.LASTNAME));
-			String firstname = attributesMap.get(shibbolethModule.getShibbolethAttributeName(UserConstants.FIRSTNAME));
-			String email = attributesMap.get(shibbolethModule.getShibbolethAttributeName(UserConstants.EMAIL));
-			if (StringHelper.containsNonWhitespace(lastname)
-					&& StringHelper.containsNonWhitespace(firstname)
-					&& StringHelper.containsNonWhitespace(email)) {
-				return true;
-			}
-		} catch (IllegalArgumentException e) {
-			log.error("Error when reading Shib attributes. Either home org not allowed to connect to this OO instance or user has missing attributes.");
-		}
-		return false;
-	}
-
 	private final void redirectToShibbolethRegistration(HttpServletResponse response) {
 		try {
 			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + ShibbolethModule.PATH_REGISTER_SHIBBOLETH + "/");
@@ -303,14 +274,14 @@ public class ShibbolethDispatcher implements Dispatcher{
 		}
 	}
 
-	private boolean authorization(HttpServletRequest req, HttpServletResponse resp, Map<String,String> attributesMap) {
+	private boolean authorization(HttpServletRequest req, HttpServletResponse resp, ShibbolethAttributes shibbolethAttibutes) {
 		boolean authorized = false;
 		if(shibbolethModule.isAccessControlByAttributes()) {
 			if(StringHelper.containsNonWhitespace(shibbolethModule.getAttribute1()) && StringHelper.containsNonWhitespace(shibbolethModule.getAttribute1Values())) {
-				authorized |= authorization(shibbolethModule.getAttribute1(), shibbolethModule.getAttribute1Values(), attributesMap);
+				authorized |= authorization(shibbolethModule.getAttribute1(), shibbolethModule.getAttribute1Values(), shibbolethAttibutes);
 			}
 			if(StringHelper.containsNonWhitespace(shibbolethModule.getAttribute2()) && StringHelper.containsNonWhitespace(shibbolethModule.getAttribute2Values())) {
-				authorized |= authorization(shibbolethModule.getAttribute2(), shibbolethModule.getAttribute2Values(), attributesMap);
+				authorized |= authorization(shibbolethModule.getAttribute2(), shibbolethModule.getAttribute2Values(), shibbolethAttibutes);
 			}
 		} else {
 			authorized = true;
@@ -325,8 +296,8 @@ public class ShibbolethDispatcher implements Dispatcher{
 		return authorized;
 	}
 
-	private boolean authorization(String attribute, String allowedValues, Map<String,String> attributesMap) {
-		String val = attributesMap.get(attribute);
+	private boolean authorization(String attributeName, String allowedValues, ShibbolethAttributes shibbolethAttributes) {
+		String val = shibbolethAttributes.getValueForAttributeName(attributeName);
 		if(StringHelper.containsNonWhitespace(val)) {
 			val = val.trim();
 			for(StringTokenizer tokenizer = new StringTokenizer(allowedValues, "\n\r,;", false); tokenizer.hasMoreTokens(); ) {
@@ -363,7 +334,6 @@ public class ShibbolethDispatcher implements Dispatcher{
 			switch (errorCode) {
 				case ShibbolethException.GENERAL_SAML_ERROR: userMsg = translator.translate("error.shibboleth.generic"); break;
 				case ShibbolethException.UNIQUE_ID_NOT_FOUND: userMsg = translator.translate("error.unqueid.notfound"); break;
-				case ShibbolethException.INSUFFICIENT_ATTRIBUTES: userMsg = translator.translate("error.insufficieant.attributes"); break;
 				default: userMsg = translator.translate("error.shibboleth.generic"); break;
 			}
 			showMessage(ureq,"org.opensaml.SAMLException: " + e.getMessage(), e, userMsg, ((ShibbolethException)e).getContactPersonEmail());

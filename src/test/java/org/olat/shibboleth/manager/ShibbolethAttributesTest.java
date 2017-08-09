@@ -23,12 +23,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -77,20 +79,20 @@ public class ShibbolethAttributesTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 
+		sut = new ShibbolethAttributes();
+
+		ReflectionTestUtils.setField(sut, "shibbolethModule", shibbolethModuleMock);
 		Map<String, String> shibbolethUserMapping = initUserMapping();
 		when(shibbolethModuleMock.getUserMapping()).thenReturn(shibbolethUserMapping);
 
-		Map<String, String> shibbolethKeysValues = initShibbolethMap();
-		sut = new ShibbolethAttributes();
-		sut.setAttributesMap(shibbolethKeysValues);
-
-		ReflectionTestUtils.setField(sut, "shibbolethModule", shibbolethModuleMock);
-
 		// ShibbolethAttributeHandler.parse() does not modify the value
+		ReflectionTestUtils.setField(sut, "shibbolethAttributeHandlerFactory", shibbolethAttributeHandlerFactoryMock);
 		when(shibbolethAttributeHandlerFactoryMock.getHandler(anyString())).thenReturn(shibbolethAttributeHandlerMock);
 		when(shibbolethAttributeHandlerFactoryMock.getHandler(isNull())).thenReturn(shibbolethAttributeHandlerMock);
 		when(shibbolethAttributeHandlerMock.parse(anyString())).then(returnsFirstArg());
-		ReflectionTestUtils.setField(sut, "shibbolethAttributeHandlerFactory", shibbolethAttributeHandlerFactoryMock);
+
+		Map<String, String> shibbolethKeysValues = initShibbolethMap();
+		sut.init(shibbolethKeysValues);
 	}
 
 	private Map<String, String> initShibbolethMap() {
@@ -121,6 +123,48 @@ public class ShibbolethAttributesTest {
 	}
 
 	@Test
+	public void shouldParseValuesWhenInit() {
+		verify(shibbolethAttributeHandlerMock, times(3)).parse(anyString());
+		verify(shibbolethAttributeHandlerMock, times(1)).parse(isNull());
+	}
+
+	@Test
+	public void shouldReplaceValueByUserPropertyName() {
+		String newValue = "newValue";
+
+		sut.setValueForUserPropertyName(USER_NAME_KEY, newValue);
+
+		assertThat(sut.getValueForUserPropertyName(USER_NAME_KEY)).isEqualTo(newValue);
+	}
+
+	@Test
+	public void shouldNotSetPropertValueWhenNoMappingExits() {
+		String keyNotPresent = "keyNotPresent";
+		String newValue = "newValue";
+
+		sut.setValueForUserPropertyName(keyNotPresent, newValue);
+
+		assertThat(sut.getValueForUserPropertyName(keyNotPresent)).isNull();
+	}
+
+	@Test
+	public void shouldNotParseValueWhenSet() {
+		sut.setValueForUserPropertyName(USER_NAME_KEY, "newValue");
+
+		// Only 3 times in the init().
+		verify(shibbolethAttributeHandlerMock, times(3)).parse(anyString());
+	}
+
+	@Test
+	public void shouldReturnACopyOfTheInternalMap() {
+		Map<String, String> copiedttributes = sut.toMap();
+
+		Map<String, String> initMap = initShibbolethMap();
+		Set<String> initKeys = initMap.keySet();
+		assertThat(copiedttributes).isNotSameAs(initMap).containsKeys(initKeys.toArray(new String[initKeys.size()]));
+	}
+
+	@Test
 	public void shouldReturnValueForAShibbolethAttributeName() {
 		String shibbolethValue = sut.getValueForAttributeName(SHIB_EMAIL_KEY);
 
@@ -137,13 +181,6 @@ public class ShibbolethAttributesTest {
 	}
 
 	@Test
-	public void shouldReturnParsedValueForShibbolethAttributeName() {
-		sut.getValueForAttributeName(SHIB_EMAIL_KEY);
-
-		verify(shibbolethAttributeHandlerMock).parse(SHIB_EMAIL_VALUE);
-	}
-
-	@Test
 	public void shouldReturnValueForAUserPropertyName() {
 		String shibbolethValue = sut.getValueForUserPropertyName(USER_EMAIL_KEY);
 
@@ -157,13 +194,6 @@ public class ShibbolethAttributesTest {
 		String shibbolethValue = sut.getValueForUserPropertyName(keyNotPresent);
 
 		assertThat(shibbolethValue).isNull();
-	}
-
-	@Test
-	public void shouldReturnParsedValueForUserPropertyName() {
-		sut.getValueForAttributeName(SHIB_EMAIL_KEY);
-
-		verify(shibbolethAttributeHandlerMock).parse(SHIB_EMAIL_VALUE);
 	}
 
 	@Test

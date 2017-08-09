@@ -26,7 +26,6 @@
 package org.olat.shibboleth;
 
 import java.util.Locale;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -78,9 +77,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * - Basic flow:
  * System asks User for username and create olataccount with ShibbolethAuthentication
  * Branches:
- * 1. no email in shibbolethAttributesMap
+ * 1. no email in shibbolethAttributes
  * 		- System asks for emailaddress (no institutionalEmail is set !!!)
- * 2. no email in shibbolethAttributesMap and User already exists in System
+ * 2. no email in shibbolethAttributes and User already exists in System
  * 		- System asks for password (no institutionalEmail is set !!!)
  *
  */
@@ -99,7 +98,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	private LanguageChooserController languageChooserController;
 
 	private Translator translator;
-	private Map<String,String> shibbolethAttributesMap;
+	private ShibbolethAttributes shibbolethAttributes;
 	private String shibbolethUniqueID;
 
 	private int state = STATE_UNDEFINED;
@@ -127,7 +126,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		super(wControl);
 
 		translator = Util.createPackageTranslator(ShibbolethModule.class, ureq.getLocale());
-		shibbolethAttributesMap = (Map<String,String>)ureq.getUserSession().getEntry(KEY_SHIBATTRIBUTES);
+		shibbolethAttributes = (ShibbolethAttributes)ureq.getUserSession().getEntry(KEY_SHIBATTRIBUTES);
 		shibbolethUniqueID = (String)ureq.getUserSession().getEntry(KEY_SHIBUNIQUEID);
 
 		if (shibbolethUniqueID == null) {
@@ -137,14 +136,11 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 			return;
 		}
 
-		if (shibbolethAttributesMap == null)
-			throw new AssertException("ShibbolethRegistrationController was unable to fetch ShibbolethAttribuitesMap from session.");
-
 		hasEmailInShibAttr = (shibbolethModule.getShibbolethAttributeName(UserConstants.EMAIL) == null) ? false : true;
 
 		locale = (Locale)ureq.getUserSession().getEntry(LocaleNegotiator.NEGOTIATED_LOCALE);
 		if(locale == null) {
-			String preferedLanguage = shibbolethAttributesMap.get(shibbolethModule.getPreferredLanguageAttribute());
+			String preferedLanguage = shibbolethAttributes.getValueForAttributeName(shibbolethModule.getPreferredLanguageAttribute());
 			if(preferedLanguage == null) {
 				locale = LocaleNegotiator.getPreferedLocale(ureq);
 			} else {
@@ -168,7 +164,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 
 		if(registrationModule.getUsernamePresetBean() != null) {
 			UserNameCreationInterceptor interceptor = registrationModule.getUsernamePresetBean();
-			proposedUsername = interceptor.getUsernameFor(shibbolethAttributesMap);
+			proposedUsername = interceptor.getUsernameFor(shibbolethAttributes.toMap());
 			if(proposedUsername == null) {
 				if(interceptor.allowChangeOfUsername()) {
 					setRegistrationForm(ureq, wControl, proposedUsername);
@@ -228,7 +224,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	 * @param req
 	 * @param attributes
 	 */
-	public static final void putShibAttributes(HttpServletRequest req, Map<String,String> attributes) {
+	public static final void putShibAttributes(HttpServletRequest req, ShibbolethAttributes attributes) {
 		CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(req).putEntry(KEY_SHIBATTRIBUTES, attributes);
 	}
 
@@ -328,10 +324,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					}
 
 					if(!hasEmailInShibAttr){
-						shibbolethAttributesMap.put(shibbolethModule.getShibbolethAttributeName(UserConstants.EMAIL), regWithEmailForm.getEmail());
+						shibbolethAttributes.setValueForUserPropertyName(UserConstants.EMAIL, regWithEmailForm.getEmail());
 					}
-					ShibbolethAttributes shibbolethAttributes = CoreSpringFactory.getImpl(ShibbolethAttributes.class);
-					shibbolethAttributes.setAttributesMap(shibbolethAttributesMap);
 					String email = shibbolethAttributes.getValueForUserPropertyName(UserConstants.EMAIL);
 
 					User user = null;
@@ -363,8 +357,6 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					secMgr.createAndPersistAuthentication(authenticationedIdentity, ShibbolethDispatcher.PROVIDER_SHIB, shibbolethUniqueID, null, null);
 
 					// update user profile
-					ShibbolethAttributes shibbolethAttributes = CoreSpringFactory.getImpl(ShibbolethAttributes.class);
-					shibbolethAttributes.setAttributesMap(shibbolethAttributesMap);
 					shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttributes);
 
 					doLogin(authenticationedIdentity, ureq);
@@ -390,7 +382,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 		}
 		// successfull login
 		ureq.getUserSession().getIdentityEnvironment().addAttributes(
-				shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttributesMap));
+				shibbolethModule.getAttributeTranslator().translateAttributesMap(shibbolethAttributes.toMap()));
 	}
 
 	/**
