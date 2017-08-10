@@ -181,6 +181,11 @@
 	/* ]]> */</script>
 #end
 </div>
+#if($r.visible("coach.reset.button"))
+<div class="o_button_group">
+	$r.render("coach.reset.button")
+</div>
+#end
 #if($userLog || $groupLog)
 <div class="o_box">
     #o_togglebox_start("o_course_run_log" $r.translate("log.title"))

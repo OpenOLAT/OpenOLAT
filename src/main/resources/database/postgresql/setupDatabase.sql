@@ -1858,6 +1858,7 @@ create table o_gta_task (
    g_acceptation_date timestamp,
    g_solution_date timestamp,
    g_graduation_date timestamp,
+   g_allow_reset_date timestamp,
    g_assignment_due_date timestamp,
    g_submission_due_date timestamp,
    g_revisions_due_date timestamp,
@@ -1866,6 +1867,7 @@ create table o_gta_task (
    fk_tasklist int8 not null,
    fk_identity int8,
    fk_businessgroup int8,
+   fk_allow_reset_identity int8,
    primary key (id)
 );
 
@@ -2551,6 +2553,8 @@ alter table o_gta_task add constraint gtask_to_identity_idx foreign key (fk_iden
 create index idx_gtask_to_identity_idx on o_gta_task (fk_identity);
 alter table o_gta_task add constraint gtask_to_bgroup_idx foreign key (fk_businessgroup) references o_gp_business (group_id);
 create index idx_gtask_to_bgroup_idx on o_gta_task (fk_businessgroup);
+alter table o_gta_task add constraint gtaskreset_to_allower_idx foreign key (fk_allow_reset_identity) references o_bs_identity (id);
+create index idx_gtaskreset_to_allower_idx on o_gta_task (fk_allow_reset_identity);
 
 alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_gta_list_to_repo_entry_idx on o_gta_task_list (fk_entry);

@@ -205,7 +205,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		} else {
 			removeAsListenerAndDispose(coachingCtrl);
 			
-			coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, coachCourseEnv, businessGroup, true, true, true);
+			coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, coachCourseEnv, businessGroup, true, true, true, false);
 			listenTo(coachingCtrl);
 			stackPanel.pushController(businessGroup.getName(), coachingCtrl);
 		}

@@ -99,6 +99,9 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_collection_date", nullable=true, insertable=true, updatable=true)
 	private Date collectionDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_allow_reset_date", nullable=true, insertable=true, updatable=true)
+	private Date allowResetDate;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_acceptation_date", nullable=true, insertable=true, updatable=true)
@@ -143,6 +146,10 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	@ManyToOne(targetEntity=BusinessGroupImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_businessgroup", nullable=true, insertable=true, updatable=false)
 	private BusinessGroup businessGroup;
+	
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_allow_reset_identity", nullable=true, insertable=true, updatable=true)
+	private Identity allowResetIdentity;
 	
 	@Override
 	public Long getKey() {
@@ -237,6 +244,24 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 
 	public void setCollectionDate(Date collectionDate) {
 		this.collectionDate = collectionDate;
+	}
+
+	@Override
+	public Date getAllowResetDate() {
+		return allowResetDate;
+	}
+
+	public void setAllowResetDate(Date allowResetDate) {
+		this.allowResetDate = allowResetDate;
+	}
+
+	@Override
+	public Identity getAllowResetIdentity() {
+		return allowResetIdentity;
+	}
+
+	public void setAllowResetIdentity(Identity allowResetIdentity) {
+		this.allowResetIdentity = allowResetIdentity;
 	}
 
 	@Override

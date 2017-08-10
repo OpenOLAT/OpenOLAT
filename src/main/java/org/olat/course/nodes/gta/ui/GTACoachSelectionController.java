@@ -242,7 +242,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		removeAsListenerAndDispose(coachingCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.clone(group), null);
-		coachingCtrl = new GTACoachController(ureq, swControl, courseEnv, gtaNode, coachCourseEnv, group, true, true, false);
+		coachingCtrl = new GTACoachController(ureq, swControl, courseEnv, gtaNode, coachCourseEnv, group, true, true, false, false);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
 		return coachingCtrl;
@@ -251,7 +251,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private Activateable2 doSelectParticipant(UserRequest ureq, Identity identity) {
 		removeAsListenerAndDispose(coachingCtrl);
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Identity", identity.getKey()), null);
-		coachingCtrl = new GTACoachController(ureq, swControl, courseEnv, gtaNode, coachCourseEnv, identity, true, true, false);
+		coachingCtrl = new GTACoachController(ureq, swControl, courseEnv, gtaNode, coachCourseEnv, identity, true, true, false, false);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
 		return coachingCtrl;

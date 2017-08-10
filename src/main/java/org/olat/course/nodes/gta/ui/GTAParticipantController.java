@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -80,13 +81,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTAParticipantController extends GTAAbstractController implements Activateable2 {
 	
-	private Link submitButton, openGroupButton, changeGroupLink;
+	private Link submitButton, openGroupButton, changeGroupLink, resetTaskButton;
 
+	private CloseableModalController cmc;
 	private MSCourseNodeRunController gradingCtrl;
 	private SubmitDocumentsController submitDocCtrl;
 	private DialogBoxController confirmSubmitDialog;
 	private GTAAssignedTaskController assignedTaskCtrl;
 	private GTAAvailableTaskController availableTaskCtrl;
+	private ConfirmResetTaskController confirmResetTaskCtrl;
 	private CloseableCalloutWindowController chooserCalloutCtrl;
 	private BusinessGroupChooserController businessGroupChooserCtrl;
 	private GTAParticipantRevisionAndCorrectionsController revisionDocumentsCtrl;
@@ -107,6 +110,11 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	@Override
 	protected void initContainer(UserRequest ureq) {
 		mainVC = createVelocityContainer("run");
+		
+		resetTaskButton = LinkFactory.createCustomLink("participant.reset.button", "reset", "participant.reset.button", Link.BUTTON, mainVC, this);
+		resetTaskButton.setElementCssClass("o_sel_course_gta_reset");
+		resetTaskButton.setVisible(false);
+		
 		putInitialPanel(mainVC);
 		initFlow() ;
 	}
@@ -375,6 +383,17 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		}
 	}
 	
+	private void doConfirmResetTask(UserRequest ureq, Task task) {
+		if(confirmResetTaskCtrl != null) return;
+		confirmResetTaskCtrl = new ConfirmResetTaskController(ureq, getWindowControl(), task, gtaNode, courseEnv);
+		listenTo(confirmResetTaskCtrl);
+		
+		String title = translate("participant.confirm.reset.task.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmResetTaskCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	@Override
 	protected Task stepReviewAndCorrection(UserRequest ureq, Task assignedTask) {
 		assignedTask = super.stepReviewAndCorrection(ureq, assignedTask);
@@ -586,6 +605,16 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 	
 	@Override
+	protected void resetTask(UserRequest ureq, Task task) {
+		resetTaskButton.setUserObject(task);
+		boolean allowed = task != null && StringHelper.containsNonWhitespace(task.getTaskName())
+				&& (task.getTaskStatus() == TaskProcess.assignment || task.getTaskStatus() == TaskProcess.submit)
+				&& task.getAllowResetDate() != null 
+				&& GTACourseNode.GTASK_ASSIGNEMENT_TYPE_MANUAL.equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_ASSIGNEMENT_TYPE));
+		resetTaskButton.setVisible(allowed);
+	}
+
+	@Override
 	protected void nodeLog() {
 		if(businessGroupTask) {
 			String userLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, getIdentity());
@@ -682,6 +711,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		} else if(submitButton == source) {
 			Task assignedTask = submitDocCtrl.getAssignedTask();
 			doConfirmSubmit(ureq, assignedTask);
+		} else if(resetTaskButton == source) {
+			doConfirmResetTask(ureq, (Task)resetTaskButton.getUserObject());
 		}
 		super.event(ureq, source, event);
 	}
@@ -716,6 +747,13 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				doSubmitDocuments(ureq, task);
 			}
 			cleanUpPopups();
+		} else if(confirmResetTaskCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				cleanUpProcess();
+				process(ureq);
+			}
+			cmc.deactivate();
+			cleanUpPopups();
 		} else if(submitDocCtrl == source) {
 			boolean hasUploadDocuments = submitDocCtrl.hasUploadDocuments();
 			if(event instanceof SubmitEvent) {
@@ -729,6 +767,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			if(submitButton != null) {
 				submitButton.setCustomEnabledLinkCSS(hasUploadDocuments ? "btn btn-primary" : "btn btn-default");
 			}
+		} else if(cmc == source) {
+			cleanUpPopups();
 		}
 		super.event(ureq, source, event);
 	}
@@ -772,11 +812,15 @@ public class GTAParticipantController extends GTAAbstractController implements A
 
 	private void cleanUpPopups() {
 		removeAsListenerAndDispose(businessGroupChooserCtrl);
+		removeAsListenerAndDispose(confirmResetTaskCtrl);
 		removeAsListenerAndDispose(confirmSubmitDialog);
 		removeAsListenerAndDispose(chooserCalloutCtrl);
+		removeAsListenerAndDispose(cmc);
 		businessGroupChooserCtrl = null;
+		confirmResetTaskCtrl = null;
 		confirmSubmitDialog = null;
 		chooserCalloutCtrl = null;
+		cmc = null;
 	}
 
 	private void doOpenBusinessGroup(UserRequest ureq) {

@@ -1861,6 +1861,7 @@ create table o_gta_task (
    g_acceptation_date datetime,
    g_solution_date datetime,
    g_graduation_date datetime,
+   g_allow_reset_date datetime,
    g_assignment_due_date datetime,
    g_submission_due_date datetime,
    g_revisions_due_date datetime,
@@ -1869,6 +1870,7 @@ create table o_gta_task (
    fk_tasklist bigint not null,
    fk_identity bigint,
    fk_businessgroup bigint,
+   fk_allow_reset_identity bigint,
    primary key (id)
 );
 
@@ -2633,6 +2635,7 @@ create index idx_checkbox_uuid_idx on o_cl_checkbox (c_checkboxid);
 alter table o_gta_task add constraint gtask_to_tasklist_idx foreign key (fk_tasklist) references o_gta_task_list (id);
 alter table o_gta_task add constraint gtask_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_gta_task add constraint gtask_to_bgroup_idx foreign key (fk_businessgroup) references o_gp_business (group_id);
+alter table o_gta_task add constraint gtaskreset_to_allower_idx foreign key (fk_allow_reset_identity) references o_bs_identity (id);
 
 alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 

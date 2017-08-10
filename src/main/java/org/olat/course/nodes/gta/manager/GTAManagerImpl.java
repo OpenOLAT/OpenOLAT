@@ -48,6 +48,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
@@ -1060,6 +1061,9 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			if(currentTask.getTaskStatus() == TaskProcess.assignment) {
 				TaskProcess nextStep = nextStep(currentTask.getTaskStatus(), cNode);
 				((TaskImpl)currentTask).setTaskStatus(nextStep);
+				if(taskFile != null) {
+					((TaskImpl)currentTask).setTaskName(taskFile.getName());
+				}
 			}
 			currentTask = dbInstance.getCurrentEntityManager().merge(currentTask);
 			syncAssessmentEntry((TaskImpl)currentTask, cNode);
@@ -1432,7 +1436,42 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setSubmissionDate(new Date());
 		return updateTask(task, review, cNode);
-	}	
+	}
+
+	@Override
+	public Task allowResetTask(Task task, Identity allower, GTACourseNode cNode) {
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setAllowResetDate(new Date());
+		taskImpl.setAllowResetIdentity(allower);
+		return updateTask(task, task.getTaskStatus(), cNode);
+	}
+	
+	@Override
+	public Task resetTask(Task task, GTACourseNode cNode, CourseEnvironment courseEnv) {
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setTaskName(null);
+		taskImpl.setAllowResetDate(null);
+		Task updatedTask = updateTask(task, TaskProcess.assignment, cNode);
+		
+		File submissionDir = null;
+		if(updatedTask.getBusinessGroup() != null) {
+			submissionDir = getSubmitDirectory(courseEnv, cNode, updatedTask.getBusinessGroup());
+		} else if(updatedTask.getIdentity() != null) {
+			submissionDir = getSubmitDirectory(courseEnv, cNode, updatedTask.getIdentity());
+		}
+		if(submissionDir != null) {
+			FileUtils.deleteDirsAndFiles(submissionDir, true, false);
+		}
+		return updatedTask;
+	}
+
+	@Override
+	public Task resetTaskRefused(Task task, GTACourseNode cNode) {
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setAllowResetDate(null);
+		taskImpl.setAllowResetIdentity(null);
+		return updateTask(task, task.getTaskStatus(), cNode);
+	}
 
 	@Override
 	public Task submitRevisions(Task task, GTACourseNode cNode) {

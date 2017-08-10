@@ -44,6 +44,10 @@ public interface Task extends TaskRef {
 	
 	public Date getGraduationDate();
 	
+	public Date getAllowResetDate();
+
+	public Identity getAllowResetIdentity();
+	
 	public TaskList getTaskList();
 	
 	public Identity getIdentity();

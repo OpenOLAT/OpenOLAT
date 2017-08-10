@@ -242,6 +242,11 @@ alter table o_gta_task_revision_date ENGINE = InnoDB;
 
 alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
 
+alter table o_gta_task add column g_allow_reset_date datetime default null;
+alter table o_gta_task add column fk_allow_reset_identity bigint default null;
+
+alter table o_gta_task add constraint gtaskreset_to_allower_idx foreign key (fk_allow_reset_identity) references o_bs_identity (id);
+
 
 
 

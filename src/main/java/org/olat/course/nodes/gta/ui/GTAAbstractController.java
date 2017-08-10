@@ -246,9 +246,13 @@ public abstract class GTAAbstractController extends BasicController implements G
 		
 		mainVC.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 		
+		resetTask(ureq, task);
+		
 		nodeLog();
 		collapsedContents(task);
 	}
+	
+	protected abstract void resetTask(UserRequest ureq, Task task);
 	
 	protected final void collapsedContents(Task currentTask) {
 		TaskProcess status = null;

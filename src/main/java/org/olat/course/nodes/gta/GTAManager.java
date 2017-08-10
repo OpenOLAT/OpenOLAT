@@ -347,6 +347,12 @@ public interface GTAManager {
 	
 	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode);
 	
+	public Task allowResetTask(Task task, Identity allower, GTACourseNode cNode);
+	
+	public Task resetTask(Task task, GTACourseNode cNode, CourseEnvironment courseEnv);
+	
+	public Task resetTaskRefused(Task task, GTACourseNode cNode);
+	
 	public void log(String step, String operation, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup,
 			CourseEnvironment courseEnv, GTACourseNode cNode);
 	
