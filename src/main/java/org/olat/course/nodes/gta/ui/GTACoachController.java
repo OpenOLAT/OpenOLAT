@@ -463,11 +463,13 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	@Override
 	protected void resetTask(UserRequest ureq, Task task) {
-		resetTaskButton.setUserObject(task);
-		boolean allowed = isAdmin && task != null && StringHelper.containsNonWhitespace(task.getTaskName())
-				&& (task.getTaskStatus() == TaskProcess.assignment || task.getTaskStatus() == TaskProcess.submit)
-				&& GTACourseNode.GTASK_ASSIGNEMENT_TYPE_MANUAL.equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_ASSIGNEMENT_TYPE));
-		resetTaskButton.setVisible(allowed);
+		if(resetTaskButton != null) {
+			resetTaskButton.setUserObject(task);
+			boolean allowed = isAdmin && task != null && StringHelper.containsNonWhitespace(task.getTaskName())
+					&& (task.getTaskStatus() == TaskProcess.assignment || task.getTaskStatus() == TaskProcess.submit)
+					&& GTACourseNode.GTASK_ASSIGNEMENT_TYPE_MANUAL.equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_ASSIGNEMENT_TYPE));
+			resetTaskButton.setVisible(allowed);
+		}
 	}
 
 	@Override
