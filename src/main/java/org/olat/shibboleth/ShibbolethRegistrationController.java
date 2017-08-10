@@ -53,6 +53,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -93,7 +94,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	private VelocityContainer mainContainer;
 	private ShibbolethRegistrationForm regForm;
 	private ShibbolethMigrationForm migrationForm;
-	private ShibbolethRegistrationWithEmailForm regWithEmailForm;
+	private ShibbolethRegistrationUserPropertiesFrom regWithUserPropForm;
 	private DisclaimerController dclController;
 	private LanguageChooserController languageChooserController;
 
@@ -107,8 +108,6 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	private static final int STATE_MIGRATED_SHIB_USER = 2;
 	private String proposedUsername;
 	Locale locale;
-
-	private boolean hasEmailInShibAttr;
 
 	@Autowired
 	private ShibbolethModule shibbolethModule;
@@ -135,8 +134,6 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 			msgcc.getWindow().dispatchRequest(ureq, true);
 			return;
 		}
-
-		hasEmailInShibAttr = (shibbolethModule.getShibbolethAttributeName(UserConstants.EMAIL) == null) ? false : true;
 
 		locale = (Locale)ureq.getUserSession().getEntry(LocaleNegotiator.NEGOTIATED_LOCALE);
 		if(locale == null) {
@@ -182,14 +179,13 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 				} else if(interceptor.allowChangeOfUsername()) {
 					setRegistrationForm(ureq, wControl, proposedUsername);
 				} else {
-					if(hasEmailInShibAttr) {
+					if(areMandatoryUserPropertiesAvaible()) {
 						state = STATE_NEW_SHIB_USER;
 						mainContainer.setPage(VELOCITY_ROOT + "/disclaimer.html");
 					} else {
-						regWithEmailForm = new ShibbolethRegistrationWithEmailForm(ureq, wControl, proposedUsername);
-						regWithEmailForm.addControllerListener(this);
-						//mainContainer.put("regWithEmailForm", regWithEmailForm);
-						mainContainer.setPage(VELOCITY_ROOT + "/registerwithemail.html");
+						regWithUserPropForm = new ShibbolethRegistrationUserPropertiesFrom(ureq, wControl, shibbolethAttributes);
+						regWithUserPropForm.addControllerListener(this);
+						mainContainer.setPage(VELOCITY_ROOT + "/register_user_props.html");
 					}
 				}
 			}
@@ -256,7 +252,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 				state = STATE_MIGRATED_SHIB_USER;
 				mainContainer.setPage(VELOCITY_ROOT + "/disclaimer.html");
 			}
-		} else if (source == regWithEmailForm){
+		} else if (source == regWithUserPropForm){
 			if (event == Event.CANCELLED_EVENT) {
 				mainContainer.setPage(VELOCITY_ROOT + "/register.html");
 			} else if (event == Event.DONE_EVENT) {
@@ -271,12 +267,12 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 
 
 				if (identity == null) { // ok, create new user
-					if (!hasEmailInShibAttr){
-						regWithEmailForm = new ShibbolethRegistrationWithEmailForm(ureq, getWindowControl(), choosenLogin);
-						regWithEmailForm.addControllerListener(this);
-						mainContainer.put("regWithEmailForm", regWithEmailForm.getInitialComponent());
-						mainContainer.setPage(VELOCITY_ROOT + "/registerwithemail.html");
-					} else { // there is an emailaddress
+					if (isMandatoryUserPropertyMissing()){
+						regWithUserPropForm = new ShibbolethRegistrationUserPropertiesFrom(ureq, getWindowControl(), shibbolethAttributes);
+						regWithUserPropForm.addControllerListener(this);
+						mainContainer.put("getUserPropsForm", regWithUserPropForm.getInitialComponent());
+						mainContainer.setPage(VELOCITY_ROOT + "/register_user_props.html");
+					} else {
 						state = STATE_NEW_SHIB_USER;
 						mainContainer.setPage(VELOCITY_ROOT + "/disclaimer.html");
 					}
@@ -323,12 +319,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						return;
 					}
 
-					if(!hasEmailInShibAttr){
-						shibbolethAttributes.setValueForUserPropertyName(UserConstants.EMAIL, regWithEmailForm.getEmail());
-					}
-					String email = shibbolethAttributes.getValueForUserPropertyName(UserConstants.EMAIL);
-
 					User user = null;
+					String email = shibbolethAttributes.getValueForUserPropertyName(UserConstants.EMAIL);
 					Identity id = UserManager.getInstance().findIdentityByEmail(email);
 					if (id != null) {
 						user = id.getUser();
@@ -367,6 +359,22 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 				getWindowControl().setError(translator.translate("sr.error.disclaimer"));
 			}
 		}
+	}
+
+	private boolean isMandatoryUserPropertyMissing() {
+		return !areMandatoryUserPropertiesAvaible();
+	}
+
+	private boolean areMandatoryUserPropertiesAvaible() {
+		String lastname = shibbolethAttributes.getValueForUserPropertyName(UserConstants.LASTNAME);
+		String firstname = shibbolethAttributes.getValueForUserPropertyName(UserConstants.FIRSTNAME);
+		String email = shibbolethAttributes.getValueForUserPropertyName(UserConstants.EMAIL);
+		if (StringHelper.containsNonWhitespace(lastname)
+				&& StringHelper.containsNonWhitespace(firstname)
+				&& StringHelper.containsNonWhitespace(email)) {
+			return true;
+		}
+		return false;
 	}
 
 	private void doLogin(Identity identity, UserRequest ureq) {

@@ -121,9 +121,9 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 			accessControlByAttributes = "true".equals(accessControlByAttributesObj);
 		}
 
-		checkShibboletAttributeNameIsNotEmpty(UserConstants.EMAIL);
-		checkShibboletAttributeNameIsNotEmpty(UserConstants.FIRSTNAME);
-		checkShibboletAttributeNameIsNotEmpty(UserConstants.LASTNAME);
+		ensureAttributeNameIsNotEmpty(UserConstants.EMAIL);
+		ensureAttributeNameIsNotEmpty(UserConstants.FIRSTNAME);
+		ensureAttributeNameIsNotEmpty(UserConstants.LASTNAME);
 
 		String attribute1Obj = getStringPropertyValue("attribute1", true);
 		if(StringHelper.containsNonWhitespace(attribute1Obj)) {
@@ -151,11 +151,10 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		init();
 	}
 
-	private void checkShibboletAttributeNameIsNotEmpty(String userProperty) {
+	private void ensureAttributeNameIsNotEmpty(String userProperty) {
 		String attributeName = getShibbolethAttributeName(userProperty);
-		if (StringHelper.containsNonWhitespace(attributeName)) {
-			log.warn("Missing configuration for user property '" + userProperty
-					+ "'. Add this configuration to olat.local.properties first. Disabling Shibboleth.");
+		if (!StringHelper.containsNonWhitespace(attributeName)) {
+			userMapping.put("oo" + userProperty, userProperty);
 		}
 	}
 
