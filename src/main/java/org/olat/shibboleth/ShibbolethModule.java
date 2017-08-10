@@ -26,10 +26,13 @@
 package org.olat.shibboleth;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
@@ -78,10 +81,10 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 
 	public static final String MULTIVALUE_SEPARATOR = ";";
 
-	@Value("${shibboleth.preferred.language}")
+	@Value("${shibboleth.preferred.language.shib}")
 	private String preferredLanguageAttribute;
-	@Value("${shibboleth.defaultUID:Shib-SwissEP-UniqueID}")
-	private String defaultUIDAttribute;
+	@Value("${shibboleth.uid.shib}")
+	private String uidAttributeName;
 	@Autowired @Qualifier("shibbolethUserMapping")
 	private HashMap<String, String> userMapping;
 	@Autowired @Qualifier("shibbolethAttributeHandler")
@@ -195,12 +198,8 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		return operators;
 	}
 
-	/**
-	 *
-	 * @return the shib. default attribute which identifies an user by an unique key
-	 */
-	public String getDefaultUIDAttribute() {
-		return defaultUIDAttribute;
+	public String getUIDAttributeName() {
+		return uidAttributeName;
 	}
 
 	public String getLoginTemplate() {
@@ -269,7 +268,7 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		setStringProperty("attribute2Values", attribute2Values, true);
 	}
 
-	public String getPreferredLanguageAttribute() {
+	public String getPreferredLanguageAttributeName() {
 		return preferredLanguageAttribute;
 	}
 
@@ -317,6 +316,22 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 
 	public String getAuthorMappingContains() {
 		return authorMappingContains;
+	}
+
+	/**
+	 * Get the names of all Shibboleth attributes which are configured either in
+	 * the context.xml or in olat.local.properties
+	 */
+	public Collection<String> getShibbolethAttributeNames() {
+		Set<String> attributeNames = new HashSet<>();
+		attributeNames.addAll(attributeTranslator.getTranslateableAttributes());
+		attributeNames.addAll(userMapping.keySet());
+		attributeNames.add(uidAttributeName);
+		attributeNames.add(preferredLanguageAttribute);
+		attributeNames.add(authorMappingAttributeName);
+		attributeNames.add(attribute1);
+		attributeNames.add(attribute2);
+		return attributeNames;
 	}
 
 }

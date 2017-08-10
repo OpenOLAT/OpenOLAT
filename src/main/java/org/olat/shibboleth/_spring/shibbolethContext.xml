@@ -80,6 +80,8 @@
 	<bean name="shibbolethAttributeHandler" class="java.util.HashMap" scope="prototype" >
 		<constructor-arg>
 			<map key-type="java.lang.String" value-type="java.lang.String">
+				<entry key='${shibboleth.uid.shib}' value='${shibboleth.uid.handler}' />
+				<entry key='${shibboleth.preferred.language.shib}' value='${shibboleth.preferred.language.handler}' />
 				<entry key='${shibboleth.user.mapping.email.shib}' value='${shibboleth.user.mapping.email.handler}' />
 				<entry key='${shibboleth.user.mapping.first.name.shib}' value='${shibboleth.user.mapping.first.name.handler}' />
 				<entry key='${shibboleth.user.mapping.last.name.shib}' value='${shibboleth.user.mapping.last.name.handler}' />

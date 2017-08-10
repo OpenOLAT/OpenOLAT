@@ -52,6 +52,10 @@ import org.springframework.test.util.ReflectionTestUtils;
  */
 public class ShibbolethAttributesTest {
 
+	private static final String SHIB_UID_KEY = "shibUidKey";
+	private static final String SHIB_UID_VALUE = "shibUidValue";
+	private static final String SHIB_LANG_KEY = "shibLangKey";
+	private static final String SHIB_LANG_VALUE = "shibLangValue";
 	private static final String USER_EMAIL_KEY = UserConstants.EMAIL;
 	private static final String SHIB_EMAIL_KEY = "shibEmailKey";
 	private static final String SHIB_EMAIL_VALUE = "shibEmailValue";
@@ -86,6 +90,8 @@ public class ShibbolethAttributesTest {
 		ReflectionTestUtils.setField(sut, "shibbolethModule", shibbolethModuleMock);
 		Map<String, String> shibbolethUserMapping = initUserMapping();
 		when(shibbolethModuleMock.getUserMapping()).thenReturn(shibbolethUserMapping);
+		when(shibbolethModuleMock.getUIDAttributeName()).thenReturn(SHIB_UID_KEY);
+		when(shibbolethModuleMock.getPreferredLanguageAttributeName()).thenReturn(SHIB_LANG_KEY);
 
 		// ShibbolethAttributeHandler.parse() does not modify the value
 		ReflectionTestUtils.setField(sut, "shibbolethAttributeHandlerFactory", shibbolethAttributeHandlerFactoryMock);
@@ -95,13 +101,14 @@ public class ShibbolethAttributesTest {
 
 		ReflectionTestUtils.setField(sut,  "differenceChecker", differenceCheckerMock);
 
-
 		Map<String, String> shibbolethKeysValues = initShibbolethMap();
 		sut.init(shibbolethKeysValues);
 	}
 
 	private Map<String, String> initShibbolethMap() {
 		Map<String, String> shibbolethMap = new HashMap<>();
+		shibbolethMap.put(SHIB_UID_KEY, SHIB_UID_VALUE);
+		shibbolethMap.put(SHIB_LANG_KEY, SHIB_LANG_VALUE);
 		shibbolethMap.put(SHIB_EMAIL_KEY, SHIB_EMAIL_VALUE);
 		shibbolethMap.put(SHIB_NAME_KEY, SHIB_NAME_VALUE);
 		shibbolethMap.put(SHIB_GENDER_KEY, SHIB_GENDER_VALUE);
@@ -129,8 +136,22 @@ public class ShibbolethAttributesTest {
 
 	@Test
 	public void shouldParseValuesWhenInit() {
-		verify(shibbolethAttributeHandlerMock, times(3)).parse(anyString());
+		verify(shibbolethAttributeHandlerMock, times(5)).parse(anyString());
 		verify(shibbolethAttributeHandlerMock, times(1)).parse(isNull());
+	}
+
+	@Test
+	public void shouldReturnUniqueIdentifier() {
+		String uid = sut.getUID();
+
+		assertThat(uid).isEqualTo(SHIB_UID_VALUE);
+	}
+
+	@Test
+	public void shouldReturnPreferredLanguage() {
+		String lang = sut.getPreferredLanguage();
+
+		assertThat(lang).isEqualTo(SHIB_LANG_VALUE);
 	}
 
 	@Test
@@ -156,8 +177,7 @@ public class ShibbolethAttributesTest {
 	public void shouldNotParseValueWhenSet() {
 		sut.setValueForUserPropertyName(USER_NAME_KEY, "newValue");
 
-		// Only 3 times in the init().
-		verify(shibbolethAttributeHandlerMock, times(3)).parse(anyString());
+		verify(shibbolethAttributeHandlerMock, times(initUserMapping().size() + 1)).parse(anyString());
 	}
 
 	@Test

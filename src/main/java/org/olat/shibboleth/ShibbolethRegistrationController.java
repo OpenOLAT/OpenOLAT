@@ -137,7 +137,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 
 		locale = (Locale)ureq.getUserSession().getEntry(LocaleNegotiator.NEGOTIATED_LOCALE);
 		if(locale == null) {
-			String preferedLanguage = shibbolethAttributes.getValueForAttributeName(shibbolethModule.getPreferredLanguageAttribute());
+			String preferedLanguage = shibbolethAttributes.getPreferredLanguage();
 			if(preferedLanguage == null) {
 				locale = LocaleNegotiator.getPreferedLocale(ureq);
 			} else {

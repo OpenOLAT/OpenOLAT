@@ -31,7 +31,6 @@ import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -64,7 +63,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.restapi.security.RestSecurityBean;
 import org.olat.shibboleth.manager.ShibbolethAttributes;
-import org.olat.shibboleth.util.ShibbolethAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -158,8 +156,10 @@ public class ShibbolethDispatcher implements Dispatcher{
 		Map<String, String> attributesMap = getShibbolethAttributesFromRequest(req);
 		ShibbolethAttributes shibbolethAttriutes = CoreSpringFactory.getImpl(ShibbolethAttributes.class);
 		shibbolethAttriutes.init(attributesMap);
-		String uniqueID = getUniqueIdentifierFromRequest(req, resp, shibbolethAttriutes);
-		if(uniqueID == null) {
+		String uid = shibbolethAttriutes.getUID();
+		if(uid == null) {
+			handleException(new ShibbolethException(ShibbolethException.UNIQUE_ID_NOT_FOUND,"Unable to get unique identifier for subject. Make sure you are listed in the metadata.xml file and your resources your are trying to access are available and your are allowed to see them. (Resourceregistry). "),
+					req, resp, translator);
 			return;
 		}
 
@@ -185,10 +185,10 @@ public class ShibbolethDispatcher implements Dispatcher{
 			return;
 		}
 
-		Authentication auth = securityManager.findAuthenticationByAuthusername(uniqueID, PROVIDER_SHIB);
+		Authentication auth = securityManager.findAuthenticationByAuthusername(uid, PROVIDER_SHIB);
 		if (auth == null) { // no matching authentication...
 			ShibbolethRegistrationController.putShibAttributes(req, shibbolethAttriutes);
-			ShibbolethRegistrationController.putShibUniqueID(req, uniqueID);
+			ShibbolethRegistrationController.putShibUniqueID(req, uid);
 			redirectToShibbolethRegistration(resp);
 			return;
 		}
@@ -232,30 +232,21 @@ public class ShibbolethDispatcher implements Dispatcher{
 		}
 	}
 
-	private String getUniqueIdentifierFromRequest(HttpServletRequest req, HttpServletResponse resp, ShibbolethAttributes shibbolethAttributes) {
-
-		String uniqueID = shibbolethAttributes.getValueForAttributeName(shibbolethModule.getDefaultUIDAttribute());
-		if (uniqueID == null) {
-			handleException(new ShibbolethException(ShibbolethException.UNIQUE_ID_NOT_FOUND,"Unable to get unique identifier for subject. Make sure you are listed in the metadata.xml file and your resources your are trying to access are available and your are allowed to see them. (Resourceregistry). "),
-					req, resp, translator);
-			return null;
-		}
-		return uniqueID;
-	}
-
 	private Map<String, String> getShibbolethAttributesFromRequest(HttpServletRequest req) {
-		Set<String> translateableAttributes = shibbolethModule.getAttributeTranslator().getTranslateableAttributes();
 		Map<String, String> attributesMap = new HashMap<>();
 		Enumeration<String> headerEnum = req.getHeaderNames();
 		while(headerEnum.hasMoreElements()) {
-			String attribute = headerEnum.nextElement();
-			String attributeValue = req.getHeader(attribute);
+			String attributeName = headerEnum.nextElement();
+			String attributeValue = req.getHeader(attributeName);
 
-			ShibbolethAttribute shibbolethAttribute = ShibbolethAttribute.createFromUserRequestValue(attribute, attributeValue);
-
-			boolean validAndTranslateableAttribute = shibbolethAttribute.isValid() && translateableAttributes.contains(shibbolethAttribute.getName());
-			if(validAndTranslateableAttribute){
-				attributesMap.put(shibbolethAttribute.getName(),shibbolethAttribute.getValueString());
+			try {
+				attributeValue = new String(attributeValue.getBytes("ISO-8859-1"), "UTF-8");
+				if (shibbolethModule.getShibbolethAttributeNames().contains(attributeName)) {
+					attributesMap.put(attributeName, attributeValue);
+				}
+			} catch (UnsupportedEncodingException e) {
+				//bad luck
+				throw new AssertException("ISO-8859-1, or UTF-8 Encoding not supported",e);
 			}
 		}
 
@@ -304,14 +295,6 @@ public class ShibbolethDispatcher implements Dispatcher{
 				String allowedValue = tokenizer.nextToken().trim();
 				if(val.equalsIgnoreCase(allowedValue)) {
 					return true;
-				}
-				// Could be multi-field attribute. Check for semi-colon delimited encodings
-				String[] multiValues = val.split(";");
-				for (String singleValue : multiValues) {
-					singleValue = singleValue.trim();
-					if(singleValue.equalsIgnoreCase(allowedValue)) {
-						return true;
-					}
 				}
 			}
 		}

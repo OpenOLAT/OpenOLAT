@@ -84,6 +84,17 @@ public class ShibbolethAttributes {
 		return shibbolethAttributeHandlerFactory.getHandler(handlerName);
 	}
 
+	public String getUID() {
+		String uidAttributeName = shibbolethModule.getUIDAttributeName();
+		return getValueForAttributeName(uidAttributeName);
+
+	}
+
+	public String getPreferredLanguage() {
+		String langAttributeName = shibbolethModule.getPreferredLanguageAttributeName();
+		return getValueForAttributeName(langAttributeName);
+	}
+
 	public String getValueForAttributeName(String attributeName) {
 		return shibbolethMap.get(attributeName);
 	}

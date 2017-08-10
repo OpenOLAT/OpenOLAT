@@ -249,7 +249,6 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.commentAndRating.UserRatingsDAOTest.class,
 	org.olat.course.auditing.UserNodeAuditManagerTest.class,
 	org.olat.shibboleth.handler.SpringShibbolethAttributeHandlerFactoryTest.class,
-	org.olat.shibboleth.util.ShibbolethAttributeTest.class,
 	org.olat.core.CoreSpringFactoryTest.class,
 	org.olat.portfolio.PortfolioModuleTest.class,
 	org.olat.portfolio.EPArtefactManagerTest.class,
