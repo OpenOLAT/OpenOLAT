@@ -145,7 +145,8 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return new MembersPeekViewController(ureq, wControl, userCourseEnv, this.getModuleConfiguration());
+		updateModuleConfigDefaults(false);
+		return new MembersPeekViewController(ureq, wControl, userCourseEnv, getModuleConfiguration());
 	}
 	
 	@Override

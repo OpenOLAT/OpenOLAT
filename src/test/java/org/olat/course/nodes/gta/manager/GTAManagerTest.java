@@ -35,6 +35,8 @@ import org.olat.course.nodes.gta.AssignmentResponse.Status;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.TaskRevisionDate;
 import org.olat.course.nodes.gta.model.TaskListImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
@@ -607,6 +609,62 @@ public class GTAManagerTest extends OlatTestCase {
 		List<Task> notDeletedAssignedTasks2_2 = gtaManager.getTasks(participant2, re2, node2);
 		Assert.assertNotNull(notDeletedAssignedTasks2_2);
 		Assert.assertEquals(1, notDeletedAssignedTasks2_2.size());
+	}
+	
+	@Test
+	public void createTaskRevisionDate() {
+		//prepare
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-20");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		GTACourseNode node = new GTACourseNode();
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		//create task
+		Task task = gtaManager.createAndPersistTask(null, tasks, TaskProcess.assignment, null, participant, node);
+		dbInstance.commitAndCloseSession();
+		
+		//create the revision log
+		TaskRevisionDate taskRevision = gtaManager.createAndPersistTaskRevisionDate(task, 2, TaskProcess.correction);
+		Assert.assertNotNull(taskRevision);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(taskRevision.getKey());
+		Assert.assertNotNull(taskRevision.getDate());
+		Assert.assertEquals(task, taskRevision.getTask());
+		Assert.assertEquals(2, taskRevision.getRevisionLoop());
+		Assert.assertEquals(TaskProcess.correction, taskRevision.getTaskStatus());
+	}
+	
+	@Test
+	public void getTaskRevisions() {
+		//prepare
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-21");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		GTACourseNode node = new GTACourseNode();
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		//create a task
+		Task task = gtaManager.createAndPersistTask(null, tasks, TaskProcess.assignment, null, participant, node);
+		dbInstance.commitAndCloseSession();
+		
+		//add the revision log
+		TaskRevisionDate taskRevision = gtaManager.createAndPersistTaskRevisionDate(task, 2, TaskProcess.correction);
+		Assert.assertNotNull(taskRevision);
+		dbInstance.commitAndCloseSession();
+		
+		//load the revisions
+		List<TaskRevisionDate> taskRevisions = gtaManager.getTaskRevisions(task);
+		Assert.assertNotNull(taskRevisions);
+		Assert.assertEquals(1, taskRevisions.size());
+		TaskRevisionDate loadedTaskRevision = taskRevisions.get(0);
+		Assert.assertNotNull(loadedTaskRevision.getKey());
+		Assert.assertNotNull(loadedTaskRevision.getDate());
+		Assert.assertEquals(task, loadedTaskRevision.getTask());
+		Assert.assertEquals(2, loadedTaskRevision.getRevisionLoop());
+		Assert.assertEquals(TaskProcess.correction, loadedTaskRevision.getTaskStatus());
 	}
 	
 	@Test

@@ -10,3 +10,6 @@
 	<li>$r.render($docInfo.linkName) #if($docInfo.uploadedBy)<small>$r.translate("uploaded.by",$docInfo.uploadedBy)</small>#end #if($r.isNotNull($docInfo.lastModified))<small>$r.translate("lastmodified",$docInfo.lastModified)</small>#end</li>
 #end
 </ul>
+#if($r.available("download"))
+	$r.render("download")
+#end

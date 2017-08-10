@@ -21,7 +21,9 @@ package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
@@ -35,10 +37,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
@@ -67,13 +72,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACoachRevisionAndCorrectionsController extends BasicController {
+public class GTACoachRevisionAndCorrectionsController extends BasicController implements Activateable2 {
 	
 	private final VelocityContainer mainVC;
 	private Link returnToRevisionsButton, closeRevisionsButton, collectButton;
 	
 	private CloseableModalController cmc;
-	private DirectoryController revisionsCtrl, correctionsCtrl;
+	private Map<Integer,DirectoryController> loopToRevisionCtrl = new HashMap<>();
+	//private DirectoryController revisionsCtrl, correctionsCtrl;
 	private SubmitDocumentsController uploadCorrectionsCtrl;
 	private ConfirmRevisionsController confirmReturnToRevisionsCtrl;
 	private DialogBoxController confirmCloseRevisionProcessCtrl, confirmCollectCtrl;
@@ -185,10 +191,11 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 
 		boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
 		if(hasDocuments) {
-			revisionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+			DirectoryController revisionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
 					"coach.revisions.description", "bulk.revisions", "revisions.zip");
 			listenTo(revisionsCtrl);
 			mainVC.put(cmpName, revisionsCtrl.getInitialComponent());
+			loopToRevisionCtrl.put(iteration, revisionsCtrl);
 		} else if (assignedTask.getTaskStatus() == TaskProcess.revision) {
 			String msg = "<i class='o_icon o_icon_error'> </i> " + translate("coach.corrections.rejected");
 			TextFactory.createTextComponentFromString(cmpName, msg, null, true, mainVC);
@@ -211,7 +218,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		
 		boolean hasDocuments = TaskHelper.hasDocuments(documentsDir);
 		if(hasDocuments) {
-			correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
+			DirectoryController correctionsCtrl = new DirectoryController(ureq, getWindowControl(), documentsDir, documentsContainer,
 					"run.coach.corrections.description", "bulk.review", "review");
 			listenTo(correctionsCtrl);
 			mainVC.put(cmpName, correctionsCtrl.getInitialComponent());
@@ -260,6 +267,20 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 		closeRevisionsButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 	}
 	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.size() <= 1) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Revision".equalsIgnoreCase(type)) {
+			int revisionLoop = entries.get(0).getOLATResourceable().getResourceableId().intValue();
+			if(loopToRevisionCtrl.containsKey(revisionLoop)) {
+				List<ContextEntry> subEntriess = entries.subList(1, entries.size());
+				loopToRevisionCtrl.get(revisionLoop).activate(ureq, subEntriess, null);
+			}
+		}
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(uploadCorrectionsCtrl == source) {
@@ -386,8 +407,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController {
 	}
 	
 	private void doCloseRevisionProcess() {
-		TaskProcess nextStep = gtaManager.nextStep(TaskProcess.correction, gtaNode);
-		assignedTask = gtaManager.updateTask(assignedTask, nextStep, gtaNode);
+		assignedTask = gtaManager.reviewedTask(assignedTask, gtaNode);
 		gtaManager.log("Revision", "close revision", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 	}
 }

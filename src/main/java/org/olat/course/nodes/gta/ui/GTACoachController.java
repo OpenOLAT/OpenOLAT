@@ -34,9 +34,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.mail.ContactList;
@@ -68,8 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACoachController extends GTAAbstractController implements AssessmentFormCallback {
-
+public class GTACoachController extends GTAAbstractController implements AssessmentFormCallback, Activateable2 {
 
 	private DirectoryController solutionsCtrl;
 	private DirectoryController correctionsCtrl;
@@ -80,12 +83,15 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private GTACoachedParticipantGradingController participantGradingCtrl;
 	private GTACoachRevisionAndCorrectionsController revisionDocumentsCtrl;
 	private ConfirmRevisionsController confirmRevisionsCtrl;
-	private DialogBoxController confirmReviewDocumentCtrl, confirmCollectCtrl, confirmBackToSubmissionCtrl;
+	private DialogBoxController confirmReviewDocumentCtrl, confirmCollectCtrl, confirmBackToSubmissionCtrl, confirmResetTaskCtrl;
 	private ContactFormController emailController;
 	private CloseableModalController cmc;
 
-	private Link reviewedButton, needRevisionsButton, emailLink, collectSubmissionsLink, backToSubmissionLink;
+	private Link reviewedButton, needRevisionsButton, emailLink, collectSubmissionsLink, backToSubmissionLink, resetTaskButton;
 	
+	
+	private final boolean isAdmin;
+	private final boolean withReset;
 	private final UserCourseEnvironment coachCourseEnv;
 	
 	@Autowired
@@ -93,14 +99,16 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	public GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup,
-			boolean withTitle, boolean withGrading, boolean withSubscription) {
-		this(ureq, wControl, courseEnv, gtaNode, coachCourseEnv, assessedGroup, null, withTitle, withGrading, withSubscription);
+			boolean withTitle, boolean withGrading, boolean withSubscription, boolean withReset) {
+		this(ureq, wControl, courseEnv, gtaNode, coachCourseEnv, assessedGroup, null,
+				withTitle, withGrading, withSubscription, withReset);
 	}
 	
 	public GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			UserCourseEnvironment coachCourseEnv, Identity assessedIdentity,
-			boolean withTitle, boolean withGrading, boolean withSubscription) {
-		this(ureq, wControl, courseEnv, gtaNode, coachCourseEnv, null, assessedIdentity, withTitle, withGrading, withSubscription);
+			boolean withTitle, boolean withGrading, boolean withSubscription, boolean withReset) {
+		this(ureq, wControl, courseEnv, gtaNode, coachCourseEnv, null, assessedIdentity,
+				withTitle, withGrading, withSubscription, withReset);
 	}
 
 	/**
@@ -116,9 +124,11 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	 */
 	private GTACoachController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, GTACourseNode gtaNode,
 			UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup, Identity assessedIdentity,
-			boolean withTitle, boolean withGrading, boolean withSubscription) {
+			boolean withTitle, boolean withGrading, boolean withSubscription, boolean withReset) {
 		super(ureq, wControl, gtaNode, courseEnv, null, assessedGroup, assessedIdentity, withTitle, withGrading, withSubscription);
 		this.coachCourseEnv = coachCourseEnv;
+		this.withReset = withReset;
+		isAdmin = coachCourseEnv.isAdmin();
 		initContainer(ureq);
 		process(ureq);
 	}
@@ -155,6 +165,12 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			}
 		}
 		
+		if(withReset) {
+			resetTaskButton = LinkFactory.createCustomLink("coach.reset.button", "reset", "coach.reset.button", Link.BUTTON, mainVC, this);
+			resetTaskButton.setElementCssClass("o_sel_course_gta_reset");
+			resetTaskButton.setVisible(false);
+		}
+		
 		putInitialPanel(mainVC);
 	}
 
@@ -174,7 +190,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			listenTo(assignedTaskCtrl);
 			mainVC.put("assignedTask", assignedTaskCtrl.getInitialComponent());
 		}
-		
+
 		return assignedTask;
 	}
 	
@@ -444,6 +460,17 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			mainVC.put("grading", participantGradingCtrl.getInitialComponent());
 		}
 	}
+	
+	@Override
+	protected void resetTask(UserRequest ureq, Task task) {
+		if(resetTaskButton != null) {
+			resetTaskButton.setUserObject(task);
+			boolean allowed = isAdmin && task != null && StringHelper.containsNonWhitespace(task.getTaskName())
+					&& (task.getTaskStatus() == TaskProcess.assignment || task.getTaskStatus() == TaskProcess.submit)
+					&& GTACourseNode.GTASK_ASSIGNEMENT_TYPE_MANUAL.equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_ASSIGNEMENT_TYPE));
+			resetTaskButton.setVisible(allowed);
+		}
+	}
 
 	@Override
 	protected void processEvent(TaskMultiUserEvent event) {
@@ -479,6 +506,23 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			process(ureq);
 		}
 	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.size() <= 1) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Submit".equalsIgnoreCase(type)) {
+			if(submittedDocCtrl != null) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				submittedDocCtrl.activate(ureq, subEntries, null);
+			}	
+		} else if("Revision".equalsIgnoreCase(type)) {
+			if(revisionDocumentsCtrl != null) {
+				revisionDocumentsCtrl.activate(ureq, entries, null);
+			}
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -498,6 +542,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			doConfirmCollectTask(ureq, (Task)collectSubmissionsLink.getUserObject());
 		} else if(backToSubmissionLink == source) {
 			doConfirmBackToSubmission(ureq, (Task)backToSubmissionLink.getUserObject());
+		} else if(resetTaskButton == source) {
+			doConfirmResetTask(ureq, (Task)resetTaskButton.getUserObject());
 		}
 		super.event(ureq, source, event);
 	}
@@ -534,10 +580,15 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				Task assignedTask = (Task)confirmCollectCtrl.getUserObject();
 				doCollectTask(ureq, assignedTask);
 			}
-		}  else if(confirmBackToSubmissionCtrl == source) {
+		} else if(confirmBackToSubmissionCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				Task assignedTask = (Task)confirmBackToSubmissionCtrl.getUserObject();
 				doBackToSubmission(ureq, assignedTask);
+			}
+		}  else if(confirmResetTaskCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				Task assignedTask = (Task)confirmResetTaskCtrl.getUserObject();
+				doAllowResetTask(ureq, assignedTask);
 			}
 		} else if(source == cmc) {
 			doCloseMailForm(false);
@@ -602,8 +653,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	private void doReviewedDocument(UserRequest ureq, Task task) {
 		//go to solution, grading or graded
-		TaskProcess nextStep = gtaManager.nextStep(TaskProcess.correction, gtaNode);
-		gtaManager.updateTask(task, nextStep, gtaNode);
+		gtaManager.reviewedTask(task, gtaNode);
 		showInfo("coach.documents.successfully.reviewed");
 		gtaManager.log("Review", "documents reviewed", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 		
@@ -705,6 +755,28 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			cleanUpProcess();
 			process(ureq);
 		}
+	}
+	
+	private void doConfirmResetTask(UserRequest ureq, Task assignedTask) {
+		String toName = null;
+		if (assessedGroup != null) {
+			toName = assessedGroup.getName();
+		} else if (assessedIdentity != null) {
+			toName = userManager.getUserDisplayName(assessedIdentity);			
+		}
+		
+		String title = translate("coach.reset.task.confirm.title");
+		String text = translate("coach.reset.task.confirm.text", new String[]{ toName });
+		confirmResetTaskCtrl = activateOkCancelDialog(ureq, title, text, confirmResetTaskCtrl);
+		confirmResetTaskCtrl.setUserObject(assignedTask);
+		listenTo(confirmResetTaskCtrl);
+	}
+	
+	private void doAllowResetTask(UserRequest ureq, Task assignedTask) {
+		gtaManager.allowResetTask(assignedTask, getIdentity(), gtaNode);
+		gtaManager.log("Allow reset task", "Allow the user to reset the task", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
+		cleanUpProcess();
+		process(ureq);
 	}
 	
 	private void doOpenMailForm(UserRequest ureq) {

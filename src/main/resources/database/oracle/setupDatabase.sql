@@ -1882,6 +1882,10 @@ create table o_gta_task (
    g_submission_date date,
    g_submission_revisions_date date,
    g_collection_date date,
+   g_acceptation_date date,
+   g_solution_date date,
+   g_graduation_date date,
+   g_allow_reset_date date,
    g_assignment_due_date date,
    g_submission_due_date date,
    g_revisions_due_date date,
@@ -1889,7 +1893,18 @@ create table o_gta_task (
    fk_tasklist number(20) not null,
    fk_identity number(20),
    fk_businessgroup number(20),
+   fk_allow_reset_identity number(20),
    primary key (id)
+);
+
+create table o_gta_task_revision_date (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  g_status varchar2(36 char) not null,
+  g_rev_loop number(20) not null,
+  g_date date not null,
+  fk_task number(20) not null,
+  primary key (id)
 );
 
 create table o_rem_reminder (
@@ -2689,9 +2704,14 @@ alter table o_gta_task add constraint gtask_to_identity_idx foreign key (fk_iden
 create index idx_gtask_to_identity_idx on o_gta_task (fk_identity);
 alter table o_gta_task add constraint gtask_to_bgroup_idx foreign key (fk_businessgroup) references o_gp_business (group_id);
 create index idx_gtask_to_bgroup_idx on o_gta_task (fk_businessgroup);
+alter table o_gta_task add constraint gtaskreset_to_allower_idx foreign key (fk_allow_reset_identity) references o_bs_identity (id);
+create index idx_gtaskreset_to_allower_idx on o_gta_task (fk_allow_reset_identity);
 
 alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_gta_list_to_repo_entry_idx on o_gta_task_list (fk_entry);
+
+alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
+create index idx_gtaskrev_to_task_idx on o_gta_task_revision_date (fk_task);
 
 -- reminders
 alter table o_rem_reminder add constraint rem_reminder_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

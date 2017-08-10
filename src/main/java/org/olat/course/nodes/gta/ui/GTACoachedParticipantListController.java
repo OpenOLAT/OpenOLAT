@@ -131,6 +131,17 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		updateModel();
 	}
 	
+	public boolean hasIdentityKey(Long identityKey) {
+		if(assessableIdentities != null) {
+			for(UserPropertiesRow row:assessableIdentities) {
+				if(row.getIdentityKey().equals(identityKey)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	public List<Identity> getAssessableIdentities() {
 		List<Identity> identities = new ArrayList<>();
 		collectIdentities(new Consumer<Identity>() {

@@ -272,6 +272,8 @@ public interface GTAManager {
 	public List<Task> getTasks(TaskList taskList, GTACourseNode gtaNode);
 	
 	public List<TaskLight> getTasksLight(RepositoryEntryRef entry, GTACourseNode gtaNode);
+	
+	public List<TaskRevisionDate> getTaskRevisions(Task task);
 
 	
 	/**
@@ -327,6 +329,14 @@ public interface GTAManager {
 
 	public Task collectTask(Task task, GTACourseNode cNode);
 	
+	/**
+	 * Task is reviewed and accepted.
+	 * @param task
+	 * @param cNode
+	 * @return
+	 */
+	public Task reviewedTask(Task task, GTACourseNode cNode);
+	
 	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode);
 	
 	public TaskDueDate updateTaskDueDate(TaskDueDate taskDueDate);
@@ -336,6 +346,12 @@ public interface GTAManager {
 	public Task submitRevisions(Task task, GTACourseNode cNode);
 	
 	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode);
+	
+	public Task allowResetTask(Task task, Identity allower, GTACourseNode cNode);
+	
+	public Task resetTask(Task task, GTACourseNode cNode, CourseEnvironment courseEnv);
+	
+	public Task resetTaskRefused(Task task, GTACourseNode cNode);
 	
 	public void log(String step, String operation, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup,
 			CourseEnvironment courseEnv, GTACourseNode cNode);

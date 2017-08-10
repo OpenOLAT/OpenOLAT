@@ -87,6 +87,15 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		initForm(ureq);
 		updateModel();
 	}
+	
+	public BusinessGroup getBusinessGroup(Long key) {
+		for(BusinessGroup group:coachedGroups) {
+			if(group.getKey().equals(key)) {
+				return group;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -196,7 +205,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		} else {
 			removeAsListenerAndDispose(coachingCtrl);
 			
-			coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, coachCourseEnv, businessGroup, true, true, true);
+			coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, coachCourseEnv, businessGroup, true, true, true, false);
 			listenTo(coachingCtrl);
 			stackPanel.pushController(businessGroup.getName(), coachingCtrl);
 		}
