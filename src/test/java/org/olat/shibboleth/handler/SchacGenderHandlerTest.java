@@ -31,6 +31,7 @@ import org.junit.Test;
  */
 public class SchacGenderHandlerTest {
 
+	private static final String OLAT_DEFAULT = "-";
 	private SchacGenderHandler sut = new SchacGenderHandler();
 
 	@Test
@@ -56,17 +57,16 @@ public class SchacGenderHandlerTest {
 	@Test
 	public void parseShouldHandleOther() {
 		String randomValue = "abc";
-		String olatUnknown = "-";
 
 		String parsed = sut.parse(randomValue);
 
-		assertThat(parsed).isEqualTo(olatUnknown);
+		assertThat(parsed).isEqualTo(OLAT_DEFAULT);
 	}
 
 	@Test
 	public void parseShouldHandleNull() {
 		String parsed = sut.parse(null);
 
-		assertThat(parsed).isNull();
+		assertThat(parsed).isEqualTo(OLAT_DEFAULT);
 	}
 }

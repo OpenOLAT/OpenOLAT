@@ -325,6 +325,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.fo.WordCountTest.class,
 	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.modules.webFeed.manager.RomeFeedFetcherTest.class,
+	org.olat.shibboleth.manager.DifferenceCheckerTest.class,
 	org.olat.shibboleth.manager.ShibbolethAttributesTest.class,
 	org.olat.shibboleth.manager.ShibbolethManagerImplTest.class,
 	org.olat.shibboleth.handler.DoNothingHandlerTest.class,

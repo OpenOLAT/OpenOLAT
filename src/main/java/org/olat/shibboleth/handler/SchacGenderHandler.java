@@ -31,9 +31,11 @@ import org.springframework.stereotype.Component;
 @Component("SchacGender")
 class SchacGenderHandler implements ShibbolethAttributeHandler {
 
+	private static final String GNEDER_DEFAULT = "-";
+
 	@Override
 	public String parse(String shibbolethAttributeValue) {
-		if (shibbolethAttributeValue == null) return null;
+		if (shibbolethAttributeValue == null) return GNEDER_DEFAULT;
 
 		switch(shibbolethAttributeValue) {
 			case "1":
@@ -41,7 +43,7 @@ class SchacGenderHandler implements ShibbolethAttributeHandler {
 			case "2":
 				return "female";
 			default:
-				return "-";
+				return GNEDER_DEFAULT;
 		}
 	}
 

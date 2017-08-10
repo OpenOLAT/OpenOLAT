@@ -49,16 +49,33 @@ public class ShibbolethAttributes {
 	private ShibbolethModule shibbolethModule;
 	@Autowired
 	private ShibbolethAttributeHandlerFactory shibbolethAttributeHandlerFactory;
+	@Autowired
+	private DifferenceChecker differenceChecker;
 
 	public void init(Map<String, String> attributes) {
-		shibbolethMap = new HashMap<>(attributes.size());
-		for (Entry<String, String> attribute : attributes.entrySet()) {
+		Map<String, String> attributesCopy = new HashMap<>(attributes);
+
+		// Get and parse all mapped attributes even when Shibboleth does not
+		// deliver the attribute. It is to ensure the null values are parsed as
+		// well as the base for the later synchronization.
+		for (Entry<String, String> attribute : getUserMappingEntrySet()) {
+			String attributeName = attribute.getKey();
+			String attributeValue = attributesCopy.remove(attributeName);
+			ShibbolethAttributeHandler handler = getAttributeHandler(attributeName);
+			String parsedValue = handler.parse(attributeValue);
+			shibbolethMap.put(attributeName, parsedValue);
+		}
+
+		// Get and parse the not mapped but delivered attributes to ensure that
+		// all attributes are available e.g. for the AttributeTranslator.
+		for (Entry<String, String> attribute : attributesCopy.entrySet()) {
 			String attributeName = attribute.getKey();
 			String attributeValue = attribute.getValue();
 			ShibbolethAttributeHandler handler = getAttributeHandler(attributeName);
 			String parsedValue = handler.parse(attributeValue);
 			shibbolethMap.put(attributeName, parsedValue);
 		}
+
 	}
 
 	private ShibbolethAttributeHandler getAttributeHandler(String attributeName) {
@@ -118,19 +135,14 @@ public class ShibbolethAttributes {
 
 	public boolean hasDifference(User user) {
 		for (Entry<String, String> mapping : getUserMappingEntrySet()) {
-			String shibbolethValue = getValueForAttributeName(mapping.getKey());
+			String shibbolethName = mapping.getKey();
+			String shibbolethValue = getValueForAttributeName(shibbolethName);
 			String userValue = user.getProperty(mapping.getValue(), null);
-	        if (hasDifference(shibbolethValue, userValue)) {
+	        if (differenceChecker.isDifferent(shibbolethName, shibbolethValue, userValue)) {
 	            return true;
 	        }
 	    }
 		return false;
-	}
-
-	private boolean hasDifference(String shibbolethValue, String userValue) {
-		return (shibbolethValue == null && userValue != null)
-			|| (shibbolethValue != null && userValue == null)
-			|| (shibbolethValue != null && userValue != null && !shibbolethValue.equals(userValue));
 	}
 
 	private Set<Entry<String, String>> getUserMappingEntrySet() {

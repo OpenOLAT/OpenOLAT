@@ -58,7 +58,9 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	 * Path identifier for shibboleth registration workflows.
 	 */
 	static final String PATH_REGISTER_SHIBBOLETH = "shibregister";
-	private static final String DEFAULT_ATTRIBUTE_HANDLER = "DoNothingHandler";
+
+	private static final List<String> MANDATORY_USER_PROPERTIES
+			= java.util.Arrays.asList(UserConstants.EMAIL, UserConstants.FIRSTNAME, UserConstants.LASTNAME);
 
 	@Value("${shibboleth.enable}")
 	private boolean enableShibbolethLogins = false;
@@ -84,6 +86,8 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	private HashMap<String, String> userMapping;
 	@Autowired @Qualifier("shibbolethAttributeHandler")
 	private HashMap<String, String> attributeHandler;
+	@Autowired @Qualifier("shibbolethDeleteIfNull")
+	private HashMap<String, Boolean> deleteIfNull;
 
 	@Value("${shibboleth.role.mapping.author.enable:false}")
 	private boolean authorMappingEnabled;
@@ -121,9 +125,7 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 			accessControlByAttributes = "true".equals(accessControlByAttributesObj);
 		}
 
-		ensureAttributeNameIsNotEmpty(UserConstants.EMAIL);
-		ensureAttributeNameIsNotEmpty(UserConstants.FIRSTNAME);
-		ensureAttributeNameIsNotEmpty(UserConstants.LASTNAME);
+		ensureDefaultsForMandatoryUserProperties();
 
 		String attribute1Obj = getStringPropertyValue("attribute1", true);
 		if(StringHelper.containsNonWhitespace(attribute1Obj)) {
@@ -151,16 +153,31 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		init();
 	}
 
-	private void ensureAttributeNameIsNotEmpty(String userProperty) {
+	private void ensureDefaultsForMandatoryUserProperties() {
+		ensureMandatoryPropertesAreInUserMapping();
+		ensureMandatoryPropertiesAreNeverDeleted();
+	}
+
+	private void ensureMandatoryPropertesAreInUserMapping() {
+		MANDATORY_USER_PROPERTIES.forEach(userPropertyName -> addToUserMappingWithDefault(userPropertyName));
+	}
+
+	private void addToUserMappingWithDefault(String userProperty) {
 		String attributeName = getShibbolethAttributeName(userProperty);
 		if (!StringHelper.containsNonWhitespace(attributeName)) {
 			userMapping.put("oo" + userProperty, userProperty);
 		}
 	}
 
-	/**
-	 * @return True if shibboleth logins are allowed.
-	 */
+	private void ensureMandatoryPropertiesAreNeverDeleted() {
+		MANDATORY_USER_PROPERTIES.forEach(userPropertyName -> addToDeleteIfNullFalse(userPropertyName));
+	}
+
+	private void addToDeleteIfNullFalse(String userPropertyName) {
+		String attributeName = getShibbolethAttributeName(userPropertyName);
+		deleteIfNull.put(attributeName, false);
+	}
+
 	public boolean isEnableShibbolethLogins() {
 		return enableShibbolethLogins;
 	}
@@ -268,6 +285,10 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 
 	public Map<String, String> getAttributeHandlerNames() {
 		return attributeHandler;
+	}
+
+	public HashMap<String, Boolean> getDeleteIfNull() {
+		return deleteIfNull;
 	}
 
 	/**

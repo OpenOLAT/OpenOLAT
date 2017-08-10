@@ -72,6 +72,8 @@ public class ShibbolethAttributesTest {
 	private ShibbolethAttributeHandlerFactory shibbolethAttributeHandlerFactoryMock;
 	@Mock
 	private ShibbolethAttributeHandler shibbolethAttributeHandlerMock;
+	@Mock
+	private DifferenceChecker differenceCheckerMock;
 
 	private ShibbolethAttributes sut;
 
@@ -90,6 +92,9 @@ public class ShibbolethAttributesTest {
 		when(shibbolethAttributeHandlerFactoryMock.getHandler(anyString())).thenReturn(shibbolethAttributeHandlerMock);
 		when(shibbolethAttributeHandlerFactoryMock.getHandler(isNull())).thenReturn(shibbolethAttributeHandlerMock);
 		when(shibbolethAttributeHandlerMock.parse(anyString())).then(returnsFirstArg());
+
+		ReflectionTestUtils.setField(sut,  "differenceChecker", differenceCheckerMock);
+
 
 		Map<String, String> shibbolethKeysValues = initShibbolethMap();
 		sut.init(shibbolethKeysValues);
@@ -199,8 +204,8 @@ public class ShibbolethAttributesTest {
 	@Test
 	public void shouldReturnTrueIfManyAttributesHaveChanged() {
 		User user = getIdenticalOlatUser();
-		user.setProperty(USER_NAME_KEY, USER_OLD_VALUE);
-		user.setProperty(USER_GENDER_KEY, USER_OLD_VALUE);
+		when(differenceCheckerMock.isDifferent(SHIB_NAME_KEY, SHIB_NAME_VALUE, SHIB_NAME_VALUE)).thenReturn(true);
+		when(differenceCheckerMock.isDifferent(SHIB_GENDER_KEY, SHIB_GENDER_VALUE, SHIB_GENDER_VALUE)).thenReturn(true);
 
 		boolean hasDifference = sut.hasDifference(user);
 
@@ -210,27 +215,7 @@ public class ShibbolethAttributesTest {
 	@Test
 	public void shouldReturnTrueIfOneAttributeHaveChanged() {
 		User user = getIdenticalOlatUser();
-		user.setProperty(USER_NAME_KEY, USER_OLD_VALUE);
-
-		boolean hasDifference = sut.hasDifference(user);
-
-		assertThat(hasDifference).isTrue();
-	}
-
-	@Test
-	public void shouldReturnTrueIfAnAttributeIsNotNullAnymore() {
-		User user = getIdenticalOlatUser();
-		user.setProperty(USER_GENDER_KEY, null);
-
-		boolean hasDifference = sut.hasDifference(user);
-
-		assertThat(hasDifference).isTrue();
-	}
-
-	@Test
-	public void shouldReturnTrueIfAnAttributeHasNoValueAnymore() {
-		User user = getIdenticalOlatUser();
-		user.setProperty(USER_CITY_KEY, USER_OLD_VALUE);
+		when(differenceCheckerMock.isDifferent(SHIB_NAME_KEY, SHIB_NAME_VALUE, SHIB_NAME_VALUE)).thenReturn(true);
 
 		boolean hasDifference = sut.hasDifference(user);
 
