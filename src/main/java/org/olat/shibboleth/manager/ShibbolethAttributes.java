@@ -19,6 +19,7 @@
  */
 package org.olat.shibboleth.manager;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -53,29 +54,15 @@ public class ShibbolethAttributes {
 	private DifferenceChecker differenceChecker;
 
 	public void init(Map<String, String> attributes) {
-		Map<String, String> attributesCopy = new HashMap<>(attributes);
+		Collection<String> shibbolethAttributeNames = shibbolethModule.getShibbolethAttributeNames();
+		shibbolethMap = new HashMap<>(shibbolethAttributeNames.size());
 
-		// Get and parse all mapped attributes even when Shibboleth does not
-		// deliver the attribute. It is to ensure the null values are parsed as
-		// well as the base for the later synchronization.
-		for (Entry<String, String> attribute : getUserMappingEntrySet()) {
-			String attributeName = attribute.getKey();
-			String attributeValue = attributesCopy.remove(attributeName);
+		for (String attributeName : shibbolethAttributeNames) {
+			String attributeValue = attributes.get(attributeName);
 			ShibbolethAttributeHandler handler = getAttributeHandler(attributeName);
 			String parsedValue = handler.parse(attributeValue);
 			shibbolethMap.put(attributeName, parsedValue);
 		}
-
-		// Get and parse the not mapped but delivered attributes to ensure that
-		// all attributes are available e.g. for the AttributeTranslator.
-		for (Entry<String, String> attribute : attributesCopy.entrySet()) {
-			String attributeName = attribute.getKey();
-			String attributeValue = attribute.getValue();
-			ShibbolethAttributeHandler handler = getAttributeHandler(attributeName);
-			String parsedValue = handler.parse(attributeValue);
-			shibbolethMap.put(attributeName, parsedValue);
-		}
-
 	}
 
 	private ShibbolethAttributeHandler getAttributeHandler(String attributeName) {

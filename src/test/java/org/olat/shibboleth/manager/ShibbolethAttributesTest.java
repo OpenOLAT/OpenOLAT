@@ -90,6 +90,7 @@ public class ShibbolethAttributesTest {
 		ReflectionTestUtils.setField(sut, "shibbolethModule", shibbolethModuleMock);
 		Map<String, String> shibbolethUserMapping = initUserMapping();
 		when(shibbolethModuleMock.getUserMapping()).thenReturn(shibbolethUserMapping);
+		when(shibbolethModuleMock.getShibbolethAttributeNames()).thenReturn(initShibbolethMap().keySet());
 		when(shibbolethModuleMock.getUIDAttributeName()).thenReturn(SHIB_UID_KEY);
 		when(shibbolethModuleMock.getPreferredLanguageAttributeName()).thenReturn(SHIB_LANG_KEY);
 
