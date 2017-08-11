@@ -24,8 +24,8 @@ package org.olat.commons.info.ui;
 import java.text.DateFormat;
 import java.util.List;
 
+import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.manager.MailFormatter;
-import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.UserConstants;

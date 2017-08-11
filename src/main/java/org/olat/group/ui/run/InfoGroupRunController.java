@@ -23,11 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoMessageFrontendManager;
+import org.olat.commons.info.InfoSubscriptionManager;
 import org.olat.commons.info.manager.MailFormatter;
-import org.olat.commons.info.model.InfoMessage;
 import org.olat.commons.info.notification.InfoSubscription;
-import org.olat.commons.info.notification.InfoSubscriptionManager;
 import org.olat.commons.info.ui.InfoDisplayController;
 import org.olat.commons.info.ui.InfoSecurityCallback;
 import org.olat.commons.info.ui.SendInfoMailFormatter;
@@ -48,7 +49,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
-import org.olat.group.BusinessGroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -64,13 +64,9 @@ public class InfoGroupRunController extends BasicController {
 	private ContextualSubscriptionController subscriptionController;
 	
 	private final String businessPath;
-	private InfoSubscriptionManager subscriptionManager;
 	
 	@Autowired
-	private	BusinessGroupService groupService;
-	@Autowired
-	private InfoMessageFrontendManager messageManager;
-
+	private InfoSubscriptionManager subscriptionManager;
 
 	public InfoGroupRunController(UserRequest ureq, WindowControl wControl, BusinessGroup businessGroup, boolean canAccess, boolean isAdmin) {
 		super(ureq, wControl);
@@ -81,7 +77,6 @@ public class InfoGroupRunController extends BasicController {
 		
 		UserSession usess = ureq.getUserSession();
 		if(!usess.getRoles().isGuestOnly()) {
-			subscriptionManager = InfoSubscriptionManager.getInstance();
 			SubscriptionContext subContext = subscriptionManager.getInfoSubscriptionContext(infoResourceable, resSubPath);
 			PublisherData pdata = subscriptionManager.getInfoPublisherData(infoResourceable, businessPath);
 			subscriptionController = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, pdata);
@@ -91,10 +86,13 @@ public class InfoGroupRunController extends BasicController {
 		boolean canAddAndEdit = isAdmin || canAccess;
 		InfoSecurityCallback secCallback = new InfoGroupSecurityCallback(getIdentity(), canAddAndEdit, isAdmin);
 		infoDisplayController = new InfoDisplayController(ureq, wControl, secCallback, businessGroup, resSubPath, businessPath);
-		SendMailOption subscribers = new SendSubscriberMailOption(infoResourceable, resSubPath, messageManager);
+		SendMailOption subscribers = new SendSubscriberMailOption(infoResourceable, resSubPath, getLocale());
 		infoDisplayController.addSendMailOptions(subscribers);
-		SendMailOption groupMembers = new SendGroupMembersMailOption(groupService, businessGroup);
-		infoDisplayController.addSendMailOptions(groupMembers);
+		SendMailOption coaches = new SendGroupMembersMailOption(businessGroup, GroupRoles.coach, translate("sendtochooser.form.radio.owners"));
+		infoDisplayController.addSendMailOptions(coaches);
+		SendMailOption participants = new SendGroupMembersMailOption(businessGroup, GroupRoles.participant, translate("sendtochooser.form.radio.partip"));
+		infoDisplayController.addSendMailOptions(participants);
+
 		MailFormatter mailFormatter = new SendInfoMailFormatter(businessGroup.getName(), businessPath, getTranslator());
 		infoDisplayController.setSendMailFormatter(mailFormatter);
 		listenTo(infoDisplayController);

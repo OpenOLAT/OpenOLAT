@@ -20,7 +20,7 @@
 
 package org.olat.commons.info.ui;
 
-import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.InfoMessage;
 
 /**
  * 

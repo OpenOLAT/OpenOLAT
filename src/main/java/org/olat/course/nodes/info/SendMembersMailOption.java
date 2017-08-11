@@ -23,19 +23,15 @@ package org.olat.course.nodes.info;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.info.ui.SendMailOption;
-import org.olat.core.gui.translator.Translator;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Util;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -48,38 +44,38 @@ import org.olat.resource.OLATResource;
  */
 public class SendMembersMailOption implements SendMailOption {
 	
-	private final OLATResource courseResource;
-	private final RepositoryManager rm;
-	private final RepositoryService repositoryService;
-	private final BusinessGroupService businessGroupService;
+	private final String label;
+	private final GroupRoles role;
+	private final RepositoryEntry repositoryEntry;
 	
-	public SendMembersMailOption(OLATResource courseResource, RepositoryManager rm, RepositoryService repositoryService, BusinessGroupService businessGroupService) {
-		this.courseResource = courseResource;
-		this.rm = rm;
-		this.repositoryService = repositoryService;
-		this.businessGroupService = businessGroupService;
+	public SendMembersMailOption(RepositoryEntry repositoryEntry, GroupRoles role, String label) {
+		this.role = role;
+		this.label = label;
+		this.repositoryEntry = repositoryEntry;
 	}
 
 	@Override
 	public String getOptionKey() {
-		return "send-mail-course-members";
+		return "send-mail-course-members-" + role.name();
 	}
 
 	@Override
-	public String getOptionTranslatedName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(SendMembersMailOption.class, locale);
-		return translator.translate("wizard.step1.send_option.member");
+	public String getOptionName() {
+		return label;
 	}
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
-		RepositoryEntry repositoryEntry = rm.lookupRepositoryEntry(courseResource, true);
+		Set<Identity> identities = new HashSet<Identity>();
+		if(role == GroupRoles.coach || role == GroupRoles.participant) {
+			List<Identity> members = CoreSpringFactory.getImpl(BusinessGroupService.class)
+					.getMembersOf(repositoryEntry, role == GroupRoles.coach, role == GroupRoles.participant);
+			identities.addAll(members);
+		}
 		
-		List<Identity> members = businessGroupService.getMembersOf(repositoryEntry, true, true);
-		Set<Identity> identities = new HashSet<Identity>(members);
-		List<Identity> reMembers = repositoryService.getMembers(repositoryEntry, GroupRoles.participant.name(), GroupRoles.coach.name(), GroupRoles.owner.name());
+		List<Identity> reMembers = CoreSpringFactory.getImpl(RepositoryService.class)
+				.getMembers(repositoryEntry, role.name());
 		identities.addAll(reMembers);
-
-		return new ArrayList<Identity>(identities);
+		return new ArrayList<>(identities);
 	}
 }

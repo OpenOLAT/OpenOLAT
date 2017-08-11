@@ -33,8 +33,6 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.commons.info.manager.InfoMessageManager;
-import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;

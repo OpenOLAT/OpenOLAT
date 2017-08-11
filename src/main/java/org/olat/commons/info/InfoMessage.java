@@ -18,7 +18,7 @@
  * <p>
  */
 
-package org.olat.commons.info.model;
+package org.olat.commons.info;
 
 import java.util.Date;
 
@@ -26,9 +26,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for InfoMessage
  * 
  * <P>
  * Initial Date:  27 jul. 2010 <br>
@@ -51,6 +48,10 @@ public interface InfoMessage {
 	public String getMessage();
 
 	public void setMessage(String message);
+	
+	public String getAttachmentPath();
+	
+	public void setAttachmentPath(String path);
 
 	public Long getResId();
 

@@ -57,7 +57,7 @@ public class SendMailStepController extends StepFormBasicController {
 		int count = 0;
 		for(SendMailOption option:options) {
 			sendOptionKeys[count] = option.getOptionKey();
-			sendOptionValues[count++] = option.getOptionTranslatedName(ureq.getLocale());
+			sendOptionValues[count++] = option.getOptionName();
 		}
 
 		initForm(ureq);

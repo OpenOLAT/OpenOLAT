@@ -23,8 +23,8 @@ package org.olat.course.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
-import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;

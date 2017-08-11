@@ -701,6 +701,7 @@ CREATE TABLE o_info_message (
   modificationdate date,
   title varchar2(2048 char),
   message clob,
+  attachmentpath varchar(1024),
   resname varchar(50 char) NOT NULL,
   resid number(20) NOT NULL,
   ressubpath varchar2(2048 char),

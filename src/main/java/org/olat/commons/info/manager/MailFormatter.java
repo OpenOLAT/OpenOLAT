@@ -21,7 +21,7 @@
 
 package org.olat.commons.info.manager;
 
-import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.InfoMessage;
 
 /**
  * 
@@ -37,6 +37,6 @@ public interface MailFormatter {
 		public String getSubject(InfoMessage msg);
 		
 		public String getBody(InfoMessage msg);
-		//fxdiff VCRP-16: intern mail system
+		
 		public String getBusinessPath();
 }

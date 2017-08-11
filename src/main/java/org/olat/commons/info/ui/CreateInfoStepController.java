@@ -20,11 +20,13 @@
 
 package org.olat.commons.info.ui;
 
+import org.olat.commons.info.InfoMessage;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
@@ -42,27 +44,26 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 public class CreateInfoStepController extends StepFormBasicController {
 	
 	private final StepsRunContext runContext;
-	private final InfoEditFormController infoEditFormController;
+	private final InfoEditFormController editForm;
 	
-	public CreateInfoStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
+	public CreateInfoStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm, InfoMessage message) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		
 		this.runContext = runContext;
-		
-		infoEditFormController = new InfoEditFormController(ureq, wControl, rootForm, true);
-		listenTo(infoEditFormController);
+		editForm = new InfoEditFormController(ureq, wControl, rootForm, true, message);
+		listenTo(editForm);
 		
 		initForm(ureq);
 	}
 	
 	@Override
 	public FormItem getStepFormItem() {
-		return infoEditFormController.getInitialFormItem();
+		return editForm.getInitialFormItem();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.add(infoEditFormController.getInitialFormItem());
+		formLayout.add(editForm.getInitialFormItem());
 	}
 
 	@Override
@@ -71,14 +72,24 @@ public class CreateInfoStepController extends StepFormBasicController {
 	}
 
 	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if(source == editForm) {
+			if(event == Event.CHANGED_EVENT) {
+				runContext.put(WizardConstants.PATH_TO_DELETE, editForm.getAttachmentPathToDelete());
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		return infoEditFormController.validateFormLogic(ureq);
+		return editForm.validateFormLogic(ureq);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		runContext.put(WizardConstants.MSG_TITLE, infoEditFormController.getTitle());
-		runContext.put(WizardConstants.MSG_MESSAGE, infoEditFormController.getMessage());
+		runContext.put(WizardConstants.MSG, editForm.getInfoMessage());
+		runContext.put(WizardConstants.PATH_TO_DELETE, editForm.getAttachmentPathToDelete());
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

@@ -18,10 +18,11 @@
  * <p>
  */
 
-package org.olat.commons.info.notification;
+package org.olat.commons.info;
 
 import java.util.List;
 
+import org.olat.commons.info.notification.InfoSubscription;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -38,30 +39,24 @@ import org.olat.core.util.prefs.Preferences;
  * Initial Date:  27 jul. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public abstract class InfoSubscriptionManager {
+public interface InfoSubscriptionManager {
+	
+	public SubscriptionContext getInfoSubscriptionContext(OLATResourceable resource, String subPath);
+	
+	public PublisherData getInfoPublisherData(OLATResourceable resource, String businessPath);
+	
+	public InfoSubscription getInfoSubscription(Preferences prefs);
+	
+	public Subscriber getInfoSubscriber(Identity identity, OLATResourceable resource, String subPath);
+	
+	public List<Identity> getInfoSubscribers(OLATResourceable resource, String subPath);
+	
+	public void subscribe(OLATResourceable resource, String resSubPath, String businessPath, Identity identity);
+	
+	public void unsubscribe(OLATResourceable resource, String subPath, Identity identity);
+	
+	public void markPublisherNews(OLATResourceable resource, String subPath);
 
-	protected static InfoSubscriptionManager INSTANCE;
-	
-	public static InfoSubscriptionManager getInstance() {
-		return INSTANCE;
-	}
-	
-	public abstract SubscriptionContext getInfoSubscriptionContext(OLATResourceable resource, String subPath);
-	
-	public abstract PublisherData getInfoPublisherData(OLATResourceable resource, String businessPath);
-	
-	public abstract InfoSubscription getInfoSubscription(Preferences prefs);
-	
-	public abstract Subscriber getInfoSubscriber(Identity identity, OLATResourceable resource, String subPath);
-	
-	public abstract List<Identity> getInfoSubscribers(OLATResourceable resource, String subPath);
-	
-	public abstract void subscribe(OLATResourceable resource, String resSubPath, String businessPath, Identity identity);
-	
-	public abstract void unsubscribe(OLATResourceable resource, String subPath, Identity identity);
-	
-	public abstract void markPublisherNews(OLATResourceable resource, String subPath);
-
-	public abstract void deleteSubscriptionContext(SubscriptionContext context);
+	public void deleteSubscriptionContext(SubscriptionContext context);
 	
 }

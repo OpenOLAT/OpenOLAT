@@ -44,7 +44,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
+import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;

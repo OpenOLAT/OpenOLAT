@@ -21,9 +21,7 @@
 package org.olat.commons.info.ui;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for WizardConstants
+
  * 
  * <P>
  * Initial Date:  28 jul. 2010 <br>
@@ -32,11 +30,9 @@ package org.olat.commons.info.ui;
 public class WizardConstants {
 
 	public static final String SEND_MAIL = "send";
-	public static final String SEND_MAIL_ALL = "all";
-	public static final String SEND_MAIL_GROUPS = "groups";
 	public static final String SEND_MAIL_SUBSCRIBERS = "subscribers";
 	
-	public static final String MSG_TITLE = "title";
-	public static final String MSG_MESSAGE = "message";
+	public static final String MSG = "message";
+	public static final String PATH_TO_DELETE = "pathToDelete";
 	
 }

@@ -20,16 +20,31 @@
 
 package org.olat.commons.info.ui;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.ValidationStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,13 +56,23 @@ import org.olat.core.util.StringHelper;
  */
 public class InfoEditFormController extends FormBasicController {
 
-	private TextElement title;
-	private RichTextElement message;
-	private final boolean showTitle;
+	private TextElement titleEl;
+	private FileElement attachmentEl;
+	private RichTextElement messageEl;
 	
-	public InfoEditFormController(UserRequest ureq, WindowControl wControl, Form mainForm, boolean showTitle) {
+	private String attachmentPath;
+	private Set<String> attachmentPathToDelete = new HashSet<>();
+	
+	private final boolean showTitle;
+	private final InfoMessage infoMessage;
+	
+	@Autowired
+	private InfoMessageFrontendManager infoMessageFrontendManager;
+	
+	public InfoEditFormController(UserRequest ureq, WindowControl wControl, Form mainForm, boolean showTitle, InfoMessage infoMessage) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, mainForm);
 		this.showTitle = showTitle;
+		this.infoMessage = infoMessage;
 		initForm(ureq);
 	}
 
@@ -58,37 +83,32 @@ public class InfoEditFormController extends FormBasicController {
 			setFormTitle("edit.title");
 		}
 		
-		title = uifactory.addTextElement("info_title", "edit.info_title", 512, "", formLayout);
-		title.setElementCssClass("o_sel_info_title");
-		title.setMandatory(true);
-		
-		message = uifactory.addRichTextElementForStringDataMinimalistic("edit.info_message", "edit.info_message", "", 6, 80,
+		String title = infoMessage.getTitle();
+		titleEl = uifactory.addTextElement("info_title", "edit.info_title", 512, title, formLayout);
+		titleEl.setElementCssClass("o_sel_info_title");
+		titleEl.setMandatory(true);
+
+		String message = infoMessage.getMessage();
+		messageEl = uifactory.addRichTextElementForStringDataMinimalistic("edit.info_message", "edit.info_message", message, 6, 80,
 				formLayout, getWindowControl());
-		message.getEditorConfiguration().setRelativeUrls(false);
-		message.getEditorConfiguration().setRemoveScriptHost(false);
-		message.setMandatory(true);
-		message.setMaxLength(2000);
+		messageEl.getEditorConfiguration().setRelativeUrls(false);
+		messageEl.getEditorConfiguration().setRemoveScriptHost(false);
+		messageEl.setMandatory(true);
+		messageEl.setMaxLength(2000);
+		
+		attachmentEl = uifactory.addFileElement(getWindowControl(), "attachment", formLayout);
+		attachmentEl.setDeleteEnabled(true);
+		attachmentEl.setMaxUploadSizeKB(5000, "attachment.max.size", new String[] { "5000" });
+		attachmentEl.addActionListener(FormEvent.ONCHANGE);
+		if(infoMessage.getAttachmentPath() != null) {
+			attachmentPath = infoMessage.getAttachmentPath();
+			attachmentPathToDelete.add(infoMessage.getAttachmentPath());
+		}
 	}
 	
 	@Override
 	protected void doDispose() {
 		//
-	}
-	
-	public String getTitle() {
-		return title.getValue();
-	}
-	
-	public void setTitle(String titleStr) {
-		title.setValue(titleStr);
-	}
-	
-	public String getMessage() {
-		return message.getValue();
-	}
-	
-	public void setMessage(String messageStr) {
-		message.setValue(messageStr);
 	}
 	
 	@Override
@@ -97,32 +117,70 @@ public class InfoEditFormController extends FormBasicController {
 	}
 	
 	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		title.clearError();
-		message.clearError();
-		boolean allOk = true;
-		
-		String t = title.getValue();
-		if(!StringHelper.containsNonWhitespace(t)) {
-			title.setErrorKey("form.legende.mandatory", new String[] {});
-			allOk = false;
-		} else if (t.length() > 500) {
-			title.setErrorKey("input.toolong", new String[] {"500", Integer.toString(t.length())});
-			allOk = false;
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(attachmentEl == source) {
+			if (attachmentEl.isUploadSuccess()) {
+				File uploadedFile = attachmentEl.getUploadFile();
+				String uploadedFilename = attachmentEl.getUploadFileName();
+				if(attachmentPath != null) {
+					attachmentPathToDelete.add(attachmentPath);
+				}
+				attachmentPath = infoMessageFrontendManager.storeAttachment(uploadedFile, uploadedFilename, infoMessage.getOLATResourceable(), infoMessage.getResSubPath());
+			} else {
+				attachmentPathToDelete.add(attachmentPath);
+			}
+			this.fireEvent(ureq, Event.CHANGED_EVENT);
 		}
-		
-		String m = message.getValue();
-		if(!StringHelper.containsNonWhitespace(m)) {
-			message.setErrorKey("form.legende.mandatory", new String[] {});
-			allOk = false;
-		} else if (m.length() > 2000) {
-			message.setErrorKey("input.toolong", new String[] {"2000", Integer.toString(m.length())});
-			allOk = false;
-		}
-		
-		return allOk && super.validateFormLogic(ureq);
+		super.formInnerEvent(ureq, source, event);
 	}
 
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		titleEl.clearError();
+		messageEl.clearError();
+		boolean allOk = true;
+		
+		String t = titleEl.getValue();
+		if(!StringHelper.containsNonWhitespace(t)) {
+			titleEl.setErrorKey("form.legende.mandatory", new String[] {});
+			allOk = false;
+		} else if (t.length() > 500) {
+			titleEl.setErrorKey("input.toolong", new String[] {"500", Integer.toString(t.length())});
+			allOk = false;
+		}
+		
+		String m = messageEl.getValue();
+		if(!StringHelper.containsNonWhitespace(m)) {
+			messageEl.setErrorKey("form.legende.mandatory", new String[] {});
+			allOk = false;
+		} else if (m.length() > 2000) {
+			messageEl.setErrorKey("input.toolong", new String[] {"2000", Integer.toString(m.length())});
+			allOk = false;
+		}
+		
+		List<ValidationStatus> validation = new ArrayList<>();
+		attachmentEl.validate(validation);
+		if(validation.size() > 0) {
+			allOk &= false;
+		}
+		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	public InfoMessage getInfoMessage() {
+		infoMessage.setTitle(titleEl.getValue());
+		infoMessage.setMessage(messageEl.getValue());
+		infoMessage.setAttachmentPath(attachmentPath);
+		return infoMessage;
+	}
+	
+	public Collection<String> getAttachmentPathToDelete() {
+		if(attachmentPath != null) {
+			attachmentPathToDelete.remove(attachmentPath);
+		}
+		return attachmentPathToDelete;	
+	}
+
+	@Override
 	public FormLayoutContainer getInitialFormItem() {
 		return flc;
 	}

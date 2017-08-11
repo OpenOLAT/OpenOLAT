@@ -18,17 +18,20 @@
  * <p>
  */
 
-package org.olat.commons.info.manager;
+package org.olat.commons.info;
 
+import java.io.File;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.manager.MailFormatter;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 
@@ -61,6 +64,12 @@ public interface InfoMessageFrontendManager {
 	public boolean sendInfoMessage(InfoMessage msgs, MailFormatter mailFormatter, Locale locale, Identity from, List<Identity> tos);
 	
 	public void saveInfoMessage(InfoMessage msg);
+	
+	public VFSLeaf getAttachment(InfoMessage msg);
+	
+	public String storeAttachment(File file, String filename, OLATResourceable ores, String subPath);
+	
+	public void deleteAttachments(Collection<String> paths);
 	
 	public void deleteInfoMessage(InfoMessage infoMessage);
 	

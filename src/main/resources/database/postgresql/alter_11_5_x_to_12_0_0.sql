@@ -250,3 +250,9 @@ alter table o_gta_task add constraint gtaskreset_to_allower_idx foreign key (fk_
 create index idx_gtaskreset_to_allower_idx on o_gta_task (fk_allow_reset_identity);
 
 
+alter table o_info_message add column attachmentpath varchar(1024) default null;
+
+
+
+
+

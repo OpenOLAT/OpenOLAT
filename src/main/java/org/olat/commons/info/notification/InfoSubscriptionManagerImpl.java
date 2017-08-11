@@ -23,7 +23,8 @@ package org.olat.commons.info.notification;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoSubscriptionManager;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -33,6 +34,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -43,26 +46,13 @@ import org.olat.core.util.resource.OresHelper;
  * Initial Date:  27 jul. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class InfoSubscriptionManagerImpl extends InfoSubscriptionManager {
+@Service
+public class InfoSubscriptionManagerImpl implements InfoSubscriptionManager {
+	
+	private static final String PUBLISHER_TYPE = OresHelper.calculateTypeName(InfoMessage.class);
 
+	@Autowired
 	private NotificationsManager notificationsManager;
-	
-	private String PUBLISHER_TYPE = OresHelper.calculateTypeName(InfoMessage.class);
-	
-	/**
-	 * [used by Spring]
-	 */
-	private InfoSubscriptionManagerImpl() {
-		INSTANCE = this;
-	}
-	
-	/**
-	 * [user by Spring]
-	 * @param notificationsManager
-	 */
-	public void setNotificationsManager(NotificationsManager notificationsManager) {
-		this.notificationsManager = notificationsManager;
-	}
 
 	@Override
 	public SubscriptionContext getInfoSubscriptionContext(OLATResourceable resource, String subPath) {

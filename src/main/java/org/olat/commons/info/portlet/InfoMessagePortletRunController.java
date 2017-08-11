@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.NewControllerFactory;
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
-import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
@@ -120,9 +120,9 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 
 	@Override
 	protected SortingCriteria createDefaultSortingCriteria() {
-		SortingCriteria sortingCriteria = new SortingCriteria(sortingTermsList, getDefaultMaxEntries());
-		sortingCriteria.setAscending(false);
-		return sortingCriteria;
+		SortingCriteria sortCriteria = new SortingCriteria(sortingTermsList, getDefaultMaxEntries());
+		sortCriteria.setAscending(false);
+		return sortCriteria;
 	}
 
 	@Override

@@ -783,6 +783,7 @@ create table if not exists o_info_message (
   modificationdate datetime,
   title varchar(2048),
   message longtext,
+  attachmentpath varchar(1024),
   resname varchar(50) NOT NULL,
   resid bigint NOT NULL,
   ressubpath varchar(2048),

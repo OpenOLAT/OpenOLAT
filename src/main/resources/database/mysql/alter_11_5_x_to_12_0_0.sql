@@ -248,6 +248,7 @@ alter table o_gta_task add column fk_allow_reset_identity bigint default null;
 alter table o_gta_task add constraint gtaskreset_to_allower_idx foreign key (fk_allow_reset_identity) references o_bs_identity (id);
 
 
+alter table o_info_message add column attachmentpath varchar(1024) default null;
 
 
 

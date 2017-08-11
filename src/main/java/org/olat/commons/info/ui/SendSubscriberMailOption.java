@@ -23,8 +23,8 @@ package org.olat.commons.info.ui;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
-import org.olat.core.gui.translator.Translator;
+import org.olat.commons.info.InfoMessageFrontendManager;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
@@ -40,14 +40,15 @@ import org.olat.core.util.Util;
  */
 public class SendSubscriberMailOption implements SendMailOption {
 
-	private final OLATResourceable ores;
+	private final String label;
 	private final String resSubPath;
-	private final InfoMessageFrontendManager messageManager;
+	private final OLATResourceable ores;
 	
-	public SendSubscriberMailOption(OLATResourceable ores, String resSubPath, InfoMessageFrontendManager messageManager) {
+	public SendSubscriberMailOption(OLATResourceable ores, String resSubPath, Locale locale) {
 		this.ores = ores;
 		this.resSubPath = resSubPath;
-		this.messageManager = messageManager;
+		label = Util.createPackageTranslator(SendSubscriberMailOption.class, locale)
+				.translate("wizard.step1.send_option.subscriber");
 	}
 	
 	@Override
@@ -56,14 +57,12 @@ public class SendSubscriberMailOption implements SendMailOption {
 	}
 
 	@Override
-	public String getOptionTranslatedName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(SendSubscriberMailOption.class, locale);
-		return translator.translate("wizard.step1.send_option.subscriber");
+	public String getOptionName() {
+		return label;
 	}
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
-		List<Identity> identities = messageManager.getInfoSubscribers(ores, resSubPath);
-		return identities;
+		return CoreSpringFactory.getImpl(InfoMessageFrontendManager.class).getInfoSubscribers(ores, resSubPath);
 	}
 }

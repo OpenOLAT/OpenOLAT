@@ -18,40 +18,31 @@
  * <p>
  */
 
-package org.olat.commons.info.manager;
+package org.olat.commons.info;
 
 import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.group.BusinessGroupRef;
 
-public abstract class InfoMessageManager {
-
-	protected static InfoMessageManager INSTANCE;
+public interface InfoMessageManager {
 	
+	public InfoMessage createInfoMessage(OLATResourceable ores, String subPath, String businessPath, Identity author);
 	
-	public static InfoMessageManager getInstance() {
-		return INSTANCE;
-	}
+	public void saveInfoMessage(InfoMessage infoMessage);
 	
+	public void deleteInfoMessage(InfoMessage infoMessage);
 	
-	public abstract InfoMessage createInfoMessage(OLATResourceable ores, String subPath, String businessPath, Identity author);
+	public List<InfoMessage> loadInfoMessagesOfIdentity(BusinessGroupRef businessGroup, IdentityRef identity);
 	
-	public abstract void saveInfoMessage(InfoMessage infoMessage);
+	public InfoMessage loadInfoMessageByKey(Long key);
 	
-	public abstract void deleteInfoMessage(InfoMessage infoMessage);
-	
-	public abstract List<InfoMessage> loadInfoMessagesOfIdentity(BusinessGroupRef businessGroup, IdentityRef identity);
-	
-	public abstract InfoMessage loadInfoMessageByKey(Long key);
-	
-	public abstract List<InfoMessage> loadInfoMessageByResource(OLATResourceable ores, String subPath, String businessPath,
+	public List<InfoMessage> loadInfoMessageByResource(OLATResourceable ores, String subPath, String businessPath,
 			Date after, Date before, int firstResult, int maxReturn);
 	
-	public abstract int countInfoMessageByResource(OLATResourceable ores, String subPath, String businessPath,
+	public int countInfoMessageByResource(OLATResourceable ores, String subPath, String businessPath,
 			Date after, Date before);
 }

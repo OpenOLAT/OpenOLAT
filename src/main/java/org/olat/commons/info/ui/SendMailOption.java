@@ -21,7 +21,6 @@
 package org.olat.commons.info.ui;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.core.id.Identity;
 
@@ -37,7 +36,7 @@ public interface SendMailOption {
 	
 	public String getOptionKey();
 	
-	public String getOptionTranslatedName(Locale locale);
+	public String getOptionName();
 	
 	public List<Identity> getSelectedIdentities();
 

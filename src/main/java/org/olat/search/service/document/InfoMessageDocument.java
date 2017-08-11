@@ -20,7 +20,7 @@
 package org.olat.search.service.document;
 
 import org.apache.lucene.document.Document;
-import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.InfoMessage;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.search.model.OlatDocument;

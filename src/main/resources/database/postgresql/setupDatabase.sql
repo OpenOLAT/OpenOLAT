@@ -629,6 +629,7 @@ create table o_info_message (
   modificationdate timestamp,
   title varchar(2048),
   message text,
+  attachmentpath varchar(1024),
   resname varchar(50) NOT NULL,
   resid int8 NOT NULL,
   ressubpath varchar(2048),

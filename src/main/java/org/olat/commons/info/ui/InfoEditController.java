@@ -20,11 +20,11 @@
 
 package org.olat.commons.info.ui;
 
+import java.util.Collection;
 import java.util.Date;
 
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
-import org.olat.commons.info.model.InfoMessage;
-import org.olat.core.CoreSpringFactory;
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -36,11 +36,9 @@ import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for InfoEditController
  * 
  * <P>
  * Initial Date:  24 aug. 2010 <br>
@@ -48,33 +46,29 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class InfoEditController extends FormBasicController {
 	
-	private final InfoMessage messageToEdit;
+	private InfoMessage messageToEdit;
 	private final InfoEditFormController editForm;
-	private final InfoMessageFrontendManager infoFrontendManager;
+	
+	@Autowired
+	private InfoMessageFrontendManager infoFrontendManager;
 
 	public InfoEditController(UserRequest ureq, WindowControl wControl, InfoMessage messageToEdit) {
 		super(ureq, wControl, "edit");
-		
 		this.messageToEdit = messageToEdit;
-		infoFrontendManager = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
-		editForm = new InfoEditFormController(ureq, wControl, mainForm, false);
-		editForm.setTitle(messageToEdit.getTitle());
-		editForm.setMessage(messageToEdit.getMessage());
+		editForm = new InfoEditFormController(ureq, wControl, mainForm, false, messageToEdit);
 		listenTo(editForm);
-		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer editCont = editForm.getInitialFormItem();
+		flc.add("edit", editCont);
 
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		editCont.add(buttonLayout);
 		uifactory.addFormSubmitButton("submit", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
-		
-		flc.add("edit", editCont);
 	}
 	
 	@Override
@@ -89,14 +83,13 @@ public class InfoEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String title = editForm.getTitle();
-		String message = editForm.getMessage();
-		
-		messageToEdit.setTitle(title);
-		messageToEdit.setMessage(message);
+		messageToEdit = editForm.getInfoMessage();
 		messageToEdit.setModificationDate(new Date());
 		messageToEdit.setModifier(getIdentity());
-		infoFrontendManager.sendInfoMessage(messageToEdit, null, null, ureq.getIdentity(), null);
+		infoFrontendManager.sendInfoMessage(messageToEdit, null, null, getIdentity(), null);
+		
+		Collection<String> pathToDelete = editForm.getAttachmentPathToDelete();
+		infoFrontendManager.deleteAttachments(pathToDelete);
 		
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.INFO_MESSAGE_UPDATED, getClass(),
 				LoggingResourceable.wrap(messageToEdit.getOLATResourceable(), OlatResourceableType.infoMessage));

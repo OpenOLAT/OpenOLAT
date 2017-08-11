@@ -14,7 +14,6 @@
 	<bean id="org.olat.course.nodes.ta.SolutionFileUploadNotificationHandler" class="org.olat.course.nodes.ta.SolutionFileUploadNotificationHandler"/>
 	<bean id="org.olat.modules.wiki.WikiPageChangeOrCreateNotificationHandler" class="org.olat.modules.wiki.WikiPageChangeOrCreateNotificationHandler" />
 	<bean id="org.olat.user.notification.NewUsersNotificationHandler" class="org.olat.user.notification.NewUsersNotificationHandler" />
-	<bean id="org.olat.commons.info.notification.InfoMessageNotificationHandler" class="org.olat.commons.info.notification.InfoMessageNotificationHandler" />
 	
 	<bean id="notificationsManager" class="org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl" >
 		<property name="dbInstance" ref="database"/>
