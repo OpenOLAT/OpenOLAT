@@ -91,6 +91,7 @@ public class ReasonImpl implements Persistable, Reason {
 		return title;
 	}
 
+	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
@@ -100,6 +101,7 @@ public class ReasonImpl implements Persistable, Reason {
 		return description;
 	}
 
+	@Override
 	public void setDescription(String description) {
 		this.description = description;
 	}

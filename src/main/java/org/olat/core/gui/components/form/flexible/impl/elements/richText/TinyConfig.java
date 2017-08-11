@@ -130,6 +130,10 @@ public class TinyConfig {
 		return plugins != null && plugins.indexOf("olatmatheditor") >= 0;
 	}
 	
+	public TinyConfig enableCharcount() {
+		return enableFeature("olatcharcount");
+	}
+	
 	public TinyConfig enableCode() {
 		return enableFeature("code");
 	}

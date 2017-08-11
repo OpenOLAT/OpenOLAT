@@ -205,7 +205,10 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		
 		Form form = te.getRootForm();
 		configurations.append("ffxhrevent: { formNam:\"").append(form.getFormName()).append("\", dispIdField:\"").append(form.getDispatchFieldId()).append("\",")
-		 .append(" dispId:\"").append(teC.getFormDispatchId()).append("\", eventIdField:\"").append(form.getEventFieldId()).append("\"}\n");
+		 .append(" dispId:\"").append(teC.getFormDispatchId()).append("\", eventIdField:\"").append(form.getEventFieldId()).append("\"},\n");
+		if(te.getMaxLength() > 0) {
+			configurations.append("maxSize:").append(te.getMaxLength()).append("\n");
+		}
 		
 		sb.append("<script type='text/javascript'>/* <![CDATA[ */\n");
 		//file browser url

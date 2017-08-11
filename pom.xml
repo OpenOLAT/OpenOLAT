@@ -270,6 +270,13 @@
 											</includes>
 										</aggregation>
 										<aggregation>
+											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatcharcount/plugin.min.js</output>
+											<removeIncluded>false</removeIncluded>
+											<includes>
+												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatcharcount/plugin.min.js</include>
+											</includes>
+										</aggregation>
+										<aggregation>
 											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatsmileys/plugin.min.js</output>
 											<removeIncluded>false</removeIncluded>
 											<includes>

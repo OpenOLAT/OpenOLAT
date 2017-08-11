@@ -850,6 +850,10 @@ public class RichTextConfiguration implements Disposable {
 		tinyConfig = tinyConfig.enableCode();
 	}
 	
+	public void enableCharCount() {
+		tinyConfig = tinyConfig.enableCharcount();
+	}
+	
 	public void enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext) {
 		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext);
 		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext");

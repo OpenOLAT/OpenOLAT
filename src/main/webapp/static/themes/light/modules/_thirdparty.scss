@@ -1,3 +1,4 @@
+
 /*
  * Overwrite jquery ui dialog and datepicker
  */
@@ -198,7 +199,7 @@ label.mce-label {
 	}
 }
 
-i.mce-ico.mce-i-media, i.mce-ico.mce-i-movie, i.mce-ico.mce-i-help, i.mce-ico.mce-i-gaptext,i.mce-ico.mce-i-gapnumerical,i.mce-ico.mce-i-hottext, i.mce-ico.mce-i-edit {
+i.mce-ico.mce-i-media, i.mce-ico.mce-i-movie, i.mce-ico.mce-i-help, i.mce-ico.mce-i-gaptext,i.mce-ico.mce-i-gapnumerical, i.mce-ico.mce-i-hottext, i.mce-ico.mce-i-edit {
 	display: inline-block;
 	font: normal normal normal #{$fa-font-size-base}/1 FontAwesome; // shortening font declaration
 	font-size: inherit; // can't have font-size inherit on line above, so need to override
@@ -243,11 +244,25 @@ i.mce-ico.mce-i-help:before {
 	color: white;
 }
 
-
-
 .mce-tabs span.o_chelp_wrapper {
 	float:right;
 	margin:5px;
+}
+
+.mce-wordcount:after {
+	display: inline-block;
+	font: normal normal normal #{$fa-font-size-base}/1 FontAwesome; // shortening font declaration
+	font-size: inherit; // can't have font-size inherit on line above, so need to override
+	text-rendering: auto; // optimizelegibility throws things off #1094
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	transform: translate(0, 0); // ensures no half-pixel rendering in firefox
+	content: $fa-var-question-circle;
+}
+
+.mce-wordcount.mce-danger:after {
+	color: $brand-danger;
+	content: $fa-var-exclamation-circle;
 }
 
 /*
