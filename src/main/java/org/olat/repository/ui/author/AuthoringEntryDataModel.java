@@ -85,6 +85,12 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case deletedBy: return item.getDeletedByFullName();
 			case deletionDate: return item.getDeletionDate();
 			case mark: return item.getMarkLink();
+			case references: {
+				if(item.getNumOfReferences() <= 0) {
+					return null;
+				}
+				return item.getReferencesLink();
+			}	
 			case detailsSupported: {
 				RepositoryHandler handler = handlerFactory.getRepositoryHandler(item.getResourceType());
 				return (handler != null) ? Boolean.TRUE : Boolean.FALSE;
@@ -125,6 +131,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		access("table.header.access"),
 		creationDate("table.header.date"),
 		lastUsage("table.header.lastusage"),
+		references("table.header.references"),
 		deletedBy("table.header.deletedby"),
 		deletionDate("table.header.deletiondate"),
 		mark("table.header.mark"),

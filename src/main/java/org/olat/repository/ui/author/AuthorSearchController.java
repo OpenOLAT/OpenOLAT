@@ -44,6 +44,7 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,12 +56,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AuthorSearchController extends FormBasicController implements ExtendedFlexiTableSearchController {
 
 	private static final String[] keys = new String[]{ "my" };
+	private static final String[] usageKeys = new String[]{ ResourceUsage.all.name(), ResourceUsage.used.name(), ResourceUsage.notUsed.name() };
 	
 	private TextElement id; // only for admins
 	private TextElement displayName;
 	private TextElement author;
 	private TextElement description;
 	private SingleSelection types;
+	private SingleSelection resourceUsageEl;
 	private MultipleSelectionElement ownedResourcesOnlyEl;
 	private FormLink searchButton;
 	
@@ -117,6 +120,14 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		ownedResourcesOnlyEl = uifactory.addCheckboxesHorizontal("cif_my", "cif.owned.resources.only", rightContainer, keys, new String[]{ "" });
 		ownedResourcesOnlyEl.select(keys[0], true);
 		
+		String[] usageValues = new String[] {
+			translate("cif.owned.resources.usage.all"),
+			translate("cif.owned.resources.usage.used"),
+			translate("cif.owned.resources.usage.notUsed")
+		};
+		resourceUsageEl = uifactory.addRadiosHorizontal("cif_used", "cif.owned.resources.usage", rightContainer, usageKeys, usageValues);
+		resourceUsageEl.select(usageKeys[0], true);
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
@@ -132,6 +143,9 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		author.setValue(se.getAuthor());
 		ownedResourcesOnlyEl.select(keys[0], se.isOwnedResourcesOnly());
 		description.setValue(se.getDescription());
+		if(se.getResourceUsage() != null) {
+			resourceUsageEl.select(se.getResourceUsage().name(), true);
+		}
 		
 		String type = se.getType();
 		if(StringHelper.containsNonWhitespace(type)) {
@@ -197,6 +211,13 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		return ownedResourcesOnlyEl.isAtLeastSelected(1);
 	}
 	
+	public ResourceUsage getResourceUsage() {
+		if(resourceUsageEl.isOneSelected()) {
+			return ResourceUsage.valueOf(resourceUsageEl.getSelectedKey());
+		}
+		return ResourceUsage.all;
+	}
+	
 	@Override
 	public void setEnabled(boolean enable) {
 		this.enabled = enable;
@@ -242,6 +263,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		e.setDescription(getDescription());
 		e.setType(getRestrictedType());
 		e.setOwnedResourcesOnly(isOwnedResourcesOnly());
+		e.setResourceUsage(getResourceUsage());
 		fireEvent(ureq, e);
 	}
 

@@ -101,8 +101,10 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.handlers.RepositoryHandlerFactory.OrderedRepositoryHandler;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthoringEntryDataModel.Cols;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,6 +134,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private AuthorSearchController searchCtrl;
 	private UserSearchController userSearchCtr;
 	private DialogBoxController copyDialogCtrl;
+	private ReferencesController referencesCtrl;
 	private CopyRepositoryEntryController copyCtrl;
 	private ConfirmCloseController closeCtrl;
 	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
@@ -290,6 +293,9 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.creationDate.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUsage.i18nKey(), Cols.lastUsage.ordinal(),
 				true, OrderBy.lastUsage.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.references.i18nKey(), Cols.references.ordinal(),
+				true, OrderBy.references.name()));
+		
 		initActionsColumns(columnsModel);
 		
 		model = new AuthoringEntryDataModel(dataSource, columnsModel);
@@ -466,6 +472,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				searchParams.setDisplayname(null);
 				searchParams.setDescription(null);
 				searchParams.setOwnedResourcesOnly(false);
+				searchParams.setResourceUsage(ResourceUsage.all);
 			}
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")
@@ -484,6 +491,11 @@ public class AuthorListController extends FormBasicController implements Activat
 			cmc.deactivate();
 			cleanUp();
 		} else if(toolsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				toolsCalloutCtrl.deactivate();
+				cleanUp();
+			}
+		}  else if(referencesCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
@@ -588,6 +600,9 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else if("tools".equals(cmd)) {
 				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
 				doOpenTools(ureq, row, link);
+			} else if("references".equals(cmd)) {
+				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
+				doOpenReferences(ureq, row, link);
 			}
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent) {
@@ -644,6 +659,25 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
 					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+			listenTo(toolsCalloutCtrl);
+			toolsCalloutCtrl.activate();
+		}
+	}
+	
+	private void doOpenReferences(UserRequest ureq, AuthoringEntryRow row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+		if(entry == null) {
+			tableEl.reloadData();
+			showWarning("repositoryentry.not.existing");
+		} else {
+			referencesCtrl = new ReferencesController(ureq, getWindowControl(), entry);
+			listenTo(referencesCtrl);
+	
+			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+					referencesCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
 			listenTo(toolsCalloutCtrl);
 			toolsCalloutCtrl.activate();
 		}
@@ -720,6 +754,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setIdAndRefs(se.getId());
 		searchParams.setAuthor(se.getAuthor());
 		searchParams.setOwnedResourcesOnly(se.isOwnedResourcesOnly());
+		searchParams.setResourceUsage(se.getResourceUsage());
 		searchParams.setDisplayname(se.getDisplayname());
 		searchParams.setDescription(se.getDescription());
 		tableEl.reset(true, true, true);
@@ -989,6 +1024,13 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 	}
 	
+	private void launch(UserRequest ureq, RepositoryEntryRef ref) {
+		String businessPath = "[RepositoryEntry:" + ref.getKey() + "]";
+		if(!NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl())) {
+			tableEl.reloadData();
+		}
+	}
+	
 	private void launchCatalog(UserRequest ureq, RepositoryEntryRef ref) {
 		String businessPath = "[RepositoryEntry:" + ref.getKey() + "][Catalog:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
@@ -1055,6 +1097,57 @@ public class AuthorListController extends FormBasicController implements Activat
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
 		toolsLink.setUserObject(row);
 		row.setToolsLink(toolsLink);
+		//references
+		if(row.getNumOfReferences() > 0) {
+			String numOfReferences = Integer.toString(row.getNumOfReferences());
+			FormLink referencesLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "references", numOfReferences, null, null, Link.NONTRANSLATED);
+			referencesLink.setUserObject(row);
+			row.setReferencesLink(referencesLink);
+		}
+	}
+	
+	private class ReferencesController extends BasicController {
+
+		@Autowired
+		private ReferenceManager referenceManager;
+		
+		public ReferencesController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+			super(ureq, wControl);
+			setTranslator(AuthorListController.this.getTranslator());
+			VelocityContainer mainVC = createVelocityContainer("references");
+			
+			List<RepositoryEntry> refs = referenceManager.getRepositoryReferencesTo(entry.getOlatResource());
+
+			List<String> refLinks = new ArrayList<>(refs.size());
+			for(RepositoryEntry ref:refs) {
+				String name = "ref-" + counter.incrementAndGet();
+				Link refLink = LinkFactory.createLink(name, "reference", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+				refLink.setCustomDisplayText(StringHelper.escapeHtml(ref.getDisplayname()));
+				refLink.setUserObject(ref);
+				refLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(ref));
+				refLinks.add(name);
+			}
+			mainVC.contextPut("referenceLinks", refLinks);
+			
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(source instanceof Link) {
+				fireEvent(ureq, Event.DONE_EVENT);
+				Link link = (Link)source;
+				if("reference".equals(link.getCommand())) {
+					RepositoryEntryRef uobject = (RepositoryEntryRef)link.getUserObject();
+					launch(ureq, uobject);
+				}
+			}
+		}
+
+		@Override
+		protected void doDispose() {
+			//
+		}
 	}
 	
 	private class ToolsController extends BasicController {
