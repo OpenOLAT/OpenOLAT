@@ -21,6 +21,7 @@ package org.olat.ims.qti21.ui.assessment;
 
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -73,7 +75,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public class IdentitiesAssessmentTestCorrectionController extends BasicController {
 	
 	private final VelocityContainer mainVC;
-	private final Link previousItemLink, currentItemLink, nextItemLink, overviewLink;
+	private NavigationController navigationCtrl;
 	
 	private IdentitiesAssessmentTestOverviewController overviewCtrl;
 	private IdentitiesAssessmentItemCorrectionController itemCorrectionCtrl;
@@ -119,19 +121,17 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 		assessmentEntries = getAssessmentEntries(lastSessions.keySet());
 
 		mainVC = createVelocityContainer("corrections");
-		
-		previousItemLink = LinkFactory.createButton("previous.item", mainVC, this);
-		previousItemLink.setIconLeftCSS("o_icon o_icon_previous");
-		currentItemLink = LinkFactory.createButton("current.item", mainVC, this);
-		nextItemLink = LinkFactory.createButton("next.item", mainVC, this);
-		nextItemLink.setIconRightCSS("o_icon o_icon_next");
-		overviewLink = LinkFactory.createButton("overview.tests", mainVC, this);
-		
+
 		itemRefs = calculateAssessmentItemToCorrect();
 		testCorrections = collectAssessedIdentityForItem(itemRefs);
+
+		navigationCtrl = new NavigationController(ureq, getWindowControl());
+		listenTo(navigationCtrl);
+		mainVC.put("navigation", navigationCtrl.getInitialComponent());
+		
 		if(itemRefs.size() > 0) {
 			currentItemRef = itemRefs.get(0);
-			updatePreviousNext();
+			navigationCtrl.updatePreviousNext();
 			updateIdentitiesAssessmentItem(ureq);
 		}
 		putInitialPanel(mainVC);
@@ -150,33 +150,6 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 	
 	private List<AssessmentItemRef> calculateAssessmentItemToCorrect() {
 		return resolvedAssessmentTest.getAssessmentItemRefs();
-	}
-	
-	private void updatePreviousNext() {
-		int index = itemRefs.indexOf(currentItemRef);
-		
-		if(index > 0) {
-			AssessmentItemRef itemRef = itemRefs.get(index - 1);
-			String itemTitle = AssessmentTestHelper.getAssessmentItemTitle(itemRef, resolvedAssessmentTest);
-			previousItemLink.setCustomDisplayText(itemTitle);
-			previousItemLink.setEnabled(true);
-		} else {
-			previousItemLink.setCustomDisplayText(translate("previous.item"));
-			previousItemLink.setEnabled(false);
-		}
-		
-		String currentItemTitle = AssessmentTestHelper.getAssessmentItemTitle(currentItemRef, resolvedAssessmentTest);
-		currentItemLink.setCustomDisplayText(currentItemTitle);
-		
-		if(index + 1 < itemRefs.size()) {
-			AssessmentItemRef itemRef = itemRefs.get(index + 1);
-			String itemTitle = AssessmentTestHelper.getAssessmentItemTitle(itemRef, resolvedAssessmentTest);
-			nextItemLink.setCustomDisplayText(itemTitle);
-			nextItemLink.setEnabled(true);
-		} else {
-			nextItemLink.setCustomDisplayText(translate("next.item"));
-			nextItemLink.setEnabled(false);
-		}
 	}
 	
 	private void updateIdentitiesAssessmentItem(UserRequest ureq) {
@@ -308,22 +281,20 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(previousItemLink == source) {
-			doPreviousAssessmentItem(ureq);
-		} else if(nextItemLink == source) {
-			doNextAssessmentItem(ureq);
-		} else if(currentItemLink == source) {
-			updateIdentitiesAssessmentItem(ureq);
-		} else if(overviewLink == source) {
-			mainVC.put("itemCorrection", overviewCtrl.getInitialComponent());
-		}
+		//
 	}
 	
 	private void doPreviousAssessmentItem(UserRequest ureq) {
-		int previousIndex = itemRefs.indexOf(currentItemRef) - 1;
+		int previousIndex = -1;
+		if(currentItemRef == null) {
+			previousIndex = itemRefs.size() - 1;
+		} else {
+			previousIndex = itemRefs.indexOf(currentItemRef) - 1;
+		}
+
 		if(previousIndex >= 0 && itemRefs.size() > previousIndex) {
 			currentItemRef = itemRefs.get(previousIndex);
-			updatePreviousNext();
+			navigationCtrl.updatePreviousNext();
 			updateIdentitiesAssessmentItem(ureq);
 		} else if(itemRefs.size() > 0) {
 			currentItemRef = itemRefs.get(0);
@@ -334,10 +305,141 @@ public class IdentitiesAssessmentTestCorrectionController extends BasicControlle
 		int nextIndex = itemRefs.indexOf(currentItemRef) + 1;
 		if(nextIndex >= 0 && itemRefs.size() > nextIndex) {
 			currentItemRef = itemRefs.get(nextIndex);
-			updatePreviousNext();
+			navigationCtrl.updatePreviousNext();
 			updateIdentitiesAssessmentItem(ureq);
 		} else if(itemRefs.size() > 0) {
 			currentItemRef = itemRefs.get(itemRefs.size() - 1);
+		}
+	}
+	
+	private void doSelectByIndex(UserRequest ureq, int index) {
+		currentItemRef = itemRefs.get(index);
+		navigationCtrl.updatePreviousNext();
+		updateIdentitiesAssessmentItem(ureq);
+		mainVC.setDirty(true);
+	}
+	
+	private void doOverview() {
+		currentItemRef = null;
+		mainVC.put("itemCorrection", overviewCtrl.getInitialComponent());
+		navigationCtrl.overview();
+	}
+	
+	private class NavigationController extends BasicController {
+
+		private final VelocityContainer navigationVC;
+		private Link previousItemLink, nextItemLink, overviewLink;
+		
+		public NavigationController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl);
+			
+			navigationVC = createVelocityContainer("corrections_navigation");
+
+			List<SelectPair> itemRefKeys = new ArrayList<>(itemRefs.size());
+			for(int i=0; i<itemRefs.size(); i++) {
+				String itemTitle = AssessmentTestHelper.getAssessmentItemTitle(itemRefs.get(i), resolvedAssessmentTest);
+				itemRefKeys.add(new SelectPair(Integer.toString(i), itemTitle));
+			}
+			itemRefKeys.add(new SelectPair("overview", translate("overview.tests")));
+			navigationVC.contextPut("itemRefKeys", itemRefKeys);
+
+			previousItemLink = LinkFactory.createButton("previous.item", navigationVC, this);
+			previousItemLink.setIconLeftCSS("o_icon o_icon_previous");
+			nextItemLink = LinkFactory.createButton("next.item", navigationVC, this);
+			nextItemLink.setIconRightCSS("o_icon o_icon_next");
+			overviewLink = LinkFactory.createButton("overview.tests", navigationVC, this);
+
+			putInitialPanel(navigationVC);
+		}
+
+		@Override
+		protected void doDispose() {
+			//
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(previousItemLink == source) {
+				doPreviousAssessmentItem(ureq);
+			} else if(nextItemLink == source) {
+				doNextAssessmentItem(ureq);
+			} else if(overviewLink == source) {
+				doOverview();
+			} else if(navigationVC == source) {
+				String cmd = ureq.getParameter("cid");
+				if("sel".equals(cmd)) {
+					String selectedKey = ureq.getParameter("item");
+					if("overview".equals(selectedKey)) {
+						doOverview();
+					} else if(StringHelper.isLong(selectedKey)) {
+						try {
+							doSelectByIndex(ureq, Integer.parseInt(selectedKey));
+						} catch (NumberFormatException e) {
+							logError("Cannot parse select index: " + selectedKey, e);
+						}
+					}
+				}
+			}
+		}
+		
+		protected void overview() {
+			navigationVC.contextPut("selectedValue", "overview");
+			
+			if(itemRefs.size() > 0) {
+				AssessmentItemRef itemRef = itemRefs.get(itemRefs.size() - 1);
+				String itemTitle = AssessmentTestHelper.getAssessmentItemTitle(itemRef, resolvedAssessmentTest);
+				previousItemLink.setCustomDisplayText(itemTitle);
+				previousItemLink.setEnabled(true);
+			}
+			
+			nextItemLink.setCustomDisplayText(translate("next.item"));
+			nextItemLink.setEnabled(false);
+		}
+		
+		protected void updatePreviousNext() {
+			int index = itemRefs.indexOf(currentItemRef);
+			
+			if(index > 0) {
+				AssessmentItemRef itemRef = itemRefs.get(index - 1);
+				String itemTitle = AssessmentTestHelper.getAssessmentItemTitle(itemRef, resolvedAssessmentTest);
+				previousItemLink.setCustomDisplayText(itemTitle);
+				previousItemLink.setEnabled(true);
+			} else {
+				previousItemLink.setCustomDisplayText(translate("previous.item"));
+				previousItemLink.setEnabled(false);
+			}
+			
+			navigationVC.contextPut("selectedValue", index);
+			navigationVC.setDirty(true);
+
+			if(index + 1 < itemRefs.size()) {
+				AssessmentItemRef itemRef = itemRefs.get(index + 1);
+				String itemTitle = AssessmentTestHelper.getAssessmentItemTitle(itemRef, resolvedAssessmentTest);
+				nextItemLink.setCustomDisplayText(itemTitle);
+				nextItemLink.setEnabled(true);
+			} else {
+				nextItemLink.setCustomDisplayText(translate("next.item"));
+				nextItemLink.setEnabled(false);
+			}
+		}
+	}
+	
+	public class SelectPair {
+		
+		private final String text;
+		private final String value;
+		
+		public SelectPair(String value, String text) {
+			this.text = text;
+			this.value = value;
+		}
+
+		public String getText() {
+			return text;
+		}
+
+		public String getValue() {
+			return value;
 		}
 	}
 }

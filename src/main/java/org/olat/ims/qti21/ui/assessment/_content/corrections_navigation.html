@@ -1,0 +1,13 @@
+<div class="o_sel_correction_navigation clearfix">
+	$r.render("previous.item")
+	<div id="o_cocurrent_item_SELBOX">
+		<select class="form-control" onchange="var current = jQuery(this).val(); jQuery(this).val('$selectedValue'); $r.openJavaScriptCommand("sel", true, false), 'item', current);">
+			#foreach($itemRef in $itemRefKeys)
+				<option value="$itemRef.value" #if($selectedValue == $itemRef.value) selected #end>$itemRef.text</option>
+			#end
+		</select>
+	</div>
+	$r.render("next.item")
+	$r.render("overview.tests")
+</div>
+
