@@ -2,6 +2,9 @@
 	$r.contextHelpWithWrapper("Portfolio assignment: Grading")		
 </div>
 $r.render("section-list")
+#if($r.isNotEmpty($scoreError))
+<div class="o_error">$scoreError</div>
+#end
 <div class="o_button_group">
 $r.render("buttons")
 </div>

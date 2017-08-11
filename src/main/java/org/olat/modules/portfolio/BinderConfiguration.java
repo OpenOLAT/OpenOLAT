@@ -39,15 +39,19 @@ public class BinderConfiguration {
 	private final boolean timeline;
 	private final boolean shareable;
 	private final boolean options;
+	private final Float maxScore;
+	private final Float minScore;
 	
-	public BinderConfiguration(boolean assessable, boolean withScore, boolean withPassed,
-			boolean timeline, boolean shareable, boolean options) {
+	public BinderConfiguration(boolean assessable, boolean withScore, Float maxScore, Float minScore,
+			boolean withPassed, boolean timeline, boolean shareable, boolean options) {
 		this.assessable = assessable;
 		this.withScore = withScore;
 		this.withPassed = withPassed;
 		this.timeline = timeline;
 		this.shareable = shareable;
 		this.options = options;
+		this.maxScore = maxScore;
+		this.minScore = minScore;
 	}
 	
 	public boolean isAssessable() {
@@ -56,6 +60,14 @@ public class BinderConfiguration {
 
 	public boolean isWithScore() {
 		return withScore;
+	}
+	
+	public Float getMaxScore() {
+		return maxScore;
+	}
+	
+	public Float getMinScore() {
+		return minScore;
 	}
 
 	public boolean isWithPassed() {
@@ -84,29 +96,31 @@ public class BinderConfiguration {
 	}
 	
 	public static BinderConfiguration createBusinessGroupConfig() {
-		return new BinderConfiguration(false, false, false, true, false, false);
+		return new BinderConfiguration(false, false, null, null, false, true, false, false);
 	}
 	
 	public static BinderConfiguration createTemplateConfig(boolean optionsEditable) {
-		return new BinderConfiguration(false, false, false, false, false, optionsEditable);
+		return new BinderConfiguration(false, false, null, null, false, false, false, optionsEditable);
 	}
 	
 	public static BinderConfiguration createInvitationConfig() {
-		return new BinderConfiguration(false, false, false, true, false, false);
+		return new BinderConfiguration(false, false, null, null, false, true, false, false);
 	}
 	
 	public static BinderConfiguration createMyPagesConfig() {
-		return new BinderConfiguration(false, false, false, true, true, false);
+		return new BinderConfiguration(false, false, null, null, false, true, true, false);
 	}
 	
 	public static BinderConfiguration createDeletedPagesConfig() {
-		return new BinderConfiguration(false, false, false, false, false, false);
+		return new BinderConfiguration(false, false, null, null, false, false, false, false);
 	}
 
 	public static BinderConfiguration createConfig(Binder binder) {
 		boolean withScore = false;
 		boolean withPassed = false;
 		boolean assessable = false;
+		Float maxScore = null;
+		Float minScore = null;
 		
 		RepositoryEntry entry = binder.getEntry();
 		if(binder.getSubIdent() != null) {
@@ -115,6 +129,10 @@ public class BinderConfiguration {
 			if(courseNode instanceof PortfolioCourseNode) {
 				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
 				withScore = pfNode.hasScoreConfigured();
+				if(withScore) {
+					maxScore = pfNode.getMaxScoreConfiguration();
+					minScore = pfNode.getMinScoreConfiguration();
+				}
 				withPassed = pfNode.hasPassedConfigured();
 				assessable = withPassed || withScore;
 			} else {
@@ -129,6 +147,6 @@ public class BinderConfiguration {
 		} else {
 			withPassed = withScore = assessable = false;
 		}
-		return new BinderConfiguration(assessable, withScore, withPassed, true, true, false);
+		return new BinderConfiguration(assessable, withScore, maxScore, minScore, withPassed, true, true, false);
 	}
 }
