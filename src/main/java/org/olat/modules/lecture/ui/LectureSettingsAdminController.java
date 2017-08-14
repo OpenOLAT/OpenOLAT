@@ -390,6 +390,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 				int period = Integer.parseInt(appealPeriodEl.getValue());
 				lectureModule.setAbsenceAppealPeriod(period);
 			}
+			lectureModule.setAbsenceDefaultAuthorized(absenceDefaultAuthorizedEl.isAtLeastSelected(1));
+			
 			
 			lectureModule.setRollCallReminderEnabled(reminderEnableEl.isAtLeastSelected(1));
 			if(reminderEnableEl.isAtLeastSelected(1)) {
