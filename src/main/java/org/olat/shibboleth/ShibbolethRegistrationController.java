@@ -185,6 +185,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					} else {
 						regWithUserPropForm = new ShibbolethRegistrationUserPropertiesFrom(ureq, wControl, shibbolethAttributes);
 						regWithUserPropForm.addControllerListener(this);
+						mainContainer.put("getUserPropsForm", regWithUserPropForm.getInitialComponent());
 						mainContainer.setPage(VELOCITY_ROOT + "/register_user_props.html");
 					}
 				}
