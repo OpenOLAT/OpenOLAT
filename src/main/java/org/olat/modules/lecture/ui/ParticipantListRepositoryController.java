@@ -1,4 +1,6 @@
 /**
+
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -179,7 +181,9 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rate, new PercentCellRenderer()));
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.infos, new ParticipantInfosRenderer(getTranslator(), defaultRate)));
+		FlexiColumnModel infoCol = new DefaultFlexiColumnModel(ParticipantsCols.infos, new ParticipantInfosRenderer(getTranslator(), defaultRate));
+		infoCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(infoCol);
 		
 		if(!printView) {
 			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
