@@ -144,6 +144,7 @@ public class TeacherRollCallWizardController extends BasicController {
 	private void doSelect(UserRequest ureq, Long callIdentityKey) {
 		for(Identity participant:participants) {
 			if(participant.getKey().equals(callIdentityKey)) {
+				calledIdentity = participant;
 				doSelect(ureq, participant);
 			}
 		}

@@ -25,11 +25,15 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CloseRollCallConfirmationController extends FormBasicController {
 
+	private FormLink quickSaveButton;
 	private TextElement blockCommentEl;
 	private SingleSelection effectiveLecturesEl;
 	private SingleSelection effectiveEndReasonEl;
@@ -168,6 +173,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		quickSaveButton = uifactory.addFormLink("save.temporary", buttonsCont, Link.BUTTON);
 		uifactory.addFormSubmitButton("close.lecture.blocks", buttonsCont);
 	}
 
@@ -179,31 +185,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String before = lectureService.toAuditXml(lectureBlock);
-		lectureBlock.setComment(blockCommentEl.getValue());
-		
-		int effectiveLectures = lectureBlock.getPlannedLecturesNumber();
-		if(effectiveLecturesEl != null) {
-			try {
-				String selectedKey = effectiveLecturesEl.getSelectedKey();
-				effectiveLectures = Integer.parseInt(selectedKey);
-			} catch(Exception ex) {
-				logError("", ex);
-			}
-		}
-		lectureBlock.setEffectiveLecturesNumber(effectiveLectures);
-		Date effectiveEndDate = getEffectiveEndDate();
-		if(effectiveEndDate == null) {
-			lectureBlock.setReasonEffectiveEnd(null);
-		} else {
-			lectureBlock.setEffectiveEndDate(effectiveEndDate);
-			if("-".equals(effectiveEndReasonEl.getSelectedKey())) {
-				lectureBlock.setReasonEffectiveEnd(null);
-			} else {
-				Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());
-				Reason selectedReason = lectureService.getReason(reasonKey);
-				lectureBlock.setReasonEffectiveEnd(selectedReason);
-			}
-		}
+		commitLectureBlocks();
 		lectureBlock = lectureService.close(lectureBlock, getIdentity());
 		fireEvent(ureq, Event.DONE_EVENT);
 
@@ -213,7 +195,15 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_ROLL_CALL_CLOSED, getClass(),
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 	}
-	
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(quickSaveButton == source) {
+			doQuickSave(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
@@ -296,5 +286,44 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doQuickSave(UserRequest ureq) {
+		String before = lectureService.toAuditXml(lectureBlock);
+		commitLectureBlocks();
+		lectureBlock = lectureService.save(lectureBlock, null);
+		lectureService.recalculateSummary(lectureBlock.getEntry());
+		fireEvent(ureq, Event.DONE_EVENT);
+
+		String after = lectureService.toAuditXml(lectureBlock);
+		lectureService.auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
+	}
+	
+	private void commitLectureBlocks() {
+		lectureBlock.setComment(blockCommentEl.getValue());
+		
+		int effectiveLectures = lectureBlock.getPlannedLecturesNumber();
+		if(effectiveLecturesEl != null) {
+			try {
+				String selectedKey = effectiveLecturesEl.getSelectedKey();
+				effectiveLectures = Integer.parseInt(selectedKey);
+			} catch(Exception ex) {
+				logError("", ex);
+			}
+		}
+		lectureBlock.setEffectiveLecturesNumber(effectiveLectures);
+		Date effectiveEndDate = getEffectiveEndDate();
+		if(effectiveEndDate == null) {
+			lectureBlock.setReasonEffectiveEnd(null);
+		} else {
+			lectureBlock.setEffectiveEndDate(effectiveEndDate);
+			if("-".equals(effectiveEndReasonEl.getSelectedKey())) {
+				lectureBlock.setReasonEffectiveEnd(null);
+			} else {
+				Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());
+				Reason selectedReason = lectureService.getReason(reasonKey);
+				lectureBlock.setReasonEffectiveEnd(selectedReason);
+			}
+		}
 	}
 }
