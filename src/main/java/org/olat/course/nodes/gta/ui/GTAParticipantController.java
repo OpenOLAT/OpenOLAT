@@ -607,9 +607,13 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	@Override
 	protected void resetTask(UserRequest ureq, Task task) {
 		resetTaskButton.setUserObject(task);
-		boolean allowed = task != null && StringHelper.containsNonWhitespace(task.getTaskName())
+
+		DueDate assignmentDueDate = getAssignementDueDate(task);
+		boolean allowed = task != null
+				&& (StringHelper.containsNonWhitespace(task.getTaskName()) || (! StringHelper.containsNonWhitespace(task.getTaskName()) && task.getTaskStatus() == TaskProcess.submit))
 				&& (task.getTaskStatus() == TaskProcess.assignment || task.getTaskStatus() == TaskProcess.submit)
 				&& task.getAllowResetDate() != null 
+				&& (assignmentDueDate == null || assignmentDueDate.getDueDate() == null || assignmentDueDate.getDueDate().after(new Date()))
 				&& GTACourseNode.GTASK_ASSIGNEMENT_TYPE_MANUAL.equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_ASSIGNEMENT_TYPE));
 		resetTaskButton.setVisible(allowed);
 	}
