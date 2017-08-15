@@ -188,6 +188,13 @@ public class BinderSecurityCallbackFactory {
 			if(element instanceof Page) {
 				Page page = (Page)element;
 				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
+					if(rights != null) {
+						for(AccessRights right:rights) {
+							if(right.getRole() == PortfolioRoles.readInvitee && right.matchElementAndAncestors(element)) {
+								return true;
+							}
+						}
+					}
 					return false;
 				}
 			}
@@ -558,6 +565,40 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canViewTitleOfElement(PortfolioElement element) {
+			if(owner) {
+				return true;
+			}
+			
+			if(element instanceof Page) {
+				Page page = (Page)element;
+				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
+					//need to be recursive, if page -> section too -> binder too???
+					if(rights != null) {
+						for(AccessRights right:rights) {
+							if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+									&& right.matchElementAndAncestors(element)) {
+								return true;
+							}
+						}
+					}
+					return owner;
+				}
+			}
+			
+			//need to be recursive, if page -> section too -> binder too???
+			if(rights != null) {
+				for(AccessRights right:rights) {
+					if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+							&& right.matchElementAndAncestors(element)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		@Override
 		public boolean canViewPendingAssignments(Section section) {
 			if(owner) return true;
 			
@@ -761,6 +802,11 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canViewElement(PortfolioElement element) {
 			return false;
+		}
+
+		@Override
+		public boolean canViewTitleOfElement(PortfolioElement element) {
+			return canViewElement(element);
 		}
 
 		@Override

@@ -245,10 +245,14 @@ public class TableOfContentController extends BasicController implements TooledC
 		List<Page> pages = portfolioService.getPages(binder, null);
 		for(Page page:pages) {
 			Section section = page.getSection();
-			if(secCallback.canViewElement(page) && section != null && sectionMap.containsKey(section.getKey())) {
-				SectionRow sectionRow = sectionMap.get(section.getKey());
-				PageRow pageRow = forgePageRow(page, numberOfCommentsMap);
-				sectionRow.getPages().add(pageRow);
+			if(section != null && sectionMap.containsKey(section.getKey())) {
+				boolean viewElement = secCallback.canViewElement(page);
+				boolean viewTitleElement = secCallback.canViewTitleOfElement(page);
+				if(viewElement || viewTitleElement) {
+					SectionRow sectionRow = sectionMap.get(section.getKey());
+					PageRow pageRow = forgePageRow(page, numberOfCommentsMap, viewElement);
+					sectionRow.getPages().add(pageRow);
+				}
 			}
 		}
 		mainVC.contextPut("sections", sectionRows);
@@ -350,7 +354,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		return sectionRow;
 	}
 	
-	private PageRow forgePageRow(Page page, Map<Long,Long> numberOfCommentsMap) {
+	private PageRow forgePageRow(Page page, Map<Long,Long> numberOfCommentsMap, boolean selectElement) {
 		PageRow pageRow = new PageRow(page);
 
 		String pageId = "page" + (++counter);
@@ -358,6 +362,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		Link openLink = LinkFactory.createCustomLink(pageId, "open_page", title, Link.LINK | Link.NONTRANSLATED, mainVC, this);
 		openLink.setElementCssClass("o_pf_open_entry");
 		openLink.setUserObject(pageRow);
+		openLink.setEnabled(selectElement);
 		pageRow.setOpenLink(openLink);
 
 		Long numOfComments = numberOfCommentsMap.get(page.getKey());

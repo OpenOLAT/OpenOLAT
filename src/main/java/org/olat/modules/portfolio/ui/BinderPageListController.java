@@ -243,14 +243,16 @@ public class BinderPageListController extends AbstractPageListController {
 
 		List<Page> pages = portfolioService.getPages(binder, searchString);
 		for (Page page : pages) {
-			if(!secCallback.canViewElement(page)) {
+			boolean viewElement = secCallback.canViewElement(page);
+			boolean viewTitleElement = viewElement || secCallback.canViewTitleOfElement(page);
+			if(!viewTitleElement) {
 				continue;
 			}
 			
 			Section section = page.getSection();
 
 			PortfolioElementRow pageRow = forgePageRow(ureq, page, sectionToAssessmentSectionMap.get(section),
-					sectionToAssignmentMap.get(section), categorizedElementMap, numberOfCommentsMap);
+					sectionToAssignmentMap.get(section), categorizedElementMap, numberOfCommentsMap, viewElement);
 			rows.add(pageRow);
 			if(secCallback.canAddPage(section)) {
 				FormLink newEntryButton = uifactory.addFormLink("new.entry." + (++counter), "new.entry", "create.new.page", null, flc, Link.BUTTON);

@@ -370,13 +370,14 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	protected PortfolioElementRow forgePageRow(UserRequest ureq, Page page, AssessmentSection assessmentSection, List<Assignment> assignments,
-			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap) {
+			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap, boolean selectElement) {
 
 		Section section = page.getSection();
 		PortfolioElementRow row = new PortfolioElementRow(page, assessmentSection, config.isAssessable());
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
 		openLink.setIconRightCSS("o_icon o_icon_start");
+		openLink.setEnabled(selectElement);
 		openLink.setPrimary(true);
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);

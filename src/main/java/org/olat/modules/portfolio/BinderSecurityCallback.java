@@ -96,6 +96,14 @@ public interface BinderSecurityCallback {
 	
 	public boolean canViewElement(PortfolioElement element);
 	
+	
+	/**
+	 * View only the title of the element but not its content
+	 * @param element
+	 * @return
+	 */
+	public boolean canViewTitleOfElement(PortfolioElement element);
+	
 	public boolean canViewPendingAssignments(Section section);
 	
 	public boolean canViewEmptySection(Section section);

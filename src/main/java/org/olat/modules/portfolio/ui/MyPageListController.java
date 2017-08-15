@@ -123,7 +123,7 @@ public class MyPageListController extends AbstractPageListController {
 			}
 			
 			List<Assignment> assignmentList = pageToAssignments.get(page);
-			PortfolioElementRow row = forgePageRow(ureq, page, null, assignmentList, categorizedElementMap, numberOfCommentsMap);
+			PortfolioElementRow row = forgePageRow(ureq, page, null, assignmentList, categorizedElementMap, numberOfCommentsMap, true);
 			rows.add(row);
 			if(page.getSection() != null) {
 				Section section = page.getSection();

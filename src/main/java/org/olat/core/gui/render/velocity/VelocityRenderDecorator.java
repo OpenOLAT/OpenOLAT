@@ -835,6 +835,15 @@ public class VelocityRenderDecorator implements Closeable {
 		return (source != null && source.isVisible() && source.isEnabled());
 	}
 	
+	public boolean enabled(Component component) {
+		return component != null && component.isVisible() && component.isEnabled();
+	}
+	
+	public boolean enabled(FormItem item) {
+		if(item == null) return false;
+		return enabled(item.getComponent());
+	}
+	
 	/**
 	 * Return the component
 	 * @param componentName

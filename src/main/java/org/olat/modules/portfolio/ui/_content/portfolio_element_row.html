@@ -161,12 +161,14 @@
 			</div>
 		</div>
 	</div>
+	#if($r.enabled($row.openFormItem))
 	<div class="o_portfolio_page_links o_noprint">
 		$r.render($row.openFormItem)
 		#if($r.isNotNull($row.commentFormLink))
 			<span class="btn btn-sm o_portfolio_comment">$r.render($row.commentFormLink)</span>
 		#end
 	</div>
+	#end
 </div>
 #end
 #if($row.newEntry && $r.isNotNull($row.newEntryLink))
