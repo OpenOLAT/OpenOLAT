@@ -55,15 +55,16 @@ public class SubmissionDateCellRenderer implements FlexiCellRenderer {
 		if(object instanceof CoachedElementRow) {
 			CoachedElementRow ciRow = (CoachedElementRow)object;
 			TaskProcess status = ciRow.getTaskStatus();
-			if(status == null || status == TaskProcess.assignment) {
-				Date dueDate = ciRow.getSubmissionDueDate();
-				if(dueDate != null && dueDate.before(new Date())) {
-					target.append(translator.translate("no.submission"));
-				}
-			} else {
-				Date date = cascading(ciRow);
+			if(status == null || status == TaskProcess.assignment || status == TaskProcess.submit) {
+				//do nothing
+			} else  {
+				Date date = ciRow.getSyntheticSubmissionDate();
 				if(date != null) {
-					target.append(formatter.formatDate(date));
+					if(ciRow.getHasSubmittedDocuments()) {
+						target.append(formatter.formatDate(date));
+					} else {
+						target.append(translator.translate("no.submission"));
+					}
 				}
 			}
 		}

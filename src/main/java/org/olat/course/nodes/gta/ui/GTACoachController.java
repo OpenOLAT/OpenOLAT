@@ -715,7 +715,17 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	}
 	
 	private void doCollectTask(UserRequest ureq, Task task) {
-		task = gtaManager.collectTask(task, gtaNode);
+		File[] submittedDocuments;
+		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		} else {
+			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, getIdentity());
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		}
+		
+		int numOfDocs = submittedDocuments == null ? 0 : submittedDocuments.length;
+		task = gtaManager.collectTask(task, gtaNode, numOfDocs);
 		showInfo("run.documents.successfully.submitted");
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUMBIT_TASK,

@@ -250,8 +250,17 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				if(dueDate != null) {
 					submissionDueDate = dueDate.getDueDate();
 				}
+			} 
+
+			Date syntheticSubmissionDate = null;
+			boolean hasSubmittedDocument = false;
+			if(task != null && task.getTaskStatus() != null && task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit) {
+				syntheticSubmissionDate = getSyntheticSubmissionDate(task);
+				if(syntheticSubmissionDate != null) {
+					hasSubmittedDocument = hasSubmittedDocument(task);
+				}
 			}
-			rows.add(new CoachedIdentityRow(assessableIdentity, task, submissionDueDate));
+			rows.add(new CoachedIdentityRow(assessableIdentity, task, submissionDueDate, syntheticSubmissionDate, hasSubmittedDocument));
 		}
 		
 		tableModel.setObjects(rows);

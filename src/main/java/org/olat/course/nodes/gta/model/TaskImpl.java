@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -93,12 +94,19 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_submission_date", nullable=true, insertable=true, updatable=true)
 	private Date submissionDate;
+	@Column(name="g_submission_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer submissionNumOfDocs;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_submission_revisions_date", nullable=true, insertable=true, updatable=true)
 	private Date submissionRevisionsDate;
+	@Column(name="g_submission_revisions_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer submissionRevisionsNumOfDocs;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_collection_date", nullable=true, insertable=true, updatable=true)
 	private Date collectionDate;
+	@Column(name="g_collection_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer collectionNumOfDocs;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_allow_reset_date", nullable=true, insertable=true, updatable=true)
 	private Date allowResetDate;
@@ -228,6 +236,14 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 		this.submissionDate = submissionDate;
 	}
 
+	public Integer getSubmissionNumOfDocs() {
+		return submissionNumOfDocs;
+	}
+
+	public void setSubmissionNumOfDocs(Integer submissionNumOfDocs) {
+		this.submissionNumOfDocs = submissionNumOfDocs;
+	}
+
 	@Override
 	public Date getSubmissionRevisionsDate() {
 		return submissionRevisionsDate;
@@ -237,6 +253,14 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 		this.submissionRevisionsDate = submissionRevisionsDate;
 	}
 
+	public Integer getSubmissionRevisionsNumOfDocs() {
+		return submissionRevisionsNumOfDocs;
+	}
+
+	public void setSubmissionRevisionsNumOfDocs(Integer submissionRevisionsNumOfDocs) {
+		this.submissionRevisionsNumOfDocs = submissionRevisionsNumOfDocs;
+	}
+
 	@Override
 	public Date getCollectionDate() {
 		return collectionDate;
@@ -244,6 +268,14 @@ public class TaskImpl implements Task, CreateInfo, Persistable, ModifiedInfo {
 
 	public void setCollectionDate(Date collectionDate) {
 		this.collectionDate = collectionDate;
+	}
+
+	public Integer getCollectionNumOfDocs() {
+		return collectionNumOfDocs;
+	}
+
+	public void setCollectionNumOfDocs(Integer collectionNumOfDocs) {
+		this.collectionNumOfDocs = collectionNumOfDocs;
 	}
 
 	@Override

@@ -130,7 +130,6 @@ public interface GTAManager {
 	
 	public void removeSolution(Solution removedSolution, CourseEnvironment courseEnv, GTACourseNode cNode);
 	
-	
 	/**
 	 * Create a subscription context.
 	 * @param courseEnv The course environment
@@ -327,7 +326,7 @@ public interface GTAManager {
 	
 	public TaskProcess nextStep(TaskProcess currentStep, GTACourseNode cNode);
 
-	public Task collectTask(Task task, GTACourseNode cNode);
+	public Task collectTask(Task task, GTACourseNode cNode, int numOfDocs);
 	
 	/**
 	 * Task is reviewed and accepted.
@@ -341,9 +340,9 @@ public interface GTAManager {
 	
 	public TaskDueDate updateTaskDueDate(TaskDueDate taskDueDate);
 	
-	public Task submitTask(Task task, GTACourseNode cNode);
+	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs);
 	
-	public Task submitRevisions(Task task, GTACourseNode cNode);
+	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs);
 	
 	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode);
 	

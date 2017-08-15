@@ -81,12 +81,18 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_submission_date", nullable=true, insertable=true, updatable=true)
 	private Date submissionDate;
+	@Column(name="g_submission_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer submissionNumOfDocs;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_submission_revisions_date", nullable=true, insertable=true, updatable=true)
 	private Date submissionRevisionsDate;
+	@Column(name="g_submission_revisions_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer submissionRevisionsNumOfDocs;
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_collection_date", nullable=true, insertable=true, updatable=true)
 	private Date collectionDate;
+	@Column(name="g_collection_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer collectionNumOfDocs;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_assignment_due_date", nullable=true, insertable=true, updatable=false)
@@ -206,12 +212,30 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 	}
 	
 	@Override
+	public Integer getSubmissionNumOfDocs() {
+		return submissionNumOfDocs;
+	}
+
+	public void setSubmissionNumOfDocs(Integer submissionNumOfDocs) {
+		this.submissionNumOfDocs = submissionNumOfDocs;
+	}
+
+	@Override
 	public Date getSubmissionRevisionsDate() {
 		return submissionRevisionsDate;
 	}
 
 	public void setSubmissionRevisionsDate(Date submissionRevisionsDate) {
 		this.submissionRevisionsDate = submissionRevisionsDate;
+	}
+	
+	@Override
+	public Integer getSubmissionRevisionsNumOfDocs() {
+		return submissionRevisionsNumOfDocs;
+	}
+
+	public void setSubmissionRevisionsNumOfDocs(Integer submissionRevisionsNumOfDocs) {
+		this.submissionRevisionsNumOfDocs = submissionRevisionsNumOfDocs;
 	}
 
 	@Override
@@ -221,6 +245,15 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 
 	public void setCollectionDate(Date collectionDate) {
 		this.collectionDate = collectionDate;
+	}
+	
+	@Override
+	public Integer getCollectionNumOfDocs() {
+		return collectionNumOfDocs;
+	}
+
+	public void setCollectionNumOfDocs(Integer collectionNumOfDocs) {
+		this.collectionNumOfDocs = collectionNumOfDocs;
 	}
 
 	@Override

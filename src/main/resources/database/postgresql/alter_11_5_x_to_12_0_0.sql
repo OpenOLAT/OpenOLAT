@@ -230,6 +230,10 @@ alter table o_gta_task add column g_acceptation_date timestamp default null;
 alter table o_gta_task add column g_solution_date timestamp default null;
 alter table o_gta_task add column g_graduation_date timestamp default null;
 
+alter table o_gta_task add column g_submission_ndocs int8 default null;
+alter table o_gta_task add column g_submission_revisions_ndocs int8 default null;
+alter table o_gta_task add column g_collection_ndocs int8 default null;
+
 create table o_gta_task_revision_date (
   id bigserial not null,
   creationdate timestamp not null,

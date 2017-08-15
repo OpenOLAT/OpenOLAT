@@ -35,12 +35,17 @@ public class CoachedGroupRow implements CoachedElementRow {
 	
 	private final TaskLight task;
 	private final Date submissionDueDate;
+	private final Date syntheticSubmissionDate;
+	private final boolean hasSubmittedDocuments;
 	private final BusinessGroup businessGroup;
 	
-	public CoachedGroupRow(BusinessGroup businessGroup, TaskLight task, Date submissionDueDate) {
+	public CoachedGroupRow(BusinessGroup businessGroup, TaskLight task, Date submissionDueDate,
+			Date syntheticSubmissionDate, boolean hasSubmittedDocuments) {
 		this.task = task;
 		this.businessGroup = businessGroup;
 		this.submissionDueDate = submissionDueDate;
+		this.hasSubmittedDocuments = hasSubmittedDocuments;
+		this.syntheticSubmissionDate = syntheticSubmissionDate;
 	}
 	
 	public String getName() {
@@ -75,6 +80,16 @@ public class CoachedGroupRow implements CoachedElementRow {
 	@Override
 	public Date getCollectionDate() {
 		return task == null ? null : task.getCollectionDate();
+	}
+
+	@Override
+	public Date getSyntheticSubmissionDate() {
+		return syntheticSubmissionDate;
+	}
+
+	@Override
+	public boolean getHasSubmittedDocuments() {
+		return hasSubmittedDocuments;
 	}
 
 	@Override

@@ -339,7 +339,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 	
 	private void doSubmitDocuments(UserRequest ureq, Task task) {
-		task = gtaManager.submitTask(task, gtaNode);
+		int numOfDocs = getNumberOfSubmittedDocuments();
+		task = gtaManager.submitTask(task, gtaNode, numOfDocs);
 		showInfo("run.documents.successfully.submitted");
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUMBIT_TASK,

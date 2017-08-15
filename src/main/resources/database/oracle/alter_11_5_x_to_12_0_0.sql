@@ -230,6 +230,10 @@ alter table o_gta_task add g_acceptation_date date default null;
 alter table o_gta_task add g_solution_date date default null;
 alter table o_gta_task add g_graduation_date date default null;
 
+alter table o_gta_task add g_submission_ndocs number(20) default null;
+alter table o_gta_task add g_submission_revisions_ndocs number(20) default null;
+alter table o_gta_task add g_collection_ndocs number(20) default null;
+
 create table o_gta_task_revision_date (
   id number(20) generated always as identity,
   creationdate date not null,

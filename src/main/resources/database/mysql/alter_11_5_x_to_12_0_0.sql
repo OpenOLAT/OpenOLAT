@@ -229,6 +229,10 @@ alter table o_gta_task add column g_acceptation_date datetime default null;
 alter table o_gta_task add column g_solution_date datetime default null;
 alter table o_gta_task add column g_graduation_date datetime default null;
 
+alter table o_gta_task add column g_submission_ndocs bigint default null;
+alter table o_gta_task add column g_submission_revisions_ndocs bigint default null;
+alter table o_gta_task add column g_collection_ndocs bigint default null;
+
 create table o_gta_task_revision_date (
   id bigint not null auto_increment,
   creationdate datetime not null,

@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -360,7 +362,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.submit
 						&& date.compareTo(new Date()) < 0) {
 					//push to the next step
-					assignedTask = gtaManager.nextStep(assignedTask, gtaNode);
+					int numOfDocs = getNumberOfSubmittedDocuments();
+					assignedTask = gtaManager.submitTask(assignedTask, gtaNode, numOfDocs);
 					doUpdateAttempts();
 				}
 			} else if(dueDate.getMessageKey() != null) {
@@ -379,6 +382,19 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return submissionDueDate;
 	}
 	
+	protected int getNumberOfSubmittedDocuments() {
+		File[] submittedDocuments;
+		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
+			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+
+		} else {
+			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		}
+		return submittedDocuments == null ? 0 : submittedDocuments.length;
+	}
+	
 	protected Task stepReviewAndCorrection(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {
 		return assignedTask;
 	}
@@ -391,11 +407,25 @@ public abstract class GTAAbstractController extends BasicController implements G
 			if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.revision
 					&& date.compareTo(new Date()) < 0) {
 				//push to the next step
-				assignedTask = gtaManager.nextStep(assignedTask, gtaNode);
+				int numOfDocs = getNumberOfRevisionDocuments(assignedTask);
+				assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs);
 				doUpdateAttempts();
 			}
 		}
 		return assignedTask;
+	}
+	
+	protected int getNumberOfRevisionDocuments(Task assignedTask) {
+		File[] submittedDocuments;
+		int iteration = assignedTask.getRevisionLoop();
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		} else {
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedIdentity);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		}
+		return submittedDocuments == null ? 0 : submittedDocuments.length;
 	}
 	
 	protected Task stepSolution(@SuppressWarnings("unused")UserRequest ureq, Task assignedTask) {

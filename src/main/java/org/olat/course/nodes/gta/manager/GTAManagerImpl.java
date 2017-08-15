@@ -1423,18 +1423,20 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
-	public Task collectTask(Task task, GTACourseNode cNode) {
+	public Task collectTask(Task task, GTACourseNode cNode, int numOfDocs) {
 		TaskProcess review = nextStep(TaskProcess.submit, cNode);
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setCollectionDate(new Date());
+		taskImpl.setCollectionNumOfDocs(numOfDocs);
 		return updateTask(task, review, cNode);
 	}
 
 	@Override
-	public Task submitTask(Task task, GTACourseNode cNode) {
+	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs) {
 		TaskProcess review = nextStep(TaskProcess.submit, cNode);
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setSubmissionDate(new Date());
+		taskImpl.setSubmissionNumOfDocs(numOfDocs);
 		return updateTask(task, review, cNode);
 	}
 
@@ -1474,9 +1476,10 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
-	public Task submitRevisions(Task task, GTACourseNode cNode) {
+	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setSubmissionRevisionsDate(new Date());
+		taskImpl.setSubmissionRevisionsNumOfDocs(numOfDocs);
 		//log the date
 		createAndPersistTaskRevisionDate(taskImpl, taskImpl.getRevisionLoop(), TaskProcess.correction);
 		return updateTask(taskImpl, TaskProcess.correction, cNode);
@@ -1524,10 +1527,11 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			taskImpl.setGraduationDate(null);
 		}
 		
-		//check submission date because of repon
+		//check submission date because of reopen
 		if(newStatus == TaskProcess.assignment || newStatus == TaskProcess.submit) {
 			if(taskImpl.getSubmissionDate() != null) {
 				taskImpl.setSubmissionDate(null);
+				taskImpl.setSubmissionNumOfDocs(null);
 			}
 		}
 	}

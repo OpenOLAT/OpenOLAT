@@ -35,12 +35,17 @@ public class CoachedIdentityRow implements CoachedElementRow {
 
 	private final TaskLight task;
 	private final Date submissionDueDate;
+	private final Date syntheticSubmissionDate;
+	private final boolean hasSubmittedDocuments;
 	private final UserPropertiesRow identity;
 	
-	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, Date submissionDueDate) {
+	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, Date submissionDueDate,
+			Date syntheticSubmissionDate, boolean hasSubmittedDocuments) {
 		this.identity = identity;
 		this.task = task;
 		this.submissionDueDate = submissionDueDate;
+		this.hasSubmittedDocuments = hasSubmittedDocuments;
+		this.syntheticSubmissionDate = syntheticSubmissionDate;
 	}
 
 	@Override
@@ -71,6 +76,16 @@ public class CoachedIdentityRow implements CoachedElementRow {
 	@Override
 	public Date getCollectionDate() {
 		return task == null ? null : task.getCollectionDate();
+	}
+
+	@Override
+	public Date getSyntheticSubmissionDate() {
+		return syntheticSubmissionDate;
+	}
+
+	@Override
+	public boolean getHasSubmittedDocuments() {
+		return hasSubmittedDocuments;
 	}
 	
 	@Override

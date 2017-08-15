@@ -37,17 +37,21 @@ public interface CoachedElementRow {
 	
 	public TaskProcess getTaskStatus();
 	
-	public Date getSubmissionDate();
-	
 	/**
 	 * @return Date only if there is a due date and the task is not submitted.
 	 */
 	public Date getSubmissionDueDate();
 	
+	public Date getSubmissionDate();
+
 	public Date getSubmissionRevisionsDate();
 	
 	public Date getCollectionDate();
 	
+	public Date getSyntheticSubmissionDate();
+	
+	public boolean getHasSubmittedDocuments();
+
 	public TaskLight getTask();
 
 }

@@ -49,9 +49,15 @@ public interface TaskLight extends TaskRef {
 	
 	public Date getSubmissionDate();
 	
+	public Integer getSubmissionNumOfDocs();
+	
 	public Date getSubmissionRevisionsDate();
 	
+	public Integer getSubmissionRevisionsNumOfDocs();
+	
 	public Date getCollectionDate();
+	
+	public Integer getCollectionNumOfDocs();
 	
 	public Long getIdentityKey();
 	

@@ -42,6 +42,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.io.SystemFileFilter;
+import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CourseFactory;
@@ -653,11 +654,25 @@ class GTANotifications {
 			RepositoryEntry re = courseEnv.getCourseGroupManager().getCourseEntry();
 			DueDate dueDate = gtaManager.getSubmissionDueDate(task, assessedIdentity, assessedGroup, gtaNode, re, true);
 			if(dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().before(new Date())) {
-				task = gtaManager.nextStep(task, gtaNode);
+				int numOfDocs = getNumberOfSubmittedDocuments(assessedIdentity, assessedGroup);
+				task = gtaManager.submitTask(task, gtaNode, numOfDocs);
 				doUpdateAttempts(assessedIdentity, assessedGroup);
 			}
 		}
 		return task;
+	}
+	
+	private int getNumberOfSubmittedDocuments(Identity assessedIdentity, BusinessGroup assessedGroup) {
+		File[] submittedDocuments;
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+
+		} else {
+			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		}
+		return submittedDocuments == null ? 0 : submittedDocuments.length;
 	}
 	
 	private boolean checkRevisionLoop(TaskProcess status, int revisionLoop,  List<TaskRevisionDate> taskRevisions) {

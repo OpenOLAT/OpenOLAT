@@ -149,7 +149,16 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 					submissionDueDate = dueDate.getDueDate();
 				}
 			}
-			rows.add(new CoachedGroupRow(group, task, submissionDueDate));
+
+			Date syntheticSubmissionDate = null;
+			boolean hasSubmittedDocument = false;
+			if(task != null && task.getTaskStatus() != null && task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit) {
+				syntheticSubmissionDate = getSyntheticSubmissionDate(task);
+				if(syntheticSubmissionDate != null) {
+					hasSubmittedDocument = this.hasSubmittedDocument(task);
+				}
+			}
+			rows.add(new CoachedGroupRow(group, task, submissionDueDate, syntheticSubmissionDate, hasSubmittedDocument));
 		}
 		
 		tableModel.setObjects(rows);

@@ -312,7 +312,18 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	}
 	
 	private void doSubmitRevisions() {
-		assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode);
+		File[] submittedDocuments;
+		int iteration = assignedTask.getRevisionLoop();
+		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, assessedGroup);
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		} else {
+			File documentsDir = gtaManager.getRevisedDocumentsDirectory(courseEnv, gtaNode, iteration, getIdentity());
+			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
+		}
+		
+		int numOfDocs = submittedDocuments == null ? 0 : submittedDocuments.length;
+		assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs);
 		gtaManager.log("Revision", "revision submitted", assignedTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUBMIT_REVISION,
