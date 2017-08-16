@@ -342,7 +342,8 @@ class GTANotifications {
 		} else {
 			name = userManager.getUserDisplayName(assessedIdentity);
 		}
-
+		
+		boolean sendNotificationDueDate = true;
 		List<TaskRevisionDate> taskRevisions = gtaManager.getTaskRevisions(task);
 		if(!coach && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
 			//check task revision 1
@@ -359,19 +360,22 @@ class GTANotifications {
 				}
 
 				Date correctionDate = getRevisionLoopDate(TaskProcess.revision, 1, taskRevisions);
-				if(task.getRevisionsDueDate() != null) {
-					String[] params = new String[] {
-							task.getTaskName(),
-							displayName,
-							formatter.formatDateAndTime(task.getRevisionsDueDate())	
-					};
-					appendSubscriptionItem("notifications.correction.duedate", params, assessedIdentity, correctionDate, coach);
-				} else {
-					String[] params = new String[] {
-							task.getTaskName(),
-							displayName
-					};
-					appendSubscriptionItem("notifications.correction", params, assessedIdentity, correctionDate, coach);
+				if(sendNotificationDueDate) {
+					if(task.getRevisionsDueDate() != null) {
+						String[] params = new String[] {
+								task.getTaskName(),
+								displayName,
+								formatter.formatDateAndTime(task.getRevisionsDueDate())	
+						};
+						appendSubscriptionItem("notifications.correction.duedate", params, assessedIdentity, correctionDate, coach);
+					} else {
+						String[] params = new String[] {
+								task.getTaskName(),
+								displayName
+						};
+						appendSubscriptionItem("notifications.correction", params, assessedIdentity, correctionDate, coach);
+					}
+					sendNotificationDueDate = false;
 				}
 
 				File[] corrections = correctionDirectory.listFiles(SystemFileFilter.FILES_ONLY);
@@ -454,19 +458,22 @@ class GTANotifications {
 						}
 
 						Date correctionDate = getRevisionLoopDate(TaskProcess.revision, i, taskRevisions);
-						if(task.getRevisionsDueDate() != null) {
-							String[] params = new String[] {
-									task.getTaskName(),
-									displayName,
-									formatter.formatDateAndTime(task.getRevisionsDueDate())
-							};
-							appendSubscriptionItem("notifications.correction.duedate", params, assessedIdentity, correctionDate, coach);
-						} else {
-							String[] params = new String[] {
-									task.getTaskName(),
-									displayName
-							};
-							appendSubscriptionItem("notifications.correction", params, assessedIdentity, correctionDate, coach);
+						if(sendNotificationDueDate) {
+							if(task.getRevisionsDueDate() != null) {
+								String[] params = new String[] {
+										task.getTaskName(),
+										displayName,
+										formatter.formatDateAndTime(task.getRevisionsDueDate())
+								};
+								appendSubscriptionItem("notifications.correction.duedate", params, assessedIdentity, correctionDate, coach);
+							} else {
+								String[] params = new String[] {
+										task.getTaskName(),
+										displayName
+								};
+								appendSubscriptionItem("notifications.correction", params, assessedIdentity, correctionDate, coach);
+							}
+							sendNotificationDueDate = false;
 						}
 						
 						File[] corrections = correctionDirectory.listFiles(SystemFileFilter.FILES_ONLY);
