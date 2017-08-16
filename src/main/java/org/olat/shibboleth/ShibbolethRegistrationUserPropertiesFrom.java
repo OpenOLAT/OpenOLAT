@@ -79,7 +79,9 @@ public class ShibbolethRegistrationUserPropertiesFrom extends FormBasicControlle
 				if(fi instanceof TextElement) {
 					String value = shibbolethAttributes.getValueForUserPropertyName( userPropertyHandler.getName());
 					if(StringHelper.containsNonWhitespace(value)) {
-						((TextElement)fi).setValue(value);
+						TextElement formElement = (TextElement)fi;
+						formElement.setValue(value);
+						formElement.setEnabled(false);
 					}
 				}
 			}
