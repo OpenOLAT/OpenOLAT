@@ -299,9 +299,9 @@ public abstract class GTAAbstractController extends BasicController implements G
 				mainVC.contextPut("assignmentDueDate", dateAsString);
 				mainVC.contextRemove("assignmentDueDateMsg");
 				
-				if(assignedTask != null && assignedTask.getTaskStatus() == TaskProcess.assignment
-						&& date.compareTo(new Date()) < 0) {
-					//push to the next step
+				if(assignedTask != null && StringHelper.containsNonWhitespace(assignedTask.getTaskName())
+						&& assignedTask.getTaskStatus() == TaskProcess.assignment && date.compareTo(new Date()) < 0) {
+					//push to the next step if the task is blocked in assignment (it's a security)
 					assignedTask = gtaManager.nextStep(assignedTask, gtaNode);
 				}
 			} else if(dueDate.getMessageKey() != null) {

@@ -174,7 +174,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(editDueDatesCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				//reload???
+				updateModel();
 			}
 			cmc.deactivate();
 			cleanUp();
