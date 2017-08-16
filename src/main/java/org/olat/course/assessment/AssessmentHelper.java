@@ -48,6 +48,7 @@ import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.course.assessment.model.AssessmentNodesLastModified;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -93,6 +94,8 @@ public class AssessmentHelper {
 	public static final String KEY_TOTAL_NODES = "totalNodes";
 	public static final String KEY_ATTEMPTED_NODES = "attemptedNodes";
 	public static final String KEY_PASSED_NODES = "attemptedNodes";
+	public static final String KEY_LAST_USER_MODIFIED = "lastUserModified";
+	public static final String KEY_LAST_COACH_MODIFIED = "lastCoachModified";
 
 	/**
 	 * String to symbolize 'not available' or 'not assigned' in assessments
@@ -432,12 +435,13 @@ public class AssessmentHelper {
 	 * @return list of object arrays or null if empty
 	 */
 	public static List<AssessmentNodeData> getAssessmentNodeDataList(UserCourseEnvironment userCourseEnv,
+			AssessmentNodesLastModified lastModifications,
 			boolean followUserVisibility, boolean discardEmptyNodes, boolean discardComments) {
 		List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 		scoreAccounting.evaluateAll();
 		getAssessmentNodeDataList(0, userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(),
-				scoreAccounting, userCourseEnv, followUserVisibility, discardEmptyNodes, discardComments, data);
+				scoreAccounting, userCourseEnv, followUserVisibility, discardEmptyNodes, discardComments, data, lastModifications);
 		return data;
 	}
 	
@@ -455,13 +459,14 @@ public class AssessmentHelper {
 			boolean followUserVisibility, boolean discardEmptyNodes, boolean discardComments) {
 		List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
 		getAssessmentNodeDataList(0, userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(),
-				evaluatedScoreAccounting, userCourseEnv, followUserVisibility, discardEmptyNodes, discardComments, data);
+				evaluatedScoreAccounting, userCourseEnv, followUserVisibility, discardEmptyNodes, discardComments, data, null);
 		return data;
 	}
 	
 	
 	public static int getAssessmentNodeDataList(int recursionLevel, CourseNode courseNode, ScoreAccounting scoreAccounting,
-			UserCourseEnvironment userCourseEnv, boolean followUserVisibility, boolean discardEmptyNodes, boolean discardComments, List<AssessmentNodeData> data) {
+			UserCourseEnvironment userCourseEnv, boolean followUserVisibility, boolean discardEmptyNodes, boolean discardComments,
+			List<AssessmentNodeData> data, AssessmentNodesLastModified lastModifications) {
 		// 1) Get list of children data using recursion of this method
 		AssessmentNodeData assessmentNodeData = new AssessmentNodeData(recursionLevel, courseNode);
 		data.add(assessmentNodeData);
@@ -470,7 +475,7 @@ public class AssessmentHelper {
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode) courseNode.getChildAt(i);
 			numOfChildren += getAssessmentNodeDataList(recursionLevel + 1,  child,  scoreAccounting,
-					userCourseEnv, followUserVisibility, discardEmptyNodes, discardComments, data);
+					userCourseEnv, followUserVisibility, discardEmptyNodes, discardComments, data, lastModifications);
 		}
 		
 		// 2) Get data of this node only if
@@ -490,6 +495,14 @@ public class AssessmentHelper {
 					assessmentNodeData.setNumOfAssessmentDocs(scoreEvaluation.getNumOfAssessmentDocs());
 				}
 				assessmentNodeData.setUserVisibility(scoreEvaluation.getUserVisible());
+				assessmentNodeData.setLastModified(scoreEvaluation.getLastModified());
+				assessmentNodeData.setLastUserModified(scoreEvaluation.getLastUserModified());
+				assessmentNodeData.setLastCoachModified(scoreEvaluation.getLastCoachModified());
+				if(lastModifications != null) {
+					lastModifications.addLastModified(scoreEvaluation.getLastModified());
+					lastModifications.addLastUserModified(scoreEvaluation.getLastUserModified());
+					lastModifications.addLastCoachModified(scoreEvaluation.getLastCoachModified());
+				}
 				
 				if(!followUserVisibility || scoreEvaluation.getUserVisible() == null || scoreEvaluation.getUserVisible().booleanValue()) {
 					// details 

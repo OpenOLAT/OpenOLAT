@@ -59,6 +59,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.test.JunitTestHelper;
@@ -162,7 +163,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 		boolean incrementAttempts = true;
 		//assessableCourseNode.updateUserScoreEvaluation(scoreEvaluation, userCourseEnv, tutor, incrementAttempts); //alternative
-		assessmentManager.saveScoreEvaluation(assessableCourseNode, tutor, student, scoreEvaluation, userCourseEnv, incrementAttempts);
+		assessmentManager.saveScoreEvaluation(assessableCourseNode, tutor, student, scoreEvaluation, userCourseEnv, incrementAttempts, Role.coach);
 		DBFactory.getInstance().closeSession();
 		//the attempts mut have been incremented
 		//assertEquals(attempts, assessableCourseNode.getUserAttempts(userCourseEnv)); //alternative
@@ -175,7 +176,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		//assessableCourseNode.updateUserUserComment(userComment, userCourseEnv, tutor); //alternative
     
 		attempts++;
-		assessmentManager.saveNodeAttempts(assessableCourseNode, tutor, student, attempts);
+		assessmentManager.saveNodeAttempts(assessableCourseNode, tutor, student, attempts, Role.coach);
 		assertEquals(attempts, assessmentManager.getNodeAttempts(assessableCourseNode, student));    	
 		//assessableCourseNode.updateUserAttempts(attempts, userCourseEnv, tutor); //alternative
 		        

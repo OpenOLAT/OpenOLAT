@@ -96,10 +96,10 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// some datas
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, refEntry, 3.0f, Boolean.FALSE);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, refEntry, 5.0f, Boolean.TRUE);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, refEntry, 8.0f, Boolean.TRUE);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, refEntry, 9.0f, Boolean.TRUE);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, refEntry, 3.0f, Boolean.FALSE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, refEntry, 5.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, refEntry, 8.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, refEntry, 9.0f, Boolean.TRUE, null, null);
 		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, refEntry);
 		dbInstance.commitAndCloseSession();
 		

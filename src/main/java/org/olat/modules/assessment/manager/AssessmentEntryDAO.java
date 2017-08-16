@@ -68,11 +68,13 @@ public class AssessmentEntryDAO {
 	
 	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry,
-			Float score, Boolean passed) {
+			Float score, Boolean passed, Date lastUserModified, Date lastCoachModified) {
 		
 		AssessmentEntryImpl data = new AssessmentEntryImpl();
 		data.setCreationDate(new Date());
 		data.setLastModified(data.getCreationDate());
+		data.setLastUserModified(lastUserModified);
+		data.setLastCoachModified(lastCoachModified);
 		data.setIdentity(assessedIdentity);
 		data.setAnonymousIdentifier(anonymousIdentifier);
 		data.setRepositoryEntry(entry);

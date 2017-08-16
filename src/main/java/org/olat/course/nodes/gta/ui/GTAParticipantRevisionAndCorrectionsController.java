@@ -63,6 +63,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.assessment.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -323,7 +324,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		}
 		
 		int numOfDocs = submittedDocuments == null ? 0 : submittedDocuments.length;
-		assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs);
+		assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs, Role.user);
 		gtaManager.log("Revision", "revision submitted", assignedTask, getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode);
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUBMIT_REVISION,
@@ -337,10 +338,10 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 
 			for(Identity identity:identities) {
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(userCourseEnv);
+				gtaNode.incrementUserAttempts(userCourseEnv, Role.user);
 			}
 		} else {
-			gtaNode.incrementUserAttempts(assessedUserCourseEnv);
+			gtaNode.incrementUserAttempts(assessedUserCourseEnv, Role.user);
 		}
 	}
 }

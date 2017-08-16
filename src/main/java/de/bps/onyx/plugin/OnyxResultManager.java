@@ -53,6 +53,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.ims.qti.QTIResultSet;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 
 import de.bps.webservices.clients.onyxreporter.OnyxReporterConnector;
@@ -194,7 +195,7 @@ public class OnyxResultManager {
 				ScoreEvaluation sc = OnyxModule.getUserScoreEvaluationFromQtiResult(userCourseEnvironment.getCourseEnvironment().getCourseResourceableId(), node,
 						bestResultConfigured, qtiResultSet.getIdentity());
 				if(node instanceof AssessableCourseNode){
-					((AssessableCourseNode) node).updateUserScoreEvaluation(sc, userCourseEnvironment, qtiResultSet.getIdentity(), false);
+					((AssessableCourseNode) node).updateUserScoreEvaluation(sc, userCourseEnvironment, qtiResultSet.getIdentity(), false, Role.coach);
 				}
 				
 			} else {

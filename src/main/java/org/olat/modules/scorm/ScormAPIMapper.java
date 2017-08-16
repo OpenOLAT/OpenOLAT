@@ -55,6 +55,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.user.UserManager;
 
 /**
@@ -199,14 +200,14 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 				// </OLATEE-27>
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = new ScoreEvaluation(new Float(0.0f), Boolean.valueOf(passed));
-				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment);
+				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment, Role.user);
 				if(increment) {
 					attemptsIncremented = true;
 				}
 			} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
-				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment);
+				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment, Role.user);
 				if(increment) {
 					attemptsIncremented = true;
 				}
@@ -214,7 +215,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		} else {
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation sceval = new ScoreEvaluation(new Float(0.0f), Boolean.valueOf(passed));
-			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false);
+			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false, Role.user);
 			if(increment) {
 				attemptsIncremented = true;
 			}
@@ -254,14 +255,14 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 				// </OLATEE-27>
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
-				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment);
+				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment, Role.user);
 				if(increment) {
 					attemptsIncremented = true;
 				}
 			} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
-				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment);
+				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment, Role.user);
 				if(increment) {
 					attemptsIncremented = true;
 				}
@@ -274,7 +275,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			// </OLATEE-27>
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), Boolean.valueOf(passed));
-			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false);
+			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false, Role.user);
 			if(increment) {
 				attemptsIncremented = true;
 			}

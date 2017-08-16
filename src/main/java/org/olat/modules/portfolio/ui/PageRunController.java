@@ -396,7 +396,7 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doPublish(UserRequest ureq) {
-		page = portfolioService.changePageStatus(page, PageStatus.published);
+		page = portfolioService.changePageStatus(page, PageStatus.published, getIdentity(), secCallback.getRole());
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
 		loadModel(ureq, false);
@@ -412,7 +412,7 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doRevision(UserRequest ureq) {
-		page = portfolioService.changePageStatus(page, PageStatus.inRevision);
+		page = portfolioService.changePageStatus(page, PageStatus.inRevision, getIdentity(), secCallback.getRole());
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
 		loadModel(ureq, false);
@@ -426,7 +426,7 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doClose(UserRequest ureq) {
-		page = portfolioService.changePageStatus(page, PageStatus.closed);
+		page = portfolioService.changePageStatus(page, PageStatus.closed, getIdentity(), secCallback.getRole());
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
 		loadModel(ureq, true);
@@ -440,7 +440,7 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doReopen(UserRequest ureq) {
-		page = portfolioService.changePageStatus(page, PageStatus.published);
+		page = portfolioService.changePageStatus(page, PageStatus.published, getIdentity(), secCallback.getRole());
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
 		loadModel(ureq, true);

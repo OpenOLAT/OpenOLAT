@@ -68,6 +68,7 @@ import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti.ui.PostDataMapper;
 import org.olat.ims.lti.ui.TalkBackMapper;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.properties.Property;
 import org.olat.resource.OLATResource;
 
@@ -394,7 +395,7 @@ public class LTIRunController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == startButton) {
-			courseNode.incrementUserAttempts(userCourseEnv);
+			courseNode.incrementUserAttempts(userCourseEnv, Role.user);
 			openBasicLTIContent(ureq);
 		} else if (source == acceptLink) {
 			storeDataExchangeAcceptance();

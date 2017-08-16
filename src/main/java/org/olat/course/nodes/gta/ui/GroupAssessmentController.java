@@ -67,6 +67,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -519,11 +520,11 @@ public class GroupAssessmentController extends FormBasicController {
 		if(applyToAllEl.isAtLeastSelected(1)) {
 			applyChangesForTheWholeGroup(rows, setAsDone, userVisible);
 		} else {
-			applyChangesForEvenryMemberGroup(rows, setAsDone, userVisible);
+			applyChangesForEveryMemberGroup(rows, setAsDone, userVisible);
 		}
 	}
 	
-	private void applyChangesForEvenryMemberGroup(List<AssessmentRow> rows, boolean setAsDone, boolean userVisible) {
+	private void applyChangesForEveryMemberGroup(List<AssessmentRow> rows, boolean setAsDone, boolean userVisible) {
 		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
 		
 		for(AssessmentRow row:rows) {
@@ -552,7 +553,7 @@ public class GroupAssessmentController extends FormBasicController {
 			} else {
 				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null);
 			}
-			gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false);
+			gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 			
 			if(withComment) {
 				String comment = row.getComment();
@@ -591,7 +592,7 @@ public class GroupAssessmentController extends FormBasicController {
 			} else {
 				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null);
 			}
-			gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false);
+			gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 		}
 
 		if(withComment) {

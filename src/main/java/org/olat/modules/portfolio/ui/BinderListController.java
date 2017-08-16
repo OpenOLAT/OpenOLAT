@@ -397,12 +397,12 @@ public class BinderListController extends FormBasicController
 		if(binder.isChanged()) {
 			showInfo("warning.binder.synched");
 		}
-		BinderController binderCtrl = doOpenBinder(ureq, binder.getBinder());
+		BinderController selectedBinderCtrl = doOpenBinder(ureq, binder.getBinder());
 		if(row instanceof BinderRow) {
 			VFSLeaf image = portfolioService.getPosterImageLeaf(binder.getBinder());
 			((BinderRow)row).setBackgroundImage(image);
 		}
-		return binderCtrl;
+		return selectedBinderCtrl;
 	}
 	
 	protected BinderController doOpenBinder(UserRequest ureq, Binder binder) {

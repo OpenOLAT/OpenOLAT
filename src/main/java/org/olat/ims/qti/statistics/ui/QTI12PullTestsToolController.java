@@ -58,6 +58,7 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQRetrievedEvent;
 import org.olat.user.UserManager;
@@ -216,7 +217,7 @@ public class QTI12PullTestsToolController extends BasicController implements Act
 		Boolean passed = new Boolean(ac.isPassed());
 		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, Boolean.FALSE, new Long(ai.getAssessID()));
 		UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-		courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, assessedIdentity, true);
+		courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, assessedIdentity, true, Role.coach);
 		
 		//cleanup
 		ai.cleanUp();

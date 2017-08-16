@@ -63,6 +63,7 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.instantMessaging.CloseInstantMessagingEvent;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.scorm.ScormAPICallback;
 import org.olat.modules.scorm.ScormAPIandDisplayController;
 import org.olat.modules.scorm.ScormCPManifestTreeModel;
@@ -315,7 +316,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			//increment user attempts only once!
 			if(!config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)
 					|| !config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
-				scormNode.incrementUserAttempts(userCourseEnv);
+				scormNode.incrementUserAttempts(userCourseEnv, Role.user);
 				attemptsIncremented = true;
 			}
 			

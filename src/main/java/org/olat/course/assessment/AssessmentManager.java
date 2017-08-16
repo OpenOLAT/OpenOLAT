@@ -38,6 +38,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -64,7 +65,17 @@ public interface AssessmentManager {
 	 * @param assessedIdentity The user whose score is changed
 	 * @param attempts The new attempts
 	 */
-	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts);
+	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts, Role by);
+	
+	/**
+	 * Change the last modification dates.
+	 * 
+	 * @param courseNode The course node
+	 * @param identity The identity which does the action
+	 * @param assessedIdentity The assessed identity
+	 * @param by The role of the identity which does the action.
+	 */
+	public void updateLastModifications(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment, Role by);
 
 	/**
 	 * Save an assessment comment for this node for a user. If there is already a comment property available, 
@@ -111,7 +122,7 @@ public interface AssessmentManager {
 	 * @param courseNode
 	 * @param identity
 	 */
-	public void incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment);
+	public void incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment, Role by);
 	
 	/**
 	 * Increment the users attempts for this course node, but without logging (aimed at background job).
@@ -212,7 +223,8 @@ public interface AssessmentManager {
 	 */
 	
 	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity,
-			ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment, boolean incrementUserAttempts);
+			ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
+			boolean incrementUserAttempts, Role by);
 	
 	/**
 	 * Provides an OLATResourceable for locking (of score/passed etc.) purposes (if doInSync is called on score/passed data)

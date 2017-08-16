@@ -72,6 +72,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.QTIResultSet;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 
 import de.bps.onyx.plugin.OnyxModule;
@@ -569,7 +570,7 @@ public class OnyxRunController extends BasicController {
 						//now increase attempts; if an exception occurred before, this will be not reached
 						if (currentState != TestState.CANCELED) {
 							AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
-							am.incrementNodeAttempts(courseNode, student, userCourseEnv);
+							am.incrementNodeAttempts(courseNode, student, userCourseEnv, Role.user);
 						}
 					} else {
 						assessmentId = resultSet.getAssessmentID();

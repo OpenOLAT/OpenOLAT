@@ -26,14 +26,44 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.WebappHelper;
+import org.olat.course.CorruptedCourseException;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
+import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.nodes.ScormCourseNode;
+import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.BlogFileResource;
+import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.PodcastFileResource;
+import org.olat.ims.qti.QTIResultSet;
+import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.model.AssessmentEntryImpl;
+import org.olat.modules.iq.IQManager;
 import org.olat.modules.webFeed.manager.FeedManager;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,14 +76,27 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 
+	private static final int BATCH_SIZE = 50;
+	
 	private static final String VERSION = "OLAT_12.0.0";
 	private static final String FEED_XML_TO_DB = "FEED XML TO DB";
 	private static final String USER_PROPERTY_CONTEXT_RENAME = "USER PROPERTY CONTEXT RENAME";
+	private static final String LAST_USER_MODIFICATION = "LAST USER MODIFICATION";
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	FeedManager feedManager;
+	private FeedManager feedManager;
+	@Autowired
+	private QTI21Service qtiService;
+	@Autowired
+	private IQManager iqManager;
+	@Autowired
+	private AssessmentService assessmentService;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private EfficiencyStatementManager efficiencyStatementManager;
 	
 	public OLATUpgrade_12_0_0() {
 		super();
@@ -84,6 +127,7 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 		allOk &= upgradeBlogXmlToDb(upgradeManager, uhd);
 		// rename a user property context name to a more suitable name
 		allOk &= changeUserPropertyContextName(upgradeManager, uhd);
+		allOk &= upgradeLastModified(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -181,5 +225,176 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 		}
 		return allOk;
 	}
+	
+	private boolean upgradeLastModified(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(LAST_USER_MODIFICATION)) {
+			
+			int counter = 0;
+			final Roles roles = new Roles(true, true, true, true, false, true, false);
+			final SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters();
+			params.setRoles(roles);
+			params.setResourceTypes(Collections.singletonList("CourseModule"));
+			
+			List<RepositoryEntry> courses;
+			do {
+				courses = repositoryManager.genericANDQueryWithRolesRestriction(params, counter, 50, true);
+				for(RepositoryEntry course:courses) {
+					try {
+						allOk &= processCourseAssessmentLastModified(course);
+					} catch (CorruptedCourseException e) {
+						log.error("Corrupted course: " + course.getKey(), e);
+					}
+				}
+				counter += courses.size();
+				log.audit("Last modifications migration processed: " + courses.size() + ", total courses processed (" + counter + ")");
+				dbInstance.commitAndCloseSession();
+			} while(courses.size() == BATCH_SIZE);
+			
+			
+			uhd.setBooleanDataValue(LAST_USER_MODIFICATION, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	
+	private boolean processCourseAssessmentLastModified(RepositoryEntry entry) {
+		try {
+			ICourse course = CourseFactory.loadCourse(entry);	
+			CourseNode rootNode = course.getRunStructure().getRootNode();
+			Set<Identity> changeSet = new HashSet<>();
+			processCourseNodeAssessmentLastModified(course, entry, rootNode, changeSet);
+			dbInstance.commitAndCloseSession();
+			
+			//update structure nodes and efficiency statement if any
+			Set<Identity> identitiesWithEfficiencyStatements = findIdentitiesWithEfficiencyStatements(entry);
+			for(Identity assessedIdentity:changeSet) {
+				UserCourseEnvironment userCourseEnv = AssessmentHelper
+						.createInitAndUpdateUserCourseEnvironment(assessedIdentity, course);
+				if(identitiesWithEfficiencyStatements.contains(assessedIdentity)) {
+					efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
+				}
+				dbInstance.commitAndCloseSession();
+			}
+		} catch(CorruptedCourseException e) {
+			log.error("Corrupted course: " + entry.getKey(), e);
+		} catch (Exception e) {
+			log.error("Unexpected error", e);
+		} finally {
+			dbInstance.commitAndCloseSession();
+		}
+		return true;
+	}
+	
+	private boolean processCourseNodeAssessmentLastModified(ICourse course, RepositoryEntry entry, CourseNode courseNode, Set<Identity> changeSet) {
+		if(courseNode instanceof IQTESTCourseNode) {
+			updateTest(entry, (IQTESTCourseNode)courseNode, changeSet);
+		} else if(courseNode instanceof MSCourseNode) {
+			updateMS(entry, courseNode, changeSet);
+		} else if(courseNode instanceof ScormCourseNode) {
+			updateScorm(course, entry, courseNode, changeSet);
+		}
+		dbInstance.commitAndCloseSession();
 
+		for(int i=courseNode.getChildCount(); i-->0; ) {
+			CourseNode child = (CourseNode)courseNode.getChildAt(i);
+			processCourseNodeAssessmentLastModified(course, entry, child, changeSet);
+		}
+		return true;
+	}
+	
+	private void updateTest(RepositoryEntry entry, IQTESTCourseNode courseNode, Set<Identity> changeSet) {
+		boolean onyx = IQEditController.CONFIG_VALUE_QTI2.equals(courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI));
+		if (onyx) return;
+		
+		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+		OLATResource ores = testEntry.getOlatResource();
+		boolean qti21 = ImsQTI21Resource.TYPE_NAME.equals(ores.getResourceableTypeName());
+
+		List<AssessmentEntryImpl> assessmentEntries = loadAssessmentEntries(entry, courseNode.getIdent());
+		for(AssessmentEntryImpl assessmentEntry:assessmentEntries) {
+			if(assessmentEntry.getLastUserModified() != null || assessmentEntry.getLastCoachModified() != null)  continue;
+
+			if(qti21) {
+				Long assessmentId = assessmentEntry.getAssessmentId();
+				if(assessmentId != null) {
+					AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
+					if(session != null && session.getFinishTime() != null) {
+						assessmentEntry.setLastUserModified(session.getFinishTime());
+						assessmentService.updateAssessmentEntry(assessmentEntry);
+						changeSet.add(assessmentEntry.getIdentity());
+					}
+				}
+			} else {
+				long olatResource = entry.getOlatResource().getResourceableId().longValue();
+				QTIResultSet rset = iqManager.getLastResultSet(assessmentEntry.getIdentity(), olatResource, courseNode.getIdent());
+				if(rset != null && rset.getLastModified() != null ) {
+					assessmentEntry.setLastUserModified(rset.getLastModified());
+					assessmentService.updateAssessmentEntry(assessmentEntry);
+					changeSet.add(assessmentEntry.getIdentity());
+				}
+			}
+		}
+	}
+
+	private void updateMS(RepositoryEntry entry, CourseNode msNode, Set<Identity> changeSet) {
+		List<AssessmentEntryImpl> assessmentEntries = loadAssessmentEntries(entry, msNode.getIdent());
+		for(AssessmentEntryImpl assessmentEntry:assessmentEntries) {
+			if(assessmentEntry.getLastCoachModified() != null) continue;
+			
+			assessmentEntry.setLastCoachModified(assessmentEntry.getLastModified());
+			assessmentService.updateAssessmentEntry(assessmentEntry);
+			changeSet.add(assessmentEntry.getIdentity());
+		}
+	}
+	
+	private void updateScorm(ICourse course, RepositoryEntry entry, CourseNode scormNode, Set<Identity> changeSet) {
+		Long courseId = course.getResourceableId();
+		String courseIdNodeId = courseId + "-" + scormNode.getIdent();
+		Calendar cal = Calendar.getInstance();
+		
+		List<AssessmentEntryImpl> assessmentEntries = loadAssessmentEntries(entry, scormNode.getIdent());
+		for(AssessmentEntryImpl assessmentEntry:assessmentEntries) {
+			if(assessmentEntry.getLastUserModified() != null || assessmentEntry.getLastCoachModified() != null) continue;
+			
+			String userId = assessmentEntry.getIdentity().getName();
+			String path = FolderConfig.getCanonicalRoot() + "/scorm/" + userId + "/" + courseIdNodeId;
+			File quiz = new File(path, "thequiz.xml");
+			if(quiz.exists()) {
+				long lastModified = quiz.lastModified();
+				if(lastModified > 0) {
+					cal.setTimeInMillis(lastModified);
+					assessmentEntry.setLastUserModified(cal.getTime());
+					assessmentService.updateAssessmentEntry(assessmentEntry);
+					changeSet.add(assessmentEntry.getIdentity());
+				}
+			}
+		}
+	}
+	
+	private List<AssessmentEntryImpl> loadAssessmentEntries(RepositoryEntryRef courseEntry, String subIdent) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select data from assessmententry data")
+		  .append(" inner join fetch data.identity ident")
+		  .append(" where data.repositoryEntry.key=:courseEntryKey and data.subIdent=:subIdent")
+		  .append(" and data.lastUserModified is null and data.lastCoachModified is null");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntryImpl.class)
+				.setParameter("courseEntryKey", courseEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.getResultList();
+	}
+	
+	private Set<Identity> findIdentitiesWithEfficiencyStatements(RepositoryEntryRef courseRepoEntry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(statement.identity) from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as statement ")
+		  .append(" where statement.lastUserModified is null and statement.lastCoachModified is null and statement.courseRepoKey=:repoKey");
+
+		List<Identity> identities = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("repoKey", courseRepoEntry.getKey())
+				.getResultList();
+		return new HashSet<>(identities);
+	}
 }

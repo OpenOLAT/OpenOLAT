@@ -233,7 +233,14 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private void populateAssessedIdentityInfos(UserRequest ureq, RepositoryEntry courseRepo, BusinessGroup group, boolean links) { 
 		if(efficiencyStatement != null) {
 			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(efficiencyStatement.getCourseTitle()));
-			mainVC.contextPut("date", StringHelper.formatLocaleDateTime(efficiencyStatement.getLastUpdated(), ureq.getLocale()));
+			
+			long lastModified;
+			if(efficiencyStatement.getLastUserModified() > 0) {
+				lastModified = efficiencyStatement.getLastUserModified();
+			} else {
+				lastModified = efficiencyStatement.getLastUpdated();
+			}
+			mainVC.contextPut("date", StringHelper.formatLocaleDateTime(lastModified, getLocale()));
 		} else if(courseRepo != null) {
 			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(courseRepo.getDisplayname()));
 		}

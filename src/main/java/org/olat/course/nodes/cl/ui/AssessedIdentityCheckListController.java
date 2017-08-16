@@ -53,6 +53,7 @@ import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -284,7 +285,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		}
 		checkboxManager.check(courseOres, courseNode.getIdent(), batchElements);
 		
-		courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity);
+		courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach);
 	}
 	
 	private void doUpdateCheck(CheckboxWrapper wrapper, boolean check) {

@@ -53,6 +53,8 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 	private Long archivedResourceKey;
 	
 	private Date lastModified;
+	private Date lastUserModified;
+	private Date lastCoachModified;
 
 	@Override	
 	public Date getLastModified() {
@@ -62,6 +64,22 @@ public class UserEfficiencyStatementLight extends PersistentObject implements Us
 	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
+	}
+
+	public Date getLastUserModified() {
+		return lastUserModified;
+	}
+
+	public void setLastUserModified(Date lastUserModified) {
+		this.lastUserModified = lastUserModified;
+	}
+
+	public Date getLastCoachModified() {
+		return lastCoachModified;
+	}
+
+	public void setLastCoachModified(Date lastCoachModified) {
+		this.lastCoachModified = lastCoachModified;
 	}
 
 	@Override

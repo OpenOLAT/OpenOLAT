@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
@@ -158,7 +159,7 @@ public class RestorePageController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		page = portfolioService.changePageStatus(page, PageStatus.draft);
+		page = portfolioService.changePageStatus(page, PageStatus.draft, getIdentity(), Role.user);
 
 		SectionRef selectSection = getSelectedSection();
 		if((page.getSection() == null && selectSection != null) ||

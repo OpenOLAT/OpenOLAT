@@ -34,6 +34,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.Role;
 
 /**
  * Description: <br>
@@ -79,7 +80,7 @@ public class IQPreviewController extends BasicController {
 				boolean passed = score >= (cutValue == null ? 0 : cutValue.floatValue());
 				ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), new Boolean(passed));
 				boolean incrementUserAttempts = true;
-				cn.updateUserScoreEvaluation(sceval, userCourseEnv, ureq.getIdentity(), incrementUserAttempts);				
+				cn.updateUserScoreEvaluation(sceval, userCourseEnv, ureq.getIdentity(), incrementUserAttempts, Role.user);				
 				getWindowControl().setInfo(translate("preview.points.set"));
 			}
 		}

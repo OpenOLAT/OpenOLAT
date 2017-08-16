@@ -173,7 +173,7 @@ public class OLATUpgrade_8_1_0 extends OLATUpgrade {
 		}
 
 		EfficiencyStatement s = (EfficiencyStatement)XStreamHelper.createXStreamInstance().fromXML(property.getTextValue());
-		efficiencyStatementManager.fillEfficiencyStatement(s, statement);
+		efficiencyStatementManager.fillEfficiencyStatement(s, null, statement);
 		statement.setLastModified(property.getLastModified());
 		
 		dbInstance.saveObject(statement);

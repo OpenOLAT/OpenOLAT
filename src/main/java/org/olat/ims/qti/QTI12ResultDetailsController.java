@@ -65,6 +65,7 @@ import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
 import org.olat.ims.qti.process.Persister;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQRetrievedEvent;
 import org.olat.repository.RepositoryEntry;
@@ -262,7 +263,7 @@ public class QTI12ResultDetailsController extends BasicController {
 		Boolean passed = new Boolean(ac.isPassed());
 		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, Boolean.FALSE, new Long(ai.getAssessID()));
 		UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-		testNode.updateUserScoreEvaluation(sceval, userCourseEnv, assessedIdentity, true);
+		testNode.updateUserScoreEvaluation(sceval, userCourseEnv, assessedIdentity, true, Role.coach);
 		
 		//cleanup
 		ai.cleanUp();

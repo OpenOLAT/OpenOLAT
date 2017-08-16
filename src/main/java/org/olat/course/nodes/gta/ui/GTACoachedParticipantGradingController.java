@@ -44,6 +44,7 @@ import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.repository.RepositoryEntry;
@@ -147,7 +148,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	}
 	
 	private void doReopenAssessment(UserRequest ureq) {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.grading, gtaNode);
+		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.grading, gtaNode, Role.coach);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -164,7 +165,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 				TaskList taskList = gtaManager.createIfNotExists(courseEntry, gtaNode);
 				assignedTask = gtaManager.createTask(null, taskList, TaskProcess.graded, null, assessedIdentity, gtaNode);
 			} else {
-				assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode);
+				assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode, Role.coach);
 			}
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}

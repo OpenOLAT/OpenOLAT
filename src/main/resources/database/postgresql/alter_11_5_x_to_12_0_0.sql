@@ -257,6 +257,11 @@ create index idx_gtaskreset_to_allower_idx on o_gta_task (fk_allow_reset_identit
 alter table o_info_message add column attachmentpath varchar(1024) default null;
 
 
+alter table o_as_entry add column lastcoachmodified timestamp default null;
+alter table o_as_entry add column lastusermodified timestamp default null;
+
+alter table o_as_eff_statement add column lastcoachmodified timestamp default null;
+alter table o_as_eff_statement add column lastusermodified timestamp default null;
 
 
 

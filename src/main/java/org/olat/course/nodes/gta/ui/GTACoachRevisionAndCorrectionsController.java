@@ -63,6 +63,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.assessment.Role;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -374,7 +375,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void doCollect() {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.correction, gtaNode);
+		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.correction, gtaNode, Role.coach);
 		gtaManager.log("Collect revision", "revision collected", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 
 		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
@@ -382,10 +383,10 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
 			for(Identity identity:identities) {
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(userCourseEnv);
+				gtaNode.incrementUserAttempts(userCourseEnv, Role.coach);
 			}
 		} else {
-			gtaNode.incrementUserAttempts(assessedUserCourseEnv);
+			gtaNode.incrementUserAttempts(assessedUserCourseEnv, Role.coach);
 		}
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUBMIT_REVISION,
@@ -395,7 +396,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void doReturnToRevisions(Task task) {
-		assignedTask = gtaManager.updateTask(task, TaskProcess.revision, currentIteration + 1, gtaNode);
+		assignedTask = gtaManager.updateTask(task, TaskProcess.revision, currentIteration + 1, gtaNode, Role.coach);
 		gtaManager.log("Revision", "need another revision", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 	}
 	

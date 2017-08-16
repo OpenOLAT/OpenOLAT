@@ -36,6 +36,7 @@ import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -264,7 +265,7 @@ public interface GTAManager {
 	
 	public Task createAndPersistTask(String taskName, TaskList taskList, TaskProcess status, BusinessGroup assessedGroup, Identity assessedIdentity, GTACourseNode cNode);
 	
-	public Task nextStep(Task task, GTACourseNode cNode);
+	public Task nextStep(Task task, GTACourseNode cNode, Role by);
 	
 	
 
@@ -336,15 +337,15 @@ public interface GTAManager {
 	 */
 	public Task reviewedTask(Task task, GTACourseNode cNode);
 	
-	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode);
+	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode, Role by);
 	
 	public TaskDueDate updateTaskDueDate(TaskDueDate taskDueDate);
 	
-	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs);
+	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs, Role by);
 	
-	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs);
+	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs, Role by);
 	
-	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode);
+	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode, Role by);
 	
 	public Task allowResetTask(Task task, Identity allower, GTACourseNode cNode);
 	

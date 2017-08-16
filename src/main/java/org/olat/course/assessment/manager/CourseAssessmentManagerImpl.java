@@ -52,6 +52,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.course.assessment.model.AssessmentNodesLastModified;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
@@ -60,12 +61,14 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -138,12 +141,20 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		Float score = null;
 		Boolean passed = null;
+		Date lastUserModified = null;
+		Date lastCoachModified = null;
 		if(scoreEvaluation != null) {
 			score = scoreEvaluation.getScore();
 			passed = scoreEvaluation.getPassed();
 		}
+		if(scoreEvaluation instanceof AssessmentEvaluation) {
+			AssessmentEvaluation eval = (AssessmentEvaluation)scoreEvaluation;
+			lastCoachModified = eval.getLastCoachModified();
+			lastUserModified = eval.getLastUserModified();
+		}
 		return assessmentService
-				.createAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), courseNode.getIdent(), referenceEntry, score, passed);
+				.createAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), courseNode.getIdent(), referenceEntry,
+						score, passed, lastUserModified, lastCoachModified);
 	}
 
 	@Override
@@ -152,10 +163,15 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	@Override
-	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts) {
+	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts, Role by) {
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		if(by == Role.coach) {
+			nodeAssessment.setLastCoachModified(new Date());
+		} else if(by == Role.user) {
+			nodeAssessment.setLastUserModified(new Date());
+		}
 		nodeAssessment.setAttempts(attempts);
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 
@@ -281,13 +297,21 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	@Override
-	public void incrementNodeAttempts(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv) {
+	public void incrementNodeAttempts(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv, Role by) {
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 		int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
 		nodeAssessment.setAttempts(attempts);
+		if(by == Role.coach) {
+			nodeAssessment.setLastCoachModified(new Date());
+		} else if(by == Role.user) {
+			nodeAssessment.setLastUserModified(new Date());
+		}
 		assessmentService.updateAssessmentEntry(nodeAssessment);
+		DBFactory.getInstance().commit();
+		userCourseEnv.getScoreAccounting().evaluateAll(true);
+		DBFactory.getInstance().commit();
 		if(courseNode instanceof AssessableCourseNode) {
 			// Update users efficiency statement
 			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
@@ -323,9 +347,26 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 	
 	@Override
+	public void updateLastModifications(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv, Role by) {
+		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		if(by == Role.coach) {
+			nodeAssessment.setLastCoachModified(new Date());
+		} else if(by == Role.user) {
+			nodeAssessment.setLastUserModified(new Date());
+		}
+		assessmentService.updateAssessmentEntry(nodeAssessment);
+		DBFactory.getInstance().commit();
+		userCourseEnv.getScoreAccounting().evaluateAll(true);
+		if(courseNode instanceof AssessableCourseNode) {
+			// Update users efficiency statement
+			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
+		}
+	}
+
+	@Override
 	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity,
 			ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnv,
-			boolean incrementUserAttempts) {
+			boolean incrementUserAttempts, Role by) {
 		final ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		final CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		
@@ -338,6 +379,11 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, subIdent, referenceEntry);
 		if(referenceEntry != null && !referenceEntry.equals(assessmentEntry.getReferenceEntry())) {
 			assessmentEntry.setReferenceEntry(referenceEntry);
+		}
+		if(by == Role.coach) {
+			assessmentEntry.setLastCoachModified(new Date());
+		} else if(by == Role.user) {
+			assessmentEntry.setLastUserModified(new Date());
 		}
 		if(score == null) {
 			assessmentEntry.setScore(null);
@@ -413,9 +459,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		// write only when enabled for this course
 		if (courseEnv.getCourseConfig().isEfficencyStatementEnabled()) {
 			List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
+			AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
 			AssessmentHelper.getAssessmentNodeDataList(0, courseEnv.getRunStructure().getRootNode(),
-					scoreAccounting, userCourseEnv, true, true, true, data);
-			efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, cgm.getCourseEntry());
+					scoreAccounting, userCourseEnv, true, true, true, data, lastModifications);
+			efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, lastModifications, cgm.getCourseEntry());
 		}
 
 		if(course.getCourseConfig().isAutomaticCertificationEnabled()) {

@@ -54,6 +54,7 @@ import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.EfficiencyStatementArchiver;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.course.assessment.model.AssessmentNodesLastModified;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.model.UserEfficiencyStatementStandalone;
@@ -166,15 +167,17 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 		CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
 		// write only when enabled for this course
 		if (cc.isEfficencyStatementEnabled()) {
-			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();				
-			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, true, true, true);
-			updateUserEfficiencyStatement(identity, userCourseEnv.getCourseEnvironment(), assessmentNodeList, repoEntry);
+			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+			AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
+			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, lastModifications, true, true, true);
+			updateUserEfficiencyStatement(identity, userCourseEnv.getCourseEnvironment(), assessmentNodeList, lastModifications,  repoEntry);
 		}
 	}
 	
-	public void updateUserEfficiencyStatement(Identity assessedIdentity, final CourseEnvironment courseEnv, List<AssessmentNodeData> assessmentNodeList, final RepositoryEntry repoEntry) {
+	public void updateUserEfficiencyStatement(Identity assessedIdentity, final CourseEnvironment courseEnv,
+			List<AssessmentNodeData> assessmentNodeList, AssessmentNodesLastModified lastModifications, final RepositoryEntry repoEntry) {
 		List<Map<String,Object>> assessmentNodes = AssessmentHelper.assessmentNodeDataListToMap(assessmentNodeList);
-				
+			
 		EfficiencyStatement efficiencyStatement = new EfficiencyStatement();
 		efficiencyStatement.setAssessmentNodes(assessmentNodes);
 		efficiencyStatement.setCourseTitle(courseEnv.getCourseTitle());
@@ -182,6 +185,14 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 		String userInfos = userManager.getUserDisplayName(assessedIdentity);
 		efficiencyStatement.setDisplayableUserInfo(userInfos);
 		efficiencyStatement.setLastUpdated(System.currentTimeMillis());
+		if(lastModifications != null) {
+			if(lastModifications.getLastUserModified() != null) {
+				efficiencyStatement.setLastUserModified(lastModifications.getLastUserModified().getTime());
+			}
+			if(lastModifications.getLastCoachModified() != null) {
+				efficiencyStatement.setLastCoachModified(lastModifications.getLastCoachModified().getTime());
+			}
+		}
 		
 		boolean debug = log.isDebug();
 		UserEfficiencyStatementImpl efficiencyProperty = getUserEfficiencyStatementFull(repoEntry, assessedIdentity);
@@ -196,7 +207,7 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 					efficiencyProperty.setCourseRepoKey(repoEntry.getKey());
 				}
 				
-				fillEfficiencyStatement(efficiencyStatement, efficiencyProperty);
+				fillEfficiencyStatement(efficiencyStatement, lastModifications, efficiencyProperty);
 				dbInstance.getCurrentEntityManager().persist(efficiencyProperty);
 				if (debug) {
 					log.debug("creating new efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + assessedIdentity.getName() + " repoEntry::" + repoEntry.getKey());
@@ -206,7 +217,7 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 				if (debug) {
 					log.debug("updating efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + assessedIdentity.getName() + " repoEntry::" + repoEntry.getKey());
 				}	
-				fillEfficiencyStatement(efficiencyStatement, efficiencyProperty);
+				fillEfficiencyStatement(efficiencyStatement, lastModifications, efficiencyProperty);
 				dbInstance.getCurrentEntityManager().merge(efficiencyProperty);
 			}
 		} else {
@@ -226,7 +237,18 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, courseOres);
 	}
 	
-	public void fillEfficiencyStatement(EfficiencyStatement efficiencyStatement, UserEfficiencyStatementImpl efficiencyProperty) {
+	public void fillEfficiencyStatement(EfficiencyStatement efficiencyStatement, AssessmentNodesLastModified lastModifications, UserEfficiencyStatementImpl efficiencyProperty) {
+		if(lastModifications != null) {
+			if(lastModifications.getLastUserModified() != null
+					&& (efficiencyProperty.getLastUserModified() == null || efficiencyProperty.getLastUserModified().before(lastModifications.getLastUserModified()))) {
+				efficiencyProperty.setLastUserModified(lastModifications.getLastUserModified());
+			}
+			if(lastModifications.getLastCoachModified() != null
+					&& (efficiencyProperty.getLastCoachModified() == null || efficiencyProperty.getLastCoachModified().before(lastModifications.getLastCoachModified()))) {
+				efficiencyProperty.setLastCoachModified(lastModifications.getLastCoachModified());
+			}
+		}
+		
 		List<Map<String,Object>> nodeData = efficiencyStatement.getAssessmentNodes();
 		if(!nodeData.isEmpty()) {
 			Map<String,Object> rootNode = nodeData.get(0);
@@ -264,6 +286,21 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 			
 			int passedNodes = getPassedNodes(nodeData);
 			efficiencyProperty.setPassedNodes(passedNodes);
+			
+			for(Map<String,Object> node:nodeData) {
+				Date lastUserModified = (Date)node.get(AssessmentHelper.KEY_LAST_USER_MODIFIED);
+				if(lastUserModified != null) {
+					if(efficiencyProperty.getLastUserModified() == null || efficiencyProperty.getLastUserModified().before(lastUserModified)) {
+						efficiencyProperty.setLastUserModified(lastUserModified);
+					}
+				}
+				Date lastCoachModified = (Date)node.get(AssessmentHelper.KEY_LAST_COACH_MODIFIED);
+				if(lastCoachModified != null) {
+					if(efficiencyProperty.getLastCoachModified() == null || efficiencyProperty.getLastCoachModified().before(lastCoachModified)) {
+						efficiencyProperty.setLastCoachModified(lastCoachModified);
+					}
+				}
+			}
 		}
 
 		efficiencyProperty.setLastModified(new Date());
@@ -597,6 +634,10 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 				.createQuery(sb.toString(), UserEfficiencyStatementLight.class)
 				.setParameter("keys", keys)
 				.getResultList();
+	}
+	
+	public List<Identity> findIdentitiesWithEfficiencyStatements(RepositoryEntryRef repoEntry) {
+		return findIdentitiesWithEfficiencyStatements(repoEntry.getKey());
 	}
 	
 	/**

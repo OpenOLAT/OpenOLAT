@@ -26,6 +26,7 @@ package org.olat.course.nodes;
 
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.Role;
 
 /**
  * 
@@ -56,6 +57,6 @@ public interface SelfAssessableCourseNode extends CourseNode {
 	 * Increments the users attempts for this node and this user + 1. 
 	 * @param userCourseEnvironment
 	 */
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment);
+	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by);
 	
 }

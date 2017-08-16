@@ -65,6 +65,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
@@ -666,7 +667,7 @@ class GTANotifications {
 			DueDate dueDate = gtaManager.getSubmissionDueDate(task, assessedIdentity, assessedGroup, gtaNode, re, true);
 			if(dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().before(new Date())) {
 				int numOfDocs = getNumberOfSubmittedDocuments(assessedIdentity, assessedGroup);
-				task = gtaManager.submitTask(task, gtaNode, numOfDocs);
+				task = gtaManager.submitTask(task, gtaNode, numOfDocs, Role.auto);
 				doUpdateAttempts(assessedIdentity, assessedGroup);
 			}
 		}
@@ -721,7 +722,7 @@ class GTANotifications {
 					&& task.getRevisionsDueDate() != null
 					&& task.getRevisionsDueDate().compareTo(new Date()) < 0) {
 				//push to the next step
-				task = gtaManager.nextStep(task, gtaNode);
+				task = gtaManager.nextStep(task, gtaNode, Role.auto);
 				doUpdateAttempts(assessedIdentity, assessedGroup);
 			}
 		}
@@ -756,12 +757,12 @@ class GTANotifications {
 			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
 			for(Identity identity:identities) {
 				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(uce);
+				gtaNode.incrementUserAttempts(uce, Role.auto);
 			}
 		} else {
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(assessedIdentity, course);
-			gtaNode.incrementUserAttempts(assessedUserCourseEnv);
+			gtaNode.incrementUserAttempts(assessedUserCourseEnv, Role.auto);
 		}
 	}
 	

@@ -55,6 +55,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
@@ -81,6 +84,7 @@ import org.olat.course.nodes.gta.model.TaskListImpl;
 import org.olat.course.nodes.gta.model.TaskRevisionDateImpl;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
@@ -90,6 +94,7 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -923,7 +928,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				task.setAssignmentDate(new Date());
 				dbInstance.getCurrentEntityManager().persist(task);
 				dbInstance.commit();
-				syncAssessmentEntry((TaskImpl)currentTask, cNode);
+				syncAssessmentEntry((TaskImpl)currentTask, cNode, Role.user);
 				response = new AssignmentResponse(task, Status.ok);
 			}
 		} else {
@@ -931,7 +936,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				((TaskImpl)currentTask).setTaskStatus(TaskProcess.submit);
 			}
 			currentTask = dbInstance.getCurrentEntityManager().merge(currentTask);
-			syncAssessmentEntry((TaskImpl)currentTask, cNode);
+			syncAssessmentEntry((TaskImpl)currentTask, cNode, Role.user);
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
 		
@@ -1054,6 +1059,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				TaskImpl task = createTask(taskName, reloadedTasks, nextStep, businessGroup, identity, cNode);
 				task.setAssignmentDate(new Date());
 				dbInstance.getCurrentEntityManager().persist(task);
+				syncAssessmentEntry(task, cNode, Role.user);
 				response = new AssignmentResponse(task, Status.ok);
 			}
 			dbInstance.commit();
@@ -1066,7 +1072,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				}
 			}
 			currentTask = dbInstance.getCurrentEntityManager().merge(currentTask);
-			syncAssessmentEntry((TaskImpl)currentTask, cNode);
+			syncAssessmentEntry((TaskImpl)currentTask, cNode, Role.user);
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
 		return response;
@@ -1264,7 +1270,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
-	public Task nextStep(Task task, GTACourseNode cNode) {
+	public Task nextStep(Task task, GTACourseNode cNode, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		TaskProcess currentStep = taskImpl.getTaskStatus();
 		//cascade through the possible steps
@@ -1272,7 +1278,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		taskImpl.setTaskStatus(nextStep);
 		TaskImpl mergedTask = dbInstance.getCurrentEntityManager().merge(taskImpl);
 		dbInstance.commit();//make the thing definitiv
-		syncAssessmentEntry(mergedTask, cNode);
+		syncAssessmentEntry(mergedTask, cNode, by);
 		return mergedTask;
 	}
 	
@@ -1428,16 +1434,16 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setCollectionDate(new Date());
 		taskImpl.setCollectionNumOfDocs(numOfDocs);
-		return updateTask(task, review, cNode);
+		return updateTask(task, review, cNode, Role.coach);
 	}
 
 	@Override
-	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs) {
+	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs, Role by) {
 		TaskProcess review = nextStep(TaskProcess.submit, cNode);
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setSubmissionDate(new Date());
 		taskImpl.setSubmissionNumOfDocs(numOfDocs);
-		return updateTask(task, review, cNode);
+		return updateTask(task, review, cNode, by);
 	}
 
 	@Override
@@ -1445,7 +1451,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setAllowResetDate(new Date());
 		taskImpl.setAllowResetIdentity(allower);
-		return updateTask(task, task.getTaskStatus(), cNode);
+		return updateTask(task, task.getTaskStatus(), cNode, Role.coach);
 	}
 	
 	@Override
@@ -1453,7 +1459,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setTaskName(null);
 		taskImpl.setAllowResetDate(null);
-		Task updatedTask = updateTask(task, TaskProcess.assignment, cNode);
+		Task updatedTask = updateTask(task, TaskProcess.assignment, cNode, Role.user);
 		
 		File submissionDir = null;
 		if(updatedTask.getBusinessGroup() != null) {
@@ -1472,17 +1478,17 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setAllowResetDate(null);
 		taskImpl.setAllowResetIdentity(null);
-		return updateTask(task, task.getTaskStatus(), cNode);
+		return updateTask(task, task.getTaskStatus(), cNode, Role.user);
 	}
 
 	@Override
-	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs) {
+	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setSubmissionRevisionsDate(new Date());
 		taskImpl.setSubmissionRevisionsNumOfDocs(numOfDocs);
 		//log the date
 		createAndPersistTaskRevisionDate(taskImpl, taskImpl.getRevisionLoop(), TaskProcess.correction);
-		return updateTask(taskImpl, TaskProcess.correction, cNode);
+		return updateTask(taskImpl, TaskProcess.correction, cNode, by);
 	}
 	
 	@Override
@@ -1490,16 +1496,16 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		TaskProcess solution = nextStep(TaskProcess.correction, cNode);
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setAcceptationDate(new Date());
-		return updateTask(taskImpl, solution, cNode);
+		return updateTask(taskImpl, solution, cNode, Role.coach);
 	}
 
 	@Override
-	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode) {
+	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setTaskStatus(newStatus);
 		syncDates(taskImpl, newStatus);
 		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
-		syncAssessmentEntry(taskImpl, cNode);
+		syncAssessmentEntry(taskImpl, cNode, by);
 		
 		//update
 		OLATResource resource = taskImpl.getTaskList().getEntry().getOlatResource();
@@ -1543,14 +1549,14 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
-	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode) {
+	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setTaskStatus(newStatus);
 		taskImpl.setRevisionLoop(iteration);
 		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
 		//log date
 		createAndPersistTaskRevisionDate(taskImpl, iteration, newStatus);
-		syncAssessmentEntry(taskImpl, cNode);
+		syncAssessmentEntry(taskImpl, cNode, by);
 		return taskImpl;
 	}
 
@@ -1572,7 +1578,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		return assessmentStatus;
 	}
 	
-	private void syncAssessmentEntry(TaskImpl taskImpl, GTACourseNode cNode) {
+	private void syncAssessmentEntry(TaskImpl taskImpl, GTACourseNode cNode, Role by) {
 		if(taskImpl == null || taskImpl.getTaskStatus() == null || cNode == null) return;
 		
 		RepositoryEntry courseRepoEntry = taskImpl.getTaskList().getEntry();
@@ -1581,8 +1587,14 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			//update whole group
 			assessmentService.updateAssessmentEntries(taskImpl.getBusinessGroup(), courseRepoEntry, cNode.getIdent(), null, assessmentStatus);
 		} else {
-			assessmentService.updateAssessmentEntry(taskImpl.getIdentity(), courseRepoEntry, cNode.getIdent(), null, assessmentStatus);
-		}	
+			Identity assessedIdentity = taskImpl.getIdentity();
+			assessmentService.updateAssessmentEntry(assessedIdentity, courseRepoEntry, cNode.getIdent(), null, assessmentStatus);
+			dbInstance.commit();
+
+			ICourse course = CourseFactory.loadCourse(courseRepoEntry);
+			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+			cNode.updateLastModifications(userCourseEnv, taskImpl.getIdentity(), by);
+		}
 	}
 
 	private TaskList loadForUpdate(TaskList tasks) {

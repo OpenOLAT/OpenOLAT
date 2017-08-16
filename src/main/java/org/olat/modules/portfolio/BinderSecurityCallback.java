@@ -21,6 +21,8 @@ package org.olat.modules.portfolio;
 
 import java.util.List;
 
+import org.olat.modules.assessment.Role;
+
 /**
  * 
  * Initial date: 15.06.2016<br>
@@ -117,6 +119,9 @@ public interface BinderSecurityCallback {
 	public boolean canViewAssess(PortfolioElement element);
 	
 	public boolean canViewAssessment();
+	
+
+	public Role getRole();
  
 
 }

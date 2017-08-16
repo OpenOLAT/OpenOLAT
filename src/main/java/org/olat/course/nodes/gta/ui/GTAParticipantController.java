@@ -69,6 +69,7 @@ import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -338,7 +339,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	
 	private void doSubmitDocuments(UserRequest ureq, Task task) {
 		int numOfDocs = getNumberOfSubmittedDocuments();
-		task = gtaManager.submitTask(task, gtaNode, numOfDocs);
+		task = gtaManager.submitTask(task, gtaNode, numOfDocs, Role.user);
 		showInfo("run.documents.successfully.submitted");
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUMBIT_TASK,
@@ -843,4 +844,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		listenTo(chooserCalloutCtrl);
 		chooserCalloutCtrl.activate();
 	}
+
+	@Override
+	protected Role getDoer() {
+		return Role.user;
+	}	
 }

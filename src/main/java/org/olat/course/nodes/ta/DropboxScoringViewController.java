@@ -80,6 +80,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.properties.Property;
 import org.olat.user.UserManager;
@@ -300,7 +301,7 @@ public class DropboxScoringViewController extends BasicController {
 						AssessmentEvaluation eval = acn.getUserScoreEvaluation(userCourseEnv);
 						if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 							eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
-							acn.updateUserScoreEvaluation(eval, userCourseEnv, coach, false);
+							acn.updateUserScoreEvaluation(eval, userCourseEnv, coach, false, Role.coach);
 						}
 					}
 
@@ -339,7 +340,7 @@ public class DropboxScoringViewController extends BasicController {
 					}
 					if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 						eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
-						acn.updateUserScoreEvaluation(eval, userCourseEnv, getIdentity(), false);
+						acn.updateUserScoreEvaluation(eval, userCourseEnv, getIdentity(), false, Role.coach);
 						fireEvent(ureq, Event.CHANGED_EVENT);
 					}
 				}

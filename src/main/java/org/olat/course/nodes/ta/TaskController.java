@@ -66,6 +66,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.properties.Property;
 
@@ -352,7 +353,7 @@ public class TaskController extends BasicController {
 		AssessmentEvaluation eval = node.getUserScoreEvaluation(userCourseEnv);
 		if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 			eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
-			node.updateUserScoreEvaluation(eval, userCourseEnv, getIdentity(), false);
+			node.updateUserScoreEvaluation(eval, userCourseEnv, getIdentity(), false, Role.user);
 		}
 	}
 	

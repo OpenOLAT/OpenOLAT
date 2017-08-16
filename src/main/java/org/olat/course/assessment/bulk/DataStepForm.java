@@ -119,7 +119,7 @@ public class DataStepForm extends StepFormBasicController {
 			OlatRootFileImpl file = new OlatRootFileImpl(savedDatas.getDataBackupFile(), null);
 			InputStream in = file.getInputStream();
 			try {
-				dataVal = IOUtils.toString(in);
+				dataVal = IOUtils.toString(in, "UTF-8");
 			} catch (IOException e) {
 				logError("", e);
 			} finally {
@@ -238,7 +238,7 @@ public class DataStepForm extends StepFormBasicController {
 		OutputStream out = inputFile.getOutputStream(false);
 
 		try {
-			IOUtils.write(val, out);
+			IOUtils.write(val, out, "UTF-8");
 			datas.setDataBackupFile(inputFile.getRelPath());
 		} catch (IOException e) {
 			logError("", e);

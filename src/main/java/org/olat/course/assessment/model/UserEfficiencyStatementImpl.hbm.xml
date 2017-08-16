@@ -20,6 +20,8 @@
 	<version name="version" access="field" column="version" type="int"/>
 	<property name="creationDate" column="creationdate" type="timestamp" />
 	<property name="lastModified" column="lastmodified" type="timestamp" />
+	<property name="lastUserModified" column="lastusermodified" type="timestamp" />
+	<property name="lastCoachModified" column="lastcoachmodified" type="timestamp" />
 
 	<property name="score" column="score" type="float" />
 	<property name="passed" column="passed" type="boolean" />
@@ -66,6 +68,8 @@
 	<version name="version" access="field" column="version" type="int"/>
 	<property name="creationDate" column="creationdate" type="timestamp" />
 	<property name="lastModified" column="lastmodified" type="timestamp" />
+	<property name="lastUserModified" column="lastusermodified" type="timestamp" />
+	<property name="lastCoachModified" column="lastcoachmodified" type="timestamp" />
 
 	<property name="score" column="score" type="float" />
 	<property name="passed" column="passed" type="boolean" />
@@ -104,6 +108,8 @@
 	<version name="version" access="field" column="version" type="int"/>
 	<property name="creationDate" column="creationdate" type="timestamp" />
 	<property name="lastModified" column="lastmodified" type="timestamp" />
+	<property name="lastUserModified" column="lastusermodified" type="timestamp" />
+	<property name="lastCoachModified" column="lastcoachmodified" type="timestamp" />
 
 	<property name="score" column="score" type="float" />
 	<property name="passed" column="passed" type="boolean" />

@@ -44,6 +44,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -103,7 +104,7 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	 * @see org.olat.course.assessment.AssessmentManager#saveNodeAttempts(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, java.lang.Integer)
 	 */
 	@Override
-	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts) {
+	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts, Role by) {
 		nodeAttempts.put(courseNode.getIdent(), attempts);
 	}
 
@@ -150,7 +151,7 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	 * @see org.olat.course.assessment.AssessmentManager#incrementNodeAttempts(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
 	 */
 	@Override
-	public void incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment) {
+	public void incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment, Role by) {
 		Integer attempts = nodeAttempts.get(courseNode.getIdent());
 		if (attempts == null) attempts = new Integer(0);
 		int iAttempts = attempts.intValue();
@@ -164,7 +165,12 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	 */
 	@Override
 	public void incrementNodeAttemptsInBackground(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment) {
-		incrementNodeAttempts(courseNode, identity, userCourseEnvironment);
+		incrementNodeAttempts(courseNode, identity, userCourseEnvironment, Role.auto);
+	}
+
+	@Override
+	public void updateLastModifications(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment, Role by) {
+		//
 	}
 
 	/**
@@ -263,13 +269,13 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	 */
 	@Override
 	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity, ScoreEvaluation scoreEvaluation, 
-			UserCourseEnvironment userCourseEnvironment, boolean incrementUserAttempts) {
+			UserCourseEnvironment userCourseEnvironment, boolean incrementUserAttempts, Role by) {
 		
 		saveNodeScore(courseNode, scoreEvaluation.getScore());
 		saveNodePassed(courseNode, scoreEvaluation.getPassed());
 		saveAssessmentID(courseNode, scoreEvaluation.getAssessmentID());
 		if(incrementUserAttempts) {
-			incrementNodeAttempts(courseNode, identity, userCourseEnvironment);
+			incrementNodeAttempts(courseNode, identity, userCourseEnvironment, by);
 		}
 	}
 

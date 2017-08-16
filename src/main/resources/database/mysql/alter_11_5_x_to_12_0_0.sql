@@ -255,4 +255,10 @@ alter table o_gta_task add constraint gtaskreset_to_allower_idx foreign key (fk_
 alter table o_info_message add column attachmentpath varchar(1024) default null;
 
 
+alter table o_as_entry add column lastcoachmodified datetime default null;
+alter table o_as_entry add column lastusermodified datetime default null;
+
+alter table o_as_eff_statement add column lastcoachmodified datetime default null;
+alter table o_as_eff_statement add column lastusermodified datetime default null;
+
 

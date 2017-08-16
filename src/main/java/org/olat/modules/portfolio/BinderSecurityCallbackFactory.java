@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.repository.model.RepositoryEntrySecurity;
 
@@ -102,7 +103,12 @@ public class BinderSecurityCallbackFactory {
 		public boolean canRestorePage(Page page) {
 			return page.getPageStatus() == PageStatus.deleted;
 		}
-		
+
+		@Override
+		public Role getRole() {
+			return Role.user;
+		}
+
 	}
 	
 	private static class BinderSecurityCallbackForDeletedBinder extends DefaultBinderSecurityCallback {
@@ -680,6 +686,11 @@ public class BinderSecurityCallbackFactory {
 			}
 			return false;
 		}
+
+		@Override
+		public Role getRole() {
+			return owner ? Role.user : Role.coach;
+		}
 	}
 	
 	private static class DefaultBinderSecurityCallback implements BinderSecurityCallback {
@@ -842,6 +853,11 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canViewAssessment() {
 			return false;
-		}	
+		}
+
+		@Override
+		public Role getRole() {
+			return Role.coach;
+		}
 	}
 }

@@ -92,6 +92,7 @@ import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.iq.IQDisplayController;
 import org.olat.modules.iq.IQManager;
@@ -518,7 +519,7 @@ public class IQRunController extends BasicController implements GenericEventList
 			
 			ScoreEvaluation sceval = new ScoreEvaluation(ac.getScore(), ac.isPassed(), assessmentStatus, userVisibility, fullyAssed, ai.getAssessID());
 			AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assessable		
-			acn.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true);
+			acn.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true, Role.user);
 				
 			// Mark publisher for notifications
 			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
@@ -534,10 +535,10 @@ public class IQRunController extends BasicController implements GenericEventList
 			// although this is not an assessable node we still use the assessment
 			// manager since this one uses caching
 			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-			am.incrementNodeAttempts(courseNode, getIdentity(), userCourseEnv);
+			am.incrementNodeAttempts(courseNode, getIdentity(), userCourseEnv, Role.user);
 		} else if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SELF)){
 			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-			am.incrementNodeAttempts(courseNode, getIdentity(), userCourseEnv);
+			am.incrementNodeAttempts(courseNode, getIdentity(), userCourseEnv, Role.user);
 		}
 	}
 

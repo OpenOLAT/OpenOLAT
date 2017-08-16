@@ -51,6 +51,12 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 	private String statementXml;
 	
 	private Date lastModified;
+	private Date lastUserModified;
+	private Date lastCoachModified;
+	
+	public UserEfficiencyStatementImpl() {
+		//
+	}
 
 	@Override
 	public Date getLastModified() {
@@ -60,6 +66,22 @@ public class UserEfficiencyStatementImpl extends PersistentObject implements Use
 	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
+	}
+
+	public Date getLastUserModified() {
+		return lastUserModified;
+	}
+
+	public void setLastUserModified(Date lastUserModified) {
+		this.lastUserModified = lastUserModified;
+	}
+
+	public Date getLastCoachModified() {
+		return lastCoachModified;
+	}
+
+	public void setLastCoachModified(Date lastCoachModified) {
+		this.lastCoachModified = lastCoachModified;
 	}
 
 	@Override

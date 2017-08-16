@@ -77,6 +77,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -396,10 +397,10 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	@Override
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity, boolean incrementAttempts) {
+			Identity coachingIdentity, boolean incrementAttempts, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts);
+		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts, by);
 	}
 
 	/**
@@ -456,7 +457,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 *      org.olat.core.id.Identity)
 	 */
 	@Override
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
 		throw new OLATRuntimeException(CheckListCourseNode.class, "Attempts variable can't be updated in ST nodes", null);
 	}
 
@@ -464,8 +465,15 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment) {
+	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
 		throw new OLATRuntimeException(CheckListCourseNode.class, "Attempts variable can't be updated in ST nodes", null);
+	}
+	
+	@Override
+	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
 	}
 
 	/**
@@ -588,22 +596,25 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 * @param userCourseEnv
 	 * @param assessedIdentity
 	 */
-	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity) {
+	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity, Role by) {
 		ModuleConfiguration config = getModuleConfiguration();
 		Boolean sum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
 		Float cutValue = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		Float maxScore = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		Boolean manualCorrection = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_MANUAL_CORRECTION);
 		if(cutValue != null) {
-			doUpdateAssessment(cutValue, maxScore, identity, assessedUserCourseEnv, assessedIdentity);
+			doUpdateAssessment(cutValue, maxScore, identity, assessedUserCourseEnv, assessedIdentity, by);
 		} else if(sum != null && sum.booleanValue()) {
-			doUpdateAssessmentBySum(identity, assessedUserCourseEnv, assessedIdentity);
+			doUpdateAssessmentBySum(identity, assessedUserCourseEnv, assessedIdentity, by);
 		} else if(manualCorrection != null && manualCorrection.booleanValue()) {
-			doUpdateManualAssessment(maxScore, identity, assessedUserCourseEnv, assessedIdentity);
+			doUpdateManualAssessment(maxScore, identity, assessedUserCourseEnv, assessedIdentity, by);
+		} else {
+			AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
+			am.updateLastModifications(this, assessedIdentity, assessedUserCourseEnv, by);
 		}
 	}
 	
-	private void doUpdateAssessment(Float cutValue, Float maxScore, Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity) {
+	private void doUpdateAssessment(Float cutValue, Float maxScore, Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity, Role by) {
 		OLATResourceable courseOres = OresHelper
 				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		
@@ -621,10 +632,10 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), passed);
 		
 		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
-		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false);
+		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false, by);
 	}
 	
-	private void doUpdateAssessmentBySum(Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity) {
+	private void doUpdateAssessmentBySum(Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity, Role by) {
 		OLATResourceable courseOres = OresHelper
 				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		
@@ -651,10 +662,10 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		ScoreEvaluation sceval = new ScoreEvaluation(score, new Boolean(passed));
 		
 		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
-		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false);
+		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false, by);
 	}
 	
-	private void doUpdateManualAssessment(Float maxScore, Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity) {
+	private void doUpdateManualAssessment(Float maxScore, Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity, Role by) {
 		OLATResourceable courseOres = OresHelper
 				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		
@@ -667,7 +678,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
 		ScoreEvaluation currentEval = getUserScoreEvaluation(am.getAssessmentEntry(this, assessedIdentity));
 		ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), currentEval.getPassed());
-		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false);
+		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false, by);
 	}
 	
 	@Override
@@ -812,7 +823,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);
 			IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
-			am.saveScoreEvaluation(this, coachIdentity, assessedIdentity, scoreEval, uce, false);
+			am.saveScoreEvaluation(this, coachIdentity, assessedIdentity, scoreEval, uce, false, Role.coach);
 		}
 	}
 

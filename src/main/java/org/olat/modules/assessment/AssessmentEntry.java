@@ -40,6 +40,14 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	
 	public Date getLastModified();
 	
+	public Date getLastCoachModified();
+	
+	public void setLastCoachModified(Date date);
+	
+	public Date getLastUserModified();
+	
+	public void setLastUserModified(Date date);
+	
 	public Long getAssessmentId();
 	
 	public void setAssessmentId(Long assessmentId);
