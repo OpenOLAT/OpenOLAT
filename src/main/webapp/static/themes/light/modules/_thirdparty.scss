@@ -260,9 +260,13 @@ i.mce-ico.mce-i-help:before {
 	content: $fa-var-question-circle;
 }
 
-.mce-wordcount.mce-danger:after {
+.mce-danger .mce-wordcount:after {
 	color: $brand-danger;
 	content: $fa-var-exclamation-circle;
+}
+
+.mce-statusbar.mce-danger {
+	background-color: $alert-danger-bg;
 }
 
 /*

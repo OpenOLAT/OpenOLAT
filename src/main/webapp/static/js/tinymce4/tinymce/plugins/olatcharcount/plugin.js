@@ -14,7 +14,7 @@
 				author : 'frentix GmbH',
 				authorurl : 'http://www.frentix.com',
 				infourl : 'http://www.frentix.com',
-				version : '1.0.0'
+				version : '1.0.1'
 			};
 		},
 
@@ -61,7 +61,9 @@
 	            ed.theme.panel.find('#wordcount').text([label, count]);
 	            var maxSize = ed.getParam("maxSize");
 	            if(count > maxSize) {
-	            		ed.theme.panel.find('#wordcount').addClass('danger');
+	            		ed.theme.panel.find('#statusbar').addClass('danger');
+	            } else {
+	            		ed.theme.panel.find('#statusbar').removeClass('danger');
 	            }
 	        }
 	        
