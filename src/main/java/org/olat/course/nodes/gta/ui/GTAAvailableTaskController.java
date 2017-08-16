@@ -60,6 +60,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
+import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.component.DescriptionWithTooltipCellRenderer;
@@ -270,11 +271,11 @@ public class GTAAvailableTaskController extends FormBasicController {
 			showInfo("task.successfully.assigned");
 			fireEvent(ureq, Event.DONE_EVENT);
 			gtaManager.log("Assignment", "task assigned", response.getTask(), getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
-			doSendConfirmationEmail();
+			doSendConfirmationEmail(response.getTask());
 		}
 	}
 	
-	private void doSendConfirmationEmail() {
+	private void doSendConfirmationEmail(Task assignedTask) {
 		MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
 		
 		MailBundle bundle = new MailBundle();
@@ -288,9 +289,15 @@ public class GTAAvailableTaskController extends FormBasicController {
 			contacts.add(assessedIdentity);
 		}
 		bundle.setContactList(contacts);
-
-		String subject = translate("mail.confirm.assignment.subject");
-		String body = translate("mail.confirm.assignment.body");
+		
+		String[] args = new String[] {
+			getIdentity().getUser().getFirstName(),	//0 first name
+			getIdentity().getUser().getLastName(),	//1 last name
+			courseEnv.getCourseTitle(),				//2 course name
+			assignedTask.getTaskName()				//3 task
+		};
+		String subject = translate("mail.confirm.assignment.subject", args);
+		String body = translate("mail.confirm.assignment.body", args);
 		bundle.setContent(subject, body);
 
 		mailManager.sendMessage(bundle);

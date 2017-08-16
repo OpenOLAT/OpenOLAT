@@ -532,7 +532,11 @@ class GTANotifications {
 				};
 				
 				if(score != null && status != null) {
-					appendSubscriptionItem("notifications.assessment.score.passed", params, assessedIdentity, graduationDate, coach);
+					if(assessment.getPassed().booleanValue()) {
+						appendSubscriptionItem("notifications.assessment.score.passed", params, assessedIdentity, graduationDate, coach);
+					} else {
+						appendSubscriptionItem("notifications.assessment.score.notpassed", params, assessedIdentity, graduationDate, coach);
+					}
 				} else if(score != null) {
 					appendSubscriptionItem("notifications.assessment.score", params, assessedIdentity, graduationDate, coach);
 				} else if(status != null) {
