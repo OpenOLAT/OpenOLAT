@@ -71,6 +71,12 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackImpl(rights, template != null, deliveryOptions);
 	}
 	
+	public static final BinderSecurityCallback getCallbackForCourseCoach(Binder binder, List<AccessRights> rights) {
+		Binder template = binder.getTemplate();
+		BinderDeliveryOptions deliveryOptions = getDeliveryOptions(binder);
+		return new BinderSecurityCallbackForCoach(rights, template != null, deliveryOptions);
+	}
+	
 	/**
 	 * Invitee can only comment binders
 	 * @return
@@ -269,6 +275,23 @@ public class BinderSecurityCallbackFactory {
 		
 		public BinderSecurityCallbackGroup(boolean owner, boolean task, BinderDeliveryOptions deliveryOptions) {
 			super(owner, task, deliveryOptions);
+		}
+
+		@Override
+		public boolean canDeleteBinder(Binder binder) {
+			return false;
+		}
+	}
+	
+	private static class BinderSecurityCallbackForCoach extends BinderSecurityCallbackImpl {
+
+		public BinderSecurityCallbackForCoach(List<AccessRights> rights, boolean task, BinderDeliveryOptions deliveryOptions) {
+			super(rights, task, deliveryOptions);
+		}
+
+		@Override
+		public boolean canViewAssess(PortfolioElement element) {
+			return true;
 		}
 
 		@Override

@@ -44,6 +44,8 @@ import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * This is the assessment view for a portfolio resource. The coaches can see
+ * all sections.
  * 
  * Initial date: 28.06.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -123,7 +125,7 @@ public class PortfolioAssessmentDetailsController extends BasicController {
 			mainVC.contextPut("returnDate", returnDate);
 			
 			List<AccessRights> rights = portfolioService.getAccessRights(loadedBinder, getIdentity());
-			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(loadedBinder, rights);
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCourseCoach(loadedBinder, rights);
 			BinderConfiguration config = BinderConfiguration.createConfig(loadedBinder);
 			
 			assessmentCtrl = new BinderAssessmentController(ureq, getWindowControl(),
