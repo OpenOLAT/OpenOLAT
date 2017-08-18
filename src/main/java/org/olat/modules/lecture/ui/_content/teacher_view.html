@@ -1,6 +1,7 @@
 <div class="o_lectures_teacher_overview">
-	<div class="o_lectures_teacher_search clearfix">
+	<div class="o_lectures_teacher_search clearfix" style="position:relative;">
 		$r.render("search")
+		$r.contextHelpWithWrapper("Lectures - Teacher view")
 	</div>
 	#if($r.isNotNull($totalBlockSize) && $totalBlockSize > 0)
 		#if($r.isNotNull($currentBlockSize) && $currentBlockSize > 0)

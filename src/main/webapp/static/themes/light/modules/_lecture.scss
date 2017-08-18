@@ -32,6 +32,13 @@
 	}
 	.o_lectures_teacher_search .o_form .o_date {
 		padding-right: 10px;
+		position: relative;
+	}
+	
+	.o_lectures_teacher_search span.o_chelp_wrapper {
+		position: absolute;
+		top: 0;
+		right: 0;
 	}
 }
 

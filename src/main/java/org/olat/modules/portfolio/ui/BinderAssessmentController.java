@@ -98,6 +98,7 @@ public class BinderAssessmentController extends FormBasicController {
 	private boolean withScore;
 	private boolean withPassed;
 	private Float minScore, maxScore;
+	private final String displayname;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -111,6 +112,7 @@ public class BinderAssessmentController extends FormBasicController {
 		withScore = config.isWithScore();
 		minScore = config.getMinScore();
 		maxScore = config.getMaxScore();
+		displayname = config.getDisplayname();
 		initForm(ureq);
 		loadModel();
 	}
@@ -334,10 +336,10 @@ public class BinderAssessmentController extends FormBasicController {
 			}
 			
 			if(maxScore != null && (maxScore.doubleValue() < scoreTotal)) {
-				flc.contextPut("scoreError", translate("error.score", new String[] { "0", AssessmentHelper.getRoundedScore(maxScore)}));
+				flc.contextPut("scoreError", translate("error.score", new String[] { "0", AssessmentHelper.getRoundedScore(maxScore), displayname }));
 				allOk &= false;
 			} else if(minScore != null && (minScore.doubleValue() > scoreTotal)) {
-				flc.contextPut("scoreError", translate("error.score", new String[] { "0", AssessmentHelper.getRoundedScore(maxScore)}));
+				flc.contextPut("scoreError", translate("error.score", new String[] { "0", AssessmentHelper.getRoundedScore(maxScore), displayname }));
 				allOk &= false;
 			}
 		}

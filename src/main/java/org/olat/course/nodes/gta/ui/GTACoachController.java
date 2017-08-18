@@ -789,6 +789,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		gtaManager.log("Allow reset task", "Allow the user to reset the task", assignedTask, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode);
 		cleanUpProcess();
 		process(ureq);
+		showInfo("info.task.reset.allowed", (String)null);
 	}
 	
 	private void doOpenMailForm(UserRequest ureq) {
