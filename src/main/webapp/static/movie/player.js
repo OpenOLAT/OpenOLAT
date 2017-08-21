@@ -242,8 +242,6 @@ var BPlayer = {
 				alert('Something go badly wrong!' + config.provider + "  " + extension);
 			}
 		}
-		
-		console.log(config);
 
 		var content;
 		var mediaDomId = domId + '_oo' + Math.floor(Math.random() * 1000000) + 'vid';
