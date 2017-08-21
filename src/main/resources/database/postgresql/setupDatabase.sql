@@ -455,10 +455,10 @@ create table o_bs_membership (
 );
 
 create table o_plock (
-    plock_id int8 not null, 
+    plock_id int8 not null,
     version int4 not null,
-    creationdate timestamp, 
-    asset varchar(255) not null unique, 
+    creationdate timestamp,
+    asset varchar(255) not null unique,
     primary key (plock_id)
 );
 
@@ -479,22 +479,22 @@ create table o_lifecycle (
 );
 
 create table oc_lock (
-	lock_id int8 not null, 
+	lock_id int8 not null,
 	version int4 not null,
-	creationdate timestamp, 
-	identity_fk int8 not null, 
-	asset varchar(120) not null unique, 
+	creationdate timestamp,
+	identity_fk int8 not null,
+	asset varchar(120) not null unique,
 	primary key (lock_id)
 );
 alter table oc_lock add constraint FK9E30F4B66115906D foreign key (identity_fk) references o_bs_identity;
 
 create table o_readmessage (
-	id int8 not null, 
+	id int8 not null,
 	version int4 not null,
     creationdate timestamp,
-	identity_id int8 not null, 
-	forum_id int8 not null, 
-	message_id int8 not null, 
+	identity_id int8 not null,
+	forum_id int8 not null,
+	message_id int8 not null,
 	primary key (id)
 );
 
@@ -564,7 +564,7 @@ create table o_checkpoint_results (
    lastmodified timestamp not null,
    result bool not null,
    checkpoint_fk int8,
-   identity_fk int8, 
+   identity_fk int8,
    primary key (checkpoint_result_id)
 );
 
@@ -599,27 +599,27 @@ create table o_projectbroker_customfields (
 );
 
 create table o_usercomment (
-	comment_id int8 not null, 
-	version int4 not null, 
-	creationdate timestamp, 
-	resname varchar(50) not null, 
-	resid int8 not null, 
-	ressubpath varchar(2048), 
+	comment_id int8 not null,
+	version int4 not null,
+	creationdate timestamp,
+	resname varchar(50) not null,
+	resid int8 not null,
+	ressubpath varchar(2048),
 	creator_id int8 not null,
-	commenttext text, 
-	parent_key int8, 
+	commenttext text,
+	parent_key int8,
 	primary key (comment_id)
 );
 create table o_userrating (
-	rating_id int8 not null, 
-	version int4 not null, 
-	creationdate timestamp, 
+	rating_id int8 not null,
+	version int4 not null,
+	creationdate timestamp,
 	lastmodified timestamp,
-	resname varchar(50) not null, 
-	resid int8 not null, 
-	ressubpath varchar(2048), 
+	resname varchar(50) not null,
+	resid int8 not null,
+	ressubpath varchar(2048),
 	creator_id int8 not null,
-	rating int4 not null, 
+	rating int4 not null,
 	primary key (rating_id)
 );
 create table o_info_message (
@@ -705,7 +705,7 @@ create table o_ep_struct_el (
   target_resid int8,
   target_ressubpath varchar(2048),
   target_businesspath varchar(2048),
-  style varchar(128),  
+  style varchar(128),
   status varchar(32),
   viewmode varchar(32),
   fk_struct_root_id int8,
@@ -713,7 +713,7 @@ create table o_ep_struct_el (
   fk_map_source_id int8,
   fk_group_id int8,
   fk_olatresource int8 not null,
-  primary key (structure_id)  
+  primary key (structure_id)
 );
 create table o_ep_struct_struct_link (
   link_id int8 not null,
@@ -1958,12 +1958,12 @@ create table o_feed (
    f_resourceable_id bigint,
    f_resourceable_type varchar(64),
    f_title varchar(1024),
-   f_description varchar(1024),
+   f_description varchar(4000),
    f_author varchar(255),
-   f_image_name varchar(255),
+   f_image_name varchar(1024),
    f_external boolean,
-   f_external_feed_url varchar(1024),
-   f_external_image_url varchar(1024),
+   f_external_feed_url varchar(4000),
+   f_external_image_url varchar(4000),
    primary key (id)
 );
 
@@ -1976,7 +1976,7 @@ create table o_feed_item (
    f_content text,
    f_author varchar(255),
    f_guid varchar(255),
-   f_external_link varchar(1024),
+   f_external_link varchar(4000),
    f_draft boolean,
    f_publish_date timestamp,
    f_width int8,
@@ -1984,7 +1984,7 @@ create table o_feed_item (
    f_filename varchar(1024),
    f_type varchar(255),
    f_length bigint,
-   f_external_url varchar(1024),
+   f_external_url varchar(4000),
    fk_feed_id bigint,
    fk_identity_author_id int8,
    fk_identity_modified_id int8,
@@ -2173,7 +2173,7 @@ create or replace view o_ep_notifications_rating_v as (
       page.title as page_title,
       urating.creator_id as author_id,
       urating.creationdate as creation_date,
-      urating.lastmodified as last_modified 
+      urating.lastmodified as last_modified
    from o_userrating as urating
    inner join o_olatresource as rating_resource on (rating_resource.resid = urating.resid and rating_resource.resname = urating.resname)
    inner join o_ep_struct_el as map on (map.fk_olatresource = rating_resource.resource_id)
@@ -2196,7 +2196,7 @@ create or replace view o_ep_notifications_comment_v as (
 );
 
 create view o_gp_business_to_repository_v as (
-	select 
+	select
 		grp.group_id as grp_id,
 		repoentry.repositoryentry_id as re_id,
 		repoentry.displayname as re_displayname
@@ -2227,9 +2227,9 @@ create or replace view o_re_membership_v as (
       re.repositoryentry_id as fk_entry_id
    from o_repositoryentry as re
    inner join o_re_to_group relgroup on (relgroup.fk_entry_id=re.repositoryentry_id and relgroup.r_defgroup=true)
-   inner join o_bs_group_member as bmember on (bmember.fk_group_id=relgroup.fk_group_id) 
+   inner join o_bs_group_member as bmember on (bmember.fk_group_id=relgroup.fk_group_id)
 );
-  
+
 -- contacts
 create view o_gp_contactkey_v as (
    select

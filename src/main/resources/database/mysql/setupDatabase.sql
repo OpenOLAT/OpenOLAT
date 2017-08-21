@@ -295,7 +295,7 @@ create table if not exists o_user (
    u_genericcheckboxproperty varchar(255),
    u_genericcheckboxproperty2 varchar(255),
    u_genericcheckboxproperty3 varchar(255),
-   
+
    fk_identity bigint,
    primary key (user_id)
 );
@@ -462,8 +462,8 @@ create table if not exists o_bs_membership (
 create table if not exists o_plock (
     plock_id bigint not null,
 	version mediumint unsigned not null,
-    creationdate datetime, 
-    asset varchar(255) not null unique, 
+    creationdate datetime,
+    asset varchar(255) not null unique,
     primary key (plock_id)
 );
 
@@ -484,21 +484,21 @@ create table if not exists o_lifecycle (
 );
 
 create table if not exists oc_lock (
-	lock_id bigint not null, 
-	version mediumint unsigned not null, 
-	creationdate datetime, 
-	identity_fk bigint not null, 
-	asset varchar(120) not null unique, 
+	lock_id bigint not null,
+	version mediumint unsigned not null,
+	creationdate datetime,
+	identity_fk bigint not null,
+	asset varchar(120) not null unique,
 	primary key (lock_id)
 );
 
 create table if not exists o_readmessage (
-	id bigint not null, 
+	id bigint not null,
 	version mediumint unsigned not null,
     creationdate datetime,
-	identity_id bigint not null, 
-	forum_id bigint not null, 
-	message_id bigint not null, 
+	identity_id bigint not null,
+	forum_id bigint not null,
+	message_id bigint not null,
 	primary key (id)
 );
 
@@ -568,7 +568,7 @@ create table if not exists o_checkpoint_results (
    lastmodified datetime not null,
    result bool not null,
    checkpoint_fk bigint,
-   identity_fk bigint, 
+   identity_fk bigint,
    primary key (checkpoint_result_id)
 );
 
@@ -591,7 +591,7 @@ create table if not exists o_projectbroker_project (
    mailNotificationEnabled boolean not null,
    projectgroup_fk bigint not null,
    projectbroker_fk bigint not null,
-   candidategroup_fk bigint not null, 
+   candidategroup_fk bigint not null,
    primary key (project_id)
 );
 
@@ -603,27 +603,27 @@ create table if not exists o_projectbroker_customfields (
 );
 
 create table if not exists o_usercomment (
-	comment_id bigint not null, 
-	version mediumint unsigned not null, 
-	creationdate datetime, 
-	resname varchar(50) not null, 
-	resid bigint not null, 
-	ressubpath varchar(2048), 
+	comment_id bigint not null,
+	version mediumint unsigned not null,
+	creationdate datetime,
+	resname varchar(50) not null,
+	resid bigint not null,
+	ressubpath varchar(2048),
   	creator_id bigint not null,
-	commenttext longtext, 
-	parent_key bigint, 
+	commenttext longtext,
+	parent_key bigint,
 	primary key (comment_id)
 );
 create table if not exists o_userrating (
-	rating_id bigint not null, 
-	version mediumint unsigned not null, 
-	creationdate datetime, 
+	rating_id bigint not null,
+	version mediumint unsigned not null,
+	creationdate datetime,
 	lastmodified datetime,
-	resname varchar(50) not null, 
-	resid bigint not null, 
-	ressubpath varchar(2048), 
+	resname varchar(50) not null,
+	resid bigint not null,
+	ressubpath varchar(2048),
     creator_id bigint not null,
-	rating integer not null, 
+	rating integer not null,
 	primary key (rating_id)
 );
 
@@ -865,7 +865,7 @@ create table if not exists o_ep_struct_el (
   target_resid bigint,
   target_ressubpath varchar(2048),
   target_businesspath varchar(2048),
-  style varchar(128),  
+  style varchar(128),
   status varchar(32),
   viewmode varchar(32),
   fk_struct_root_id bigint,
@@ -873,7 +873,7 @@ create table if not exists o_ep_struct_el (
   fk_map_source_id bigint,
   fk_group_id bigint,
   fk_olatresource bigint not null,
-  primary key (structure_id)  
+  primary key (structure_id)
 );
 create table if not exists o_ep_struct_struct_link (
   link_id bigint not null,
@@ -1442,7 +1442,7 @@ create table o_qti_assessmenttest_session (
    q_duration bigint,
    q_score float(65,30) default null,
    q_manual_score float(65,30) default null,
-   q_passed bit default null, 
+   q_passed bit default null,
    q_storage varchar(1024),
    fk_reference_entry bigint not null,
    fk_entry bigint,
@@ -1961,12 +1961,12 @@ create table o_feed (
    f_resourceable_id bigint,
    f_resourceable_type varchar(64),
    f_title varchar(1024),
-   f_description varchar(1024),
+   f_description varchar(4000),
    f_author varchar(255),
-   f_image_name varchar(255),
+   f_image_name varchar(1024),
    f_external boolean,
-   f_external_feed_url varchar(1024),
-   f_external_image_url varchar(1024),
+   f_external_feed_url varchar(4000),
+   f_external_image_url varchar(4000),
    primary key (id)
 );
 
@@ -1979,7 +1979,7 @@ create table o_feed_item (
    f_content mediumtext,
    f_author varchar(255),
    f_guid varchar(255),
-   f_external_link varchar(1024),
+   f_external_link varchar(4000),
    f_draft boolean,
    f_publish_date datetime,
    f_width bigint,
@@ -1987,7 +1987,7 @@ create table o_feed_item (
    f_filename varchar(1024),
    f_type varchar(255),
    f_length bigint,
-   f_external_url varchar(1024),
+   f_external_url varchar(4000),
    fk_feed_id bigint not null,
    fk_identity_author_id bigint,
    fk_identity_modified_id bigint,
@@ -2175,7 +2175,7 @@ create or replace view o_ep_notifications_rating_v as (
       page.title as page_title,
       urating.creator_id as author_id,
       urating.creationdate as creation_date,
-      urating.lastmodified as last_modified 
+      urating.lastmodified as last_modified
    from o_userrating as urating
    inner join o_olatresource as rating_resource on (rating_resource.resid = urating.resid and rating_resource.resname = urating.resname)
    inner join o_ep_struct_el as map on (map.fk_olatresource = rating_resource.resource_id)
@@ -2198,7 +2198,7 @@ create or replace view o_ep_notifications_comment_v as (
 );
 
 create view o_gp_business_to_repository_v as (
-	select 
+	select
 		grp.group_id as grp_id,
 		repoentry.repositoryentry_id as re_id,
 		repoentry.displayname as re_displayname
@@ -2229,9 +2229,9 @@ create or replace view o_re_membership_v as (
       re.repositoryentry_id as fk_entry_id
    from o_repositoryentry as re
    inner join o_re_to_group relgroup on (relgroup.fk_entry_id=re.repositoryentry_id and relgroup.r_defgroup=1)
-   inner join o_bs_group_member as bmember on (bmember.fk_group_id=relgroup.fk_group_id) 
+   inner join o_bs_group_member as bmember on (bmember.fk_group_id=relgroup.fk_group_id)
 );
-  
+
 -- contacts
 create view o_gp_contactkey_v as (
    select
