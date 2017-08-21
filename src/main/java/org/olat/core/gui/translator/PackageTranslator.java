@@ -53,9 +53,8 @@ public class PackageTranslator implements Translator {
 	private Locale locale;
 	private int fallBackLevel = 0;
 	
-	private final I18nModule i18nModule;
-	private final I18nManager i18nManager;
-	
+	private transient I18nModule i18nModule;
+	private transient I18nManager i18nManager;
 	
 
 	private PackageTranslator(String packageName, Locale locale, boolean fallBack, Translator fallBackTranslator) {
@@ -65,6 +64,12 @@ public class PackageTranslator implements Translator {
 		this.fallBack = fallBack;
 		i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
 		i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
+	}
+	
+	private Object readResolve() {
+		i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
+		i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
+		return this;
 	}
 	
 	public void setFallBack(PackageTranslator fallback){
