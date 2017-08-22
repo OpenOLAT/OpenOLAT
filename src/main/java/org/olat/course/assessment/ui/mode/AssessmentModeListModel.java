@@ -27,7 +27,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
@@ -44,6 +47,8 @@ import org.olat.course.nodes.CourseNode;
  *
  */
 public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> implements SortableFlexiTableDataModel<AssessmentMode> {
+	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentModeListModel.class);
 	
 	private final Translator translator;
 	private final AssessmentModeCoordinationService coordinationService;
@@ -72,27 +77,35 @@ public class AssessmentModeListModel extends DefaultFlexiTableDataModel<Assessme
 			case status: {
 				List<String> warnings = null;
 				Status status = mode.getStatus();
-				if(StringHelper.containsNonWhitespace(mode.getStartElement())) {
-					ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry());
-					CourseNode node = course.getRunStructure().getNode(mode.getStartElement());
-					if(node == null) {
-						warnings = new ArrayList<>(2);
-						warnings.add(translator.translate("warning.missing.start.element"));
-					}
-				}
-				if(StringHelper.containsNonWhitespace(mode.getElementList())) {
-					ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry());
-					String elements = mode.getElementList();
-					for(String element:elements.split(",")) {
-						CourseNode node = course.getRunStructure().getNode(element);
+				try {
+					if(StringHelper.containsNonWhitespace(mode.getStartElement())) {
+						ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry());
+						CourseNode node = course.getRunStructure().getNode(mode.getStartElement());
 						if(node == null) {
-							if(warnings == null) {
-								warnings = new ArrayList<>(2);
-							}
-							warnings.add(translator.translate("warning.missing.element"));
-							break;
+							warnings = new ArrayList<>(2);
+							warnings.add(translator.translate("warning.missing.start.element"));
 						}
 					}
+					if(StringHelper.containsNonWhitespace(mode.getElementList())) {
+						ICourse course = CourseFactory.loadCourse(mode.getRepositoryEntry());
+						String elements = mode.getElementList();
+						for(String element:elements.split(",")) {
+							CourseNode node = course.getRunStructure().getNode(element);
+							if(node == null) {
+								if(warnings == null) {
+									warnings = new ArrayList<>(2);
+								}
+								warnings.add(translator.translate("warning.missing.element"));
+								break;
+							}
+						}
+					}
+				} catch (CorruptedCourseException e) {
+					log.error("", e);
+					if(warnings == null) {
+						warnings = new ArrayList<>(2);
+					}
+					warnings.add(translator.translate("cif.error.corrupted"));
 				}
 				return new EnhancedStatus(status, warnings);
 			}
