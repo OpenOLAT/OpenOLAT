@@ -62,6 +62,8 @@ import org.olat.selenium.page.course.DialogConfigurationPage;
 import org.olat.selenium.page.course.DialogPage;
 import org.olat.selenium.page.course.ForumCEPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
+import org.olat.selenium.page.course.LTIConfigurationPage;
+import org.olat.selenium.page.course.LTIPage;
 import org.olat.selenium.page.course.MemberListConfigurationPage;
 import org.olat.selenium.page.course.MemberListPage;
 import org.olat.selenium.page.course.MembersPage;
@@ -1026,6 +1028,96 @@ public class CourseTest {
 		participantFeed
 			.clickFirstMonthOfPager()
 			.assertOnBlogPost(post2Title);
+	}
+	
+
+	/**
+	 * An author setup a course with a LTI course element with score enabled.
+	 * A participant take the course and see the LTI content. The back channel
+	 * need the url of the OpenOLAT instance which is currently difficult
+	 * for a selenium test. The grading is not tested until a LTI server
+	 * can be installed on localhost.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseWithLTI(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-LTI-" + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+
+		//create a course element of type Test with the test that we create above
+		String ltiTitle = "LTI";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit()
+			.createNode("lti")
+			.nodeTitle(ltiTitle);
+		
+		//configure assessment
+		LTIConfigurationPage ltiConfig = new LTIConfigurationPage(browser);
+		ltiConfig
+			.selectConfiguration()
+			.setLtiPage("http://lti.frentix.com/tool.php", "123456", "secret")
+			.enableScore(10.0d, 5.0d)
+			.save();
+		//set the score / passed calculation in root node and publish
+		courseEditor
+			.selectRoot()
+			.selectTabScore()
+			.enableRootScoreByNodes()
+			.autoPublish()
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred);
+		
+		//go to members management
+		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.addMember()
+			.searchMember(participant, true)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		//Participant login
+		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword())
+			.resume();
+
+		NavigationPage participantNavBar = new NavigationPage(participantBrowser);
+		participantNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(courseTitle)
+			.select(courseTitle);
+		
+		CoursePageFragment participantCourse = new CoursePageFragment(participantBrowser);
+		participantCourse
+			.clickTree()
+			.selectWithTitle(ltiTitle);
+		LTIPage lti = new LTIPage(participantBrowser);
+		lti
+			.start()
+			.outcomeToolProvider();
+			//.sendGrade(0.8d);
 	}
 	
 	/**
