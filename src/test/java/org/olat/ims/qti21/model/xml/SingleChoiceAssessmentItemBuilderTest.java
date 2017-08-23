@@ -19,15 +19,26 @@
  */
 package org.olat.ims.qti21.model.xml;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuilder;
 
@@ -39,8 +50,13 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlReader;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.running.ItemSessionController;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.types.ResponseData;
+import uk.ac.ed.ph.jqtiplus.types.StringResponseData;
+import uk.ac.ed.ph.jqtiplus.value.FloatValue;
+import uk.ac.ed.ph.jqtiplus.value.Value;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
@@ -50,6 +66,8 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  *
  */
 public class SingleChoiceAssessmentItemBuilderTest {
+	
+	private static final OLog log = Tracing.createLoggerFor(SingleChoiceAssessmentItemBuilderTest.class);
 	
 	/**
 	 * Check if a bare bone multiple choice created with our builder make a valid assessmentItem.
@@ -90,6 +108,55 @@ public class SingleChoiceAssessmentItemBuilderTest {
         
         //score per 
         Assert.assertEquals(ScoreEvaluation.allCorrectAnswers, itemBuilder.getScoreEvaluationMode());
+	}
+	
+	@Test
+	public void createSingleAssessmentItem_allCorrectAnswers() throws IOException {
+		QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
+		SingleChoiceAssessmentItemBuilder itemBuilder = new SingleChoiceAssessmentItemBuilder("Single choice", "Single choice", qtiSerializer);
+		itemBuilder.setQuestion("<p>Hello</p>");
+		
+		ChoiceInteraction interaction = itemBuilder.getChoiceInteraction();
+		SimpleChoice choice1 = AssessmentItemFactory.createSimpleChoice(interaction, "One", "sc");
+		SimpleChoice choice2 = AssessmentItemFactory.createSimpleChoice(interaction, "Two", "sc");
+		SimpleChoice choice3 = AssessmentItemFactory.createSimpleChoice(interaction, "Three", "sc");
+
+		List<SimpleChoice> choiceList = new ArrayList<>();
+		choiceList.add(choice1);
+		choiceList.add(choice2);
+		choiceList.add(choice3);
+		itemBuilder.setSimpleChoices(choiceList);
+		itemBuilder.setCorrectAnswer(choice2.getIdentifier());
+		itemBuilder.setMaxScore(3.0d);
+		itemBuilder.setScoreEvaluationMode(ScoreEvaluation.allCorrectAnswers);
+		itemBuilder.build();
+		
+		File itemFile = new File(WebappHelper.getTmpDir(), "scAssessmentItem" + UUID.randomUUID() + ".xml");
+		try(FileOutputStream out = new FileOutputStream(itemFile)) {
+			qtiSerializer.serializeJqtiObject(itemBuilder.getAssessmentItem(), out);
+		} catch(Exception e) {
+			log.error("", e);
+		}
+		
+		{// correct answers
+			Map<Identifier, ResponseData> responseMap = new HashMap<>();
+			Identifier responseIdentifier = itemBuilder.getInteraction().getResponseIdentifier();
+	        responseMap.put(responseIdentifier, new StringResponseData(choice2.getIdentifier().toString()));
+			ItemSessionController itemSessionController = RunningItemHelper.run(itemFile, responseMap);
+			Value score = itemSessionController.getItemSessionState().getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER);
+			Assert.assertEquals(new FloatValue(3.0d), score);
+		}
+		
+		{// wrong answer
+			Map<Identifier, ResponseData> responseMap = new HashMap<>();
+			Identifier responseIdentifier = itemBuilder.getInteraction().getResponseIdentifier();
+	        responseMap.put(responseIdentifier, new StringResponseData(choice3.getIdentifier().toString()));
+			ItemSessionController itemSessionController = RunningItemHelper.run(itemFile, responseMap);
+			Value score = itemSessionController.getItemSessionState().getOutcomeValue(QTI21Constants.SCORE_IDENTIFIER);
+			Assert.assertEquals(new FloatValue(0.0d), score);
+		}
+		
+		FileUtils.deleteDirsAndFiles(itemFile.toPath());
 	}
 	
 	private AssessmentItem loadAssessmentItem(URL itemUrl) throws URISyntaxException {
