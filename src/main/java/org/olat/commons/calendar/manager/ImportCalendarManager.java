@@ -152,20 +152,24 @@ public class ImportCalendarManager {
 
 			List<ImportedCalendar> importedCalendars = importedCalendarDao.getImportedCalendars(identity);
 			for (ImportedCalendar importedCalendar: importedCalendars) {
-				if(reload) {
-					reloadImportCalendar(importedCalendar, timestamp);
-				}
+				try {
+					if(reload) {
+						reloadImportCalendar(importedCalendar, timestamp);
+					}
 
-				String calendarId = importedCalendar.getCalendarId();
-				KalendarRenderWrapper calendarWrapper = calendarManager.getImportedCalendar(identity, calendarId);
-				calendarWrapper.setDisplayName(importedCalendar.getDisplayName());
-				calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-				calendarWrapper.setImported(true);
-				CalendarUserConfiguration config = calendarManager.findCalendarConfigForIdentity(calendarWrapper.getKalendar(), identity);
-				if (config != null) {
-					calendarWrapper.setConfiguration(config);
+					String calendarId = importedCalendar.getCalendarId();
+					KalendarRenderWrapper calendarWrapper = calendarManager.getImportedCalendar(identity, calendarId);
+					calendarWrapper.setDisplayName(importedCalendar.getDisplayName());
+					calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+					calendarWrapper.setImported(true);
+					CalendarUserConfiguration config = calendarManager.findCalendarConfigForIdentity(calendarWrapper.getKalendar(), identity);
+					if (config != null) {
+						calendarWrapper.setConfiguration(config);
+					}
+					calendars.add(calendarWrapper);
+				} catch (Exception e) {
+					log.error("Cannot read an imported file", e);
 				}
-				calendars.add(calendarWrapper);
 			}
 			Collections.sort(calendars, KalendarComparator.getInstance());
 		}
