@@ -25,7 +25,8 @@
 			<ul class="list-unstyled o_match_dnd_targets target-bottom clearfix">
 			#foreach($choice in $orderedSet2)
 				#set($choiceIdentifier = $r.toString($choice.identifier))
-				<li class="o_match_dnd_target" data-qti-match-max="${choice.matchMax}">$r.renderFlowStatics($choice.getFlowStatics())
+				<li class="o_match_dnd_target" data-qti-match-max="${choice.matchMax}">
+					<div class="clearfix">$r.renderFlowStatics($choice.getFlowStatics())</div>
 					<ul class="o_match_dnd_target_drop_zone list-unstyled clearfix" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}"></ul>
 				</li>
 			#end
@@ -35,7 +36,8 @@
 			<ul class="list-unstyled o_match_dnd_targets target-right">
 			#foreach($choice in $orderedSet2)
 				#set($choiceIdentifier = $r.toString($choice.identifier))
-				<li class="o_match_dnd_target" data-qti-match-max="${choice.matchMax}">$r.renderFlowStatics($choice.getFlowStatics())
+				<li class="o_match_dnd_target" data-qti-match-max="${choice.matchMax}">
+					<div class="clearfix">$r.renderFlowStatics($choice.getFlowStatics())</div>
 					<ul class="o_match_dnd_target_drop_zone list-unstyled" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}"></ul>
 				</li>
 			#end
@@ -51,7 +53,8 @@
 			<ul class="list-unstyled o_match_dnd_targets target-top clearfix">
 			#foreach($choice in $orderedSet2)
 				#set($choiceIdentifier = $r.toString($choice.identifier))
-				<li class="o_match_dnd_target" data-qti-match-max="${choice.matchMax}">$r.renderFlowStatics($choice.getFlowStatics())
+				<li class="o_match_dnd_target" data-qti-match-max="${choice.matchMax}">
+						<div class="clearfix">$r.renderFlowStatics($choice.getFlowStatics())</div>
 					<ul class="o_match_dnd_target_drop_zone list-unstyled clearfix" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}"></ul>
 				</li>
 			#end
@@ -73,8 +76,9 @@
 			<ul class="list-unstyled o_match_dnd_targets target-right">
 			#foreach($choice in $orderedSet2)
 				#set($choiceIdentifier = $r.toString($choice.identifier))
-				<li class="o_match_dnd_target" data-qti-match-max="${choice.matchMax}">$r.renderFlowStatics($choice.getFlowStatics())
-					<ul class="o_match_dnd_target_drop_zone list-unstyled" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}"></ul>
+				<li class="o_match_dnd_target" data-qti-match-max="${choice.matchMax}">
+					<div class="clearfix">$r.renderFlowStatics($choice.getFlowStatics())</div>
+					<ul class="o_match_dnd_target_drop_zone list-unstyled clearfix" data-qti-id="${choiceIdentifier}" data-qti-match-max="${choice.matchMax}"></ul>
 				</li>
 			#end
 			</ul>
