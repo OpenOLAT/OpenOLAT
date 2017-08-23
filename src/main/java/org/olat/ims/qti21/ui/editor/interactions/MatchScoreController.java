@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -189,10 +190,10 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 		DirectedPairValue dKey = new DirectedPairValue(sourceIdentifier, targetIdentifier);
 		if(!scoreWrappers.containsKey(dKey)) {
 			String key = sourceIdentifier.toString() + "-" + targetIdentifier.toString();
-			TextElement textEl = uifactory.addTextElement(key, null, 4, "", scoreCont);
+			TextElement textEl = uifactory.addTextElement(key, null, 8, "", scoreCont);
 			MatchScoreWrapper scoreWrapper = new MatchScoreWrapper(sourceIdentifier, targetIdentifier, textEl);
 			textEl.setDomReplacementWrapperRequired(false);
-			textEl.setDisplaySize(4);
+			textEl.setDisplaySize(5);
 			textEl.setUserObject(scoreWrapper);
 			textEl.setEnabled(!restrictedEdit);
 			
