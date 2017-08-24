@@ -28,6 +28,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -50,8 +52,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -217,7 +221,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TSCols.correction.i18nHeaderKey(), TSCols.correction.ordinal(), "correction",
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("correction"), "correction"), null)));
 		}
-	
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("download.log", translate("download.log"), "log"));
 
 		tableModel = new QTI21AssessmentTestSessionTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "sessions", tableModel, 20, false, getTranslator(), formLayout);
@@ -342,6 +346,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 					}
 				} else if("correction".equals(cmd)) {
 					doCorrection(ureq, testSession);
+				} else if("log".equals(cmd)) {
+					doDownloadLog(ureq, testSession);
 				}
 			}
 		}
@@ -461,6 +467,53 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				true, translate("table.header.results"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+	
+	private void doDownloadLog(UserRequest ureq, AssessmentTestSession session) {
+		File logFile = qtiService.getAssessmentSessionAuditLogFile(session);
+		if(logFile != null && logFile.exists()) {
+			String filename = "auditlog_";
+			if(session.getAnonymousIdentifier() != null) {
+				filename += session.getAnonymousIdentifier();
+			} else {
+				filename += session.getIdentity().getUser().getFirstName()
+						+ "_" + session.getIdentity().getUser().getLastName();
+			}
+			filename += "_" + entry.getDisplayname();
+			if(courseNode != null) {
+				if(StringHelper.containsNonWhitespace(courseNode.getShortTitle())) {
+					filename += "_" + courseNode.getShortTitle();
+				} else {
+					filename += "_" + courseNode.getLongTitle();
+				}
+			}
+			
+			filename += ".log";
+			ureq.getDispatchResult().setResultingMediaResource(new LogDownload(logFile, filename));
+		} else {
+			showWarning("warning.download.log");
+		}
+	}
+	
+	private static class LogDownload extends FileMediaResource {
+		
+		private final String filename;
+		
+		public LogDownload(File file, String filename) {
+			super(file, true);
+			this.filename = filename;
+		}
+
+		@Override
+		public String getContentType() {
+			return "application/octet-stream";
+		}
+
+		@Override
+		public void prepare(HttpServletResponse hres) {
+			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + StringHelper.urlEncodeUTF8(filename));
+			hres.setHeader("Content-Description", StringHelper.urlEncodeUTF8(filename));
+		}
 	}
 	
 	public static class AssessmentTestSessionComparator implements Comparator<QTI21AssessmentTestSessionDetails> {

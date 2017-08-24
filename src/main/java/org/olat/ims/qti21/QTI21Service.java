@@ -220,6 +220,13 @@ public interface QTI21Service {
 	public AssessmentSessionAuditLogger getAssessmentSessionAuditLogger(AssessmentTestSession session, boolean authorMode);
 	
 	/**
+	 * 
+	 * @param session The test session
+	 * @return The file or null if it doesn't exists
+	 */
+	public File getAssessmentSessionAuditLogFile(AssessmentTestSession session);
+	
+	/**
 	 * This will return the last session if it's not finished, terminated or exploded.
 	 * 
 	 * @param identity The identity which play the session

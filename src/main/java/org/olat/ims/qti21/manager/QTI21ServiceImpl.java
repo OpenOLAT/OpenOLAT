@@ -447,6 +447,12 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
+	public File getAssessmentSessionAuditLogFile(AssessmentTestSession session) {
+		File userStorage = testSessionDao.getSessionStorage(session);
+		return new File(userStorage, "audit.log");
+	}
+
+	@Override
 	public AssessmentSessionAuditLogger getAssessmentSessionAuditLogger(AssessmentTestSession session, boolean authorMode) {
 		if(authorMode) {
 			return new AssessmentSessionAuditOLog();
@@ -455,8 +461,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			return new AssessmentSessionAuditOLog();
 		}
 		try {
-			File userStorage = testSessionDao.getSessionStorage(session);
-			File auditLog = new File(userStorage, "audit.log");
+			File auditLog = getAssessmentSessionAuditLogFile(session);
 			FileOutputStream outputStream = new FileOutputStream(auditLog, true);
 			return new AssessmentSessionAuditFileLog(outputStream);
 		} catch (IOException e) {
