@@ -429,6 +429,18 @@ public class RepositoryManager {
 		return displaynames.get(0);
 	}
 	
+	public String lookupDisplayNameByResourceKey(Long resourceKey) {
+		List<String> displaynames = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("getDisplayNameByResourceKey", String.class)
+				.setParameter("resKey", resourceKey)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
+				.getResultList();
+
+		if (displaynames.size() > 1) throw new AssertException("Repository lookup returned zero or more than one result: " + displaynames.size());
+		else if (displaynames.isEmpty()) return null;
+		return displaynames.get(0);
+	}
+	
 	/**
 	 * Convenience method to access the repositoryEntry displayname by the referenced OLATResourceable id.
 	 * This only works if a repository entry has an referenced olat resourceable like a course or an content package repo entry

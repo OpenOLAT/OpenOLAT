@@ -36,8 +36,6 @@ import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItem;
@@ -61,8 +59,6 @@ import org.springframework.stereotype.Service;
  */
 @Service("questionDao")
 public class QuestionItemDAO {
-	
-	private static final OLog log = Tracing.createLoggerFor(QuestionItemDAO.class);
 	
 	@Autowired
 	private DB dbInstance;

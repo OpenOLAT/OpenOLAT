@@ -28,6 +28,7 @@ import java.util.Map;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -145,6 +146,8 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private boolean itemCollectionDirty = false;
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private QTIModule qtiModule;
 	@Autowired
@@ -572,6 +575,9 @@ public class QuestionListController extends AbstractItemListController implement
 		List<QuestionItem> newItems = Collections.singletonList(item);
 		getSource().postImport(newItems, false);
 		getItemsTable().reset();
+		
+		dbInstance.commit();
+		qpoolService.index(newItems);
 		
 		QPoolEvent qce = new QPoolEvent(QPoolEvent.ITEM_CREATED);
 		fireEvent(ureq, qce);
