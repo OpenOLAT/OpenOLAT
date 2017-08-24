@@ -22,6 +22,7 @@ package org.olat.selenium.page.qti;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -52,7 +53,8 @@ public class QTI21MultipleChoiceEditorPage extends QTI21AssessmentItemEditorPage
 	
 	public QTI21MultipleChoiceEditorPage setCorrect(int position) {
 		By correctBy = By.xpath("//div[contains(@class,'o_sel_choice_" + position + "')]//input[contains(@id,'oo_correct-')]");
-		browser.findElement(correctBy).click();
+		WebElement correctEl = browser.findElement(correctBy);
+		OOGraphene.check(correctEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
