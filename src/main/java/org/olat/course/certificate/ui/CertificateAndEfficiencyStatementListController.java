@@ -56,6 +56,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -246,12 +247,22 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				resourceKeyToStatments.put(resourceKey, wrapper);
 				statments.add(wrapper);
 			} else {
+				if(!StringHelper.containsNonWhitespace(wrapper.getDisplayName())) {
+					wrapper.setDisplayName(certificate.getCourseTitle());
+				}
 				wrapper.setResourceKey(resourceKey);
 			}
 			if(resourceKey != null && wrapper.getResourceKey() == null) {
 				wrapper.setResourceKey(resourceKey);
 			}
 			wrapper.setCertificate(certificate);
+		}
+		
+		for(CertificateAndEfficiencyStatement statment:statments) {
+			if(!StringHelper.containsNonWhitespace(statment.getDisplayName()) && statment.getResourceKey() != null) {
+				String displayName = repositoryManager.lookupDisplayNameByResourceKey(statment.getResourceKey());
+				statment.setDisplayName(displayName);
+			}
 		}
 		
 		tableModel.setObjects(statments);

@@ -195,7 +195,8 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 					efficiencyProperty.setResource(repoEntry.getOlatResource());
 					efficiencyProperty.setCourseRepoKey(repoEntry.getKey());
 				}
-				
+				efficiencyProperty.setShortTitle(courseEnv.getRunStructure().getRootNode().getShortTitle());
+				efficiencyProperty.setTitle(courseEnv.getRunStructure().getRootNode().getLongTitle());
 				fillEfficiencyStatement(efficiencyStatement, efficiencyProperty);
 				dbInstance.getCurrentEntityManager().persist(efficiencyProperty);
 				if (debug) {
@@ -205,7 +206,9 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 				// update existing
 				if (debug) {
 					log.debug("updating efficiency statement property::" + efficiencyProperty.getKey() + " for id::" + assessedIdentity.getName() + " repoEntry::" + repoEntry.getKey());
-				}	
+				}
+				efficiencyProperty.setShortTitle(courseEnv.getRunStructure().getRootNode().getShortTitle());
+				efficiencyProperty.setTitle(courseEnv.getRunStructure().getRootNode().getLongTitle());
 				fillEfficiencyStatement(efficiencyStatement, efficiencyProperty);
 				dbInstance.getCurrentEntityManager().merge(efficiencyProperty);
 			}
