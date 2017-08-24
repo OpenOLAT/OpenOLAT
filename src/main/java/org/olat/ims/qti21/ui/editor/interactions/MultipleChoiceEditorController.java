@@ -241,8 +241,10 @@ public class MultipleChoiceEditorController extends FormBasicController {
 			//correct response
 			String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
 			List<Identifier> correctAnswerList = new ArrayList<>();
-			for(String correctAnswer:correctAnswers) {
-				correctAnswerList.add(Identifier.parseString(correctAnswer));
+			if(correctAnswers != null) {
+				for(String correctAnswer:correctAnswers) {
+					correctAnswerList.add(Identifier.parseString(correctAnswer));
+				}
 			}
 			itemBuilder.setCorrectAnswers(correctAnswerList);
 			
@@ -296,13 +298,13 @@ public class MultipleChoiceEditorController extends FormBasicController {
 	
 	private void updateCorrectAnswers(UserRequest ureq) {
 		String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
+		List<Identifier> correctAnswerList = new ArrayList<>();
 		if(correctAnswers != null) {
-			List<Identifier> correctAnswerList = new ArrayList<>();
 			for(String correctAnswer:correctAnswers) {
 				correctAnswerList.add(Identifier.parseString(correctAnswer));
 			}
-			itemBuilder.setCorrectAnswers(correctAnswerList);
-		}	
+		}
+		itemBuilder.setCorrectAnswers(correctAnswerList);	
 	}
 	
 	private void doAddSimpleChoice(UserRequest ureq) {
