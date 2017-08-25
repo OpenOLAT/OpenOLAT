@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -32,6 +32,7 @@ import org.olat.modules.portfolio.model.TitlePart;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
 import org.olat.modules.portfolio.ui.editor.PageRunComponent;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
@@ -58,12 +59,12 @@ public class TitlePageElementHandler implements PageElementHandler, SimpleAddPag
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
 		String content = "";
 		if(element instanceof TitlePart) {
 			content = ((TitlePart)element).getContent();
 		}
-		Component cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
+		TextComponent cmp = TextFactory.createTextComponentFromString("title_" + idGenerator.incrementAndGet(), content, null, false, null);
 		return new PageRunComponent(cmp);
 	}
 

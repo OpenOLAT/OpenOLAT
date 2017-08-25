@@ -1,1 +1,6 @@
 $!text
+#if($r.available("meta"))
+<div class="clearfix"><div class="panel panel-default o_artefact_metadata">
+	$r.render("meta")
+</div></div>
+#end

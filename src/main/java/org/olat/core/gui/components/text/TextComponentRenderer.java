@@ -26,6 +26,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -58,13 +59,21 @@ class TextComponentRenderer extends DefaultComponentRenderer {
 		if (text != null) {
 			// Add a wrapper with a CSS class if necessary
 			String cssClass = comp.getCssClass();
+			String elementCssClasss = comp.getElementCssClass();
 			String tag = comp.getSpanAsDomReplaceable() ? "span" : "div";
 			// In any case render a span or div. If in ajax mode, another span/div
 			// will be wrapped around this to identify the component.
 			sb.append("<").append(tag);
 			// Add optional css class
-			if (cssClass != null) {
-				sb.append(" class='").append(cssClass).append("'");
+			if (cssClass != null || elementCssClasss != null) {
+				sb.append(" class='");
+				if(StringHelper.containsNonWhitespace(cssClass)) {
+					sb.append(cssClass);
+				}
+				if(StringHelper.containsNonWhitespace(elementCssClasss)) {
+					sb.append(" ").append(elementCssClasss);
+				}
+				sb.append("'");
 			}
 			if(!comp.isDomReplacementWrapperRequired()) {
 				sb.append(" id='").append(comp.getDispatchID()).append("'");

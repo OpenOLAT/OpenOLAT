@@ -1,0 +1,6 @@
+#foreach($panel in $panels)
+<div class="clearfix">
+	<h3>$r.escapeHtml($panel.evaluator.fullName)</h3>
+	$r.render($panel.componentName)
+</div>
+#end

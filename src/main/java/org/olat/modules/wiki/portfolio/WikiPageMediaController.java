@@ -38,6 +38,8 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaRenderingHints;
+import org.olat.modules.portfolio.ui.MediaMetadataController;
 
 /**
  * 
@@ -49,12 +51,17 @@ public class WikiPageMediaController extends BasicController {
 	
 	private static final OLog log = Tracing.createLoggerFor(WikiPageMediaController.class);
 
-	public WikiPageMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+	public WikiPageMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("details");
 		String wikiText = getContent(media.getContent());
 		mainVC.contextPut("text", wikiText);
+		if(hints.isExtendedMetadata()) {
+			MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
+			listenTo(metaCtrl);
+			mainVC.put("meta", metaCtrl.getInitialComponent());
+		}
 		putInitialPanel(mainVC);
 	}
 

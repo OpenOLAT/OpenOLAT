@@ -78,6 +78,7 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 	private Size realSize;
 	private Size scaledSize;
 	private float scalingFactor;
+	private boolean divImageWrapper = true;
 	private boolean cropSelectionEnabled = false;
 
 	/**
@@ -102,6 +103,14 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 
 	public void setAlt(String alt) {
 		this.alt = alt;
+	}
+
+	public boolean isDivImageWrapper() {
+		return divImageWrapper;
+	}
+
+	public void setDivImageWrapper(boolean divImageWrapper) {
+		this.divImageWrapper = divImageWrapper;
 	}
 
 	/**

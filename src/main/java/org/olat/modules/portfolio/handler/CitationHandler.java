@@ -29,6 +29,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
@@ -92,8 +93,8 @@ public class CitationHandler extends AbstractMediaHandler implements Interactive
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new CitationMediaController(ureq, wControl, media);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
+		return new CitationMediaController(ureq, wControl, media, hints);
 	}
 
 	@Override

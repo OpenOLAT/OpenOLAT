@@ -1,0 +1,10 @@
+#foreach($component in $components)
+	$r.render($component)
+#end
+#if($r.isTrue($print))
+<script type='text/javascript'>
+/* <![CDATA[ */
+	window.print();
+/* ]]> */
+</script>
+#end

@@ -22,14 +22,11 @@ package org.olat.modules.portfolio.handler;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
@@ -43,15 +40,12 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
-import org.olat.modules.portfolio.model.MediaPart;
-import org.olat.modules.portfolio.ui.editor.PageRunComponent;
 import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
-import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementAddController;
-import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.media.CollectVideoMediaController;
 import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.modules.portfolio.ui.media.VideoMediaController;
@@ -74,8 +68,6 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 	static {
 		mimeTypes.add("video/mp4");
 	}
-	
-	private AtomicInteger idGenerator = new AtomicInteger();
 
 	@Autowired
 	private MediaDAO mediaDao;
@@ -166,31 +158,10 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 	public Media createMedia(AbstractArtefact artefact) {
 		return null;//no specific image document in old portfolio
 	}
-	
-	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {	
-		if(element instanceof Media) {
-			return new PageRunComponent(getContent(ureq, (Media)element));
-		}
-		if(element instanceof MediaPart) {
-			MediaPart mediaPart = (MediaPart)element;
-			return new PageRunComponent(getContent(ureq, mediaPart.getMedia()));
-		}
-		return null;
-	}
-	
-	private ImageComponent getContent(UserRequest ureq, Media media) {
-		File mediaDir = new File(FolderConfig.getCanonicalRoot(), media.getStoragePath());
-		File mediaFile = new File(mediaDir, media.getRootFilename());
-		ImageComponent imageCmp = new ImageComponent(ureq.getUserSession(), "video_" + idGenerator.incrementAndGet());
-		imageCmp.setMedia(mediaFile);
-		imageCmp.setMaxWithAndHeightToFitWithin(800, 600);
-		return imageCmp;
-	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new VideoMediaController(ureq, wControl, media);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
+		return new VideoMediaController(ureq, wControl, media, hints);
 	}
 	
 	@Override

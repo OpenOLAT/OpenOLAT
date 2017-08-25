@@ -25,10 +25,13 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaRenderingHints;
+import org.olat.modules.portfolio.ui.MediaMetadataController;
 
 /**
  * 
@@ -38,15 +41,22 @@ import org.olat.modules.portfolio.Media;
  */
 public class VideoMediaController extends BasicController {
 	
-	public VideoMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+	public VideoMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		super(ureq, wControl);
 		
+		VelocityContainer mainVC = createVelocityContainer("media_video");
+
 		File mediaDir = new File(FolderConfig.getCanonicalRoot(), media.getStoragePath());
 		File mediaFile = new File(mediaDir, media.getRootFilename());
-		ImageComponent imageCmp = new ImageComponent(ureq.getUserSession(), "image");
-		imageCmp.setMedia(mediaFile);
-		
-		putInitialPanel(imageCmp);
+		ImageComponent videoCmp = new ImageComponent(ureq.getUserSession(), "image");
+		videoCmp.setMedia(mediaFile);
+		mainVC.put("video", videoCmp);
+		if(hints.isExtendedMetadata()) {
+			MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
+			listenTo(metaCtrl);
+			mainVC.put("meta", metaCtrl.getInitialComponent());
+		}
+		putInitialPanel(mainVC);
 	}
 
 

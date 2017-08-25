@@ -36,6 +36,8 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.SystemItemFilter;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaRenderingHints;
+import org.olat.modules.portfolio.ui.MediaMetadataController;
 
 /**
  * 
@@ -45,7 +47,7 @@ import org.olat.modules.portfolio.Media;
  */
 public class ForumMessageMediaController extends BasicController {
 
-	public ForumMessageMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+	public ForumMessageMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		super(ureq, wControl);
 
 		VelocityContainer mainVC = createVelocityContainer("messageDetails");
@@ -66,6 +68,12 @@ public class ForumMessageMediaController extends BasicController {
 			}
 			mainVC.contextPut("attachments", attachments);
 			mainVC.contextPut("hasAttachments", true);
+			
+			if(hints.isExtendedMetadata()) {
+				MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
+				listenTo(metaCtrl);
+				mainVC.put("meta", metaCtrl.getInitialComponent());
+			}
 		} 
 		
 		putInitialPanel(mainVC);		

@@ -330,6 +330,11 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canExportBinder() {
+			return owner;
+		}
+
+		@Override
 		public boolean canMoveToTrashBinder(Binder binder) {
 			if(owner) {
 				if(binder.getBinderStatus() == null || binder.getBinderStatus() == BinderStatus.open) {
@@ -720,6 +725,11 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canEditBinder() {
+			return false;
+		}
+
+		@Override
+		public boolean canExportBinder() {
 			return false;
 		}
 

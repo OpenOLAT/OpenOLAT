@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -53,7 +54,7 @@ public interface MediaHandler {
 	
 	public Media createMedia(AbstractArtefact artefact);
 	
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints);
 	
 	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media);
 

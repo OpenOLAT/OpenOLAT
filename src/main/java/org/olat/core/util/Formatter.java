@@ -638,7 +638,7 @@ public class Formatter {
 		if (htmlFragment.contains("<math") || htmlFragment.contains("class='math'") || htmlFragment.contains("class=\"math\"")) {
 			// add math wrapper
 			String domid = "mw_" + CodeHelper.getRAMUniqueID();
-			String elem = htmlFragment.contains("<div") ? "div" : "span";
+			String elem = htmlFragment.contains("<div") || htmlFragment.contains("<p") ? "div" : "span";
 			StringBuilder sb = new StringBuilder(htmlFragment.length() + 200);
 			sb.append("<").append(elem).append(" id=\"").append(domid).append("\">");
 			sb.append(htmlFragment);

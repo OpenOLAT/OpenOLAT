@@ -16,9 +16,12 @@
 	</div>
 	#end
 	<div class="o_download">
-		$r.render("download") 
-		<span class="o_size">
-			($size)
-		</span>
+		<a id="o_c8000010939" href="$mapperUri/$filename" target="_blank"><i class="o_icon o_icon-fw $cssClass"></i> $filename</a>
+		<span class="o_size">($size)</span>
 	</div>
 </div>
+#if($r.available("meta"))
+<div class="panel panel-default o_artefact_metadata">
+	$r.render("meta")
+</div>
+#end

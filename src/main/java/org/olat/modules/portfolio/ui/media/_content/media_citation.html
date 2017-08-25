@@ -6,7 +6,7 @@
 	</h5>
 	#end
 	<blockquote class="o_quote">
-		$r.xssScan($citation)
+		<div class="">$r.xssScan($citation)</div>
 	</blockquote>	
 	#if ($description)
 	<div class="o_desc o_block">
@@ -19,3 +19,8 @@
 		</div>
 	#end
 </div>
+#if($r.available("meta"))
+<div class="panel panel-default o_artefact_metadata">
+	$r.render("meta")
+</div>
+#end

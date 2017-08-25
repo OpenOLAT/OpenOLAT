@@ -59,6 +59,7 @@ import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.manager.MetadataXStream;
 import org.olat.modules.portfolio.model.BinderPageUsage;
+import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.olat.modules.portfolio.ui.event.MediaEvent;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,35 +129,40 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			layoutCont.contextPut("description", StringHelper.xssScan(media.getDescription()));
 			layoutCont.contextPut("iconCssClass", handler.getIconCssClass(media));
 			
-			mediaCtrl = handler.getMediaController(ureq, getWindowControl(), media);
+			mediaCtrl = handler.getMediaController(ureq, getWindowControl(), media, new StandardMediaRenderingHints());
 			if(mediaCtrl != null) {
 				listenTo(mediaCtrl);
 				layoutCont.put("media", mediaCtrl.getInitialComponent());
 			}
+			
+			String metaPage = velocity_root + "/media_details_metadata.html";
+			FormLayoutContainer metaCont = FormLayoutContainer.createCustomFormLayout("meta", getTranslator(), metaPage);
+			layoutCont.add("meta", metaCont);
+			metaCont.setRootForm(mainForm);
 
-			layoutCont.contextPut("media", media);
+			metaCont.contextPut("media", media);
 			String author = userManager.getUserDisplayName(media.getAuthor());
-			layoutCont.contextPut("author", author);
+			metaCont.contextPut("author", author);
 			
 			if(media.getCollectionDate() != null) {
 				String collectionDate = Formatter.getInstance(getLocale()).formatDate(media.getCollectionDate());
-				layoutCont.contextPut("collectionDate", collectionDate);
+				metaCont.contextPut("collectionDate", collectionDate);
 			}
 			
 			if (media.getBusinessPath() != null) {
-				gotoOriginalLink = LinkFactory.createLink("goto.original", layoutCont.getFormItemComponent(), this);
+				gotoOriginalLink = LinkFactory.createLink("goto.original", metaCont.getFormItemComponent(), this);
 			}
 			
 			if(StringHelper.containsNonWhitespace(media.getMetadataXml())) {
 				Object metadata = MetadataXStream.get().fromXML(media.getMetadataXml());
-				layoutCont.contextPut("metadata", metadata);
+				metaCont.contextPut("metadata", metadata);
 			}
 			
 			List<Category> categories = portfolioService.getCategories(media);
 			if(categories != null && categories.size() > 0) {
 				Map<String,String> categoriesMap = categories.stream()
 						.collect(Collectors.toMap(c -> c.getName(), c -> c.getName()));
-				TextBoxListElement categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categoriesMap, formLayout, getTranslator());
+				TextBoxListElement categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categoriesMap, metaCont, getTranslator());
 				categoriesEl.setHelpText(translate("categories.hint"));
 				categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
 				categoriesEl.setEnabled(false);
@@ -170,16 +176,16 @@ public class MediaDetailsController extends FormBasicController implements Activ
 				
 				FormLink link;
 				if(binder.getBinderKey() == null) {
-					link = uifactory.addFormLink("binder_" + (++counter), "page", binder.getPageTitle(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
+					link = uifactory.addFormLink("binder_" + (++counter), "page", binder.getPageTitle(), null, metaCont, Link.LINK | Link.NONTRANSLATED);
 					binderUniqueKeys.add(binder.getPageKey());
 				} else {
-					link = uifactory.addFormLink("binder_" + (++counter), "binder", binder.getBinderTitle(), null, layoutCont, Link.LINK | Link.NONTRANSLATED);
+					link = uifactory.addFormLink("binder_" + (++counter), "binder", binder.getBinderTitle(), null, metaCont, Link.LINK | Link.NONTRANSLATED);
 					binderUniqueKeys.add(binder.getBinderKey());
 				}
 				link.setUserObject(binder);
 				binderLinks.add(link);
 			}
-			layoutCont.contextPut("binderLinks", binderLinks);
+			metaCont.contextPut("binderLinks", binderLinks);
 		}
 	}
 	

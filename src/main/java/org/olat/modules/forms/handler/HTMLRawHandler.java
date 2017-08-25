@@ -31,10 +31,11 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.forms.model.xml.HTMLRaw;
 import org.olat.modules.forms.ui.HTMLRawEditorController;
-import org.olat.modules.portfolio.ui.editor.PageRunComponent;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
+import org.olat.modules.portfolio.ui.editor.PageRunComponent;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
@@ -57,7 +58,7 @@ public class HTMLRawHandler implements PageElementHandler, SimpleAddPageElementH
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
 		String content = "";
 		if(element instanceof HTMLRaw) {
 			content = ((HTMLRaw)element).getContent();

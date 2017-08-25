@@ -27,9 +27,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
@@ -41,12 +44,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -65,6 +71,8 @@ import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
+import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
+import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -78,7 +86,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BinderPageListController extends AbstractPageListController {
 	
-	private Link newSectionLink, newEntryLink, newAssignmentLink;
+	private Link newSectionLink, newEntryLink, newAssignmentLink,
+		exportBinderAsCpLink, exportBinderAsPdfLink, printLink;
 	private FormLink newSectionButton, previousSectionLink, nextSectionLink, showAllSectionsLink;
 	
 	private CloseableModalController cmc;
@@ -110,6 +119,26 @@ public class BinderPageListController extends AbstractPageListController {
 
 	@Override
 	public void initTools() {
+		if(secCallback.canExportBinder()) {
+			Dropdown exportTools = new Dropdown("export.binder", "export.binder", false, getTranslator());
+			exportTools.setElementCssClass("o_sel_pf_export_tools");
+			exportTools.setIconCSS("o_icon o_icon_download");
+			stackPanel.addTool(exportTools, Align.left);
+
+			exportBinderAsCpLink = LinkFactory.createToolLink("export.binder.cp", translate("export.binder.cp"), this);
+			exportBinderAsCpLink.setIconLeftCSS("o_icon o_icon_download");
+			exportTools.addComponent(exportBinderAsCpLink);
+			
+			printLink = LinkFactory.createToolLink("export.binder.onepage", translate("export.binder.onepage"), this);
+			printLink.setIconLeftCSS("o_icon o_icon_print");
+			printLink.setPopup(new LinkPopupSettings(950, 750, "binder"));
+			exportTools.addComponent(printLink);
+			
+			exportBinderAsPdfLink = LinkFactory.createToolLink("export.binder.pdf", translate("export.binder.pdf"), this);
+			exportBinderAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
+			exportTools.addComponent(exportBinderAsPdfLink);
+		}
+		
 		if(secCallback.canAddSection()) {
 			newSectionLink = LinkFactory.createToolLink("new.section", translate("create.new.section"), this);
 			newSectionLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
@@ -401,6 +430,12 @@ public class BinderPageListController extends AbstractPageListController {
 			} else {
 				doCreateNewAssignment(ureq, filteringSection);
 			}
+		} else if(exportBinderAsCpLink == source) {
+			doExportBinderAsCP(ureq);
+		} else if(exportBinderAsPdfLink == source) {
+			doExportBinderAsPdf(ureq);
+		} else if(printLink == source) {
+			doPrint(ureq);
 		}
 		super.event(ureq, source, event);
 	}
@@ -562,6 +597,30 @@ public class BinderPageListController extends AbstractPageListController {
 		cmc = new CloseableModalController(getWindowControl(), null, newAssignmentCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doExportBinderAsCP(UserRequest ureq) {
+		MediaResource resource = new ExportBinderAsCPResource(binder, ureq, getLocale());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private void doExportBinderAsPdf(UserRequest ureq) {
+		MediaResource resource = new ExportBinderAsPDFResource(binder, ureq, getLocale());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private void doPrint(UserRequest ureq) {
+		ControllerCreator ctrlCreator = new ControllerCreator() {
+			@Override
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {			
+				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, binder, true);
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
+				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
+				return layoutCtr;
+			}					
+		};
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
+		openInNewBrowserWindow(ureq, layoutCtrlr);
 	}
 	
 	@Override
