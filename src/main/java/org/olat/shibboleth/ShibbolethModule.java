@@ -28,6 +28,7 @@ package org.olat.shibboleth;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +59,8 @@ import org.springframework.stereotype.Service;
 public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOff {
 
 	private static final OLog log = Tracing.createLoggerFor(ShibbolethModule.class);
+
+	private static final String AUTHOR_CONTAINS_SPLIT_VALUE = ",";
 
 	/**
 	 * Path identifier for shibboleth registration workflows.
@@ -165,7 +168,7 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 
 	private Set<IdentifierKey> parseAcIdentifiers(String raw) {
 		Set<IdentifierKey> keys = new HashSet<>();
-		List<String> keyStrings = Arrays.asList(raw.split(","));
+		List<String> keyStrings = Arrays.asList(raw.split(AUTHOR_CONTAINS_SPLIT_VALUE));
 		for (String keyString : keyStrings) {
 			try {
 				keys.add(IdentifierKey.valueOf(keyString));
@@ -339,8 +342,12 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		return authorMappingAttributeName;
 	}
 
-	public String getAuthorMappingContains() {
-		return authorMappingContains;
+	public Collection<String> getAuthorMappingContains() {
+		Collection<String> containsValues = Collections.<String>emptyList();
+		if (StringHelper.containsNonWhitespace(authorMappingContains)) {
+			containsValues = Arrays.asList(authorMappingContains.split(AUTHOR_CONTAINS_SPLIT_VALUE));
+		}
+		return containsValues;
 	}
 
 	/**

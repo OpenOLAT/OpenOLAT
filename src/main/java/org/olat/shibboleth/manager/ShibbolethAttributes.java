@@ -121,7 +121,12 @@ public class ShibbolethAttributes {
 	public boolean isAuthor() {
 		try {
 			String attributeValue = getValueForAttributeName(shibbolethModule.getAuthorMappingAttributeName());
-			return attributeValue.contains(shibbolethModule.getAuthorMappingContains());
+			for (String isContained : shibbolethModule.getAuthorMappingContains()) {
+				if (attributeValue.contains(isContained)) {
+					return true;
+				}
+			}
+			return false;
 		} catch (Exception e) {
 			return false;
 		}

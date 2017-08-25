@@ -27,6 +27,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -43,6 +44,7 @@ import org.olat.shibboleth.handler.ShibbolethAttributeHandler;
 import org.olat.shibboleth.handler.ShibbolethAttributeHandlerFactory;
 import org.olat.user.UserImpl;
 import org.springframework.test.util.ReflectionTestUtils;
+
 
 /**
  *
@@ -324,7 +326,7 @@ public class ShibbolethAttributesTest {
 	public void shouldNotBeAnAuthorIfAttributeDoesNotContainValue() {
 		when(shibbolethModuleMock.isAuthorMappingEnabled()).thenReturn(true);
 		when(shibbolethModuleMock.getAuthorMappingAttributeName()).thenReturn(SHIB_NAME_KEY);
-		when(shibbolethModuleMock.getAuthorMappingContains()).thenReturn("notContained");
+		when(shibbolethModuleMock.getAuthorMappingContains()).thenReturn(Arrays.<String>asList("notContained"));
 
 		boolean isAuthor = sut.isAuthor();
 
@@ -335,7 +337,18 @@ public class ShibbolethAttributesTest {
 	public void shouldBeAnAuthorIfAttributeContainsValue() {
 		when(shibbolethModuleMock.isAuthorMappingEnabled()).thenReturn(true);
 		when(shibbolethModuleMock.getAuthorMappingAttributeName()).thenReturn(SHIB_NAME_KEY);
-		when(shibbolethModuleMock.getAuthorMappingContains()).thenReturn("mi");
+		when(shibbolethModuleMock.getAuthorMappingContains()).thenReturn(Arrays.<String>asList("mi"));
+
+		boolean isAuthor = sut.isAuthor();
+
+		assertThat(isAuthor).isTrue();
+	}
+
+	@Test
+	public void shouldBeAnAuthorIfAttributeContainsOneOfManyValue() {
+		when(shibbolethModuleMock.isAuthorMappingEnabled()).thenReturn(true);
+		when(shibbolethModuleMock.getAuthorMappingAttributeName()).thenReturn(SHIB_NAME_KEY);
+		when(shibbolethModuleMock.getAuthorMappingContains()).thenReturn(Arrays.<String>asList("a","b","c","mi","sun"));
 
 		boolean isAuthor = sut.isAuthor();
 
