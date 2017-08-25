@@ -76,7 +76,9 @@ public class TokenAccessConfigurationController extends AbstractConfigurationMet
 		tokenEl.setElementCssClass("o_sel_accesscontrol_token");
 		
 		dateFrom = uifactory.addDateChooser("from_" + link.getKey(), "from", link.getValidFrom(), formLayout);
+		dateFrom.setHelpText(translate("from.hint"));
 		dateTo = uifactory.addDateChooser("to_" + link.getKey(), "to", link.getValidTo(), formLayout);
+		dateTo.setHelpText(translate("to.hint"));
 
 		super.initForm(formLayout, listener, ureq);
 	}
