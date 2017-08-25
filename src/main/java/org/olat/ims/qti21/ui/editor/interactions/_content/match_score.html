@@ -10,7 +10,7 @@
 	<tbody>
 	#foreach($sourceChoice in $sourceChoices)
 		<tr>
-			<th>${sourceChoice.getSummary()}</th>
+			<th>${r.render($sourceChoice.getSummaryEl())}</th>
 			#set($sourceIndex = ${foreach.index})
 			#foreach($targetChoice in $targetChoices)
 				<td class="o_sel_match_${sourceIndex}_${foreach.index}">
