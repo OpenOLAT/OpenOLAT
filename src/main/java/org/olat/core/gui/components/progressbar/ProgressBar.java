@@ -133,11 +133,13 @@ public class ProgressBar extends AbstractComponent {
 	}
 
 	public boolean isWidthInPercent() {
-		width = 100;
 		return widthInPercent;
 	}
 
 	public void setWidthInPercent(boolean widthInPercent) {
+		if(widthInPercent) {
+			width = 100;
+		}
 		this.widthInPercent = widthInPercent;
 	}
 
