@@ -119,6 +119,9 @@ public class CmdServeResource implements FolderCommand {
 						smr.setContentType(mimetype);
 						smr.setEncoding(enc);
 						smr.setData(page);
+						if(forceDownload) {
+							smr.setDownloadable(true, vfsfile.getName());
+						}
 						mr = smr;
 					} else {
 						// found a new charset other than iso-8859-1 -> let it load again
