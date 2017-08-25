@@ -82,6 +82,11 @@ public class ShibbolethAttributes {
 		return getValueForAttributeName(langAttributeName);
 	}
 
+	public String getAcRawValues() {
+		String langAttributeName = shibbolethModule.getAcAutoAttributeName();
+		return getValueForAttributeName(langAttributeName);
+	}
+
 	public String getValueForAttributeName(String attributeName) {
 		return shibbolethMap.get(attributeName);
 	}

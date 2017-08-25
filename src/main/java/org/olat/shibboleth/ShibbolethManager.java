@@ -35,7 +35,8 @@ public interface ShibbolethManager {
 	 * Create and persist an OpenOLAT user and synchronize the Shibboleth user
 	 * attribute with the OpenOLAT user properties. The new user is added with
 	 * the role user. The new user is added to the role authors if this function
-	 * is enabled. Required Attributes have to be checked before this method.
+	 * is enabled. If the auto access control is enabled the access orders are
+	 * created. Required Attributes have to be checked before this method.
 	 *
 	 * @param username
 	 * @param shibbolethUniqueID
@@ -47,7 +48,9 @@ public interface ShibbolethManager {
 
 	/**
 	 * Synchronize the Shibboleth user attributes to the OpenOLAT user
-	 * properties and persist the user in the database.
+	 * properties and persist the user in the database. The new user is added to
+	 * the role authors if this function is enabled. If the auto access control
+	 * is enabled the access orders are created.
 	 *
 	 * @param identity
 	 * @param shibbolethAttributes

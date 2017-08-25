@@ -55,10 +55,10 @@ import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ *
  * Description:<br>
- * 
- * 
+ *
+ *
  * <P>
  * Initial Date:  14 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -72,21 +72,21 @@ public class AccessConfigurationController extends FormBasicController {
 	private CloseableModalController cmc;
 	private FormLayoutContainer confControllerContainer;
 	private AbstractConfigurationMethodController newMethodCtrl, editMethodCtrl;
-	
+
 	private final List<AccessInfo> confControllers = new ArrayList<AccessInfo>();
-	
+
 	private final boolean embbed;
 	private final boolean emptyConfigGrantsFullAccess;
 	private boolean allowPaymentMethod;
 	private final boolean editable;
-	
+
 	private final Formatter formatter;
-	
+
 	@Autowired
 	private ACService acService;
 	@Autowired
 	private AccessControlModule acModule;
-	
+
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean editable) {
 		super(ureq, wControl, "access_configuration");
@@ -96,16 +96,16 @@ public class AccessConfigurationController extends FormBasicController {
 		this.allowPaymentMethod = allowPaymentMethod;
 		embbed = false;
 		this.editable = editable;
-		emptyConfigGrantsFullAccess = true; 
+		emptyConfigGrantsFullAccess = true;
 		formatter = Formatter.getInstance(getLocale());
-		
+
 		initForm(ureq);
 	}
-		
+
 	public AccessConfigurationController(UserRequest ureq, WindowControl wControl, OLATResource resource,
 			String displayName, boolean allowPaymentMethod, boolean editable, Form form) {
 		super(ureq, wControl, FormBasicController.LAYOUT_CUSTOM, "access_configuration", form);
-		
+
 		this.editable = editable;
 		this.resource = resource;
 		this.displayName = displayName;
@@ -113,10 +113,10 @@ public class AccessConfigurationController extends FormBasicController {
 		embbed = true;
 		emptyConfigGrantsFullAccess = false;
 		formatter = Formatter.getInstance(getLocale());
-		
+
 		initForm(ureq);
 	}
-	
+
 	public int getNumOfBookingConfigurations() {
 		return confControllers.size();
 	}
@@ -134,7 +134,7 @@ public class AccessConfigurationController extends FormBasicController {
 				if(handler.isPaymentMethod() && !allowPaymentMethod) {
 					continue;
 				}
-				
+
 				String title = handler.getMethodName(getLocale());
 				FormLink add = uifactory.addFormLink("create." + handler.getType(), title, null, formLayout, Link.LINK | Link.NONTRANSLATED);
 				add.setUserObject(method);
@@ -144,16 +144,16 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 			((FormLayoutContainer)formLayout).contextPut("methods", addMethods);
 		}
-		
+
 		String confPage = velocity_root + "/configuration_list.html";
 		confControllerContainer = FormLayoutContainer.createCustomFormLayout("conf-controllers", getTranslator(), confPage);
 		confControllerContainer.setRootForm(mainForm);
 		formLayout.add(confControllerContainer);
-		
+
 		loadConfigurations();
-		
+
 		confControllerContainer.contextPut("confControllers", confControllers);
-		
+
 		if(!embbed) {
 			setFormTitle("accesscontrol.title");
 
@@ -166,14 +166,14 @@ public class AccessConfigurationController extends FormBasicController {
 				uifactory.addFormSubmitButton("save", buttonGroupLayout);
 			}
 		}
-		
-		confControllerContainer.contextPut("emptyConfigGrantsFullAccess", Boolean.valueOf(emptyConfigGrantsFullAccess));		
+
+		confControllerContainer.contextPut("emptyConfigGrantsFullAccess", Boolean.valueOf(emptyConfigGrantsFullAccess));
 	}
-	
+
 	public void setAllowPaymentMethod(boolean allowPayment) {
 		this.allowPaymentMethod = allowPayment;
 	}
-	
+
 	public boolean isPaymentMethodInUse() {
 		boolean paymentMethodInUse = false;
 		for(AccessInfo info:confControllers) {
@@ -181,7 +181,7 @@ public class AccessConfigurationController extends FormBasicController {
 		}
 		return paymentMethodInUse;
 	}
-	
+
 	@Override
 	protected void doDispose() {
 		//
@@ -223,7 +223,7 @@ public class AccessConfigurationController extends FormBasicController {
 			super.event(ureq, source, event);
 		}
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(editMethodCtrl);
 		removeAsListenerAndDispose(newMethodCtrl);
@@ -257,7 +257,7 @@ public class AccessConfigurationController extends FormBasicController {
 	@Override
 	public void formOK(UserRequest ureq) {
 		Map<String,FormItem> formItemMap = confControllerContainer.getFormComponents();
-		
+
 		List<OfferAccess> links = new ArrayList<OfferAccess>();
 		for(AccessInfo info:confControllers) {
 			FormItem dateFrom = formItemMap.get("from_" + info.getLink().getKey());
@@ -266,18 +266,18 @@ public class AccessConfigurationController extends FormBasicController {
 				info.getLink().setValidFrom(from);
 				info.getLink().getOffer().setValidFrom(from);
 			}
-			
+
 			FormItem dateTo = formItemMap.get("to_" + info.getLink().getKey());
 			if(dateTo instanceof DateChooser) {
 				Date to = ((DateChooser)dateTo).getDate();
 				info.getLink().setValidTo(to);
 				info.getLink().getOffer().setValidTo(to);
 			}
-			
+
 			links.add(info.getLink());
 		}
 	}
-	
+
 	protected void loadConfigurations() {
 		List<Offer> offers = acService.findOfferByResource(resource, true, null);
 		for(Offer offer:offers) {
@@ -287,7 +287,7 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 		}
 	}
-	
+
 	protected void replace(OfferAccess link) {
 		boolean updated = false;
 		for(AccessInfo confController:confControllers) {
@@ -296,41 +296,41 @@ public class AccessConfigurationController extends FormBasicController {
 				updated = true;
 			}
 		}
-		
+
 		if(!updated) {
 			addConfiguration(link);
 		} else {
 			confControllerContainer.setDirty(true);
 		}
 	}
-	
+
 	protected void addConfiguration(OfferAccess link) {
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		AccessInfo infos = new AccessInfo(handler.getMethodName(getLocale()), handler.isPaymentMethod(), null, link);
 		confControllers.add(infos);
-		
+
 		if(editable) {
 			FormLink editLink = uifactory.addFormLink("edit_" + link.getKey(), "edit", "edit", null, confControllerContainer, Link.BUTTON_SMALL);
 			editLink.setUserObject(infos);
 			editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			confControllerContainer.add(editLink.getName(), editLink);
-			
+
 			FormLink delLink = uifactory.addFormLink("del_" + link.getKey(), "delete", "delete", null, confControllerContainer, Link.BUTTON_SMALL);
 			delLink.setUserObject(infos);
 			delLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			confControllerContainer.add(delLink.getName(), delLink);
 		}
 	}
-	
+
 	private void editMethod(UserRequest ureq, AccessInfo infos) {
 		OfferAccess link = infos.getLink();
-		
+
 		removeAsListenerAndDispose(editMethodCtrl);
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		if (handler != null) {
 			editMethodCtrl = handler.editConfigurationController(ureq, getWindowControl(), link);
 		}
-		
+
 		if(editMethodCtrl != null) {
 			listenTo(editMethodCtrl);
 
@@ -340,11 +340,11 @@ public class AccessConfigurationController extends FormBasicController {
 			listenTo(cmc);
 		}
 	}
-	
+
 	protected void addMethod(UserRequest ureq, AccessMethod method) {
 		Offer offer = acService.createOffer(resource, displayName);
 		OfferAccess link = acService.createOfferAccess(offer, method);
-		
+
 		removeAsListenerAndDispose(newMethodCtrl);
 		AccessMethodHandler handler = acModule.getAccessMethodHandler(link.getMethod().getType());
 		if (handler != null) {
@@ -362,29 +362,29 @@ public class AccessConfigurationController extends FormBasicController {
 			addConfiguration(newLink);
 		}
 	}
-	
+
 	public class AccessInfo {
 		private String name;
 		private String infos;
 		private String dates;
 		private OfferAccess link;
 		private final boolean paymentMethod;
-		
+
 		public AccessInfo(String name, boolean paymentMethod, String infos, OfferAccess link) {
 			this.name = name;
 			this.paymentMethod = paymentMethod;
 			this.infos = infos;
 			this.link = link;
 		}
-		
+
 		public String getName() {
 			return name;
 		}
-		
+
 		public void setName(String name) {
 			this.name = name;
 		}
-		
+
 		public boolean isPaymentMethod() {
 			return paymentMethod;
 		}
@@ -416,7 +416,7 @@ public class AccessConfigurationController extends FormBasicController {
 						BigDecimal vat = acModule.getVat();
 						String vatStr = vat == null ? "" : vat.setScale(3, BigDecimal.ROUND_HALF_EVEN).toPlainString();
 						return translate("access.info.price.vat", new String[]{price, vatStr});
-						
+
 					} else {
 						return translate("access.info.price.noVat", new String[]{price});
 					}
@@ -427,7 +427,7 @@ public class AccessConfigurationController extends FormBasicController {
 			}
 			return "";
 		}
-		
+
 		public void setInfos(String infos) {
 			this.infos = infos;
 		}

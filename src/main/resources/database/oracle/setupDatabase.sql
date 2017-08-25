@@ -324,7 +324,7 @@ CREATE TABLE o_user (
    u_genericcheckboxproperty varchar2(255 char),
    u_genericcheckboxproperty2 varchar2(255 char),
    u_genericcheckboxproperty3 varchar2(255 char),
-   
+
    fk_identity number(20),
    PRIMARY KEY (user_id)
 );
@@ -759,7 +759,7 @@ create table o_ep_struct_el (
   target_resid number(20),
   target_ressubpath varchar(2048 char),
   target_businesspath varchar(2048 char),
-  style varchar(128 char),  
+  style varchar(128 char),
   status varchar(32 char),
   viewmode varchar(32 char),
   fk_struct_root_id number(20),
@@ -767,7 +767,7 @@ create table o_ep_struct_el (
   fk_map_source_id number(20),
   fk_ownergroup number(20),
   fk_olatresource number(20) not null,
-  primary key (structure_id)  
+  primary key (structure_id)
 );
 
 create table o_ep_struct_struct_link (
@@ -962,7 +962,7 @@ create table o_ac_order_line (
   fk_order_part_id number(20),
   fk_offer_id number(20),
   primary key (order_item_id)
-); 
+);
 
 create table o_ac_transaction (
   transaction_id number(20) NOT NULL,
@@ -1018,6 +1018,19 @@ create table o_ac_paypal_transaction (
    trx_amount NUMBER (21,20),
    trx_currency_code VARCHAR(3 char),
    primary key (transaction_id)
+);
+
+create table o_ac_auto_advance_order (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  a_identifier_key varchar(64) not null,
+  a_identifier_value varchar(64) not null,
+  a_status varchar(32) not null,
+  a_status_modified date not null,
+  fk_identity number(20) not null,
+  fk_method number(20) not null,
+  primary key (id)
 );
 
 CREATE TABLE o_stat_lastupdated (
@@ -1997,13 +2010,13 @@ create table o_sms_message_log (
 );
 
 -- webfeed
-create table o_feed ( 
+create table o_feed (
    id number(20) generated always as identity,
    creationdate date not null,
    lastmodified date not null,
    f_resourceable_id number(20),
    f_resourceable_type varchar(64),
-   f_title varchar(1024), 
+   f_title varchar(1024),
    f_description varchar(1024),
    f_author varchar(255),
    f_image_name varchar(255),
@@ -2218,7 +2231,7 @@ create or replace view o_ep_notifications_rating_v as (
       page.title as page_title,
       urating.creator_id as author_id,
       urating.creationdate as creation_date,
-      urating.lastmodified as last_modified 
+      urating.lastmodified as last_modified
    from o_userrating urating
    inner join o_olatresource rating_resource on (rating_resource.resid = urating.resid and rating_resource.resname = urating.resname)
    inner join o_ep_struct_el map on (map.fk_olatresource = rating_resource.resource_id)
@@ -2242,7 +2255,7 @@ create or replace view o_ep_notifications_comment_v as (
 );
 
 create view o_gp_business_to_repository_v as (
-	select 
+	select
 		grp.group_id as grp_id,
 		repoentry.repositoryentry_id as re_id,
 		repoentry.displayname as re_displayname
@@ -2273,7 +2286,7 @@ create or replace view o_re_membership_v as (
       re.repositoryentry_id as fk_entry_id
    from o_repositoryentry re
    inner join o_re_to_group relgroup on (relgroup.fk_entry_id=re.repositoryentry_id and relgroup.r_defgroup=1)
-   inner join o_bs_group_member bmember on (bmember.fk_group_id=relgroup.fk_group_id) 
+   inner join o_bs_group_member bmember on (bmember.fk_group_id=relgroup.fk_group_id)
 );
 
 -- contacts
@@ -2674,6 +2687,11 @@ create index idx_transact_method_idx on o_ac_transaction (fk_method_id);
 create index paypal_pay_key_idx on o_ac_paypal_transaction (pay_key);
 create index paypal_pay_trx_id_idx on o_ac_paypal_transaction (ipn_transaction_id);
 create index paypal_pay_s_trx_id_idx on o_ac_paypal_transaction (ipn_sender_transaction_id);
+
+create index idx_ac_aao_id_idx on o_ac_auto_advance_order(id);
+create index idx_ac_aao_identifier_idx on o_ac_auto_advance_order(a_identifier_key, a_identifier_value);
+create index idx_ac_aao_ident_idx on o_ac_auto_advance_order(fk_identity);
+alter table o_ac_auto_advance_order add constraint aao_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 
 -- reservations
 alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);

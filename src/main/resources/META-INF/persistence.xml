@@ -48,7 +48,7 @@
 		<mapping-file>org/olat/core/util/mail/model/DBMailRecipient.hbm.xml</mapping-file>
 		<mapping-file>org/olat/core/logging/activity/LoggingObject.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/db/impl/CourseDBEntryImpl.hbm.xml</mapping-file>
-		
+
 		<!-- Start upgraders mapping -->
 		<mapping-file>org/olat/upgrade/model/BGAreaUpgrade.hbm.xml</mapping-file>
 		<mapping-file>org/olat/upgrade/model/BGContextImpl.hbm.xml</mapping-file>
@@ -63,8 +63,8 @@
 		<class>org.olat.upgrade.model.EPMapUpgradeToGroupRelation</class>
 		<class>org.olat.upgrade.model.InvitationUpgrade</class>
 		<!-- End upgraders mapping -->
-		
-		
+
+
 		<class>org.olat.basesecurity.IdentityShort</class>
 		<class>org.olat.basesecurity.model.GroupImpl</class>
 		<class>org.olat.basesecurity.model.GrantImpl</class>
@@ -134,6 +134,7 @@
 		<class>org.olat.resource.accesscontrol.model.FreeAccessMethod</class>
 		<class>org.olat.resource.accesscontrol.model.TokenAccessMethod</class>
 		<class>org.olat.resource.accesscontrol.model.ResourceReservationImpl</class>
+		<class>org.olat.resource.accesscontrol.provider.auto.model.AdvanceOrderImpl</class>
 		<class>org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod</class>
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
 		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
@@ -206,6 +207,7 @@
 		<class>org.olat.ims.lti.model.LTIOutcomeImpl</class>
 		<class>org.olat.portfolio.model.InvitationImpl</class>
 		<class>org.olat.portfolio.model.structel.EPStructureElementToGroupRelation</class>
+		<class>org.olat.shibboleth.manager.ShibbolethAutoAccessMethod</class>
 		<class>org.olat.user.UserImpl</class>
 		<properties>
 			<property name="hibernate.generate_statistics" value="true"/>

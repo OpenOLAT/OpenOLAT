@@ -28,37 +28,42 @@ import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
 
 
 /**
- * 
+ *
  * Description:<br>
  * This a paypal payment method.
- * 
+ *
  * <P>
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Entity(name="acpaypalmethod")
-@DiscriminatorValue(value="paypal.method") 
+@DiscriminatorValue(value="paypal.method")
 public class PaypalAccessMethod extends AbstractAccessMethod {
-	
+
 	private static final long serialVersionUID = 7682228653442368290L;
 
 	@Override
 	public String getType() {
 		return PaypalAccessHandler.METHOD_TYPE;
-	}	
-	
+	}
+
 	@Override
 	public String getMethodCssClass() {
 		return PaypalAccessHandler.METHOD_CSS_CLASS;
 	}
-	
+
 	@Override
 	public boolean isNeedUserInteraction() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isPaymentMethod() {
+		return true;
+	}
+
+	@Override
+	public boolean isVisibleInGui() {
 		return true;
 	}
 }

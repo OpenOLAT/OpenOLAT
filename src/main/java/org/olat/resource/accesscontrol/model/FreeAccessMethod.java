@@ -27,16 +27,16 @@ import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
 
 
 /**
- * 
+ *
  * Description:<br>
  * This a "static" payment method. There is only one instance.
- * 
+ *
  * <P>
  * Initial Date:  27 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Entity(name="acfreemethod")
-@DiscriminatorValue(value="free.method")  
+@DiscriminatorValue(value="free.method")
 public class FreeAccessMethod extends AbstractAccessMethod {
 
 	private static final long serialVersionUID = -6028245920419886453L;
@@ -55,9 +55,14 @@ public class FreeAccessMethod extends AbstractAccessMethod {
 	public boolean isNeedUserInteraction() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean isPaymentMethod() {
 		return false;
+	}
+
+	@Override
+	public boolean isVisibleInGui() {
+		return true;
 	}
 }

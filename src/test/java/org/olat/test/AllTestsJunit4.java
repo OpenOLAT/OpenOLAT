@@ -314,6 +314,7 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACOrderManagerTest.class,
 	org.olat.resource.accesscontrol.ACTransactionManagerTest.class,
 	org.olat.resource.accesscontrol.ACReservationDAOTest.class,
+	org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAOTest.class,
 	org.olat.core.util.vfs.version.VersionManagerTest.class,
 	/**
 	 * Pure JUnit test without need of framework
@@ -324,6 +325,13 @@ import org.junit.runners.Suite;
 	org.olat.modules.fo.WordCountTest.class,
 	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.modules.webFeed.manager.RomeFeedFetcherTest.class,
+	org.olat.resource.accesscontrol.provider.auto.manager.AutoAccessManagerImplTest.class,
+	org.olat.resource.accesscontrol.provider.auto.manager.ExternalIdHandlerTest.class,
+	org.olat.resource.accesscontrol.provider.auto.manager.ExternalRefHandlerTest.class,
+	org.olat.resource.accesscontrol.provider.auto.manager.IdentifierHandlerTest.class,
+	org.olat.resource.accesscontrol.provider.auto.manager.InputValidatorTest.class,
+	org.olat.resource.accesscontrol.provider.auto.manager.InternalIdHandlerTest.class,
+	org.olat.resource.accesscontrol.provider.auto.manager.SemicolonSplitterTest.class,
 	org.olat.shibboleth.manager.DifferenceCheckerTest.class,
 	org.olat.shibboleth.manager.ShibbolethAttributesTest.class,
 	org.olat.shibboleth.manager.ShibbolethManagerImplTest.class,

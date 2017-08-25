@@ -26,6 +26,7 @@
 package org.olat.shibboleth;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +42,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 import org.olat.shibboleth.util.AttributeTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -109,6 +111,14 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	@Value("${shibboleth.ac.attribute2Values:#{null}}")
 	private String attribute2Values;
 
+	@Value("${method.auto.shib.identifiers}")
+	private String acAutoIdentifiersString;
+	private Set<IdentifierKey> acAutoIdentifiers;
+	@Value("${method.auto.shib.shib}")
+	private String acAutoAttributeName;
+	@Value("${method.auto.shib.splitter}")
+	private String acAutoSplitter;
+
 	@Autowired
 	public ShibbolethModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -149,6 +159,21 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		if(StringHelper.containsNonWhitespace(attribute2ValuesObj)) {
 			attribute2Values = attribute2ValuesObj;
 		}
+
+		acAutoIdentifiers = parseAcIdentifiers(acAutoIdentifiersString);
+	}
+
+	private Set<IdentifierKey> parseAcIdentifiers(String raw) {
+		Set<IdentifierKey> keys = new HashSet<>();
+		List<String> keyStrings = Arrays.asList(raw.split(","));
+		for (String keyString : keyStrings) {
+			try {
+				keys.add(IdentifierKey.valueOf(keyString));
+			} catch (Exception e) {
+				log.warn("The value '" + keyString + "' for the property 'shib.ac.auto.identifiers' is not valid.");
+			}
+		}
+		return keys;
 	}
 
 	@Override
@@ -331,7 +356,20 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		attributeNames.add(authorMappingAttributeName);
 		attributeNames.add(attribute1);
 		attributeNames.add(attribute2);
+		attributeNames.add(acAutoAttributeName);
 		return attributeNames;
+	}
+
+	public Set<IdentifierKey> getAcAutoIdentifiers() {
+		return acAutoIdentifiers;
+	}
+
+	public String getAcAutoAttributeName() {
+		return acAutoAttributeName;
+	}
+
+	public String getAcAutoSplitter() {
+		return acAutoSplitter;
 	}
 
 }

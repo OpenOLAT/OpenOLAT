@@ -23,10 +23,14 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.shibboleth.ShibbolethManager;
+import org.olat.shibboleth.ShibbolethModule;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,7 +47,13 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 	private BaseSecurity securityManager;
 
 	@Autowired
+	private ShibbolethModule shibbolethModule;
+	@Autowired
+	private AccessControlModule acModule;
+	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private AutoAccessManager autoAccessManager;
 
 	public ShibbolethManagerImpl() {
 		securityManager = BaseSecurityManager.getInstance();
@@ -56,6 +66,7 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 		Identity identity = createUserAndPersist(username, shibbolethUniqueID, language, shibbolethAttributes);
 		addToUsersGroup(identity);
 		addToAuthorsGroup(identity, shibbolethAttributes);
+		createAndBookAdvanceOrders(identity, shibbolethAttributes);
 
 		return identity;
 	}
@@ -89,6 +100,21 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 		return securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
 	}
 
+	private void createAndBookAdvanceOrders(Identity identity, ShibbolethAttributes shibbolethAttributes) {
+		if (acModule.isAutoEnabled()) {
+			createAdvanceOr(identity, shibbolethAttributes);
+			autoAccessManager.grantAccessToCourse(identity);
+		}
+	}
+
+	private void createAdvanceOr(Identity identity, ShibbolethAttributes shibbolethAttributes) {
+		ShibbolethAdvanceOrderInput input = getShibbolethAdvanceOrderInput();
+		input.setIdentity(identity);
+		String rawValues = shibbolethAttributes.getAcRawValues();
+		input.setRawValues(rawValues);
+		autoAccessManager.createAdvanceOrders(input);
+	}
+
 	@Override
 	public void syncUser(Identity identity, ShibbolethAttributes shibbolethAttributes) {
 		if (identity == null || shibbolethAttributes == null) {
@@ -98,6 +124,7 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 		User user = identity.getUser();
 		syncAndPersistUser(user, shibbolethAttributes);
 		addToAuthorsGroup(identity, shibbolethAttributes);
+		createAndBookAdvanceOrders(identity, shibbolethAttributes);
 	}
 
 	private void syncAndPersistUser(User user, ShibbolethAttributes shibbolethAttributes) {
@@ -105,6 +132,13 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 			User syncedUser = shibbolethAttributes.syncUser(user);
 			userManager.updateUser(syncedUser);
 		}
+	}
+
+	/**
+	 * Because the static method of the CoreSpringFactory can not be mocked.
+	 */
+	protected ShibbolethAdvanceOrderInput getShibbolethAdvanceOrderInput() {
+		return CoreSpringFactory.getImpl(ShibbolethAdvanceOrderInput.class);
 	}
 
 }

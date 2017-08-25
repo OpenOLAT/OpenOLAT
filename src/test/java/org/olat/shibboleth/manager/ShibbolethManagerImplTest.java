@@ -28,9 +28,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.olat.basesecurity.BaseSecurity;
@@ -39,7 +41,11 @@ import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
+import org.olat.resource.accesscontrol.AccessControlModule;
+import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
+import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.shibboleth.ShibbolethDispatcher;
+import org.olat.shibboleth.ShibbolethModule;
 import org.olat.user.UserManager;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -52,6 +58,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 public class ShibbolethManagerImplTest {
 
 	@Mock
+	private ShibbolethModule shibbolethModuleMock;
+	@Mock
+	private AccessControlModule acModuleMock;
+	@Mock
 	private BaseSecurity securityManagerMock;
 	@Mock
 	private SecurityGroup securityGroupOlatusersMock;
@@ -59,6 +69,10 @@ public class ShibbolethManagerImplTest {
 	private SecurityGroup securityGroupAuthorMock;
 	@Mock
 	private UserManager userManagerMock;
+	@Mock
+	private AutoAccessManager autoAccessManagerMock;
+	@Mock
+	private ShibbolethAdvanceOrderInput advanceOrderInputMock;
 	@Mock
 	private Identity identityMock;
 	@Mock
@@ -68,13 +82,16 @@ public class ShibbolethManagerImplTest {
 	@Mock
 	private ShibbolethAttributes attributesMock;
 
-	@InjectMocks
-	private ShibbolethManagerImpl sut;
+	private TestableShibbolethManagerImpl sut = new TestableShibbolethManagerImpl();
 
 	@Before
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		ReflectionTestUtils.setField(sut, "securityManager", securityManagerMock);
+		ReflectionTestUtils.setField(sut, "shibbolethModule", shibbolethModuleMock);
+		ReflectionTestUtils.setField(sut, "acModule", acModuleMock);
+		ReflectionTestUtils.setField(sut, "autoAccessManager", autoAccessManagerMock);
+		ReflectionTestUtils.setField(sut, "userManager", userManagerMock);
 
 		when(securityManagerMock.findSecurityGroupByName(Constants.GROUP_OLATUSERS))
 				.thenReturn(securityGroupOlatusersMock);
@@ -86,6 +103,7 @@ public class ShibbolethManagerImplTest {
 		when(identityMock.getUser()).thenReturn(userMock);
 		when(userMock.getPreferences()).thenReturn(preferencesMock);
 		when(attributesMock.syncUser(any(User.class))).then(returnsFirstArg());
+		when(attributesMock.getAcRawValues()).thenReturn("values");
 	}
 
 	@Test
@@ -131,6 +149,63 @@ public class ShibbolethManagerImplTest {
 	}
 
 	@Test
+	public void shouldCreateAdvanceOrderWhenCreating() {
+		when(acModuleMock.isAutoEnabled()).thenReturn(true);
+
+		sut.createUser(anyString(), anyString(), anyString(), attributesMock);
+
+		verify(autoAccessManagerMock).createAdvanceOrders(advanceOrderInputMock);
+	}
+
+	@Test
+	public void shouldBookAdvanceOrderWhenCreating() {
+		when(acModuleMock.isAutoEnabled()).thenReturn(true);
+
+		sut.createUser(anyString(), anyString(), anyString(), attributesMock);
+
+		verify(autoAccessManagerMock).grantAccessToCourse(identityMock);
+	}
+
+	@Test
+	public void shouldCreateAdvanceOrderWhenSyncing() {
+		when(acModuleMock.isAutoEnabled()).thenReturn(true);
+
+		sut.syncUser(identityMock, attributesMock);
+
+		verify(autoAccessManagerMock).createAdvanceOrders(advanceOrderInputMock);
+	}
+
+	@Test
+	public void shouldBookAdvanceOrderWhenSyncing() {
+		when(acModuleMock.isAutoEnabled()).thenReturn(true);
+
+		sut.syncUser(identityMock, attributesMock);
+
+		verify(autoAccessManagerMock).grantAccessToCourse(identityMock);
+	}
+
+
+	@Test
+	public void shouldNotCreateAdvanceOrderWhenDisabled() {
+		when(acModuleMock.isAutoEnabled()).thenReturn(false);
+
+		sut.syncUser(identityMock, attributesMock);
+
+		verify(autoAccessManagerMock, never()).createAdvanceOrders(null);
+	}
+
+	@Test
+	public void shouldNotBookAdvanceOrderWhenDisabled() {
+		when(acModuleMock.isAutoEnabled()).thenReturn(false);
+		Collection<AdvanceOrder> advanceOrders = new HashSet<>();
+		when(autoAccessManagerMock.loadPendingAdvanceOrders(identityMock)).thenReturn(advanceOrders);
+
+		sut.syncUser(identityMock, attributesMock);
+
+		verify(autoAccessManagerMock, never()).grantAccess(advanceOrders);
+	}
+
+	@Test
 	public void shouldSyncUserWhenAttributesChanged() {
 		when(attributesMock.hasDifference(userMock)).thenReturn(true);
 
@@ -155,6 +230,14 @@ public class ShibbolethManagerImplTest {
 		sut.syncUser(identityMock, attributesMock);
 
 		verify(userManagerMock, never()).updateUser(userMock);
+	}
+
+	private class TestableShibbolethManagerImpl extends ShibbolethManagerImpl {
+
+		@Override
+		protected ShibbolethAdvanceOrderInput getShibbolethAdvanceOrderInput() {
+			return advanceOrderInputMock;
+		}
 
 	}
 }

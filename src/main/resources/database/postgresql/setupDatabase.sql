@@ -869,6 +869,19 @@ create table o_ac_offer_access (
 	primary key (offer_method_id)
 );
 
+create table o_ac_auto_advance_order (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  a_identifier_key varchar(64) not null,
+  a_identifier_value varchar(64) not null,
+  a_status varchar(32) not null,
+  a_status_modified timestamp not null,
+  fk_identity int8 not null,
+  fk_method int8 not null,
+  primary key (id)
+);
+
 -- access cart
 create table o_ac_order (
 	order_id int8 NOT NULL,
@@ -2523,6 +2536,11 @@ create index idx_transact_method_idx on o_ac_transaction (fk_method_id);
 create index paypal_pay_key_idx on o_ac_paypal_transaction (pay_key);
 create index paypal_pay_trx_id_idx on o_ac_paypal_transaction (ipn_transaction_id);
 create index paypal_pay_s_trx_id_idx on o_ac_paypal_transaction (ipn_sender_transaction_id);
+
+create index idx_ac_aao_id_idx on o_ac_auto_advance_order(id);
+create index idx_ac_aao_identifier_idx on o_ac_auto_advance_order(a_identifier_key, a_identifier_value);
+create index idx_ac_aao_ident_idx on o_ac_auto_advance_order(fk_identity);
+alter table o_ac_auto_advance_order add constraint aao_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 
 -- reservations
 alter table o_ac_reservation add constraint idx_rsrv_to_rsrc_rsrc foreign key (fk_resource) references o_olatresource (resource_id);

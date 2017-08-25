@@ -38,19 +38,19 @@ import org.olat.resource.accesscontrol.ui.OrderTableItem;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
- * 
+ *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public interface ACService {
-	
+
 	/**
-	 * 
+	 *
 	 * @param resource
-	 * @param atDate 
+	 * @param atDate
 	 * @return
 	 */
 	public boolean isResourceAccessControled(OLATResource resource, Date atDate);
-	
+
 	/**
 	 * The rule to access a business group:<br/>
 	 * -No offer, access is free<br/>
@@ -62,11 +62,11 @@ public interface ACService {
 	 * @return
 	 */
 	public AccessResult isAccessible(BusinessGroup group, Identity forId, boolean allowNonInteractiveAccess);
-	
+
 	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, boolean allowNonInteractiveAccess);
-	
+
 	/**
-	 * 
+	 *
 	 * @param entry
 	 * @param forId
 	 * @param knowMember If you know that the forId is a member
@@ -75,24 +75,24 @@ public interface ACService {
 	 */
 	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, Boolean knowMember, boolean allowNonInteractiveAccess);
 
-	
+
 	public Offer createOffer(OLATResource resource, String resourceName);
-	
+
 	public Offer save(Offer offer);
-	
+
 	public void deleteOffer(Offer offer);
-	
-	
+
+
 	public List<OLATResourceAccess> filterRepositoryEntriesWithAC(List<RepositoryEntry> repoEntries);
-	
+
 	public List<OLATResourceAccess> filterResourceWithAC(List<OLATResource> resources);
-	
+
 	public Set<Long> filterResourcesWithAC(Collection<Long> resourceKeys);
-	
+
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate);
-	
+
 	/**
-	 * 
+	 *
 	 * @param resourceKeys This parameter is mandatory and must not be empty
 	 * @param resourceType
 	 * @param valid
@@ -103,22 +103,26 @@ public interface ACService {
 
 	/**
 	 * Get the list of access methods for a business group that are currently available
-	 * @param group 
-	 * @param valid 
+	 * @param group
+	 * @param valid
 	 * @param atDate
 	 * @return The list of OfferAccess objects that represent available access methods
 	 */
 	public List<OfferAccess> getAccessMethodForBusinessGroup(BusinessGroup group, boolean valid, Date atDate);
-	
+
+	public List<OfferAccess> getValidOfferAccess(OLATResource resource, AccessMethod method);
+
+	public List<AccessMethod> getAvailableMethodsByType(Class<? extends AccessMethod> type);
+
 	public OfferAccess saveOfferAccess(OfferAccess link);
-	
+
 	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument);
 
 	public boolean allowAccesToResource(Identity identity, Offer offer);
-	
+
 	public boolean denyAccesToResource(Identity identity, Offer offer);
-	
-	
+
+
 	/**
 	 * Get the reservation form an identity on a resource
 	 * @param identity
@@ -126,21 +130,21 @@ public interface ACService {
 	 * @return
 	 */
 	public ResourceReservation getReservation(Identity identity, OLATResource resource);
-	
+
 	/**
 	 * Get the reservations pending a list of resources.
 	 * @param resources
 	 * @return
 	 */
 	public List<ResourceReservation> getReservations(List<OLATResource> resources);
-	
+
 	/**
 	 * The list of pending reservations
 	 * @param identity
 	 * @return
 	 */
 	public List<ResourceReservation> getReservations(Identity identity);
-	
+
 	/**
 	 * Reserve a resource
 	 * @param identity
@@ -148,57 +152,59 @@ public interface ACService {
 	 * @return
 	 */
 	public boolean reserveAccessToResource(Identity identity, OfferAccess offer);
-	
+
 	/**
 	 * A user must sometimes explicitly accept a reservation.
 	 * @param identity
 	 * @param reservation
 	 */
 	public void acceptReservationToResource(Identity identity, ResourceReservation reservation);
-	
+
 	/**
 	 * Cancel a reservation
 	 * @param identity
 	 * @param reservation
 	 */
 	public void removeReservation(Identity ureqIdentity, Identity identity, ResourceReservation reservation);
-	
+
 	public int countReservations(OLATResource resource);
-	
+
 	public void cleanupReservations();
-	
+
 	/**
-	 * 
+	 *
 	 * @param resources
 	 * @return
 	 */
 	public List<ACResourceInfo> getResourceInfos(List<OLATResource> resources);
 
 	public String resolveDisplayName(OLATResource resource);
-	
+
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable);
-	
+
 	public List<AccessMethod> getAvailableMethods(Identity identity, Roles roles);
-	
+
 	public OfferAccess createOfferAccess(Offer offer, AccessMethod method);
-	
+
 	public void deletedLinkToMethod(OfferAccess link);
-	
+
 	public List<OfferAccess> getOfferAccess(Offer offer, boolean valid);
-	
+
 	public Order loadOrderByKey(Long key);
-	
+
 	public List<Order> findOrders(Identity delivery, OrderStatus... status);
-	
+
 	public List<AccessTransaction> findAccessTransactions(Order order);
-	
+
 	public List<Order> findOrders(OLATResource resource, OrderStatus... status);
-	
+
+	public List<Order> findOrder(OLATResource resource, Identity identity, AccessMethod method);
+
 	public int countOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
 			OrderStatus[] statuss);
-	
+
 	public List<OrderTableItem> findOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr, Date from, Date to,
 			OrderStatus[] status, int firstResult, int maxResults,
 			List<UserPropertyHandler> userPropertyHandlers, SortKey... orderBy);
-	
+
 }

@@ -34,43 +34,55 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.Offer;
+import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OfferImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 
+ *
  * Description:<br>
- * 
+ *
  * <P>
  * Initial Date:  14 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
 public class ACOfferDAO {
-	
+
 	@Autowired
 	private DB dbInstance;
-	
+
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select offer from acoffer offer")
-			.append(" left join fetch offer.resource resource")
-			.append(" where resource.key=:resourceKey")
-			.append(" and offer.valid=").append(valid);
+		sb.append("select offer, access.method from acofferaccess access ")
+				.append(" inner join access.offer offer")
+				.append(" left join offer.resource resource")
+				.append(" where resource.key=:resourceKey")
+				.append(" and offer.valid=").append(valid);
+
 		if(atDate != null) {
 			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
 			  .append(" and (offer.validTo is null or offer.validTo>=:atDate)");
 		}
 
-		TypedQuery<Offer> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Offer.class)
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
 				.setParameter("resourceKey", resource.getKey());
 		if(atDate != null) {
 			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
-	
-		List<Offer> offers = query.getResultList();
+
+		List<Object[]> loadedObjects = query.getResultList();
+		List<Offer> offers = new ArrayList<>();
+		for(Object[] objects:loadedObjects) {
+			Offer offer = (Offer)objects[0];
+			AccessMethod method = (AccessMethod)objects[1];
+			if(method.isVisibleInGui()) {
+				offers.add(offer);
+			}
+		}
+
 		return offers;
 	}
 
@@ -90,7 +102,7 @@ public class ACOfferDAO {
 
 	public Set<Long> filterResourceWithOffer(Collection<Long> resourceKeys) {
 		if(resourceKeys == null || resourceKeys.isEmpty()) return Collections.emptySet();
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select offer.resource.key from acoffer offer")
 		  .append(" inner join offer.resource resource")
@@ -99,7 +111,7 @@ public class ACOfferDAO {
 
 		Set<Long> resourceWithOffers = new HashSet<Long>();
 		List<Long> keys = new ArrayList<Long>(resourceKeys);
-		
+
 		//too much in with hibernate can generate a stack overflow
 		int hibernateInBatch = 500;
 		int firstResult = 0;
@@ -108,14 +120,14 @@ public class ACOfferDAO {
 			List<Long> inParameter = keys.subList(firstResult, toIndex);
 			query.setParameter("resourceKeys", inParameter);
 			firstResult += inParameter.size();
-			
+
 			List<Long> offerKeys = query.getResultList();
 			resourceWithOffers.addAll(offerKeys);
 		} while(firstResult < keys.size());
 
 		return resourceWithOffers;
 	}
-	
+
 	public Offer createOffer(OLATResource resource, String resourceName) {
 		OfferImpl offer = new OfferImpl();
 		Date now = new Date();
@@ -135,7 +147,7 @@ public class ACOfferDAO {
 		offer.setResourceTypeName(resourceTypeName);
 		return offer;
 	}
-	
+
 	public void deleteOffer(Offer offer) {
 		if(offer instanceof OfferImpl) {
 			((OfferImpl)offer).setValid(false);

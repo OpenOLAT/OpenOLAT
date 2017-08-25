@@ -24,29 +24,31 @@ import java.util.Date;
 
 
 /**
- * 
+ *
  * Description:<br>
  * Interface for payment method
- * 
+ *
  * <P>
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public interface AccessMethod {
-	
+
 	public Long getKey();
-	
+
 	public Date getCreationDate();
-	
+
 	public boolean isValid();
-	
+
 	public boolean isEnabled();
-	
+
 	public String getType();
-	
+
 	public boolean isNeedUserInteraction();
-	
+
 	public boolean isPaymentMethod();
 
 	public String getMethodCssClass();
+
+	public boolean isVisibleInGui();
 }
