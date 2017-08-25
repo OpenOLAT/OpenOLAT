@@ -231,8 +231,26 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		List<TextEntryAlternative> alternatives = new ArrayList<>(alternativeRows.size());
 		for(AlternativeRow row:alternativeRows) {
 			TextEntryAlternative alternative = row.getAlternative();
-			alternative.setAlternative(row.getAlternativeEl().getValue());
-			alternatives.add(alternative);
+			String val = row.getAlternativeEl().getValue();
+			int indexSeparator = val.indexOf(';');
+			// Don't split single ;, or &auml;
+			if(indexSeparator >= 0 && val.length() > 1 && indexSeparator != val.length() - 1) {
+				String[] valArr = val.split("[;]");
+				for(int i=0;i<valArr.length; i++) {
+					if(i==0) {
+						alternative.setAlternative(valArr[i]);
+						alternatives.add(alternative);
+					} else {
+						TextEntryAlternative newAlternative = new TextEntryAlternative();
+						newAlternative.setAlternative(valArr[i]);
+						newAlternative.setScore(alternative.getScore());
+						alternatives.add(newAlternative);
+					}
+				}
+			} else {
+				alternative.setAlternative(val);
+				alternatives.add(alternative);
+			}
 		}
 		interaction.setAlternatives(alternatives);
 		interaction.setCaseSensitive(caseSensitiveEl.isAtLeastSelected(1));
