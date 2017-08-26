@@ -231,11 +231,14 @@ public class TeacherRollCallController extends FormBasicController {
 		//buttons
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		quickSaveButton = uifactory.addFormSubmitButton("save", "save.temporary", formLayout);
+		quickSaveButton.setElementCssClass("o_sel_lecture_quick_save");
 		closeLectureBlocksButton = uifactory.addFormLink("close.lecture.blocks", formLayout, Link.BUTTON);
+		closeLectureBlocksButton.setElementCssClass("o_sel_lecture_close");
 		if(lectureModule.isStatusCancelledEnabled()) {
 			cancelLectureBlockButton = uifactory.addFormLink("cancel.lecture.blocks", formLayout, Link.BUTTON);
 		}
 		reopenButton = uifactory.addFormLink("reopen.lecture.blocks", formLayout, Link.BUTTON);
+		reopenButton.setElementCssClass("o_sel_lecture_reopen");
 		updateUI();
 	}
 	

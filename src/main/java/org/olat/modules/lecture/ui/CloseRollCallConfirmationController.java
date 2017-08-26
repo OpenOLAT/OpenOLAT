@@ -87,6 +87,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_lecture_confirm_close_form");
 		if(lectureModule.isStatusPartiallyDoneEnabled()) {
 			int plannedLectures = lectureBlock.getPlannedLecturesNumber();
 			String[] effectiveKeys = new String[plannedLectures];

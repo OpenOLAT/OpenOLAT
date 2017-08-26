@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.lecture.LecturesToolPage;
 import org.olat.selenium.page.portfolio.PortfolioV2HomePage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -155,6 +156,13 @@ public class UserToolsPage {
 		PortfolioV2HomePage page = new PortfolioV2HomePage(browser);
 		page.assertHome();
 		return page;
+	}
+	
+	public LecturesToolPage openLectures() {
+		By myLecturesBy = By.className("o_sel_user_tools-mylectures");
+		browser.findElement(myLecturesBy).click();
+		OOGraphene.waitBusy(browser);
+		return new LecturesToolPage(browser);
 	}
 	
 	/**

@@ -220,8 +220,13 @@ public class CourseEditorPageFragment {
 
 		OOGraphene.waitModalDialog(browser);
 		By node = By.xpath("//div[@id='o_course_editor_choose_nodetype']//a[contains(@class,'o_sel_course_editor_node-" + nodeAlias + "')]");
-		browser.findElement(node).click();
-		OOGraphene.waitBusy(browser);
+		if("lti".equals(nodeAlias)) {
+			OOGraphene.clickAndWait(node, browser);
+			
+		} else {
+			browser.findElement(node).click();
+			OOGraphene.waitBusy(browser);
+		}
 		return this;
 	}
 	

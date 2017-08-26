@@ -113,6 +113,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		if(!lectureManagementManaged) {
 			addLectureButton = uifactory.addFormLink("add.lecture", formLayout, Link.BUTTON);
 			addLectureButton.setIconLeftCSS("o_icon o_icon_add");
+			addLectureButton.setElementCssClass("o_sel_repo_add_lecture");
 			
 			deleteLecturesButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		}

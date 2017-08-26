@@ -94,6 +94,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("lecture.course.admin.title");
 		setFormContextHelp("Lectures and absences");
+		formLayout.setElementCssClass("o_sel_repo_lecture_settings_form");
 		if(lectureConfigManaged) {
 			String flags = entry.getManagedFlagsString() == null ? "" : entry.getManagedFlagsString().trim();
 			String flagsFormatted = null;
@@ -119,6 +120,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("lecture.admin.enabled", formLayout, onKeys, onValues);
 		enableEl.setEnabled(!lectureConfigManaged);
+		enableEl.setElementCssClass("o_sel_repo_lecture_enable");
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 		if(lectureConfig.isLectureEnabled()) {
 			enableEl.select(onKeys[0], true);
@@ -127,6 +129,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		String[] overrideValues = new String[]{ translate("config.override.yes"), translate("config.override.no") };
 		overrideEl = uifactory.addRadiosHorizontal("config.override", formLayout, overrideKeys, overrideValues);
 		overrideEl.setEnabled(!lectureConfigManaged);
+		overrideEl.setElementCssClass("o_sel_repo_lecture_override");
 		overrideEl.addActionListener(FormEvent.ONCHANGE);
 		if(lectureConfig.isOverrideModuleDefault()) {
 			overrideEl.select(overrideKeys[0], true);//yes
