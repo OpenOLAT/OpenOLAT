@@ -59,8 +59,17 @@ public class TeacherRollCallWizardPage {
 		return this;
 	}
 	
+	public TeacherRollCallWizardPage saveAndNext() {
+		By saveBy = By.cssSelector("div.o_rollcall_wizard button.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public TeacherRollCallWizardPage closeRollCall() {
-		By closeBy = By.cssSelector("div.o_sel_lecture_confirm_close_form");
+		By closeBy = By.cssSelector("fieldset.o_sel_lecture_confirm_close_form button.btn-primary");
+		browser.findElement(closeBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 

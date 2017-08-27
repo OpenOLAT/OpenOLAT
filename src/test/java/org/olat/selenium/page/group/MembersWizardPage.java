@@ -127,12 +127,10 @@ public class MembersWizardPage {
 			OOGraphene.waitBusyAndScrollTop(browser);
 		}
 		
-		if(participant) {
-			By participantBy = By.cssSelector("label input[name='repoRights'][type='checkbox'][value='participant']");
-			WebElement participantEl = browser.findElement(participantBy);
-			OOGraphene.check(participantEl, new Boolean(participant));
-			OOGraphene.waitBusyAndScrollTop(browser);
-		}
+		By participantBy = By.cssSelector("label input[name='repoRights'][type='checkbox'][value='participant']");
+		WebElement participantEl = browser.findElement(participantBy);
+		OOGraphene.check(participantEl, new Boolean(participant));
+		OOGraphene.waitBusyAndScrollTop(browser);
 		return this;
 	}
 	
