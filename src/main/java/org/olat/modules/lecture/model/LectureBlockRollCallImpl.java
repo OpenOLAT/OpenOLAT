@@ -87,6 +87,9 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="l_absence_appeal_date", nullable=true, insertable=true, updatable=true)
 	private Date absenceAppealDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="l_absence_supervisor_noti_date", nullable=true, insertable=true, updatable=true)
+	private Date absenceSupervisorNotificationDate;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
@@ -244,6 +247,16 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 
 	public void setLecturesAbsentNumber(int lecturesAbsentNumber) {
 		this.lecturesAbsentNumber = lecturesAbsentNumber;
+	}
+
+	@Override
+	public Date getAbsenceSupervisorNotificationDate() {
+		return absenceSupervisorNotificationDate;
+	}
+
+	@Override
+	public void setAbsenceSupervisorNotificationDate(Date absenceSupervisorNotificationDate) {
+		this.absenceSupervisorNotificationDate = absenceSupervisorNotificationDate;
 	}
 
 	@Override

@@ -30,6 +30,9 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockRollCallSearchParameters;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -286,6 +289,144 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, attendeeList.size());
 		Assert.assertEquals(0, attendeeList.get(0).intValue());
 		Assert.assertEquals(3, attendeeList.get(1).intValue());
+	}
+	
+	@Test
+	public void getRollCalls_searchParams_True() {
+		// an open lecture block
+		LectureBlock openLectureBlock = createMinimalLectureBlock(3);
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lecturer-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lecturer-2");
+		dbInstance.commitAndCloseSession();
+
+		// a closed lecture block
+		LectureBlock closedLectureBlock = createMinimalLectureBlock(3);
+		dbInstance.commitAndCloseSession();
+		closedLectureBlock.setStatus(LectureBlockStatus.done);
+		closedLectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
+		lectureBlockDao.update(closedLectureBlock);
+
+		List<Integer> absences = Arrays.asList(1, 2);
+		LectureBlockRollCall rollCall1 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id1, null, null, null, Collections.emptyList());
+		LectureBlockRollCall rollCall2 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id2, null, null, null, absences);
+		LectureBlockRollCall rollCall3 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id1, null, null, null, absences);
+		LectureBlockRollCall rollCall4 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id2, null, null, null, Collections.emptyList());
+		dbInstance.commit();
+		
+		rollCall2.setAbsenceSupervisorNotificationDate(new Date());
+		rollCall2 = lectureBlockRollCallDao.update(rollCall2);
+		dbInstance.commitAndCloseSession();
+		
+		{//only absences
+			LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
+			searchParams.setHasAbsence(Boolean.TRUE);
+			List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(searchParams);
+			Assert.assertFalse(rollCalls.contains(rollCall1));
+			Assert.assertTrue(rollCalls.contains(rollCall2));
+			Assert.assertTrue(rollCalls.contains(rollCall3));
+			Assert.assertFalse(rollCalls.contains(rollCall4));
+		}
+		
+		{//only with supervisor date
+			LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
+			searchParams.setHasSupervisorNotificationDate(Boolean.TRUE);
+			List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(searchParams);
+			Assert.assertFalse(rollCalls.contains(rollCall1));
+			Assert.assertTrue(rollCalls.contains(rollCall2));
+			Assert.assertFalse(rollCalls.contains(rollCall3));
+			Assert.assertFalse(rollCalls.contains(rollCall4));
+		}
+		
+		{//only closed
+			LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
+			searchParams.setClosed(Boolean.TRUE);
+			List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(searchParams);
+			Assert.assertTrue(rollCalls.contains(rollCall1));
+			Assert.assertTrue(rollCalls.contains(rollCall2));
+			Assert.assertFalse(rollCalls.contains(rollCall3));
+			Assert.assertFalse(rollCalls.contains(rollCall4));
+		}
+
+		{//only with supervisor date
+			LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
+			searchParams.setClosed(Boolean.TRUE);
+			searchParams.setHasAbsence(Boolean.TRUE);
+			searchParams.setHasSupervisorNotificationDate(Boolean.TRUE);
+			List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(searchParams);
+			Assert.assertFalse(rollCalls.contains(rollCall1));
+			Assert.assertTrue(rollCalls.contains(rollCall2));
+			Assert.assertFalse(rollCalls.contains(rollCall3));
+			Assert.assertFalse(rollCalls.contains(rollCall4));
+		}
+	}
+	
+	@Test
+	public void getRollCalls_searchParams_False() {
+		// an open lecture block
+		LectureBlock openLectureBlock = createMinimalLectureBlock(3);
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lecturer-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("lecturer-2");
+		dbInstance.commitAndCloseSession();
+
+		// a closed lecture block
+		LectureBlock closedLectureBlock = createMinimalLectureBlock(3);
+		dbInstance.commitAndCloseSession();
+		closedLectureBlock.setStatus(LectureBlockStatus.done);
+		closedLectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
+		lectureBlockDao.update(closedLectureBlock);
+
+		List<Integer> absences = Arrays.asList(1, 2);
+		LectureBlockRollCall rollCall1 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id1, null, null, null, Collections.emptyList());
+		LectureBlockRollCall rollCall2 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id2, null, null, null, absences);
+		LectureBlockRollCall rollCall3 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id1, null, null, null, absences);
+		LectureBlockRollCall rollCall4 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id2, null, null, null, Collections.emptyList());
+		dbInstance.commit();
+		
+		rollCall2.setAbsenceSupervisorNotificationDate(new Date());
+		rollCall2 = lectureBlockRollCallDao.update(rollCall2);
+		dbInstance.commitAndCloseSession();
+		
+		{// only not closed
+			LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
+			searchParams.setClosed(Boolean.FALSE);
+			List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(searchParams);
+			Assert.assertFalse(rollCalls.contains(rollCall1));
+			Assert.assertFalse(rollCalls.contains(rollCall2));
+			Assert.assertTrue(rollCalls.contains(rollCall3));
+			Assert.assertTrue(rollCalls.contains(rollCall4));
+		}
+		
+		{// without absence
+			LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
+			searchParams.setHasAbsence(Boolean.FALSE);
+			List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(searchParams);
+			Assert.assertTrue(rollCalls.contains(rollCall1));
+			Assert.assertFalse(rollCalls.contains(rollCall2));
+			Assert.assertFalse(rollCalls.contains(rollCall3));
+			Assert.assertTrue(rollCalls.contains(rollCall4));
+		}
+		
+		{// without supervisor date
+			LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
+			searchParams.setHasSupervisorNotificationDate(Boolean.FALSE);
+			List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(searchParams);
+			Assert.assertTrue(rollCalls.contains(rollCall1));
+			Assert.assertFalse(rollCalls.contains(rollCall2));
+			Assert.assertTrue(rollCalls.contains(rollCall3));
+			Assert.assertTrue(rollCalls.contains(rollCall4));
+		}
+		
+		{// open, without supervisor date
+			LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
+			searchParams.setClosed(Boolean.FALSE);
+			searchParams.setHasAbsence(Boolean.FALSE);
+			searchParams.setHasSupervisorNotificationDate(Boolean.FALSE);
+			List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(searchParams);
+			Assert.assertFalse(rollCalls.contains(rollCall1));
+			Assert.assertFalse(rollCalls.contains(rollCall2));
+			Assert.assertFalse(rollCalls.contains(rollCall3));
+			Assert.assertTrue(rollCalls.contains(rollCall4));
+		}
 	}
 
 	private LectureBlock createMinimalLectureBlock(int numOfLectures) {

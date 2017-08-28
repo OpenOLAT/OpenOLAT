@@ -62,6 +62,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockRollCallSearchParameters;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.LectureModule;
@@ -428,6 +429,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	@Override
 	public List<LectureBlockRollCall> getRollCalls(LectureBlockRef block) {
 		return lectureBlockRollCallDao.getRollCalls(block);
+	}
+
+	@Override
+	public List<LectureBlockRollCall> getRollCalls(LectureBlockRollCallSearchParameters searchParams) {
+		return lectureBlockRollCallDao.getRollCalls(searchParams);
 	}
 
 	@Override

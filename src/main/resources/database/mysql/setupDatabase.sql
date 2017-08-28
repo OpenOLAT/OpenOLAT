@@ -2063,6 +2063,7 @@ create table o_lecture_block_roll_call (
   l_absence_reason mediumtext,
   l_absence_authorized bit default null,
   l_absence_appeal_date datetime,
+  l_absence_supervisor_noti_date datetime,
   fk_lecture_block bigint not null,
   fk_identity bigint not null,
   primary key (id)

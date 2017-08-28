@@ -38,6 +38,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockRollCallSearchParameters;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
@@ -254,6 +255,58 @@ public class LectureBlockRollCallDAO {
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		return rollCalls != null && rollCalls.size() > 0 ? rollCalls.get(0) : null;
+	}
+	
+	public List<LectureBlockRollCall> getRollCalls(LectureBlockRollCallSearchParameters searchParams) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rollcall from lectureblockrollcall rollcall")
+		  .append(" inner join fetch rollcall.identity ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" inner join fetch rollcall.lectureBlock block");
+		
+		boolean where = false;
+		if(searchParams.getHasAbsence() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			if(searchParams.getHasAbsence().booleanValue()) {
+				sb.append("rollcall.lecturesAbsentNumber>0");
+			} else {
+				sb.append("(rollcall.lecturesAbsentNumber = 0 or rollcall.lecturesAbsentNumber is null)");
+			}
+		}
+		
+		if(searchParams.getHasSupervisorNotificationDate() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			if(searchParams.getHasSupervisorNotificationDate().booleanValue()) {
+				sb.append("rollcall.absenceSupervisorNotificationDate is not null");
+			} else {
+				sb.append("rollcall.absenceSupervisorNotificationDate is null");
+			}
+		}
+		
+		if(searchParams.getClosed() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			if(searchParams.getClosed().booleanValue()) {
+				sb.append("(block.statusString='").append(LectureBlockStatus.done.name()).append("'")
+				  .append(" or block.rollCallStatusString='").append(LectureRollCallStatus.closed.name()).append("'")
+				  .append(" or block.rollCallStatusString='").append(LectureRollCallStatus.autoclosed.name()).append("')");
+			} else {
+				sb.append("(block.statusString!='").append(LectureBlockStatus.done.name()).append("'")
+				  .append(" and block.rollCallStatusString!='").append(LectureRollCallStatus.closed.name()).append("'")
+				  .append(" and block.rollCallStatusString!='").append(LectureRollCallStatus.autoclosed.name()).append("')");
+			}
+		}
+		
+		if(searchParams.getRollCallKey() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("rollcall.key=:rollCallKey");
+		}
+
+		TypedQuery<LectureBlockRollCall> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlockRollCall.class);
+		if(searchParams.getRollCallKey() != null) {
+			query.setParameter("rollCallKey", searchParams.getRollCallKey());
+		}
+		return query.getResultList();
 	}
 	
 	public List<LectureBlockAndRollCall> getParticipantLectureBlockAndRollCalls(RepositoryEntryRef entry, IdentityRef identity) {

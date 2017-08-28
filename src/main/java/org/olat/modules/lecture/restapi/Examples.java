@@ -31,6 +31,7 @@ import java.util.Date;
 public class Examples {
 	
 	public static final LectureBlockVO SAMPLE_LECTUREBLOCKVO = new LectureBlockVO();
+	public static final LectureBlockRollCallVO SAMPLE_LECTUREBLOCKROLLCALLVO = new LectureBlockRollCallVO();
 	public static final RepositoryEntryLectureConfigurationVO SAMPLE_REPOSITORYENTRYLECTURECONFIGURATIONVO = new RepositoryEntryLectureConfigurationVO();
   
 	static {
@@ -45,6 +46,16 @@ public class Examples {
 		SAMPLE_LECTUREBLOCKVO.setExternalId("EXT-234");
 		SAMPLE_LECTUREBLOCKVO.setStartDate(new Date());
 		SAMPLE_LECTUREBLOCKVO.setEndDate(new Date());
+		
+		SAMPLE_LECTUREBLOCKROLLCALLVO.setKey(23l);
+		SAMPLE_LECTUREBLOCKROLLCALLVO.setLecturesAbsentNumber(2);
+		SAMPLE_LECTUREBLOCKROLLCALLVO.setLecturesAttendedNumber(3);
+		SAMPLE_LECTUREBLOCKROLLCALLVO.setComment("A comment");
+		SAMPLE_LECTUREBLOCKROLLCALLVO.setAbsenceReason("The reason of the absence");
+		SAMPLE_LECTUREBLOCKROLLCALLVO.setAbsenceAuthorized(Boolean.TRUE);
+		SAMPLE_LECTUREBLOCKROLLCALLVO.setAbsenceSupervisorNotificationDate(new Date());
+		SAMPLE_LECTUREBLOCKROLLCALLVO.setIdentityKey(2439873895l);
+		SAMPLE_LECTUREBLOCKROLLCALLVO.setLectureBlockKey(345l);
 		
 		SAMPLE_REPOSITORYENTRYLECTURECONFIGURATIONVO.setCalculateAttendanceRate(Boolean.TRUE);
 		SAMPLE_REPOSITORYENTRYLECTURECONFIGURATIONVO.setLectureEnabled(Boolean.TRUE);
