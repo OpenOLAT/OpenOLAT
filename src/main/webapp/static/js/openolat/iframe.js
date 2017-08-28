@@ -178,7 +178,7 @@ function b_sendNewUriEventToParent() {
 }
 
 function b_addOnloadEvent(fnc){
-//console.log("b_addOnloadEvent window.name=" + window.name + " b_iframeid=" + b_iframeid + " fnc=" + fnc);
+	//console.log("b_addOnloadEvent window.name=" + window.name + " b_iframeid=" + b_iframeid + " fnc=" + fnc);
 	try {
 		// Only continue if we can locate the main window
 		var mainwindow = b_getMainWindow(window.parent);
@@ -211,29 +211,31 @@ function b_anchorFirefoxWorkaround() {
 	var anchors = document.getElementsByTagName('a');
 	for (var i=0; i < anchors.length; i++) {
 		var anchor = anchors[i];
-    	var href = anchor.getAttribute('href');
-    	if(href && href[0] == "#") {
-      		var name = href.substring(1);
-      		anchor.addEventListener('click', function() {
-        		try {
-        			var nameElement = document.getElementsByName(name);
-            		var element = null;
-            		if(nameElement != null && nameElement.length > 0) {
+		var href = anchor.getAttribute('href');
+		if(href && href[0] == "#") {
+      		anchor.addEventListener('click', function(el) {
+      			try {
+      				var href = el.target.getAttribute('href');
+      	      		var name = href.substring(1);
+      				var nameElement = document.getElementsByName(name);
+      				
+      				var element = null;
+      				if(nameElement != null && nameElement.length > 0) {
              			element = nameElement[0];
-            		} else {
-            			var idElement = document.getElementById(name);
-            		 	if(idElement != null) { 
-            		 		element = idElement;
-            		 	}
-            		}
-            		if(element && window && window.parent) {
+      				} else {
+      					var idElement = document.getElementById(name);
+      					if(idElement != null) { 
+      						element = idElement;
+      					}
+      				}
+      				if(element && window && window.parent) {
               			var offset = b_anchorFirefoxWorkaroundCumulativeOffset(element);
               			window.parent.scrollTo(offset[0], offset[1]);
-            		}
-        		} catch(e) {
-        			//console.log(e);
-        		}
-        		return true;
+      				}
+      			} catch(e) {
+      				//console.log(e);
+      			}
+      			return true;
       		});
 		}
 	}

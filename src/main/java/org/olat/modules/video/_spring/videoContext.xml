@@ -32,6 +32,7 @@
 	
 	<bean id="videoTranscodingJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 	  <property name="jobClass" value="org.olat.modules.video.manager.VideoTranscodingJob" />
+	  <property name="durability" value="true" />
 	</bean>
 
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">

@@ -65,9 +65,24 @@ public class ImportedToCalendarDAO {
 				.getResultList();
 	}
 	
+	public List<ImportedToCalendar> getImportedToCalendars(String toCalendarId, String toType) {
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("importedToCalendarByIdAndType", ImportedToCalendar.class)
+				.setParameter("toCalendarId", toCalendarId)
+				.setParameter("toType", toType)
+				.getResultList();
+	}
+	
 	public List<ImportedToCalendar> getImportedToCalendars() {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("importedToCalendars", ImportedToCalendar.class)
 				.getResultList();
+	}
+	
+	public void delete(ImportedToCalendar importedToCalendar) {
+		ImportedToCalendar reloadedImportedToCalendar = dbInstance.getCurrentEntityManager()
+			.getReference(ImportedToCalendar.class, importedToCalendar.getKey());
+		dbInstance.getCurrentEntityManager()
+			.remove(reloadedImportedToCalendar);
 	}
 }
