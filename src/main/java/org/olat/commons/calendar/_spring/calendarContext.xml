@@ -32,6 +32,7 @@
 	
 	<bean id="calendarImportJob" class="org.springframework.scheduling.quartz.JobDetailBean">
 	  <property name="jobClass" value="org.olat.commons.calendar.ImportCalendarJob" />
+	  <property name="durability" value="true" />
 	</bean>
 	
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">

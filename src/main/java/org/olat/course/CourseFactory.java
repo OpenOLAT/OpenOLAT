@@ -46,6 +46,7 @@ import org.apache.poi.util.IOUtils;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarNotificationManager;
+import org.olat.commons.calendar.manager.ImportToCalendarManager;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -376,8 +377,9 @@ public class CourseFactory {
 		CoursePropertyManager propertyManager = PersistingCoursePropertyManager.getInstance(res);
 		propertyManager.deleteAllCourseProperties();
 		// delete course calendar
-		CalendarManager calManager = CoreSpringFactory.getImpl(CalendarManager.class);
-		calManager.deleteCourseCalendar(res);
+		CoreSpringFactory.getImpl(ImportToCalendarManager.class).deleteCourseImportedCalendars(res);
+		CoreSpringFactory.getImpl(CalendarManager.class).deleteCourseCalendar(res);
+		
 		// delete IM messages
 		CoreSpringFactory.getImpl(InstantMessagingService.class).deleteMessages(res);
 		//delete tasks
