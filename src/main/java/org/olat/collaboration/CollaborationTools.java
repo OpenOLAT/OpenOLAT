@@ -39,6 +39,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.manager.ImportToCalendarManager;
 import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -671,8 +672,8 @@ public class CollaborationTools implements Serializable {
 		 * Delete calendar if exists
 		 */
 		if (businessGroupTodelete != null) {
-			CalendarManager calManager =  CoreSpringFactory.getImpl(CalendarManager.class);
-			calManager.deleteGroupCalendar(businessGroupTodelete);
+			CoreSpringFactory.getImpl(ImportToCalendarManager.class).deleteGroupImportedCalendars(businessGroupTodelete);
+			CoreSpringFactory.getImpl(CalendarManager.class).deleteGroupCalendar(businessGroupTodelete);
 		}
 		
 		/*

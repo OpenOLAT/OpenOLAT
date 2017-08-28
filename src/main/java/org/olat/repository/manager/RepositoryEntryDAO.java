@@ -102,6 +102,18 @@ public class RepositoryEntryDAO {
 				.getResultList();
 	}
 	
+	public RepositoryEntry loadByResourceId(String resourceName, Long resourceId) {
+		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadRepositoryEntryByResourceId", RepositoryEntry.class)
+				.setParameter("resId", resourceId)
+				.setParameter("resName", resourceName)
+				.getResultList();
+		if(entries.isEmpty()) {
+			return null;
+		}
+		return entries.get(0);
+	}
+	
 	public List<RepositoryEntry> searchByIdAndRefs(String idAndRefs) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")

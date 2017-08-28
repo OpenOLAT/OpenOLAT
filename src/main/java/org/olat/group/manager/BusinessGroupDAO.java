@@ -219,6 +219,19 @@ public class BusinessGroupDAO {
 		return groups;
 	}
 	
+	public BusinessGroup loadByResourceId(Long resourceId) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select bgi from businessgroup bgi ")
+		  .append(" inner join fetch bgi.resource resource")
+		  .append(" where resource.resName='BusinessGroup' and resource.resId=:resId");
+
+		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("resId", resourceId)
+				.getResultList();
+		return groups == null || groups.isEmpty() ? null : groups.get(0);
+	}
+	
 	public BusinessGroup loadForUpdate(Long id) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bgi from businessgroup bgi ")

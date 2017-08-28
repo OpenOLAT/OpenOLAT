@@ -42,9 +42,13 @@ public class ICalFileCalendarUserDeleteManager implements UserDataDeletable {
 
 	@Autowired
 	private CalendarManager calendarManager;
+	@Autowired
+	private ImportToCalendarManager importToCalendarManager;
 
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {
+		importToCalendarManager.deletePersonalImportedCalendars(identity);
+		log.debug("Personal imported calendars deleted for identity=" + identity);
 		calendarManager.deletePersonalCalendar(identity);
 		log.debug("Personal calendar deleted for identity=" + identity);
 	}

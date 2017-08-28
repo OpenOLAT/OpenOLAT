@@ -25,6 +25,8 @@
 */
 package org.olat.commons.calendar;
 
+import java.util.Random;
+
 import org.olat.commons.calendar.manager.ImportToCalendarManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
@@ -40,11 +42,24 @@ import org.quartz.JobExecutionContext;
  */
 public class ImportCalendarJob extends JobWithDB {
 	
+	private static final Random random = new Random();
+	
 	@Override
 	public void executeWithDB(JobExecutionContext context) {
 		try {
+			jitter();
 			CoreSpringFactory.getImpl(ImportToCalendarManager.class).updateCalendarIn();
 		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	private void jitter() {
+		try {
+			double millis = random.nextDouble() * 180000.0d;
+			long wait = Math.round(millis);
+			Thread.sleep(wait);
+		} catch (InterruptedException e) {
 			log.error("", e);
 		}
 	}
