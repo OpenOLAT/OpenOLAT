@@ -71,6 +71,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.BinderStatistics;
+import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.model.SectionRefImpl;
 import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
@@ -822,7 +823,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		ControllerCreator ctrlCreator = new ControllerCreator() {
 			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {			
-				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, binder, true);
+				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, binder, ExtendedMediaRenderingHints.toPrint(), true);
 				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
 				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
 				return layoutCtr;

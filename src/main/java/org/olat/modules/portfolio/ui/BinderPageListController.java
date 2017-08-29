@@ -70,6 +70,7 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
@@ -612,8 +613,9 @@ public class BinderPageListController extends AbstractPageListController {
 	private void doPrint(UserRequest ureq) {
 		ControllerCreator ctrlCreator = new ControllerCreator() {
 			@Override
-			public Controller createController(UserRequest lureq, WindowControl lwControl) {			
-				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, binder, true);
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {
+				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, binder,
+						ExtendedMediaRenderingHints.toPrint(), true);
 				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
 				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
 				return layoutCtr;

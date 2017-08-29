@@ -62,6 +62,7 @@ import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -216,7 +217,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 			ByteArrayOutputStream manifestOut = new ByteArrayOutputStream();
 			write(manifest, manifestOut);
 			String manifestXml = new String(manifestOut.toByteArray());
-			String indexSrc = "section_" + sections.get(0).getKey() + ".html";
+			String indexSrc = sectionFilename(sections.get(0));
 			CPOfflineReadableManager.getInstance().makeCPOfflineReadable(manifestXml, indexSrc, zout);
 		} catch (Exception e) {
 			log.error("", e);
@@ -257,7 +258,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 			ResourceType resource = cpObjectFactory.createResourceType();
 			resource.setIdentifier(resourceIdentifier);
 			resource.setType("webcontent");
-			resource.setHref(itemIdentifier + ".html");
+			resource.setHref(sectionFilename(section));
 			resources.getResource().add(resource);
 		}
 		
@@ -279,10 +280,22 @@ public class ExportBinderAsCPResource implements MediaResource {
 			ResourceType resource = cpObjectFactory.createResourceType();
 			resource.setIdentifier(resourceIdentifier);
 			resource.setType("webcontent");
-			resource.setHref(itemIdentifier + ".html");
+			resource.setHref(pageFilename(page));
 			resources.getResource().add(resource);
 		}
 		return manifest;
+	}
+	
+	private String pageFilename(Page page) {
+		String title = page.getTitle();
+		String filename = StringHelper.transformDisplayNameToFileSystemName(title).toLowerCase();
+		return filename + "_p" + page.getKey() + ".html";
+	}
+	
+	private String sectionFilename(Section section) {
+		String title = section.getTitle();
+		String filename = StringHelper.transformDisplayNameToFileSystemName(title).toLowerCase();
+		return filename + "_s" + section.getKey() + ".html";
 	}
 	
 	private final void write(ManifestType manifest, OutputStream out) {
@@ -306,7 +319,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 		rowVC.contextPut("rowIndex", 0);
 
 		String html = createResultHTML(null, rowVC, null, "o_section_export");
-		convertToZipEntry(zout, "section_" + section.getKey() +".html", html);	
+		convertToZipEntry(zout, sectionFilename(section), html);	
 	}
 	
 	private void exportPage(Page page, ZipOutputStream zout) throws IOException {
@@ -314,7 +327,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
 		PageMetadataController metadatCtrl = new PageMetadataController(ureq, mockwControl, secCallback, page);
 
-		PageController pageCtrl = new PageController(ureq, mockwControl, new PortfolioPageProvider(page), new ExtendedMediaRenderingHints());
+		PageController pageCtrl = new PageController(ureq, mockwControl, new PortfolioPageProvider(page), ExtendedMediaRenderingHints.toPrint());
 		pageCtrl.loadElements(ureq);
 		
 		CommentAndRatingSecurityCallback commentSecCallback = new ReadOnlyCommentsSecurityCallback();
@@ -325,7 +338,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 		Component comments = commentsCtrl.getNumOfComments() > 0 ? commentsCtrl.getInitialComponent() : null;
 		String html = createResultHTML(metadata, component, comments, "o_page_export");
 		html = exportMedia(html, zout);
-		convertToZipEntry(zout, "page_" + page.getKey() +".html", html);	
+		convertToZipEntry(zout, pageFilename(page), html);	
 		
 		pageCtrl.dispose();
 		metadatCtrl.dispose();
@@ -374,8 +387,10 @@ public class ExportBinderAsCPResource implements MediaResource {
 		ZipUtil.addDirectoryToZip(sasstheme.toPath(), "css/offline/light", zout);
 		File fontawesome = new File(WebappHelper.getContextRealPath("/static/font-awesome"));
 		ZipUtil.addDirectoryToZip(fontawesome.toPath(), "css/font-awesome", zout);
-		File qtiJs = new File(WebappHelper.getContextRealPath("/static/js/jquery/"));
-		ZipUtil.addDirectoryToZip(qtiJs.toPath(), "js/jquery", zout);
+		File jQueryJs = new File(WebappHelper.getContextRealPath("/static/js/jquery/"));
+		ZipUtil.addDirectoryToZip(jQueryJs.toPath(), "js/jquery", zout);
+		File d3Js = new File(WebappHelper.getContextRealPath("/static/js/d3/"));
+		ZipUtil.addDirectoryToZip(d3Js.toPath(), "js/d3", zout);
 	}
 	
 	public String exportMedia(String html, ZipOutputStream zout) {
@@ -460,8 +475,15 @@ public class ExportBinderAsCPResource implements MediaResource {
 			}
 		}
 
-		private String processMedia(final String src) {
-			if(!src.startsWith(DispatcherModule.PATH_MAPPED)) return null;
+		private String processMedia(String src) {
+			String serverContext = Settings.getServerContextPath();
+			if(serverContext != null && serverContext.length() > 1 && src.startsWith(serverContext)) {
+				src = src.substring(serverContext.length(), src.length());
+			}
+			
+			if(!src.startsWith(DispatcherModule.PATH_MAPPED)) {
+				return null;
+			}
 
 			String subInfo = src.substring(DispatcherModule.PATH_MAPPED.length());
 			int slashPos = subInfo.indexOf('/');

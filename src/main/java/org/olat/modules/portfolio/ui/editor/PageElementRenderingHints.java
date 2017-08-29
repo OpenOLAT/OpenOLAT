@@ -27,6 +27,8 @@ package org.olat.modules.portfolio.ui.editor;
  */
 public interface PageElementRenderingHints {
 	
+	public boolean isToPdf();
+	
 	public boolean isOnePage();
 
 	public boolean isExtendedMetadata();

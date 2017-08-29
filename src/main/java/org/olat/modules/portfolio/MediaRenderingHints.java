@@ -27,6 +27,8 @@ package org.olat.modules.portfolio;
  */
 public interface MediaRenderingHints {
 	
+	public boolean isToPdf();
+	
 	public boolean isExtendedMetadata();
 
 }

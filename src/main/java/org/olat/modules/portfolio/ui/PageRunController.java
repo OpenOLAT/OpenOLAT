@@ -63,6 +63,7 @@ import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.handler.EvaluationFormHandler;
+import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.olat.modules.portfolio.ui.editor.AddElementInfos;
@@ -540,7 +541,7 @@ public class PageRunController extends BasicController implements TooledControll
 		ControllerCreator ctrlCreator = new ControllerCreator() {
 			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {			
-				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, page, true);
+				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, page, ExtendedMediaRenderingHints.toPrint(), true);
 				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
 				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
 				return layoutCtr;

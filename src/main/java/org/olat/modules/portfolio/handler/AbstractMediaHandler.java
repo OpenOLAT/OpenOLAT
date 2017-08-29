@@ -115,6 +115,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 		
 		public RenderingHints(PageElementRenderingHints options) {
 			this.options = options;
+		}	
+
+		@Override
+		public boolean isToPdf() {
+			return options.isToPdf();
 		}
 
 		@Override

@@ -31,6 +31,11 @@ import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
 public class StandardMediaRenderingHints implements MediaRenderingHints, PageElementRenderingHints {
 
 	@Override
+	public boolean isToPdf() {
+		return false;
+	}
+	
+	@Override
 	public boolean isOnePage() {
 		return false;
 	}

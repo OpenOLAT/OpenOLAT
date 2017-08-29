@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.ui.media;
 import java.io.File;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
@@ -51,6 +52,15 @@ public class VideoMediaController extends BasicController {
 		ImageComponent videoCmp = new ImageComponent(ureq.getUserSession(), "image");
 		videoCmp.setMedia(mediaFile);
 		mainVC.put("video", videoCmp);
+		mainVC.contextPut("pdf", hints.isToPdf());
+		if(hints.isToPdf()) {
+			videoCmp.setMaxWithAndHeightToFitWithin(800, 600);
+			Size size = videoCmp.getScaledSize();
+			if(size != null) {
+				mainVC.contextPut("scaledSize", size);
+			}
+		}
+		
 		if(hints.isExtendedMetadata()) {
 			MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
 			listenTo(metaCtrl);

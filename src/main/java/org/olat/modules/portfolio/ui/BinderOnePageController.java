@@ -42,10 +42,10 @@ import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.handler.EvaluationFormHandler;
-import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.ui.editor.PageController;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
 import org.olat.modules.portfolio.ui.editor.PageProvider;
 import org.olat.modules.portfolio.ui.editor.handler.HTMLRawPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.SpacerElementHandler;
@@ -66,28 +66,33 @@ public class BinderOnePageController extends BasicController {
 	
 	private int counter = 0;
 	private List<String> components = new ArrayList<>();
+	private final PageElementRenderingHints renderingHints;
 	
 	@Autowired
 	private PortfolioService portfolioService;
 
 	public BinderOnePageController(UserRequest ureq, WindowControl wControl,
-			BinderRef binderRef, boolean print) {
+			BinderRef binderRef, PageElementRenderingHints renderingHints, boolean print) {
 		super(ureq, wControl);
+		this.renderingHints = renderingHints;
 		
 		mainVC = createVelocityContainer("binder_one_page");
 		mainVC.contextPut("components", components);
 		mainVC.contextPut("print", print);
+		mainVC.contextPut("mainCssClass", "o_binder_export");
 		putInitialPanel(mainVC);
 		loadComponents(ureq, binderRef);
 	}
 	
 	public BinderOnePageController(UserRequest ureq, WindowControl wControl,
-			Page page, boolean print) {
+			Page page, PageElementRenderingHints renderingHints, boolean print) {
 		super(ureq, wControl);
+		this.renderingHints = renderingHints;
 		
 		mainVC = createVelocityContainer("binder_one_page");
 		mainVC.contextPut("components", components);
 		mainVC.contextPut("print", print);
+		mainVC.contextPut("mainCssClass", "o_page_export");
 		putInitialPanel(mainVC);
 		loadPage(ureq, page);
 	}
@@ -134,7 +139,7 @@ public class BinderOnePageController extends BasicController {
 		Component pageMetaCmp = metadatCtrl.getInitialComponent();
 		pageVC.put("meta", pageMetaCmp);
 
-		PageController pageCtrl = new PageController(ureq, getWindowControl(), new PortfolioPageProvider(page), new ExtendedMediaRenderingHints());
+		PageController pageCtrl = new PageController(ureq, getWindowControl(), new PortfolioPageProvider(page), renderingHints);
 		listenTo(pageCtrl);
 		pageCtrl.loadElements(ureq);
 		

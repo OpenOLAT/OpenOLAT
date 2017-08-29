@@ -1,4 +1,8 @@
-$r.render("video")
+#if($r.isTrue($pdf))
+	<div class="o_pf_video_placeholder" #if($r.isNotNull($scaledSize)) style="width: ${scaledSize.width}px; height: ${scaledSize.height}px;" #end><i class="o_icon o_icon-lg o_filetype_mp4"> </i></div>
+#else
+	$r.render("video")
+#end
 #if($r.available("meta"))
 <div class="panel panel-default o_artefact_metadata">
 	$r.render("meta")

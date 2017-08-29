@@ -30,6 +30,16 @@ import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
  */
 public class ExtendedMediaRenderingHints implements MediaRenderingHints, PageElementRenderingHints {
 
+	private final boolean toPdf;
+	
+	private ExtendedMediaRenderingHints(boolean toPdf) {
+		this.toPdf = toPdf;
+	}
+
+	@Override
+	public boolean isToPdf() {
+		return toPdf;
+	}
 
 	@Override
 	public boolean isOnePage() {
@@ -39,6 +49,14 @@ public class ExtendedMediaRenderingHints implements MediaRenderingHints, PageEle
 	@Override
 	public boolean isExtendedMetadata() {
 		return true;
+	}
+	
+	public static PageElementRenderingHints toPdf() {
+		return new ExtendedMediaRenderingHints(true);
+	}
+	
+	public static PageElementRenderingHints toPrint() {
+		return new ExtendedMediaRenderingHints(false);
 	}
 	
 }

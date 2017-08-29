@@ -65,6 +65,7 @@ import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.ui.BinderOnePageController;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -184,9 +185,9 @@ public class ExportBinderAsPDFResource implements MediaResource {
 		WindowControl mockwControl = new WindowControlMocker();
 		BinderOnePageController printCtrl;
 		if(selectedPage != null) {
-			printCtrl = new BinderOnePageController(ureq, mockwControl, selectedPage, false);
+			printCtrl = new BinderOnePageController(ureq, mockwControl, selectedPage, ExtendedMediaRenderingHints.toPdf(), false);
 		} else {
-			printCtrl = new BinderOnePageController(ureq, mockwControl, binderRef, false);
+			printCtrl = new BinderOnePageController(ureq, mockwControl, binderRef, ExtendedMediaRenderingHints.toPdf(), false);
 		}
 		Component content = printCtrl.getInitialComponent();
 		String html = createResultHTML(content);
