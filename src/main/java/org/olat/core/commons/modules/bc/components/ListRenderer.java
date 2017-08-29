@@ -33,7 +33,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.modules.bc.FolderModule;
+import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -47,7 +47,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.AbstractVirtualContainer;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -85,7 +84,6 @@ public class ListRenderer {
 	/** View thumbnail */
 	public static final String PARAM_SERV_THUMBNAIL = "servthumb";
 
-	private FolderModule folderModule;
 	private VFSLockManager lockManager;
 	private UserManager userManager;
  	
@@ -112,9 +110,6 @@ public class ListRenderer {
 		}
 		if(userManager == null) {
 			userManager = CoreSpringFactory.getImpl(UserManager.class);
-		}
-		if(folderModule == null) {
-			folderModule = CoreSpringFactory.getImpl(FolderModule.class);
 		}
 
 		List<VFSItem> children = fc.getCurrentContainerChildren();
@@ -256,15 +251,7 @@ public class ListRenderer {
 				ubu.buildURI(sb, new String[] { PARAM_SERV }, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
 				sb.append("\"");
 
-				boolean download = folderModule.isForceDownload();
-				if (!download) {
-					// additional check if not an html or txt page. Only HTML pages are
-					// displayed in browser, all other should be downloaded
-					String mimeType = WebappHelper.getMimeType(name);
-					if (mimeType != null && !"text/html".equals(mimeType) && !"application/xhtml+xml".equals(mimeType)) {
-						download = true;
-					}					
-				}
+				boolean download = FolderManager.isDownloadForcedFileType(name);
 				if (download) {
 					sb.append(" download=\"").append(StringHelper.escapeHtml(name)).append("\"");					
 				} else {					
