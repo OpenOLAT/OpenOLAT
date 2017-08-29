@@ -127,7 +127,9 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 					}
 				}
 			} else if("assessmentItem".equals(qName) || "assessmentTest".equals(qName)) {
-				writeAssessmentElement(attributes);
+				writeAssessmentElementAttributes(attributes);
+			}  else if("object".equals(qName)) {
+				writeObjectElementAttributes(attributes);
 			} else {
 				int numOfAttributes = attributes.getLength();
 				for(int i=0;i<numOfAttributes; i++) {
@@ -153,7 +155,22 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 		}
 	}
 	
-	private void writeAssessmentElement(Attributes attributes)
+	private void writeObjectElementAttributes(Attributes attributes)
+	throws XMLStreamException {
+		int numOfAttributes = attributes.getLength();
+		for(int i=0;i<numOfAttributes; i++) {
+			String attrQName = attributes.getQName(i);
+			String attrValue = attributes.getValue(i);
+			if("data".equals(attrQName)) {
+				if(attrValue.contains("%2F")) {
+					attrValue = attrValue.replace("%2F", "/");
+				}
+			}
+			xtw.writeAttribute(attrQName, attrValue);
+		}
+	}
+	
+	private void writeAssessmentElementAttributes(Attributes attributes)
 	throws XMLStreamException {
 		boolean hasToolName = false;
 		boolean hasEditor = false;
