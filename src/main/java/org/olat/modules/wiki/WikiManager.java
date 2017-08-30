@@ -92,15 +92,19 @@ public class WikiManager {
 	public static final String MODIFY_AUTHOR = "modify.author";
 	public static final String M_TIME = "mTime";
 	public static final String INITIAL_AUTHOR = "initial.author";
+	public static final String INITIAL_PAGENAME = "initial.pagename";
 	public static final String FORUM_KEY = "forum.key";
 	public static final String VERSION = "version";
 	public static final String C_TIME = "cTime";
 	public static final String PAGENAME = "pagename";
+	public static final String OLD_PAGENAME = "old.pagenames";
 	private static WikiManager instance;
 	public static final String WIKI_RESOURCE_FOLDER_NAME = "wiki";
 	public static final String VERSION_FOLDER_NAME = "versions";
 	public static final String WIKI_FILE_SUFFIX = "wp";
+	public static final String WIKI_DOT_FILE_SUFFIX = "." + WIKI_FILE_SUFFIX;
 	public static final String WIKI_PROPERTIES_SUFFIX = "properties";
+	public static final String WIKI_DOT_PROPERTIES_SUFFIX = "." + WIKI_PROPERTIES_SUFFIX;
 	public static final String UPDATE_COMMENT = "update.comment";
 	
   //o_clusterNOK cache : 08.04.08/cg Not tested in cluster-mode 
@@ -199,20 +203,19 @@ public class WikiManager {
 	 */
 	private final static void resetAndCopyProperties(Path file, Path destFile) {
 		Properties props = new Properties();
-    	try(InputStream inStream = Files.newInputStream(file);
-    		OutputStream outStream = Files.newOutputStream(destFile)) {
-    		
-    		props.load(inStream);
-    		props.setProperty(VERSION, "0");
-    		props.setProperty(FORUM_KEY, "0");
-    		props.setProperty(MODIFY_AUTHOR, "0");
-    		props.setProperty(UPDATE_COMMENT, "0");
-    		props.setProperty(VIEW_COUNT, "0");
-    		props.setProperty(M_TIME, "0");
-    		props.store(outStream, "");
-    	} catch(Exception e) {
-    		log.error("", e);
-    	}
+		try (InputStream inStream = Files.newInputStream(file);
+				OutputStream outStream = Files.newOutputStream(destFile)) {
+			props.load(inStream);
+			props.setProperty(VERSION, "0");
+			props.setProperty(FORUM_KEY, "0");
+			props.setProperty(MODIFY_AUTHOR, "0");
+			props.setProperty(UPDATE_COMMENT, "0");
+			props.setProperty(VIEW_COUNT, "0");
+			props.setProperty(M_TIME, "0");
+			props.store(outStream, "");
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
 
 	/**
@@ -248,9 +251,8 @@ public class WikiManager {
 			
 	        String filename = file.getFileName().toString();
 	        if(filename.endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
-	        	final Path destFile = Paths.get(destDir.toString(), relFile.toString());
-	        	resetAndCopyProperties(file, destFile);
-	        	
+	        		final Path destFile = Paths.get(destDir.toString(), relFile.toString());
+	        		resetAndCopyProperties(file, destFile);
 	        } else if (filename.endsWith(WIKI_FILE_SUFFIX)) {
 	        	final Path destFile = Paths.get(destDir.toString(), relFile.toString());
 				Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
@@ -305,10 +307,12 @@ public class WikiManager {
 	    throws IOException {
 	        String filename = file.getFileName().toString();
 	        if(filename.endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
-	        	final Path destFile = Paths.get(wikiDir.toString(), file.toString());
-	        	resetAndCopyProperties(file, destFile);
+	        		String f = convertAlternativeFilename(file.toString());
+	        		final Path destFile = Paths.get(wikiDir.toString(), f);
+	        		resetAndCopyProperties(file, destFile);
 	        } else if (filename.endsWith(WIKI_FILE_SUFFIX)) {
-	        	final Path destFile = Paths.get(wikiDir.toString(), file.toString());
+        			String f = convertAlternativeFilename(file.toString());
+	        		final Path destFile = Paths.get(wikiDir.toString(), f);
 				Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
 			} else if (!filename.contains(WIKI_FILE_SUFFIX + "-")
 					&& !filename.contains(WIKI_PROPERTIES_SUFFIX + "-")) {
@@ -321,9 +325,9 @@ public class WikiManager {
 		@Override
 		public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
 		throws IOException {
-	        final Path dirToCreate = Paths.get(destDir.toString(), dir.toString());
+			final Path dirToCreate = Paths.get(destDir.toString(), dir.toString());
 	        if(Files.notExists(dirToCreate)){
-	        	Files.createDirectory(dirToCreate);
+	        		Files.createDirectory(dirToCreate);
 	        }
 	        return FileVisitResult.CONTINUE;
 		}
@@ -449,7 +453,7 @@ public class WikiManager {
 				// due to a bug we have to rename some pages that start with an non
 				// ASCII lowercase letter
 				String idOutOfFileName = propertiesFile.getName().substring(0, propertiesFile.getName().indexOf("."));
-				if (!page.getPageId().equals(idOutOfFileName)) {
+				if (!page.matchIds(idOutOfFileName)) {
 					// rename corrupt prop file
 					propertiesFile.rename(page.getPageId() + "." + WikiManager.WIKI_PROPERTIES_SUFFIX);
 					// load content and delete corrupt content file
@@ -664,6 +668,31 @@ public class WikiManager {
 		} catch (UnsupportedEncodingException e) {
 			throw new OLATRuntimeException(WikiManager.class, "Encoding UTF-8 not supported by your platform!", e);
 		}
+	}
+	
+	public static String convertAlternativeFilename(String id) {
+		String convertedId = id;
+		if(id != null) {
+			if(id.endsWith(WIKI_DOT_FILE_SUFFIX)) {
+				convertedId = convertAlternativeFilename(id, WIKI_DOT_FILE_SUFFIX);
+			} else if(id.endsWith(WIKI_DOT_PROPERTIES_SUFFIX)) {
+				convertedId = convertAlternativeFilename(id, WIKI_DOT_PROPERTIES_SUFFIX);
+			}
+		}
+		return convertedId;
+	}
+	
+	private static String convertAlternativeFilename(String id, String suffix) {
+		char[] idChars = id.toCharArray();
+		int indexLast = idChars.length - suffix.length() - 1;
+		if(idChars[indexLast] == '_') {
+			idChars[indexLast] =  '=';
+			if(idChars[indexLast - 1] == '_') {
+				idChars[indexLast - 1] =  '=';
+			}
+			return new String(idChars);
+		}
+		return id;
 	}
 
 	/**

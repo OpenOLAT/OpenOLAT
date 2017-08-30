@@ -214,9 +214,10 @@ public class WikiMainController extends BasicController implements CloneableCont
 		if (initialPageName != null && wiki.pageExists(WikiManager.generatePageId(initialPageName))) {
 			page = wiki.getPage(initialPageName, true);
 		} else {
-			page = wiki.getPage(WikiPage.WIKI_INDEX_PAGE);
-			if (initialPageName != null)
+			page = wiki.getPage(WikiPage.WIKI_INDEX_PAGE, true);
+			if (initialPageName != null) {
 				showError("wiki.error.page.not.found");
+			}
 		}
 		this.pageId = page.getPageId();
 
@@ -509,8 +510,9 @@ public class WikiMainController extends BasicController implements CloneableCont
 				&& !(event instanceof RequestImageEvent)) {
 			page = wiki.getPage(pageId, true);
 			// set recent page id to the page currently used
-			if (page != null)
+			if (page != null) {
 				pageId = page.getPageId();
+			}
 		}
 
 		if (source == content) {
