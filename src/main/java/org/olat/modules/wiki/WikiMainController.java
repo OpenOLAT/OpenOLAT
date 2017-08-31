@@ -98,6 +98,8 @@ import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.ui.ForumController;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
+import org.olat.modules.wiki.WikiPageSort.WikiFileComparator;
+import org.olat.modules.wiki.WikiPageSort.WikiPageNameComparator;
 import org.olat.modules.wiki.gui.components.wikiToHtml.ErrorEvent;
 import org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtil;
 import org.olat.modules.wiki.gui.components.wikiToHtml.RequestImageEvent;
@@ -325,8 +327,13 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/wiki.js" }, null);
 		content.put("js", js);
-		editContent.contextPut("fileList", wiki.getMediaFileList());
-		editContent.contextPut("linkList", wiki.getListOfAllPageNames());
+		
+		List<VFSItem> mediaFiles = wiki.getMediaFileList();
+		Collections.sort(mediaFiles, new WikiFileComparator(getLocale()));
+		editContent.contextPut("fileList", mediaFiles);
+		List<String> allPages = wiki.getListOfAllPageNames();
+		Collections.sort(allPages, new WikiPageNameComparator(getLocale()));
+		editContent.contextPut("linkList", allPages);
 
 		tabs.addTab(translate("tab.edit"), editContent);
 
