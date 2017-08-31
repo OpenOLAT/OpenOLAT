@@ -53,6 +53,7 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 	private static final String CMD_IMAGEBROWSER = "image";
 	private static final String CMD_FLASHPLAYERBROWSER = "flashplayer";
 	private static final String CMD_FILEBROWSER = "file";
+	private static final String CMD_MEDIABROWSER = "media";
 	private static final ComponentRenderer RENDERER = new RichTextElementRenderer();
 
 	private final RichTextElementImpl element;
@@ -126,7 +127,8 @@ class RichTextElementComponent extends FormBaseComponentImpl {
 		// element we make an exception since we have the media and link chooser
 		// events that must be dispatched by this code.		
 		String moduleUri = ureq.getModuleURI();
-		if (CMD_FILEBROWSER.equals(moduleUri) || CMD_IMAGEBROWSER.equals(moduleUri) || CMD_FLASHPLAYERBROWSER.equals(moduleUri)) {
+		if (CMD_FILEBROWSER.equals(moduleUri) || CMD_IMAGEBROWSER.equals(moduleUri)
+				|| CMD_FLASHPLAYERBROWSER.equals(moduleUri) || CMD_MEDIABROWSER.equals(moduleUri)) {
 			// Get currently edited relative file path
 			String fileName = getRichTextElementImpl().getEditorConfiguration().getLinkBrowserRelativeFilePath();
 			createFileSelectorPopupWindow(ureq, moduleUri, fileName);
