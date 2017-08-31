@@ -49,7 +49,7 @@ import org.olat.core.util.vfs.filters.SystemItemFilter;
  */
 public class FolderManager  extends BasicManager {
 	
-	private static FolderModule folderModule = CoreSpringFactory.getImpl(FolderModule.class);
+	private static FolderModule folderModule;
 
 	/**
 	 * Get this path as a full WebDAV link
@@ -111,6 +111,13 @@ public class FolderManager  extends BasicManager {
 	 * @return true: force file download; false: open in new browser window
 	 */
 	public static boolean isDownloadForcedFileType(String name) {
+		if (folderModule == null) {
+			// Load only once and keep. Not best practice, in the long run the
+			// folder manager needs a full spring bean refactoring, but for now
+			// this is good enough. The not synchronized nature of the
+			// assignment is not a problem here.
+			folderModule = CoreSpringFactory.getImpl(FolderModule.class);
+		}
 		// If enabled in module, no further checks necessary. 
 		boolean download = folderModule.isForceDownload();
 		if (!download) {
