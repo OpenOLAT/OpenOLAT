@@ -280,6 +280,9 @@ public class BinderPageListController extends AbstractPageListController {
 			}
 			
 			Section section = page.getSection();
+			if(section != null && !secCallback.canViewElement(section)) {
+				continue;
+			}
 
 			PortfolioElementRow pageRow = forgePageRow(ureq, page, sectionToAssessmentSectionMap.get(section),
 					sectionToAssignmentMap.get(section), categorizedElementMap, numberOfCommentsMap, viewElement);

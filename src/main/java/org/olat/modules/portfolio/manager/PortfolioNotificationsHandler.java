@@ -242,7 +242,8 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 			//page part
 			Date partLastModified = (Date)object[1];
 			
-			if(secCallback.canViewElement(page)) {
+			Section section = page.getSection();
+			if(secCallback.canViewElement(page) && secCallback.canViewElement(section)) {
 				// page created
 				if(isSameDay(pageCreationDate, pageLastModified) && pageCreationDate.compareTo(compareDate) >= 0) {
 					if(!uniqueCreatePageKeys.containsKey(pageKey)) {

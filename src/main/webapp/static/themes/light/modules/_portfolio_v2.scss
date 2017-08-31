@@ -15,6 +15,11 @@
 	border: 1px $o-portfolio-lead-border-color solid;
 }
 
+.o_section_ended .o_section_lead {
+	border-color: $o-portfolio-lead-ended-border-color;
+	background-color: $o-portfolio-lead-ended-background-color;
+}
+
 .o_section_lead.o_assignment_2_instantiate {
 	border-radius: $o-portfolio-lead-border-radius $o-portfolio-lead-border-radius 0px 0px;
 	border-bottom: none;
@@ -29,10 +34,19 @@
 	border-right: 1px $o-portfolio-lead-border-color solid;
 }
 
+.o_assignment_2_instantiate.o_section_ended {
+	border-color: $o-portfolio-lead-ended-border-color;
+	background-color: $o-portfolio-lead-ended-background-color;
+}
+
 .o_assignment_2_instantiate.last {
 	padding-bottom: $o-portfolio-lead-space-sm;
 	border-bottom: 1px $o-portfolio-lead-border-color solid;
 	border-radius: 0px 0px $o-portfolio-lead-border-radius $o-portfolio-lead-border-radius;
+}
+
+.o_assignment_2_instantiate.o_section_ended.last {
+	border-color: $o-portfolio-lead-ended-border-color;
 }
 
 /* media positioning and sizes */

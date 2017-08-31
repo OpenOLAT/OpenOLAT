@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -576,6 +577,12 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canViewElement(PortfolioElement element) {
 			if(owner) {
+				if(element instanceof Section) {
+					Section section = (Section)element;
+					if(section.getBeginDate() != null && section.getBeginDate().after(new Date())) {
+						return false;
+					}
+				}
 				return true;
 			}
 			
@@ -634,7 +641,13 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewPendingAssignments(Section section) {
-			if(owner) return true;
+			if(owner) {
+				Date beginDate = section.getBeginDate();
+				if(beginDate != null && beginDate.after(new Date())) {
+					return false;
+				}
+				return true;
+			}
 			
 			if(rights != null) {
 				for(AccessRights right:rights) {
