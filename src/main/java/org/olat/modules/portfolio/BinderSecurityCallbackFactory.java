@@ -577,10 +577,18 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canViewElement(PortfolioElement element) {
 			if(owner) {
-				if(element instanceof Section) {
-					Section section = (Section)element;
-					if(section.getBeginDate() != null && section.getBeginDate().after(new Date())) {
-						return false;
+				if(task) {
+					if(element instanceof Section) {
+						Section section = (Section)element;
+						if(section.getBeginDate() != null && section.getBeginDate().after(new Date())) {
+							return false;
+						}
+					} else if(element instanceof Page) {
+						Page page = (Page)element;
+						Section section = page.getSection();
+						if(section != null && section.getBeginDate() != null && section.getBeginDate().after(new Date())) {
+							return false;
+						}
 					}
 				}
 				return true;
@@ -589,7 +597,7 @@ public class BinderSecurityCallbackFactory {
 			if(element instanceof Page) {
 				Page page = (Page)element;
 				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
-					return owner;
+					return false;
 				}
 			}
 			
@@ -608,6 +616,20 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canViewTitleOfElement(PortfolioElement element) {
 			if(owner) {
+				if(task) {
+					if(element instanceof Section) {
+						Section section = (Section)element;
+						if(section.getBeginDate() != null && section.getBeginDate().after(new Date())) {
+							return false;
+						}
+					} else if(element instanceof Page) {
+						Page page = (Page)element;
+						Section section = page.getSection();
+						if(section != null && section.getBeginDate() != null && section.getBeginDate().after(new Date())) {
+							return false;
+						}
+					}
+				}
 				return true;
 			}
 			
