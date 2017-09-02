@@ -367,9 +367,9 @@ public class HotspotEditorController extends FormBasicController {
 		}
 		
 		if(objectImg != null) {
-			String filename = objectImg.getName();
+			String relativePath = itemFile.getParentFile().toPath().relativize(objectImg.toPath()).toString();
 			size = imageService.getSize(new LocalFileImpl(objectImg), null);
-			hotspotsCont.contextPut("filename", filename);
+			hotspotsCont.contextPut("filename", relativePath);
 			setBackgroundSize(size);
 		} else {
 			hotspotsCont.contextRemove("filename");
@@ -435,7 +435,9 @@ public class HotspotEditorController extends FormBasicController {
 				height = size.getHeight();
 				width = size.getWidth();
 			}
-			itemBuilder.setBackground(filename, mimeType, height, width);
+
+			String relPath = itemFile.getParentFile().toPath().relativize(objectImg.toPath()).toString();
+			itemBuilder.setBackground(relPath, mimeType, height, width);
 		}
 		
 		if(updateHotspot) {
