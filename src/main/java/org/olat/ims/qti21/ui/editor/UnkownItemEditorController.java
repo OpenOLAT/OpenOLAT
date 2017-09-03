@@ -35,6 +35,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.InMemoryAssessmentTestSession;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.assessment.TerminatedStaticCandidateSessionContext;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
@@ -73,7 +74,7 @@ public class UnkownItemEditorController extends FormBasicController {
 	public UnkownItemEditorController(UserRequest ureq, WindowControl wControl,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItem item, File itemFileRef, File fUnzippedDirRoot) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
+		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
 		this.item = item;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 
