@@ -40,6 +40,7 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
@@ -82,7 +83,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
+public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implements ResponseIdentifierForFeedback {
 	
 	private String question;
 	private Identifier responseIdentifier;
@@ -182,6 +183,21 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
 	}
 	
+	@Override
+	public Identifier getResponseIdentifier() {
+		return responseIdentifier;
+	}
+	
+	@Override
+	public List<Answer> getAnswers() {
+		List<HotspotChoice> hotspotChoices = getHotspotChoices();
+		List<Answer> answers = new ArrayList<>(hotspotChoices.size());
+		for(HotspotChoice choice:hotspotChoices) {
+			answers.add(new Answer(choice.getIdentifier(), null));
+		}
+		return answers;
+	}
+
 	public String getBackground() {
 		Object graphichObject = hotspotInteraction.getObject();
 		if(graphichObject != null) {

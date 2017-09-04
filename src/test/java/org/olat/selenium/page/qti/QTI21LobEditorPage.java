@@ -62,8 +62,8 @@ public class QTI21LobEditorPage extends QTI21AssessmentItemEditorPage {
 		return new QTI21MinimalScoreEditorPage(browser);
 	}
 	
-	public QTI21LobFeedbacksEditorPage selectFeedbacks() {
+	public QTI21FeedbacksEditorPage selectFeedbacks() {
 		selectTab(By.className("o_sel_assessment_item_feedbacks"));
-		return new QTI21LobFeedbacksEditorPage(browser);
+		return new QTI21FeedbacksEditorPage(browser);
 	}
 }

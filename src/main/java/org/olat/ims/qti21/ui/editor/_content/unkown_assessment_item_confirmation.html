@@ -1,0 +1,16 @@
+<h4>Convert to: $questionType</h4>
+#if($r.isNotEmpty($warnings))
+	<div class="o_error">$r.translate("warning.conversion.list")
+		<ul class="list-unstyled">
+		#foreach($warning in $warnings)
+			<li><i class="o_icon ${warning.cssClass()}"> </i>  $r.translate(${warning.i18nKey()})</li>
+		#end
+		</ul>
+	</div>
+#else
+	<div class="o_warning">$r.translate("warning.conversion.standard")</div>
+#end
+<div class="o_button_group">
+	$r.render("cancel")
+	$r.render("convert")
+</div>

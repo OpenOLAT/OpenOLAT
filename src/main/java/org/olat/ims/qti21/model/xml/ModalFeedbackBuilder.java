@@ -19,6 +19,9 @@
  */
 package org.olat.ims.qti21.model.xml;
 
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.ims.qti21.QTI21Constants;
@@ -27,15 +30,27 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import uk.ac.ed.ph.jqtiplus.attribute.value.StringAttribute;
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
+import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.And;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Equal;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Gt;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Gte;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lt;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lte;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseRule;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.SetOutcomeValue;
+import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.BaseType;
+import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
-import uk.ac.ed.ph.jqtiplus.value.SingleValue;
+import uk.ac.ed.ph.jqtiplus.value.IntegerValue;
 
 /**
  * 
@@ -48,20 +63,18 @@ public class ModalFeedbackBuilder {
 	private final ModalFeedback modalFeedback;
 	private final AssessmentItem assessmentItem;
 	
+	private final ModalFeedbackType type;
+	
 	private String title;
 	private String text;
 	private Identifier identifier;
+	private List<ModalFeedbackCondition> conditions;
 	
-	public ModalFeedbackBuilder(AssessmentItem assessmentItem) {
+	public ModalFeedbackBuilder(AssessmentItem assessmentItem, ModalFeedbackType type) {
 		this.assessmentItem = assessmentItem;
 		this.modalFeedback = null;
+		this.type = type;
 		identifier = IdentifierGenerator.newNumberAsIdentifier("Feedback");
-	}
-	
-	public ModalFeedbackBuilder(AssessmentItem assessmentItem, Identifier identifier) {
-		this.assessmentItem = assessmentItem;
-		this.identifier = identifier;
-		this.modalFeedback = null;
 	}
 	
 	public ModalFeedbackBuilder(AssessmentItem assessmentItem, ModalFeedback modalFeedback) {
@@ -72,13 +85,163 @@ public class ModalFeedbackBuilder {
 			StringAttribute titleAttr = modalFeedback.getAttributes().getStringAttribute(ModalFeedback.ATTR_TITLE_NAME);
 			title = titleAttr == null ? null : titleAttr.getComputedValue();
 			identifier = modalFeedback.getIdentifier();
+			type = extract();
 		} else {
 			identifier = IdentifierGenerator.newNumberAsIdentifier("Feedback");
+			type = null;
 		}
 	}
 	
-	public Identifier getModalFeedbackIdentifier() {
-		return modalFeedback.getIdentifier();
+	private ModalFeedbackType extract() {
+		if(isCorrectRule()) {
+			return ModalFeedbackType.correct;
+		}
+		if(isIncorrectRule()) {
+			return ModalFeedbackType.incorrect;
+		}
+		if(isEmptyRule()) {
+			return ModalFeedbackType.empty;
+		}
+		if(isAnsweredRule()) {
+			return ModalFeedbackType.answered;
+		}
+		if(isCorrectSolutionRule()) {
+			return ModalFeedbackType.correctSolution;
+		}
+		if(isHint()) {
+			return ModalFeedbackType.hint;
+		}
+		extractConditions();
+		if(conditions != null && conditions.size() > 0) {
+			return ModalFeedbackType.additional;
+		}
+		return ModalFeedbackType.unkown;
+	}
+	
+	public void extractConditions() {
+		ResponseCondition feedbackRule = findFeedbackResponseCondition(modalFeedback.getIdentifier(), QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+		ResponseIf responseIf = feedbackRule.getResponseIf();
+		if(responseIf != null && responseIf.getExpressions() != null
+				&& responseIf.getExpressions().size() == 1
+				&& responseIf.getExpressions().get(0) instanceof And
+				&& responseIf.getResponseRules().size() == 1
+				&& responseIf.getResponseRules().get(0) instanceof SetOutcomeValue) {
+			And and = (And)responseIf.getExpression();
+			List<Expression> conditionElements = and.getExpressions();
+			List<ModalFeedbackCondition> extractedConditions = new ArrayList<>();
+			for(Expression conditionElement:conditionElements) {
+				ModalFeedbackCondition condition = extractCondition(conditionElement);
+				if(condition != null) {
+					extractedConditions.add(condition);
+				}
+			}
+			if(extractedConditions != null) {
+				conditions = extractedConditions;
+			}
+		}
+	}
+	
+	private ModalFeedbackCondition extractCondition(Expression conditionElement) {
+		ModalFeedbackOperatorAndExpressions operatorAndExpressions = extractOperatorCondition(conditionElement);
+		if(operatorAndExpressions.getOperator() != null) {
+			List<Expression> expressions = operatorAndExpressions.getExpressions();
+			ModalFeedbackCondition.Variable variable = extractVariableCondition(expressions);
+			String value = extractBaseValueCondition(expressions); 
+			
+			ModalFeedbackCondition condition = new ModalFeedbackCondition();
+			condition.setVariable(variable);
+			condition.setValue(value);
+			condition.setOperator(operatorAndExpressions.getOperator());
+			return condition;
+		}
+		
+		return null;
+	}
+	
+	private String extractBaseValueCondition(List<Expression> expressions) {
+		BaseValue bValue = null;
+		if(expressions.get(0) instanceof BaseValue) {
+			bValue = (BaseValue)expressions.get(0);
+		} else if(expressions.get(1) instanceof BaseValue) {
+			bValue = (BaseValue)expressions.get(1);
+		}
+		if(bValue != null) {
+			if(bValue.getBaseTypeAttrValue() == BaseType.IDENTIFIER) {
+				IdentifierValue val = (IdentifierValue)bValue.getSingleValue();
+				return val.identifierValue().toString();
+			}
+			if(bValue.getBaseTypeAttrValue() == BaseType.INTEGER) {
+				IntegerValue val = (IntegerValue)bValue.getSingleValue();
+				return Integer.toString(val.intValue());
+			}
+			if(bValue.getBaseTypeAttrValue() == BaseType.FLOAT) {
+				FloatValue val = (FloatValue)bValue.getSingleValue();
+				return Double.toString(val.doubleValue());
+			}
+		}
+		
+		return null;
+	}
+	
+	private ModalFeedbackCondition.Variable extractVariableCondition(List<Expression> expressions) {
+		Variable variable = null;
+		if(expressions.get(0) instanceof Variable) {
+			variable = (Variable)expressions.get(0);
+		} else if(expressions.get(1) instanceof Variable) {
+			variable = (Variable)expressions.get(1);
+		}
+		if(variable != null) {
+			ComplexReferenceIdentifier varIdentifier = variable.getIdentifier();
+			if(QTI21Constants.SCORE_CLX_IDENTIFIER.equals(varIdentifier)) {
+				return ModalFeedbackCondition.Variable.score;
+			} else if(QTI21Constants.NUM_ATTEMPTS_CLX_IDENTIFIER.equals(varIdentifier)) {
+				return ModalFeedbackCondition.Variable.attempts;
+			} else {
+				return ModalFeedbackCondition.Variable.response;
+			}
+		}
+		
+		return null;
+	}
+	
+	private ModalFeedbackOperatorAndExpressions extractOperatorCondition(Expression conditionElement) {
+		ModalFeedbackCondition.Operator operator = null;
+		List<Expression> expressions = conditionElement.getExpressions();
+		if(conditionElement instanceof Gt) {
+			operator =  ModalFeedbackCondition.Operator.bigger;
+		} else if(conditionElement instanceof Gte) {
+			operator = ModalFeedbackCondition.Operator.biggerEquals;
+		} else if(conditionElement instanceof Equal || conditionElement instanceof Match) {
+			operator = ModalFeedbackCondition.Operator.equals;
+		} else if(conditionElement instanceof Lt) {
+			operator = ModalFeedbackCondition.Operator.smaller;
+		} else if(conditionElement instanceof Lte) {
+			operator = ModalFeedbackCondition.Operator.smallerEquals;
+		} else if(conditionElement instanceof Not) {
+			if(conditionElement.getExpressions().size() == 1 && conditionElement.getExpressions().get(0) instanceof Match) {
+				operator = ModalFeedbackCondition.Operator.notEquals;
+				expressions = conditionElement.getExpressions().get(0).getExpressions();
+			}
+		}
+		return new ModalFeedbackOperatorAndExpressions(operator, expressions);
+	}
+	
+	private static class ModalFeedbackOperatorAndExpressions {
+		private final ModalFeedbackCondition.Operator operator;
+		private final List<Expression> expressions;
+		
+		public ModalFeedbackOperatorAndExpressions(ModalFeedbackCondition.Operator operator, List<Expression> expressions) {
+			this.operator = operator;
+			this.expressions = expressions;
+		}
+
+		public ModalFeedbackCondition.Operator getOperator() {
+			return operator;
+		}
+
+		public List<Expression> getExpressions() {
+			return expressions;
+		}
 	}
 	
 	public boolean isCorrectRule() {
@@ -103,7 +266,10 @@ public class ModalFeedbackBuilder {
 	
 	public boolean isCorrectSolutionRule() {
 		ResponseCondition feedbackRule = findFeedbackResponseCondition(modalFeedback.getIdentifier(), QTI21Constants.CORRECT_SOLUTION_IDENTIFIER);
-		return findBaseValueInExpressionsOfResponseIf(feedbackRule, QTI21Constants.INCORRECT_IDENTIFIER);
+		boolean allOk = findBaseValueInExpressionsOfResponseIf(feedbackRule, QTI21Constants.INCORRECT_IDENTIFIER);
+		allOk |= modalFeedback.getOutcomeIdentifier() != null
+					&& QTI21Constants.CORRECT_SOLUTION_IDENTIFIER.equals(modalFeedback.getOutcomeIdentifier());
+		return allOk;
 	}
 	
 	public boolean isHint() {
@@ -133,6 +299,22 @@ public class ModalFeedbackBuilder {
 
 	public void setIdentifier(Identifier identifier) {
 		this.identifier = identifier;
+	}
+	
+	public ModalFeedbackType getType() {
+		return type;
+	}
+	
+	public Identifier getModalFeedbackIdentifier() {
+		return modalFeedback.getIdentifier();
+	}
+	
+	public List<ModalFeedbackCondition> getFeedbackConditons() {
+		return conditions;
+	}
+	
+	public void setFeedbackConditions(List<ModalFeedbackCondition> conditions) {
+		this.conditions = new ArrayList<>(conditions);
 	}
 
 	private ResponseCondition findFeedbackResponseCondition(Identifier feedbackIdentifier, Identifier outcomeValueIdentifier) {
@@ -177,24 +359,16 @@ public class ModalFeedbackBuilder {
 		return false;
 	}
 	
-	private boolean findBaseValueInExpression(Expression expression, Identifier feedbackIdentifier) {
-		if(expression instanceof BaseValue) {
-			BaseValue bValue = (BaseValue)expression;
-			SingleValue sValue = bValue.getSingleValue();
-			if(sValue instanceof IdentifierValue) {
-				IdentifierValue iValue = (IdentifierValue)sValue;
-				if(feedbackIdentifier.equals(iValue.identifierValue())) {
-					return true;
-				}
-			}
-		} else {
-			List<Expression> childExpressions = expression.getExpressions();
-			for(Expression childExpression:childExpressions) {
-				if(findBaseValueInExpression(childExpression, feedbackIdentifier)) {
-					return true;
-				}
-			}
-		}
-		return false;
+
+	
+	public enum ModalFeedbackType {
+		hint,
+		correctSolution,
+		correct,
+		incorrect,
+		empty,
+		answered,
+		additional,
+		unkown
 	}
 }

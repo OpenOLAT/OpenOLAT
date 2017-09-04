@@ -1,0 +1,35 @@
+<div class="o_sel_assessment_item_feedbacks">
+	<div class="o_button_group o_button_group_right">
+	#if($r.available("add.feedback.menu"))
+		$r.render("add.feedback.menu")
+	#end	
+	$r.contextHelpWithWrapper("Test editor QTI 2.1 in detail#details_testeditor_feedback")
+	</div>
+	#if($r.available("hint"))
+		$r.render("hint")
+	#end
+	#if($r.available("correctSolution"))
+		$r.render("correctSolution")
+	#end
+	#if($r.available("correct"))
+		$r.render("correct")
+	#end
+	#if($r.available("incorrect"))
+		$r.render("incorrect")
+	#end
+	#if($r.available("answered"))
+		$r.render("answered")
+	#end
+		#if($r.available("empty"))
+		$r.render("empty")
+	#end
+	#foreach($additional in $additionals)
+		$r.render($additional.formLayoutContainer)
+	#end
+	
+	#if($r.available("submit"))
+	<div class="col-sm-offset-2 col-sm-10">
+		$r.render("submit")
+	</div>
+	#end
+</div>

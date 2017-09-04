@@ -1195,5 +1195,10 @@ ul.testPartDrilldown {
 		text-align: right;
 		@extend %o_small;			
 	}	
-}	
+}
+
+/* Editor */
+.o_sel_assessment_item_feedbacks {
+	min-height: 250px;
+}
 

@@ -35,6 +35,7 @@ import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
+import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
@@ -1234,5 +1235,15 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, slider);
 		formLayout.add(slider);
 		return slider;
+	}
+	
+	
+	public DropdownItem addDropdownMenu(String name, String i18nLabel, FormItemContainer formLayout, Translator translator) {
+		DropdownItem dropdown = new DropdownItem(name, name, translator);
+		dropdown.setEmbbeded(true);
+		dropdown.setButton(true);
+		setLabelIfNotNull(i18nLabel, dropdown);
+		formLayout.add(dropdown);
+		return dropdown;
 	}
 }

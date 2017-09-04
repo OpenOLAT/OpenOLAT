@@ -68,6 +68,12 @@ public class QTI21Constants {
 	
 	public static final ComplexReferenceIdentifier PASS_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(PASS);
 	
+	public static final String NUM_ATTEMPTS = "numAttempts";
+	
+	public static final Identifier NUM_ATTEMPTS_IDENTIFIER = Identifier.assumedLegal(NUM_ATTEMPTS);
+	
+	public static final ComplexReferenceIdentifier NUM_ATTEMPTS_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(NUM_ATTEMPTS);
+	
 	public static final String FEEDBACKBASIC = "FEEDBACKBASIC";
 	
 	public static final Identifier FEEDBACKBASIC_IDENTIFIER = Identifier.parseString(FEEDBACKBASIC);
@@ -82,11 +88,15 @@ public class QTI21Constants {
 
 	public static final Identifier CORRECT_IDENTIFIER = Identifier.parseString(CORRECT);
 	
+	public static final ComplexReferenceIdentifier CORRECT_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(CORRECT);
+	
 	public static final IdentifierValue CORRECT_IDENTIFIER_VALUE = new IdentifierValue(CORRECT);
 	
 	public static final String INCORRECT = "incorrect";
 	
 	public static final Identifier INCORRECT_IDENTIFIER = Identifier.parseString(INCORRECT);
+	
+	public static final ComplexReferenceIdentifier INCORRECT_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(INCORRECT);
 	
 	public static final IdentifierValue INCORRECT_IDENTIFIER_VALUE = new IdentifierValue(INCORRECT);
 
@@ -99,6 +109,8 @@ public class QTI21Constants {
 	public static final String EMPTY = "empty";
 	
 	public static final Identifier EMPTY_IDENTIFIER = Identifier.parseString(EMPTY);
+	
+	public static final ComplexReferenceIdentifier EMPTY_CLX_IDENTIFIER = ComplexReferenceIdentifier.parseString(EMPTY);
 	
 	public static final IdentifierValue EMPTY_IDENTIFIER_VALUE = new IdentifierValue(EMPTY);
 	

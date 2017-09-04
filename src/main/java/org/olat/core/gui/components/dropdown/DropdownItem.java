@@ -56,6 +56,20 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 		dropdown.setEmbbeded(embbeded);
 	}
 	
+	public DropdownOrientation getOrientation() {
+		return dropdown.getOrientation();
+	}
+
+	public void setOrientation(DropdownOrientation orientation) {
+		dropdown.setOrientation(orientation);
+	}
+
+	@Override
+	public void setElementCssClass(String elementCssClass) {
+		dropdown.setElementCssClass(elementCssClass);
+		super.setElementCssClass(elementCssClass);
+	}
+
 	public void addElement(FormLink link) {
 		items.add(link);
 		

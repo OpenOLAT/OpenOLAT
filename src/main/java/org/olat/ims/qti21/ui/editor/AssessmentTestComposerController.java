@@ -418,6 +418,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				doSaveManifest();
 			} else if(AssessmentItemEvent.ASSESSMENT_ITEM_METADATA_CHANGED.equals(aie.getCommand())) {
 				doSaveManifest();
+			} else if(AssessmentItemEvent.ASSESSMENT_ITEM_NEED_RELOAD.equals(aie.getCommand())) {
+				doReloadItem(ureq);
 			}
 		} else if(selectQItemCtrl == source) {
 			cmc.deactivate();
@@ -834,6 +836,15 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			return doOpenFirstItem((TreeNode)node.getChildAt(0));
 		}
 		return null;
+	}
+	
+	private TreeNode doReloadItem(UserRequest ureq) {
+		TreeNode selectedNode = menuTree.getSelectedNode();
+		updateTreeModel(false);
+		menuTree.setSelectedNodeId(selectedNode.getIdent());
+		selectedNode = menuTree.getSelectedNode();
+		partEditorFactory(ureq, selectedNode);
+		return selectedNode;	
 	}
 	
 	/**

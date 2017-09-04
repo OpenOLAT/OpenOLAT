@@ -80,7 +80,7 @@ public class OnyxToQtiWorksAssessementItemsTest {
                 { "Hotspotaufgabe_478898401.xml" },
                 { "Task_1597435347.xml" },
                 { "text-entry-b-3-8.xml" },
-                { "extended-text-e-3.7.xml" },
+                { "extended-text-e-3-7.xml" },
                 { "extended-text-b-3-7.xml" },
                 { "extended-text-c-3-7.xml" },
                 { "extended-text-3-7.xml" },

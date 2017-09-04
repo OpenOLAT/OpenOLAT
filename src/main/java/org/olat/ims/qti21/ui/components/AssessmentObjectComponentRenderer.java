@@ -90,6 +90,7 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.XmlUtilities;
+import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -334,7 +335,9 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 		Value feedbackBasic = itemSessionState.getOutcomeValue(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
 		if(feedbackBasic != null && feedbackBasic.hasBaseType(BaseType.IDENTIFIER) && feedbackBasic instanceof IdentifierValue) {
 			IdentifierValue identifierValue = (IdentifierValue)feedbackBasic;
-			if(QTI21Constants.CORRECT_IDENTIFIER_VALUE.equals(identifierValue)) {
+			if(AssessmentItemFactory.matchAdditionalFeedback(resolvedAssessmentItem.getRootNodeLookup().extractAssumingSuccessful(), modalFeedback)) {
+				sb.append(" o_additional_modal_feedback");
+			} else if(QTI21Constants.CORRECT_IDENTIFIER_VALUE.equals(identifierValue)) {
 				sb.append(" o_correct_modal_feedback");
 			} else if(QTI21Constants.INCORRECT_IDENTIFIER_VALUE.equals(identifierValue)) {
 				sb.append(" o_incorrect_modal_feedback");

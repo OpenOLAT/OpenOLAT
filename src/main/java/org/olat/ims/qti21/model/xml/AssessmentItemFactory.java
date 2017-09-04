@@ -46,19 +46,23 @@ import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.TextRun;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.object.Object;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
+import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.And;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Equal;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Gt;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Gte;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lt;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lte;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Multiple;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Sum;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
@@ -92,12 +96,15 @@ import uk.ac.ed.ph.jqtiplus.node.test.View;
 import uk.ac.ed.ph.jqtiplus.node.test.VisibilityMode;
 import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
+import uk.ac.ed.ph.jqtiplus.value.IntegerValue;
 import uk.ac.ed.ph.jqtiplus.value.Orientation;
+import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 import uk.ac.ed.ph.jqtiplus.value.StringValue;
 
 /**
@@ -1045,6 +1052,214 @@ public class AssessmentItemFactory {
 		return modalFeedback;
 	}
 	
+	/**
+	 * the additional feedback have only responseIf
+	 * 
+	 * 
+	 * @param item
+	 * @param feedback
+	 * @return
+	 */
+	public static boolean matchAdditionalFeedback(AssessmentItem item, ModalFeedback feedback) {
+		List<ResponseRule> responseRules = item.getResponseProcessing().getResponseRules();
+		for(ResponseRule responseRule:responseRules) {
+			if(responseRule instanceof ResponseCondition) {
+				ResponseCondition responseCondition = (ResponseCondition)responseRule;
+				if(responseCondition.getResponseIf() == null || responseCondition.getResponseElse() != null
+						|| (responseCondition.getResponseElseIfs() != null && responseCondition.getResponseElseIfs().size() > 0)) {
+					continue;
+				}
+				
+				ResponseIf responseIf = responseCondition.getResponseIf();
+				List<ResponseRule> ifResponseRules = responseIf.getResponseRules();
+				if(ifResponseRules == null || ifResponseRules.size() != 1 || !(ifResponseRules.get(0) instanceof SetOutcomeValue)) {
+					continue;
+				}
+				
+				SetOutcomeValue setOutcomeValue = (SetOutcomeValue)responseIf.getResponseRules().get(0);
+				if(!findBaseValueInExpression(setOutcomeValue.getExpression(), feedback.getIdentifier())) {
+					continue;
+				}
+				
+				List<Expression> expressions = responseIf.getExpressions();
+				if(expressions == null || expressions.size() != 1 || !(expressions.get(0) instanceof And)) {
+					continue;
+				}
+				
+				List<Variable> variables = QueryUtils.search(Variable.class, expressions.get(0));
+				if(variables != null && variables.size() == 1) {
+					Variable bValue = variables.get(0);
+					ComplexReferenceIdentifier identifier = bValue.getIdentifier();
+					if(identifier.equals(QTI21Constants.SCORE_CLX_IDENTIFIER)
+							|| identifier.equals(QTI21Constants.NUM_ATTEMPTS_CLX_IDENTIFIER)) {
+						return true;
+					}
+					if(identifier.equals(QTI21Constants.CORRECT_CLX_IDENTIFIER)
+							|| identifier.equals(QTI21Constants.INCORRECT_CLX_IDENTIFIER)
+							|| identifier.equals(QTI21Constants.EMPTY_CLX_IDENTIFIER)) {
+						return false;
+					}
+					String identifierToString = identifier.toString();
+					if(identifierToString.contains("RESPONSE_")) {
+						return true;
+					}
+				}	
+			}
+		}
+
+		return false;
+	}
+	
+	public static ResponseCondition createModalFeedbackRuleWithConditions(ResponseProcessing responseProcessing,
+			Identifier feedbackIdentifier, Identifier responseIdentifier, List<ModalFeedbackCondition> conditions) {
+		ResponseCondition rule = new ResponseCondition(responseProcessing);
+		
+		/*
+		<responseCondition>
+			<responseIf>
+				<and>
+					<equal toleranceMode="exact">
+						<variable identifier="SCORE" />
+						<baseValue baseType="float">
+							4
+						</baseValue>
+					</equal>
+				</and>
+				<setOutcomeValue identifier="FEEDBACKMODAL">
+					<multiple>
+						<variable identifier="FEEDBACKMODAL" />
+						<baseValue baseType="identifier">
+							Feedback2074019497
+						</baseValue>
+					</multiple>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		*/
+		
+		ResponseIf responseIf = new ResponseIf(rule);
+		rule.setResponseIf(responseIf);
+		
+		{//rule
+			And and = new And(responseIf);
+			responseIf.getExpressions().add(and);
+			for(ModalFeedbackCondition condition:conditions) {
+				appendModalFeedbackCondition(condition, responseIdentifier, and);
+			}
+		}
+
+		{//outcome
+			SetOutcomeValue feedbackVar = new SetOutcomeValue(responseIf);
+			feedbackVar.setIdentifier(QTI21Constants.FEEDBACKMODAL_IDENTIFIER);
+			
+			Multiple multiple = new Multiple(feedbackVar);
+			feedbackVar.setExpression(multiple);
+			
+			Variable variable = new Variable(multiple);
+			variable.setIdentifier(ComplexReferenceIdentifier.parseString(QTI21Constants.FEEDBACKMODAL));
+			multiple.getExpressions().add(variable);
+			
+			BaseValue feedbackVal = new BaseValue(feedbackVar);
+			feedbackVal.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+			feedbackVal.setSingleValue(new IdentifierValue(feedbackIdentifier));
+			multiple.getExpressions().add(feedbackVal);
+			
+			responseIf.getResponseRules().add(feedbackVar);
+		}
+		
+		return rule;
+	}
+	
+	private static void appendModalFeedbackCondition(ModalFeedbackCondition condition, Identifier responseIdentifier, And and) {
+		ModalFeedbackCondition.Variable var = condition.getVariable();
+		ModalFeedbackCondition.Operator operator = condition.getOperator();
+		String value = condition.getValue();
+		
+		Expression expression = null;
+		if(var == ModalFeedbackCondition.Variable.response) {
+			if(operator == ModalFeedbackCondition.Operator.equals) {
+				Match match = new Match(and);
+				and.getExpressions().add(match);
+				expression = match;
+			} else if(operator == ModalFeedbackCondition.Operator.notEquals) {
+				Not not = new Not(and);
+				and.getExpressions().add(not);
+				
+				Match match = new Match(not);
+				not.getExpressions().add(match);
+				expression = match;
+			}
+		} else {
+			switch(operator) {
+				case bigger: {
+					Gt gt = new Gt(and);
+					and.getExpressions().add(gt);
+					expression = gt;
+					break;
+				}
+				case biggerEquals: {
+					Gte gte = new Gte(and);
+					and.getExpressions().add(gte);
+					expression = gte;
+					break;
+				}
+				case equals: {
+					Equal equal = new Equal(and);
+					equal.setToleranceMode(ToleranceMode.EXACT);
+					and.getExpressions().add(equal);
+					expression = equal;
+					break;
+				}
+				case notEquals: {
+					Not not = new Not(and);
+					and.getExpressions().add(not);
+					Equal equal = new Equal(not);
+					equal.setToleranceMode(ToleranceMode.EXACT);
+					not.getExpressions().add(equal);
+					expression = equal;
+					break;
+				}
+				case smaller: {
+					Lt lt = new Lt(and);
+					and.getExpressions().add(lt);
+					expression = lt;
+					break;
+				}
+				case smallerEquals: {
+					Lte lte = new Lte(and);
+					and.getExpressions().add(lte);
+					expression = lte;
+					break;
+				}
+			}
+		}
+		
+		if(expression != null) {
+			Variable variable = new Variable(expression);
+			expression.getExpressions().add(variable);
+			BaseValue bValue = new BaseValue(expression);
+			expression.getExpressions().add(bValue);
+			
+			switch(var) {
+				case score:
+					bValue.setBaseTypeAttrValue(BaseType.FLOAT);
+					bValue.setSingleValue(new FloatValue(Double.parseDouble(value)));
+					variable.setIdentifier(QTI21Constants.SCORE_CLX_IDENTIFIER);
+					break;
+				case attempts:
+					bValue.setBaseTypeAttrValue(BaseType.INTEGER);
+					bValue.setSingleValue(new IntegerValue(Integer.parseInt(value)));
+					variable.setIdentifier(QTI21Constants.NUM_ATTEMPTS_CLX_IDENTIFIER);
+					break;	
+				case response:
+					bValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+					bValue.setSingleValue(new IdentifierValue(Identifier.parseString(value)));
+					variable.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier.toString()));
+					break;
+			}
+		}
+	}
+	
 	public static ResponseCondition createModalFeedbackBasicRule(ResponseProcessing responseProcessing,
 			Identifier feedbackIdentifier, String inCorrect, boolean hint) {
 		ResponseCondition rule = new ResponseCondition(responseProcessing);
@@ -1405,7 +1620,26 @@ public class AssessmentItemFactory {
 		return list;
 	}
 	
-
+	public static boolean findBaseValueInExpression(Expression expression, Identifier feedbackIdentifier) {
+		if(expression instanceof BaseValue) {
+			BaseValue bValue = (BaseValue)expression;
+			SingleValue sValue = bValue.getSingleValue();
+			if(sValue instanceof IdentifierValue) {
+				IdentifierValue iValue = (IdentifierValue)sValue;
+				if(feedbackIdentifier.equals(iValue.identifierValue())) {
+					return true;
+				}
+			}
+		} else {
+			List<Expression> childExpressions = expression.getExpressions();
+			for(Expression childExpression:childExpressions) {
+				if(findBaseValueInExpression(childExpression, feedbackIdentifier)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 	
 
 }

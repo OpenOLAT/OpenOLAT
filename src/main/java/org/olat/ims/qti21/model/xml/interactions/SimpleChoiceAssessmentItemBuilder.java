@@ -26,6 +26,8 @@ import java.util.List;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.util.filter.FilterFactory;
+import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -47,7 +49,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuilder {
+public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuilder implements ResponseIdentifierForFeedback {
 	
 	protected boolean shuffle;
 	protected String question;
@@ -113,6 +115,23 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 			orientation = choiceInteraction.getOrientation();
 			cssClass = choiceInteraction.getClassAttr();
 		}
+	}
+	
+	@Override
+	public Identifier getResponseIdentifier() {
+		return responseIdentifier;
+	}
+
+	@Override
+	public List<Answer> getAnswers() {
+		List<SimpleChoice> simpleChoices = getChoices();
+		List<Answer> answers = new ArrayList<>(simpleChoices.size());
+		for(SimpleChoice choice:simpleChoices) {
+			String choiceContent =  getHtmlHelper().flowStaticString(choice.getFlowStatics());
+			String label = FilterFactory.getHtmlTagsFilter().filter(choiceContent);
+			answers.add(new Answer(choice.getIdentifier(), label));
+		}
+		return answers;
 	}
 	
 	@Override
