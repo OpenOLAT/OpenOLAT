@@ -328,12 +328,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		JSAndCSSComponent js = new JSAndCSSComponent("js", new String[] { "js/openolat/wiki.js" }, null);
 		content.put("js", js);
 		
-		List<VFSItem> mediaFiles = wiki.getMediaFileList();
-		Collections.sort(mediaFiles, new WikiFileComparator(getLocale()));
-		editContent.contextPut("fileList", mediaFiles);
-		List<String> allPages = wiki.getListOfAllPageNames();
-		Collections.sort(allPages, new WikiPageNameComparator(getLocale()));
-		editContent.contextPut("linkList", allPages);
+		updateFileAndLinkList(wiki);
 
 		tabs.addTab(translate("tab.edit"), editContent);
 
@@ -367,6 +362,15 @@ public class WikiMainController extends BasicController implements CloneableCont
 
 		// set pageId to the latest used
 		this.pageId = page.getPageId();
+	}
+	
+	private void updateFileAndLinkList(Wiki wiki) {
+		List<VFSItem> mediaFiles = wiki.getMediaFileList();
+		Collections.sort(mediaFiles, new WikiFileComparator(getLocale()));
+		editContent.contextPut("fileList", mediaFiles);
+		List<String> allPages = wiki.getListOfAllPageNames();
+		Collections.sort(allPages, new WikiPageNameComparator(getLocale()));
+		editContent.contextPut("linkList", allPages);
 	}
 
 	private void updateWikiMenu(Wiki wiki) {
@@ -565,7 +569,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			 ************************************************************************/
 			if (command.equals(ACTION_EDIT_MENU)) {
 				page = wiki.getPage(WikiPage.WIKI_MENU_PAGE);
-				editContent.contextPut("linkList", wiki.getListOfAllPageNames());
+				updateFileAndLinkList(wiki);
 				tryToSetEditLock(page, ureq, ores);
 				updatePageContext(ureq, page);
 				tabs.setSelectedPane(2);
@@ -578,7 +582,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			openLastChangesPage(ureq, wiki);
 		} else if (source == editMenuButton) {
 			page = wiki.getPage(WikiPage.WIKI_MENU_PAGE);
-			editContent.contextPut("linkList", wiki.getListOfAllPageNames());
+			updateFileAndLinkList(wiki);
 			tryToSetEditLock(page, ureq, ores);
 			updatePageContext(ureq, page);
 			// wikiEditForm.setPage(page);
@@ -641,8 +645,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			 * tabbed pane change to edit tab
 			 **********************************************************************/
 			wikiEditForm.resetUpdateComment();
-			editContent.contextPut("linkList", wiki.getListOfAllPageNames());
-			editContent.contextPut("fileList", wiki.getMediaFileList());
+			updateFileAndLinkList(wiki);
 			// try to edit acquire lock for this page
 			tryToSetEditLock(page, ureq, ores);
 		} else if (command.equals(TabbedPaneChangedEvent.TAB_CHANGED) && compName.equals("vc_versions")) {
@@ -887,7 +890,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 			if (event.getCommand().equals(FolderEvent.UPLOAD_EVENT)) {
 				FolderEvent fEvent = (FolderEvent) event;
 				createMediaMetadataFile(fEvent.getFilename(), ureq.getIdentity().getKey());
-				editContent.contextPut("fileList", wiki.getMediaFileList());
+				updateFileAndLinkList(wiki);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -928,7 +931,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 				TableMultiSelectEvent tmse = (TableMultiSelectEvent) event;
 				if (tmse.getAction().equals(ACTION_DELETE_MEDIAS)) {
 					deleteMediaFile(mediaFilesTableModel.getObjects(tmse.getSelection()), ureq);
-					editContent.contextPut("fileList", wiki.getMediaFileList());
+					updateFileAndLinkList(wiki);
 				}
 			}
 		} else if (source == archiveWikiDialogCtr) {
