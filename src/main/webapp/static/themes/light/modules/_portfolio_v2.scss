@@ -170,6 +170,10 @@
 	}
 }
 
+.o_portfolio_status_block p.o_section_ended {
+	font-size: 120%;
+}
+
 .o_page_assignment {
 	font-size: $o-portfolio-assignment-font-size;
 	&.o_togglebox_wrapper div.o_togglebox_content {
