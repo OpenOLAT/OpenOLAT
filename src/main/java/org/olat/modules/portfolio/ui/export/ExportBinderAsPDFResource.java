@@ -55,6 +55,7 @@ import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -323,7 +324,12 @@ public class ExportBinderAsPDFResource implements MediaResource {
 			}
 		}
 
-		private String processMedia(final String src) {
+		private String processMedia(String src) {
+			String serverContext = Settings.getServerContextPath();
+			if(serverContext != null && serverContext.length() > 1 && src.startsWith(serverContext)) {
+				src = src.substring(serverContext.length(), src.length());
+			}
+			
 			if(!src.startsWith(DispatcherModule.PATH_MAPPED)) return null;
 
 			String subInfo = src.substring(DispatcherModule.PATH_MAPPED.length());

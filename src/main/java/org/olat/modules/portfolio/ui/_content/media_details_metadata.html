@@ -1,4 +1,8 @@
 <table class="table table-condensed table-striped"><tbody>
+	#if($r.isNotEmpty($mediaType))
+	<tr><th>$r.translate("table.header.type")</th>
+		<td>#if($r.isNotEmpty($mediaIconCssClass))<i class="o_icon $mediaIconCssClass"> </i> #end $r.escapeHtml($mediaType)</td></tr>
+	#end
 	#if($r.isNotEmpty($author))
 	<tr><th>$r.translate("author")</th>
 		<td>$r.escapeHtml($author)</td></tr>

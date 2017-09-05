@@ -32,6 +32,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.manager.MetadataXStream;
 import org.olat.user.UserManager;
@@ -67,6 +68,14 @@ public class MediaMetadataController extends BasicController {
 		metaVC.contextPut("media", media);
 		String author = userManager.getUserDisplayName(media.getAuthor());
 		metaVC.contextPut("author", author);
+		
+		MediaHandler handler = portfolioService.getMediaHandler(media.getType());
+		String type = translate("artefact." + handler.getType());
+		metaVC.contextPut("mediaType", type);
+		String iconCssClass = handler.getIconCssClass(media);
+		if(StringHelper.containsNonWhitespace(iconCssClass)) {
+			metaVC.contextPut("mediaIconCssClass", iconCssClass);
+		}
 			
 		if(media.getCollectionDate() != null) {
 			String collectionDate = Formatter.getInstance(getLocale()).formatDate(media.getCollectionDate());
