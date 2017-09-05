@@ -21,11 +21,13 @@ package org.olat.ims.qti21.ui.editor;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AlienItemAnalyzer.Report;
 
 /**
@@ -37,6 +39,7 @@ import org.olat.ims.qti21.model.xml.AlienItemAnalyzer.Report;
 public class UnkownItemConversionConfirmationController extends FormBasicController {
 
 	private final Report report;
+	private SingleSelection alternativeEl;
 	
 	public UnkownItemConversionConfirmationController(UserRequest ureq, WindowControl wControl, Report report) {
 		super(ureq, wControl, "unkown_assessment_item_confirmation");
@@ -50,10 +53,29 @@ public class UnkownItemConversionConfirmationController extends FormBasicControl
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("warnings", report.getWarnings());
 			layoutCont.contextPut("questionType", translate("new." + report.getType().name()));
-			
 		}
+		
+		if(report.getAlternatives().size() > 0) {
+			String[] theKeys = new String[report.getAlternatives().size()];
+			String[] theValues = new String[theKeys.length];
+			for(int i=0; i<report.getAlternatives().size(); i++) {
+				QTI21QuestionType alternative = report.getAlternatives().get(i);
+				theKeys[i] = alternative.name();
+				theValues[i] = translate("new." + alternative.name());
+			}
+			alternativeEl = uifactory.addDropdownSingleselect("questions.alternative", formLayout, theKeys, theValues, null);
+			alternativeEl.setDomReplacementWrapperRequired(false);
+		}
+
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("convert", formLayout);
+	}
+	
+	public QTI21QuestionType getSelectedQuestionType() {
+		if(alternativeEl != null && alternativeEl.isOneSelected()) {
+			return QTI21QuestionType.valueOf(alternativeEl.getSelectedKey());
+		}
+		return report.getType();
 	}
 
 	@Override

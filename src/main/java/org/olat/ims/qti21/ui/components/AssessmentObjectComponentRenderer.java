@@ -1026,6 +1026,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 					interactionName += "_kprim";
 				} else if(hasClass(matchInteraction, QTI21Constants.CSS_MATCH_DRAG_AND_DROP)) {
 					interactionName += "_dnd";
+				} else if(hasClass(matchInteraction, QTI21Constants.CSS_MATCH_KPRIM)) {
+					interactionName += "_kprim";
 				}
 				break;
 			}

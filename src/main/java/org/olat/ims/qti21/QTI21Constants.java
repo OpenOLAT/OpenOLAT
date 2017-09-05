@@ -149,6 +149,8 @@ public class QTI21Constants {
 	
 	public static final String CSS_MATCH_DRAG_AND_DROP = "match_dnd";
 	
+	public static final String CSS_MATCH_KPRIM = "match_krpim";
+	
 	public static final String CSS_MATCH_SOURCE_TOP = "source-top";
 	
 	public static final String CSS_MATCH_SOURCE_LEFT = "source-left";

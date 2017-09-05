@@ -35,6 +35,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.CustomOperator;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.MatchInteraction;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
 
@@ -68,6 +69,7 @@ public class AlienItemAnalyzer {
 			checkFeedback(report);
 			checkItemBody(report);
 			checkCustomOperator(report);
+			checkKprim(report);
 			return report;
 		} catch (Exception e) {
 			log.error("", e);
@@ -172,6 +174,17 @@ public class AlienItemAnalyzer {
 		}
 	}
 	
+	private void checkKprim(Report report) {
+		List<Interaction> interactions = item.getItemBody().findInteractions();
+		if(interactions != null && interactions.size() == 1) {
+			Interaction interaction = interactions.get(0);
+			if(interaction instanceof MatchInteraction) {
+				report.addAlternative(QTI21QuestionType.match);
+				report.addAlternative(QTI21QuestionType.matchdraganddrop);
+			}
+		}
+	}
+	
 	public enum ReportWarningEnum {
 		
 		templates("warning.t"
@@ -200,10 +213,11 @@ public class AlienItemAnalyzer {
 
 	public static class Report {
 		
-		private final QTI21QuestionType type;
+		private QTI21QuestionType type;
 		
 		private boolean blocker;
 		private final List<ReportWarningEnum> warnings = new ArrayList<>();
+		private final List<QTI21QuestionType> alternatives = new ArrayList<>();
 		
 		public Report(QTI21QuestionType type) {
 			this(type, false);
@@ -234,8 +248,20 @@ public class AlienItemAnalyzer {
 			return warnings;
 		}
 		
+		public List<QTI21QuestionType> getAlternatives() {
+			return alternatives;
+		}
+		
+		public void addAlternative(QTI21QuestionType alternative) {
+			alternatives.add(alternative);
+		}
+		
 		public QTI21QuestionType getType() {
 			return type;
+		}
+		
+		public void setType(QTI21QuestionType type) {
+			this.type = type;
 		}
 	}
 }

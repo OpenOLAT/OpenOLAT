@@ -210,10 +210,12 @@ public enum QTI21QuestionType {
 			ResponseDeclaration responseDeclaration = item.getResponseDeclaration(interaction.getResponseIdentifier());
 			String responseIdentifier = responseDeclaration.getIdentifier().toString();
 			Cardinality cardinalty = responseDeclaration.getCardinality();
-			if(hasClass(interaction, "match_dnd")) {
+			if(hasClass(interaction, QTI21Constants.CSS_MATCH_DRAG_AND_DROP)) {
 				return QTI21QuestionType.matchdraganddrop;
 			} else if(cardinalty.isMultiple()) {
-				if(responseIdentifier.startsWith("KPRIM_")) {
+				if(hasClass(interaction, QTI21Constants.CSS_MATCH_KPRIM)) {
+					return QTI21QuestionType.kprim;
+				} else if(responseIdentifier.startsWith("KPRIM_")) {
 					return QTI21QuestionType.kprim;
 				} else {
 					return QTI21QuestionType.match;
@@ -243,7 +245,9 @@ public enum QTI21QuestionType {
 		}
 	}
 	
-	private static final boolean hasClass(Interaction interaction, String cssClass) {
+	public static final boolean hasClass(Interaction interaction, String cssClass) {
+		if(interaction == null || cssClass == null) return false;
+		
 		List<String> cssClasses = interaction.getClassAttr();
 		return cssClasses != null && cssClasses.size() > 0 && cssClasses.contains(cssClass);
 	}

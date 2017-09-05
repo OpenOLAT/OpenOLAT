@@ -26,8 +26,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.ims.qti21.AssessmentResponse;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.manager.archive.SimpleContentRenderer;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
@@ -61,7 +63,8 @@ public class MatchInteractionArchive extends DefaultInteractionArchive {
 	public int writeHeader2(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
 		MatchInteraction matchInteraction = (MatchInteraction)interaction;
 
-		boolean kprim = matchInteraction.getResponseIdentifier().toString().startsWith("KPRIM_");
+		boolean kprim = matchInteraction.getResponseIdentifier().toString().startsWith("KPRIM_")
+				|| QTI21QuestionType.hasClass(matchInteraction, QTI21Constants.CSS_MATCH_KPRIM);
 		String fix = kprim ? "_KP" : "_K";
 		
 		int numOfChoices = matchInteraction.getSimpleMatchSets().get(0).getSimpleAssociableChoices().size();
@@ -84,7 +87,8 @@ public class MatchInteractionArchive extends DefaultInteractionArchive {
 		if(!StringHelper.containsNonWhitespace(stringuifiedResponse)) {
 			col += matchInteraction.getSimpleMatchSets().get(0).getSimpleAssociableChoices().size();
 		} else {
-			boolean kprim = matchInteraction.getResponseIdentifier().toString().startsWith("KPRIM_");
+			boolean kprim = matchInteraction.getResponseIdentifier().toString().startsWith("KPRIM_")
+					|| QTI21QuestionType.hasClass(matchInteraction, QTI21Constants.CSS_MATCH_KPRIM);
 			
 			Set<String> correctAnswers = CorrectResponsesUtil.getCorrectDirectPairResponses(item, matchInteraction, false);
 			List<String> responses = CorrectResponsesUtil.parseResponses(stringuifiedResponse);

@@ -21,7 +21,9 @@ package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -55,6 +57,7 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationLevel;
 import uk.ac.ed.ph.jqtiplus.notification.NotificationRecorder;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -172,7 +175,7 @@ public class UnkownItemEditorController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmationCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				doConvertItem(ureq);
+				doConvertItem(ureq, confirmationCtrl.getSelectedQuestionType());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -213,10 +216,29 @@ public class UnkownItemEditorController extends FormBasicController {
 		cmc.activate();
 	}
 
-	private void doConvertItem(UserRequest ureq) {
+	private void doConvertItem(UserRequest ureq, QTI21QuestionType alternativeType) {
 		item.setToolName(QTI21Constants.TOOLNAME);
 		item.setToolVersion(Settings.getVersion());
+		if(alternativeType == QTI21QuestionType.matchdraganddrop) {
+			addClassToInteraction(QTI21Constants.CSS_MATCH_DRAG_AND_DROP);
+		}
 		qtiService.updateAssesmentObject(itemFileRef, resolvedAssessmentItem);
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_NEED_RELOAD, item));
+	}
+	
+	private void addClassToInteraction(String cssClass) {
+		List<Interaction> interactions = item.getItemBody().findInteractions();
+		for(Interaction interaction:interactions) {
+			List<String> cssClasses = interaction.getClassAttr();
+			if(cssClasses == null) {
+				cssClasses = new ArrayList<>();
+			} else {
+				cssClasses = new ArrayList<>(cssClasses);
+			}
+			if(!cssClasses.contains(cssClass)) {
+				cssClasses.add(cssClass);
+			}
+			interaction.setClassAttr(cssClasses);
+		}
 	}
 }

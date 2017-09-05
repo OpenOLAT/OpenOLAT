@@ -36,6 +36,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti.statistics.QTIType;
 import org.olat.ims.qti.statistics.model.StatisticsItem;
+import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21StatisticsManager;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
@@ -173,7 +174,8 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 					itemRef, item, (ChoiceInteraction)interaction, itemStats, resourceResult);
 		} else if(interaction instanceof MatchInteraction) {
 			String responseIdentifier = interaction.getResponseIdentifier().toString();
-			if(responseIdentifier.startsWith("KPRIM_")) {
+			if(responseIdentifier.startsWith("KPRIM_") 
+					|| QTI21QuestionType.hasClass(interaction, QTI21Constants.CSS_MATCH_KPRIM)) {
 				interactionCtrl = new KPrimStatisticsController(ureq, getWindowControl(),
 						itemRef, item, (MatchInteraction)interaction, resourceResult);
 			} else {
