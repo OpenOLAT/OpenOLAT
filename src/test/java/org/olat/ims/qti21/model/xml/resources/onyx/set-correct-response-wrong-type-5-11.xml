@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1p1.xsd http://www.w3.org/1998/Math/MathML http://www.w3.org/Math/XMLSchema/mathml2/mathml2.xsd" identifier="idbad91fb5-fe3f-4adf-a0a7-088a7d0bad73" title="XML-Berechnung-ONYX" adaptive="false" timeDependent="false">
+	<responseDeclaration identifier="RESPONSE" cardinality="single" baseType="float">
+		<correctResponse>
+			<value>
+				0
+			</value>
+		</correctResponse>
+	</responseDeclaration>
+	<outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float">
+		<defaultValue>
+			<value>
+				0
+			</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float">
+		<defaultValue>
+			<value>
+				1
+			</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="FEEDBACKBASIC" cardinality="single" baseType="identifier" view="testConstructor">
+		<defaultValue>
+			<value>
+				empty
+			</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="FEEDBACKMODAL" cardinality="multiple" baseType="identifier" view="testConstructor" />
+	<templateDeclaration identifier="var1" cardinality="single" baseType="integer" />
+	<templateDeclaration identifier="var2" cardinality="single" baseType="integer" />
+	<templateDeclaration identifier="solution" cardinality="single" baseType="integer" />
+	<templateProcessing>
+		<setTemplateValue identifier="var1">
+			<randomInteger min="1" max="10" />
+		</setTemplateValue>
+		<setTemplateValue identifier="var2">
+			<randomInteger min="1" max="10" />
+		</setTemplateValue>
+		<setTemplateValue identifier="solution">
+			<customOperator definition="MAXIMA" value="float($(1)+$(2));">
+				<variable identifier="var1" /><variable identifier="var2" />
+			</customOperator>
+		</setTemplateValue>
+		<setCorrectResponse identifier="RESPONSE">
+			<variable identifier="solution" />
+		</setCorrectResponse>
+	</templateProcessing>
+	<itemBody>
+		<p>
+			Berechnen Sie: 4+5 = <textEntryInteraction responseIdentifier="RESPONSE" />
+		</p>
+	</itemBody>
+	<responseProcessing>
+		<responseCondition>
+			<responseIf>
+				<equal toleranceMode="exact">
+					<variable identifier="RESPONSE" /><correct identifier="RESPONSE" />
+				</equal>
+				<setOutcomeValue identifier="SCORE">
+					<sum>
+						<variable identifier="SCORE" />
+						<baseValue baseType="float">
+							1
+						</baseValue>
+					</sum>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<not>
+					<isNull>
+						<variable identifier="RESPONSE" />
+					</isNull>
+				</not>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">
+						incorrect
+					</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<and>
+					<not>
+						<match>
+							<variable identifier="FEEDBACKBASIC" />
+							<baseValue baseType="identifier">
+								empty
+							</baseValue>
+						</match>
+					</not>
+					<equal toleranceMode="exact">
+						<variable identifier="SCORE" /><variable identifier="MAXSCORE" />
+					</equal>
+				</and>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">
+						correct
+					</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<and>
+					<match>
+						<baseValue baseType="identifier">
+							correct
+						</baseValue>
+						<variable identifier="FEEDBACKBASIC" />
+					</match>
+				</and>
+				<setOutcomeValue identifier="FEEDBACKMODAL">
+					<multiple>
+						<variable identifier="FEEDBACKMODAL" />
+						<baseValue baseType="identifier">
+							Feedback1365540989
+						</baseValue>
+					</multiple>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<and>
+					<match>
+						<baseValue baseType="identifier">
+							incorrect
+						</baseValue>
+						<variable identifier="FEEDBACKBASIC" />
+					</match>
+				</and>
+				<setOutcomeValue identifier="FEEDBACKMODAL">
+					<multiple>
+						<variable identifier="FEEDBACKMODAL" />
+						<baseValue baseType="identifier">
+							Feedback1212849391
+						</baseValue>
+					</multiple>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+	</responseProcessing>
+	<modalFeedback identifier="Feedback1365540989" outcomeIdentifier="FEEDBACKMODAL" showHide="show">
+		<p>
+			Winner
+		</p>
+	</modalFeedback>
+	<modalFeedback identifier="Feedback1212849391" outcomeIdentifier="FEEDBACKMODAL" showHide="show">
+		<p>
+			Looser
+		</p>
+	</modalFeedback>
+</assessmentItem>

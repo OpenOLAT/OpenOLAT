@@ -128,9 +128,16 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 				}
 			} else if("assessmentItem".equals(qName) || "assessmentTest".equals(qName)) {
 				writeAssessmentElementAttributes(attributes);
-			}  else if("object".equals(qName)) {
+			} else if("object".equals(qName)) {
 				writeObjectElementAttributes(attributes);
 			} else {
+				if("customOperator".equals(qName)) {
+					String customOperatorDefinition = attributes.getValue("definition");
+					if("MAXIMA".equals(customOperatorDefinition)) {
+						xtw.writeAttribute("class", "org.olat.ims.qti21.manager.extensions.MaximaOperator");
+					}
+				}
+
 				int numOfAttributes = attributes.getLength();
 				for(int i=0;i<numOfAttributes; i++) {
 					String attrQName = attributes.getQName(i);

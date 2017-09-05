@@ -55,6 +55,7 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.model.xml.AssessmentItemChecker;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.model.xml.QTI21Infos;
 import org.olat.ims.qti21.repository.handlers.QTI21IMSManifestExplorerVisitor;
@@ -183,6 +184,10 @@ public class QTI21ImportProcessor {
 			AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
 			ResolvedAssessmentItem resolvedAssessmentItem = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+			
+			if(!AssessmentItemChecker.checkAndCorrect(assessmentItem)) {
+				qtiService.persistAssessmentObject(outputFile, assessmentItem);
+			}
 			
 			AssessmentItemMetadata metadata = new AssessmentItemMetadata(metadataBuilder);
 

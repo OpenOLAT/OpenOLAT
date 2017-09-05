@@ -208,6 +208,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
         if (qtiModule.isMathAssessExtensionEnabled()) {
             log.info("Enabling the MathAssess extensions");
             extensionPackages.add(new MathAssessExtensionPackage(xsltStylesheetCache));
+            extensionPackages.add(new OpenOLATExtensionPackage(xsltStylesheetCache));
         }
         jqtiExtensionManager = new JqtiExtensionManager(extensionPackages);
         xsltStylesheetManager = new XsltStylesheetManager(new ClassPathResourceLocator(), xsltStylesheetCache);

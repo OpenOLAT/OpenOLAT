@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.repository.handlers;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
@@ -42,12 +43,16 @@ import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
+import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
+import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.BadRessourceHelper;
 import org.olat.ims.qti21.model.xml.Onyx38ToQtiWorksHandler;
+import org.olat.ims.qti21.model.xml.AssessmentItemChecker;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.model.xml.QTI21ExplorerHandler;
 import org.olat.ims.qti21.model.xml.QTI21Infos;
@@ -57,6 +62,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.node.RootNode;
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.provision.BadResourceException;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
 import uk.ac.ed.ph.jqtiplus.reading.QtiXmlInterpretationException;
@@ -65,6 +71,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.validation.ItemValidationResult;
 import uk.ac.ed.ph.jqtiplus.validation.TestValidationResult;
+import uk.ac.ed.ph.jqtiplus.xmlutils.locators.FileResourceLocator;
 import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 
 /**
@@ -136,6 +143,11 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 		try {
 			boolean validated = true;
 			QTI21Infos fileInfos = scanFile(inputFile);
+			//inherit from test if needed
+			if(fileInfos.getEditor() == null && infos.getEditor() != null) {
+				fileInfos.setEditor(infos.getEditor());
+				fileInfos.setVersion(infos.getVersion());
+			}
 			if(onyx38Family(fileInfos)) {
 				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), new HandlerProvider() {
 					@Override
@@ -144,12 +156,17 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 					}
 				});
 			} else if(onyxWebFamily(fileInfos)) {
-				validated = convertXmlFile(inputFile, outputFile, infos.getType(), new HandlerProvider() {
+				validated = convertXmlFile(inputFile, outputFile, fileInfos.getType(), new HandlerProvider() {
 					@Override
 					public DefaultHandler2 create(XMLStreamWriter xtw) {
 						return new OnyxToQtiWorksHandler(xtw, infos);
 					}
 				});
+				
+				if(validated && fileInfos.getType() == InputType.assessmentItem) {
+					//check templateVariables
+					checkAssessmentItem(outputFile);
+				}
 			} else {
 				Files.copy(inputFile, outputFile, StandardCopyOption.REPLACE_EXISTING);
 			}
@@ -242,6 +259,27 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 		} catch (URISyntaxException e) {
 			log.error("", e);
 			return false;
+		}
+	}
+	
+	private void checkAssessmentItem(Path outputFile) {
+		QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+		QtiXmlReader qtiXmlReader = new QtiXmlReader(qtiService.jqtiExtensionManager());
+		ResourceLocator fileResourceLocator = new FileResourceLocator();
+		ResourceLocator inputResourceLocator = 
+				ImsQTI21Resource.createResolvingResourceLocator(fileResourceLocator);
+		
+		URI assessmentObjectSystemId = outputFile.toFile().toURI();
+		AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
+		ResolvedAssessmentItem resolvedAssessmentItem = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
+		AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+
+		if(!AssessmentItemChecker.checkAndCorrect(assessmentItem)) {
+			try(FileOutputStream out = new FileOutputStream(outputFile.toFile())) {
+				qtiService.qtiSerializer().serializeJqtiObject(assessmentItem, out);
+			} catch(Exception e) {
+				log.error("", e);
+			}
 		}
 	}
 	
