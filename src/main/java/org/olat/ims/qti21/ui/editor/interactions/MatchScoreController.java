@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
@@ -215,9 +216,23 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 		allOk &= validateDouble(maxScoreEl);
 
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
-			/*for(HotspotChoiceWrapper wrapper:wrappers) {
-				allOk &= validateDouble(wrapper.getPointsEl());
-			}*/
+			for(Map.Entry<DirectedPairValue, MatchScoreWrapper> entry:scoreWrappers.entrySet()) {
+				MatchScoreWrapper scoreWrapper = entry.getValue();
+				TextElement scoreEl = scoreWrapper.getScoreEl();
+				String val = scoreEl.getValue();
+				scoreEl.clearError();
+				if(StringHelper.containsNonWhitespace(val)) {
+					try {
+						Double.parseDouble(val);
+					} catch (NumberFormatException e) {
+						scoreEl.setErrorKey("error.double", null);
+						allOk &= false;
+					}
+				} else {
+					scoreEl.setErrorKey("form.legende.mandatory", null);
+					allOk &= false;
+				}
+			}
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
