@@ -116,8 +116,8 @@
 		};
 	
 		/* Drawing on Paint App */
-		tmp_ctx.lineWidth = document.getElementById("width_range").value;
-		//tmp_ctx.lineWidth = 5;
+		//tmp_ctx.lineWidth = document.getElementById("width_range").value;
+		tmp_ctx.lineWidth = 10;
 		tmp_ctx.lineJoin = 'round';
 		tmp_ctx.lineCap = 'round';
 		tmp_ctx.strokeStyle = 'blue';
@@ -194,16 +194,26 @@
 			undo_count = 0; //NEWTHING
 		}
 		
-		jQuery("#width_range").on("input change", function() {
-			tmp_ctx.lineWidth = document.getElementById("width_range").value / 2;
-			drawBrush();
+		jQuery("#width_range_ui").slider({
+			min: 1,
+			max: 100,
+			value: 20,
+			change: function(event, ui) {
+				tmp_ctx.lineWidth = ui.value / 2;
+				drawBrush();
+			}
 		});
+		jQuery("#opacity_range_ui").slider({
+			min: 1,
+			max: 100,
+			value: 100,
+			change: function(event, ui) {
+				tmp_ctx.globalAlpha = ui.value / 100;
+				drawBrush();
+			}
+		});
+		drawBrush();
 		
-		jQuery("#opacity_range").on("change", function() {
-			tmp_ctx.globalAlpha = document.getElementById("opacity_range").value / 100;
-			drawBrush();
-		});
-	
 		//NEWTHING
 		jQuery("#clear").on("click", function() {
 			var mainWin = o_getMainWin();

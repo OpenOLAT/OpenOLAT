@@ -227,9 +227,17 @@ div.hotspotInteraction {
 }
 
 
-/* drawing */
+/* Drawing */
 .o_draw_circle.o_qti_hotspot_correct, .o_draw_rectangle.o_qti_hotspot_correct {
 	background-color: rgba(229, 255, 204, 0.6);
+}
+
+#width_range_ui, #opacity_range_ui {
+	width: 120px;
+}
+
+.o_slider_width_range, .o_slider_opacity_range {
+	margin: 3px 10px 0 0;
 }
 
 .o_qti_hotspot_label {
