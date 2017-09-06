@@ -34,5 +34,7 @@ import org.olat.login.oauth.model.OAuthUser;
 public interface OAuthUserCreator extends OAuthSPI {
 	
 	public Identity createUser(OAuthUser user);
+	
+	public Identity updateUser(OAuthUser user, Identity identity);
 
 }
