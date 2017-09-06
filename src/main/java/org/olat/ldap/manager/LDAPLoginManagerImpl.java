@@ -449,6 +449,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			log.warn("Identiy is null - should not happen", null);
 			return;
 		}
+		
+		identity = securityManager.loadIdentityByKey(identity.getKey());
 		User user = identity.getUser();
 		// remove user identifyer - can not be changed later
 		olatPropertyMap.remove(LDAPConstants.LDAP_USER_IDENTIFYER);
