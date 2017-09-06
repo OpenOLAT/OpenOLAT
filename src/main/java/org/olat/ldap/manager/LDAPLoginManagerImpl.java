@@ -1430,6 +1430,35 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			syncUser(olatProToSync, ident);
 		}
 	}
+	
+	@Override
+	public void doSyncSingleUserWithLoginAttribute(Identity ident) {
+		LdapContext ctx = bindSystem();
+		if (ctx == null) {
+			log.error("could not bind to ldap", null);
+		}
+		
+		String ldapUserIDAttribute = syncConfiguration.getLdapUserLoginAttribute();
+		String filter = ldapDao.buildSearchUserFilter(ldapUserIDAttribute, ident.getName());
+		
+		List<Attributes> ldapUserAttrs = new ArrayList<>();
+		ldapDao.searchInLdap(new LDAPVisitor() {
+			@Override
+			public void visit(SearchResult result) {
+				ldapUserAttrs.add(result.getAttributes());
+			}
+		}, filter, syncConfiguration.getUserAttributes(), ctx);
+		
+		if(ldapUserAttrs.size() == 1) {
+			Attributes attrs = ldapUserAttrs.get(0);
+			Map<String, String> olatProToSync = prepareUserPropertyForSync(attrs, ident);
+			if (olatProToSync != null) {
+				syncUser(olatProToSync, ident);
+			}
+		} else {
+			log.error("Cannot sync the user because it was not found on LDAP server: " + ident);
+		}
+	}
 
 	/**
 	 * @see org.olat.ldap.LDAPLoginManager#getLastSyncDate()
