@@ -241,9 +241,17 @@ img.o_hotspot_responsive[usemap] {
 }
 
 
-/* drawing */
+/* Drawing */
 .o_draw_circle.o_qti_hotspot_correct, .o_draw_rectangle.o_qti_hotspot_correct {
 	background-color: rgba(229, 255, 204, 0.6);
+}
+
+#width_range_ui, #opacity_range_ui {
+	width: 120px;
+}
+
+.o_slider_width_range, .o_slider_opacity_range {
+	margin: 3px 10px 0 0;
 }
 
 .o_qti_hotspot_label {
@@ -427,7 +435,8 @@ img.o_hotspot_responsive[usemap] {
 			margin: -1px 2px;
 			line-height: 90%;		
 			vertical-align: middle;
-			font-size: 98%;
+			font-size: ($font-size-base * 0.98);
+			line-height: 1.5; /* smaller than #itemBody */
 			border: 0.5px solid $o-qti-textEntryInteraction-border-color;
 			background: $o-qti-textEntryInteraction-bg;
 			padding: 0.5px 1px;
@@ -461,7 +470,8 @@ img.o_hotspot_responsive[usemap] {
 		padding: $padding-small-vertical $padding-small-horizontal;
 		border-left: 1px solid $o-qti-item-border-color;
 		border-right: 1px solid $o-qti-item-border-color;
-		line-height: 1.5em;
+		font-size: $font-size-base;
+		line-height: 1.8; /* larger than .textEntryInteraction input */
 	}
 	.modalFeedback {
 		h4:first-of-type {
