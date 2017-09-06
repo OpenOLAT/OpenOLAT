@@ -193,36 +193,6 @@
 			undo_arr.push(image);
 			undo_count = 0; //NEWTHING
 		}
-
-		/*
-		document.getElementById("undo").addEventListener("click", function(){
-			if( undo_arr.length > 1 ) {
-				if ( undo_count + 1 < undo_arr.length ) {
-					if ( undo_count + 2 == undo_arr.length ) {
-						if (confirm("Do you really want to UNDO ??? WARNING ! You will not be able to REDO this step ")) {
-							undo_count++;
-							UndoFunc(undo_count); 
-						}
-					} else {
-						undo_count++;
-							UndoFunc(undo_count);
-					}
-			
-					if ( undo_count + 1 == undo_arr.length ) {
-						undo_count = 0; undo_arr = []; undo_arr.push(empty_canv);
-					}	
-				}
-			//else { undo_count = 0; undo_arr = []; undo_arr.push(empty_canv); }
-			}
-		});
-	
-		document.getElementById("redo").addEventListener("click", function(){
-			if ( undo_count > 0 ) {
-				undo_count--;
-				UndoFunc(undo_count);
-			}
-		});
-		*/
 		
 		jQuery("#width_range").on("input change", function() {
 			tmp_ctx.lineWidth = document.getElementById("width_range").value / 2;
@@ -270,6 +240,7 @@
 			$('#paintModal').on('hidden.bs.modal', function (event) {
 				jQuery("#paintModal").remove();
 			});
+			o_scrollToElement('#o_top');
 		});
 
 		var onPaintBrush = function() {
