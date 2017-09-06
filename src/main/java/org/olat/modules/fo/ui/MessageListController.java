@@ -1306,7 +1306,11 @@ public class MessageListController extends BasicController implements GenericEve
 				}
 			}
 			mainVC.contextPut("messages", oneView);
-			messageTableCtrl.setSelectView(oneView.get(0));
+			if(oneView.size() > 0) {
+				messageTableCtrl.setSelectView(oneView.get(0));
+			} else {
+				showWarning("error.message.deleted");
+			}
 			messageTableCtrl.loadMessages(new ArrayList<>(backupViews));
 		}
 	}
