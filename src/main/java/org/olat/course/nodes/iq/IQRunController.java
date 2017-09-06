@@ -483,7 +483,16 @@ public class IQRunController extends BasicController implements GenericEventList
 				Document doc = iqManager.getResultsReportingFromFile(ureq.getIdentity(), type, assessmentID);
 				//StringBuilder resultsHTML = LocalizedXSLTransformer.getInstance(ureq.getLocale()).renderResults(doc);
 				String summaryConfig = (String)modConfig.get(IQEditController.CONFIG_KEY_SUMMARY);
-				int summaryType = AssessmentInstance.getSummaryType(summaryConfig);
+				int summaryType = AssessmentInstance.SUMMARY_NONE;
+				try {
+					summaryType = AssessmentInstance.getSummaryType(summaryConfig);
+				} catch (Exception e) {
+					// cannot change AssessmentInstance: fallback if the the configuration is inherited from a QTI 2.1 configuration
+					if(StringHelper.containsNonWhitespace(summaryConfig)) {
+						summaryType = AssessmentInstance.SUMMARY_DETAILED;
+					}
+					logError("", e);
+				}
 				String resultsHTML = iqManager.transformResultsReporting(doc, ureq.getLocale(), summaryType);
 				myContent.contextPut("displayreporting", resultsHTML);
 				myContent.contextPut("resreporting", resultsHTML);
