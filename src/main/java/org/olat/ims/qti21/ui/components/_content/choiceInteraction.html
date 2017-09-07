@@ -1,6 +1,6 @@
 #set($responseIdentifier = $r.responseUniqueId($interaction))
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
-<div class="choiceInteraction $r.renderClassAttr($interaction)">
+<div id="qti_container_${responseIdentifier}" class="choiceInteraction $r.renderClassAttr($interaction)">
 #if($r.isInvalidResponse($interaction.responseIdentifier))
 	<div class="badResponse">
 	#if($interaction.minChoices == $interaction.maxChoices && $interaction.minChoices > 0)
@@ -74,3 +74,14 @@
 	</table>
 #end
 </div>
+#if(!$r.isSingleChoice($interaction) && $r.isItemSessionOpen())
+<script type='text/javascript'>
+	jQuery(function() {
+		jQuery('#qti_container_${responseIdentifier}').choiceInteraction({
+			responseIdentifier: '$responseIdentifier',
+			formDispatchFieldId: '$r.formDispatchFieldId',
+			maxChoices: $interaction.maxChoices
+		});
+	});
+</script>
+#end

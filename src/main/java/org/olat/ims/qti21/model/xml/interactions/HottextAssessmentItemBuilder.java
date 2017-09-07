@@ -223,6 +223,31 @@ public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder im
 	public boolean isCorrect(Choice choice) {
 		return correctAnswers.contains(choice.getIdentifier());
 	}
+	
+	@Override
+	public int getMaxPossibleCorrectAnswers() {
+		return getChoices().size();
+	}
+
+	@Override
+	public int getMaxChoices() {
+		return hottextInteraction.getMaxChoices();
+	}
+	
+	@Override
+	public void setMaxChoices(int choices) {
+		hottextInteraction.setMaxChoices(choices);
+	}
+	
+	@Override
+	public int getMinChoices() {
+		return hottextInteraction.getMinChoices();
+	}
+
+	@Override
+	public void setMinChoices(int choices) {
+		hottextInteraction.setMinChoices(choices);
+	}
 
 	@Override
 	public List<Hottext> getChoices() {

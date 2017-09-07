@@ -99,7 +99,7 @@ public class OpenOLATExtensionPackage implements JqtiExtensionPackage<OpenOLATEx
 
     @Override
     public void lifecycleEvent(final Object source, final JqtiLifecycleEventType eventType) {
-        log.info("Received lifecycle event {}" + eventType);
+        //log.debug("Received lifecycle event {}" + eventType);
         switch (eventType) {
             case MANAGER_INITIALISED:
                 startMaximaPool();

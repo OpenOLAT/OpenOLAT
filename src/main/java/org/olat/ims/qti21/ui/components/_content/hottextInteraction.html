@@ -1,7 +1,7 @@
 #set($responseIdentifier = $r.responseUniqueId($interaction))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
-<div class="$localName">
+<div id="qti_container_${responseIdentifier}" class="$localName">
 	#if($interaction.getPrompt())
 	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
@@ -26,3 +26,14 @@
 	
 	$r.renderBlockStatics($interaction.getBlockStatics())
 </div>
+#if(!$r.isSingleChoice($interaction) && $r.isItemSessionOpen())
+<script type='text/javascript'>
+	jQuery(function() {
+		jQuery('#qti_container_${responseIdentifier}').choiceInteraction({
+			responseIdentifier: '$responseIdentifier',
+			formDispatchFieldId: '$r.formDispatchFieldId',
+			maxChoices: $interaction.maxChoices
+		});
+	});
+</script>
+#end

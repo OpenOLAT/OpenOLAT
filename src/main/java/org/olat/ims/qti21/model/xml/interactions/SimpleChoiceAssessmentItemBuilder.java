@@ -50,7 +50,9 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  *
  */
 public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuilder implements ResponseIdentifierForFeedback {
-	
+
+	protected int maxChoices;
+	protected int minChoices;
 	protected boolean shuffle;
 	protected String question;
 	protected List<String> cssClass;
@@ -114,6 +116,8 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 			choices.addAll(choiceInteraction.getSimpleChoices());
 			orientation = choiceInteraction.getOrientation();
 			cssClass = choiceInteraction.getClassAttr();
+			maxChoices = choiceInteraction.getMaxChoices();
+			minChoices = choiceInteraction.getMinChoices();
 		}
 	}
 	
@@ -142,7 +146,27 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 	public ChoiceInteraction getChoiceInteraction() {
 		return choiceInteraction;
 	}
-	
+
+	@Override
+	public int getMaxChoices() {
+		return maxChoices;
+	}
+
+	@Override
+	public void setMaxChoices(int maxChoices) {
+		this.maxChoices = maxChoices;
+	}
+
+	@Override
+	public int getMinChoices() {
+		return minChoices;
+	}
+
+	@Override
+	public void setMinChoices(int minChoices) {
+		this.minChoices = minChoices;
+	}
+
 	public boolean isShuffle() {
 		return shuffle;
 	}

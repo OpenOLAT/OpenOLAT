@@ -140,6 +140,11 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 	}
 	
 	@Override
+	public int getMaxPossibleCorrectAnswers() {
+		return 1;
+	}
+	
+	@Override
 	public void clearSimpleChoices() {
 		correctAnswer = null;
 		super.clearSimpleChoices();

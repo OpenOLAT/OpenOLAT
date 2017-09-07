@@ -104,7 +104,7 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 		
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
-		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 1, true);
+		ChoiceInteraction choiceInteraction = appendChoiceInteraction(itemBody, responseDeclarationId, 0, true);
 		
 		appendSimpleChoice(choiceInteraction, defaultAnswer, correctResponseId);
 
@@ -161,6 +161,11 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 	}
 
 	@Override
+	public int getMaxPossibleCorrectAnswers() {
+		return choices.size();
+	}
+
+	@Override
 	public void clearSimpleChoices() {
 		if(correctAnswers != null) {
 			correctAnswers.clear();
@@ -194,6 +199,18 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 		blocks.add(singleChoiceInteraction);
 		List<SimpleChoice> choiceList = getChoices();
 		singleChoiceInteraction.getSimpleChoices().addAll(choiceList);
+
+		int finalMaxChoices = 0;
+		if(maxChoices >= 0 && maxChoices <= choiceList.size()) {
+			finalMaxChoices = maxChoices;
+		}
+		singleChoiceInteraction.setMaxChoices(finalMaxChoices);
+		
+		int finalMinChoices = 0;
+		if(minChoices >= 0 && minChoices <= choiceList.size()) {
+			finalMinChoices = minChoices;
+		}
+		singleChoiceInteraction.setMinChoices(finalMinChoices);
 	}
 
 	@Override
