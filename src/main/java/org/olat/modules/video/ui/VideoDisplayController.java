@@ -79,7 +79,7 @@ public class VideoDisplayController extends BasicController {
 	private RepositoryEntry entry;
 	private String descriptionText;
 	private String mediaRepoBaseUrl;
-
+	private VideoMeta videoMetadata;
 
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean autoWidth) {
 		this(ureq, wControl, entry, false, false, false, true, null, false, autoWidth, null, false);
@@ -108,7 +108,7 @@ public class VideoDisplayController extends BasicController {
 				
 		VFSLeaf video = videoManager.getMasterVideoFile(entry.getOlatResource());
 		if(video != null) {
-			VideoMeta videoMetadata = videoManager.getVideoMetadata(entry.getOlatResource());
+			videoMetadata = videoManager.getVideoMetadata(entry.getOlatResource());
 			if(autoWidth){
 				mainVC.contextPut("height", 480);
 				mainVC.contextPut("width", "100%");
@@ -143,6 +143,10 @@ public class VideoDisplayController extends BasicController {
 			// Finally load the video, transcoded versions and tracks
 			loadVideo(ureq, video);
 		}
+	}
+	
+	public VideoMeta getVideoMetadata() {
+		return videoMetadata;
 	}
 	
 	public void setTimeUpdateListener(boolean enable) {
