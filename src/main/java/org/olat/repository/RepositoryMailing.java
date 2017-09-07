@@ -25,6 +25,7 @@ import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
@@ -166,7 +167,7 @@ public class RepositoryMailing {
 		// build learning resources as list of url as string
 		final String reName = re.getDisplayname();
 		final String redescription = (StringHelper.containsNonWhitespace(re.getDescription()) ? FilterFactory.getHtmlTagAndDescapingFilter().filter(re.getDescription()) : ""); 
-
+		final String reUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + re.getKey();
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		String[] bodyArgs = new String[] {
 				actor.getUser().getProperty(UserConstants.FIRSTNAME, null),
@@ -180,6 +181,8 @@ public class RepositoryMailing {
 		String subject = trans.translate(subjectKey);
 		String body = trans.translate(bodyKey, bodyArgs);
 		
+		
+		
 		// create a mail template which all these data
 		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
 			@Override
@@ -192,6 +195,7 @@ public class RepositoryMailing {
 				// Put variables from greater context
 				context.put("coursename", reName);
 				context.put("coursedescription", redescription);
+				context.put("courseurl", reUrl);
 			}
 		};
 		return mailTempl;
