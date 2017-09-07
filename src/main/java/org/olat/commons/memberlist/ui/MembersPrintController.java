@@ -118,7 +118,6 @@ public class MembersPrintController extends BasicController {
 	private class UserAvatarHQMapper implements Mapper {
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {
-			MediaResource rsrc = null;
 			if(relPath != null) {
 				if(relPath.startsWith("/")) {
 					relPath = relPath.substring(1, relPath.length());
@@ -135,13 +134,12 @@ public class MembersPrintController extends BasicController {
 						portrait = meta.getThumbnail(300, 300, false);
 					}
 					
-					if(portrait == null) {
-						return new NotFoundMediaResource(relPath);
+					if(portrait != null) {
+						return new VFSMediaResource(portrait);
 					}
-					return new VFSMediaResource(portrait);
 				}
 			}
-			return rsrc;
+			return new NotFoundMediaResource(relPath);
 		}
 	}
 }

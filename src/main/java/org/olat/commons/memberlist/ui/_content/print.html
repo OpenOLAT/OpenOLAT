@@ -30,14 +30,16 @@
 		} else {
 			jQuery("#o_print_brand").empty();
 		}
-		
+
 		jQuery(".o_cmembers_print .o_portrait img").each(function(index, el) {
 			//workaround caching of images
 			var imgEl = jQuery(el).get(0);
-			if(imgEl.height > 2) {
+			//28x30 is the default size of images by IE
+			if(imgEl.width >= 100 && imgEl.height > 2 && imgEl.height < 100 && imgEl.height != 30 && imgEl.width != 28) {
 				var margin = 100 - imgEl.height;
 				jQuery(el).css("margin-top", (margin / 2) + "px");
 			}
+			
 			jQuery(el).load(function() {
 				var imgEl = jQuery(el).get(0);
 				var margin = 100 - imgEl.height;
@@ -46,7 +48,10 @@
 				}
 			});
 		});
+		
+		setTimeout(function() {
+			window.print();
+		}, 300)
 	})
-	window.print();
 /* ]]> */
 </script>

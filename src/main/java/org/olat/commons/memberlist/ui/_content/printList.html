@@ -5,7 +5,7 @@
 		<div class="clearfix">
 			<div class="o_portrait">
 				#if(${member.isPortraitAvailable()})
-					<img src="$avatarBaseURL/$member.getKey()/portrait.jpg">
+					<img src="$avatarBaseURL/${member.getKey()}/portrait_hq_${member.getKey()}.jpg">
 				#elseif(${member.getGender().equals("female")})
 					<img src='$r.staticLink("themes/light/images/portrait/dummy_female_big.png")'>
 				#elseif(${member.getGender().equals("male")})
