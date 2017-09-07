@@ -53,6 +53,9 @@ public class AttributeTranslator {
 	 */
 	public void setAttributeTranslations(Map<String, String> attributeTranslations) {
 		this.attributeTranslations = attributeTranslations;
+		// cleanup empty value
+		this.attributeTranslations.remove("");
+		this.attributeTranslations.remove(" ");
 	}
 
 
@@ -61,6 +64,9 @@ public class AttributeTranslator {
 	 */
 	public void setAttributeSelectableValues(Map<String, List<String>> attributeSelectableValues) {
 		this.attributeSelectableValues = attributeSelectableValues;
+		// cleanup empty value
+		this.attributeTranslations.remove("");
+		this.attributeTranslations.remove(" ");
 	}
 
 
@@ -70,18 +76,19 @@ public class AttributeTranslator {
 		Iterator<String> keys = attributesMap.keySet().iterator();
 		while (keys.hasNext()) {
 			String attribute = keys.next();
-			if (attributeTranslations.keySet().contains(attribute)) {
-				String translatedKey = translateAttribute(attribute);
-				String value = attributesMap.get(attribute);
-				convertedMap.put(translatedKey, value);
-			}
+			String translatedKey = translateAttribute(attribute);
+			String value = attributesMap.get(attribute);
+			convertedMap.put(translatedKey, value);
 		}
 		return convertedMap;
 	}
 
 
 	/**
-	 * Translate Shibboleth Attributes according to configured attribute translations
+	 * Translate Shibboleth Attributes according to configured attribute
+	 * translations. If not attribute translator is found, use the untranslated
+	 * attribute name.
+	 * 
 	 * @param inName
 	 * @return Translated attribute name.
 	 */

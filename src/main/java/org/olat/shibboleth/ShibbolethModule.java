@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.Resource;
+
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.id.UserConstants;
@@ -73,7 +75,7 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	@Value("${shibboleth.enable}")
 	private boolean enableShibbolethLogins = false;
 
-	@Autowired
+	@Resource(name="${shibboleth.attribute.translator}")
 	private AttributeTranslator attributeTranslator;
 
 	@Autowired @Qualifier("shibbolethOperators")
@@ -211,6 +213,15 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 
 	public boolean isEnableShibbolethLogins() {
 		return enableShibbolethLogins;
+	}
+	
+	/**
+	 * @return true: use the attribute configurator in the course editor based
+	 *         on the attribute translator; false: don's use the attribute
+	 *         configurator
+	 */
+	public boolean isEnableShibbolethCourseEasyConfig() {
+		return isEnableShibbolethLogins() && getAttributeTranslator().getTranslateableAttributes().size() > 0;
 	}
 
 	@Override
@@ -356,16 +367,27 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	 */
 	public Collection<String> getShibbolethAttributeNames() {
 		Set<String> attributeNames = new HashSet<>();
-		attributeNames.addAll(attributeTranslator.getTranslateableAttributes());
-		attributeNames.addAll(userMapping.keySet());
-		attributeNames.add(uidAttributeName);
-		attributeNames.add(preferredLanguageAttribute);
-		attributeNames.add(authorMappingAttributeName);
-		attributeNames.add(attribute1);
-		attributeNames.add(attribute2);
-		attributeNames.add(acAutoAttributeName);
+		for (String userMappingKey : attributeTranslator.getTranslateableAttributes()) {
+			addAttributeNameIfDefined(userMappingKey, attributeNames);			
+		}
+		for (String userMappingKey : userMapping.keySet()) {
+			addAttributeNameIfDefined(userMappingKey, attributeNames);
+		}
+		addAttributeNameIfDefined(uidAttributeName, attributeNames);
+		addAttributeNameIfDefined(preferredLanguageAttribute, attributeNames);
+		addAttributeNameIfDefined(authorMappingAttributeName, attributeNames);
+		addAttributeNameIfDefined(attribute1, attributeNames);
+		addAttributeNameIfDefined(attribute2, attributeNames);
+		addAttributeNameIfDefined(acAutoAttributeName, attributeNames);
 		return attributeNames;
 	}
+	
+	private void addAttributeNameIfDefined(String attributeName, Set<String> attributeNames) {
+		if (StringHelper.containsNonWhitespace(attributeName)) {
+			attributeNames.add(attributeName);
+		}		
+	}
+	
 
 	public Set<IdentifierKey> getAcAutoIdentifiers() {
 		return acAutoIdentifiers;

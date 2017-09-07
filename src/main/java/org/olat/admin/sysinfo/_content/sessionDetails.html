@@ -44,7 +44,7 @@
 		<tr><td><i>$r.translate("sess.noattributes")</i></td></tr>
 		#else
 			#foreach($key in $env.getAttributes().keySet())
-				<tr><td>$key:</td><td>$env.getAttributes().get($key)</td></tr>
+				<tr><td>$key:</td><td>$!env.getAttributes().get($key)</td></tr>
 			#end
 		#end
 	</table>

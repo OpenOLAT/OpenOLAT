@@ -559,12 +559,12 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 	/**
 	 * Internal helper to create a sting array that contains all shibboleth attributes that can be selected in the drop down
 	 *
-	 * @return String[] - will never returh null
+	 * @return String[] - will never return null
 	 */
 	private String[] getShibAttributes() {
-		if (shibbolethModule.isEnableShibbolethLogins()) {
+		if (shibbolethModule.isEnableShibbolethCourseEasyConfig()) {
 			final AttributeTranslator attTrans = getAttributeTranslator();
-			final Set<String> attributes = attTrans.getTranslateableAttributes();
+			Set<String> attributes = attTrans.getTranslateableAttributes();
 			final String[] outNames = new String[attributes.size()];
 			int i = 0;
 			for (final String attribute : attributes) {

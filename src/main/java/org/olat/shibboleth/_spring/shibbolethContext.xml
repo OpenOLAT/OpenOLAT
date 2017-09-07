@@ -136,12 +136,59 @@
 		</constructor-arg>
 	</bean>
 
-<bean id="attributeTranslator" class="org.olat.shibboleth.util.AttributeTranslator" >
+
+<bean id="emptyAttributeTranslator" class="org.olat.shibboleth.util.AttributeTranslator">
+	<!-- 
+		The default attribute translator to not translate anything. This will disable the attribute editor 
+		in the course easy condition editor.
+	-->
+	<property name="attributeTranslations"><map></map></property>
+	<property name="attributeSelectableValues"><map></map></property>
+</bean>
+
+<bean id="userMappingAttributeTranslator" class="org.olat.shibboleth.util.AttributeTranslator">
+	<!-- 
+		A simple attibute translator that will use all shibboleth attribute that are mapped
+		to OpenOLAT userproperties. Those mapped attributes will appear in the course easy
+		condition editor.
+	-->
+	<property name="attributeTranslations">
+		<map>
+			<entry key='${shibboleth.user.mapping.email.shib}' value="email" />
+			<entry key='${shibboleth.user.mapping.first.name.shib}' value="firstName" />
+			<entry key='${shibboleth.user.mapping.last.name.shib}' value="lastName" />
+			<entry key='${shibboleth.user.mapping.key1.shib}' value='${shibboleth.user.mapping.key1.olat}' />
+			<entry key='${shibboleth.user.mapping.key2.shib}' value='${shibboleth.user.mapping.key2.olat}' />
+			<entry key='${shibboleth.user.mapping.key3.shib}' value='${shibboleth.user.mapping.key3.olat}' />
+			<entry key='${shibboleth.user.mapping.key4.shib}' value='${shibboleth.user.mapping.key4.olat}' />
+			<entry key='${shibboleth.user.mapping.key5.shib}' value='${shibboleth.user.mapping.key5.olat}' />
+			<entry key='${shibboleth.user.mapping.key6.shib}' value='${shibboleth.user.mapping.key6.olat}' />
+			<entry key='${shibboleth.user.mapping.key7.shib}' value='${shibboleth.user.mapping.key7.olat}' />
+			<entry key='${shibboleth.user.mapping.key8.shib}' value='${shibboleth.user.mapping.key8.olat}' />
+			<entry key='${shibboleth.user.mapping.key9.shib}' value='${shibboleth.user.mapping.key9.olat}' />
+			<entry key='${shibboleth.user.mapping.key10.shib}' value='${shibboleth.user.mapping.key10.olat}' />
+			<entry key='${shibboleth.user.mapping.key11.shib}' value='${shibboleth.user.mapping.key11.olat}' />
+			<entry key='${shibboleth.user.mapping.key12.shib}' value='${shibboleth.user.mapping.key12.olat}' />
+			<entry key='${shibboleth.user.mapping.key13.shib}' value='${shibboleth.user.mapping.key13.olat}' />
+			<entry key='${shibboleth.user.mapping.key14.shib}' value='${shibboleth.user.mapping.key14.olat}' />
+			<entry key='${shibboleth.user.mapping.key15.shib}' value='${shibboleth.user.mapping.key15.olat}' />
+			<entry key='${shibboleth.user.mapping.key16.shib}' value='${shibboleth.user.mapping.key16.olat}' />
+			<entry key='${shibboleth.user.mapping.key17.shib}' value='${shibboleth.user.mapping.key17.olat}' />
+			<entry key='${shibboleth.user.mapping.key18.shib}' value='${shibboleth.user.mapping.key18.olat}' />
+			<entry key='${shibboleth.user.mapping.key19.shib}' value='${shibboleth.user.mapping.key19.olat}' />
+			<entry key='${shibboleth.user.mapping.key20.shib}' value='${shibboleth.user.mapping.key20.olat}' />		
+		</map>
+	</property>
+	<property name="attributeSelectableValues"><map></map></property>
+</bean>
+
+<bean id="switchAttributeTranslator" class="org.olat.shibboleth.util.AttributeTranslator" >
 	<property name="attributeTranslations">
 		<map>
 		<!--
-				Attributes to translate for easier reading/handling within OLAT.
-				Attributes will be available by their translated name (value) within OLAT.
+				Attributes to translate for easier reading/handling within OpenOLAT based
+				on the SWITCH AAI infrastructure. Attributes will be available by their 
+				translated name (value) within OpenOLAT.
 
 				As an option, for each attribute predefined selectable values can be added as
 				in the example below. These are used in the course editors easy mode to display
