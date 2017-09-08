@@ -231,6 +231,14 @@ public class HotspotEditorController extends FormBasicController {
 			backgroundEl.validate(status);
 			allOk &= status.isEmpty();
 		}
+
+		correctHotspotsEl.clearError();
+		if(!restrictedEdit) {
+			if(correctHotspotsEl.getSelectedKeys().size() == 0) {
+				correctHotspotsEl.setErrorKey("error.need.correct.answer", null);
+				allOk &= false;
+			}
+		}
 		
 		return allOk & super.validateFormLogic(ureq);
 	}
