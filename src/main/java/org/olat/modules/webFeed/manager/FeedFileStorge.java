@@ -104,6 +104,7 @@ public class FeedFileStorge {
 		xstream.omitField(FeedImpl.class, "id");
 		xstream.omitField(FeedImpl.class, "itemIds");
 		xstream.omitField(FeedImpl.class, "key");
+		xstream.omitField(FeedImpl.class, "wrappers");
 		xstream.alias("item", ItemImpl.class);
 		xstream.omitField(ItemImpl.class, "key");
 		xstream.omitField(ItemImpl.class, "feed");
