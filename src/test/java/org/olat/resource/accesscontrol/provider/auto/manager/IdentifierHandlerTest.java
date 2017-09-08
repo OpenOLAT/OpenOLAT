@@ -63,7 +63,7 @@ public class IdentifierHandlerTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 
-		when(externaHandlerMock.getItentifierKey()).thenReturn(IdentifierKey.externalId);
+		when(externaHandlerMock.getIdentifierKey()).thenReturn(IdentifierKey.externalId);
 		handlers.add(externaHandlerMock);
 		sut.initHandlerCache();
 

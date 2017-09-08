@@ -36,7 +36,7 @@ interface IdentifierKeyHandler {
 	/**
 	 * Specifies for which identifier the handler can be used.
 	 */
-	public IdentifierKey getItentifierKey();
+	public IdentifierKey getIdentifierKey();
 
 	/**
 	 * Find the RepositoryEntries by a given value.

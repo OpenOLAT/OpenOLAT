@@ -41,7 +41,7 @@ class ExternalRefHandler implements IdentifierKeyHandler {
 	private RepositoryService repositoryService;
 
 	@Override
-	public IdentifierKey getItentifierKey() {
+	public IdentifierKey getIdentifierKey() {
 		return IdentifierKey.externalRef;
 	}
 

@@ -23,9 +23,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +43,8 @@ import org.springframework.stereotype.Component;
 @Component
 class IdentifierHandler {
 
+	private static final OLog log = Tracing.createLoggerFor(IdentifierHandler.class);
+
 	@Autowired
     private Collection<IdentifierKeyHandler> loadedHandlers;
 
@@ -48,7 +53,7 @@ class IdentifierHandler {
     @PostConstruct
     void initHandlerCache() {
         for(IdentifierKeyHandler handler : loadedHandlers) {
-            handlers.put(handler.getItentifierKey(), handler);
+            handlers.put(handler.getIdentifierKey(), handler);
         }
     }
 
@@ -63,7 +68,14 @@ class IdentifierHandler {
      * @returns the course or null if not found or too many found
      */
     List<RepositoryEntry> findRepositoryEntries(IdentifierKey key, String value) {
-		return handlers.get(key).find(value);
+		List<RepositoryEntry> entries = handlers.get(key).find(value);
+		if (entries.size() > 1) {
+			String keys = entries.stream()
+					.map(re -> re.getSoftkey())
+					.collect(Collectors.joining(", "));
+			log.debug("Found more then one RepositotyEntry for " + key + "=" + value + ". Keys: " + keys);
+		}
+		return entries;
     }
 
     /**
