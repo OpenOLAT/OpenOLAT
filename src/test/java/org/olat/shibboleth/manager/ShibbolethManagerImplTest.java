@@ -45,7 +45,6 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.shibboleth.ShibbolethDispatcher;
-import org.olat.shibboleth.ShibbolethModule;
 import org.olat.user.UserManager;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -57,8 +56,6 @@ import org.springframework.test.util.ReflectionTestUtils;
  */
 public class ShibbolethManagerImplTest {
 
-	@Mock
-	private ShibbolethModule shibbolethModuleMock;
 	@Mock
 	private AccessControlModule acModuleMock;
 	@Mock
@@ -88,7 +85,6 @@ public class ShibbolethManagerImplTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		ReflectionTestUtils.setField(sut, "securityManager", securityManagerMock);
-		ReflectionTestUtils.setField(sut, "shibbolethModule", shibbolethModuleMock);
 		ReflectionTestUtils.setField(sut, "acModule", acModuleMock);
 		ReflectionTestUtils.setField(sut, "autoAccessManager", autoAccessManagerMock);
 		ReflectionTestUtils.setField(sut, "userManager", userManagerMock);
