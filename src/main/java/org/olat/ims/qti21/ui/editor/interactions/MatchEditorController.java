@@ -243,7 +243,7 @@ public class MatchEditorController extends FormBasicController {
 		}
 		
 		commitTemporaryAssociations(ureq);
-		
+		/*
 		if(singleMultiEl.isOneSelected() && singleMultiEl.isSelected(0)) {
 			Map<String,String> sourseTargetMap = new HashMap<>();
 			String[] directedPairsIds = ureq.getHttpReq().getParameterValues("qtiworks_response_" + itemBuilder.getResponseIdentifier());
@@ -278,6 +278,7 @@ public class MatchEditorController extends FormBasicController {
 				}
 			}
 		}
+		*/
 		
 		if(layoutEl != null) {
 			layoutEl.clearError();

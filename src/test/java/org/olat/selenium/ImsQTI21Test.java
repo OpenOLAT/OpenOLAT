@@ -1611,7 +1611,193 @@ public class ImsQTI21Test {
 			.assertOnAssessmentTestScore(10);// 4 points from the first question, 6 from the second
 	}
 	
-
+	/**
+	 * An author make a test with 2 matches. A match with "multiple selection"
+	 * and score "all answers", a second with "single selection" and score
+	 * "per answers". They are distractors, the assessed user must let them blank.<br>
+	 * A first user make the test, but doesn't answer all questions
+	 * correctly, log out and a second user make the perfect test.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorMatch_distractors(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		UserVO melissa = new UserRestClient(deploymentUrl).createRandomUser("Melissa");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "Match QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add a match, multiple selection
+		QTI21MatchEditorPage matchEditor = qtiEditor
+			.addMatch();
+		matchEditor
+			.setSource(0, "Eclipse")
+			.setSource(1, "nano")
+			.setTarget(0, "IDE")
+			.setTarget(1, "WordProcessor")
+			.addColumn()
+			.setTarget(2, "CAD")
+			.save();
+		// change max score
+		matchEditor
+			.selectScores()
+			.setMaxScore("4")
+			.save();
+		// set some feedbacks
+		matchEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is only an hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		// second match
+		matchEditor = qtiEditor
+			.addMatch()
+			.setSingleChoices()
+			.setSource(0, "Java")
+			.setSource(1, "C")
+			.addRow()
+			.setSource(2, "PHP")
+			.setTarget(0, "Lynx")
+			.setTarget(1, "Netscape")
+			.addColumn()
+			.setTarget(2, "Pixel")
+			.save();
+		// select score "per answer" and set the scores
+		matchEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("6")
+			.setScore(0, 0, "0.0")
+			.setScore(0, 1, "0.0")
+			.setScore(0, 2, "1.0")
+			.setScore(1, 0, "0.0")
+			.setScore(1, 1, "1.0")
+			.setScore(1, 2, "0.0")
+			.setScore(2, 0, "2.0")
+			.setScore(2, 1, "0.0")
+			.setScore(2, 2, "-0.5")
+			.save();
+		matchEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page reiQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		reiQtiPage
+			.assertOnAssessmentItem()
+			.answerMatch("Eclipse", "WordProcessor", true)
+			.answerMatch("nano", "CAD", true)
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerMatch("nano", "CAD", false)
+			.answerMatch("Eclipse", "WordProcessor", false)
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMatch("Java", "Pixel", true)
+			.answerMatch("C", "Lynx", true)
+			.answerMatch("PHP", "Pixel", true)
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore("4.5");// 4 points from the first question, 0.5 from the second
+		
+		//a second user search the content package
+		LoginPage melLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		melLoginPage
+			.loginAs(melissa.getLogin(), melissa.getPassword())
+			.resume();
+		NavigationPage melNavBar = new NavigationPage(participantBrowser);
+		melNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.assertOnAssessmentItem()
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMatch("Java", "Pixel", true)
+			.answerMatch("C", "Pixel", true)
+			.answerMatch("PHP", "Lynx", true)
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.answerMatch("Java", "Pixel", false)
+			.answerMatch("C", "Pixel", false)
+			.answerMatch("PHP", "Lynx", false)
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(10);// 4 points from the first question, 6 from the second
+	}
+	
 	/**
 	 * An author make a test with 2 match of the drag and drop variety
 	 * with feedbacks.<br>
@@ -1799,6 +1985,193 @@ public class ImsQTI21Test {
 			.endTest()
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(11);// 4 points from the first question, 7 from the second	
+	}
+	
+	/**
+	 * An author make a test with 2 match of the drag and drop variety
+	 * with feedbacks but as distractor. The assessed user need to let them
+	 * blank to have the max. score.<br>
+	 * A first user make the test, check the feedbacks but make an error
+	 * and score the maximum. A second user answers all the questions
+	 * correctly.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorMatchDragAndDrop_distractors(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO asuka = new UserRestClient(deploymentUrl).createRandomUser("Asuka");
+		UserVO chara = new UserRestClient(deploymentUrl).createRandomUser("Chara");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "Match DnD QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add a match, multiple selection
+		QTI21MatchEditorPage matchEditor = qtiEditor
+			.addMatchDragAndDrop();
+		matchEditor
+			.setSource(0, "Einstein")
+			.setSource(1, "Planck")
+			.addRow()
+			.setSource(2, "Euler")
+			.setTarget(0, "Chemistry")
+			.setTarget(1, "Philosophy")
+			.save();
+		// change max score
+		matchEditor
+			.selectScores()
+			.setMaxScore("4")
+			.save();
+		// set some feedbacks
+		matchEditor
+			.selectFeedbacks()
+			.setHint("Hint", "Euler come from Switzerland")
+			.setCorrectSolution("Correct solution", "The correct solution is simple")
+			.setCorrectFeedback("Correct feedback", "You are right")
+			.setIncorrectFeedback("Incorrect", "Your answer is not exactly correct")
+			.save();
+		
+		// second match
+		matchEditor = qtiEditor
+			.addMatchDragAndDrop()
+			.setSingleChoices()
+			.setSource(0, "Euler")
+			.setSource(1, "Broglie")
+			.addRow()
+			.setSource(2, "Konrad")
+			.setTarget(0, "Chemistry")
+			.setTarget(1, "Biology")
+			.addColumn()
+			.setTarget(2, "Astrology")
+			.save();
+		// select score "per answer" and set the scores
+		matchEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("8")
+			.setScore(0, 0, "1.0")
+			.setScore(0, 1, "0.0")
+			.setScore(0, 2, "0.0")
+			.setScore(1, 0, "0.0")
+			.setScore(1, 1, "0.0")
+			.setScore(1, 2, "-0.5")
+			.setScore(2, 0, "0.0")
+			.setScore(2, 1, "2.0")
+			.setScore(2, 2, "0.0")
+			.save();
+		matchEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		//close editor
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage asukaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		asukaLoginPage
+			.loginAs(asuka.getLogin(), asuka.getPassword())
+			.resume();
+		NavigationPage asukaNavBar = new NavigationPage(participantBrowser);
+		asukaNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page asukaQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		asukaQtiPage
+			.assertOnAssessmentItem()
+			.answerMatchDropSourceToTarget("Einstein", "Chemistry")
+			.answerMatchDropSourceToTarget("Planck", "Philosophy")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerMatchDetarget("Planck")
+			.answerMatchDetarget("Einstein")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMatchDropSourceToTarget("Broglie", "Astrology") // -0.5 points
+			.answerMatchDropSourceToTarget("Euler", "Chemistry")  // 1 points
+			.answerMatchDropSourceToTarget("Konrad", "Chemistry") // 0 points
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore("4.5");
+		
+		//a second user search the content package
+		LoginPage charaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		charaLoginPage
+			.loginAs(chara.getLogin(), chara.getPassword())
+			.resume();
+		NavigationPage charaNavBar = new NavigationPage(participantBrowser);
+		charaNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerMatchDropSourceToTarget("Broglie", "Chemistry")   // 2 points
+			.answerMatchDropSourceToTarget("Euler", "Astrology") // 2 points
+			.answerMatchDropSourceToTarget("Konrad", "Astrology")   // 3 points
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.answerMatchDetarget("Broglie")
+			.answerMatchDetarget("Euler")
+			.answerMatchDetarget("Konrad")
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(12);// 4 points from the first question, 8 from the second	
 	}
 	
 	/**

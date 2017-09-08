@@ -368,6 +368,12 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page assertOnAssessmentTestScore(String score) {
+		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_scores')]/td/div/span[contains(@class,'o_sel_assessmenttest_score')][contains(text(),'" + score + "')]");
+		OOGraphene.waitElement(resultsBy, 5, browser);
+		return this;
+	}
+	
 	public QTI21Page assertOnAssessmentTestPassed() {
 		By notPassedBy = By.cssSelector("div.o_sel_results_details tr.o_qti_stateinfo.o_passed");
 		OOGraphene.waitElement(notPassedBy, 5, browser);
