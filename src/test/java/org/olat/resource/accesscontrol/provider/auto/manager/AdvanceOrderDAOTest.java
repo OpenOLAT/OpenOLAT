@@ -21,6 +21,7 @@ package org.olat.resource.accesscontrol.provider.auto.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -177,6 +178,42 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 		Collection<AdvanceOrder> advanceOrders = sut.loadPendingAdvanceOrders(identifiers);
 
 		assertThat(advanceOrders).hasSize(1).contains(aoMatchingInternalId);
+	}
+
+	@Test
+	public void shouldDeleteAdvanceOrdersByIdentity() {
+		AdvanceOrder aoPending = sut.create(identity, IdentifierKey.internalId, IDENTIFIER_VALUE, freeMethod);
+		sut.save(aoPending);
+		AdvanceOrder aoDone = sut.create(identity, IdentifierKey.externalId, IDENTIFIER_VALUE, freeMethod);
+		sut.save(aoDone);
+		sut.accomplishAndSave(aoDone);
+		Identity otherIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("otheruser");
+		AdvanceOrder aoOtherIdentity = sut.create(otherIdentity, IdentifierKey.internalId, "not matching", freeMethod);
+		sut.save(aoOtherIdentity);
+		dbInstance.commitAndCloseSession();
+
+		sut.deleteAdvanceOrders(identity);
+
+		Collection<AdvanceOrder> aoDeletedUser = loadAllAdvanceOrders(identity);
+		assertThat(aoDeletedUser).hasSize(0);
+		Collection<AdvanceOrder> aoActiveUser = loadAllAdvanceOrders(otherIdentity);
+		assertThat(aoActiveUser).hasSize(1);
+
+	}
+
+	private Collection<AdvanceOrder> loadAllAdvanceOrders(Identity identity) {
+		if (identity == null) return new ArrayList<>(0);
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select advanceOrder from advanceOrder advanceOrder")
+		  .append(" where advanceOrder.identity.key=:identityKey");
+
+		List<AdvanceOrder> advanceOrder = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AdvanceOrder.class)
+				.setParameter("identityKey", identity.getKey())
+				.getResultList();
+
+		return advanceOrder;
 	}
 
 	@Test

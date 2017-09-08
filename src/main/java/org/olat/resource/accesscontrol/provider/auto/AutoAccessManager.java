@@ -61,6 +61,13 @@ public interface AutoAccessManager {
 	public Collection<AdvanceOrder> loadPendingAdvanceOrders(RepositoryEntry entry);
 
 	/**
+	 * Delete all advance order of a user.
+	 *
+	 * @param identity
+	 */
+	public void deleteAdvanceOrders(Identity identity);
+
+	/**
 	 * Load all pending advance orders for the identity and try to grant access.
 	 *
 	 * @param identity

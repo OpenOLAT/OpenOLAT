@@ -54,15 +54,18 @@ import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
  */
 @Entity(name="advanceOrder")
 @Table(name="o_ac_auto_advance_order")
-@NamedQueries(
+@NamedQueries({
 	@NamedQuery(name="exists", query=
 			  "select count(*) "
 			+ "from advanceOrder ao "
 			+ "where ao.identity.key =:identityKey "
 			+ "and ao.identifierKey =:identifierKey "
 			+ "and ao.identifierValue =:identifierValue "
-			+ "and ao.method.key =:methodKey")
-)
+			+ "and ao.method.key =:methodKey"),
+	@NamedQuery(name="deleteByIdentity", query =
+			  "delete from advanceOrder ao"
+			+ " where ao.identity.key=:identityKey")
+})
 public class AdvanceOrderImpl implements Persistable, AdvanceOrder {
 
 	private static final long serialVersionUID = -536425559285612562L;

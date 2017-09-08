@@ -118,6 +118,11 @@ public class AutoAccessManagerImpl implements AutoAccessManager {
 	}
 
 	@Override
+	public void deleteAdvanceOrders(Identity identity) {
+		advanceOrderDAO.deleteAdvanceOrders(identity);
+	}
+
+	@Override
 	public void grantAccessToCourse(Identity identity) {
 		Collection<AdvanceOrder> pendingAdvanceOrders = loadPendingAdvanceOrders(identity);
 		grantAccess(pendingAdvanceOrders);

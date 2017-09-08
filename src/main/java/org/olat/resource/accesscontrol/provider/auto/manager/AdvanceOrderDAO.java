@@ -123,6 +123,13 @@ class AdvanceOrderDAO {
 		return query.getResultList();
 	}
 
+	void deleteAdvanceOrders(Identity identity) {
+		dbInstance.getCurrentEntityManager()
+				.createNamedQuery("deleteByIdentity")
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+	}
+
 	AdvanceOrder save(AdvanceOrder advanceOrder) {
 		if(advanceOrder.getKey() == null) {
 			dbInstance.getCurrentEntityManager().persist(advanceOrder);
