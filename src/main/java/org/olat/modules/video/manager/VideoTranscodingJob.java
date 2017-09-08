@@ -138,10 +138,9 @@ public class VideoTranscodingJob extends JobWithDB {
 		cmd.add(transcodedFile.getAbsolutePath());
 		cmd.add("--optimize");
 		cmd.add("--preset");
-		cmd.add("Normal");
+		cmd.add("Fast 1080p30");
 		cmd.add("--height");
 		cmd.add(Integer.toString(videoTranscoding.getResolution()));
-		cmd.add("--deinterlace");
 		cmd.add("--crop");
 		cmd.add("0:0:0:0");
 		
