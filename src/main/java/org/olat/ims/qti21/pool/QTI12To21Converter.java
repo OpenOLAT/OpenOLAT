@@ -688,18 +688,21 @@ public class QTI12To21Converter {
 		String solutionText = question.getSolutionText();
 		if(StringHelper.containsNonWhitespace(solutionText)) {
 			ModalFeedbackBuilder solution = itemBuilder.createCorrectSolutionFeedback();
+			solutionText = blockedHtml(solutionText);
 			solution.setText(solutionText);
 		}
 		
 		String feedbackMastery = QTIEditHelper.getFeedbackMasteryText(item);
 		if(StringHelper.containsNonWhitespace(feedbackMastery)) {
 			ModalFeedbackBuilder feedback = itemBuilder.createCorrectFeedback();
+			feedbackMastery = blockedHtml(feedbackMastery);
 			feedback.setText(feedbackMastery);
 		}
 
 		String feedbackFail = QTIEditHelper.getFeedbackFailText(item);
 		if(StringHelper.containsNonWhitespace(feedbackFail)) {
 			ModalFeedbackBuilder feedback = itemBuilder.createIncorrectFeedback();
+			feedbackFail = blockedHtml(feedbackFail);
 			feedback.setText(feedbackFail);
 		}
 		

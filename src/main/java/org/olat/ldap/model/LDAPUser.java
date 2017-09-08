@@ -23,7 +23,7 @@ import java.util.List;
 
 import javax.naming.directory.Attributes;
 
-import org.olat.core.id.Identity;
+import org.olat.basesecurity.IdentityRef;
 
 /**
  * 
@@ -43,7 +43,7 @@ public class LDAPUser {
 	private List<String> groupIds;
 	private List<String> coachedGroupIds;
 	private Attributes attributes;
-	private Identity cachedIdentity;
+	private IdentityRef cachedIdentity;
 	
 	public String getDn() {
 		return dn;
@@ -125,11 +125,11 @@ public class LDAPUser {
 		this.coachedGroupIds = coachedGroupIds;
 	}
 
-	public Identity getCachedIdentity() {
+	public IdentityRef getCachedIdentity() {
 		return cachedIdentity;
 	}
 
-	public void setCachedIdentity(Identity cachedIdentity) {
+	public void setCachedIdentity(IdentityRef cachedIdentity) {
 		this.cachedIdentity = cachedIdentity;
 	}
 	

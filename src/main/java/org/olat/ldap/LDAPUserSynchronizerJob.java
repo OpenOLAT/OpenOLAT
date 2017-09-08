@@ -19,9 +19,6 @@
  */
 package org.olat.ldap;
 
-import java.util.Calendar;
-import java.util.Date;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.quartz.JobExecutionContext;
@@ -37,28 +34,17 @@ import org.quartz.JobExecutionException;
  * @author gnaegi
  */
 public class LDAPUserSynchronizerJob extends JobWithDB {
-	
-	private static Date lastFullSync;
 
 	/**
 	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
 	 */
-	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
+	public void executeWithDB(JobExecutionContext arg0)
+	throws JobExecutionException {
 		try {
 			log.info("Starting LDAP user synchronize job");
 			LDAPError errors = new LDAPError();
 			LDAPLoginManager ldapLoginManager = CoreSpringFactory.getImpl(LDAPLoginManager.class);
-			boolean full;
-			
-			Calendar fullLimit = Calendar.getInstance();
-			fullLimit.add(Calendar.HOUR_OF_DAY, -12);
-			if(lastFullSync == null || lastFullSync.before(fullLimit.getTime())) {
-				full = true;
-				lastFullSync = new Date();
-			} else {
-				full = false;
-			}
-			boolean allOk = ldapLoginManager.doBatchSync(errors, full);
+			boolean allOk = ldapLoginManager.doBatchSync(errors);
 			if(allOk) {
 				log.info("LDAP user synchronize job finished successfully");				
 			} else {
@@ -67,7 +53,6 @@ public class LDAPUserSynchronizerJob extends JobWithDB {
 		} catch (Exception e) {
 			// ups, something went completely wrong! We log this but continue next time
 			log.error("Erron while synchronizeing LDAP users", e);
-		}
-		// db closed by JobWithDB class		
+		}		
 	}
 }

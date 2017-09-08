@@ -27,6 +27,7 @@ import java.util.Map;
 import javax.naming.directory.Attributes;
 import javax.naming.ldap.LdapContext;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
@@ -54,13 +55,13 @@ public interface LDAPLoginManager {
 	
 	public Identity findIdentityByLdapAuthentication(Attributes attrs, LDAPError errors);
 	
-	public void syncUser(Map<String,String> olatPropertyMap, Identity identity);
+	public Identity syncUser(Map<String,String> olatPropertyMap, IdentityRef identity);
 	
 	public void syncUserGroups(Identity identity);
 	
 	public void deletIdentities(List<Identity> identityList);
 
-	public boolean doBatchSync(LDAPError errors, boolean full);
+	public boolean doBatchSync(LDAPError errors);
 	
 	public Date getLastSyncDate();
 	
