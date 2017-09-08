@@ -69,7 +69,7 @@ public class ShibbolethAttributesTest {
 	private static final String SHIB_GENDER_VALUE = "female";
 	private static final String USER_CITY_KEY = UserConstants.CITY;
 	private static final String SHIB_CITY_KEY = "shibCity";
-	private static final String SHIB_CITY_VALUE = null;
+	private static final String SHIB_CITY_VALUE_NULL = null;
 	private static final String USER_OLD_VALUE = "old";
 	private static final String SHIB_AC_IDENTIFIER_KEY = "adIdenitfierKey";
 	private static final String SHIB_AC_IDENTIFIER_VALUE = "adIdenitfierValue";
@@ -118,7 +118,7 @@ public class ShibbolethAttributesTest {
 		shibbolethMap.put(SHIB_EMAIL_KEY, SHIB_EMAIL_VALUE);
 		shibbolethMap.put(SHIB_NAME_KEY, SHIB_NAME_VALUE);
 		shibbolethMap.put(SHIB_GENDER_KEY, SHIB_GENDER_VALUE);
-		shibbolethMap.put(SHIB_CITY_KEY, SHIB_CITY_VALUE);
+		shibbolethMap.put(SHIB_CITY_KEY, SHIB_CITY_VALUE_NULL);
 		shibbolethMap.put(SHIB_AC_IDENTIFIER_KEY, SHIB_AC_IDENTIFIER_VALUE);
 		return shibbolethMap;
 	}
@@ -137,7 +137,7 @@ public class ShibbolethAttributesTest {
 		user.setProperty(USER_EMAIL_KEY, SHIB_EMAIL_VALUE);
 		user.setProperty(USER_NAME_KEY, SHIB_NAME_VALUE);
 		user.setProperty(USER_GENDER_KEY, SHIB_GENDER_VALUE);
-		user.setProperty(USER_CITY_KEY, SHIB_CITY_VALUE);
+		user.setProperty(USER_CITY_KEY, SHIB_CITY_VALUE_NULL);
 		return user;
 	}
 
@@ -281,7 +281,7 @@ public class ShibbolethAttributesTest {
 
 		User syncedUser = sut.syncUser(user);
 
-		assertThat(syncedUser.getProperty(USER_CITY_KEY, null)).isEqualTo(SHIB_CITY_VALUE);
+		assertThat(syncedUser.getProperty(USER_CITY_KEY, null)).isEqualTo(SHIB_CITY_VALUE_NULL);
 	}
 
 	@Test
@@ -291,26 +291,34 @@ public class ShibbolethAttributesTest {
 
 		User syncedUser = sut.syncUser(user);
 
-		assertThat(syncedUser.getProperty(USER_CITY_KEY, null)).isEqualTo(SHIB_CITY_VALUE);
+		assertThat(syncedUser.getProperty(USER_CITY_KEY, null)).isEqualTo(SHIB_CITY_VALUE_NULL);
 	}
 
 	@Test
 	public void shouldNotChangeNullValueOfSyncedUser() {
 		User user = getIdenticalOlatUser();
+		sut.setValueForUserPropertyName(USER_EMAIL_KEY, null);
+		when(differenceCheckerMock.isDifferent(SHIB_EMAIL_KEY, null, SHIB_EMAIL_VALUE)).thenReturn(false);
+		String newGenderValue = "changedValue";
+		sut.setValueForUserPropertyName(USER_GENDER_KEY, newGenderValue);
+		when(differenceCheckerMock.isDifferent(SHIB_GENDER_KEY, newGenderValue, SHIB_GENDER_VALUE)).thenReturn(true);
 
 		User syncedUser = sut.syncUser(user);
 
-		assertThat(syncedUser.getProperty(USER_CITY_KEY, null)).isEqualTo(SHIB_CITY_VALUE);
+		assertThat(syncedUser.getProperty(USER_EMAIL_KEY, null)).isEqualTo(SHIB_EMAIL_VALUE);
+		assertThat(syncedUser.getProperty(USER_CITY_KEY, null)).isEqualTo(SHIB_CITY_VALUE_NULL);
+		assertThat(syncedUser.getProperty(USER_GENDER_KEY, null)).isEqualTo(newGenderValue);
 	}
 
 	@Test
 	public void shouldRemovePropertyFromSyncedUserIfNotPresentInShibboleth() {
 		User user = getIdenticalOlatUser();
 		user.setProperty(USER_CITY_KEY, USER_OLD_VALUE);
+		when(differenceCheckerMock.isDifferent(SHIB_CITY_KEY, SHIB_CITY_VALUE_NULL, USER_OLD_VALUE)).thenReturn(true);
 
 		User syncedUser = sut.syncUser(user);
 
-		assertThat(syncedUser.getProperty(USER_CITY_KEY, null)).isEqualTo(SHIB_CITY_VALUE);
+		assertThat(syncedUser.getProperty(USER_CITY_KEY, null)).isEqualTo(SHIB_CITY_VALUE_NULL);
 	}
 
 	@Test

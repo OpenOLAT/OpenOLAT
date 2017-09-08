@@ -30,7 +30,6 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.shibboleth.ShibbolethManager;
-import org.olat.shibboleth.ShibbolethModule;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,8 +45,6 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 
 	private BaseSecurity securityManager;
 
-	@Autowired
-	private ShibbolethModule shibbolethModule;
 	@Autowired
 	private AccessControlModule acModule;
 	@Autowired

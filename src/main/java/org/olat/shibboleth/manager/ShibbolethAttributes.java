@@ -134,9 +134,13 @@ public class ShibbolethAttributes {
 
 	public User syncUser(User user) {
 		for (Entry<String, String> mapping : getUserMappingEntrySet()) {
-			String shibbolethValue = getValueForAttributeName(mapping.getKey());
+			String shibbolethName = mapping.getKey();
+			String shibbolethValue = getValueForAttributeName(shibbolethName);
+			String userValue = user.getProperty(mapping.getValue(), null);
 			String userPropertyName = mapping.getValue();
-			user.setProperty(userPropertyName, shibbolethValue);
+			if (differenceChecker.isDifferent(shibbolethName, shibbolethValue, userValue)) {
+				user.setProperty(userPropertyName, shibbolethValue);
+			}
 		}
 		return user;
 	}
