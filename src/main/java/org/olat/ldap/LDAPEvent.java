@@ -39,7 +39,6 @@ public class LDAPEvent extends MultiUserEvent {
 	
 	public static final String SYNCHING = "synching";
 	public static final String DO_SYNCHING = "do_synching";
-	public static final String DO_FULL_SYNCHING = "do_full_synching";
 	public static final String SYNCHING_ENDED = "synching_ended";
 	
 	private boolean success;
