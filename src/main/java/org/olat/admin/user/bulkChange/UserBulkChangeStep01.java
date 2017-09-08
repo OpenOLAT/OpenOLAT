@@ -20,11 +20,10 @@
 package org.olat.admin.user.bulkChange;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
 
 import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.gui.UserRequest;
@@ -36,7 +35,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.rules.RulesFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -48,6 +46,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -91,25 +90,34 @@ class UserBulkChangeStep01 extends BasicStep {
 	private final class UserBulkChangeStepForm01 extends StepFormBasicController {
 
 		private FormLayoutContainer textContainer;
-		private HashSet<FormItem> targets;
+
 		private MultipleSelectionElement chkAuthor;
 		private SingleSelection setAuthor;
 		private MultipleSelectionElement chkUserManager;
 		private SingleSelection setUserManager;
 		private MultipleSelectionElement chkGroupManager;
 		private SingleSelection setGroupManager;
-		private Identity identity;
+		private MultipleSelectionElement chkPoolManager;
+		private SingleSelection setPoolManager;
+		private MultipleSelectionElement chkInstitutionManager;
+		private SingleSelection setInstitutionManager;
 		private MultipleSelectionElement chkAdmin;
 		private SingleSelection setAdmin;
 		private MultipleSelectionElement chkStatus;
 		private SingleSelection setStatus;
 		private MultipleSelectionElement sendLoginDeniedEmail;
+		
+		private Identity identity;
+		
+		@Autowired
+		private UserManager userManager;
+		@Autowired
+		private BaseSecurity securityManager;
 
 		public UserBulkChangeStepForm01(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
 			// use custom translator with fallback to user properties translator
-			UserManager um = UserManager.getInstance();
-			setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
+			setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 			flc.setTranslator(getTranslator());
 			initForm(ureq);
 		}
@@ -121,9 +129,8 @@ class UserBulkChangeStep01 extends BasicStep {
 
 		@Override
 		protected void formOK(UserRequest ureq) {
-
 			Boolean validChange = (Boolean) getFromRunContext("validChange");
-			HashMap<String, String> roleChangeMap = new HashMap<String, String>();
+			Map<String, String> roleChangeMap = new HashMap<>();
 
 			if (chkUserManager!=null && chkUserManager.getSelectedKeys().contains("Usermanager")) {
 				roleChangeMap.put(Constants.GROUP_USERMANAGERS, setUserManager.getSelectedKey());
@@ -137,6 +144,16 @@ class UserBulkChangeStep01 extends BasicStep {
 
 			if (chkAuthor!=null && chkAuthor.getSelectedKeys().contains("Author")) {
 				roleChangeMap.put(Constants.GROUP_AUTHORS, setAuthor.getSelectedKey());
+				validChange = true;
+			}
+			
+			if (chkPoolManager!=null && chkPoolManager.getSelectedKeys().contains("PoolManager")) {
+				roleChangeMap.put(Constants.GROUP_POOL_MANAGER, setPoolManager.getSelectedKey());
+				validChange = true;
+			}
+			
+			if (chkInstitutionManager!=null && chkInstitutionManager.getSelectedKeys().contains("InstitutionManager")) {
+				roleChangeMap.put(Constants.GROUP_INST_ORES_MANAGER, setInstitutionManager.getSelectedKey());
 				validChange = true;
 			}
 
@@ -158,6 +175,29 @@ class UserBulkChangeStep01 extends BasicStep {
 			addToRunContext("validChange", validChange);
 
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		}
+
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if(chkUserManager == source) {
+				setUserManager.setVisible(chkUserManager.isAtLeastSelected(1));
+			} else if(chkGroupManager == source) {
+				setGroupManager.setVisible(chkGroupManager.isAtLeastSelected(1));
+			} else if(chkAuthor == source) {
+				setAuthor.setVisible(chkAuthor.isAtLeastSelected(1));
+			} else if(chkPoolManager == source) {
+				setPoolManager.setVisible(chkPoolManager.isAtLeastSelected(1));
+			} else if(chkInstitutionManager == source) {
+				setInstitutionManager.setVisible(chkInstitutionManager.isAtLeastSelected(1));
+			} else if(chkAdmin == source) {
+				setAdmin.setVisible(chkAdmin.isAtLeastSelected(1));
+			} else if(chkStatus == source || setStatus == source) {
+				setStatus.setVisible(chkStatus.isAtLeastSelected(1));
+				boolean loginDenied = chkStatus.isAtLeastSelected(1) && setStatus.isOneSelected()
+						&& Integer.toString(Identity.STATUS_LOGIN_DENIED).equals(setStatus.getSelectedKey());
+				sendLoginDeniedEmail.setVisible(loginDenied);
+			}
+			super.formInnerEvent(ureq, source, event);
 		}
 
 		@Override
@@ -184,16 +224,20 @@ class UserBulkChangeStep01 extends BasicStep {
 			// check user rights:
 			boolean iAmOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 			identity = ureq.getIdentity();
-			BaseSecurity secMgr = BaseSecurityManager.getInstance();
+			
 			// get user system roles groups from security manager
-			SecurityGroup adminGroup = secMgr.findSecurityGroupByName(Constants.GROUP_ADMIN);
-			boolean isAdmin = secMgr.isIdentityInSecurityGroup(identity, adminGroup);
-			SecurityGroup userManagerGroup = secMgr.findSecurityGroupByName(Constants.GROUP_USERMANAGERS);
-			boolean isUserManager = secMgr.isIdentityInSecurityGroup(identity, userManagerGroup);
-			SecurityGroup authorGroup = secMgr.findSecurityGroupByName(Constants.GROUP_AUTHORS);
-			boolean isAuthor = secMgr.isIdentityInSecurityGroup(identity, authorGroup);
-			SecurityGroup groupmanagerGroup = secMgr.findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS);
-			boolean isGroupManager = secMgr.isIdentityInSecurityGroup(identity, groupmanagerGroup);
+			SecurityGroup adminGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ADMIN);
+			boolean isAdmin = securityManager.isIdentityInSecurityGroup(identity, adminGroup);
+			SecurityGroup userManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_USERMANAGERS);
+			boolean isUserManager = securityManager.isIdentityInSecurityGroup(identity, userManagerGroup);
+			SecurityGroup authorGroup = securityManager.findSecurityGroupByName(Constants.GROUP_AUTHORS);
+			boolean isAuthor = securityManager.isIdentityInSecurityGroup(identity, authorGroup);
+			SecurityGroup groupmanagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_GROUPMANAGERS);
+			boolean isGroupManager = securityManager.isIdentityInSecurityGroup(identity, groupmanagerGroup);
+			SecurityGroup poolManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_POOL_MANAGER);
+			boolean isPoolManager = securityManager.isIdentityInSecurityGroup(identity, poolManagerGroup);
+			SecurityGroup insitutionManagerGroup = securityManager.findSecurityGroupByName(Constants.GROUP_INST_ORES_MANAGER);
+			boolean isInstitutionManager = securityManager.isIdentityInSecurityGroup(identity, insitutionManagerGroup);
 
 			// usermanager:
 			if (isAdmin || isUserManager || iAmOlatAdmin) {
@@ -203,10 +247,6 @@ class UserBulkChangeStep01 extends BasicStep {
 
 				setUserManager = uifactory.addDropdownSingleselect("setUserManager", null, innerFormLayout, addremove, addremoveTranslated, null);
 				setUserManager.setVisible(false);
-				targets = new HashSet<FormItem>();
-				targets.add(setUserManager);
-				RulesFactory.createHideRule(chkUserManager, null, targets, innerFormLayout);
-				RulesFactory.createShowRule(chkUserManager, "Usermanager", targets, innerFormLayout);
 			}
 
 			// groupmanager
@@ -217,10 +257,6 @@ class UserBulkChangeStep01 extends BasicStep {
 
 				setGroupManager = uifactory.addDropdownSingleselect("setGroupManager", null, innerFormLayout, addremove, addremoveTranslated, null);
 				setGroupManager.setVisible(false);
-				targets = new HashSet<FormItem>();
-				targets.add(setGroupManager);
-				RulesFactory.createHideRule(chkGroupManager, null, targets, innerFormLayout);
-				RulesFactory.createShowRule(chkGroupManager, "Groupmanager", targets, innerFormLayout);
 			}
 
 			// author
@@ -231,14 +267,27 @@ class UserBulkChangeStep01 extends BasicStep {
 
 				setAuthor = uifactory.addDropdownSingleselect("setAuthor", null, innerFormLayout, addremove, addremoveTranslated, null);
 				setAuthor.setVisible(false);
-				targets = new HashSet<FormItem>();
-				targets.add(setAuthor);
-				RulesFactory.createHideRule(chkAuthor, null, targets, innerFormLayout);
-				RulesFactory.createShowRule(chkAuthor, "Author", targets, innerFormLayout);
 			}
 			
-			//TODO unique user property (doesn't bulk change unique property)
+			//pool manager
+			if (isAdmin || isPoolManager || iAmOlatAdmin) {
+				chkPoolManager = uifactory.addCheckboxesHorizontal("PoolManager", "table.role.poolManager", innerFormLayout, new String[] { "PoolManager" }, new String[] { "" });
+				chkPoolManager.select("Author", false);
+				chkPoolManager.addActionListener(FormEvent.ONCLICK);
 
+				setPoolManager = uifactory.addDropdownSingleselect("setPoolManager", null, innerFormLayout, addremove, addremoveTranslated, null);
+				setPoolManager.setVisible(false);
+			}
+			
+			//
+			if (isAdmin || isInstitutionManager || iAmOlatAdmin) {
+				chkInstitutionManager = uifactory.addCheckboxesHorizontal("InsitutionManager", "table.role.institutionManager", innerFormLayout, new String[] { "InstitutionManager" }, new String[] { "" });
+				chkInstitutionManager.select("Author", false);
+				chkInstitutionManager.addActionListener(FormEvent.ONCLICK);
+
+				setInstitutionManager = uifactory.addDropdownSingleselect("setInstitutionManager", null, innerFormLayout, addremove, addremoveTranslated, null);
+				setInstitutionManager.setVisible(false);
+			}
 			
 			// sysadmin
 			if (isAdmin || iAmOlatAdmin) {
@@ -248,10 +297,6 @@ class UserBulkChangeStep01 extends BasicStep {
 
 				setAdmin = uifactory.addDropdownSingleselect("setAdmin",null, innerFormLayout, addremove, addremoveTranslated, null);
 				setAdmin.setVisible(false);
-				targets = new HashSet<FormItem>();
-				targets.add(setAdmin);
-				RulesFactory.createHideRule(chkAdmin, null, targets, innerFormLayout);
-				RulesFactory.createShowRule(chkAdmin, "Admin", targets, innerFormLayout);
 			}
 
 			// status
@@ -259,7 +304,6 @@ class UserBulkChangeStep01 extends BasicStep {
 				chkStatus = uifactory.addCheckboxesHorizontal("Status", "table.role.status", innerFormLayout, new String[] { "Status" }, new String[] { "" });
 				chkStatus.select("Status", false);
 				chkStatus.addActionListener(FormEvent.ONCLICK);
-
 
 				// TODO: RH: pay attention: if status changes in Identity-statics this
 				// may lead to missing status
@@ -273,23 +317,11 @@ class UserBulkChangeStep01 extends BasicStep {
 				setStatus = uifactory.addDropdownSingleselect("setStatus",null, innerFormLayout, statusKeys, statusValues, null);
 				setStatus.setVisible(false);
 				setStatus.addActionListener(FormEvent.ONCHANGE);
-				targets = new HashSet<FormItem>();
-				targets.add(setStatus);
-				RulesFactory.createHideRule(chkStatus, null, targets, innerFormLayout);
-				RulesFactory.createShowRule(chkStatus, "Status", targets, innerFormLayout);
-				
+
 				sendLoginDeniedEmail = uifactory.addCheckboxesHorizontal("rightsForm.sendLoginDeniedEmail", innerFormLayout, new String[]{"y"}, new String[]{translate("rightsForm.sendLoginDeniedEmail")});
 				sendLoginDeniedEmail.setLabel(null, null);
 				sendLoginDeniedEmail.setVisible(false);
-				RulesFactory.createHideRule(chkStatus, null, sendLoginDeniedEmail, innerFormLayout);
-				RulesFactory.createHideRule(setStatus, Integer.toString(Identity.STATUS_ACTIV), sendLoginDeniedEmail, innerFormLayout);
-				RulesFactory.createHideRule(setStatus, Integer.toString(Identity.STATUS_PERMANENT), sendLoginDeniedEmail, innerFormLayout);
-				RulesFactory.createShowRule(setStatus, Integer.toString(Identity.STATUS_LOGIN_DENIED), sendLoginDeniedEmail, innerFormLayout);
-
 			}
-
 		}
-
 	}
-
 }

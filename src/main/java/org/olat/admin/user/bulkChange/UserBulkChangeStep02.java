@@ -32,7 +32,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -64,6 +63,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.ui.BusinessGroupFormController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -80,20 +80,16 @@ class UserBulkChangeStep02 extends BasicStep {
 	static final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
 	public List<UserPropertyHandler> userPropertyHandlers;
 
-	private final UserBulkChangeManager ubcMan;
-	private final BusinessGroupService businessGroupService;
-
 	public UserBulkChangeStep02(UserRequest ureq) {
 		super(ureq);
 		setI18nTitleAndDescr("step2.description", null);
 		setNextStep(Step.NOSTEP);
-		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
-		ubcMan = UserBulkChangeManager.getInstance();
 	}
 
 	/**
 	 * @see org.olat.core.gui.control.generic.wizard.Step#getInitialPrevNextFinishConfig()
 	 */
+	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return new PrevNextFinishConfig(true, false, true);
 	}
@@ -104,6 +100,7 @@ class UserBulkChangeStep02 extends BasicStep {
 	 *      org.olat.core.gui.control.generic.wizard.StepsRunContext,
 	 *      org.olat.core.gui.components.form.flexible.impl.Form)
 	 */
+	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
 		StepFormController stepI = new UserBulkChangeStepForm02(ureq, windowControl, form, stepsRunContext);
 		return stepI;
@@ -112,6 +109,11 @@ class UserBulkChangeStep02 extends BasicStep {
 	private final class UserBulkChangeStepForm02 extends StepFormBasicController {
 
 		private FormLayoutContainer textContainer;
+		
+		@Autowired
+		private UserBulkChangeManager ubcMan;
+		@Autowired
+		private BusinessGroupService businessGroupService;
 
 		public UserBulkChangeStepForm02(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -165,8 +167,11 @@ class UserBulkChangeStep02 extends BasicStep {
 			boolean isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());
 			userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 
-			String[] securityGroups = { Constants.GROUP_USERMANAGERS, Constants.GROUP_GROUPMANAGERS, Constants.GROUP_AUTHORS,
-					Constants.GROUP_ADMIN };
+			String[] securityGroups = {
+					Constants.GROUP_USERMANAGERS, Constants.GROUP_GROUPMANAGERS,
+					Constants.GROUP_POOL_MANAGER, Constants.GROUP_INST_ORES_MANAGER,
+					Constants.GROUP_AUTHORS, Constants.GROUP_ADMIN
+				};
 
 			// loop over users to be edited:
 			for (Identity identity : selectedIdentities) {
@@ -247,6 +252,8 @@ class UserBulkChangeStep02 extends BasicStep {
 			}
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.useradmin", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.groupadmin", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.poolManager", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.institutionManager", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.author", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.admin", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.status", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));

@@ -35,12 +35,9 @@ import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.admin.user.SystemRolesAndRightsController;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -50,7 +47,6 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -64,6 +60,9 @@ import org.olat.login.auth.OLATAuthManager;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.GenderPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Description:<br>
@@ -74,15 +73,30 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author rhaag
  */
-public class UserBulkChangeManager extends BasicManager {
+@Service
+public class UserBulkChangeManager implements InitializingBean {
+	
 	private static VelocityEngine velocityEngine;
-	private static OLog log = Tracing.createLoggerFor(UserBulkChangeManager.class);
-	private static UserBulkChangeManager INSTANCE = new UserBulkChangeManager();
+	private static final OLog log = Tracing.createLoggerFor(UserBulkChangeManager.class);
 
 	static final String PWD_IDENTIFYER = "password";
 	static final String LANG_IDENTIFYER = "language";
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private OLATAuthManager olatAuthManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
-	public UserBulkChangeManager() {
+	@Override
+	public void afterPropertiesSet() throws Exception {
 		// init velocity engine
 		Properties p = null;
 		try {
@@ -95,32 +109,29 @@ public class UserBulkChangeManager extends BasicManager {
 			throw new RuntimeException("config error " + p.toString());
 		}
 	}
-	
 
-	public static UserBulkChangeManager getInstance() {
-		return INSTANCE;
-	}
 
 	public void changeSelectedIdentities(List<Identity> selIdentities, Map<String, String> attributeChangeMap,
 			Map<String, String> roleChangeMap, List<String> notUpdatedIdentities, boolean isAdministrativeUser, List<Long> ownGroups, List<Long> partGroups,
 			Translator trans, Identity addingIdentity) {
 
-		Translator transWithFallback = UserManager.getInstance().getPropertyHandlerTranslator(trans);
+		Translator transWithFallback = userManager.getPropertyHandlerTranslator(trans);
 		String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
 
 		notUpdatedIdentities.clear();
-		List<Identity> changedIdentities = new ArrayList<Identity>();
-		List<UserPropertyHandler> userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer,
+		List<Identity> changedIdentities = new ArrayList<>();
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer,
 				isAdministrativeUser);
-		String[] securityGroups = { Constants.GROUP_USERMANAGERS, Constants.GROUP_GROUPMANAGERS, Constants.GROUP_AUTHORS, Constants.GROUP_ADMIN };
-		UserManager um = UserManager.getInstance();
-		BaseSecurity secMgr = BaseSecurityManager.getInstance();
+		String[] securityGroups = {
+				Constants.GROUP_USERMANAGERS, Constants.GROUP_GROUPMANAGERS,
+				Constants.GROUP_AUTHORS, Constants.GROUP_ADMIN,
+				Constants.GROUP_POOL_MANAGER, Constants.GROUP_INST_ORES_MANAGER
+			};
 
 		// loop over users to be edited:
 		for (Identity identity : selIdentities) {
-			DB db = DBFactory.getInstance();
 			//reload identity from cache, to prevent stale object
-			identity = (Identity) db.loadObject(identity);
+			identity = securityManager.loadIdentityByKey(identity.getKey());
 			User user = identity.getUser();
 			String errorDesc = "";
 			boolean updateError = false;
@@ -128,15 +139,14 @@ public class UserBulkChangeManager extends BasicManager {
 			if (attributeChangeMap.containsKey(PWD_IDENTIFYER)) {
 				String newPwd = attributeChangeMap.get(PWD_IDENTIFYER);
 				if (StringHelper.containsNonWhitespace(newPwd)) {
-					if (!UserManager.getInstance().syntaxCheckOlatPassword(newPwd)) {
+					if (!userManager.syntaxCheckOlatPassword(newPwd)) {
 						errorDesc = transWithFallback.translate("error.password");
 						updateError = true;
 					}
 				} else {
 					newPwd = null;
 				}
-				OLATAuthManager olatAuthenticationSpi = CoreSpringFactory.getImpl(OLATAuthManager.class);
-				olatAuthenticationSpi.changePasswordAsAdmin(identity, newPwd);
+				olatAuthManager.changePasswordAsAdmin(identity, newPwd);
 			}
 
 			// set language
@@ -187,20 +197,20 @@ public class UserBulkChangeManager extends BasicManager {
 			// set roles for identity
 			// loop over securityGroups defined above
 			for (String securityGroup : securityGroups) {
-				SecurityGroup secGroup = secMgr.findSecurityGroupByName(securityGroup);
-				Boolean isInGroup = secMgr.isIdentityInSecurityGroup(identity, secGroup);
+				SecurityGroup secGroup = securityManager.findSecurityGroupByName(securityGroup);
+				Boolean isInGroup = securityManager.isIdentityInSecurityGroup(identity, secGroup);
 				String thisRoleAction = "";
 				if (roleChangeMap.containsKey(securityGroup)) {
 					thisRoleAction = roleChangeMap.get(securityGroup);
 					// user not anymore in security group, remove him
 					if (isInGroup && thisRoleAction.equals("remove")) {
-						secMgr.removeIdentityFromSecurityGroup(identity, secGroup);
-						logAudit("User::" + addingIdentity.getName() + " removed system role::" + securityGroup + " from user::" + identity.getName(), null);
+						securityManager.removeIdentityFromSecurityGroup(identity, secGroup);
+						log.audit("User::" + addingIdentity.getName() + " removed system role::" + securityGroup + " from user::" + identity.getName(), null);
 					}
 					// user not yet in security group, add him
 					if (!isInGroup && thisRoleAction.equals("add")) {
-						secMgr.addIdentityToSecurityGroup(identity, secGroup);
-						logAudit("User::" + addingIdentity.getName() + " added system role::" + securityGroup + " to user::" + identity.getName(), null);
+						securityManager.addIdentityToSecurityGroup(identity, secGroup);
+						log.audit("User::" + addingIdentity.getName() + " added system role::" + securityGroup + " to user::" + identity.getName(), null);
 					}
 				}
 			}
@@ -224,8 +234,8 @@ public class UserBulkChangeManager extends BasicManager {
 				if(oldStatus != status && status == Identity.STATUS_LOGIN_DENIED && Boolean.parseBoolean(roleChangeMap.get("sendLoginDeniedEmail"))) {
 					sendLoginDeniedEmail(identity);
 				}
-				identity = secMgr.saveIdentityStatus(identity, status);
-				logAudit("User::" + addingIdentity.getName() + " changed accout status for user::" + identity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
+				identity = securityManager.saveIdentityStatus(identity, status);
+				log.audit("User::" + addingIdentity.getName() + " changed accout status for user::" + identity.getName() + " from::" + oldStatusText + " to::" + newStatusText, null);
 			}
 
 			// persist changes:
@@ -234,13 +244,13 @@ public class UserBulkChangeManager extends BasicManager {
 				log.debug("error during bulkChange of users, following user could not be updated: " + errorOutput);
 				notUpdatedIdentities.add(errorOutput); 
 			} else {
-				um.updateUserFromIdentity(identity);
+				userManager.updateUserFromIdentity(identity);
 				changedIdentities.add(identity);
-				logAudit("User::" + addingIdentity.getName() + " successfully changed account data for user::" + identity.getName() + " in bulk change", null);
+				log.audit("User::" + addingIdentity.getName() + " successfully changed account data for user::" + identity.getName() + " in bulk change", null);
 			}
 
 			// commit changes for this user
-			db.intermediateCommit();
+			dbInstance.commit();
 		} // for identities
 
 		// FXOLAT-101: add identity to new groups:
@@ -263,10 +273,9 @@ public class UserBulkChangeManager extends BasicManager {
 				}
 			}
 
-			BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			MailPackage mailing = new MailPackage();
-			bgs.updateMemberships(addingIdentity, changes, mailing);
-			DBFactory.getInstance().commit();
+			businessGroupService.updateMemberships(addingIdentity, changes, mailing);
+			dbInstance.commit();
 		}
 	}
 	
@@ -276,11 +285,11 @@ public class UserBulkChangeManager extends BasicManager {
 		Translator translator = Util.createPackageTranslator(SystemRolesAndRightsController.class, locale);
 
 		String gender = "";
-		UserPropertyHandler handler = UserManager.getInstance().getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);
+		UserPropertyHandler handler = userManager.getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);
 		if(handler instanceof GenderPropertyHandler) {
 			String internalGender = ((GenderPropertyHandler)handler).getInternalValue(identity.getUser());
 			if(StringHelper.containsNonWhitespace(internalGender)) {
-				Translator userPropTrans = UserManager.getInstance().getUserPropertiesConfig().getTranslator(translator);
+				Translator userPropTrans = userManager.getUserPropertiesConfig().getTranslator(translator);
 				gender = userPropTrans.translate("form.name.gender.salutation." + internalGender);
 			}
 		}
@@ -288,7 +297,7 @@ public class UserBulkChangeManager extends BasicManager {
 		String[] args = new String[] {
 				identity.getName(),//0: changed users username
 				identity.getUser().getProperty(UserConstants.EMAIL, null),// 1: changed users email address
-				UserManager.getInstance().getUserDisplayName(identity.getUser()),// 2: Name (first and last name) of user who changed the password
+				userManager.getUserDisplayName(identity.getUser()),// 2: Name (first and last name) of user who changed the password
 				WebappHelper.getMailConfig("mailSupport"), //3: configured support email address
 				identity.getUser().getProperty(UserConstants.LASTNAME, null), //4 last name
 				getServerURI(), //5 url system
@@ -299,7 +308,7 @@ public class UserBulkChangeManager extends BasicManager {
 		bundle.setToId(identity);
 		bundle.setContent(translator.translate("mailtemplate.login.denied.subject", args),
 			translator.translate("mailtemplate.login.denied.body", args));
-		CoreSpringFactory.getImpl(MailManager.class).sendExternMessage(bundle, null, false);
+		mailManager.sendExternMessage(bundle, null, false);
 	}
 	
 	private String getServerURI() {
@@ -317,19 +326,15 @@ public class UserBulkChangeManager extends BasicManager {
 			velocityEngine.evaluate(vcContext, evaluatedUserValue, "vcUservalue", valToEval);
 		} catch (ParseErrorException e) {
 			log.error("parsing of values in BulkChange Field not possible!");
-			e.printStackTrace();
 			return "ERROR";
 		} catch (MethodInvocationException e) {
 			log.error("evaluating of values in BulkChange Field not possible!");
-			e.printStackTrace();
 			return "ERROR";
 		} catch (ResourceNotFoundException e) {
 			log.error("evaluating of values in BulkChange Field not possible!");
-			e.printStackTrace();
 			return "ERROR";
 		} catch (Exception e) {
 			log.error("evaluating of values in BulkChange Field not possible!");
-			e.printStackTrace();
 			return "ERROR";
 		}
 		return evaluatedUserValue.toString();
@@ -342,8 +347,7 @@ public class UserBulkChangeManager extends BasicManager {
 	 * @param isAdministrativeUser
 	 */
 	public void setUserContext(Identity identity, Context vcContext) {
-		List<UserPropertyHandler> userPropertyHandlers2;
-		userPropertyHandlers2 = UserManager.getInstance().getAllUserPropertyHandlers();
+		List<UserPropertyHandler> userPropertyHandlers2 = userManager.getAllUserPropertyHandlers();
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers2) {
 			String propertyName = userPropertyHandler.getName();
 			String userValue = identity.getUser().getProperty(propertyName, null);
@@ -358,8 +362,7 @@ public class UserBulkChangeManager extends BasicManager {
 	
 	public Context getDemoContext(Translator propertyTrans) {
 		Context vcContext = new VelocityContext();
-		List<UserPropertyHandler> userPropertyHandlers2;
-		userPropertyHandlers2 = UserManager.getInstance().getAllUserPropertyHandlers();
+		List<UserPropertyHandler> userPropertyHandlers2 = userManager.getAllUserPropertyHandlers();
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers2) {
 			String propertyName = userPropertyHandler.getName();
 			String userValue = propertyTrans.translate("import.example." + userPropertyHandler.getName());
