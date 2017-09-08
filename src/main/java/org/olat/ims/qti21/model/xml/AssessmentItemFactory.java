@@ -49,6 +49,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Correct;
+import uk.ac.ed.ph.jqtiplus.node.expression.general.MapResponse;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.And;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Equal;
@@ -83,6 +84,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseCondition;
+import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseConditionChild;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElse;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseElseIf;
 import uk.ac.ed.ph.jqtiplus.node.item.response.processing.ResponseIf;
@@ -189,6 +191,90 @@ public class AssessmentItemFactory {
 		// outcome feedback
 		OutcomeDeclaration feedbackOutcomeDeclaration = createOutcomeDeclarationForFeedbackBasic(assessmentItem);
 		outcomeDeclarations.getOutcomeDeclarations().add(feedbackOutcomeDeclaration);
+	}
+	
+	/*
+	<setOutcomeValue identifier="FEEDBACKBASIC">
+		<baseValue baseType="identifier">
+			correct
+		</baseValue>
+	</setOutcomeValue>
+	*/
+	public static void appendSetOutcomeFeedbackCorrect(ResponseConditionChild responseCondition) {
+		SetOutcomeValue correctOutcomeValue = new SetOutcomeValue(responseCondition);
+		correctOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+		responseCondition.getResponseRules().add(correctOutcomeValue);
+		
+		BaseValue correctValue = new BaseValue(correctOutcomeValue);
+		correctValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+		correctValue.setSingleValue(QTI21Constants.CORRECT_IDENTIFIER_VALUE);
+		correctOutcomeValue.setExpression(correctValue);
+	}
+	
+	/*
+	<setOutcomeValue identifier="FEEDBACKBASIC">
+		<baseValue baseType="identifier">incorrect</baseValue>
+	</setOutcomeValue>
+	*/
+	public static void appendSetOutcomeFeedbackIncorrect(ResponseConditionChild responseCondition) {
+		SetOutcomeValue incorrectOutcomeValue = new SetOutcomeValue(responseCondition);
+		incorrectOutcomeValue.setIdentifier(QTI21Constants.FEEDBACKBASIC_IDENTIFIER);
+		responseCondition.getResponseRules().add(incorrectOutcomeValue);
+		
+		BaseValue incorrectValue = new BaseValue(incorrectOutcomeValue);
+		incorrectValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+		incorrectValue.setSingleValue(QTI21Constants.INCORRECT_IDENTIFIER_VALUE);
+		incorrectOutcomeValue.setExpression(incorrectValue);
+	}
+	
+	/*
+    <setOutcomeValue identifier="SCORE">
+      <sum>
+        <variable identifier="SCORE"/>
+        <mapResponse identifier="RESPONSE_1"/>
+      </sum>
+    </setOutcomeValue>
+	*/
+	public static void appendSetOutcomeScoreMapResponse(ResponseConditionChild responseCondition, Identifier responseIdentifier) {
+		SetOutcomeValue scoreOutcome = new SetOutcomeValue(responseCondition);
+		scoreOutcome.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
+		responseCondition.getResponseRules().add(scoreOutcome);
+		
+		Sum sum = new Sum(scoreOutcome);
+		scoreOutcome.getExpressions().add(sum);
+		
+		Variable scoreVar = new Variable(sum);
+		scoreVar.setIdentifier(QTI21Constants.SCORE_CLX_IDENTIFIER);
+		sum.getExpressions().add(scoreVar);
+		
+		MapResponse mapResponse = new MapResponse(sum);
+		mapResponse.setIdentifier(responseIdentifier);
+		sum.getExpressions().add(mapResponse);
+	}
+	
+	/*
+	<setOutcomeValue identifier="SCORE">
+	    <sum>
+	      <variable identifier="SCORE"/>
+	      <variable identifier="MAXSCORE"/>
+	    </sum>
+	  </setOutcomeValue>
+	*/
+	public static void appendSetOutcomeScoreMaxScore(ResponseConditionChild responseCondition) {
+		SetOutcomeValue scoreOutcomeValue = new SetOutcomeValue(responseCondition);
+		scoreOutcomeValue.setIdentifier(QTI21Constants.SCORE_IDENTIFIER);
+		responseCondition.getResponseRules().add(scoreOutcomeValue);
+		
+		Sum sum = new Sum(scoreOutcomeValue);
+		scoreOutcomeValue.getExpressions().add(sum);
+		
+		Variable scoreVar = new Variable(sum);
+		scoreVar.setIdentifier(QTI21Constants.SCORE_CLX_IDENTIFIER);
+		sum.getExpressions().add(scoreVar);
+		
+		Variable maxScoreVar = new Variable(sum);
+		maxScoreVar.setIdentifier(QTI21Constants.MAXSCORE_CLX_IDENTIFIER);
+		sum.getExpressions().add(maxScoreVar);
 	}
 	
 	public static HotspotInteraction appendHotspotInteraction(ItemBody itemBody, Identifier responseDeclarationId, Identifier correctResponseId) {
