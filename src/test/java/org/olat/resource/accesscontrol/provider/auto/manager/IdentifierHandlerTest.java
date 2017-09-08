@@ -76,28 +76,28 @@ public class IdentifierHandlerTest {
 		List<RepositoryEntry> resources = Arrays.asList(course);
 		when(externaHandlerMock.find(anyString())).thenReturn(resources);
 
-		RepositoryEntry loaded = sut.findRepositoryEntry(IdentifierKey.externalId, "EXT-123");
+		List<RepositoryEntry> loaded = sut.findRepositoryEntries(IdentifierKey.externalId, "EXT-123");
 
-		assertThat(loaded).isEqualTo(course);
+		assertThat(loaded.get(0)).isEqualTo(course);
 	}
 
 	@Test
-	public void shouldReturnNullIfNoCourseFound() {
+	public void shouldReturnEmptyListIfNoCourseFound() {
 		when(externaHandlerMock.find(anyString())).thenReturn(Collections.<RepositoryEntry>emptyList());
 
-		RepositoryEntry loaded = sut.findRepositoryEntry(IdentifierKey.externalId, "EXT-123");
+		List<RepositoryEntry> loaded = sut.findRepositoryEntries(IdentifierKey.externalId, "EXT-123");
 
-		assertThat(loaded).isNull();
+		assertThat(loaded).isEmpty();
 	}
 
 	@Test
-	public void shouldReturnNullIfMoreThanOneCourseFound() {
+	public void shouldReturnAllIfMoreThanOneCourseFound() {
 		List<RepositoryEntry> resources = Arrays.asList(course, course2);
 		when(externaHandlerMock.find(anyString())).thenReturn(resources);
 
-		RepositoryEntry loaded = sut.findRepositoryEntry(IdentifierKey.externalId, "EXT-123");
+		List<RepositoryEntry> loaded = sut.findRepositoryEntries(IdentifierKey.externalId, "EXT-123");
 
-		assertThat(loaded).isNull();
+		assertThat(loaded).hasSameSizeAs(resources);
 	}
 
 }

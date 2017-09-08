@@ -53,20 +53,17 @@ class IdentifierHandler {
     }
 
     /**
-     * Finds the RepositoryEntry for a given identifier key and value.
+     * Finds the RepositoryEntries for a given identifier key and value.
+     * It is a explicit requirement to return all entries. Maybe in other
+     * setups it would be appropriate to only return one entry because
+     * we are searching by an identifier.
      *
      * @param key
      * @param value
      * @returns the course or null if not found or too many found
      */
-    RepositoryEntry findRepositoryEntry(IdentifierKey key, String value) {
-		List<RepositoryEntry> entries = handlers.get(key).find(value);
-
-		RepositoryEntry entry = null;
-		if (entries.size() == 1) {
-			entry = entries.get(0);
-		}
-		return entry;
+    List<RepositoryEntry> findRepositoryEntries(IdentifierKey key, String value) {
+		return handlers.get(key).find(value);
     }
 
     /**

@@ -146,14 +146,20 @@ public class AutoAccessManagerImpl implements AutoAccessManager {
 		if (isAdvanceOrderAccomplished(advanceOrder))
 			return;
 
-		RepositoryEntry entry = findRepositoryEntry(advanceOrder);
-		if (entry != null) {
-			if (hasNoAccess(advanceOrder, entry)) {
-				OLATResource resource = entry.getOlatResource();
-				OfferAccess offerAccess = getOrCreateOfferAccess(resource, entry, advanceOrder.getMethod());
-				makeOrder(offerAccess, advanceOrder);
+		List<RepositoryEntry> entries = findRepositoryEntries(advanceOrder);
+		if (!entries.isEmpty()) {
+			for (RepositoryEntry entry: entries) {
+				grantAccessIfHasNoAccess(advanceOrder, entry);
 			}
 			advanceOrderDAO.accomplishAndSave(advanceOrder);
+		}
+	}
+
+	private void grantAccessIfHasNoAccess(AdvanceOrder advanceOrder, RepositoryEntry entry) {
+		if (hasNoAccess(advanceOrder, entry)) {
+			OLATResource resource = entry.getOlatResource();
+			OfferAccess offerAccess = getOrCreateOfferAccess(resource, entry, advanceOrder.getMethod());
+			makeOrder(offerAccess, advanceOrder);
 		}
 	}
 
@@ -161,10 +167,10 @@ public class AutoAccessManagerImpl implements AutoAccessManager {
 		return !Status.PENDING.equals(advanceOrder.getStatus());
 	}
 
-	private RepositoryEntry findRepositoryEntry(AdvanceOrder advanceOrder) {
+	private List<RepositoryEntry> findRepositoryEntries(AdvanceOrder advanceOrder) {
 		IdentifierKey identifierKey = advanceOrder.getIdentifierKey();
 		String identifierValue = advanceOrder.getIdentifierValue();
-		return identifierHandler.findRepositoryEntry(identifierKey, identifierValue);
+		return identifierHandler.findRepositoryEntries(identifierKey, identifierValue);
 	}
 
 	private boolean hasNoAccess(AdvanceOrder advanceOrder, RepositoryEntry entry) {

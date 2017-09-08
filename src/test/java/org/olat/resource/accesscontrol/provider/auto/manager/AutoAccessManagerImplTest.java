@@ -95,6 +95,7 @@ public class AutoAccessManagerImplTest {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDaoMock;
 	@Mock
 	private RepositoryEntry repositoryEntryMock;
+	private List<RepositoryEntry> listWithRespositotyEntryMock;
 	@Mock
 	private OLATResource resourceMock;
 
@@ -127,6 +128,8 @@ public class AutoAccessManagerImplTest {
 
 		when(repositoryEntryMock.getDisplayname()).thenReturn(DISPLAY_NAME);
 		when(repositoryEntryMock.getOlatResource()).thenReturn(resourceMock);
+		listWithRespositotyEntryMock = new ArrayList<>();
+		listWithRespositotyEntryMock.add(repositoryEntryMock);
 	}
 
 	private Collection<AdvanceOrder> getPendingAdvanceOrders() {
@@ -183,7 +186,7 @@ public class AutoAccessManagerImplTest {
 
 		sut.grantAccess(advanceOrders);
 
-		verify(identifierHandlerMock, never()).findRepositoryEntry(any(IdentifierKey.class), anyString());
+		verify(identifierHandlerMock, never()).findRepositoryEntries(any(IdentifierKey.class), anyString());
 	}
 
 	@Test
@@ -192,12 +195,12 @@ public class AutoAccessManagerImplTest {
 
 		sut.grantAccess(getPendingAdvanceOrders());
 
-		verify(identifierHandlerMock, never()).findRepositoryEntry(any(IdentifierKey.class), anyString());
+		verify(identifierHandlerMock, never()).findRepositoryEntries(any(IdentifierKey.class), anyString());
 	}
 
 	@Test
 	public void shouldNotGrantAccessIfNoResourceFound() {
-		when(identifierHandlerMock.findRepositoryEntry(any(IdentifierKey.class), anyString())).thenReturn(null);
+		when(identifierHandlerMock.findRepositoryEntries(any(IdentifierKey.class), anyString())).thenReturn(null);
 
 		sut.grantAccess(getPendingAdvanceOrders());
 
@@ -208,7 +211,7 @@ public class AutoAccessManagerImplTest {
 
 	@Test
 	public void shouldMakeOfferBeforeGrantingAccessIfNotExists() {
-		when(identifierHandlerMock.findRepositoryEntry(any(IdentifierKey.class), anyString())).thenReturn(repositoryEntryMock);
+		when(identifierHandlerMock.findRepositoryEntries(any(IdentifierKey.class), anyString())).thenReturn(listWithRespositotyEntryMock);
 		when(repositoryEntryRelationDaoMock.hasRole(IDENTITY, repositoryEntryMock, GroupRoles.participant.name())).thenReturn(false);
 		when(acServiceMock.getValidOfferAccess(any(OLATResource.class), any(AccessMethod.class))).thenReturn(new ArrayList<>());
 		Offer offerMock = mock(Offer.class);
@@ -225,7 +228,7 @@ public class AutoAccessManagerImplTest {
 
 	@Test
 	public void shouldNotMakeOfferBeforeGrantingAccessIfOfferExists() {
-		when(identifierHandlerMock.findRepositoryEntry(any(IdentifierKey.class), anyString())).thenReturn(repositoryEntryMock);
+		when(identifierHandlerMock.findRepositoryEntries(any(IdentifierKey.class), anyString())).thenReturn(listWithRespositotyEntryMock);
 		OfferAccess offerAccessDummy = mock(OfferAccess.class);
 		List<OfferAccess> offerAccess = Arrays.asList(offerAccessDummy);
 		when(acServiceMock.getValidOfferAccess(any(OLATResource.class), any(AccessMethod.class))).thenReturn(offerAccess);
@@ -238,7 +241,7 @@ public class AutoAccessManagerImplTest {
 
 	@Test
 	public void shouldGrantAccessIfNoAccess() {
-		when(identifierHandlerMock.findRepositoryEntry(any(IdentifierKey.class), anyString())).thenReturn(repositoryEntryMock);
+		when(identifierHandlerMock.findRepositoryEntries(any(IdentifierKey.class), anyString())).thenReturn(listWithRespositotyEntryMock);
 		OfferAccess offerAccessDummy = mock(OfferAccess.class);
 		List<OfferAccess> offerAccess = Arrays.asList(offerAccessDummy);
 		when(acServiceMock.getValidOfferAccess(any(OLATResource.class), any(AccessMethod.class))).thenReturn(offerAccess);
@@ -250,7 +253,7 @@ public class AutoAccessManagerImplTest {
 
 	@Test
 	public void shouldNotGrantAccessIfHasAccess() {
-		when(identifierHandlerMock.findRepositoryEntry(any(IdentifierKey.class), anyString())).thenReturn(repositoryEntryMock);
+		when(identifierHandlerMock.findRepositoryEntries(any(IdentifierKey.class), anyString())).thenReturn(listWithRespositotyEntryMock);
 		when(repositoryEntryRelationDaoMock.hasRole(IDENTITY, repositoryEntryMock, GroupRoles.participant.name())).thenReturn(true);
 
 		sut.grantAccess(getPendingAdvanceOrders());
@@ -260,7 +263,7 @@ public class AutoAccessManagerImplTest {
 
 	@Test
 	public void shouldMarkAccessOrderAsDone() {
-		when(identifierHandlerMock.findRepositoryEntry(any(IdentifierKey.class), anyString())).thenReturn(repositoryEntryMock);
+		when(identifierHandlerMock.findRepositoryEntries(any(IdentifierKey.class), anyString())).thenReturn(listWithRespositotyEntryMock);
 		OfferAccess offerAccessDummy = mock(OfferAccess.class);
 		List<OfferAccess> offerAccess = Arrays.asList(offerAccessDummy);
 		when(acServiceMock.getValidOfferAccess(any(OLATResource.class), any(AccessMethod.class))).thenReturn(offerAccess);
