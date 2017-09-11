@@ -114,7 +114,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	
 
 	@Override
-	public void deleteItems(List<QuestionItemShort> items) {
+	public void deleteItems(List<? extends QuestionItemShort> items) {
 		if(items == null || items.isEmpty()) {
 			return; //nothing to do
 		}

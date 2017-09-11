@@ -145,6 +145,15 @@ public class RestSecurityHelper {
 		}
 	}
 	
+	public static boolean isQuestionPoolManager(HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			return (roles.isPoolAdmin() || roles.isOLATAdmin());
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
 	public static boolean isAdmin(HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);

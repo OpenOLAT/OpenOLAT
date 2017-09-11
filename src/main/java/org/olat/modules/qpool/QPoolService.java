@@ -70,7 +70,7 @@ public interface QPoolService {
 	
 	public QuestionItem updateItem(QuestionItem item);
 	
-	public void deleteItems(List<QuestionItemShort> items);
+	public void deleteItems(List<? extends QuestionItemShort> items);
 	
 	public int countItems(SearchQuestionItemParams params);
 	

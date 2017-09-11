@@ -160,7 +160,7 @@ public class CollectionDAO {
 	public int removeItemFromCollection(List<QuestionItemShort> items, QuestionItemCollection collection) {
 		if(items == null || items.isEmpty()) return 0;//noting to do
 		
-		List<Long> keys = new ArrayList<Long>();
+		List<Long> keys = new ArrayList<>();
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}
@@ -174,10 +174,10 @@ public class CollectionDAO {
 				.executeUpdate();
 	}
 	
-	public int deleteItemFromCollections(List<QuestionItemShort> items) {
+	public int deleteItemFromCollections(List<? extends QuestionItemShort> items) {
 		if(items == null || items.isEmpty()) return 0;//noting to do
 		
-		List<Long> keys = new ArrayList<Long>();
+		List<Long> keys = new ArrayList<>();
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}
