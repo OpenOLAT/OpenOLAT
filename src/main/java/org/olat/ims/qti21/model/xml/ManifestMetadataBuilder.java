@@ -26,6 +26,7 @@ import java.util.StringTokenizer;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
+import org.olat.core.util.StringHelper;
 import org.olat.imscp.xml.manifest.ManifestMetadataType;
 import org.olat.imscp.xml.manifest.MetadataType;
 import org.olat.imsmd.xml.manifest.ClassificationType;
@@ -204,6 +205,23 @@ public class ManifestMetadataBuilder {
 		}
 	}
 	
+	public String getEducationContext() {
+		EducationalType educational = getEducational(true);
+		StringBuilder sb = new StringBuilder();
+		if(educational != null) {
+			ContextType type = getFromAny(ContextType.class, educational.getContent());
+			if(type != null && type.getSource() != null && type.getSource().getLangstring() != null
+					&& type.getValue() != null && type.getValue().getLangstring() != null) {
+				String source = type.getSource().getLangstring().getValue();
+				String value = type.getValue().getLangstring().getValue();
+				if(StringHelper.containsNonWhitespace(source) && StringHelper.containsNonWhitespace(value)) {
+					sb.append(value);
+				}
+			}
+		}
+		return sb.length() == 0 ? null: sb.toString();
+	}
+	
 	public void setEducationalContext(String context, String lang) {
 		EducationalType educational = getEducational(true);
 		if(educational != null) {
@@ -248,6 +266,28 @@ public class ManifestMetadataBuilder {
 			type.setSource(sourceType);
 			type.setValue(valueType);
 		}
+	}
+	
+	public String getClassificationTaxonomy() {
+		StringBuilder sb = new StringBuilder();
+		ClassificationType classification = getClassification("discipline", null, false);
+		if(classification != null) {
+			TaxonpathType taxonpath = getFromAny(TaxonpathType.class, classification.getContent());
+			if(taxonpath != null) {
+				List<TaxonType> taxons = taxonpath.getTaxon();
+				if(taxons != null) {
+					for(TaxonType taxon:taxons) {
+						if(taxon.getEntry() != null && taxon.getEntry().getLangstring().size() > 0) {
+							LangstringType value = taxon.getEntry().getLangstring().get(0);
+							if(value != null && value.getValue() != null) {
+								sb.append("/").append(value.getValue());
+							}
+						}
+					}
+				}
+			}
+		}
+		return sb.length() == 0 ? null : sb.toString();
 	}
 	
 	/**

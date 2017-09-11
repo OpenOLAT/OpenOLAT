@@ -423,8 +423,8 @@ public class QuestionItemDAO {
 				.getResultList();
 	}
 	
-	public int removeFromShares(List<QuestionItemShort> items) {
-		List<Long> keys = new ArrayList<Long>();
+	public int removeFromShares(List<? extends QuestionItemShort> items) {
+		List<Long> keys = new ArrayList<>();
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}
@@ -437,7 +437,7 @@ public class QuestionItemDAO {
 	}
 	
 	public int removeFromShare(List<QuestionItemShort> items, OLATResource resource) {
-		List<Long> keys = new ArrayList<Long>();
+		List<Long> keys = new ArrayList<>();
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}

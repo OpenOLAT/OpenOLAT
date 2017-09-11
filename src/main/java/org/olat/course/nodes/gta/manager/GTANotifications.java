@@ -200,7 +200,7 @@ class GTANotifications {
 		} else {
 			Task task = gtaManager.getTask(subscriberIdentity, taskList);
 			if(task != null) {
-				header = translator.translate("notifications.individual.header.task", new String[]{ task.getTaskName(), displayName });
+				header = translator.translate("notifications.individual.header.task", new String[]{ getTaskName(task), displayName });
 			}
 		}
 		
@@ -231,7 +231,7 @@ class GTANotifications {
 				File[] submissions = submitDirectory.listFiles(SystemFileFilter.FILES_ONLY);
 				if(submissions.length == 0) {
 					String[] params = new String[] {
-							task.getTaskName(),		// {0}
+							getTaskName(task),		// {0}
 							displayName,				// {1}
 							fullName					// {2}
 					};
@@ -239,7 +239,7 @@ class GTANotifications {
 				} else {
 					for(File submission:submissions) {
 						String[] params = new String[] {
-								task.getTaskName(),		// {0}
+								getTaskName(task),		// {0}
 								displayName,				// {1}
 								submission.getName(),	// {2}
 								fullName					// {3}
@@ -279,7 +279,7 @@ class GTANotifications {
 			if(groups.size() == 1 && !owner && !membership.isCoach()) {
 				Task task = gtaManager.getTask(groups.get(0), taskList);
 				if(task != null) {
-					header = translator.translate("notifications.group.header.task", new String[]{ task.getTaskName(), displayName });
+					header = translator.translate("notifications.group.header.task", new String[]{ getTaskName(task), displayName });
 				}
 			}
 			
@@ -307,7 +307,7 @@ class GTANotifications {
 				File[] submisssions = submitDirectory.listFiles(SystemFileFilter.FILES_ONLY);
 				if(submisssions.length == 0) {
 					String[] params = new String[] { 
-							task.getTaskName(),
+							getTaskName(task),
 							displayName,
 							group.getName()
 					};
@@ -317,7 +317,7 @@ class GTANotifications {
 					for(File submission:submisssions) {
 						String author = getAuthor(submission, submitContainer);
 						String[] params = new String[] {
-								task.getTaskName(),		// {0}
+								getTaskName(task),		// {0}
 								displayName,				// {1}
 								submission.getName(),		// {2}
 								author,					// {3}
@@ -364,14 +364,14 @@ class GTANotifications {
 				if(sendNotificationDueDate) {
 					if(task.getRevisionsDueDate() != null) {
 						String[] params = new String[] {
-								task.getTaskName(),
+								getTaskName(task),
 								displayName,
 								formatter.formatDateAndTime(task.getRevisionsDueDate())	
 						};
 						appendSubscriptionItem("notifications.correction.duedate", params, assessedIdentity, correctionDate, coach);
 					} else {
 						String[] params = new String[] {
-								task.getTaskName(),
+								getTaskName(task),
 								displayName
 						};
 						appendSubscriptionItem("notifications.correction", params, assessedIdentity, correctionDate, coach);
@@ -383,7 +383,7 @@ class GTANotifications {
 				for(File correction:corrections) {
 					String author = getAuthor(correction, correctionContainer);
 					String[] params = new String[] {
-							task.getTaskName(),
+							getTaskName(task),
 							displayName,
 							correction.getName(),
 							author
@@ -417,7 +417,7 @@ class GTANotifications {
 							File[] revisions = revisionDirectory.listFiles(SystemFileFilter.FILES_ONLY);
 							if(revisions.length == 0) {
 								String[] params = new String[] {
-										task.getTaskName(),
+										getTaskName(task),
 										displayName,
 										name
 								};
@@ -430,7 +430,7 @@ class GTANotifications {
 								for(File revision:revisions) {
 									String author = getAuthor(revision, revisionContainer);
 									String[] params = new String[] {
-											task.getTaskName(),
+											getTaskName(task),
 											displayName,
 											revision.getName(),
 											name,
@@ -462,14 +462,14 @@ class GTANotifications {
 						if(sendNotificationDueDate) {
 							if(task.getRevisionsDueDate() != null) {
 								String[] params = new String[] {
-										task.getTaskName(),
+										getTaskName(task),
 										displayName,
 										formatter.formatDateAndTime(task.getRevisionsDueDate())
 								};
 								appendSubscriptionItem("notifications.correction.duedate", params, assessedIdentity, correctionDate, coach);
 							} else {
 								String[] params = new String[] {
-										task.getTaskName(),
+										getTaskName(task),
 										displayName
 								};
 								appendSubscriptionItem("notifications.correction", params, assessedIdentity, correctionDate, coach);
@@ -481,7 +481,7 @@ class GTANotifications {
 						for(File correction:corrections) {
 							String author = getAuthor(correction, correctionContainer);
 							String[] params = new String[] {
-									task.getTaskName(),
+									getTaskName(task),
 									displayName,
 									correction.getName(),
 									author
@@ -501,7 +501,7 @@ class GTANotifications {
 		if(task.getAcceptationDate().after(compareDate)) {
 			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 			String[] params = new String[] { 
-				task.getTaskName(),
+				getTaskName(task),
 				courseEntry.getDisplayname()
 			};
 			if(assessedGroup != null) {
@@ -533,7 +533,7 @@ class GTANotifications {
 
 				Date graduationDate = task.getGraduationDate();
 				String[] params = new String[] {
-						task.getTaskName(),
+						getTaskName(task),
 						courseEntry.getDisplayname(),
 						score,
 						status
@@ -557,7 +557,7 @@ class GTANotifications {
 				List<File> docs = gtaNode.getIndividualAssessmentDocuments(assessedUserCourseEnv);
 				for(File doc:docs) {
 					String[] docParams = new String[] {
-							task.getTaskName(),
+							getTaskName(task),
 							courseEntry.getDisplayname(),
 							doc.getName()
 					};
@@ -637,7 +637,7 @@ class GTANotifications {
 						String author = getAuthor(solution, solutionContainer);
 						if(task != null) {
 							String[] params = new String[] {
-									task.getTaskName(),
+									getTaskName(task),
 									displayName,
 									solution.getName(),
 									author
@@ -867,5 +867,13 @@ class GTANotifications {
 			}
 		}
 		return ok;
+	}
+	
+	private String getTaskName (Task task) {
+		if (!StringHelper.containsNonWhitespace(task.getTaskName())) {
+			return gtaNode.getShortTitle();	
+		} else {
+			return task.getTaskName();
+		}
 	}
 }
