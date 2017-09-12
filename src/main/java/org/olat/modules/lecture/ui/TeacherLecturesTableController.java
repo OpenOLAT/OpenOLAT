@@ -61,6 +61,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
@@ -70,6 +71,7 @@ import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.modules.lecture.ui.export.LectureBlockExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
+import org.olat.modules.lecture.ui.export.LecturesBlockSignaturePDFExport;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -278,14 +280,27 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private void doExportAttendanceList(UserRequest ureq, LectureBlock row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
 		List<Identity> participants = lectureService.getParticipants(lectureBlock);
+		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(row);
 		try {
 			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, getTranslator());
 			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
-			export.setResourceTitle(lectureBlock.getEntry().getDisplayname());
+			export.create(participants, rollCalls);
+			ureq.getDispatchResult().setResultingMediaResource(export);
+		} catch (COSVisitorException | IOException | TransformerException e) {
+			logError("", e);
+		}
+	}
+	
+	private void doExportAttendanceListForSignature(UserRequest ureq, LectureBlock row) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		List<Identity> participants = lectureService.getParticipants(lectureBlock);
+		try {
+			LecturesBlockSignaturePDFExport export = new LecturesBlockSignaturePDFExport(lectureBlock, getTranslator());
+			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
 			export.create(participants);
 			ureq.getDispatchResult().setResultingMediaResource(export);
 		} catch (COSVisitorException | IOException | TransformerException e) {
-			e.printStackTrace();
+			logError("", e);
 		}
 	}
 	
@@ -341,6 +356,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 			VelocityContainer mainVC = createVelocityContainer("tools");
 			addLink("export", "export", "o_icon o_filetype_xlsx", mainVC);
 			addLink("attendance.list", "attendance.list", "o_icon o_filetype_pdf", mainVC);
+			addLink("attendance.list.to.sign", "attendance.list.to.sign", "o_icon o_filetype_pdf", mainVC);
 			putInitialPanel(mainVC);
 		}
 		
@@ -361,6 +377,9 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 				if("export".equals(cmd)) {
 					LectureBlock block = lectureService.getLectureBlock(row);
 					doExportLectureBlock(ureq, block);
+				} else if("attendance.list.to.sign".equals(cmd)) {
+					LectureBlock block = lectureService.getLectureBlock(row);
+					doExportAttendanceListForSignature(ureq, block);
 				} else if("attendance.list".equals(cmd)) {
 					LectureBlock block = lectureService.getLectureBlock(row);
 					doExportAttendanceList(ureq, block);

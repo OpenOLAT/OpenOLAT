@@ -21,9 +21,7 @@ package org.olat.modules.lecture.ui.export;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
@@ -40,7 +38,6 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.pdf.PdfDocument;
 import org.olat.modules.lecture.LectureBlock;
-import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -49,30 +46,24 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LecturesBlockPDFExport extends PdfDocument implements MediaResource {
+public class LecturesBlockSignaturePDFExport extends PdfDocument implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(LecturesBlockPDFExport.class);
+	private static final OLog log = Tracing.createLoggerFor(LecturesBlockSignaturePDFExport.class);
 	
 	private String teacher;
-	private int numOfLectures;
 	private final Translator translator;
 	private final LectureBlock lectureBlock;
 	private final RepositoryEntry entry;
 	
-	public LecturesBlockPDFExport(LectureBlock lectureBlock, Translator translator)
+	public LecturesBlockSignaturePDFExport(LectureBlock lectureBlock, Translator translator)
 			throws IOException {
 		super(translator.getLocale());
 		
 		marginTopBottom = 62.0f;
 		marginLeftRight = 62.0f;
-		entry = lectureBlock.getEntry();
 		this.translator = translator;
 		this.lectureBlock = lectureBlock;
-		
-		numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-		if(numOfLectures <= 0) {
-			numOfLectures = lectureBlock.getPlannedLecturesNumber();
-		}
+		entry = lectureBlock.getEntry();
 	}
 
 	public String getTeacher() {
@@ -134,13 +125,13 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 		}
 	}
 
-	public void create(List<Identity> rows, List<LectureBlockRollCall> rollCalls)
+	public void create(List<Identity> rows)
     throws IOException, COSVisitorException, TransformerException {
 	    	addPage();
 	    	String lectureBlockTitle = lectureBlock.getTitle();
 	    	String resourceTitle = entry.getDisplayname();
 	    	addMetadata(lectureBlockTitle, resourceTitle, teacher);
-	
+
 	    	String title = resourceTitle + " - " + lectureBlockTitle;
 	    	addParagraph(title, 16, true, width);
 	
@@ -157,12 +148,10 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 	    	float fontSize = 10.0f;
 	    	
 	    	String[] content = getRows(rows);
-	    	boolean[][] absences = getRowAbsences(rows, rollCalls);
-	    	String[] comment = getRowComment(rows, rollCalls);
-	    	
+	
 	    	int numOfRows = content.length;
 	    	for(int offset=0; offset<numOfRows; ) {
-	    		offset += drawTable(content, absences, comment, offset, fontSize, cellMargin);
+	    		offset += drawTable(content, offset, fontSize, cellMargin);
 	    		closePage();
 	        	if(offset<numOfRows) {
 	        		addPage();
@@ -170,10 +159,10 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 	    	}
 	    	
 	    	addPageNumbers(); 
-	}
+	    }
 		
-	private String[] getRows(List<Identity> rows) {
-		int numOfRows = rows.size();
+		private String[] getRows(List<Identity> rows) {
+			int numOfRows = rows.size();
 	
 	    	String[] content = new String[numOfRows];
 	    	for(int i=0; i<numOfRows; i++) {
@@ -184,64 +173,17 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 	    	return content;
 	}
 	
-	private boolean[][] getRowAbsences(List<Identity> rows, List<LectureBlockRollCall> rollCalls) {
-		Map<Identity,LectureBlockRollCall> rollCallMap = new HashMap<>();
-		for(LectureBlockRollCall rollCall:rollCalls) {
-			rollCallMap.put(rollCall.getIdentity(), rollCall);
-		}
-
-		int numOfRows = rows.size();
-		
-		boolean[][] content = new boolean[numOfRows][];
-		for(int i=0; i<numOfRows; i++) {
-	        	content[i] = new boolean[numOfLectures];
-	        	
-	        	LectureBlockRollCall rollCall = rollCallMap.get(rows.get(i));
-	        	if(rollCall != null && rollCall.getLecturesAbsentList() != null) {
-	        		List<Integer> absences = rollCall.getLecturesAbsentList();
-	        		for(int j=0; j<numOfLectures; j++) {
-	        			content[i][j] = absences.contains(new Integer(j));
-	        		}
-	        	} else {
-	        		for(int j=0; j<numOfLectures; j++) {
-	        			content[i][j] = false;
-	        		}
-	        	}
-	    	}
-	    	
-	    	return content;
-	}
-	
-	private String[] getRowComment(List<Identity> rows, List<LectureBlockRollCall> rollCalls) {
-		Map<Identity,LectureBlockRollCall> rollCallMap = new HashMap<>();
-		for(LectureBlockRollCall rollCall:rollCalls) {
-			rollCallMap.put(rollCall.getIdentity(), rollCall);
-		}
-
-		int numOfRows = rows.size();
-		String[] content = new String[numOfRows];
-		for(int i=0; i<numOfRows; i++) {
-	        	
-	        	LectureBlockRollCall rollCall = rollCallMap.get(rows.get(i));
-	        	if(rollCall != null && StringHelper.containsNonWhitespace(rollCall.getComment())) {
-	        		content[i] = rollCall.getComment();
-	        	}
-	    	}
-	    	return content;
-	}
-	
 	private String getName(Identity identity) {
 		StringBuilder sb = new StringBuilder();
 		User user = identity.getUser();
 		if(StringHelper.containsNonWhitespace(user.getFirstName())) {
-			
 			sb.append(user.getFirstName());
 		}
 		if(StringHelper.containsNonWhitespace(user.getLastName())) {
 			if(sb.length() > 0) sb.append(" ");
 			sb.append(user.getLastName());
 		}
-
+		
 		String institutionalIdentifier = user.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, translator.getLocale());
 		if(StringHelper.containsNonWhitespace(institutionalIdentifier)) {
 			if(sb.length() > 0) sb.append(", ");
@@ -250,21 +192,14 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 		return sb.toString();
 	}
     
-	public int drawTable(String[] content, boolean[][] checked, String[]comments, int offset, float fontSize, float cellMargin)
+	public int drawTable(String[] content, int offset, float fontSize, float cellMargin)
 	throws IOException {
 	
 		float tableWidth = width;
 		float rowHeight = (lineHeightFactory * fontSize) + (2 * cellMargin);
+		float lecturesColWidth = 150f;
 		
-		float allColWidth = 25f;
-		float lectureColWidth = 15f;
-		float lecturesColWidth =  numOfLectures * lectureColWidth + cellMargin;
-
-		float nameMaxSizeWithMargin = (tableWidth - lecturesColWidth - allColWidth) / 2.0f;
-		if(nameMaxSizeWithMargin < 140.0f) {
-			nameMaxSizeWithMargin = 140.0f;
-		}
-		float commentColWidth = tableWidth - lecturesColWidth - allColWidth - nameMaxSizeWithMargin;
+		float nameMaxSizeWithMargin = tableWidth - lecturesColWidth;
 		float nameMaxSize = nameMaxSizeWithMargin - (2 * cellMargin);
 		
 		float availableHeight = currentY - marginTopBottom - rowHeight;
@@ -313,47 +248,22 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
 		nextx += lecturesColWidth;
 		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
-		nextx += allColWidth;
-		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
-		nextx += commentColWidth;
-		drawLine(nextx, y, nextx, y - tableHeight, 0.5f);
 
 		// now add the text
 		// draw the headers
 		final float textx = marginLeftRight + cellMargin;
 		float texty = currentY;
 		{
-			float headerY = texty - rowHeight + (2 * cellMargin);
-			float headerX = textx;
-			
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
-			currentContentStream.moveTextPositionByAmount(headerX, headerY);
+			currentContentStream.moveTextPositionByAmount(textx, texty - rowHeight + (2 * cellMargin));
 			currentContentStream.drawString(translator.translate("pdf.table.header.participants"));
 			currentContentStream.endText();
 			
-			headerX += nameMaxSizeWithMargin;
-			for(int i=0; i<numOfLectures; i++) {
-				currentContentStream.beginText();
-				currentContentStream.setFont(fontBold, fontSize);
-				currentContentStream.moveTextPositionByAmount(headerX, headerY);
-				currentContentStream.drawString(Integer.toString(i+1));
-				currentContentStream.endText();
-				headerX += lectureColWidth;
-			}
-			
-			headerX += cellMargin;
 			currentContentStream.beginText();
 			currentContentStream.setFont(fontBold, fontSize);
-			currentContentStream.moveTextPositionByAmount(headerX, headerY);
-			currentContentStream.drawString(translator.translate("pdf.table.header.all"));
-			currentContentStream.endText();
-
-			headerX += allColWidth;
-			currentContentStream.beginText();
-			currentContentStream.setFont(fontBold, fontSize);
-			currentContentStream.moveTextPositionByAmount(headerX, headerY);
-			currentContentStream.drawString(translator.translate("pdf.table.header.comment"));
+			currentContentStream.moveTextPositionByAmount(textx + nameMaxSizeWithMargin, texty - rowHeight + (2 * cellMargin));
+			currentContentStream.drawString(translator.translate("pdf.table.header.signature"));
 			currentContentStream.endText();
 		}
 
@@ -385,75 +295,6 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 				currentContentStream.drawString(text);
 				currentContentStream.endText();
 			}
-			
-			float offetSetYTop = 7f;
-			float offetSetYBottom = 2f;
-			float boxWidth = 9.0f;
-			
-			//absences check box
-			boolean all = true;
-			boolean[] absences = checked[i];
-			float boxx = textx + nameMaxSizeWithMargin;
-			for (int j=0; j<absences.length; j++) {
-				drawLine(boxx, texty + offetSetYTop, boxx, texty - offetSetYBottom, 0.5f);
-				drawLine(boxx, texty - offetSetYBottom, boxx + boxWidth, texty - offetSetYBottom, 0.5f);
-				drawLine(boxx, texty + offetSetYTop, boxx + boxWidth, texty + offetSetYTop, 0.5f);
-				drawLine(boxx + boxWidth, texty + offetSetYTop, boxx + boxWidth, texty - offetSetYBottom, 0.5f);
-				
-				if(absences[j]) {
-					currentContentStream.beginText();
-					currentContentStream.setFont(font, fontSize);
-					currentContentStream.moveTextPositionByAmount(boxx + 2f, texty);
-					currentContentStream.drawString("x");
-					currentContentStream.endText();
-				}
-				all &= absences[j];
-				boxx += 15f;
-			}
-
-			{// all check box
-				boxx += cellMargin;
-				drawLine(boxx, texty + offetSetYTop, boxx, texty - offetSetYBottom, 0.5f);
-				drawLine(boxx, texty - offetSetYBottom, boxx + boxWidth, texty - offetSetYBottom, 0.5f);
-				drawLine(boxx, texty + offetSetYTop, boxx + boxWidth, texty + offetSetYTop, 0.5f);
-				drawLine(boxx + boxWidth, texty + offetSetYTop, boxx + boxWidth, texty - offetSetYBottom, 0.5f);
-			
-				if(all) {
-					currentContentStream.beginText();
-					currentContentStream.setFont(font, fontSize);
-					currentContentStream.moveTextPositionByAmount(boxx + 2f, texty);
-					currentContentStream.drawString("x");
-					currentContentStream.endText();
-				}
-				boxx += allColWidth;
-			}
-			
-			{//comment
-				if(comments[i] != null) {
-					String comment = comments[i];
-					float nameWidth = getStringWidth(comment, fontSize);
-					if(nameWidth > commentColWidth) {
-						nameWidth = getStringWidth(comment, fontSize - 2);
-						if(nameWidth > commentColWidth) {
-							//cut
-							float numOfChars = comment.length() * (commentColWidth / nameWidth);
-							comment = comment.substring(0, Math.round(numOfChars) - 4) + "...";
-						}
-						currentContentStream.beginText();
-						currentContentStream.setFont(font, fontSize - 2);
-						currentContentStream.moveTextPositionByAmount(boxx + 2f, texty);
-						currentContentStream.drawString(comment);
-						currentContentStream.endText();
-					} else {
-						currentContentStream.beginText();
-						currentContentStream.setFont(font, fontSize);
-						currentContentStream.moveTextPositionByAmount(boxx + 2f, texty);
-						currentContentStream.drawString(comment);
-						currentContentStream.endText();
-					}
-				}
-			}
-			
 			texty -= rowHeights[i];
 		}
 		return rows;
