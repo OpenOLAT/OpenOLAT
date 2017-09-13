@@ -130,6 +130,8 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 				writeAssessmentElementAttributes(attributes);
 			} else if("object".equals(qName)) {
 				writeObjectElementAttributes(attributes);
+			} else if("img".equals(qName)) {
+				writeImgElementAttributes(attributes);
 			} else {
 				if("customOperator".equals(qName)) {
 					String customOperatorDefinition = attributes.getValue("definition");
@@ -177,6 +179,21 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 		}
 	}
 	
+	private void writeImgElementAttributes(Attributes attributes)
+	throws XMLStreamException {
+		int numOfAttributes = attributes.getLength();
+		for(int i=0;i<numOfAttributes; i++) {
+			String attrQName = attributes.getQName(i);
+			String attrValue = attributes.getValue(i);
+			if("src".equals(attrQName)) {
+				if(attrValue.contains("%2F")) {
+					attrValue = attrValue.replace("%2F", "/");
+				}
+			}
+			xtw.writeAttribute(attrQName, attrValue);
+		}
+	}
+	
 	private void writeAssessmentElementAttributes(Attributes attributes)
 	throws XMLStreamException {
 		boolean hasToolName = false;
@@ -210,9 +227,81 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 			rubricCharacterBuffer.append(ch, start, length);
 		} else {
 			try {
-				xtw.writeCharacters(ch, start, length);
+				// replace MathJax start and end \( \
+				String text = new String(ch, start, length);
+				if(text.contains("\\(") || text.contains("\\)")) {
+					processLatexParenthesis(text);
+				} else if(text.contains("$$")) {
+					processLatexDollar(text);
+				} else {
+					xtw.writeCharacters(ch, start, length);
+				}
 			} catch (XMLStreamException e) {
 				throw new SAXException(e);
+			}
+		}
+	}
+	
+	private boolean latexDollarOpen = false;
+	
+	private void processLatexDollar(String text)
+	throws XMLStreamException, SAXException {
+		for(int i=100; i-->0; ) {
+		
+			int index = text.indexOf("$$");
+			if(index < 0) {
+				char[] lastBits = text.toCharArray();
+				xtw.writeCharacters(lastBits, 0, lastBits.length);
+				break;
+			} else {
+				String startText = text.substring(0, index);
+				if(startText.length() > 0) {
+					char[] startBits = startText.toCharArray();
+					xtw.writeCharacters(startBits, 0, startBits.length);
+				}
+				
+				if(latexDollarOpen) {
+					xtw.writeEndElement();
+					latexDollarOpen = false;
+				} else {
+					xtw.writeStartElement("span");
+					xtw.writeAttribute("class", "math");
+					latexDollarOpen = true;
+				}
+				text = text.substring(index + 2, text.length());
+			}
+		}
+	}
+	
+	private void processLatexParenthesis(String text)
+	throws XMLStreamException, SAXException {
+		for(int i=100; i-->0; ) {
+		
+			int indexOpen = text.indexOf("\\(");
+			int indexClose = text.indexOf("\\)");
+			if(indexOpen < 0 && indexClose < 0) {
+				char[] lastBits = text.toCharArray();
+				xtw.writeCharacters(lastBits, 0, lastBits.length);
+				break;
+			} else if((indexOpen >= 0 && indexOpen < indexClose) || (indexOpen >= 0 && indexClose < 0)) {
+				String startText = text.substring(0, indexOpen);
+				if(startText.length() > 0) {
+					char[] startBits = startText.toCharArray();
+					xtw.writeCharacters(startBits, 0, startBits.length);
+				}
+				
+				xtw.writeStartElement("span");
+				xtw.writeAttribute("class", "math");
+				text = text.substring(indexOpen + 2, text.length());
+			} else if((indexClose >= 0 && indexOpen > indexClose) || (indexClose >= 0 && indexOpen < 0))  {
+				String startText = text.substring(0, indexClose);
+				if(startText.length() > 0) {
+					char[] startBits = startText.toCharArray();
+					xtw.writeCharacters(startBits, 0, startBits.length);
+				}
+				
+				xtw.writeEndElement();
+				text = text.substring(indexClose + 2, text.length());
 			}
 		}
 	}

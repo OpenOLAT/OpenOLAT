@@ -69,29 +69,36 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  *
  */
 @RunWith(Parameterized.class)
-public class OnyxToQtiWorksAssessementItemsTest {
+public class Onyx38ToQtiWorksAssessementItemsTest {
 	
-	private static final OLog log = Tracing.createLoggerFor(OnyxToQtiWorksAssessementItemsTest.class);
+	private static final OLog log = Tracing.createLoggerFor(Onyx38ToQtiWorksAssessementItemsTest.class);
 	
 	@Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { "match-with-latex-5-11.xml", new QTI21Infos() }
+                { "Auswahlaufgabe_1509468352.xml" },
+                { "Hotspotaufgabe_478898401.xml" },
+                { "Task_1597435347.xml" },
+                { "text-entry-b-3-8.xml" },
+                { "extended-text-e-3-7.xml" },
+                { "extended-text-b-3-7.xml" },
+                { "extended-text-c-3-7.xml" },
+                { "extended-text-3-7.xml" },
+                { "text-entry-3-8.xml" },
+                { "extended-text-d-3-7.xml" }
         });
     }
     
     private String xmlFilename;
-    private QTI21Infos infos;
     
-	public OnyxToQtiWorksAssessementItemsTest(String xmlFilename, QTI21Infos infos) {
-		this.xmlFilename = xmlFilename;
-		this.infos = infos;
-	}
+    public Onyx38ToQtiWorksAssessementItemsTest(String xmlFilename) {
+    	this.xmlFilename = xmlFilename;
+    }
 
 	@Test
 	public void fixItem()
 	throws IOException, XMLStreamException, SAXException, ParserConfigurationException, URISyntaxException {	
-		URL xmlUrl = OnyxToQtiWorksAssessementItemsTest.class.getResource("resources/onyx/" + xmlFilename);
+		URL xmlUrl = Onyx38ToQtiWorksAssessementItemsTest.class.getResource("resources/onyx/" + xmlFilename);
 		File xmlFile = new File(xmlUrl.toURI());
 		File tmpDir = new File(WebappHelper.getTmpDir(), "onyx" + UUID.randomUUID());
 		tmpDir.mkdirs();
@@ -103,7 +110,7 @@ public class OnyxToQtiWorksAssessementItemsTest {
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 	
 			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
-			DefaultHandler2 myHandler = new OnyxToQtiWorksHandler(xtw, infos);
+			DefaultHandler2 myHandler = new Onyx38ToQtiWorksHandler(xtw);
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);
 		} catch(Exception e1) {
@@ -117,7 +124,8 @@ public class OnyxToQtiWorksAssessementItemsTest {
         ResolvedAssessmentItem resolvedAssessmentItem = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(outputFile.toURI());
         Assert.assertNotNull(resolvedAssessmentItem);
         AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-
+        
+        
         // validation is only 
         ItemValidationResult itemResult = assessmentObjectXmlLoader.loadResolveAndValidateItem(outputFile.toURI());
         BadResourceException e = itemResult.getResolvedAssessmentItem().getItemLookup().getBadResourceException();

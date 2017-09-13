@@ -76,7 +76,7 @@ public class QTI21ExplorerHandlerTest {
     
     @Test
     public void exploreAndGetInfos() throws Exception {
-    	URL xmlUrl = OnyxToQtiWorksAssessementItemsTest.class.getResource(xmlFilename);
+    	URL xmlUrl = QTI21ExplorerHandlerTest.class.getResource(xmlFilename);
 		File xmlFile = new File(xmlUrl.toURI());
 		try(InputStream in = Files.newInputStream(xmlFile.toPath())) {
 			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
