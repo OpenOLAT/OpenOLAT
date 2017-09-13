@@ -72,6 +72,8 @@ public class VideoModule extends AbstractSpringModule {
 	private String transcodingDir;
 	@Value("${video.transcoding.resolution.preferred}")
 	private String transcodingPreferredResolutionConf;
+	@Value("${video.transcoding.profile}")
+	private String transcodingProfile;
 	
 	private int[] transcodingResolutionsArr; //= new int[] { 1080,720,480,360 };
 	private Integer preferredDefaultResolution;// = new Integer(720);
@@ -133,6 +135,9 @@ public class VideoModule extends AbstractSpringModule {
 			preferredDefaultResolution =  getIntPropertyValue(PREFERRED_RESOLUTION);
 		}
 		
+		// clean setting of injected config
+		setVideoTranscodingProfile(this.transcodingProfile);
+		
 
 		log.info("video.enabled=" + isEnabled());
 		log.info("video.coursenode.enabled=" + isCoursenodeEnabled());
@@ -141,6 +146,7 @@ public class VideoModule extends AbstractSpringModule {
 		log.info("video.transcoding.resolution.preferred=" + getPreferredDefaultResolution());
 		log.info("video.transcoding.taskset.cpuconfig=" + getTranscodingTasksetConfig());
 		log.info("video.transcoding.local=" + isTranscodingLocal());
+		log.info("video.transcoding.profile=" + getVideoTranscodingProfile());
 
 		// Register video site for activation in top navigation
 		NewControllerFactory.getInstance().addContextEntryControllerCreator(VideoSite.class.getSimpleName(),
@@ -261,6 +267,23 @@ public class VideoModule extends AbstractSpringModule {
 	public void setTranscoding(boolean transcodingLocal) {
 		this.transcodingLocal = transcodingLocal;
 		setStringProperty(VIDEOTRANSCODING_LOCAL, Boolean.toString(transcodingLocal), true);
+	}
+	
+	public void setVideoTranscodingProfile(String profile) {
+		if (StringHelper.containsNonWhitespace(profile)) {
+			if (profile.equals("Fast")) {
+				this.transcodingProfile = "Fast";
+				return;
+			} else if (profile.equals("Very Fast")) {
+				this.transcodingProfile = "Very Fast";
+				return;
+			}
+		}
+		this.transcodingProfile = "Fast"; // default;
+	}
+	
+	public String getVideoTranscodingProfile() {
+		return this.transcodingProfile;
 	}
 
 }
