@@ -291,6 +291,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.I18nTest.class,
 	org.olat.restapi.MyForumsTest.class,
 	org.olat.restapi.LecturesBlocksTest.class,
+	org.olat.restapi.LecturesBlocksRootTest.class,
 	org.olat.restapi.LecturesBlockRollCallTest.class,
 	org.olat.restapi.NotificationsTest.class,
 	org.olat.restapi.NotificationsSubscribersTest.class,
