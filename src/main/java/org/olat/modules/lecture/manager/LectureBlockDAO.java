@@ -276,7 +276,7 @@ public class LectureBlockDAO {
 		
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
 			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" and (entry.externalRef=:searchString or ");
+			sb.append(" (entry.externalRef=:searchString or ");
 			PersistenceHelper.appendFuzzyLike(sb, "entry.displayname", "fuzzySearchString", dbInstance.getDbVendor());
 			sb.append(" or ");
 			PersistenceHelper.appendFuzzyLike(sb, "block.title", "fuzzySearchString", dbInstance.getDbVendor());
