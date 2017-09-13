@@ -40,7 +40,7 @@
 				<value>org.olat.modules.fo.restapi.ForumImportWebService</value>
 				<value>org.olat.modules.fo.restapi.ForumCourseNodeWebService</value>
 				<value>org.olat.modules.fo.restapi.MyForumsWebService</value>
-				<value>org.olat.modules.lecture.restapi.LectureBlockRollCallWebService</value>
+				<value>org.olat.modules.lecture.restapi.LectureBlocksRootWebService</value>
 				<value>org.olat.modules.openmeetings.restapi.OpenMeetingsWebService</value>
 				<value>org.olat.modules.vitero.restapi.ViteroWebService</value>
 				<value>org.olat.core.commons.services.notifications.restapi.NotificationsWebService</value>

@@ -361,6 +361,14 @@ public interface LectureService {
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry);
 	
 	/**
+	 * Search lecture blocks.
+	 * 
+	 * @param searchParams The search parameters
+	 * @return A list of lecture blocks
+	 */
+	public List<LectureBlock> getLectureBlocks(LecturesBlockSearchParameters searchParams);
+	
+	/**
 	 * Return the list of lecture blocks of a course with the teachers.
 	 * 
 	 * @param entry

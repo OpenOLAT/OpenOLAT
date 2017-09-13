@@ -32,6 +32,7 @@ public class LectureBlockRollCallSearchParameters {
 	private Boolean hasSupervisorNotificationDate;
 	
 	private Long rollCallKey;
+	private Long lectureBlockKey;
 
 	public Boolean getClosed() {
 		return closed;
@@ -63,5 +64,13 @@ public class LectureBlockRollCallSearchParameters {
 
 	public void setRollCallKey(Long rollCallKey) {
 		this.rollCallKey = rollCallKey;
+	}
+
+	public Long getLectureBlockKey() {
+		return lectureBlockKey;
+	}
+
+	public void setLectureBlockKey(Long lectureBlockKey) {
+		this.lectureBlockKey = lectureBlockKey;
 	}
 }

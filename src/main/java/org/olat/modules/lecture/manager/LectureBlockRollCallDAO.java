@@ -300,12 +300,21 @@ public class LectureBlockRollCallDAO {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append("rollcall.key=:rollCallKey");
 		}
+		
+		if(searchParams.getLectureBlockKey() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("rollcall.lectureBlock.key=:lectureBlockKey");
+		}
 
 		TypedQuery<LectureBlockRollCall> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockRollCall.class);
 		if(searchParams.getRollCallKey() != null) {
 			query.setParameter("rollCallKey", searchParams.getRollCallKey());
 		}
+		if(searchParams.getLectureBlockKey() != null) {
+			query.setParameter("lectureBlockKey", searchParams.getLectureBlockKey());
+		}
+		
 		return query.getResultList();
 	}
 	

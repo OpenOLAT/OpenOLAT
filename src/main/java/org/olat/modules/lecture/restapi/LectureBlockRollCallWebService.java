@@ -1,5 +1,6 @@
 /**
 
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -51,7 +52,6 @@ import org.olat.modules.lecture.LectureService;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Path("repo/lectures/rollcalls")
 public class LectureBlockRollCallWebService {
 	
 	/**
@@ -69,9 +69,11 @@ public class LectureBlockRollCallWebService {
 	 * @return The roll calls
 	 */
 	@GET
+	@Path("/")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getRollCalls(@QueryParam("closed") Boolean closed, @QueryParam("hasAbsence") Boolean hasAbsence, 
 			@QueryParam("hasSupervisorNotificationDate") Boolean hasSupervisorNotificationDate,
+			@QueryParam("lectureBlockKey") Long lectureBlockKey,
 			@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isOLATAdmin()) {
@@ -88,6 +90,9 @@ public class LectureBlockRollCallWebService {
 		}
 		if(closed != null) {
 			searchParams.setClosed(closed);
+		}
+		if(lectureBlockKey != null) {
+			searchParams.setLectureBlockKey(lectureBlockKey);
 		}
 		
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(searchParams);
@@ -149,6 +154,7 @@ public class LectureBlockRollCallWebService {
 	 * @return The updated roll call
 	 */
 	@PUT
+	@Path("/")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateRollCallPut(LectureBlockRollCallVO rollCallVo, @Context HttpServletRequest httpRequest) {
@@ -171,6 +177,7 @@ public class LectureBlockRollCallWebService {
 	 * @return The updated roll call
 	 */
 	@POST
+	@Path("/")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateRollCall(LectureBlockRollCallVO rollCallVo, @Context HttpServletRequest httpRequest) {
