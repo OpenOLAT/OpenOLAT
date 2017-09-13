@@ -114,6 +114,8 @@ table {
 		td, th { 
 			padding: $padding-xs-vertical $padding-xs-horizontal;
 			border: 0;
+		}
+		thead td, th { 
 			font-weight: bold;
 		}
 	}
@@ -281,3 +283,8 @@ p.b_figure_caption {
 .b_clear_float, p.b_clear_float, div.b_clear_float { 
 	clear: both;
 }
+
+
+/* tinymce specific css classes for alignment, figures etc.*/
+@import "tinymce";
+
