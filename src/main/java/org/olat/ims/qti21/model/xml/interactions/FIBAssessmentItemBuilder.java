@@ -989,10 +989,10 @@ public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 			return false;
 		}
 		
-		private boolean match(double firstNumber) {
+		private boolean match(double answer) {
 			double lTolerance = lowerTolerance == null ? 0.0d : lowerTolerance.doubleValue();
 			double uTolerance = upperTolerance == null ? 0.0d : upperTolerance.doubleValue();
-			return toleranceMode.isEqual(firstNumber, solution,
+			return toleranceMode.isEqual(solution, answer,
 					lTolerance, uTolerance,
 					true, true);
 		}
