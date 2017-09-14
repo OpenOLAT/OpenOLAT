@@ -1,6 +1,14 @@
-$!text
-#if($r.available("meta"))
-<div class="clearfix"><div class="panel panel-default o_artefact_metadata">
-	$r.render("meta")
-</div></div>
-#end
+<div class="o_wiki">
+	#if($title)
+	<h5>
+		$title
+		<small>$r.translate("document.by",$author)</small>	
+	</h5>
+	#end
+	$!text
+	#if($r.available("meta"))
+	<div class="clearfix"><div class="panel panel-default o_artefact_metadata">
+		$r.render("meta")
+	</div></div>
+	#end
+</div>

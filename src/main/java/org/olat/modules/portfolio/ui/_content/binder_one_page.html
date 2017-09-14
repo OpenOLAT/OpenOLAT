@@ -1,4 +1,14 @@
 <div class="$mainCssClass">
+#if ($binderTitle)
+	<div class="o_binder o_print_break_after">
+		<h1>$r.translate("binder.title", $binderTitle) 
+			#if($owners && !$owners.isEmpty())
+				<br />
+				<small>$r.translate("binder.by",$owners)</small>
+			#end
+		</h1>
+	</div>
+#end
 #foreach($component in $components)
 	$r.render($component)
 #end

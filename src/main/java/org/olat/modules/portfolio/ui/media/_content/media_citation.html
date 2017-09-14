@@ -9,7 +9,7 @@
 		<div class="">$r.xssScan($citation)</div>
 	</blockquote>	
 	#if ($description)
-	<div class="o_desc o_block">
+	<div class="o_desc o_block_small">
 		$r.xssScan($description)
 	</div>
 	#end
@@ -18,9 +18,9 @@
 			$r.render("cit")
 		</div>
 	#end
+	#if($r.available("meta"))
+	<div class="panel panel-default o_artefact_metadata o_block_large_bottom">
+		$r.render("meta")
+	</div>
+	#end
 </div>
-#if($r.available("meta"))
-<div class="panel panel-default o_artefact_metadata">
-	$r.render("meta")
-</div>
-#end

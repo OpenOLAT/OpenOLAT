@@ -13,6 +13,16 @@
 	@extend %o_block_top;
 	@extend %o_block_bottom;
 }
+.o_block_small_bottom, %o_block_small_bottom {
+	margin-bottom: 0.5em;
+}
+.o_block_small_top, %o_block_small_top {
+	margin-top: 0.5em;
+}
+.o_block_small, %o_block_small {
+	@extend %o_block_small_top;
+	@extend %o_block_small_bottom;
+}
 .o_block_large_bottom, %o_block_large_bottom {
 	margin-bottom: 2em;
 }
@@ -325,6 +335,23 @@
 	@include img-responsive(inline-block);
 	max-width: 100%;
 }
+
+/* figures with captions */
+.o_figure_caption_bottom {
+	display: inline-block;	
+	min-width: 50%;
+	figure { 
+		display: table; 
+	}
+	figcaption { 
+		display: table-caption; 
+		caption-side: bottom ; 
+		font-size: 90%;
+		font-style: italic;
+		text-align: center;
+	}
+}
+
 
 /* vertical centered helper */
 .o_image_vertical_center_helper {

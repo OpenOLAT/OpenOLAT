@@ -1,12 +1,11 @@
 <div class="o_file">
 	#if($title)
 	<h5>
-		<i class="o_icon o_icon-fw $cssClass"> </i> 
 		$title
 		<small>$r.translate("document.by",$author)</small>	
 	</h5>
 	#end
-	<div class="o_meta small text-muted">
+	<div class="o_meta small text-muted o_noprint">
 		$r.translate("document.creationdate", $r.formatDateAndTime($creationdate))
 	</div>
 	
@@ -19,9 +18,9 @@
 		<a id="o_c8000010939" href="$mapperUri/$filename" target="_blank"><i class="o_icon o_icon-fw $cssClass"></i> $filename</a>
 		<span class="o_size">($size)</span>
 	</div>
+	#if($r.available("meta"))
+	<div class="panel panel-default o_artefact_metadata">
+		$r.render("meta")
+	</div>
+	#end
 </div>
-#if($r.available("meta"))
-<div class="panel panel-default o_artefact_metadata">
-	$r.render("meta")
-</div>
-#end

@@ -30,6 +30,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.AssessmentSection;
@@ -39,6 +40,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.handler.EvaluationFormHandler;
@@ -52,6 +54,7 @@ import org.olat.modules.portfolio.ui.editor.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -71,6 +74,9 @@ public class BinderOnePageController extends BasicController {
 	@Autowired
 	private PortfolioService portfolioService;
 
+	@Autowired
+	private UserManager userManager;
+	
 	public BinderOnePageController(UserRequest ureq, WindowControl wControl,
 			BinderRef binderRef, PageElementRenderingHints renderingHints, boolean print) {
 		super(ureq, wControl);
@@ -81,7 +87,7 @@ public class BinderOnePageController extends BasicController {
 		mainVC.contextPut("print", print);
 		mainVC.contextPut("mainCssClass", "o_binder_export");
 		putInitialPanel(mainVC);
-		loadComponents(ureq, binderRef);
+		loadMetadataAndComponents(ureq, binderRef);
 	}
 	
 	public BinderOnePageController(UserRequest ureq, WindowControl wControl,
@@ -97,8 +103,18 @@ public class BinderOnePageController extends BasicController {
 		loadPage(ureq, page);
 	}
 	
-	private void loadComponents(UserRequest ureq, BinderRef binderRef) {
+	private void loadMetadataAndComponents(UserRequest ureq, BinderRef binderRef) {
 		Binder binder = portfolioService.getBinderByKey(binderRef.getKey());
+		// load metadata
+		List<Identity> owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+		StringBuilder ownerSb = new StringBuilder();
+		for(Identity owner:owners) {
+			if(ownerSb.length() > 0) ownerSb.append(", ");
+			ownerSb.append(userManager.getUserDisplayName(owner));
+		}
+		mainVC.contextPut("owners", ownerSb.toString());
+		mainVC.contextPut("binderTitle", binder.getTitle());
+		mainVC.contextPut("binderKey", binder.getKey());		
 		//load pages
 		List<Section> sections = portfolioService.getSections(binder);
 		List<Page> pages = portfolioService.getPages(binder, null);
