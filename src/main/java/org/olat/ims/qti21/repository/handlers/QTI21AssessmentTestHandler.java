@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
@@ -52,7 +53,6 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.fileresource.ZippedDirectoryMediaResource;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -269,9 +269,19 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			boolean withReferences, Locale locale, File file, String filename) {
 		ImsQTI21Resource ores = new ImsQTI21Resource();
 		OLATResource resource = OLATResourceManager.getInstance().createAndPersistOLATResourceInstance(ores);
-		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRootImpl(resource).getBasefile();
+		File fResourceFileroot = FileResourceManager.getInstance().getFileResourceRoot(resource);
 		File zipDir = new File(fResourceFileroot, FileResourceManager.ZIPDIR);
 		copyResource(file, filename, zipDir);
+		
+		File optionsFile = new File(zipDir, QTI21Service.PACKAGE_CONFIG_FILE_NAME);
+		if(optionsFile.exists()) {
+			try {// move the options to the root directory
+				File target = new File(fResourceFileroot, QTI21Service.PACKAGE_CONFIG_FILE_NAME);
+				Files.move(optionsFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		} 
 
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class)
 				.create(initialAuthor, null, "", displayname, description, resource, RepositoryEntry.ACC_OWNERS);
@@ -299,10 +309,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res, boolean backwardsCompatible) {
-		File unzippedDir = FileResourceManager.getInstance().unzipFileResource(res);
-		String displayName = CoreSpringFactory.getImpl(RepositoryManager.class)
-				.lookupDisplayNameByOLATResourceableId(res.getResourceableId());
-		return new ZippedDirectoryMediaResource(displayName, unzippedDir);
+		return new QTI21AssessmentTestMediaResource(res);
 	}
 	
 	@Override
