@@ -504,6 +504,11 @@ public class PageRunController extends BasicController implements TooledControll
 		removeAsListenerAndDispose(pageEditCtrl);
 		if(Boolean.FALSE.equals(editLink.getUserObject())) {
 			doRunPage(ureq);
+			// Add comments controller again in run mode, maybe removed by
+			// previous edit mode entering
+			if(commentsCtrl != null) {
+				mainVC.put("comments", commentsCtrl.getInitialComponent());
+			}
 		} else {
 			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider(),
 					new FullEditorSecurityCallback(), getTranslator());
@@ -511,6 +516,10 @@ public class PageRunController extends BasicController implements TooledControll
 			mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
 			editLink(false);
+			// Remove comments controller in edit mode, save button confuses user
+			if(commentsCtrl != null) {
+				mainVC.remove(commentsCtrl.getInitialComponent());
+			}
 		}
 	}
 	
