@@ -886,7 +886,7 @@ public class BusinessGroupDAO {
 		}
 		
 		loadOfferAccess(resourceKeyToGroup);
-		loadRelations(keyToGroup, null, null);
+		loadRelations(keyToGroup, params, identity);
 		return groups;
 	}
 	
@@ -930,7 +930,7 @@ public class BusinessGroupDAO {
 			}
 		}
 		
-		loadRelations(keyToGroup, null, null);
+		loadRelations(keyToGroup, params, identity);
 		loadOfferAccess(resourceKeyToGroup);
 		loadMemberships(identity, keyToGroup);
 		return groups;
@@ -1129,15 +1129,15 @@ public class BusinessGroupDAO {
 			if(params.getResources() != null && params.getResources().booleanValue()) {
 				sb.append(" exists (select resourceRel.key from repoentrytogroup as resourceRel where bgi.baseGroup.key=resourceRel.group.key )");
 			} else {
-				sb.append(" bgi.baseGroup.key not in (select resourceRel.group.key from repoentrytogroup as resourceRel)");
+				sb.append(" not exists (select resourceRel.key from repoentrytogroup as resourceRel where resourceRel.group.key=bGroup.key)");
 			}
 		}
 		
 		// orphans
 		if(params.isHeadless()) {
 			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" bgi.baseGroup.key not in (select headMembership.group.key from bgroupmember as headMembership")
-			  .append("   where headMembership.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
+			sb.append(" not exists (select headMembership.key from bgroupmember as headMembership")
+			  .append("   where bGroup.key=headMembership.group.key and headMembership.role in ('").append(GroupRoles.coach.name()).append("','").append(GroupRoles.participant.name()).append("')")
 			  .append(" )");
 		}
 	}
@@ -1164,6 +1164,8 @@ public class BusinessGroupDAO {
 
 	private void loadRelations(Map<Long, ? extends BusinessGroupRow> keyToGroup, BusinessGroupQueryParams params, IdentityRef identity) {
 		if(keyToGroup.isEmpty()) return;
+		if(params.getResources() != null && !params.getResources().booleanValue()) return;//no resources, no relations
+		if(params.isHeadless()) return; //headless don't have relations
 		
 		final int RELATIONS_IN_LIMIT = 64;
 		final boolean restrictToMembership = params != null && identity != null
@@ -1180,18 +1182,33 @@ public class BusinessGroupDAO {
 			  .append(" inner join bGroup.members as membership on membership.identity.key=:identityKey");
 		} else if(keyToGroup.size() < RELATIONS_IN_LIMIT) {
 			sr.append(" where bgi.key in (:businessGroupKeys)");
+		} else if(params.getPublicGroups() != null && params.getPublicGroups().booleanValue()) {
+			sr.append(" inner join acoffer as offer on (bgi.resource.key = offer.resource.key)");
+		} else if(params.getRepositoryEntry() != null) {
+			sr.append(" inner join repoentrytobusinessgroup as refBgiToGroup")
+			  .append("   on (refBgiToGroup.entry.key=:repositoryEntryKey and bgi.baseGroup.key=refBgiToGroup.businessGroup.key)");
+		} else {
+			sr.append(" inner join bgi.resource as bgResource ")
+			  .append(" inner join bgi.baseGroup as bGroup ");
+			filterBusinessGroupToSearch(sr, params, false);
 		}
 		
 		TypedQuery<Object[]> resourcesQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sr.toString(), Object[].class);
 		if(restrictToMembership) {
 			resourcesQuery.setParameter("identityKey", identity.getKey());
-		} else  if(keyToGroup.size() < RELATIONS_IN_LIMIT) {
+		} else if(keyToGroup.size() < RELATIONS_IN_LIMIT) {
 			List<Long> businessGroupKeys = new ArrayList<>(keyToGroup.size());
 			for(Long businessGroupKey:keyToGroup.keySet()) {
 				businessGroupKeys.add(businessGroupKey);
 			}
 			resourcesQuery.setParameter("businessGroupKeys", businessGroupKeys);
+		} else if(params.getPublicGroups() != null && params.getPublicGroups().booleanValue()) {
+			//no parameters to add
+		} else if(params.getRepositoryEntry() != null) {
+			resourcesQuery.setParameter("repositoryEntryKey", params.getRepositoryEntry().getKey());
+		} else {
+			filterBusinessGroupToSearchParameters(resourcesQuery, params, identity, false);
 		}
 		
 		List<Object[]> resources = resourcesQuery.getResultList();
