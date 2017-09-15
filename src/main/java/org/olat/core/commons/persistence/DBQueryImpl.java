@@ -31,14 +31,10 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
@@ -59,18 +55,6 @@ public class DBQueryImpl implements DBQuery {
 	private static final OLog log = Tracing.createLoggerFor(DBQueryImpl.class);
 
 	private Query query = null;
-
-	public final static Map<String, SimpleProbe> listTableStatsMap_ = new HashMap<String, SimpleProbe>();
-	
-	public final static Set<String> registeredTables_ = new HashSet<String>();
-
-	static {
-		registeredTables_.add("org.olat.basesecurity.SecurityGroupMembershipImpl");
-		registeredTables_.add("org.olat.group.area.BGAreaImpl");
-		registeredTables_.add("org.olat.group.BusinessGroupImpl");
-		registeredTables_.add("org.olat.resource.OLATResourceImpl");
-		registeredTables_.add("org.olat.commons.lifecycle.LifeCycleEntry");
-	}
 	
 	/**
 	 * Default construcotr.
@@ -118,63 +102,8 @@ public class DBQueryImpl implements DBQuery {
 	 * @see org.olat.core.commons.persistence.DBQuery#list()
 	 */
 	public List list() {
-		final long startTime = System.currentTimeMillis();
 		try{
-			boolean doLog = log.isDebug();
-			long start = 0;
-			if (doLog) start = System.currentTimeMillis();
-			List li = query.list();
-			if (doLog) {
-				long time = (System.currentTimeMillis() - start);
-				log.debug("list dbquery (time "+time+") query "+getQueryString());
-			}
-			String queryString = query.getQueryString().trim();
-			String queryStringToLowerCase = queryString.toLowerCase();
-			if (queryStringToLowerCase.startsWith("from ")) {
-				queryString = queryString.substring(5).trim();
-				queryStringToLowerCase = queryString.toLowerCase();
-			} else if (queryStringToLowerCase.startsWith("select ") && (queryStringToLowerCase.contains(" from "))) {
-				queryString = queryString.substring(queryStringToLowerCase.indexOf(" from ")+6).trim();
-				queryStringToLowerCase = queryString.toLowerCase();
-			} else {
-				queryString = null;
-			}
-			if (queryString!=null) {
-				final long endTime = System.currentTimeMillis();
-				final long diff = endTime - startTime;
-				int wherePos = queryStringToLowerCase.indexOf(" where ");
-				if (wherePos!=-1) {
-					queryString = queryString.substring(0, wherePos);
-				}
-				queryString = queryString.trim();
-				StringTokenizer st = new StringTokenizer(queryString, ",");
-				while(st.hasMoreTokens()) {
-					String aTable = st.nextToken();
-					aTable = aTable.trim();
-					int spacePos = aTable.toLowerCase().indexOf(" ");
-					if (spacePos!=-1) {
-						aTable = aTable.substring(0, spacePos);
-					}
-					aTable = aTable.trim();
-					SimpleProbe probe = listTableStatsMap_.get(aTable);
-					if (probe==null) {
-						probe = new SimpleProbe();
-						listTableStatsMap_.put(aTable, probe);
-					}
-					probe.addMeasurement(diff);
-					if (!registeredTables_.contains(aTable)) {
-						aTable = "THEREST";
-						probe = listTableStatsMap_.get(aTable);
-						if (probe==null) {
-							probe = new SimpleProbe();
-							listTableStatsMap_.put(aTable, probe);
-						}
-						probe.addMeasurement(diff);
-					}
-					//System.out.println(" A TABLE: "+aTable+" stats: "+probe);
-				}
-			}
-			return li;
+			return query.list();
 		}
 		catch (HibernateException he) {
 			String msg ="Error in list()" ; 
