@@ -273,7 +273,14 @@ public class XSSFilterTest {
 		// for now i tags must have at least a space to not b removed
 		t("<i class=\"o_icon o_icon_dev\"> </i> ", "<i class=\"o_icon o_icon_dev\"> </i> ");
 	}
+
+	@Test
+	public void test_figure() {
+		// for now i tags must have at least a space to not b removed
+		t("<figure class=\"image\"><img src=\"bla.png\" /><figcaption>gugs</figcaption></figure>", "<figure class=\"image\"><img src=\"bla.png\" /><figcaption>gugs</figcaption></figure>");
+	}
 	
+
 	@Test
 	public void test_big_tiny_output(){
 		testsToRun = 1;

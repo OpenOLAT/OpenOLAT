@@ -99,7 +99,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String TABFOCUS_SETTINGS_PREV_NEXT = ":prev,:next";
 	// Valid elements
 	private static final String EXTENDED_VALID_ELEMENTS = "extended_valid_elements";
-	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],img[*],iframe[*],map[*],area[*],textentryinteraction[*]";
+	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],figure[*],figcaption,img[*],iframe[*],map[*],area[*],textentryinteraction[*]";
 	private static final String MATHML_VALID_ELEMENTS = "math[*],mi[*],mn[*],mo[*],mtext[*],mspace[*],ms[*],mrow[*],mfrac[*],msqrt[*],mroot[*],merror[*],mpadded[*],mphantom[*],mfenced[*],mstyle[*],menclose[*],msub[*],msup[*],msubsup[*],munder[*],mover[*],munderover[*],mmultiscripts[*],mtable[*],mtr[*],mtd[*],maction[*]";
 	private static final String INVALID_ELEMENTS = "invalid_elements";
 	private static final String INVALID_ELEMENTS_FORM_MINIMALISTIC_VALUE_UNSAVE = "iframe,script,@[on*],object,embed";
