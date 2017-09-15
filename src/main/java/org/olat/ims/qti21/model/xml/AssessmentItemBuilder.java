@@ -49,6 +49,7 @@ import uk.ac.ed.ph.jqtiplus.node.shared.declaration.DefaultValue;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
+import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
@@ -483,14 +484,16 @@ public abstract class AssessmentItemBuilder {
 		ModalFeedback modalFeedback = AssessmentItemFactory
 					.createModalFeedback(assessmentItem, feedbackIdentifier, feedback.getTitle(), feedback.getText());
 		modalFeedbacks.add(modalFeedback);
-				
+		
+		Cardinality cardinality = null;		
 		Identifier responseIdentifier = null;
 		if(this instanceof ResponseIdentifierForFeedback) {
 			responseIdentifier = ((ResponseIdentifierForFeedback)this).getResponseIdentifier();
+			cardinality = assessmentItem.getResponseDeclaration(responseIdentifier).getCardinality();
 		}
 		ResponseCondition feedbackCondition = AssessmentItemFactory
 				.createModalFeedbackRuleWithConditions(assessmentItem.getResponseProcessing(), feedbackIdentifier,
-						responseIdentifier, feedback.getFeedbackConditons());
+						responseIdentifier, cardinality, feedback.getFeedbackConditons());
 		responseRules.add(feedbackCondition);
 	}
 	

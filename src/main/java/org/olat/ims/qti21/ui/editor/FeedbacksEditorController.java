@@ -265,6 +265,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		itemBuilder.setAdditionalFeedbackBuilders(additionalBuilders);
 		additionalForms.clear();
 		additionalForms.addAll(validAdditionalForms);
+		updateAddButtons();
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem()));
 	}
@@ -414,6 +415,8 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			textEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback");
 			RichTextConfiguration richTextConfig2 = textEl.getEditorConfiguration();
 			richTextConfig2.setFileBrowserUploadRelPath("media");// set upload dir to the media dir
+			
+			updateDeleteButtons();
 		}
 		
 		public FormLayoutContainer getFormLayoutContainer() {
@@ -480,11 +483,20 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 				conditions.add(conditionForm);
 			}
 			conditionListContainer.setDirty(true);
+			updateDeleteButtons();
 		}
 		
 		public void doRemoveCondition(ConditionForm toRemove) {
 			conditions.remove(toRemove);
 			conditionListContainer.remove(toRemove.getFormLayoutContainer());
+			updateDeleteButtons();
+		}
+		
+		private void updateDeleteButtons() {
+			boolean enableDelete = conditions.size() > 1;
+			for(ConditionForm condition:conditions) {
+				condition.setDeleteEnable(enableDelete);
+			}
 		}
 		
 		public class ConditionForm {
@@ -596,10 +608,15 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 				
 				if(!restrictedEdit) {
 					addButton = uifactory.addFormLink("add_".concat(id), "add", null, ruleContainer, Link.BUTTON);
-					addButton.setIconLeftCSS("o_icon o_icon_add_item");
+					addButton.setIconLeftCSS("o_icon o_icon_add");
 					deleteButton = uifactory.addFormLink("del_".concat(id), "delete", null, ruleContainer, Link.BUTTON);	
-					deleteButton.setIconLeftCSS("o_icon o_icon_remove_item");
-					deleteButton.setEnabled(conditions.indexOf(this) == 0);
+					deleteButton.setIconLeftCSS("o_icon o_icon_remove");
+				}
+			}
+			
+			public void setDeleteEnable(boolean enable) {
+				if(deleteButton != null) {
+					deleteButton.setEnabled(enable);
 				}
 			}
 			

@@ -59,6 +59,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.IsNull;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lt;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lte;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Member;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Multiple;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
@@ -1197,7 +1198,7 @@ public class AssessmentItemFactory {
 	}
 	
 	public static ResponseCondition createModalFeedbackRuleWithConditions(ResponseProcessing responseProcessing,
-			Identifier feedbackIdentifier, Identifier responseIdentifier, List<ModalFeedbackCondition> conditions) {
+			Identifier feedbackIdentifier, Identifier responseIdentifier, Cardinality cardinality, List<ModalFeedbackCondition> conditions) {
 		ResponseCondition rule = new ResponseCondition(responseProcessing);
 		
 		/*
@@ -1230,7 +1231,7 @@ public class AssessmentItemFactory {
 			And and = new And(responseIf);
 			responseIf.getExpressions().add(and);
 			for(ModalFeedbackCondition condition:conditions) {
-				appendModalFeedbackCondition(condition, responseIdentifier, and);
+				appendModalFeedbackCondition(condition, responseIdentifier, cardinality, and);
 			}
 		}
 
@@ -1256,44 +1257,58 @@ public class AssessmentItemFactory {
 		return rule;
 	}
 	
-	private static void appendModalFeedbackCondition(ModalFeedbackCondition condition, Identifier responseIdentifier, And and) {
+	private static void appendModalFeedbackCondition(ModalFeedbackCondition condition, Identifier responseIdentifier, Cardinality cardinality, And and) {
 		ModalFeedbackCondition.Variable var = condition.getVariable();
 		ModalFeedbackCondition.Operator operator = condition.getOperator();
 		String value = condition.getValue();
 		
-		Expression expression = null;
 		if(var == ModalFeedbackCondition.Variable.response) {
-			if(operator == ModalFeedbackCondition.Operator.equals) {
-				Match match = new Match(and);
-				and.getExpressions().add(match);
-				expression = match;
-			} else if(operator == ModalFeedbackCondition.Operator.notEquals) {
-				Not not = new Not(and);
-				and.getExpressions().add(not);
-				
-				Match match = new Match(not);
-				not.getExpressions().add(match);
-				expression = match;
+			if(cardinality == Cardinality.MULTIPLE) {
+				if(operator == ModalFeedbackCondition.Operator.equals) {
+					Member member = new Member(and);
+					and.getExpressions().add(member);
+					appendVariableBaseValue(var, value, responseIdentifier, member, true);
+				} else if(operator == ModalFeedbackCondition.Operator.notEquals) {
+					Not not = new Not(and);
+					and.getExpressions().add(not);
+					
+					Member member = new Member(not);
+					not.getExpressions().add(member);
+					appendVariableBaseValue(var, value, responseIdentifier, member, true);
+				}
+			} else {
+				if(operator == ModalFeedbackCondition.Operator.equals) {
+					Match match = new Match(and);
+					and.getExpressions().add(match);
+					appendVariableBaseValue(var, value, responseIdentifier, match, false);
+				} else if(operator == ModalFeedbackCondition.Operator.notEquals) {
+					Not not = new Not(and);
+					and.getExpressions().add(not);
+					
+					Match match = new Match(not);
+					not.getExpressions().add(match);
+					appendVariableBaseValue(var, value, responseIdentifier, match, false);
+				}
 			}
 		} else {
 			switch(operator) {
 				case bigger: {
 					Gt gt = new Gt(and);
 					and.getExpressions().add(gt);
-					expression = gt;
+					appendVariableBaseValue(var, value, responseIdentifier, gt, false);
 					break;
 				}
 				case biggerEquals: {
 					Gte gte = new Gte(and);
 					and.getExpressions().add(gte);
-					expression = gte;
+					appendVariableBaseValue(var, value, responseIdentifier, gte, false);
 					break;
 				}
 				case equals: {
 					Equal equal = new Equal(and);
 					equal.setToleranceMode(ToleranceMode.EXACT);
 					and.getExpressions().add(equal);
-					expression = equal;
+					appendVariableBaseValue(var, value, responseIdentifier, equal, false);
 					break;
 				}
 				case notEquals: {
@@ -1302,47 +1317,66 @@ public class AssessmentItemFactory {
 					Equal equal = new Equal(not);
 					equal.setToleranceMode(ToleranceMode.EXACT);
 					not.getExpressions().add(equal);
-					expression = equal;
+					appendVariableBaseValue(var, value, responseIdentifier, equal, false);
 					break;
 				}
 				case smaller: {
 					Lt lt = new Lt(and);
 					and.getExpressions().add(lt);
-					expression = lt;
+					appendVariableBaseValue(var, value, responseIdentifier, lt, false);
 					break;
 				}
 				case smallerEquals: {
 					Lte lte = new Lte(and);
 					and.getExpressions().add(lte);
-					expression = lte;
+					appendVariableBaseValue(var, value, responseIdentifier, lte, false);
 					break;
 				}
 			}
 		}
-		
-		if(expression != null) {
-			Variable variable = new Variable(expression);
-			expression.getExpressions().add(variable);
-			BaseValue bValue = new BaseValue(expression);
-			expression.getExpressions().add(bValue);
-			
-			switch(var) {
-				case score:
-					bValue.setBaseTypeAttrValue(BaseType.FLOAT);
-					bValue.setSingleValue(new FloatValue(Double.parseDouble(value)));
-					variable.setIdentifier(QTI21Constants.SCORE_CLX_IDENTIFIER);
-					break;
-				case attempts:
-					bValue.setBaseTypeAttrValue(BaseType.INTEGER);
-					bValue.setSingleValue(new IntegerValue(Integer.parseInt(value)));
-					variable.setIdentifier(QTI21Constants.NUM_ATTEMPTS_CLX_IDENTIFIER);
-					break;	
-				case response:
-					bValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
-					bValue.setSingleValue(new IdentifierValue(Identifier.parseString(value)));
-					variable.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier.toString()));
-					break;
-			}
+	}
+	
+	/*
+		<variable identifier="SCORE" />
+		<baseValue baseType="float">4</baseValue>
+	 */
+	/**
+	 * 
+	 * @param var
+	 * @param value
+	 * @param responseIdentifier
+	 * @param parentExpression
+	 * @param reverse if true, reverse the order, first baseValue and then variable
+	 */
+	private static void appendVariableBaseValue(ModalFeedbackCondition.Variable var, String value,
+			Identifier responseIdentifier, Expression parentExpression, boolean reverse) {
+
+		Variable variable = new Variable(parentExpression);
+		BaseValue bValue = new BaseValue(parentExpression);
+		if(reverse) {
+			parentExpression.getExpressions().add(bValue);
+			parentExpression.getExpressions().add(variable);
+		} else {
+			parentExpression.getExpressions().add(variable);
+			parentExpression.getExpressions().add(bValue);
+		}
+
+		switch(var) {
+			case score:
+				bValue.setBaseTypeAttrValue(BaseType.FLOAT);
+				bValue.setSingleValue(new FloatValue(Double.parseDouble(value)));
+				variable.setIdentifier(QTI21Constants.SCORE_CLX_IDENTIFIER);
+				break;
+			case attempts:
+				bValue.setBaseTypeAttrValue(BaseType.INTEGER);
+				bValue.setSingleValue(new IntegerValue(Integer.parseInt(value)));
+				variable.setIdentifier(QTI21Constants.NUM_ATTEMPTS_CLX_IDENTIFIER);
+				break;	
+			case response:
+				bValue.setBaseTypeAttrValue(BaseType.IDENTIFIER);
+				bValue.setSingleValue(new IdentifierValue(Identifier.parseString(value)));
+				variable.setIdentifier(ComplexReferenceIdentifier.parseString(responseIdentifier.toString()));
+				break;
 		}
 	}
 	

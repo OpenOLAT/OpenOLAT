@@ -19,7 +19,7 @@
  */
 package org.olat.ims.qti21.model.xml;
 
-import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.*;
+import static org.olat.ims.qti21.model.xml.AssessmentItemFactory.findBaseValueInExpression;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +38,7 @@ import uk.ac.ed.ph.jqtiplus.node.expression.operator.Gte;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lt;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Lte;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Match;
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.Member;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Not;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
@@ -211,14 +212,14 @@ public class ModalFeedbackBuilder {
 			operator =  ModalFeedbackCondition.Operator.bigger;
 		} else if(conditionElement instanceof Gte) {
 			operator = ModalFeedbackCondition.Operator.biggerEquals;
-		} else if(conditionElement instanceof Equal || conditionElement instanceof Match) {
+		} else if(conditionElement instanceof Equal || conditionElement instanceof Match || conditionElement instanceof Member) {
 			operator = ModalFeedbackCondition.Operator.equals;
 		} else if(conditionElement instanceof Lt) {
 			operator = ModalFeedbackCondition.Operator.smaller;
 		} else if(conditionElement instanceof Lte) {
 			operator = ModalFeedbackCondition.Operator.smallerEquals;
 		} else if(conditionElement instanceof Not) {
-			if(conditionElement.getExpressions().size() == 1 && conditionElement.getExpressions().get(0) instanceof Match) {
+			if(conditionElement.getExpressions().size() == 1 && (conditionElement.getExpressions().get(0) instanceof Match || conditionElement.getExpressions().get(0) instanceof Member)) {
 				operator = ModalFeedbackCondition.Operator.notEquals;
 				expressions = conditionElement.getExpressions().get(0).getExpressions();
 			}

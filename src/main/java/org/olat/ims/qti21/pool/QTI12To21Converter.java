@@ -60,6 +60,7 @@ import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
+import org.olat.ims.qti.editor.beecom.objects.ChoiceResponse;
 import org.olat.ims.qti.editor.beecom.objects.Control;
 import org.olat.ims.qti.editor.beecom.objects.Duration;
 import org.olat.ims.qti.editor.beecom.objects.EssayQuestion;
@@ -86,6 +87,10 @@ import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder;
+import org.olat.ims.qti21.model.xml.ModalFeedbackBuilder.ModalFeedbackType;
+import org.olat.ims.qti21.model.xml.ModalFeedbackCondition;
+import org.olat.ims.qti21.model.xml.ModalFeedbackCondition.Operator;
+import org.olat.ims.qti21.model.xml.ModalFeedbackCondition.Variable;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.model.xml.interactions.EssayAssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
@@ -431,6 +436,7 @@ public class QTI12To21Converter {
 		convertOrientation(question, itemBuilder);
 		
 		List<Response> responses = question.getResponses();
+		Map<String,Identifier> identToIdentifier = new HashMap<>();
 		for(Response response:responses) {
 			String responseText = response.getContent().renderAsHtmlForEditor();
 			responseText = blockedHtml(responseText);
@@ -444,11 +450,14 @@ public class QTI12To21Converter {
 					.createSimpleChoice(interaction, responseText, itemBuilder.getQuestionType().getPrefix());
 			}
 			itemBuilder.addSimpleChoice(newChoice);
+			identToIdentifier.put(response.getIdent(), newChoice.getIdentifier());
 			
 			if(response.isCorrect()) {
 				itemBuilder.setCorrectAnswer(newChoice.getIdentifier());
 			}	
 		}
+		
+		convertFeedbackPerAnswers(item, itemBuilder, identToIdentifier);
 		
 		double correctScore = question.getSingleCorrectScore();
 		if(correctScore >= 0.0d) {
@@ -480,6 +489,7 @@ public class QTI12To21Converter {
 		}
 		
 		boolean singleCorrect = question.isSingleCorrect();
+		Map<String, Identifier> identToIdentifier = new HashMap<>();
 		for(Response response:responses) {
 			String responseText = response.getContent().renderAsHtmlForEditor();
 			responseText = blockedHtml(responseText);
@@ -495,6 +505,7 @@ public class QTI12To21Converter {
 			}
 			
 			itemBuilder.addSimpleChoice(newChoice);
+			identToIdentifier.put(response.getIdent(), newChoice.getIdentifier());
 			
 			double score = response.getPoints();
 			if(singleCorrect) {
@@ -511,6 +522,8 @@ public class QTI12To21Converter {
 				itemBuilder.setMapping(newChoice.getIdentifier(), score);
 			}
 		}
+
+		convertFeedbackPerAnswers(item, itemBuilder, identToIdentifier);
 
 		if(singleCorrect) {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.allCorrectAnswers);
@@ -706,6 +719,35 @@ public class QTI12To21Converter {
 			feedback.setText(feedbackFail);
 		}
 		
+
+	}
+	
+	private void convertFeedbackPerAnswers(Item item, AssessmentItemBuilder itemBuilder, Map<String,Identifier> identToIdentifier) {
+		Question question = item.getQuestion();
+		
+		List<ModalFeedbackBuilder> additionalFeedbacks = new ArrayList<>();
+		for (Response response : question.getResponses()) {
+			if(response instanceof ChoiceResponse) {
+				Material responseFeedbackMat = QTIEditHelper.getFeedbackOlatRespMaterial(item, response.getIdent());
+				if(responseFeedbackMat != null) {
+					String feedbackCondition = responseFeedbackMat.renderAsHtmlForEditor();
+					feedbackCondition = blockedHtml(feedbackCondition);
+					
+					ModalFeedbackCondition condition = new ModalFeedbackCondition();
+					condition.setVariable(Variable.response);
+					condition.setOperator(Operator.equals);
+					condition.setValue(identToIdentifier.get(response.getIdent()).toString());
+					List<ModalFeedbackCondition> conditions = new ArrayList<>(1);
+					conditions.add(condition);
+					
+					ModalFeedbackBuilder feedback = new ModalFeedbackBuilder(itemBuilder.getAssessmentItem(), ModalFeedbackType.additional);
+					feedback.setFeedbackConditions(conditions);
+					feedback.setText(feedbackCondition);
+					additionalFeedbacks.add(feedback);
+				}
+			}
+		}
+		itemBuilder.setAdditionalFeedbackBuilders(additionalFeedbacks);
 	}
 	
 	private void convertDuration(Duration duration, ControlObject<?> parent) {
