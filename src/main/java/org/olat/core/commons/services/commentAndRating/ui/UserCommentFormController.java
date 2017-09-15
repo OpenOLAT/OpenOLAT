@@ -154,7 +154,7 @@ public class UserCommentFormController extends FormBasicController {
 						showError("comments.coment.reply.error");
 						fireEvent(ureq, Event.FAILED_EVENT);
 					} else {
-						notificationsManager.markPublisherNews(ores.getResourceableTypeName(), ores.getResourceableId().toString(), null, false)
+						notificationsManager.markPublisherNews(ores.getResourceableTypeName(), ores.getResourceableId().toString(), null, false);
 						fireEvent(ureq, Event.CHANGED_EVENT);
 					}
 				}
