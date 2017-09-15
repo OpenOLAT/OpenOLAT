@@ -317,6 +317,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 			if(handlerQTI21.acceptImport(file, "repo.zip").isValid()) {
 				re = handlerQTI21.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 						rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+				getModuleConfiguration().set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
 			} else {
 				RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
 				re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
