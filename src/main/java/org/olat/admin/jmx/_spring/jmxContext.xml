@@ -16,39 +16,5 @@
 	<bean id="registry" class="org.springframework.remoting.rmi.RmiRegistryFactoryBean" lazy-init="true">
 	  <property name="port" value="${jmx.rmi.port}"/>
 	</bean>	
-	
-	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false" >
-    	<property name="beans">
-			<map>
-				<entry key="org.olat.admin.jmx.datasources:name=ThreadAndControllerInfo">
-					<bean class="org.olat.admin.jmx.datasources.ThreadAndControllerInfo" />
-				</entry>
-				<entry key="org.olat.admin:name=AdminModule" value-ref="adminModule" />
-				<entry key="org.olat.core.commons.modules.bc:name=FilesInfoMBean" >
-					<ref bean="org.olat.core.commons.modules.bc.FilesInfoMBean"/>
-				</entry>
-			</map>
-		</property>
-		<property name="server" ref="org.springframework.jmx.support.MBeanServerFactoryBean"/>
-	</bean>
-
-<!--  DISABLE JMX CONNECTOR	
-    <bean id="serverConnector"
-	      class="org.springframework.jmx.support.ConnectorServerFactoryBean" depends-on="registry">
-		<property name="objectName" value="connector:name=rmi"/>
-		<property name="serviceUrl" 
-	            value="service:jmx:rmi://localhost/jndi/rmi://localhost:${jmx.rmi.port}/olat_connector"/>
-	    <property name="daemon" value="true"/>
-		<property name="environment">
--->
-			 <!-- the following is only valid when the sun jmx implementation is used --> 
-<!--  DISABLE JMX CONNECTOR	
-   			<map>
-  				<entry key="jmx.remote.x.password.file" value="/usr/local/opt/java/jre/lib/management/jmxremote.password"/>
-				<entry key="jmx.remote.x.access.file" value="/usr/local/opt/java/jre/lib/management/jmxremote.access"/>
-			</map>
-		</property>
-	</bean>
--->
 
 </beans>

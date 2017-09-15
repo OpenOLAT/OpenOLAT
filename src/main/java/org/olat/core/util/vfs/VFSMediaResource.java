@@ -30,8 +30,6 @@ import java.io.InputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.FilesInfoMBean;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -45,11 +43,9 @@ public class VFSMediaResource implements MediaResource {
 	private String encoding;
 	boolean unknownMimeType = false;
 	private boolean downloadable = false;
-	private FilesInfoMBean filesInfoMBean;
 
 	public VFSMediaResource(VFSLeaf vfsLeaf) {
 		this.vfsLeaf = vfsLeaf;
-		this.filesInfoMBean = (FilesInfoMBean) CoreSpringFactory.getBean(FilesInfoMBean.class.getCanonicalName());
 	}
 	
 	@Override
@@ -96,7 +92,6 @@ public class VFSMediaResource implements MediaResource {
 
 	@Override
 	public InputStream getInputStream() {
-		filesInfoMBean.logDownload(getSize());
 		return vfsLeaf.getInputStream();
 	}
 

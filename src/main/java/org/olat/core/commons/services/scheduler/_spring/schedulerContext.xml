@@ -35,7 +35,6 @@ How to add a new job:
         <list>
         	<!-- Include every bean here that should be scheduled -->
             <ref bean="sendNotificationsEmailTrigger" />
-            <!-- <ref bean="dumpJMXJobTrigger"/> -->
             <ref bean="adobeCleanupJob"/>
             <ref bean="updateStatisticsTrigger"/>
             <ref bean="searchIndexingTrigger"/>
@@ -61,15 +60,6 @@ How to add a new job:
 
 <!-- add referenced schedulers here -->
 
-<!-- Only needed in cluster mode, dumps jmx info to disc --> 
-<bean id="dumpJMXJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
-    <property name="jobDetail" ref="dumpJMXJob" />
-    <!-- 5 minute -->
-    <property name="startDelay" value="300000" />
-    <!-- repeat every 10 seconds (dmps the data to disk) -->
-    <property name="repeatInterval" value="60000" />
-</bean>
-
 <!-- Example bean for cron style scheduling--> 
 <!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
 <!--
@@ -79,28 +69,6 @@ How to add a new job:
     <property name="startDelay" value="300000" />
 </bean>
  -->
-
-
-<!--  job definition  -->
-<bean id="dumpJMXJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-	<property name="jobClass" value="org.olat.admin.jmx.DumpJMXJob"/>
-	<property name="jobDataAsMap">
-    <map>
-    	<!-- either true or false -->
-    	<!-- TODO:gs make configurable via olat.properties file -->
-    	<entry key="enabled" value="false" />
-    	<!-- List of dumping beans, key must end with 'Bean'  -->
-    	<entry key="ThreadAndControllerInfoBean" value="org.olat.admin.jmx.datasources:name=ThreadAndControllerInfo" />
-    	<entry key="FilesInfoMBean" value="org.olat.core.commons.modules.bc:name=FilesInfoMBean" />
-    </map>
-  </property>
-</bean>
-
-<!--
-	Export your Beans via JMX, to enable start you JVM with "-Dcom.sun.management.jmxremote=true".
-	This only enables JMX locally and allows you to connect with the same user. To connect via remote read:
-	http://java.sun.com/javase/6/docs/technotes/guides/management/agent.html
--->
 
 	<!-- SEARCH INDEXING CONFIGURATION -->
 

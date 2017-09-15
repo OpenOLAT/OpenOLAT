@@ -10,9 +10,6 @@
   
 	<context:component-scan base-package="org.olat.core.commons.modules.bc" />
 
-
-	<bean id="org.olat.core.commons.modules.bc.FilesInfoMBean" class="org.olat.core.commons.modules.bc.FilesInfoMBean" />
-	
 	<bean id="metaInfoFactory" class="org.olat.core.commons.modules.bc.meta.MetaInfoFactory">
 		<property name="thumbnailService" ref="thumbnailService" />
 	</bean>

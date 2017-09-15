@@ -34,8 +34,6 @@ import java.io.InputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.FilesInfoMBean;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 
@@ -59,7 +57,6 @@ import org.olat.core.util.WebappHelper;
 public class FileMediaResource implements MediaResource {
 	//TODO:fj:a clean up on all filemediaresources subclasses
 	protected File file;
-	private FilesInfoMBean filesInfoMBean;
 	private boolean unknownMimeType = false;
 	private boolean deliverAsAttachment = false;
 
@@ -87,7 +84,6 @@ public class FileMediaResource implements MediaResource {
 	public FileMediaResource(File file, boolean deliverAsAttachment) {
 		this.file = file;
 		this.deliverAsAttachment = deliverAsAttachment;
-		this.filesInfoMBean = (FilesInfoMBean) CoreSpringFactory.getBean(FilesInfoMBean.class.getCanonicalName());
 	}
 	
 	@Override
@@ -131,7 +127,6 @@ public class FileMediaResource implements MediaResource {
 		BufferedInputStream bis = null;
 		try {
 			bis = new BufferedInputStream( new FileInputStream(file) );
-			filesInfoMBean.logDownload(getSize());
 		} catch (FileNotFoundException e) {
 			//
 		}
