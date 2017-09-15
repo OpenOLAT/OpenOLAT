@@ -173,6 +173,10 @@
 				.o_lifecycle {
 					position: absolute; 
 					top: 5px; right: 40px;
+					z-index: 2px;
+					background: white;
+					padding: 0 3px 3px 3px;
+					border-radius: 0px 0px $border-radius-small $border-radius-small;
 					font-size: 90%;
 					line-height: normal;
 					@include text-overflow();
