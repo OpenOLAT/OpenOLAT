@@ -812,6 +812,7 @@ public class FormUIFactory {
 		rte.getEditorConfiguration().setExtendedValidElements("script[src|type|defer]");
 		rte.getEditorConfiguration().disableTinyMedia();
 		rte.getEditorConfiguration().setFilenameUriValidation(true);
+		rte.getEditorConfiguration().setFigCaption(false);
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;
@@ -829,6 +830,7 @@ public class FormUIFactory {
 		rte.getEditorConfiguration().setExtendedValidElements("script[src|type|defer]");
 		rte.getEditorConfiguration().disableTinyMedia();
 		rte.getEditorConfiguration().setFilenameUriValidation(true);
+		rte.getEditorConfiguration().setFigCaption(false);
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;

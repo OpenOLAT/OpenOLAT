@@ -151,6 +151,7 @@ public class RichTextConfiguration implements Disposable {
 	private boolean relativeUrls = true;
 	private boolean removeScriptHost = true;
 	private boolean pathInStatusBar = true;
+	private boolean figCaption = true;
 	private boolean allowCustomMediaFactory = true;
 	private boolean sendOnBlur;
 	private boolean readOnly;
@@ -880,6 +881,21 @@ public class RichTextConfiguration implements Disposable {
 		setNonQuotedConfigValue(RichTextConfiguration.HEIGHT, "b_initialEditorHeight()");
 	}
 	
+	/**
+	 * @return True if the fig caption for image is enabled.
+	 */
+	public boolean isFigCaption() {
+		return figCaption;
+	}
+
+	/**
+	 * Enable or disable fig caption for image.
+	 * @param figCaption
+	 */
+	public void setFigCaption(boolean figCaption) {
+		this.figCaption = figCaption;
+	}
+
 	public boolean isFilenameUriValidation() {
 		return filenameUriValidation;
 	}
@@ -1001,7 +1017,7 @@ public class RichTextConfiguration implements Disposable {
  		StringOutput tinyMenuSb = new StringOutput();
  		tinyMenuSb.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n")
  		  .append("image_advtab:true,\n")
- 		  .append("image_caption:true,\n")
+ 		  .append("image_caption:").append(figCaption).append(",\n")
  		  .append("image_title:true,\n")
 		  .append("relative_urls:").append(isRelativeUrls()).append(",\n")
 		  .append("remove_script_host:").append(isRemoveScriptHost()).append(",\n")
