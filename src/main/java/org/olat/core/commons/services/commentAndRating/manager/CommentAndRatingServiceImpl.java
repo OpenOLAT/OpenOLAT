@@ -27,6 +27,7 @@ import org.olat.core.commons.services.commentAndRating.model.OLATResourceableRat
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.commons.services.commentAndRating.model.UserCommentsCount;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
+import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
@@ -41,18 +42,19 @@ import org.springframework.stereotype.Service;
  * the interface for an code example)
  * <P>
  * Initial Date: 24.11.2009 <br>
- * 
+ *
  * @author gnaegi
  */
 @Service
 public class CommentAndRatingServiceImpl implements CommentAndRatingService {
+
 	@Autowired
 	private UserRatingsDAO userRatingsDao;
 	@Autowired
 	private UserCommentsDAO userCommentsDao;
-	
+	@Autowired
+	private NotificationsManager notificationsManager;
 
-	
 
 	@Override
 	public Long countRatings(OLATResourceable ores, String resSubPath) {
@@ -122,7 +124,9 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 	@Override
 	public UserComment createComment(Identity creator, OLATResourceable ores,
 			String resSubPath, String commentText) {
-		return userCommentsDao.createComment(creator, ores, resSubPath, commentText);
+		UserComment comment = userCommentsDao.createComment(creator, ores, resSubPath, commentText);
+		markPublisherNews(comment);
+		return comment;
 	}
 
 	@Override
@@ -132,12 +136,16 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 
 	@Override
 	public UserComment replyTo(UserComment originalComment, Identity creator, String replyCommentText) {
-		return userCommentsDao.replyTo(originalComment, creator, replyCommentText);
+		UserComment reply = userCommentsDao.replyTo(originalComment, creator, replyCommentText);
+		markPublisherNews(reply);
+		return reply;
 	}
 
 	@Override
 	public UserComment updateComment(UserComment comment, String newCommentText) {
-		return userCommentsDao.updateComment(comment, newCommentText);
+		UserComment updatedComment = userCommentsDao.updateComment(comment, newCommentText);
+		markPublisherNews(updatedComment);
+		return updatedComment;
 	}
 
 	@Override
@@ -148,6 +156,7 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 	/**
 	 * @see org.olat.core.commons.services.commentAndRating.CommentAndRatingService#deleteAll()
 	 */
+	@Override
 	public int deleteAll(OLATResourceable ores, String resSubPath) {
 		if (ores == null) {
 			throw new AssertException("CommentAndRatingService must be initialized first, call init method");
@@ -158,9 +167,10 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 	}
 
 	/**
-	 * 
+	 *
 	 * @see org.olat.core.commons.services.commentAndRating.CommentAndRatingService#deleteAllIgnoringSubPath()
 	 */
+	@Override
 	public int deleteAllIgnoringSubPath(OLATResourceable ores) {
 		if (ores == null) {
 			throw new AssertException("CommentAndRatingService must be initialized first, call init method");
@@ -168,5 +178,15 @@ public class CommentAndRatingServiceImpl implements CommentAndRatingService {
 		int delCount = userCommentsDao.deleteAllCommentsIgnoringSubPath(ores);
 		delCount += userRatingsDao.deleteAllRatingsIgnoringSubPath(ores);
 		return delCount;
+	}
+
+	private void markPublisherNews(UserComment comment) {
+		if (comment == null) return;
+
+		notificationsManager.markPublisherNews(
+				comment.getResName(),
+				comment.getResId().toString(),
+				null,
+				false);
 	}
 }

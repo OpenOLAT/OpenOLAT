@@ -22,7 +22,6 @@ package org.olat.core.commons.services.commentAndRating.ui;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
-import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -35,7 +34,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -66,8 +64,6 @@ public class UserCommentFormController extends FormBasicController {
 	private final String resSubPath;
 	private final OLATResourceable ores;
 	private final CommentAndRatingService commentAndRatingService;
-	@Autowired
-	private NotificationsManager notificationsManager;
 
 	/**
 	 * Constructor for a user comment form controller. Use the
@@ -144,7 +140,6 @@ public class UserCommentFormController extends FormBasicController {
 				if (parentComment == null) {
 					// create new comment
 					toBeUpdatedComment = commentAndRatingService.createComment(getIdentity(), ores, resSubPath, commentText);
-					notificationsManager.markPublisherNews(ores.getResourceableTypeName(), ores.getResourceableId().toString(), null, false);
 					// notify listeners that we finished.
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				} else {
@@ -154,7 +149,6 @@ public class UserCommentFormController extends FormBasicController {
 						showError("comments.coment.reply.error");
 						fireEvent(ureq, Event.FAILED_EVENT);
 					} else {
-						notificationsManager.markPublisherNews(ores.getResourceableTypeName(), ores.getResourceableId().toString(), null, false);
 						fireEvent(ureq, Event.CHANGED_EVENT);
 					}
 				}
@@ -164,7 +158,6 @@ public class UserCommentFormController extends FormBasicController {
 					showError("comments.coment.update.error");
 					fireEvent(ureq, Event.FAILED_EVENT);
 				} else {
-					notificationsManager.markPublisherNews(ores.getResourceableTypeName(), ores.getResourceableId().toString(), null, false);
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
