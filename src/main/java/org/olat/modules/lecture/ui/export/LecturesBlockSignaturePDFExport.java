@@ -133,6 +133,7 @@ public class LecturesBlockSignaturePDFExport extends PdfDocument implements Medi
 	    	addMetadata(lectureBlockTitle, resourceTitle, teacher);
 
 	    	String title = resourceTitle + " - " + lectureBlockTitle;
+	    	title = translator.translate("attendance.list.to.sign.title", new String[] { title });
 	    	addParagraph(title, 16, true, width);
 	
 	    	Formatter formatter = Formatter.getInstance(translator.getLocale());

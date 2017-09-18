@@ -146,6 +146,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 	    	addMetadata(lectureBlockTitle, resourceTitle, teacher);
 	
 	    	String title = resourceTitle + " - " + lectureBlockTitle;
+	    	title = translator.translate("attendance.list.title", new String[] { title });
 	    	addParagraph(title, 16, true, width);
 	
 	    	Formatter formatter = Formatter.getInstance(translator.getLocale());
