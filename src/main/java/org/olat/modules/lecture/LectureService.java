@@ -332,7 +332,8 @@ public interface LectureService {
 			String comment, List<Integer> absences);
 	
 	/**
-	 * Remove the specified lectures to the ones the identity follows.
+	 * Remove the specified lectures to the ones the identity follows. If the number of absences is zero,
+	 * the authorized absence flag is set ot NULL.
 	 * 
 	 * @param identity The participant of the lecture
 	 * @param lectureBlock The lecture block

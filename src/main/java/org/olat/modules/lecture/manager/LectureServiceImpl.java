@@ -461,9 +461,18 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		if(rollCall == null) {//reload in case of concurrent usage
 			rollCall = lectureBlockRollCallDao.getRollCall(lectureBlock, identity);
 		}
+		
+		boolean checkAuthorized = lectureModule.isAuthorizedAbsenceEnabled() &&  lectureModule.isAbsenceDefaultAuthorized();
 		if(rollCall == null) {
-			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, absences);
+			Boolean authorized = null;
+			if(checkAuthorized && absences != null && absences.size() > 0) {
+				authorized = Boolean.TRUE;
+			}
+			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, authorized, null, null, absences);
 		} else {
+			if(checkAuthorized && absences != null && absences.size() > 0 && rollCall.getAbsenceAuthorized() == null) {
+				rollCall.setAbsenceAuthorized(Boolean.TRUE);
+			}
 			rollCall = lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, absences);
 		}
 		return rollCall;
@@ -474,11 +483,19 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		if(rollCall == null) {//reload in case of concurrent usage
 			rollCall = lectureBlockRollCallDao.getRollCall(lectureBlock, identity);
 		}
+		boolean checkAuthorized = lectureModule.isAuthorizedAbsenceEnabled() &&  lectureModule.isAbsenceDefaultAuthorized();
 		if(rollCall == null) {
-			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, comment, absences);
+			Boolean authorized = null;
+			if(checkAuthorized && absences != null && absences.size() > 0) {
+				authorized = Boolean.TRUE;
+			}
+			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, authorized, null, comment, absences);
 		} else {
 			if(comment != null) {
 				rollCall.setComment(comment);
+			}
+			if(checkAuthorized && absences != null && absences.size() > 0 && rollCall.getAbsenceAuthorized() == null) {
+				rollCall.setAbsenceAuthorized(Boolean.TRUE);
 			}
 			rollCall = lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, absences);
 		}

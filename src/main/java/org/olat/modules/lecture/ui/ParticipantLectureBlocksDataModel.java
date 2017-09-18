@@ -111,6 +111,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 				}
 				return null;
 			}
+			case unauthorizedAbsentLectures:
 			case absentLectures: {
 				if(!isDataVisible(row.getRow())) {
 					return null;
@@ -196,6 +197,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 		plannedLectures("table.header.planned.lectures"),
 		attendedLectures("table.header.attended.lectures"),
 		absentLectures("table.header.absent.lectures"),
+		unauthorizedAbsentLectures("table.header.unauthorized.absence"),
 		authorizedAbsentLectures("table.header.authorized.absence"),
 		status("table.header.status"),
 		appeal("table.header.appeal");

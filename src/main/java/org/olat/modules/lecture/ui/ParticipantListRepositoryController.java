@@ -166,9 +166,11 @@ public class ParticipantListRepositoryController extends FormBasicController {
 
 		if(rollCallEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.attendedLectures));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.absentLectures));
 			if(authorizedAbsenceEnabled) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.unauthorizedAbsenceLectures));
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.authorizedAbsenceLectures));
+			} else {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.absentLectures));
 			}
 			FlexiColumnModel progressCol = new DefaultFlexiColumnModel(ParticipantsCols.progress, new LectureStatisticsCellRenderer());
 			progressCol.setExportable(false);

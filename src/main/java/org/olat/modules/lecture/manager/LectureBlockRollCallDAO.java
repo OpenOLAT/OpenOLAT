@@ -150,6 +150,10 @@ public class LectureBlockRollCallDAO {
 			}
 			call.setLecturesAttendedList(attendedList);
 			call.setLecturesAttendedNumber(numOfLectures - currentAbsentList.size());
+			
+			if(currentAbsentList.size() == 0) {
+				call.setAbsenceAuthorized(null);
+			}
 		}
 	}
 	

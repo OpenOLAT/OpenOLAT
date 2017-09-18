@@ -419,7 +419,7 @@ public class TeacherRollCallController extends FormBasicController {
 			
 			if(row.getRollCall() == null) {
 				//??? stop?
-			} else {
+			} else if(!absenceDefaultAuthorized) {
 				String reason = row.getRollCall().getAbsenceReason();
 				if(row.getAuthorizedAbsence().isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(reason)) {
 					row.getAuthorizedAbsence().setErrorKey("error.reason.mandatory", null);
@@ -522,11 +522,11 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private void doCheckAllRow(TeacherRollCallRow row) {
-		List<Integer> allIndex = new ArrayList<>(numOfLectures);
+		List<Integer> allAbsences = new ArrayList<>(numOfLectures);
 		for(int i=0; i<numOfLectures; i++) {
-			allIndex.add(i);
+			allAbsences.add(i);
 		}
-		LectureBlockRollCall rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), null, allIndex);
+		LectureBlockRollCall rollCall = lectureService.addRollCall(row.getIdentity(), lectureBlock, row.getRollCall(), null, allAbsences);
 		for(MultipleSelectionElement check:row.getChecks()) {
 			check.select(onKeys[0], true);
 		}
@@ -551,7 +551,15 @@ public class TeacherRollCallController extends FormBasicController {
 			lectureService.auditLog(LectureBlockAuditLog.Action.removeFromRollCall, before, lectureService.toAuditXml(rollCall),
 					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
 		}
-		row.setRollCall(rollCall);	
+		row.setRollCall(rollCall);
+		if(authorizedAbsenceEnabled) {
+			if(rollCall.getAbsenceAuthorized() != null && rollCall.getAbsenceAuthorized().booleanValue()) {
+				row.getAuthorizedAbsence().select(onKeys[0], true);
+			} else {
+				row.getAuthorizedAbsence().uncheckAll();
+			}
+			row.getAuthorizedAbsenceCont().setDirty(true);
+		}
 		row.getRollCallStatusEl().getComponent().setDirty(true);
 	}
 	
