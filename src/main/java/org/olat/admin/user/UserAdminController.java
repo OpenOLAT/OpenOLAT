@@ -64,6 +64,7 @@ import org.olat.ldap.LDAPLoginModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.properties.Property;
+import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.ChangePrefsController;
 import org.olat.user.DisplayPortraitController;
 import org.olat.user.ProfileAndHomePageEditController;
@@ -76,11 +77,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  *  @author Sabina Jeger
  *  <pre>
  *  Complete rebuild on 17. jan 2006 by Florian Gnaegi
- *  
- *  Functionality to change or view all kind of things for this user 
- *  based on the configuration for the user manager. 
+ *
+ *  Functionality to change or view all kind of things for this user
+ *  based on the configuration for the user manager.
  *  This controller should only be used by the UserAdminMainController.
- *  
+ *
  * </pre>
  */
 public class UserAdminController extends BasicController implements Activateable2 {
@@ -97,12 +98,13 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_EDIT_UQUOTA			= "edit.uquota";
 	private static final String NLS_VIEW_GROUPS 		= "view.groups";
 	private static final String NLS_VIEW_COURSES		= "view.courses";
+	private static final String NLS_VIEW_ACCESS			= "view.access";
 	private static final String NLS_VIEW_EFF_STATEMENTS = "view.effStatements";
 	private static final String NLS_VIEW_SUBSCRIPTIONS 	= "view.subscriptions";
 	private static final String NLS_VIEW_LECTURES		= "view.lectures";
-	
+
 	private VelocityContainer myContent;
-		
+
 	private Identity myIdentity = null;
 
 	// controllers used in tabbed pane
@@ -118,7 +120,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
 
 	private final boolean isOlatAdmin;
-	
+
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -139,36 +141,36 @@ public class UserAdminController extends BasicController implements Activateable
 		isOlatAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 
 		if (!securityManager.isIdentityPermittedOnResourceable(
-				ureq.getIdentity(), 
-				Constants.PERMISSION_ACCESS, 
+				ureq.getIdentity(),
+				Constants.PERMISSION_ACCESS,
 				OresHelper.lookupType(this.getClass()))) {
 			throw new OLATSecurityException("Insufficient permissions to access UserAdminController");
 		}
-		
+
 		myIdentity = identity;
-				
-		if (allowedToManageUser(ureq, myIdentity)) {			
+
+		if (allowedToManageUser(ureq, myIdentity)) {
 			myContent = createVelocityContainer("udispatcher");
 			backLink = LinkFactory.createLinkBack(myContent, this);
 			userShortDescrCtr = new UserShortDescription(ureq, wControl, identity);
 			listenTo(userShortDescrCtr);
 			myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());
-			
+
 			setBackButtonEnabled(true); // default
 			initTabbedPane(myIdentity, ureq);
-			exposeUserDataToVC(ureq, myIdentity);					
+			exposeUserDataToVC(ureq, myIdentity);
 			putInitialPanel(myContent);
 		} else {
-			String supportAddr = WebappHelper.getMailConfig("mailSupport");			
-			showWarning(NLS_ERROR_NOACCESS_TO_USER, supportAddr);			
+			String supportAddr = WebappHelper.getMailConfig("mailSupport");
+			showWarning(NLS_ERROR_NOACCESS_TO_USER, supportAddr);
 			putInitialPanel(new Panel("empty"));
 		}
 	}
-	
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
-		
+
 		String entryPoint = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("tab".equals(entryPoint)) {
 			userTabP.activate(ureq, entries, state);
@@ -188,7 +190,7 @@ public class UserAdminController extends BasicController implements Activateable
 			myContent.contextPut("showButton", Boolean.valueOf(backButtonEnabled));
 		}
 	}
-	
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
@@ -209,8 +211,8 @@ public class UserAdminController extends BasicController implements Activateable
 		if (source == propertiesCtr) {
 			if (event.getCommand().equals("PropFound")){
 				PropFoundEvent foundEvent = (PropFoundEvent) event;
-				Property myfoundProperty = foundEvent.getProperty();				
-				showInfo(NLS_FOUND_PROPERTY, myfoundProperty.getKey().toString());								
+				Property myfoundProperty = foundEvent.getProperty();
+				showInfo(NLS_FOUND_PROPERTY, myfoundProperty.getKey().toString());
 			}
 		} else if (source == pwdCtr) {
 			if (event == Event.DONE_EVENT) {
@@ -279,7 +281,7 @@ public class UserAdminController extends BasicController implements Activateable
 		// passed all tests, current user is allowed to edit given identity
 		return true;
 	}
-	
+
 	/**
 	 * Initialize the tabbed pane according to the users rights and the system
 	 * configuration
@@ -290,7 +292,7 @@ public class UserAdminController extends BasicController implements Activateable
 		// first Initialize the user details tabbed pane
 		userTabP = new TabbedPane("userTabP", ureq.getLocale());
 		userTabP.addListener(this);
-		
+
 		/**
 		 *  Determine, whether the user admin is or is not able to edit all fields in user
 		 *  profile form. The system admin is always able to do so.
@@ -303,7 +305,7 @@ public class UserAdminController extends BasicController implements Activateable
 		userProfileCtr = new ProfileAndHomePageEditController(ureq, getWindowControl(), identity, canEditAllFields.booleanValue());
 		listenTo(userProfileCtr);
 		userTabP.addTab(translate(NLS_EDIT_UPROFILE), userProfileCtr.getInitialComponent());
-		
+
 		userTabP.addTab(translate(NLS_EDIT_UPREFS), new TabCreator() {
 			@Override
 			public Component create(UserRequest uureq) {
@@ -317,13 +319,13 @@ public class UserAdminController extends BasicController implements Activateable
 			userTabP.addTab(translate(NLS_EDIT_UPWD), new TabCreator() {
 				@Override
 				public Component create(UserRequest uureq) {
-					pwdCtr =  new UserChangePasswordController(uureq, getWindowControl(), identity);				
-					listenTo(pwdCtr); 
+					pwdCtr =  new UserChangePasswordController(uureq, getWindowControl(), identity);
+					listenTo(pwdCtr);
 					return pwdCtr.getInitialComponent();
 				}
 			});
 		}
-		
+
 		Boolean canAuth = BaseSecurityModule.USERMANAGER_ACCESS_TO_AUTH;
 		if (canAuth.booleanValue() || isOlatAdmin) {
 			userTabP.addTab(translate(NLS_EDIT_UAUTH), new TabCreator() {
@@ -335,19 +337,19 @@ public class UserAdminController extends BasicController implements Activateable
 				}
 			});
 		}
-		
+
 		Boolean canProp = BaseSecurityModule.USERMANAGER_ACCESS_TO_PROP;
 		if (canProp.booleanValue() || isOlatAdmin) {
 			userTabP.addTab(translate(NLS_EDIT_UPROP), new TabCreator() {
 				@Override
 				public Component create(UserRequest uureq) {
-					propertiesCtr = new UserPropertiesController(uureq, getWindowControl(), identity);			
+					propertiesCtr = new UserPropertiesController(uureq, getWindowControl(), identity);
 					listenTo(propertiesCtr);
 					return propertiesCtr.getInitialComponent();
 				}
 			});
 		}
-		
+
 		Boolean canStartGroups = BaseSecurityModule.USERMANAGER_CAN_START_GROUPS;
 		userTabP.addTab(translate(NLS_VIEW_GROUPS), new TabCreator() {
 			@Override
@@ -366,8 +368,19 @@ public class UserAdminController extends BasicController implements Activateable
 				return courseCtr.getInitialComponent();
 			}
 		});
-		
-		if (isOlatAdmin) {	
+
+		if (isOlatAdmin) {
+			userTabP.addTab(translate(NLS_VIEW_ACCESS), new TabCreator() {
+				@Override
+				public Component create(UserRequest uureq) {
+					Controller accessCtr = new UserOrderController(ureq, getWindowControl(), identity);
+					listenTo(accessCtr);
+					return accessCtr.getInitialComponent();
+				}
+			});
+		}
+
+		if (isOlatAdmin) {
 			userTabP.addTab(translate(NLS_VIEW_EFF_STATEMENTS), new TabCreator() {
 				@Override
 				public Component create(UserRequest uureq) {
@@ -391,10 +404,10 @@ public class UserAdminController extends BasicController implements Activateable
 					listenTo(subscriptionsCtr);
 					return subscriptionsCtr.getInitialComponent();
 				}
-				
-			});			
+
+			});
 		}
-		
+
 		userTabP.addTab(translate(NLS_EDIT_UROLES), new TabCreator() {
 			@Override
 			public Component create(UserRequest uureq) {
@@ -403,7 +416,7 @@ public class UserAdminController extends BasicController implements Activateable
 				return rolesCtr.getInitialComponent();
 			}
 		});
-		
+
 		Boolean canQuota = BaseSecurityModule.USERMANAGER_ACCESS_TO_QUOTA;
 		if (canQuota.booleanValue() || isOlatAdmin) {
 			userTabP.addTab(translate(NLS_EDIT_UQUOTA), new TabCreator() {
@@ -415,7 +428,7 @@ public class UserAdminController extends BasicController implements Activateable
 				}
 			});
 		}
-		
+
 		if(lectureModule.isEnabled()) {
 			userTabP.addTab(translate(NLS_VIEW_LECTURES), new TabCreator() {
 				@Override
@@ -430,11 +443,11 @@ public class UserAdminController extends BasicController implements Activateable
 				}
 			});
 		}
-		
+
 		// now push to velocity
 		myContent.put("userTabP", userTabP);
 	}
-	
+
 	private boolean isPasswordChangesAllowed(Identity identity) {
 		Boolean canChangePwd = BaseSecurityModule.USERMANAGER_CAN_MODIFY_PWD;
 		if (canChangePwd.booleanValue()  || isOlatAdmin) {
@@ -444,14 +457,14 @@ public class UserAdminController extends BasicController implements Activateable
 				// it's an ldap-user
 				return ldapLoginModule.isPropagatePasswordChangedOnLdapServer();
 			}
-			
+
 			Boolean canCreatePwd = BaseSecurityModule.USERMANAGER_CAN_CREATE_PWD;
 			Authentication olatAuth = securityManager.findAuthentication(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier());
 			if (olatAuth != null || canCreatePwd.booleanValue() || isOlatAdmin) {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -460,7 +473,7 @@ public class UserAdminController extends BasicController implements Activateable
 	 * @param ureq
 	 * @param identity
 	 */
-	private void exposeUserDataToVC(UserRequest ureq, Identity identity) {		
+	private void exposeUserDataToVC(UserRequest ureq, Identity identity) {
 		removeAsListenerAndDispose(portraitCtr);
 		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), identity, true, true);
 		myContent.put("portrait", portraitCtr.getInitialComponent());
@@ -468,9 +481,9 @@ public class UserAdminController extends BasicController implements Activateable
 		userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), identity);
 		myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	@Override
