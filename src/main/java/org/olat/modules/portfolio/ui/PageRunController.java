@@ -155,6 +155,10 @@ public class PageRunController extends BasicController implements TooledControll
 			listenTo(pageEditCtrl);
 			mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
+			// Remove comments controller in edit mode, save button confuses user
+			if(commentsCtrl != null && commentsCtrl.getCommentsCount() == 0) {
+				mainVC.remove(commentsCtrl.getInitialComponent());
+			}
 		}
 	}
 
@@ -517,7 +521,7 @@ public class PageRunController extends BasicController implements TooledControll
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
 			editLink(false);
 			// Remove comments controller in edit mode, save button confuses user
-			if(commentsCtrl != null) {
+			if(commentsCtrl != null && commentsCtrl.getCommentsCount() == 0) {
 				mainVC.remove(commentsCtrl.getInitialComponent());
 			}
 		}

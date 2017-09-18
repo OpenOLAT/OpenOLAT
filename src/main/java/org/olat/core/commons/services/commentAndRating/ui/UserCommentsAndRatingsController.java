@@ -218,7 +218,7 @@ public class UserCommentsAndRatingsController extends BasicController implements
 	 * 
 	 * @return
 	 */
-	long getCommentsCount() {
+	public long getCommentsCount() {
 		if (commentsCount != null) {			
 			return commentsCount.longValue();
 		} else {
