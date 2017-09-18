@@ -192,8 +192,9 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implemen
 	public List<Answer> getAnswers() {
 		List<HotspotChoice> hotspotChoices = getHotspotChoices();
 		List<Answer> answers = new ArrayList<>(hotspotChoices.size());
+		int count = 0;
 		for(HotspotChoice choice:hotspotChoices) {
-			answers.add(new Answer(choice.getIdentifier(), null));
+			answers.add(new Answer(choice.getIdentifier(), Integer.toString(++count)));
 		}
 		return answers;
 	}

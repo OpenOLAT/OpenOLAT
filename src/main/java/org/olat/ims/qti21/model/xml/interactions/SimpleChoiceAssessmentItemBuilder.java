@@ -132,7 +132,7 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 		List<Answer> answers = new ArrayList<>(simpleChoices.size());
 		for(SimpleChoice choice:simpleChoices) {
 			String choiceContent =  getHtmlHelper().flowStaticString(choice.getFlowStatics());
-			String label = FilterFactory.getHtmlTagsFilter().filter(choiceContent);
+			String label = FilterFactory.getHtmlTagAndDescapingFilter().filter(choiceContent);
 			answers.add(new Answer(choice.getIdentifier(), label));
 		}
 		return answers;
