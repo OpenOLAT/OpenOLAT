@@ -246,8 +246,8 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.mark.MarksTest.class,
 	org.olat.test.SpringInitDestroyVerficationTest.class,
 	//org.olat.course.statistic.weekly.TestWeeklyStatisticManager_fillGaps.class, don't know what it tests
-	org.olat.core.commons.services.commentAndRating.UserCommentsTest.class,
-	org.olat.core.commons.services.commentAndRating.UserRatingsDAOTest.class,
+	org.olat.core.commons.services.commentAndRating.manager.UserCommentsDAOTest.class,
+	org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAOTest.class,
 	org.olat.course.auditing.UserNodeAuditManagerTest.class,
 	org.olat.shibboleth.handler.SpringShibbolethAttributeHandlerFactoryTest.class,
 	org.olat.core.CoreSpringFactoryTest.class,
@@ -322,6 +322,7 @@ import org.junit.runners.Suite;
 	/**
 	 * Pure JUnit test without need of framework
 	 */
+	org.olat.core.commons.services.commentAndRating.manager.CommentAndRatingServiceImplTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.richText.TextModeTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.TextElementRendererTest.class,
 	org.olat.modules.card2brain.manager.Card2BrainManagerImplTest.class,

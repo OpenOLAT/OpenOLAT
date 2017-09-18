@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.commentAndRating;
+package org.olat.core.commons.services.commentAndRating.manager;
 
 import static org.junit.Assert.assertEquals;
 
@@ -43,7 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author gnaegi
  */
-public class UserCommentsTest extends OlatTestCase {
+public class UserCommentsDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private UserCommentsDAO userCommentsDao;
