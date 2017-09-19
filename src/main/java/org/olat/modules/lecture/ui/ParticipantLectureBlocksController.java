@@ -163,8 +163,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		} else {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.absentLectures));
 		}
-		
-		
+	
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.status,
 				new LectureBlockRollCallStatusCellRenderer(authorizedAbsenceEnabled, absenceDefaultAuthorized, getTranslator())));
 
@@ -317,9 +316,22 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		contactList.addAllIdentites(teachers);
 		contactList.addAllIdentites(onwers);
 		
+		StringBuilder teacherNames = new StringBuilder();
+		for(Identity teacher:teachers) {
+			if(teacherNames.length() > 0) teacherNames.append(", ");
+			teacherNames.append(teacher.getUser().getFirstName()).append(" ").append(teacher.getUser().getLastName());
+		}
+		String date = Formatter.getInstance(getLocale()).formatDate(block.getStartDate());
+		String[] args = new String[] {
+			row.getLectureBlockTitle(),
+			teacherNames.toString(),
+			date
+		};
+		
 		ContactMessage cmsg = new ContactMessage(getIdentity());
 		cmsg.addEmailTo(contactList);
-		cmsg.setSubject(translate("appeal.subject", new String[]{ row.getLectureBlockTitle() }));
+		cmsg.setSubject(translate("appeal.subject", args));
+		cmsg.setBodyText(translate("appeal.body", args));
 		appealCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		appealCtrl.setUserObject(row);
 		appealCtrl.setContactFormTitle(translate("new.appeal.title"));
