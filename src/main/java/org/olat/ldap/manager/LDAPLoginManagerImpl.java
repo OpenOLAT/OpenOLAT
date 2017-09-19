@@ -1177,15 +1177,15 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				} else {
 					log.warn(errors.get(), null);
 				}
-				
-				
 			} catch (Exception e) {
 				// catch here to go on with other users on exeptions!
 				log.error("some error occured in looping over set of changed user-attributes, actual user " + user + ". Will still continue with others.", e);
-			}
-			
-			if(count % 10 == 0) {
-				dbInstance.commitAndCloseSession();
+				errors.insert("Cannot sync user: " + user);
+			} finally {
+				dbInstance.commit();
+				if(count % 10 == 0) {
+					dbInstance.closeSession();
+				}
 			}
 			if(count % 1000 == 0) {
 				log.info("Retrieve " + count + "/" + ldapUserList.size() + " users in LDAP server");
@@ -1200,11 +1200,16 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			int syncCount = 0;
 			for (IdentityRef ident : changedMapIdentityMap.keySet()) {
 				// sync user is exception save, no try/catch needed
-				syncUser(changedMapIdentityMap.get(ident), ident);
-				
-				syncCount++;
-				if(syncCount % 20 == 0) {
-					dbInstance.commitAndCloseSession();
+				try {
+					syncCount++;
+					syncUser(changedMapIdentityMap.get(ident), ident);
+				} catch (Exception e) {
+					errors.insert("Cannot sync user: " + ident);
+				} finally {
+					dbInstance.commit();
+					if(syncCount % 20 == 0) {
+						dbInstance.closeSession();
+					}
 				}
 				if(syncCount % 1000 == 0) {
 					log.info("Update " + syncCount + "/" + changedMapIdentityMap.size() + " LDAP users");
@@ -1218,26 +1223,27 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			log.info("LDAP batch sync: no users to create" + sinceSentence);
 		} else {			
 			int newCount = 0;
-			
 			for (LDAPUser ldapUser: newLdapUserList) {
 				Attributes userAttrs = ldapUser.getAttributes();
 				try {
+					newCount++;
 					Identity identity = createAndPersistUser(userAttrs);
 					if(StringHelper.containsNonWhitespace(ldapUser.getDn())) {
 						dnToIdentityKeyMap.put(ldapUser.getDn(), ldapUser);
 						ldapUser.setCachedIdentity(new IdentityRefImpl(identity.getKey()));
 					}
-					
-					newCount++;
-					if(newCount % 20 == 0) {
-						dbInstance.intermediateCommit();
-					}
-					if(newCount % 1000 == 0) {
-						log.info("Create " + count + "/" + newLdapUserList.size() + " LDAP users");
-					}
 				} catch (Exception e) {
 					// catch here to go on with other users on exeptions!
 					log.error("some error occured while creating new users, actual userAttribs " + userAttrs + ". Will still continue with others.", e);
+				} finally {
+					dbInstance.commit();
+					if(newCount % 20 == 0) {
+						dbInstance.closeSession();
+					}
+				}
+				
+				if(newCount % 1000 == 0) {
+					log.info("Create " + count + "/" + newLdapUserList.size() + " LDAP users");
 				}
 			}
 			log.info("LDAP batch sync: " + newLdapUserList.size() + " users created" + sinceSentence);
