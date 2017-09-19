@@ -268,7 +268,7 @@ public class OpenXMLDocument {
 		
 		if(StringHelper.containsNonWhitespace(documentHeader)) {
 			try(InputStream headerIn = OpenXMLDocument.class.getResourceAsStream("_resources/header.xml")) {
-				String headerTemplate = IOUtils.toString(headerIn);
+				String headerTemplate = IOUtils.toString(headerIn, "UTF-8");
 				String header = headerTemplate.replace("[oodocumentitlte]", documentHeader);
 
 				String headerId = generateId();

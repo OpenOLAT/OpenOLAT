@@ -471,6 +471,11 @@ public class QTI21WordExport implements MediaResource {
 				case "simpleassociablechoice":
 					//do nothing
 					break;
+				case "div":
+				case "p":
+					trimTextBuffer();
+					super.startElement(uri, localName, qName, attributes);
+					break;
 				default: {
 					if(renderElement) {
 						super.startElement(uri, localName, qName, attributes);
@@ -668,7 +673,7 @@ public class QTI21WordExport implements MediaResource {
 		
 		private void startMatch(MatchInteraction matchInteraction) {
 			List<String> cssClasses = matchInteraction.getClassAttr();
-			if(cssClasses.contains(QTI21Constants.CSS_MATCH_DRAG_AND_DROP)) {
+			if(cssClasses != null && cssClasses.contains(QTI21Constants.CSS_MATCH_DRAG_AND_DROP)) {
 				if(hasClass(matchInteraction, QTI21Constants.CSS_MATCH_SOURCE_TOP)
 						|| hasClass(matchInteraction, QTI21Constants.CSS_MATCH_SOURCE_BOTTOM)) {
 					startMatchDragAndDropHorizontal(matchInteraction);

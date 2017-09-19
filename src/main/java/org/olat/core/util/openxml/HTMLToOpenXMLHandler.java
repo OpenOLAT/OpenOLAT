@@ -167,6 +167,17 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 		return null;
 	}
 	
+	protected void trimTextBuffer() {
+		if(textBuffer == null) return;
+		
+		String text = textBuffer.toString().trim();
+		if(text.length() == 0) {
+			textBuffer = null;
+		} else {
+			textBuffer = new StringBuilder(text);
+		}
+	}
+	
 	protected void flushText() {
 		if(textBuffer == null) return;
 		
@@ -403,7 +414,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) {
 		String tag = localName.toLowerCase();
-		if("p".equalsIgnoreCase(tag)) {
+		if("p".equals(tag)) {
 			getCurrentParagraph(pNeedNewParagraph);
 		} else if("span".equalsIgnoreCase(tag)) {
 			flushText();
@@ -419,18 +430,18 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			styleStack.add(new StyleStatus(tag, styles));
 		} else if("br".equals(tag)) {
 			closeParagraph();
-		} else if("em".equalsIgnoreCase(tag)) {
+		} else if("em".equals(tag)) {
 			flushText();
 			Style[] styles = setTextPreferences(Style.italic);
 			styleStack.add(new StyleStatus(tag, styles));
-		} else if("strong".equalsIgnoreCase(tag)) {
+		} else if("strong".equals(tag)) {
 			flushText();
 			Style[] styles = setTextPreferences(Style.bold);
 			styleStack.add(new StyleStatus(tag, styles));
 		} else if("img".equals(tag)) {
 			String path = attributes.getValue("src");
 			setImage(path);
-		} else if("table".equalsIgnoreCase(tag)) {
+		} else if("table".equals(tag)) {
 			startTable();
 		} else if("tr".equals(tag)) {
 			startCurrentTableRow();
@@ -456,9 +467,11 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 					appendParagraph(new Spacing(120, 0));
 					pNeedNewParagraph = false;
 				} else {
+					getCurrentParagraph(pNeedNewParagraph);
 					styleStack.add(new StyleStatus(tag, new Style[0]));
 				}
 			} else {
+				getCurrentParagraph(pNeedNewParagraph);
 				styleStack.add(new StyleStatus(tag, new Style[0]));
 			}
 		}
@@ -506,6 +519,7 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 			popStyle(tag);
 		} else if("div".equals(tag)) {
 			popStyle(tag);
+			closeParagraph();
 		}
 	}
 	
