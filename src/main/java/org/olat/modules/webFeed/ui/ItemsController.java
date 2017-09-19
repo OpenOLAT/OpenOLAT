@@ -77,9 +77,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * This class is responsible for dealing with items. For internal podcasts,
  * items can be created, edited and deleted.
- * 
+ *
  * Initial Date: Mar 2, 2009 <br>
- * 
+ *
  * @author gwassmann
  */
 public class ItemsController extends BasicController implements Activateable2 {
@@ -91,7 +91,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private Map<Item, Controller> artefactLinks;
 	private Map<Item, Controller> commentsLinks;
 	private Link addItemButton, makeInternalButton, makeExternalButton, olderItemsLink, newerItemsLink, startpageLink;
+	private Link externalUrlButton;
 	private FormBasicController itemFormCtr;
+	private ExternalUrlController externalUrlCtr;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDialogCtr;
 	private Feed feedResource;
@@ -122,7 +124,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * default constructor, with full FeedItemDisplayConfig
-	 * 
+	 *
 	 * @param ureq
 	 * @param wControl
 	 * @param feed
@@ -139,7 +141,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * load items with a given displayconfig
-	 * 
+	 *
 	 * @param ureq
 	 * @param wControl
 	 * @param feed
@@ -227,7 +229,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * Creates all necessary buttons for editing the feed's items
-	 * 
+	 *
 	 * @param feed
 	 *            the current feed object
 	 */
@@ -243,6 +245,9 @@ public class ItemsController extends BasicController implements Activateable2 {
 					createButtonsForItem(ureq, feed, item);
 				}
 			}
+		} else if (feed.isExternal()) {
+			externalUrlButton = LinkFactory.createButtonSmall("feed.external.url", vcItems, this);
+			externalUrlButton.setElementCssClass("o_sel_feed_item_new");
 		} else if (feed.isUndefined()) {
 			// The feed is whether internal nor external:
 			// That is,
@@ -258,7 +263,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * Create the comments and rating components for each feed item
-	 * 
+	 *
 	 * @param ureq
 	 * @param feed
 	 */
@@ -273,7 +278,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * Create comments and rating component link for given feed item
-	 * 
+	 *
 	 * @param ureq
 	 * @param feed
 	 * @param item
@@ -303,7 +308,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * Create a GUI component to display a nicely formatted date
-	 * 
+	 *
 	 * @param ureq
 	 * @param feed
 	 */
@@ -480,10 +485,15 @@ public class ItemsController extends BasicController implements Activateable2 {
 			if (item != null) {
 				displayItemController(ureq, item);
 			}
+		} else if (source == externalUrlButton) {
+			externalUrlCtr = uiFactory.createExternalUrlController(ureq, getWindowControl(), feedResource);
+			activateModalDialog(externalUrlCtr, uiFactory.getTranslator().translate("feed.external.url"));
 		} else if (source == makeInternalButton) {
 			if (feedResource.isUndefined()) {
 				feedResource = feedManager.updateFeedMode(Boolean.FALSE, feedResource);
 			} else if (feedResource.isExternal()) {
+				externalUrlButton = LinkFactory.createButtonSmall("feed.external.url", vcItems, this);
+				externalUrlButton.setElementCssClass("o_sel_feed_item_new");
 				// Very special case: another user concurrently changed feed to
 				// external. Do nothing
 				vcItems.setDirty(true);
@@ -508,6 +518,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 		} else if (source == makeExternalButton) {
 			if (feedResource.isUndefined()) {
+				externalUrlButton = LinkFactory.createButtonSmall("feed.external.url", vcItems, this);
+				externalUrlButton.setElementCssClass("o_sel_feed_item_new");
 				feedResource = feedManager.updateFeedMode(Boolean.TRUE, feedResource);
 				vcItems.setDirty(true);
 				// Ask listening FeedMainController to open and handle a new
@@ -518,8 +530,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 				ThreadLocalUserActivityLogger.log(FeedLoggingAction.FEED_EDIT, getClass(),
 						LoggingResourceable.wrap(feedResource));
 			}
-			// else nothing to do, already set to external by a concurrent user
-
 		} else if (source == olderItemsLink) {
 			helper.olderItems();
 			createEditButtons(ureq, feedResource);
@@ -719,6 +729,18 @@ public class ItemsController extends BasicController implements Activateable2 {
 				removeAsListenerAndDispose(itemFormCtr);
 				itemFormCtr = null;
 			}
+		} else if (source == externalUrlCtr) {
+			if (event.equals(Event.CHANGED_EVENT))  {
+				String externalUrl = externalUrlCtr.getExternalFeedUrlEl();
+				feedManager.updateExternalFeedUrl(feedResource, externalUrl);
+			} else if (event.equals(Event.CHANGED_EVENT)) {
+				// nothing to do
+			}
+			cmc.deactivate();
+			removeAsListenerAndDispose(cmc);
+			cmc = null;
+			removeAsListenerAndDispose(externalUrlCtr);
+			externalUrlCtr = null;
 		} else if (source == naviCtr && event instanceof NavigationEvent) {
 			List<? extends Dated> selItems = ((NavigationEvent) event).getSelectedItems();
 			List<Item> items = new ArrayList<>();
@@ -763,13 +785,13 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * Private helper to remove any temp media files created for this feed
-	 * 
+	 *
 	 * @param tmpItem
 	 */
 	private void cleanupTmpItemMediaDir(Item tmpItem) {
 		String guid = tmpItem.getGuid();
 		if (guid == null) return;
-		
+
 		// delete the dir only if the item is not saved.
 		Long key = tmpItem.getKey();
 		if (key == null) {
@@ -792,7 +814,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * Sets the items view dirty.
-	 * 
+	 *
 	 * @param ureq
 	 * @param feed
 	 *            the current feed
@@ -819,7 +841,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 
 	/**
 	 * Displays the item in the mainPanel of this controller.
-	 * 
+	 *
 	 * @param ureq
 	 * @param item
 	 */

@@ -42,10 +42,10 @@ import org.olat.resource.OLATResource;
 /**
  * The <code>FeedManager</code> singleton is responsible for dealing with feed
  * resources.
- * 
+ *
  * <P>
  * Initial Date: Feb 11, 2009 <br>
- * 
+ *
  * @author gwassmann
  */
 public abstract class FeedManager {
@@ -63,7 +63,7 @@ public abstract class FeedManager {
 
 	/**
 	 * Use this method instead of any constructor to get the singelton object.
-	 * 
+	 *
 	 * @return INSTANCE
 	 */
 	public static final FeedManager getInstance() {
@@ -71,15 +71,15 @@ public abstract class FeedManager {
 	}
 
 	/**
-	 * Creates a blank OLAT podcast resource 
-	 * 
+	 * Creates a blank OLAT podcast resource
+	 *
 	 * @return The resource
 	 */
 	public abstract OLATResourceable createPodcastResource();
-	
+
 	/**
 	 * Check if a feed has items
-	 * 
+	 *
 	 * @param feed
 	 * @return
 	 */
@@ -87,38 +87,38 @@ public abstract class FeedManager {
 
 	/**
 	 * Creates a blank OLAT blog resource
-	 * 
+	 *
 	 * @return The resource
 	 */
 	public abstract OLATResourceable createBlogResource();
 
 	/**
 	 * Deletes a feed.
-	 * 
+	 *
 	 * @param feed
 	 */
 	public abstract void deleteFeed(OLATResourceable feed);
 
 	/**
 	 * Copies a given feed resourceable
-	 * 
+	 *
 	 * @param feed
 	 */
 	public abstract boolean copy(OLATResource source, OLATResource target);
-	
+
 	/**
 	 * Enrich the feed with the properties in the RepositoryEntry.
-	 * 
+	 *
 	 * @param feed
 	 * @param entry
 	 * @return the same Feed object with actualized attributes
 	 */
 	public abstract Feed enrichFeedByRepositoryEntry(Feed feed, RepositoryEntry entry);
-	
+
 	/**
 	 * Update the feed with the properties in the RepositoryEntry and save it
 	 * in the database.
-	 * 
+	 *
 	 * @param entry
 	 * @return a new updated Feed object
 	 */
@@ -127,7 +127,7 @@ public abstract class FeedManager {
 	/**
 	 * Create the given Item and saves the appropriate file (podcast, video etc.)
 	 * on the file system.
-	 * 
+	 *
 	 * @param feed the item will be added to this feed
 	 * @param item the item to add
 	 * @param file the file of the item
@@ -135,21 +135,21 @@ public abstract class FeedManager {
 	 */
 	public abstract Feed createItem(Feed feed, Item item, FileElement file);
 
-	
+
 	/**
 	 * Removes the given Item from the feed and delete the item from the
 	 * database. Additionally the content on the file system (podcast etc.)
 	 * and the comments and the ratings of the item are deleted.
-	 * 
+	 *
 	 * @param item the item to remove
 	 * @return the feed without the removed item
 	 */
 	public abstract Feed deleteItem(Item item);
-	
+
 	/**
 	 * Update the Item in the database and save the file element in the file
 	 * system.
-	 * 
+	 *
 	 * @param modifiedItem
 	 * @param file
 	 * @return the updated feed
@@ -159,7 +159,7 @@ public abstract class FeedManager {
 	/**
 	 * Update the feed source mode. Additionally it deleted all Items of the Feed
 	 * if the mode of the Feed changes.
-	 * 
+	 *
 	 * @param external true: set to be an external feed; false: this is an
 	 *          internal feed; null: undefined
 	 * @param feed
@@ -169,27 +169,37 @@ public abstract class FeedManager {
 
 	/**
 	 * Update the feed from the given feed object
-	 * 
+	 *
 	 * @param feed
 	 * @return
 	 */
 	public abstract Feed updateFeed(Feed feed);
-	
+
+	/**
+	 * Update the external URL of the feed, delete all items of the feed and
+	 * download the items of the new external feed URL.
+	 *
+	 * @param feed
+	 * @param externalFeedUrl
+	 * @return
+	 */
+	public abstract Feed updateExternalFeedUrl(Feed feed, String externalFeedUrl);
+
 	/**
 	 * Load the Item with the given key from the database or NULL if no such
 	 * item exists.
-	 * 
+	 *
 	 * @param key the key of the Item
 	 * @return the loaded Item or NULL
 	 */
 	public abstract Item loadItem(Long key);
-	
+
 	/**
 	 * Load the Item with the given guid from the database or NULL if no such
 	 * item exists.
 	 * @param feedKey the key of the feed
 	 * @param guid the guid of the Item
-	 * 
+	 *
 	 * @return the loaded Item or NULL
 	 */
 	public abstract Item loadItemByGuid(Long feedKey, String guid);
@@ -197,60 +207,60 @@ public abstract class FeedManager {
 	/**
 	 * Load the Item with the given guid from the database or NULL if no such
 	 * item exists or more then one items with the same guid exist.
-	 * 
+	 *
 	 * @param itemId
 	 * @return
 	 */
 	public abstract Item loadItemByGuid(String itemId);
- 
+
 	/**
 	 * Load all items of the feed (from file system or the external feed)
-	 * 
+	 *
 	 * @param feed
 	 */
 	public abstract List<Item> loadItems(Feed feed);
-	
+
 	/**
 	 * Load the guid of all Items of the feed
-	 * 
+	 *
 	 * @param feed
 	 */
 	public abstract List<String> loadItemsGuid(Feed feed);
-	
+
 	/**
 	 * Load all published Items
-	 * 
+	 *
 	 * @param feed
 	 */
 	public abstract List<Item> loadPublishedItems(Feed feed);
-	
+
 	/**
 	 * Load all Items of a feed and filter them in relation to the identity rights.
-	 * 
+	 *
 	 * @param feed
 	 * @param callback
 	 * @param identity
 	 * @return
 	 */
 	public abstract List<Item> loadFilteredAndSortedItems(Feed feed, FeedSecurityCallback callback, Identity identity);
-	
+
 	/**
 	 * Returns the feed with the provided id or null if not found.
-	 * 
+	 *
 	 * @param feed The feed to be re-read
 	 * @return The newly read feed
 	 */
 	public abstract Feed loadFeed(OLATResourceable feed);
-	
+
 	/**
 	 * Returns the feed from the XML file inside the directory or null if not
 	 * found.
-	 * 
+	 *
 	 * @param feedDir the directory which contains the feed file
 	 * @return the feed or null
 	 */
 	public abstract Feed loadFeedFromXML(Path feedDir);
-	
+
 	/**
 	 * In the early days all information about a feed where stored in XML files.
 	 * This method migrates that old feeds from the XML files to the database.
@@ -259,7 +269,7 @@ public abstract class FeedManager {
 	 * the end the XML files are deleted. If the Feed is imported from an other
 	 * system the identity keys should be deleted because they do not
 	 * correspondent with the keys in the actual system.
-	 * 
+	 *
 	 * @param ores
 	 * @param removeIdentityKeys
 	 *            If true, the identity keys of the author and the modifier are
@@ -269,7 +279,7 @@ public abstract class FeedManager {
 
 	/**
 	 * Returns the media file of the item
-	 * 
+	 *
 	 * @param id
 	 * @param resourceTypeName
 	 * @param itemId
@@ -277,10 +287,10 @@ public abstract class FeedManager {
 	 * @return The media resource (audio or video file of the feed item)
 	 */
 	public abstract MediaResource createItemMediaFile(OLATResourceable feed, String itemId, String fileName);
-	
+
 	/**
 	 * Returns the media file of the feed
-	 * 
+	 *
 	 * @param id
 	 * @param resourceTypeName
 	 * @param fileName
@@ -291,7 +301,7 @@ public abstract class FeedManager {
 	/**
 	 * Returns the base URI of the feed including user identity key and token if
 	 * necessary.
-	 * 
+	 *
 	 * @param feed
 	 * @param idKey
 	 * @return The base URI of the (RSS) feed
@@ -300,7 +310,7 @@ public abstract class FeedManager {
 
 	/**
 	 * Creates the RSS feed resource.
-	 * 
+	 *
 	 * @param feedId
 	 * @param type The resource type name
 	 * @param identityKey
@@ -310,7 +320,7 @@ public abstract class FeedManager {
 
 	/**
 	 * Creates and returns a zip-file media resource of the given feed resource
-	 * 
+	 *
 	 * @param resource
 	 * @return A zip-file media resource
 	 */
@@ -318,7 +328,7 @@ public abstract class FeedManager {
 
 	/**
 	 * Create and returns a zip-file as VFSLeaf of the given feed resourue
-	 * 
+	 *
 	 * @param ores the resource
 	 * @return The VFSLeaf
 	 */
@@ -326,40 +336,40 @@ public abstract class FeedManager {
 
 	/**
 	 * Returns the container of the item which belongs to the feed
-	 * 
+	 *
 	 * @param item
 	 * @return The container of the item
 	 */
 	public abstract VFSContainer getItemContainer(Item item);
-	
+
 	/**
 	 * Save the item in an XML file in the item container.
-	 * 
+	 *
 	 * @param item
 	 */
 	public abstract void saveItemAsXML(Item item);
-	
+
 	/**
 	 * Delete the item XML file from the item container.
-	 * 
+	 *
 	 * @param item
 	 */
 	public abstract void deleteItemXML(Item item);
 
 	/**
 	 * Returns the File of the item's enclosure if it exists or null
-	 * 
+	 *
 	 * @param item
 	 * @return The enclosure media file
 	 */
 	public abstract File loadItemEnclosureFile(Item item);
 
-	
+
 	public abstract Quota getQuota(OLATResourceable feed);
 
 	/**
 	 * Validates a feed url.
-	 * 
+	 *
 	 * @param url
 	 * @return valid url (rss, atom etc.)
 	 */
@@ -367,14 +377,14 @@ public abstract class FeedManager {
 
 	/**
 	 * Releases a lock
-	 * 
+	 *
 	 * @param lock The lock to be released
 	 */
 	public abstract void releaseLock(LockResult lock);
 
 	/**
 	 * Acquires the lock on the specified feed
-	 * 
+	 *
 	 * @param feed The feed to be locked
 	 * @param identity The person who is locking the resource
 	 * @return The lock result
@@ -383,7 +393,7 @@ public abstract class FeedManager {
 
 	/**
 	 * Acquires the lock of an item
-	 * 
+	 *
 	 * @param feed The item's feed
 	 * @param item The item to be locked
 	 * @param identity The person who is locking the resource
@@ -398,13 +408,13 @@ public abstract class FeedManager {
 	public boolean isLocked(OLATResourceable feed) {
 		return CoordinatorManager.getInstance().getCoordinator().getLocker().isLocked(feed, null);
 	}
-	
+
 	/**
 	 * There are different kinds of web feeds, e.g. podcasts, blogs etc. This
 	 * method returns the kind of a resourceType. In contrast to the resource type
 	 * name, the kind is a single noun designating the feed. It might be used to
 	 * get a comprehensible expression for folder or file names.
-	 * 
+	 *
 	 * @param ores
 	 * @return The kind of the resource type
 	 */
@@ -413,16 +423,16 @@ public abstract class FeedManager {
 	/**
 	 * Replace the image of the feed.
 	 * If the image is null, the existing image is kept.
-	 * 
+	 *
 	 * @param feed
 	 * @param image
 	 * @return
 	 */
 	public abstract Feed replaceFeedImage(Feed feed, FileElement image);
-	
+
 	/**
 	 * Delete the feed image.
-	 * 
+	 *
 	 * @param feed
 	 * @return
 	 */

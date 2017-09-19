@@ -39,10 +39,10 @@ import org.olat.modules.webFeed.ui.FeedUIFactory;
 
 /**
  * UI factory for blogs.
- * 
+ *
  * <P>
  * Initial Date: Jun 8, 2009 <br>
- * 
+ *
  * @author gwassmann
  */
 public class BlogUIFactory extends FeedUIFactory {
@@ -102,4 +102,5 @@ public class BlogUIFactory extends FeedUIFactory {
 			UserRequest ureq, WindowControl control) {
 		return new BlogNodeEditController(courseNode, course, uce, ureq, control);
 	}
+
 }
