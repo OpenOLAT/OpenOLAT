@@ -32,15 +32,16 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.AbstractFeedCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.Item;
 
 /**
  * Abstract Factory Pattern for the user interface of different feed types.
- * 
+ *
  * <P>
  * Initial Date: Jul 30, 2009 <br>
- * 
+ *
  * @author gwassmann
  */
 public abstract class FeedUIFactory {
@@ -53,7 +54,7 @@ public abstract class FeedUIFactory {
 	public abstract Translator getTranslator();
 
 	public abstract void setTranslator(Locale locale);
-	
+
 	public abstract VelocityContainer createInfoVelocityContainer(BasicController controller);
 
 	public abstract VelocityContainer createItemsVelocityContainer(BasicController controller);
@@ -71,7 +72,7 @@ public abstract class FeedUIFactory {
 	public final FeedMainController createMainController(OLATResourceable ores, UserRequest ureq, WindowControl wControl, FeedSecurityCallback callback) {
 		return new FeedMainController(ores, ureq, wControl, null, null, this, callback, null);
 	}
-	
+
 	// with specific FeedItemDisplayConfig
 	public final FeedMainController createMainController(final OLATResourceable ores, final UserRequest ureq, final WindowControl wControl, final FeedSecurityCallback callback, FeedItemDisplayConfig displayConfig) {
 		return new FeedMainController(ores, ureq, wControl, null, null, this, callback, displayConfig);
@@ -81,6 +82,9 @@ public abstract class FeedUIFactory {
 
 	public abstract TabbableController createNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce, UserRequest ureq,
 			WindowControl control);
-	
-	
+
+	public ExternalUrlController createExternalUrlController(UserRequest ureq, WindowControl windowControl, Feed feedResource) {
+		return new ExternalUrlController(ureq, windowControl, feedResource);
+	}
+
 }

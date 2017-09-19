@@ -4,6 +4,11 @@
 		$r.render("feed.add.item")
 	</div>
 #end
+#if ($callback.mayCreateItems() && $feed.isExternal())
+	<div class="pull-right">
+		$r.render("feed.external.url")
+	</div>
+#end
 <div class="clearfix"></div>
 
 #if ($items.size() == 0)
@@ -38,14 +43,14 @@
 					$r.escapeHtml($episode.getTitle())
 				#end
 				<i class="o_icon o_icon_$helper.getMediaType($episode.getEnclosure())"></i>
-				
+
 				#if($r.available("date.$episode.getGuid()"))
 					<small>
 						$r.render("date.$episode.getGuid()")
 					</small>
 				#end
 				</h3>
-				<div class="o_meta">				
+				<div class="o_meta">
 				#set ( $info = $helper.getInfo($episode) )
 				#if ( $info )
 					$info
@@ -55,18 +60,18 @@
 				#end
 				</div>
 			</div>
-			
+
 			<div class="o_content o_user_content_block">
 				$!helper.getItemDescriptionForBrowser($episode)
-				 
+
 				#set($podId = $r.getUniqueId())
-				#if ($!episode.getEnclosure())								
+				#if ($!episode.getEnclosure())
 				<div class="o_block_large_top o_enclosure">
 					<div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($episode.getEnclosure())"></div>
-					
+
 					<div class="o_block_top">
 						<a href="$!helper.getMediaUrl($episode)" target="_blank">
-							<i class="o_icon o_icon-fw o_filetype_$!helper.getMediaType($episode.getEnclosure())"></i> 
+							<i class="o_icon o_icon-fw o_filetype_$!helper.getMediaType($episode.getEnclosure())"></i>
 							$r.translate("podcast.episode.download")
 						</a>
 					</div>
@@ -84,7 +89,7 @@
 				#end
 
 			</div>
-			
+
 			<div class="o_block_footer">
 				<div class="clearfix">
 					<ul class="o_readmore list-inline pull-right">
@@ -93,18 +98,18 @@
 						#end
 						#if ($feed.isExternal() && $episode.getExternalLink())
 							<li><a href="$!episode.getExternalLink()" target="_blank">
-								$r.translate("feed.item.original") 
+								$r.translate("feed.item.original")
 								<i class="o_icon o_icon_start"></i>
 							</a></li>
 						#end
 					</ul>
-	
+
 					#if ($r.available("commentsAndRating.${episode.getGuid()}"))
 						$r.render("commentsAndRating.${episode.getGuid()}")
 					#end
 				</div>
 			</div>
-			
+
 			#if($feed.isInternal())
 			<div class="o_button_group">
 				#if ($r.available("feed.edit.item.$episode.getGuid()") && $r.visible("feed.edit.item.$episode.getGuid()"))
@@ -117,7 +122,7 @@
 			#end
 		</div>
 	#end
-	
+
 	<div class="o_button_group">
 		<ul class="pagination">
 			<li>

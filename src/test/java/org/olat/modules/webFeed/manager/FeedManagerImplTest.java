@@ -69,6 +69,8 @@ public class FeedManagerImplTest {
 	private static final Long FEED_KEY = 4L;
 	private static final String RESOURCEABLE_TYPE_NAME = "resurcable type name";
 	private static final Long RESOURCABLE_ID = 5L;
+	private static final String EXTERNAL_URL_OLD = "oldExternalURL";
+	private static final String EXTERNAL_URL_NEW = "newExternalURL";
 	private static final Long ITEM_KEY = 6L;
 	private static Identity IGNORE_NEWS_FOR_NOBODY = null;
 	private static boolean SEND_NO_EVENTS = false;
@@ -76,9 +78,10 @@ public class FeedManagerImplTest {
 	@Mock
 	private OLATResource resourceDummy;
 	@Mock
-	private Feed feedMock;
+	private Feed internatFeedMock;
+	private Feed externalFeed;
 	@Mock
-	private Item itemMock;
+	private Item internalItemMock;
 	@Mock
 	private FileElement fileElementDummy;
 	@Mock
@@ -108,7 +111,7 @@ public class FeedManagerImplTest {
 	private FeedManagerImpl sut;
 
 	@Before
-	public void injectNonSpringManagers() {
+	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		when(coordinaterManagerMock.getCoordinator()).thenReturn(coordinaterMock);
 		when(coordinaterMock.getSyncer()).thenReturn(syncerDummy);
@@ -121,61 +124,121 @@ public class FeedManagerImplTest {
 		ReflectionTestUtils.setField(sut, "repositoryManager", repositoryManager);
 		ReflectionTestUtils.setField(sut, "notificationsManager", notificationsManagerMock);
 
-		when(feedMock.getKey()).thenReturn(FEED_KEY);
-		when(feedMock.getResourceableTypeName()).thenReturn(RESOURCEABLE_TYPE_NAME);
-		when(feedMock.getResourceableId()).thenReturn(RESOURCABLE_ID);
-		when(feedMock.isInternal()).thenReturn(true);
+		when(internatFeedMock.getKey()).thenReturn(FEED_KEY);
+		when(internatFeedMock.getResourceableTypeName()).thenReturn(RESOURCEABLE_TYPE_NAME);
+		when(internatFeedMock.getResourceableId()).thenReturn(RESOURCABLE_ID);
+		when(internatFeedMock.isInternal()).thenReturn(true);
 
-		when(itemMock.getKey()).thenReturn(ITEM_KEY);
-		when(itemMock.getFeed()).thenReturn(feedMock);
+		when(internalItemMock.getKey()).thenReturn(ITEM_KEY);
+		when(internalItemMock.getFeed()).thenReturn(internatFeedMock);
+
+		externalFeed = new FeedImpl(resourceDummy);
+		externalFeed.setKey(FEED_KEY);
+		externalFeed.setExternal(true);
+		externalFeed.setExternalFeedUrl(EXTERNAL_URL_OLD);
+	}
+
+	@Test
+	public void shouldUpdateFeedWhenExternalUrlChanged() {
+		when(feedDAOMock.loadFeed(externalFeed)).thenReturn(externalFeed);
+		when(feedDAOMock.updateFeed(externalFeed)).thenReturn(externalFeed);
+
+		Feed updatedFeed = sut.updateExternalFeedUrl(externalFeed, EXTERNAL_URL_NEW);
+
+		assertThat(updatedFeed.getExternalFeedUrl()).isEqualTo(EXTERNAL_URL_NEW);
+		assertThat(updatedFeed.getLastModified()).isNotNull();
+		verify(feedDAOMock).updateFeed(externalFeed);
+	}
+
+	@Test
+	public void shouldNotUpdateFeedWhenExternalUrlIsTheSame() {
+		when(feedDAOMock.loadFeed(externalFeed)).thenReturn(externalFeed);
+		when(feedDAOMock.updateFeed(externalFeed)).thenReturn(externalFeed);
+
+		Feed updatedFeed = sut.updateExternalFeedUrl(externalFeed, EXTERNAL_URL_OLD);
+
+		assertThat(updatedFeed.getExternalFeedUrl()).isEqualTo(EXTERNAL_URL_OLD);
+		assertThat(updatedFeed.getLastModified()).isNotNull();
+		verify(feedDAOMock).updateFeed(externalFeed);
+	}
+
+	@Test
+	public void shouldDeleteAllItemsIfExternalUrlChanged() {
+		when(feedDAOMock.loadFeed(externalFeed)).thenReturn(externalFeed);
+		when(feedDAOMock.updateFeed(externalFeed)).thenReturn(externalFeed);
+
+		sut.updateExternalFeedUrl(externalFeed, EXTERNAL_URL_NEW);
+
+		verify(itemDAOMock).removeItems(externalFeed);
+	}
+
+	@Test
+	public void shouldNotDeleteItemsWhenExternaUrlIsTheSame() {
+		when(feedDAOMock.loadFeed(externalFeed)).thenReturn(externalFeed);
+		when(feedDAOMock.updateFeed(externalFeed)).thenReturn(externalFeed);
+
+		sut.updateExternalFeedUrl(externalFeed, EXTERNAL_URL_OLD);
+
+		verify(itemDAOMock, never()).removeItems(externalFeed);
+	}
+
+	@Test
+	public void shouldFetchItemsWhenExternalUrlChanged() {
+		when(feedDAOMock.loadFeed(externalFeed)).thenReturn(externalFeed);
+		when(feedDAOMock.updateFeed(externalFeed)).thenReturn(externalFeed);
+
+		sut.updateExternalFeedUrl(externalFeed, EXTERNAL_URL_NEW);
+
+		verify(feedFetcherMock).fetchFeed(externalFeed);
+		verify(feedFetcherMock).fetchItems(externalFeed);
 	}
 
 	@Test
 	public void shouldSaveItemWhenItemCreated() {
-		when(feedDAOMock.loadFeed(FEED_KEY)).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(FEED_KEY)).thenReturn(internatFeedMock);
 
-		sut.createItem(feedMock, itemMock, fileElementDummy);
+		sut.createItem(internatFeedMock, internalItemMock, fileElementDummy);
 
-		verify(itemDAOMock).createItem(feedMock, itemMock);
+		verify(itemDAOMock).createItem(internatFeedMock, internalItemMock);
 	}
 
 	@Test
 	public void shouldOnlyAllowToCreateItemIfFeedIsInternal() {
-		when(feedDAOMock.loadFeed(FEED_KEY)).thenReturn(feedMock);
-		when(feedMock.isInternal()).thenReturn(false);
+		when(feedDAOMock.loadFeed(FEED_KEY)).thenReturn(internatFeedMock);
+		when(internatFeedMock.isInternal()).thenReturn(false);
 
-		Feed feedOfCreatedItem = sut.createItem(null, itemMock, fileElementDummy);
+		Feed feedOfCreatedItem = sut.createItem(null, internalItemMock, fileElementDummy);
 
 		assertThat(feedOfCreatedItem).isNull();
-		verify(itemDAOMock, never()).createItem(feedMock, itemMock);
+		verify(itemDAOMock, never()).createItem(internatFeedMock, internalItemMock);
 	}
 
 	@Test
 	public void shouldSaveItemWhenItemUpdated() {
-		when(itemDAOMock.loadItem(ITEM_KEY)).thenReturn(itemMock);
-		when(itemDAOMock.updateItem(itemMock)).thenReturn(itemMock);
+		when(itemDAOMock.loadItem(ITEM_KEY)).thenReturn(internalItemMock);
+		when(itemDAOMock.updateItem(internalItemMock)).thenReturn(internalItemMock);
 
-		sut.updateItem(itemMock, fileElementDummy);
+		sut.updateItem(internalItemMock, fileElementDummy);
 
-		verify(itemDAOMock).updateItem(itemMock);
+		verify(itemDAOMock).updateItem(internalItemMock);
 	}
 
 	@Test
 	public void shouldNotSaveItemIfItemToUpdateDoesNotExists() {
 		when(itemDAOMock.loadItem(ITEM_KEY)).thenReturn(null);
-		when(itemDAOMock.updateItem(itemMock)).thenReturn(itemMock);
+		when(itemDAOMock.updateItem(internalItemMock)).thenReturn(internalItemMock);
 
-		sut.updateItem(itemMock, fileElementDummy);
+		sut.updateItem(internalItemMock, fileElementDummy);
 
-		verify(itemDAOMock, never()).updateItem(itemMock);
+		verify(itemDAOMock, never()).updateItem(internalItemMock);
 	}
 
 	@Test
 	public void shouldMarkPublisherNewsWhenItemCreated() {
-		when(feedDAOMock.loadFeed(FEED_KEY)).thenReturn(feedMock);
-		when(feedDAOMock.updateFeed(feedMock)).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(FEED_KEY)).thenReturn(internatFeedMock);
+		when(feedDAOMock.updateFeed(internatFeedMock)).thenReturn(internatFeedMock);
 
-		sut.createItem(feedMock, itemMock, fileElementDummy);
+		sut.createItem(internatFeedMock, internalItemMock, fileElementDummy);
 
 		verify(notificationsManagerMock).markPublisherNews(
 				RESOURCEABLE_TYPE_NAME,
@@ -186,10 +249,10 @@ public class FeedManagerImplTest {
 
 	@Test
 	public void shouldMarkPublisherNewsWhenItemUpdated() {
-		when(itemDAOMock.loadItem(ITEM_KEY)).thenReturn(itemMock);
-		when(itemDAOMock.updateItem(itemMock)).thenReturn(itemMock);
+		when(itemDAOMock.loadItem(ITEM_KEY)).thenReturn(internalItemMock);
+		when(itemDAOMock.updateItem(internalItemMock)).thenReturn(internalItemMock);
 
-		sut.updateItem(itemMock, fileElementDummy);
+		sut.updateItem(internalItemMock, fileElementDummy);
 
 		verify(notificationsManagerMock).markPublisherNews(
 				RESOURCEABLE_TYPE_NAME,
@@ -210,9 +273,9 @@ public class FeedManagerImplTest {
 
 	@Test
 	public void importShouldSaveFeedToDatabase() {
-		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(feedMock);
-		when(feedDAOMock.createFeed(any(Feed.class))).thenReturn(feedMock);
-		when(feedMock.isExternal()).thenReturn(false);
+		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(internatFeedMock);
+		when(feedDAOMock.createFeed(any(Feed.class))).thenReturn(internatFeedMock);
+		when(internatFeedMock.isExternal()).thenReturn(false);
 
 		sut.importFeedFromXML(resourceDummy, true);
 
@@ -221,10 +284,10 @@ public class FeedManagerImplTest {
 
 	@Test
 	public void importShouldSaveItemsToDatabase() {
-		List<Item> items = java.util.Arrays.asList(itemMock, itemMock, itemMock);
+		List<Item> items = java.util.Arrays.asList(internalItemMock, internalItemMock, internalItemMock);
 
-		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(feedMock);
-		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
+		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(internatFeedMock);
 		when(feedFileStorageMock.loadItemsFromXML(resourceDummy)).thenReturn(items);
 
 		sut.importFeedFromXML(resourceDummy, true);
@@ -236,8 +299,8 @@ public class FeedManagerImplTest {
 	public void importShouldNotCreateItemsIfNoXmlFilesArePresent() {
 		List<Item> emtpyList = new ArrayList<>();
 
-		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(feedMock);
-		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
+		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(internatFeedMock);
 		when(feedFileStorageMock.loadItemsFromXML(resourceDummy)).thenReturn(emtpyList);
 
 		sut.importFeedFromXML(resourceDummy, true);
@@ -247,110 +310,110 @@ public class FeedManagerImplTest {
 
 	@Test
 	public void importShoulDeleteAuthorKey() {
-		List<Item> items = java.util.Arrays.asList(itemMock);
+		List<Item> items = java.util.Arrays.asList(internalItemMock);
 
-		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(feedMock);
-		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
+		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(internatFeedMock);
 		when(feedFileStorageMock.loadItemsFromXML(resourceDummy)).thenReturn(items);
-		when(itemDAOMock.loadItemByGuid(any(Long.class), any(String.class))).thenReturn(itemMock);
+		when(itemDAOMock.loadItemByGuid(any(Long.class), any(String.class))).thenReturn(internalItemMock);
 
 		sut.importFeedFromXML(resourceDummy, true);
 
-		verify(itemMock).setAuthorKey(null);
+		verify(internalItemMock).setAuthorKey(null);
 	}
 
 	@Test
 	public void importShoulDeleteModifierKey() {
-		List<Item> items = java.util.Arrays.asList(itemMock);
+		List<Item> items = java.util.Arrays.asList(internalItemMock);
 
-		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(feedMock);
-		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
+		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(internatFeedMock);
 		when(feedFileStorageMock.loadItemsFromXML(resourceDummy)).thenReturn(items);
-		when(itemDAOMock.loadItemByGuid(any(Long.class), any(String.class))).thenReturn(itemMock);
+		when(itemDAOMock.loadItemByGuid(any(Long.class), any(String.class))).thenReturn(internalItemMock);
 
 		sut.importFeedFromXML(resourceDummy, true);
 
-		verify(itemMock).setModifierKey(null);
+		verify(internalItemMock).setModifierKey(null);
 	}
 
 	@Test
 	public void importShoulDeleteFeedXmlFile() {
-		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(feedMock);
-		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
+		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(internatFeedMock);
 
 		sut.importFeedFromXML(resourceDummy, true);
 
-		verify(feedFileStorageMock).deleteFeedXML(feedMock);
+		verify(feedFileStorageMock).deleteFeedXML(internatFeedMock);
 	}
 
 	@Test
 	public void importShoulDeleteItemsXmlFiles() {
-		List<Item> items = java.util.Arrays.asList(itemMock, itemMock, itemMock);
+		List<Item> items = java.util.Arrays.asList(internalItemMock, internalItemMock, internalItemMock);
 
-		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(feedMock);
-		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
+		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(internatFeedMock);
 		when(feedFileStorageMock.loadItemsFromXML(resourceDummy)).thenReturn(items);
 
 		sut.importFeedFromXML(resourceDummy, true);
 
-		verify(feedFileStorageMock, times(3)).deleteItemXML(itemMock);
+		verify(feedFileStorageMock, times(3)).deleteItemXML(internalItemMock);
 	}
 
 	@Test
 	public void importShoulLoadItemsOfExternalFeeds() {
-		List<Item> items = java.util.Arrays.asList(itemMock);
+		List<Item> items = java.util.Arrays.asList(internalItemMock);
 
-		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(feedMock);
-		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
+		when(feedFileStorageMock.loadFeedFromXML(any(OLATResource.class))).thenReturn(internatFeedMock);
 		when(feedFileStorageMock.loadItemsFromXML(resourceDummy)).thenReturn(items);
-		when(feedMock.isExternal()).thenReturn(true);
+		when(internatFeedMock.isExternal()).thenReturn(true);
 
 		sut.importFeedFromXML(resourceDummy, true);
 
-		verify(feedFetcherMock).fetchFeed(feedMock);
-		verify(feedFetcherMock).fetchItems(feedMock);
+		verify(feedFetcherMock).fetchFeed(internatFeedMock);
+		verify(feedFetcherMock).fetchItems(internatFeedMock);
 	}
 
 	@Test
 	public void exportShouldWriteFeedToXmlFile() {
-		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
 
 		sut.getFeedArchive(resourceDummy);
 
-		verify(feedFileStorageMock).saveFeedAsXML(feedMock);
+		verify(feedFileStorageMock).saveFeedAsXML(internatFeedMock);
 	}
 
 	@Test
 	public void exportShouldWriteItemsToXmlFiles() {
-		List<Item> threeItems = java.util.Arrays.asList(itemMock, itemMock, itemMock);
+		List<Item> threeItems = java.util.Arrays.asList(internalItemMock, internalItemMock, internalItemMock);
 
 		when(itemDAOMock.loadItems(any(Feed.class))).thenReturn(threeItems);
-		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
 
 		sut.getFeedArchive(resourceDummy);
 
-		verify(feedFileStorageMock, times(3)).saveItemAsXML(itemMock);
+		verify(feedFileStorageMock, times(3)).saveItemAsXML(internalItemMock);
 	}
 
 	@Test
 	public void exportShoulDeleteFeedXmlFile() {
-		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
 
 		sut.getFeedArchive(resourceDummy);
 
-		verify(feedFileStorageMock).deleteFeedXML(feedMock);
+		verify(feedFileStorageMock).deleteFeedXML(internatFeedMock);
 	}
 
 	@Test
 	public void exportShoulDeleteItemsXmlFiles() {
-		List<Item> threeItems = java.util.Arrays.asList(itemMock, itemMock, itemMock);
+		List<Item> threeItems = java.util.Arrays.asList(internalItemMock, internalItemMock, internalItemMock);
 
 		when(itemDAOMock.loadItems(any(Feed.class))).thenReturn(threeItems);
-		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(feedMock);
+		when(feedDAOMock.loadFeed(any(OLATResource.class))).thenReturn(internatFeedMock);
 
 		sut.getFeedArchive(resourceDummy);
 
-		verify(feedFileStorageMock, times(3)).deleteItemXML(itemMock);
+		verify(feedFileStorageMock, times(3)).deleteItemXML(internalItemMock);
 	}
 
 
@@ -399,4 +462,5 @@ public class FeedManagerImplTest {
 
 		assertThat(enrichedFeed).isNull();
 	}
+
 }

@@ -200,10 +200,7 @@ public class FeedManagerImpl extends FeedManager {
 			Date now = new Date();
 			if (now.after(nextUpdateDate) || loadItems(feed).isEmpty()) {
 				// time to update or first load after creation of the feed
-				saveExternalItems(feed);
-				saveExternalFeed(feed);
-				notificationsManager.markPublisherNews(ores.getResourceableTypeName(),
-						feed.getResourceableId().toString(), null, false);
+				saveExternalFeedIAndtems(feed);
 			}
 
 			feed.setLastModified(new Date());
@@ -211,6 +208,13 @@ public class FeedManagerImpl extends FeedManager {
 		}
 
 		return feed;
+	}
+
+	private void saveExternalFeedIAndtems(Feed feed) {
+		saveExternalItems(feed);
+		saveExternalFeed(feed);
+		notificationsManager.markPublisherNews(feed.getResourceableTypeName(),
+				feed.getResourceableId().toString(), null, false);
 	}
 
 	@Override
@@ -241,6 +245,28 @@ public class FeedManagerImpl extends FeedManager {
 
 		reloaded.setExternal(external);
 		return updateFeed(reloaded);
+	}
+
+	@Override
+	public Feed updateExternalFeedUrl(Feed feed, String externalFeedUrl) {
+		Feed reloaded = feedDAO.loadFeed(feed);
+		if (reloaded == null) return null;
+		if (!feed.isExternal()) return feed;
+
+		if (!StringHelper.isSame(reloaded.getExternalFeedUrl(), externalFeedUrl)) {
+			itemDAO.removeItems(feed);
+		}
+		if (StringHelper.containsNonWhitespace(externalFeedUrl)) {
+			reloaded.setExternalFeedUrl(externalFeedUrl);
+			saveExternalFeedIAndtems(feed);
+		} else {
+			reloaded.setExternal(null);
+			reloaded.setExternalFeedUrl(null);
+		}
+		reloaded.setLastModified(new Date());
+		Feed updated = feedDAO.updateFeed(reloaded);
+
+		return updated;
 	}
 
 	@Override
