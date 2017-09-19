@@ -239,8 +239,8 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 		float tableWidth = width;
 		float rowHeight = (lineHeightFactory * fontSize) + (2 * cellMargin);
 		
-		float allColWidth = 25f;
-		float authorisedColWidth = authorizedAbsenceEnabled ? 35f : 0f;
+		float allColWidth = 29f;
+		float authorisedColWidth = authorizedAbsenceEnabled ? 29f : 0f;
 		float lectureColWidth = 15f;
 		float lecturesColWidth =  numOfLectures * lectureColWidth + cellMargin;
 
@@ -410,15 +410,16 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 
 			{// all check box
 				boxx += cellMargin;
-				drawLine(boxx, texty + offetSetYTop, boxx, texty - offetSetYBottom, 0.5f);
-				drawLine(boxx, texty - offetSetYBottom, boxx + boxWidth, texty - offetSetYBottom, 0.5f);
-				drawLine(boxx, texty + offetSetYTop, boxx + boxWidth, texty + offetSetYTop, 0.5f);
-				drawLine(boxx + boxWidth, texty + offetSetYTop, boxx + boxWidth, texty - offetSetYBottom, 0.5f);
+				float startBoxx = boxx + ((allColWidth - boxWidth - (2 * cellMargin)) / 2);
+				drawLine(startBoxx, texty + offetSetYTop, startBoxx, texty - offetSetYBottom, 0.5f);
+				drawLine(startBoxx, texty - offetSetYBottom, startBoxx + boxWidth, texty - offetSetYBottom, 0.5f);
+				drawLine(startBoxx, texty + offetSetYTop, startBoxx + boxWidth, texty + offetSetYTop, 0.5f);
+				drawLine(startBoxx + boxWidth, texty + offetSetYTop, startBoxx + boxWidth, texty - offetSetYBottom, 0.5f);
 			
 				if(all) {
 					currentContentStream.beginText();
 					currentContentStream.setFont(font, fontSize);
-					currentContentStream.moveTextPositionByAmount(boxx + 2f, texty);
+					currentContentStream.moveTextPositionByAmount(startBoxx + 2f, texty);
 					currentContentStream.drawString("x");
 					currentContentStream.endText();
 				}
@@ -426,15 +427,16 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 			}
 			
 			{//authorised
-				drawLine(boxx, texty + offetSetYTop, boxx, texty - offetSetYBottom, 0.5f);
-				drawLine(boxx, texty - offetSetYBottom, boxx + boxWidth, texty - offetSetYBottom, 0.5f);
-				drawLine(boxx, texty + offetSetYTop, boxx + boxWidth, texty + offetSetYTop, 0.5f);
-				drawLine(boxx + boxWidth, texty + offetSetYTop, boxx + boxWidth, texty - offetSetYBottom, 0.5f);
+				float startBoxx = boxx + ((authorisedColWidth - boxWidth - (2 * cellMargin)) / 2);
+				drawLine(startBoxx, texty + offetSetYTop, startBoxx, texty - offetSetYBottom, 0.5f);
+				drawLine(startBoxx, texty - offetSetYBottom, startBoxx + boxWidth, texty - offetSetYBottom, 0.5f);
+				drawLine(startBoxx, texty + offetSetYTop, startBoxx + boxWidth, texty + offetSetYTop, 0.5f);
+				drawLine(startBoxx + boxWidth, texty + offetSetYTop, startBoxx + boxWidth, texty - offetSetYBottom, 0.5f);
 			
 				if(content[i].isAuthorised()) {
 					currentContentStream.beginText();
 					currentContentStream.setFont(font, fontSize);
-					currentContentStream.moveTextPositionByAmount(boxx + 2f, texty);
+					currentContentStream.moveTextPositionByAmount(startBoxx + 2f, texty);
 					currentContentStream.drawString("x");
 					currentContentStream.endText();
 				}
