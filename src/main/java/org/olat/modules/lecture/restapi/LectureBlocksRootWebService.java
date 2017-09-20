@@ -66,7 +66,6 @@ public class LectureBlocksRootWebService {
 	 * @return The lecture blocks
 	 */
 	@GET
-	@Path("")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response searchLectureBlocks(@QueryParam("date") String date, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
