@@ -19,8 +19,8 @@
  */
 package org.olat.resource.accesscontrol.provider.auto.manager;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +106,7 @@ public class AutoAccessManagerImpl implements AutoAccessManager {
 
 	@Override
 	public Collection<AdvanceOrder> loadPendingAdvanceOrders(RepositoryEntry entry) {
-		if (entry == null) return Collections.<AdvanceOrder>emptyList();
+		if (entry == null) return new ArrayList<>();
 
 		Map<IdentifierKey, String> searchValues = new EnumMap<>(IdentifierKey.class);
 		for (IdentifierKey key: IdentifierKey.values()) {

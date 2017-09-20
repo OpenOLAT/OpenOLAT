@@ -19,7 +19,7 @@
  */
 package org.olat.resource.accesscontrol.provider.auto.manager;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.repository.RepositoryEntry;
@@ -47,7 +47,7 @@ class ExternalRefHandler implements IdentifierKeyHandler {
 
 	@Override
 	public List<RepositoryEntry> find(String value) {
-		List<RepositoryEntry> entries = Collections.<RepositoryEntry>emptyList();;
+		List<RepositoryEntry> entries = new ArrayList<>();
 
 		try {
 			entries = repositoryService.loadRepositoryEntriesByExternalRef(value);

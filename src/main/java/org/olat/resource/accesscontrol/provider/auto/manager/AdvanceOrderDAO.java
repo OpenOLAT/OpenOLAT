@@ -21,7 +21,6 @@ package org.olat.resource.accesscontrol.provider.auto.manager;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +93,7 @@ class AdvanceOrderDAO {
 	}
 
 	Collection<AdvanceOrder> loadPendingAdvanceOrders(Map<IdentifierKey, String> identifiers) {
-		if (identifiers == null || identifiers.isEmpty()) return Collections.<AdvanceOrder>emptyList();
+		if (identifiers == null || identifiers.isEmpty()) return new ArrayList<>();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("select advanceOrder from advanceOrder advanceOrder")
