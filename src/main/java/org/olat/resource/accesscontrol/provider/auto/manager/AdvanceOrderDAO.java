@@ -123,6 +123,13 @@ class AdvanceOrderDAO {
 		return query.getResultList();
 	}
 
+	public void deleteAdvanceOrder(AdvanceOrder advanceOrder) {
+		dbInstance.getCurrentEntityManager()
+		.createNamedQuery("deleteByKey")
+		.setParameter("key", advanceOrder.getKey())
+		.executeUpdate();
+	}
+
 	void deleteAdvanceOrders(Identity identity) {
 		dbInstance.getCurrentEntityManager()
 				.createNamedQuery("deleteByIdentity")

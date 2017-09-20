@@ -62,6 +62,8 @@ import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 			+ "and ao.identifierKey =:identifierKey "
 			+ "and ao.identifierValue =:identifierValue "
 			+ "and ao.method.key =:methodKey"),
+	@NamedQuery(name="deleteByKey", query =
+			  "delete from advanceOrder ao where ao.key=:key"),
 	@NamedQuery(name="deleteByIdentity", query =
 			  "delete from advanceOrder ao"
 			+ " where ao.identity.key=:identityKey")

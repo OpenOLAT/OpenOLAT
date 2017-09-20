@@ -118,6 +118,11 @@ public class AutoAccessManagerImpl implements AutoAccessManager {
 	}
 
 	@Override
+	public void deleteAdvanceOrder(AdvanceOrder advanceOrder) {
+		advanceOrderDAO.deleteAdvanceOrder(advanceOrder);
+	}
+
+	@Override
 	public void deleteAdvanceOrders(Identity identity) {
 		advanceOrderDAO.deleteAdvanceOrders(identity);
 	}

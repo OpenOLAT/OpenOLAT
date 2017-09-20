@@ -181,6 +181,23 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 	}
 
 	@Test
+	public void shouldDeleteAdvaceOrderByKey() {
+		AdvanceOrder aoToKeep1 = sut.create(identity, IdentifierKey.internalId, IDENTIFIER_VALUE, freeMethod);
+		sut.save(aoToKeep1);
+		AdvanceOrder aoToDelete = sut.create(identity, IdentifierKey.externalId, IDENTIFIER_VALUE, freeMethod);
+		aoToDelete = sut.save(aoToDelete);
+		AdvanceOrder aoToKeep2 = sut.create(identity, IdentifierKey.externalRef, IDENTIFIER_VALUE, freeMethod);
+		sut.save(aoToKeep2);
+		AdvanceOrder aoToKeep3 = sut.create(identity, IdentifierKey.internalId, "not matching", freeMethod);
+		sut.save(aoToKeep3);
+		dbInstance.commitAndCloseSession();
+
+		sut.deleteAdvanceOrder(aoToDelete);
+
+		assertThat(sut.loadPendingAdvanceOrders(identity)).hasSize(3).doesNotContain(aoToDelete);
+	}
+
+	@Test
 	public void shouldDeleteAdvanceOrdersByIdentity() {
 		AdvanceOrder aoPending = sut.create(identity, IdentifierKey.internalId, IDENTIFIER_VALUE, freeMethod);
 		sut.save(aoPending);
@@ -198,7 +215,6 @@ public class AdvanceOrderDAOTest extends OlatTestCase {
 		assertThat(aoDeletedUser).hasSize(0);
 		Collection<AdvanceOrder> aoActiveUser = loadAllAdvanceOrders(otherIdentity);
 		assertThat(aoActiveUser).hasSize(1);
-
 	}
 
 	private Collection<AdvanceOrder> loadAllAdvanceOrders(Identity identity) {

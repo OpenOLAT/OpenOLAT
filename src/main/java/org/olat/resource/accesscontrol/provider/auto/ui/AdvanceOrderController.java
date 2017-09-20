@@ -24,14 +24,20 @@ import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrder;
@@ -48,7 +54,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AdvanceOrderController extends FormBasicController {
 
+	private static final String CMD_DELETE = "deleteAdvanceOrder";
+
 	private FlexiTableElement tableEl;
+	private DialogBoxController confirmDeleteDialogCtrl;
+
 	private AdvanceOrderDataModel dataModel;
 	private Identity identity;
 
@@ -72,19 +82,33 @@ public class AdvanceOrderController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AdvanceOrderCol.identifierKey));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AdvanceOrderCol.identifierValue));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AdvanceOrderCol.method, new AccessMethodRenderer(acModule)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.advanceOrder.delete", translate("delete"), CMD_DELETE));
+
 		dataModel = new AdvanceOrderDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), formLayout);
 		tableEl.setEmtpyTableMessageKey("table.advanceOrder.empty");
 	}
 
-	private void loadModel() {
-		Collection<AdvanceOrder> advanceOrders = autoAccessManager.loadPendingAdvanceOrders(identity);
-		List<AdvanceOrderRow> rows = new ArrayList<>(advanceOrders.size());
-		for(AdvanceOrder advanceOrder: advanceOrders) {
-			rows.add(new AdvanceOrderRow(advanceOrder));
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == tableEl) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if (CMD_DELETE.equals(se.getCommand())) {
+					AdvanceOrderRow row = dataModel.getObject(se.getIndex());
+					doConfirmDelete(ureq, row);
+				}
+			}
 		}
-		dataModel.setObjects(rows);
-		tableEl.reset(true, true, true);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(confirmDeleteDialogCtrl == source) {
+			doDeleteAdvanceOrderIfConfirmed(event);
+			removeAsListenerAndDispose(confirmDeleteDialogCtrl);
+			confirmDeleteDialogCtrl = null;
+		}
 	}
 
 	@Override
@@ -95,6 +119,32 @@ public class AdvanceOrderController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	private void doConfirmDelete(UserRequest ureq, AdvanceOrderRow row) {
+		AdvanceOrder advanceOrder = row.getAdvanceOrder();
+		String title = translate("confirm.delete.advanceOrder.title");
+		String message = translate("confirm.delete.advanceOrder");
+		confirmDeleteDialogCtrl = activateYesNoDialog(ureq, title, message, confirmDeleteDialogCtrl);
+		confirmDeleteDialogCtrl.setUserObject(advanceOrder);
+	}
+
+	private void doDeleteAdvanceOrderIfConfirmed(Event event) {
+		if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+			AdvanceOrder advanceOrder = (AdvanceOrder) confirmDeleteDialogCtrl.getUserObject();
+			autoAccessManager.deleteAdvanceOrder(advanceOrder);
+			loadModel();
+		}
+	}
+
+	private void loadModel() {
+		Collection<AdvanceOrder> advanceOrders = autoAccessManager.loadPendingAdvanceOrders(identity);
+		List<AdvanceOrderRow> rows = new ArrayList<>(advanceOrders.size());
+		for(AdvanceOrder advanceOrder: advanceOrders) {
+			rows.add(new AdvanceOrderRow(advanceOrder));
+		}
+		dataModel.setObjects(rows);
+		tableEl.reset(true, true, true);
 	}
 
 }

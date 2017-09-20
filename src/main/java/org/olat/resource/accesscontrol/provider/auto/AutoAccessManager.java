@@ -61,6 +61,13 @@ public interface AutoAccessManager {
 	public Collection<AdvanceOrder> loadPendingAdvanceOrders(RepositoryEntry entry);
 
 	/**
+	 * Delete an advance order.
+	 *
+	 * @param advanceOrder
+	 */
+	public void deleteAdvanceOrder(AdvanceOrder advanceOrder);
+
+	/**
 	 * Delete all advance order of a user.
 	 *
 	 * @param identity
