@@ -682,7 +682,7 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public ValidatedURL validateFeedUrl(String url, String type) {
-		boolean enclosuresExpected = "BLOG".indexOf(type) >= 0? false: true;
+		boolean enclosuresExpected = type != null && type.indexOf("BLOG") >= 0? false: true;
 		return externalFeedFetcher.validateFeedUrl(url, enclosuresExpected);
 	}
 
