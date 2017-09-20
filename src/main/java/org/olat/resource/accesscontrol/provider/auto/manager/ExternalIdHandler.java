@@ -42,7 +42,7 @@ class ExternalIdHandler implements IdentifierKeyHandler {
 
 	@Override
 	public IdentifierKey getIdentifierKey() {
-		return IdentifierKey.internalId;
+		return IdentifierKey.externalId;
 	}
 
 	@Override
