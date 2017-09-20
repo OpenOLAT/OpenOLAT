@@ -20,10 +20,6 @@
 package org.olat.modules.webFeed.manager;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -84,12 +80,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
-import com.rometools.rome.io.FeedException;
-import com.rometools.rome.io.ParsingFeedException;
-import com.rometools.rome.io.SyndFeedInput;
-import com.rometools.rome.io.XmlReader;
 
 /**
  * This is the actual feed manager implementation. It handles all operations on
@@ -691,51 +682,8 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public ValidatedURL validateFeedUrl(String url, String type) {
-		SyndFeedInput input = new SyndFeedInput();
-
-		boolean modifiedProtocol = false;
-		try {
-			if (url != null) {
-				url = url.trim();
-			}
-			if (url.startsWith("feed") || url.startsWith("itpc")) {
-				// accept feed(s) urls like generated in safari browser
-				url = "http" + url.substring(4);
-				modifiedProtocol = true;
-			}
-			URL realUrl = new URL(url);
-			SyndFeed feed = input.build(new XmlReader(realUrl));
-			if (!feed.getEntries().isEmpty()) {
-				// check for enclosures
-				SyndEntry entry = feed.getEntries().get(0);
-				if (type != null && type.indexOf("BLOG") >= 0) {
-					return new ValidatedURL(url, ValidatedURL.State.VALID);
-				}
-				if (entry.getEnclosures().isEmpty()) {
-					return new ValidatedURL(url, ValidatedURL.State.NO_ENCLOSURE);
-				}
-			}
-			// The feed was read successfully
-			return new ValidatedURL(url, ValidatedURL.State.VALID);
-		} catch (ParsingFeedException e) {
-			if (modifiedProtocol) {
-				// fallback for SWITCHcast itpc -> http -> https
-				url = "https" + url.substring(4);
-				return validateFeedUrl(url, type);
-			}
-			return new ValidatedURL(url, ValidatedURL.State.NOT_FOUND);
-		} catch (FileNotFoundException e) {
-			return new ValidatedURL(url, ValidatedURL.State.NOT_FOUND);
-		} catch (MalformedURLException e) {
-			// The url is invalid
-		} catch (FeedException e) {
-			// The feed couldn't be read
-		} catch (IOException e) {
-			// Maybe network or file problems
-		} catch (IllegalArgumentException e) {
-			// something very wrong with the feed
-		}
-		return new ValidatedURL(url, ValidatedURL.State.MALFORMED);
+		boolean enclosuresExpected = "BLOG".indexOf(type) >= 0? false: true;
+		return externalFeedFetcher.validateFeedUrl(url, enclosuresExpected);
 	}
 
 	@Override

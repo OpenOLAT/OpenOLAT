@@ -396,7 +396,7 @@ public class FeedFileStorge {
 					log.warn("Item XML-File could not be read. Item container: " + leaf);
 				}
 			} else {
-				log.error("Item XML-File could not be found on file system."
+				log.warn("Item XML-File could not be found on file system."
 						+ " Item container: " + itemContainer.getName());
 			}
 		}
