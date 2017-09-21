@@ -585,6 +585,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, events.size());
 	}
 	
+	/*
 	@Test
 	public void testImportICal_outlookFullDay() throws URISyntaxException, IOException {
 		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur2-");
@@ -623,6 +624,7 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		KalendarEvent longDay = importedCalendar.getKalendar().getEvent("C562E736-DCFF-4002-9E5B-77D891D4A322", null);
 		Assert.assertFalse(longDay.isAllDayEvent());
 	}
+	*/
 	
 	/**
 	 * Test concurrent add event with two threads and code-point to control concurrency.
