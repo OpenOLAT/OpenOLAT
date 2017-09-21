@@ -701,14 +701,22 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// check all day event first
 		boolean isAllDay = false;
 		Parameter dateParameter = event.getProperties().getProperty(Property.DTSTART).getParameters().getParameter(Value.DATE.getName());
-		if (dateParameter != null) isAllDay = true;
+		if (dateParameter != null) {
+			isAllDay = true;
+		} else if(start != null && end != null && (end.getTime() - start.getTime()) == (24 * 60 * 60 * 1000)) {
+			//check that start has no hour, no minute and no second
+			java.util.Calendar cal = java.util.Calendar.getInstance();
+			cal.setTime(start);
+			isAllDay = cal.get(java.util.Calendar.HOUR_OF_DAY) == 0 && cal.get(java.util.Calendar.MINUTE) == 0
+					&& cal.get(java.util.Calendar.SECOND) == 0 && cal.get(java.util.Calendar.MILLISECOND) == 0;
+		}
 
 		if (isAllDay) {
 			//Make sure the time of the dates are 00:00 localtime because DATE fields in iCal are GMT 00:00 
 			//Note that start date and end date can have different offset because of daylight saving switch
 			java.util.TimeZone timezone = java.util.GregorianCalendar.getInstance().getTimeZone();
 			start = new Date(start.getTime() - timezone.getOffset(start.getTime()));
-			end   = new Date(end.getTime()   - timezone.getOffset(end.getTime()));
+			end   = new Date(end.getTime() - timezone.getOffset(end.getTime()));
 			
 			// adjust end date: ICal sets end dates to the next day
 			end = new Date(end.getTime() - (1000 * 60 * 60 * 24));

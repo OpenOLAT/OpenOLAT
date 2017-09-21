@@ -146,16 +146,13 @@ public class CalendarImportTest {
         Period period = new Period(start, end);
         PeriodList pList = rootEvent.calculateRecurrenceSet(period);
         for(Object obj:pList) {
-        	Period p = (Period)obj;
-        	System.out.println("Period: " + p.getStart());
+        		Period p = (Period)obj;
+        		System.out.println("Period: " + p.getStart());
         }
         
         RecurrenceId recurrenceId = exceptionEvent.getRecurrenceId();
         Date recurrenceDate = recurrenceId.getDate();
         System.out.println("Recurrence: " + recurrenceDate);
-        
         exceptionEvent.getSequence();
 	}
-
-
 }
