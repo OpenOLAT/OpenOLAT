@@ -183,9 +183,9 @@ public class PageRunController extends BasicController implements TooledControll
 			printLink.setPopup(new LinkPopupSettings(950, 750, "binder"));
 			exportTools.addComponent(printLink);
 			
-			exportPageAsPdfLink = LinkFactory.createToolLink("export.page.pdf", translate("export.page.pdf"), this);
-			exportPageAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
-			exportTools.addComponent(exportPageAsPdfLink);
+			//exportPageAsPdfLink = LinkFactory.createToolLink("export.page.pdf", translate("export.page.pdf"), this);
+			//exportPageAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
+			//exportTools.addComponent(exportPageAsPdfLink);
 		}
 		
 		moveToTrashLink = LinkFactory.createToolLink("delete.page", translate("delete.page"), this);

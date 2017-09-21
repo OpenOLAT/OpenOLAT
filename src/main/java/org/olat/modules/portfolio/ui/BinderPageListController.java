@@ -135,9 +135,9 @@ public class BinderPageListController extends AbstractPageListController {
 			printLink.setPopup(new LinkPopupSettings(950, 750, "binder"));
 			exportTools.addComponent(printLink);
 			
-			exportBinderAsPdfLink = LinkFactory.createToolLink("export.binder.pdf", translate("export.binder.pdf"), this);
-			exportBinderAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
-			exportTools.addComponent(exportBinderAsPdfLink);
+			//exportBinderAsPdfLink = LinkFactory.createToolLink("export.binder.pdf", translate("export.binder.pdf"), this);
+			//exportBinderAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
+			//exportTools.addComponent(exportBinderAsPdfLink);
 		}
 		
 		if(secCallback.canAddSection()) {
