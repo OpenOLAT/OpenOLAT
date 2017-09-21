@@ -19,7 +19,6 @@
  */
 package org.olat.modules.video.ui;
 
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 
 /**
@@ -36,8 +35,6 @@ public class QualityTableRow {
 	private Object[] size;
 	private String format;
 	private FormLink deleteLink;
-
-	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 
 	/**
 	 * 

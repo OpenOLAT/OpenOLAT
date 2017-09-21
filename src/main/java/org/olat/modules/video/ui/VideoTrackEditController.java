@@ -20,10 +20,9 @@
 package org.olat.modules.video.ui;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -58,11 +57,10 @@ public class VideoTrackEditController extends FormBasicController {
 	private VideoTrackUploadForm trackUploadForm;
 	private CloseableModalController cmc;
 
-	private Map<String, TrackTableRow> rows;
-
+	private OLATResource videoResource;
+	
 	@Autowired
 	private VideoManager videoManager;
-	private OLATResource videoResource;
 
 	public VideoTrackEditController(UserRequest ureq, WindowControl wControl, OLATResource videoResource) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -87,78 +85,82 @@ public class VideoTrackEditController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, TrackTableCols.file.i18nKey(), TrackTableCols.file.ordinal(), true, TrackTableCols.file.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TrackTableCols.language.i18nKey(), TrackTableCols.language.ordinal(), true, TrackTableCols.language.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, TrackTableCols.delete.i18nKey(), TrackTableCols.delete.ordinal(),false, TrackTableCols.delete.name()));
-		tableModel = new VideoTracksTableModel(columnsModel, getTranslator());
+		tableModel = new VideoTracksTableModel(columnsModel, getLocale());
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "tracks", tableModel, getTranslator(), generalCont);
 		tableEl.setCustomizeColumns(false);
 		Map<String, VFSLeaf> tracks = videoManager.getAllTracks(videoResource);
-		rows = new HashMap<String,TrackTableRow>(tracks.size());
-		if (!tracks.isEmpty()) {
-			for (Map.Entry<String, VFSLeaf> entry : tracks.entrySet()) {
-				FormLink delButton = uifactory.addFormLink(entry.getKey(), "deleteTrack", "track.delete", "track.delete", null, Link.BUTTON);
-				rows.put(entry.getKey(), new TrackTableRow(entry.getKey(), entry.getValue(), delButton));
-
-			}
-			tableModel.setObjects(new ArrayList<TrackTableRow>(rows.values()));
+		List<TrackTableRow> rows = new ArrayList<>(tracks.size());
+		for (Map.Entry<String, VFSLeaf> entry : tracks.entrySet()) {
+			rows.add(forgeRow(entry.getKey(), entry.getValue()));
 		}
-//		tableEl.setVisible(!videoManager.getAllTracks(videoResource).isEmpty());
-		tableEl.setVisible(true);
+		tableModel.setObjects(rows);
 		tableEl.setEmtpyTableMessageKey("track.notrack");
 
 		addButton = uifactory.addFormLink("add.track", generalCont, Link.BUTTON);
 	}
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-
-		return true;
+	
+	private TrackTableRow forgeRow(String language, VFSLeaf track) {
+		FormLink delButton = uifactory.addFormLink("lang_".concat(language), "deleteTrack", "track.delete", "track.delete", null, Link.LINK);
+		delButton.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+		TrackTableRow row = new TrackTableRow(language, track, delButton);
+		delButton.setUserObject(row);
+		return row;
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-
+		//
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (addButton == source) {
 			doAddTrack(ureq);
-		}else if (source.getComponent() instanceof Link){
-			String lang = rows.get(source.getName()).getLanguage();
-			videoManager.removeTrack(videoResource, lang);
-			rows.remove(rows.get(source.getName()).getLanguage());
-			tableModel.setObjects(new ArrayList<TrackTableRow>(rows.values()));
-			tableEl.reset();
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("deleteTrack".equals(link.getCmd())) {
+				TrackTableRow row = (TrackTableRow)link.getUserObject();
+				videoManager.removeTrack(videoResource, row.getLanguage());
+				List<TrackTableRow> rows = tableModel.getObjects();
+				rows.remove(row);
+				tableModel.setObjects(rows);
+				tableEl.reset(true, true, true);
+			}
 		}
 	}
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(source == trackUploadForm){
-			rows.put(trackUploadForm.getLang(), new TrackTableRow(trackUploadForm.getLang(), (VFSLeaf) ((FolderEvent) event).getItem(), uifactory.addFormLink(trackUploadForm.getLang(),"deleteTrack", "track.delete", "track.delete", null, Link.BUTTON)));
-			tableModel.setObjects(new ArrayList<TrackTableRow>(rows.values()));
-			tableEl.reset();
-			tableEl.setVisible(true);
-			tableEl.setEnabled(true);
+		if(source == trackUploadForm) {
+			if(event instanceof TrackUploadEvent) {
+				TrackUploadEvent fEvent = (TrackUploadEvent)event;
+				TrackTableRow row = forgeRow(fEvent.getLang(), fEvent.getTrack());
+				List<TrackTableRow> rows = tableModel.getObjects();
+				rows.add(row);
+				tableModel.setObjects(rows);
+				tableEl.reset(true, true, true);
+			}
 			cmc.deactivate();
-			// cleanup
-			removeAsListenerAndDispose(trackUploadForm);
-			removeAsListenerAndDispose(cmc);
-		} else if(event.getCommand() == "CLOSE_MODAL_EVENT"){
-			cmc.deactivate();
-			// cleanup
-			removeAsListenerAndDispose(trackUploadForm);
-			removeAsListenerAndDispose(cmc);
+			cleanUp();
+		} else if(cmc == source){
+			cleanUp();
 		}
 	}
-
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(trackUploadForm);
+		removeAsListenerAndDispose(cmc);
+		trackUploadForm = null;
+		cmc = null;
+	}
 
 	private void doAddTrack(UserRequest ureq) {
 		trackUploadForm = new VideoTrackUploadForm(ureq, getWindowControl(), videoResource);
 		listenTo(trackUploadForm);
+		
 		cmc = new CloseableModalController(getWindowControl(), "close", trackUploadForm.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
 	}
-
 }

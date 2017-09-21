@@ -19,37 +19,32 @@
  */
 package org.olat.modules.video.ui;
 
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.control.Event;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
- *	model of a tablerow in the table of different videotracks in the videoconfiguration
- *
- * Initial date: 07.04.2015<br>
- * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
+ * 
+ * Initial date: 21 sept. 2017<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TrackTableRow {
+public class TrackUploadEvent extends Event {
 
-	private final String language;
+	private static final long serialVersionUID = -2951558903014424854L;
+	private final String lang;
 	private final VFSLeaf track;
-	private final FormLink deleteLink;
-
-	public TrackTableRow(String language, VFSLeaf track, FormLink deleteLink) {
-		this.language = language;
+	
+	public TrackUploadEvent(String lang, VFSLeaf track) {
+		super("track-upload");
+		this.lang = lang;
 		this.track = track;
-		this.deleteLink = deleteLink;
+	}
+
+	public String getLang() {
+		return lang;
 	}
 
 	public VFSLeaf getTrack() {
 		return track;
-	}
-
-	public String getLanguage() {
-		return language;
-	}
-
-	public FormLink getDeleteLink() {
-		return deleteLink;
 	}
 }
