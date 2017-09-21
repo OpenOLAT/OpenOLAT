@@ -85,7 +85,7 @@ public class CatalogManagerController extends BasicController implements Activat
 			Long entryKey = entry.getOLATResourceable().getResourceableId();
 			if(entryKey != null && entryKey.longValue() > 0) {
 				List<ContextEntry> parentLine = new ArrayList<>();
-				for(CatalogEntry node = catalogManager.getCatalogEntryByKey(entryKey); node.getParent() != null; node=node.getParent()) {
+				for(CatalogEntry node = catalogManager.getCatalogEntryByKey(entryKey); node != null && node.getParent() != null; node=node.getParent()) {
 					OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", node.getKey());
 					ContextEntry ctxEntry = BusinessControlFactory.getInstance().createContextEntry(nodeRes);
 					ctxEntry.setTransientState(new CatalogStateEntry(node));

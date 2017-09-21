@@ -21,7 +21,6 @@ package org.olat.modules.video.ui;
 
 import java.util.Date;
 
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 
 /**
@@ -41,8 +40,6 @@ public class TranscodingQueueTableRow {
 	private FormLink deleteLink;
 	private FormLink retranscodeLink;
 	private Object[] failureReason;
-
-	protected FormUIFactory uifactory = FormUIFactory.getInstance();
 
 
 	/**
