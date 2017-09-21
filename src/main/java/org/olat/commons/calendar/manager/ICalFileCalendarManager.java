@@ -703,12 +703,6 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		Parameter dateParameter = event.getProperties().getProperty(Property.DTSTART).getParameters().getParameter(Value.DATE.getName());
 		if (dateParameter != null) {
 			isAllDay = true;
-		} else if(start != null && end != null && (end.getTime() - start.getTime()) == (24 * 60 * 60 * 1000)) {
-			//check that start has no hour, no minute and no second
-			java.util.Calendar cal = java.util.Calendar.getInstance();
-			cal.setTime(start);
-			isAllDay = cal.get(java.util.Calendar.HOUR_OF_DAY) == 0 && cal.get(java.util.Calendar.MINUTE) == 0
-					&& cal.get(java.util.Calendar.SECOND) == 0 && cal.get(java.util.Calendar.MILLISECOND) == 0;
 		}
 
 		if (isAllDay) {
