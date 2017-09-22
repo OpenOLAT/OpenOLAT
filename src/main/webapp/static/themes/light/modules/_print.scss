@@ -107,6 +107,19 @@
 		border: 10px solid #000;
 	}
 	
+	/* Print backgrounds on sliders */
+	.ui-slider.ui-slider-horizontal.ui-widget-content {
+		-webkit-print-color-adjust: exact;
+		color-adjust: exact;
+		background: $o-slider-background !important;
+		.ui-slider-handle {
+			-webkit-print-color-adjust: exact;
+			color-adjust: exact;
+			background-color: $o-slider-handler-background-color !important;
+		}
+	}
+	
+	
 	/* Print background colors in radial progress bar */
 	.radial-progress {
 		page-break-inside : avoid;

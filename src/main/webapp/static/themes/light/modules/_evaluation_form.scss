@@ -1,7 +1,12 @@
 .o_evaluation_form {
-
+	.o_evaluation_block {
+		margin-top: $o-evaluation-block-margin-top;
+		margin-bottom: $o-evaluation-block-margin-bottom;
+	}
+		
 	.o_evaluation_step_labels {
 		margin-bottom: $o-evaluation-step-labels-margin-bottom;
+		font-weight: $o-evaluation-step-labels-font-weight;
 		
 		div, span {
 			display:inline-block;
@@ -57,8 +62,12 @@
 			}
 			
 			.o_evaluation_steps div.radio {
+				background-color: $o-evaluation-step-background-color;
 				display:inline-block;
 				text-align: center;
+				&:hover {
+					background-color: $o-evaluation-slider-hover-background-color;
+				}
 			}
 		}
 	}
@@ -69,10 +78,12 @@
 
 	.o_evaluation_left_label {
 		text-align: right;
+		font-weight: $o-evaluation-side-labels-font-weight;
 	}
 	
 	.o_evaluation_right_label {
 		text-align: left;
+		font-weight: $o-evaluation-side-labels-font-weight;
 	}
 	
 	.o_evaluation_textinput {
@@ -146,4 +157,18 @@
 			right: 15px;
 		}
 	}
+}
+
+
+/* Print styles */
+@media print {
+	.o_evaluation_block {
+		page-break-inside : avoid;
+	}
+	.o_evaluation_discrete_radio .o_slider .o_evaluation_steps div.radio {
+		-webkit-print-color-adjust: exact;
+		color-adjust: exact;
+		background-color: $o-evaluation-step-background-color !important;
+	}
+	
 }

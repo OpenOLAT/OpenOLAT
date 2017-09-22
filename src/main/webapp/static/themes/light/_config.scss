@@ -489,9 +489,15 @@ $o-forum-quote-font-size		: $font-size-small !default;
 $o-forum-attachment-font-size	: $font-size-small !default;
 
 /* Evaluation forms */
-$o-evaluation-slider-margin-bottom			: 8px;
-$o-evaluation-step-labels-margin-bottom		: 8px;
-$o-evaluation-slider-hover-background-color	: $table-bg-hover;
+$o-evaluation-block-margin-top				: 2em !default;
+$o-evaluation-block-margin-bottom			: 2em !default;
+$o-evaluation-side-labels-font-weight		: normal !default;
+$o-evaluation-step-labels-margin-bottom		: 1em !default;
+$o-evaluation-step-labels-font-weight		: bold !default;
+$o-evaluation-step-background-color 		: $table-bg-accent !default;
+$o-evaluation-slider-margin-bottom			: 1em !default;
+$o-evaluation-slider-hover-background-color	: $table-bg-hover !default;
+
 
 /* Portlets site */
 $o-portlet-border				: $panel-default-border !default;
@@ -645,7 +651,8 @@ $o-cit-quote-font-size			: $font-size-large !default;
 $o-cit-quote-color				: $o-forum-quote-color !default;
 
 /* Sliders */
-$o-slider-border					: #999;
+$o-slider-border					: #aaa !default;
+$o-slider-background				: #f9f9f9 !default;
 $o-slider-handler-border-color		: $brand-primary !default;
 $o-slider-handler-background-color	: $brand-primary !default;
 

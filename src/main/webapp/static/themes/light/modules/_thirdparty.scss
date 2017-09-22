@@ -93,6 +93,7 @@
 
 .ui-slider.ui-slider-horizontal.ui-widget-content {
 	border-color: $o-slider-border;
+	background: $o-slider-background;
 	
 	&.ui-state-disabled {
 		opacity: 0.65;
