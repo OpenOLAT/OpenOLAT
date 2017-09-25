@@ -26,29 +26,30 @@ function setFlexiFormDirtyByListener(e){
 	//
 }
 function o_mathjax() {
-	jQuery.ajax("${r.mathJaxCdnFullUrl()}MathJax.js?config=TeX-AMS-MML_HTMLorMML", {
+	window.MathJax = {
+			extensions: ["jsMath2jax.js"],
+			messageStyle: 'none',
+			showProcessingMessages: false,
+			showMathMenu: false,
+			menuSettings: { },
+			jsMath2jax: {
+				preview: "none"
+			},
+			tex2jax: {
+				ignoreClass: "math"
+			},
+			"HTML-CSS": {
+			    EqnChunk: 5, EqnChunkFactor: 1, EqnChunkDelay: 100
+			},
+			"fast-preview": {
+				disabled: true
+			}
+		}
+	jQuery.ajax("${r.mathJaxCdnFullUrl()}MathJax.js?config=${r.mathJaxConfig()}", {
 		cache: true,
 		dataType: "script",
+		crossDomain: true,
 		success: function() {
-	    	MathJax.Hub.Config({
-				extensions: ["jsMath2jax.js"],
-				messageStyle: 'none',
-				showProcessingMessages: false,
-				showMathMenu: false,
-				menuSettings: { },
-				jsMath2jax: {
-					preview: "none"
-				},
-				tex2jax: {
-					ignoreClass: "math"
-				},
-				"HTML-CSS": {
-				    EqnChunk: 5, EqnChunkFactor: 1, EqnChunkDelay: 100
-				},
-				"fast-preview": {
-					disabled: true
-				}
-			});
 		}
 	});
 }

@@ -352,6 +352,12 @@ public class VelocityRenderDecorator implements Closeable {
 		}
 		return sb;
 	}
+
+	public StringOutput mathJaxConfig() {
+		StringOutput sb = new StringOutput(100);
+		sb.append(WebappHelper.getMathJaxConfig());
+		return sb;
+	}
 	
 	public StringOutput contextPath() {
 		StringOutput sb = new StringOutput(100);

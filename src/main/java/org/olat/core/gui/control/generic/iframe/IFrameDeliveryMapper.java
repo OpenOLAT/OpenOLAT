@@ -597,33 +597,9 @@ public class IFrameDeliveryMapper implements Mapper {
 			appendStaticJs("js/prototype/prototype.js");
 		}
 		
-		/*
-		 MathJax.Hub.Config({
-			extensions: ["jsMath2jax.js"],
-			messageStyle: 'none',
-			showProcessingMessages: false,
-			showMathMenu: false,
-			menuSettings: { },
-			jsMath2jax: {
-				preview: "none"
-			},
-			tex2jax: {
-				ignoreClass: "math"
-			},
-			"HTML-CSS": {
-			    EqnChunk: 5, EqnChunkFactor: 1, EqnChunkDelay: 100
-			},
-			"fast-preview": {
-				disabled: true
-			}
-		});
-		*/
 		public void appendJsMath() {
-			append("<script type=\"text/javascript\" src=\"");
-			append(WebappHelper.getMathJaxCdn());
-			append("MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>\n");
 			append("<script type=\"text/javascript\">\n");
-			append("MathJax.Hub.Config({\n");	
+			append("window.MathJax = {\n");
 			append(" extensions: [\"jsMath2jax.js\"],\n");
 			append(" messageStyle: 'none',\n");
 			append(" showProcessingMessages: false,\n");
@@ -641,8 +617,13 @@ public class IFrameDeliveryMapper implements Mapper {
 			append(" \"fast-preview\": {\n");
 			append("   disabled: true\n");
 			append(" }\n");
-			append("});");
+			append("};");
 			append("</script>");
+			append("<script type=\"text/javascript\" src=\"");
+			append(WebappHelper.getMathJaxCdn());
+			append("MathJax.js?config=");
+			append(WebappHelper.getMathJaxConfig());
+			append("\"></script>\n");
 		}
 		
 		public void appendGlossary() {
