@@ -1,0 +1,1 @@
+alter table o_feed modify f_description mediumtext;

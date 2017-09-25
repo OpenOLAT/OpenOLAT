@@ -78,7 +78,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		Membership membership = gtaManager.getMembership(getIdentity(), entry, gtaNode);
-		if(membership.isCoach() && membership.isParticipant()) {
+		if((membership.isCoach() && membership.isParticipant()) || (userCourseEnv.isAdmin() && membership.isParticipant())) {
 			mainVC = createVelocityContainer("run_segments");
 			
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
