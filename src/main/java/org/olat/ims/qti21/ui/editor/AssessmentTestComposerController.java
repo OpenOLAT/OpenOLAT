@@ -164,7 +164,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private SelectItemController selectQItemCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private StepsMainRunController importTableWizard;
-	private final LayoutMain3ColsController columnLayoutCtr;
+	private LayoutMain3ColsController columnLayoutCtr;
 	
 	private File unzippedDirRoot;
 	private VFSContainer unzippedContRoot;
@@ -217,6 +217,12 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		}
 		
 		addLoggingResourceable(LoggingResourceable.wrapTest(testEntry));
+	
+		if(!checkResolvedAssessmentTest()) {
+			VelocityContainer errorVC = createVelocityContainer("error");
+			putInitialPanel(errorVC);
+			return;
+		}
 		
 		// test structure
 		menuTree = new MenuTree("atTree");
@@ -352,6 +358,20 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			selectedNode = menuTree.getTreeModel().getRootNode();
 		}
 		partEditorFactory(ureq, selectedNode);
+	}
+	
+	private boolean checkResolvedAssessmentTest() {
+		ResolvedAssessmentTest resolvedObject;
+		try {
+			resolvedObject = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, true);
+			if(resolvedObject == null) {
+				return false;
+			}
+			return resolvedObject.getRootNodeLookup().extractIfSuccessful() != null;
+		} catch (Exception e) {
+			logError("QTI 2.1 AssessmentTest is corrupted: " + testEntry, e);
+			return false;
+		}
 	}
 	
 	private void updateTreeModel(boolean forceReload) {
