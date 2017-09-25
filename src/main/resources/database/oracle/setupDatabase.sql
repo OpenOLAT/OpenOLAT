@@ -2017,7 +2017,7 @@ create table o_feed (
    f_resourceable_id number(20),
    f_resourceable_type varchar(64),
    f_title varchar(1024),
-   f_description varchar(1024),
+   f_description clob,
    f_author varchar(255),
    f_image_name varchar(255),
    f_external number(2) default 0,

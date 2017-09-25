@@ -1971,7 +1971,7 @@ create table o_feed (
    f_resourceable_id bigint,
    f_resourceable_type varchar(64),
    f_title varchar(1024),
-   f_description varchar(4000),
+   f_description text,
    f_author varchar(255),
    f_image_name varchar(1024),
    f_external boolean,
