@@ -1,0 +1,17 @@
+<div class="o_image">
+	<div class="o_figure_caption_bottom">
+		<figure class="o_image">
+			$r.render("image")
+			#if($r.isNotEmpty($media.description))
+			<figcaption>
+				$media.description
+			</figcaption>
+			#end
+		</figure>
+	</div>
+	#if($r.available("meta") && $r.isTrue($extendedMetadata))
+		<div class="panel panel-default o_artefact_metadata">
+			$r.render("meta")
+		</div>
+	#end
+</div>

@@ -355,9 +355,6 @@ public class QTIResultManagerTest extends OlatTestCase {
 		List<QTIResultSet> sets = qtiResultManager.getResultSets(re1.getOlatResource().getResourceableId(), resSubPath, re1.getKey(), null);
 		Assert.assertNotNull(sets);
 		Assert.assertEquals(0, sets.size());
-		Assert.assertFalse(sets.contains(result1_1a));
-		Assert.assertFalse(sets.contains(result1_1b));
-		Assert.assertFalse(sets.contains(result2_1));
 		
 		List<QTIResultSet> setRe2s = qtiResultManager.getResultSets(re2.getOlatResource().getResourceableId(), resSubPath, re2.getKey(), null);
 		Assert.assertNotNull(setRe2s);
@@ -368,6 +365,9 @@ public class QTIResultManagerTest extends OlatTestCase {
 		List<QTIResult> results =  qtiResultManager.selectResults(re1.getOlatResource().getResourceableId(), resSubPath, re1.getKey(), null, 3);
 		Assert.assertNotNull(results);
 		Assert.assertEquals(0, results.size());
+		Assert.assertFalse(results.contains(result1_1a));
+		Assert.assertFalse(results.contains(result1_1b));
+		Assert.assertFalse(results.contains(result2_1));
 		
 		List<QTIResult> resultsRe2 =  qtiResultManager.selectResults(re2.getOlatResource().getResourceableId(), resSubPath, re2.getKey(), null, 3);
 		Assert.assertNotNull(resultsRe2);

@@ -45,6 +45,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.repository.RepositoryEntry;
@@ -148,6 +149,7 @@ public class CertificatePhantomWorker {
 		fillCertificationInfos(context);
 		fillAssessmentInfos(context);
 		fillMetaInfos(context);
+		context.put("formatter", new DateFormatter());
 		return context;
 	}
 	
@@ -277,6 +279,21 @@ public class CertificatePhantomWorker {
 		
 		log.info("PhantomJS help is available if exit value = 0: " + worker.getExitValue());
 		return worker.getExitValue() == 0;
+	}
+	
+	public static class DateFormatter {
+
+		public String formatDate(Date date, String language) {
+			Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
+			Formatter formatter = Formatter.getInstance(locale);
+			return formatter.formatDate(date);
+		}
+		
+		public String formatDateLong(Date date, String language) {
+			Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
+			Formatter formatter = Formatter.getInstance(locale);
+			return formatter.formatDateLong(date);
+		}
 	}
 
 	private static class ProcessWorker extends Thread {

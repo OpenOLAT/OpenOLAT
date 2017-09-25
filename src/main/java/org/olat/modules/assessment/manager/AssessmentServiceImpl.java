@@ -21,6 +21,7 @@ package org.olat.modules.assessment.manager;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
@@ -51,8 +52,10 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	
 	@Override
 	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, Float score, Boolean passed) {
-		return assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, referenceEntry, score, passed);
+			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry,
+			Float score, Boolean passed, Date lastUserModified, Date lastCoachModified) {
+		return assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, referenceEntry,
+				score, passed, lastUserModified, lastCoachModified);
 	}
 
 	@Override

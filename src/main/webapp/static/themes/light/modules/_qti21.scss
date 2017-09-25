@@ -130,6 +130,20 @@ div.hotspotInteraction {
 	overflow-x: auto;
 }
 
+img.o_hotspot_responsive[usemap] {
+	max-width: 100%;
+	width: auto;
+	height: auto;
+}
+
+/* Gap text / FIB */
+.form-inline.o_qti_gaptext_add_first_alternative {
+	padding: 9px 0 3px 0;
+}
+
+.form-inline.o_qti_gaptext_add_alternative {
+	margin-bottom: 3px;
+}
 
 /* Essay extended text */
 #itemBody .extendedTextInteraction {
@@ -227,9 +241,17 @@ div.hotspotInteraction {
 }
 
 
-/* drawing */
+/* Drawing */
 .o_draw_circle.o_qti_hotspot_correct, .o_draw_rectangle.o_qti_hotspot_correct {
 	background-color: rgba(229, 255, 204, 0.6);
+}
+
+#width_range_ui, #opacity_range_ui {
+	width: 120px;
+}
+
+.o_slider_width_range, .o_slider_opacity_range {
+	margin: 3px 10px 0 0;
 }
 
 .o_qti_hotspot_label {
@@ -244,6 +266,20 @@ div.hotspotInteraction {
 
 .o_info.o_assessmentsection_rubrics {
 	margin:0 0 0.5em 0;
+	position: relative;
+	
+	&.o_hide {
+		display: none;
+	}
+	&.o_show {
+		display: block;
+	}
+	
+	a.o_hide {
+		position: absolute;
+		bottom: 0.5em;
+		right: 1em;
+	}
 }
 
 .o_assessmentitem{
@@ -287,75 +323,93 @@ div.hotspotInteraction {
 		div.highlight {
 			border: 1px solid $o-qti-highlight-color;
 		}
-
-		div.box {
-			background-color: $o-qti-box-bg;
+		
+		div.box.vertical {
+			width: 50%;
+			float: left;
+			position: relative;
+			padding: 0;
+			margin-top: 5px;
+			
+			ul {
+				min-height: 200px;
+			}
+		}
+		
+		div.box.horizontal {
+			ul {
+				min-height: 50px;
+				width: 100%;
+			}
+		}
+		
+		div.box.source {
+			padding: 5px 10px;
+			border: 1px solid $o-qti-order-sources-border-color;
+			border-radius: $o-qti-order-border-radius;
+			background: $o-qti-order-sources-bg;
+		}
+		
+		div.box.source.horizontal {
+			padding: 5px 10px 15px 10px;
+		}
+		
+		div.box.target {
+			ul {
+				border: 2px solid $o-qti-order-drop-accept-border-color;
+				border-radius: $o-qti-order-border-radius;
+				background: $o-qti-order-target-bg;
+			}
+		}
+		
+		div.box.target.vertical {
+			padding: 6px 0 0 10px;
+			
+			ul {
+				padding: 10px;
+			}
+		}
+		
+		div.box.target.horizontal {
+			padding-top: 10px;
+			
+			ul {
+				padding: 10px 10px 0 10px;
+			}
+		}
+		
+		div.box.horizontal ul li {
+			float: left;
+			width: auto;
+			margin-right: 10px;
+			min-width: 50px;
 		}
 
 		div.box span.info {
-			margin-left: 1em;
 			color: $o-qti-box-color;
 			font-style: italic;
 			font-size: smaller;
-		}
-
-		div.box.horizontal {
-  			margin: 0.5em 0;
-			width: 100%;
-		}
-
-		ul.horizontal {
-			float: left;
-			margin: 0 1em;
-			padding: 1em 0;
-			width: 100%;
-		}
-
-		div.box.vertical {
-			margin: 1em 0;
-			width: 49%;
-		}
-
-		div.box.vertical.source {
-			float: left;
-		}
-
-		div.box.vertical.target {
-			float: right;
-		}
-
-		ul.vertical {
-			margin: 0 1em;
-			padding: 1em 0;
-			width: auto;
 		}
 
 		ul {
 			list-style-type: none;
 			margin: 0;
 			padding: 0;
-			width: 60%;
 			
 			li {
-				margin: 0 3px 3px 3px;
-				padding: 0.4em;
-				padding-left: 1.5em;
-				font-size: 1em;
+				padding: 10px;
+				margin-bottom: 10px;
+				border: 2px $o-qti-order-source-border-style $o-qti-gap-border-color;
+				border-radius: $o-qti-order-border-radius;
+				background-color: #ffffff;
+				background: $o-qti-order-source-bg;
+				@include clearfix;				
 				
 				span.ui-icon {
 					position: absolute;
 					margin-left: -1.3em;
 				}
 			}
-		}
-
-		ul.horizontal li {
-			float: left;
-			width: auto;
-		}
-
-		br {
-			clear: both;
 		}
 	}
 
@@ -399,7 +453,8 @@ div.hotspotInteraction {
 			margin: -1px 2px;
 			line-height: 90%;		
 			vertical-align: middle;
-			font-size: 98%;
+			font-size: ($font-size-base * 0.98);
+			line-height: 1.5; /* smaller than #itemBody */
 			border: 0.5px solid $o-qti-textEntryInteraction-border-color;
 			background: $o-qti-textEntryInteraction-bg;
 			padding: 0.5px 1px;
@@ -433,7 +488,8 @@ div.hotspotInteraction {
 		padding: $padding-small-vertical $padding-small-horizontal;
 		border-left: 1px solid $o-qti-item-border-color;
 		border-right: 1px solid $o-qti-item-border-color;
-		line-height: 1.5em;
+		font-size: $font-size-base;
+		line-height: 1.8; /* larger than .textEntryInteraction input */
 	}
 	.modalFeedback {
 		h4:first-of-type {
@@ -1149,5 +1205,15 @@ ul.testPartDrilldown {
 		text-align: right;
 		@extend %o_small;			
 	}	
-}	
+}
+
+/* Editor */
+.o_sel_assessment_item_feedbacks {
+	min-height: 250px;
+}
+
+.o_alternative_question_types h4 select {
+	display: inline-block;
+	width: auto;
+}
 

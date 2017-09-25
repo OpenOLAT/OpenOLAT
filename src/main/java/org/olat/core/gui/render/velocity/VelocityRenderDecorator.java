@@ -196,6 +196,14 @@ public class VelocityRenderDecorator implements Closeable {
 		return "";
 	}
 	
+	public String javaScriptCommand(String command, boolean dirtyCheck, boolean pushState, String key1, String value1, String key2, String value2) {
+		renderer.getUrlBuilder().buildXHREvent(target, null, dirtyCheck, pushState,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command),
+				new NameValuePair(key1, value1),
+				new NameValuePair(key2, value2));
+		return "";
+	}
+	
 	/**
 	 * Creates the start of a java script fragment to execute a background request. It's
 	 * up to you to close the javascript call.
@@ -205,6 +213,12 @@ public class VelocityRenderDecorator implements Closeable {
 	 */
 	public String openJavaScriptCommand(String command) {
 		renderer.getUrlBuilder().openXHREvent(target, null, false, false,
+				new NameValuePair(VelocityContainer.COMMAND_ID, command));
+		return "";
+	}
+	
+	public String openJavaScriptCommand(String command, boolean dirtyCheck, boolean pushState) {
+		renderer.getUrlBuilder().openXHREvent(target, null, dirtyCheck, pushState,
 				new NameValuePair(VelocityContainer.COMMAND_ID, command));
 		return "";
 	}
@@ -350,6 +364,12 @@ public class VelocityRenderDecorator implements Closeable {
 		} else {
 			sb.append("https:").append(WebappHelper.getMathJaxCdn());
 		}
+		return sb;
+	}
+
+	public StringOutput mathJaxConfig() {
+		StringOutput sb = new StringOutput(100);
+		sb.append(WebappHelper.getMathJaxConfig());
 		return sb;
 	}
 	
@@ -721,6 +741,16 @@ public class VelocityRenderDecorator implements Closeable {
 		return false;
 	}
 	
+	public boolean isFalse(Object obj) {
+		if("falsse".equals(obj)) {
+			return true;
+		}
+		if(obj instanceof Boolean) {
+			return !((Boolean)obj).booleanValue();
+		}
+		return false;
+	}
+	
 	public boolean isNull(Object obj) {
 		return obj == null;
 	}
@@ -809,6 +839,15 @@ public class VelocityRenderDecorator implements Closeable {
 	public boolean enabled(String componentName) {
 		Component source = renderer.findComponent(componentName);
 		return (source != null && source.isVisible() && source.isEnabled());
+	}
+	
+	public boolean enabled(Component component) {
+		return component != null && component.isVisible() && component.isEnabled();
+	}
+	
+	public boolean enabled(FormItem item) {
+		if(item == null) return false;
+		return enabled(item.getComponent());
 	}
 	
 	/**
@@ -972,15 +1011,17 @@ public class VelocityRenderDecorator implements Closeable {
 	}
 	
 	public Languages getLanguages() {
-		I18nManager i18nMgr = I18nManager.getInstance();
-		Collection<String> enabledKeysSet = I18nModule.getEnabledLanguageKeys();
+		I18nManager i18nMgr = CoreSpringFactory.getImpl(I18nManager.class);
+		I18nModule i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
+		
+		Collection<String> enabledKeysSet = i18nModule.getEnabledLanguageKeys();
 		Map<String, String> langNames = new HashMap<String, String>();
 		Map<String, String> langTranslators = new HashMap<String, String>();
 		String[] enabledKeys = ArrayHelper.toArray(enabledKeysSet);
 		String[] names = new String[enabledKeys.length];
 		for (int i = 0; i < enabledKeys.length; i++) {
 			String key = enabledKeys[i];
-			String langName = i18nMgr.getLanguageInEnglish(key, I18nModule.isOverlayEnabled());
+			String langName = i18nMgr.getLanguageInEnglish(key, i18nModule.isOverlayEnabled());
 			langNames.put(key, langName);
 			names[i] = langName;
 			String author = i18nMgr.getLanguageAuthor(key);

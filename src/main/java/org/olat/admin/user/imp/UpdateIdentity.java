@@ -169,6 +169,11 @@ public class UpdateIdentity implements Identity {
 		}
 
 		@Override
+		public String getInstitutionalEmail() {
+			return updatedProperties.get(UserConstants.INSTITUTIONALEMAIL);
+		}
+
+		@Override
 		public Date getCreationDate() {
 			return user.getCreationDate();
 		}

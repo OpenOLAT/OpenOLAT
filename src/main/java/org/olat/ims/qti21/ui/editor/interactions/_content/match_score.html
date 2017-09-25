@@ -3,14 +3,14 @@
 		<tr>
 			<th></th>
 			#foreach($targetChoice in $targetChoices)
-				<th>${targetChoice.getSummary()}
+				<th>${r.render($targetChoice.getSummaryEl())}
 			#end
 		</tr>
 	</thead>
 	<tbody>
 	#foreach($sourceChoice in $sourceChoices)
 		<tr>
-			<th>${sourceChoice.getSummary()}</th>
+			<th>${r.render($sourceChoice.getSummaryEl())}</th>
 			#set($sourceIndex = ${foreach.index})
 			#foreach($targetChoice in $targetChoices)
 				<td class="o_sel_match_${sourceIndex}_${foreach.index}">
@@ -18,6 +18,9 @@
 				$r.render("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}")
 				#if(${scoreWrapper.isCorrect()})
 					<i class=" o_icon o_icon-lg o_icon_accept"> </i>
+				#end
+				#if($f.hasError("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}"))
+					<div>$r.render("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}_ERROR")</div>
 				#end
 				</td>
 			#end

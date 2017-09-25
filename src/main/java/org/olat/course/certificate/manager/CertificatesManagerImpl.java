@@ -874,7 +874,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		
 		Float score = workUnit.getScore();
 		String lang = identity.getUser().getPreferences().getLanguage();
-		Locale locale = I18nManager.getInstance().getLocaleOrDefault(lang);
+		Locale locale = i18nManager.getLocaleOrDefault(lang);
 		Boolean passed = workUnit.getPassed();
 		Date dateCertification = certificate.getCreationDate();
 		Date dateFirstCertification = getDateFirstCertification(identity, resource.getKey());

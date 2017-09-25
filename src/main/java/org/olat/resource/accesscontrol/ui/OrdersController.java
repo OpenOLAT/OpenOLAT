@@ -40,7 +40,9 @@ import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -54,35 +56,45 @@ import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ *
  * Description:<br>
  * List the orders
- * 
+ *
  * <P>
  * Initial Date:  20 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class OrdersController extends FormBasicController implements Activateable2, BreadcrumbPanelAware {
-	
+
 	private static final String CMD_SELECT = "sel";
-	
+
 
 	private FlexiTableElement tableEl;
 	private OrdersDataSource dataSource;
 	private OrdersDataModel dataModel;
 	private BreadcrumbPanel stackPanel;
+	private CloseableModalController cmc;
+
+	private Identity identity;
 
 	private OrderDetailController detailController;
-	
+
 	@Autowired
 	private ACService acService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private AccessControlModule acModule;
-	
+
 	public OrdersController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.identity = getIdentity();
+		initForm(ureq);
+	}
+
+	public OrdersController(UserRequest ureq, WindowControl wControl, Identity identity) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
+		this.identity = identity;
 		initForm(ureq);
 	}
 
@@ -101,8 +113,8 @@ public class OrdersController extends FormBasicController implements Activateabl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.methods, new AccessMethodRenderer(acModule)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.total));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.order.details", translate("select"), CMD_SELECT));
-		
-		dataSource = new OrdersDataSource(acService, null, getIdentity(), null);
+
+		dataSource = new OrdersDataSource(acService, null, identity, null);
 		dataModel = new OrdersDataModel(dataSource, getLocale(), userManager, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "orderList", dataModel, 25, true, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
@@ -112,7 +124,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		filters.add(new FlexiTableFilter(translate("order.status.payed"), OrderStatus.PAYED.name()));
 		filters.add(new FlexiTableFilter(translate("order.status.error"), OrderStatus.ERROR.name()));
 		tableEl.setFilters("", filters, false);
-		
+
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("title", translate("orders.my"));
@@ -122,9 +134,10 @@ public class OrdersController extends FormBasicController implements Activateabl
 
 	@Override
 	protected void doDispose() {
-		//
+		removeAsListenerAndDispose(cmc);
+		cmc = null;
 	}
-	
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
@@ -144,7 +157,7 @@ public class OrdersController extends FormBasicController implements Activateabl
 		super.formInnerEvent(ureq, source, event);
 	}
 
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == detailController) {
@@ -154,11 +167,11 @@ public class OrdersController extends FormBasicController implements Activateabl
 			}
 		}
 	}
-	
+
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		/*if(entries == null || entries.isEmpty()) return;
-		
+
 		ContextEntry entry = entries.get(0);
 		String type = entry.getOLATResourceable().getResourceableTypeName();
 		if(Order.class.getSimpleName().equals(type)) {
@@ -180,6 +193,13 @@ public class OrdersController extends FormBasicController implements Activateabl
 		detailController = new OrderDetailController(ureq, bwControl, order.getOrderKey());
 		detailController.hideBackLink();
 		listenTo(detailController);
-		stackPanel.pushController(order.getOrderNr(), detailController);
+		if (stackPanel != null) {
+			stackPanel.pushController(order.getOrderNr(), detailController);
+		} else {
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), detailController.getInitialComponent(),
+					true, translate("order.booking"));
+			cmc.activate();
+			listenTo(cmc);
+		}
 	}
 }

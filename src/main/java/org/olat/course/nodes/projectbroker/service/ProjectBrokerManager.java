@@ -47,27 +47,27 @@ public interface ProjectBrokerManager {
 	public List<Project> getProjectListBy(Long projectBrokerId);
 
 	public List<Project> getProjectsWith(BusinessGroup group);
-	
-	
+
+
 	/**
 	 * Returns a project-broker object for certain project-broker-ID.
 	 * @param projectBrokerId
 	 * @return
 	 */
 	public ProjectBroker getProjectBroker(Long projectBrokerId);
-	
+
 	/**
-	 * Creates a new project-broker and save it. 
+	 * Creates a new project-broker and save it.
 	 * @return
 	 */
 	public ProjectBroker createAndSaveProjectBroker();
-	
+
 	/**
 	 * Update and save an existing project.
 	 * @param project
 	 */
 	public void updateProject(Project project);
-	
+
 	/**
 	 * Create and save a new project.
 	 * @param projectTitle
@@ -122,11 +122,11 @@ public interface ProjectBrokerManager {
 	 * @param project
 	 * @param moduleConfig
 	 * @param nbrSelectedProjects
-	 * @param isParticipantInAnyProject 
+	 * @param isParticipantInAnyProject
 	 * @return
 	 */
 	public boolean canBeProjectSelectedBy(Identity identity, Project project,  ProjectBrokerModuleConfiguration moduleConfig, int nbrSelectedProjects, boolean isParticipantInAnyProject);
-	
+
 	/**
 	 * Return true when the project can be de-selected by an identity.
 	 * @param identity
@@ -171,17 +171,17 @@ public interface ProjectBrokerManager {
 	 * @param cNode
 	 */
 	public void saveAttachedFile(Project project, String fileName, VFSLeaf uploadedItem, CourseEnvironment courseEnv, CourseNode cNode);
-	
+
 	/**
-	 * Return true when the custom-field value is one of possible-values (drop-down-mode) or when it could be any value (input field). 
+	 * Return true when the custom-field value is one of possible-values (drop-down-mode) or when it could be any value (input field).
 	 * @param value
 	 * @param string
 	 * @return
 	 */
 	public boolean isCustomFieldValueValid(String value, String string);
-	
+
 	/**
-	 * Get attachment-file relative path. 
+	 * Get attachment-file relative path.
 	 * E.g. course/<COURSE_ID>/projectbroker_attach/<COURSE_NODE>/<PROJECT_ID>
 	 * @param project
 	 * @param courseEnv
@@ -228,7 +228,7 @@ public interface ProjectBrokerManager {
 	 * @return
 	 */
 	public boolean existProjectName(Long projectBrokerId, String newProjectTitle);
-	
+
 	/**
 	 * Get attachment-folder relative path (without project-id). THis path can be used to delete all
 	 * attachment-file for certain project-broker.
@@ -240,7 +240,7 @@ public interface ProjectBrokerManager {
 	public String getAttachmentBasePathRelToFolderRoot(CourseEnvironment courseEnvironment, CourseNode courseNode);
 
 	/**
-	 * Get list of selected projects for certain identity. 
+	 * Get list of selected projects for certain identity.
 	 * @param identity
 	 * @param projectBrokerId
 	 * @return
@@ -255,7 +255,7 @@ public interface ProjectBrokerManager {
 	public Project getProject(Long projectId);
 
 	/**
-	 * Get list of coached projects for certain identity. 
+	 * Get list of coached projects for certain identity.
 	 * @param identity
 	 * @param projectBrokerId
 	 * @return
@@ -268,5 +268,5 @@ public interface ProjectBrokerManager {
 	 * @return
 	 */
 	public boolean existsProject(Long projectKey);
-	
+
 }

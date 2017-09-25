@@ -39,8 +39,8 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
-import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;

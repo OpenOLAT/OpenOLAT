@@ -1,14 +1,25 @@
-<div class="o_cal_time">$date</div>
 <div class="o_cal_wv_event_tooltip_content">
-	$r.escapeHtml($subject)
+	<h5>$r.escapeHtml($subject)</h5>
+	
+	<div class="o_cal_date text-muted">
+		<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
+		$date
+	</div>
+	#if($time && $time != "")
+	<div class="o_cal_time text-muted">
+		<i class="o_icon o_icon-fw o_icon_time">&nbsp;</i>
+		$time
+	</div>
+	#end
 	#if($location && !${location.isEmpty()})
-	<div class="o_cal_location">
-		<b>$r.translate("cal.form.location"):</b> $r.escapeHtml($location)
+	<div class="o_cal_location text-muted">
+		<i class="o_icon o_icon-fw o_icon_home" title="$r.translateInAttribute("cal.form.location")">&nbsp;</i>
+		$r.escapeHtml($location)
 	</div>
 	#end
 	#if($description && !${description.isEmpty()})
 	<div class="o_cal_description">
-		<b>$r.translate("cal.form.description"):</b> $r.xssScan($description)
+		$r.xssScan($description)
 	</div>
 	#end
 	<div class="o_cal_links">

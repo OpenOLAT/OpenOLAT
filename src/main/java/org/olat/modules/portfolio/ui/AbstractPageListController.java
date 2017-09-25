@@ -106,8 +106,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractPageListController extends FormBasicController
 implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	
-	public static final int PICTURE_WIDTH = 265;
-	public static final int PICTURE_HEIGHT = (PICTURE_WIDTH / 3) * 2;
+	public static final int PICTURE_WIDTH = 970 * 2;	// max width for large images: 1294 * 75% , x2 for high res displays
+	public static final int PICTURE_HEIGHT = 230 * 2 ; 	// max size for large images, see CSS, x2 for high res displays
 
 	protected TimelineElement timelineEl;
 	private FormLink timelineSwitchOnButton, timelineSwitchOffButton;
@@ -370,13 +370,14 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	protected PortfolioElementRow forgePageRow(UserRequest ureq, Page page, AssessmentSection assessmentSection, List<Assignment> assignments,
-			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap) {
+			Map<OLATResourceable,List<Category>> categorizedElementMap, Map<Long,Long> numberOfCommentsMap, boolean selectElement) {
 
 		Section section = page.getSection();
 		PortfolioElementRow row = new PortfolioElementRow(page, assessmentSection, config.isAssessable());
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.full", "open.full.page", null, flc, Link.BUTTON_SMALL);
 		openLink.setIconRightCSS("o_icon o_icon_start");
+		openLink.setEnabled(selectElement);
 		openLink.setPrimary(true);
 		row.setOpenFormLink(openLink);
 		openLink.setUserObject(row);

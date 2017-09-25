@@ -20,12 +20,11 @@
 package org.olat.group.ui.run;
 
 import java.util.List;
-import java.util.Locale;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.info.ui.SendMailOption;
-import org.olat.core.gui.translator.Translator;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 
@@ -35,30 +34,28 @@ import org.olat.group.BusinessGroupService;
  */
 public class SendGroupMembersMailOption implements SendMailOption {
 
-	private BusinessGroupService groupService;
+	private final String label;
+	private final GroupRoles role;
 	private BusinessGroup businessGroup;
 	
-	
-	public SendGroupMembersMailOption(BusinessGroupService groupService, BusinessGroup businessGroup) {
-		this.groupService = groupService;
+	public SendGroupMembersMailOption(BusinessGroup businessGroup, GroupRoles role, String label) {
+		this.role = role;
+		this.label = label;
 		this.businessGroup = businessGroup;
 	}
 
 	@Override
 	public String getOptionKey() {
-		return "send-mail-group-members";
+		return "send-mail-group-members-" + role.name();
 	}
 
 	@Override
-	public String getOptionTranslatedName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(SendGroupMembersMailOption.class, locale);
-		return translator.translate("wizard.step1.send_option.member");
+	public String getOptionName() {
+		return label;
 	}
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
-		List<Identity> groupMembers = groupService.getMembers(businessGroup);
-		return groupMembers;
+		return CoreSpringFactory.getImpl(BusinessGroupService.class).getMembers(businessGroup, role.name());
 	}
-
 }

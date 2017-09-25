@@ -86,7 +86,7 @@ import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
-import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,17 +105,18 @@ public class VideoManagerImpl implements VideoManager {
 	protected static final String DIRNAME_REPOENTRY = "repoentry";
 	public static final String FILETYPE_MP4 = "mp4";
 	private static final String FILETYPE_JPG = "jpg";
-	private static final String FILETYPE_SRT = "srt";
 	private static final String FILENAME_POSTER_JPG = "poster.jpg";
 	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
 	private static final String FILENAME_CHAPTERS_VTT = "chapters.vtt";
 	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
 	private static final String DIRNAME_MASTER = "master";
 	public static final String TRACK = "track_";
-	public static final String DOT = "." ;
+
 	
 	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 	private static final SimpleDateFormat vttDateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
+	
+	private final JobKey videoJobKey = new JobKey("videoTranscodingJobDetail", Scheduler.DEFAULT_GROUP);
 
 	@Autowired
 	private MovieService movieService;
@@ -427,8 +428,7 @@ public class VideoManagerImpl implements VideoManager {
 		// 3) Start transcoding immediately, force job execution
 		if (videoModule.isTranscodingLocal()) {
 			try {
-				JobDetail detail = scheduler.getJobDetail("videoTranscodingJobDetail", Scheduler.DEFAULT_GROUP);
-				scheduler.triggerJob(detail.getName(), detail.getGroup());
+				scheduler.triggerJob(videoJobKey);
 			} catch (SchedulerException e) {
 				log.error("Error while starting video transcoding job", e);
 			}			

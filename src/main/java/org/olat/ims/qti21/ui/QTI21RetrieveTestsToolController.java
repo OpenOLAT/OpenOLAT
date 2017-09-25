@@ -47,7 +47,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.archiver.ScoreAccountingHelper;
-import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroupService;
@@ -110,9 +109,37 @@ public class QTI21RetrieveTestsToolController extends BasicController implements
 		initButton();
 	}
 	
+	private List<Identity> getIdentities() {
+		List<Identity> identities;
+		if(asOptions.getGroup() == null && asOptions.getIdentities() == null) {
+			if(courseEnv != null) {
+				identities = ScoreAccountingHelper.loadUsers(courseEnv);
+			} else {
+				identities = repositoryService.getMembers(assessedEntry, GroupRoles.participant.name());
+			}
+		} else if (asOptions.getIdentities() != null) {
+			identities = asOptions.getIdentities();
+		} else {
+			identities = businessGroupService.getMembers(asOptions.getGroup());
+		}
+		return identities;
+	}
+	
 	private void initButton() {
+		boolean enabled;
+		List<Identity> identities = getIdentities();
+		if(identities == null || identities.isEmpty()) {
+			enabled = false;
+		} else if(courseEnv != null) {
+			enabled = qtiService.isRunningAssessmentTestSession(courseEnv.getCourseGroupManager().getCourseEntry(),
+					courseNode.getIdent(), courseNode.getReferencedRepositoryEntry(), getIdentities());
+		} else {
+			enabled = qtiService.isRunningAssessmentTestSession(assessedEntry, null, assessedEntry, getIdentities());
+		}
+		
 		pullButton = LinkFactory.createButton("menu.retrieve.tests.title", null, this);
 		pullButton.setTranslator(getTranslator());
+		pullButton.setEnabled(enabled);
 		putInitialPanel(pullButton);
 		getInitialComponent().setSpanAsDomReplaceable(true); // override to wrap panel as span to not break link layout 
 	}
@@ -158,24 +185,7 @@ public class QTI21RetrieveTestsToolController extends BasicController implements
 			sessions = qtiService.getRunningAssessmentTestSession(assessedEntry, null, assessedEntry);
 		}
 		
-		ArchiveOptions options = new ArchiveOptions();
-		List<Identity> identities = null;
-		if(asOptions.getGroup() == null && asOptions.getIdentities() == null) {
-			if(courseEnv != null) {
-				identities = ScoreAccountingHelper.loadUsers(courseEnv);
-				options.setIdentities(identities);
-			} else {
-				identities = repositoryService.getMembers(assessedEntry, GroupRoles.participant.name());
-				options.setIdentities(identities);
-			}
-		} else if (asOptions.getIdentities() != null) {
-			identities = asOptions.getIdentities();
-			options.setIdentities(identities);
-		} else {
-			identities = businessGroupService.getMembers(asOptions.getGroup());
-			options.setGroup(asOptions.getGroup());
-		}
-		
+		List<Identity> identities = getIdentities();
 		List<AssessmentTestSession> sessionsToRetrieve = new ArrayList<>();
 		Set<Identity> assessedIdentites = new HashSet<>(identities);
 		for(AssessmentTestSession session:sessions) {

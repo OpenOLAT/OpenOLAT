@@ -99,9 +99,10 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 		//special validator in case of bulkChange, wizard in first step allows entry of ${userProperty} (velocity-style)
 		//to validate the input a special isValidValue is used.
 		if (usageIdentifyer.equals(UserBulkChangeStep00.class.getCanonicalName())){
-			tElem.setItemValidatorProvider(new ItemValidatorProvider(){
+			tElem.setItemValidatorProvider(new ItemValidatorProvider() {
+				@Override
 				public boolean isValidValue(String value, ValidationError validationError, Locale locale2) {
-					UserBulkChangeManager ubcMan = UserBulkChangeManager.getInstance();
+					UserBulkChangeManager ubcMan = CoreSpringFactory.getImpl(UserBulkChangeManager.class);
 					Context vcContext = new VelocityContext();
 					if (user==null){
 						vcContext = ubcMan.getDemoContext(locale2);

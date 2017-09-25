@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
@@ -33,6 +35,7 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -41,10 +44,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
@@ -66,12 +71,15 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.BinderStatistics;
+import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.model.SectionRefImpl;
 import org.olat.modules.portfolio.ui.event.DeleteBinderEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.RestoreBinderEvent;
 import org.olat.modules.portfolio.ui.event.SectionSelectionEvent;
+import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
+import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
 import org.olat.user.UserManager;
@@ -87,7 +95,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TableOfContentController extends BasicController implements TooledController, Activateable2 {
 	
 	private Link newSectionTool, newSectionButton, newEntryLink, newAssignmentLink,
-		editBinderMetadataLink, moveToTrashBinderLink, deleteBinderLink, restoreBinderLink;
+		editBinderMetadataLink, moveToTrashBinderLink, deleteBinderLink, restoreBinderLink,
+		exportBinderAsCpLink, printLink, exportBinderAsPdfLink;
 	
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -160,6 +169,26 @@ public class TableOfContentController extends BasicController implements TooledC
 			moveToTrashBinderLink = LinkFactory.createToolLink("delete.binder", translate("delete.binder"), this);
 			moveToTrashBinderLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 			stackPanel.addTool(moveToTrashBinderLink, Align.left);
+		}
+		
+		if(secCallback.canExportBinder()) {
+			Dropdown exportTools = new Dropdown("export.binder", "export.binder", false, getTranslator());
+			exportTools.setElementCssClass("o_sel_pf_export_tools");
+			exportTools.setIconCSS("o_icon o_icon_download");
+			stackPanel.addTool(exportTools, Align.left);
+
+			exportBinderAsCpLink = LinkFactory.createToolLink("export.binder.cp", translate("export.binder.cp"), this);
+			exportBinderAsCpLink.setIconLeftCSS("o_icon o_icon_download");
+			exportTools.addComponent(exportBinderAsCpLink);
+			
+			printLink = LinkFactory.createToolLink("export.binder.onepage", translate("export.binder.onepage"), this);
+			printLink.setIconLeftCSS("o_icon o_icon_print");
+			printLink.setPopup(new LinkPopupSettings(950, 750, "binder"));
+			exportTools.addComponent(printLink);
+			
+			//exportBinderAsPdfLink = LinkFactory.createToolLink("export.binder.pdf", translate("export.binder.pdf"), this);
+			//exportBinderAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
+			//exportTools.addComponent(exportBinderAsPdfLink);
 		}
 		
 		if(secCallback.canDeleteBinder(binder)) {
@@ -245,10 +274,14 @@ public class TableOfContentController extends BasicController implements TooledC
 		List<Page> pages = portfolioService.getPages(binder, null);
 		for(Page page:pages) {
 			Section section = page.getSection();
-			if(secCallback.canViewElement(page) && section != null && sectionMap.containsKey(section.getKey())) {
-				SectionRow sectionRow = sectionMap.get(section.getKey());
-				PageRow pageRow = forgePageRow(page, numberOfCommentsMap);
-				sectionRow.getPages().add(pageRow);
+			if(section != null && sectionMap.containsKey(section.getKey())) {
+				boolean viewElement = secCallback.canViewElement(page);
+				boolean viewTitleElement = secCallback.canViewTitleOfElement(page);
+				if(viewElement || viewTitleElement) {
+					SectionRow sectionRow = sectionMap.get(section.getKey());
+					PageRow pageRow = forgePageRow(page, numberOfCommentsMap, viewElement);
+					sectionRow.getPages().add(pageRow);
+				}
 			}
 		}
 		mainVC.contextPut("sections", sectionRows);
@@ -350,7 +383,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		return sectionRow;
 	}
 	
-	private PageRow forgePageRow(Page page, Map<Long,Long> numberOfCommentsMap) {
+	private PageRow forgePageRow(Page page, Map<Long,Long> numberOfCommentsMap, boolean selectElement) {
 		PageRow pageRow = new PageRow(page);
 
 		String pageId = "page" + (++counter);
@@ -358,6 +391,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		Link openLink = LinkFactory.createCustomLink(pageId, "open_page", title, Link.LINK | Link.NONTRANSLATED, mainVC, this);
 		openLink.setElementCssClass("o_pf_open_entry");
 		openLink.setUserObject(pageRow);
+		openLink.setEnabled(selectElement);
 		pageRow.setOpenLink(openLink);
 
 		Long numOfComments = numberOfCommentsMap.get(page.getKey());
@@ -523,6 +557,12 @@ public class TableOfContentController extends BasicController implements TooledC
 			doConfirmDeleteBinder(ureq);
 		} else if(restoreBinderLink == source) {
 			doConfirmRestore(ureq);
+		} else if(exportBinderAsCpLink == source) {
+			doExportBinderAsCP(ureq);
+		} else if(printLink == source) {
+			doPrint(ureq);
+		} else if(exportBinderAsPdfLink == source) {
+			doExportBinderAsPdf(ureq);
 		} else if(source instanceof Link) {
 			Link link = (Link)source;
 			String cmd = link.getCommand();
@@ -767,6 +807,30 @@ public class TableOfContentController extends BasicController implements TooledC
 	private void doDeleteBinder() {
 		portfolioService.deleteBinder(binder);
 		showInfo("delete.binder.success");
+	}
+	
+	private void doExportBinderAsCP(UserRequest ureq) {
+		MediaResource resource = new ExportBinderAsCPResource(binder, ureq, getLocale());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private void doExportBinderAsPdf(UserRequest ureq) {
+		MediaResource resource = new ExportBinderAsPDFResource(binder, ureq, getLocale());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private void doPrint(UserRequest ureq) {
+		ControllerCreator ctrlCreator = new ControllerCreator() {
+			@Override
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {			
+				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, binder, ExtendedMediaRenderingHints.toPrint(), true);
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
+				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
+				return layoutCtr;
+			}					
+		};
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
+		openInNewBrowserWindow(ureq, layoutCtrlr);
 	}
 	
 	public class PageRow {

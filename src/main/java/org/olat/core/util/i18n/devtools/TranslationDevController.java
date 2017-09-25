@@ -37,9 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class TranslationDevController extends FormBasicController {
 
-	@Autowired
-	private TranslationDevManager translationDevManager;
-
 	private String[] values = { "" };
 	private String[] keys = { "on" };
 
@@ -93,6 +90,11 @@ public class TranslationDevController extends FormBasicController {
     private TextElement addKeyValue;
 	private TextElement addKeyKey;
 	private FormLink submitAdd;
+	
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private TranslationDevManager translationDevManager;
 
 	public TranslationDevController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -103,7 +105,7 @@ public class TranslationDevController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		if(!I18nModule.isTransToolEnabled()){
+		if(!i18nModule.isTransToolEnabled()){
 			setFormWarning("devtools.warning");
 		}
 

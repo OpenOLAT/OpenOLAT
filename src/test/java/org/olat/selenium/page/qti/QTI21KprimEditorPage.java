@@ -22,6 +22,7 @@ package org.olat.selenium.page.qti;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -55,8 +56,10 @@ public class QTI21KprimEditorPage extends QTI21AssessmentItemEditorPage {
 	}
 	
 	public QTI21KprimEditorPage setAnswer(int position, String answer) {
-		String containerCssSelector = "div.o_sel_choice_" + position;
-		OOGraphene.tinymce(answer, containerCssSelector, browser);
+		By answerBy = By.cssSelector("div.o_sel_choice_" + position + " input[type='text']");
+		WebElement answerEl = browser.findElement(answerBy);
+		answerEl.clear();
+		answerEl.sendKeys(answer);
 		return this;
 	}
 	

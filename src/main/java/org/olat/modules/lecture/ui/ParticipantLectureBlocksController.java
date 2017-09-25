@@ -54,16 +54,19 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.ui.ParticipantLectureBlocksDataModel.ParticipantCols;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.LecturesCompulsoryRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -84,11 +87,13 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	
 	private final RepositoryEntry entry;
 	private final boolean appealEnabled;
-	private final AppealCallback appealCallback;
 	
 	private CloseableModalController cmc;
 	private ContactFormController appealCtrl;
 	
+	private int count = 0;
+	private final int appealOffset;
+	private final int appealPeriod;
 	private final boolean withPrint;
 	private final boolean withAppeal;
 	private final Identity assessedIdentity;
@@ -119,9 +124,8 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		
-		int appealOffset = lectureModule.getRollCallAutoClosePeriod();//TODO absence or is it reminder period
-		int appealPeriod = lectureModule.getAbsenceAppealPeriod();
-		appealCallback = new AppealCallback(appealEnabled, appealOffset, appealPeriod);
+		appealOffset = lectureModule.getRollCallAutoClosePeriod();//TODO absence or is it reminder period
+		appealPeriod = lectureModule.getAbsenceAppealPeriod();
 		initForm(ureq);
 		loadModel();
 	}
@@ -151,21 +155,24 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.entry));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.lectureBlock));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.coach));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.plannedLectures));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.plannedLectures, new LecturesCompulsoryRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.attendedLectures));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.absentLectures));
 		if(authorizedAbsenceEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.unauthorizedAbsentLectures));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.authorizedAbsentLectures));
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.absentLectures));
 		}
+	
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantCols.status,
-				new LectureBlockRollCallStatusCellRenderer(authorizedAbsenceEnabled, absenceDefaultAuthorized)));
+				new LectureBlockRollCallStatusCellRenderer(authorizedAbsenceEnabled, absenceDefaultAuthorized, getTranslator())));
 
 		if(appealEnabled && withAppeal && assessedIdentity.equals(getIdentity())) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("appeal", ParticipantCols.appeal.ordinal(), "appeal",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("appeal"), "appeal"), null)));
 		}
 
-		tableModel = new ParticipantLectureBlocksDataModel(columnsModel, appealCallback,
+		tableModel = new ParticipantLectureBlocksDataModel(columnsModel,
 				authorizedAbsenceEnabled, absenceDefaultAuthorized, getLocale());
 		int paging = withPrint ? 20 : -1;
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, paging, false, getTranslator(), formLayout);
@@ -174,7 +181,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		options.setDefaultOrderBy(new SortKey(ParticipantCols.date.name(), true));
 		tableEl.setSortSettings(options);
 		tableEl.setCustomizeColumns(withPrint);
-		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-roll-call-appeal");
+		tableEl.setAndLoadPersistedPreferences(ureq, "participant-roll-call-appeal");
 		tableEl.setEmtpyTableMessageKey("empty.repository.entry.lectures");
 		
 		List<FlexiTableFilter> filters = new ArrayList<>();
@@ -184,8 +191,54 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	}
 	
 	private void loadModel() {
+		Date now = new Date();
+		Formatter formatter = Formatter.getInstance(getLocale());
+		
 		List<LectureBlockAndRollCall> rollCalls = lectureService.getParticipantLectureBlocks(entry, assessedIdentity);
-		tableModel.setObjects(rollCalls);
+		List<LectureBlockAndRollCallRow> rows = new ArrayList<>(rollCalls.size());
+		for(LectureBlockAndRollCall rollCall:rollCalls) {
+			LectureBlockAndRollCallRow row = new LectureBlockAndRollCallRow(rollCall);
+			if(appealEnabled && !LectureBlockStatus.cancelled.equals(row.getRow().getStatus()) && rollCall.isCompulsory()) {
+				
+				int lectures = row.getRow().getEffectiveLecturesNumber();
+				if(lectures <= 0) {
+					lectures = row.getRow().getPlannedLecturesNumber();
+				}
+				int attended = row.getRow().getLecturesAttendedNumber();
+				if(attended < lectures) {
+					Date date = row.getRow().getDate();
+					Calendar cal = Calendar.getInstance();
+					cal.setTime(date);
+					cal = CalendarUtils.getEndOfDay(cal);
+					cal.add(Calendar.DATE, appealOffset);
+					Date beginAppeal = CalendarUtils.removeTime(cal.getTime());
+					cal.add(Calendar.DATE, appealPeriod);
+					Date endAppeal = CalendarUtils.getEndOfDay(cal).getTime();
+
+					FormLink appealLink = null;
+					if(now.compareTo(beginAppeal) >= 0 && now.compareTo(endAppeal) <= 0) {
+						appealLink = uifactory.addFormLink("appeal_" + count++, "appeal", translate("appeal"), null, flc, Link.LINK | Link.NONTRANSLATED);
+						appealLink.setTitle(translate("appeal.tooltip", new String[] { formatter.formatDate(beginAppeal), formatter.formatDate(endAppeal) }));
+						appealLink.setUserObject(row);
+						//appeal
+					} else if(now.compareTo(endAppeal) > 0) {
+						// appeal closed
+						appealLink = uifactory.addFormLink("appeal_" + count++, "aclosed", "appeal.closed", null, flc, Link.LINK);
+						appealLink.setEnabled(false);
+						appealLink.setDomReplacementWrapperRequired(false);
+					} else if(now.compareTo(date) >= 0) {
+						// appeal at
+						String appealFrom = translate("appeal.from", new String[]{ formatter.formatDate(beginAppeal) });
+						appealLink = uifactory.addFormLink("appeal_" + count++, "appealat", appealFrom, null, flc, Link.LINK | Link.NONTRANSLATED);
+						appealLink.setEnabled(false);
+						appealLink.setDomReplacementWrapperRequired(false);
+					}
+					row.setAppealButton(appealLink);
+				}
+			}
+			rows.add(row);
+		}
+		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 
@@ -230,13 +283,19 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				LectureBlockAndRollCall row = tableModel.getObject(se.getIndex());
+				LectureBlockAndRollCallRow row = tableModel.getObject(se.getIndex());
 				if("appeal".equals(cmd)) {
-					doAppeal(ureq, row);
+					doAppeal(ureq, row.getRow());
 				}
 			}
 		} else if(openCourseButton == source) {
 			doOpenCourse(ureq);
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("appeal".equals(link.getCmd())) {
+				LectureBlockAndRollCallRow row = (LectureBlockAndRollCallRow)link.getUserObject();
+				doAppeal(ureq, row.getRow());
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -257,9 +316,22 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		contactList.addAllIdentites(teachers);
 		contactList.addAllIdentites(onwers);
 		
+		StringBuilder teacherNames = new StringBuilder();
+		for(Identity teacher:teachers) {
+			if(teacherNames.length() > 0) teacherNames.append(", ");
+			teacherNames.append(teacher.getUser().getFirstName()).append(" ").append(teacher.getUser().getLastName());
+		}
+		String date = Formatter.getInstance(getLocale()).formatDate(block.getStartDate());
+		String[] args = new String[] {
+			row.getLectureBlockTitle(),
+			teacherNames.toString(),
+			date
+		};
+		
 		ContactMessage cmsg = new ContactMessage(getIdentity());
 		cmsg.addEmailTo(contactList);
-		cmsg.setSubject(translate("appeal.subject", new String[]{ row.getLectureBlockTitle() }));
+		cmsg.setSubject(translate("appeal.subject", args));
+		cmsg.setBodyText(translate("appeal.body", args));
 		appealCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		appealCtrl.setUserObject(row);
 		appealCtrl.setContactFormTitle(translate("new.appeal.title"));
@@ -288,42 +360,5 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	private void doOpenCourse(UserRequest ureq) {
 		String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-	}
-	
-	public class AppealCallback {
-		
-		private final boolean enabled;
-		private final int appealOffset;
-		private final int appealPeriod;
-		private final Date now;
-		
-		public AppealCallback(boolean enabled, int appealOffset, int appealPeriod) {
-			this.enabled = enabled;
-			this.appealOffset = appealOffset;
-			this.appealPeriod = appealPeriod;
-			now = new Date();
-		}
-		
-		public boolean appealAllowed(LectureBlockAndRollCall row) {
-			if(enabled) {
-				int lectures = row.getEffectiveLecturesNumber();
-				if(lectures <= 0) {
-					lectures = row.getPlannedLecturesNumber();
-				}
-				int attended = row.getLecturesAttendedNumber();
-				if(attended < lectures) {
-					Date date = row.getDate();
-					Calendar cal = Calendar.getInstance();
-					cal.setTime(date);
-					cal = CalendarUtils.getEndOfDay(cal);
-					cal.add(Calendar.DATE, appealOffset);
-					Date beginAppeal = cal.getTime();
-					cal.add(Calendar.DATE, appealPeriod);
-					Date endAppeal = cal.getTime();
-					return now.compareTo(beginAppeal) >= 0 && now.compareTo(endAppeal) <= 0;
-				}
-			}
-			return false;
-		}
 	}
 }

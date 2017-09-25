@@ -192,10 +192,14 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 		jsa.addRequiredStaticJsFile("assessment/rendering/javascript/UpConversionAjaxController.js");
 		
 		jsa.addRequiredStaticJsFile("js/jquery/maphilight/jquery.maphilight.js");
+		// drawing needs slider, slider need it too
+		// order needs sortable
+		// drag and drop used a lot...
 		jsa.addRequiredStaticJsFile("js/jquery/ui/jquery-ui-1.11.4.custom.qti.min.js");
 		
 		jsa.addRequiredStaticJsFile("js/jquery/openolat/jquery.paint.js");
-		
+
+		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.choice.js");
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.associate.js");
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.graphicAssociate.js");
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.graphicGap.js");
@@ -208,6 +212,7 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.match_dnd.js");
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.gapMatch.js");
 		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.hotspot.js");
+		jsa.addRequiredStaticJsFile("js/jquery/qti/jquery.hotspot.responsive.js");
 
 	}
 	

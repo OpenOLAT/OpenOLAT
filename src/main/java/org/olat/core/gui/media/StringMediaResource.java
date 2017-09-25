@@ -43,6 +43,8 @@ public class StringMediaResource extends DefaultMediaResource {
 	//default - if no encoding is specified we assume iso latin
 	private String encoding = "iso-8859-1";
 	private String data;
+	private boolean downloadable = false;
+	private String downloadFileName = null;
 	
 	@Override
 	public boolean acceptRanges() {
@@ -87,10 +89,30 @@ public class StringMediaResource extends DefaultMediaResource {
 		hres.setHeader("Pragma", "no-cache");
 		hres.setDateHeader("Expires", 0);
 		//
+		if (downloadable && downloadFileName != null) {
+			String filename = StringHelper.urlEncodeUTF8(downloadFileName);
+			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + filename);
+		}
 	}
 	
 	@Override
 	public String toString() {
 		return data;
+	}
+
+	/**
+	 * Set to true to force the browser to download the resource. This is done
+	 * by set the content-disposition to attachment
+	 * 
+	 * NOTE: make sure when writing the link to properly set the target or
+	 * download attribute depending on the mime-type or the downloadable nature
+	 * of the file!
+	 * 
+	 * @param downloadable true: set to download; false: let browser decide
+	 * @param downloadFileName name of the attachment if downloadable set to true
+	 */
+	public void setDownloadable(boolean downloadable, String downloadFileName) {
+		this.downloadable = downloadable;
+		this.downloadFileName = downloadFileName;		
 	}
 }

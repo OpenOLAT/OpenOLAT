@@ -30,6 +30,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.ui.media.CollectTextMediaController;
@@ -108,8 +109,8 @@ public class TextHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new TextMediaController(ureq, wControl, media);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
+		return new TextMediaController(ureq, wControl, media, hints);
 	}
 
 	@Override

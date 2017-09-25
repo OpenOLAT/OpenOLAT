@@ -32,6 +32,7 @@ import java.io.Writer;
 import java.util.Locale;
 
 import org.apache.log4j.Level;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
@@ -51,12 +52,24 @@ public class PackageTranslator implements Translator {
 	private final String packageName;
 	private Locale locale;
 	private int fallBackLevel = 0;
+	
+	private transient I18nModule i18nModule;
+	private transient I18nManager i18nManager;
+	
 
 	private PackageTranslator(String packageName, Locale locale, boolean fallBack, Translator fallBackTranslator) {
 		this.locale = locale;
 		this.packageName = packageName;
 		this.fallBackTranslator = fallBackTranslator;
 		this.fallBack = fallBack;
+		i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
+		i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
+	}
+	
+	private Object readResolve() {
+		i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
+		i18nModule = CoreSpringFactory.getImpl(I18nModule.class);
+		return this;
 	}
 	
 	public void setFallBack(PackageTranslator fallback){
@@ -198,9 +211,8 @@ public class PackageTranslator implements Translator {
    */
 	@Override
 	public String translate(String key, String[] args, boolean fallBackToDefaultLocale) {
-		I18nManager i18n = I18nManager.getInstance();
-		boolean overlayEnabled = I18nModule.isOverlayEnabled();
-		String val = i18n.getLocalizedString(packageName, key, args, locale, overlayEnabled, fallBackToDefaultLocale);
+		boolean overlayEnabled = i18nModule.isOverlayEnabled();
+		String val = i18nManager.getLocalizedString(packageName, key, args, locale, overlayEnabled, fallBackToDefaultLocale);
 		if (val == null) {
 			// if not found, try the fallBackTranslator
 			if (fallBackTranslator != null && fallBackLevel < 10) {
@@ -209,10 +221,10 @@ public class PackageTranslator implements Translator {
 			} else if (fallBack) { // both fallback and fallbacktranslator does not
 				// make sense; latest translator in chain should
 				// fallback to application fallback.
-				val = i18n.getLocalizedString(I18nModule.getApplicationFallbackBundle(), key, args, locale, overlayEnabled, fallBackToDefaultLocale);
+				val = i18nManager.getLocalizedString(i18nModule.getApplicationFallbackBundle(), key, args, locale, overlayEnabled, fallBackToDefaultLocale);
 				if (val == null) {
 					// lastly fall back to brasato framework fallback
-					val = i18n.getLocalizedString(I18nModule.getCoreFallbackBundle(), key, args, locale, overlayEnabled, fallBackToDefaultLocale);
+					val = i18nManager.getLocalizedString(i18nModule.getCoreFallbackBundle(), key, args, locale, overlayEnabled, fallBackToDefaultLocale);
 				}
 			}
 		} 

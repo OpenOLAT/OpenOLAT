@@ -60,6 +60,7 @@ import org.olat.user.ProfileFormController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.GenericUnique127CharTextPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public /**
  * Description:<br>
@@ -74,12 +75,10 @@ class UserBulkChangeStep00 extends BasicStep {
 	
 	static final String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
 	static final String usageIdentifyerForAllProperties = ProfileFormController.class.getCanonicalName();
-	TextElement textAreaElement;
-	List<Identity> identitiesToEdit;
+	private List<Identity> identitiesToEdit;
 	private static VelocityEngine velocityEngine;
-	boolean isAdministrativeUser;
-	boolean isOLATAdmin;
-	static UserBulkChangeManager ubcMan;
+	private boolean isAdministrativeUser;
+	private boolean isOLATAdmin;
 
 	static {
 		// init velocity engine
@@ -100,7 +99,6 @@ class UserBulkChangeStep00 extends BasicStep {
 		this.identitiesToEdit = toEdit;
 		setI18nTitleAndDescr("step0.description", null);
 		setNextStep(new UserBulkChangeStep01(ureq));
-		ubcMan = UserBulkChangeManager.getInstance();
 		Roles roles = ureq.getUserSession().getRoles();
 		isOLATAdmin = roles.isOLATAdmin();
 		isAdministrativeUser = (roles.isAuthor() || roles.isGroupManager() || roles.isUserManager() || roles.isOLATAdmin());
@@ -129,9 +127,12 @@ class UserBulkChangeStep00 extends BasicStep {
 	private final class UserBulkChangeStepForm00 extends StepFormBasicController {
 		private FormLayoutContainer textContainer;
 		private List<UserPropertyHandler> userPropertyHandlers;
-		FormItem formitem;
-		List<MultipleSelectionElement> checkBoxes;
-		List<FormItem> formItems;
+		private FormItem formitem;
+		private List<MultipleSelectionElement> checkBoxes;
+		private List<FormItem> formItems;
+		
+		@Autowired
+		private UserBulkChangeManager ubcMan;
 
 		public UserBulkChangeStepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);

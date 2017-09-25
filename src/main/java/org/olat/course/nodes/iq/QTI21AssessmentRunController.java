@@ -89,6 +89,7 @@ import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -570,8 +571,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe, courseNode.getIdent(),
 				deliveryOptions, overrideOptions, true, false, false);
 		listenTo(displayCtrl);
-		if(displayCtrl.isTerminated()) {
-			//do nothing
+		if(displayCtrl.isEnded()) {
+			if(!displayCtrl.isResultsVisible()) {
+				doExitAssessment(ureq, null, true);
+				initAssessment(ureq);
+			}
 		} else {
 			// in case displayController was unable to initialize, a message was set by displayController
 			// this is the case if no more attempts or security check was unsuccessfull
@@ -638,7 +642,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	/**
 	 * Remove the runtime from the GUI stack only.
 	 * @param ureq
-	 * @param event
+	 * @param event The event which triggered the method (optional)
 	 * @param testEnded true if the test was ended and not suspended or cancelled (use to control increment of attempts)
 	 */
 	private void doExitAssessment(UserRequest ureq, Event event, boolean testEnded) {
@@ -662,7 +666,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			incrementAttempts.set(true);
 		}
 		
-		fireEvent(ureq, event);
+		if(event != null) {
+			fireEvent(ureq, event);
+		}
 	}
 	
 	@Override
@@ -722,7 +728,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, visibility, Boolean.TRUE, assessmentId);
 			
 			boolean increment = incrementAttempts.getAndSet(false);
-			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), increment);
+			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), increment, Role.user);
 			if(increment) {
 				ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_CLOSE_IN_COURSE, getClass());
 			}
@@ -731,7 +737,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		} else if(courseNode instanceof SelfAssessableCourseNode) {
 			boolean increment = incrementAttempts.getAndSet(false);
 			if(increment) {
-				((SelfAssessableCourseNode)courseNode).incrementUserAttempts(userCourseEnv);
+				((SelfAssessableCourseNode)courseNode).incrementUserAttempts(userCourseEnv, Role.user);
 			}
 		}
 	}

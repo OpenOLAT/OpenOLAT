@@ -27,7 +27,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.InfoMessage;
 
 /**
  * 

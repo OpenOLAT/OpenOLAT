@@ -25,7 +25,11 @@
 
 package org.olat.modules.wiki;
 
+import java.text.Collator;
 import java.util.Comparator;
+import java.util.Locale;
+
+import org.olat.core.util.vfs.VFSItem;
 
 /**
  * Description:<br>
@@ -40,7 +44,7 @@ public class WikiPageSort {
 	 * use this comparator if you like a list of sorted pages by pageName
 	 */
 	protected static final Comparator<WikiPage> PAGENAME_ORDER = new Comparator<WikiPage>() {
-
+		@Override
 		public int compare(WikiPage p1, WikiPage p2) {
 			return p1.getPageName().compareTo(p2.getPageName());
 		}
@@ -50,10 +54,57 @@ public class WikiPageSort {
 	 * use this comparator if you like a list of sorted pages by mod time
 	 */
 	protected static final Comparator<WikiPage> MODTIME_ORDER = new Comparator<WikiPage>() {
-
+		@Override
 		public int compare(WikiPage p1, WikiPage p2) {
 			// the "-" in from of the Long return negative int and therefore realizes an descending order
 			return - Long.valueOf(p1.getModificationTime()).compareTo(Long.valueOf(p2.getModificationTime()));
+		}
+	};
+	
+	public static class WikiPageNameComparator implements Comparator<String> {
+		
+		private final Collator collator;
+		
+		public WikiPageNameComparator(Locale locale) {
+			 collator = Collator.getInstance(locale);
+		}
+
+		@Override
+		public int compare(String n1, String n2) {
+			if(n1 == null) {
+				return n2 == null ? 0 : 1;
+			} else if(n2 == null) {
+				return -1;
+			}
+			return collator.compare(n1, n2);
+		}
+	}
+	
+	public static class WikiFileComparator implements Comparator<VFSItem> {
+		
+		private final Collator collator;
+		
+		public WikiFileComparator(Locale locale) {
+			 collator = Collator.getInstance(locale);
+		}
+
+		@Override
+		public int compare(VFSItem v1, VFSItem v2) {
+			if(v1 == null) {
+				return v2 == null ? 0 : 1;
+			} else if(v2 == null) {
+				return -1;
+			}
+			
+			String n1 = v1.getName();
+			String n2 = v2.getName();
+			
+			if(n1 == null) {
+				return n2 == null ? 0 : 1;
+			} else if(n2 == null) {
+				return -1;
+			}
+			return collator.compare(n1, n2);
 		}
 	};
 }

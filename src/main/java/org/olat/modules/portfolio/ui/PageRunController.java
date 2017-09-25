@@ -22,13 +22,17 @@ package org.olat.modules.portfolio.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -37,10 +41,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -57,7 +63,9 @@ import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.handler.EvaluationFormHandler;
+import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
 import org.olat.modules.portfolio.model.MediaPart;
+import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.olat.modules.portfolio.ui.editor.AddElementInfos;
 import org.olat.modules.portfolio.ui.editor.FullEditorSecurityCallback;
 import org.olat.modules.portfolio.ui.editor.InteractiveAddPageElementHandler;
@@ -68,6 +76,7 @@ import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementAddController;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
 import org.olat.modules.portfolio.ui.editor.PageProvider;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
@@ -82,6 +91,7 @@ import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
 import org.olat.modules.portfolio.ui.event.PublishEvent;
 import org.olat.modules.portfolio.ui.event.ReopenPageEvent;
 import org.olat.modules.portfolio.ui.event.RevisionEvent;
+import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -94,7 +104,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PageRunController extends BasicController implements TooledController, Activateable2  {
 
 	private VelocityContainer mainVC;
-	private Link editLink, editMetadataLink, moveToTrashLink, restoreLink, deleteLink;
+	private Link editLink, editMetadataLink, moveToTrashLink, restoreLink, deleteLink,
+		printLink, exportPageAsPdfLink;
 	protected final TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
@@ -130,7 +141,7 @@ public class PageRunController extends BasicController implements TooledControll
 		mainVC.contextPut("pageTitle", page.getTitle());
 		loadMeta(ureq);
 		
-		pageCtrl = new PageController(ureq, getWindowControl(), new PortfolioPageProvider());
+		pageCtrl = new PageController(ureq, getWindowControl(), new PortfolioPageProvider(), new StandardMediaRenderingHints());
 		listenTo(pageCtrl);
 		mainVC.put("page", pageCtrl.getInitialComponent());
 		loadModel(ureq, false);
@@ -144,6 +155,10 @@ public class PageRunController extends BasicController implements TooledControll
 			listenTo(pageEditCtrl);
 			mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
+			// Remove comments controller in edit mode, save button confuses user
+			if(commentsCtrl != null && commentsCtrl.getCommentsCount() == 0) {
+				mainVC.remove(commentsCtrl.getInitialComponent());
+			}
 		}
 	}
 
@@ -152,11 +167,26 @@ public class PageRunController extends BasicController implements TooledControll
 		editLink(!openInEditMode);
 		stackPanel.addTool(editLink, Align.left);
 
-		
 		editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
 		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
 		editMetadataLink.setVisible(secCallback.canEditPageMetadata(page, assignments));
 		stackPanel.addTool(editMetadataLink, Align.left);
+		
+		if(secCallback.canExportBinder()) {
+			Dropdown exportTools = new Dropdown("export.page", "export.page", false, getTranslator());
+			exportTools.setElementCssClass("o_sel_pf_export_tools");
+			exportTools.setIconCSS("o_icon o_icon_download");
+			stackPanel.addTool(exportTools, Align.left);
+			
+			printLink = LinkFactory.createToolLink("export.page.onepage", translate("export.page.onepage"), this);
+			printLink.setIconLeftCSS("o_icon o_icon_print");
+			printLink.setPopup(new LinkPopupSettings(950, 750, "binder"));
+			exportTools.addComponent(printLink);
+			
+			//exportPageAsPdfLink = LinkFactory.createToolLink("export.page.pdf", translate("export.page.pdf"), this);
+			//exportPageAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
+			//exportTools.addComponent(exportPageAsPdfLink);
+		}
 		
 		moveToTrashLink = LinkFactory.createToolLink("delete.page", translate("delete.page"), this);
 		moveToTrashLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
@@ -285,7 +315,10 @@ public class PageRunController extends BasicController implements TooledControll
 				doConfirmClose(ureq);
 			} else if(event instanceof ReopenPageEvent) {
 				doConfirmReopen(ureq);
-			}	
+			} else if(event == Event.CHANGED_EVENT) {
+				// categories modified, just propagate
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
 		} else if(restorePageCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadMeta(ureq);
@@ -348,6 +381,10 @@ public class PageRunController extends BasicController implements TooledControll
 			doRestorePage(ureq);
 		} else if(deleteLink == source) {
 			doConfirmDelete(ureq);
+		} else if(printLink == source) {
+			doPrint(ureq);
+		} else if(exportPageAsPdfLink == source) {
+			doExportBinderAsPdf(ureq);
 		}
 	}
 	
@@ -393,7 +430,7 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doPublish(UserRequest ureq) {
-		page = portfolioService.changePageStatus(page, PageStatus.published);
+		page = portfolioService.changePageStatus(page, PageStatus.published, getIdentity(), secCallback.getRole());
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
 		loadModel(ureq, false);
@@ -409,7 +446,7 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doRevision(UserRequest ureq) {
-		page = portfolioService.changePageStatus(page, PageStatus.inRevision);
+		page = portfolioService.changePageStatus(page, PageStatus.inRevision, getIdentity(), secCallback.getRole());
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
 		loadModel(ureq, false);
@@ -423,7 +460,7 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doClose(UserRequest ureq) {
-		page = portfolioService.changePageStatus(page, PageStatus.closed);
+		page = portfolioService.changePageStatus(page, PageStatus.closed, getIdentity(), secCallback.getRole());
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
 		loadModel(ureq, true);
@@ -437,7 +474,7 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doReopen(UserRequest ureq) {
-		page = portfolioService.changePageStatus(page, PageStatus.published);
+		page = portfolioService.changePageStatus(page, PageStatus.published, getIdentity(), secCallback.getRole());
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
 		loadModel(ureq, true);
@@ -471,6 +508,11 @@ public class PageRunController extends BasicController implements TooledControll
 		removeAsListenerAndDispose(pageEditCtrl);
 		if(Boolean.FALSE.equals(editLink.getUserObject())) {
 			doRunPage(ureq);
+			// Add comments controller again in run mode, maybe removed by
+			// previous edit mode entering
+			if(commentsCtrl != null) {
+				mainVC.put("comments", commentsCtrl.getInitialComponent());
+			}
 		} else {
 			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider(),
 					new FullEditorSecurityCallback(), getTranslator());
@@ -478,6 +520,10 @@ public class PageRunController extends BasicController implements TooledControll
 			mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
 			editLink(false);
+			// Remove comments controller in edit mode, save button confuses user
+			if(commentsCtrl != null && commentsCtrl.getCommentsCount() == 0) {
+				mainVC.remove(commentsCtrl.getInitialComponent());
+			}
 		}
 	}
 	
@@ -497,6 +543,25 @@ public class PageRunController extends BasicController implements TooledControll
 		cmc = new CloseableModalController(getWindowControl(), null, restorePageCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doExportBinderAsPdf(UserRequest ureq) {
+		MediaResource resource = new ExportBinderAsPDFResource(page, ureq, getLocale());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private void doPrint(UserRequest ureq) {
+		ControllerCreator ctrlCreator = new ControllerCreator() {
+			@Override
+			public Controller createController(UserRequest lureq, WindowControl lwControl) {			
+				BinderOnePageController printCtrl = new BinderOnePageController(lureq, lwControl, page, ExtendedMediaRenderingHints.toPrint(), true);
+				LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, lwControl, printCtrl);
+				layoutCtr.addDisposableChildController(printCtrl); // dispose controller on layout dispose
+				return layoutCtr;
+			}					
+		};
+		ControllerCreator layoutCtrlr = BaseFullWebappPopupLayoutFactory.createPrintPopupLayout(ctrlCreator);
+		openInNewBrowserWindow(ureq, layoutCtrlr);
 	}
 
 	private class PortfolioPageProvider implements PageProvider {
@@ -643,7 +708,7 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 
 		@Override
-		public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+		public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
 			return null;
 		}
 

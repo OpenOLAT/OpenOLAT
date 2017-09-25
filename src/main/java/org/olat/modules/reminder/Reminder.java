@@ -42,7 +42,11 @@ public interface Reminder extends CreateInfo, ModifiedInfo {
 	public String getConfiguration();
 
 	public void setConfiguration(String configuration);
-	
+
+	public String getEmailSubject();
+
+	public void setEmailSubject(String emailSubject);
+
 	public String getEmailBody();
 
 	public void setEmailBody(String emailBody);

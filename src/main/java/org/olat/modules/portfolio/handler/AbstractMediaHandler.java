@@ -26,10 +26,13 @@ import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaHandler;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.model.MediaPart;
-import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
+import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
+import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
 
 /**
@@ -57,13 +60,13 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
 		if(element instanceof Media) {
-			return new PageRunControllerElement(getMediaController(ureq, wControl, (Media)element));
+			return new PageRunControllerElement(getMediaController(ureq, wControl, (Media)element, new RenderingHints(options)));
 		}
 		if(element instanceof MediaPart) {
 			MediaPart mediaPart = (MediaPart)element;
-			return new PageRunControllerElement(getMediaController(ureq, wControl, mediaPart.getMedia()));
+			return new PageRunControllerElement(getMediaController(ureq, wControl, mediaPart.getMedia(), new RenderingHints(options)));
 		}
 		return null;
 	}
@@ -71,11 +74,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof Media) {
-			return getMediaController(ureq, wControl, (Media)element);
+			return getMediaController(ureq, wControl, (Media)element, new StandardMediaRenderingHints());
 		}
 		if(element instanceof MediaPart) {
 			MediaPart mediaPart = (MediaPart)element;
-			return getMediaController(ureq, wControl, mediaPart.getMedia());
+			return getMediaController(ureq, wControl, mediaPart.getMedia(), new StandardMediaRenderingHints());
 		}
 		return null;
 	}
@@ -103,6 +106,30 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 		@Override
 		public String getDescription() {
 			return description;
+		}
+	}
+	
+	public static class RenderingHints implements MediaRenderingHints, PageElementRenderingHints {
+		
+		private final PageElementRenderingHints options;
+		
+		public RenderingHints(PageElementRenderingHints options) {
+			this.options = options;
+		}	
+
+		@Override
+		public boolean isToPdf() {
+			return options.isToPdf();
+		}
+
+		@Override
+		public boolean isOnePage() {
+			return options.isOnePage();
+		}
+
+		@Override
+		public boolean isExtendedMetadata() {
+			return options.isExtendedMetadata();
 		}
 	}
 }

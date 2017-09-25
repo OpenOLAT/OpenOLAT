@@ -51,8 +51,10 @@ public class WikiResource extends FileResource {
 
 	public static final String TYPE_NAME = "FileResource.WIKI";
 	public static final String INDEX_FILENAME = WikiManager.generatePageId(WikiPage.WIKI_INDEX_PAGE) + "." + WikiManager.WIKI_FILE_SUFFIX;
-	public static final String INDEX_PROPNAME = WikiManager.generatePageId(WikiPage.WIKI_INDEX_PAGE) + "." + WikiManager.WIKI_PROPERTIES_SUFFIX;
-
+	public static final String INDEX_PROPNAME = WikiManager.generatePageId(WikiPage.WIKI_INDEX_PAGE) + "." + WikiManager.WIKI_PROPERTIES_SUFFIX;	
+	public static final String INDEX_ALT_FILENAME = INDEX_FILENAME.replace("=", "_");
+	public static final String INDEX_ALT_PROPNAME = INDEX_PROPNAME.replace("=", "_");
+	
 	public WikiResource() {
 		super(TYPE_NAME);
 	}
@@ -78,9 +80,9 @@ public class WikiResource extends FileResource {
 		throws IOException {
 
 			String filename = file.getFileName().toString();
-			if(INDEX_FILENAME.equals(filename)) {
+			if(INDEX_FILENAME.equals(filename) || INDEX_ALT_FILENAME.equals(filename)) {
 				indexFile = true;
-			} else if(INDEX_PROPNAME.equals(filename)) {
+			} else if(INDEX_PROPNAME.equals(filename) || INDEX_ALT_PROPNAME.equals(filename)) {
 				indexProperties = true;
 			}
 			return (indexProperties && indexFile) ? FileVisitResult.TERMINATE : FileVisitResult.CONTINUE;

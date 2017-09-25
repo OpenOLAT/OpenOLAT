@@ -42,25 +42,25 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 
 /**
- * 
+ *
  * Description:<br>
  * The root object for access method. The concret implementation must inherent for this
- * and use the subclass of hibernate to map the object on the DB. 
- * 
+ * and use the subclass of hibernate to map the object on the DB.
+ *
  * <P>
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 
-@Entity  
-@Table(name="o_ac_method")  
-@Inheritance(strategy=InheritanceType.SINGLE_TABLE)  
-@DiscriminatorColumn(name="access_method", discriminatorType=DiscriminatorType.STRING)  
-@DiscriminatorValue(value="abstract")  
+@Entity
+@Table(name="o_ac_method")
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="access_method", discriminatorType=DiscriminatorType.STRING)
+@DiscriminatorValue(value="abstract")
 public abstract class AbstractAccessMethod implements Persistable, AccessMethod, ModifiedInfo  {
 
 	private static final long serialVersionUID = 5656490927761461774L;
-	
+
 	@Id
 	@GeneratedValue(generator = "system-uuid")
 	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
@@ -75,7 +75,7 @@ public abstract class AbstractAccessMethod implements Persistable, AccessMethod,
 	private Long key;
 	@Version
 	private int version = 0;
-	
+
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
@@ -94,11 +94,11 @@ public abstract class AbstractAccessMethod implements Persistable, AccessMethod,
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="validto", nullable=true, insertable=true, updatable=true)
 	private Date validTo;
-	
+
 	public AbstractAccessMethod() {
 		//
 	}
-	
+
 	@Override
 	public Long getKey() {
 		return key;
@@ -108,6 +108,7 @@ public abstract class AbstractAccessMethod implements Persistable, AccessMethod,
 		this.key = key;
 	}
 
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -124,7 +125,7 @@ public abstract class AbstractAccessMethod implements Persistable, AccessMethod,
 	public void setValid(boolean valid) {
 		this.valid = valid;
 	}
-	
+
 	@Override
 	public boolean isEnabled() {
 		return enabled;
@@ -133,9 +134,6 @@ public abstract class AbstractAccessMethod implements Persistable, AccessMethod,
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
-
-	@Override
-	public abstract String getType();
 
 	@Override
 	public Date getLastModified() {
@@ -162,12 +160,12 @@ public abstract class AbstractAccessMethod implements Persistable, AccessMethod,
 	public void setValidTo(Date validTo) {
 		this.validTo = validTo;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return getKey() == null ? 34688 : getKey().hashCode();
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if(this == obj) {

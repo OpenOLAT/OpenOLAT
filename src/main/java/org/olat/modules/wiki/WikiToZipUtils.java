@@ -126,7 +126,7 @@ public class WikiToZipUtils {
 				String overviewPage = WikiToZipUtils.createIndexPageForExport(items);
 				if(overviewPage != null){
 					exportStream.putNextEntry(new ZipEntry(currentPath + "/index.html"));
-					IOUtils.write(overviewPage, exportStream);
+					IOUtils.write(overviewPage, exportStream, "UTF-8");
 					exportStream.closeEntry();
 				}
 				for(VFSItem wikiItem:items) {

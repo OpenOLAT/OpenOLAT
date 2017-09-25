@@ -1,0 +1,17 @@
+.o_gta_coach_selection {
+	.o_noti {
+		display:inline-block;
+		float: none;
+		margin: 0;
+	}
+	
+	.o_gta_coach_selection_bar {
+		position: relative;
+
+		.o_noti {
+			position: absolute;
+			top: 3px;
+			right: 0;
+		}
+	}
+}

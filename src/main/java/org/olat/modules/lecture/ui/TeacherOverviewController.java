@@ -26,6 +26,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
@@ -99,5 +101,17 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 			}
 		}
 		return rows;
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		//reload table... first
+		super.event(ureq, source, event);
+		
+		if(source instanceof TeacherRollCallController) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
+				stackPanel.popUpToController(this);
+			}
+		}
 	}
 }

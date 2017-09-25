@@ -216,7 +216,9 @@ public class StudentCoursesController extends FormBasicController implements Act
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.authorizedAbsenceLectures));
 			}
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lastModification));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.lastModification));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lastUserModified));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.lastCoachModified));
 		
 		model = new EfficiencyStatementEntryTableDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);

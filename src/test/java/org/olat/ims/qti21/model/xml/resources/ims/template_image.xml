@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd"
+	identifier="template" title="Transportation" adaptive="false" timeDependent="false">
+	<!-- Thanks to Mark Stickley for the excellent images! -->
+	<responseDeclaration identifier="RESPONSE" cardinality="single" baseType="integer"/>
+    <outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float"/>
+	<templateDeclaration identifier="TRANSPORT" cardinality="single" baseType="identifier"
+		mathVariable="false" paramVariable="false"/>
+	<templateDeclaration identifier="SPEED" cardinality="single" baseType="integer"
+		mathVariable="false" paramVariable="false"/>
+	<templateProcessing>
+		<setTemplateValue identifier="TRANSPORT">
+			<random>
+				<multiple>
+					<baseValue baseType="identifier">plane</baseValue>
+					<baseValue baseType="identifier">train</baseValue>
+					<baseValue baseType="identifier">bus</baseValue>
+				</multiple>
+			</random>
+		</setTemplateValue>
+		<templateCondition>
+			<templateIf>
+				<match>
+					<variable identifier="TRANSPORT"/>
+					<baseValue baseType="identifier">plane</baseValue>
+				</match>
+				<setTemplateValue identifier="SPEED">
+					<baseValue baseType="integer">600</baseValue>
+				</setTemplateValue>
+			</templateIf>
+			<templateElseIf>
+				<match>
+					<variable identifier="TRANSPORT"/>
+					<baseValue baseType="identifier">train</baseValue>
+				</match>
+				<setTemplateValue identifier="SPEED">
+					<baseValue baseType="integer">200</baseValue>
+				</setTemplateValue>
+			</templateElseIf>
+			<templateElse>
+				<setTemplateValue identifier="SPEED">
+					<baseValue baseType="integer">50</baseValue>
+				</setTemplateValue>
+			</templateElse>
+		</templateCondition>
+		<setCorrectResponse identifier="RESPONSE">
+			<product>
+				<baseValue baseType="integer">3</baseValue>
+				<variable identifier="SPEED"/>
+			</product>
+		</setCorrectResponse>
+	</templateProcessing>
+	<itemBody>
+		<h1>Mick's Travels</h1>
+		<p>
+			<templateInline templateIdentifier="TRANSPORT" showHide="show" identifier="plane">
+				<img src="images/plane.png" alt="Picture of a plane."/>
+			</templateInline>
+			<templateInline templateIdentifier="TRANSPORT" showHide="show" identifier="train">
+				<img src="images/train.png" alt="Picture of a train"/>
+			</templateInline>
+			<templateInline templateIdentifier="TRANSPORT" showHide="show" identifier="bus">
+				<img src="images/bus.png" alt="Picture of a bus"/>
+			</templateInline>
+		</p>
+		<p>Mick travels at an average speed of <printedVariable identifier="SPEED"/> km/h.</p>
+		<p>How far does he travel in 3 hours? <textEntryInteraction responseIdentifier="RESPONSE"
+				expectedLength="8"/> km.</p>
+	</itemBody>
+	<responseProcessing
+		template="http://www.imsglobal.org/question/qti_v2p1/rptemplates/match_correct"/>
+</assessmentItem>

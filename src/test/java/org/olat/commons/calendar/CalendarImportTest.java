@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -91,6 +92,17 @@ public class CalendarImportTest {
         assertNotNull(calendar);
 	}
 	
+	/*
+	 * Why is this test not reliable???
+	@Test(expected = ParserException.class)
+	public void testImportRefresh() throws IOException, ParserException {
+		InputStream in = CalendarImportTest.class.getResourceAsStream("Refresh.ics");
+		CalendarBuilder builder = new CalendarBuilder();
+		Calendar calendar = builder.build(in);
+        assertNotNull(calendar);
+	}
+	*/
+	
 	@Test @Ignore
 	public void testImportFromFGiCal() throws IOException, ParserException {
 		//default settings in olat
@@ -134,16 +146,13 @@ public class CalendarImportTest {
         Period period = new Period(start, end);
         PeriodList pList = rootEvent.calculateRecurrenceSet(period);
         for(Object obj:pList) {
-        	Period p = (Period)obj;
-        	System.out.println("Period: " + p.getStart());
+        		Period p = (Period)obj;
+        		System.out.println("Period: " + p.getStart());
         }
         
         RecurrenceId recurrenceId = exceptionEvent.getRecurrenceId();
         Date recurrenceDate = recurrenceId.getDate();
         System.out.println("Recurrence: " + recurrenceDate);
-        
         exceptionEvent.getSequence();
 	}
-
-
 }

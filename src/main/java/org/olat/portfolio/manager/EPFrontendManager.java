@@ -54,6 +54,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.webFeed.portfolio.LiveBlogArtefactHandler;
 import org.olat.portfolio.PortfolioModule;
@@ -1148,10 +1149,10 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 	 * @param map
 	 */
 	public void submitMap(PortfolioStructureMap map) {
-		submitMap(map, true);
+		submitMap(map, true, Role.user);
 	}
 	
-	private void submitMap(PortfolioStructureMap map, boolean logActivity) {
+	private void submitMap(PortfolioStructureMap map, boolean logActivity, Role by) {
 		if(!(map instanceof EPStructuredMap)) return;//add an exception
 		
 		EPStructuredMap submittedMap = (EPStructuredMap)map;
@@ -1170,7 +1171,7 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 				ienv.setIdentity(owner);
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 				if(logActivity) {
-					am.incrementNodeAttempts(courseNode, owner, uce);
+					am.incrementNodeAttempts(courseNode, owner, uce, by);
 				} else {
 					am.incrementNodeAttemptsInBackground(courseNode, owner, uce);
 				}
@@ -1192,7 +1193,7 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 		List<PortfolioStructureMap> mapsToClose = structureManager.getOpenStructuredMapAfterDeadline();
 		int count = 0;
 		for(PortfolioStructureMap mapToClose:mapsToClose) {
-			submitMap(mapToClose, false);
+			submitMap(mapToClose, false, Role.auto);
 			if(count % 5 == 0) {
 				// this possibly takes longer than connection timeout, so do intermediatecommits.
 				dbInstance.intermediateCommit();

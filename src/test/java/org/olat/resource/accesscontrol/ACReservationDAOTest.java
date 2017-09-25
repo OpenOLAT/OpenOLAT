@@ -35,6 +35,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,7 @@ public class ACReservationDAOTest extends OlatTestCase  {
 	@Before
 	public void interruptReservationJob() {	
 		try {
-			scheduler.pauseJob("acReservationCleanupJobDetail", Scheduler.DEFAULT_GROUP);
+			scheduler.pauseJob(new JobKey("acReservationCleanupJobDetail", Scheduler.DEFAULT_GROUP));
 		} catch (SchedulerException e) {
 			log.error("Cannot intterupt the reservation job.", e);
 		}

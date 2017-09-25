@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.core;
 
+import java.io.File;
 import java.util.List;
 
 import org.junit.Assert;
@@ -96,6 +97,28 @@ public class FolderPage {
 		
 		By saveAndCloseButton = By.cssSelector("#o_button_saveclose a.btn");
 		OOGraphene.clickAndWait(saveAndCloseButton, browser);
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public FolderPage uploadFile(File file) {
+		By newFileBy = By.className("o_bc_upload");
+		browser.findElement(newFileBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By inputBy = By.cssSelector("div.modal-dialog div.o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputBy, file, browser);
+		OOGraphene.waitBusy(browser);
+		
+		By saveButtonBy = By.cssSelector("div.o_sel_upload_buttons button.btn-primary");
+		browser.findElement(saveButtonBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public FolderPage selectRootDirectory() {
+		By rootBy = By.xpath("//div[@class='o_briefcase_folder']//ol[@class='breadcrumb']/li[1]/a");
+		browser.findElement(rootBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

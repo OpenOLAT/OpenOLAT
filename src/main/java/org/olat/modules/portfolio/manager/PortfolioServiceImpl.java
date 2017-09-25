@@ -61,6 +61,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.manager.EvaluationFormSessionDAO;
@@ -1030,7 +1031,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public Page changePageStatus(Page page, PageStatus status) {
+	public Page changePageStatus(Page page, PageStatus status, Identity identity, Role by) {
 		PageStatus currentStatus = page.getPageStatus();
 		Page reloadedPage = pageDao.loadByKey(page.getKey());
 		((PageImpl)reloadedPage).setPageStatus(status);
@@ -1069,6 +1070,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 				}
 			}
 		}
+		if(reloadedPage.getSection() != null && reloadedPage.getSection().getBinder() != null) {
+			Binder binder = reloadedPage.getSection().getBinder();
+			updateAssessmentEntryLastModification(binder, identity, by);
+		}
+		
 		return pageDao.updatePage(reloadedPage);
 	}
 	
@@ -1116,6 +1122,39 @@ public class PortfolioServiceImpl implements PortfolioService {
 		((SectionImpl)reloadedSection).setSectionStatus(status);
 		reloadedSection = binderDao.updateSection(reloadedSection);
 		return reloadedSection;
+	}
+	
+	private void updateAssessmentEntryLastModification(Binder binder, Identity doer, Role by) {
+		if(binder.getEntry() == null) return;
+
+		RepositoryEntry entry = binder.getEntry();
+		List<Identity> assessedIdentities = getMembers(binder, PortfolioRoles.owner.name());
+
+		//order status from the entry / section
+		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
+			ICourse course = CourseFactory.loadCourse(entry);
+			CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
+			if(courseNode instanceof PortfolioCourseNode) {
+				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
+				for(Identity assessedIdentity:assessedIdentities) {
+					UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+					pfNode.updateLastModifications(userCourseEnv, doer, by);
+				}
+			}
+		} else {
+			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
+			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
+			for(Identity assessedIdentity:assessedIdentities) {
+				AssessmentEntry assessmentEntry = assessmentService
+						.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), referenceEntry);
+				if(by == Role.coach) {
+					assessmentEntry.setLastCoachModified(new Date());
+				} else if(by == Role.user) {
+					assessmentEntry.setLastUserModified(new Date());
+				}
+				assessmentService.updateAssessmentEntry(assessmentEntry);
+			}
+		}
 	}
 
 	@Override
@@ -1212,7 +1251,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
 				ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), totalPassed, binderStatus, true, true, binder.getKey());
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				pfNode.updateUserScoreEvaluation(scoreEval, userCourseEnv, coachingIdentity, false);
+				pfNode.updateUserScoreEvaluation(scoreEval, userCourseEnv, coachingIdentity, false, Role.coach);
 			}
 		} else {
 			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
@@ -1268,7 +1307,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				AssessmentEvaluation eval = pfNode.getUserScoreEvaluation(userCourseEnv);
 				
 				ScoreEvaluation scoreEval= new ScoreEvaluation(eval.getScore(), eval.getPassed(), status, true, fullyAssessed, binder.getKey());
-				pfNode.updateUserScoreEvaluation(scoreEval, userCourseEnv, coachingIdentity, false);
+				pfNode.updateUserScoreEvaluation(scoreEval, userCourseEnv, coachingIdentity, false, Role.coach);
 			}
 		} else {
 			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();

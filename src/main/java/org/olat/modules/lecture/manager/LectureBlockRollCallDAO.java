@@ -19,7 +19,6 @@
  */
 package org.olat.modules.lecture.manager;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,8 +35,10 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockRollCallSearchParameters;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
@@ -62,13 +63,13 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class LectureBlockRollCallDAO {
-	
-	private static final SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-	
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private LectureBlockAuditLogDAO auditLogDao;
 	
 	public LectureBlockRollCall createAndPersistRollCall(LectureBlock lectureBlock, Identity identity,
 			Boolean authorizedAbsence, String absenceReason, String comment, List<Integer> absences) {
@@ -93,9 +94,7 @@ public class LectureBlockRollCallDAO {
 	private void addInternalLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences) {
 		if(absences != null) {
 			LectureBlockRollCallImpl call = (LectureBlockRollCallImpl)rollCall;
-			String currentAbsent = call.getLecturesAbsent();
-			String currentAttended = call.getLecturesAttended();
-			
+
 			List<Integer> currentAbsentList = call.getLecturesAbsentList();
 			for(int i=absences.size(); i-->0; ) {
 				Integer absence = absences.get(i);
@@ -105,22 +104,22 @@ public class LectureBlockRollCallDAO {
 			}
 			call.setLecturesAbsentList(currentAbsentList);
 			call.setLecturesAbsentNumber(currentAbsentList.size());
-		
-			int plannedLecture = lectureBlock.getPlannedLecturesNumber();
+			
+			int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
+			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
+				numOfLectures = lectureBlock.getPlannedLecturesNumber();
+			}
 			
 			List<Integer> attendedList = new ArrayList<>();
-			for(int i=0; i<plannedLecture; i++) {
+			for(int i=0; i<numOfLectures; i++) {
 				if(!currentAbsentList.contains(i)) {
 					attendedList.add(i);
 				}
 			}
 			call.setLecturesAttendedList(attendedList);
-			call.setLecturesAttendedNumber(plannedLecture - currentAbsentList.size());
-			updateLog(call, currentAbsent, currentAttended);
+			call.setLecturesAttendedNumber(numOfLectures - currentAbsentList.size());
 		}
 	}
-	
-
 	
 	public LectureBlockRollCall removeLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences) {
 		removeInternalLecture(lectureBlock, rollCall, absences);
@@ -130,8 +129,6 @@ public class LectureBlockRollCallDAO {
 	private void removeInternalLecture(LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences) {
 		if(absences != null) {
 			LectureBlockRollCallImpl call = (LectureBlockRollCallImpl)rollCall;
-			String currentAbsent = call.getLecturesAbsent();
-			String currentAttended = call.getLecturesAttended();
 			
 			List<Integer> currentAbsentList = call.getLecturesAbsentList();
 			for(int i=absences.size(); i-->0; ) {
@@ -139,27 +136,36 @@ public class LectureBlockRollCallDAO {
 			}
 			call.setLecturesAbsentList(currentAbsentList);
 			call.setLecturesAbsentNumber(currentAbsentList.size());
-		
-			int plannedLecture = lectureBlock.getPlannedLecturesNumber();
-			
+
+			int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
+			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
+				numOfLectures = lectureBlock.getPlannedLecturesNumber();
+			}
+
 			List<Integer> attendedList = new ArrayList<>();
-			for(int i=0; i<plannedLecture; i++) {
+			for(int i=0; i<numOfLectures; i++) {
 				if(!currentAbsentList.contains(i)) {
 					attendedList.add(i);
 				}
 			}
 			call.setLecturesAttendedList(attendedList);
-			call.setLecturesAttendedNumber(plannedLecture - currentAbsentList.size());
-			updateLog(call, currentAbsent, currentAttended);
+			call.setLecturesAttendedNumber(numOfLectures - currentAbsentList.size());
+			
+			if(currentAbsentList.size() == 0) {
+				call.setAbsenceAuthorized(null);
+			}
 		}
 	}
 	
-	public LectureBlockRollCall adaptLecture(LectureBlockRollCall rollCall, int numberOfLectures) {
+	public LectureBlockRollCall adaptLecture(LectureBlock lectureBlock,
+			LectureBlockRollCall rollCall, int numberOfLectures, Identity author) {
 		LectureBlockRollCallImpl call = (LectureBlockRollCallImpl)rollCall;
 		List<Integer> currentAbsentList = call.getLecturesAbsentList();
 		List<Integer> currentAttendedList = call.getLecturesAttendedList();
 		
 		if((currentAbsentList != null && currentAbsentList.size() > 0) || (currentAttendedList != null && currentAttendedList.size() > 0)) {
+			String before = auditLogDao.toXml(rollCall);
+			
 			int currentLectures = currentAbsentList.size() + currentAttendedList.size();
 			if(currentLectures > numberOfLectures) {
 				// need to reduce
@@ -193,21 +199,14 @@ public class LectureBlockRollCallDAO {
 				call.setLecturesAttendedNumber(attendedList.size());
 				call = (LectureBlockRollCallImpl)update(call);
 			}
+			
+			String after = auditLogDao.toXml(rollCall);
+			if(before == null || !before.equals(after)) {
+				auditLogDao.auditLog(LectureBlockAuditLog.Action.adaptRollCall, before, after,
+						null, lectureBlock, rollCall, lectureBlock.getEntry(), rollCall.getIdentity(), author);
+			}
 		}
 		return call;
-	}
-	
-	private void updateLog(LectureBlockRollCallImpl call, String currentAbsent, String currentAttended) {
-		String log = call.getLog() == null ? "" : call.getLog();
-		
-		Date now = new Date();
-		String date;
-		synchronized(sdb) {
-			date = sdb.format(now);
-		}
-		log += date + " Absent: " + currentAbsent + "->" + call.getLecturesAbsent() + ";";
-		log += "Attended: " + currentAttended + "->" + call.getLecturesAttended() + " \n";
-		call.setLog(log);
 	}
 	
 	public LectureBlockRollCall loadByKey(Long key) {
@@ -260,6 +259,67 @@ public class LectureBlockRollCallDAO {
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		return rollCalls != null && rollCalls.size() > 0 ? rollCalls.get(0) : null;
+	}
+	
+	public List<LectureBlockRollCall> getRollCalls(LectureBlockRollCallSearchParameters searchParams) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rollcall from lectureblockrollcall rollcall")
+		  .append(" inner join fetch rollcall.identity ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" inner join fetch rollcall.lectureBlock block");
+		
+		boolean where = false;
+		if(searchParams.getHasAbsence() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			if(searchParams.getHasAbsence().booleanValue()) {
+				sb.append("rollcall.lecturesAbsentNumber>0");
+			} else {
+				sb.append("(rollcall.lecturesAbsentNumber = 0 or rollcall.lecturesAbsentNumber is null)");
+			}
+		}
+		
+		if(searchParams.getHasSupervisorNotificationDate() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			if(searchParams.getHasSupervisorNotificationDate().booleanValue()) {
+				sb.append("rollcall.absenceSupervisorNotificationDate is not null");
+			} else {
+				sb.append("rollcall.absenceSupervisorNotificationDate is null");
+			}
+		}
+		
+		if(searchParams.getClosed() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			if(searchParams.getClosed().booleanValue()) {
+				sb.append("(block.statusString='").append(LectureBlockStatus.done.name()).append("'")
+				  .append(" or block.rollCallStatusString='").append(LectureRollCallStatus.closed.name()).append("'")
+				  .append(" or block.rollCallStatusString='").append(LectureRollCallStatus.autoclosed.name()).append("')");
+			} else {
+				sb.append("(block.statusString!='").append(LectureBlockStatus.done.name()).append("'")
+				  .append(" and block.rollCallStatusString!='").append(LectureRollCallStatus.closed.name()).append("'")
+				  .append(" and block.rollCallStatusString!='").append(LectureRollCallStatus.autoclosed.name()).append("')");
+			}
+		}
+		
+		if(searchParams.getRollCallKey() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("rollcall.key=:rollCallKey");
+		}
+		
+		if(searchParams.getLectureBlockKey() != null) {
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append("rollcall.lectureBlock.key=:lectureBlockKey");
+		}
+
+		TypedQuery<LectureBlockRollCall> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlockRollCall.class);
+		if(searchParams.getRollCallKey() != null) {
+			query.setParameter("rollCallKey", searchParams.getRollCallKey());
+		}
+		if(searchParams.getLectureBlockKey() != null) {
+			query.setParameter("lectureBlockKey", searchParams.getLectureBlockKey());
+		}
+		
+		return query.getResultList();
 	}
 	
 	public List<LectureBlockAndRollCall> getParticipantLectureBlockAndRollCalls(RepositoryEntryRef entry, IdentityRef identity) {
@@ -491,7 +551,7 @@ public class LectureBlockRollCallDAO {
 		}
 		
 		Map<String,Object> queryParams = new HashMap<>();
-		appendUsersStatisticsSearchParams(params, queryParams, sb);
+		appendUsersStatisticsSearchParams(params, queryParams, userPropertyHandlers, sb);
 
 		TypedQuery<Object[]> rawQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
@@ -585,7 +645,8 @@ public class LectureBlockRollCallDAO {
 		return statisticsList;
 	}
 	
-	private void appendUsersStatisticsSearchParams(LectureStatisticsSearchParameters params, Map<String,Object> queryParams, StringBuilder sb) {
+	private void appendUsersStatisticsSearchParams(LectureStatisticsSearchParameters params, Map<String,Object> queryParams,
+			List<UserPropertyHandler> userPropertyHandlers, StringBuilder sb) {
 		if(StringHelper.containsNonWhitespace(params.getLogin())) {
 			String login = PersistenceHelper.makeFuzzyQueryString(params.getLogin());
 			if (login.contains("_") && dbInstance.isOracle()) {
@@ -609,6 +670,14 @@ public class LectureBlockRollCallDAO {
 				String qName = "p_" + ++count;
 				
 				UserPropertyHandler handler = userManager.getUserPropertiesConfig().getPropertyHandler(propName);
+				if(handler == null) {// fallback if the haandler is disabled
+					for(UserPropertyHandler userPropertyHandler:userPropertyHandlers) {
+						if(propName.equals(userPropertyHandler.getName())) {
+							handler = userPropertyHandler;
+						}
+					}
+				}
+				
 				if(dbInstance.isMySQL()) {
 					sb.append(" and user.").append(handler.getName()).append(" like :").append(qName);
 				} else {

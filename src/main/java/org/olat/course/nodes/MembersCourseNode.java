@@ -34,7 +34,6 @@ import org.olat.course.ICourse;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
-import org.olat.course.editor.formfragments.MembersSelectorFormFragment;
 import org.olat.course.nodes.info.InfoCourseNodeEditController;
 import org.olat.course.nodes.members.MembersCourseNodeEditController;
 import org.olat.course.nodes.members.MembersCourseNodeRunController;
@@ -42,9 +41,7 @@ import org.olat.course.nodes.members.MembersPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.IModuleConfiguration;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.ModuleProperty;
 import org.olat.repository.RepositoryEntry;
 
 
@@ -66,28 +63,29 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 	
 	//Config keys
 	public static final String CONFIG_KEY_SHOWOWNER = "showOwner";
-	private static final String CONFIG_KEY_SHOWCOACHES = "showCoaches";
-	private static final String CONFIG_KEY_SHOWPARTICIPANTS = "showParticpants";
+	public static final String CONFIG_KEY_SHOWCOACHES = "showCoaches";
+	public static final String CONFIG_KEY_SHOWPARTICIPANTS = "showParticpants";
 	
-
+	public static final String CONFIG_KEY_COACHES_ALL = "members_CoachesAll";
+	public static final String CONFIG_KEY_PARTICIPANTS_ALL = "members_ParticipantsAll";
+	
 	public static final String CONFIG_KEY_EMAIL_FUNCTION = "emailFunction";
 	public static final String CONFIG_KEY_DOWNLOAD_FUNCTION = "downloadFunction";
 	public static final String EMAIL_FUNCTION_ALL = "all";
 	public static final String EMAIL_FUNCTION_COACH_ADMIN = "coachAndAdmin";
-
-	public static final ModuleProperty<Boolean>     CONFIG_KEY_COACHES_ALL      = new ModuleProperty<Boolean>(MembersSelectorFormFragment.CONFIG_KEY_COACHES_ALL){};
-	public static final ModuleProperty<Boolean>     CONFIG_KEY_COACHES_COURSE   = new ModuleProperty<Boolean>(MembersSelectorFormFragment.CONFIG_KEY_COACHES_COURSE, false){};
-	public static final ModuleProperty<String> 		CONFIG_KEY_COACHES_GROUP    = new ModuleProperty<String>(MembersSelectorFormFragment.CONFIG_KEY_COACHES_GROUP){};
-	public static final ModuleProperty<List<Long>>  CONFIG_KEY_COACHES_GROUP_ID = new ModuleProperty<List<Long>>(MembersSelectorFormFragment.CONFIG_KEY_COACHES_GROUP_ID){};
-	public static final ModuleProperty<String> 	    CONFIG_KEY_COACHES_AREA     = new ModuleProperty<String>(MembersSelectorFormFragment.CONFIG_KEY_COACHES_AREA){};
-	public static final ModuleProperty<List<Long>>  CONFIG_KEY_COACHES_AREA_IDS = new ModuleProperty<List<Long>>(MembersSelectorFormFragment.CONFIG_KEY_COACHES_AREA_IDS){};
 	
-	public static final ModuleProperty<Boolean> 	CONFIG_KEY_PARTICIPANTS_ALL      = new ModuleProperty<Boolean>(MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_ALL){};
-	public static final ModuleProperty<Boolean> 	CONFIG_KEY_PARTICIPANTS_COURSE   = new ModuleProperty<Boolean>(MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_COURSE){};
-	public static final ModuleProperty<String> 	    CONFIG_KEY_PARTICIPANTS_GROUP    = new ModuleProperty<String>(MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_GROUP){};
-	public static final ModuleProperty<List<Long>>  CONFIG_KEY_PARTICIPANTS_GROUP_ID = new ModuleProperty<List<Long>>(MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_GROUP_ID){};
-	public static final ModuleProperty<String> 		CONFIG_KEY_PARTICIPANTS_AREA     = new ModuleProperty<String>(MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_AREA){};
-	public static final ModuleProperty<List<Long>> 	CONFIG_KEY_PARTICIPANTS_AREA_ID  = new ModuleProperty<List<Long>>(MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_AREA_ID){};
+	public static final String CONFIG_KEY_COACHES_COURSE = "members_CourseCoaches";
+	public static final String CONFIG_KEY_COACHES_GROUP = "members_GroupCoaches";
+	public static final String CONFIG_KEY_COACHES_GROUP_ID = "members_GroupCoachesIds";
+	public static final String CONFIG_KEY_COACHES_AREA = "members_AreaCoaches";
+	public static final String CONFIG_KEY_COACHES_AREA_IDS = "members_AreaCoachesIds";
+	
+	public static final String CONFIG_KEY_PARTICIPANTS_COURSE = "members_CourseParticipants";
+	public static final String CONFIG_KEY_PARTICIPANTS_GROUP = "members_GroupParticipants";
+	public static final String CONFIG_KEY_PARTICIPANTS_GROUP_ID = "members_GroupParticipantsIds";
+	public static final String CONFIG_KEY_PARTICIPANTS_AREA = "members_AreaParticipants";
+	public static final String CONFIG_KEY_PARTICIPANTS_AREA_ID = "members_AreaParticipantsIds";
+
 
 	public MembersCourseNode() {
 		super(TYPE);
@@ -147,29 +145,13 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return new MembersPeekViewController(ureq, wControl, userCourseEnv, this.getModuleConfiguration());
-		
-		//TODO check if this is the desired 
-//		updateModuleConfigDefaults(false);
-//		
-//		// Use normal view as peekview
-//		Controller controller;
-//		Roles roles = ureq.getUserSession().getRoles();
-//		if (roles.isGuestOnly()) {
-//			Translator trans = Util.createPackageTranslator(CourseNode.class, ureq.getLocale());
-//			String title = trans.translate("guestnoaccess.title");
-//			String message = trans.translate("guestnoaccess.message");
-//			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
-//		} else {
-//			controller = new MembersCourseNodeRunController(ureq, wControl, userCourseEnv, this.getModuleConfiguration());
-//		}
-//		return controller;
+		updateModuleConfigDefaults(false);
+		return new MembersPeekViewController(ureq, wControl, userCourseEnv, getModuleConfiguration());
 	}
 	
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
-		IModuleConfiguration membersFrag = IModuleConfiguration.fragment("members", config);
 		int version = config.getConfigurationVersion();
 		if(isNewNode){
 			config.setBooleanEntry(CONFIG_KEY_SHOWOWNER, false);
@@ -194,11 +176,11 @@ public class MembersCourseNode extends AbstractAccessableCourseNode {
 			}
 			if(version < 4) {
 				if(config.getBooleanEntry(CONFIG_KEY_SHOWCOACHES)) {
-					membersFrag.set(CONFIG_KEY_COACHES_ALL, true);
+					config.set(CONFIG_KEY_COACHES_ALL, true);
 					config.remove(CONFIG_KEY_SHOWCOACHES);
 				}
 				if(config.getBooleanEntry(CONFIG_KEY_SHOWPARTICIPANTS)) {
-					membersFrag.set(CONFIG_KEY_PARTICIPANTS_ALL, true);
+					config.set(CONFIG_KEY_PARTICIPANTS_ALL, true);
 					config.remove(CONFIG_KEY_SHOWPARTICIPANTS);
 				}
 				config.setConfigurationVersion(4);

@@ -99,7 +99,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String TABFOCUS_SETTINGS_PREV_NEXT = ":prev,:next";
 	// Valid elements
 	private static final String EXTENDED_VALID_ELEMENTS = "extended_valid_elements";
-	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],img[*],iframe[*],map[*],area[*],textentryinteraction[*]";
+	private static final String EXTENDED_VALID_ELEMENTS_VALUE_FULL = "script[src|type|defer],form[*],input[*],a[*],p[*],#comment[*],figure[*],figcaption,img[*],iframe[*],map[*],area[*],textentryinteraction[*]";
 	private static final String MATHML_VALID_ELEMENTS = "math[*],mi[*],mn[*],mo[*],mtext[*],mspace[*],ms[*],mrow[*],mfrac[*],msqrt[*],mroot[*],merror[*],mpadded[*],mphantom[*],mfenced[*],mstyle[*],menclose[*],msub[*],msup[*],msubsup[*],munder[*],mover[*],munderover[*],mmultiscripts[*],mtable[*],mtr[*],mtd[*],maction[*]";
 	private static final String INVALID_ELEMENTS = "invalid_elements";
 	private static final String INVALID_ELEMENTS_FORM_MINIMALISTIC_VALUE_UNSAVE = "iframe,script,@[on*],object,embed";
@@ -150,10 +150,9 @@ public class RichTextConfiguration implements Disposable {
 	private String linkBrowserAbsolutFilePath;
 	private boolean relativeUrls = true;
 	private boolean removeScriptHost = true;
-	private boolean statusBar = true;
 	private boolean pathInStatusBar = true;
+	private boolean figCaption = true;
 	private boolean allowCustomMediaFactory = true;
-	private boolean inline = false;
 	private boolean sendOnBlur;
 	private boolean readOnly;
 	private boolean filenameUriValidation = false;
@@ -166,6 +165,7 @@ public class RichTextConfiguration implements Disposable {
 	private final Locale locale;
 	private TinyConfig tinyConfig;
 	
+	private List<TextMode> textModes = Collections.singletonList(TextMode.formatted);
 	private RichTextConfigurationDelegate additionalConfiguration;
 	
 	public RichTextConfiguration(Locale locale) {
@@ -414,14 +414,6 @@ public class RichTextConfiguration implements Disposable {
 		this.allowCustomMediaFactory = allowCustomMediaFactory;
 	}
 
-	public boolean isInline() {
-		return inline;
-	}
-
-	public void setInline(boolean inline) {
-		this.inline = inline;
-	}
-
 	public boolean isSendOnBlur() {
 		return sendOnBlur;
 	}
@@ -432,21 +424,6 @@ public class RichTextConfiguration implements Disposable {
 	 */
 	public void setSendOnBlur(boolean sendOnBlur) {
 		this.sendOnBlur = sendOnBlur;
-	}
-
-	public boolean isStatusBar() {
-		return statusBar;
-	}
-
-	/**
-	 * Allow to remove the status bar
-	 * 
-	 * @see https://www.tinymce.com/docs/configure/editor-appearance/#statusbar
-	 * 
-	 * @param statusBar
-	 */
-	public void setStatusBar2(boolean statusBar) {
-		this.statusBar = statusBar;
 	}
 
 	public boolean isPathInStatusBar() {
@@ -464,6 +441,22 @@ public class RichTextConfiguration implements Disposable {
 
 	public void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
+	}
+
+	public List<TextMode> getTextModes() {
+		return new ArrayList<>(textModes);
+	}
+
+	public void setSimplestTextModeAllowed(TextMode textMode) {
+		if(textMode != null) {
+			List<TextMode> newModes = new ArrayList<>(3);
+			for(int i=textMode.ordinal(); i<=TextMode.formatted.ordinal(); i++) {
+				newModes.add(TextMode.values()[i]);
+			}
+			textModes = newModes;
+		} else {
+			textModes = Collections.singletonList(TextMode.formatted);
+		}
 	}
 
 	public RichTextConfigurationDelegate getAdditionalConfiguration() {
@@ -858,6 +851,10 @@ public class RichTextConfiguration implements Disposable {
 		tinyConfig = tinyConfig.enableCode();
 	}
 	
+	public void enableCharCount() {
+		tinyConfig = tinyConfig.enableCharcount();
+	}
+	
 	public void enableQTITools(boolean textEntry, boolean numericalInput, boolean hottext) {
 		tinyConfig = tinyConfig.enableQTITools(textEntry, numericalInput, hottext);
 		setQuotedConfigValue("custom_elements", "~textentryinteraction,~hottext");
@@ -884,6 +881,21 @@ public class RichTextConfiguration implements Disposable {
 		setNonQuotedConfigValue(RichTextConfiguration.HEIGHT, "b_initialEditorHeight()");
 	}
 	
+	/**
+	 * @return True if the fig caption for image is enabled.
+	 */
+	public boolean isFigCaption() {
+		return figCaption;
+	}
+
+	/**
+	 * Enable or disable fig caption for image.
+	 * @param figCaption
+	 */
+	public void setFigCaption(boolean figCaption) {
+		this.figCaption = figCaption;
+	}
+
 	public boolean isFilenameUriValidation() {
 		return filenameUriValidation;
 	}
@@ -1005,9 +1017,10 @@ public class RichTextConfiguration implements Disposable {
  		StringOutput tinyMenuSb = new StringOutput();
  		tinyMenuSb.append("plugins: '").append(tinyConfig.getPlugins()).append("',\n")
  		  .append("image_advtab:true,\n")
+ 		  .append("image_caption:").append(figCaption).append(",\n")
+ 		  .append("image_title:true,\n")
 		  .append("relative_urls:").append(isRelativeUrls()).append(",\n")
 		  .append("remove_script_host:").append(isRemoveScriptHost()).append(",\n")
-		  .append("inline:").append(isInline()).append(",\n")
 		  .append("statusbar:").append(true).append(",\n")
 		  .append("resize:").append(true).append(",\n")
 		  .append("menubar:").append(tinyConfig.hasMenu()).append(",\n");

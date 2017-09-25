@@ -145,6 +145,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private UserBulkChangeManager ubcMan;
 
 	/**
 	 * Constructor to trigger the user search workflow using a generic search form
@@ -571,7 +573,6 @@ public class UsermanagerUserSearchController extends BasicController implements 
 						return;
 					}
 					selectedIdentities = tdm.getIdentities(tmse.getSelection());
-					final UserBulkChangeManager ubcMan = UserBulkChangeManager.getInstance();
 					// valid selection: load in wizard
 					Step start = new UserBulkChangeStep00(ureq, selectedIdentities);
 					

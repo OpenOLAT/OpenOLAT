@@ -297,7 +297,37 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		}
 		
 		if(writeRubrics) {
-			sb.append("<div class='o_info o_assessmentsection_rubrics'>");
+			boolean show = true;
+			for(int i=sectionParentLine.size(); i-->0; ) {
+				AssessmentSection selectedSection = sectionParentLine.get(i);
+				if(component.getCandidateSessionContext().isRubricHidden(selectedSection.getIdentifier())) {
+					show = false;
+				}
+			}
+			
+			String key = sectionParentLine.get(0).getIdentifier().toString();
+			Form form = component.getQtiItem().getRootForm();
+			String dispatchId = component.getQtiItem().getFormDispatchId();
+			
+			sb.append("<a href='javascript:;' onclick=\"")
+			  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
+					new NameValuePair("cid", Event.rubric.name()), new NameValuePair("section", key)))
+			  .append("; return false;\" class='o_toogle_rubrics translated'><i class='o_icon o_icon-fw ");
+			if(show) {
+				sb.append("o_icon_close_togglebox'> </i> <span>").append(translator.translate("hide.rubric"));
+			} else {
+				sb.append("o_icon_open_togglebox'> </i> <span>").append(translator.translate("show.rubric"));
+			}
+			sb.append("</span></a>");
+
+			sb.append("<div class='o_info o_assessmentsection_rubrics clearfix");
+			if(show) {
+				sb.append(" o_show");
+			} else {
+				sb.append(" o_hide");
+			}
+			sb.append("'>");
+			
 			//write the titles first
 			if(writeTitles) {
 				sb.append("<h4>");
@@ -316,7 +346,6 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 				sb.append("</h4>");
 			}
 			
-
 			for(int i=sectionParentLine.size(); i-->0; ) {
 				AssessmentSection selectedSection = sectionParentLine.get(i);
 				for(RubricBlock rubricBlock:selectedSection.getRubricBlocks()) {
@@ -325,7 +354,34 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 					sb.append("</div>");
 				}
 			}
-			sb.append("</div>");
+			
+			sb.append("<a href='javascript:;' onclick=\"")
+			  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
+					new NameValuePair("cid", Event.rubric.name()), new NameValuePair("section", key)))
+			  .append("; return false;\" class='o_toogle_rubrics o_hide'><span>")
+			  .append(translator.translate("hide.rubric.short"))
+			  .append("</span></a>");
+			// script to show/hide the rubrics with the translated linked
+			sb.append("<script type=\"text/javascript\">\n")
+			  .append("/* <![CDATA[ */ \n")
+			  .append("jQuery(function() {\n")
+			  .append(" jQuery('.o_toogle_rubrics').on('click', function() {\n")
+			  .append("   jQuery('.o_assessmentsection_rubrics').each(function(index, el) {\n")
+			  .append("     var current = jQuery(el).attr('class');\n")
+			  .append("     if(current.indexOf('o_hide') >= 0) {\n")
+			  .append("       jQuery(el).removeClass('o_hide').addClass('o_show');\n")
+			  .append("       jQuery('a.o_toogle_rubrics.translated i').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');\n")
+			  .append("       jQuery('a.o_toogle_rubrics.translated span').html('").append(translator.translate("hide.rubric")).append("');")
+			  .append("     } else {\n")
+			  .append("   	  jQuery(el).removeClass('o_show').addClass('o_hide');\n")
+			  .append("       jQuery('a.o_toogle_rubrics.translated i').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');\n")
+			  .append("       jQuery('a.o_toogle_rubrics.translated span').html('").append(translator.translate("show.rubric")).append("');")
+			  .append("     }\n")
+			  .append("   });")
+			  .append(" });")
+			  .append("});\n /* ]]> */")
+			  .append("</script>")
+			  .append("</div>");
 		}
 	}
 	
@@ -348,7 +404,15 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		//title + status
 		sb.append("<h4 class='itemTitle'>");
 		renderItemStatus(sb, itemSessionState, options, translator);
-		sb.append(StringHelper.escapeHtml(itemNode.getSectionPartTitle()), component.isShowTitles())
+		
+		String title;
+		if(component.isShowTitles()) {
+			title = StringHelper.escapeHtml(itemNode.getSectionPartTitle());
+		} else {
+			int num = component.getCandidateSessionContext().getNumber(itemNode);
+			title = translator.translate("question.title", new String[] { Integer.toString(num) });
+		}
+		sb.append(title)
 		  .append("</h4>")
 		  .append("<div id='itemBody' class='clearfix'>");
 

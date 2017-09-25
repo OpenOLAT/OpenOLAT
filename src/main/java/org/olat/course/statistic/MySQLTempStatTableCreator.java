@@ -98,7 +98,7 @@ public class MySQLTempStatTableCreator implements IStatisticUpdater {
 			long fromSeconds = from.getTime() / 1000l;
 			long untilSeconds = until.getTime() / 1000l;
 
-			jdbcTemplate_.update(
+			long numLoggingActions = jdbcTemplate_.update(
 					"insert into o_stat_temptable (creationdate,businesspath,userproperty2,userproperty4,userproperty10,userproperty3) " +
 						"select " +
 							"creationdate,businesspath,userproperty2,userproperty4,userproperty10,userproperty3 " +
@@ -107,8 +107,7 @@ public class MySQLTempStatTableCreator implements IStatisticUpdater {
 						" where " +
 							"actionverb='launch' and actionobject='node' and creationdate>from_unixtime('"+ fromSeconds +"') and creationdate<=from_unixtime('"+ untilSeconds +"');");
 			
-			long numLoggingActions = jdbcTemplate_.queryForLong("select count(*) from o_stat_temptable;");
-			log_.info("updateStatistic: insert done. number of logging actions: "+numLoggingActions);
+			log_.info("updateStatistic: insert done. number of logging actions: " + numLoggingActions);
 		} catch(RuntimeException e) {
 			log_.warn("updateStatistic: ran into a RuntimeException: "+e, e);
 		} catch(Error er) {

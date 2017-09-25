@@ -47,7 +47,7 @@ public class TeacherOverviewSearchController extends FormBasicController {
 	private final boolean withSearchString;
 	
 	public TeacherOverviewSearchController(UserRequest ureq, WindowControl wControl, boolean withSearchString) {
-		super(ureq, wControl);
+		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.withSearchString = withSearchString;
 		initForm(ureq);
 	}
@@ -57,8 +57,10 @@ public class TeacherOverviewSearchController extends FormBasicController {
 		searchEl = uifactory.addTextElement("search.text", "search.form.string", 128, "", formLayout);
 		searchEl.setHelpText(translate("search.form.string.hint"));
 		searchEl.setVisible(withSearchString);
-		startEl = uifactory.addDateChooser("start", "search.form.start", null, formLayout);
-		endEl = uifactory.addDateChooser("end", "search.form.end", null, formLayout);
+		FormLayoutContainer dateLayout = FormLayoutContainer.createHorizontalFormLayout("dateLayout", getTranslator());
+		formLayout.add(dateLayout);
+		startEl = uifactory.addDateChooser("start", "search.form.start", null, dateLayout);
+		endEl = uifactory.addDateChooser("end", "search.form.end", null, dateLayout);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);

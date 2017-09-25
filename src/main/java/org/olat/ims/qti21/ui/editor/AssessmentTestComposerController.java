@@ -418,6 +418,8 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				doSaveManifest();
 			} else if(AssessmentItemEvent.ASSESSMENT_ITEM_METADATA_CHANGED.equals(aie.getCommand())) {
 				doSaveManifest();
+			} else if(AssessmentItemEvent.ASSESSMENT_ITEM_NEED_RELOAD.equals(aie.getCommand())) {
+				doReloadItem(ureq);
 			}
 		} else if(selectQItemCtrl == source) {
 			cmc.deactivate();
@@ -836,6 +838,15 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		return null;
 	}
 	
+	private TreeNode doReloadItem(UserRequest ureq) {
+		TreeNode selectedNode = menuTree.getSelectedNode();
+		updateTreeModel(false);
+		menuTree.setSelectedNodeId(selectedNode.getIdent());
+		selectedNode = menuTree.getSelectedNode();
+		partEditorFactory(ureq, selectedNode);
+		return selectedNode;	
+	}
+	
 	/**
 	 * Create a new test part and a section. Test part need a section,
 	 * section ref as children, it's mandatory.
@@ -1120,8 +1131,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			currentEditorCtrl = new AssessmentTestPartEditorController(ureq, getWindowControl(), (TestPart)uobject,
 					restrictedEdit, assessmentTestBuilder.isEditable());
 		} else if(uobject instanceof AssessmentSection) {
+			URI testURI = resolvedAssessmentTest.getTestLookup().getSystemId();
+			File testFile = new File(testURI);
 			currentEditorCtrl = new AssessmentSectionEditorController(ureq, getWindowControl(), (AssessmentSection)uobject,
-					restrictedEdit, assessmentTestBuilder.isEditable());
+					unzippedDirRoot, unzippedContRoot, testFile, restrictedEdit, assessmentTestBuilder.isEditable());
 		} else if(uobject instanceof AssessmentItemRef) {
 			AssessmentItemRef itemRef = (AssessmentItemRef)uobject;
 			ResolvedAssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);

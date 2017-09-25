@@ -31,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.id.OLATResourceable;
 import org.olat.modules.wiki.versioning.ChangeInfo;
@@ -46,6 +47,15 @@ import org.olat.test.OlatTestCase;
  */
 public class WikiUnitTest extends OlatTestCase {
 	private static final String WIKI_CONTENT = "==heading==\n'''bold'''\n[[Image:test.jpg|bla]]";
+	
+	@Test
+	public void alternativeId() {
+		String alternativeId = "SW5kZXg_.wp";
+		String convertedId = WikiManager.convertAlternativeFilename(alternativeId);
+		
+		String indexId = WikiManager.generatePageId(WikiPage.WIKI_INDEX_PAGE) + WikiManager.WIKI_DOT_FILE_SUFFIX;
+		Assert.assertEquals(indexId, convertedId);
+	}
 
 	@Test
 	public void testWikiStuff() {

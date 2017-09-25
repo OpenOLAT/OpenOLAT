@@ -246,17 +246,21 @@ public class LTIConfigForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("form.title");
 		setFormContextHelp("Other#_lti_config");
+		formLayout.setElementCssClass("o_sel_lti_config_form");
 
 		thost = uifactory.addTextElement("host", "LTConfigForm.url", 255, fullURI, formLayout);
+		thost.setElementCssClass("o_sel_lti_config_title");
 		thost.setExampleKey("LTConfigForm.url.example", null);
 		thost.setDisplaySize(64);
 		thost.setMandatory(true);
 		
 		tkey  = uifactory.addTextElement ("key","LTConfigForm.key", 255, key, formLayout);
+		tkey.setElementCssClass("o_sel_lti_config_key");
 		tkey.setExampleKey ("LTConfigForm.key.example", null);
 		tkey.setMandatory(true);
 		
 		tpass = uifactory.addTextElement ("pass","LTConfigForm.pass", 255, pass, formLayout);
+		tpass.setElementCssClass("o_sel_lti_config_pass");
 		tpass.setExampleKey("LTConfigForm.pass.example", null);
 		tpass.setMandatory(true);
 
@@ -315,6 +319,7 @@ public class LTIConfigForm extends FormBasicController {
 		String[] assessableKeys = new String[]{ "on" };
 		String[] assessableValues = new String[]{ "" };
 		isAssessableEl = uifactory.addCheckboxesHorizontal("isassessable", "assessable.label", formLayout, assessableKeys, assessableValues);
+		isAssessableEl.setElementCssClass("o_sel_lti_config_assessable");
 		isAssessableEl.addActionListener(FormEvent.ONCHANGE);
 		if(isAssessable) {
 			isAssessableEl.select("on", true);
@@ -323,12 +328,14 @@ public class LTIConfigForm extends FormBasicController {
 		Float scaleValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
 		String scaleFactor = scaleValue == null ? "1.0" : scaleValue.toString();
 		scaleFactorEl = uifactory.addTextElement("scale", "scaleFactor", 10, scaleFactor, formLayout);
+		scaleFactorEl.setElementCssClass("o_sel_lti_config_scale");
 		scaleFactorEl.setDisplaySize(3);
 		scaleFactorEl.setVisible(isAssessable);
 		
 		Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		String cut = cutValue == null ? "" : cutValue.toString();
 		cutValueEl = uifactory.addTextElement("cutvalue", "cutvalue.label", 10, cut, formLayout);
+		cutValueEl.setElementCssClass("o_sel_lti_config_cutval");
 		cutValueEl.setDisplaySize(3);
 		cutValueEl.setVisible(isAssessable);
 		

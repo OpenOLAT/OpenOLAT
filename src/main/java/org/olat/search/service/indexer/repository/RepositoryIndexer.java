@@ -204,49 +204,50 @@ public class RepositoryIndexer extends AbstractHierarchicalIndexer {
 		if (debug) logDebug("checkAccess for businessControl=" + businessControl + "  identity=" + identity + "  roles=" + roles);
 		Long repositoryKey = contextEntry.getOLATResourceable().getResourceableId();
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryKey);
-		if (repositoryEntry != null) {
-			boolean isOwner = repositoryManager.isOwnerOfRepositoryEntry(identity,repositoryEntry);
-			boolean isAllowedToLaunch = false;
-			if (!isOwner) {
-				isAllowedToLaunch = repositoryManager.isAllowedToLaunch(identity, roles, repositoryEntry);
-				if(isAllowedToLaunch) {
-					List<ContextEntry> entries = businessControl.getEntriesDownTheControls();
-					if(entries.size() > 1) {
-						boolean hasAccess = false;
-						ACService acService = CoreSpringFactory.getImpl(ACService.class);
-						AccessResult acResult = acService.isAccessible(repositoryEntry, identity, false); 
-						if (acResult.isAccessible()) {
-							hasAccess = true;
-						} else if (!acResult.getAvailableMethods().isEmpty()) {
-							for(OfferAccess offer:acResult.getAvailableMethods()) {
-								String type = offer.getMethod().getType();
-								if (type.equals(FreeAccessHandler.METHOD_TYPE) || type.equals(PaypalAccessHandler.METHOD_TYPE)) {
-									hasAccess = true;
-								}
-							}
-						}
-						isAllowedToLaunch = hasAccess;
-					}
-				}
-			}
-			if (debug) logDebug("isOwner=" + isOwner + "  isAllowedToLaunch=" + isAllowedToLaunch);
-			if (isOwner || isAllowedToLaunch) {
-				Indexer repositoryEntryIndexer = getRepositoryEntryIndexer(repositoryEntry);
-				if (debug) logDebug("repositoryEntryIndexer=" + repositoryEntryIndexer);
-				if (repositoryEntryIndexer != null) {
-				  return super.checkAccess(contextEntry, businessControl, identity, roles)
-				  		&& repositoryEntryIndexer.checkAccess(contextEntry, businessControl, identity, roles);
-				} else {
-					// No Indexer => no access
-					return false;
-				}
-			} else {
-				return false;
-			}
-		} else {
-			logWarn("Can not found RepositoryEntry with key=" + repositoryKey, null);
+		if (repositoryEntry == null) {
 			return false;
 		}
+		if(roles.isGuestOnly()) {
+			if(repositoryEntry.getAccess() != RepositoryEntry.ACC_USERS_GUESTS) {
+				return false;
+			}
+		}
+			
+		boolean isOwner = repositoryManager.isOwnerOfRepositoryEntry(identity,repositoryEntry);
+		boolean isAllowedToLaunch = false;
+		if (!isOwner) {
+			isAllowedToLaunch = repositoryManager.isAllowedToLaunch(identity, roles, repositoryEntry);
+			if(isAllowedToLaunch) {
+				List<ContextEntry> entries = businessControl.getEntriesDownTheControls();
+				if(entries.size() > 1) {
+					boolean hasAccess = false;
+					ACService acService = CoreSpringFactory.getImpl(ACService.class);
+					AccessResult acResult = acService.isAccessible(repositoryEntry, identity, false); 
+					if (acResult.isAccessible()) {
+						hasAccess = true;
+					} else if (!acResult.getAvailableMethods().isEmpty()) {
+						for(OfferAccess offer:acResult.getAvailableMethods()) {
+							String type = offer.getMethod().getType();
+							if (type.equals(FreeAccessHandler.METHOD_TYPE) || type.equals(PaypalAccessHandler.METHOD_TYPE)) {
+								hasAccess = true;
+							}
+						}
+					}
+					isAllowedToLaunch = hasAccess;
+				}
+			}
+		}
+			
+		if (debug) logDebug("isOwner=" + isOwner + "  isAllowedToLaunch=" + isAllowedToLaunch);
+		if (isOwner || isAllowedToLaunch) {
+			Indexer repositoryEntryIndexer = getRepositoryEntryIndexer(repositoryEntry);
+			if (debug) logDebug("repositoryEntryIndexer=" + repositoryEntryIndexer);
+			if (repositoryEntryIndexer != null) {
+			  return super.checkAccess(contextEntry, businessControl, identity, roles)
+			  		&& repositoryEntryIndexer.checkAccess(contextEntry, businessControl, identity, roles);
+			}
+		}
+		return false;
 	}
 	
 	/**

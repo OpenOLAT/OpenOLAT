@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
@@ -66,8 +67,9 @@ public class OlatTopNavController extends BasicController implements LockableCon
 		topNavVC = createVelocityContainer("topnav");
 		topNavVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacmenet ID
 		
-		boolean isGuest = ureq.getUserSession().getRoles().isGuestOnly();
-		boolean isInvitee = ureq.getUserSession().getRoles().isInvitee();
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isGuest = roles.isGuestOnly();
+		boolean isInvitee = roles.isInvitee();
 		topNavVC.contextPut("isGuest", new Boolean(isGuest));
 		topNavVC.contextPut("isInvitee", new Boolean(isInvitee));
 		

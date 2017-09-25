@@ -21,7 +21,6 @@
 package org.olat.modules.lecture.manager;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -60,8 +59,10 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockRollCallSearchParameters;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.LectureModule;
@@ -100,7 +101,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	private static final OLog log = Tracing.createLoggerFor(LectureServiceImpl.class);
-	private static final SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 	private static final CalendarManagedFlag[] CAL_MANAGED_FLAGS = new CalendarManagedFlag[] { CalendarManagedFlag.all };
 
 	@Autowired
@@ -121,6 +121,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	private CalendarManager calendarMgr;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
+	@Autowired
+	private LectureBlockAuditLogDAO auditLogDao;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
@@ -149,6 +151,14 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		return config;
 	}
 	
+	@Override
+	public boolean isRepositoryEntryLectureEnabled(RepositoryEntryRef entry) {
+		if(!lectureModule.isEnabled()) {
+			return false;
+		}
+		return lectureConfigurationDao.isConfigurationEnabledFor(entry);
+	}
+
 	@Override
 	public RepositoryEntryLectureConfiguration copyRepositoryEntryLectureConfiguration(RepositoryEntry sourceEntry, RepositoryEntry targetEntry) {
 		RepositoryEntryLectureConfiguration config = lectureConfigurationDao.getConfiguration(sourceEntry);
@@ -201,17 +211,19 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	}
 	
 	@Override
-	public LectureBlock close(LectureBlock lectureBlock) {
+	public LectureBlock close(LectureBlock lectureBlock, Identity author) {
 		lectureBlock.setStatus(LectureBlockStatus.done);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlockDao.update(lectureBlock);
+		
+		int numOfLectures = block.getEffectiveLecturesNumber();
+		if(numOfLectures <= 0 && block.getStatus() != LectureBlockStatus.cancelled) {
+			numOfLectures = block.getPlannedLecturesNumber();
+		}
+		
 		List<LectureBlockRollCall> rollCallList = lectureBlockRollCallDao.getRollCalls(lectureBlock);
 		for(LectureBlockRollCall rollCall:rollCallList) {
-			int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
-			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
-				numOfLectures = lectureBlock.getPlannedLecturesNumber();
-			}
-			lectureBlockRollCallDao.adaptLecture(rollCall, numOfLectures);
+			lectureBlockRollCallDao.adaptLecture(block, rollCall, numOfLectures, author);
 		}
 		dbInstance.commit();
 		recalculateSummary(block.getEntry());
@@ -230,24 +242,45 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	}
 
 	@Override
-	public void appendToLectureBlockLog(LectureBlockRef lectureBlock, Identity user, Identity assessedIdentity, String audit) {
-		Date now = new Date();
-		String date;
-		synchronized(sdb) {
-			date = sdb.format(now);
-		}
-		
-		StringBuilder sb = new StringBuilder(256);
-		sb.append("Date: ").append(date).append(" \n");
-		if(user != null) {
-			sb.append("User: ").append(userManager.getUserDisplayName(user)).append(" (").append(user.getKey()).append(") \n");
-		}
-		if(assessedIdentity != null) {
-			sb.append("Assessed user: ").append(userManager.getUserDisplayName(assessedIdentity)).append(" (").append(user.getKey()).append(") \n");
-		}
-		sb.append(audit);
-		log.audit(sb.toString());
-		lectureBlockDao.appendLog(lectureBlock, sb.toString());
+	public String toAuditXml(LectureBlock lectureBlock) {
+		return auditLogDao.toXml(lectureBlock);
+	}
+	
+	@Override
+	public String toAuditXml(LectureBlockRollCall rollCall) {
+		return auditLogDao.toXml(rollCall);
+	}
+	
+	@Override
+	public LectureBlock toAuditLectureBlock(String xml) {
+		return auditLogDao.lectureBlockFromXml(xml);
+	}
+
+	@Override
+	public LectureBlockRollCall toAuditLectureBlockRollCall(String xml) {
+		return auditLogDao.rollCallFromXml(xml);
+	}
+
+	@Override
+	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
+			LectureBlockRef lectureBlock, LectureBlockRollCall rollCall,
+			RepositoryEntryRef entry, IdentityRef assessedIdentity, IdentityRef author) {
+		auditLogDao.auditLog(action, before, after, message, lectureBlock, rollCall, entry, assessedIdentity, author);
+	}
+
+	@Override
+	public List<LectureBlockAuditLog> getAuditLog(LectureBlockRef lectureBlock) {
+		return auditLogDao.getAuditLog(lectureBlock);
+	}
+
+	@Override
+	public List<LectureBlockAuditLog> getAuditLog(IdentityRef assessedIdentity) {
+		return auditLogDao.getAuditLog(assessedIdentity);
+	}
+
+	@Override
+	public List<LectureBlockAuditLog> getAuditLog(RepositoryEntryRef entry) {
+		return auditLogDao.getAuditLog(entry);
 	}
 
 	@Override
@@ -399,6 +432,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	}
 
 	@Override
+	public List<LectureBlockRollCall> getRollCalls(LectureBlockRollCallSearchParameters searchParams) {
+		return lectureBlockRollCallDao.getRollCalls(searchParams);
+	}
+
+	@Override
 	public LectureBlockRollCall getOrCreateRollCall(Identity identity, LectureBlock lectureBlock,
 			Boolean authorizedAbsence, String reasonAbsence) {
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.getRollCall(lectureBlock, identity);
@@ -423,9 +461,18 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		if(rollCall == null) {//reload in case of concurrent usage
 			rollCall = lectureBlockRollCallDao.getRollCall(lectureBlock, identity);
 		}
+		
+		boolean checkAuthorized = lectureModule.isAuthorizedAbsenceEnabled() &&  lectureModule.isAbsenceDefaultAuthorized();
 		if(rollCall == null) {
-			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, absences);
+			Boolean authorized = null;
+			if(checkAuthorized && absences != null && absences.size() > 0) {
+				authorized = Boolean.TRUE;
+			}
+			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, authorized, null, null, absences);
 		} else {
+			if(checkAuthorized && absences != null && absences.size() > 0 && rollCall.getAbsenceAuthorized() == null) {
+				rollCall.setAbsenceAuthorized(Boolean.TRUE);
+			}
 			rollCall = lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, absences);
 		}
 		return rollCall;
@@ -436,11 +483,19 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		if(rollCall == null) {//reload in case of concurrent usage
 			rollCall = lectureBlockRollCallDao.getRollCall(lectureBlock, identity);
 		}
+		boolean checkAuthorized = lectureModule.isAuthorizedAbsenceEnabled() &&  lectureModule.isAbsenceDefaultAuthorized();
 		if(rollCall == null) {
-			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, comment, absences);
+			Boolean authorized = null;
+			if(checkAuthorized && absences != null && absences.size() > 0) {
+				authorized = Boolean.TRUE;
+			}
+			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, authorized, null, comment, absences);
 		} else {
 			if(comment != null) {
 				rollCall.setComment(comment);
+			}
+			if(checkAuthorized && absences != null && absences.size() > 0 && rollCall.getAbsenceAuthorized() == null) {
+				rollCall.setAbsenceAuthorized(Boolean.TRUE);
 			}
 			rollCall = lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, absences);
 		}
@@ -475,7 +530,23 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 			if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
 				numOfLectures = lectureBlock.getPlannedLecturesNumber();
 			}
-			lectureBlockRollCallDao.adaptLecture(rollCall, lectureBlock.getPlannedLecturesNumber());
+			lectureBlockRollCallDao.adaptLecture(lectureBlock, rollCall, numOfLectures, null);
+		}
+	}
+	
+	@Override
+	public void adaptAll(Identity author) {
+		List<LectureBlock> lectureBlocks = lectureBlockDao.getLectureBlocks();
+		for(LectureBlock lectureBlock:lectureBlocks) {
+			List<LectureBlockRollCall> rollCallList = lectureBlockRollCallDao.getRollCalls(lectureBlock);
+			for(LectureBlockRollCall rollCall:rollCallList) {
+				int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
+				if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
+					numOfLectures = lectureBlock.getPlannedLecturesNumber();
+				}
+				lectureBlockRollCallDao.adaptLecture(lectureBlock, rollCall, numOfLectures, author);
+			}
+			dbInstance.commitAndCloseSession();
 		}
 	}
 
@@ -525,6 +596,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	}
 	
 	private void autoClose(LectureBlockImpl lectureBlock) {
+		String blockBefore = auditLogDao.toXml(lectureBlock);
 		lectureBlock.setStatus(LectureBlockStatus.done);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.autoclosed);
 		if(lectureBlock.getEffectiveLecturesNumber() <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
@@ -544,15 +616,22 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 			}
 			if(participantAndSummary.getSummary() != null) {
 				LectureBlockRollCall rollCall = rollCallMap.get(participantAndSummary.getIdentity());
+				
+				String before = auditLogDao.toXml(rollCall);
 				if(rollCall == null) {
-					lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, participantAndSummary.getIdentity(), null, null, null, new ArrayList<>());
+					rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, participantAndSummary.getIdentity(), null, null, null, new ArrayList<>());
 				} else if(rollCall.getLecturesAbsentList().isEmpty() && rollCall.getLecturesAttendedList().isEmpty()) {
-					lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, new ArrayList<>());
+					rollCall = lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, new ArrayList<>());
 				}
+
+				String after = auditLogDao.toXml(rollCall);
+				auditLogDao.auditLog(LectureBlockAuditLog.Action.autoclose, before, after, null,
+						lectureBlock, rollCall, lectureBlock.getEntry(), participantAndSummary.getIdentity(), null);
 			}
 		}
-	
-		appendToLectureBlockLog(lectureBlock, null, null, "Auto-closed");
+
+		String blockAfter = auditLogDao.toXml(lectureBlock);
+		auditLogDao.auditLog(LectureBlockAuditLog.Action.autoclose, blockBefore, blockAfter, null, lectureBlock, null, lectureBlock.getEntry(), null, null);
 		dbInstance.commit();
 		
 		recalculateSummary(lectureBlock.getEntry());
@@ -618,6 +697,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		return lectureBlockDao.getLectureBlocks(entry);
 	}
 	
+	@Override
+	public List<LectureBlock> getLectureBlocks(LecturesBlockSearchParameters searchParams) {
+		return lectureBlockDao.searchLectureBlocks(searchParams);
+	}
+
 	@Override
 	public List<LectureBlock> getLectureBlocks(IdentityRef teacher, LecturesBlockSearchParameters searchParams) {
 		return lectureBlockDao.loadByTeacher(teacher, searchParams);
@@ -939,7 +1023,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		KalendarEvent event = new KalendarEvent(eventId, null, title, lectureBlock.getStartDate(), lectureBlock.getEndDate());
 		event.setExternalId(generateExternalId(lectureBlock, entry));
 		event.setLocation(lectureBlock.getLocation());
-		event.setDescription(lectureBlock.getDescription());
+		updateEventDescription(lectureBlock, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 		return event;
 	}
@@ -947,11 +1031,23 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 	private boolean updateEvent(LectureBlock lectureBlock, KalendarEvent event) {
 		event.setSubject(lectureBlock.getTitle());
 		event.setLocation(lectureBlock.getLocation());
-		event.setDescription(lectureBlock.getDescription());
+		updateEventDescription(lectureBlock, event);
 		event.setBegin(lectureBlock.getStartDate());
 		event.setEnd(lectureBlock.getEndDate());
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 		return true;
+	}
+	
+	private void updateEventDescription(LectureBlock lectureBlock, KalendarEvent event) {
+		StringBuilder descr = new StringBuilder();
+		if(StringHelper.containsNonWhitespace(lectureBlock.getDescription())) {
+			descr.append(lectureBlock.getDescription());
+		}
+		if(StringHelper.containsNonWhitespace(lectureBlock.getPreparation())) {
+			if(descr.length() > 0) descr.append("\n");
+			descr.append(lectureBlock.getPreparation());
+		}
+		event.setDescription(descr.toString());
 	}
 	
 	private String generateExternalIdPrefix(RepositoryEntry entry) {

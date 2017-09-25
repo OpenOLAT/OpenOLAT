@@ -224,7 +224,7 @@ public class AuthHelper {
 	 * @return true if login was successful, false otherwise
 	 */
 	public static int doAnonymousLogin(UserRequest ureq, Locale locale) {
-		Collection<String> supportedLanguages = I18nModule.getEnabledLanguageKeys();
+		Collection<String> supportedLanguages = CoreSpringFactory.getImpl(I18nModule.class).getEnabledLanguageKeys();
 		if ( locale == null || ! supportedLanguages.contains(locale.toString()) ) {
 			locale = I18nModule.getDefaultLocale();
 		}
@@ -363,7 +363,7 @@ public class AuthHelper {
 		boolean wasGuest = false;
 		UserSession usess = ureq.getUserSession();
 		if(usess != null && usess.getRoles() != null) {
-			wasGuest = ureq.getUserSession().getRoles().isGuestOnly();
+			wasGuest = usess.getRoles().isGuestOnly();
 		}
 
 		String lang = I18nManager.getInstance().getLocaleKey(ureq.getLocale());

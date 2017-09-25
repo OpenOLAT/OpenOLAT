@@ -25,6 +25,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
 
 /**
  * 
@@ -63,6 +64,7 @@ public class CoachGroupsTableModel extends DefaultFlexiTableDataModel<CoachedGro
 			case name: return row.getName();
 			case taskName: return row.getTaskName();
 			case taskStatus: return row.getTaskStatus();
+			case submissionDate: return SubmissionDateCellRenderer.cascading(row);
 			default: return "ERROR";
 		}
 	}
@@ -70,7 +72,8 @@ public class CoachGroupsTableModel extends DefaultFlexiTableDataModel<CoachedGro
 	public enum CGCols {
 		name("table.header.group.name"),
 		taskName("table.header.group.taskName"),
-		taskStatus("table.header.group.step");
+		taskStatus("table.header.group.step"),
+		submissionDate("table.header.submissionDate");
 		
 		private final String i18nKey;
 		

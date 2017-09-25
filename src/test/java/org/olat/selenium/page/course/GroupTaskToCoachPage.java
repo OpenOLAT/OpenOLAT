@@ -95,7 +95,12 @@ public class GroupTaskToCoachPage {
 	public GroupTaskToCoachPage needRevision() {
 		By reviewBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_need_revision");
 		OOGraphene.clickAndWait(reviewBy, browser);
-		return confirm();
+		
+		OOGraphene.waitModalDialog(browser);
+		By okBy = By.xpath("//div[contains(@class,'modal-dialog')]//button");
+		browser.findElement(okBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
 	}
 	
 	public GroupTaskToCoachPage closeRevisions() {

@@ -55,6 +55,7 @@ import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
 import org.olat.search.service.indexer.Indexer;
 import org.olat.search.service.indexer.OlatFullIndexer;
+import org.olat.search.service.indexer.repository.course.CourseNodeEntry;
 import org.olat.search.service.indexer.repository.course.CourseNodeIndexer;
 
 /**
@@ -164,10 +165,16 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(repositoryKey);
 		if (isLogDebugEnabled()) logDebug("repositoryEntry=" + repositoryEntry );
 
+		if(roles.isGuestOnly()) {
+			if(repositoryEntry.getAccess() != RepositoryEntry.ACC_USERS_GUESTS) {
+				return false;
+			}
+		}
+		
 		Long nodeId = bcContextEntry.getOLATResourceable().getResourceableId();
 		if (isLogDebugEnabled()) logDebug("nodeId=" + nodeId );
-		
 		ICourse course = CourseFactory.loadCourse(repositoryEntry);
+		
 		IdentityEnvironment ienv = new IdentityEnvironment();
 		ienv.setIdentity(identity);
 		ienv.setRoles(roles);
@@ -200,6 +207,7 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		
 		if (mayAccessWholeTreeUp) {
 			CourseNodeIndexer courseNodeIndexer = getCourseNodeIndexer(courseNode);
+			bcContextEntry.setTransientState(new CourseNodeEntry(courseNode));
 			return courseNodeIndexer.checkAccess(bcContextEntry, businessControl, identity, roles)
 					&& super.checkAccess(bcContextEntry, businessControl, identity, roles);		
 		} else {

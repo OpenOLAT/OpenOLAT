@@ -103,7 +103,7 @@ public class EntryPage {
 	
 	public EntryPage assertOnImage(File image) {
 		String filename = image.getName();
-		By titleBy = By.xpath("//div[contains(@class,'o_image')]//img[contains(@src,'" + filename + "')]");
+		By titleBy = By.xpath("//figure[contains(@class,'o_image')]//img[contains(@src,'" + filename + "')]");
 		OOGraphene.waitElement(titleBy, 5, browser);
 		return this;
 	}
@@ -153,7 +153,7 @@ public class EntryPage {
 	}
 	
 	public EntryPage assertOnCitation(String citation) {
-		By citationBy = By.xpath("//blockquote[contains(@class,'o_quote')]/p[contains(text(),'" + citation + "')]");
+		By citationBy = By.xpath("//blockquote[contains(@class,'o_quote')]//p[contains(text(),'" + citation + "')]");
 		OOGraphene.waitElement(citationBy, 5, browser);
 		return this;
 	}

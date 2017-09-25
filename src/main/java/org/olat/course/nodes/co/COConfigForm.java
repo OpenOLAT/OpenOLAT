@@ -33,22 +33,16 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.IFormFragmentController;
-import org.olat.core.gui.components.form.flexible.impl.IFormFragmentHost;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailHelper;
-import org.olat.course.editor.formfragments.MembersSelectorFormFragment;
+import org.olat.course.nodes.members.ui.group.MembersSelectorFormFragment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.IModuleConfiguration;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -58,76 +52,89 @@ import org.olat.modules.ModuleConfiguration;
  * @author Felix Jost
  * @author Dirk Furrer
  */
-public class COConfigForm extends FormBasicController {
+public class COConfigForm extends MembersSelectorFormFragment {
 	
 	private SelectionElement wantEmail;
-	private TextElement teArElEmailToAdresses;
-	
 	private SelectionElement wantOwners;
-	
+	private TextElement teArElEmailToAdresses;
 	private TextElement teElSubject;
 	private TextElement teArElBody;
-
-	// --
-//	private SelectionElement wantCoaches;	
-//	private SingleSelection coachesChoice;	
-//	private FormLink chooseGroupCoachesLink;
-//	private GroupSelectionController groupChooseCoaches;
-//	private StaticTextElement easyGroupCoachSelectionList;
-//	private FormLink chooseAreasCoachesLink;
-//	private AreaSelectionController areaChooseCoaches;
-//	private StaticTextElement easyAreaCoachSelectionList;
-
-	// --
-//	private SelectionElement wantParticipants;
-//	private SingleSelection participantsChoice;
-//	private FormLink chooseGroupParticipantsLink;
-//	private GroupSelectionController groupChooseParticipants;
-//	private StaticTextElement easyGroupParticipantsSelectionList;
-//	private FormLink chooseAreasParticipantsLink;
-//	private AreaSelectionController areaChooseParticipants;
-//	private StaticTextElement easyAreaParticipantsSelectionList;
-	// --
-
-	private final MembersSelectorFormFragment membersFragment;
 	
 	private FormItemContainer recipentsContainer;	
 
-	private FormSubmit subm;
-	
-//	private CloseableModalController cmc;
-	
-	private List<String> eList;
-	private ModuleConfiguration config;
-//	private CourseEditorEnv cev;
-	
-//	@Autowired
-//	private BGAreaManager areaManager;
-//	@Autowired
-//	private BusinessGroupService businessGroupService;
+	private FormSubmit submitButton;
 
+	private List<String> eList;
 
 	/**
 	 * Form constructor
 	 * 
 	 * @param name The form name
 	 * @param config The module configuration
-	 * @param withCancel true: cancel button is rendered, false: no cancel button
 	 */
-	protected COConfigForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration config, UserCourseEnvironment uce) {
-		super(ureq, wControl);
-		this.config = config;
-//		this.cev = uce.getCourseEditorEnv();
-		
-		membersFragment = new MembersSelectorFormFragment(uce.getCourseEditorEnv());
-		registerFormFragment(membersFragment);	// register with parent for proper lifecycle handling
-		initForm(ureq);
-		validateFormLogic(ureq);
+	protected COConfigForm(UserRequest ureq, WindowControl wControl,
+			ModuleConfiguration config, UserCourseEnvironment uce) {
+		super(ureq, wControl, uce.getCourseEditorEnv(), config);
 	}
 
 	@Override
-	public void storeFormData(UserRequest ureq) {
-		membersFragment.storeConfiguration(ureq, IModuleConfiguration.fragment("emailTo", "", config));
+	protected String getConfigKeyCoachesGroup() {
+		return COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP;
+	}
+
+	@Override
+	protected String getConfigKeyCoachesGroupIds() {
+		return COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP_ID;
+	}
+
+	@Override
+	protected String getConfigKeyCoachesArea() {
+		return COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA;
+	}
+
+	@Override
+	protected String getConfigKeyCoachesAreaIds() {
+		return COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA_IDS;
+	}
+
+	@Override
+	protected String getConfigKeyCoachesCourse() {
+		return COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE;
+	}
+
+	@Override
+	protected String getConfigKeyCoachesAll() {
+		return COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL;
+	}
+	
+	@Override
+	protected String getConfigKeyParticipantsGroup() {
+		return COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP;
+	}
+
+	@Override
+	protected String getConfigKeyParticipantsArea() {
+		return COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA;
+	}
+
+	@Override
+	protected String getConfigKeyParticipantsGroupIds() {
+		return COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID;
+	}
+
+	@Override
+	protected String getConfigKeyParticipantsAreaIds() {
+		return COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID;
+	}
+
+	@Override
+	protected String getConfigKeyParticipantsCourse() {
+		return COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE;
+	}
+
+	@Override
+	protected String getConfigKeyParticipantsAll() {
+		return COEditController.CONFIG_KEY_EMAILTOPARTICIPANTS_ALL;
 	}
 
 	/**
@@ -137,7 +144,7 @@ public class COConfigForm extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isOK = true;
 		
-		if (!membersFragment.sendToCoaches() && !membersFragment.sendToPartips() && !wantEmail.isSelected(0) && !sendToOwners()) {
+		if (!sendToCoaches() && !sendToPartips() && !wantEmail.isSelected(0) && !sendToOwners()) {
 			recipentsContainer.setErrorKey("no.recipents.specified", null);
 			isOK = false;
 		}
@@ -174,13 +181,8 @@ public class COConfigForm extends FormBasicController {
 			}
 		}
 		
-		return isOK 
-				& membersFragment.validateFormLogic(ureq) 
-				& super.validateFormLogic(ureq);
+		return isOK & super.validateFormLogic(ureq);
 	}
-
-
-	
 	
 	/**
 	 * @return the message subject
@@ -208,52 +210,22 @@ public class COConfigForm extends FormBasicController {
 	}
 	
 	@Override
-	protected void formOK(UserRequest ureq) {
-		fireEvent (ureq, Event.DONE_EVENT);
-	}
-
-	@Override
-	public IFormFragmentHost getFragmentHostInterface() {
-		return new IFormFragmentHost() {
-			final Translator parent = COConfigForm.this.getTranslator();
-			final Translator delegate = Util.createPackageTranslator(MembersSelectorFormFragment.class, parent.getLocale(), parent);
-			final IFormFragmentController adapter = IFormFragmentController.fragmentControllerAdapter(COConfigForm.this, canSubmit -> {
-				subm.setEnabled(canSubmit);
-			});
-
-			@Override
-			public Translator getFragmentTranslator() {
-				return delegate;
-			}
-
-			@Override
-			public IFormFragmentController getFragmentController() {
-				return adapter;
-			}
-		};
-	}
-
-	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		Boolean ownerSelection = config.getBooleanSafe(COEditController.CONFIG_KEY_EMAILTOOWNERS);
-//		Boolean coacheSelection = config.getBooleanSafe(COEditController.CONFIG_KEY_EMAILTOCOACHES_ALL) || config.getBooleanSafe(COEditController.CONFIG_KEY_EMAILTOCOACHES_COURSE) || config.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_GROUP) != null || config.get(COEditController.CONFIG_KEY_EMAILTOCOACHES_AREA) != null;
 
-		
 		setFormTitle("header", null);
 		setFormContextHelp("Administration and Organisation#_mail");
 
 		//for displaying error message in case neither group stuff nor email is selected
-				recipentsContainer = FormLayoutContainer.createHorizontalFormLayout(
-						"recipents", getTranslator()
-				);
-				formLayout.add(recipentsContainer);
+		recipentsContainer = FormLayoutContainer.createHorizontalFormLayout("recipents", getTranslator());
+		formLayout.add(recipentsContainer);
 		
 		wantEmail = uifactory.addCheckboxesHorizontal("wantEmail", "message.want.email", formLayout, new String[]{"xx"}, new String[]{null});
 		wantEmail.addActionListener(FormEvent.ONCLICK);
 		
 		// External recipients
-		eList = (List<String>) config.get(COEditController.CONFIG_KEY_EMAILTOADRESSES);
+		eList = config.getList(COEditController.CONFIG_KEY_EMAILTOADRESSES, String.class);
 		String emailToAdresses = "";
 		if (eList != null) {
 			emailToAdresses = StringHelper.formatIdentitesAsEmailToString(eList, "\n");
@@ -271,8 +243,7 @@ public class COConfigForm extends FormBasicController {
 		wantOwners.addActionListener(FormEvent.ONCLICK);
 		
 		// include existing fragment
-		IModuleConfiguration emailToFrag = IModuleConfiguration.fragment("emailTo", "", config);
-		membersFragment.initFormFragment(ureq, this, this, emailToFrag);
+		super.initForm(formLayout, listener, ureq);
 
 		//subject
 		String mS = (String) config.get(COEditController.CONFIG_KEY_MSUBJECT_DEFAULT);
@@ -284,14 +255,13 @@ public class COConfigForm extends FormBasicController {
 		String mBody = (mB != null) ? mB : "";
 		teArElBody = uifactory.addRichTextElementForStringDataMinimalistic("mBody", "message.body", mBody, 8, 60, formLayout, getWindowControl());
 		
-		subm = uifactory.addFormSubmitButton("save", formLayout);
-		
-		
+		submitButton = uifactory.addFormSubmitButton("save", formLayout);
 		update();
 	}
 
-	private void update () {
-		membersFragment.refreshContents();
+	@Override
+	protected void update() {
+		super.update();
 		
 		teArElEmailToAdresses.setVisible(wantEmail.isSelected(0));
 		teArElEmailToAdresses.clearError();
@@ -306,23 +276,28 @@ public class COConfigForm extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		/*boolean processed = */this.membersFragment.processFormEvent(ureq, source, event);
-		
+		super.formInnerEvent(ureq, source, event);
 		update();
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		subm.setEnabled(true);
-
+		submitButton.setEnabled(true);
 		// the parent takes care of dealing with fragments
 		super.event(ureq, source, event);
-		
 	}
 
 	@Override
-	protected void doDispose() {
-		membersFragment.dispose();
+	protected void setFormCanSubmit(boolean enable) {
+		submitButton.setEnabled(enable);
 	}
-	
+
+	@Override
+	protected void storeConfiguration(ModuleConfiguration config) {
+		super.storeConfiguration(config);
+		config.setBooleanEntry(COEditController.CONFIG_KEY_EMAILTOOWNERS, sendToOwners());
+		config.set(COEditController.CONFIG_KEY_EMAILTOADRESSES, getEmailList());
+		config.set(COEditController.CONFIG_KEY_MSUBJECT_DEFAULT, getMSubject());
+		config.set(COEditController.CONFIG_KEY_MBODY_DEFAULT, getMBody());
+	}
 }

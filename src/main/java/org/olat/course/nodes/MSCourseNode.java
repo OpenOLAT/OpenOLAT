@@ -66,6 +66,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.Role;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -413,10 +414,10 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 */
 	@Override
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity, boolean incrementAttempts) {
+			Identity coachingIdentity, boolean incrementAttempts, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts);		
+		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts, by);		
 	}
 
 	/**
@@ -474,7 +475,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 *      org.olat.core.id.Identity)
 	 */
 	@Override
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
 		throw new OLATRuntimeException(MSCourseNode.class, "Attempts variable can't be updated in MS nodes", null);
 	}
 
@@ -482,8 +483,15 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment) {
+	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
 		throw new OLATRuntimeException(MSCourseNode.class, "Attempts variable can't be updated in MS nodes", null);
+	}
+	
+	@Override
+	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
 	}
 
 	/**

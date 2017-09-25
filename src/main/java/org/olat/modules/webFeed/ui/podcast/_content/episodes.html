@@ -4,7 +4,11 @@
 		$r.render("feed.add.item")
 	</div>
 #end
-<h4 class="o_title">$r.translate("podcast.episodes")</h4>
+#if ($callback.mayCreateItems() && $feed.isExternal())
+	<div class="pull-right">
+		$r.render("feed.external.url")
+	</div>
+#end
 <div class="clearfix"></div>
 
 #if ($items.size() == 0)
@@ -39,14 +43,14 @@
 					$r.escapeHtml($episode.getTitle())
 				#end
 				<i class="o_icon o_icon_$helper.getMediaType($episode.getEnclosure())"></i>
-				
+
 				#if($r.available("date.$episode.getGuid()"))
 					<small>
 						$r.render("date.$episode.getGuid()")
 					</small>
 				#end
 				</h3>
-				<div class="o_meta">				
+				<div class="o_meta">
 				#set ( $info = $helper.getInfo($episode) )
 				#if ( $info )
 					$info
@@ -56,18 +60,18 @@
 				#end
 				</div>
 			</div>
-			
+
 			<div class="o_content o_user_content_block">
 				$!helper.getItemDescriptionForBrowser($episode)
-				 
+
 				#set($podId = $r.getUniqueId())
-				#if ($!episode.getEnclosure())								
+				#if ($!episode.getEnclosure())
 				<div class="o_block_large_top o_enclosure">
 					<div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($episode.getEnclosure())"></div>
-					
+
 					<div class="o_block_top">
 						<a href="$!helper.getMediaUrl($episode)" target="_blank">
-							<i class="o_icon o_icon-fw o_filetype_$!helper.getMediaType($episode.getEnclosure())"></i> 
+							<i class="o_icon o_icon-fw o_filetype_$!helper.getMediaType($episode.getEnclosure())"></i>
 							$r.translate("podcast.episode.download")
 						</a>
 					</div>
@@ -85,7 +89,7 @@
 				#end
 
 			</div>
-			
+
 			<div class="o_block_footer">
 				<div class="clearfix">
 					<ul class="o_readmore list-inline pull-right">
@@ -94,18 +98,18 @@
 						#end
 						#if ($feed.isExternal() && $episode.getExternalLink())
 							<li><a href="$!episode.getExternalLink()" target="_blank">
-								$r.translate("feed.item.original") 
+								$r.translate("feed.item.original")
 								<i class="o_icon o_icon_start"></i>
 							</a></li>
 						#end
 					</ul>
-	
+
 					#if ($r.available("commentsAndRating.${episode.getGuid()}"))
 						$r.render("commentsAndRating.${episode.getGuid()}")
 					#end
 				</div>
 			</div>
-			
+
 			#if($feed.isInternal())
 			<div class="o_button_group">
 				#if ($r.available("feed.edit.item.$episode.getGuid()") && $r.visible("feed.edit.item.$episode.getGuid()"))
@@ -118,21 +122,34 @@
 			#end
 		</div>
 	#end
-	
-	<ul class="pagination">
-		#if ( $helper.hasOlderItems($items) )
-		<li>
-			$r.render("feed.older.items")
-		</li>
-		#end
-		#if ( $helper.hasNewerItems() )
-		<li>
-			$r.render("feed.startpage")
-		</li>
-		<li>
-			$r.render("feed.newer.items")
-		</li>
-		#end
-	</ul>
+
+	<div class="o_button_group">
+		<ul class="pagination">
+			<li>
+				#if ( $helper.hasOlderItems($items) )
+					$r.getComponent("feed.older.items").setEnabled($true)
+				#else
+					$r.getComponent("feed.older.items").setEnabled($false)
+				#end
+				$r.render("feed.older.items")
+			</li>
+			<li>
+				#if ( $helper.hasNewerItems() )
+					$r.getComponent("feed.startpage").setEnabled($true)
+				#else
+					$r.getComponent("feed.startpage").setEnabled($false)
+				#end
+				$r.render("feed.startpage")
+			</li>
+			<li>
+				#if ( $helper.hasNewerItems() )
+					$r.getComponent("feed.newer.items").setEnabled($true)
+				#else
+					$r.getComponent("feed.newer.items").setEnabled($false)
+				#end
+				$r.render("feed.newer.items")
+			</li>
+		</ul>
+	</div>
 #end
 </div>

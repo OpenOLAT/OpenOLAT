@@ -139,11 +139,12 @@ public class ChangePasswordController extends BasicController implements Support
 
 				String oldPwd = chPwdForm.getOldPasswordValue();
 				Identity provenIdent = null;
-
-				if (securityManager.findAuthentication(ureq.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP) != null) {
+				Authentication ldapAuthentication = securityManager.findAuthentication(ureq.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP);
+				if (ldapAuthentication != null) {
 					LDAPError ldapError = new LDAPError();
 					//fallback to OLAT if enabled happen automatically in LDAPAuthenticationController
-					provenIdent = ldapLoginManager.authenticate(ureq.getIdentity().getName(), oldPwd, ldapError);
+					String userName = ldapAuthentication.getAuthusername();
+					provenIdent = ldapLoginManager.authenticate(userName, oldPwd, ldapError);
 				} else if(securityManager.findAuthentication(ureq.getIdentity(), BaseSecurityModule.getDefaultAuthProviderIdentifier()) != null) {
 					provenIdent = olatAuthenticationSpi.authenticate(ureq.getIdentity(), ureq.getIdentity().getName(), oldPwd);
 				}
@@ -152,8 +153,7 @@ public class ChangePasswordController extends BasicController implements Support
 					showError("error.password.noauth");	
 				} else {
 					String newPwd = chPwdForm.getNewPasswordValue();
-					if(olatAuthenticationSpi.changePassword(ureq.getIdentity(), provenIdent, newPwd)) {
-						//TODO: verify that we are NOT in a transaction (changepwd should be commited immediately)				
+					if(olatAuthenticationSpi.changePassword(ureq.getIdentity(), provenIdent, newPwd)) {			
 						fireEvent(ureq, Event.DONE_EVENT);
 						getLogger().audit("Changed password for identity."+provenIdent.getName());
 						showInfo("password.successful");

@@ -34,10 +34,16 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
  *
  */
 public class RateWarningCellRenderer implements FlexiCellRenderer {
+	
+	private final Translator translator;
+	
+	public RateWarningCellRenderer(Translator translator) {
+		this.translator = translator;
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
+			URLBuilder ubu, Translator trans) {
 		
 		if(cellValue instanceof LectureBlockStatistics) {
 			LectureBlockStatistics stats = (LectureBlockStatistics)cellValue;
@@ -47,9 +53,11 @@ public class RateWarningCellRenderer implements FlexiCellRenderer {
 				double requiredRate = stats.getRequiredRate();
 				
 				if(requiredRate > attendanceRate) {
-					target.append("<i class='o_icon o_icon-lg o_icon_error'> </i>");
+					String title = translator.translate("rate.error.title");
+					target.append("<i class='o_icon o_icon-lg o_icon_error' title='").append(title).append("'> </i>");
 				} else if(attendanceRate - requiredRate < 0.05) {// less than 5%
-					target.append("<i class='o_icon o_icon-lg o_icon_warning'> </i>");	
+					String title = translator.translate("rate.warning.title");
+					target.append("<i class='o_icon o_icon-lg o_icon_warning' title='").append(title).append("'> </i>");	
 				}
 			}
 		}

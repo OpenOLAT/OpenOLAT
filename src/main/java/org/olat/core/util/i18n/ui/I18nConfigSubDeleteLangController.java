@@ -46,6 +46,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -68,6 +69,11 @@ class I18nConfigSubDeleteLangController extends FormBasicController {
 	private DialogBoxController dialogCtr;
 	private FormLink cancelButton;
 	private FormSubmit submitButton;
+	
+	@Autowired
+	private I18nManager i18nMgr;
+	@Autowired
+	private I18nModule i18nModule;
 
 	/**
 	 * Constructor for the delete-language workflow
@@ -77,7 +83,7 @@ class I18nConfigSubDeleteLangController extends FormBasicController {
 	 */
 	public I18nConfigSubDeleteLangController(UserRequest ureq, WindowControl control) {
 		super(ureq, control, LAYOUT_VERTICAL);
-		if (!I18nModule.isTransToolEnabled()) { throw new AssertException(
+		if (!i18nModule.isTransToolEnabled()) { throw new AssertException(
 				"Languages can only be deleted when the translation tool is enabled and the translation tool source pathes are configured in the olat.properties"); }
 		initForm(ureq);
 	}
@@ -88,13 +94,12 @@ class I18nConfigSubDeleteLangController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener,UserRequest ureq) {
-		I18nManager i18nMgr = I18nManager.getInstance();
 		// A title, displayed in fieldset
 		setFormTitle("configuration.management.delete.title");
 		setFormDescription("configuration.management.delete.description");
 		//
 		// Add languages checkboxes
-		Set<String> deletableKeysUnsorted = I18nModule.getTranslatableLanguageKeys();
+		Set<String> deletableKeysUnsorted = i18nModule.getTranslatableLanguageKeys();
 		String[] deletableKeys = ArrayHelper.toArray(deletableKeysUnsorted);
 		String[] availableValues = new String[deletableKeys.length];
 		for (int i = 0; i < deletableKeys.length; i++) {
@@ -132,10 +137,10 @@ class I18nConfigSubDeleteLangController extends FormBasicController {
 			showError("configuration.management.delete.error", defaultKey);
 			return;
 		}
-		String fallbackKey = I18nModule.getFallbackLocale().toString();
+		String fallbackKey = i18nModule.getFallbackLocale().toString();
 		if (toDelete.contains(fallbackKey)) {
 			deleteLangSelection.select(fallbackKey, false);
-			showError("configuration.management.delete.error", I18nModule.getFallbackLocale().toString());
+			showError("configuration.management.delete.error", i18nModule.getFallbackLocale().toString());
 			return;
 		}
 		dialogCtr = activateYesNoDialog(ureq, translate("configuration.management.delete.confirm.title"), translate(
@@ -146,12 +151,13 @@ class I18nConfigSubDeleteLangController extends FormBasicController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == dialogCtr) {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				// Yes case, delete now
 				for (String deleteLang : deleteLangSelection.getSelectedKeys()) {
-					I18nManager.getInstance().deleteLanguage(deleteLang, true);
+					i18nMgr.deleteLanguage(deleteLang, true);
 					logAudit("Deleted language::" + deleteLang, null);
 				}
 				// wow, everything worked fine

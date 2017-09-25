@@ -125,7 +125,7 @@ public class WikiToCPResource implements MediaResource {
 		// create the ims manifest
 		String manifest = export.createIMSManifest(wiki, identity);
 		zout.putNextEntry(new ZipEntry("imsmanifest.xml"));
-		IOUtils.write(manifest, zout);
+		IOUtils.write(manifest, zout, "UTF-8");
 		zout.closeEntry();
 
 		VFSContainer mediaContainer = WikiManager.getInstance().getMediaFolder(ores);
@@ -137,7 +137,7 @@ public class WikiToCPResource implements MediaResource {
 		// create the javascript mapping file
 		String jsContent = export.createJsMappingContent(wiki);
 		zout.putNextEntry(new ZipEntry("mapping.js"));
-		IOUtils.write(jsContent, zout);
+		IOUtils.write(jsContent, zout, "UTF-8");
 		zout.closeEntry();
 		
 		
@@ -145,7 +145,7 @@ public class WikiToCPResource implements MediaResource {
 		for (WikiPage page: pages) {
 			String htmlPage = export.wikiPageToHtml(page);
 			zout.putNextEntry(new ZipEntry(page.getPageId() + ".html"));
-			IOUtils.write(htmlPage, zout);
+			IOUtils.write(htmlPage, zout, "UTF-8");
 			zout.closeEntry();
 		}
 		

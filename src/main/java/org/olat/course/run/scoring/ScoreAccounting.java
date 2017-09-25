@@ -177,6 +177,18 @@ public class ScoreAccounting {
 			return se;
 		}
 		
+		private void updateLastModified(CourseNode cNode, LastModifications lastModifications) {
+			AssessmentEvaluation eval = cachedScoreEvals.get(cNode);
+			if(eval != null) {
+				lastModifications.addLastUserModified(eval.getLastUserModified());
+				lastModifications.addLastCoachModified(eval.getLastCoachModified());
+			}
+			
+			for(int i=cNode.getChildCount(); i-->0; ) {
+				updateLastModified((CourseNode)cNode.getChildAt(i), lastModifications);
+			}
+		}
+		
 		/**
 		 * Recalculate the score of structure nodes.
 		 * 
@@ -196,6 +208,8 @@ public class ScoreAccounting {
 				Boolean userVisibility = entry == null ? null : entry.getUserVisibility();
 				Long assessmendId = entry == null ? null : entry.getAssessmentId();
 				int numOfAssessmentDocs = entry == null ? -1 : entry.getNumberOfAssessmentDocuments();
+				Date lastModified = entry == null ? null : entry.getLastModified();
+				
 				AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
 				ConditionInterpreter ci = userCourseEnvironment.getConditionInterpreter();
 				if (cNode.hasScoreConfigured() && scoreExpressionStr != null) {
@@ -221,7 +235,11 @@ public class ScoreAccounting {
 						}
 					}
 				}
-				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, userVisibility, null, assessmendId, null, null, numOfAssessmentDocs);
+				
+				LastModifications lastModifications = new LastModifications();
+				updateLastModified(cNode, lastModifications);
+				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, userVisibility, null, assessmendId, null, null, numOfAssessmentDocs,
+						lastModified, lastModifications.getLastUserModified(), lastModifications.getLastCoachModified());
 				
 				if(entry == null) {
 					Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -235,11 +253,49 @@ public class ScoreAccounting {
 						entry.setScore(null);
 					}
 					entry.setPassed(passed);
+					if(lastModifications.getLastCoachModified() != null
+							&& (entry.getLastCoachModified() == null || (entry.getLastCoachModified() != null && entry.getLastCoachModified().before(lastModifications.getLastCoachModified())))) {
+						entry.setLastCoachModified(lastModifications.getLastCoachModified());
+					}
+					if(lastModifications.getLastUserModified() != null
+							&& (entry.getLastUserModified() == null || (entry.getLastUserModified() != null && entry.getLastUserModified().before(lastModifications.getLastUserModified())))) {
+						entry.setLastUserModified(lastModifications.getLastUserModified());
+					}	
 					entry = userCourseEnvironment.getCourseEnvironment().getAssessmentManager().updateAssessmentEntry(entry);
 					identToEntries.put(cNode.getIdent(), entry);
 					changes = true;
 				}
 			} else {
+				//only update the last modifications dates
+				LastModifications lastModifications = new LastModifications();
+				updateLastModified(cNode, lastModifications);
+				if(entry == null) {
+					if(lastModifications.getLastCoachModified() != null || lastModifications.getLastUserModified() != null) {
+						se = new AssessmentEvaluation(new Date(), lastModifications.getLastUserModified(), lastModifications.getLastCoachModified());
+						Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+						userCourseEnvironment.getCourseEnvironment().getAssessmentManager()
+							.createAssessmentEntry(cNode, assessedIdentity, se);
+						changes = true;
+					}
+				} else {
+					boolean updated = false;
+					if(lastModifications.getLastCoachModified() != null
+							&& (entry.getLastCoachModified() == null || (entry.getLastCoachModified() != null && entry.getLastCoachModified().before(lastModifications.getLastCoachModified())))) {
+						entry.setLastCoachModified(lastModifications.getLastCoachModified());
+						updated = true;
+					}
+					if(lastModifications.getLastUserModified() != null
+							&& (entry.getLastUserModified() == null || (entry.getLastUserModified() != null && entry.getLastUserModified().before(lastModifications.getLastUserModified())))) {
+						entry.setLastUserModified(lastModifications.getLastUserModified());
+						updated = true;
+					}
+					if(updated) {
+						entry = userCourseEnvironment.getCourseEnvironment().getAssessmentManager().updateAssessmentEntry(entry);
+						identToEntries.put(cNode.getIdent(), entry);
+						changes = true;
+					}
+				}
+				
 				se = AssessmentEvaluation.EMPTY_EVAL;
 			}
 			return se;
@@ -275,6 +331,18 @@ public class ScoreAccounting {
 					|| (se.getScore() != null && entry.getScore() == null)
 					|| (se.getScore() != null && entry.getScore() != null
 							&& Math.abs(se.getScore().floatValue() - entry.getScore().floatValue()) > 0.00001)) {
+				same &= false;
+			}
+			
+			if((entry.getLastUserModified() == null && se.getLastUserModified() != null)
+					|| (se.getLastUserModified() != null && entry.getLastUserModified() != null
+							&& se.getLastUserModified().after(entry.getLastUserModified()))) {
+				same &= false;
+			}
+			
+			if((entry.getLastCoachModified() == null && se.getLastCoachModified() != null)
+					|| (se.getLastCoachModified() != null && entry.getLastCoachModified() != null
+							&& se.getLastCoachModified().after(entry.getLastCoachModified()))) {
 				same &= false;
 			}
 			
@@ -388,6 +456,32 @@ public class ScoreAccounting {
 	 */
 	public boolean isError() {
 		return error;
+	}
+	
+	private static class LastModifications {
+		
+		private Date lastUserModified;
+		private Date lastCoachModified;
+		
+		public Date getLastUserModified() {
+			return lastUserModified;
+		}
+		
+		public void addLastUserModified(Date date) {
+			if(date != null && (lastUserModified == null || lastUserModified.before(date))) {
+				lastUserModified = date;
+			}
+		}
+		
+		public Date getLastCoachModified() {
+			return lastCoachModified;
+		}
+		
+		public void addLastCoachModified(Date date) {
+			if(date != null && (lastCoachModified == null || lastCoachModified.before(date))) {
+				lastCoachModified = date;
+			}
+		}
 	}
 }
 

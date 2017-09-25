@@ -77,6 +77,8 @@ public class RegistrationForm2 extends FormBasicController {
 
 	@Autowired
 	private UserModule userModule;
+	@Autowired
+	private I18nManager i18nManager;
 	
 	/**
 	 * @param name
@@ -174,7 +176,7 @@ public class RegistrationForm2 extends FormBasicController {
 		
 		uifactory.addSpacerElement("lang", formLayout, true);
 		// second the user language
-		Map<String, String> languages = I18nManager.getInstance().getEnabledLanguagesTranslated();
+		Map<String, String> languages = i18nManager.getEnabledLanguagesTranslated();
 		lang = uifactory.addDropdownSingleselect("user.language", formLayout,
 				StringHelper.getMapKeysAsStringArray(languages),
 				StringHelper.getMapValuesAsStringArray(languages),

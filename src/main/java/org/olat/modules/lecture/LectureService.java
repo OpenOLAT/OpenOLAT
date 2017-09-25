@@ -55,6 +55,14 @@ public interface LectureService {
 	public RepositoryEntryLectureConfiguration getRepositoryEntryLectureConfiguration(RepositoryEntry entry);
 	
 	/**
+	 * 
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	public boolean isRepositoryEntryLectureEnabled(RepositoryEntryRef entry);
+	
+	/**
 	 * Update the specified configuration
 	 * @param config The configuration to merge
 	 * @return A merged configuration
@@ -92,9 +100,10 @@ public interface LectureService {
 	 * the status of the roll call.
 	 * 
 	 * @param lectureBlock The lecture block to close
+	 * @param author The user which trigger the action
 	 * @return The updated lecture block
 	 */
-	public LectureBlock close(LectureBlock lectureBlock);
+	public LectureBlock close(LectureBlock lectureBlock, Identity author);
 	
 	/**
 	 * The method will set the status of the lecture block and 
@@ -105,13 +114,37 @@ public interface LectureService {
 	 */
 	public LectureBlock cancel(LectureBlock lectureBlock);
 	
+	public String toAuditXml(LectureBlock lectureBlock);
+	
+	public LectureBlock toAuditLectureBlock(String xml);
+	
+	public String toAuditXml(LectureBlockRollCall rollCall);
+	
+	public LectureBlockRollCall toAuditLectureBlockRollCall(String xml);
+
+	
 	/**
 	 * Append content to the log saved on the lecture block.
 	 * 
 	 * @param lectureBlock The lecture block
 	 * @param log The content to append
 	 */
-	public void appendToLectureBlockLog(LectureBlockRef lectureBlock, Identity user, Identity assessedIdentity, String log);
+	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
+			LectureBlockRef lectureBlock, LectureBlockRollCall rollCall,
+			RepositoryEntryRef entry, IdentityRef assessedIdentity, IdentityRef author);
+	
+	public List<LectureBlockAuditLog> getAuditLog(LectureBlockRef lectureBlock);
+	
+	/**
+	 * The audit log of a specific user.
+	 * 
+	 * @param assessedIdentity
+	 * @return A list of roll call changes.
+	 */
+	public List<LectureBlockAuditLog> getAuditLog(IdentityRef assessedIdentity);
+	
+
+	public List<LectureBlockAuditLog> getAuditLog(RepositoryEntryRef entry);
 	
 	/**
 	 * Reload the lecture block.
@@ -235,6 +268,10 @@ public interface LectureService {
 	
 	public List<LectureBlockRollCall> getRollCalls(LectureBlockRef block);
 	
+	
+	public List<LectureBlockRollCall> getRollCalls(LectureBlockRollCallSearchParameters searchParams);
+	
+	
 	/**
 	 * Create a roll call with some settings.
 	 * 
@@ -264,6 +301,13 @@ public interface LectureService {
 	public void adaptRollCalls(LectureBlock lectureBlock);
 	
 	/**
+	 * Adapt all roll call on the database. Use with cautions!
+	 * 
+	 * @param author The user which trigger the action
+	 */
+	public void adaptAll(Identity author);
+	
+	/**
 	 * Add the specified lectures to the ones the identity follows.
 	 * 
 	 * @param identity The participant of the lecture
@@ -288,7 +332,8 @@ public interface LectureService {
 			String comment, List<Integer> absences);
 	
 	/**
-	 * Remove the specified lectures to the ones the identity follows.
+	 * Remove the specified lectures to the ones the identity follows. If the number of absences is zero,
+	 * the authorized absence flag is set ot NULL.
 	 * 
 	 * @param identity The participant of the lecture
 	 * @param lectureBlock The lecture block
@@ -315,6 +360,14 @@ public interface LectureService {
 	 * @return
 	 */
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry);
+	
+	/**
+	 * Search lecture blocks.
+	 * 
+	 * @param searchParams The search parameters
+	 * @return A list of lecture blocks
+	 */
+	public List<LectureBlock> getLectureBlocks(LecturesBlockSearchParameters searchParams);
 	
 	/**
 	 * Return the list of lecture blocks of a course with the teachers.

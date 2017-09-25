@@ -34,53 +34,59 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.method.AccessMethodHandler;
+import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
+import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
+import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 
 /**
- * 
+ *
  * Description:<br>
- * 
+ *
  * <P>
  * Initial Date:  26 mai 2011 <br>
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class AccessControlAdminController extends FormBasicController {
-	
+
+	private final static String METHOD_AUTO = "ac.method.auto.name";
 	private MultipleSelectionElement enabled, homeEnabled;
 	private MultipleSelectionElement methods;
-	
+
 	private String[] values = {""};
 	private String[] keys = {"on"};
-	
+
 	private String[] methodValues = {""};
 	private String[] methodKeys = {""};
-	
+
 	private final AccessControlModule acModule;
 
 	public AccessControlAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
+
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 
 		values = new String[] {
 			getTranslator().translate("ac.on")
 		};
-		
+
 		methodKeys = new String[] {
-			"free.method",
-			"token.method",
-			"paypal.method"
+			FreeAccessHandler.METHOD_TYPE,
+			TokenAccessHandler.METHOD_TYPE,
+			PaypalAccessHandler.METHOD_TYPE,
+			METHOD_AUTO
 		};
 
 		methodValues = new String[methodKeys.length];
-		for(int i=0; i<methodKeys.length; i++) {
+		for(int i=0; i<methodKeys.length-1; i++) {
 			AccessMethodHandler handler = acModule.getAccessMethodHandler(methodKeys[i]);
 			methodValues[i] = handler.getMethodName(getLocale());
 		}
-		
+		methodValues[3] = getTranslator().translate(METHOD_AUTO);
+
 		initForm(ureq);
 	}
-	
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.title");
@@ -88,32 +94,33 @@ public class AccessControlAdminController extends FormBasicController {
 
 		enabled = uifactory.addCheckboxesHorizontal("ac.enabled", formLayout, keys, values);
 		enabled.select(keys[0], acModule.isEnabled());
-		
+
 		uifactory.addSpacerElement("spaceman", formLayout, false);
-		
+
 		methods = uifactory.addCheckboxesVertical("ac.methods", formLayout, methodKeys, methodValues, 1);
-		methods.select("free.method", acModule.isFreeEnabled());
-		methods.select("token.method", acModule.isTokenEnabled());
-		methods.select("paypal.method", acModule.isPaypalEnabled());
+		methods.select(FreeAccessHandler.METHOD_TYPE, acModule.isFreeEnabled());
+		methods.select(TokenAccessHandler.METHOD_TYPE, acModule.isTokenEnabled());
+		methods.select(PaypalAccessHandler.METHOD_TYPE, acModule.isPaypalEnabled());
+		methods.select(METHOD_AUTO, acModule.isAutoEnabled());
 		methods.setEnabled(acModule.isEnabled());
 		methods.addActionListener(FormEvent.ONCHANGE);
-		
+
 		uifactory.addSpacerElement("itgirl", formLayout, false);
-		
+
 		homeEnabled = uifactory.addCheckboxesHorizontal("ac.home.enabled", formLayout, keys, values);
 		homeEnabled.select(keys[0], acModule.isPaypalEnabled() || acModule.isHomeOverviewEnabled());
-		
+
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
-		
+
 		formLayout.add(buttonGroupLayout);
 		update();
 	}
-	
+
 	public void update() {
 		Collection<String> selectedMethods = methods.getSelectedKeys();
-		if(selectedMethods.contains("paypal.method")) {
+		if(selectedMethods.contains(PaypalAccessHandler.METHOD_TYPE)) {
 			homeEnabled.select(keys[0], true);
 			homeEnabled.setEnabled(false);
 		} else {
@@ -137,16 +144,17 @@ public class AccessControlAdminController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		boolean on = !enabled.getSelectedKeys().isEmpty();
 		acModule.setEnabled(on);
-		
+
 		Collection<String> selectedMethods = methods.getSelectedKeys();
-		acModule.setFreeEnabled(selectedMethods.contains("free.method"));
-		acModule.setTokenEnabled(selectedMethods.contains("token.method"));
-		boolean paypalEnabled = selectedMethods.contains("paypal.method");
+		acModule.setFreeEnabled(selectedMethods.contains(FreeAccessHandler.METHOD_TYPE));
+		acModule.setTokenEnabled(selectedMethods.contains(TokenAccessHandler.METHOD_TYPE));
+		boolean paypalEnabled = selectedMethods.contains(PaypalAccessHandler.METHOD_TYPE);
 		acModule.setPaypalEnabled(paypalEnabled);
-		
+		acModule.setAutoEnabled(selectedMethods.contains(METHOD_AUTO));
+
 		boolean homeOverviewEnabled = paypalEnabled || !homeEnabled.getSelectedKeys().isEmpty();
 		acModule.setHomeOverviewEnabled(homeOverviewEnabled);
-		
+
 		methods.setEnabled(on);
 		showInfo("ac.saved");
 	}

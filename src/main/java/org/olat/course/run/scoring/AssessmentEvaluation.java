@@ -19,6 +19,8 @@
  */
 package org.olat.course.run.scoring;
 
+import java.util.Date;
+
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -37,6 +39,11 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	private final String comment;
 	private final String coachComment;
 	private final int numOfAssessmentDocs;
+	
+	private final Date lastModified;
+	private final Date lastUserModified;
+	private final Date lastCoachModified;
+	
 
 	public AssessmentEvaluation(Float score, Boolean passed) {
 		this(score, passed, null, null);
@@ -47,16 +54,24 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	}
 	
 	public AssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, null, null, fullyAssessed, assessmentID, null, null, -1);
+		this(score, passed, null, null, null, fullyAssessed, assessmentID, null, null, -1, null, null, null);
+	}
+	
+	public AssessmentEvaluation(Date lastModified, Date lastUserModified, Date lastCoachModified) {
+		this(null, null, null, null, null, null, null, null, null, -1, lastModified, lastUserModified, lastCoachModified);
 	}
 	
 	public AssessmentEvaluation(Float score, Boolean passed, Integer attempts, AssessmentEntryStatus assessmentStatus, Boolean userVisibility,
-			Boolean fullyAssessed, Long assessmentID, String comment, String coachComment, int numOfAssessmentDocs) {
+			Boolean fullyAssessed, Long assessmentID, String comment, String coachComment, int numOfAssessmentDocs,
+			Date lastModified, Date lastUserModified, Date lastCoachModified) {
 		super(score, passed, assessmentStatus, userVisibility, fullyAssessed, assessmentID);
 		this.attempts = attempts;
 		this.comment = comment;
 		this.coachComment = coachComment;
 		this.numOfAssessmentDocs = numOfAssessmentDocs;
+		this.lastModified = lastModified;
+		this.lastUserModified = lastUserModified;
+		this.lastCoachModified = lastCoachModified;
 	}
 	
 	/**
@@ -67,7 +82,8 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	 */
 	public AssessmentEvaluation(AssessmentEvaluation eval, AssessmentEntryStatus assessmentStatus) {
 		this(eval.getScore(), eval.getPassed(), eval.getAttempts(), assessmentStatus, eval.getUserVisible(),
-				eval.getFullyAssessed(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1);
+				eval.getFullyAssessed(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1,
+				eval.getLastModified(), eval.getLastUserModified(), eval.getLastCoachModified());
 	}
 
 	public Integer getAttempts() {
@@ -86,6 +102,18 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		return numOfAssessmentDocs;
 	}
 	
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	public Date getLastUserModified() {
+		return lastUserModified;
+	}
+
+	public Date getLastCoachModified() {
+		return lastCoachModified;
+	}
+
 	public static final AssessmentEvaluation toAssessmentEvalutation(AssessmentEntry entry, AssessableCourseNode node) {
 		if(entry == null) {
 			return AssessmentEvaluation.EMPTY_EVAL;
@@ -111,6 +139,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 			comment = entry.getComment();
 		}
 		return new AssessmentEvaluation(score, passed, attempts, entry.getAssessmentStatus(), entry.getUserVisibility(),
-				entry.getFullyAssessed(), entry.getAssessmentId(), comment, entry.getCoachComment(), entry.getNumberOfAssessmentDocuments());
+				entry.getFullyAssessed(), entry.getAssessmentId(), comment, entry.getCoachComment(), entry.getNumberOfAssessmentDocuments(),
+				entry.getLastModified(), entry.getLastUserModified(), entry.getLastCoachModified());
 	}
 }

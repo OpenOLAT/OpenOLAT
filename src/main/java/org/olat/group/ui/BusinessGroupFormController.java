@@ -178,12 +178,13 @@ public class BusinessGroupFormController extends FormBasicController {
 			BusinessControlFactory bcf = BusinessControlFactory.getInstance();
 			List<ContextEntry> entries = bcf.createCEListFromString("[BusinessGroup:" + businessGroup.getKey() + "]");
 			String url = bcf.getAsURIString(entries, true);
+			url = "<span class='o_copy_code o_nowrap'><input type='text' value='" + url + "' onclick='this.select()'/></span>";
 			StaticTextElement urlEl = uifactory.addStaticTextElement("create.form.businesspath", url, formLayout);
 			urlEl.setElementCssClass("o_sel_group_url");
 			// link to group visiting card
 			bcf = BusinessControlFactory.getInstance();
 			entries = bcf.createCEListFromString("[GroupCard:" + businessGroup.getKey() + "]");
-			url = bcf.getAsURIString(entries, true);
+			url = "<span class='o_copy_code o_nowrap'><input type='text' value='" + bcf.getAsURIString(entries, true) + "' onclick='this.select()'/></span>";
 			StaticTextElement cardEl = uifactory.addStaticTextElement("create.form.groupcard", url, formLayout);
 			cardEl.setElementCssClass("o_sel_group_card_url");
 		}

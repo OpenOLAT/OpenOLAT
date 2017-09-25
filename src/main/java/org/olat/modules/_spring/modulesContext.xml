@@ -14,8 +14,6 @@
 	<import resource="classpath:/org/olat/modules/glossary/_spring/glossaryContext.xml"/>
 	<import resource="classpath:/org/olat/modules/iq/_spring/iqContext.xml"/>
 	<import resource="classpath:/org/olat/modules/lecture/_spring/lectureContext.xml"/>
-	<import resource="classpath:/org/olat/modules/openmeetings/_spring/openmeetingsContext.xml"/>
-	<import resource="classpath:/org/olat/modules/vitero/_spring/viteroContext.xml"/>
 	<import resource="classpath:/org/olat/modules/webFeed/_spring/webFeedContext.xml"/>
 	<import resource="classpath:/org/olat/modules/wiki/_spring/wikiContext.xml"/>
 	<import resource="classpath:/org/olat/modules/reminder/_spring/reminderContext.xml"/>
@@ -51,7 +49,7 @@
 				<property name="className" value="org.olat.modules.card2brain.ui.Card2BrainAdminController"/>
 			</bean>
 		</property>
-		<property name="navigationKey" value="gotomeeting" />
+		<property name="navigationKey" value="card2brain" />
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.modules.card2brain.ui"/>
@@ -120,6 +118,48 @@
 		<property name="extensionPoints">
 			<list>
 				<value>org.olat.home.HomeMainController</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- vitero admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="8228" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
+				<property name="factoryName" value="org.olat.modules.vitero.ViteroUIFactory"/>
+				<property name="factoryMethod" value="createViteroAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="vitero" />
+		<property name="parentTreeNodeIdentifier" value="externalToolsParent" /> 
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.modules.vitero.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
+	<!-- OpenMeetings admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7210" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
+				<property name="factoryName" value="org.olat.modules.openmeetings.OpenMeetingsUIFactory"/>
+				<property name="factoryMethod" value="createAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="openmeetings" />
+		<property name="parentTreeNodeIdentifier" value="externalToolsParent" /> 
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.modules.openmeetings.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
 	</bean>

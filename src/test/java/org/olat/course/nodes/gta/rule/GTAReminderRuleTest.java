@@ -20,6 +20,8 @@
 package org.olat.course.nodes.gta.rule;
 
 import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -32,9 +34,14 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.GTARelativeToDates;
@@ -66,6 +73,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTAReminderRuleTest extends OlatTestCase {
 	
+	private static final OLog log = Tracing.createLoggerFor(GTAReminderRuleTest.class);
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -92,12 +101,12 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		//prepare a course with a volatile task
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-1");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-2");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		RepositoryEntry re = deployGTACourse();
 		repositoryEntryRelationDao.addRole(participant1, re, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(participant2, re, GroupRoles.participant.name());
 		dbInstance.commit();
 		
-		GTACourseNode node = new GTACourseNode();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		
 		Calendar cal = Calendar.getInstance();
@@ -404,12 +413,12 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		//prepare a course with a volatile task
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-1");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-2");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		RepositoryEntry re = deployGTACourse();
 		repositoryEntryRelationDao.addRole(participant1, re, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(participant2, re, GroupRoles.participant.name());
 		dbInstance.commit();
 		
-		GTACourseNode node = new GTACourseNode();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		
 		Calendar cal = Calendar.getInstance();
@@ -598,5 +607,32 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		rule.setRightOperand(Integer.toString(amount));
 		rule.setRightUnit(unit.name());
 		return rule;
+	}
+	
+	private RepositoryEntry deployGTACourse() {
+		try {
+			Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-reminder");
+			String displayname = "GTARemind-" + UUID.randomUUID();
+			
+			URL courseUrl = JunitTestHelper.class.getResource("file_resources/GTA_course.zip");
+			File courseFile = new File(courseUrl.toURI());
+			return JunitTestHelper.deployCourse(initialAuthor, displayname, courseFile);
+		} catch (URISyntaxException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	private GTACourseNode getGTACourseNode(RepositoryEntry courseEntry) {
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		for(int i=rootNode.getChildCount(); i-->0; ) {
+			INode child = rootNode.getChildAt(i);
+			if(child instanceof GTACourseNode) {
+				return ((GTACourseNode)child);
+			}
+		}
+		
+		return null;
 	}
 }

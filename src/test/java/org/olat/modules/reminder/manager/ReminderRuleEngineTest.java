@@ -50,6 +50,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
 import org.olat.modules.reminder.rule.CourseEnrollmentDateRuleSPI;
@@ -1059,7 +1060,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		ienv.setIdentity(student);
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 
-		course.getCourseEnvironment().getAssessmentManager().saveScoreEvaluation(testNode, tutor, student, scoreEval, userCourseEnv, true);
+		course.getCourseEnvironment().getAssessmentManager().saveScoreEvaluation(testNode, tutor, student, scoreEval, userCourseEnv, true, Role.coach);
 		dbInstance.commit();
 		
 		return testNode.getIdent();

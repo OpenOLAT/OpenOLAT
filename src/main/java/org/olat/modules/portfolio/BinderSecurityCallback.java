@@ -21,6 +21,8 @@ package org.olat.modules.portfolio;
 
 import java.util.List;
 
+import org.olat.modules.assessment.Role;
+
 /**
  * 
  * Initial date: 15.06.2016<br>
@@ -39,6 +41,8 @@ public interface BinderSecurityCallback {
 	public boolean canMoveToTrashBinder(Binder binder);
 	
 	public boolean canDeleteBinder(Binder binder);
+	
+	public boolean canExportBinder();
 	
 	/**
 	 * Can edit the edit the meta-data in this binder inclusive meta-data
@@ -61,7 +65,9 @@ public interface BinderSecurityCallback {
 	public boolean canEditPage(Page page);
 	
 	public boolean canEditPageMetadata(Page page, List<Assignment> assignments);
-	
+
+	public boolean canEditCategories(Page page);
+
 	public boolean canPublish(Page page);
 	
 	public boolean canRevision(Page page);
@@ -94,6 +100,14 @@ public interface BinderSecurityCallback {
 	
 	public boolean canViewElement(PortfolioElement element);
 	
+	
+	/**
+	 * View only the title of the element but not its content
+	 * @param element
+	 * @return
+	 */
+	public boolean canViewTitleOfElement(PortfolioElement element);
+	
 	public boolean canViewPendingAssignments(Section section);
 	
 	public boolean canViewEmptySection(Section section);
@@ -107,6 +121,9 @@ public interface BinderSecurityCallback {
 	public boolean canViewAssess(PortfolioElement element);
 	
 	public boolean canViewAssessment();
+	
+
+	public Role getRole();
  
 
 }

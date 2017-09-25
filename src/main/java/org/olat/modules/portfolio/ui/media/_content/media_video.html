@@ -1,0 +1,15 @@
+<div class="o_video">
+	#if($r.isTrue($pdf))
+		<div class="o_pf_video_placeholder" #if($r.isNotNull($scaledSize)) style="width: ${scaledSize.width}px; height: ${scaledSize.height}px;" #end><i class="o_icon o_icon-5x o_filetype_mp4"> </i></div>
+	#else
+		<div class="o_pf_video_placeholder visible-print-block" #if($r.isNotNull($scaledSize)) style="width: ${scaledSize.width}px; height: ${scaledSize.height}px;" #end><i class="o_icon o_icon-5x o_filetype_mp4"> </i></div>
+		<div class="o_noprint">
+		$r.render("video")
+		</div>
+	#end
+	#if($r.available("meta"))
+	<div class="panel panel-default o_artefact_metadata">
+		$r.render("meta")
+	</div>
+	#end
+</div>

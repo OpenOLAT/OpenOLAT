@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openolat</groupId>
 	<artifactId>openolat-lms</artifactId>
-	<version>12.0-SNAPSHOT</version>
+	<version>12.2-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>OpenOLAT LMS</name>
 	<url>http://www.openolat.org</url>
@@ -62,7 +62,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>3.2.18.RELEASE</org.springframework.version>
+		<org.springframework.version>4.3.10.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.2.10.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
 		<jackson.version>1.9.2</jackson.version>
@@ -71,7 +71,7 @@
 		<org.infinispan.version>8.2.5.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
 		<version.selenium>3.4.0</version.selenium>
-		<version.drone>2.2.0</version.drone>
+		<version.drone>2.3.1</version.drone>
 		<activemq.version>5.11.1</activemq.version>
 		<qtiworks.version>1.0.4</qtiworks.version>
 
@@ -267,6 +267,13 @@
 											<removeIncluded>false</removeIncluded>
 											<includes>
 												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatmovieviewer/plugin.min.js</include>
+											</includes>
+										</aggregation>
+										<aggregation>
+											<output>${basedir}/src/main/webapp/static/js/tinymce4/tinymce/plugins/olatcharcount/plugin.min.js</output>
+											<removeIncluded>false</removeIncluded>
+											<includes>
+												<include>${basedir}/target/jquery/tinymce4/tinymce/plugins/olatcharcount/plugin.min.js</include>
 											</includes>
 										</aggregation>
 										<aggregation>
@@ -1298,7 +1305,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
+				<version>1.8</version>
 				<executions>
 					<!-- Copy the notice.txt file -->
 					<execution>
@@ -1316,18 +1323,18 @@
 					</execution>
 					<!-- Download tomcat for integration test -->
 					<execution>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                        	<goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <mkdir dir="${project.build.directory}/downloads" />
-                                <get src="http://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/8.0.24/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
-                                <unzip src="${project.build.directory}/downloads/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/arq-apache-tomcat-8.0.24" />
-                            </tasks>
-                        </configuration>
-                    </execution> 
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<mkdir dir="${project.build.directory}/downloads" />
+								<get src="https://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/8.0.24/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
+								<unzip src="${project.build.directory}/downloads/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/arq-apache-tomcat-8.0.24" />
+							</target>
+						</configuration>
+					</execution> 
 				</executions>
 			</plugin>
             <!-- Unit tests -->
@@ -1342,6 +1349,7 @@
 					<systemPropertyVariables>
 						<java.io.tmpdir>${project.build.directory}/olatdata</java.io.tmpdir>
 					</systemPropertyVariables>
+					<trimStackTrace>false</trimStackTrace>
 					<testNGArtifactName>none:none</testNGArtifactName>
 					<includes>
 						<include>org/olat/test/AllTestsJunit4.java</include>
@@ -1360,7 +1368,7 @@
 					<skipTests>${skipSeleniumTests}</skipTests>
 					<reuseForks>false</reuseForks>
 					<argLine>-Xmx512m -Xms256m -Djava.awt.headless=true</argLine>
-					
+					<trimStackTrace>false</trimStackTrace>
 					<systemPropertyVariables>
 						<profile>${test.env}</profile>
 						<test.env.db.name>${test.env.db.name}</test.env.db.name>
@@ -2296,7 +2304,7 @@
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz</artifactId>
-			<version>1.8.6</version>
+			<version>2.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
@@ -2574,7 +2582,7 @@
 		<dependency>
 			<groupId>org.jboss.arquillian.graphene</groupId>
 			<artifactId>graphene-webdriver</artifactId>
-			<version>2.2.1</version>
+			<version>2.3.1</version>
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
@@ -2644,7 +2652,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>2.19.1</version>
+				<version>2.20</version>
 			</plugin>
 		</plugins>
 	</reporting>

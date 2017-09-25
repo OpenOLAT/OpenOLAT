@@ -63,6 +63,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -200,7 +201,7 @@ public class QTI21ResetToolController extends BasicController {
 				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null);
 				IdentityEnvironment ienv = new IdentityEnvironment(identity, studentRoles);
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-				testCourseNode.updateUserScoreEvaluation(scoreEval, uce, getIdentity(), false);
+				testCourseNode.updateUserScoreEvaluation(scoreEval, uce, getIdentity(), false, Role.coach);
 			}
 		} else if(assessedEntry != null) {
 			archiveData(assessedEntry);

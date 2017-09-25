@@ -8,7 +8,7 @@
   http://www.springframework.org/schema/context 
   http://www.springframework.org/schema/context/spring-context.xsd">
   
-	<context:component-scan base-package="org.olat.core.util.session,org.olat.core.util.vfs.version,org.olat.core.helpers" />
+	<context:component-scan base-package="org.olat.core.util.session,org.olat.core.util.vfs.version,org.olat.core.util.i18n" />
 
 	<bean id="codeHelper" class="org.olat.core.util.CodeHelper" >
 		<constructor-arg value="${node.id}" />
@@ -48,6 +48,7 @@
 		<property name="applicationName" value="${application.name}" />
 		<property name="mobileContext" value="${mobile.context}" />
 		<property name="mathJaxCdn" value="${mathjax.cdn}"/>
+		<property name="mathJaxConfig" value="${mathjax.config}"/>
 	</bean>
 
 	<bean id="org.olat.core.helpers.Settings" class="org.olat.core.helpers.Settings" depends-on="org.olat.core.util.WebappHelper">

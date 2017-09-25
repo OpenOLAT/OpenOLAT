@@ -417,6 +417,10 @@ public class PortfolioElementRow {
 	public void setInstantiateAssignmentLink(FormLink instantiateAssignmentLink) {
 		this.instantiateAssignmentLink = instantiateAssignmentLink;
 	}
+	
+	public boolean isSectionEnded() {
+		return section != null && section.getEndDate() != null && new Date().after(section.getEndDate());
+	}
 
 	public FormLink getCloseSectionLink() {
 		return closeSectionLink;

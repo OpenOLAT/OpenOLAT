@@ -30,8 +30,6 @@ import java.io.InputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.FilesInfoMBean;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -45,11 +43,9 @@ public class VFSMediaResource implements MediaResource {
 	private String encoding;
 	boolean unknownMimeType = false;
 	private boolean downloadable = false;
-	private FilesInfoMBean filesInfoMBean;
 
 	public VFSMediaResource(VFSLeaf vfsLeaf) {
 		this.vfsLeaf = vfsLeaf;
-		this.filesInfoMBean = (FilesInfoMBean) CoreSpringFactory.getBean(FilesInfoMBean.class.getCanonicalName());
 	}
 	
 	@Override
@@ -96,7 +92,6 @@ public class VFSMediaResource implements MediaResource {
 
 	@Override
 	public InputStream getInputStream() {
-		filesInfoMBean.logDownload(getSize());
 		return vfsLeaf.getInputStream();
 	}
 
@@ -112,7 +107,7 @@ public class VFSMediaResource implements MediaResource {
 	@Override
 	public void prepare(HttpServletResponse hres) {
 		String filename = StringHelper.urlEncodeUTF8(vfsLeaf.getName());
-		if (unknownMimeType) {
+		if (unknownMimeType || downloadable) {
 			hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + filename);
 		} else {
 			hres.setHeader("Content-Disposition", "filename*=UTF-8''" + filename);
@@ -135,6 +130,20 @@ public class VFSMediaResource implements MediaResource {
 		this.encoding = encoding;
 	}
 	
+	/**
+	 * Set to true to force the browser to download the resource. This is done by 
+	 * a) set the content-disposition to attachment
+	 * b) set the mime-type to some non-existing mime-type for browser-executable, 
+	 * xss-relevant resource such as html files. Since the browser does not 
+	 * understand the mime-type, the file gets downloaded instead of executed. 
+	 * 
+	 * NOTE: make sure when writing the link to properly set the target or 
+	 * download attribute depending on the mime-type or the downloadable nature
+	 * of the file!
+	 * 
+	 * @param downloadable true: force browser to download; false: let browser
+	 * decide, might render inline in browser window
+	 */
 	public void setDownloadable(boolean downloadable) {
 		this.downloadable = downloadable;
 	}

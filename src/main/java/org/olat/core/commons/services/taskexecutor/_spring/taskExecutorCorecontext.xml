@@ -34,13 +34,13 @@
 	</bean>
 	
 	<!-- Persistent task executor job -->
-	<bean id="taskExecutorTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="taskExecutorTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="taskExecutorJob" />
   		<!--  every day at 1:21 -->
 		<property name="cronExpression" value="10 */5 * * * ?" />
 		<property name="startDelay" value="60000" />
 	</bean>
-	<bean id="taskExecutorJob" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	<bean id="taskExecutorJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.taskexecutor.manager.ExecutorJob" />
 	</bean>
 

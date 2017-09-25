@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_v2p1p1.xsd http://www.w3.org/1998/Math/MathML http://www.w3.org/Math/XMLSchema/mathml2/mathml2.xsd"
+	identifier="id7b3114b3-7b0f-411c-a69e-7243deac0d45" title="Knoten_SC_1"
+	adaptive="false" timeDependent="false">
+	<responseDeclaration identifier="RESPONSE_1"
+		cardinality="single" baseType="identifier">
+		<correctResponse>
+			<value>idd2ea93f6-3fdd-4308-a7ba-494477fe86f3</value>
+		</correctResponse>
+	</responseDeclaration>
+	<outcomeDeclaration identifier="SCORE" cardinality="single"
+		baseType="float">
+		<defaultValue>
+			<value>0</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="MAXSCORE"
+		cardinality="single" baseType="float">
+		<defaultValue>
+			<value>4</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="FEEDBACKBASIC"
+		cardinality="single" baseType="identifier">
+		<defaultValue>
+			<value>empty</value>
+		</defaultValue>
+	</outcomeDeclaration>
+	<outcomeDeclaration identifier="FEEDBACKMODAL"
+		cardinality="multiple" baseType="identifier" view="testConstructor" />
+	<itemBody>
+		<p>Aufgabenstellung - 4 Punkte</p>
+		<p>
+			<strong>Fett-Formatiert</strong>
+		</p>
+		<p>
+			<em>Kursiv Formatiert</em>
+		</p>
+		<choiceInteraction responseIdentifier="RESPONSE_1"
+			shuffle="true" maxChoices="1">
+			<simpleChoice identifier="idc04c4c0d-5637-41e6-b49c-b915e4061f75">
+				<p>Antwort 1 - falsch</p>
+			</simpleChoice>
+			<simpleChoice identifier="id941faa89-34ba-47cd-9565-5d17856327c3">
+				<p>Antwort 2 - auch falsch</p>
+			</simpleChoice>
+			<simpleChoice identifier="iddcb9cdcf-cba4-4bba-b4a1-cc304b733e60">
+				<p>Antwort 3 - aber so richtig falsch!</p>
+			</simpleChoice>
+			<simpleChoice identifier="idd2ea93f6-3fdd-4308-a7ba-494477fe86f3">
+				<p>Antwort 4 - der hier ist richtig. ...vielleicht.</p>
+			</simpleChoice>
+		</choiceInteraction>
+	</itemBody>
+	<responseProcessing>
+		<responseCondition>
+			<responseIf>
+				<isNull>
+					<variable identifier="RESPONSE_1" />
+				</isNull>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">empty</baseValue>
+				</setOutcomeValue>
+			</responseIf>
+			<responseElseIf>
+				<match>
+					<variable identifier="RESPONSE_1" />
+					<correct identifier="RESPONSE_1" />
+				</match>
+				<setOutcomeValue identifier="SCORE">
+					<sum>
+						<variable identifier="SCORE" />
+						<variable identifier="MAXSCORE" />
+					</sum>
+				</setOutcomeValue>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">correct</baseValue>
+				</setOutcomeValue>
+			</responseElseIf>
+			<responseElse>
+				<setOutcomeValue identifier="FEEDBACKBASIC">
+					<baseValue baseType="identifier">incorrect</baseValue>
+				</setOutcomeValue>
+			</responseElse>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<and>
+					<match>
+						<baseValue baseType="identifier">correct</baseValue>
+						<variable identifier="FEEDBACKBASIC" />
+					</match>
+				</and>
+				<setOutcomeValue identifier="FEEDBACKMODAL">
+					<multiple>
+						<variable identifier="FEEDBACKMODAL" />
+						<baseValue baseType="identifier">Feedback387304179</baseValue>
+					</multiple>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+		<responseCondition>
+			<responseIf>
+				<and>
+					<match>
+						<baseValue baseType="identifier">incorrect</baseValue>
+						<variable identifier="FEEDBACKBASIC" />
+					</match>
+				</and>
+				<setOutcomeValue identifier="FEEDBACKMODAL">
+					<multiple>
+						<variable identifier="FEEDBACKMODAL" />
+						<baseValue baseType="identifier">Feedback1195493580</baseValue>
+					</multiple>
+				</setOutcomeValue>
+			</responseIf>
+		</responseCondition>
+	</responseProcessing>
+	<modalFeedback identifier="Feedback387304179"
+		outcomeIdentifier="FEEDBACKMODAL" showHide="show" title="Feedback - Richtig">
+		<p>Richtig Text</p>
+	</modalFeedback>
+	<modalFeedback identifier="Feedback1195493580"
+		outcomeIdentifier="FEEDBACKMODAL" showHide="show" title="Feedback - Falsch">
+		<p>Falsch Text</p>
+	</modalFeedback>
+</assessmentItem>

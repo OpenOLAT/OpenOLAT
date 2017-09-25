@@ -40,6 +40,7 @@ import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
+import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 
 import uk.ac.ed.ph.jqtiplus.node.content.ItemBody;
@@ -82,7 +83,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
+public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder implements ResponseIdentifierForFeedback {
 	
 	private String question;
 	private Identifier responseIdentifier;
@@ -182,6 +183,22 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
 	}
 	
+	@Override
+	public Identifier getResponseIdentifier() {
+		return responseIdentifier;
+	}
+	
+	@Override
+	public List<Answer> getAnswers() {
+		List<HotspotChoice> hotspotChoices = getHotspotChoices();
+		List<Answer> answers = new ArrayList<>(hotspotChoices.size());
+		int count = 0;
+		for(HotspotChoice choice:hotspotChoices) {
+			answers.add(new Answer(choice.getIdentifier(), Integer.toString(++count)));
+		}
+		return answers;
+	}
+
 	public String getBackground() {
 		Object graphichObject = hotspotInteraction.getObject();
 		if(graphichObject != null) {
@@ -273,6 +290,27 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 	@Override
 	public void setQuestion(String question) {
 		this.question = question;
+	}
+	
+	public boolean isResponsive() {
+		List<String> cssClasses = hotspotInteraction.getClassAttr();
+		return cssClasses != null && cssClasses.size() > 0
+				&& cssClasses.contains(QTI21Constants.CSS_INTERACTION_RESPONSIVE); 
+	}
+	
+	public void setResponsive(boolean responsive) {
+		List<String> cssClasses = hotspotInteraction.getClassAttr();
+		if(cssClasses == null) {
+			cssClasses = new ArrayList<>();
+		}
+		if(responsive) {
+			if(!cssClasses.contains(QTI21Constants.CSS_INTERACTION_RESPONSIVE)) {
+				cssClasses.add(QTI21Constants.CSS_INTERACTION_RESPONSIVE);
+			}
+		} else {
+			cssClasses.remove(QTI21Constants.CSS_INTERACTION_RESPONSIVE);
+		}
+		hotspotInteraction.setClassAttr(cssClasses);
 	}
 	
 	public HotspotChoice getHotspotChoice(String identifier) {

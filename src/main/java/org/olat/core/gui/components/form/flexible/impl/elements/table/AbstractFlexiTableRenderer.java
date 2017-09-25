@@ -430,15 +430,15 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderPageSize(sb, ftC, translator);
 		}
 
-		sb.append("<ul class='pagination'>");
 		if(pageSize > 0 && rows > pageSize) {
+			sb.append("<ul class='pagination'>");
 			int page = ftE.getPage();
 			int maxPage = (int)Math.ceil(((double) rows / (double) pageSize));
 			renderPageBackLink(sb, ftC, page);
 			renderPageNumberLinks(sb, ftC, page, maxPage);
 			renderPageNextLink(sb, ftC, page, maxPage);
+			sb.append("</ul>");
 		}
-		sb.append("</ul>");
 	}
 	
 	private void renderPageSize(StringOutput sb, FlexiTableComponent ftC, Translator translator) {

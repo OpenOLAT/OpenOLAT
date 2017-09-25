@@ -64,9 +64,9 @@
 <!-- ################################## -->
 <!-- # VIRTUAL CLASSROOM SERVICE JOBS # -->
 <!-- ################################## -->
-	<bean id="adobeCleanupJob" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="adobeCleanupJob" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
     	<property name="jobDetail">
-    		<bean class="org.springframework.scheduling.quartz.JobDetailBean">
+    		<bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 				<property name="jobClass" value="de.bps.course.nodes.vc.provider.adobe.AdobeConnectCleanupJob" />
 				<property name="jobDataAsMap">
 				    <map>

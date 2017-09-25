@@ -75,7 +75,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	private Integer amountUsersToDelete;
 	private List<Identity> identitiesToDelete;
 	private LDAPLoginManager ldapLoginManager;
-	private Link fullSyncStartLink;
+
 	private UserSearchController userSearchCtrl;
 	private CloseableCalloutWindowController calloutCtr;
 	private Link syncOneUserLink;
@@ -93,7 +93,6 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 		updateLastSyncDateInVC();
 		// Create start LDAP sync link
 		syncStartLink = LinkFactory.createButton("sync.button.start", ldapAdminVC, this);
-		fullSyncStartLink = LinkFactory.createButton("full.sync.button.start", ldapAdminVC, this);
 		// sync one user only
 //		syncOneUserLink = LinkFactory.createButton("one.user.sync.button.start", ldapAdminVC, this);
 		
@@ -144,29 +143,17 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 			// Start sync job
 			// Disable start link during sync
 			syncStartLink.setEnabled(false);
-			fullSyncStartLink.setEnabled(false);
 			LDAPEvent ldapEvent = new LDAPEvent(LDAPEvent.DO_SYNCHING);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ldapEvent, LDAPLoginManager.ldapSyncLockOres);
 			showInfo("admin.synchronize.started");
-		}
-		else if (source == fullSyncStartLink){
-			// Start sync job
-			// Disable start link during sync
-			syncStartLink.setEnabled(false);
-			fullSyncStartLink.setEnabled(false);
-			LDAPEvent ldapEvent = new LDAPEvent(LDAPEvent.DO_FULL_SYNCHING);
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ldapEvent, LDAPLoginManager.ldapSyncLockOres);
-			showInfo("admin.synchronize.started");			
-		}
-		else if (source == syncOneUserLink){
+		} else if (source == syncOneUserLink){
 			userSearchCtrl = new UserSearchController(ureq, getWindowControl(), false);
 			listenTo(userSearchCtrl);
 			calloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(), userSearchCtrl.getInitialComponent(), syncOneUserLink, null, true, null);
 			calloutCtr.addDisposableChildController(userSearchCtrl);
 			calloutCtr.activate();
 			listenTo(calloutCtr);
-		}
-		else if (source == deletStartLink) {
+		} else if (source == deletStartLink) {
 			// cancel if some one else is making sync or delete job
 			if (!ldapLoginManager.acquireSyncLock()) {
 				showError("delete.error.lock");
@@ -284,7 +271,6 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 		}
 		// re-enable start link
 		syncStartLink.setEnabled(true);
-		fullSyncStartLink.setEnabled(true);
 		// update last sync date
 		updateLastSyncDateInVC();
 	}

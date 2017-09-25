@@ -43,6 +43,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.i18n.I18nModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -64,6 +65,9 @@ class I18nConfigSubDeletePackageController extends FormBasicController {
 	private DialogBoxController dialogCtr;
 	private FormLink cancelButton;
 	private FormSubmit submitButton;
+	
+	@Autowired
+	private I18nModule i18nModule;
 
 	/**
 	 * Constructor for the delete-language pack workflow
@@ -121,7 +125,7 @@ class I18nConfigSubDeletePackageController extends FormBasicController {
 					logAudit("Deleted language pack::" + deleteLangPack, null);
 				}
 				// Reset i18n system
-				I18nModule.reInitializeAndFlushCache();
+				i18nModule.reInitializeAndFlushCache();
 				// wow, everything worked fine
 				showInfo("configuration.management.package.delete.success", deleteLangPackSelection.getSelectedKeys().toString());
 				fireEvent(ureq, Event.DONE_EVENT);

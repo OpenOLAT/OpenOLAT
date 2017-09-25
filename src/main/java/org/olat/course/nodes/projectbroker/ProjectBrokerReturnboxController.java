@@ -38,11 +38,11 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  *
- * @author Christian Guretzki 
+ * @author Christian Guretzki
  */
 
 public class ProjectBrokerReturnboxController extends ReturnboxController  {
-	
+
 	private Project project;
 
 	/**
@@ -54,13 +54,13 @@ public class ProjectBrokerReturnboxController extends ReturnboxController  {
 	 * @param userCourseEnv
 	 * @param previewMode
 	 */
-	public ProjectBrokerReturnboxController(UserRequest ureq, WindowControl wControl, 
+	public ProjectBrokerReturnboxController(UserRequest ureq, WindowControl wControl,
 			CourseNode node, UserCourseEnvironment userCourseEnv, boolean previewMode, Project project) {
 		super(ureq, wControl, node, userCourseEnv, previewMode, false);
 		this.project = project;
 		initReturnbox(ureq, wControl, node, userCourseEnv, previewMode);
 	}
-	
+
 	/**
 	 * Return returnbox base-path. e.g. course/<COURSE_ID>/returnbox/<NODE_id>/<USER_NAME>
 	 * @see org.olat.course.nodes.ta.ReturnboxController#getReturnboxPathFor(org.olat.course.run.environment.CourseEnvironment, org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
@@ -71,9 +71,9 @@ public class ProjectBrokerReturnboxController extends ReturnboxController  {
 	}
 
 	/**
-	 * Return returnbox base-path. e.g. course/<COURSE_ID>/returnbox/<NODE_id> 
-	 * To have the path for certain user you must call method 'getReturnboxPathFor'  
-	 * 
+	 * Return returnbox base-path. e.g. course/<COURSE_ID>/returnbox/<NODE_id>
+	 * To have the path for certain user you must call method 'getReturnboxPathFor'
+	 *
 	 * @param project
 	 * @param courseEnv
 	 * @param cNode
@@ -82,5 +82,5 @@ public class ProjectBrokerReturnboxController extends ReturnboxController  {
 	public static String getReturnboxBasePathForProject(Project project, CourseEnvironment courseEnv, CourseNode node) {
 		return getReturnboxPathRelToFolderRoot(courseEnv, node) + File.separator + project.getKey();
 	}
-	
+
 }

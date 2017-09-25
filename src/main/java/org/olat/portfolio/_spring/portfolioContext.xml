@@ -69,7 +69,7 @@
 	</bean>
 	
 	<!-- Deadline Job -->
-	<bean id="epDeadlineTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="epDeadlineTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="epDeadlineJob.${cluster.singleton.services}" />
   	<!-- adjust cron style syntax for your notification needs 
    	"0 10 0 * *"  e.g. 10 minutes after midnight
@@ -88,16 +88,16 @@
 		<property name="startDelay" value="60000" />
 	</bean>
 
-	<bean id="epDeadlineJob.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	<bean id="epDeadlineJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.portfolio.manager.EPDeadlineJob" />
 	</bean>
 	
 	<!-- dummy bean -->
-	<bean id="epDeadlineJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+	<bean id="epDeadlineJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 	
-	<bean id="invitationCleanupTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="invitationCleanupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="invitationCleanupJob.${cluster.singleton.services}" />
 		 <!-- adjust cron style syntax for your notification needs 
 		  	"0 10 0 * *"  e.g. 10 minutes after midnight
@@ -119,11 +119,11 @@
 		<property name="startDelay" value="150000" />
 	</bean>
 
-	<bean id="invitationCleanupJob.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	<bean id="invitationCleanupJob.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 		<property name="jobClass" value="org.olat.portfolio.manager.InvitationCleanupJob" />
 	</bean>
 	<!-- dummy bean -->
-	<bean id="invitationCleanupJob.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+	<bean id="invitationCleanupJob.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>
 	

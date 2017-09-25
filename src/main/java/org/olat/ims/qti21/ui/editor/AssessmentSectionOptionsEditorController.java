@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.ui.editor;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.model.xml.AssessmentHtmlBuilder;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
@@ -57,6 +59,10 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 	private SingleSelection shuffleEl, randomSelectedEl;
 	private List<RichTextElement> rubricEls = new ArrayList<>();
 	
+	private final File testFile;
+	private final File rootDirectory;
+	private final VFSContainer rootContainer;
+	
 	private final AssessmentSection section;
 	private final AssessmentHtmlBuilder htmlBuilder;
 	
@@ -66,10 +72,14 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 	private static final String[] yesnoKeys = new String[]{ "y", "n"};
 	
 	public AssessmentSectionOptionsEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentSection section, boolean restrictedEdit, boolean editable) {
+			AssessmentSection section, File rootDirectory, VFSContainer rootContainer, File testFile,
+			boolean restrictedEdit, boolean editable) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestDisplayController.class, ureq.getLocale()));
 		this.section = section;
 		this.editable = editable;
+		this.testFile = testFile;
+		this.rootDirectory = rootDirectory;
+		this.rootContainer = rootContainer;
 		this.restrictedEdit = restrictedEdit;
 		htmlBuilder = new AssessmentHtmlBuilder();
 		initForm(ureq);
@@ -87,9 +97,11 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
 		titleEl.setEnabled(editable);
 		titleEl.setMandatory(true);
-		
+
+		String relativePath = rootDirectory.toPath().relativize(testFile.toPath().getParent()).toString();
+		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		if(section.getRubricBlocks().isEmpty()) {
-			RichTextElement rubricEl = uifactory.addRichTextElementForQTI21("rubric" + counter++, "form.imd.rubric", "", 8, -1, null,
+			RichTextElement rubricEl = uifactory.addRichTextElementForQTI21("rubric" + counter++, "form.imd.rubric", "", 12, -1, itemContainer,
 					formLayout, ureq.getUserSession(), getWindowControl());
 			rubricEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			rubricEl.setEnabled(editable);
@@ -97,7 +109,7 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 		} else {
 			for(RubricBlock rubricBlock:section.getRubricBlocks()) {
 				String rubric = htmlBuilder.blocksString(rubricBlock.getBlocks());
-				RichTextElement rubricEl = uifactory.addRichTextElementForQTI21("rubric" + counter++, "form.imd.rubric", rubric, 8, -1, null,
+				RichTextElement rubricEl = uifactory.addRichTextElementForQTI21("rubric" + counter++, "form.imd.rubric", rubric, 12, -1, itemContainer,
 						formLayout, ureq.getUserSession(), getWindowControl());
 				rubricEl.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 				rubricEl.setEnabled(editable);
@@ -191,7 +203,7 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 		//rubrics
 		List<RubricBlock> rubricBlocks = new ArrayList<>();
 		for(RichTextElement rubricEl:rubricEls) {
-			String rubric = rubricEl.getValue();
+			String rubric = rubricEl.getRawValue();
 			if(htmlBuilder.containsSomething(rubric)) {
 				RubricBlock rubricBlock = (RubricBlock)rubricEl.getUserObject();
 				if(rubricBlock == null) {

@@ -28,6 +28,7 @@ import java.util.Map;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -61,6 +62,7 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
+import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.qpool.QTIQPoolServiceProvider;
@@ -144,6 +146,10 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private boolean itemCollectionDirty = false;
 
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private QTIModule qtiModule;
 	@Autowired
 	private QuestionPoolModule qpoolModule;
 	@Autowired
@@ -570,6 +576,9 @@ public class QuestionListController extends AbstractItemListController implement
 		getSource().postImport(newItems, false);
 		getItemsTable().reset();
 		
+		dbInstance.commit();
+		qpoolService.index(newItems);
+		
 		QPoolEvent qce = new QPoolEvent(QPoolEvent.ITEM_CREATED);
 		fireEvent(ureq, qce);
 
@@ -639,7 +648,12 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private void doOpenRepositoryImport(UserRequest ureq) {
 		removeAsListenerAndDispose(importTestCtrl);
-		String[] allowed = new String[]{ ImsQTI21Resource.TYPE_NAME, TestFileResource.TYPE_NAME, SurveyFileResource.TYPE_NAME };
+		String[] allowed;
+		if(qtiModule.isCreateResourcesEnabled()) {
+			allowed = new String[]{ ImsQTI21Resource.TYPE_NAME, TestFileResource.TYPE_NAME, SurveyFileResource.TYPE_NAME };
+		} else {
+			allowed = new String[]{ ImsQTI21Resource.TYPE_NAME };
+		}
 		importTestCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, allowed,
 				null, translate("import.repository"), false, false, false, true, Can.copyable);
 		listenTo(importTestCtrl);

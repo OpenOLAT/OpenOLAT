@@ -46,6 +46,7 @@ import org.olat.core.id.Persistable;
 @Table(name="o_cal_import_to")
 @NamedQueries({
 	@NamedQuery(name="importedToCalendarByIdTypeAndUrl", query="select cal from importedtocal cal where cal.toCalendarId=:toCalendarId and cal.toType=:toType and cal.url=:url"),
+	@NamedQuery(name="importedToCalendarByIdAndType", query="select cal from importedtocal cal where cal.toCalendarId=:toCalendarId and cal.toType=:toType"),
 	@NamedQuery(name="importedToCalendars", query="select cal from importedtocal cal")
 })
 public class ImportedToCalendar implements ModifiedInfo, Persistable {

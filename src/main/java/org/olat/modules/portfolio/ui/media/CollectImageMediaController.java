@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -147,7 +148,6 @@ public class CollectImageMediaController extends FormBasicController implements 
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		fileEl.setMaxUploadSizeKB(10000, null, null);
 		fileEl.setPreview(ureq.getUserSession(), true);
-		fileEl.setDeleteEnabled(true);
 		if(mediaReference != null) {
 			fileEl.setEnabled(false);
 			VFSItem item = fileHandler.getImage(mediaReference);
@@ -190,8 +190,25 @@ public class CollectImageMediaController extends FormBasicController implements 
 			fileEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
+		
+		titleEl.clearError();
+		if (titleEl.isEmpty()) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 
 		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(fileEl == source) {
+			if (this.titleEl.isEmpty()) {
+				this.titleEl.setValue(fileEl.getUploadFileName());
+				this.titleEl.getComponent().setDirty(true);
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

@@ -78,6 +78,34 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_assignment_date", nullable=true, insertable=true, updatable=true)
 	private Date assignmentDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_submission_date", nullable=true, insertable=true, updatable=true)
+	private Date submissionDate;
+	@Column(name="g_submission_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer submissionNumOfDocs;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_submission_revisions_date", nullable=true, insertable=true, updatable=true)
+	private Date submissionRevisionsDate;
+	@Column(name="g_submission_revisions_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer submissionRevisionsNumOfDocs;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_collection_date", nullable=true, insertable=true, updatable=true)
+	private Date collectionDate;
+	@Column(name="g_collection_ndocs", nullable=true, insertable=true, updatable=true)
+	private Integer collectionNumOfDocs;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_assignment_due_date", nullable=true, insertable=true, updatable=false)
+	private Date assignmentDueDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_submission_due_date", nullable=true, insertable=true, updatable=false)
+	private Date submissionDueDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_revisions_due_date", nullable=true, insertable=true, updatable=false)
+	private Date revisionsDueDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="g_solution_due_date", nullable=true, insertable=true, updatable=false)
+	private Date solutionDueDate;
 	
 	@Column(name="g_status", nullable=false, insertable=false, updatable=false)
 	private String status;
@@ -172,6 +200,96 @@ public class TaskLightImpl implements TaskLight, CreateInfo, Persistable, Modifi
 
 	public void setAssignmentDate(Date assignmentDate) {
 		this.assignmentDate = assignmentDate;
+	}
+	
+	@Override
+	public Date getSubmissionDate() {
+		return submissionDate;
+	}
+
+	public void setSubmissionDate(Date submissionDate) {
+		this.submissionDate = submissionDate;
+	}
+	
+	@Override
+	public Integer getSubmissionNumOfDocs() {
+		return submissionNumOfDocs;
+	}
+
+	public void setSubmissionNumOfDocs(Integer submissionNumOfDocs) {
+		this.submissionNumOfDocs = submissionNumOfDocs;
+	}
+
+	@Override
+	public Date getSubmissionRevisionsDate() {
+		return submissionRevisionsDate;
+	}
+
+	public void setSubmissionRevisionsDate(Date submissionRevisionsDate) {
+		this.submissionRevisionsDate = submissionRevisionsDate;
+	}
+	
+	@Override
+	public Integer getSubmissionRevisionsNumOfDocs() {
+		return submissionRevisionsNumOfDocs;
+	}
+
+	public void setSubmissionRevisionsNumOfDocs(Integer submissionRevisionsNumOfDocs) {
+		this.submissionRevisionsNumOfDocs = submissionRevisionsNumOfDocs;
+	}
+
+	@Override
+	public Date getCollectionDate() {
+		return collectionDate;
+	}
+
+	public void setCollectionDate(Date collectionDate) {
+		this.collectionDate = collectionDate;
+	}
+	
+	@Override
+	public Integer getCollectionNumOfDocs() {
+		return collectionNumOfDocs;
+	}
+
+	public void setCollectionNumOfDocs(Integer collectionNumOfDocs) {
+		this.collectionNumOfDocs = collectionNumOfDocs;
+	}
+
+	@Override
+	public Date getAssignmentDueDate() {
+		return assignmentDueDate;
+	}
+
+	public void setAssignmentDueDate(Date assignmentDueDate) {
+		this.assignmentDueDate = assignmentDueDate;
+	}
+
+	@Override
+	public Date getSubmissionDueDate() {
+		return submissionDueDate;
+	}
+
+	public void setSubmissionDueDate(Date submissionDueDate) {
+		this.submissionDueDate = submissionDueDate;
+	}
+
+	@Override
+	public Date getRevisionsDueDate() {
+		return revisionsDueDate;
+	}
+
+	public void setRevisionsDueDate(Date revisionsDueDate) {
+		this.revisionsDueDate = revisionsDueDate;
+	}
+
+	@Override
+	public Date getSolutionDueDate() {
+		return solutionDueDate;
+	}
+
+	public void setSolutionDueDate(Date solutionDueDate) {
+		this.solutionDueDate = solutionDueDate;
 	}
 
 	@Override

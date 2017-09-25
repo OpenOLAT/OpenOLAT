@@ -32,6 +32,7 @@ import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
@@ -54,7 +55,7 @@ public class TextInputHandler implements PageElementHandler, SimpleAddPageElemen
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
 		if(element instanceof TextInput) {
 			Controller ctrl = new TextInputController(ureq, wControl, (TextInput)element);
 			return new PageRunControllerElement(ctrl);

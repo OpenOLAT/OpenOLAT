@@ -27,7 +27,7 @@ import java.util.Date;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface TaskLight {
+public interface TaskLight extends TaskRef {
 	
 	public Long getKey();
 	
@@ -46,6 +46,18 @@ public interface TaskLight {
 	public String getTaskName();
 	
 	public Date getAssignmentDate();
+	
+	public Date getSubmissionDate();
+	
+	public Integer getSubmissionNumOfDocs();
+	
+	public Date getSubmissionRevisionsDate();
+	
+	public Integer getSubmissionRevisionsNumOfDocs();
+	
+	public Date getCollectionDate();
+	
+	public Integer getCollectionNumOfDocs();
 	
 	public Long getIdentityKey();
 	

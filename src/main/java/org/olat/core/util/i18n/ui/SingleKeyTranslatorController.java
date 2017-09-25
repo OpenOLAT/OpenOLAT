@@ -40,6 +40,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -61,7 +62,10 @@ public class SingleKeyTranslatorController extends FormBasicController {
 	private static final String LBL_NAME_PREFIX = "lbl.";
 	private Map<String, TextElement> textElements;
 
+	@Autowired
 	private I18nManager i18nMng;
+	@Autowired
+	private I18nModule i18nModule;
 
 	public SingleKeyTranslatorController(UserRequest ureq, WindowControl wControl, String keyToTranslate, Class<?> translatorBaseClass) {
 		this(ureq,wControl,new String[]{keyToTranslate},translatorBaseClass);
@@ -94,12 +98,9 @@ public class SingleKeyTranslatorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// load 18n-stuff
-		i18nMng = I18nManager.getInstance();
+		Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
 
-		Map<Locale, Locale> allOverlays = I18nModule.getOverlayLocales();
-
-		Collection<String> enabledKeys = I18nModule.getEnabledLanguageKeys();
+		Collection<String> enabledKeys = i18nModule.getEnabledLanguageKeys();
 		bundles = new ArrayList<I18nRowBundle>();
 		for (String key : enabledKeys) {
 			Locale loc = i18nMng.getLocaleOrNull(key);

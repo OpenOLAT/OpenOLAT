@@ -286,7 +286,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			}
 
 			// 6) attribute switch
-			if (shibbolethModule.isEnableShibbolethLogins()) {
+			if (shibbolethModule.isEnableShibbolethCourseEasyConfig()) {
 				if (attributeSwitch.getSelectedKeys().size() == 1) {
 					List<ExtendedCondition> le = attribteRowAdderSubform.getAttributeConditions();
 		
@@ -558,7 +558,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			}
 		}
 		
-		if (shibbolethModule.isEnableShibbolethLogins()) {
+		if (shibbolethModule.isEnableShibbolethCourseEasyConfig()) {
 			retVal=validateAttibuteFields()&&retVal;	
 		}
 		//
@@ -725,10 +725,10 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		addEasyGroupAreaChoosers(formLayout);
 		addAssessmentSwitch(formLayout);
 		//
-		if(shibbolethModule.isEnableShibbolethLogins()){
+		if(shibbolethModule.isEnableShibbolethCourseEasyConfig()) {
 			addAttributeSwitch(formLayout, ureq);
 		}
-		flc.contextPut("shibbolethEnabled", new Boolean(shibbolethModule.isEnableShibbolethLogins()));
+		flc.contextPut("shibbolethEnabled", new Boolean(shibbolethModule.isEnableShibbolethCourseEasyConfig()));
 		addAssessmentMode(formLayout);
 		addApplyRulesForTutorsToo(formLayout);
 		
@@ -837,7 +837,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		
 		final Set<FormItem> dependenciesAttributeSwitch = new HashSet<FormItem>();
 		// only add when initialized. is null when shibboleth module is not enabled
-		if (shibbolethModule.isEnableShibbolethLogins()) {
+		if (shibbolethModule.isEnableShibbolethCourseEasyConfig()) {
 			dependenciesAttributeSwitch.add(attributeBconnector);
 		}
 		
@@ -879,7 +879,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			}
 		});
 		
-		if (shibbolethModule.isEnableShibbolethLogins()) {
+		if (shibbolethModule.isEnableShibbolethCourseEasyConfig()) {
 			FormItemDependencyRule hideClearAttibuteSwitchDeps = RulesFactory.createCustomRule(attributeSwitch, null, dependenciesAttributeSwitch, formLayout);
 			
 			hideClearAttibuteSwitchDeps.setDependencyRuleApplayable(new DependencyRuleApplayable() {
@@ -922,7 +922,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				groupSwitch.clearError();
 				groupSubContainer.setVisible(false);			
 				
-				if (shibbolethModule.isEnableShibbolethLogins()) {
+				if (shibbolethModule.isEnableShibbolethCourseEasyConfig()) {
 					attributeSwitch.clearError();
 				}
 				easyGroupList.setFocus(false);
@@ -1056,7 +1056,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		switchesOnly.add(groupSwitch);
 		switchesOnly.add(assessmentSwitch);
 		switchesOnly.add(applyRulesForCoach);
-		if (shibbolethModule.isEnableShibbolethLogins()) {
+		if (shibbolethModule.isEnableShibbolethCourseEasyConfig()) {
 			switchesOnly.add(attributeSwitch);
 		}
 
@@ -1071,7 +1071,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				assessmentMode.setEnabled(true);
 								
 				//default is a checked disabled apply rules for coach
-				if (shibbolethModule.isEnableShibbolethLogins()) {
+				if (shibbolethModule.isEnableShibbolethCourseEasyConfig()) {
 					attributeSwitch.setEnabled(true);
 				}
 				if(!firedDuringInit){

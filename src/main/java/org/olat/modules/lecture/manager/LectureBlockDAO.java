@@ -85,16 +85,6 @@ public class LectureBlockDAO {
 		return block;
 	}
 	
-	public boolean appendLog(LectureBlockRef block, String log) {
-		String update = "update lectureblocklog blocklog set blocklog.log=case when blocklog.log is null then :newLog else concat(blocklog.log,'\n',:newLog) end where blocklog.key=:blockKey";
-		int rows = dbInstance.getCurrentEntityManager()
-			.createQuery(update)
-			.setParameter("blockKey", block.getKey())
-			.setParameter("newLog", log)
-			.executeUpdate();
-		return rows > 0;
-	}
-	
 	public LectureBlock loadByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select block from lectureblock block")
@@ -146,11 +136,35 @@ public class LectureBlockDAO {
 		return rows;
 	}
 	
+	public List<LectureBlock> getLectureBlocks() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select block from lectureblock block")
+		  .append(" inner join fetch block.entry entry");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlock.class)
+				.getResultList();
+	}
+	
 	public List<LectureBlock> getLectureBlocks(RepositoryEntryRef entry) {
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("lectureBlocksByRepositoryEntry", LectureBlock.class)
 				.setParameter("repoEntryKey", entry.getKey())
 				.getResultList();
+	}
+	
+	public List<LectureBlock> searchLectureBlocks(LecturesBlockSearchParameters searchParams) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select block from lectureblock block")
+		  .append(" inner join block.teacherGroup tGroup")
+		  .append(" inner join tGroup.members membership")
+		  .append(" inner join fetch block.entry entry");
+		boolean where = false;
+		where = addSearchParametersToQuery(sb, where, searchParams);
+		
+		TypedQuery<LectureBlock> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlock.class);
+		addSearchParametersToQuery(query, searchParams);
+		return query.getResultList();
 	}
 	
 	public List<LectureBlock> loadByTeacher(IdentityRef identityRef, LecturesBlockSearchParameters searchParams) {
@@ -160,7 +174,7 @@ public class LectureBlockDAO {
 		  .append(" inner join tGroup.members membership")
 		  .append(" inner join fetch block.entry entry")
 		  .append(" where membership.identity.key=:teacherKey");
-		addSearchParametersToQuery(sb, searchParams);
+		addSearchParametersToQuery(sb, true, searchParams);
 		
 		TypedQuery<LectureBlock> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlock.class)
@@ -225,7 +239,7 @@ public class LectureBlockDAO {
 		  .append(" inner join membership.identity coach")
 		  .append(" inner join fetch coach.user usercoach")
 		  .append(" where membership.role='").append("teacher").append("' and block.entry.key=:repoEntryKey");
-		addSearchParametersToQuery(sc, searchParams);
+		addSearchParametersToQuery(sc, true, searchParams);
 		if(teacher != null) {
 			sc.append(" and exists (select teachership.key from bgroupmember teachership where")
 			  .append("  teachership.group.key=tGroup.key and teachership.identity.key=:teacherKey")
@@ -257,11 +271,12 @@ public class LectureBlockDAO {
 		return new ArrayList<>(blockMap.values());
 	}
 	
-	private void addSearchParametersToQuery(StringBuilder sb, LecturesBlockSearchParameters searchParams) {
-		if(searchParams == null) return;
+	private boolean addSearchParametersToQuery(StringBuilder sb, boolean where, LecturesBlockSearchParameters searchParams) {
+		if(searchParams == null) return where;
 		
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
-			sb.append(" and (entry.externalRef=:searchString or ");
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" (entry.externalRef=:searchString or ");
 			PersistenceHelper.appendFuzzyLike(sb, "entry.displayname", "fuzzySearchString", dbInstance.getDbVendor());
 			sb.append(" or ");
 			PersistenceHelper.appendFuzzyLike(sb, "block.title", "fuzzySearchString", dbInstance.getDbVendor());
@@ -269,11 +284,14 @@ public class LectureBlockDAO {
 		}
 		
 		if(searchParams.getStartDate() != null) {
-			sb.append(" and block.startDate>=:startDate");
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" block.startDate>=:startDate");
 		}
 		if(searchParams.getEndDate() != null) {
-			sb.append(" and block.endDate<=:endDate");
+			where = PersistenceHelper.appendAnd(sb, where);
+			sb.append(" block.endDate<=:endDate");
 		}
+		return where;
 	}
 	
 	private void addSearchParametersToQuery(TypedQuery<?> query, LecturesBlockSearchParameters searchParams) {

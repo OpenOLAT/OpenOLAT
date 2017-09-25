@@ -34,6 +34,7 @@ import java.util.Properties;
 
 import org.olat.core.id.Persistable;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 
 /**
@@ -394,5 +395,18 @@ public class PersistenceHelper {
 		if(results == null || pos >= results.length) return def;
 		Object obj = results[pos];
 		return obj == null ? null : ((Boolean)obj).booleanValue();
+	}
+	
+	public static final String convert(String content) {
+		if(StringHelper.containsNonWhitespace(content)) {
+			StringBuilder sb = new StringBuilder(content.length() + 100);
+			for(char ch : content.toCharArray()) {
+				if(ch < 55000) {
+					sb.append(ch);
+				}
+			}
+			return sb.toString();
+		}
+		return content;
 	}
 }

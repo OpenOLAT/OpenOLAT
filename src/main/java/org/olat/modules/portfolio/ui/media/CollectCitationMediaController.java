@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -111,6 +112,10 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		businessPath = media.getBusinessPath();
 		mediaReference = media;
+		
+		if(StringHelper.containsNonWhitespace(mediaReference.getMetadataXml())) {
+			citation = (CitationXml)MetadataXStream.get().fromXML(mediaReference.getMetadataXml());
+		}
 		
 		List<Category> categoryList = portfolioService.getCategories(media);
 		for(Category category:categoryList) {
@@ -282,6 +287,12 @@ public class CollectCitationMediaController extends FormBasicController implemen
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
+		
+		titleEl.clearError();
+		if (titleEl.isEmpty()) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
 
 		return allOk & super.validateFormLogic(ureq);
 	}

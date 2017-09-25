@@ -2,9 +2,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
                         http://www.springframework.org/schema/beans/spring-beans.xsd
-                        http://www.springframework.org/schema/context 
+                        http://www.springframework.org/schema/context
                         http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:component-scan base-package="org.olat.resource.accesscontrol" />
@@ -12,42 +12,29 @@
 	<!--  Extension for archiver -->
 	<bean class="org.olat.resource.accesscontrol.ui.OrdersActionExtension" init-method="initExtensionPoints">
 		<constructor-arg index="0" ref="acModule" />
-		<property name="actionController">	
+		<property name="actionController">
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.resource.accesscontrol.ui.OrdersAdminController"/>
 			</bean>
 		</property>
-		
+
 		<property name="i18nActionKey" value="order.menu.title.alt"/>
 		<property name="i18nDescriptionKey" value="order.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.resource.accesscontrol.ui"/>
 		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.course.archiver.ArchiverMainController</value>		
+			<list>
+				<value>org.olat.course.archiver.ArchiverMainController</value>
 			</list>
 		</property>
 		<property name="order" value="267" />
 	</bean>
-	
+
 	<!--  The "orders"  (Buchungen) in Home -->
-		<bean class="org.olat.instantMessaging.InstantMessagingUserToolExtension" init-method="initExtensionPoints">
-		<property name="order" value="118" />
-		<property name="navigationKey" value="imclient" />
-		<property name="translationPackage" value="org.olat.instantMessaging.ui" />
-		<property name="i18nActionKey" value="im.chat"/>
-		<property name="i18nDescriptionKey" value="im.chat"/>
-		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.home.HomeMainController</value>
-			</list>
-		</property>
-	</bean>
-	
 	<bean class="org.olat.resource.accesscontrol.ui.HomeOrdersActionExtension" name="accesscontrol.actExt" init-method="initExtensionPoints">
 		<constructor-arg index="0" ref="acModule" />
 		<property name="order" value="109" />
 		<property name="enabled" value="${minimalhome.ext.bookings}"></property>
-		<property name="actionController">	
+		<property name="actionController">
 			<bean class=" org.olat.core.gui.control.creator.FactoryControllerCreator" scope="prototype">
 				<property name="factoryName" value="org.olat.resource.accesscontrol.ACUIFactory"/>
 				<property name="factoryMethod" value="createOrdersController"/>
@@ -60,61 +47,61 @@
 		<property name="i18nActionKey" value="menu.orders"/>
 		<property name="i18nDescriptionKey" value="menu.orders.alt"/>
 		<property name="extensionPoints">
-			<list>	
+			<list>
 				<value>org.olat.home.HomeMainController</value>
 			</list>
 		</property>
 	</bean>
-	
+
 	<!-- Access control administration -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.access" init-method="initExtensionPoints">
-		<property name="actionController">	
+		<property name="actionController">
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.resource.accesscontrol.ui.AccessControlAdminController"/>
 			</bean>
 		</property>
 		<property name="navigationKey" value="accesscontrol" />
-		<property name="parentTreeNodeIdentifier" value="sysconfigParent" /> 
+		<property name="parentTreeNodeIdentifier" value="sysconfigParent" />
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.resource.accesscontrol.ui"/>
 		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
+			<list>
+				<value>org.olat.admin.SystemAdminMainController</value>
 			</list>
 		</property>
 		<property name="order" value="7220" />
 	</bean>
-	
-	<bean id="acReservationCleanupJob" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+
+	<bean id="acReservationCleanupJob" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
     	<property name="jobDetail" ref="acReservationCleanupJobDetail"/>
     	<!-- 60 seconds -->
   		<property name="repeatInterval" value="60000"/>
     	<property name="startDelay" value="30000" />
 	</bean>
-	
-	<bean id="acReservationCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+
+	<bean id="acReservationCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 		<property name="jobClass" value="org.olat.resource.accesscontrol.manager.ReservationsJob" />
 	</bean>
-	
+
 	<bean id="freeAccessHandler" class="org.olat.resource.accesscontrol.provider.free.FreeAccessHandler"/>
 	<bean id="tokenAccessHandler" class="org.olat.resource.accesscontrol.provider.token.TokenAccessHandler"/>
-	
+
 	<!--  Orders admin panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-		<property name="actionController">	
+		<property name="actionController">
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
 				<property name="className" value="org.olat.resource.accesscontrol.ui.OrdersAdminController"/>
 			</bean>
 		</property>
 		<property name="navigationKey" value="booking" />
-		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="parentTreeNodeIdentifier" value="modulesParent" />
 		<property name="i18nActionKey" value="order.menu.title"/>
 		<property name="i18nDescriptionKey" value="order.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.resource.accesscontrol.ui"/>
 		<property name="extensionPoints">
-			<list>	
-				<value>org.olat.admin.SystemAdminMainController</value>		
+			<list>
+				<value>org.olat.admin.SystemAdminMainController</value>
 			</list>
 		</property>
 		<property name="order" value="7600" />

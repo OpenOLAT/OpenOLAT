@@ -35,16 +35,11 @@ import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
-import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.event.FrameworkStartedEvent;
-import org.olat.core.util.event.FrameworkStartupEventChannel;
-import org.olat.core.util.event.GenericEventListener;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -60,49 +55,50 @@ import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.olat.resource.accesscontrol.model.OfferAccessImpl;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
+import org.olat.shibboleth.manager.ShibbolethAutoAccessMethod;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 
+ *
  * Description:<br>
  * This class manages the methods available to access the resource.
  * As standard "static" (static as singleton), there is Token  and Free
  * based access.
- * 
+ *
  * <P>
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
-public class ACMethodDAO implements GenericEventListener {
-	
+public class ACMethodDAO implements InitializingBean {
+
 	private static final OLog log = Tracing.createLoggerFor(ACMethodDAO.class);
 
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private AccessControlModule acModule;
-	
-	@Autowired
-	public ACMethodDAO(CoordinatorManager coordinatorManager) {
-		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, FrameworkStartupEventChannel.getStartupEventChannel());
-	}
 
 	@Override
-	public void event(Event event) {
-		if (event instanceof FrameworkStartedEvent && ((FrameworkStartedEvent) event).isEventOnThisNode()) {
-			enableMethod(TokenAccessMethod.class, acModule.isTokenEnabled());
-			enableMethod(FreeAccessMethod.class, acModule.isFreeEnabled());
-			enableMethod(PaypalAccessMethod.class, acModule.isPaypalEnabled());
-			dbInstance.commitAndCloseSession();
-		}
+	public void afterPropertiesSet() throws Exception {
+		enableMethod(TokenAccessMethod.class, acModule.isTokenEnabled());
+		enableMethod(FreeAccessMethod.class, acModule.isFreeEnabled());
+		enableMethod(PaypalAccessMethod.class, acModule.isPaypalEnabled());
+		enableAutoMethods(acModule.isAutoEnabled());
+		dbInstance.commitAndCloseSession();
+	}
+
+
+	public void enableAutoMethods(boolean autoEnabled) {
+		enableMethod(ShibbolethAutoAccessMethod.class, autoEnabled);
 	}
 
 	public void enableMethod(Class<? extends AccessMethod> type, boolean enable) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(type.getName()).append(" method");
-		
+
 		List<AccessMethod> methods = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AccessMethod.class)
 				.getResultList();
@@ -131,7 +127,7 @@ public class ACMethodDAO implements GenericEventListener {
 
 	public boolean isValidMethodAvailable(OLATResource resource, Date atDate) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(access.method) from acofferaccess access ")
+		sb.append("select access.method from acofferaccess access ")
 			.append(" inner join access.offer offer")
 			.append(" inner join offer.resource oResource")
 			.append(" where access.valid=true")
@@ -142,16 +138,22 @@ public class ACMethodDAO implements GenericEventListener {
 			  .append(" and (offer.validTo is null or offer.validTo>=:atDate)");
 		}
 
-		TypedQuery<Number> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Number.class);
+		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
 		query.setParameter("resourceKey", resource.getKey());
 		if(atDate != null) {
 			query.setParameter("atDate", atDate, TemporalType.TIMESTAMP);
 		}
 
-		Number methods = query.getSingleResult();
-		return methods.intValue() > 0;
+		List<AccessMethod> methods = query.getResultList();
+		List<AccessMethod> guiMethods = new ArrayList<>();
+		for (AccessMethod method: methods) {
+			if (method.isVisibleInGui()) {
+				guiMethods.add(method);
+			}
+		}
+		return !guiMethods.isEmpty();
 	}
-	
+
 	public List<AccessMethod> getAllMethods() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName()).append(" method");
@@ -164,12 +166,12 @@ public class ACMethodDAO implements GenericEventListener {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName()).append(" method")
 			.append(" where method.valid=true and method.enabled=true");
-		
+
 		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
 		if(identity != null) {
 			//query.setLong("identityKey", identity.getKey());
 		}
-	
+
 		List<AccessMethod> methods = query.getResultList();
 		List<AccessMethod> allowedMethods = new ArrayList<AccessMethod>();
 		for(AccessMethod method:methods) {
@@ -187,7 +189,7 @@ public class ACMethodDAO implements GenericEventListener {
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName()).append(" method")
 			.append(" where method.valid=true")
 			.append(" and method.class=").append(type.getName());
-		
+
 		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
 		List<AccessMethod> methods = query.getResultList();
 		return methods;
@@ -207,7 +209,28 @@ public class ACMethodDAO implements GenericEventListener {
 				.setParameter("offerKey", offer.getKey())
 				.getResultList();
 	}
-	
+
+	public List<OfferAccess> getValidOfferAccess(OLATResource resource, AccessMethod method) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select access from acofferaccess access")
+		  .append(" inner join fetch access.offer offer")
+		  .append(" inner join fetch access.method method")
+		  .append(" inner join fetch offer.resource resource")
+		  .append(" where resource.key=:resourceKey")
+		  .append(" and access.valid=true");
+		if(method != null) {
+			sb.append(" and access.method=:method");
+		}
+
+		TypedQuery<OfferAccess> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), OfferAccess.class);
+		query.setParameter("resourceKey", resource.getKey());
+		if(method != null) {
+			query.setParameter("method", method);
+		}
+		return query.getResultList();
+	}
+
 	public List<OfferAccess> getOfferAccess(Collection<Offer> offers, boolean valid) {
 		if(offers == null || offers.isEmpty()) return Collections.emptyList();
 
@@ -218,7 +241,7 @@ public class ACMethodDAO implements GenericEventListener {
 		  .append(" inner join fetch offer.resource resource")
 		  .append(" where offer.key in (:offersKey)")
 		  .append(" and access.valid=:valid");
-		
+
 		List<Long> offersKey = PersistenceHelper.toKeys(offers);
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), OfferAccess.class)
@@ -226,12 +249,12 @@ public class ACMethodDAO implements GenericEventListener {
 				.setParameter("valid", valid)
 				.getResultList();
 	}
-	
+
 	public List<OLATResourceAccess> getAccessMethodForResources(Collection<Long> resourceKeys,
 			String resourceType, String excludedResourceType, boolean valid, Date atDate) {
 
 		final int maxResourcesEntries = 250;//quicker to filter in java, numerous keys in "in" are slow
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select access.method, resource, offer.price from acofferaccess access, ")
 			.append(OLATResourceImpl.class.getName()).append(" resource")
@@ -251,7 +274,7 @@ public class ACMethodDAO implements GenericEventListener {
 		if(StringHelper.containsNonWhitespace(excludedResourceType)) {
 			sb.append(" and not(oResource.resName=:excludedResourceType)");
 		}
-			
+
 		if(atDate != null) {
 			sb.append(" and (offer.validFrom is null or offer.validFrom<=:atDate)")
 				.append(" and (offer.validTo is null or offer.validTo>=:atDate)");
@@ -276,7 +299,7 @@ public class ACMethodDAO implements GenericEventListener {
 		if(StringHelper.containsNonWhitespace(excludedResourceType)) {
 			query.setParameter("excludedResourceType", excludedResourceType);
 		}
-		
+
 		List<Object[]> rawResults = query.getResultList();
 		Map<Long,OLATResourceAccess> rawResultsMap = new HashMap<Long,OLATResourceAccess>();
 		for(Object[] rawResult:rawResults) {
@@ -285,7 +308,10 @@ public class ACMethodDAO implements GenericEventListener {
 			if(resourceKeysSet != null && !resourceKeysSet.contains(resource.getKey())) {
 				continue;
 			}
-			
+			if(!method.isVisibleInGui()) {
+				continue;
+			}
+
 			Price price = (Price)rawResult[2];
 			if(rawResultsMap.containsKey(resource.getKey())) {
 				rawResultsMap.get(resource.getKey()).addBundle(price, method);
@@ -293,7 +319,7 @@ public class ACMethodDAO implements GenericEventListener {
 				rawResultsMap.put(resource.getKey(), new OLATResourceAccess(resource, price, method));
 			}
 		}
-		
+
 		return new ArrayList<OLATResourceAccess>(rawResultsMap.values());
 	}
 
@@ -305,7 +331,7 @@ public class ACMethodDAO implements GenericEventListener {
 		access.setValid(true);
 		return access;
 	}
-	
+
 	public OfferAccess save(OfferAccess link) {
 		if(link.getKey() == null) {
 			dbInstance.getCurrentEntityManager().persist(link);
@@ -314,22 +340,22 @@ public class ACMethodDAO implements GenericEventListener {
 		}
 		return link;
 	}
-	
+
 	public void delete(OfferAccess link) {
 		OfferAccessImpl access = (OfferAccessImpl)link;
 		access.setValid(false);
-	
+
 		if(link.getKey() == null) return;
 		dbInstance.updateObject(access);
 	}
-	
+
 	/**
 	 * Activate the token method if not already configured.
 	 */
 	protected void activateTokenMethod(boolean enable) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from actokenmethod method");
-		
+
 		List<AccessMethod> methods = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AccessMethod.class)
 				.getResultList();
@@ -348,12 +374,12 @@ public class ACMethodDAO implements GenericEventListener {
 			}
 		}
 	}
-	
+
 	protected void activateFreeMethod(boolean enable) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select method from ").append(AbstractAccessMethod.class.getName())
 			.append(" method where method.class=").append(FreeAccessMethod.class.getName());
-		
+
 		TypedQuery<AccessMethod> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), AccessMethod.class);
 		List<AccessMethod> methods = query.getResultList();
 		if(methods.isEmpty() && enable) {
@@ -371,4 +397,6 @@ public class ACMethodDAO implements GenericEventListener {
 			}
 		}
 	}
+
+
 }

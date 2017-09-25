@@ -242,6 +242,10 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.passed, new PassedCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.numOfAssessmentDocs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.status, new AssessmentStatusCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.lastModified));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.lastUserModified));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.lastCoachModified));
+		
 		if(nodesSelectable) {
 			DefaultFlexiColumnModel selectCol = new DefaultFlexiColumnModel("select", NodeCols.select.ordinal(), CMD_SELECT_NODE,
 					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("select"), CMD_SELECT_NODE), null));
@@ -278,7 +282,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		List<AssessmentNodeData> nodesTableList;
 		if (loadNodesFromCourse) {
 			// get list of course node and user data and populate table data model 	
-			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, followUserResultsVisibility, discardEmptyNodes, true);
+			nodesTableList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnvironment, null, followUserResultsVisibility, discardEmptyNodes, true);
 		} else {
 			// use list from efficiency statement 
 			nodesTableList = preloadedNodesList;

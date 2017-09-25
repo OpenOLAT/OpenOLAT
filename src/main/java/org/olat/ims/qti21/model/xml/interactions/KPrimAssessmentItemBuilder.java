@@ -111,6 +111,10 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 		//the single choice interaction
 		ItemBody itemBody = appendDefaultItemBody(assessmentItem);
 		MatchInteraction matchInteraction = appendMatchInteractionForKPrim(itemBody, responseDeclarationId, defaultAnswer);
+		List<String> cssClasses = new ArrayList<>();
+		cssClasses.add(QTI21Constants.CSS_MATCH_KPRIM);
+		matchInteraction.setClassAttr(cssClasses);
+		
 		SimpleMatchSet matchSet = matchInteraction.getSimpleMatchSets().get(0);
 		Map<Identifier,Identifier> associations = new HashMap<>();
 		for(SimpleAssociableChoice choice:matchSet.getSimpleAssociableChoices()) {
@@ -271,14 +275,16 @@ public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 
 		//add question
 		getHtmlHelper().appendHtml(assessmentItem.getItemBody(), question);
+		
+		if(cssClass == null) {
+			cssClass = new ArrayList<>();
+		}
+		if(!cssClass.contains(QTI21Constants.CSS_MATCH_KPRIM)) {
+			cssClass.add(QTI21Constants.CSS_MATCH_KPRIM);
+		}
 
 		matchInteraction.setShuffle(isShuffle());
-		if(cssClass == null || cssClass.isEmpty()) {
-			matchInteraction.setClassAttr(null);
-		} else {
-			matchInteraction.setClassAttr(cssClass);
-		}
-		
+		matchInteraction.setClassAttr(cssClass);
 		blocks.add(matchInteraction);
 	}
 

@@ -318,7 +318,7 @@ public class AssessmentTestBuilder {
 				assessmentTest.getOutcomeProcessing().getOutcomeRules().add(cutValueRule);
 			}
 		} else if(cutValueRule != null) {
-			assessmentTest.getOutcomeDeclarations().remove(cutValueRule);
+			assessmentTest.getOutcomeProcessing().getOutcomeRules().remove(cutValueRule);
 		}
 	}
 	

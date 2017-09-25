@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -44,12 +45,14 @@ public class PageController extends BasicController {
 	private int counter;
 	private final PageProvider provider;
 	private final VelocityContainer mainVC;
+	private final PageElementRenderingHints renderingHints;
 	
 	private Map<String,PageElementHandler> handlerMap = new HashMap<>();
 	
-	public PageController(UserRequest ureq, WindowControl wControl, PageProvider provider) {
+	public PageController(UserRequest ureq, WindowControl wControl, PageProvider provider, PageElementRenderingHints renderingHints) {
 		super(ureq, wControl);
 		this.provider = provider;
+		this.renderingHints = renderingHints;
 		
 		for(PageElementHandler handler:provider.getAvailableHandlers()) {
 			handlerMap.put(handler.getType(), handler);
@@ -84,9 +87,9 @@ public class PageController extends BasicController {
 		for(PageElement element:elements) {
 			PageElementHandler handler = handlerMap.get(element.getType());
 			if(handler != null) {
-				PageRunElement runElement = handler.getContent(ureq, getWindowControl(), element);
+				PageRunElement runElement = handler.getContent(ureq, getWindowControl(), element, renderingHints);
 				String cmpId = "cpt-" + (++counter);
-				newFragments.add(new PageFragment(cmpId, runElement));
+				newFragments.add(new PageFragment(handler.getType(), cmpId, runElement));
 				mainVC.put(cmpId, runElement.getComponent());
 			}
 		}
@@ -95,13 +98,19 @@ public class PageController extends BasicController {
 	}
 	
 	public static final class PageFragment {
-		
+
+		private final String type;
 		private final String componentName;
 		private final PageRunElement runElement;
 		
-		public PageFragment(String componentName, PageRunElement runElement) {
+		public PageFragment(String type, String componentName, PageRunElement runElement) {
+			this.type = type;
 			this.componentName = componentName;
 			this.runElement = runElement;
+		}
+		
+		public String getCssClass() {
+			return "o_ed_".concat(type);
 		}
 		
 		public String getComponentName() {

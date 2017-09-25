@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -76,8 +77,6 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 
 	public void setEffectiveLecturesNumber(int effectiveLecturesNumber);
 
-	public String getLog();
-
 	public Date getStartDate();
 
 	public void setStartDate(Date startDate);
@@ -109,6 +108,8 @@ public interface LectureBlock extends LectureBlockRef, ModifiedInfo, CreateInfo,
 	 * @param rollCallStatus Cannot be null
 	 */
 	public void setRollCallStatus(LectureRollCallStatus rollCallStatus);
+	
+	public Date getAutoClosedDate();
 
 	public RepositoryEntry getEntry();
 

@@ -103,12 +103,13 @@ public class HomeMainController extends MainLayoutBasicController implements Act
 				if (entries.size() >= 1) {
 					entries = entries.subList(1, entries.size());
 				}
+
+				String actionText = gAE.getActionText(getLocale());
+				stackPanel.rootController(actionText, contentCtr);
+				
 				if (currentCtr instanceof Activateable2) {
 					((Activateable2) currentCtr).activate(ureq, entries, entry.getTransientState());
 				}
-				
-				String actionText = gAE.getActionText(getLocale());
-				stackPanel.rootController(actionText, contentCtr);
 			}
 		}
 	}

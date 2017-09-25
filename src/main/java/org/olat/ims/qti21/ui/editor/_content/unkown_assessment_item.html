@@ -1,0 +1,19 @@
+<div class="o_warning">
+	$off_warn
+	#if($r.available("convert.alien"))
+		<div class="o_button_group">
+			$r.render("convert.alien")
+		</div>
+	#end
+</div>
+<div id="o_qti_run">
+	<div class="qtiworks o_assessmentitem">
+		<div class="o_assessmentitem_wrapper">
+			<h4 class="itemTitle">$title</h4>
+			<div id="itemBody" class="clearfix">
+				$r.render($responseId)
+			</div>
+			<div class="o_button_group o_assessmentitem_controls"></div>
+		</div>
+	</div>
+</div>

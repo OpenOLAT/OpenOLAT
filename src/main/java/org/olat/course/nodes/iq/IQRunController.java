@@ -92,6 +92,7 @@ import org.olat.ims.qti.process.ImsRepositoryResolver;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.iq.IQDisplayController;
 import org.olat.modules.iq.IQManager;
@@ -483,7 +484,16 @@ public class IQRunController extends BasicController implements GenericEventList
 				Document doc = iqManager.getResultsReportingFromFile(ureq.getIdentity(), type, assessmentID);
 				//StringBuilder resultsHTML = LocalizedXSLTransformer.getInstance(ureq.getLocale()).renderResults(doc);
 				String summaryConfig = (String)modConfig.get(IQEditController.CONFIG_KEY_SUMMARY);
-				int summaryType = AssessmentInstance.getSummaryType(summaryConfig);
+				int summaryType = AssessmentInstance.SUMMARY_NONE;
+				try {
+					summaryType = AssessmentInstance.getSummaryType(summaryConfig);
+				} catch (Exception e) {
+					// cannot change AssessmentInstance: fallback if the the configuration is inherited from a QTI 2.1 configuration
+					if(StringHelper.containsNonWhitespace(summaryConfig)) {
+						summaryType = AssessmentInstance.SUMMARY_DETAILED;
+					}
+					logError("", e);
+				}
 				String resultsHTML = iqManager.transformResultsReporting(doc, ureq.getLocale(), summaryType);
 				myContent.contextPut("displayreporting", resultsHTML);
 				myContent.contextPut("resreporting", resultsHTML);
@@ -518,7 +528,7 @@ public class IQRunController extends BasicController implements GenericEventList
 			
 			ScoreEvaluation sceval = new ScoreEvaluation(ac.getScore(), ac.isPassed(), assessmentStatus, userVisibility, fullyAssed, ai.getAssessID());
 			AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assessable		
-			acn.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true);
+			acn.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true, Role.user);
 				
 			// Mark publisher for notifications
 			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
@@ -534,10 +544,10 @@ public class IQRunController extends BasicController implements GenericEventList
 			// although this is not an assessable node we still use the assessment
 			// manager since this one uses caching
 			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-			am.incrementNodeAttempts(courseNode, getIdentity(), userCourseEnv);
+			am.incrementNodeAttempts(courseNode, getIdentity(), userCourseEnv, Role.user);
 		} else if(type.equals(AssessmentInstance.QMD_ENTRY_TYPE_SELF)){
 			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-			am.incrementNodeAttempts(courseNode, getIdentity(), userCourseEnv);
+			am.incrementNodeAttempts(courseNode, getIdentity(), userCourseEnv, Role.user);
 		}
 	}
 

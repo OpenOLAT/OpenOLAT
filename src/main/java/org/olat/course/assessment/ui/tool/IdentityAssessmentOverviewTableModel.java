@@ -109,6 +109,9 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 				return nodeData.getNumOfAssessmentDocs();
 			}
 			case select: return nodeData.isSelectable();
+			case lastModified: return nodeData.getLastModified();
+			case lastUserModified: return nodeData.getLastUserModified();
+			case lastCoachModified: return nodeData.getLastCoachModified();
 			default: return "ERROR";
 		}
 	}
@@ -136,7 +139,10 @@ public class IdentityAssessmentOverviewTableModel extends DefaultFlexiTableDataM
 		status("table.header.status", true),
 		passed("table.header.passed", true),
 		select("table.action.select", false),
-		numOfAssessmentDocs("table.header.num.assessmentDocs", true);
+		numOfAssessmentDocs("table.header.num.assessmentDocs", true),
+		lastModified("table.header.lastScoreDate", true),
+		lastUserModified("table.header.lastUserModificationDate", true),
+		lastCoachModified("table.header.lastCoachModificationDate", true);
 		
 		private final String i18nKey;
 		private final boolean sortable;

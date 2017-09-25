@@ -30,6 +30,7 @@ import org.olat.commons.calendar.ui.events.CalendarGUIAddEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIFormEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIMoveEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIPrintEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIResizeEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -104,6 +105,7 @@ public class FullCalendarElement extends FormItemImpl {
 		String selectedEventId = getRootForm().getRequestParameter("evSelect");
 		String addEventMarker = getRootForm().getRequestParameter("evAdd");
 		String movedEventId = getRootForm().getRequestParameter("evMove");
+		String resizedEventId = getRootForm().getRequestParameter("evResize");
 		String changeViewName = getRootForm().getRequestParameter("evChangeView");
 		String print = getRootForm().getRequestParameter("print");
 		String config = getRootForm().getRequestParameter("config");
@@ -134,6 +136,10 @@ public class FullCalendarElement extends FormItemImpl {
 			String minuteDelta = getRootForm().getRequestParameter("minuteDelta");
 			String allDay = getRootForm().getRequestParameter("allDay");
 			doMove(ureq, movedEventId, dayDelta, minuteDelta, allDay);
+		} else if(StringHelper.containsNonWhitespace(resizedEventId)) {
+			String minuteDelta = getRootForm().getRequestParameter("minuteDelta");
+			String allDay = getRootForm().getRequestParameter("allDay");
+			doResize(ureq, resizedEventId, minuteDelta, allDay);
 		} else if(StringHelper.containsNonWhitespace(changeViewName)) {
 			String start = getRootForm().getRequestParameter("start");
 			doChangeView(changeViewName, start);
@@ -186,6 +192,36 @@ public class FullCalendarElement extends FormItemImpl {
 			KalendarEvent event = component.getCalendarEvent(eventId);
 			KalendarRenderWrapper calWrapper = component.getCalendarByNormalizedId(eventId);
 			getRootForm().fireFormEvent(ureq, new CalendarGUIMoveEvent(this, event, calWrapper, day, minute, allDay));
+		}
+	}
+	
+	protected void doResize(UserRequest ureq, String eventId, String minuteDelta, String allDayStr) {
+		Long minute = null;
+		if(StringHelper.isLong(minuteDelta)) {
+			minute = Long.parseLong(minuteDelta);
+		}
+		
+		Boolean allDay = null;
+		if("true".equals(allDayStr)) {
+			allDay = Boolean.TRUE;
+		} else if("false".equals(allDayStr)) {
+			allDay = Boolean.FALSE;
+		}
+		
+		if(component.isOccurenceOfCalendarEvent(eventId)) {
+			String uid = component.getCalendarEventUid(eventId);
+			KalendarRenderWrapper cal = component.getCalendarById(uid);
+			KalendarRecurEvent rEvent = getCurrenceKalendarEvent(cal, eventId);
+			getRootForm().fireFormEvent(ureq, new CalendarGUIResizeEvent(this, rEvent, cal, minute, allDay));
+		} else if(component.isReccurenceOfCalendarEvent(eventId)) {
+			String uid = component.getCalendarEventUid(eventId);
+			KalendarRenderWrapper cal = component.getCalendarById(uid);
+			KalendarRecurEvent rEvent = getCurrenceKalendarEvent(cal, eventId);
+			getRootForm().fireFormEvent(ureq, new CalendarGUIResizeEvent(this, rEvent, cal, minute, allDay));
+		} else {
+			KalendarEvent event = component.getCalendarEvent(eventId);
+			KalendarRenderWrapper calWrapper = component.getCalendarByNormalizedId(eventId);
+			getRootForm().fireFormEvent(ureq, new CalendarGUIResizeEvent(this, event, calWrapper, minute, allDay));
 		}
 	}
 	

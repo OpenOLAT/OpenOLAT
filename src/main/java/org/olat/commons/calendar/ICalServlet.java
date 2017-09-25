@@ -127,6 +127,8 @@ public class ICalServlet extends HttpServlet {
 	throws IOException {
 		String requestUrl = request.getPathInfo();
 		try {
+			//log need a session before the response is committed
+			request.getSession();
 			if (log.isDebug()) {
 				log.debug("doGet pathInfo=" + requestUrl);
 			}
@@ -274,7 +276,7 @@ public class ICalServlet extends HttpServlet {
 			out.write(CalScale.GREGORIAN.toString());
 		}
 
-		outputTTL(out);
+		outputTTL(agent, out);
 
 		Set<String> timezoneIds = new HashSet<>();
 		outputCalendarComponents(calendar, out, agent, timezoneIds);
@@ -312,7 +314,7 @@ public class ICalServlet extends HttpServlet {
 			out.write(Version.VERSION_2_0.toString());
 			out.write(CalScale.GREGORIAN.toString());
 			
-			outputTTL(out);
+			outputTTL(agent, out);
 
 			Set<String> timezoneIds = new HashSet<>();
 			int numOfFiles = iCalFiles.size();
@@ -337,6 +339,8 @@ public class ICalServlet extends HttpServlet {
 			return Agent.outlook;
 		} else if(userAgent != null && userAgent.indexOf("Google") >= 0 && userAgent.indexOf("Calendar") >= 0) {
 			return Agent.googleCalendar;
+		} else if(userAgent != null && userAgent.startsWith("Java/1.")) {
+			return Agent.java;
 		}
 		return Agent.unkown;
 	}
@@ -349,12 +353,14 @@ public class ICalServlet extends HttpServlet {
 	 * @param out
 	 * @throws IOException
 	 */
-	private void outputTTL(Writer out)
+	private void outputTTL(Agent agent, Writer out)
 	throws IOException {
 		out.write("X-PUBLISHED-TTL:PT" + TTL_HOURS + "H");
 		out.write(Strings.LINE_SEPARATOR);
-		out.write("REFRESH-INTERVAL;VALUE=DURATION:PT" + TTL_HOURS + "H");
-		out.write(Strings.LINE_SEPARATOR);
+		if(agent == null || agent != Agent.java) {
+			out.write("REFRESH-INTERVAL;VALUE=DURATION:PT" + TTL_HOURS + "H");
+			out.write(Strings.LINE_SEPARATOR);
+		}
 	}
 	
 	private void outputTimeZoneForOutlook(Set<String> timezoneIds,  Writer out) {
@@ -499,8 +505,9 @@ public class ICalServlet extends HttpServlet {
     }
     
     private enum Agent {
-    	unkown,
-    	outlook,
-    	googleCalendar
+    		unkown,
+    		outlook,
+    		googleCalendar,
+    		java
     }
 }

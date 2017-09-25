@@ -91,6 +91,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
@@ -251,8 +252,13 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 		}
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.assessmentStatus, new AssessmentStatusCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.initialLaunchDate, select));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.lastScoreUpdate, select));
+		if(courseNode.getParent() == null) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.initialLaunchDate, select));
+		}
+		
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.lastModified, select));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.lastUserModified, select));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.lastCoachModified, select));
 		
 		if(course.getCourseConfig().isCertificateEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.certificate, new DownloadCertificateCellRenderer()));
@@ -646,7 +652,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 			ScoreEvaluation scoreEval = assessableCourseNode.getUserScoreEvaluation(assessedUserCourseEnv);
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 					scoreEval.getAssessmentStatus(), visibility, scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
-			assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false);
+			assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 		}
 		updateModel(ureq, null, null, null);
 	}
@@ -679,7 +685,7 @@ public class IdentityListCourseNodeController extends FormBasicController implem
 				ScoreEvaluation scoreEval = assessableCourseNode.getUserScoreEvaluation(assessedUserCourseEnv);
 				ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 						AssessmentEntryStatus.done, null, scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
-				assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false);
+				assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 			}
 			
 			updateModel(ureq, null, null, null);

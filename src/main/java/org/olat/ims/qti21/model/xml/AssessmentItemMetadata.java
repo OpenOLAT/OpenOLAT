@@ -251,9 +251,11 @@ public class AssessmentItemMetadata {
 		
 		EducationalType educational = metadata.getEducational(false);
 		if(educational != null) {
-			//
+			level = metadata.getEducationContext();
 		}
 		
+		taxonomyPath = metadata.getClassificationTaxonomy();
+	
 		//qti metadata
 		QTIMetadataType qtiMetadata = metadata.getQtiMetadata(true);
 		if(qtiMetadata != null) {

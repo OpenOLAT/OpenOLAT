@@ -6,7 +6,7 @@
 	<!-- 
 	 -->
 
-	<bean id="updateStatisticsTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="updateStatisticsTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 	    <property name="jobDetail" ref="org.olat.statistics.job.${cluster.singleton.services}" />
 	    <!-- adjust cron style syntax for your notification needs 
 	    	"0 10 0 * *"  e.g. 10 minutes after midnight
@@ -27,12 +27,12 @@
 	    <property name="startDelay" value="300000" />
 	</bean>
 	
-	<bean id="org.olat.statistics.job.enabled" class="org.springframework.scheduling.quartz.JobDetailBean" lazy-init="true">
+	<bean id="org.olat.statistics.job.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
 	  <property name="jobClass" value="org.olat.course.statistic.UpdateStatisticsJob"/>
 	</bean>
 	
 	<!-- dummy bean -->
-	<bean id="org.olat.statistics.job.disabled" class="org.springframework.scheduling.quartz.JobDetailBean"  lazy-init="true">
+	<bean id="org.olat.statistics.job.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean"  lazy-init="true">
 		<!-- NOTE: reusing the notifications.DummyJob here -->
 		<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 	</bean>

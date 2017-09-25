@@ -27,6 +27,7 @@ import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.itemSoluti
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.nextItem;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.reviewItem;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.reviewTestPart;
+import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.rubric;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.selectItem;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.testPartNavigation;
 import static org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent.Event.timesUp;
@@ -185,6 +186,11 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 					}
 					case tmpResponse: {
 						event = new QTIWorksAssessmentTestEvent(tmpResponse, this);
+						break;
+					}
+					case rubric: {
+						String selectedSection = ureq.getParameter("section");
+						event = new QTIWorksAssessmentTestEvent(rubric, selectedSection, this);
 						break;
 					}
 					default: {

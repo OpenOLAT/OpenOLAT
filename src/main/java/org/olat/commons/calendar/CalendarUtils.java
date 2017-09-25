@@ -82,6 +82,15 @@ public class CalendarUtils {
 		return cal;
 	}
 	
+	
+	
+	public static Date endOfDay(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal = getEndOfDay(cal);
+		return cal.getTime();
+	}
+	
 	public static Calendar getEndOfDay(Calendar cal) {
 		cal.set(Calendar.HOUR_OF_DAY, 23);
 		cal.set(Calendar.MINUTE, 59);

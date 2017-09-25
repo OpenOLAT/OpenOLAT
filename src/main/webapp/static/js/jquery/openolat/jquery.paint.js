@@ -116,8 +116,8 @@
 		};
 	
 		/* Drawing on Paint App */
-		tmp_ctx.lineWidth = document.getElementById("width_range").value;
-		//tmp_ctx.lineWidth = 5;
+		//tmp_ctx.lineWidth = document.getElementById("width_range").value;
+		tmp_ctx.lineWidth = 10;
 		tmp_ctx.lineJoin = 'round';
 		tmp_ctx.lineCap = 'round';
 		tmp_ctx.strokeStyle = 'blue';
@@ -193,47 +193,27 @@
 			undo_arr.push(image);
 			undo_count = 0; //NEWTHING
 		}
-
-		/*
-		document.getElementById("undo").addEventListener("click", function(){
-			if( undo_arr.length > 1 ) {
-				if ( undo_count + 1 < undo_arr.length ) {
-					if ( undo_count + 2 == undo_arr.length ) {
-						if (confirm("Do you really want to UNDO ??? WARNING ! You will not be able to REDO this step ")) {
-							undo_count++;
-							UndoFunc(undo_count); 
-						}
-					} else {
-						undo_count++;
-							UndoFunc(undo_count);
-					}
-			
-					if ( undo_count + 1 == undo_arr.length ) {
-						undo_count = 0; undo_arr = []; undo_arr.push(empty_canv);
-					}	
-				}
-			//else { undo_count = 0; undo_arr = []; undo_arr.push(empty_canv); }
+		
+		jQuery("#width_range_ui").slider({
+			min: 1,
+			max: 100,
+			value: 20,
+			change: function(event, ui) {
+				tmp_ctx.lineWidth = ui.value / 2;
+				drawBrush();
 			}
 		});
-	
-		document.getElementById("redo").addEventListener("click", function(){
-			if ( undo_count > 0 ) {
-				undo_count--;
-				UndoFunc(undo_count);
+		jQuery("#opacity_range_ui").slider({
+			min: 1,
+			max: 100,
+			value: 100,
+			change: function(event, ui) {
+				tmp_ctx.globalAlpha = ui.value / 100;
+				drawBrush();
 			}
 		});
-		*/
+		drawBrush();
 		
-		jQuery("#width_range").on("input change", function() {
-			tmp_ctx.lineWidth = document.getElementById("width_range").value / 2;
-			drawBrush();
-		});
-		
-		jQuery("#opacity_range").on("change", function() {
-			tmp_ctx.globalAlpha = document.getElementById("opacity_range").value / 100;
-			drawBrush();
-		});
-	
 		//NEWTHING
 		jQuery("#clear").on("click", function() {
 			var mainWin = o_getMainWin();
@@ -270,6 +250,7 @@
 			$('#paintModal').on('hidden.bs.modal', function (event) {
 				jQuery("#paintModal").remove();
 			});
+			o_scrollToElement('#o_top');
 		});
 
 		var onPaintBrush = function() {

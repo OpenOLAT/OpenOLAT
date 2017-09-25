@@ -23,5 +23,10 @@
 				</div>
 			#end
 		</div>
+		#if($r.available("meta"))
+		<div class="panel panel-default o_artefact_metadata">
+			$r.render("meta")
+		</div>
+		#end
 	</div>
 </div></div>

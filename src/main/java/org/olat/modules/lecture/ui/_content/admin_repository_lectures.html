@@ -1,12 +1,16 @@
-#if($r.available("add.lecture"))
+<div class="o_sel_repo_lectures_list">
 <div class="o_button_group o_button_group_right">
-	$r.render("add.lecture")
+	#if($r.available("add.lecture"))
+		$r.render("add.lecture")
+	#end
+	$r.contextHelpWithWrapper("Lectures and absences")
 </div>
-#end
 $r.render("table")
-
+#if($r.available("delete"))
 <div class="o_button_group">
 	#if($r.available("delete"))
 		$r.render("delete")
 	#end
+</div>
+#end
 </div>

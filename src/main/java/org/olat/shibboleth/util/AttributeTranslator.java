@@ -36,23 +36,26 @@ public class AttributeTranslator {
 
 	// contains the mapping from the shib-attribute to the simplified shib attribute
 	private Map<String, String> attributeTranslations;
-	// contains predefined values that can be selected for a specific shib-attribute. 
-	// Note that as key the simplified shib attribute is used and not the original 
+	// contains predefined values that can be selected for a specific shib-attribute.
+	// Note that as key the simplified shib attribute is used and not the original
 	// attributes (see attributeTranslations map)
 	private Map<String, List<String>> attributeSelectableValues;
-	
+
 	/**
 	 * [used by spring]
 	 */
 	public AttributeTranslator() {
 		//
 	}
-	
+
 	/**
 	 * [used by spring]
 	 */
 	public void setAttributeTranslations(Map<String, String> attributeTranslations) {
 		this.attributeTranslations = attributeTranslations;
+		// cleanup empty value
+		this.attributeTranslations.remove("");
+		this.attributeTranslations.remove(" ");
 	}
 
 
@@ -61,26 +64,31 @@ public class AttributeTranslator {
 	 */
 	public void setAttributeSelectableValues(Map<String, List<String>> attributeSelectableValues) {
 		this.attributeSelectableValues = attributeSelectableValues;
+		// cleanup empty value
+		this.attributeTranslations.remove("");
+		this.attributeTranslations.remove(" ");
 	}
 
 
-	
+
 	public final Map<String, String> translateAttributesMap(Map<String, String> attributesMap) {
-		Map<String, String> convertedMap = new HashMap<String, String>(attributesMap.size());
+		Map<String, String> convertedMap = new HashMap<>(attributesMap.size());
 		Iterator<String> keys = attributesMap.keySet().iterator();
 		while (keys.hasNext()) {
 			String attribute = keys.next();
 			String translatedKey = translateAttribute(attribute);
 			String value = attributesMap.get(attribute);
-			
 			convertedMap.put(translatedKey, value);
 		}
 		return convertedMap;
 	}
-	
-	
+
+
 	/**
-	 * Translate Shibboleth Attributes according to configured attribute translations
+	 * Translate Shibboleth Attributes according to configured attribute
+	 * translations. If not attribute translator is found, use the untranslated
+	 * attribute name.
+	 * 
 	 * @param inName
 	 * @return Translated attribute name.
 	 */
@@ -92,19 +100,19 @@ public class AttributeTranslator {
 	/**
 	 * Get all valid values for this attribute if such values are defined. When no
 	 * values are defined, NULL will be returned.
-	 * 
+	 *
 	 * @param attribute
 	 * @return
 	 */
 	public String[] getSelectableValuesForAttribute(String attribute) {
-		List<String> list = attributeSelectableValues.get(attribute); 
+		List<String> list = attributeSelectableValues.get(attribute);
 		if(list!=null) {
 			//only some attributes have selectable values
-		  return list.toArray(new String[0]);	
+		  return list.toArray(new String[0]);
 		}
 		return new String[0];
 	}
-	
+
 	/**
 	 * Get all attributes identifiers that can be translated
 	 * @return
@@ -112,5 +120,5 @@ public class AttributeTranslator {
 	public Set<String> getTranslateableAttributes() {
 		return this.attributeTranslations.keySet();
 	}
-	
+
 }

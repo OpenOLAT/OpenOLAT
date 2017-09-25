@@ -36,9 +36,10 @@ import org.olat.core.util.FileVisitor;
  * @author gnaegi
  */
 class I18nDirectoriesVisitor implements FileVisitor {
-	private OLog log = Tracing.createLoggerFor(I18nDirectoriesVisitor.class);
+	private static final OLog log = Tracing.createLoggerFor(I18nDirectoriesVisitor.class);
 	private String basePath;
 	private List<String> bundles = new LinkedList<String>();
+	private final List<String> referenceLangKeys;
 
 	/**
 	 * Packag scope constructor
@@ -46,8 +47,9 @@ class I18nDirectoriesVisitor implements FileVisitor {
 	 * @param basePathConfig The base path to be subtracted from the file name to
 	 *          get the classname
 	 */
-	I18nDirectoriesVisitor(String basePathConfig) {
+	I18nDirectoriesVisitor(String basePathConfig, List<String> referenceLangKeys) {
 		basePath = basePathConfig;
+		this.referenceLangKeys = referenceLangKeys;
 	}
 
 	/**
@@ -58,7 +60,6 @@ class I18nDirectoriesVisitor implements FileVisitor {
 		if (file.isFile()) { // regular file
 			String toBeChechedkFilName = file.getName();
 			// match?
-			List<String> referenceLangKeys = I18nModule.getTransToolReferenceLanguages();
 			for (String langKey : referenceLangKeys) {
 				String computedFileName = I18nModule.LOCAL_STRINGS_FILE_PREFIX + langKey + I18nModule.LOCAL_STRINGS_FILE_POSTFIX;
 				if (toBeChechedkFilName.equals(computedFileName)) {

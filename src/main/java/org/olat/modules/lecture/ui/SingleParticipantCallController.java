@@ -38,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
@@ -64,6 +65,7 @@ public class SingleParticipantCallController extends FormBasicController {
 	private LectureBlockRollCall rollCall;
 	private final LectureBlock lectureBlock;
 	private final boolean autorizedAbsenceEnabled;
+	private final boolean absenceDefaultAuthorized;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -77,6 +79,7 @@ public class SingleParticipantCallController extends FormBasicController {
 		this.lectureBlock = lectureBlock;
 
 		autorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		rollCall = lectureService.getOrCreateRollCall(calledIdentity, lectureBlock, null, null);
 
 		initForm(ureq);
@@ -123,7 +126,7 @@ public class SingleParticipantCallController extends FormBasicController {
 			absenceReasonEl.setDomReplacementWrapperRequired(false);
 			absenceReasonEl.setPlaceholderKey("authorized.absence.reason", null);
 			absenceReasonEl.setVisible(authorizedAbsencedEl.isAtLeastSelected(1));
-			absenceReasonEl.setMandatory(true);
+			absenceReasonEl.setMandatory(!absenceDefaultAuthorized);
 		}
 		
 		String comment = rollCall.getComment();
@@ -147,7 +150,7 @@ public class SingleParticipantCallController extends FormBasicController {
 		if(absenceReasonEl != null) {
 			absenceReasonEl.clearError();
 		}
-		if(authorizedAbsencedEl != null && authorizedAbsencedEl.isAtLeastSelected(1)) {
+		if(!absenceDefaultAuthorized && authorizedAbsencedEl != null && authorizedAbsencedEl.isAtLeastSelected(1)) {
 			if(!StringHelper.containsNonWhitespace(absenceReasonEl.getValue())) {
 				absenceReasonEl.setErrorKey("error.reason.mandatory", null);
 				allOk &= false;
@@ -161,6 +164,9 @@ public class SingleParticipantCallController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(selectAllLink == source) {
 			doSelectAll();
+			doCheckAuthorized();
+		} else if(checks.contains(source)) {
+			doCheckAuthorized();
 		} else if(authorizedAbsencedEl == source) {
 			absenceReasonEl.setVisible(authorizedAbsencedEl.isAtLeastSelected(1));
 		}
@@ -178,12 +184,15 @@ public class SingleParticipantCallController extends FormBasicController {
 		}
 
 		String comment = commentEl.getValue();
+		String before = lectureService.toAuditXml(rollCall);
 		rollCall = lectureService.addRollCall(calledIdentity, lectureBlock, rollCall, comment, absenceList);
-		if(authorizedAbsencedEl != null && authorizedAbsencedEl.isAtLeastSelected(1)) {
-			rollCall.setAbsenceAuthorized(true);
+		if(authorizedAbsencedEl != null) {
+			rollCall.setAbsenceAuthorized(authorizedAbsencedEl.isAtLeastSelected(1));
 			rollCall.setAbsenceReason(absenceReasonEl.getValue());
 			rollCall = lectureService.updateRollCall(rollCall);
 		}
+		lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),
+				Integer.toString(rollCall.getLecturesAttendedNumber()), lectureBlock, rollCall, lectureBlock.getEntry(), calledIdentity, getIdentity());
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
@@ -197,5 +206,22 @@ public class SingleParticipantCallController extends FormBasicController {
 		for(MultipleSelectionElement check:checks) {
 			check.select(onKeys[0], true);
 		}	
+	}
+	
+	private void doCheckAuthorized() {
+		if(autorizedAbsenceEnabled) {
+			int absences = 0;
+			for(MultipleSelectionElement check:checks) {
+				if(check.isAtLeastSelected(1)) {
+					++absences;
+				}
+			}
+			
+			if(absences == 0) {
+				authorizedAbsencedEl.uncheckAll();
+			} else  if(absenceDefaultAuthorized && (rollCall == null || rollCall.getAbsenceAuthorized() == null)) {
+				authorizedAbsencedEl.select(onKeys[0], true);	
+			}
+		}
 	}
 }

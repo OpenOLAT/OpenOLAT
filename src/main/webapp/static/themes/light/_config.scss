@@ -357,6 +357,8 @@ $o-portfolio-lead-space-sm							: $padding-large-vertical !default;
 $o-portfolio-lead-background-color					: lighten($gray-base, 95%) !default;
 $o-portfolio-lead-border-color						: darken($o-portfolio-lead-background-color,10%) !default;
 $o-portfolio-lead-border-radius						: $border-radius-small !default;
+$o-portfolio-lead-ended-background-color				: lighten($brand-danger, 30%) !default;
+$o-portfolio-lead-ended-border-color					: darken($o-portfolio-lead-ended-background-color	,10%) !default;
 $o-portfolio-page-summary-font-size					: $font-size-large !default;
 
 /* QTI2 eAssessment */
@@ -402,9 +404,9 @@ $o-qti-error										: $brand-danger !default;
 $o-qti-box-bg										: #eee !default;
 $o-qti-box-color									: #666 !default;
 $o-qti-choice-tablelayout-bg						: #e7e7e7 !default;
-$o-qti-userselection-color							: #fff !default;
-$o-qti-userselection-bg								: $o-qti-status-review-color !default;
-$o-qti-userselection-border-color					: darken($o-qti-userselection-bg,10%) !default;
+$o-qti-userselection-color							: $text-color !default;
+$o-qti-userselection-bg								: $state-info-bg !default;
+$o-qti-userselection-border-color					: $state-info-border !default;
 $o-qti-gap-border-color								: #999 !default;
 $o-qti-gap-drag-border-color						: $brand-primary !default;
 $o-qti-gap-selected-border-color					: $brand-primary !default;
@@ -428,12 +430,24 @@ $o-qti-match-drop-accept-border-color				: darken($brand-info, 25%) !default;
 $o-qti-match-target-border-color					: $brand-info !default;
 $o-qti-match-target-bg								: $state-info-bg !default;
 $o-qti-match-border-radius							: $panel-border-radius !default;
+$o-qti-order-source-border-style						: dashed !default;
+$o-qti-order-sources-border-color					: $o-qti-run-infos-border-color !default;
+$o-qti-order-border-radius							: $panel-border-radius !default;
+$o-qti-order-source-bg								: $state-warning-bg !default;
+$o-qti-order-sources-bg								: $o-qti-run-infos-bg !default;
+$o-qti-order-drop-accept-border-color				: darken($brand-info, 25%) !default;
+$o-qti-order-target-bg								: $state-info-bg !default;
 $o-qti-textEntryInteraction-color					: $text-color !default;
 $o-qti-textEntryInteraction-bg						: #fff !default;
 $o-qti-textEntryInteraction-border-color			: $o-qti-gap-border-color !default;
 $o-qti-textEntryInteraction-filled-color			: $o-qti-userselection-color !default;
 $o-qti-textEntryInteraction-filled-bg				: $o-qti-userselection-bg !default;
 $o-qti-textEntryInteraction-filled-border-color		: $o-qti-userselection-border-color !default;
+
+/* Lecture module */
+$o-lm-current-bg									: $o-toolbar-bg-color !default;
+$o-lm-current-border-color							: transparent !default; 
+$o-lm-current-border-radius							: $border-radius-base !default;
 
 /* Chat and other floating window */
 $o-dialog-window-bg				: #fefefe !default;
@@ -475,9 +489,15 @@ $o-forum-quote-font-size		: $font-size-small !default;
 $o-forum-attachment-font-size	: $font-size-small !default;
 
 /* Evaluation forms */
-$o-evaluation-slider-margin-bottom			: 8px;
-$o-evaluation-step-labels-margin-bottom		: 8px;
-$o-evaluation-slider-hover-background-color	: $table-bg-hover;
+$o-evaluation-block-margin-top				: 2em !default;
+$o-evaluation-block-margin-bottom			: 2em !default;
+$o-evaluation-side-labels-font-weight		: normal !default;
+$o-evaluation-step-labels-margin-bottom		: 1em !default;
+$o-evaluation-step-labels-font-weight		: bold !default;
+$o-evaluation-step-background-color 		: $table-bg-accent !default;
+$o-evaluation-slider-margin-bottom			: 1em !default;
+$o-evaluation-slider-hover-background-color	: $table-bg-hover !default;
+
 
 /* Portlets site */
 $o-portlet-border				: $panel-default-border !default;
@@ -631,7 +651,8 @@ $o-cit-quote-font-size			: $font-size-large !default;
 $o-cit-quote-color				: $o-forum-quote-color !default;
 
 /* Sliders */
-$o-slider-border					: #999;
+$o-slider-border					: #aaa !default;
+$o-slider-background				: #f9f9f9 !default;
 $o-slider-handler-border-color		: $brand-primary !default;
 $o-slider-handler-background-color	: $brand-primary !default;
 
@@ -641,3 +662,4 @@ $o-portrait-border				: none !default;
 $o-bookmark-color				: #bc2d0c !default;
 $o-imagebg-text-background		: rgba(255, 255, 255, 0.8) !default;
 $o-progress-marker-color		: rgb(255, 0, 0) !default; /* danger color */
+$o-cal-desc-background-color	: $o-toolbar-bg-color !default;

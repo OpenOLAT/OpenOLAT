@@ -6,13 +6,13 @@
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 <!-- update job for onyx results -->
-<bean id="updateQtiResultsTriggerOnyx" class="org.springframework.scheduling.quartz.CronTriggerBean">
+<bean id="updateQtiResultsTriggerOnyx" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
     <property name="jobDetail" ref="updateOnyxResults.${onyx.update.results.job}" />
     <property name="cronExpression" value="0 0 2 * * ?"/><!-- 2am, daily -->
     <property name="startDelay" value="90000" />
 </bean>
 
-<bean id="updateOnyxResults.enabled" class="org.springframework.scheduling.quartz.JobDetailBean">
+<bean id="updateOnyxResults.enabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 	  <property name="jobClass" value="de.bps.jobs.UpdateOnyxResults" />
 	    <property name="jobDataAsMap">
 	    <map>
@@ -21,7 +21,7 @@
 	  </property>
 	</bean>	
 	
-<bean id="updateOnyxResults.disabled" class="org.springframework.scheduling.quartz.JobDetailBean">
+<bean id="updateOnyxResults.disabled" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 	<!-- NOTE: reusing the notifications.DummyJob here -->
 	<property name="jobClass" value="org.olat.core.commons.services.scheduler.DummyJob" />
 </bean>

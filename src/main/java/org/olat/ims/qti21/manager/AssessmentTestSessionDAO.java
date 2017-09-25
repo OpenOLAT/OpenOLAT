@@ -452,7 +452,7 @@ public class AssessmentTestSessionDAO {
 		return query.getResultList();
 	}
 	
-	public boolean hasRunningTestSessions(RepositoryEntryRef entry, String courseSubIdent, RepositoryEntry testEntry) {
+	public boolean hasRunningTestSessions(RepositoryEntryRef entry, String courseSubIdent, RepositoryEntry testEntry, List<? extends IdentityRef> identities) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session.key from qtiassessmenttestsession session")
 		  .append(" left join session.testEntry testEntry")
@@ -464,6 +464,9 @@ public class AssessmentTestSessionDAO {
 		} else {
 			sb.append(" and session.subIdent is null");
 		}
+		if(identities != null && identities.size() > 0) {
+			sb.append(" and session.identity in (:identityKeys)");
+		}
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
@@ -474,6 +477,10 @@ public class AssessmentTestSessionDAO {
 		if(StringHelper.containsNonWhitespace(courseSubIdent)) {
 			query.setParameter("subIdent", courseSubIdent);
 		}
+		if(identities != null && identities.size() > 0) {
+			query.setParameter("identityKeys", identities);
+		}
+		
 		List<Long> found = query.getResultList();
 		return found == null || found.isEmpty() || found.get(0) == null ? false : found.get(0) >= 0;
 	}

@@ -20,20 +20,32 @@
 package org.olat.course.nodes.gta.manager;
 
 import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.AssignmentResponse.Status;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.TaskRevisionDate;
 import org.olat.course.nodes.gta.model.TaskListImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
@@ -53,6 +65,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTAManagerTest extends OlatTestCase {
 	
+	private static final OLog log = Tracing.createLoggerFor(GTAManagerTest.class);
+	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -66,8 +80,8 @@ public class GTAManagerTest extends OlatTestCase {
 	
 	@Test
 	public void createIfNotExists() {
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		Assert.assertNotNull(node.getIdent());
 		
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
@@ -97,8 +111,8 @@ public class GTAManagerTest extends OlatTestCase {
 	public void selectTask_identity() {
 		//prepare
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-1");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
 		File taskFile = new File("solo.txt");
@@ -129,8 +143,8 @@ public class GTAManagerTest extends OlatTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-2");
 		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
 		dbInstance.commit();
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.group.name());
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
 		File taskFile = new File("bg.txt");
@@ -162,8 +176,8 @@ public class GTAManagerTest extends OlatTestCase {
 		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
 		dbInstance.commit();
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.group.name());
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
 		File taskFile = new File("bg.txt");
@@ -184,8 +198,8 @@ public class GTAManagerTest extends OlatTestCase {
 	public void isTaskAssigned() {
 		//create an individual task
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-6");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
 		dbInstance.commit();
@@ -208,8 +222,8 @@ public class GTAManagerTest extends OlatTestCase {
 	public void isTaskInProcess() {
 		//prepare
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-11");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
 		File taskFile = new File("solo.txt");
@@ -235,8 +249,8 @@ public class GTAManagerTest extends OlatTestCase {
 	public void isTasksInProcess_yes() {
 		//prepare
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-12");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
 		File taskFile = new File("solo.txt");
@@ -257,8 +271,8 @@ public class GTAManagerTest extends OlatTestCase {
 	@Test
 	public void isTasksInProcess_no() {
 		//prepare
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
 		Assert.assertNotNull(tasks);
@@ -274,8 +288,8 @@ public class GTAManagerTest extends OlatTestCase {
 		//create an individual task
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-7");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-8");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		TaskList taskList = gtaManager.createIfNotExists(re, node);
 		dbInstance.commit();
@@ -298,8 +312,8 @@ public class GTAManagerTest extends OlatTestCase {
 		//create an individual task
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-7");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-8");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		TaskList taskList = gtaManager.createIfNotExists(re, node);
 		dbInstance.commit();
@@ -331,8 +345,8 @@ public class GTAManagerTest extends OlatTestCase {
 		//create an individual task
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-7");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-8");
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		TaskList taskList = gtaManager.createIfNotExists(re, node);
 		dbInstance.commit();
@@ -372,14 +386,34 @@ public class GTAManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getEnrollmentDate() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-20");
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		dbInstance.commit();
+		
+		//no participant enrolled
+		Date noEnrollmentDate = gtaManager.getEnrollmentDate(businessGroup);
+		Assert.assertNull(noEnrollmentDate);
+		
+		//add participant
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-21");
+		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
+		dbInstance.commit();
+		
+		// there is a participant enrolled
+		Date enrollmentDate = gtaManager.getEnrollmentDate(businessGroup);
+		Assert.assertNotNull(enrollmentDate);
+	}
+	
+	@Test
 	public void deleteTaskList() {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-9");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-10");
 		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
 		dbInstance.commit();
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
-		GTACourseNode node = new GTACourseNode();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.group.name());
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
 		File taskFile = new File("bg.txt");
@@ -419,10 +453,10 @@ public class GTAManagerTest extends OlatTestCase {
 		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
 		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
 		dbInstance.commit();
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		RepositoryEntry re = deployGTACourse();
 		
 		//node 1
-		GTACourseNode node1 = new GTACourseNode();
+		GTACourseNode node1 = getGTACourseNode(re);
 		node1.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.group.name());
 		TaskList tasks1 = gtaManager.createIfNotExists(re, node1);
 		File taskFile = new File("bg.txt");
@@ -476,11 +510,11 @@ public class GTAManagerTest extends OlatTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-9");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-10");
 		dbInstance.commit();
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		RepositoryEntry re = deployGTACourse();
 		repositoryEntryRelationDao.addRole(coach, re, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(participant, re, GroupRoles.participant.name());
 
-		GTACourseNode node = new GTACourseNode();
+		GTACourseNode node = getGTACourseNode(re);
 		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		TaskList tasks = gtaManager.createIfNotExists(re, node);
 		File taskFile = new File("bg.txt");
@@ -519,25 +553,25 @@ public class GTAManagerTest extends OlatTestCase {
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-21");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-22");
 		
-		RepositoryEntry re1 = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		RepositoryEntry re1 = deployGTACourse();
 		repositoryEntryRelationDao.addRole(coach, re1, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(participant1, re1, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(participant2, re1, GroupRoles.participant.name());
 		
 		//course 1
-		GTACourseNode node1 = new GTACourseNode();
+		GTACourseNode node1 = getGTACourseNode(re1);
 		node1.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		TaskList tasks1 = gtaManager.createIfNotExists(re1, node1);
 		File taskFile = new File("bg.txt");
 		Assert.assertNotNull(tasks1);
 		dbInstance.commit();
 
-		RepositoryEntry re2 = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		RepositoryEntry re2 = deployGTACourse();
 		repositoryEntryRelationDao.addRole(coach, re2, GroupRoles.coach.name());
 		repositoryEntryRelationDao.addRole(participant1, re2, GroupRoles.participant.name());
 
 		//participant 2 course 2
-		GTACourseNode node2 = new GTACourseNode();
+		GTACourseNode node2 = getGTACourseNode(re2);
 		node2.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
 		TaskList tasks2 = gtaManager.createIfNotExists(re2, node2);
 		Assert.assertNotNull(tasks2);
@@ -586,6 +620,62 @@ public class GTAManagerTest extends OlatTestCase {
 		List<Task> notDeletedAssignedTasks2_2 = gtaManager.getTasks(participant2, re2, node2);
 		Assert.assertNotNull(notDeletedAssignedTasks2_2);
 		Assert.assertEquals(1, notDeletedAssignedTasks2_2.size());
+	}
+	
+	@Test
+	public void createTaskRevisionDate() {
+		//prepare
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-20");
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		//create task
+		Task task = gtaManager.createAndPersistTask(null, tasks, TaskProcess.assignment, null, participant, node);
+		dbInstance.commitAndCloseSession();
+		
+		//create the revision log
+		TaskRevisionDate taskRevision = gtaManager.createAndPersistTaskRevisionDate(task, 2, TaskProcess.correction);
+		Assert.assertNotNull(taskRevision);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(taskRevision.getKey());
+		Assert.assertNotNull(taskRevision.getDate());
+		Assert.assertEquals(task, taskRevision.getTask());
+		Assert.assertEquals(2, taskRevision.getRevisionLoop());
+		Assert.assertEquals(TaskProcess.correction, taskRevision.getTaskStatus());
+	}
+	
+	@Test
+	public void getTaskRevisions() {
+		//prepare
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-21");
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.individual.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		//create a task
+		Task task = gtaManager.createAndPersistTask(null, tasks, TaskProcess.assignment, null, participant, node);
+		dbInstance.commitAndCloseSession();
+		
+		//add the revision log
+		TaskRevisionDate taskRevision = gtaManager.createAndPersistTaskRevisionDate(task, 2, TaskProcess.correction);
+		Assert.assertNotNull(taskRevision);
+		dbInstance.commitAndCloseSession();
+		
+		//load the revisions
+		List<TaskRevisionDate> taskRevisions = gtaManager.getTaskRevisions(task);
+		Assert.assertNotNull(taskRevisions);
+		Assert.assertEquals(1, taskRevisions.size());
+		TaskRevisionDate loadedTaskRevision = taskRevisions.get(0);
+		Assert.assertNotNull(loadedTaskRevision.getKey());
+		Assert.assertNotNull(loadedTaskRevision.getDate());
+		Assert.assertEquals(task, loadedTaskRevision.getTask());
+		Assert.assertEquals(2, loadedTaskRevision.getRevisionLoop());
+		Assert.assertEquals(TaskProcess.correction, loadedTaskRevision.getTaskStatus());
 	}
 	
 	@Test
@@ -643,5 +733,32 @@ public class GTAManagerTest extends OlatTestCase {
 
 		String nextSlot = gtaManager.nextSlotRoundRobin(slots, usedSlots);
 		Assert.assertEquals("C", nextSlot);
+	}
+	
+	private RepositoryEntry deployGTACourse() {
+		try {
+			Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-author");
+			String displayname = "GTA-" + UUID.randomUUID();
+			
+			URL courseUrl = JunitTestHelper.class.getResource("file_resources/GTA_course.zip");
+			File courseFile = new File(courseUrl.toURI());
+			return JunitTestHelper.deployCourse(initialAuthor, displayname, courseFile);
+		} catch (URISyntaxException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	private GTACourseNode getGTACourseNode(RepositoryEntry courseEntry) {
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		CourseNode rootNode = course.getRunStructure().getRootNode();
+		for(int i=rootNode.getChildCount(); i-->0; ) {
+			INode child = rootNode.getChildAt(i);
+			if(child instanceof GTACourseNode) {
+				return ((GTACourseNode)child);
+			}
+		}
+		
+		return null;
 	}
 }

@@ -48,6 +48,8 @@ import org.olat.core.util.vfs.filters.SystemItemFilter;
  * @author Mike Stock
  */
 public class FolderManager  extends BasicManager {
+	
+	private static FolderModule folderModule;
 
 	/**
 	 * Get this path as a full WebDAV link
@@ -98,6 +100,37 @@ public class FolderManager  extends BasicManager {
 				getFileInfosRecursively((OlatRelPathImpl)item, fileInfos, newerThan, basePathlen);
 			}
 		}
+	}
+	
+	/**
+	 * Check if a file is offered as a download or as inline rendered. If
+	 * security is enabled in the module, this will return true for all file
+	 * types. If disabled it will depend on the mime type.
+	 * 
+	 * @param name the File name (including mime type extension, e.g. "index.html"
+	 * @return true: force file download; false: open in new browser window
+	 */
+	public static boolean isDownloadForcedFileType(String name) {
+		if (folderModule == null) {
+			// Load only once and keep. Not best practice, in the long run the
+			// folder manager needs a full spring bean refactoring, but for now
+			// this is good enough. The not synchronized nature of the
+			// assignment is not a problem here.
+			folderModule = CoreSpringFactory.getImpl(FolderModule.class);
+		}
+		// If enabled in module, no further checks necessary. 
+		boolean download = folderModule.isForceDownload();
+		if (!download) {
+			// Additional check if not an html or txt page. Only HTML pages are
+			// displayed in browser, all other should be downloaded.
+			// Excel, Word and PowerPoint not allowed to open inline, they will show
+			// an unsupported WebDAV loginpromt!
+			String mimeType = WebappHelper.getMimeType(name);
+			if (mimeType != null && !"text/html".equals(mimeType) && !"application/xhtml+xml".equals(mimeType)) {
+				download = true;
+			}					
+		}
+		return download;
 	}
 	
 }

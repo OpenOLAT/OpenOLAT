@@ -48,6 +48,8 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.FeedChangedEvent;
 import org.olat.modules.webFeed.FeedResourceSecurityCallback;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.manager.FeedManager;
@@ -72,7 +74,6 @@ import org.olat.resource.references.ReferenceManager;
  * 
  * @author Gregor Wassmann
  */
-// Loads of parameters are unused
 public class BlogHandler implements RepositoryHandler {
 
 	@Override
@@ -238,4 +239,14 @@ public class BlogHandler implements RepositoryHandler {
 	public boolean isLocked(OLATResourceable ores) {
 		return FeedManager.getInstance().isLocked(ores);
 	}
+
+	@Override
+	public void onDescriptionChanged(RepositoryEntry entry) {
+		Feed feed = FeedManager.getInstance().updateFeedWithRepositoryEntry(entry);
+		DBFactory.getInstance().commitAndCloseSession();
+
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new FeedChangedEvent(feed.getKey()), feed);
+	}
+	
 }

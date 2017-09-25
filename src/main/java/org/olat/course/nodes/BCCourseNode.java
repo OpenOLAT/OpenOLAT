@@ -246,6 +246,16 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		FileUtils.copyDirContentsToDir(fFolderNodeData, fFolderNodeDir, true, "import course node");
 	}
 
+	@Override
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
+		CourseNode node = super.createInstanceForCopy(isNewTitle, course, author);
+		if(node.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
+			File fFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), node));
+			fFolderNodeDir.mkdirs();
+		}
+		return node;
+	}
+
 	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#calcAccessAndVisibility(org.olat.course.condition.interpreter.ConditionInterpreter,
 	 *      org.olat.course.run.userview.NodeEvaluation)

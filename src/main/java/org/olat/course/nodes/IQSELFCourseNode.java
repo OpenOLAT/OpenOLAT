@@ -77,6 +77,7 @@ import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -310,9 +311,19 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	public void importNode(File importDirectory, ICourse course, Identity owner, Locale locale, boolean withReferences) {
 		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
 		if(withReferences && rie.anyExportedPropertiesAvailable()) {
-			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
-			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
-				rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+			File file = rie.importGetExportedFile();
+			RepositoryHandler handlerQTI21 = RepositoryHandlerFactory.getInstance().getRepositoryHandler(ImsQTI21Resource.TYPE_NAME);
+
+			RepositoryEntry re;
+			if(handlerQTI21.acceptImport(file, "repo.zip").isValid()) {
+				re = handlerQTI21.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+						rie.getDescription(), false, locale, rie.importGetExportedFile(), null);
+				getModuleConfiguration().set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
+			} else {
+				RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(TestFileResource.TYPE_NAME);
+				re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+					rie.getDescription(), false, locale, file, null);
+			}
 			IQEditController.setIQReference(re, getModuleConfiguration());
 		} else {
 			IQEditController.removeIQReference(getModuleConfiguration());
@@ -393,10 +404,10 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment) {
+	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment);
+		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);
 	}
 
 }

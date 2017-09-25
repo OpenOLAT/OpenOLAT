@@ -85,6 +85,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
+import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.search.service.document.RepositoryEntryDocument;
 import org.olat.search.service.indexer.LifeFullIndexer;
@@ -93,14 +94,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 
+ *
  * Initial date: 20.02.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @Service("repositoryService")
 public class RepositoryServiceImpl implements RepositoryService {
-	
+
 	private static final OLog log = Tracing.createLoggerFor(RepositoryServiceImpl.class);
 
 	@Autowired
@@ -113,6 +114,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 	private BaseSecurity securityManager;
 	@Autowired
 	private ACReservationDAO reservationDao;
+	@Autowired
+	private AutoAccessManager autoAccessManager;
 	@Autowired
 	private ReferenceManager referenceManager;
 	@Autowired
@@ -148,7 +151,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
-	
+
 	@Override
 	public RepositoryEntry create(String initialAuthor, String resourceName,
 			String displayname, String description, OLATResource resource) {
@@ -160,11 +163,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 			String resourceName, String displayname, String description, OLATResource resource, int access) {
 		return create(initialAuthorAlt, initialAuthor, resourceName, displayname, description, resource, access);
 	}
-	
+
 	private RepositoryEntry create(String initialAuthorName, Identity initialAuthor, String resourceName,
-			String displayname, String description, OLATResource resource, int access) { 
+			String displayname, String description, OLATResource resource, int access) {
 		Date now = new Date();
-		
+
 		RepositoryEntry re = new RepositoryEntry();
 		if(StringHelper.containsNonWhitespace(initialAuthorName)) {
 			re.setInitialAuthor(initialAuthorName);
@@ -191,7 +194,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 			dbInstance.getCurrentEntityManager().persist(resource);
 		}
 		re.setOlatResource(resource);
-		
+
 		RepositoryEntryStatistics statistics = new RepositoryEntryStatistics();
 		statistics.setLastUsage(now);
 		statistics.setCreationDate(now);
@@ -201,9 +204,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 		statistics.setNumOfRatings(0l);
 		statistics.setNumOfComments(0l);
 		dbInstance.getCurrentEntityManager().persist(statistics);
-		
+
 		re.setStatistics(statistics);
-		
+
 		Group group = groupDao.createGroup();
 		RepositoryEntryToGroupRelation rel = new RepositoryEntryToGroupRelation();
 		rel.setCreationDate(new Date());
@@ -214,13 +217,15 @@ public class RepositoryServiceImpl implements RepositoryService {
 		Set<RepositoryEntryToGroupRelation> rels = new HashSet<>(2);
 		rels.add(rel);
 		re.setGroups(rels);
-		
+
 		if(initialAuthor != null) {
 			groupDao.addMembershipTwoWay(group, initialAuthor, GroupRoles.owner.name());
 		}
-		
+
 		dbInstance.getCurrentEntityManager().persist(re);
-		return re;	
+
+		autoAccessManager.grantAccess(re);
+		return re;
 	}
 
 	@Override
@@ -229,7 +234,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		OLATResource copyResource = resourceManager.createOLATResourceInstance(sourceResource.getResourceableTypeName());
 		RepositoryEntry copyEntry = create(author, null, sourceEntry.getResourcename(), displayname,
 				sourceEntry.getDescription(), copyResource, RepositoryEntry.ACC_OWNERS);
-		
+
 		//copy all fields
 		copyEntry.setAuthors(sourceEntry.getAuthors());
 		copyEntry.setCredits(sourceEntry.getCredits());
@@ -238,13 +243,13 @@ public class RepositoryServiceImpl implements RepositoryService {
 		copyEntry.setObjectives(sourceEntry.getObjectives());
 		copyEntry.setRequirements(sourceEntry.getRequirements());
 		copyEntry = dbInstance.getCurrentEntityManager().merge(copyEntry);
-	
+
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(sourceEntry);
 		copyEntry = handler.copy(author, sourceEntry, copyEntry);
 
 		//copy the image
 		RepositoryManager.getInstance().copyImage(sourceEntry, copyEntry);
-		
+
 		//copy media container
 		VFSContainer sourceMediaContainer = handler.getMediaContainer(sourceEntry);
 		if(sourceMediaContainer != null) {
@@ -254,8 +259,8 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 				LoggingResourceable.wrap(copyEntry, OlatResourceableType.genRepoEntry));
-		
-		
+
+
 		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, copyEntry.getKey());
 		return copyEntry;
 	}
@@ -266,9 +271,10 @@ public class RepositoryServiceImpl implements RepositoryService {
 		RepositoryEntry mergedRe = dbInstance.getCurrentEntityManager().merge(re);
 		dbInstance.commit();
 		lifeIndexer.indexDocument(RepositoryEntryDocument.TYPE, mergedRe.getKey());
+		autoAccessManager.grantAccess(re);
 		return mergedRe;
 	}
-	
+
 	@Override
 	public RepositoryEntry loadByKey(Long key) {
 		return repositoryEntryDAO.loadByKey(key);
@@ -278,7 +284,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public RepositoryEntry loadByResourceKey(Long resourceKey) {
 		return repositoryEntryDAO.loadByResourceKey(resourceKey);
 	}
-	
+
 	@Override
 	public List<RepositoryEntry> loadByResourceKeys(Collection<Long> resourceKeys) {
 		return repositoryEntryDAO.loadByResourceKeys(resourceKeys);
@@ -292,6 +298,16 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public OLATResource loadRepositoryEntryResourceBySoftKey(String softkey) {
 		return repositoryEntryDAO.loadRepositoryEntryResourceBySoftKey(softkey);
+	}
+
+	@Override
+	public List<RepositoryEntry> loadRepositoryEntriesByExternalId(String externalId) {
+		return repositoryEntryDAO.loadRepositoryEntriesByExternalId(externalId);
+	}
+
+	@Override
+	public List<RepositoryEntry> loadRepositoryEntriesByExternalRef(String externalRef) {
+		return repositoryEntryDAO.loadRepositoryEntriesByExternalRef(externalRef);
 	}
 
 	@Override
@@ -320,13 +336,13 @@ public class RepositoryServiceImpl implements RepositoryService {
 				if(item instanceof VFSLeaf
 						&& item.getName().startsWith(re.getKey().toString())
 						&& (item.getName().endsWith(".mp4") || item.getName().endsWith(".m4v") || item.getName().endsWith(".flv")) ) {
-					return (VFSLeaf)item;	
-				}	
+					return (VFSLeaf)item;
+				}
 			}
 		}
 		return null;
 	}
-	
+
 	@Override
 	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
@@ -370,7 +386,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 	@Override
 	public ErrorList deletePermanently(RepositoryEntry entry, Identity identity, Roles roles, Locale locale) {
 		ErrorList errors = new ErrorList();
-		
+
 		boolean debug = log.isDebug();
 
 		// invoke handler delete callback
@@ -386,7 +402,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 
 		userCourseInformationsManager.deleteUserCourseInformations(entry);
 		certificatesManager.deleteRepositoryEntry(entry);
-		
+
 		// delete all bookmarks referencing deleted entry
 		CoreSpringFactory.getImpl(MarkManager.class).deleteMarks(entry);
 		// delete all catalog entries referencing deleted entry
@@ -407,7 +423,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 		//delete lectures
 		CoreSpringFactory.getImpl(LectureService.class).delete(entry);
 		dbInstance.commit();
-		
+
 		// inform handler to do any cleanup work... handler must delete the
 		// referenced resourceable a swell.
 		handler.cleanupOnDelete(entry, resource);
@@ -426,9 +442,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 		if(debug) log.debug("deleteRepositoryEntry Done");
 		return errors;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param entry
 	 */
 	@Override
@@ -451,12 +467,12 @@ public class RepositoryServiceImpl implements RepositoryService {
 			groupDao.removeGroup(defaultGroup);
 		}
 		dbInstance.commit();
-		
+
 		OLATResource reloadedResource = resourceManager.findResourceById(resourceKey);
 		if(reloadedResource != null) {
 			dbInstance.getCurrentEntityManager().remove(reloadedResource);
 		}
-		
+
 		dbInstance.commit();
 	}
 
@@ -522,7 +538,7 @@ public class RepositoryServiceImpl implements RepositoryService {
 	/**
 	 * Get the role in the specified resource, business group are included in
 	 * the query.
-	 * 
+	 *
 	 */
 	@Override
 	public List<String> getRoles(Identity identity, RepositoryEntryRef re) {
@@ -587,12 +603,12 @@ public class RepositoryServiceImpl implements RepositoryService {
 		return reToGroupDao.countMembers(re, roles);
 	}
 
-	
+
 	@Override
 	public int countMembers(List<? extends RepositoryEntryRef> res, Identity excludeMe) {
 		return reToGroupDao.countMembers(res, excludeMe);
 	}
-	
+
 	@Override
 	public Date getEnrollmentDate(RepositoryEntryRef re, IdentityRef identity, String... roles) {
 		return reToGroupDao.getEnrollmentDate(re, identity, roles);

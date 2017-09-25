@@ -76,18 +76,18 @@ import org.olat.group.BusinessGroup;
 /**
  *
  * @author guretzki
- * 
+ *
  */
 
 public class ProjectListController extends BasicController implements GenericEventListener {
-	
+
 	private static final String OPEN_IDENTITY_CMD = "openID";
 	// List commands
 	private static final String TABLE_ACTION_SHOW_DETAIL     = "cmd.show.detail";
 	private static final String TABLE_ACTION_ACCOUNT_MANAGER = "cmd.account.manager";
 	private static final String TABLE_ACTION_SELECT          = "cmd.select";
 	private static final String TABLE_ACTION_CANCEL_SELECT   = "cmd.cancel.select";
-	
+
 
 	private VelocityContainer contentVC;
 	private StackedPanel mainPanel;
@@ -100,7 +100,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	private Long courseId;
 	private CourseNode courseNode;
 	private UserCourseEnvironment userCourseEnv;
-	
+
 	private ProjectBrokerModuleConfiguration moduleConfig;
 	private Long projectBrokerId;
 	private int numberOfCustomFieldInTable = 0;
@@ -109,7 +109,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	private boolean isParticipantInAnyProject;
 	private CloseableCalloutWindowController calloutCtrl;
 	private Project currentProject;
-	
+
 	private DialogBoxController noDeselectWarning;
 
 	private final ProjectBrokerMailer projectBrokerMailer;
@@ -123,7 +123,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	 * @param ne
 	 * @param previewMode
 	 */
-	protected ProjectListController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNode courseNode, boolean previewMode) { 
+	protected ProjectListController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNode courseNode, boolean previewMode) {
 		super(ureq, wControl);
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = courseNode;
@@ -132,7 +132,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		projectBrokerManager = CoreSpringFactory.getImpl(ProjectBrokerManager.class);
 		courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
 		moduleConfig = new ProjectBrokerModuleConfiguration(courseNode.getModuleConfiguration());
-		
+
 		contentVC = createVelocityContainer("project_list");
 		// set header info with project-broker run mode [accept.automatically.limited , accept.manually.limited etc.]
 		String infoProjectBrokerRunMode = "";
@@ -149,7 +149,7 @@ public class ProjectListController extends BasicController implements GenericEve
 				infoProjectBrokerRunMode = translate("info.projectbroker.runmode.accept.automatically.unlimited" );
 			} else {
 				infoProjectBrokerRunMode = translate("info.projectbroker.runmode.accept.automatically.limited", Integer.toString(moduleConfig.getNbrParticipantsPerTopic()) );
-			}			
+			}
 		}
 		contentVC.contextPut("infoProjectBrokerRunMode", infoProjectBrokerRunMode);
 		mainPanel = new SimpleStackedPanel("projectlist_panel");
@@ -166,7 +166,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		// push title and learning objectives, only visible on intro page
 		contentVC.contextPut("menuTitle", courseNode.getShortTitle());
 		contentVC.contextPut("displayTitle", courseNode.getLongTitle());
-	
+
 		projectBrokerId = projectBrokerManager.getProjectBrokerId(cpm, courseNode);
 		if (projectBrokerId == null) {
 			// no project-broker exist => create a new one, happens only once
@@ -175,9 +175,9 @@ public class ProjectListController extends BasicController implements GenericEve
 			projectBrokerManager.saveProjectBrokerId(projectBrokerId, cpm, courseNode);
 			getLogger().info("no project-broker exist => create a new one projectBrokerId=" + projectBrokerId);
 		}
-		
+
 		tableController = createTableController(ureq, wControl);
-		
+
 		OLATResourceable projectBroker = projectBrokerManager.getProjectBroker(projectBrokerId);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), projectBroker);
 		updateProjectListModelOf(tableController, ureq.getIdentity());
@@ -194,10 +194,10 @@ public class ProjectListController extends BasicController implements GenericEve
 			Long resId = ores.getResourceableId();
 			if (resId.longValue() != 0) {
 				if (isLogDebugEnabled()) logDebug("projectId=" , ores.getResourceableId().toString());
-				
+
 				Project proj = projectBrokerManager.getProject(ores.getResourceableId());
 				if (proj != null) {
-					activateProjectController(proj, ureq);				
+					activateProjectController(proj, ureq);
 				} else {
 					// message not found, do nothing. Load normal start screen
 					logDebug("Invalid projectId=" , ores.getResourceableId().toString());
@@ -210,8 +210,8 @@ public class ProjectListController extends BasicController implements GenericEve
 
 		putInitialPanel(mainPanel);
 	}
-	
-	
+
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
@@ -260,13 +260,13 @@ public class ProjectListController extends BasicController implements GenericEve
 				updateProjectListModelOf(tableController, urequest.getIdentity());
 			} else if (pbEditEvent.isCreateEvent() || pbEditEvent.isDeletedEvent()){
 				mainPanel.popContent();
-				updateProjectListModelOf(tableController, urequest.getIdentity());			
+				updateProjectListModelOf(tableController, urequest.getIdentity());
 			}
 		} else if (source == noDeselectWarning) {
 			if(DialogBoxUIFactory.isOkEvent(event)){
 				handleEnrollAction(urequest, currentProject);
 			}
-		}	
+		}
 	}
 
 
@@ -291,7 +291,7 @@ public class ProjectListController extends BasicController implements GenericEve
 				List<String> warningButtons = new ArrayList<String>();
 				warningButtons.add(translate("info.projectbroker.no.deselect.select"));
 				warningButtons.add(translate("info.projectbroker.no.deselect.cancel"));
-				String message = translate("info.projectbroker.deselect.confirmation",selectedProject.getTitle())+"<br/><div class=\"o_important\">"+translate("info.projectbroker.no.deselect")+"</div>"; 
+				String message = translate("info.projectbroker.deselect.confirmation",selectedProject.getTitle())+"<br/><div class=\"o_important\">"+translate("info.projectbroker.no.deselect")+"</div>";
 				noDeselectWarning = activateGenericDialog(urequest, translate("info.projectbroker.no.deselect.title"), message, warningButtons, noDeselectWarning);
 				return;
 			}
@@ -337,7 +337,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	}
 
 	private void updateProjectListModelOf(TableController tableCtrl, Identity identity) {
-		List<Project> projects = new ArrayList<Project>(projectBrokerManager.getProjectListBy(projectBrokerId));	
+		List<Project> projects = new ArrayList<Project>(projectBrokerManager.getProjectListBy(projectBrokerId));
 		nbrSelectedProjects = projectBrokerManager.getNbrSelectedProjects(identity, projects);
 		isParticipantInAnyProject = projectBrokerManager.isParticipantInAnyProject( identity,  projects);
 		projectListTableModel = new ProjectListTableModel(projects, identity, getTranslator(), moduleConfig, numberOfCustomFieldInTable, numberOfEventInTable, nbrSelectedProjects, isParticipantInAnyProject);
@@ -353,22 +353,22 @@ public class ProjectListController extends BasicController implements GenericEve
 			ArrayList<Link> identLinks = new ArrayList<Link>(allIdents.size());
 			for (Identity identity : allIdents) {
 				String last = identity.getUser().getProperty(UserConstants.LASTNAME, getLocale());
-				String first = identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()); 
-				String linkName = last + " " + first;	
-				
+				String first = identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale());
+				String linkName = last + " " + first;
+
 				Link idLink = LinkFactory.createCustomLink(linkName, OPEN_IDENTITY_CMD, linkName, Link.NONTRANSLATED, identityVC, this);
 				idLink.setUserObject(identity);
 				identLinks.add(idLink);
 			}
-			identityVC.contextPut("identLinks", identLinks);			
-			
+			identityVC.contextPut("identLinks", identLinks);
+
 			int row = tableEvent.getRowId();
 			String targetDomID = ProjectManagerColumnRenderer.PROJECTMANAGER_COLUMN_ROW_IDENT + row;
 			String title = translate("projectlist.callout.title", projectAt.getTitle());
 			removeAsListenerAndDispose(calloutCtrl);
 			calloutCtrl = new CloseableCalloutWindowController(urequest, getWindowControl(), identityVC, targetDomID, title, true, null);
 			calloutCtrl.activate();
-			listenTo(calloutCtrl);	
+			listenTo(calloutCtrl);
 		} else if (projectAt.getProjectLeaders().size() == 1) {
 			// no callout, if its only one user
 			Identity leader = projectAt.getProjectLeaders().get(0);
@@ -380,7 +380,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		String businessPath = "[HomePage:" + ident.getKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
-	
+
 
 	private void activateProjectController(Project project, UserRequest urequest) {
 		removeAsListenerAndDispose(projectController);
@@ -390,28 +390,28 @@ public class ProjectListController extends BasicController implements GenericEve
 	}
 
 	/**
-	 * 
+	 *
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
 	protected void doDispose() {
 		//
 	}
-	
+
 	private TableController createTableController(final UserRequest ureq, WindowControl wControl) {
 		numberOfCustomFieldInTable = 0;
-		numberOfEventInTable = 0;		
+		numberOfEventInTable = 0;
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
 		tableConfig.setTableEmptyMessage(translate("projectlist.no.projects"));
 		tableConfig.setPreferencesOffered(true, "projectbrokerList");
 		tableConfig.setShowAllLinkEnabled(false);// Do not allow show all because many entries takes too long to render
-		
+
 		removeAsListenerAndDispose(tableController);
 		tableController = new TableController(tableConfig, ureq, wControl, this.getTranslator(), true);
 		listenTo(tableController);
-		
+
 		int dataColumn = 0;
 		tableController.addColumnDescriptor(new DefaultColumnDescriptor("projectlist.tableheader.title", dataColumn++, TABLE_ACTION_SHOW_DETAIL, getLocale()));
-		
+
 		CustomRenderColumnDescriptor projectManagerDescriptor = new CustomRenderColumnDescriptor("projectlist.tableheader.account.manager", dataColumn++, TABLE_ACTION_ACCOUNT_MANAGER, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new ProjectManagerColumnRenderer()){
 
 			/**
@@ -430,7 +430,7 @@ public class ProjectListController extends BasicController implements GenericEve
 					Object val = getModelData(row);
 					String rowSt = Integer.toString(row); // to get info about row in Renderer!
 					getCustomCellRenderer().render(sb, renderer, val, getLocale(), getAlignment(), rowSt);
-			}	
+			}
 		};
 		tableController.addColumnDescriptor(projectManagerDescriptor);
 		// Custom-Fields
@@ -441,27 +441,44 @@ public class ProjectListController extends BasicController implements GenericEve
 				numberOfCustomFieldInTable++;
 				DefaultColumnDescriptor columnDescriptor = new DefaultColumnDescriptor(customField.getName(), dataColumn++,null, getLocale());
 				columnDescriptor.setTranslateHeaderKey(false);
-				tableController.addColumnDescriptor(columnDescriptor);				
+				tableController.addColumnDescriptor(columnDescriptor);
 			}
 		}
 		// Project Events
 		for (Project.EventType eventType : Project.EventType.values()) {
 			if (moduleConfig.isProjectEventEnabled(eventType) && moduleConfig.isProjectEventTableViewEnabled(eventType)) {
 				numberOfEventInTable ++;
-				tableController.addColumnDescriptor(new CustomRenderColumnDescriptor("projectlist.tableheader.event." + eventType.getI18nKey(), dataColumn++, 
+				tableController.addColumnDescriptor(new CustomRenderColumnDescriptor("projectlist.tableheader.event." + eventType.getI18nKey(), dataColumn++,
 						null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new ProjectEventColumnRenderer()));
 			}
 		}
-		
-		tableController.addColumnDescriptor(new CustomRenderColumnDescriptor("projectlist.tableheader.state", dataColumn++, 
+
+		tableController.addColumnDescriptor(new CustomRenderColumnDescriptor("projectlist.tableheader.state", dataColumn++,
 				null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new ProjectStateColumnRenderer()));
-		tableController.addColumnDescriptor(new DefaultColumnDescriptor("projectlist.tableheader.numbers", dataColumn++, null, getLocale()));
-		
+		tableController.addColumnDescriptor(new DefaultColumnDescriptor("projectlist.tableheader.numbers", dataColumn++, null, getLocale()) {
+			@Override
+			public int compareTo(int rowa, int rowb) {
+				Object a = table.getTableDataModel().getValueAt(rowa, dataColumn);
+				Object b = table.getTableDataModel().getValueAt(rowb, dataColumn);
+				if (a == null || b == null) {
+					boolean bb = (b == null);
+					return (a == null) ? (bb ? 0: -1) : (bb ? 1: 0);
+				}
+				try {
+					Long la = new Long((String)a);
+					Long lb = new Long((String)b);
+					return la.compareTo(lb);
+				} catch (NumberFormatException e) {
+					return super.compareTo(rowa, rowb);
+				}
+			}
+		});
+
 		String selectCmd = userCourseEnv.isCourseReadOnly() ? null : TABLE_ACTION_SELECT;
-		tableController.addColumnDescriptor(new BooleanColumnDescriptor("projectlist.tableheader.select", dataColumn++, selectCmd, 
+		tableController.addColumnDescriptor(new BooleanColumnDescriptor("projectlist.tableheader.select", dataColumn++, selectCmd,
 				translate("table.action.select"), "-" ));
 		String cancelCmd = userCourseEnv.isCourseReadOnly() ? null : TABLE_ACTION_CANCEL_SELECT;
-		tableController.addColumnDescriptor(new BooleanColumnDescriptor("projectlist.tableheader.cancel.select", dataColumn++, cancelCmd, 
+		tableController.addColumnDescriptor(new BooleanColumnDescriptor("projectlist.tableheader.cancel.select", dataColumn++, cancelCmd,
 				translate("projectlist.tableheader.cancel.select"), "-" ));
 		return tableController;
 
@@ -469,9 +486,9 @@ public class ProjectListController extends BasicController implements GenericEve
 
 
 	/**
-	 * Is called when a project is deleted via group-management 
+	 * Is called when a project is deleted via group-management
 	 * (ProjectBrokerManager.deleteGroupDataFor(BusinessGroup group) , DeletableGroupData-interface)
-	 * 
+	 *
 	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
 	 */
 	@Override

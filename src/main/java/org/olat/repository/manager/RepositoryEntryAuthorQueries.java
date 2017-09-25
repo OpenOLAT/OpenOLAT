@@ -41,6 +41,7 @@ import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.model.RepositoryEntryAuthorImpl;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.OrderBy;
+import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
 import org.olat.user.UserImpl;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +98,9 @@ public class RepositoryEntryAuthorQueries {
 			Number numOffers = (Number)object[2];
 			long offers = numOffers == null ? 0l : numOffers.longValue();
 			
+			Number numOfReferences = (Number)object[3];
+			int references = numOfReferences == null ? 0 : numOfReferences.intValue();
+			
 			String deletedByName = null;
 			if(params.isDeleted()) {
 				Identity deletedBy = re.getDeletedBy();
@@ -105,7 +109,7 @@ public class RepositoryEntryAuthorQueries {
 				}
 			}
 			
-			views.add(new RepositoryEntryAuthorImpl(re, hasMarks, offers, deletedByName));
+			views.add(new RepositoryEntryAuthorImpl(re, hasMarks, offers, references, deletedByName));
 		}
 		return views;
 	}
@@ -138,8 +142,11 @@ public class RepositoryEntryAuthorQueries {
 				needIdentity = true;
 			}
 			sb.append(" (select count(offer.key) from acoffer as offer ")
-			  .append("   where offer.resource=res and offer.valid=true")
-			  .append(" ) as offers")
+			  .append("   where offer.resource.key=res.key and offer.valid=true")
+			  .append(" ) as offers,")
+			  .append(" (select count(ref.key) from references as ref ")
+			  .append("   where ref.target.key=res.key")
+			  .append(" ) as references")
 			  .append(" from repositoryentry as v")
 			  .append(" inner join ").append(oracle ? "" : "fetch").append(" v.olatResource as res")
 			  .append(" inner join fetch v.statistics as stats")
@@ -177,6 +184,14 @@ public class RepositoryEntryAuthorQueries {
 			  .append("       and membership.role='").append(GroupRoles.owner.name()).append("'")
 			  .append("   )")
 			  .append(" ))");
+		}
+		
+		if(params.getResourceUsage() != null && params.getResourceUsage() != ResourceUsage.all) {
+			sb.append(" and res.resName!='CourseModule' and");	
+			if(params.getResourceUsage() == ResourceUsage.notUsed) {
+				sb.append(" not");
+			}
+			sb.append(" exists (select ref.key from references as ref where ref.target.key=res.key)");
 		}
 		
 		if(params.getRepoEntryKeys() != null && params.getRepoEntryKeys().size() > 0) {
@@ -369,6 +384,14 @@ public class RepositoryEntryAuthorQueries {
 						sb.append(" order by offers desc, lower(v.displayname) desc");
 					}
 					break;
+				case references: {
+					if(asc) {
+						sb.append(" order by references asc, lower(v.displayname) asc");
+					} else {
+						sb.append(" order by references desc, lower(v.displayname) desc");
+					}
+					break;
+				}
 				case creationDate:
 					sb.append(" order by v.creationDate ");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");

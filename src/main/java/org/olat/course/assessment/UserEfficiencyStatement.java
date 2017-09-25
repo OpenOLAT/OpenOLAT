@@ -41,6 +41,10 @@ public interface UserEfficiencyStatement {
 	
 	public Date  getLastModified();
 	
+	public Date getLastUserModified();
+	
+	public Date getLastCoachModified();
+	
 	public Date getCreationDate();
 	
 	public Long getCourseRepoKey();

@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.util.Date;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -26,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
@@ -72,5 +75,29 @@ public abstract class GTACoachedListController extends FormBasicController {
 			boolean grading = config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
 			layoutCont.contextPut("gradingEnabled", grading);
 		}
+	}
+	
+	protected Date getSyntheticSubmissionDate(TaskLight task) {
+		Date date = task.getSubmissionDate();
+		if(date == null || (task.getSubmissionRevisionsDate() != null && task.getSubmissionRevisionsDate().after(date))) {
+			date = task.getSubmissionRevisionsDate();
+		}
+		if(date == null || (task.getCollectionDate() != null && task.getCollectionDate().after(date))) {
+			date = task.getCollectionDate();
+		}
+		return date;
+	}
+	
+	public boolean hasSubmittedDocument(TaskLight task) {
+		Integer numOfDocs = task.getSubmissionNumOfDocs();
+		Date date = task.getSubmissionDate();
+		if(date == null || (task.getSubmissionRevisionsDate() != null && task.getSubmissionRevisionsDate().after(date))) {
+			date = task.getSubmissionRevisionsDate();
+			numOfDocs = task.getSubmissionRevisionsNumOfDocs();
+		}
+		if(date == null || (task.getCollectionDate() != null && task.getCollectionDate().after(date))) {
+			numOfDocs = task.getCollectionNumOfDocs();
+		}
+		return numOfDocs == null ? false : numOfDocs.intValue() > 0;
 	}
 }

@@ -75,7 +75,7 @@
 	}
 	
 	.input-group.o_date_picker {
-		width: 16em;
+		width: 12em;
 	}
 	
 	/* file chooser */
@@ -104,9 +104,9 @@
 			right: 38px;
 		}
 	}
-	
-	.has-feedback.has-error .o_fileinput .o_fakechooser {
-		margin-right:30px;
+	/* hide error icon for file element - clash with file element controls */
+	.o_fileElement.has-error .o_icon_error.form-control-feedback {
+		display: none;
 	}
 	
 	/* disabled text areas are rendered in div's for improved printing and layouting features */
@@ -163,7 +163,7 @@
 	line-height: $o-toggle-size;
 	font-size: $o-toggle-size;
 	text-align: left;
-	padding: 0 0.5em 0 0;
+	padding: 0 0.5em 0 1px;
 	margin: 0;
 	@extend %o_undecorated;
 	
@@ -180,7 +180,7 @@
 	}
 	&.o_on {
 		text-align: right;
-		padding: 0 0 0 0.5em;
+		padding: 0 1px 0 0.5em;
 		i {
 			color: $o-toggle-on-color;
 			text-shadow: -1px 0 2px rgba(0,0,0,.25);

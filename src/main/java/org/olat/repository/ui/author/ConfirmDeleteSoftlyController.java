@@ -104,7 +104,7 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 			}
 			uifactory.addStaticTextElement("rows", "details.delete.entries", message.toString(), layoutCont);
 
-			String[] acknowledge = new String[] { translate("details.delete.acknowledge.msg") };
+			String[] acknowledge = new String[] { translate("details.delete.soft.acknowledge.msg") };
 			acknowledgeEl = uifactory.addCheckboxesHorizontal("confirm", "details.delete.acknowledge", layoutCont, new String[]{ "" },  acknowledge);
 			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

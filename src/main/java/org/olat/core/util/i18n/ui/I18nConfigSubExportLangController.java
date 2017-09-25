@@ -47,6 +47,7 @@ import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -67,6 +68,11 @@ class I18nConfigSubExportLangController extends FormBasicController {
 	private MultipleSelectionElement exportLangSelection;
 	private FormLink cancelButton;
 	private FormSubmit submitButton;
+	
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nMgr;
 
 	/**
 	 * Constructor for the export-language workflow
@@ -85,13 +91,12 @@ class I18nConfigSubExportLangController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		I18nManager i18nMgr = I18nManager.getInstance();
 		// A title, displayed in fieldset
 		setFormTitle("configuration.management.package.export.title");
 		setFormDescription("configuration.management.package.export.description");
 		//
 		// Add languages checkboxes
-		Set<String> availableKeysUnsorted = I18nModule.getAvailableLanguageKeys();
+		Set<String> availableKeysUnsorted = i18nModule.getAvailableLanguageKeys();
 		String[] availableKeys = ArrayHelper.toArray(availableKeysUnsorted);
 		String[] availableValues = new String[availableKeys.length];
 		for (int i = 0; i < availableKeys.length; i++) {
@@ -127,7 +132,7 @@ class I18nConfigSubExportLangController extends FormBasicController {
 		}
 		String tmpFileName = CodeHelper.getGlobalForeverUniqueID();
 		// crate new temp file
-		File exportFile = I18nManager.getInstance().createLanguageJarFile(toExport, tmpFileName);
+		File exportFile = i18nMgr.createLanguageJarFile(toExport, tmpFileName);
 		if (exportFile != null) {
 			String fileName = "language_export_" + Settings.getApplicationName() + "_" + Settings.getVersion() + ".jar";
 			// Create a temporary media resource that gets deleted from the

@@ -26,6 +26,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -71,8 +72,10 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 			return row.getIdentity().getIdentityName();
 		} else if(col == CGCols.taskStatus.ordinal()) {
 			return row.getTaskStatus();
-		}  else if(col == CGCols.taskName.ordinal()) {
+		} else if(col == CGCols.taskName.ordinal()) {
 			return row.getTaskName();
+		} else if(col == CGCols.submissionDate.ordinal()) {
+			return SubmissionDateCellRenderer.cascading(row);
 		} else if(col >= GTACoachedGroupGradingController.USER_PROPS_OFFSET) {
 			int propIndex = col - GTACoachedGroupGradingController.USER_PROPS_OFFSET;
 			return row.getIdentity().getIdentityProp(propIndex);
@@ -83,7 +86,8 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 	public enum CGCols {
 		username("username"),
 		taskName("table.header.group.taskName"),
-		taskStatus("table.header.group.step");
+		taskStatus("table.header.group.step"),
+		submissionDate("table.header.submissionDate");
 		
 		private final String i18nKey;
 		

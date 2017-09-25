@@ -42,6 +42,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
@@ -64,6 +65,11 @@ public class SendTokenToUserForm extends FormBasicController {
 	private TextElement mailText;
 	
 	private String dummyKey;
+	
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nManager;
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
@@ -122,7 +128,7 @@ public class SendTokenToUserForm extends FormBasicController {
 			Translator userTrans = Util.createPackageTranslator(RegistrationManager.class, locale) ;
 			String body = userTrans.translate("pwchange.intro", new String[] { user.getName() })
 					+ userTrans.translate("pwchange.body", new String[] {
-							serverpath, dummyKey, I18nManager.getInstance().getLocaleKey(locale)
+							serverpath, dummyKey, i18nModule.getLocaleKey(locale)
 					});
 			return body;
 		}
@@ -147,7 +153,7 @@ public class SendTokenToUserForm extends FormBasicController {
 		}
 		
 		Preferences prefs = user.getUser().getPreferences();
-		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
+		Locale locale = i18nManager.getLocaleOrDefault(prefs.getLanguage());
 		String emailAdress = user.getUser().getProperty(UserConstants.EMAIL, locale);
 
 		TemporaryKey tk = registrationManager.loadTemporaryKeyByEmail(emailAdress);

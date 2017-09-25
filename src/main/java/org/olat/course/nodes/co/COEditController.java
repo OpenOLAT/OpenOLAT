@@ -27,7 +27,6 @@ package org.olat.course.nodes.co;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -40,7 +39,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.editor.formfragments.MembersSelectorFormFragment;
 import org.olat.course.nodes.COCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -66,29 +64,29 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_EMAILTOGROUPS = "emailToGroups";
 	
 	/** config key: to email addresses to be extracted from specified learn areas */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA 			= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_AREA;
+	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA = "emailTo" + "AreaCoaches";
 	/** config key: to email addresses to be extracted from specified learn areas */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA_IDS 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_AREA_IDS;
+	public static final String CONFIG_KEY_EMAILTOCOACHES_AREA_IDS = "emailTo" + "AreaCoachesIds";
 	
 	/** config key: keys of the course participants list */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_ALL 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_ALL;
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_ALL = "emailTo" + "ParticipantsAll";
 	/** config key: keys of the group participants list */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID 	= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_GROUP_ID;
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID = "emailTo" + "GroupParticipantsIds";
 	/** config key: email goes to group participants */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP 	= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_GROUP;
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID 	= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_AREA_ID;
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP = "emailTo" + "GroupParticipants";
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID = "emailTo" + "AreaParticipantsIds";
 	/** config key: email goes to group participants */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_AREA;
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_AREA = "emailTo" + "AreaParticipants";
 	/** config key: email goes to course participants */
-	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE 	= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_PARTICIPANTS_COURSE;
+	public static final String CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE = "emailTo" + "CourseParticipants";
 	/** config key: email goes to group coaches */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP 			= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_GROUP;
+	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP = "emailTo" + "GroupCoaches";
 	/** config key: key of the group coaches list */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP_ID 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_GROUP_ID;
+	public static final String CONFIG_KEY_EMAILTOCOACHES_GROUP_ID = "emailTo" + "GroupCoachesIds";
 	/** config key: key of the course coaches list */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_ALL 			= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_ALL;
+	public static final String CONFIG_KEY_EMAILTOCOACHES_ALL = "emailTo" + "CoachesAll";
 	/** config key: email goes to course coaches */
-	public static final String CONFIG_KEY_EMAILTOCOACHES_COURSE 		= "emailTo" + MembersSelectorFormFragment.CONFIG_KEY_COACHES_COURSE;
+	public static final String CONFIG_KEY_EMAILTOCOACHES_COURSE = "emailTo" + "CourseCoaches";
 	/** config key: email goes to course owners */
 	public static final String CONFIG_KEY_EMAILTOOWNERS = "emailToOwners";
 	/** config key: email goes to email address */
@@ -98,9 +96,7 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	/** config key: default body text */
 	public static final String CONFIG_KEY_MBODY_DEFAULT = "mBodyDefault";
 	
-	private ModuleConfiguration moduleConfiguration;
 	private final VelocityContainer myContent;
-	private Panel main;
 	private COConfigForm configForm;	
 	private COCourseNode courseNode;
 	private ConditionEditController accessibilityCondContr;
@@ -116,16 +112,12 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	 */
 	public COEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, COCourseNode coCourseNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq,wControl);
-		this.moduleConfiguration = config;
 		this.courseNode = coCourseNode;
-
-		main = new Panel("coeditpanel");
-
+		
 		myContent = createVelocityContainer("edit");
 
 		configForm = new COConfigForm(ureq, wControl, config, euce);
 		configForm.addControllerListener(this);
-
 		myContent.put("configForm", configForm.getInitialComponent());
 
 		// not needed: setInitialComponent(myContent);
@@ -134,8 +126,6 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
 				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), coCourseNode));		
 		listenTo(accessibilityCondContr);
-
-		main.setContent(myContent);
 	}
 
 	/**
@@ -160,32 +150,8 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 			}
 		}
 		else if (source == configForm) { // those must be links
-			if (event == Event.CANCELLED_EVENT) {
-				return;
-			} else if (event == Event.DONE_EVENT) {
-				this.configForm.storeFormData(ureq);
-
-//				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_GROUP, configForm.getEmailGroupCoaches());
-//				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_AREA, configForm.getEmailCoachesAreas());
-//				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_GROUP_ID, configForm.getEmailGroupCoachesIds());
-//				moduleConfiguration.set(CONFIG_KEY_EMAILTOCOACHES_AREA_IDS, configForm.getEmailCoachesAreaIds());
-//				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_ALL, configForm.sendToCoachesAll());
-//				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOCOACHES_COURSE, configForm.sendToCoachesCourse());
-				
-//				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP, configForm.getEmailGroupParticipants());
-//				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_GROUP_ID, configForm.getEmailGroupParticipantsIds());
-//				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_AREA, configForm.getEmailParticipantsAreas());
-//				moduleConfiguration.set(CONFIG_KEY_EMAILTOPARTICIPANTS_AREA_ID, configForm.getEmailParticipantsAreaIds());
-//				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS_COURSE, configForm.sendToParticipantsCourse());
-//				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOPARTICIPANTS_ALL, configForm.sendToParticipantsAll());
-				
-				moduleConfiguration.setBooleanEntry(CONFIG_KEY_EMAILTOOWNERS, configForm.sendToOwners());
-				moduleConfiguration.set(CONFIG_KEY_EMAILTOADRESSES, configForm.getEmailList());
-				moduleConfiguration.set(CONFIG_KEY_MSUBJECT_DEFAULT, configForm.getMSubject());
-				moduleConfiguration.set(CONFIG_KEY_MBODY_DEFAULT, configForm.getMBody());
-
+			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-				return;
 			}
 		}
 	}

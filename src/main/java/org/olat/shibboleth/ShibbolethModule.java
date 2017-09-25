@@ -26,15 +26,26 @@
 package org.olat.shibboleth;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.annotation.Resource;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
 import org.olat.shibboleth.util.AttributeTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,40 +56,28 @@ import org.springframework.stereotype.Service;
  * Initial Date:  16.07.2004
  *
  * @author Mike Stock
- * 
- * Comment:  
- * 
  */
 @Service("shibbolethModule")
 public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOff {
-	
+
 	private static final OLog log = Tracing.createLoggerFor(ShibbolethModule.class);
-	
+
+	private static final String AUTHOR_CONTAINS_SPLIT_VALUE = ",";
+
 	/**
 	 * Path identifier for shibboleth registration workflows.
 	 */
-	static final String PATH_REGISTER_SHIBBOLETH = "shibregister";	
-	
-	private static final String CONF_OLATUSERMAPPING_FIRSTNAME = "FirstName";
-	private static final String CONF_OLATUSERMAPPING_LASTNAME = "LastName";
-	private static final String CONF_OLATUSERMAPPING_EMAIL = "EMail";
-	public static final String CONF_OLATUSERMAPPING_INSTITUTIONALNAME = "InstitutionalName";
-	private static final String CONF_OLATUSERMAPPING_INSTITUTIONALEMAIL = "InstitutionalEMail";
-	private static final String CONF_OLATUSERMAPPING_INSTITUTIONALUSERIDENTIFIER = "InstitutionalUserIdentifier";
-	private static final String CONF_OLATUSERMAPPING_PREFERED_LANGUAGE = "PreferedLanguage";
-	private static final String CONF_OLATUSERMAPPING_ORGUNIT = "OrgUnit";
-	
+	static final String PATH_REGISTER_SHIBBOLETH = "shibregister";
+
+	private static final List<String> MANDATORY_USER_PROPERTIES
+			= java.util.Arrays.asList(UserConstants.EMAIL, UserConstants.FIRSTNAME, UserConstants.LASTNAME);
+
 	@Value("${shibboleth.enable}")
 	private boolean enableShibbolethLogins = false;
-	
-	@Autowired
+
+	@Resource(name="${shibboleth.attribute.translator}")
 	private AttributeTranslator attributeTranslator;
 
-	@Value("${language.enable}")
-	private boolean useLanguageInReq = false;
-	@Value("${language.param:en}")
-	private String languageParamName;
-	
 	@Autowired @Qualifier("shibbolethOperators")
 	private ArrayList<String> operators;
 
@@ -87,13 +86,25 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	@Value("${shibboleth.template.login.default:default_shibbolethlogin}")
 	private String loginTemplateDefault;
 
-	public final String MULTIVALUE_SEPARATOR = ";";
-	
-	@Value("${shibboleth.defaultUID:Shib-SwissEP-UniqueID}")
-	private String defaultUIDAttribute;
+	public static final String MULTIVALUE_SEPARATOR = ";";
+
+	@Value("${shibboleth.preferred.language.shib}")
+	private String preferredLanguageAttribute;
+	@Value("${shibboleth.uid.shib}")
+	private String uidAttributeName;
 	@Autowired @Qualifier("shibbolethUserMapping")
 	private HashMap<String, String> userMapping;
+	@Autowired @Qualifier("shibbolethAttributeHandler")
+	private HashMap<String, String> attributeHandler;
+	@Autowired @Qualifier("shibbolethDeleteIfNull")
+	private HashMap<String, Boolean> deleteIfNull;
 
+	@Value("${shibboleth.role.mapping.author.enable:false}")
+	private boolean authorMappingEnabled;
+	@Value("${shibboleth.role.mapping.author.shib}")
+	private String authorMappingAttributeName;
+	@Value("${shibboleth.role.mapping.author.contains}")
+	private String authorMappingContains;
 	@Value("${shibboleth.ac.byAttributes:false}")
 	private boolean accessControlByAttributes;
 	@Value("${shibboleth.ac.attribute1:#{null}}")
@@ -104,159 +115,130 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 	private String attribute2;
 	@Value("${shibboleth.ac.attribute2Values:#{null}}")
 	private String attribute2Values;
-	
+
+	@Value("${method.auto.shib.identifiers}")
+	private String acAutoIdentifiersString;
+	private Set<IdentifierKey> acAutoIdentifiers;
+	@Value("${method.auto.shib.shib}")
+	private String acAutoAttributeName;
+	@Value("${method.auto.shib.splitter}")
+	private String acAutoSplitter;
+
 	@Autowired
 	public ShibbolethModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
 	}
-	
+
 	@Override
 	public void init() {
 		if (enableShibbolethLogins) {
 			log.info("Shibboleth logins enabled.");
-			
-			if(useLanguageInReq) {
-				log.info("Language code is sent as parameter in the AAI request with lang: "+languageParamName);
-			} else {
-				log.info("Language code is not sent with AAI request.");
-			}
 		} else {
 			log.info("Shibboleth logins disabled.");
 		}
-		
+
 		//module enabled/disabled
 		String accessControlByAttributesObj = getStringPropertyValue("accessControlByAttributes", true);
 		if(StringHelper.containsNonWhitespace(accessControlByAttributesObj)) {
 			accessControlByAttributes = "true".equals(accessControlByAttributesObj);
 		}
-		
+
+		ensureDefaultsForMandatoryUserProperties();
+
 		String attribute1Obj = getStringPropertyValue("attribute1", true);
 		if(StringHelper.containsNonWhitespace(attribute1Obj)) {
 			attribute1 = attribute1Obj;
 		}
-		
+
 		String attribute1ValuesObj = getStringPropertyValue("attribute1Values", true);
 		if(StringHelper.containsNonWhitespace(attribute1ValuesObj)) {
 			attribute1Values = attribute1ValuesObj;
 		}
-		
+
 		String attribute2Obj = getStringPropertyValue("attribute2", true);
 		if(StringHelper.containsNonWhitespace(attribute2Obj)) {
 			attribute2 = attribute2Obj;
 		}
-		
+
 		String attribute2ValuesObj = getStringPropertyValue("attribute2Values", true);
 		if(StringHelper.containsNonWhitespace(attribute2ValuesObj)) {
 			attribute2Values = attribute2ValuesObj;
 		}
+
+		acAutoIdentifiers = parseAcIdentifiers(acAutoIdentifiersString);
 	}
-	
+
+	private Set<IdentifierKey> parseAcIdentifiers(String raw) {
+		Set<IdentifierKey> keys = new HashSet<>();
+		List<String> keyStrings = Arrays.asList(raw.split(AUTHOR_CONTAINS_SPLIT_VALUE));
+		for (String keyString : keyStrings) {
+			try {
+				keys.add(IdentifierKey.valueOf(keyString));
+			} catch (Exception e) {
+				log.warn("The value '" + keyString + "' for the property 'shib.ac.auto.identifiers' is not valid.");
+			}
+		}
+		return keys;
+	}
+
 	@Override
 	protected void initFromChangedProperties() {
 		init();
 	}
-	
-	/**
-	 * @return True if shibboleth logins are allowed.
-	 */
+
+	private void ensureDefaultsForMandatoryUserProperties() {
+		ensureMandatoryPropertesAreInUserMapping();
+		ensureMandatoryPropertiesAreNeverDeleted();
+	}
+
+	private void ensureMandatoryPropertesAreInUserMapping() {
+		MANDATORY_USER_PROPERTIES.forEach(userPropertyName -> addToUserMappingWithDefault(userPropertyName));
+	}
+
+	private void addToUserMappingWithDefault(String userProperty) {
+		String attributeName = getShibbolethAttributeName(userProperty);
+		if (!StringHelper.containsNonWhitespace(attributeName)) {
+			userMapping.put("oo" + userProperty, userProperty);
+		}
+	}
+
+	private void ensureMandatoryPropertiesAreNeverDeleted() {
+		MANDATORY_USER_PROPERTIES.forEach(userPropertyName -> addToDeleteIfNullFalse(userPropertyName));
+	}
+
+	private void addToDeleteIfNullFalse(String userPropertyName) {
+		String attributeName = getShibbolethAttributeName(userPropertyName);
+		deleteIfNull.put(attributeName, false);
+	}
+
 	public boolean isEnableShibbolethLogins() {
 		return enableShibbolethLogins;
 	}
 	
+	/**
+	 * @return true: use the attribute configurator in the course editor based
+	 *         on the attribute translator; false: don's use the attribute
+	 *         configurator
+	 */
+	public boolean isEnableShibbolethCourseEasyConfig() {
+		return isEnableShibbolethLogins() && getAttributeTranslator().getTranslateableAttributes().size() > 0;
+	}
+
 	@Override
 	public boolean isEnabled() {
 		return isEnableShibbolethLogins();
-	}
-
-	/**
-	 * @return true if the language should be sent in the aai request
-	 */
-	public boolean useLanguageInReq() {
-		return useLanguageInReq;
-	}
-
-	/**
-	 * @return the get request parameter name to be used sending the language code.
-	 */
-	public String getLanguageParamName() {
-		return languageParamName;
 	}
 
 	public AttributeTranslator getAttributeTranslator() {
 		return attributeTranslator;
 	}
 
-	public String[] getRegisteredOperatorKeys() {
-		return null;
-	}
-	
 	public List<String> getOperatorKeys() {
 		return operators;
 	}
 
-	/**
-	 * 
-	 * @return the shib. default attribute which identifies an user by an unique key
-	 */
-	public String getDefaultUIDAttribute() {
-		return defaultUIDAttribute;
-	}
-	
-	/**
-	 * @param attributesMap
-	 * @return First Name value from shibboleth attributes.
-	 */
-	public String getFirstName() {
-		return userMapping.get(CONF_OLATUSERMAPPING_FIRSTNAME);
-	}
-	
-	/**
-	 * @return Last Name value from shibboleth attributes.
-	 */
-	public String getLastName() {
-		return userMapping.get(CONF_OLATUSERMAPPING_LASTNAME);
-	}
-	
-	/**
-	 * @return EMail value from shibboleth attributes.
-	 */
-	public String getEMail() {
-		return userMapping.get(CONF_OLATUSERMAPPING_EMAIL);
-	}
-	
-	/**
-	 * @return Institutional EMail value from shibboleth attributes.
-	 */
-	public String getInstitutionalEMail() {
-		return userMapping.get(CONF_OLATUSERMAPPING_INSTITUTIONALEMAIL);
-	}
-	
-	/**
-	 * @return Institutional Name value from shibboleth attributes.
-	 */
-	public String getInstitutionalName() {
-		return userMapping.get(CONF_OLATUSERMAPPING_INSTITUTIONALNAME);
-	}
-	
-	/**
-	 * @return Institutional User Identifyer value from shibboleth attributes.
-	 */
-	public String getInstitutionalUserIdentifier() {
-		return userMapping.get(CONF_OLATUSERMAPPING_INSTITUTIONALUSERIDENTIFIER);
-	}
-	
-	/**
-	 * @return OrgUnit User Identifyer value from shibboleth attributes or NULL if not defined.
-	 */
-	public String getOrgUnit() {
-		return userMapping.get(CONF_OLATUSERMAPPING_ORGUNIT);
-	}
-	
-	/**
-	 * @return Prefered language value from shibboleth attributes.
-	 */
-	public String getPreferedLanguage() {
-		return userMapping.get(CONF_OLATUSERMAPPING_PREFERED_LANGUAGE);
+	public String getUIDAttributeName() {
+		return uidAttributeName;
 	}
 
 	public String getLoginTemplate() {
@@ -324,4 +306,99 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		this.attribute2Values = attribute2Values;
 		setStringProperty("attribute2Values", attribute2Values, true);
 	}
+
+	public String getPreferredLanguageAttributeName() {
+		return preferredLanguageAttribute;
+	}
+
+	/**
+	 * Returns the mapping of a Shibboleth user to an OpenOLAT user. The key
+	 * is the Shibboleth attribute name. The value is the user property.
+	 *
+	 * @return
+	 */
+	public Map<String, String> getUserMapping() {
+		return userMapping;
+	}
+
+	public Map<String, String> getAttributeHandlerNames() {
+		return attributeHandler;
+	}
+
+	public HashMap<String, Boolean> getDeleteIfNull() {
+		return deleteIfNull;
+	}
+
+	/**
+	 * Returns the name of a Shibboleth attribute for a given user property name
+	 * of null if not found.
+	 *
+	 * @param userProperty
+	 * @return
+	 */
+	public String getShibbolethAttributeName(String userProperty) {
+		for (Entry<String, String> mapping : userMapping.entrySet()) {
+	        if (userProperty != null && userProperty.equals(mapping.getValue())) {
+	            return mapping.getKey();
+	        }
+	    }
+	    return null;
+	}
+
+	public boolean isAuthorMappingEnabled() {
+		return authorMappingEnabled;
+	}
+
+	public String getAuthorMappingAttributeName() {
+		return authorMappingAttributeName;
+	}
+
+	public Collection<String> getAuthorMappingContains() {
+		Collection<String> containsValues = Collections.<String>emptyList();
+		if (StringHelper.containsNonWhitespace(authorMappingContains)) {
+			containsValues = Arrays.asList(authorMappingContains.split(AUTHOR_CONTAINS_SPLIT_VALUE));
+		}
+		return containsValues;
+	}
+
+	/**
+	 * Get the names of all Shibboleth attributes which are configured either in
+	 * the context.xml or in olat.local.properties
+	 */
+	public Collection<String> getShibbolethAttributeNames() {
+		Set<String> attributeNames = new HashSet<>();
+		for (String userMappingKey : attributeTranslator.getTranslateableAttributes()) {
+			addAttributeNameIfDefined(userMappingKey, attributeNames);			
+		}
+		for (String userMappingKey : userMapping.keySet()) {
+			addAttributeNameIfDefined(userMappingKey, attributeNames);
+		}
+		addAttributeNameIfDefined(uidAttributeName, attributeNames);
+		addAttributeNameIfDefined(preferredLanguageAttribute, attributeNames);
+		addAttributeNameIfDefined(authorMappingAttributeName, attributeNames);
+		addAttributeNameIfDefined(attribute1, attributeNames);
+		addAttributeNameIfDefined(attribute2, attributeNames);
+		addAttributeNameIfDefined(acAutoAttributeName, attributeNames);
+		return attributeNames;
+	}
+	
+	private void addAttributeNameIfDefined(String attributeName, Set<String> attributeNames) {
+		if (StringHelper.containsNonWhitespace(attributeName)) {
+			attributeNames.add(attributeName);
+		}		
+	}
+	
+
+	public Set<IdentifierKey> getAcAutoIdentifiers() {
+		return acAutoIdentifiers;
+	}
+
+	public String getAcAutoAttributeName() {
+		return acAutoAttributeName;
+	}
+
+	public String getAcAutoSplitter() {
+		return acAutoSplitter;
+	}
+
 }

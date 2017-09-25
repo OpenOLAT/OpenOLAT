@@ -1,4 +1,6 @@
 /**
+
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -21,12 +23,9 @@
 package org.olat.core.commons.services.notifications.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.isAdmin;
+import static org.olat.restapi.security.RestSecurityHelper.parseDate;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -240,50 +239,5 @@ public class NotificationsWebService {
 			infoVO.setItems(itemVOes);
 		}
 		return infoVO;
-	}
-	
-	private Date parseDate(String date, Locale locale) {
-		if(StringHelper.containsNonWhitespace(date)) {
-			if(date.indexOf('T') > 0) {
-				if(date.indexOf('.') > 0) {
-					try {
-						return new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.S").parse(date);
-					} catch (ParseException e) {
-						//fail silently
-					}
-				} else {
-					try {
-						return new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").parse(date);
-					} catch (ParseException e) {
-						//fail silently
-					}
-				}
-			}
-			
-			//try with the locale
-			if(date.length() > 10) {
-				//probably date time
-				try {
-					DateFormat format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale);
-					format.setLenient(true);
-					return format.parse(date);
-				} catch (ParseException e) {
-					//fail silently
-				}
-			} else {
-				try {
-					DateFormat format = DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
-					format.setLenient(true);
-					return format.parse(date);
-				} catch (ParseException e) {
-					//fail silently
-				}
-			}
-		}
-		
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(new Date());
-		cal.add(Calendar.MONTH, -1);
-		return cal.getTime();
 	}
 }

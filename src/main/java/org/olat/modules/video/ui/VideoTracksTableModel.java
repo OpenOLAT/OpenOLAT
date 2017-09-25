@@ -21,10 +21,8 @@ package org.olat.modules.video.ui;
 
 import java.util.Locale;
 
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.translator.Translator;
 
 /**
  * table-model for to list de available subtitle-tracks in the metadata
@@ -35,16 +33,16 @@ import org.olat.core.gui.translator.Translator;
  */
 public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTableRow>{
 
-	protected FormUIFactory uifactory = FormUIFactory.getInstance();
-	private Translator translator;
-	public VideoTracksTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	private final Locale locale;
+	
+	public VideoTracksTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
-		this.translator = translator;
+		this.locale = locale;
 	}
 
 	@Override
 	public VideoTracksTableModel createCopyWithEmptyList() {
-		return new VideoTracksTableModel(getTableColumnModel(), translator);
+		return new VideoTracksTableModel(getTableColumnModel(), locale);
 	}
 
 
@@ -53,7 +51,7 @@ public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTable
 		TrackTableRow track = getObject(row);
 		switch(TrackTableCols.values()[col]) {
 			case file: return track.getTrack();
-			case language: return new Locale(track.getLanguage()).getDisplayLanguage(this.translator.getLocale());
+			case language: return new Locale(track.getLanguage()).getDisplayLanguage(locale);
 			case delete: return track.getDeleteLink();
 			default: return "";
 		}
@@ -74,5 +72,4 @@ public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTable
 			return i18nKey;
 		}
 	}
-
 }

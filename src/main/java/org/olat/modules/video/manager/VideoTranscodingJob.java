@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.ObjectDeletedException;
@@ -41,7 +42,6 @@ import org.olat.modules.video.VideoTranscoding;
 import org.olat.resource.OLATResource;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.StatefulJob;
 
 /**
  * 
@@ -49,7 +49,8 @@ import org.quartz.StatefulJob;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VideoTranscodingJob extends JobWithDB implements StatefulJob {
+public class VideoTranscodingJob extends JobWithDB {
+	private ArrayList<String> resolutionsWithProfile = new ArrayList<String>(Arrays.asList("1080", "720", "480"));
 
 	/**
 	 * 
@@ -125,6 +126,12 @@ public class VideoTranscodingJob extends JobWithDB implements StatefulJob {
 		videoTranscoding.setTranscoder(VideoTranscoding.TRANSCODER_LOCAL);
 		videoTranscoding = videoManager.updateVideoTranscoding(videoTranscoding);
 		
+		String resolution = Integer.toString(videoTranscoding.getResolution());
+		String profile = "Normal"; // Legacy fallback		
+		if (resolutionsWithProfile.contains(resolution)) {
+			profile = videoModule.getVideoTranscodingProfile() + " " + resolution + "p30";
+		}
+		
 		ArrayList<String> cmd = new ArrayList<>();
 		String tasksetConfig = videoModule.getTranscodingTasksetConfig();
 		if (tasksetConfig != null && !"Mac OS X".equals(System.getProperty("os.name"))) {
@@ -137,13 +144,12 @@ public class VideoTranscodingJob extends JobWithDB implements StatefulJob {
 		cmd.add(masterFile.getAbsolutePath());
 		cmd.add("-o"); 
 		cmd.add(transcodedFile.getAbsolutePath());
-		cmd.add("--optimize");
+		cmd.add("--optimize"); 	// add video infos to header for web "fast start"
 		cmd.add("--preset");
-		cmd.add("Normal");
+		cmd.add(profile);
 		cmd.add("--height");
-		cmd.add(Integer.toString(videoTranscoding.getResolution()));
-		cmd.add("--deinterlace");
-		cmd.add("--crop");
+		cmd.add(resolution);
+		cmd.add("--crop");		// do not crop
 		cmd.add("0:0:0:0");
 		
 		Process process = null;

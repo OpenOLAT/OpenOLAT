@@ -56,9 +56,12 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
@@ -66,6 +69,9 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.export.LectureBlockExport;
+import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
+import org.olat.modules.lecture.ui.export.LecturesBlockSignaturePDFExport;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,7 +92,9 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private TeacherRollCallController rollCallCtrl;
 	
 	private int counter;
+	private final String id;
 	private final boolean admin;
+	private final boolean sortAsc;
 	private final String emptyI18nKey;
 	private final boolean withRepositoryEntry, withTeachers;
 	
@@ -98,10 +106,12 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private LectureService lectureService;
 	
 	public TeacherLecturesTableController(UserRequest ureq, WindowControl wControl,
-			boolean admin, String emptyI18nKey,
+			boolean admin, String emptyI18nKey, boolean sortAsc, String id,
 			boolean withRepositoryEntry, boolean withTeachers) {
 		super(ureq, wControl, "teacher_view_table");
+		this.id = id;
 		this.admin = admin;
+		this.sortAsc = sortAsc;
 		this.emptyI18nKey = emptyI18nKey;
 		this.withTeachers = withTeachers;
 		this.withRepositoryEntry = withRepositoryEntry;
@@ -117,8 +127,8 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(withRepositoryEntry) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.externalRef, "open.course"));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.entry, "open.course"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.externalRef, "details"));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.entry, "details"));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.date, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.startTime, new TimeFlexiCellRenderer(getLocale())));
@@ -129,20 +139,25 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.teachers));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.status, new LectureBlockStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.details.i18nHeaderKey(), TeachCols.details.ordinal(), "details",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.tools));
+		DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(TeachCols.details.i18nHeaderKey(), TeachCols.details.ordinal(), "details",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("table.header.details"), "details"), null));
+		// set sort key even though we do not sort - added as css classes to column headers for styling
+		detailsCol.setSortKey(TeachCols.details.name());
+		columnsModel.addFlexiColumnModel(detailsCol);
+		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(TeachCols.tools);
+		toolsCol.setSortable(false);
+		columnsModel.addFlexiColumnModel(toolsCol);
 		
 		tableModel = new TeacherOverviewDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
-		sortOptions.setDefaultOrderBy(new SortKey(TeachCols.date.name(), false));
+		sortOptions.setDefaultOrderBy(new SortKey(TeachCols.date.name(), sortAsc));
 		tableEl.setSortSettings(sortOptions);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setEmtpyTableMessageKey(emptyI18nKey);
-		tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview");
+		tableEl.setAndLoadPersistedPreferences(ureq, "lecture-teacher-overview-".concat(id));
 	}
 	
 	public int getRowCount() {
@@ -265,21 +280,37 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private void doExportAttendanceList(UserRequest ureq, LectureBlock row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
 		List<Identity> participants = lectureService.getParticipants(lectureBlock);
+		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(row);
 		try {
-			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, getTranslator());
+			boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, authorizedAbsenceEnabled, getTranslator());
 			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
-			export.setResourceTitle(lectureBlock.getEntry().getDisplayname());
+			export.create(participants, rollCalls);
+			ureq.getDispatchResult().setResultingMediaResource(export);
+		} catch (COSVisitorException | IOException | TransformerException e) {
+			logError("", e);
+		}
+	}
+	
+	private void doExportAttendanceListForSignature(UserRequest ureq, LectureBlock row) {
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
+		List<Identity> participants = lectureService.getParticipants(lectureBlock);
+		try {
+			LecturesBlockSignaturePDFExport export = new LecturesBlockSignaturePDFExport(lectureBlock, getTranslator());
+			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
 			export.create(participants);
 			ureq.getDispatchResult().setResultingMediaResource(export);
 		} catch (COSVisitorException | IOException | TransformerException e) {
-			e.printStackTrace();
+			logError("", e);
 		}
 	}
 	
 	private void doSelectLectureBlock(UserRequest ureq, LectureBlock block) {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(block);
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
-		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock));
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("LectureBlock", block.getKey());
+		WindowControl swControl = addToHistory(ureq, ores, null);
+		rollCallCtrl = new TeacherRollCallController(ureq, swControl, reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock));
 		listenTo(rollCallCtrl);
 		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
 	}
@@ -326,6 +357,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 			VelocityContainer mainVC = createVelocityContainer("tools");
 			addLink("export", "export", "o_icon o_filetype_xlsx", mainVC);
 			addLink("attendance.list", "attendance.list", "o_icon o_filetype_pdf", mainVC);
+			addLink("attendance.list.to.sign", "attendance.list.to.sign", "o_icon o_filetype_pdf", mainVC);
 			putInitialPanel(mainVC);
 		}
 		
@@ -346,6 +378,9 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 				if("export".equals(cmd)) {
 					LectureBlock block = lectureService.getLectureBlock(row);
 					doExportLectureBlock(ureq, block);
+				} else if("attendance.list.to.sign".equals(cmd)) {
+					LectureBlock block = lectureService.getLectureBlock(row);
+					doExportAttendanceListForSignature(ureq, block);
 				} else if("attendance.list".equals(cmd)) {
 					LectureBlock block = lectureService.getLectureBlock(row);
 					doExportAttendanceList(ureq, block);

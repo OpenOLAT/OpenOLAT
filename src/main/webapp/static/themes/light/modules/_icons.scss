@@ -1,3 +1,4 @@
+
 /* Load font-awesome library as we use font styles for the default icons */
 $fa-font-path:        "../../font-awesome/fonts" !default;
 /* we use fonts as icon base. In case you want to use bitmap icons instead, 
@@ -144,6 +145,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_lifecycle:before { content: $fa-var-power-off;}
 .o_icon_lifecycle_date:before { content: $fa-var-calendar;}
 .o_icon_locked:before { content: $fa-var-lock;}
+.o_icon_log:before { content: $fa-var-file-text;}
 .o_icon_login:before { content: $fa-var-sign-in;}
 .o_icon_logout:before { content: $fa-var-sign-out;}
 .o_icon_mandatory:before { content: $fa-var-asterisk; color: #f0ad4e;}
@@ -278,6 +280,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_table_large:before { content: $fa-var-th-large; }
 .o_icon_tags:before { content: $fa-var-tags; }
 .o_icon_textinput:before { content: $fa-var-align-left; }
+.o_icon_time:before { content: $fa-var-clock-o; }
 .o_icon_timelimit:before { content: $fa-var-clock-o; }
 .o_icon_timelimit_start:before { content: $fa-var-hourglass-start; }
 .o_icon_timelimit_half:before { content: $fa-var-hourglass-half; }
@@ -492,6 +495,9 @@ $fa-css-prefix: "o_icon" !default;
 .o_lectures_rollcall_warning:before { content: $fa-var-adjust; color: $brand-warning; }
 .o_lectures_rollcall_danger:before { content: $fa-var-circle-o; color: $brand-danger; }
 .o_lectures_rollcall_free:before { content: $fa-var-circle; color: #969696; }
+.o_lectures_attended:before { content: $fa-var-circle; color: $brand-success; }
+.o_lectures_authorized:before { content: $fa-var-circle; color: $brand-warning; }
+.o_lectures_absent:before { content: $fa-var-circle; color: $brand-danger; }
 
 /* coaching */
 .o_black_led:before { content: $fa-var-circle; color: $brand-primary; }

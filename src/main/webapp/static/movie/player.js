@@ -152,7 +152,8 @@ var BPlayer = {
 		        path: mediaElementBaseUrl + 'hls/hls.min.js'
 		    },
 		    flv : {
-		        path: mediaElementBaseUrl + 'flv/flv.min.js'
+		        path: mediaElementBaseUrl + 'flv/flv.min.js',
+		        withCredentials: true
 		    },
 			success: function(mediaElement, originalNode, player) {
 				if(config.autostart) {
@@ -206,12 +207,14 @@ var BPlayer = {
 			config.enablePseudoStreaming = true;
 			if(extension == 'flv') {
 				mimeType = "video/flv";
+				meConfig.renderers = ['flash_video','native_flv'];
 			} else {
 				mimeType = "video/mp4";
 			}
 		} else {
 			if(extension == 'flv') {
 				mimeType = "video/flv";
+				meConfig.renderers = ['flash_video','native_flv'];
 			} else if(extension == 'f4v') {
 				mimeType = "video/flv";
 			} else if(extension == 'mp4') {

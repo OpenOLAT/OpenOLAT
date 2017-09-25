@@ -30,6 +30,10 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
@@ -78,5 +82,13 @@ public class ProjectBrokerCourseNodeIndexer extends AbstractHierarchicalIndexer 
 	@Override
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
+	}
+	
+	@Override
+	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
+		if(roles.isGuestOnly()) {
+			return false;
+		}
+		return super.checkAccess(contextEntry, businessControl, identity, roles);
 	}
 }

@@ -30,25 +30,23 @@ import org.olat.group.BusinessGroup;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Task {
+public interface Task extends TaskRef {
 	
-	public Long getKey();
+	public Date getSubmissionDate();
 	
-	public Date getCreationDate();
+	public Date getSubmissionRevisionsDate();
 	
-	public Date getLastModified();
+	public Date getCollectionDate();
 	
-	public TaskProcess getTaskStatus();
+	public Date getAcceptationDate();
 	
-	/**
-	 * Iteration of the revision / correction process. Start with 1.
-	 * @return
-	 */
-	public int getRevisionLoop();
+	public Date getSolutionDate();
 	
-	public String getTaskName();
+	public Date getGraduationDate();
 	
-	public Date getAssignmentDate();
+	public Date getAllowResetDate();
+
+	public Identity getAllowResetIdentity();
 	
 	public TaskList getTaskList();
 	

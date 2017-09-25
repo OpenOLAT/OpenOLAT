@@ -138,6 +138,7 @@ import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryLifeCycleChangeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.resource.OLATResource;
+import org.olat.search.SearchModule;
 import org.olat.search.SearchServiceUIFactory;
 import org.olat.search.SearchServiceUIFactory.DisplayOption;
 import org.olat.search.service.QuickSearchEvent;
@@ -219,6 +220,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private InstantMessagingModule imModule;
 	@Autowired
 	private CourseDBManager courseDBManager;
+	@Autowired
+	private SearchModule searchModule;
 	
 	public CourseRuntimeController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry re, RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator,
@@ -787,9 +790,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(glossary);
 		}
 		
-		if(!assessmentLock && lectureModule.isEnabled()
-				//check the configuration enable the lectures and the user is a teacher 
-				&& lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity())) {
+		if(!assessmentLock && isLecturesLinkEnabled()) {
 			lecturesLink = LinkFactory.createToolLink("command.lectures", translate("command.lectures"), this, "o_icon_lecture");
 			toolbarPanel.addTool(lecturesLink);
 		}
@@ -804,13 +805,25 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		// add course search to toolbox 
-		boolean isSearchEnabled = !assessmentLock && !isGuestOnly;
+		boolean isSearchEnabled = !assessmentLock && searchModule.isSearchAllowed(roles);
 		if (isSearchEnabled) {
 			searchLink = LinkFactory.createToolLink("coursesearch", translate("command.coursesearch"), this, "o_icon_search");
 			searchLink.setVisible(cc.isCourseSearchEnabled());
 			toolbarPanel.addTool(searchLink);
 		}
-		
+	}
+	
+	//check the configuration enable the lectures and the user is a teacher 
+	private boolean isLecturesLinkEnabled() {
+		if(lectureModule.isEnabled()) {
+			if(reSecurity.isEntryAdmin()) {
+				return lectureService.isRepositoryEntryLectureEnabled(getRepositoryEntry());
+			} else {
+				//check the configuration enable the lectures and the user is a teacher 
+				return lectureService.hasLecturesAsTeacher(getRepositoryEntry(), getIdentity());
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -1090,9 +1103,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if("Reminders".equalsIgnoreCase(type) || "RemindersLogs".equalsIgnoreCase(type)) {
 				doReminders(ureq);
 			} else if("Lectures".equalsIgnoreCase(type)) {
-				doLectures(ureq);
+				Activateable2 lectures = doLectures(ureq);
+				if(lectures != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					lectures.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
 			} else if("LectureBlock".equalsIgnoreCase(type)) {
-				doLectures(ureq).activate(ureq, entries, state);
+				Activateable2 lectures = doLectures(ureq);
+				if(lectures != null) {
+					lectures.activate(ureq, entries, state);
+				}
+			} else if("LecturesAdmin".equalsIgnoreCase(type)) {
+				Activateable2 lecturesAdmin = doLecturesAdmin(ureq);
+				if(lecturesAdmin != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					lecturesAdmin.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
 			} else if("MembersMgmt".equalsIgnoreCase(type)) {
 				Activateable2 members = doMembers(ureq);
 				if(members != null) {
@@ -1376,21 +1402,25 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void doLecturesAdmin(UserRequest ureq) {
+	private LectureRepositoryAdminController doLecturesAdmin(UserRequest ureq) {
 		if(delayedClose == Delayed.lecturesAdmin || requestForClose(ureq)) {
 			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				removeCustomCSS();
 
-				OLATResourceable ores = OresHelper.createOLATResourceableType("lecturesAdmin");
+				OLATResourceable ores = OresHelper.createOLATResourceableType("LecturesAdmin");
 				WindowControl swControl = addToHistory(ureq, ores, null);
-				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, getRepositoryEntry());
+				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, getRepositoryEntry());
 				listenTo(ctrl);
 				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);
 				setActiveTool(lecturesAdminLink);
 				currentToolCtr = lecturesAdminCtrl;
+				return lecturesAdminCtrl;
+			} else {
+				return null;
 			}
 		} else {
 			delayedClose = Delayed.lecturesAdmin;
+			return null;
 		}
 	}
 	

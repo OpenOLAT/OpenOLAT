@@ -44,7 +44,6 @@ public class GenericQuotaViewController extends BasicController {
 
 	private VelocityContainer myContent;
 	private QuotaForm quotaForm;
-	private boolean modalMode;
 	private Quota currentQuota;
 
 
@@ -57,12 +56,9 @@ public class GenericQuotaViewController extends BasicController {
 	 * @param ureq
 	 * @param wControl
 	 * @param quotaPath The path for which the quota should be edited
-	 * @param modalMode true: window will push to fullscreen and pop itself when finished. false: normal
-	 * controller mode, get initial component using getInitialComponent()
 	 */
-	GenericQuotaViewController(UserRequest ureq, WindowControl wControl, String relPath, boolean modalMode) {
+	GenericQuotaViewController(UserRequest ureq, WindowControl wControl, String relPath) {
 		super(ureq, wControl);
-		this.modalMode = modalMode;
 		
 		// check if quota foqf.cannot.del.defaultr this path already exists
 		QuotaManager qm = QuotaManager.getInstance();
@@ -86,7 +82,6 @@ public class GenericQuotaViewController extends BasicController {
 		QuotaManager qm = QuotaManager.getInstance();
 		myContent = createVelocityContainer("edit");
 		myContent.contextPut("notEnoughPrivilege", Boolean.FALSE);
-		myContent.contextPut("modalMode", Boolean.valueOf(modalMode));
 		myContent.contextPut("users",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_USERS));
 		myContent.contextPut("powerusers",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_POWER));
 		myContent.contextPut("groups",qm.getDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_GROUPS));

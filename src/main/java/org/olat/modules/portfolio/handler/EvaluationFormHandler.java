@@ -46,9 +46,10 @@ import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.EvaluationFormPart;
 import org.olat.modules.portfolio.ui.MultiEvaluationFormController;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
-import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
+import org.olat.modules.portfolio.ui.editor.PageRunControllerElement;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.repository.RepositoryEntry;
 
@@ -71,7 +72,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
 		Controller ctrl = null;
 		if(element instanceof EvaluationFormPart) {
 			PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
@@ -83,7 +84,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 			if(assignment == null) {
 				ctrl = getController(ureq, wControl, body, eva);
 			} else {
-				ctrl = getControllerForAssignment(ureq, wControl, body, assignment);
+				ctrl = getControllerForAssignment(ureq, wControl, body, assignment, hints.isOnePage());
 			}
 		}
 		
@@ -117,7 +118,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 		return ctrl;
 	}
 	
-	private Controller getControllerForAssignment(UserRequest ureq, WindowControl wControl, PageBody body, Assignment assignment) {
+	private Controller getControllerForAssignment(UserRequest ureq, WindowControl wControl, PageBody body, Assignment assignment, boolean onePage) {
 		PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 
 		//find the evaluation form
@@ -150,26 +151,26 @@ public class EvaluationFormHandler implements PageElementHandler {
 			}
 		} else {
 			if(hasRole(PortfolioRoles.owner, ureq.getIdentity(), accessRights)) {
-				boolean readOnly = (pageStatus == PageStatus.published) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted);
+				boolean readOnly = (pageStatus == PageStatus.published) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted) || onePage;
 				Identity owner = getOwner(accessRights);
 				List<Identity> coachesAndReviewers = getCoachesAndReviewers(accessRights);
 				if(coachesAndReviewers.size() > 0) {
-					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, body, re, false, readOnly, anonym);
+					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, body, re, false, readOnly, onePage, anonym);
 				} else {
 					ctrl = new EvaluationFormController(ureq, wControl, ureq.getIdentity(), body, re, readOnly, false);
 				}
 			} else if(hasRole(PortfolioRoles.coach, ureq.getIdentity(), accessRights)) {
 				Identity owner = getOwner(accessRights);
 				List<Identity> coachesAndReviewers = getCoachesAndReviewers(accessRights);
-				boolean readOnly = (pageStatus == PageStatus.draft) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted);
-				ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, body, re, false, readOnly, anonym);
+				boolean readOnly = (pageStatus == PageStatus.draft) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted) || onePage;
+				ctrl = new MultiEvaluationFormController(ureq, wControl, owner, coachesAndReviewers, body, re, false, readOnly, onePage, anonym);
 			} else if(hasRole(PortfolioRoles.reviewer, ureq.getIdentity(), accessRights)
 					|| hasRole(PortfolioRoles.invitee, ureq.getIdentity(), accessRights)) {
-				boolean readOnly = (pageStatus == PageStatus.draft) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted);
+				boolean readOnly = (pageStatus == PageStatus.draft) || (pageStatus == PageStatus.closed) || (pageStatus == PageStatus.deleted) || onePage;
 				if(assignment.isReviewerSeeAutoEvaluation()) {
 					Identity owner = getOwner(accessRights);
 					List<Identity> reviewers = Collections.singletonList(ureq.getIdentity());
-					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, reviewers, body, re, true, readOnly, anonym);
+					ctrl = new MultiEvaluationFormController(ureq, wControl, owner, reviewers, body, re, true, readOnly, onePage, anonym);
 				} else {
 					ctrl = new EvaluationFormController(ureq, wControl, ureq.getIdentity(), body, re, readOnly, !readOnly);
 				}

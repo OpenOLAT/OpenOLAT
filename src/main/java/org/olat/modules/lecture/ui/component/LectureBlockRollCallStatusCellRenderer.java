@@ -25,7 +25,10 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
+import org.olat.modules.lecture.ui.LectureBlockAndRollCallRow;
 
 /**
  * 
@@ -35,52 +38,79 @@ import org.olat.modules.lecture.model.LectureBlockAndRollCall;
  */
 public class LectureBlockRollCallStatusCellRenderer implements FlexiCellRenderer {
 
+	private final Translator translator;
 	private final boolean authorizedAbsenceEnabled;
 	private final boolean absenceDefaultAuthorized;
 	
-	public LectureBlockRollCallStatusCellRenderer(boolean authorizedAbsenceEnabled, boolean absenceDefaultAuthorized) {
+	public LectureBlockRollCallStatusCellRenderer(boolean authorizedAbsenceEnabled, boolean absenceDefaultAuthorized,
+			Translator translator) {
 		this.authorizedAbsenceEnabled = authorizedAbsenceEnabled;
 		this.absenceDefaultAuthorized = absenceDefaultAuthorized;
+		this.translator = translator;
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof LectureBlockAndRollCall) {
-			LectureBlockAndRollCall rollCall = (LectureBlockAndRollCall)cellValue;
-			if(rollCall.isRollCalled()) {
-				int numOfLectures = rollCall.getEffectiveLecturesNumber();
-				if(numOfLectures < 0) {
-					numOfLectures = rollCall.getPlannedLecturesNumber();
-				}
-			
-				String title;
-				String iconCssClass;
-				if(rollCall.isCompulsory()) {
-					if(rollCall.getLecturesAttendedNumber() >= numOfLectures) {
-						iconCssClass = "o_lectures_rollcall_ok";
-						title = translator.translate("rollcall.tooltip.ok");
-					} else if(authorizedAbsenceEnabled) {
-						if(absenceDefaultAuthorized && rollCall.getLecturesAuthorizedAbsent() == null) {
-							iconCssClass = "o_lectures_rollcall_ok";
-							title = translator.translate("rollcall.tooltip.ok");
-						} else if(rollCall.getLecturesAuthorizedAbsent() != null && rollCall.getLecturesAuthorizedAbsent().booleanValue()) {
-							iconCssClass = "o_lectures_rollcall_warning";
-							title = translator.translate("rollcall.tooltip.authorized.absence");
-						} else {
-							iconCssClass = "o_lectures_rollcall_danger";
-							title = translator.translate("rollcall.tooltip.absence");
-						}
-					} else {
-						iconCssClass = "o_lectures_rollcall_danger";
-						title = translator.translate("rollcall.tooltip.absence");
-					}
-				} else {
-					iconCssClass = "o_lectures_rollcall_free";
-					title = translator.translate("rollcall.tooltip.free");
-				}
-				target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg ").append(iconCssClass).append("'> </i></span>");
-			}
+			URLBuilder ubu, Translator trans) {
+		if(cellValue instanceof LectureBlockAndRollCallRow) {
+			LectureBlockAndRollCallRow rollCallRow = (LectureBlockAndRollCallRow)cellValue;
+			render(target, rollCallRow.getRow());
+		} else if(cellValue instanceof LectureBlockAndRollCall) {
+			render(target, (LectureBlockAndRollCall)cellValue);
 		}
+	}
+	
+	private void render(StringOutput target, LectureBlockAndRollCall rollCall) {
+		if(rollCall.isRollCalled()) {
+			LectureBlockStatus status = rollCall.getStatus();
+			LectureRollCallStatus rollCallStatus = rollCall.getRollCallStatus();
+			if(status == LectureBlockStatus.cancelled) {
+				String title = translator.translate("cancelled");
+				target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg o_icon_cancelled'> </i></span>");
+			} else if(status == LectureBlockStatus.done
+					&& (rollCallStatus == LectureRollCallStatus.closed || rollCallStatus == LectureRollCallStatus.autoclosed)) {
+				renderClosed(target, rollCall);	
+			} else {
+				String title = translator.translate("in.progress");
+				target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg o_icon_status_in_review'> </i></span>");
+			}
+		} else if(!rollCall.isCompulsory()) {
+			String title = translator.translate("rollcall.tooltip.free");
+			target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg o_lectures_rollcall_free'> </i></span>");
+		}
+	}
+	
+	private void renderClosed(StringOutput target, LectureBlockAndRollCall rollCall) {
+		int numOfLectures = rollCall.getEffectiveLecturesNumber();
+		if(numOfLectures < 0) {
+			numOfLectures = rollCall.getPlannedLecturesNumber();
+		}
+	
+		String title;
+		String iconCssClass;
+		if(rollCall.isCompulsory()) {
+			if(rollCall.getLecturesAttendedNumber() >= numOfLectures) {
+				iconCssClass = "o_lectures_rollcall_ok";
+				title = translator.translate("rollcall.tooltip.ok");
+			} else if(authorizedAbsenceEnabled) {
+				if(absenceDefaultAuthorized && rollCall.getLecturesAuthorizedAbsent() == null) {
+					iconCssClass = "o_lectures_rollcall_ok";
+					title = translator.translate("rollcall.tooltip.ok");
+				} else if(rollCall.getLecturesAuthorizedAbsent() != null && rollCall.getLecturesAuthorizedAbsent().booleanValue()) {
+					iconCssClass = "o_lectures_rollcall_warning";
+					title = translator.translate("rollcall.tooltip.authorized.absence");
+				} else {
+					iconCssClass = "o_lectures_rollcall_danger";
+					title = translator.translate("rollcall.tooltip.absence");
+				}
+			} else {
+				iconCssClass = "o_lectures_rollcall_danger";
+				title = translator.translate("rollcall.tooltip.absence");
+			}
+		} else {
+			iconCssClass = "o_lectures_rollcall_free";
+			title = translator.translate("rollcall.tooltip.free");
+		}
+		target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg ").append(iconCssClass).append("'> </i></span>");
 	}
 }

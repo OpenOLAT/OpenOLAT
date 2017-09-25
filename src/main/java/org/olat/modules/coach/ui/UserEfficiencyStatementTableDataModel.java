@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.course.assessment.UserEfficiencyStatement;
-import org.olat.modules.coach.model.EfficiencyStatementEntry;
 
 /**
  * 
@@ -93,10 +92,6 @@ public class UserEfficiencyStatementTableDataModel implements TableDataModel<Use
 	@Override
 	public UserEfficiencyStatement getObject(int row) {
 		return group.get(row);
-	}
-	
-	public int indexOf(EfficiencyStatementEntry obj) {
-		return group.indexOf(obj);
 	}
 
 	@Override

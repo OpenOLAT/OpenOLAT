@@ -10,7 +10,12 @@
 				<i class="o_icon o_icon_print o_icon-lg">&nbsp;</i>
 				<span>$r.translate("topnav.printview")</span>
 			</a>
-		</li>	
+		</li>
+		#if($r.available("search.tool"))
+		<li id="o_navbar_search_opener" class="o_navbar_tool dropdown">
+			$r.render("search.tool")
+		</li>
+		#end	
 		#if($r.available("topnav.help"))
 		<li id="o_navbar_help">
 			$r.render("topnav.help")

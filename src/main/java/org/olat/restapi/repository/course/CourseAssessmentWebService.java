@@ -80,6 +80,7 @@ import org.olat.ims.qti.navigator.Navigator;
 import org.olat.ims.qti.process.AssessmentFactory;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.iq.IQManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -329,7 +330,7 @@ public class CourseAssessmentWebService {
 			} else {
 				AssessableCourseNode assessableNode = (AssessableCourseNode) node;
 				ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, Boolean.TRUE, new Long(nodeKey));//not directly pass this key
-				assessableNode.updateUserScoreEvaluation(scoreEval, userCourseEnvironment, requestIdentity, true);
+				assessableNode.updateUserScoreEvaluation(scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
 			}
 
 			CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
@@ -440,7 +441,7 @@ public class CourseAssessmentWebService {
 				AssessableCourseNode acn = (AssessableCourseNode) courseNode;
 				// assessment nodes are assessable
 				boolean incrementUserAttempts = true;
-				acn.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementUserAttempts);
+				acn.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementUserAttempts, Role.coach);
 			} else {
 				log.error("Result set already saved");
 			}

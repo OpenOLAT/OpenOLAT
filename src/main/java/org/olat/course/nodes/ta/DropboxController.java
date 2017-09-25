@@ -81,6 +81,7 @@ import org.olat.course.nodes.TACourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 
 /**
  * Initial Date:  02.09.2004
@@ -361,14 +362,7 @@ public class DropboxController extends BasicController {
 		
 		// update attempts counter for this user: one file - one attempts
 		AssessableCourseNode acn = (AssessableCourseNode) node;
-		/*AssessmentEvaluation eval = acn.getUserScoreEvaluation(userCourseEnv);
-		if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
-			eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
-			acn.updateUserScoreEvaluation(eval, userCourseEnv, getIdentity(), true);
-		} else {
-			acn.incrementUserAttempts(userCourseEnv);
-		}*/
-		acn.incrementUserAttempts(userCourseEnv);
+		acn.incrementUserAttempts(userCourseEnv, Role.user);
 				
 		// log entry for this file
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();

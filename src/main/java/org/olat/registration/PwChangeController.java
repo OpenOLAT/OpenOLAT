@@ -54,6 +54,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
@@ -70,8 +71,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PwChangeController extends BasicController {
 
-	private static String SEPARATOR = "____________________________________________________________________\n";
-
 	private Panel passwordPanel;
 	private Link pwchangeHomelink;
 	private final VelocityContainer myContent;
@@ -85,6 +84,10 @@ public class PwChangeController extends BasicController {
 	private String pwKey;
 	private TemporaryKey tempKey;
 	
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nManager;
 	@Autowired
 	private UserModule userModule;
 	@Autowired
@@ -248,7 +251,7 @@ public class PwChangeController extends BasicController {
 			return null;
 		}
 		Preferences prefs = identity.getUser().getPreferences();
-		Locale locale = I18nManager.getInstance().getLocaleOrDefault(prefs.getLanguage());
+		Locale locale = i18nManager.getLocaleOrDefault(prefs.getLanguage());
 		ureq.getUserSession().setLocale(locale);
 		myContent.contextPut("locale", locale);
 		
@@ -274,8 +277,8 @@ public class PwChangeController extends BasicController {
 			.append("<div class='o_body'>")
 			.append(userTrans.translate("pwchange.headline"))
 			.append(userTrans.translate("pwchange.intro", new String[] { identity.getName() }))
-		    .append(userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(), I18nManager.getInstance().getLocaleKey(ureq.getLocale()) }))
-		    .append(userTrans.translate("pwchange.body.alt", new String[] { serverpath, tk.getRegistrationKey(), I18nManager.getInstance().getLocaleKey(ureq.getLocale()) }))
+		    .append(userTrans.translate("pwchange.body", new String[] { serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()) }))
+		    .append(userTrans.translate("pwchange.body.alt", new String[] { serverpath, tk.getRegistrationKey(), i18nModule.getLocaleKey(ureq.getLocale()) }))
 		    .append("</div>")
 		    .append("<div class='o_footer'>")
 		    .append(userTrans.translate("reg.wherefrom", new String[] { serverpath, today, ip }))

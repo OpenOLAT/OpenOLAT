@@ -163,8 +163,10 @@ public class ValidationStepForm extends StepFormBasicController {
 			}
 
 			for(String prop : userPropsToSearch) {
-				identity = userManager.findIdentityKeyWithProperty(prop, assessedId);
-				if(identity != null) {
+				List<Identity> found = userManager.findIdentitiesWithProperty(prop, assessedId);
+				if(found.size() > 0) {
+					// ignore multiple hits, just take the first one
+					identity = found.get(0);
 					idToIdentityMap.put(assessedId, identity);
 					continue;
 				}

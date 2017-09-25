@@ -122,6 +122,7 @@ public class ImportCalendarByUrlController extends FormBasicController {
 			logError("", e);
 		} catch (OLATRuntimeException e) {
 			showError("cal.import.url.content.invalid");
+			logError("Invalid calendar: " + url, e);
 		}
 	}
 

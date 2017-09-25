@@ -197,8 +197,8 @@
 			<div class="o_extlink clearfix o_block_large_bottom">
 				<h4>$r.translate("details.extlinkheader")</h4>
 				<div class="o_copy_code o_nowrap">
-					<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
-					$extlink
+					<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+					<input type="text" value="$extlink" onclick="this.select()"/>
 					<script type="text/javascript">
 					/* <![CDATA[ */
 						jQuery(function() {
@@ -209,8 +209,8 @@
 				</div>
 				#if ($isGuestAllowed)
 				<div class="o_copy_code o_nowrap">
-					<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"></i></a>
-					${extlink}?guest=true&amp;lang=$r.getLanguageCode()
+					<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
+					<input type="text" value="${extlink}?guest=true&amp;lang=$r.getLanguageCode()" onclick="this.select()"/>					
 					<script type="text/javascript">
 					/* <![CDATA[ */
 						jQuery(function() {

@@ -147,7 +147,9 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 					return certificate == null ? null : certificate.getNextRecertificationDate();
 				}
 				case initialLaunchDate: return row.getInitialCourseLaunchDate();
-				case lastScoreUpdate: return row.getLastModified();
+				case lastModified: return row.getLastModified();
+				case lastUserModified: return row.getLastUserModified();
+				case lastCoachModified: return row.getLastCoachModified();		
 			}
 		}
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
@@ -172,7 +174,9 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		certificate("table.header.certificate"),
 		recertification("table.header.recertification"),
 		initialLaunchDate("table.header.initialLaunchDate"),
-		lastScoreUpdate("table.header.lastScoreDate"),
+		lastModified("table.header.lastScoreDate"),
+		lastUserModified("table.header.lastUserModificationDate"),
+		lastCoachModified("table.header.lastCoachModificationDate"),
 		numOfAssessmentDocs("table.header.num.assessmentDocs");
 		
 		private final String i18nKey;

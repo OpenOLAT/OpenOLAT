@@ -114,6 +114,8 @@ table {
 		td, th { 
 			padding: $padding-xs-vertical $padding-xs-horizontal;
 			border: 0;
+		}
+		thead td, th { 
 			font-weight: bold;
 		}
 	}
@@ -277,16 +279,12 @@ p.b_figure_caption {
 	font-family: $headings-font-family;
 }
 
-/* Movie player responsive fix. Must correspond with js code in player.js*/
-span.olatFlashMovieViewer {
-	max-width: 100% !important;
-	border: none !important;
-}
-.mejs__container, .mejs__mediaelement video, .mejs__layers div, .me_cannotplay {
-	max-width: 100%;
-}
-
 /* float clear classes */
 .b_clear_float, p.b_clear_float, div.b_clear_float { 
 	clear: both;
 }
+
+
+/* tinymce specific css classes for alignment, figures etc.*/
+@import "tinymce";
+

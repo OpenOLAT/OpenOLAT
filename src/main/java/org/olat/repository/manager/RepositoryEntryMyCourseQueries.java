@@ -200,6 +200,11 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		//user course informations
 		//efficiency statements
+		
+		// join seems to be quicker
+		if(params.getMarked() != null && params.getMarked().booleanValue()) {
+			sb.append(" inner join ").append(MarkImpl.class.getName()).append(" as mark2 on (mark2.creator.key=:identityKey and mark2.resId=v.key and mark2.resName='RepositoryEntry')");
+		}
 
 		sb.append(" where ");
 		needIdentityKey |= appendMyViewAccessSubSelect(sb, roles, params.getFilters(), params.isMembershipMandatory());
@@ -228,11 +233,6 @@ public class RepositoryEntryMyCourseQueries {
 		}
 		if (params.isResourceTypesDefined()) {
 			sb.append(" and res.resName in (:resourcetypes)");
-		}
-		if(params.getMarked() != null && params.getMarked().booleanValue()) {
-			sb.append(" and exists (select mark2.key from ").append(MarkImpl.class.getName()).append(" as mark2 ")
-			  .append("   where mark2.creator.key=:identityKey and mark2.resId=v.key and mark2.resName='RepositoryEntry'")
-			  .append(" )");
 		}
 		
 		String author = params.getAuthor();
@@ -291,8 +291,9 @@ public class RepositoryEntryMyCourseQueries {
 		if(StringHelper.containsNonWhitespace(params.getIdRefsAndTitle())) {
 			quickRefs = params.getIdRefsAndTitle();
 			quickText = PersistenceHelper.makeFuzzyQueryString(quickRefs);
-			
-			sb.append(" and (v.externalId=:quickRef or v.externalRef=:quickRef or v.softkey=:quickRef or ");
+			sb.append(" and (v.externalId=:quickRef or ");
+			PersistenceHelper.appendFuzzyLike(sb, "v.externalRef", "quickText", dbInstance.getDbVendor());
+			sb.append(" or v.softkey=:quickRef or ");
 			PersistenceHelper.appendFuzzyLike(sb, "v.displayname", "quickText", dbInstance.getDbVendor());
 			if(StringHelper.isLong(quickRefs)) {
 				try {

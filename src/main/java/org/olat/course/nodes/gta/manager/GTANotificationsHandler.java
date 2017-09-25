@@ -37,6 +37,7 @@ import org.olat.core.util.Util;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.GTARunController;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -63,6 +64,8 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 	private RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private AssessmentEntryDAO courseNodeAssessmentDao;
 
 	@Override
 	public SubscriptionInfo createSubscriptionInfo(Subscriber subscriber, Locale locale, Date compareDate) {
@@ -70,20 +73,16 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 		Date latestNews = p.getLatestNewsDate();
 	
 		SubscriptionInfo si;
-	
 		// there could be news for me, investigate deeper
 		try {
 			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
-				Translator translator = Util.createPackageTranslator(GTARunController.class, locale);
-				
 				GTANotifications notifications = new GTANotifications(subscriber, locale, compareDate,
-						repositoryService, gtaManager, businessGroupService, userManager);
+						repositoryService, gtaManager, businessGroupService, userManager, courseNodeAssessmentDao);
 				List<SubscriptionListItem> items = notifications.getItems();
 				if(items.isEmpty()) {
 					si = NotificationsManager.getInstance().getNoSubscriptionInfo();
 				} else {
-					String displayName = notifications.getDisplayName();
-					String title = translator.translate("notifications.header", new String[]{ displayName });
+					String title = notifications.getNotifificationHeader();
 					TitleItem titleItem = new TitleItem(title, CSS_CLASS_ICON);
 					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), titleItem, items);
 				}

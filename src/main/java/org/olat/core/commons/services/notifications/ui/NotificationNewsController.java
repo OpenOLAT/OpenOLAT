@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
@@ -92,13 +93,14 @@ public class NotificationNewsController extends BasicController implements
 		} else {
 			compareDate = newsSinceDate;
 		}
+		compareDate = CalendarUtils.removeTime(compareDate);
+		
 		// Main view is a velocity container
 		newsVC = createVelocityContainer("notificationsNews");
 		// Fetch data from DB and update datamodel and reuse subscribers
 		List<Subscriber> subs = updateNewsDataModel();
 		// Add date and type chooser
-		dateChooserCtr = new DateChooserController(ureq, getWindowControl(),
-				new Date());
+		dateChooserCtr = new DateChooserController(ureq, getWindowControl(), compareDate);
 		dateChooserCtr.setSubscribers(subs);
 		listenTo(dateChooserCtr);
 		newsVC.put("dateChooserCtr", dateChooserCtr.getInitialComponent());
@@ -136,6 +138,7 @@ public class NotificationNewsController extends BasicController implements
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == dateChooserCtr) {
 			if (event == Event.CHANGED_EVENT) {

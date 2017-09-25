@@ -39,6 +39,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.core.util.crypto.X509CertificatePrivateKeyPair;
+import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.ui.assessment.ValidationXmlSignatureController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,15 +59,18 @@ public class QTI21AdminController extends FormBasicController {
 	private static final String[] onValues = new String[]{ "" };
 	
 	private FormLink validationButton;
-	private MultipleSelectionElement mathExtensionEl, digitalSignatureEl;
+	private MultipleSelectionElement mathExtensionEl, digitalSignatureEl, createQTI12resourcesEl;
 	private FileElement certificateEl;
 	private TextElement certificatePasswordEl;
 	
 	private CloseableModalController cmc;
 	private ValidationXmlSignatureController validationCtrl;
-	
+
+
 	@Autowired
-	private QTI21Module qtiModule;
+	private QTIModule qti12Module;
+	@Autowired
+	private QTI21Module qti21Module;
 	
 	public QTI21AdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "admin");
@@ -75,16 +79,30 @@ public class QTI21AdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		validationButton = uifactory.addFormLink("validate.xml.signature", formLayout, Link.BUTTON);
+		FormLayoutContainer qti12LayoutCont = FormLayoutContainer.createDefaultFormLayout("optionsFor12", getTranslator());
+		qti12LayoutCont.setRootForm(mainForm);
+		formLayout.add("optionsFor12", qti12LayoutCont);
+		qti12LayoutCont.setFormTitle(translate("admin.12.title"));
+		
+		createQTI12resourcesEl = uifactory.addCheckboxesHorizontal("create.12.resources", "create.12.resources", qti12LayoutCont,
+				onKeys, onValues);
+		if(qti12Module.isCreateResourcesEnabled()) {
+			createQTI12resourcesEl.select(onKeys[0], true);
+		}
+		
 		
 		FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("options", getTranslator());
 		layoutCont.setRootForm(mainForm);
 		formLayout.add("options", layoutCont);
 		layoutCont.setFormTitle(translate("admin.title"));
+
+		validationButton = uifactory.addFormLink("validate.xml.signature", layoutCont, Link.BUTTON);
+		validationButton.setCustomEnabledLinkCSS("btn btn-default pull-right");
+		validationButton.getComponent().setSuppressDirtyFormWarning(true);
 		
 		digitalSignatureEl = uifactory.addCheckboxesHorizontal("digital.signature", "digital.signature", layoutCont,
 				onKeys, onValues);
-		if(qtiModule.isDigitalSignatureEnabled()) {
+		if(qti21Module.isDigitalSignatureEnabled()) {
 			digitalSignatureEl.select(onKeys[0], true);
 		}
 		digitalSignatureEl.setExampleKey("digital.signature.text", null);
@@ -93,12 +111,12 @@ public class QTI21AdminController extends FormBasicController {
 		certificateEl = uifactory.addFileElement(getWindowControl(), "digital.signature.certificate", "digital.signature.certificate", layoutCont);
 		certificateEl.setExampleKey("digital.signature.certificate.example", null);
 		certificateEl.setHelpText(translate("digital.signature.certificate.hint"));
-		if(StringHelper.containsNonWhitespace(qtiModule.getDigitalSignatureCertificate())) {
-			File certificate = qtiModule.getDigitalSignatureCertificateFile();
+		if(StringHelper.containsNonWhitespace(qti21Module.getDigitalSignatureCertificate())) {
+			File certificate = qti21Module.getDigitalSignatureCertificateFile();
 			certificateEl.setInitialFile(certificate);
 		}
 		
-		String certificatePassword = qtiModule.getDigitalSignatureCertificatePassword();
+		String certificatePassword = qti21Module.getDigitalSignatureCertificatePassword();
 		String password = StringHelper.containsNonWhitespace(certificatePassword) ? PASSWORD_PLACEHOLDER : "";
 		certificatePasswordEl = uifactory.addPasswordElement("digital.signature.certificate.password", "digital.signature.certificate.password",
 				256, password, layoutCont);
@@ -106,7 +124,7 @@ public class QTI21AdminController extends FormBasicController {
 
 		mathExtensionEl = uifactory.addCheckboxesHorizontal("math.extension", "math.extension", layoutCont,
 				onKeys, onValues);
-		if(qtiModule.isMathAssessExtensionEnabled()) {
+		if(qti21Module.isMathAssessExtensionEnabled()) {
 			mathExtensionEl.select(onKeys[0], true);
 		}
 		mathExtensionEl.setExampleKey("math.extension.text", null);
@@ -168,6 +186,13 @@ public class QTI21AdminController extends FormBasicController {
 		
 		return allOk;
 	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
+		if(source != this.validationButton) {
+			super.propagateDirtinessToContainer(source, fe);
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -192,19 +217,21 @@ public class QTI21AdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		qtiModule.setMathAssessExtensionEnabled(mathExtensionEl.isSelected(0));
-		qtiModule.setDigitalSignatureEnabled(digitalSignatureEl.isSelected(0));
+		qti12Module.setCreateResourcesEnabled(createQTI12resourcesEl.isSelected(0));
+		
+		qti21Module.setMathAssessExtensionEnabled(mathExtensionEl.isSelected(0));
+		qti21Module.setDigitalSignatureEnabled(digitalSignatureEl.isSelected(0));
 		if(digitalSignatureEl.isSelected(0)) {
 			File uploadedCertificate = certificateEl.getUploadFile();
 			if(uploadedCertificate != null && uploadedCertificate.exists()) {
-				qtiModule.setDigitalSignatureCertificateFile(uploadedCertificate, certificateEl.getUploadFileName());
-				File newFile = qtiModule.getDigitalSignatureCertificateFile();
+				qti21Module.setDigitalSignatureCertificateFile(uploadedCertificate, certificateEl.getUploadFileName());
+				File newFile = qti21Module.getDigitalSignatureCertificateFile();
 				certificateEl.reset();// make sure the same certificate is not load twice
 				certificateEl.setInitialFile(newFile);
 			}
 			String password = certificatePasswordEl.getValue();
 			if(!PASSWORD_PLACEHOLDER.equals(password)) {
-				qtiModule.setDigitalSignatureCertificatePassword(password);
+				qti21Module.setDigitalSignatureCertificatePassword(password);
 			}
 		}
 	}

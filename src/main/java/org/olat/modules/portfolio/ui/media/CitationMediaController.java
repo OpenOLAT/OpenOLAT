@@ -29,7 +29,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.portfolio.Citation;
 import org.olat.modules.portfolio.Media;
+import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.manager.MetadataXStream;
+import org.olat.modules.portfolio.ui.MediaMetadataController;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.modules.portfolio.ui.component.CitationComponent;
 
@@ -41,7 +43,7 @@ import org.olat.modules.portfolio.ui.component.CitationComponent;
  */
 public class CitationMediaController extends BasicController {
 	
-	public CitationMediaController(UserRequest ureq, WindowControl wControl, Media media) {
+	public CitationMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		
@@ -61,6 +63,13 @@ public class CitationMediaController extends BasicController {
 			cmp.setCitation(citation);
 			cmp.setDublinCoreMetadata(media);
 			mainVC.put("cit", cmp);	
+		}
+		
+		
+		if(hints.isExtendedMetadata()) {
+			MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
+			listenTo(metaCtrl);
+			mainVC.put("meta", metaCtrl.getInitialComponent());
 		}
 	}
 

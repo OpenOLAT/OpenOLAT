@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,35 +42,49 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.AssignmentResponse.Status;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.GTARelativeToDates;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
+import org.olat.course.nodes.gta.TaskDueDate;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.TaskRef;
+import org.olat.course.nodes.gta.TaskRevisionDate;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.Membership;
 import org.olat.course.nodes.gta.model.Solution;
 import org.olat.course.nodes.gta.model.SolutionList;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.model.TaskDefinitionList;
+import org.olat.course.nodes.gta.model.TaskDueDateImpl;
 import org.olat.course.nodes.gta.model.TaskImpl;
 import org.olat.course.nodes.gta.model.TaskListImpl;
+import org.olat.course.nodes.gta.model.TaskRevisionDateImpl;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
@@ -79,10 +94,13 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -109,11 +127,17 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private UserCourseInformationsManager userCourseInformationsManager;
 
 	/**
 	 * Get the task folder path relative to the folder root for a specific node.
@@ -810,6 +834,25 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
+	public Task getTask(TaskRef task) {
+		String q = "select task from gtatask task where task.key=:taskKey";
+		List<Task> tasks = dbInstance.getCurrentEntityManager().createQuery(q, Task.class)
+			.setParameter("taskKey", task.getKey())
+			.getResultList();
+
+		return tasks.isEmpty() ? null : tasks.get(0);
+	}
+
+	@Override
+	public TaskDueDate getDueDatesTask(TaskRef task) {
+		List<TaskDueDate> tasks = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("dueDateTaskByTask", TaskDueDate.class)
+			.setParameter("taskKey", task.getKey())
+			.getResultList();
+		return tasks.isEmpty() ? null : tasks.get(0);
+	}
+
+	@Override
 	public Task getTask(IdentityRef identity, TaskList taskList) {
 		String q = "select task from gtatask task where task.taskList.key=:taskListKey and task.identity.key=:identityKey";
 		List<Task> tasks = dbInstance.getCurrentEntityManager().createQuery(q, Task.class)
@@ -829,6 +872,17 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			.getResultList();
 
 		return tasks.isEmpty() ? null : tasks.get(0);
+	}
+
+	@Override
+	public List<TaskRevisionDate> getTaskRevisions(Task task) {
+		if(task == null || task.getKey() == null) return Collections.emptyList();
+		
+		String q = "select taskrev from gtataskrevisiondate taskrev where taskrev.task.key=:taskKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q, TaskRevisionDate.class)
+			.setParameter("taskKey", task.getKey())
+			.getResultList();
 	}
 	
 	@Override
@@ -874,7 +928,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				task.setAssignmentDate(new Date());
 				dbInstance.getCurrentEntityManager().persist(task);
 				dbInstance.commit();
-				syncAssessmentEntry((TaskImpl)currentTask, cNode);
+				syncAssessmentEntry((TaskImpl)currentTask, cNode, Role.user);
 				response = new AssignmentResponse(task, Status.ok);
 			}
 		} else {
@@ -882,7 +936,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				((TaskImpl)currentTask).setTaskStatus(TaskProcess.submit);
 			}
 			currentTask = dbInstance.getCurrentEntityManager().merge(currentTask);
-			syncAssessmentEntry((TaskImpl)currentTask, cNode);
+			syncAssessmentEntry((TaskImpl)currentTask, cNode, Role.user);
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
 		
@@ -1005,6 +1059,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				TaskImpl task = createTask(taskName, reloadedTasks, nextStep, businessGroup, identity, cNode);
 				task.setAssignmentDate(new Date());
 				dbInstance.getCurrentEntityManager().persist(task);
+				syncAssessmentEntry(task, cNode, Role.user);
 				response = new AssignmentResponse(task, Status.ok);
 			}
 			dbInstance.commit();
@@ -1012,12 +1067,23 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			if(currentTask.getTaskStatus() == TaskProcess.assignment) {
 				TaskProcess nextStep = nextStep(currentTask.getTaskStatus(), cNode);
 				((TaskImpl)currentTask).setTaskStatus(nextStep);
+				if(taskFile != null) {
+					((TaskImpl)currentTask).setTaskName(taskFile.getName());
+				}
 			}
 			currentTask = dbInstance.getCurrentEntityManager().merge(currentTask);
-			syncAssessmentEntry((TaskImpl)currentTask, cNode);
+			syncAssessmentEntry((TaskImpl)currentTask, cNode, Role.user);
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
 		return response;
+	}
+
+	@Override
+	public Task createAndPersistTask(String taskName, TaskList taskList, TaskProcess status,
+			BusinessGroup assessedGroup, Identity assessedIdentity, GTACourseNode cNode) {
+		Task task = createTask(taskName, taskList, status, assessedGroup, assessedIdentity, cNode);
+		dbInstance.getCurrentEntityManager().persist(task);
+		return task;
 	}
 
 	@Override
@@ -1031,6 +1097,10 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		task.setTaskStatus(status);//assignment is ok -> go to submit step
 		task.setRevisionLoop(0);
 		
+		if(status == TaskProcess.graded) {
+			task.setGraduationDate(new Date());
+		}
+		
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			task.setBusinessGroup(assessedGroup);
 		} else {
@@ -1038,9 +1108,169 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		}
 		return task;
 	}
+	
+	public TaskRevisionDate createAndPersistTaskRevisionDate(Task task, int revisionLoop, TaskProcess status) {
+		TaskRevisionDateImpl rev = new TaskRevisionDateImpl();
+		rev.setCreationDate(new Date());
+		rev.setDate(rev.getCreationDate());
+		rev.setRevisionLoop(revisionLoop);
+		rev.setStatus(status.name());
+		rev.setTask(task);
+		dbInstance.getCurrentEntityManager().persist(rev);
+		return rev;
+	}
 
 	@Override
-	public Task nextStep(Task task, GTACourseNode cNode) {
+	public boolean isDueDateEnabled(GTACourseNode cNode) {
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES, false)
+				|| cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES, false)
+				|| cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES, false)
+				|| cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD, false)) {
+			return true;
+		} else if(cNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE) != null
+				|| cNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE) != null
+				|| cNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER) != null) {
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public DueDate getAssignmentDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
+		DueDate assignmentDueDate = null;
+		Date dueDate = cNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE);
+		boolean relativeDate = cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
+		if((relativeDate || dueDate != null) && withIndividualDueDate && assignedTask != null && assignedTask.getAssignmentDueDate() != null) {
+			assignmentDueDate = new DueDate(false, assignedTask.getAssignmentDueDate());
+		} else if(relativeDate) {
+			int numOfDays = cNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE, -1);
+			String relativeTo = cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_ASSIGNMENT_DEADLINE_RELATIVE_TO);
+			if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
+				assignmentDueDate = getReferenceDate(numOfDays, relativeTo, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+			}
+		} else if(dueDate != null) {
+			assignmentDueDate = new DueDate(false, dueDate);
+		}
+		return assignmentDueDate;
+	}
+	
+	@Override
+	public DueDate getSubmissionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
+		DueDate submissionDueDate = null;
+		Date dueDate = cNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SUBMIT_DEADLINE);
+		boolean relativeDate = cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
+		if((relativeDate || dueDate != null) && withIndividualDueDate && assignedTask != null && assignedTask.getSubmissionDueDate() != null) {
+			submissionDueDate = new DueDate(false, assignedTask.getSubmissionDueDate());
+		} else if(relativeDate) {
+			int numOfDays = cNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE, -1);
+			String relativeTo = cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_SUBMIT_DEADLINE_RELATIVE_TO);
+			if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
+				submissionDueDate = getReferenceDate(numOfDays, relativeTo, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+			}
+		} else if(dueDate != null) {
+			submissionDueDate = new DueDate(false, dueDate);
+		}
+		return submissionDueDate;
+	}
+	
+	@Override
+	public DueDate getSolutionDueDate(TaskRef assignedTask, IdentityRef assessedIdentity, BusinessGroup assessedGroup,
+			GTACourseNode cNode, RepositoryEntry courseEntry, boolean withIndividualDueDate) {
+		DueDate solutionDueDate = null;
+		boolean relativeDate = cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES);
+		Date dueDate = cNode.getModuleConfiguration().getDateValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
+		if((relativeDate || dueDate != null) && withIndividualDueDate && assignedTask != null && assignedTask.getSolutionDueDate() != null) {
+			solutionDueDate = new DueDate(false, assignedTask.getSolutionDueDate());
+		} else if(relativeDate) {
+			int numOfDays = cNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE, -1);
+			String relativeTo = cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO);
+			if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
+				solutionDueDate = getReferenceDate(numOfDays, relativeTo, assignedTask, assessedIdentity, assessedGroup, courseEntry);
+			}
+		} else if(dueDate != null) {
+			solutionDueDate = new DueDate(false, dueDate);
+		}
+
+		return solutionDueDate;
+	}
+	
+	@Override
+	public DueDate getReferenceDate(int numOfDays, String relativeTo, TaskRef assignedTask,
+			IdentityRef assessedIdentity, BusinessGroup assessedGroup, RepositoryEntry courseEntry) {
+		DueDate dueDate = null;
+		if(numOfDays >= 0 && StringHelper.containsNonWhitespace(relativeTo)) {
+			GTARelativeToDates rel = GTARelativeToDates.valueOf(relativeTo);
+			Date referenceDate = null;
+			String messageKey = null;
+			String messageArg = null;
+			switch(rel) {
+				case courseStart: {
+					RepositoryEntryLifecycle lifecycle = courseEntry.getLifecycle();
+					if(lifecycle != null && lifecycle.getValidFrom() != null) {
+						referenceDate = lifecycle.getValidFrom();
+					}
+					break;
+				}
+				case courseLaunch: {
+					if(assessedIdentity != null) {
+						referenceDate = userCourseInformationsManager
+							.getInitialLaunchDate(courseEntry, assessedIdentity);
+					} else {
+						referenceDate = userCourseInformationsManager
+								.getInitialParticipantLaunchDate(courseEntry, assessedGroup);
+					}
+					break;
+				}
+				case enrollment: {
+					if(assessedIdentity != null) {
+						referenceDate = repositoryService
+							.getEnrollmentDate(courseEntry, assessedIdentity);
+					} else {
+						referenceDate = getEnrollmentDate(assessedGroup);
+					}
+					break;
+				}
+				case assignment: {
+					if(assignedTask != null) {
+						referenceDate = assignedTask.getAssignmentDate(); 
+					} else {
+						messageKey = "relative.to.assignment.message";
+						messageArg =  Integer.toString(numOfDays);
+					}
+					break;
+				}
+			}
+			
+			if(referenceDate != null) {
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(referenceDate);
+				cal.add(Calendar.DATE, numOfDays);
+				dueDate = new DueDate(true, cal.getTime());
+			} else if(messageKey != null) {
+				dueDate = new DueDate(true, messageKey, messageArg);
+			}
+		}
+		return dueDate;
+	}
+	
+	protected Date getEnrollmentDate(BusinessGroup businessGroup) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select min(membership.creationDate) from businessgroup as bgroup ")
+		  .append(" inner join bgroup.baseGroup as baseGroup")
+		  .append(" inner join baseGroup.members as membership on (membership.role ='").append(GroupRoles.participant.name()).append("')")
+		  .append(" where bgroup.key=:businessGroupKey");
+
+		List<Date> dates = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Date.class)
+				.setParameter("businessGroupKey", businessGroup.getKey())
+				.getResultList();
+		return dates.isEmpty() ? null : dates.get(0);
+	}
+
+	@Override
+	public Task nextStep(Task task, GTACourseNode cNode, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		TaskProcess currentStep = taskImpl.getTaskStatus();
 		//cascade through the possible steps
@@ -1048,7 +1278,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		taskImpl.setTaskStatus(nextStep);
 		TaskImpl mergedTask = dbInstance.getCurrentEntityManager().merge(taskImpl);
 		dbInstance.commit();//make the thing definitiv
-		syncAssessmentEntry(mergedTask, cNode);
+		syncAssessmentEntry(mergedTask, cNode, by);
 		return mergedTask;
 	}
 	
@@ -1199,21 +1429,134 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 
 	@Override
-	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode) {
+	public Task collectTask(Task task, GTACourseNode cNode, int numOfDocs) {
+		TaskProcess review = nextStep(TaskProcess.submit, cNode);
 		TaskImpl taskImpl = (TaskImpl)task;
-		taskImpl.setTaskStatus(newStatus);
-		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
-		syncAssessmentEntry(taskImpl, cNode);
-		return taskImpl;
+		taskImpl.setCollectionDate(new Date());
+		taskImpl.setCollectionNumOfDocs(numOfDocs);
+		return updateTask(task, review, cNode, Role.coach);
 	}
 
 	@Override
-	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode) {
+	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs, Role by) {
+		TaskProcess review = nextStep(TaskProcess.submit, cNode);
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setSubmissionDate(new Date());
+		taskImpl.setSubmissionNumOfDocs(numOfDocs);
+		return updateTask(task, review, cNode, by);
+	}
+
+	@Override
+	public Task allowResetTask(Task task, Identity allower, GTACourseNode cNode) {
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setAllowResetDate(new Date());
+		taskImpl.setAllowResetIdentity(allower);
+		return updateTask(task, task.getTaskStatus(), cNode, Role.coach);
+	}
+	
+	@Override
+	public Task resetTask(Task task, GTACourseNode cNode, CourseEnvironment courseEnv) {
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setTaskName(null);
+		taskImpl.setAllowResetDate(null);
+		Task updatedTask = updateTask(task, TaskProcess.assignment, cNode, Role.user);
+		
+		File submissionDir = null;
+		if(updatedTask.getBusinessGroup() != null) {
+			submissionDir = getSubmitDirectory(courseEnv, cNode, updatedTask.getBusinessGroup());
+		} else if(updatedTask.getIdentity() != null) {
+			submissionDir = getSubmitDirectory(courseEnv, cNode, updatedTask.getIdentity());
+		}
+		if(submissionDir != null) {
+			FileUtils.deleteDirsAndFiles(submissionDir, true, false);
+		}
+		return updatedTask;
+	}
+
+	@Override
+	public Task resetTaskRefused(Task task, GTACourseNode cNode) {
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setAllowResetDate(null);
+		taskImpl.setAllowResetIdentity(null);
+		return updateTask(task, task.getTaskStatus(), cNode, Role.user);
+	}
+
+	@Override
+	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs, Role by) {
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setSubmissionRevisionsDate(new Date());
+		taskImpl.setSubmissionRevisionsNumOfDocs(numOfDocs);
+		//log the date
+		createAndPersistTaskRevisionDate(taskImpl, taskImpl.getRevisionLoop(), TaskProcess.correction);
+		return updateTask(taskImpl, TaskProcess.correction, cNode, by);
+	}
+	
+	@Override
+	public Task reviewedTask(Task task, GTACourseNode cNode) {
+		TaskProcess solution = nextStep(TaskProcess.correction, cNode);
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setAcceptationDate(new Date());
+		return updateTask(taskImpl, solution, cNode, Role.coach);
+	}
+
+	@Override
+	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode, Role by) {
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setTaskStatus(newStatus);
+		syncDates(taskImpl, newStatus);
+		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
+		syncAssessmentEntry(taskImpl, cNode, by);
+		
+		//update
+		OLATResource resource = taskImpl.getTaskList().getEntry().getOlatResource();
+		notificationsManager.markPublisherNews(getSubscriptionContext(resource, cNode), null, false);
+		
+		return taskImpl;
+	}
+	
+	private void syncDates(TaskImpl taskImpl, TaskProcess newStatus) {
+		//solution date
+		if(newStatus == TaskProcess.solution || newStatus == TaskProcess.grading || newStatus == TaskProcess.graded) {
+			if(taskImpl.getSolutionDate() == null) {
+				taskImpl.setSolutionDate(new Date());
+			}
+		} else {
+			taskImpl.setSolutionDate(null);
+		}
+		
+		//graduation date
+		if(newStatus == TaskProcess.graded) {
+			if(taskImpl.getGraduationDate() == null) {
+				taskImpl.setGraduationDate(new Date());
+			}
+		} else {
+			taskImpl.setGraduationDate(null);
+		}
+		
+		//check submission date because of reopen
+		if(newStatus == TaskProcess.assignment || newStatus == TaskProcess.submit) {
+			if(taskImpl.getSubmissionDate() != null) {
+				taskImpl.setSubmissionDate(null);
+				taskImpl.setSubmissionNumOfDocs(null);
+			}
+		}
+	}
+	
+	@Override
+	public TaskDueDate updateTaskDueDate(TaskDueDate taskDueDate) {
+		((TaskDueDateImpl)taskDueDate).setLastModified(new Date());
+		return dbInstance.getCurrentEntityManager().merge(taskDueDate);
+	}
+
+	@Override
+	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setTaskStatus(newStatus);
 		taskImpl.setRevisionLoop(iteration);
 		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
-		syncAssessmentEntry(taskImpl, cNode);
+		//log date
+		createAndPersistTaskRevisionDate(taskImpl, iteration, newStatus);
+		syncAssessmentEntry(taskImpl, cNode, by);
 		return taskImpl;
 	}
 
@@ -1235,7 +1578,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		return assessmentStatus;
 	}
 	
-	private void syncAssessmentEntry(TaskImpl taskImpl, GTACourseNode cNode) {
+	private void syncAssessmentEntry(TaskImpl taskImpl, GTACourseNode cNode, Role by) {
 		if(taskImpl == null || taskImpl.getTaskStatus() == null || cNode == null) return;
 		
 		RepositoryEntry courseRepoEntry = taskImpl.getTaskList().getEntry();
@@ -1244,8 +1587,14 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			//update whole group
 			assessmentService.updateAssessmentEntries(taskImpl.getBusinessGroup(), courseRepoEntry, cNode.getIdent(), null, assessmentStatus);
 		} else {
-			assessmentService.updateAssessmentEntry(taskImpl.getIdentity(), courseRepoEntry, cNode.getIdent(), null, assessmentStatus);
-		}	
+			Identity assessedIdentity = taskImpl.getIdentity();
+			assessmentService.updateAssessmentEntry(assessedIdentity, courseRepoEntry, cNode.getIdent(), null, assessmentStatus);
+			dbInstance.commit();
+
+			ICourse course = CourseFactory.loadCourse(courseRepoEntry);
+			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+			cNode.updateLastModifications(userCourseEnv, taskImpl.getIdentity(), by);
+		}
 	}
 
 	private TaskList loadForUpdate(TaskList tasks) {

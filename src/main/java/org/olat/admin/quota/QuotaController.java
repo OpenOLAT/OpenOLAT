@@ -30,6 +30,8 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.table.ColumnDescriptor;
+import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.gui.components.table.StaticColumnDescriptor;
 import org.olat.core.gui.components.table.Table;
@@ -83,8 +85,10 @@ public class QuotaController extends BasicController {
 
 		quotaTableModel = new QuotaTableModel();
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.path", 0, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.quota", 1, null, getLocale()));
-		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.header.limit", 2, null, getLocale()));
+		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.quota", 1, null, getLocale(),
+				ColumnDescriptor.ALIGNMENT_LEFT, new QuotaByteRenderer()));
+		tableCtr.addColumnDescriptor(new CustomRenderColumnDescriptor("table.header.limit", 2, null, getLocale(),
+				ColumnDescriptor.ALIGNMENT_LEFT, new QuotaByteRenderer()));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("qf.edit", "table.action", translate("edit")));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("qf.del", "table.action", translate("delete")));
 		tableCtr.setTableDataModel(quotaTableModel);
@@ -95,24 +99,20 @@ public class QuotaController extends BasicController {
 		putInitialPanel(main);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == addQuotaButton){
 			// clean up old controller first
 			if (quotaEditCtr != null) removeAsListenerAndDispose(quotaEditCtr);
 			// start edit workflow in dedicated quota edit controller
 			removeAsListenerAndDispose(quotaEditCtr);
-			quotaEditCtr = new GenericQuotaEditController(ureq, getWindowControl(), null);
+			quotaEditCtr = new GenericQuotaEditController(ureq, getWindowControl());
 			listenTo(quotaEditCtr);
 			main.setContent(quotaEditCtr.getInitialComponent());
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == quotaEditCtr) {
 			if (event == Event.CHANGED_EVENT) {
@@ -142,17 +142,14 @@ public class QuotaController extends BasicController {
 						tableCtr.setTableDataModel(quotaTableModel);
 						showInfo("qf.deleted", q.getPath());
 					} else {
-						// default quotas can not be qf.cannot.del.default")deleted
+						// default quotas can not be deleted
 						showError("qf.cannot.del.default");
 					}
 				}
 			}
 		}
 
-		/**
-		 * 
-		 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-		 */
+		@Override
 		protected void doDispose() {
 			//
 		}

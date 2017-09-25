@@ -81,6 +81,10 @@ public class CategoryImpl implements Persistable, CreateInfo, Category {
 	}
 
 	public void setName(String name) {
+		if (name != null && name.length() > 32) {
+			// cut, limted on db
+			name = name.substring(0, 32);
+		}
 		this.name = name;
 	}
 

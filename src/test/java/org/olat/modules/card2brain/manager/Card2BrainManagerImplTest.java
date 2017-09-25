@@ -128,4 +128,33 @@ public class Card2BrainManagerImplTest {
 		assertThat(sut.checkEnterpriseLogin("", "", "")).isNull();
 	}
 	
+	@Test
+	public void parseAliasShouldRemoveUrlStart() {
+		String alias = "myAlias";
+		String url = "https://card2brain.ch/box/" + alias;
+		
+		String parsedAlias = sut.parseAlias(url);
+		
+		assertThat(parsedAlias).isEqualTo(alias);
+	}
+	
+	@Test
+	public void parseAliasShouldRemoveUrlEditor() {
+		String alias = "myAlias";
+		String url = "https://card2brain.ch/box/" + alias + "/editor";
+		
+		String parsedAlias = sut.parseAlias(url);
+		
+		assertThat(parsedAlias).isEqualTo(alias);
+	}		
+	
+	@Test
+	public void parseAliasShouldReplaceBlanks() {
+		String aliasWithBlanks = "bread and butter";
+		String aliasWithoutBlanks = "bread_and_butter";
+		
+		String parsedAlias = sut.parseAlias(aliasWithBlanks);
+		
+		assertThat(parsedAlias).isEqualTo(aliasWithoutBlanks);
+	}
 }

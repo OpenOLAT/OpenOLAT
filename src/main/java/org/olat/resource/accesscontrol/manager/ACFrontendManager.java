@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
@@ -78,19 +79,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 
+ *
  * Description:<br>
  * The access control is not intend for security check.
- * 
+ *
  * <P>
  * Initial Date:  14 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("acService")
 public class ACFrontendManager implements ACService {
-	
+
 	private static final OLog log = Tracing.createLoggerFor(ACFrontendManager.class);
-	
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -134,7 +135,7 @@ public class ACFrontendManager implements ACService {
 		if(!accessModule.isEnabled()) {
 			return new AccessResult(true);
 		}
-		
+
 		boolean member;
 		if(knowMember == null) {
 			member = repositoryService.isMember(forId, entry);
@@ -144,40 +145,41 @@ public class ACFrontendManager implements ACService {
 		if(member) {
 			return new AccessResult(true);
 		}
-		
-		List<Offer> offers = accessManager.findOfferByResource(entry.getOlatResource(), true, new Date());
+
+		Date now = dateNow();
+		List<Offer> offers = accessManager.findOfferByResource(entry.getOlatResource(), true, now);
 		if(offers.isEmpty()) {
 			if(methodManager.isValidMethodAvailable(entry.getOlatResource(), null)) {
 				//not open for the moment: no valid offer at this date but some methods are defined
 				return new AccessResult(false);
 			} else {
 				return new AccessResult(true);
-			}	
+			}
 		}
 		return isAccessible(forId, offers, allowNonInteractiveAccess);
 	}
-	
+
 	@Override
 	public AccessResult isAccessible(RepositoryEntry entry, Identity forId, boolean allowNonInteractiveAccess) {
 		if(!accessModule.isEnabled()) {
 			return new AccessResult(true);
 		}
-		
+
 		boolean member = repositoryService.isMember(forId, entry);
 		return isAccessible(entry, forId, new Boolean(member), allowNonInteractiveAccess);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param resource
-	 * @param atDate 
+	 * @param atDate
 	 * @return
 	 */
 	@Override
 	public boolean isResourceAccessControled(OLATResource resource, Date atDate) {
 		return methodManager.isValidMethodAvailable(resource, atDate);
 	}
-	
+
 	/**
 	 * The rule to access a business group:<br/>
 	 * -No offer, access is free<br/>
@@ -201,21 +203,22 @@ public class ACFrontendManager implements ACService {
 		if(roles.contains(GroupRoles.participant.name())) {
 			return new AccessResult(true);
 		}
-		
+
+		Date now = dateNow();
 		OLATResource resource = OLATResourceManager.getInstance().findResourceable(group);
-		List<Offer> offers = accessManager.findOfferByResource(resource, true, new Date());
+		List<Offer> offers = accessManager.findOfferByResource(resource, true, now);
 		if(offers.isEmpty()) {
 			if(methodManager.isValidMethodAvailable(resource, null)) {
 				//not open for the moment: no valid offer at this date but some methods are defined
 				return new AccessResult(false);
 			} else {
 				return new AccessResult(true);
-			}	
+			}
 		}
-		
+
 		return isAccessible(forId, offers, allowNonInteractiveAccess);
 	}
-	
+
 	protected AccessResult isAccessible(Identity identity, List<Offer> offers, boolean allowNonInteractiveAccess) {
 		List<OfferAccess> offerAccess = methodManager.getOfferAccess(offers, true);
 		if(offerAccess.isEmpty()) {
@@ -253,12 +256,13 @@ public class ACFrontendManager implements ACService {
 			resourceKeys.add(ores.getKey());
 			resourceTypes.add(ores.getResourceableTypeName());
 		}
-		
+
 		String resourceType = null;
 		if(resourceTypes.size() == 1) {
 			resourceType = resourceTypes.iterator().next();
 		}
-		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
+		Date now = dateNow();
+		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, now);
 	}
 
 	@Override
@@ -272,12 +276,13 @@ public class ACFrontendManager implements ACService {
 			resourceKeys.add(resource.getKey());
 			resourceTypes.add(resource.getResourceableTypeName());
 		}
-		
+
 		String resourceType = null;
 		if(resourceTypes.size() == 1) {
 			resourceType = resourceTypes.iterator().next();
 		}
-		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, new Date());
+		Date now = dateNow();
+		return methodManager.getAccessMethodForResources(resourceKeys, resourceType, "BusinessGroup", true, now);
 	}
 
 	@Override
@@ -289,9 +294,9 @@ public class ACFrontendManager implements ACService {
 	public List<Offer> findOfferByResource(OLATResource resource, boolean valid, Date atDate) {
 		return accessManager.findOfferByResource(resource, valid, atDate);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param resourceKeys This parameter is mandatory and must not be empty!
 	 */
 	@Override
@@ -304,8 +309,8 @@ public class ACFrontendManager implements ACService {
 
 	/**
 	 * Get the list of access methods for a business group that are currently available
-	 * @param group 
-	 * @param valid 
+	 * @param group
+	 * @param valid
 	 * @param atDate
 	 * @return The list of OfferAccess objects that represent available access methods
 	 */
@@ -323,6 +328,16 @@ public class ACFrontendManager implements ACService {
 	}
 
 	@Override
+	public List<OfferAccess> getValidOfferAccess(OLATResource resource, AccessMethod method) {
+		return methodManager.getValidOfferAccess(resource, method);
+	}
+
+	@Override
+	public List<AccessMethod> getAvailableMethodsByType(Class<? extends AccessMethod> type) {
+		return methodManager.getAvailableMethodsByType(type);
+	}
+
+	@Override
 	public Offer save(Offer offer) {
 		return accessManager.saveOffer(offer);
 	}
@@ -335,20 +350,20 @@ public class ACFrontendManager implements ACService {
 		}
 		return methodManager.save(link);
 	}
-	
+
 	@Override
 	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument) {
 		if(link == null || link.getOffer() == null || link.getMethod() == null) {
 			log.audit("Access refused (no offer) to: " + link + " for " + identity);
 			return new AccessResult(false);
 		}
-		
+
 		AccessMethodHandler handler = accessModule.getAccessMethodHandler(link.getMethod().getType());
 		if(handler == null) {
 			log.audit("Access refused (no handler method) to: " + link + " for " + identity);
 			return new AccessResult(false);
 		}
-		
+
 		if(handler.checkArgument(link, argument)) {
 			if(allowAccesToResource(identity, link.getOffer())) {
 				Order order = orderManager.saveOneClick(identity, link);
@@ -365,7 +380,7 @@ public class ACFrontendManager implements ACService {
 		}
 		return new AccessResult(false);
 	}
-	
+
 	@Override
 	public void acceptReservationToResource(Identity identity, ResourceReservation reservation) {
 		OLATResource resource = reservation.getResource();
@@ -391,7 +406,7 @@ public class ACFrontendManager implements ACService {
 	public ResourceReservation getReservation(Identity identity, OLATResource resource) {
 		return reservationDao.loadReservation(identity, resource);
 	}
-	
+
 	@Override
 	public List<ResourceReservation> getReservations(List<OLATResource> resources) {
 		return reservationDao.loadReservations(resources);
@@ -422,7 +437,7 @@ public class ACFrontendManager implements ACService {
 				if(reservation != null) {
 					reserved = true;
 				}
-				
+
 				int currentCount = businessGroupService.countMembers(reloadedGroup, GroupRoles.participant.name());
 				int reservations = reservationDao.countReservations(resource);
 				if(currentCount + reservations < reloadedGroup.getMaxParticipants().intValue()) {
@@ -453,13 +468,13 @@ public class ACFrontendManager implements ACService {
 		if(offer.getKey() == null) {
 			return false;
 		}
-		
+
 		//check the resource
 		OLATResource resource = offer.getResource();
 		if(resource == null || resource.getKey() == null || resource.getResourceableId() == null || resource.getResourceableTypeName() == null) {
 			return false;
 		}
-		
+
 		String resourceType = resource.getResourceableTypeName();
 		if("BusinessGroup".equals(resourceType)) {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
@@ -485,13 +500,13 @@ public class ACFrontendManager implements ACService {
 		if(offer.getKey() == null) {
 			return false;
 		}
-		
+
 		//check the resource
 		OLATResource resource = offer.getResource();
 		if(resource == null || resource.getKey() == null || resource.getResourceableId() == null || resource.getResourceableTypeName() == null) {
 			return false;
 		}
-		
+
 		String resourceType = resource.getResourceableTypeName();
 		if("BusinessGroup".equals(resourceType)) {
 			BusinessGroup group = businessGroupService.loadBusinessGroup(resource);
@@ -529,13 +544,13 @@ public class ACFrontendManager implements ACService {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public List<ACResourceInfo> getResourceInfos(List<OLATResource> resources) {
 		if(resources == null || resources.isEmpty()) {
 			return Collections.emptyList();
 		}
-		
+
 		List<OLATResource> groupResources = new ArrayList<OLATResource>(resources.size());
 		List<OLATResource> repositoryResources = new ArrayList<OLATResource>(resources.size());
 		for(OLATResource resource:resources) {
@@ -606,7 +621,12 @@ public class ACFrontendManager implements ACService {
 	public List<Order> findOrders(Identity delivery, OrderStatus... status) {
 		return orderManager.findOrdersByDelivery(delivery, status);
 	}
-	
+
+	@Override
+	public List<Order> findOrder(OLATResource resource, Identity identity, AccessMethod method) {
+		return orderManager.findOrdersByResource(resource, identity, method);
+	}
+
 	@Override
 	public List<AccessTransaction> findAccessTransactions(Order order) {
 		return transactionManager.loadTransactionsForOrder(order);
@@ -636,7 +656,7 @@ public class ACFrontendManager implements ACService {
 		for(AccessMethod method:methods) {
 			methodMap.put(method.getKey().toString(), method);
 		}
-		
+
 		List<RawOrderItem> rawOrders = orderManager.findNativeOrderItems(resource, delivery, orderNr, from, to, status,
 				firstResult, maxResults, userPropertyHandlers, orderBy);
 		List<OrderTableItem> items = new ArrayList<>(rawOrders.size());
@@ -644,7 +664,7 @@ public class ACFrontendManager implements ACService {
 			String orderStatusStr = rawOrder.getOrderStatus();
 			OrderStatus orderStatus = OrderStatus.valueOf(orderStatusStr);
 			Status finalStatus = getStatus(orderStatusStr,  rawOrder.getTrxStatus(), rawOrder.getPspTrxStatus());
-			
+
 			String methodIds = rawOrder.getTrxMethodIds();
 			List<AccessMethod> orderMethods = new ArrayList<>(2);
 			if(StringHelper.containsNonWhitespace(methodIds)) {
@@ -655,23 +675,23 @@ public class ACFrontendManager implements ACService {
 					}
 				}
 			}
-			
+
 			OrderTableItem item = new OrderTableItem(rawOrder.getOrderKey(), rawOrder.getOrderNr(),
 					rawOrder.getTotal(), rawOrder.getCreationDate(), orderStatus, finalStatus,
 					rawOrder.getDeliveryKey(), rawOrder.getUsername(), rawOrder.getUserProperties(), orderMethods);
 			item.setResourceDisplayname(rawOrder.getResourceName());
-			
+
 			items.add(item);
 		}
-		
+
 		return items;
 	}
-	
+
 	public Status getStatus(String orderStatus, String trxStatus, String pspTrxStatus) {
 		boolean warning = false;
 		boolean error = false;
 		boolean canceled = false;
-		
+
 		if(OrderStatus.CANCELED.name().equals(orderStatus)) {
 			canceled = true;
 		} else if(OrderStatus.ERROR.name().equals(orderStatus)) {
@@ -679,7 +699,7 @@ public class ACFrontendManager implements ACService {
 		} else if(OrderStatus.PREPAYMENT.name().equals(orderStatus)) {
 			warning = true;
 		}
-		
+
 		if(StringHelper.containsNonWhitespace(trxStatus)) {
 			if(trxStatus.contains(AccessTransactionStatus.CANCELED.name())) {
 				canceled = true;
@@ -687,7 +707,7 @@ public class ACFrontendManager implements ACService {
 				error = true;
 			}
 		}
-		
+
 		if(StringHelper.containsNonWhitespace(pspTrxStatus)) {
 			if(pspTrxStatus.contains(PSPTransactionStatus.ERROR.name())) {
 				error = true;
@@ -695,7 +715,7 @@ public class ACFrontendManager implements ACService {
 				warning = true;
 			}
 		}
-		
+
 		if(error) {
 			return Status.ERROR;
 		} else if (warning) {
@@ -704,8 +724,14 @@ public class ACFrontendManager implements ACService {
 			return Status.CANCELED;
 		} else {
 			return Status.OK;
-		}	
+		}
 	}
-	
-	
+
+	/**
+	 * @return The current date without time
+	 */
+	private Date dateNow() {
+		return CalendarUtils.removeTime(new Date());
+	}
+
 }

@@ -46,7 +46,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.manager.BasicManager;
 import org.olat.resource.OLATResource;
-import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
@@ -150,8 +150,7 @@ public class TaskExecutorManagerImpl extends BasicManager implements TaskExecuto
 	@Override
 	public void executeTaskToDo() {
 		try {
-			JobDetail detail = scheduler.getJobDetail("taskExecutorJob", Scheduler.DEFAULT_GROUP);
-			scheduler.triggerJob(detail.getName(), detail.getGroup());
+			scheduler.triggerJob(new JobKey("taskExecutorJob", Scheduler.DEFAULT_GROUP));
 		} catch (SchedulerException e) {
 			log.error("", e);
 		}

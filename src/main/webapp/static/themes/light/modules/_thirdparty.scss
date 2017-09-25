@@ -1,3 +1,4 @@
+
 /*
  * Overwrite jquery ui dialog and datepicker
  */
@@ -92,6 +93,7 @@
 
 .ui-slider.ui-slider-horizontal.ui-widget-content {
 	border-color: $o-slider-border;
+	background: $o-slider-background;
 	
 	&.ui-state-disabled {
 		opacity: 0.65;
@@ -188,7 +190,17 @@ label.mce-label {
 	}
 }
 
-i.mce-ico.mce-i-media, i.mce-ico.mce-i-movie, i.mce-ico.mce-i-help, i.mce-ico.mce-i-gaptext,i.mce-ico.mce-i-gapnumerical,i.mce-ico.mce-i-hottext, i.mce-ico.mce-i-edit {
+.o_richtext_mce>.o_richtext_mce_modes {
+	text-align: right;
+	padding-right: $input-border-radius;
+	a {
+		border-bottom: none;
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+}
+
+i.mce-ico.mce-i-media, i.mce-ico.mce-i-movie, i.mce-ico.mce-i-help, i.mce-ico.mce-i-gaptext,i.mce-ico.mce-i-gapnumerical, i.mce-ico.mce-i-hottext, i.mce-ico.mce-i-edit {
 	display: inline-block;
 	font: normal normal normal #{$fa-font-size-base}/1 FontAwesome; // shortening font declaration
 	font-size: inherit; // can't have font-size inherit on line above, so need to override
@@ -233,11 +245,29 @@ i.mce-ico.mce-i-help:before {
 	color: white;
 }
 
-
-
 .mce-tabs span.o_chelp_wrapper {
 	float:right;
 	margin:5px;
+}
+
+.mce-wordcount:after {
+	display: inline-block;
+	font: normal normal normal #{$fa-font-size-base}/1 FontAwesome; // shortening font declaration
+	font-size: inherit; // can't have font-size inherit on line above, so need to override
+	text-rendering: auto; // optimizelegibility throws things off #1094
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	transform: translate(0, 0); // ensures no half-pixel rendering in firefox
+	content: $fa-var-question-circle;
+}
+
+.mce-danger .mce-wordcount:after {
+	color: $brand-danger;
+	content: $fa-var-exclamation-circle;
+}
+
+.mce-statusbar.mce-danger {
+	background-color: $alert-danger-bg;
 }
 
 /*

@@ -179,7 +179,7 @@ public class QTI21Page {
 		By sourceBy = By.xpath("//li[contains(@class,'o_match_dnd_source')]/p[contains(text(),'" + source + "')]");
 		OOGraphene.waitElement(sourceBy, 5, browser);
 		WebElement sourceEl = browser.findElement(sourceBy);
-		By targetBy = By.xpath("//li[contains(@class,'o_match_dnd_target')]/p[contains(text(),'" + target + "')]");
+		By targetBy = By.xpath("//li[contains(@class,'o_match_dnd_target')]/div[@class='clearfix']/p[contains(text(),'" + target + "')]");
 		WebElement targetEl = browser.findElement(targetBy);
 		new Actions(browser)
 			.moveToElement(sourceEl, 30, 30)
@@ -197,7 +197,7 @@ public class QTI21Page {
 	public QTI21Page answerMatchDropTargetToTarget(String source, String target) {
 		By sourceDroppedBy = By.xpath("//ul[contains(@class,'o_match_dnd_target_drop_zone')]/li[contains(@class,'o_match_dnd_source')]/p[contains(text(),'" + source + "')]");
 		WebElement sourceEl = browser.findElement(sourceDroppedBy);
-		By targetBy = By.xpath("//li[contains(@class,'o_match_dnd_target')]/p[contains(text(),'" + target + "')]");
+		By targetBy = By.xpath("//li[contains(@class,'o_match_dnd_target')]/div[@class='clearfix']/p[contains(text(),'" + target + "')]");
 		WebElement targetEl = browser.findElement(targetBy);
 		new Actions(browser)
 			.moveToElement(sourceEl, 30, 30)
@@ -379,6 +379,12 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page assertOnAssessmentTestScore(int score) {
+		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_scores')]/td/div/span[contains(@class,'o_sel_assessmenttest_score')][contains(text(),'" + score + "')]");
+		OOGraphene.waitElement(resultsBy, 5, browser);
+		return this;
+	}
+	
+	public QTI21Page assertOnAssessmentTestScore(String score) {
 		By resultsBy = By.xpath("//div[contains(@class,'o_sel_results_details')]//tr[contains(@class,'o_sel_assessmenttest_scores')]/td/div/span[contains(@class,'o_sel_assessmenttest_score')][contains(text(),'" + score + "')]");
 		OOGraphene.waitElement(resultsBy, 5, browser);
 		return this;

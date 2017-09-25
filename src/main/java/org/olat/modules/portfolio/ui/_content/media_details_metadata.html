@@ -1,0 +1,103 @@
+<table class="table table-condensed table-striped"><tbody>
+	#if($r.isNotEmpty($mediaType))
+	<tr><th>$r.translate("table.header.type")</th>
+		<td>#if($r.isNotEmpty($mediaIconCssClass))<i class="o_icon $mediaIconCssClass"> </i> #end $r.escapeHtml($mediaType)</td></tr>
+	#end
+	#if($r.isNotEmpty($author))
+	<tr><th>$r.translate("author")</th>
+		<td>$r.escapeHtml($author)</td></tr>
+	#end
+	#if($r.isNotEmpty($collectionDate))
+	<tr><th>$r.translate("artefact.collect.date")</th>
+		<td>$r.escapeHtml($collectionDate)</td></tr>
+	#end
+	#if($r.available("goto.original"))
+		<tr><th></th><td>$r.render("goto.original")</td>
+	#end
+	#if($r.isNotEmpty($media.creators))
+	<tr><th>$r.translate("creators")</th>
+		<td>$r.escapeHtml($media.creators)</td></tr>
+	#end
+	#if($r.isNotEmpty($media.place))
+	<tr><th>$r.translate("place")</th>
+		<td>$r.escapeHtml($media.place)</td></tr>
+	#end
+	#if($r.isNotEmpty($media.publisher))
+	<tr><th>$r.translate("publisher")</th>
+		<td>$r.escapeHtml($media.publisher)</td></tr>
+	#end
+	#if($r.isNotEmpty($media.url))
+	<tr><th>$r.translate("url")</th>
+		<td>$r.escapeHtml($media.url)</td></tr>
+	#end
+	#if($r.isNotEmpty($media.source))
+	<tr><th>$r.translate("source")</th>
+		<td>$r.escapeHtml($media.source)</td></tr>
+	#end
+	#if($r.isNotEmpty($media.language))
+	<tr><th>$r.translate("language")</th>
+		<td>$r.escapeHtml($media.language)</td></tr>
+	#end
+	
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.edition))
+	<tr><th>$r.translate("mf.edition")</th>
+		<td>$r.escapeHtml($metadata.edition)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.editor))
+	<tr><th>$r.translate("mf.editor")</th>
+		<td>$r.escapeHtml($metadata.editor)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.volume))
+	<tr><th>$r.translate("volume")</th>
+		<td>$r.escapeHtml($metadata.volume)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.series))
+	<tr><th>$r.translate("series")</th>
+		<td>$r.escapeHtml($metadata.series)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.publicationTitle))
+	<tr><th>$r.translate("publication.title")</th>
+		<td>$r.escapeHtml($metadata.publicationTitle)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.issue))
+	<tr><th>$r.translate("issue")</th>
+		<td>$r.escapeHtml($metadata.issue)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.pages))
+	<tr><th>$r.translate("pages")</th>
+		<td>$r.escapeHtml($metadata.pages)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.institution))
+	<tr><th>$r.translate("institution")</th>
+		<td>$r.escapeHtml($metadata.institution)</td></tr>
+	#end
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.isbn))
+	<tr><th>$r.translate("mf.isbn")</th>
+		<td>$r.escapeHtml($metadata.isbn)</td></tr>
+	#end
+	
+	#if($r.isNotNull($metadata) && $r.isNotEmpty($metadata.lastVisit))
+	<tr><th>$r.translate("mf.lastVisitDate")</th>
+		<td>$r.formatDate($metadata.lastVisit)</td></tr>
+	#end
+	
+	#if($r.available("categories"))
+	<tr><th>$r.translate("categories")</th>
+		<td>$r.render("categories")</td></tr>
+	#end
+	#if($r.isNotEmpty($categoriesList))
+	<tr><th>$r.translate("categories")</th>
+		<td><i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
+		 #foreach($category in $categoriesList)
+		 	<span class="tag label label-info">$category</span>
+		 #end</td></tr>
+	#end
+	
+	#if($r.isNotEmpty($binderLinks))
+	<tr><th>$r.translate("used.in")</th>
+		<td>#foreach($bLink in $binderLinks)
+			#if($foreach.count > 1), #end
+			$r.render($bLink)
+		#end</td></tr>
+	#end
+</tbody></table>

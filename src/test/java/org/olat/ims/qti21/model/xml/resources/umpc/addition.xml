@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p1 http://www.imsglobal.org/xsd/imsqti_v2p1.xsd"
+xmlns:m="http://www.w3.org/1998/Math/MathML" 
+identifier="Template_FIB_001" 
+title="addition of floating numbers" 
+adaptive="false" 
+timeDependent="false"> 
+ 
+<responseDeclaration identifier="REPONSE1" cardinality="single" baseType="float" /> 
+ 
+<outcomeDeclaration identifier="FEEDBACK" cardinality="single" baseType="identifier" /> 
+<outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float" /> 
+ 
+<templateDeclaration identifier="a" cardinality="single" baseType="float" mathVariable="true" paramVariable="true" />   
+ 
+<templateDeclaration identifier="b" cardinality="single" baseType="float" mathVariable="true" paramVariable="true" />   
+ 
+<templateDeclaration identifier="SOLUTION1" cardinality="single" baseType="float" mathVariable="true" paramVariable="true" /> 
+ 
+<templateProcessing> 
+ 
+<setTemplateValue identifier="a"><divide><truncate><product><randomFloat min="0.0" max="100.0" /><baseValue baseType="integer">100</baseValue></product></truncate><baseValue baseType="integer">100</baseValue></divide></setTemplateValue>   
+<setTemplateValue identifier="b"><divide><truncate><product><randomFloat min="0.0" max="100.0" /><baseValue baseType="integer">100</baseValue></product></truncate><baseValue baseType="integer">100</baseValue></divide></setTemplateValue>   
+ 
+<setTemplateValue identifier="SOLUTION1"><divide><round><product><sum><variable identifier="a" /><variable identifier="b" /></sum><baseValue baseType="integer">100</baseValue></product></round><baseValue baseType="integer">100</baseValue></divide></setTemplateValue> 
+ 
+ 
+<setCorrectResponse identifier="REPONSE1"><variable identifier="SOLUTION1" /></setCorrectResponse> 
+ 
+</templateProcessing> 
+<itemBody><div> 
+<em> 
+ 
+</em> 
+<em> 
+ 
+</em> 
+Compute:  
+<m:math><m:mrow><m:mi>a</m:mi><m:mo>+</m:mo><m:mi>b</m:mi></m:mrow><m:mo>=</m:mo></m:math><textEntryInteraction responseIdentifier="REPONSE1" expectedLength="5" /><m:math></m:math> 
+ 
+</div></itemBody> 
+ 
+<responseProcessing> 
+<responseCondition> 
+<responseIf> 
+<and> 
+<equalRounded roundingMode="decimalPlaces" figures="2"><variable identifier="REPONSE1" /><correct identifier="REPONSE1" /> 
+</equalRounded> 
+</and> 
+<setOutcomeValue identifier="FEEDBACK"><baseValue baseType="identifier">_1V</baseValue></setOutcomeValue> 
+<setOutcomeValue identifier="SCORE"><baseValue baseType="float">10</baseValue></setOutcomeValue> 
+</responseIf> 
+<responseElse> 
+<setOutcomeValue identifier="FEEDBACK"><baseValue baseType="identifier">_0</baseValue></setOutcomeValue> 
+<setOutcomeValue identifier="SCORE"><baseValue baseType="float">0</baseValue></setOutcomeValue> 
+</responseElse> 
+</responseCondition> 
+</responseProcessing> 
+ 
+<modalFeedback outcomeIdentifier="FEEDBACK" identifier="_1V" showHide="show"> 
+Good answer.<br/>Compute:  
+<m:math><m:mrow><m:mi>a</m:mi><m:mo>+</m:mo><m:mi>b</m:mi></m:mrow><m:mo>=</m:mo><m:mi>SOLUTION1</m:mi></m:math> 
+ 
+</modalFeedback> 
+<modalFeedback outcomeIdentifier="FEEDBACK" identifier="_0" showHide="show"> 
+It is wrong.<br/>Compute:  
+<m:math><m:mrow><m:mi>a</m:mi><m:mo>+</m:mo><m:mi>b</m:mi></m:mrow><m:mo>=</m:mo><m:mi>SOLUTION1</m:mi></m:math> 
+ 
+</modalFeedback> 
+</assessmentItem> 

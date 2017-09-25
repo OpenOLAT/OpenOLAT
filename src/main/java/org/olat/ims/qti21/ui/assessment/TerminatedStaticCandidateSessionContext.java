@@ -25,6 +25,9 @@ import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
 
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNode;
+import uk.ac.ed.ph.jqtiplus.types.Identifier;
+
 /**
  * 
  * Initial date: 16.08.2016<br>
@@ -62,5 +65,15 @@ public class TerminatedStaticCandidateSessionContext implements CandidateSession
 	@Override
 	public boolean isMarked(String itemKey) {
 		return false;
+	}
+
+	@Override
+	public boolean isRubricHidden(Identifier sectionKey) {
+		return false;
+	}
+
+	@Override
+	public int getNumber(TestPlanNode node) {
+		return 0;
 	}
 }

@@ -12,7 +12,7 @@
 </div>
 #end
 #if(${row.isSection()})
-<div class="o_portfolio_section">
+<div class="o_portfolio_section #if(${row.isSectionEnded()}) o_section_ended #end">
 	<h3>$r.escapeHtml($row.sectionLongTitle) <small><i class="o_icon $row.sectionCssClassStatus" title="$r.translate("section.status"): $r.translate("$row.getSectionStatusI18nKey()")"> </i></small></h3>
 	<div class="o_section_lead #if(${row.isSectionWithAssignmentToInstantiate()}) o_assignment_2_instantiate #else o_block_large_bottom #end">
 		<div class="o_portfolio_section_meta o_small">
@@ -29,7 +29,9 @@
 			</div>
 			<div class="o_portfolio_status_block">
 				<span><strong>$r.translate("section.status"): </strong> $r.translate(${row.getSectionStatusI18nKey()})</span>
-		
+				#if(${row.isSectionEnded()}) 
+					<p class="o_section_ended">$r.translate("section.ended.explain")</p>
+				#end
 				#if($r.isNotNull($row.closeSectionLink))
 					$r.render($row.closeSectionLink)
 				#end
@@ -75,7 +77,7 @@
 #end
 #if(${row.isPendingAssignment()})
 	#if($r.isNotNull($row.instantiateAssignmentLink))
-	<div class="o_assignment_2_instantiate #if(${row.isLastAssignmentToInstantiate()}) last #end">$r.render($row.instantiateAssignmentLink)
+	<div class="o_assignment_2_instantiate #if(${row.isSectionEnded()}) o_section_ended #end #if(${row.isLastAssignmentToInstantiate()}) last #end">$r.render($row.instantiateAssignmentLink)
 	<div id="o_assignment_summary_${row.instantiateAssignmentLink.formDispatchId}" style="display:none;"></div>
 	<script type="text/javascript">/* <![CDATA[ */jQuery(function() {
 	  jQuery('#${row.instantiateAssignmentLink.formDispatchId}').tooltip({
@@ -161,12 +163,14 @@
 			</div>
 		</div>
 	</div>
+	#if($r.enabled($row.openFormItem))
 	<div class="o_portfolio_page_links o_noprint">
 		$r.render($row.openFormItem)
 		#if($r.isNotNull($row.commentFormLink))
 			<span class="btn btn-sm o_portfolio_comment">$r.render($row.commentFormLink)</span>
 		#end
 	</div>
+	#end
 </div>
 #end
 #if($row.newEntry && $r.isNotNull($row.newEntryLink))

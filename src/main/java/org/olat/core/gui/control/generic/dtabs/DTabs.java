@@ -81,6 +81,13 @@ public interface DTabs {
 	public boolean addDTab(UserRequest ureq, DTab dt);
 
 	/**
+	 * Update the title of an already instantiated tab. Use rarely
+	 * @param ores
+	 * @param newTitle
+	 */
+	public void updateDTabTitle(OLATResourceable ores, String newTitle);
+
+	/**
 	 * Remove a tab from tabs-list.
 	 * @param dt Remove this tab
 	 */

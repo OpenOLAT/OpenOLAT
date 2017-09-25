@@ -1,8 +1,8 @@
-<div class="clearfix">
 #if($r.available("single"))
 	$r.render("backLink")
-	<div class="o_block_bottom">$r.render("single")</div>
+	<div class="o_sel_pf_participant_folder clearfix o_block_bottom">$r.render("single")</div>
 #else
+<div class="o_sel_pf_participants_list">
 	#if ($r.available("contextualSubscription"))
 	<div class="clearfix o_block_bottom">
 		$r.render("contextualSubscription")
@@ -12,6 +12,7 @@
 	#if($hasParticipants)
 		$r.render("buttons")
 	#end
-#end
 </div>
+#end
+
 

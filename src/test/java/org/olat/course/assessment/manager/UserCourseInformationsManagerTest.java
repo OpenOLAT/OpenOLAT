@@ -30,12 +30,17 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.UserCourseInformations;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
+import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.test.JunitTestHelper;
@@ -54,6 +59,10 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
 	
@@ -142,7 +151,7 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getInitialLaunchDate() {
+	public void getInitialLaunchDate_ressource() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-2-" + UUID.randomUUID().toString());
 		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
 		dbInstance.commitAndCloseSession();
@@ -152,6 +161,44 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Date launchDate = userCourseInformationsManager.getInitialLaunchDate(courseResource, user);
+		Assert.assertNotNull(launchDate);
+	}
+	
+	@Test
+	public void getInitialLaunchDate_repositoryEntry() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-2-" + UUID.randomUUID().toString());
+		ICourse course = CoursesWebService.createEmptyCourse(user, "course-launch-dates", "course long name", null);
+		dbInstance.commitAndCloseSession();
+		
+		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		userCourseInformationsManager.updateUserCourseInformations(courseResource, user);
+		dbInstance.commitAndCloseSession();
+		
+		Date launchDate = userCourseInformationsManager.getInitialLaunchDate(courseEntry, user);
+		Assert.assertNotNull(launchDate);
+	}
+	
+	@Test
+	public void getInitialParticiantLaunchDate_businessGroup() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("init-launch-1-");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("init-launch-2-");
+		ICourse course = CoursesWebService.createEmptyCourse(id1, "course-launch-dates", "course long name", null);
+		dbInstance.commitAndCloseSession();
+		
+		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		userCourseInformationsManager.updateUserCourseInformations(courseResource, id1);
+		userCourseInformationsManager.updateUserCourseInformations(courseResource, id2);
+		dbInstance.commit();
+		
+		//add user to a group
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "initial launch", "tg", null, null, false, false, courseEntry);
+	    businessGroupRelationDao.addRole(id1, group, GroupRoles.participant.name());
+	    businessGroupRelationDao.addRole(id2, group, GroupRoles.participant.name());
+	    dbInstance.commitAndCloseSession();
+		
+		Date launchDate = userCourseInformationsManager.getInitialParticipantLaunchDate(courseEntry, group);
 		Assert.assertNotNull(launchDate);
 	}
 	
@@ -205,8 +252,6 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		Assert.assertTrue(launchDates.containsKey(user3.getKey()));
 		Assert.assertNotNull(launchDates.get(user3.getKey()));
 	}
-	
-	
 	
 	/**
 	 * This test is to analyze a red screen

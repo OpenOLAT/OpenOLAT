@@ -68,6 +68,7 @@ import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -324,7 +325,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			//make sure all results is on the database before calculating some scores
 			//manager commit already DBFactory.getInstance().commit();
 			
-			courseNode.updateScoreEvaluation(getIdentity(), userCourseEnv, getIdentity());
+			courseNode.updateScoreEvaluation(getIdentity(), userCourseEnv, getIdentity(), Role.user);
 			
 			Checkbox checkbox = wrapper.getCheckbox();
 			logUpdateCheck(checkbox.getCheckboxId(), checkbox.getTitle());

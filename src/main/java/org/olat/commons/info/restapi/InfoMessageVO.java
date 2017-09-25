@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.InfoMessage;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)

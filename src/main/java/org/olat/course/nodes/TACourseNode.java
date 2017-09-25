@@ -97,6 +97,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.Role;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -669,11 +670,11 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	 */
 	@Override
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEval, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity, boolean incrementAttempts) {
+			Identity coachingIdentity, boolean incrementAttempts, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		ScoreEvaluation newScoreEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), null, null);
-		am.saveScoreEvaluation(this, coachingIdentity, mySelf, newScoreEval, userCourseEnvironment, incrementAttempts);		
+		am.saveScoreEvaluation(this, coachingIdentity, mySelf, newScoreEval, userCourseEnvironment, incrementAttempts, by);		
 	}
 
 	/**
@@ -726,11 +727,11 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	 *      org.olat.core.id.Identity)
 	 */
 	@Override
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
+	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
 		if (userAttempts != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeAttempts(this, coachingIdentity, mySelf, userAttempts);
+			am.saveNodeAttempts(this, coachingIdentity, mySelf, userAttempts, by);
 		}
 	}
 
@@ -738,10 +739,17 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment) {
+	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment);
+		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);
+	}
+	
+	@Override
+	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
 	}
 
 	/**

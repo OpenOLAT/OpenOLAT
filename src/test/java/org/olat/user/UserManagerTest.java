@@ -121,6 +121,32 @@ public class UserManagerTest extends OlatTestCase {
 		Assert.assertTrue(identities.contains(id2));
 	}
 	
+	@Test
+	public void findUserKeyWithProperty() {
+		//create a user
+		Identity id = createUser(UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+
+		String institutionalEmail = id.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
+		List<Long> identityKeys = userManager.findUserKeyWithProperty(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
+		Assert.assertNotNull(identityKeys);
+		Assert.assertEquals(1, identityKeys.size());
+		Assert.assertEquals(id.getUser().getKey(), identityKeys.get(0));
+	}
+	
+	@Test
+	public void findIdentitiesWithProperty() {
+		//create a user
+		Identity id = createUser(UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+
+		String institutionalEmail = id.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
+		List<Identity> identities = userManager.findIdentitiesWithProperty(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
+		Assert.assertNotNull(identities);
+		Assert.assertEquals(1, identities.size());
+		Assert.assertEquals(id, identities.get(0));
+	}
+	
 	private Identity createUser(String uuid) {
 		String username = "createid-" + uuid;
 		String email = username + "@frentix.com";

@@ -35,9 +35,11 @@ import org.olat.core.util.openxml.workbookstyle.Font.FontStyle;
  *
  */
 public class OpenXMLWorkbookStyles {
-	
+
+	public static final String PERCENT_FORMAT = "10";
 	public static final String DATE_FORMAT = "14";
 	public static final String TIME_FORMAT = "21";
+	public static final String DATE_TIME_FORMAT = "22";
 
 	private List<Font> fonts = new ArrayList<>();
 	private List<Fill> fills = new ArrayList<>();
@@ -56,8 +58,10 @@ public class OpenXMLWorkbookStyles {
 	private final CellStyle borderRightStyle;
 	private final CellStyle dateStyle;
 	private final CellStyle durationStyle;
+	private final CellStyle dateTimeStyle;
 	private final CellStyle headerStyle;
 	private final CellStyle correctStyle;
+	private final CellStyle percentStyle;
 
 	public OpenXMLWorkbookStyles() {
 		standardFont = new Font(fonts.size(), "12", "1", "Calibri", "2", "minor", FontStyle.none);
@@ -83,12 +87,16 @@ public class OpenXMLWorkbookStyles {
 		cellXfs.add(borderRightStyle);
 		dateStyle = new CellStyle(cellXfs.size(), DATE_FORMAT, standardFont, noneFile, noBorder, null, "1");
 		cellXfs.add(dateStyle);
+		dateTimeStyle = new CellStyle(cellXfs.size(), DATE_TIME_FORMAT, standardFont, noneFile, noBorder, null, "1");
+		cellXfs.add(dateTimeStyle);
 		durationStyle = new CellStyle(cellXfs.size(), TIME_FORMAT, standardFont, noneFile, borderRight, null, "1");
 		cellXfs.add(durationStyle);
 		headerStyle = new CellStyle(cellXfs.size(), "0", boldFont, noneFile, noBorder, null, null);
 		cellXfs.add(headerStyle);
 		correctStyle = new CellStyle(cellXfs.size(), "0", boldFont, correctFill, noBorder, null, null);
 		cellXfs.add(correctStyle);
+		percentStyle = new CellStyle(cellXfs.size(), PERCENT_FORMAT, standardFont, noneFile, borderRight, null, "1");
+		cellXfs.add(percentStyle);
 	}
 	
 	public CellStyle getBorderRightStyle() {
@@ -107,6 +115,10 @@ public class OpenXMLWorkbookStyles {
 		return dateStyle;
 	}
 	
+	public CellStyle getDateTimeStyle() {
+		return dateTimeStyle;
+	}
+	
 	public CellStyle getDurationStyle() {
 		return dateStyle;
 	}
@@ -117,6 +129,10 @@ public class OpenXMLWorkbookStyles {
 	
 	public CellStyle getCorrectStyle() {
 		return correctStyle;
+	}
+	
+	public CellStyle getPercentStyle() {
+		return percentStyle;
 	}
 	
 	public List<Font> getFonts() {

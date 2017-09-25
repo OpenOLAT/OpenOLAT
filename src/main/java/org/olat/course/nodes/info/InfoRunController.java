@@ -24,16 +24,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoSubscriptionManager;
 import org.olat.commons.info.manager.MailFormatter;
-import org.olat.commons.info.model.InfoMessage;
 import org.olat.commons.info.notification.InfoSubscription;
-import org.olat.commons.info.notification.InfoSubscriptionManager;
 import org.olat.commons.info.ui.InfoDisplayController;
 import org.olat.commons.info.ui.InfoSecurityCallback;
 import org.olat.commons.info.ui.SendInfoMailFormatter;
 import org.olat.commons.info.ui.SendSubscriberMailOption;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -56,10 +55,9 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.InfoCourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -77,27 +75,28 @@ public class InfoRunController extends BasicController {
 	private ContextualSubscriptionController subscriptionController;
 	
 	private final String businessPath;
-	private final InfoCourseNode courseNode;
-	private final ModuleConfiguration config;
+	
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private InfoSubscriptionManager subscriptionManager;
 
 	public InfoRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne, InfoCourseNode courseNode) {
 		super(ureq, wControl);
-		
-		this.courseNode = courseNode;
-		this.config = courseNode.getModuleConfiguration();
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		
 		Long resId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		ICourse course = CourseFactory.loadCourse(resId);
-		String resSubPath = this.courseNode.getIdent();
+		
+		String resSubPath = courseNode.getIdent();
 		OLATResourceable infoResourceable = new InfoOLATResourceable(resId);
 		businessPath = normalizeBusinessPath(wControl.getBusinessControl().getAsString());
+		ICourse course = CourseFactory.loadCourse(resId);
+		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		
 		//manage opt-out subscription
 		UserSession usess = ureq.getUserSession();
 		if(!usess.getRoles().isGuestOnly()) {
-			subscriptionManager = InfoSubscriptionManager.getInstance();
 			SubscriptionContext subContext = subscriptionManager.getInfoSubscriptionContext(infoResourceable, resSubPath);
 			PublisherData pdata = subscriptionManager.getInfoPublisherData(infoResourceable, businessPath);
 			if(InfoCourseNodeEditController.getAutoSubscribe(config)) {
@@ -116,28 +115,23 @@ public class InfoRunController extends BasicController {
 		} else {
 			Identity identity = getIdentity();
 			Roles roles = usess.getRoles();
-			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-			boolean institutionalManager = RepositoryManager.getInstance().isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry());
-			boolean courseAdmin = cgm.isIdentityCourseAdministrator(identity);
-			
-			canAdd = courseAdmin
-				|| ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID)
-				|| institutionalManager
-				|| roles.isOLATAdmin();
 		
-			canAdmin = courseAdmin
-				|| ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID)
-				|| institutionalManager
-				|| roles.isOLATAdmin();
+			boolean isAdmin = roles.isOLATAdmin()
+					|| cgm.isIdentityCourseAdministrator(identity)
+					|| repositoryManager.isInstitutionalRessourceManagerFor(identity, roles, cgm.getCourseEntry());
+			
+			canAdd = isAdmin || ne.isCapabilityAccessible(InfoCourseNode.EDIT_CONDITION_ID);
+			canAdmin = isAdmin || ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID);
 		}
 
 		InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(getIdentity(), canAdd, canAdmin);
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		
 		infoDisplayController = new InfoDisplayController(ureq, wControl, config, secCallback, infoResourceable, resSubPath, businessPath);
-		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, CoreSpringFactory.getImpl(InfoMessageFrontendManager.class)));
-		infoDisplayController.addSendMailOptions(new SendMembersMailOption(course.getCourseEnvironment().getCourseGroupManager().getCourseResource(),
-				RepositoryManager.getInstance(), repositoryService, CoreSpringFactory.getImpl(BusinessGroupService.class)));
+		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, getLocale()));
+		infoDisplayController.addSendMailOptions(new SendMembersMailOption(cgm.getCourseEntry(), GroupRoles.owner, translate("wizard.step1.send_option.owner")));
+		infoDisplayController.addSendMailOptions(new SendMembersMailOption(cgm.getCourseEntry(), GroupRoles.coach, translate("wizard.step1.send_option.coach")));
+		infoDisplayController.addSendMailOptions(new SendMembersMailOption(cgm.getCourseEntry(), GroupRoles.participant, translate("wizard.step1.send_option.participant")));
+
 		MailFormatter mailFormatter = new SendInfoMailFormatter(course.getCourseTitle(), businessPath, getTranslator());
 		infoDisplayController.setSendMailFormatter(mailFormatter);
 		listenTo(infoDisplayController);

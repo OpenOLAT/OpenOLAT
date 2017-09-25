@@ -22,6 +22,7 @@ package org.olat.commons.info.ui;
 
 import java.util.List;
 
+import org.olat.commons.info.InfoMessage;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
@@ -41,8 +42,11 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class CreateInfoStep extends BasicStep {
 	
-	public CreateInfoStep(UserRequest ureq, List<SendMailOption> options) {
+	private final InfoMessage message;
+	
+	public CreateInfoStep(UserRequest ureq, List<SendMailOption> options, InfoMessage message) {
 		super(ureq);
+		this.message = message;
 		setI18nTitleAndDescr("wizard.step0.title", "wizard.step0.description");
 		setNextStep(new SendMailStep(ureq, options));
 	}
@@ -54,6 +58,6 @@ public class CreateInfoStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateInfoStepController(ureq, wControl, runContext, form);
+		return new CreateInfoStepController(ureq, wControl, runContext, form, message);
 	}
 }

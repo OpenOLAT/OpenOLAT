@@ -54,7 +54,6 @@ public class StandardEditMediaController extends FormBasicController {
 	private TextBoxListElement categoriesEl;
 
 	private Media mediaReference;
-	private final String businessPath;
 	private Map<String,String> categories = new HashMap<>();
 	
 	@Autowired
@@ -63,7 +62,6 @@ public class StandardEditMediaController extends FormBasicController {
 	public StandardEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
-		businessPath = media.getBusinessPath();
 		mediaReference = media;
 		
 		List<Category> categoryList = portfolioService.getCategories(media);

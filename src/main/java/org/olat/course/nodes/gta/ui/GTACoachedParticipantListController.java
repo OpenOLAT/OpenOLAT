@@ -20,14 +20,19 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,7 +46,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
@@ -49,8 +56,14 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskLight;
+import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.CoachParticipantsTableModel.CGCols;
+import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
+import org.olat.course.nodes.gta.ui.component.TaskStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -74,11 +87,14 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private FlexiTableElement tableEl;
 	private CoachParticipantsTableModel tableModel;
 
-
 	private List<UserPropertiesRow> assessableIdentities;
+	private final UserCourseEnvironmentImpl coachCourseEnv;
 	
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+
+	private CloseableModalController cmc;
+	private EditDueDatesController editDueDatesCtrl;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -86,6 +102,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private BaseSecurityManager securityManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -99,19 +117,52 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(GTACoachedGroupGradingController.USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
-		
-		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		UserCourseEnvironmentImpl coachCourseEnv = (UserCourseEnvironmentImpl)userCourseEnv;
+		coachCourseEnv = (UserCourseEnvironmentImpl)userCourseEnv;
 
-		boolean admin = userCourseEnv.isAdmin();
-
-		Set<Identity> duplicateKiller = new HashSet<>();
 		assessableIdentities = new ArrayList<>();
+		collectIdentities(new Consumer<Identity>() {
+			@Override
+			public void accept(Identity participant) {
+				assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale()));
+			}
+		});
+		
+		initForm(ureq);
+		updateModel();
+	}
+	
+	public boolean hasIdentityKey(Long identityKey) {
+		if(assessableIdentities != null) {
+			for(UserPropertiesRow row:assessableIdentities) {
+				if(row.getIdentityKey().equals(identityKey)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public List<Identity> getAssessableIdentities() {
+		List<Identity> identities = new ArrayList<>();
+		collectIdentities(new Consumer<Identity>() {
+			@Override
+			public void accept(Identity participant) {
+				identities.add(participant);
+			}
+		});
+		return identities;
+	}
+	
+	private void collectIdentities(Consumer<Identity> participantCollector) {
+		Set<Identity> duplicateKiller = new HashSet<>();
+		CourseGroupManager cgm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		boolean admin = coachCourseEnv.isAdmin();
+		
 		List<BusinessGroup> coachedGroups = admin ? cgm.getAllBusinessGroups() : coachCourseEnv.getCoachedGroups();
 		List<Identity> participants = businessGroupService.getMembers(coachedGroups, GroupRoles.participant.name());
 		for(Identity participant:participants) {
 			if(!duplicateKiller.contains(participant)) {
-				assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale()));
+				participantCollector.accept(participant);
 				duplicateKiller.add(participant);
 			}
 		}
@@ -122,14 +173,11 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			List<Identity> courseParticipants = repositoryService.getMembers(re, GroupRoles.participant.name());
 			for(Identity participant:courseParticipants) {
 				if(!duplicateKiller.contains(participant)) {
-					assessableIdentities.add(new UserPropertiesRow(participant, userPropertyHandlers, getLocale()));
+					participantCollector.accept(participant);
 					duplicateKiller.add(participant);
 				}
 			}
 		}
-		
-		initForm(ureq);
-		updateModel();
 	}
 
 	@Override
@@ -169,7 +217,12 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus.i18nKey(), CGCols.taskStatus.ordinal(),
 				true, CGCols.taskStatus.name(), new TaskStatusCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate.i18nKey(), CGCols.submissionDate.ordinal(),
+				true, CGCols.submissionDate.name(), new SubmissionDateCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
+		if(gtaManager.isDueDateEnabled(gtaNode)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.duedates", translate("duedates"), "duedates"));
+		}
 		tableModel = new CoachParticipantsTableModel(userPropertyHandlers, getLocale(), columnsModel);
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
@@ -190,7 +243,24 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		List<CoachedIdentityRow> rows = new ArrayList<>(assessableIdentities.size());
 		for(UserPropertiesRow assessableIdentity:assessableIdentities) {
 			TaskLight task = identityToTasks.get(assessableIdentity.getIdentityKey());
-			rows.add(new CoachedIdentityRow(assessableIdentity, task));
+			Date submissionDueDate = null;
+			if(task == null || task.getTaskStatus() == null || task.getTaskStatus() == TaskProcess.assignment) {
+				IdentityRef identityRef = new IdentityRefImpl(assessableIdentity.getIdentityKey());
+				DueDate dueDate = gtaManager.getSubmissionDueDate(task, identityRef, null, gtaNode, entry, true);
+				if(dueDate != null) {
+					submissionDueDate = dueDate.getDueDate();
+				}
+			} 
+
+			Date syntheticSubmissionDate = null;
+			boolean hasSubmittedDocument = false;
+			if(task != null && task.getTaskStatus() != null && task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit) {
+				syntheticSubmissionDate = getSyntheticSubmissionDate(task);
+				if(syntheticSubmissionDate != null) {
+					hasSubmittedDocument = hasSubmittedDocument(task);
+				}
+			}
+			rows.add(new CoachedIdentityRow(assessableIdentity, task, submissionDueDate, syntheticSubmissionDate, hasSubmittedDocument));
 		}
 		
 		tableModel.setObjects(rows);
@@ -203,13 +273,36 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	}
 	
 	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if(editDueDatesCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				updateModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == cmc) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(editDueDatesCtrl);
+		removeAsListenerAndDispose(cmc);
+		editDueDatesCtrl = null;
+		cmc = null;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				CoachedIdentityRow row = tableModel.getObject(se.getIndex());
-				if(StringHelper.containsNonWhitespace(cmd)) {
+				if("duedates".equals(cmd)) {
+					doEditDueDate(ureq, row);
+				} else if(StringHelper.containsNonWhitespace(cmd)) {
 					fireEvent(ureq, new SelectIdentityEvent(row.getIdentity().getIdentityKey()));	
 				}
 			}
@@ -221,5 +314,28 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	protected void formOK(UserRequest ureq) {
 		//
 	}
+	
+	private void doEditDueDate(UserRequest ureq, CoachedIdentityRow row) {
+		if(editDueDatesCtrl != null) return;
+		
+		Task task;
+		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentity().getIdentityKey());
+		RepositoryEntry entry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		if(row.getTask() == null) {
+			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
+			TaskList taskList = gtaManager.getTaskList(entry, gtaNode);
+			task = gtaManager.createAndPersistTask(null, taskList, firstStep, null, assessedIdentity, gtaNode);
+		} else {
+			task = gtaManager.getTask(row.getTask());
+		}
 
+		editDueDatesCtrl = new EditDueDatesController(ureq, getWindowControl(), task, assessedIdentity, null, gtaNode, entry);
+		listenTo(editDueDatesCtrl);
+		
+		String fullname = userManager.getUserDisplayName(assessedIdentity);
+		String title = translate("duedates.user", new String[] { fullname });
+		cmc = new CloseableModalController(getWindowControl(), "close", editDueDatesCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
 }

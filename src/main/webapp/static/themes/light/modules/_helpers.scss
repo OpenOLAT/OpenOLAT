@@ -13,6 +13,16 @@
 	@extend %o_block_top;
 	@extend %o_block_bottom;
 }
+.o_block_small_bottom, %o_block_small_bottom {
+	margin-bottom: 0.5em;
+}
+.o_block_small_top, %o_block_small_top {
+	margin-top: 0.5em;
+}
+.o_block_small, %o_block_small {
+	@extend %o_block_small_top;
+	@extend %o_block_small_bottom;
+}
 .o_block_large_bottom, %o_block_large_bottom {
 	margin-bottom: 2em;
 }
@@ -156,6 +166,14 @@
 	margin-bottom: 0;
 }
 
+/* minimized text-style buttons */
+.o_button_textstyle {
+	&:before {content:'['}
+	&:after {content:']'}
+}
+
+
+
 .panel-imagebg {
 	background-repeat:no-repeat;
 	background-position: center;
@@ -256,6 +274,11 @@
 .o_deleted, %o_deleted { 
 	text-decoration: line-through;
 }	
+/* highlight a row on hover event */
+.o_highlight_on_hover:hover { 
+	background-color: $table-bg-hover;
+}
+	
 /* clickable elements that should indicate this with a cursor change */
 .o_clickable, %o_clickable {
 	cursor: pointer;
@@ -275,19 +298,25 @@
 
 /* link or other copy&paste code blocks that might be to long for the screen (creates a scrollbar) */
 .o_copy_code, %o_copy_code {
-	overflow-x: auto;  
-	overflow-y: auto;
   	font-family: $font-family-monospace;
   	padding: 2px 4px;
   	font-size: 90%;
   	color: $code-color;
  	background-color: $code-bg;
   	border-radius: $border-radius-base;
+  	
+  	input,textarea {
+  		border: 0;
+  		width: 95%;
+  		background: transparent;
+  	}
 }
 
 /* text that should be on one line, e.g. in tables */
 .o_nowrap, %o_nowrap {
 	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }	
 
 /* titles with subtitles */
@@ -306,6 +335,23 @@
 	@include img-responsive(inline-block);
 	max-width: 100%;
 }
+
+/* figures with captions */
+.o_figure_caption_bottom {
+	display: inline-block;	
+	min-width: 50%;
+	figure { 
+		display: table; 
+	}
+	figcaption { 
+		display: table-caption; 
+		caption-side: bottom ; 
+		font-size: 90%;
+		font-style: italic;
+		text-align: center;
+	}
+}
+
 
 /* vertical centered helper */
 .o_image_vertical_center_helper {

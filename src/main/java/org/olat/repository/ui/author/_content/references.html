@@ -1,0 +1,6 @@
+$r.translate("details.referenceinfo.txt")
+<ul class="o_dropdown list-unstyled">
+#foreach($referenceLink in $referenceLinks)
+	<li>$r.render($referenceLink)</li>
+#end
+</ul>

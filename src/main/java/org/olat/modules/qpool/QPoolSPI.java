@@ -30,7 +30,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.util.vfs.VFSLeaf;
 
 /**
  * 
@@ -47,8 +46,6 @@ public interface QPoolSPI {
 	public List<ExportFormatOptions> getTestExportFormats();
 	
 	public boolean isCompatible(String filename, File file);
-	
-	public boolean isCompatible(String filename, VFSLeaf file);
 	
 	/**
 	 * 

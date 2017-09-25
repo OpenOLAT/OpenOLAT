@@ -26,7 +26,6 @@ import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.modules.lecture.model.LectureBlockAndRollCall;
 import org.olat.modules.lecture.ui.ParticipantLectureBlocksDataModel.ParticipantCols;
 
 /**
@@ -35,14 +34,14 @@ import org.olat.modules.lecture.ui.ParticipantLectureBlocksDataModel.Participant
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ParticipantLectureBlocksSortDelegate extends SortableFlexiTableModelDelegate<LectureBlockAndRollCall> {
+public class ParticipantLectureBlocksSortDelegate extends SortableFlexiTableModelDelegate<LectureBlockAndRollCallRow> {
 
 	public ParticipantLectureBlocksSortDelegate(SortKey orderBy, ParticipantLectureBlocksDataModel tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
 	}
 	
 	@Override
-	protected void sort(List<LectureBlockAndRollCall> rows) {
+	protected void sort(List<LectureBlockAndRollCallRow> rows) {
 		int columnIndex = getColumnIndex();
 		ParticipantCols column = ParticipantCols.values()[columnIndex];
 		switch(column) {
@@ -53,15 +52,15 @@ public class ParticipantLectureBlocksSortDelegate extends SortableFlexiTableMode
 		}
 	}
 	
-	private class AttendedLecturesComparator implements Comparator<LectureBlockAndRollCall> {
+	private class AttendedLecturesComparator implements Comparator<LectureBlockAndRollCallRow> {
 		@Override
-		public int compare(LectureBlockAndRollCall o1, LectureBlockAndRollCall o2) {
-			boolean c1 = o1.isRollCalled();
-			boolean c2 = o2.isRollCalled();
+		public int compare(LectureBlockAndRollCallRow o1, LectureBlockAndRollCallRow o2) {
+			boolean c1 = o1.getRow().isRollCalled();
+			boolean c2 = o2.getRow().isRollCalled();
 			int c = compareBooleans(c1, c2);
 			if(c == 0) {
-				int l1 = o1.getLecturesAttendedNumber();
-				int l2 = o2.getLecturesAttendedNumber();
+				int l1 = o1.getRow().getLecturesAttendedNumber();
+				int l2 = o2.getRow().getLecturesAttendedNumber();
 				c = compareInts(l1, l2);
 			}
 			return c;

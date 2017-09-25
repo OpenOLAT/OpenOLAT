@@ -20,10 +20,6 @@
 package org.olat.modules.webFeed.manager;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -37,6 +33,7 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.image.Size;
@@ -85,29 +82,24 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
-import com.rometools.rome.io.FeedException;
-import com.rometools.rome.io.ParsingFeedException;
-import com.rometools.rome.io.SyndFeedInput;
-import com.rometools.rome.io.XmlReader;
 
 /**
  * This is the actual feed manager implementation. It handles all operations on
  * the various feeds and items.
- * 
+ *
  * <P>
  * Initial Date: Feb 17, 2009 <br>
- * 
+ *
  * @author Gregor Wassmann
  */
 public class FeedManagerImpl extends FeedManager {
-	
+
 	private static final OLog log = Tracing.createLoggerFor(FeedManagerImpl.class);
-	
+
 	// 10 minutes
 	private static final int EXTERNAL_FEED_ACTUALIZATION_MILLIS = 10*60*1000;
-	
+
 	public static final String KIND_PODCAST = "podcast";
 	public static final String KIND_BLOG = "blog";
 
@@ -115,7 +107,9 @@ public class FeedManagerImpl extends FeedManager {
 	private Coordinator coordinator;
 	private OLATResourceManager resourceManager;
 	private FileResourceManager fileResourceManager;
-	
+
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private FeedDAO feedDAO;
 	@Autowired
@@ -140,9 +134,9 @@ public class FeedManagerImpl extends FeedManager {
 		INSTANCE = this;
 		this.coordinator = coordinatorManager.getCoordinator();
 	}
-	
+
 	FeedManagerImpl() {
-		
+
 	}
 
 	public void setRepositoryManager(RepositoryManager repositoryManager) {
@@ -164,7 +158,7 @@ public class FeedManagerImpl extends FeedManager {
 	/**
 	 * This method creates an OLATResource in the database and
 	 * initializes the container on the file system.
-	 * 
+	 *
 	 * @param feedResource
 	 * @return The feed resourcable
 	 */
@@ -172,28 +166,26 @@ public class FeedManagerImpl extends FeedManager {
 		// save the resource in the database
 		OLATResource ores = resourceManager.createOLATResourceInstance(feedResource);
 		resourceManager.saveOLATResource(ores);
-		
+
 		// create a feed and save it in the database
 		feedDAO.createFeedForResourcable(feedResource);
-		
+
 		// Create a resource folder for storing the images
 		feedFileStorage.getOrCreateFeedContainer(feedResource);
-		
+
 		return feedResource;
 	}
-	
+
 	/**
 	 * Load the Feed from the database.
-	 * 
+	 *
 	 * Additionally this method triggers the actualization of the external feed
-	 * and his items. The download starts is the last modified time is 
+	 * and his items. The download starts is the last modified time is
 	 */
 	@Override
 	public Feed loadFeed(OLATResourceable ores) {
 		Feed feed = feedDAO.loadFeed(ores);
-		
-		feed = enrichFeedByRepositoryEntryInfromation(feed);
-		
+
 		// Update the external feed and the items
 		if (feed != null && feed.isExternal() && StringHelper.containsNonWhitespace(feed.getExternalFeedUrl())) {
 			Calendar cal = Calendar.getInstance();
@@ -203,17 +195,21 @@ public class FeedManagerImpl extends FeedManager {
 			Date now = new Date();
 			if (now.after(nextUpdateDate) || loadItems(feed).isEmpty()) {
 				// time to update or first load after creation of the feed
-				saveExternalItems(feed);
-				saveExternalFeed(feed);
-				notificationsManager.markPublisherNews(ores.getResourceableTypeName(),
-						feed.getResourceableId().toString(), null, false);
+				saveExternalFeedIAndtems(feed);
 			}
 
 			feed.setLastModified(new Date());
 			feedDAO.updateFeed(feed);
 		}
-		
+
 		return feed;
+	}
+
+	private void saveExternalFeedIAndtems(Feed feed) {
+		saveExternalItems(feed);
+		saveExternalFeed(feed);
+		notificationsManager.markPublisherNews(feed.getResourceableTypeName(),
+				feed.getResourceableId().toString(), null, false);
 	}
 
 	@Override
@@ -223,34 +219,55 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public Feed updateFeed(Feed feed) {
-		enrichRepositoryEntryByFeedInformation(feed);
 		return feedDAO.updateFeed(feed);
 	}
 
 	@Override
 	public Feed updateFeedMode(Boolean external, Feed feed) {
 		if (feed == null) return null;
-		
+
 		// first, reload actual version of the feed
 		Feed reloaded = feedDAO.loadFeed(feed);
 		if (reloaded == null) return null;
-		
+
 		// delete all items if the mode changes
 		if (external == null
-				|| feed.isUndefined() 
+				|| feed.isUndefined()
 				|| external.booleanValue() != feed.getExternal().booleanValue()) {
 			itemDAO.removeItems(feed);
 			reloaded.setExternalImageURL(null);
 		}
-		
+
 		reloaded.setExternal(external);
 		return updateFeed(reloaded);
 	}
 
 	@Override
+	public Feed updateExternalFeedUrl(Feed feed, String externalFeedUrl) {
+		Feed reloaded = feedDAO.loadFeed(feed);
+		if (reloaded == null) return null;
+		if (!feed.isExternal()) return feed;
+
+		if (!StringHelper.isSame(reloaded.getExternalFeedUrl(), externalFeedUrl)) {
+			itemDAO.removeItems(feed);
+		}
+		if (StringHelper.containsNonWhitespace(externalFeedUrl)) {
+			reloaded.setExternalFeedUrl(externalFeedUrl);
+			saveExternalFeedIAndtems(feed);
+		} else {
+			reloaded.setExternal(null);
+			reloaded.setExternalFeedUrl(null);
+		}
+		reloaded.setLastModified(new Date());
+		Feed updated = feedDAO.updateFeed(reloaded);
+
+		return updated;
+	}
+
+	@Override
 	public Feed replaceFeedImage(Feed feed, FileElement image) {
 		String saveFileName = null;
-		
+
 		if (image != null) {
 			saveFileName = feedFileStorage.saveFeedMedia(feed, image);
 			feed = feedDAO.loadFeed(feed.getKey());
@@ -259,21 +276,21 @@ public class FeedManagerImpl extends FeedManager {
 				feed = feedDAO.updateFeed(feed);
 			}
 		}
-		
+
 		return feed;
 	}
-	
+
 	@Override
 	public Feed deleteFeedImage(Feed feed) {
 		String saveFileName = null;
-		
+
 		feedFileStorage.deleteFeedMedia(feed);
 		Feed reloadedFeed = feedDAO.loadFeed(feed.getKey());
 		if (reloadedFeed != null) {
 			reloadedFeed.setImageName(saveFileName);
 			reloadedFeed = feedDAO.updateFeed(reloadedFeed);
 		}
-		
+
 		return reloadedFeed;
 	}
 
@@ -281,11 +298,11 @@ public class FeedManagerImpl extends FeedManager {
 	public void deleteFeed(OLATResourceable ores) {
 		// delete the container on the file system
 		fileResourceManager.deleteFileResource(ores);
-		
+
 		// delete comments and ratings
 		CommentAndRatingService commentAndRatingService = CoreSpringFactory.getImpl(CommentAndRatingService.class);
 		commentAndRatingService.deleteAllIgnoringSubPath(ores);
-		
+
 		// delete the feed and all items from the database
 		Feed feed = feedDAO.loadFeed(ores);
 		itemDAO.removeItems(feed);
@@ -293,30 +310,30 @@ public class FeedManagerImpl extends FeedManager {
 		resourceManager.deleteOLATResourceable(ores);
 		feed = null;
 	}
-		
+
 	@Override
 	public Feed createItem(Feed feed, Item item, FileElement file) {
-		Feed reloadedFeed = null;
-		
-		if (feed != null && feed.isInternal()) {
-	
-			// Set the current date as published date.
-			if (item.getPublishDate() == null) {
-				item.setPublishDate(new Date());
-			}
-			
-			// Save the Enclosure
-			Enclosure enclosure = replaceEnclosure(item, file);
-			item.setEnclosure(enclosure);
-			
-			// Save the Item
-			itemDAO.createItem(feed, item);
-			
-			// Set the modification date of the feed
-			reloadedFeed = feedDAO.loadFeed(feed.getKey());
-			reloadedFeed.setLastModified(new Date());
-			reloadedFeed = feedDAO.updateFeed(reloadedFeed);
+		if (feed == null || item == null || !feed.isInternal()) return null;
+
+		// Set the current date as published date.
+		if (item.getPublishDate() == null) {
+			item.setPublishDate(new Date());
 		}
+
+		// Save the Enclosure
+		Enclosure enclosure = replaceEnclosure(item, file);
+		item.setEnclosure(enclosure);
+
+		// Save the Item
+		itemDAO.createItem(feed, item);
+
+		// Set the modification date of the feed
+		Feed reloadedFeed = feedDAO.loadFeed(feed.getKey());
+		reloadedFeed.setLastModified(new Date());
+		reloadedFeed = feedDAO.updateFeed(reloadedFeed);
+
+		markPublisherNews(reloadedFeed);
+
 		return reloadedFeed;
 	}
 
@@ -325,22 +342,27 @@ public class FeedManagerImpl extends FeedManager {
 	public Item loadItem(Long key) {
 		return itemDAO.loadItem(key);
 	}
-	
+
 	@Override
 	public Item loadItemByGuid(Long feedKey, String guid) {
 		return itemDAO.loadItemByGuid(feedKey, guid);
 	}
 
 	@Override
+	public Item loadItemByGuid(String guid) {
+		return itemDAO.loadItemByGuid(guid);
+	}
+
+	@Override
 	public List<Item> loadItems(Feed feed) {
 		return itemDAO.loadItems(feed);
 	}
-	
+
 	@Override
 	public List<String> loadItemsGuid(Feed feed) {
 		return itemDAO.loadItemsGuid(feed);
 	}
-	
+
 	@Override
 	public List<Item> loadPublishedItems(Feed feed) {
 		return itemDAO.loadPublishedItems(feed);
@@ -381,28 +403,31 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public Item updateItem(Item item, FileElement file) {
+		if (item == null) return null;
+
 		Item updatedItem = itemDAO.loadItem(item.getKey());
-		
+
 		if (updatedItem != null) {
 			Enclosure enclosure = replaceEnclosure(item, file);
 			item.setEnclosure(enclosure);
 			updatedItem = itemDAO.updateItem(item);
+			markPublisherNews(updatedItem.getFeed());
 		}
-		
+
 		return updatedItem;
 	}
 
 	/**
 	 * Save or delete the media file to the file system and get the appropriate
 	 * Enclosure.
-	 * 
+	 *
 	 * @param item
 	 * @param file
 	 * @return
 	 */
 	private Enclosure replaceEnclosure(Item item, FileElement file) {
 		Enclosure enclosure = item.getEnclosure();
-		
+
 		if (file != null) {
 			if (file.isUploadSuccess()) {
 				if (enclosure != null && enclosure.getFileName() != null) {
@@ -422,7 +447,7 @@ public class FeedManagerImpl extends FeedManager {
 				enclosure = null;
 			}
 		}
-		
+
 		return enclosure;
 	}
 
@@ -430,21 +455,21 @@ public class FeedManagerImpl extends FeedManager {
 	@Override
 	public Feed deleteItem(Item item) {
 		Feed feed = item.getFeed();
-		
+
 		// delete the item from the database
 		itemDAO.removeItem(item);
-		
+
 		// delete the item container from the file system
 		feedFileStorage.deleteItemContainer(item);
-		
+
 		// delete comments and ratings
 		CommentAndRatingService commentAndRatingService = CoreSpringFactory
 				.getImpl(CommentAndRatingService.class);
 		commentAndRatingService.deleteAll(feed, item.getGuid());
-		
+
 		// reload the Feed
 		Feed reloadedFeed = feedDAO.loadFeed(feed.getKey());
-		
+
 		// If the last item has been removed, set the feed to undefined.
 		// The user can then newly decide whether to add items manually
 		// or from an external source.
@@ -454,18 +479,18 @@ public class FeedManagerImpl extends FeedManager {
 		}
 		reloadedFeed.setLastModified(new Date());
 		reloadedFeed = feedDAO.updateFeed(reloadedFeed);
-		
+
 		return reloadedFeed;
 	}
 
 	/**
 	 * Fetch the external feed and store it in the database.
-	 * 
+	 *
 	 * @param feed
 	 */
 	private void saveExternalFeed(Feed feed) {
 		feed = externalFeedFetcher.fetchFeed(feed);
-		
+
 		if (feed != null) {
 			feed.setLastModified(new Date());
 			feedDAO.updateFeed(feed);
@@ -474,12 +499,12 @@ public class FeedManagerImpl extends FeedManager {
 
 	/**
 	 * Fetch all items of the external feed and store them in the database.
-	 * 
+	 *
 	 * @param feed
 	 */
 	private void saveExternalItems(Feed feed) {
 		List<Item> externalItems = externalFeedFetcher.fetchItems(feed);
-		
+
 		for (Item externalItem : externalItems) {
 			Item reloaded = itemDAO.loadItemByGuid(feed.getKey(), externalItem.getGuid());
 			if (reloaded == null) {
@@ -492,6 +517,10 @@ public class FeedManagerImpl extends FeedManager {
 				// published date should never be null because it triggers notifications
 				if (externalItem.getPublishDate() == null) {
 					externalItem.setPublishDate(now);
+				}
+				
+				if(dbInstance.isMySQL()) {
+					mysqlCleanUp(externalItem);
 				}
 				itemDAO.createItem(feed, externalItem);
 			} else {
@@ -509,90 +538,65 @@ public class FeedManagerImpl extends FeedManager {
 				reloaded.setContent(externalItem.getContent());
 				reloaded.setEnclosure(externalItem.getEnclosure());
 				
+				if(dbInstance.isMySQL()) {
+					mysqlCleanUp(externalItem);
+				}
 				itemDAO.updateItem(reloaded);
 			}
 		}
 	}
-
-	/**
-	 * Update the repository entry with the latest set properties in the feed
-	 * resource.
-	 * <p>
-	 * Properties are:
-	 * <ul>
-	 * <li>Title
-	 * <li>Author
-	 * <li>Descripion (wiki style in repository)
-	 * <li>Image
-	 * </ul>
-	 * 
-	 * @param feed
-	 */
-	private void enrichRepositoryEntryByFeedInformation(Feed feed) {
-		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(feed, false);
-		if (entry != null && feed != null) {
-			Date whenTheFeedWasLastModified = feed.getLastModified();
-			if (whenTheFeedWasLastModified != null && entry.getLastModified().before(whenTheFeedWasLastModified)) {
-				// feed is newer than repository entry, update repository entry
-				String saveTitle = PersistenceHelper.truncateStringDbSave(feed.getTitle(), 100, true);
-				entry.setDisplayname(saveTitle);
-				String saveDesc = PersistenceHelper.truncateStringDbSave(feed.getDescription(), 16777210, true);
-				entry.setDescription(saveDesc);
-				// Update the image
-				VFSLeaf oldEntryImage = repositoryManager.getImage(entry);
-				if (oldEntryImage != null) {
-					// Delete the old File
-					oldEntryImage.delete();
-				}
-				// Copy the feed image to the repository home folder
-				VFSItem newImage = feedFileStorage.loadFeedMedia(feed);
-				if (newImage == null) {
-					// huh? image defined but not found on disk - remove
-					// image from feed
-					feed.setImageName(null);
-				} else {
-					repositoryManager.setImage((VFSLeaf) newImage, entry);
-				}
-			}
-		}
-	}
 	
-	/**
-	 * Update the feed resource with the latest set properties in the repository
-	 * entry.
-	 * <p>
-	 * Properties are:
-	 * <ul>
-	 * <li>Title (if not already set)
-	 * <li>Author
-	 * </ul>
-	 * 
-	 * @param feed
-	 */
-	private Feed enrichFeedByRepositoryEntryInfromation(Feed feed) {
-		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(feed, false);
-		if (entry != null && feed != null) {
-			Date whenTheFeedWasLastModified = feed.getLastModified();
-			if (feed.getTitle() == null || whenTheFeedWasLastModified == null || entry.getLastModified().after(whenTheFeedWasLastModified)) {
-				// Copy the title (only) initially
-				if (feed.getTitle() == null) {
-					feed.setTitle(entry.getDisplayname());
-				}
-				if (StringHelper.containsNonWhitespace(entry.getAuthors())) {
-					feed.setAuthor(entry.getAuthors());
-				} else {
-					feed.setAuthor(null);
-				}
-				feed = updateFeed(feed);
-			}
+	private void mysqlCleanUp(Item item) {
+		item.setTitle(PersistenceHelper.convert(item.getTitle()));
+		item.setContent(PersistenceHelper.convert(item.getContent()));
+		item.setDescription(PersistenceHelper.convert(item.getDescription()));
+	}
+
+	private void markPublisherNews(Feed feed) {
+		if (feed == null) return;
+
+		notificationsManager.markPublisherNews(
+				feed.getResourceableTypeName(),
+				feed.getResourceableId().toString(),
+				null,
+				false);
+	}
+
+	@Override
+	public Feed updateFeedWithRepositoryEntry(RepositoryEntry entry) {
+		Feed feed = loadFeed(entry.getOlatResource());
+		feed = enrichFeedByRepositoryEntry(feed, entry);
+		feed = updateFeed(feed);
+		return feed;
+	}
+
+	@Override
+	public Feed enrichFeedByRepositoryEntry(Feed feed, RepositoryEntry entry) {
+		if (feed == null) return null;
+		if (entry == null) return feed;
+
+		// copy the metadata
+		feed.setTitle(entry.getDisplayname());
+		feed.setDescription(entry.getDescription());
+
+		// Some old feeds have an author but it is not in the RespositoryEntry.
+		// Keep the author of the feed in this case.
+		if (entry.getAuthors() != null) {
+			feed.setAuthor(entry.getAuthors());
 		}
+
+		// copy the image
+		VFSLeaf image = repositoryManager.getImage(entry);
+		String imageName = feedFileStorage.saveFeedMedia(feed, image);
+		feed.setImageName(imageName);
+
 		return feed;
 	}
 
 	/**
 	 * A unique key for the item of the feed. Can be used e.g. for locking and
 	 * caching.
-	 * 
+	 *
 	 * @param string
 	 * @param string2
 	 * @return A unique key for the item of the feed
@@ -607,7 +611,7 @@ public class FeedManagerImpl extends FeedManager {
 	/**
 	 * A unique key for the item of the feed. Can be used e.g. for locking and
 	 * caching. (Protected for performance reasons)
-	 * 
+	 *
 	 * @param item
 	 * @param feed
 	 * @return A unique key for the item of the feed
@@ -621,12 +625,12 @@ public class FeedManagerImpl extends FeedManager {
 	public VFSContainer getItemContainer(Item item) {
 		return feedFileStorage.getOrCreateItemContainer(item);
 	}
-	
+
 	@Override
 	public void saveItemAsXML(Item item) {
 		feedFileStorage.saveItemAsXML(item);
 	}
-	
+
 	@Override
 	public void deleteItemXML(Item item) {
 		feedFileStorage.deleteItemXML(item);
@@ -695,51 +699,8 @@ public class FeedManagerImpl extends FeedManager {
 
 	@Override
 	public ValidatedURL validateFeedUrl(String url, String type) {
-		SyndFeedInput input = new SyndFeedInput();
-
-		boolean modifiedProtocol = false;
-		try {
-			if (url != null) {
-				url = url.trim();
-			}
-			if (url.startsWith("feed") || url.startsWith("itpc")) {
-				// accept feed(s) urls like generated in safari browser
-				url = "http" + url.substring(4);
-				modifiedProtocol = true;
-			}
-			URL realUrl = new URL(url);
-			SyndFeed feed = input.build(new XmlReader(realUrl));
-			if (!feed.getEntries().isEmpty()) {
-				// check for enclosures
-				SyndEntry entry = feed.getEntries().get(0);
-				if (type != null && type.indexOf("BLOG") >= 0) {
-					return new ValidatedURL(url, ValidatedURL.State.VALID);
-				}
-				if (entry.getEnclosures().isEmpty()) {
-					return new ValidatedURL(url, ValidatedURL.State.NO_ENCLOSURE);
-				}
-			}
-			// The feed was read successfully
-			return new ValidatedURL(url, ValidatedURL.State.VALID);
-		} catch (ParsingFeedException e) {
-			if (modifiedProtocol) {
-				// fallback for SWITCHcast itpc -> http -> https
-				url = "https" + url.substring(4);
-				return validateFeedUrl(url, type);
-			}
-			return new ValidatedURL(url, ValidatedURL.State.NOT_FOUND);
-		} catch (FileNotFoundException e) {
-			return new ValidatedURL(url, ValidatedURL.State.NOT_FOUND);
-		} catch (MalformedURLException e) {
-			// The url is invalid
-		} catch (FeedException e) {
-			// The feed couldn't be read
-		} catch (IOException e) {
-			// Maybe network or file problems
-		} catch (IllegalArgumentException e) {
-			// something very wrong with the feed
-		}
-		return new ValidatedURL(url, ValidatedURL.State.MALFORMED);
+		boolean enclosuresExpected = type != null && type.indexOf("BLOG") >= 0? false: true;
+		return externalFeedFetcher.validateFeedUrl(url, enclosuresExpected);
 	}
 
 	@Override
@@ -753,10 +714,10 @@ public class FeedManagerImpl extends FeedManager {
 		// load the feed and the items from the database
 		Feed sourceFeed = feedDAO.loadFeed(sourceResource);
 		List<Item> items = itemDAO.loadItems(sourceFeed);
-		
+
 		// copy the feed in the database
 		Feed targetFeed = feedDAO.copyFeed(sourceResource, targetResource);
-		
+
 		// copy the items in the database
 		for (Item item : items) {
 			itemDAO.copyItem(targetFeed, item);
@@ -775,12 +736,12 @@ public class FeedManagerImpl extends FeedManager {
 	public VFSLeaf getFeedArchive(OLATResourceable resource) {
 		VFSContainer rootContainer = feedFileStorage.getResourceContainer(resource);
 		VFSContainer feedContainer = feedFileStorage.getOrCreateFeedContainer(resource);
-		
+
 		// Load the feed from database an store it to the XML file.
 		Feed feed = feedDAO.loadFeed(resource);
 		feed.setModelVersion(FeedImpl.CURRENT_MODEL_VERSION);
 		feedFileStorage.saveFeedAsXML(feed);
-		
+
 		// Load the items from the database, make it export safe and store them
 		// to XML files.
 		List<Item> items = loadItems(feed);
@@ -814,20 +775,20 @@ public class FeedManagerImpl extends FeedManager {
 				return (VFSLeaf) rootContainer.resolve(zipFileName);
 			}
 		});
-		
+
 		// delete the XML files again. They are only needed for the export.
 		for (Item item : items) {
 			feedFileStorage.deleteItemXML(item);
 		}
 		feedFileStorage.deleteFeedXML(feed);
-		
+
 		return zip;
 	}
 
 	/**
 	 * Returns the file name of the archive that is to be exported. Depends on
 	 * the kind of the resource.
-	 * 
+	 *
 	 * @param resource
 	 * @return The zip archive file name
 	 */
@@ -844,9 +805,9 @@ public class FeedManagerImpl extends FeedManager {
 	public void importFeedFromXML(OLATResource ores, boolean removeIdentityKeys) {
 		Feed feedFromXml = feedFileStorage.loadFeedFromXML(ores);
 		if (feedFromXml == null) return;
-		
+
 		// Check if the feed already exits or create it. The feed exists
-		// possibly, if a previous migration from an XML feed was not 
+		// possibly, if a previous migration from an XML feed was not
 		// successful.
 		Feed feed = feedDAO.loadFeed(ores);
 		if (feed == null) {
@@ -861,11 +822,11 @@ public class FeedManagerImpl extends FeedManager {
 			feed = feedDAO.createFeed(feedFromXml);
 			log.info("Feed imported " + "(" + ores.getResourceableTypeName() + "): " + ores.getResourceableId());
 		}
-		
+
 		List<Item> itemsFromXml = feedFileStorage.loadItemsFromXML(ores);
 		itemsFromXml = fixFeedVersionIssues(feedFromXml, itemsFromXml);
 		for (Item itemFromXml : itemsFromXml) {
-			// Check if the item already exits or create it. 
+			// Check if the item already exits or create it.
 			Item item = itemDAO.loadItemByGuid(feed.getKey(), itemFromXml.getGuid());
 			if (item == null) {
 				if (removeIdentityKeys) {
@@ -887,12 +848,12 @@ public class FeedManagerImpl extends FeedManager {
 			}
 			feedFileStorage.deleteItemXML(itemFromXml);
 		}
-		
+
 		if (feed.isExternal()) {
 			saveExternalItems(feed);
 			saveExternalFeed(feed);
 		}
-		
+
 		feedFileStorage.deleteFeedXML(feed);
 	}
 
@@ -901,7 +862,7 @@ public class FeedManagerImpl extends FeedManager {
 	 * necessary fixes to the model. Since feeds can be exported and imported
 	 * this fixes must apply on the fly and can't be implemented with the system
 	 * upgrade mechanism.
-	 * 
+	 *
 	 * @param feed
 	 * @return the fixed items
 	 */

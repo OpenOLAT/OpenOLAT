@@ -19,7 +19,8 @@
  */
 package org.olat.modules.reminder;
 
-import java.text.ParseException;
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
@@ -32,8 +33,8 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.modules.reminder.model.SendTime;
 import org.quartz.CronTrigger;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.quartz.TriggerKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,8 @@ import org.springframework.stereotype.Service;
 public class ReminderModule extends AbstractSpringModule {
 	
 	private static final OLog log = Tracing.createLoggerFor(ReminderModule.class);
+
+	private final TriggerKey reminderTriggerKey = new TriggerKey("reminderTrigger", Scheduler.DEFAULT_GROUP);
 	
 	private static final String REMINDER_ENABLED = "remiNder.enabled";
 	private static final String SMS_ENABLED = "sms.enabled";
@@ -129,24 +132,28 @@ public class ReminderModule extends AbstractSpringModule {
 		}
 		return selectedSpi;
 	}
+	
 	/**
 	 * Default 0 0 9/1 * * ?
 	 * 
 	 */
 	private void configureQuartzJob() {
 		try {
-			Trigger trigger = scheduler.getTrigger("reminderTrigger", Scheduler.DEFAULT_GROUP);
+			Trigger trigger = scheduler.getTrigger(reminderTriggerKey);
 			if(trigger instanceof CronTrigger) {
 				CronTrigger cronTrigger = (CronTrigger)trigger;
 				String currentCronExpression = cronTrigger.getCronExpression();
 				String cronExpression = getCronExpression();
 				if(!cronExpression.equals(currentCronExpression)) {
 					log.info("Start reminder with this cron expression: " + cronExpression);
-					cronTrigger.setCronExpression(cronExpression);
-					scheduler.rescheduleJob("reminderTrigger", Scheduler.DEFAULT_GROUP, (Trigger)cronTrigger.clone());
+					
+					Trigger newTrigger = cronTrigger.getTriggerBuilder()
+							.withSchedule(cronSchedule(cronExpression))
+						    .build();
+					scheduler.rescheduleJob(reminderTriggerKey, newTrigger);
 				}
 			}
-		} catch (SchedulerException | ParseException e) {
+		} catch (Exception e) {
 			log.error("", e);
 		}
 	}

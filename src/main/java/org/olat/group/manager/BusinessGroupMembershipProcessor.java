@@ -25,7 +25,7 @@ import java.util.List;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
+import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.gui.control.Event;
 import org.olat.core.util.coordinate.CoordinatorManager;

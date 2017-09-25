@@ -57,6 +57,7 @@ import org.olat.course.site.model.LanguageConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -79,6 +80,9 @@ public class CourseSiteAdminController extends FormBasicController {
 	
 	private CourseSiteConfiguration siteConfiguration;
 	private final RepositoryManager repositoryManager;
+	
+	@Autowired
+	private I18nModule i18nModule;
 	
 	public CourseSiteAdminController(UserRequest ureq, WindowControl wControl, CourseSiteConfiguration siteConfiguration) {
 		super(ureq, wControl);
@@ -128,7 +132,7 @@ public class CourseSiteAdminController extends FormBasicController {
 			}
 		}
 		
-		for(String langKey:I18nModule.getEnabledLanguageKeys()) {
+		for(String langKey:i18nModule.getEnabledLanguageKeys()) {
 			if(langToConfigMap.containsKey(langKey)) {
 				LanguageConfiguration langConfig = langToConfigMap.get(langKey);
 				RepositoryEntry re = repositoryManager.lookupRepositoryEntryBySoftkey(langConfig.getRepoSoftKey(), false);

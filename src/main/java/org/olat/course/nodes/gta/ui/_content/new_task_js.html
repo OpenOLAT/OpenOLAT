@@ -1,0 +1,16 @@
+<script>
+/* <![CDATA[ */
+jQuery(function() {
+	jQuery('#$titleId').on('keyup', function() {
+		var copy = jQuery('#$filenameId').attr('data-copy');
+		if(copy != 'stop') {
+			var name = o_normalizeFilename(jQuery('#$titleId').val());
+			jQuery('#$filenameId').val(name + ".html");
+		}
+	});
+	jQuery('#$filenameId').on('keyup', function() {
+		jQuery('#$filenameId').attr('data-copy', 'stop');
+	});
+});
+/* ]]> */
+</script>

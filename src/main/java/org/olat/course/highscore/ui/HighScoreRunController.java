@@ -182,7 +182,7 @@ public class HighScoreRunController extends FormBasicController{
 		
 		// compute ranking and order
 		highscoreDataModel = highScoreManager.sortRankByScore(assessEntries, allMembers, ownIdMembers,
-				 allPodium, ownIdIndices, tableSize, ownIdentity, userManager);
+				 allPodium, ownIdIndices, tableSize, ownIdentity);
 		
 		allScores = highscoreDataModel.getScores();
 

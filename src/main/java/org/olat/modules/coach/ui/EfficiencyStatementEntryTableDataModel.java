@@ -119,6 +119,14 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 					UserEfficiencyStatement s = entry.getUserEfficencyStatement();
 					return s == null ? null : s.getLastModified();
 				}
+				case lastUserModified: {
+					UserEfficiencyStatement s = entry.getUserEfficencyStatement();
+					return s == null ? null : s.getLastUserModified();
+				}
+				case lastCoachModified: {
+					UserEfficiencyStatement s = entry.getUserEfficencyStatement();
+					return s == null ? null : s.getLastCoachModified();
+				}
 				case plannedLectures: {
 					LectureBlockStatistics statistics = getLectureBlockStatistics(entry);
 					return statistics == null ? null : statistics.getTotalPersonalPlannedLectures();
@@ -184,6 +192,8 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		recertification("table.header.recertification"),
 		progress("table.header.progress"),
 		lastModification("table.header.lastScoreDate"),
+		lastUserModified("table.header.lastUserModificationDate"),
+		lastCoachModified("table.header.lastCoachModificationDate"),
 		plannedLectures("table.header.planned.lectures"),
 		attendedLectures("table.header.attended.lectures"),
 		absentLectures("table.header.absent.lectures"),

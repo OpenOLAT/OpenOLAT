@@ -23,8 +23,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -95,6 +97,8 @@ public class BinderAssessmentController extends FormBasicController {
 
 	private boolean withScore;
 	private boolean withPassed;
+	private Float minScore, maxScore;
+	private final String displayname;
 	
 	@Autowired
 	private PortfolioService portfolioService;
@@ -104,8 +108,11 @@ public class BinderAssessmentController extends FormBasicController {
 		super(ureq, wControl, "section_assessment");
 		this.binder = binder;
 		this.secCallback = secCallback;
-		this.withPassed = config.isWithPassed();
-		this.withScore = config.isWithScore();
+		withPassed = config.isWithPassed();
+		withScore = config.isWithScore();
+		minScore = config.getMinScore();
+		maxScore = config.getMaxScore();
+		displayname = config.getDisplayname();
 		initForm(ureq);
 		loadModel();
 	}
@@ -294,6 +301,50 @@ public class BinderAssessmentController extends FormBasicController {
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+
+		flc.contextRemove("scoreError");
+		if(withScore && (maxScore != null || minScore != null)) {
+			double scoreTotal = 0.0d;
+
+			Set<Section> visibleSections = new HashSet<>();
+			List<AssessmentSectionWrapper> rows = model.getObjects();
+			for(AssessmentSectionWrapper row:rows) {
+				BigDecimal score = row.getScore();
+				if(row.getScoreEl() != null) {
+					String value = row.getScoreEl().getValue();
+					if(StringHelper.containsNonWhitespace(value)) {
+						score = new BigDecimal(value);
+					}
+				}
+				if(score != null) {
+					scoreTotal += score.doubleValue();
+				}
+				visibleSections.add(row.getSection());
+			}
+			
+			// add score of other sections
+			List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, null);
+			for(AssessmentSection assessmentSection:assessmentSections) {
+				if(!visibleSections.contains(assessmentSection.getSection()) && assessmentSection.getScore() != null) {
+					scoreTotal += assessmentSection.getScore().doubleValue();
+				}
+			}
+			
+			if(maxScore != null && (maxScore.doubleValue() < scoreTotal)) {
+				flc.contextPut("scoreError", translate("error.score", new String[] { "0", AssessmentHelper.getRoundedScore(maxScore), displayname }));
+				allOk &= false;
+			} else if(minScore != null && (minScore.doubleValue() > scoreTotal)) {
+				flc.contextPut("scoreError", translate("error.score", new String[] { "0", AssessmentHelper.getRoundedScore(maxScore), displayname }));
+				allOk &= false;
+			}
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
 	}
 
 	@Override

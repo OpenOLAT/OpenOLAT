@@ -68,12 +68,29 @@ public class LectureBlockWebService {
 		securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
 	}
 	
+	/**
+	 * Return a specific lecture blocks.
+	 * @response.representation.200.qname {http://www.example.com}lectureBlocksVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc A lecture blocks
+	 * @response.representation.200.example {@link org.olat.modules.lecture.restapi.Examples#SAMPLE_LECTUREBLOCKVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @return The lecture blocks
+	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getLectureBlock() {
 		return Response.ok(new LectureBlockVO(lectureBlock, entry.getKey())).build();
 	}
-	
+
+	/**
+	 * Delete a specific lecture blocks.
+	 * @response.representation.200.doc Lecture blocks deleted
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @return Nothing
+	 */
 	@DELETE
 	public Response deleteLectureBlock() {
 		lectureService.deleteLectureBlock(lectureBlock);
@@ -81,6 +98,15 @@ public class LectureBlockWebService {
 		return Response.ok().build();
 	}
 
+	/**
+	 * Get all teachers of the specific lecture blocks.
+	 * @response.representation.200.qname {http://www.example.com}userVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The array of authors
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course not found
+	 * @return It returns an array of <code>UserVO</code>
+	 */
 	@GET
 	@Path("teachers")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -89,6 +115,14 @@ public class LectureBlockWebService {
 		return identitiesToResponse(teachers);
 	}
 	
+	/**
+	 * Add a teacher to the lecture block 
+	 * @response.representation.200.doc The user is a teacher of the lecture block
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course or the user not found
+	 * @param identityKey The user identifier
+	 * @return It returns 200  if the user is added as teacher of the lecture block.
+	 */
 	@PUT
 	@Path("teachers/{identityKey}")
 	public Response addTeacher(@PathParam("identityKey") Long identityKey) {
@@ -100,6 +134,14 @@ public class LectureBlockWebService {
 		return Response.ok().build();
 	}
 	
+	/**
+	 * Remove a teacher of the lecture block
+	 * @response.representation.200.doc The user was successfully removed as teacher of the lecture block
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The course, the lecture block or the user not found
+	 * @param identityKey The user identifier
+	 * @return It returns 200  if the user is removed as teacher of the lecture block
+	 */
 	@DELETE
 	@Path("teachers/{identityKey}")
 	public Response removeTeacher(@PathParam("identityKey") Long identityKey) {
@@ -114,7 +156,6 @@ public class LectureBlockWebService {
 	
 	/**
 	 * Add the group of the course to the lecture block participants list.
-	 * 
 	 * @response.representation.200.doc Successfully added
 	 * @return 200 if all ok
 	 */
@@ -135,7 +176,6 @@ public class LectureBlockWebService {
 	
 	/**
 	 * Remove the group of the course from the lecture block participants.
-	 * 
 	 * @response.representation.200.doc Successfully removed
 	 * @return 200 if all ok
 	 */
@@ -155,7 +195,6 @@ public class LectureBlockWebService {
 	
 	/**
 	 * Synchronize the calendars based on the lecture block.
-	 * 
 	 * @response.representation.200.doc The calendar is successfully synchronized
 	 * @return 200 if all ok
 	 */

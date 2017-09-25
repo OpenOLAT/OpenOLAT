@@ -12,16 +12,20 @@
 			 $r.translate("meta.last.modified", $r.formatDateAndTime($lastModified))
 		</span>
 		
-		#if($r.isNotEmpty($pageCategories))
+	#if($r.isNotEmpty($pageCategories) || $r.available("pageCategoriesCtr"))
 		<span class="o_portfolio_categories text-muted o_small">
+		#if ($r.available("pageCategoriesCtr"))
+			$r.render("pageCategoriesCtr")
+		#else
 			<i class="o_icon o_icon_tags" title="$r.translateInAttribute("categories")"> </i>
 			 #foreach($category in $pageCategories)
 			 	<span class="tag label label-info">
 				 	$category
 			 	</span>
 			 #end
-		</span>
 		#end
+		</span>
+	#end
 		
 	</div>
 	#if($r.available("poster") || $r.isNotEmpty($pageSummary))
@@ -90,7 +94,7 @@
 					#end 
 					</ul>
 				#end
-				<div class="pull-right"><a href="#page_assignment_${assignment.key}" data-toggle="collapse" data-target="#page_assignment_${assignment.key}" onclick="jQuery('#o_toggler_${assignment.key}').toggleClass('o_in'); return false;">$r.translate("assignment.hide")</a></div>
+				<div class="pull-right"><a href="#page_assignment_${assignment.key}" class="o_closer" data-toggle="collapse" data-target="#page_assignment_${assignment.key}" onclick="jQuery('#o_toggler_${assignment.key}').toggleClass('o_in'); return false;">$r.translate("assignment.hide")</a></div>
 			</div>
     	</div>
 	</div>

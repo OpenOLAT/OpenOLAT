@@ -1,4 +1,6 @@
 /**
+
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -54,6 +56,7 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.ui.ParticipantListDataModel.ParticipantsCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
+import org.olat.modules.lecture.ui.component.ParticipantInfosRenderer;
 import org.olat.modules.lecture.ui.component.PercentCellRenderer;
 import org.olat.modules.lecture.ui.component.RateWarningCellRenderer;
 import org.olat.repository.RepositoryEntry;
@@ -69,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ParticipantListRepositoryController extends FormBasicController {
 	
-	protected static final String USER_PROPS_ID = ParticipantListRepositoryController.class.getCanonicalName();
+	public static final String USER_PROPS_ID = ParticipantListRepositoryController.class.getCanonicalName();
 
 	public static final int USER_PROPS_OFFSET = 500;
 	
@@ -163,16 +166,26 @@ public class ParticipantListRepositoryController extends FormBasicController {
 
 		if(rollCallEnabled) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.attendedLectures));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.absentLectures));
 			if(authorizedAbsenceEnabled) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.unauthorizedAbsenceLectures));
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.authorizedAbsenceLectures));
+			} else {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.absentLectures));
 			}
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.progress, new LectureStatisticsCellRenderer()));
+			FlexiColumnModel progressCol = new DefaultFlexiColumnModel(ParticipantsCols.progress, new LectureStatisticsCellRenderer());
+			progressCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(progressCol);
 		}
 		if(rateEnabled) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rateWarning, new RateWarningCellRenderer()));
+			FlexiColumnModel warningCol = new DefaultFlexiColumnModel(ParticipantsCols.rateWarning, new RateWarningCellRenderer(getTranslator()));
+			warningCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(warningCol);
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.rate, new PercentCellRenderer()));
 		}
+		
+		FlexiColumnModel infoCol = new DefaultFlexiColumnModel(ParticipantsCols.infos, new ParticipantInfosRenderer(getTranslator(), defaultRate));
+		infoCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(infoCol);
 		
 		if(!printView) {
 			DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
@@ -182,12 +195,11 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(editColumn);
 		}
 		
-		tableModel = new ParticipantListDataModel(columnsModel, getLocale()); 
+		tableModel = new ParticipantListDataModel(columnsModel, getTranslator(), getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(!printView);
-		tableEl.setMultiSelect(!printView);
-		tableEl.setSelectAllEnable(!printView);
-		//TODO absence tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry");
+		tableEl.setEmtpyTableMessageKey("empty.table.participant.list");
+		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry");
 	}
 	
 	private void loadModel() {

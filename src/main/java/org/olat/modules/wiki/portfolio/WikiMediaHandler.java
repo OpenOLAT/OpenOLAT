@@ -1,4 +1,6 @@
 /**
+
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -30,6 +32,7 @@ import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.handler.AbstractMediaHandler;
 import org.olat.modules.portfolio.manager.MediaDAO;
@@ -113,8 +116,8 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new WikiPageMediaController(ureq, wControl, media);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
+		return new WikiPageMediaController(ureq, wControl, media, hints);
 	}
 
 	@Override

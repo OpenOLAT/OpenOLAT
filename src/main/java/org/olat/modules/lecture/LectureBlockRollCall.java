@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.CreateInfo;
@@ -58,5 +59,9 @@ public interface LectureBlockRollCall extends ModifiedInfo, CreateInfo {
 	public String getComment();
 	
 	public void setComment(String comment);
+
+	public Date getAbsenceSupervisorNotificationDate();
+
+	public void setAbsenceSupervisorNotificationDate(Date absenceSupervisorNotificationDate);
 
 }

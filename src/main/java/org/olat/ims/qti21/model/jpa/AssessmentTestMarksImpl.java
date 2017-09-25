@@ -41,6 +41,8 @@ import org.olat.repository.RepositoryEntry;
 
 /**
  * 
+ * This object hold the marks and other hide/show settings
+ * 
  * Initial date: 03.03.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
@@ -65,6 +67,8 @@ public class AssessmentTestMarksImpl implements AssessmentTestMarks, Persistable
 
     @Column(name="q_marks", nullable=true, insertable=true, updatable=true)
 	private String marks;
+    @Column(name="q_hidden_rubrics", nullable=true, insertable=true, updatable=true)
+	private String hiddenRubrics;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_reference_entry", nullable=false, insertable=true, updatable=false)
@@ -99,24 +103,36 @@ public class AssessmentTestMarksImpl implements AssessmentTestMarks, Persistable
 		this.creationDate = creationDate;
 	}
 
+	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
 
+	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
-	
-	
-	
+
+	@Override
 	public String getMarks() {
 		return marks;
 	}
 
+	@Override
 	public void setMarks(String marks) {
 		this.marks = marks;
 	}
-	
+
+	@Override
+	public String getHiddenRubrics() {
+		return hiddenRubrics;
+	}
+
+	@Override
+	public void setHiddenRubrics(String rubrics) {
+		this.hiddenRubrics = rubrics;
+	}
+
 	public RepositoryEntry getTestEntry() {
 		return testEntry;
 	}

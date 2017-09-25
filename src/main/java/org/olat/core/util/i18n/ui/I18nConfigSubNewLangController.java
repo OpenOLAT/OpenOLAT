@@ -51,6 +51,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -72,6 +73,9 @@ import org.olat.user.UserManager;
 class I18nConfigSubNewLangController extends FormBasicController {
 	private TextElement newLanguage, newCountry, newVariant, newTranslatedInEnglish, newTranslatedInLanguage, newTranslator;
 	private FormLink cancelButton;
+	
+	@Autowired
+	private I18nModule i18nModule;
 
 	/**
 	 * Constructor for the new-language workflow
@@ -81,7 +85,7 @@ class I18nConfigSubNewLangController extends FormBasicController {
 	 */
 	protected I18nConfigSubNewLangController(UserRequest ureq, WindowControl control) {
 		super(ureq, control, LAYOUT_DEFAULT);
-		if (!I18nModule.isTransToolEnabled()) { throw new AssertException(
+		if (!i18nModule.isTransToolEnabled()) { throw new AssertException(
 				"New languages can only be created when the translation tool is enabled and the translation tool source pathes are configured in the olat.properties"); }
 		initForm(ureq);
 	}

@@ -64,6 +64,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.properties.Property;
 
 /**
@@ -240,19 +241,19 @@ public class ConvertToGTACourseNode {
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 				Float score = assessmentData.getScore() == null ? null : assessmentData.getScore().floatValue();
 				ScoreEvaluation scoreEval = new ScoreEvaluation(score, assessmentData.getPassed());
-				assessmentMgr.saveScoreEvaluation(gtaNode, null, assessedIdentity, scoreEval, userCourseEnv, false);
+				assessmentMgr.saveScoreEvaluation(gtaNode, null, assessedIdentity, scoreEval, userCourseEnv, false, Role.auto);
 				
 				//set graded
 				Task task = gtaManager.getTask(assessedIdentity, taskList);
 				if(task == null) {
 					gtaManager.createTask(null, taskList, TaskProcess.graded, null, assessedIdentity, gtaNode);
 				} else {
-					gtaManager.updateTask(task, TaskProcess.graded, gtaNode);
+					gtaManager.updateTask(task, TaskProcess.graded, gtaNode, Role.auto);
 				}
 			}
 			
 			if(assessmentData.getAttempts() != null) {
-				assessmentMgr.saveNodeAttempts(gtaNode, null, assessedIdentity, assessmentData.getAttempts().intValue());
+				assessmentMgr.saveNodeAttempts(gtaNode, null, assessedIdentity, assessmentData.getAttempts().intValue(), Role.auto);
 			}
 			
 			if(StringHelper.containsNonWhitespace(assessmentData.getCoachComment())) {
@@ -366,7 +367,7 @@ public class ConvertToGTACourseNode {
 		if(task == null) {
 			gtaManager.createTask(null, taskList, process, null, assessedIdentity, gtaNode);
 		} else {
-			gtaManager.updateTask(task, process, gtaNode);
+			gtaManager.updateTask(task, process, gtaNode, Role.auto);
 		}
 	}
 	

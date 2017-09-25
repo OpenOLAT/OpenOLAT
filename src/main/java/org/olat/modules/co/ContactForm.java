@@ -53,6 +53,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
@@ -351,12 +352,13 @@ public class ContactForm extends FormBasicController {
 				}
 				attachmentEl.reset();
 				attachmentSize += size;
-				FormLink removeFile = uifactory.addFormLink(attachment.getName(), "delete", null, uploadCont, Link.BUTTON_SMALL);
+				FormLink removeFile = uifactory.addFormLink(attachment.getName(), "delete", null, uploadCont, Link.BUTTON_XSMALL);
+				removeFile.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
 				removeFile.setUserObject(attachment);
 				attachmentLinks.add(removeFile);
 				//pretty labels
 				uploadCont.setLabel(NLS_CONTACT_ATTACHMENT, null);
-				attachmentNames.put(attachment.getName(), filename);
+				attachmentNames.put(attachment.getName(), filename + " <span class='text-muted'>(" + Formatter.formatBytes(size) + ")</span>");
 				attachmentCss.put(attachment.getName(), CSSHelper.createFiletypeIconCssClassFor(filename));
 				uploadCont.contextPut("attachments", attachmentLinks);
 				uploadCont.contextPut("attachmentNames", attachmentNames);
@@ -429,6 +431,7 @@ public class ContactForm extends FormBasicController {
 			uifactory.addFormCancelButton("msg.cancel", buttonGroupLayout, ureq, getWindowControl());
 		}
 	}
+
 
 	@Override
 	protected void doDispose() {

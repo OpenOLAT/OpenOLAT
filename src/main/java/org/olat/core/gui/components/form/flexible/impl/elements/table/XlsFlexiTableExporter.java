@@ -73,19 +73,20 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 		};
 	}
 
-	private void createHeader(List<FlexiColumnModel> columns, Translator translator,
+	protected void createHeader(List<FlexiColumnModel> columns, Translator translator,
 			OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
 		sheet.setHeaderRows(1);
 		Row headerRow = sheet.newRow();
 		for (int c=0; c<columns.size(); c++) {
 			FlexiColumnModel cd = columns.get(c);
+			
 			String headerVal = cd.getHeaderLabel() == null ?
 					translator.translate(cd.getHeaderKey()) : cd.getHeaderLabel();
 			headerRow.addCell(c, headerVal, workbook.getStyles().getHeaderStyle());
 		}
 	}
 
-	private void createData(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator,
+	protected void createData(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator,
 			OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
 		FlexiTableDataModel<?> dataModel = ftC.getFlexiTableElement().getTableDataModel();
 		
@@ -95,28 +96,38 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 			Row dataRow = sheet.newRow();
 			for (int c = 0; c<numOfColumns; c++) {
 				FlexiColumnModel cd = columns.get(c);
-				
-				int colIndex = cd.getColumnIndex();
-				if(colIndex >= 0) {
-					Object value = dataModel.getValueAt(r, colIndex);
-					if(value instanceof Date) {
-						dataRow.addCell(c, (Date)value, workbook.getStyles().getDateStyle());
-					} else if(value instanceof Number) {
-						dataRow.addCell(c, (Number)value, null);
-					} else {
-						StringOutput so = StringOutputPool.allocStringBuilder(1000);
-						cd.getCellRenderer().render(null, so, value, r, ftC, ubu, translator);
-						String cellValue = StringOutputPool.freePop(so);
-						
-						cellValue = StringHelper.stripLineBreaks(cellValue);
-						cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
-						if(StringHelper.containsNonWhitespace(cellValue)) {
-							cellValue = StringEscapeUtils.unescapeHtml(cellValue);
-						}
-						dataRow.addCell(c, cellValue, null);
+				createCell(ftC, cd, dataRow, r, c, translator, workbook);
+			}
+		}
+	}
+	
+	protected void createCell(FlexiTableComponent ftC, FlexiColumnModel cd, Row dataRow, int row, int col, Translator translator,
+			OpenXMLWorkbook workbook) {
+		FlexiTableDataModel<?> dataModel = ftC.getFlexiTableElement().getTableDataModel();
+		
+		try {
+			int colIndex = cd.getColumnIndex();
+			if(colIndex >= 0) {
+				Object value = dataModel.getValueAt(row, colIndex);
+				if(value instanceof Date) {
+					dataRow.addCell(col, (Date)value, workbook.getStyles().getDateStyle());
+				} else if(value instanceof Number) {
+					dataRow.addCell(col, (Number)value, null);
+				} else {
+					StringOutput so = StringOutputPool.allocStringBuilder(1000);
+					cd.getCellRenderer().render(null, so, value, row, ftC, ubu, translator);
+					String cellValue = StringOutputPool.freePop(so);
+					
+					cellValue = StringHelper.stripLineBreaks(cellValue);
+					cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
+					if(StringHelper.containsNonWhitespace(cellValue)) {
+						cellValue = StringEscapeUtils.unescapeHtml(cellValue);
 					}
+					dataRow.addCell(col, cellValue, null);
 				}
 			}
+		} catch (Exception e) {
+			log.error("", e);
 		}
 	}
 }

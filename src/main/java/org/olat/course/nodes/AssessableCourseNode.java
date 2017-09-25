@@ -1,4 +1,5 @@
 /**
+
 * OLAT - Online Learning and Training<br>
 * http://www.olat.org
 * <p>
@@ -38,6 +39,7 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.Role;
 
 
 /**
@@ -183,7 +185,7 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @param userCourseEnvironment
 	 * @param coachingIdentity
 	 */
-	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts);
+	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts, Role doneBy);
 	/**
 	 * Updates the user comment for this node and this user. This comment is visible to the user.
 	 * @param userComment
@@ -214,14 +216,23 @@ public interface AssessableCourseNode extends CourseNode {
 	 * Increments the users attempts for this node and this user + 1. 
 	 * @param userCourseEnvironment
 	 */
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment);
+	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role doneBy);
 	/**
 	 * Updates the users attempts for this node and this user. 
 	 * @param userAttempts
 	 * @param userCourseEnvironment
 	 * @param coachingIdentity
 	 */
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity);
+	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role doneBy);
+	
+	/**
+	 * 
+	 * @param userCourseEnvironment The user course environment of the assessed identity
+	 * @param identity The identity which do the action
+	 * @param doneBy The role of the identity which do the action
+	 */
+	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role doneBy);
+	
 	/**
 	 * Updates the coach comment for this node and this user. This comment is not visible to the user.
 	 * @param coachComment
@@ -234,5 +245,4 @@ public interface AssessableCourseNode extends CourseNode {
 	 */
 	public boolean hasStatusConfigured();
 
-	
 }

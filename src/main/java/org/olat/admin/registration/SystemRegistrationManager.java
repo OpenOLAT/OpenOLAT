@@ -24,7 +24,10 @@
 */
 package org.olat.admin.registration;
 
-import java.text.ParseException;
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -63,10 +66,11 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
-import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.Trigger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -171,7 +175,7 @@ public class SystemRegistrationManager implements InitializingBean {
 	
 	public void send() {
 		try {
-			scheduler.triggerJob(SCHEDULER_NAME, Scheduler.DEFAULT_GROUP);
+			scheduler.triggerJob(new JobKey(SCHEDULER_NAME, Scheduler.DEFAULT_GROUP));
 		} catch (SchedulerException e) {
 			log.error("", e);
 		}
@@ -250,7 +254,7 @@ public class SystemRegistrationManager implements InitializingBean {
 		
 		// System config
 		msgProperties.put("instantMessagingEnabled", String.valueOf(CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()));
-		msgProperties.put("enabledLanguages", I18nModule.getEnabledLanguageKeys().toString());
+		msgProperties.put("enabledLanguages", CoreSpringFactory.getImpl(I18nModule.class).getEnabledLanguageKeys().toString());
 		msgProperties.put("clusterEnabled", clusterMode);
 		msgProperties.put("debuggingEnabled", String.valueOf(Settings.isDebuging()));
 		
@@ -318,19 +322,16 @@ public class SystemRegistrationManager implements InitializingBean {
 
 		String cronExpression = createCronTriggerExpression();
 		try {
-			// Create job with cron trigger configuration
-			JobDetail jobDetail = new JobDetail(SCHEDULER_NAME, Scheduler.DEFAULT_GROUP, SystemRegistrationJob.class);
-			CronTrigger trigger = new CronTrigger();
-			trigger.setName(TRIGGER);
-			// Use this cron expression for debugging, tries to send data every minute
-			//trigger.setCronExpression("0 * * * * ?");
-			trigger.setCronExpression(cronExpression);
-			// Schedule job now
+			JobDetail jobDetail = newJob(SystemRegistrationJob.class)
+					.withIdentity(SCHEDULER_NAME, Scheduler.DEFAULT_GROUP)
+					.build();
+			Trigger trigger = newTrigger()
+				    .withIdentity(TRIGGER)
+				    .withSchedule(cronSchedule(cronExpression))
+				    .build();
 			scheduler.scheduleJob(jobDetail, trigger);
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			log.error("Illegal cron expression for system registration", e);
-		} catch (SchedulerException e) {
-			log.error("Can not start system registration scheduler", e);
 		}
 		log.info("Registration background job successfully started: "+cronExpression, null);
 	}

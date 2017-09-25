@@ -18,34 +18,28 @@
 	<div id="qtiworks_response_${responseIdentifier}">
 		## Create holder for hidden form fields that will contain the actual data to pass back
 		<div class="hiddenInputContainer"></div>
-
-        <!-- Now generate selection widget -->
-		<h4>$r.translate("interaction.order.source")</h4>
 		<div class="source box ${orientation}">
 			#if($r.isItemSessionOpen())
 				<span class="info">$r.translate("interaction.order.drag.msg")</span>
 			#end
-			<ul class="${orientation}">
+			<ul>
 				#foreach($unselectedChoice in $unselectedVisibleChoices)
 				<li id="qtiworks_response_${unselectedChoice.identifier}" class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
-      				$r.renderFlowStatics($unselectedChoice.getFlowStatics())
-   				 </li>
+      				$r.renderFlowStatics($unselectedChoice.getFlowStatics())</li>
 				#end
 			</ul>
-        </div>
-        <h4>$r.translate("interaction.order.target")</h4>
+        </div>  
 		<div class="target box ${orientation}">
 			#if($r.isItemSessionOpen())
 				<span class="info">$r.translate("interaction.order.drop.msg")</span>
 			#end
-			<ul class="${orientation}">
+			<ul class="clearfix">
 				#foreach($respondedChoice in $respondedVisibleChoices)
 				<li id="qtiworks_response_${respondedChoice.identifier}" class="ui-state-default"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>
-				    $r.renderFlowStatics($respondedChoice.getFlowStatics())
-   				 </li>
-            	#end
-			</ul><br /><br />
-		</div><br /><br />
+				    $r.renderFlowStatics($respondedChoice.getFlowStatics())</li>
+            		#end
+			</ul>
+		</div>
 		<script type="text/javascript">
 		jQuery(function() {
 			jQuery('#qtiworks_response_${responseIdentifier}').orderInteraction({
@@ -56,8 +50,8 @@
           		minChoices: #if($interaction.minChoices) $interaction.minChoices #else null #end,
           		maxChoices: #if($interaction.maxChoices) $interaction.maxChoices #else null #end,
           		opened: $isItemSessionOpen
-        	  });
-          });
+        	  	});
+        });
         </script>
 	</div>
 </div>

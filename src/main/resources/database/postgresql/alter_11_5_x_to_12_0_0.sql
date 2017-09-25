@@ -69,8 +69,7 @@ create table o_lecture_block (
   l_descr text,
   l_preparation text,
   l_location varchar(255),
-  l_comment text, 
-  l_log text,
+  l_comment text,
   l_start_date timestamp not null,
   l_end_date timestamp not null,
   l_compulsory bool default true,
@@ -112,8 +111,7 @@ create table o_lecture_block_roll_call (
   id bigserial not null,
   creationdate timestamp not null,
   lastmodified timestamp not null,
-  l_comment text, 
-  l_log text,
+  l_comment text,
   l_lectures_attended varchar(128),
   l_lectures_absent varchar(128),
   l_lectures_attended_num int8 not null default 0,
@@ -191,6 +189,79 @@ create table o_lecture_entry_config (
 
 alter table o_lecture_entry_config add constraint lec_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_lec_entry_conf_entry_idx on o_lecture_entry_config(fk_entry);
+
+
+create table o_lecture_block_audit_log (
+  id bigserial not null,
+  creationdate timestamp not null,
+  l_action varchar(32),
+  l_val_before text,
+  l_val_after text,
+  l_message text,
+  fk_lecture_block int8,
+  fk_roll_call int8,
+  fk_entry int8,
+  fk_identity int8,
+  fk_author int8,
+  primary key (id)
+);
+
+create index idx_lec_audit_entry_idx on o_lecture_block_audit_log(fk_entry);
+create index idx_lec_audit_ident_idx on o_lecture_block_audit_log(fk_identity);
+
+
+alter table o_rem_reminder add column r_email_subject varchar(255);
+update o_rem_reminder set r_email_subject=r_description;
+
+
+alter table o_qti_assessment_marks add column q_hidden_rubrics text default null;
+
+
+alter table o_gta_task add column g_submission_date timestamp default null;
+alter table o_gta_task add column g_submission_revisions_date timestamp default null;
+alter table o_gta_task add column g_collection_date timestamp default null;
+
+alter table o_gta_task add column g_assignment_due_date timestamp default null;
+alter table o_gta_task add column g_submission_due_date timestamp default null;
+alter table o_gta_task add column g_revisions_due_date timestamp default null;
+alter table o_gta_task add column g_solution_due_date timestamp default null;
+
+alter table o_gta_task add column g_acceptation_date timestamp default null;
+alter table o_gta_task add column g_solution_date timestamp default null;
+alter table o_gta_task add column g_graduation_date timestamp default null;
+
+alter table o_gta_task add column g_submission_ndocs int8 default null;
+alter table o_gta_task add column g_submission_revisions_ndocs int8 default null;
+alter table o_gta_task add column g_collection_ndocs int8 default null;
+
+create table o_gta_task_revision_date (
+  id bigserial not null,
+  creationdate timestamp not null,
+  g_status varchar(36) not null,
+  g_rev_loop int8 not null,
+  g_date timestamp not null,
+  fk_task int8 not null,
+  primary key (id)
+);
+
+alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
+create index idx_gtaskrev_to_task_idx on o_gta_task_revision_date (fk_task);
+
+alter table o_gta_task add column g_allow_reset_date timestamp default null;
+alter table o_gta_task add column fk_allow_reset_identity int8 default null;
+
+alter table o_gta_task add constraint gtaskreset_to_allower_idx foreign key (fk_allow_reset_identity) references o_bs_identity (id);
+create index idx_gtaskreset_to_allower_idx on o_gta_task (fk_allow_reset_identity);
+
+
+alter table o_info_message add column attachmentpath varchar(1024) default null;
+
+
+alter table o_as_entry add column lastcoachmodified timestamp default null;
+alter table o_as_entry add column lastusermodified timestamp default null;
+
+alter table o_as_eff_statement add column lastcoachmodified timestamp default null;
+alter table o_as_eff_statement add column lastusermodified timestamp default null;
 
 
 

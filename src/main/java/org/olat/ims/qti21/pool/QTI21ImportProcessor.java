@@ -55,7 +55,10 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.model.xml.AssessmentItemChecker;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
+import org.olat.ims.qti21.model.xml.QTI21Infos;
+import org.olat.ims.qti21.repository.handlers.QTI21IMSManifestExplorerVisitor;
 import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
@@ -142,6 +145,17 @@ public class QTI21ImportProcessor {
 		return items;
 	}
 	
+	private QTI21Infos getInfos(Path imsmanifestPath) {
+		try {
+			QTI21IMSManifestExplorerVisitor visitor = new QTI21IMSManifestExplorerVisitor();
+			Files.walkFileTree(imsmanifestPath, visitor);
+			return visitor.getInfos();
+		} catch (IOException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
 	private QuestionItem processResource(ResourceType resource, Path imsmanifestPath, ManifestMetadataBuilder metadataBuilder) {
 		try {
 			String href = resource.getHref();
@@ -158,7 +172,8 @@ public class QTI21ImportProcessor {
 			if(!outputFile.getParentFile().exists()) {
 				outputFile.getParentFile().mkdirs();
 			}
-			convertXmlFile(assessmentItemPath, outputFile.toPath());
+			QTI21Infos infos = getInfos(imsmanifestPath);
+			convertXmlFile(assessmentItemPath, outputFile.toPath(), infos);
 
 			QtiXmlReader qtiXmlReader = new QtiXmlReader(qtiService.jqtiExtensionManager());
 			ResourceLocator fileResourceLocator = new FileResourceLocator();
@@ -169,6 +184,10 @@ public class QTI21ImportProcessor {
 			AssessmentObjectXmlLoader assessmentObjectXmlLoader = new AssessmentObjectXmlLoader(qtiXmlReader, inputResourceLocator);
 			ResolvedAssessmentItem resolvedAssessmentItem = assessmentObjectXmlLoader.loadAndResolveAssessmentItem(assessmentObjectSystemId);
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+			
+			if(!AssessmentItemChecker.checkAndCorrect(assessmentItem)) {
+				qtiService.persistAssessmentObject(outputFile, assessmentItem);
+			}
 			
 			AssessmentItemMetadata metadata = new AssessmentItemMetadata(metadataBuilder);
 
@@ -207,14 +226,14 @@ public class QTI21ImportProcessor {
 		}
 	}
 	
-	private void convertXmlFile(Path inputFile, Path outputFile) {
+	private void convertXmlFile(Path inputFile, Path outputFile, QTI21Infos infos) {
 		try(InputStream in = Files.newInputStream(inputFile);
 				Writer out = Files.newBufferedWriter(outputFile, Charset.forName("UTF-8"))) {
 			XMLOutputFactory xof = XMLOutputFactory.newInstance();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 	
 			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
-			OnyxToQtiWorksHandler myHandler = new OnyxToQtiWorksHandler(xtw, null);
+			OnyxToQtiWorksHandler myHandler = new OnyxToQtiWorksHandler(xtw, infos);
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);
 		} catch(Exception e) {

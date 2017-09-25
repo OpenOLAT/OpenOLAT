@@ -56,6 +56,8 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	
 	private final Date lastUsage;
 	
+	public int numOfReferences;
+	
 	private final Date deletionDate;
 	private final String deletedByFullName;
 	
@@ -66,7 +68,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	
 	private final long offers;
 	
-	public RepositoryEntryAuthorImpl(RepositoryEntry re, boolean marked, long offers, String deletedByFullName) {
+	public RepositoryEntryAuthorImpl(RepositoryEntry re, boolean marked, long offers, int numOfReferences, String deletedByFullName) {
 		key = re.getKey();
 		creationDate = re.getCreationDate();
 		
@@ -86,6 +88,8 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		statusCode = re.getStatusCode();
 		
 		lastUsage = re.getStatistics().getLastUsage();
+		
+		this.numOfReferences = numOfReferences;
 		
 		deletionDate = re.getDeletionDate();
 		this.deletedByFullName = deletedByFullName;
@@ -188,6 +192,11 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	@Override
 	public RepositoryEntryLifecycle getLifecycle() {
 		return lifecycle;
+	}
+
+	@Override
+	public int getNumOfReferences() {
+		return numOfReferences;
 	}
 
 	@Override

@@ -73,7 +73,7 @@ public class QTI21CSVImportWizard {
 			log.error("", ex);
 		}
 		
-		By importAreaBy = By.cssSelector(".modal-content textarea");
+		By importAreaBy = By.cssSelector(".modal-content .o_wizard_steps_current_content textarea");
 		WebElement importAreaEl = browser.findElement(importAreaBy);
 		OOGraphene.textarea(importAreaEl, sb.toString(), browser);
 		return this;
@@ -104,8 +104,7 @@ public class QTI21CSVImportWizard {
 	public QTI21CSVImportWizard finish() {
 		browser.findElement(finishBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitElementDisappears(By.cssSelector(".modal-content"), 5, browser);
+		OOGraphene.waitElementDisappears(By.cssSelector(".modal-content .wizard"), 5, browser);
 		return this;
 	}
-
 }

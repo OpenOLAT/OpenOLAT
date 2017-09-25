@@ -35,6 +35,7 @@ import org.olat.modules.portfolio.ui.editor.PageRunComponent;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElementHandler;
+import org.olat.modules.portfolio.ui.editor.PageElementRenderingHints;
 import org.olat.modules.portfolio.ui.editor.PageRunElement;
 import org.olat.modules.portfolio.ui.editor.SimpleAddPageElementHandler;
 
@@ -59,7 +60,7 @@ public class TitleHandler implements PageElementHandler, SimpleAddPageElementHan
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
 		String content = "";
 		if(element instanceof Title) {
 			content = ((Title)element).getContent();

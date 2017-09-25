@@ -42,6 +42,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockToGroupImpl;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -130,7 +131,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getLectureBlocks() {
+	public void getLectureBlocks_entry() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());
@@ -144,6 +145,157 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, blocks.size());
 		LectureBlock loadedBlock = blocks.get(0);
 		Assert.assertEquals(lectureBlock, loadedBlock);
+	}
+	
+	@Test
+	public void getLectureBlocks_all() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Get them all");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		
+		List<LectureBlock> blocks = lectureBlockDao.getLectureBlocks();
+		Assert.assertNotNull(blocks);
+		Assert.assertTrue(blocks.size() >= 1);
+		Assert.assertTrue(blocks.contains(lectureBlock));
+	}
+	
+	@Test
+	public void loadByTeachers() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		//search all
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		List<LectureBlock> blocks = lectureBlockDao.loadByTeacher(teacher, searchParams);
+		Assert.assertNotNull(blocks);
+		Assert.assertEquals(1, blocks.size());
+		Assert.assertEquals(lectureBlock, blocks.get(0));
+	}
+	
+	@Test
+	public void loadByTeachers_searchString() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		//search lectures with the string
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setSearchString("lecturers");
+		List<LectureBlock> blocks = lectureBlockDao.loadByTeacher(teacher, searchParams);
+		Assert.assertNotNull(blocks);
+		Assert.assertEquals(1, blocks.size());
+		Assert.assertEquals(lectureBlock, blocks.get(0));
+		
+		//search lectures with a string which is not available to this teacher
+		LecturesBlockSearchParameters searchNegativeParams = new LecturesBlockSearchParameters();
+		searchNegativeParams.setSearchString("goodbye");
+		List<LectureBlock> negativeBlocks = lectureBlockDao.loadByTeacher(teacher, searchNegativeParams);
+		Assert.assertNotNull(negativeBlocks);
+		Assert.assertEquals(0, negativeBlocks.size());
+	}
+	
+	@Test
+	public void loadByTeachers_startEndDates() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		//search lectures with the string
+		LecturesBlockSearchParameters searchNowParams = new LecturesBlockSearchParameters();
+		Calendar now = Calendar.getInstance();
+		now.add(Calendar.DATE, -1);
+		searchNowParams.setStartDate(now.getTime());
+		now.add(Calendar.DATE, 2);
+		searchNowParams.setEndDate(now.getTime());
+		List<LectureBlock> blocks = lectureBlockDao.loadByTeacher(teacher, searchNowParams);
+		Assert.assertNotNull(blocks);
+		Assert.assertEquals(1, blocks.size());
+		Assert.assertEquals(lectureBlock, blocks.get(0));
+		
+		//search in future
+		LecturesBlockSearchParameters searchFutureParams = new LecturesBlockSearchParameters();
+		now.add(Calendar.DATE, 2);
+		searchFutureParams.setStartDate(now.getTime());
+		now.add(Calendar.DATE, 2);
+		searchFutureParams.setEndDate(now.getTime());
+		List<LectureBlock> futureBlocks = lectureBlockDao.loadByTeacher(teacher, searchFutureParams);
+		Assert.assertNotNull(futureBlocks);
+		Assert.assertEquals(0, futureBlocks.size());
+	}
+	
+	@Test
+	public void loadByTeachers_startDate() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-3");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		//search lectures with the string
+		LecturesBlockSearchParameters searchNowParams = new LecturesBlockSearchParameters();
+		Calendar now = Calendar.getInstance();
+		now.add(Calendar.DATE, -1);
+		searchNowParams.setStartDate(now.getTime());
+		List<LectureBlock> blocks = lectureBlockDao.loadByTeacher(teacher, searchNowParams);
+		Assert.assertNotNull(blocks);
+		Assert.assertEquals(1, blocks.size());
+		Assert.assertEquals(lectureBlock, blocks.get(0));
+		
+		//search in future
+		LecturesBlockSearchParameters searchFutureParams = new LecturesBlockSearchParameters();
+		now.add(Calendar.DATE, 2);
+		searchFutureParams.setStartDate(now.getTime());
+		List<LectureBlock> futureBlocks = lectureBlockDao.loadByTeacher(teacher, searchFutureParams);
+		Assert.assertNotNull(futureBlocks);
+		Assert.assertEquals(0, futureBlocks.size());
+	}
+	
+	@Test
+	public void loadByTeachers_endDate() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-3");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		//search lectures with the string
+		LecturesBlockSearchParameters searchNowParams = new LecturesBlockSearchParameters();
+		Calendar now = Calendar.getInstance();
+		now.add(Calendar.DATE, -1);
+		searchNowParams.setEndDate(now.getTime());
+		List<LectureBlock> blocks = lectureBlockDao.loadByTeacher(teacher, searchNowParams);
+		Assert.assertNotNull(blocks);
+		Assert.assertEquals(0, blocks.size());
+		
+		//search in future
+		LecturesBlockSearchParameters searchFutureParams = new LecturesBlockSearchParameters();
+		now.add(Calendar.DATE, 2);
+		searchFutureParams.setEndDate(now.getTime());
+		List<LectureBlock> futureBlocks = lectureBlockDao.loadByTeacher(teacher, searchFutureParams);
+		Assert.assertNotNull(futureBlocks);
+		Assert.assertEquals(1, futureBlocks.size());
+		Assert.assertEquals(lectureBlock, futureBlocks.get(0));
 	}
 	
 	@Test
@@ -365,29 +517,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, rollcalls.size());
 		Assert.assertEquals(lectureBlock, rollcalls.get(0));
 	}
-	
-	@Test
-	public void appendLog() {
-		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		LectureBlock block = createMinimalLectureBlock(entry);
-		dbInstance.commitAndCloseSession();
 
-		//append something
-		boolean ok = lectureBlockDao.appendLog(block, "New infos");
-		Assert.assertTrue(ok);
-		dbInstance.commitAndCloseSession();
-
-		LectureBlock updatedBlock = lectureBlockDao.loadByKey(block.getKey());
-		Assert.assertEquals("New infos", updatedBlock.getLog());
-		
-		//append more things
-		boolean okToo = lectureBlockDao.appendLog(block, "More infos");
-		Assert.assertTrue(okToo);
-		dbInstance.commitAndCloseSession();
-
-		LectureBlock updated2Block = lectureBlockDao.loadByKey(block.getKey());
-		Assert.assertEquals("New infos\nMore infos", updated2Block.getLog());
-	}
 	
 	@Test
 	public void deleteLectureBlock() {

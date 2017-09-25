@@ -66,6 +66,7 @@ public class RSSFeed extends SyndFeedImpl {
 		// According to the rss specification, the feed channel description is not
 		// (explicitly) allowed to contain html tags.
 		String strippedDescription = FilterFactory.getHtmlTagsFilter().filter(feed.getDescription());
+		strippedDescription = strippedDescription == null? "": strippedDescription;
 		// TODO: remove when filter does it
 		strippedDescription = strippedDescription.replaceAll("&nbsp;", " ");
 		setDescription(strippedDescription);

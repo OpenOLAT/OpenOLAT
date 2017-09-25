@@ -104,9 +104,9 @@ public class CollaborationToolsSettingsController extends BasicController {
 		if (ureq.getUserSession().getRoles().isOLATAdmin()) {
 			vc_collabtools.contextPut("isOlatAdmin", Boolean.TRUE);
 			if(managed) {
-				quotaCtr = QuotaManager.getInstance().getQuotaViewInstance(ureq, getWindowControl(), collabTools.getFolderRelPath(), false);
+				quotaCtr = QuotaManager.getInstance().getQuotaViewInstance(ureq, getWindowControl(), collabTools.getFolderRelPath());
 			} else {
-				quotaCtr = QuotaManager.getInstance().getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath(), false);
+				quotaCtr = QuotaManager.getInstance().getQuotaEditorInstance(ureq, getWindowControl(), collabTools.getFolderRelPath());
 			}
 			listenTo(quotaCtr);
 		} else {

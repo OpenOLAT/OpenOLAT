@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +36,20 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskLight;
+import org.olat.course.nodes.gta.TaskList;
+import org.olat.course.nodes.gta.TaskProcess;
+import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.ui.CoachGroupsTableModel.CGCols;
+import org.olat.course.nodes.gta.ui.component.SubmissionDateCellRenderer;
+import org.olat.course.nodes.gta.ui.component.TaskStatusCellRenderer;
 import org.olat.course.nodes.gta.ui.events.SelectBusinessGroupEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -58,7 +68,9 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	private CoachGroupsTableModel tableModel;
 	private final BreadcrumbPanel stackPanel;
 	
+	private CloseableModalController cmc;
 	private GTACoachController coachingCtrl;
+	private EditDueDatesController editDueDatesCtrl;
 	
 	private final List<BusinessGroup> coachedGroups;
 	private final UserCourseEnvironment coachCourseEnv;
@@ -74,6 +86,15 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		this.stackPanel = stackPanel;
 		initForm(ureq);
 		updateModel();
+	}
+	
+	public BusinessGroup getBusinessGroup(Long key) {
+		for(BusinessGroup group:coachedGroups) {
+			if(group.getKey().equals(key)) {
+				return group;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -91,12 +112,21 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus.i18nKey(), CGCols.taskStatus.ordinal(),
 				true, CGCols.taskStatus.name(), new TaskStatusCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate.i18nKey(), CGCols.submissionDate.ordinal(),
+				true, CGCols.submissionDate.name(), new SubmissionDateCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
+		if(gtaManager.isDueDateEnabled(gtaNode)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.duedates", translate("duedates"), "duedates"));
+		}
 		tableModel = new CoachGroupsTableModel(columnsModel);
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
 		tableEl.setShowAllRowsEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-groups");
+	}
+
+	public List<BusinessGroup> getCoachedGroups() {
+		return coachedGroups;
 	}
 	
 	protected void updateModel() {
@@ -112,7 +142,23 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		List<CoachedGroupRow> rows = new ArrayList<>(coachedGroups.size());
 		for(BusinessGroup group:coachedGroups) {
 			TaskLight task = groupToTasks.get(group.getKey());
-			rows.add(new CoachedGroupRow(group, task));
+			Date submissionDueDate = null;
+			if(task == null || task.getTaskStatus() == null || task.getTaskStatus() == TaskProcess.assignment) {
+				DueDate dueDate = gtaManager.getSubmissionDueDate(task, null, group, gtaNode, entry, true);
+				if(dueDate != null) {
+					submissionDueDate = dueDate.getDueDate();
+				}
+			}
+
+			Date syntheticSubmissionDate = null;
+			boolean hasSubmittedDocument = false;
+			if(task != null && task.getTaskStatus() != null && task.getTaskStatus() != TaskProcess.assignment && task.getTaskStatus() != TaskProcess.submit) {
+				syntheticSubmissionDate = getSyntheticSubmissionDate(task);
+				if(syntheticSubmissionDate != null) {
+					hasSubmittedDocument = this.hasSubmittedDocument(task);
+				}
+			}
+			rows.add(new CoachedGroupRow(group, task, submissionDueDate, syntheticSubmissionDate, hasSubmittedDocument));
 		}
 		
 		tableModel.setObjects(rows);
@@ -122,6 +168,27 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if(editDueDatesCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				updateModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == cmc) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(editDueDatesCtrl);
+		removeAsListenerAndDispose(cmc);
+		editDueDatesCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -133,6 +200,8 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 				CoachedGroupRow row = tableModel.getObject(se.getIndex());
 				if("details".equals(cmd) || "select".equals(cmd)) {
 					doSelect(ureq, row.getBusinessGroup());
+				} else if("duedates".equals(cmd)) {
+					doEditDueDate(ureq, row);
 				}
 			}
 		}
@@ -145,7 +214,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 		} else {
 			removeAsListenerAndDispose(coachingCtrl);
 			
-			coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, coachCourseEnv, businessGroup, true, true, true);
+			coachingCtrl = new GTACoachController(ureq, getWindowControl(), courseEnv, gtaNode, coachCourseEnv, businessGroup, true, true, true, false);
 			listenTo(coachingCtrl);
 			stackPanel.pushController(businessGroup.getName(), coachingCtrl);
 		}
@@ -154,5 +223,28 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doEditDueDate(UserRequest ureq, CoachedGroupRow row) {
+		if(editDueDatesCtrl != null) return;
+		
+		Task task;
+		BusinessGroup assessedGroup = row.getBusinessGroup();
+		RepositoryEntry entry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		if(row.getTask() == null) {
+			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
+			TaskList taskList = gtaManager.getTaskList(entry, gtaNode);
+			task = gtaManager.createAndPersistTask(null, taskList, firstStep, assessedGroup, null, gtaNode);
+		} else {
+			task = gtaManager.getTask(row.getTask());
+		}
+
+		editDueDatesCtrl = new EditDueDatesController(ureq, getWindowControl(), task, null, assessedGroup, gtaNode, entry);
+		listenTo(editDueDatesCtrl);
+		
+		String title = translate("duedates.user", new String[] { StringHelper.escapeHtml(assessedGroup.getName()) });
+		cmc = new CloseableModalController(getWindowControl(), "close", editDueDatesCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

@@ -69,6 +69,12 @@ public class NewTaskController extends FormBasicController {
 		formLayout.add(formButtons);
 		uifactory.addFormSubmitButton("submit", "create", formButtons);
 		uifactory.addFormCancelButton("cancel", formButtons, ureq, getWindowControl());
+		
+		String jsPage = velocity_root + "/new_task_js.html";
+		FormLayoutContainer jsCont = FormLayoutContainer.createCustomFormLayout("js", getTranslator(), jsPage);
+		jsCont.contextPut("titleId", titleEl.getFormDispatchId());
+		jsCont.contextPut("filenameId", filenameEl.getFormDispatchId());
+		formLayout.add(jsCont);
 	}
 	
 	@Override

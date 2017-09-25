@@ -46,8 +46,8 @@ public interface CourseNodeIndexer extends Indexer {
 	
 	public default SearchResourceContext createSearchResourceContext(SearchResourceContext courseResourceContext, CourseNode node, String type) {
 		SearchResourceContext courseNodeResourceContext = new SearchResourceContext(courseResourceContext);
-    	courseNodeResourceContext.setBusinessControlFor(node);
-    	courseNodeResourceContext.setDocumentType(type);
+		courseNodeResourceContext.setBusinessControlFor(node);
+		courseNodeResourceContext.setDocumentType(type);
     	if(StringHelper.containsNonWhitespace(node.getShortTitle())) {
     		courseNodeResourceContext.setTitle(node.getShortTitle());
     	} else if(StringHelper.containsNonWhitespace(node.getLongTitle())) {

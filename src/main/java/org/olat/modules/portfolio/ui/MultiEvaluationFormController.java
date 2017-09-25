@@ -63,8 +63,8 @@ public class MultiEvaluationFormController extends BasicController {
 	
 	private Link ownerLink;
 	private Link compareLink;
-	private final VelocityContainer mainVC;
-	private final SegmentViewComponent segmentView;
+	private VelocityContainer mainVC;
+	private SegmentViewComponent segmentView;
 	
 	private List<Evaluator> evaluators = new ArrayList<>();
 	private List<Link> otherEvaluatorLinks = new ArrayList<>();
@@ -79,24 +79,89 @@ public class MultiEvaluationFormController extends BasicController {
 	
 	public MultiEvaluationFormController(UserRequest ureq, WindowControl wControl,
 			Identity owner, List<Identity> otherEvaluators, PageBody anchor, RepositoryEntry formEntry,
-			boolean doneFirst, boolean readOnly, boolean anonym) {
+			boolean doneFirst, boolean readOnly, boolean onePage, boolean anonym) {
 		super(ureq, wControl);
 		this.owner = owner;
 		this.anchor = anchor;
 		this.readOnly = readOnly;
 		this.doneFirst = doneFirst;
 		this.formEntry = formEntry;
+		
+		if(onePage) {
+			initOnePageView(ureq, otherEvaluators, anonym);
+		} else {
+			initSegmentView(ureq, otherEvaluators, anonym);
+		}
+		putInitialPanel(mainVC);
+	}
+	
+	private void initOnePageView(UserRequest ureq, List<Identity> otherEvaluators, boolean anonym) {
+		mainVC = createVelocityContainer("multi_evaluation_one_page");
+		List<EvaluatorPanel> panels = new ArrayList<>();
+		mainVC.contextPut("panels", panels);
 
+		boolean viewOthers = isViewOthers();
+		
+		if(owner != null) {
+			String ownerFullname = userManager.getUserDisplayName(owner);
+			Evaluator evaluator = new Evaluator(owner, ownerFullname);
+			evaluators.add(evaluator);
+			boolean me = owner.equals(getIdentity());
+			if(me || viewOthers) {
+				Controller ctrl = createEvalutationForm(ureq, owner);
+				String componentName = "panel_" + (++count);
+				panels.add(new EvaluatorPanel(evaluator, componentName, ctrl.getInitialComponent()));
+				mainVC.put(componentName, ctrl.getInitialComponent());
+			}
+		}
+
+		if(otherEvaluators != null && otherEvaluators.size() > 0) {
+			int countEva = 1;
+			for(Identity evaluator:otherEvaluators) {
+				boolean me = evaluator.equals(ureq.getIdentity());
+				
+				String evaluatorFullname;
+				if(!me && anonym) {
+					evaluatorFullname = translate("anonym.evaluator", new String[] { Integer.toString(countEva++) });
+				} else {
+					evaluatorFullname = userManager.getUserDisplayName(evaluator);
+				}
+				Evaluator eval = new Evaluator(evaluator, evaluatorFullname);
+				evaluators.add(eval);
+				if(me || viewOthers) {
+					Controller ctrl = createEvalutationForm(ureq, evaluator);
+					String componentName = "panel_" + (++count);
+					panels.add(new EvaluatorPanel(eval, componentName, ctrl.getInitialComponent()));
+					mainVC.put(componentName, ctrl.getInitialComponent());
+				}
+			}
+		}
+		
+		if(viewOthers && (owner != null && otherEvaluators != null && otherEvaluators.size() > 0) || (otherEvaluators != null && otherEvaluators.size() > 1)) {
+			removeAsListenerAndDispose(compareEvaluationCtrl);
+			CompareEvaluationsFormController ctrl = new CompareEvaluationsFormController(ureq, getWindowControl(), evaluators, anchor, formEntry);
+			listenTo(ctrl);
+
+			Evaluator eval = new Evaluator(null, translate("compare.evaluations"));
+			String componentName = "panel_" + (++count);
+			panels.add(new EvaluatorPanel(eval, componentName, ctrl.getInitialComponent()));
+			mainVC.put(componentName, ctrl.getInitialComponent());
+		}
+	}
+	
+	private Controller createEvalutationForm(UserRequest ureq, Identity evaluator) {
+		boolean ro = readOnly || !evaluator.equals(getIdentity());
+		boolean doneButton = !ro && evaluator.equals(getIdentity()) && (owner == null || !owner.equals(evaluator));
+		EvaluationFormController evalutionFormCtrl =  new EvaluationFormController(ureq, getWindowControl(), evaluator, anchor, formEntry, ro, doneButton);
+		listenTo(evalutionFormCtrl);
+		return evalutionFormCtrl;
+	}
+
+	private void initSegmentView(UserRequest ureq, List<Identity> otherEvaluators, boolean anonym) {
 		mainVC = createVelocityContainer("multi_evaluation_form");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		
-		boolean viewOthers;
-		if(doneFirst) {
-			EvaluationFormSession session = evaluationFormManager.getSessionForPortfolioEvaluation(getIdentity(), anchor);
-			viewOthers = session == null ? false : session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done;
-		} else {
-			viewOthers = true;
-		}
+		boolean viewOthers = isViewOthers();
 		
 		if(owner != null) {
 			String ownerFullname = userManager.getUserDisplayName(owner);
@@ -144,7 +209,17 @@ public class MultiEvaluationFormController extends BasicController {
 		
 		segmentView.setVisible(viewOthers);
 		mainVC.put("segments", segmentView);
-		putInitialPanel(mainVC);
+	}
+	
+	private boolean isViewOthers() {
+		boolean viewOthers;
+		if(doneFirst) {
+			EvaluationFormSession session = evaluationFormManager.getSessionForPortfolioEvaluation(getIdentity(), anchor);
+			viewOthers = session == null ? false : session.getEvaluationFormSessionStatus() == EvaluationFormSessionStatus.done;
+		} else {
+			viewOthers = true;
+		}
+		return viewOthers;
 	}
 
 	@Override
@@ -203,5 +278,31 @@ public class MultiEvaluationFormController extends BasicController {
 		compareEvaluationCtrl = new CompareEvaluationsFormController(ureq, getWindowControl(), evaluators, anchor, formEntry);
 		listenTo(compareEvaluationCtrl);
 		mainVC.put("segmentCmp", compareEvaluationCtrl.getInitialComponent());
+	}
+	
+	public static class EvaluatorPanel {
+		
+		
+		private final Evaluator evaluator;
+		private final Component component;
+		private final String componentName;
+		
+		public EvaluatorPanel(Evaluator evaluator, String componentName, Component component) {
+			this.evaluator = evaluator;
+			this.component = component;
+			this.componentName = componentName;
+		}
+
+		public Evaluator getEvaluator() {
+			return evaluator;
+		}
+
+		public Component getComponent() {
+			return component;
+		}
+
+		public String getComponentName() {
+			return componentName;
+		}
 	}
 }

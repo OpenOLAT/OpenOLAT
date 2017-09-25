@@ -21,6 +21,7 @@
 package org.olat.resource.accesscontrol;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -44,15 +45,16 @@ import org.olat.resource.accesscontrol.manager.ACOfferDAO;
 import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
+import org.olat.shibboleth.manager.ShibbolethAutoAccessMethod;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ *
  * Description:<br>
  * Test the payment manager
- * 
+ *
  * <P>
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -61,29 +63,30 @@ public class ACMethodManagerTest extends OlatTestCase {
 
 	private static Identity ident1;
 	private static boolean isInitialized = false;
-	
+
 	@Autowired
 	private DB dbInstance;
-	
+
 	@Autowired
 	private ACOfferDAO acOfferManager;
-	
+
 	@Autowired
 	private ACService acService;
-	
+
 	@Autowired
 	private ACMethodDAO acMethodManager;
 
 	@Autowired
 	private OLATResourceManager resourceManager;
-	
+
 	@Before
 	public void setUp() {
 		if(!isInitialized) {
 			ident1 = JunitTestHelper.createAndPersistIdentityAsRndUser("ac-method-mgr");
 		}
+		acMethodManager.enableMethod(ShibbolethAutoAccessMethod.class, true);
 	}
-	
+
 	@Test
 	public void testManagers() {
 		assertNotNull(acOfferManager);
@@ -91,34 +94,41 @@ public class ACMethodManagerTest extends OlatTestCase {
 		assertNotNull(dbInstance);
 		assertNotNull(acMethodManager);
 	}
-	
+
 	@Test
 	public void testTokenMethod() {
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
 		assertNotNull(methods);
 		assertEquals(1, methods.size());
 	}
-	
+
 	@Test
 	public void testFreeMethod() {
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		assertNotNull(methods);
 		assertEquals(1, methods.size());
 	}
-	
+
+	@Test
+	public void testAutoShibMethod() {
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(ShibbolethAutoAccessMethod.class);
+		assertNotNull(methods);
+		assertEquals(1, methods.size());
+	}
+
 	@Test
 	public void testStandardMethods() {
 		Roles roles = new Roles(false, false, false, true, false, false, false);
 		List<AccessMethod> methods = acMethodManager.getAvailableMethods(ident1, roles);
 		assertNotNull(methods);
 		assertTrue(methods.size() >= 2);
-		
+
 		Set<String> duplicateTypes = new HashSet<>();
-		
+
 		boolean foundFree = false;
 		boolean foundToken = false;
 		for(AccessMethod method:methods) {
-			Assert.assertFalse(duplicateTypes.contains(method.getType()));	
+			Assert.assertFalse(duplicateTypes.contains(method.getType()));
 			if(method instanceof FreeAccessMethod) {
 				foundFree = true;
 			} else if(method instanceof TokenAccessMethod) {
@@ -131,7 +141,58 @@ public class ACMethodManagerTest extends OlatTestCase {
 		assertTrue(foundFree);
 		assertTrue(foundToken);
 	}
-	
+
+	@Test
+	public void testIsValidMethodAvailable() {
+		//create a resource and an offer
+		OLATResource randomOres = createResource();
+		Offer offer = acService.createOffer(randomOres, "TestIsValidMethodAvailable");
+		offer = acService.save(offer);
+		dbInstance.commitAndCloseSession();
+
+		//create a link offer to gui method
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
+		AccessMethod method = methods.get(0);
+		OfferAccess access = acMethodManager.createOfferAccess(offer, method);
+		acMethodManager.save(access);
+
+		//create a link offer to gui method
+		List<AccessMethod> methodsNonGUI = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
+		AccessMethod methodNonGUI = methodsNonGUI.get(0);
+		OfferAccess accessNonGUI = acMethodManager.createOfferAccess(offer, methodNonGUI);
+		acMethodManager.save(accessNonGUI);
+
+		dbInstance.commitAndCloseSession();
+
+		boolean isAvailable = acMethodManager.isValidMethodAvailable(randomOres, null);
+
+		assertTrue(isAvailable);
+	}
+
+	@Test
+	public void testIsValidMethodAvailable_nonGui() {
+		//create a resource and an offer
+		OLATResource randomOres = createResource();
+		Offer offer = acService.createOffer(randomOres, "TestIsValidMethodAvailableNonGui");
+		offer = acService.save(offer);
+		dbInstance.commitAndCloseSession();
+
+		//create a link offer to method
+		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(ShibbolethAutoAccessMethod.class);
+		assertNotNull(methods);
+		assertEquals(1, methods.size());
+
+		AccessMethod method = methods.get(0);
+		OfferAccess access = acMethodManager.createOfferAccess(offer, method);
+		acMethodManager.save(access);
+
+		dbInstance.commitAndCloseSession();
+
+		boolean isAvailable = acMethodManager.isValidMethodAvailable(randomOres, null);
+
+		assertFalse(isAvailable);
+	}
+
 	@Test
 	public void testOfferAccess() {
 		//create a resource and an offer
@@ -139,18 +200,18 @@ public class ACMethodManagerTest extends OlatTestCase {
 		Offer offer = acService.createOffer(randomOres, "TestOfferAccess");
 		offer = acService.save(offer);
 		dbInstance.commitAndCloseSession();
-		
+
 		//create a link offer to method
 		List<AccessMethod> methods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
 		assertNotNull(methods);
 		assertEquals(1, methods.size());
-		
+
 		AccessMethod method = methods.get(0);
 		OfferAccess access = acMethodManager.createOfferAccess(offer, method);
 		acMethodManager.save(access);
 
 		dbInstance.commitAndCloseSession();
-		
+
 		//retrieve the link
 		List<OfferAccess> retrievedOfferAccess = acMethodManager.getOfferAccess(offer, true);
 		assertNotNull(retrievedOfferAccess);
@@ -162,49 +223,49 @@ public class ACMethodManagerTest extends OlatTestCase {
 		assertNotNull(retrievedAccess.getOffer());
 		Assert.assertEquals(offer, retrievedAccess.getOffer());
 	}
-	
+
 	@Test
 	public void testSeveralOfferAccess() {
 		//create some resources and offers
 		OLATResource randomOres1 = createResource();
 		Offer offer1 = acService.createOffer(randomOres1, "TestSeveralOfferAccess 1");
 		offer1 = acService.save(offer1);
-		
+
 		OLATResource randomOres2 = createResource();
 		Offer offer2 = acService.createOffer(randomOres2, "TestSeveralOfferAccess 2");
 		offer2 = acService.save(offer2);
-		
+
 		OLATResource randomOres3 = createResource();
 		Offer offer3 = acService.createOffer(randomOres3, "TestSeveralOfferAccess 3");
 		offer3 = acService.save(offer3);
-		
+
 		dbInstance.commitAndCloseSession();
-		
+
 		//create a link offer to method
 		List<AccessMethod> tokenMethods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
 		assertNotNull(tokenMethods);
 		assertEquals(1, tokenMethods.size());
 		AccessMethod tokenMethod = tokenMethods.get(0);
-		
+
 		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		assertNotNull(freeMethods);
 		assertEquals(1, freeMethods.size());
 		AccessMethod freeMethod = freeMethods.get(0);
-		
+
 		OfferAccess access1 = acMethodManager.createOfferAccess(offer1, tokenMethod);
 		acMethodManager.save(access1);
-		
+
 		OfferAccess access2 = acMethodManager.createOfferAccess(offer2, tokenMethod);
 		acMethodManager.save(access2);
-		
+
 		OfferAccess access3_1 = acMethodManager.createOfferAccess(offer3, tokenMethod);
 		acMethodManager.save(access3_1);
-		
+
 		OfferAccess access3_2 = acMethodManager.createOfferAccess(offer3, freeMethod);
 		acMethodManager.save(access3_2);
 
 		dbInstance.commitAndCloseSession();
-		
+
 		//retrieve the link to offer 1
 		List<OfferAccess> retrievedOfferAccess = acMethodManager.getOfferAccess(offer1, true);
 		assertNotNull(retrievedOfferAccess);
@@ -216,8 +277,8 @@ public class ACMethodManagerTest extends OlatTestCase {
 		assertNotNull(retrievedAccess.getOffer());
 		assertEquals(offer1, retrievedAccess.getOffer());
 		dbInstance.commitAndCloseSession();
-		
-		
+
+
 		{//retrieve the links to offer 3
 			List<OfferAccess> retrievedOfferAccess3 = acMethodManager.getOfferAccess(offer3, true);
 			assertNotNull(retrievedOfferAccess3);
@@ -244,16 +305,16 @@ public class ACMethodManagerTest extends OlatTestCase {
 			}
 			assertNotNull(retrievedAccess3_2.getOffer());
 			assertEquals(offer3, retrievedAccess3_2.getOffer());
-			
+
 			dbInstance.commitAndCloseSession();
 		}
-		
+
 		{//retrieve the links by resource
-			List<Offer> offers = new ArrayList<Offer>();
+			List<Offer> offers = new ArrayList<>();
 			offers.add(offer1);
 			offers.add(offer2);
 			offers.add(offer3);
-			
+
 			List<OfferAccess> retrievedAllOfferAccess = acMethodManager.getOfferAccess(offers, true);
 			assertNotNull(retrievedAllOfferAccess);
 			assertEquals(4, retrievedAllOfferAccess.size());
@@ -261,7 +322,7 @@ public class ACMethodManagerTest extends OlatTestCase {
 			dbInstance.commitAndCloseSession();
 		}
 	}
-	
+
 	@Test
 	public void testDeleteOfferAccess() {
 		//create some resources and offers
@@ -269,38 +330,38 @@ public class ACMethodManagerTest extends OlatTestCase {
 		Offer offer = acService.createOffer(randomOres1, "TestDeleteOfferAccess");
 		offer = acService.save(offer);
 		dbInstance.commitAndCloseSession();
-		
+
 		//create two link offer to method
 		List<AccessMethod> tokenMethods = acMethodManager.getAvailableMethodsByType(TokenAccessMethod.class);
 		assertNotNull(tokenMethods);
 		assertEquals(1, tokenMethods.size());
 		AccessMethod tokenMethod = tokenMethods.get(0);
-		
+
 		List<AccessMethod> freeMethods = acMethodManager.getAvailableMethodsByType(FreeAccessMethod.class);
 		assertNotNull(freeMethods);
 		assertEquals(1, freeMethods.size());
 		AccessMethod freeMethod = freeMethods.get(0);
-		
-		
+
+
 		OfferAccess access3_1 = acMethodManager.createOfferAccess(offer, tokenMethod);
 		acMethodManager.save(access3_1);
-		
+
 		OfferAccess access3_2 = acMethodManager.createOfferAccess(offer, freeMethod);
 		acMethodManager.save(access3_2);
 
 		dbInstance.commitAndCloseSession();
-		
+
 		//delete one of them
 		acMethodManager.delete(access3_2);
 		dbInstance.commitAndCloseSession();
-		
-		//retrieve 
+
+		//retrieve
 		List<OfferAccess> retrievedOfferAccess = acMethodManager.getOfferAccess(offer, true);
 		assertNotNull(retrievedOfferAccess);
 		assertEquals(1, retrievedOfferAccess.size());
 		assertEquals(access3_1, retrievedOfferAccess.get(0));
 	}
-	
+
 	private OLATResource createResource() {
 		//create a repository entry
 		OLATResourceable resourceable = new TypedResourceable(UUID.randomUUID().toString().replace("-", ""));

@@ -1,0 +1,23 @@
+<div class="$mainCssClass">
+#if ($binderTitle)
+	<div class="o_binder o_print_break_after">
+		<h1>$r.translate("binder.title", $binderTitle) 
+			#if($owners && !$owners.isEmpty())
+				<br />
+				<small>$r.translate("binder.by",$owners)</small>
+			#end
+		</h1>
+	</div>
+#end
+#foreach($component in $components)
+	$r.render($component)
+#end
+#if($r.isTrue($print))
+<script type='text/javascript'>
+/* <![CDATA[ */
+    ## Execute deferred. Gives browser the time to finish the page rendering first before executing the print dialog. 
+	jQuery(function() {window.print();});
+/* ]]> */
+</script>
+#end
+</div>

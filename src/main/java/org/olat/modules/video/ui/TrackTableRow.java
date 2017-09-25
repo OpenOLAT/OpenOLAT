@@ -19,7 +19,6 @@
  */
 package org.olat.modules.video.ui;
 
-import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -32,30 +31,25 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class TrackTableRow {
 
-	private String language;
-	private VFSLeaf track;
-	private FormLink deleteLink;
-
-	protected FormUIFactory uifactory = FormUIFactory.getInstance();
+	private final String language;
+	private final VFSLeaf track;
+	private final FormLink deleteLink;
 
 	public TrackTableRow(String language, VFSLeaf track, FormLink deleteLink) {
 		this.language = language;
 		this.track = track;
 		this.deleteLink = deleteLink;
-		this.deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
-
 	}
 
-	public VFSLeaf getTrack(){
+	public VFSLeaf getTrack() {
 		return track;
 	}
 
-	public String getLanguage(){
+	public String getLanguage() {
 		return language;
 	}
 
-	public FormLink getDeleteLink(){
+	public FormLink getDeleteLink() {
 		return deleteLink;
 	}
-
 }

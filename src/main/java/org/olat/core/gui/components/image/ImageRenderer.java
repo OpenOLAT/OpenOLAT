@@ -119,9 +119,14 @@ public class ImageRenderer extends DefaultComponentRenderer {
 			}
 			sb.append("'>");
 		}
-		sb.append("<div id='").append(compId).append("' class='o_image'>"); // START component
+		
+		boolean divWrapper = ic.isDivImageWrapper();
+		if(divWrapper) {
+			sb.append("<div id='").append(compId).append("' class='o_image'>"); // START component
+		}
+		
 		// The inner component 
-		String imgId = "o_img" + ic.getDispatchID();
+		String imgId = divWrapper ? "o_img" + ic.getDispatchID() : compId;
 		sb.append("<img").append(" id='").append(imgId).append("'");
 		if (scaledSize != null) {
 			sb.append(" width=\"").append(scaledSize.getWidth()).append("\"");
@@ -165,8 +170,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 		      .append("/* ]]> */\n")
 		      .append("</script>");
 		}
-		sb.append("</div>"); // ENDcomponent
+		sb.append("</div>", divWrapper); // ENDcomponent
 		sb.append("</div>", cropEnabled);
-
 	}
 }

@@ -199,7 +199,7 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig, Initializ
 					"Could not find user property usage configuration for usageIdentifyer::" + usageIdentifyer
 							+ ", please check yout olat_userconfig.xml file. Using default configuration instead.", null);
 			if (currentUsageConfig == null) {
-				throw new OLATRuntimeException("Missing default user property usage configuratoin in olat_userconfig.xml", null);
+				throw new OLATRuntimeException("Missing default user property usage configuration in olat_userconfig.xml", null);
 			}
 		}
 		return currentUsageConfig;

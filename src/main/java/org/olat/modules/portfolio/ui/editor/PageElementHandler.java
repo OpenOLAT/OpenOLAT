@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -35,7 +36,7 @@ public interface PageElementHandler {
 	
 	public String getIconCssClass();
 	
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element);
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options);
 	
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);
 	

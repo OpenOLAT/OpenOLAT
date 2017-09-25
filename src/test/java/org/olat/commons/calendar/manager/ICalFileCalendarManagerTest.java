@@ -583,8 +583,47 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 				.importCalendar(test, calendarName, CalendarManager.TYPE_USER, calendarFile);
 		List<KalendarEvent> events = importedCalendar.getKalendar().getEvents();
 		Assert.assertEquals(2, events.size());
-
 	}
+	
+	@Test
+	public void testImportICal_outlookFullDay() throws URISyntaxException, IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur2-");
+		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("Fullday_outlook.ics");
+		File calendarFile = new File(calendarUrl.toURI());
+		String calendarName = UUID.randomUUID().toString().replace("-", "");
+		
+		KalendarRenderWrapper importedCalendar = importCalendarManager
+				.importCalendar(test, calendarName, CalendarManager.TYPE_USER, calendarFile);
+		List<KalendarEvent> events = importedCalendar.getKalendar().getEvents();
+		Assert.assertEquals(1, events.size());
+		
+		KalendarEvent event = events.get(0);
+		Assert.assertTrue(event.isAllDayEvent());
+	}
+	
+	@Test
+	public void testImportICal_icalFullDay() throws URISyntaxException, IOException {
+		Identity test = JunitTestHelper.createAndPersistIdentityAsRndUser("ur3-");
+		URL calendarUrl = ICalFileCalendarManagerTest.class.getResource("Fullday_ical.ics");
+		File calendarFile = new File(calendarUrl.toURI());
+		String calendarName = UUID.randomUUID().toString().replace("-", "");
+		
+		KalendarRenderWrapper importedCalendar = importCalendarManager
+				.importCalendar(test, calendarName, CalendarManager.TYPE_USER, calendarFile);
+		List<KalendarEvent> events = importedCalendar.getKalendar().getEvents();
+		Assert.assertEquals(3, events.size());
+		
+		// 24 hours but on 2 days
+		KalendarEvent on2days = importedCalendar.getKalendar().getEvent("EFE10508-15B0-4FCE-A258-37BA642B760D", null);
+		Assert.assertFalse(on2days.isAllDayEvent());
+		// real all day with the iCal standard
+		KalendarEvent allDay = importedCalendar.getKalendar().getEvent("14C0ACCD-AC0B-4B10-A448-0BF129492091", null);
+		Assert.assertTrue(allDay.isAllDayEvent());
+		// almost a full day bit it miss one minute
+		KalendarEvent longDay = importedCalendar.getKalendar().getEvent("C562E736-DCFF-4002-9E5B-77D891D4A322", null);
+		Assert.assertFalse(longDay.isAllDayEvent());
+	}
+
 	
 	/**
 	 * Test concurrent add event with two threads and code-point to control concurrency.

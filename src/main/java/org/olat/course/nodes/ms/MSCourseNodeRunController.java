@@ -30,10 +30,15 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -55,9 +60,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  Jun 16, 2004
  * @author gnaegi
  */
-public class MSCourseNodeRunController extends BasicController {
+public class MSCourseNodeRunController extends BasicController implements Activateable2 {
 
 	private final VelocityContainer myContent;
+	private DisplayOrDownloadComponent download;
+	
+	private String mapperUri;
 	private final boolean showLog;
 	private boolean hasScore, hasPassed, hasComment;
 	private final UserCourseEnvironment userCourseEnv;
@@ -132,8 +140,8 @@ public class MSCourseNodeRunController extends BasicController {
 		myContent.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 
 		// Push variables to velocity page
-		exposeConfigToVC(ureq, config);		
-		exposeUserDataToVC(ureq, userCourseEnv, courseNode);
+		exposeConfigToVC(ureq);		
+		exposeUserDataToVC(ureq);
 		putInitialPanel(myContent);
 	}
 	
@@ -158,6 +166,20 @@ public class MSCourseNodeRunController extends BasicController {
 		return hasComment;
 	}
 
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(type.startsWith("path")) {
+			if(download != null) {
+				String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+				String url = mapperUri + "/" + path;
+				download.triggerFileDownload(url);
+			}
+		}
+	}
+
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
@@ -170,21 +192,22 @@ public class MSCourseNodeRunController extends BasicController {
 		}
 	}
 	
-	private void exposeConfigToVC(UserRequest ureq, ModuleConfiguration config) {
+	private void exposeConfigToVC(UserRequest ureq) {
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
 	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
-	    	myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
-	    	myContent.contextPut("in-disclaimer", isPanelOpen(ureq, "disclaimer", true));
+	    		myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
+	    		myContent.contextPut("in-disclaimer", isPanelOpen(ureq, "disclaimer", true));
 	    }
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
 	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
 	}
 	
-	private void exposeUserDataToVC(UserRequest ureq, UserCourseEnvironment userCourseEnv, PersistentAssessableCourseNode courseNode) {
+	private void exposeUserDataToVC(UserRequest ureq) {
 		AssessmentEntry assessmentEntry = courseNode.getUserAssessmentEntry(userCourseEnv);
 		if(assessmentEntry == null) {
 			myContent.contextPut("hasPassedValue", Boolean.FALSE);
@@ -213,10 +236,14 @@ public class MSCourseNodeRunController extends BasicController {
 				
 				if(courseNode.hasIndividualAsssessmentDocuments()) {
 					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
-					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
+					mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 					myContent.contextPut("docsMapperUri", mapperUri);
 					myContent.contextPut("docs", docs);
 					myContent.contextPut("in-assessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
+					if(download == null) {
+						download = new DisplayOrDownloadComponent("", null);
+						myContent.put("download", download);
+					}
 				}
 			}
 		}

@@ -20,6 +20,16 @@
 
 package org.olat.commons.info.manager;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -27,9 +37,12 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.commons.info.model.InfoMessage;
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoMessageFrontendManager;
+import org.olat.commons.info.InfoMessageManager;
+import org.olat.commons.info.InfoSubscriptionManager;
 import org.olat.commons.info.model.InfoMessageImpl;
-import org.olat.commons.info.notification.InfoSubscriptionManager;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -44,8 +57,14 @@ import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 
 /**
  * 
@@ -55,46 +74,20 @@ import org.olat.group.BusinessGroupRef;
  * Initial Date:  28 juil. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Service
 public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManager {
+
+	private final DateFormat formater = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
+	private static final OLog log = Tracing.createLoggerFor(InfoMessageFrontendManagerImpl.class);
 	
-	private static final OLog log = Tracing.createLoggerFor(InfoMessageFrontendManagerImpl.class); 
-			
+	@Autowired
 	private MailManager mailManager;
+	@Autowired
 	private CoordinatorManager coordinatorManager;
+	@Autowired
 	private InfoMessageManager infoMessageManager;
+	@Autowired
 	private InfoSubscriptionManager infoSubscriptionManager;
-
-	/**
-	 * [used by Spring]
-	 * @param mailManager
-	 */
-	public void setMailManager(MailManager mailManager) {
-		this.mailManager = mailManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param coordinatorManager
-	 */
-	public void setCoordinatorManager(CoordinatorManager coordinatorManager) {
-		this.coordinatorManager = coordinatorManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param infoMessageManager
-	 */
-	public void setInfoMessageManager(InfoMessageManager infoMessageManager) {
-		this.infoMessageManager = infoMessageManager;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param infoSubscriptionManager
-	 */
-	public void setInfoSubscriptionManager(InfoSubscriptionManager infoSubscriptionManager) {
-		this.infoSubscriptionManager = infoSubscriptionManager;
-	}
 
 	@Override
 	public InfoMessage loadInfoMessage(Long key) {
@@ -109,6 +102,72 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	@Override
 	public void saveInfoMessage(InfoMessage infoMessage) {
 		infoMessageManager.saveInfoMessage(infoMessage);
+	}
+	
+	@Override
+	public VFSLeaf getAttachment(InfoMessage msg) {
+		VFSLeaf attachment = null;
+		if(StringHelper.containsNonWhitespace(msg.getAttachmentPath())) {
+			VFSItem item = getStoragePath().resolve(msg.getAttachmentPath());
+			if(item instanceof VFSLeaf) {
+				attachment = (VFSLeaf)item;
+			}
+		}
+		return attachment;
+	}
+	
+	@Override
+	public void deleteAttachments(Collection<String> paths) {
+		if(paths == null || paths.isEmpty()) return;
+		
+		VFSContainer ressourceContainer = getStoragePath();
+		for(String path:paths) {
+			VFSItem item = ressourceContainer.resolve(path);
+			if(item instanceof VFSLeaf) {
+				((VFSLeaf)item).delete();
+			}
+		}
+	}
+
+	@Override
+	public String storeAttachment(File file, String filename, OLATResourceable ores, String subPath) {
+		try {
+			File ressourceDir = getResourceDir(ores);
+
+			String datePart;
+			synchronized(formater) {
+				datePart = formater.format(new Date());
+			}
+			if(filename == null) {
+				filename = file.getName();
+			}
+			filename = datePart + "_" + filename;
+			File attachment = new File(ressourceDir, filename);
+			Files.copy(file.toPath(), attachment.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			
+			File root = getStoragePath().getBasefile();
+			Path relativePath = root.toPath().relativize(attachment.toPath());
+			return relativePath.toString();
+		} catch (IOException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	private File getResourceDir(OLATResourceable ores) {
+		File root = getStoragePath().getBasefile();
+		String type = ores.getResourceableTypeName().toLowerCase();
+		File typePath = new File(root, type);
+		String id = ores.getResourceableId().toString();
+		File resourceFile = new File(typePath, id);
+		if(!resourceFile.exists()) {
+			resourceFile.mkdirs();
+		}
+		return resourceFile;
+	}
+	
+    private OlatRootFolderImpl getStoragePath() {
+    		return new OlatRootFolderImpl("/infomessages/", null);
 	}
 
 	@Override
@@ -138,13 +197,22 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 				if(!StringHelper.containsNonWhitespace(body)) {
 					body = infoMessage.getMessage();
 				}
-				//fxdiff VCRP-16: intern mail system
+				File attachment = null;
+				if(StringHelper.containsNonWhitespace(infoMessage.getAttachmentPath())) {
+					File root = getStoragePath().getBasefile();
+					attachment = new File(root, infoMessage.getAttachmentPath());
+				}
+				
 				MailContext context = new MailContextImpl(mailFormatter.getBusinessPath());
 				MailBundle bundle = new MailBundle();
 				bundle.setContext(context);
 				bundle.setFromId(from);
 				bundle.setContactList(contactList);
-				bundle.setContent(subject, body);
+				if(attachment != null) {
+					bundle.setContent(subject, body, attachment);
+				} else {
+					bundle.setContent(subject, body);
+				}
 				
 				MailerResult result = mailManager.sendMessage(bundle);
 				send = result.isSuccessful();
@@ -161,6 +229,9 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	
 	@Override
 	public void deleteInfoMessage(InfoMessage infoMessage) {
+		if(StringHelper.containsNonWhitespace(infoMessage.getAttachmentPath())) {
+			deleteAttachments(Collections.singletonList(infoMessage.getAttachmentPath()));
+		}
 		infoMessageManager.deleteInfoMessage(infoMessage);
 		infoSubscriptionManager.markPublisherNews(infoMessage.getOLATResourceable(), infoMessage.getResSubPath());
 	}
@@ -185,13 +256,18 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	public void removeInfoMessagesAndSubscriptionContext(BusinessGroup group) {
 		List<InfoMessage> messages = infoMessageManager.loadInfoMessageByResource(group,
 				InfoMessageFrontendManager.businessGroupResSubPath, null, null, null, 0, 0);
+		List<String> pathToDelete = new ArrayList<>();
 		for (InfoMessage im : messages) {
 			infoMessageManager.deleteInfoMessage(im);
+			if(StringHelper.containsNonWhitespace(im.getAttachmentPath())) {
+				pathToDelete.add(im.getAttachmentPath());
+			}
 		}			
 		String resName = group.getResourceableTypeName();
 		Long resId = group.getResourceableId();
 		SubscriptionContext subscriptionContext =  new SubscriptionContext(resName, resId, "");
 		infoSubscriptionManager.deleteSubscriptionContext(subscriptionContext);
+		deleteAttachments(pathToDelete);
 	}
 
 	@Override

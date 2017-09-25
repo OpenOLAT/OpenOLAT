@@ -74,6 +74,8 @@ public class ImpressumAdminController extends FormBasicController {
 	private final VFSContainer termsOfUseDir;
 	
 	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
 	private I18nManager i18nManager;
 	@Autowired
 	private ImpressumModule impressumModule;
@@ -116,7 +118,7 @@ public class ImpressumAdminController extends FormBasicController {
 		List<ButtonGroup> impressumButtons = new ArrayList<>();
 		impressumCont.contextPut("buttons", impressumButtons);
 		
-		for(String lang:I18nModule.getEnabledLanguageKeys()) {
+		for(String lang:i18nModule.getEnabledLanguageKeys()) {
 			FormLink editLink = uifactory
 					.addFormLink("impressum." + lang, "impressum", getTranslated(lang), "impressum.file", impressumCont, Link.BUTTON | Link.NONTRANSLATED);
 			editLink.setLabel(null, null);
@@ -146,7 +148,7 @@ public class ImpressumAdminController extends FormBasicController {
 		List<ButtonGroup> termsOfUseButtons = new ArrayList<>();
 		termsCont.contextPut("buttons", termsOfUseButtons);
 		
-		for(String lang:I18nModule.getEnabledLanguageKeys()) {
+		for(String lang:i18nModule.getEnabledLanguageKeys()) {
 			FormLink editLink = uifactory.addFormLink("termofuser." + lang, "termsofuse", getTranslated(lang), "termofuse.file", termsCont, Link.BUTTON | Link.NONTRANSLATED);
 			editLink.setLabel(null, null);
 			String filePath = "index_" + lang + ".html";

@@ -100,9 +100,9 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		
 		mainVC = createVelocityContainer("teacher_view");
 		
-		startButton = LinkFactory.createButton("start", mainVC, this);
+		startButton = LinkFactory.createButton("start.desktop", mainVC, this);
 		startButton.setVisible(false);
-		startWizardButton = LinkFactory.createButton("start.wizard", mainVC, this);
+		startWizardButton = LinkFactory.createButton("start.mobile", mainVC, this);
 		startWizardButton.setVisible(false);
 		
 		allTeachersSwitch = LinkFactory.createToolLink("all.teachers.switch", translate("all.teachers.switch"), this);
@@ -110,8 +110,10 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		allTeachersSwitch.setUserObject(all);
 		if(all) {
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
+			allTeachersSwitch.setTooltip(translate("all.teachers.switch.tooltip.on"));
 		} else {
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
+			allTeachersSwitch.setTooltip(translate("all.teachers.switch.tooltip.off"));
 		}
 		
 		searchCtrl = new TeacherOverviewSearchController(ureq, getWindowControl(), withRepositoryEntry);
@@ -119,23 +121,23 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		mainVC.put("search", searchCtrl.getInitialComponent());
 		
 		currentLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.current.lectures.blocks", withRepositoryEntry, withTeachers);
+				admin, "empty.table.current.lectures.blocks", false, "current", withRepositoryEntry, withTeachers);
 		listenTo(currentLecturesBlockCtrl);
 		mainVC.put("currentLectures", currentLecturesBlockCtrl.getInitialComponent());
 		
 		pendingLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.lectures.blocks", withRepositoryEntry, withTeachers);
+				admin, "empty.table.lectures.blocks", false, "pending", withRepositoryEntry, withTeachers);
 		listenTo(pendingLecturesBlockCtrl);
 		mainVC.put("pendingLectures", pendingLecturesBlockCtrl.getInitialComponent());
 		
 		nextLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.lectures.blocks", withRepositoryEntry, withTeachers);
+				admin, "empty.table.lectures.blocks", true, "next", withRepositoryEntry, withTeachers);
 		nextLecturesBlockCtrl.setTablePageSize(5);
 		listenTo(nextLecturesBlockCtrl);
 		mainVC.put("nextLectures", nextLecturesBlockCtrl.getInitialComponent());
 		
 		closedLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.lectures.blocks", withRepositoryEntry, withTeachers);
+				admin, "empty.table.lectures.blocks", false, "closed", withRepositoryEntry, withTeachers);
 		closedLecturesBlockCtrl.setTablePageSize(10);
 		listenTo(closedLecturesBlockCtrl);
 		mainVC.put("closedLectures", closedLecturesBlockCtrl.getInitialComponent());
@@ -184,7 +186,9 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 				startWizardButton.setUserObject(block);
 				
 				currentBlocks.add(row);
-			} else if(block.getRollCallStatus() == LectureRollCallStatus.closed || block.getRollCallStatus() == LectureRollCallStatus.autoclosed) {
+			} else if(block.getStatus() == LectureBlockStatus.cancelled
+					|| block.getRollCallStatus() == LectureRollCallStatus.closed
+					|| block.getRollCallStatus() == LectureRollCallStatus.autoclosed) {
 				closedBlocks.add(row);
 			} else if(block.getStartDate() != null && block.getStartDate().after(now)) {
 				nextBlocks.add(row);
@@ -201,6 +205,8 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		mainVC.contextPut("nextBlockSize", nextBlocks.size());
 		closedLecturesBlockCtrl.loadModel(closedBlocks);
 		mainVC.contextPut("closedBlockSize", closedBlocks.size());
+		mainVC.contextPut("totalBlockSize", getRowCount());
+
 		dirtyTables = false;
 	}
 	
@@ -356,7 +362,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		RollCallSecurityCallback secCallback = getRollCallSecurityCallback(reloadedBlock, teachers.contains(getIdentity()));
 		rollCallWizardCtrl = new TeacherRollCallWizardController(ureq, getWindowControl(), reloadedBlock, participants, secCallback);
 		if(withRepositoryEntry) {
-			rollCallCtrl.addLoggingResourceable(CoreLoggingResourceable.wrap(reloadedBlock.getEntry().getOlatResource(),
+			rollCallWizardCtrl.addLoggingResourceable(CoreLoggingResourceable.wrap(reloadedBlock.getEntry().getOlatResource(),
 					OlatResourceableType.course, reloadedBlock.getEntry().getDisplayname()));
 		}
 		listenTo(rollCallWizardCtrl);
@@ -387,8 +393,10 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		}
 		if(newValue) {
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
+			allTeachersSwitch.setTooltip(translate("all.teachers.switch.tooltip.on"));
 		} else {
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
+			allTeachersSwitch.setTooltip(translate("all.teachers.switch.tooltip.off"));
 		}
 		allTeachersSwitch.setUserObject(newValue);
 	}

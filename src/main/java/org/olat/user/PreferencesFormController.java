@@ -50,6 +50,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * This form controller provides an interface to change the user's system
@@ -70,6 +71,9 @@ public class PreferencesFormController extends FormBasicController {
 	private Identity tobeChangedIdentity;
 	private SingleSelection language, fontsize, charset, notificationInterval, mailSystem;
 	private static final String[] mailIntern = new String[]{"intern.only","send.copy"};
+	
+	@Autowired
+	private I18nModule i18nModule;
 
 	/**
 	 * Constructor for the user preferences form
@@ -193,7 +197,7 @@ public class PreferencesFormController extends FormBasicController {
 		String langKey = prefs.getLanguage();
 		// Preselect the users language if available. Maye not anymore enabled on
 		// this server
-		if (prefs.getLanguage() != null && I18nModule.getEnabledLanguageKeys().contains(langKey)) {
+		if (prefs.getLanguage() != null && i18nModule.getEnabledLanguageKeys().contains(langKey)) {
 			language.select(prefs.getLanguage(), true);
 		} else {
 			language.select(I18nModule.getDefaultLocale().toString(), true);

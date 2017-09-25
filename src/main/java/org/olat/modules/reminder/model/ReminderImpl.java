@@ -93,6 +93,8 @@ public class ReminderImpl implements Reminder, Persistable {
 	private Date startDate;
 	@Column(name="r_configuration", nullable=true, insertable=true, updatable=true)
 	private String configuration;
+	@Column(name="r_email_Subject", nullable=true, insertable=true, updatable=true)
+	private String emailSubject;
 	@Column(name="r_email_body", nullable=true, insertable=true, updatable=true)
 	private String emailBody;
 	
@@ -170,6 +172,16 @@ public class ReminderImpl implements Reminder, Persistable {
 	@Override
 	public void setConfiguration(String configuration) {
 		this.configuration = configuration;
+	}
+
+	@Override
+	public String getEmailSubject() {
+		return emailSubject;
+	}
+
+	@Override
+	public void setEmailSubject(String emailSubject) {
+		this.emailSubject = emailSubject;
 	}
 
 	@Override

@@ -35,6 +35,7 @@ import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -68,13 +69,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PageMetadataController extends BasicController {
 	
-	public static final int PICTURE_WIDTH = 300;
-	public static final int PICTURE_HEIGHT = (PICTURE_WIDTH / 3) * 2;//max-height=200px is defined in css
+	public static final int PICTURE_WIDTH = 970 * 2;	// max width for large images: 1294 * 75% , x2 for high res displays
+	public static final int PICTURE_HEIGHT = 300 * 2 ; 	// max size for large images, see CSS, x2 for high res displays
 	
 	private Link publishButton, revisionButton, closeButton, reopenButton;
 	private ImageComponent imageCmp;
 	private String mapperThumbnailUrl;
 	private VelocityContainer mainVC;
+
+	private CategoriesEditController categoriesEditCtr;
 	
 	private final Page page;
 	private final List<Assignment> assignments;
@@ -122,11 +125,20 @@ public class PageMetadataController extends BasicController {
 		mainVC.contextPut("lastPublicationDate", page.getLastPublicationDate());
 
 		List<Category> categories = portfolioService.getCategories(page);
-		List<String> categoryNames = new ArrayList<>(categories.size());
-		for(Category category:categories) {
-			categoryNames.add(category.getName());
+		if (secCallback.canEditCategories(page)) {
+			// editable categories
+			categoriesEditCtr = new CategoriesEditController(ureq, getWindowControl(), categories);
+			listenTo(categoriesEditCtr);
+			mainVC.put("pageCategoriesCtr", categoriesEditCtr.getInitialComponent());			
+		} else {
+			// read-only categories
+			List<String> categoryNames = new ArrayList<>(categories.size());
+			for(Category category:categories) {
+				categoryNames.add(category.getName());
+			}
+			mainVC.contextPut("pageCategories", categoryNames);
 		}
-		mainVC.contextPut("pageCategories", categoryNames);
+		
 		mainVC.contextPut("lastModified", page.getLastModified());
 		
 		if(StringHelper.containsNonWhitespace(page.getImagePath())) {
@@ -226,6 +238,16 @@ public class PageMetadataController extends BasicController {
 			fireEvent(ureq, new ClosePageEvent());
 		} else if(reopenButton == source) {
 			fireEvent(ureq, new ReopenPageEvent());
+		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == categoriesEditCtr) {
+			if (event == Event.CHANGED_EVENT) {				
+				portfolioService.updateCategories(page, categoriesEditCtr.getUpdatedCategories());
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
 		}
 	}
 	

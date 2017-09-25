@@ -1454,11 +1454,18 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 
 			if (attachments != null && !attachments.isEmpty()) {
 				// with attachment use multipart message
-				Multipart multipart = new MimeMultipart();
+				Multipart multipart = new MimeMultipart("mixed");
 				// 1) add body part
-				BodyPart messageBodyPart = new MimeBodyPart();
-				messageBodyPart.setText(body);
-				multipart.addBodyPart(messageBodyPart);
+				if(StringHelper.isHtml(body)) {
+					Multipart alternativePart = createMultipartAlternative(body);
+					MimeBodyPart wrap = new MimeBodyPart();
+					wrap.setContent(alternativePart);
+					multipart.addBodyPart(wrap);
+				} else {
+					BodyPart messageBodyPart = new MimeBodyPart();
+					messageBodyPart.setText(body);
+					multipart.addBodyPart(messageBodyPart);
+				}
 				// 2) add attachments
 				for (DBMailAttachment attachment : attachments) {
 					// abort if attachment does not exist
@@ -1468,7 +1475,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 								+ (attachment == null ? null : attachment.getName()), null);
 						return msg;
 					}
-					messageBodyPart = new MimeBodyPart();
+					BodyPart messageBodyPart = new MimeBodyPart();
 
 					VFSLeaf data = getAttachmentDatas(attachment);
 					DataSource source = new VFSDataSource(attachment.getName(), attachment.getMimetype(), data);
@@ -1480,7 +1487,11 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				msg.setContent(multipart);
 			} else {
 				// without attachment everything is easy, just set as text
-				msg.setText(body, "utf-8");
+				if(StringHelper.isHtml(body)) {
+					msg.setContent(createMultipartAlternative(body));
+				} else {
+					msg.setText(body, "utf-8");
+				}
 			}
 			msg.setSentDate(new Date());
 			msg.saveChanges();

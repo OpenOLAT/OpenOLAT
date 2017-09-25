@@ -21,29 +21,40 @@
 package org.olat.core.util.i18n;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import org.olat.core.configuration.AbstractOLATModule;
-import org.olat.core.configuration.Destroyable;
-import org.olat.core.configuration.PersistedProperties;
+import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.control.Event;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
+import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
 
 /**
  * <h3>Description:</h3> The I18nModule initializes the localization
@@ -54,8 +65,8 @@ import org.olat.core.util.resource.OresHelper;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-
-public class I18nModule extends AbstractOLATModule implements Destroyable {
+@Service("i18nModule")
+public class I18nModule extends AbstractSpringModule {
 	
 	private static final OLog log = Tracing.createLoggerFor(I18nModule.class);
 	
@@ -81,71 +92,75 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	private static final String CONFIG_LANGUAGES_ENABLED = "enabledLanguages";
 	private static final String CONFIG_LANGUAGES_ENABLED_ALL = "all";
 	private static final String CONFIG_DEFAULT_LANG = "defaultLanguage";
-	private static final String CONFIG_FALLBACK_LANG = "fallbackLanguage";
-	private static final String CONFIG_LANGUAGES_REFERENCES = "transToolReferenceLanguages";
-	private static final String CONFIG_OVERLAY = "overlayName";
-	private static final String CONFIG_OVERLAY_ENABLED = "overlayEnabled";
-	private static final String CONFIG_CACHING_ENABLED = "cachingEnabled";
-	private static final String CONFIG_LANGUAGE_LIST_ENABLED = "dropDownListEnabled";
-	private static final String CONFIG_APPLICATION_FALLBACK_BUNDLE = "applicationFallbackBundle";
-	private static final String CONFIG_CORE_FALLBACK_BUNDLE = "coreFallbackBundle";
-	private static final String CONFIG_TRANS_TOOL_ENABLED = "transToolEnabled";
-	private static final String CONFIG_TRANS_TOOL_APPLICATION_SRC_PATH = "transToolApplicationSrcPath";
-	private static final String CONFIG_TRANS_TOOL_APPLICATION_OPT_SRC_PATH = "transToolApplicationOptSrcPath";
+	
+	@Value("${enabledLanguages}")
+	private String enabledLanguages;
+	@Value("${defaultlang:en}")
+	private String defaultLanguage;
+	@Value("${fallbacklang:en}")
+	private String fallbackLanguage;
 
 	// General configuration
-	private static String overlayName;
-	private static boolean overlayEnabled;
-	private static boolean cachingEnabled;
-	private static boolean languageDropDownListEnabled;
+	private final String overlayName = "customizing";
+	private final boolean overlayEnabled = true;
+
+	@Value("${localization.cache:true}")
+	private boolean cachingEnabled;
+	private boolean languageDropDownListEnabled = true;
 	// Lists of the available and enabled languages and locales
-	private static final Set<String> availableLanguages = new HashSet<String>();
-	private static final Set<String> translatableLanguages = new HashSet<String>();
-	private static final Map<String, File> translatableLangAppBaseDirLookup = new HashMap<String, File>();
+	private final Set<String> availableLanguages = new HashSet<>();
+	private final Set<String> translatableLanguages = new HashSet<>();
+	private final Map<String, File> translatableLangAppBaseDirLookup = new HashMap<>();
 	// keys: lang string, values: locale
-	private static final Map<String, Locale> allLocales = new HashMap<String, Locale>();
+	private static final Map<String, Locale> allLocales = new HashMap<>();
 	// keys: orig Locale, values: overlay Locale
-	private static final Map<Locale, Locale> overlayLocales = new HashMap<Locale, Locale>();
-	private static final Set<String> overlayLanguagesKeys = new HashSet<String>();
-	private static final Set<String> enabledLanguagesKeys = new HashSet<String>();
+	private final Map<Locale, Locale> overlayLocales = new HashMap<>();
+	private final Set<String> overlayLanguagesKeys = new HashSet<>();
+	private final Set<String> enabledLanguagesKeys = new HashSet<>();
 	// The default locale (used on loginscreen and as first fallback) and the
 	// fallback (used as second fallback)
 	private static Locale defaultLocale;
-	private static Locale fallbackLocale;
+	private Locale fallbackLocale;
 	// The available bundles
-	private static List<String> bundleNames = null; // sorted alphabetically
-	private static String coreFallbackBundle = null;
-	private static String applicationFallbackBundle = null;
+	private List<String> bundleNames; // sorted alphabetically
+	
+	private final String coreFallbackBundle = "org.olat.core";
+	private final String applicationFallbackBundle = "org.olat";
+
 	// Translation tool related configuration
-	private static final List<String> transToolReferenceLanguages = new ArrayList<String>();
-	private static File transToolApplicationLanguagesDir = null;
-	private static File transToolApplicationOptLanguagesSrcDir = null;
-	private static boolean transToolEnabled = false;
+	private final List<String> transToolReferenceLanguages = new ArrayList<>();
+	
+    @Value("${i18n.application.src.dir}")
+	private String transToolApplicationSrcPath;
+	private File transToolApplicationLanguagesDir;
+	@Value("${i18n.application.opt.src.dir}")
+	private String transToolApplicationOptSrcPath;
+	private File transToolApplicationOptLanguagesSrcDir;
+	@Value("${is.translation.server:disabled}")
+	private String transToolEnabled;
+	private final String referenceLanguages = "en,de";
+
+	private final ConcurrentMap<Locale,String> localeToLocaleKey = new ConcurrentHashMap<>();
+	
 	// When running on a cluster, we need an event when flushing the i18n cache to do this on all machines
 	private static OLATResourceable I18N_CACHE_FLUSHED_EVENT_CHANNEL;
 
 	// Reference to instance for static methods
-	private static I18nModule INSTANCE;
-	private CoordinatorManager coordinatorManager;
+	private final CoordinatorManager coordinatorManager;
 
-	/**
-	 * [spring]
-	 */
-	private I18nModule(CoordinatorManager coordinatorManager) {
-		super();
+	@Autowired
+	public I18nModule(CoordinatorManager coordinatorManager, WebappHelper webappHelper) {
+		super(coordinatorManager);
+		assert webappHelper != null;
 		this.coordinatorManager = coordinatorManager;
-		//if (INSTANCE != null && !Settings.isJUnitTest()) { throw new OLATRuntimeException("Tried to construct I18nModule, but module was already loaded!", null); }
-		INSTANCE = this;
 	}
 
 	@Override
 	protected void initDefaultProperties() {
 		// First read default configuration from the module config and then set
 		// is as default in the properties
-		String defaultLanguageKey = getStringConfigParameter(CONFIG_DEFAULT_LANG, "en", false);
-		setStringPropertyDefault(CONFIG_DEFAULT_LANG, defaultLanguageKey);
-		String enabledLanguagesConfig = getStringConfigParameter(CONFIG_LANGUAGES_ENABLED, CONFIG_LANGUAGES_ENABLED_ALL, false);
-		setStringPropertyDefault(CONFIG_LANGUAGES_ENABLED, enabledLanguagesConfig);
+		setStringPropertyDefault(CONFIG_DEFAULT_LANG, defaultLanguage);
+		setStringPropertyDefault(CONFIG_LANGUAGES_ENABLED, enabledLanguages);
 	}
 
 	@Override
@@ -185,8 +200,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 		// can't be changed at runtime and are project specific
 
 		// Set configured reference languages
-		String referenceLanguagesConfig = getStringConfigParameter(CONFIG_LANGUAGES_REFERENCES, "en", false);
-		String[] referenceAndFallbackKeys = referenceLanguagesConfig.split(",");
+		String[] referenceAndFallbackKeys = referenceLanguages.split(",");
 		// remove whitespace and check for douplicates
 		for (int i = 0; i < referenceAndFallbackKeys.length; i++) {
 			String langKey = referenceAndFallbackKeys[i];
@@ -194,61 +208,39 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 			transToolReferenceLanguages.add(langKey);
 		}
 
-		// Language overlay: used to override a language with some custom wording
-		overlayName = getStringConfigParameter(CONFIG_OVERLAY, "customizing", false);
-		overlayEnabled = getBooleanConfigParameter(CONFIG_OVERLAY_ENABLED, true);
-
 		// Set caching configuration of local strings
-		cachingEnabled = getBooleanConfigParameter(CONFIG_CACHING_ENABLED, true);
-		logInfo("Localization caching set to: " + cachingEnabled, null);
+		log.info("Localization caching set to: " + cachingEnabled, null);
 
 		// Set how the list of available availableLanguages will be shown
 		// (drop-down[true] or in one line[false])
-		languageDropDownListEnabled = getBooleanConfigParameter(CONFIG_LANGUAGE_LIST_ENABLED, true);
-		logInfo("Configuring 'dropDownListEnabled = " + languageDropDownListEnabled + "'", null);
+		log.info("Configuring 'dropDownListEnabled = " + languageDropDownListEnabled + "'", null);
 
 		// Set additional source path to load languages from and to store
 		// languages when using the translation tool. Init the values even when transtool is not configured for development mode		
-		String appSrc = getStringConfigParameter(CONFIG_TRANS_TOOL_APPLICATION_SRC_PATH, "", false);
-		if (StringHelper.containsNonWhitespace(appSrc)) {
-			appSrc = appSrc.trim();
-			transToolApplicationLanguagesDir = new File(appSrc);
+		if (StringHelper.containsNonWhitespace(transToolApplicationSrcPath)) {
+			transToolApplicationSrcPath = transToolApplicationSrcPath.trim();
+			transToolApplicationLanguagesDir = new File(transToolApplicationSrcPath);
 		}
-		String optAppSrc = getStringConfigParameter(CONFIG_TRANS_TOOL_APPLICATION_OPT_SRC_PATH, "", false);
-		if (StringHelper.containsNonWhitespace(optAppSrc)) {
-			optAppSrc = optAppSrc.trim();
-			transToolApplicationOptLanguagesSrcDir = new File(optAppSrc);
+		if (StringHelper.containsNonWhitespace(transToolApplicationOptSrcPath)) {
+			transToolApplicationOptSrcPath = transToolApplicationOptSrcPath.trim();
+			transToolApplicationOptLanguagesSrcDir = new File(transToolApplicationOptSrcPath);
 		}
 		
 		// Enable or disable translation tool and i18n source directories
-		transToolEnabled = getBooleanConfigParameter(CONFIG_TRANS_TOOL_ENABLED, false);
-		if (transToolEnabled) {
-			//
+		boolean translationToolEnabled = "enabled".equals(transToolEnabled);
+		if (translationToolEnabled) {
 			if (transToolApplicationLanguagesDir != null && transToolApplicationOptLanguagesSrcDir != null) {
 				// Check if configuration is valid, otherwise disable translation server mode
 			} else {
 				// disable, pathes not configured properly
-				transToolEnabled = false;
-			}
-			// error handling, notify on console about disabled translation tool
-			if (!transToolEnabled) {
-				logWarn(
-						"Translation configuration enabled but invalid translation tool source path defined. Disabling translation tool. Fix your configuration in spring config of i18Module",
-						null);
-				logWarn(" transToolApplicationSrcPath::" + appSrc + " transToolApplicationI18nSrcPath::" + optAppSrc, null);
+				translationToolEnabled = false;
+				log.warn("Translation configuration enabled but invalid translation tool source path defined. Disabling translation tool. Fix your configuration in spring config of i18Module", null);
+				log.warn(" transToolApplicationSrcPath::" + transToolApplicationSrcPath + " transToolApplicationI18nSrcPath::" + transToolApplicationOptSrcPath, null);
 			}
 		}
 
-		I18nManager i18nMgr = I18nManager.getInstance();
-		i18nMgr.setCachingEnabled(cachingEnabled);
-
 		// Get all bundles that contain i18n files
 		initBundleNames();
-		// Set the base bundles for olatcore and the application. When a key is
-		// not found, the manager looks it up in the application base and the in
-		// the core base bundle before it gives up
-		applicationFallbackBundle = getStringConfigParameter(CONFIG_APPLICATION_FALLBACK_BUNDLE, "org.olat", false);
-		coreFallbackBundle = getStringConfigParameter(CONFIG_CORE_FALLBACK_BUNDLE, "org.olat.core", false);
 
 		// Search for all available languages on the build path and initialize them
 		doInitAvailableLanguages();
@@ -257,15 +249,13 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 		// the persisted system configuration
 		doInitLanguageConfiguration();
 
-		logInfo("Configured i18nModule with default language::" + getDefaultLocale().toString() + " and the reference languages '"
-				+ referenceLanguagesConfig + "' and the following enabled languages: " + enabledLanguagesKeys.toString(), null);
+		log.info("Configured i18nModule with default language::" + getDefaultLocale().toString() + " and the reference languages '"
+				+ referenceLanguages + "' and the following enabled languages: " + enabledLanguagesKeys.toString(), null);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.configuration.Destroyable#destroy()
-	 */
+	@Override
 	public void destroy() {
+		super.destroy();
 		// remove from event channel
 		if (I18N_CACHE_FLUSHED_EVENT_CHANNEL != null) {
 			coordinatorManager.getCoordinator().getEventBus().deregisterFor(this, I18N_CACHE_FLUSHED_EVENT_CHANNEL);
@@ -277,21 +267,20 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * Initialize the available languages and load all locales
 	 */
 	private void doInitAvailableLanguages() {
-		I18nManager i18nMgr = I18nManager.getInstance();
 		// Search all availableLanguages files that exist 
 
 		String i18nDirRelPath = File.separator + applicationFallbackBundle.replace(".", File.separator) + File.separator + I18nManager.I18N_DIRNAME;
 		if (transToolApplicationLanguagesDir != null) {
 			File coreSrcI18nDir = new File(transToolApplicationLanguagesDir, i18nDirRelPath);
 			if (coreSrcI18nDir.exists()) {
-				for (String languageCode : i18nMgr.searchForAvailableLanguages(transToolApplicationLanguagesDir)) {
+				for (String languageCode : searchForAvailableLanguages(transToolApplicationLanguagesDir)) {
 					if (availableLanguages.contains(languageCode)) {
 						String path = "";
 						if (transToolApplicationOptLanguagesSrcDir != null) path = transToolApplicationOptLanguagesSrcDir.getAbsolutePath();
-						logDebug("Skipping duplicate or previously loaded language::" + languageCode + " found in " +path , null);
+						log.debug("Skipping duplicate or previously loaded language::" + languageCode + " found in " +path , null);
 						continue;
 					}
-					logDebug("Detected translatable language " + languageCode + " in " + transToolApplicationLanguagesDir.getAbsolutePath(), null);
+					log.debug("Detected translatable language " + languageCode + " in " + transToolApplicationLanguagesDir.getAbsolutePath(), null);
 					availableLanguages.add(languageCode);
 					translatableLanguages.add(languageCode);
 					translatableLangAppBaseDirLookup.put(languageCode, transToolApplicationLanguagesDir);
@@ -300,12 +289,12 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 		}
 		// 2) Add languages from the translation tool source path
 		if (isTransToolEnabled()) {
-			for (String languageCode : i18nMgr.searchForAvailableLanguages(transToolApplicationOptLanguagesSrcDir)) {
+			for (String languageCode : searchForAvailableLanguages(transToolApplicationOptLanguagesSrcDir)) {
 				if (availableLanguages.contains(languageCode)) {
-					logDebug("Skipping duplicate or previously loaded language::" + languageCode + " found in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath(), null);
+					log.debug("Skipping duplicate or previously loaded language::" + languageCode + " found in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath(), null);
 					continue;
 				}
-				logDebug("Detected translatable language " + languageCode + " in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath(), null);
+				log.debug("Detected translatable language " + languageCode + " in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath(), null);
 				availableLanguages.add(languageCode);
 				translatableLanguages.add(languageCode);
 				translatableLangAppBaseDirLookup.put(languageCode, transToolApplicationOptLanguagesSrcDir);
@@ -316,12 +305,12 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 		if(StringHelper.containsNonWhitespace(folderRoot)) {
 			//started from WEB-INF/classes
 			File libDir = new File(WebappHelper.getBuildOutputFolderRoot());
-			for (String languageCode : i18nMgr.searchForAvailableLanguages(libDir)) {
+			for (String languageCode : searchForAvailableLanguages(libDir)) {
 				if (availableLanguages.contains(languageCode)) {
-					logDebug("Skipping duplicate or previously loaded  language::" + languageCode + " found in " + libDir.getAbsolutePath(), null);
+					log.debug("Skipping duplicate or previously loaded  language::" + languageCode + " found in " + libDir.getAbsolutePath(), null);
 					continue;
 				}
-				logDebug("Detected non-translatable language " + languageCode + " in " + libDir.getAbsolutePath(), null);
+				log.debug("Detected non-translatable language " + languageCode + " in " + libDir.getAbsolutePath(), null);
 				availableLanguages.add(languageCode);
 				// don't add to translatable languages nor to source lookup maps - those
 				// langs are read only
@@ -332,23 +321,23 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 			String[] enabledLanguages = enabledLanguagesConfig.split(",");
 			for (String languageCode : enabledLanguages) {
 				if (availableLanguages.contains(languageCode)) {
-					logWarn("Skipping duplicate or previously loaded  language::" + languageCode + " found in "
+					log.warn("Skipping duplicate or previously loaded  language::" + languageCode + " found in "
 							+ LANG_PACKS_DIRECTORY.getAbsolutePath(), null);
 					continue;
 				}
-				logDebug("Force non-translatable language " + languageCode + " defined from enabledLanguages.", null);
+				log.debug("Force non-translatable language " + languageCode + " defined from enabledLanguages.", null);
 				availableLanguages.add(languageCode);
 			}
 		}
 		
 		// 4) Add languages from the customizing lang packs
-		for (String languageCode : i18nMgr.searchForAvailableLanguages(LANG_PACKS_DIRECTORY)) {
+		for (String languageCode : searchForAvailableLanguages(LANG_PACKS_DIRECTORY)) {
 			if (availableLanguages.contains(languageCode)) {
-				logWarn("Skipping duplicate or previously loaded  language::" + languageCode + " found in "
+				log.warn("Skipping duplicate or previously loaded  language::" + languageCode + " found in "
 						+ LANG_PACKS_DIRECTORY.getAbsolutePath(), null);
 				continue;
 			}
-			logDebug("Detected non-translatable language " + languageCode + " in " + LANG_PACKS_DIRECTORY.getAbsolutePath(), null);
+			log.debug("Detected non-translatable language " + languageCode + " in " + LANG_PACKS_DIRECTORY.getAbsolutePath(), null);
 			availableLanguages.add(languageCode);
 			// don't add to translatable languages nor to source lookup maps - those
 			// langs are read only
@@ -363,9 +352,9 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 		//
 		// Build list of all locales and the overlay locales if available
 		for (String langKey : availableLanguages) {
-			Locale locale = i18nMgr.createLocale(langKey);
+			Locale locale = createLocale(langKey);
 			if (locale == null) {
-				logError("Could not create locale for lang::" + langKey + ", skipping language and remove it from list of available languages",
+				log.error("Could not create locale for lang::" + langKey + ", skipping language and remove it from list of available languages",
 						null);
 				toRemoveLangs.add(langKey);
 				continue;
@@ -377,12 +366,12 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 			//
 			// Add overlay
 			if (isOverlayEnabled()) {
-				Locale overlayLocale = i18nMgr.createOverlay(locale);
+				Locale overlayLocale = createOverlay(locale);
 				// Calculate the overlay key as used as reference. Note, this is not the
 				// same as overlayLocale.toString(), this would add '_' for each element
-				String overlayKey = i18nMgr.getLocaleKey(overlayLocale);
+				String overlayKey = getLocaleKey(overlayLocale);
 				if (overlayLocale == null) {
-					logError("Could not create overlay locale for lang::" + langKey + " (" + overlayKey + "), skipping language", null);
+					log.error("Could not create overlay locale for lang::" + langKey + " (" + overlayKey + "), skipping language", null);
 					continue;
 				}
 				// Don't add same overlay twice
@@ -402,38 +391,180 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 			translatableLangAppBaseDirLookup.remove(langKey);
 		}
 		// Set fallback locale from configuration
-		String fallbackLangKey = getStringConfigParameter(CONFIG_FALLBACK_LANG, Locale.ENGLISH.toString(), false);
 		// fallbackLangKey can't be null because EN is guaranteed to be available,
 		// see above
-		fallbackLocale = allLocales.get(fallbackLangKey);
+		fallbackLocale = allLocales.get(fallbackLanguage);
 
 		// Check if translation tool reference languages are available
 		if (isTransToolEnabled() && transToolReferenceLanguages.size() == 0) {
-			logError("Did not find the fallback language configuration in the configuration, using language::en instead", null);
+			log.error("Did not find the fallback language configuration in the configuration, using language::en instead", null);
 		} else {
 			for (String langKey : transToolReferenceLanguages) {
 				if (!allLocales.containsKey(langKey)) {
-					logError("The configured fallback language::" + langKey + " does not exist. Using language::en instead", null);
+					log.error("The configured fallback language::" + langKey + " does not exist. Using language::en instead", null);
 				}
 			}
 		}
 	}
+	
+	/**
+	 * Search for available languages in the given directory. The translation
+	 * files must start with 'LocalStrings_' and end with '.properties'.
+	 * Everything in between is considered a language key.
+	 * <p>
+	 * If the directory contains jar files, those files are opened and searched
+	 * for languages files as well. In this case, the algorythm only looks for
+	 * translation files that are in the org/olat/core/_i18n package
+	 * 
+	 * @param i18nDir
+	 * @return set of language keys the system will find translations for
+	 */
+	Set<String> searchForAvailableLanguages(File i18nDir) {
+		Set<String> foundLanguages = new TreeSet<String>();
+		i18nDir = new File(i18nDir.getAbsolutePath()+"/org/olat/_i18n");
+		if (i18nDir.exists()) {
+			// First check for locale files
+			String[] langFiles = i18nDir.list(i18nFileFilter);
+			for (String langFileName : langFiles) {
+				String lang = langFileName.substring(I18nModule.LOCAL_STRINGS_FILE_PREFIX.length(), langFileName.lastIndexOf("."));
+				foundLanguages.add(lang);
+				log.debug("Adding lang::" + lang + " from filename::" + langFileName + " from dir::" + i18nDir.getAbsolutePath(), null);
+			}
+		}
+		return foundLanguages;
+	}
+	
+	/**
+	 * Create a local that represents the overlay locale for the given locale
+	 * 
+	 * @param locale The original locale
+	 * @return The overlay locale
+	 */
+	Locale createOverlay(Locale locale) {
+		String lang = locale.getLanguage();
+		String country = (locale.getCountry() == null ? "" : locale.getCountry());
+		String variant = createOverlayKeyForLanguage(locale.getVariant() == null ? "" : locale.getVariant());
+		Locale overlay = new Locale(lang, country, variant);
+		return overlay;
+	}
+	
+	/**
+	 * Add the overlay postfix to the given language key
+	 * @param langKey
+	 * @return
+	 */
+	String createOverlayKeyForLanguage(String langKey) {
+		return langKey + "__" + getOverlayName();
+	}
+	
+	/**
+	 * Helper method to create a locale from a given locale key ('de', 'de_CH',
+	 * 'de_CH_ZH')
+	 * 
+	 * @param localeKey
+	 * @return the locale or NULL if no locale could be generated from this string
+	 */
+	Locale createLocale(String localeKey) {
+		Locale aloc = null;
+		// de
+		// de_CH
+		// de_CH_zueri
+		String[] parts = localeKey.split("_");
+		switch (parts.length) {
+			case 1:
+				aloc = new Locale(parts[0]);
+				break;
+			case 2:
+				aloc = new Locale(parts[0], parts[1]);
+				break;
+			case 3:
+				String lastPart = parts[2];
+				// Add all remaining parts to variant, variant can contain
+				// underscores according to Locale spec
+				for (int i = 3; i < parts.length; i++) {
+					String part = parts[i];
+					lastPart = lastPart + "_" + part;
+				}
+				aloc = new Locale(parts[0], parts[1], lastPart);
+				break;
+			default:
+				return null;
+		}
+		// Test if the locale has been constructed correctly. E.g. when the
+		// language part is not existing in the ISO chart, the locale can
+		// convert to something else.
+		// E.g. he_HE_HE will convert automatically to iw_HE_HE
+		if (aloc.toString().equals(localeKey)) {
+			return aloc;
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Calculate the locale key that identifies the given locale. Adds support for
+	 * the overlay mechanism.
+	 * 
+	 * @param locale
+	 * @return
+	 */
+	public String getLocaleKey(Locale locale) {
+		String key = localeToLocaleKey.get(locale);
+		if(key == null) {
+			String langKey = locale.getLanguage();
+			String country = locale.getCountry();
+			// Only add country when available - in case of an overlay country is
+			// set to
+			// an empty value
+			if (StringHelper.containsNonWhitespace(country)) {
+				langKey = langKey + "_" + country;
+			}
+			String variant = locale.getVariant();
+			// Only add the _ separator if the variant contains something in
+			// addition to
+			// the overlay, otherways use the __ only
+			if (StringHelper.containsNonWhitespace(variant)) {
+				if (variant.startsWith("__" + getOverlayName())) {
+					langKey += variant;
+				} else {
+					langKey = langKey + "_" + variant;
+				}
+			}
+			
+			key = localeToLocaleKey.putIfAbsent(locale, langKey);
+			if(key == null) {
+				key = langKey;
+			}
+			
+		}
+		return key;
+	}
+	
+	private static FilenameFilter i18nFileFilter = new FilenameFilter() {
+		@Override
+		public boolean accept(File dir, String name) {
+			// don't add overlayLocales as selectable availableLanguages
+			// (LocaleStrings_de__VENDOR.properties)
+			if (name.startsWith(I18nModule.LOCAL_STRINGS_FILE_PREFIX) && name.indexOf("_") != 0 && name.endsWith(I18nModule.LOCAL_STRINGS_FILE_POSTFIX)) { return true; }
+			return false;
+		}
+	};
 
 	private void doInitLanguageConfiguration() {
 		// Set the default language
 		String defaultLanguageKey = getStringPropertyValue(CONFIG_DEFAULT_LANG, false);
 		Locale newDefaultLocale = allLocales.get(defaultLanguageKey);
 		if (newDefaultLocale == null) {
-			logError("Could not set default locale to value::" + defaultLanguageKey + " - no such language found. Using fallback locale instead",
+			log.error("Could not set default locale to value::" + defaultLanguageKey + " - no such language found. Using fallback locale instead",
 					null);
 			newDefaultLocale = allLocales.get(transToolReferenceLanguages.get(0));
 		} else if (!availableLanguages.contains(newDefaultLocale.toString())) {
-			logError("Did not find the default language::" + newDefaultLocale.toString()
+			log.error("Did not find the default language::" + newDefaultLocale.toString()
 					+ " in the available availableLanguages files! Using fallback locale instead", null);
 			newDefaultLocale = allLocales.get(transToolReferenceLanguages.get(0));
 		}
 		defaultLocale = newDefaultLocale;
-		logInfo("Setting default locale::" + newDefaultLocale.toString(), null);
+		log.info("Setting default locale::" + newDefaultLocale.toString(), null);
 
 		// Enabling configured languages (a subset of the available languages)
 		String[] enabledLanguages;
@@ -450,12 +581,12 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 				enabledLanguagesKeys.add(langKey);
 			} // else skip this entry
 		}
-		logInfo("Enabling languages::" + enabledLanguagesConfig, null);
+		log.info("Enabling languages::" + enabledLanguagesConfig, null);
 		// Make sure that the configured default language is enabled
 		if (!enabledLanguagesKeys.contains(getDefaultLocale().toString())) {
 			String defLang = getDefaultLocale().toString();
 			enabledLanguagesKeys.add(defLang);
-			logWarn("The configured default language::" + defLang + " is not in the list of enabled languages. Enabling language::" + defLang,
+			log.warn("The configured default language::" + defLang + " is not in the list of enabled languages. Enabling language::" + defLang,
 					null);
 		}
 	}
@@ -476,11 +607,11 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * 
 	 * @param newDefaultLocale
 	 */
-	public static void setDefaultLocale(Locale newDefaultLocale) {
+	public void setDefaultLocale(Locale newDefaultLocale) {
 		if (defaultLocale == null || !defaultLocale.toString().equals(newDefaultLocale.toString())) {
 			// Just set the string property here. This will fire an event and
 			// call the method initFromChangedProperties()
-			INSTANCE.setStringProperty(CONFIG_DEFAULT_LANG, newDefaultLocale.toString(), true);
+			setStringProperty(CONFIG_DEFAULT_LANG, newDefaultLocale.toString(), true);
 		}
 	}
 
@@ -488,7 +619,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * @return The locale that is used when a string is not found in any other
 	 *         locale
 	 */
-	public static Locale getFallbackLocale() {
+	public Locale getFallbackLocale() {
 		return fallbackLocale;
 	}
 
@@ -499,7 +630,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	/**
 	 * @return true: caching is enabled; false: caching is disabled
 	 */
-	static boolean isCachingEnabled() {
+	public boolean isCachingEnabled() {
 		return cachingEnabled;
 	}
 
@@ -509,7 +640,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 *         the enabled languages to get the list of languages that are enabled
 	 *         to be used
 	 */
-	public static Set<String> getAvailableLanguageKeys() {
+	public Set<String> getAvailableLanguageKeys() {
 		return availableLanguages;
 	}
 
@@ -518,7 +649,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 *         tool. Theses are the languages that are available in the source
 	 *         form. Languages embedded in jars can't be edited.
 	 */
-	public static Set<String> getTranslatableLanguageKeys() {
+	public Set<String> getTranslatableLanguageKeys() {
 		return translatableLanguages;
 	}
 
@@ -526,7 +657,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * @return the map (with dummy value) of all languages including
 	 *         overlayLocales (as a String)
 	 */
-	public static Map<String, Locale> getAllLocales() {
+	public Map<String, Locale> getAllLocales() {
 		return allLocales;
 	}
 
@@ -534,7 +665,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * @return The lookup map of the overlay locales. Key: the locale; value: the
 	 *         corresponding overlay
 	 */
-	public static Map<Locale, Locale> getOverlayLocales() {
+	public Map<Locale, Locale> getOverlayLocales() {
 		return overlayLocales;
 	}
 
@@ -543,7 +674,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 *         de_CH, en, ...). those are the languages which can be chosen by the
 	 *         user
 	 */
-	public static Collection<String> getEnabledLanguageKeys() {
+	public Collection<String> getEnabledLanguageKeys() {
 		synchronized (enabledLanguagesKeys) {
 			return new HashSet<String>(enabledLanguagesKeys);
 		}
@@ -552,8 +683,8 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	/**
 	 * @return as keys: a List of Strings with the supported languages overlay keys
 	 */
-	public static Set<String> getOverlayLanguageKeys() {
-			return overlayLanguagesKeys;
+	public Set<String> getOverlayLanguageKeys() {
+		return overlayLanguagesKeys;
 	}
 
 	
@@ -563,7 +694,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * 
 	 * @param newEnabledLangKeys
 	 */
-	public static void setEnabledLanguageKeys(Collection<String> newEnabledLangKeys) {
+	public void setEnabledLanguageKeys(Collection<String> newEnabledLangKeys) {
 		if (!newEnabledLangKeys.equals(enabledLanguagesKeys)) {
 			String newEnabledConfig = "";
 			for (String enabledKey : newEnabledLangKeys) {
@@ -576,7 +707,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 
 			// Just set the string property here. This will fire an event and
 			// call the method initFromChangedProperties()
-			INSTANCE.setStringProperty(CONFIG_LANGUAGES_ENABLED, newEnabledConfig.toString(), true);
+			setStringProperty(CONFIG_LANGUAGES_ENABLED, newEnabledConfig.toString(), true);
 			// No need to reinitialize i18n Module, setting the new property will already do this
 		}
 	}
@@ -584,14 +715,14 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	/**
 	 * @return A list of language keys that are reference and fallback languages
 	 */
-	public static List<String> getTransToolReferenceLanguages() {
+	public List<String> getTransToolReferenceLanguages() {
 		return transToolReferenceLanguages;
 	}
 
 	/**
 	 * @return All bundles that contain a _i18n directory with translation files
 	 */
-	public static List<String> getBundleNamesContainingI18nFiles() {
+	public List<String> getBundleNamesContainingI18nFiles() {
 		return bundleNames;
 	}
 
@@ -599,7 +730,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * @return The bundle name that contains the commonly used translations from
 	 *         the olatcore framework
 	 */
-	public static String getCoreFallbackBundle() {
+	public String getCoreFallbackBundle() {
 		return coreFallbackBundle;
 	}
 
@@ -607,7 +738,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * @return The bundle name that contains the commonly used translations from
 	 *         the application
 	 */
-	public static String getApplicationFallbackBundle() {
+	public String getApplicationFallbackBundle() {
 		return applicationFallbackBundle;
 	}
 
@@ -617,7 +748,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * 
 	 * @return true: enabled; false: disabled
 	 */
-	public static boolean isOverlayEnabled() {
+	public boolean isOverlayEnabled() {
 		return (overlayEnabled && StringHelper.containsNonWhitespace(overlayName));
 	}
 
@@ -627,7 +758,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * 
 	 * @return name of the overlay
 	 */
-	public static String getOverlayName() {
+	public String getOverlayName() {
 		if (isOverlayEnabled()) return overlayName;
 		else return null;
 	}
@@ -636,17 +767,61 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * @return true: enable the translation tool; false: disable the translation
 	 *         tool
 	 */
-	public static boolean isTransToolEnabled() {
-		return transToolEnabled;
+	public boolean isTransToolEnabled() {
+		return "enabled".equals(transToolEnabled);
 	}
 
 	/**
 	 * search for bundles that contain i18n files. Searches in the org.olat.core
 	 * package
 	 */
-	static void initBundleNames() {
-		I18nManager i18nMgr = I18nManager.getInstance();
-		bundleNames = i18nMgr.searchForBundleNamesContainingI18nFiles();
+	void initBundleNames() {
+		bundleNames = searchForBundleNamesContainingI18nFiles();
+	}
+	
+	/**
+	 * Search in all packages on the source patch for packages that contain an
+	 * _i18n directory that can be used to store olatcore localization files
+	 * 
+	 * @return set of bundles that contain olatcore i18n compatible localization
+	 *         files
+	 */
+	List<String> searchForBundleNamesContainingI18nFiles() {
+		List<String> foundBundles;
+		// 1) First search on normal source path of application
+		String srcPath = null; 
+		File applicationDir = getTransToolApplicationLanguagesSrcDir();
+		if (applicationDir != null) {
+			srcPath = applicationDir.getAbsolutePath();
+		} else {
+			// Fall back to compiled classes
+			srcPath = WebappHelper.getBuildOutputFolderRoot();
+		}
+		if(StringHelper.containsNonWhitespace(srcPath)) {
+			I18nDirectoriesVisitor srcVisitor = new I18nDirectoriesVisitor(srcPath, getTransToolReferenceLanguages());
+			FileUtils.visitRecursively(new File(srcPath), srcVisitor);
+			foundBundles = srcVisitor.getBundlesContainingI18nFiles();
+			// 3) For jUnit tests, add also the I18n test dir
+			if (Settings.isJUnitTest()) {
+				Resource testres = new ClassPathResource("olat.local.properties");
+				String jUnitSrcPath = null;
+				try {
+					jUnitSrcPath = testres.getFile().getAbsolutePath();
+				} catch (IOException e) {
+					throw new StartupException("Could not find classpath resource for: test-classes/olat.local.property ", e);
+	  			}
+	
+	
+				I18nDirectoriesVisitor juniSrcVisitor = new I18nDirectoriesVisitor(jUnitSrcPath, getTransToolReferenceLanguages());
+				FileUtils.visitRecursively(new File(jUnitSrcPath), juniSrcVisitor);
+				foundBundles.addAll(juniSrcVisitor.getBundlesContainingI18nFiles());
+			}
+			// Sort alphabetically
+			Collections.sort(foundBundles);
+		} else {
+			foundBundles = new ArrayList<String>();
+		}
+		return foundBundles;
 	}
 
 	/**
@@ -657,7 +832,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * @param bundleName
 	 * @return The file or null if the language is not read-write configured
 	 */
-	public static File getPropertyFilesBaseDir(Locale locale, String bundleName) {
+	public File getPropertyFilesBaseDir(Locale locale, String bundleName) {
 		// 1) Special case, junit test files are not in olat source path
 		// We don't want translator to translate those files!
 		if (Settings.isJUnitTest() && bundleName.startsWith("org.olat.core.util.i18n.junittestdata") ) {
@@ -670,21 +845,19 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 			return transToolApplicationLanguagesDir;
 		}
 		// 3) Locale files from core or application
-		String localeKey = I18nManager.getInstance().getLocaleKey(locale);
+		String localeKey = getLocaleKey(locale);
 		return translatableLangAppBaseDirLookup.get(localeKey);
 	}
 
 	/**
 	 * Reinitialize the entire i18n system
 	 */
-	public static void reInitializeAndFlushCache() {
-		synchronized (enabledLanguagesKeys) {
-			// Re-initialize all local caches
-			doReInitialize();
-			// Notify other nodes to reInitialize the caches as well
-			I18nReInitializeCachesEvent changedConfigEvent = new I18nReInitializeCachesEvent();
-			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(changedConfigEvent, I18N_CACHE_FLUSHED_EVENT_CHANNEL);				
-		}
+	public void reInitializeAndFlushCache() {
+		// Re-initialize all local caches
+		doReInitialize();
+		// Notify other nodes to reInitialize the caches as well
+		I18nReInitializeCachesEvent changedConfigEvent = new I18nReInitializeCachesEvent();
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(changedConfigEvent, I18N_CACHE_FLUSHED_EVENT_CHANNEL);				
 	}
 
 	/**
@@ -692,7 +865,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * is decoupled from the reInitialize() to prevent endless firing of events
 	 * in the cluster.
 	 */
-	private static void doReInitialize() {		
+	private void doReInitialize() {		
 		synchronized (enabledLanguagesKeys) {
 			// Clear everything
 			availableLanguages.clear();
@@ -705,13 +878,14 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 			transToolReferenceLanguages.clear();
 			I18nManager.getInstance().clearCaches();
 			// Now rebuild everything from scratch
-			INSTANCE.doInit();
+			doInit();
 		}
 	}
 
 	/**
 	 * @see org.olat.core.configuration.AbstractOLATModule#event(org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(Event event) {
 		// First delegate to AbstractOLATModule
 		super.event(event);
@@ -731,7 +905,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * 
 	 * @return
 	 */
-	public static File getTransToolApplicationLanguagesSrcDir() {
+	public File getTransToolApplicationLanguagesSrcDir() {
 		return transToolApplicationLanguagesDir;
 	}
 
@@ -741,13 +915,7 @@ public class I18nModule extends AbstractOLATModule implements Destroyable {
 	 * 
 	 * @return
 	 */
-	public static File getTransToolApplicationOptLanguagesSrcDir() {
+	public File getTransToolApplicationOptLanguagesSrcDir() {
 		return transToolApplicationOptLanguagesSrcDir;
 	}
-
-	@Override
-	public void setPersistedProperties(PersistedProperties persistedProperties) {
-		this.moduleConfigProperties = persistedProperties;
-	}
-
 }

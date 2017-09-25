@@ -91,6 +91,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 
@@ -126,6 +127,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public static final String GTASK_REVISION_PERIOD = "grouptask.revision.period";
 	public static final String GTASK_SAMPLE_SOLUTION = "grouptask.solution";
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER = "grouptask.solution.visible.after";
+	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_ALL = "grouptask.solution.visible.all";
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE = "grouptask.solution.visible.after.relative";
 	public static final String GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER_RELATIVE_TO = "grouptask.solution.visible.after.relative.to";
 	public static final String GTASK_GRADING = "grouptask.grading";
@@ -151,6 +153,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	
 	public static final String GTASK_SUBMISSION_TEXT = "grouptask.submission.text";
 	public static final String GTASK_SUBMISSION_MAIL_CONFIRMATION = "grouptask.submission.mail.confirmation";
+	
+	public static final String GTASK_MAX_REVISED_DOCS = "grouptask.max.revised.docs";
 	
 	public static final String GTASK_SOLUTIONS = "grouptask.solutions";
 	
@@ -629,7 +633,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		}
 	}
 	
-	private void archiveNodeData(ICourse course, BusinessGroup businessGroup, TaskList taskList, String dirName, ZipOutputStream exportStream) {
+	public void archiveNodeData(ICourse course, BusinessGroup businessGroup, TaskList taskList, String dirName, ZipOutputStream exportStream) {
 		ModuleConfiguration config = getModuleConfiguration();
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		
@@ -949,10 +953,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 
 	@Override
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnv,
-			Identity coachingIdentity, boolean incrementAttempts) {
+			Identity coachingIdentity, boolean incrementAttempts, Role by) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, coachingIdentity, assessedIdentity, new ScoreEvaluation(scoreEvaluation), userCourseEnv, incrementAttempts);
+		am.saveScoreEvaluation(this, coachingIdentity, assessedIdentity, new ScoreEvaluation(scoreEvaluation), userCourseEnv, incrementAttempts, by);
 	}
 
 	@Override
@@ -983,19 +987,26 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	}
 
 	@Override
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnv) {
+	public void incrementUserAttempts(UserCourseEnvironment userCourseEnv, Role by) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		am.incrementNodeAttempts(this, assessedIdentity, userCourseEnv);
+		am.updateLastModifications(this, assessedIdentity, userCourseEnv, by);
 	}
 
 	@Override
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnv, Identity coachingIdentity) {
+	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnv, Identity coachingIdentity, Role by) {
 		if (userAttempts != null) {
 			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 			Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
-			am.saveNodeAttempts(this, coachingIdentity, assessedIdentity, userAttempts);
+			am.saveNodeAttempts(this, coachingIdentity, assessedIdentity, userAttempts, by);
 		}
+	}
+	
+	@Override
+	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
 	}
 
 	@Override

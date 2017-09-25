@@ -25,19 +25,22 @@
 */
 package org.olat.core.commons.services.scheduler;
 
-import static org.junit.Assert.assertEquals;
+import static org.quartz.JobBuilder.newJob;
 
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.olat.test.OlatTestCase;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.TriggerUtils;
+import org.quartz.spi.OperableTrigger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.quartz.SimpleTriggerBean;
+import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
 
 /**
  * Description:<br>
@@ -53,8 +56,11 @@ public class SchedulerTest extends OlatTestCase {
 	
 	@Test
 	public void testSimpleTrigger() throws SchedulerException, ParseException {
-		JobDetail job = new JobDetail("schedulerTestJobSimpleTrigger", Scheduler.DEFAULT_GROUP, SchedulerTestJob.class);
-		SimpleTriggerBean trigger = new SimpleTriggerBean();
+		JobDetail job = newJob(SchedulerTestJob.class)
+				.withIdentity("schedulerTestJobSimpleTrigger", Scheduler.DEFAULT_GROUP)
+				.build();
+
+		SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
 		trigger.setName("Test scheduler trigger");
 		trigger.setStartDelay(0);
 		trigger.setRepeatInterval(1000);
@@ -62,14 +68,17 @@ public class SchedulerTest extends OlatTestCase {
 		trigger.setJobDetail(job);
 		trigger.afterPropertiesSet();
 		// Schedule job now
-		scheduler.scheduleJob(job, trigger);
+		scheduler.scheduleJob(job, trigger.getObject());
+		
+		sleep(20);//because of cal.add(Calendar.MILLISECOND, 11);
 
-		//check next time
+		//check number of calls to the job
+		org.quartz.Calendar quartzCal = scheduler.getCalendar(trigger.getObject().getCalendarName());
 		Calendar cal = Calendar.getInstance();
 		Date start = cal.getTime();
 		cal.add(Calendar.SECOND, 5);
-		cal.add(Calendar.MILLISECOND, 011);
+		cal.add(Calendar.MILLISECOND, 11);
 		Date end = cal.getTime();
-		assertEquals(5, trigger.computeNumTimesFiredBetween(start, end));
+		Assert.assertEquals(5, TriggerUtils.computeFireTimesBetween((OperableTrigger)trigger.getObject(), quartzCal, start, end).size());
 	}
 }

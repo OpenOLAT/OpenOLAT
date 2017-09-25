@@ -43,7 +43,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private final BigDecimal score;
 	private final Boolean passed;
 	private final Date initialCourseLaunchDate;
-	private final Date lastModified;
+	private final Date lastModified, lastUserModified, lastCoachModified;
 	private final int numOfAssessmentDocs;
 	private final AssessmentEntryStatus status;
 	
@@ -57,6 +57,8 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			passed = entry.getPassed();
 			userVisibility = entry.getUserVisibility();
 			lastModified = entry.getLastModified();
+			lastUserModified = entry.getLastUserModified();
+			lastCoachModified = entry.getLastCoachModified();
 			status = entry.getAssessmentStatus();
 			numOfAssessmentDocs = entry.getNumberOfAssessmentDocuments();
 		} else {
@@ -64,7 +66,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			score = null;
 			passed = null;
 			userVisibility = null;
-			lastModified = null;
+			lastModified = lastUserModified = lastCoachModified = null;
 			status = null;
 			numOfAssessmentDocs = 0;
 		}
@@ -89,6 +91,14 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public Date getLastModified() {
 		return lastModified;
+	}
+	
+	public Date getLastUserModified() {
+		return lastUserModified;
+	}
+	
+	public Date getLastCoachModified() {
+		return lastCoachModified;
 	}
 
 	public int getNumOfAssessmentDocs() {

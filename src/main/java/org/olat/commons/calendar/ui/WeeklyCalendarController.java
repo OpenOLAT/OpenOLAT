@@ -51,6 +51,7 @@ import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIMoveEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIPrintEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIRemoveEvent;
+import org.olat.commons.calendar.ui.events.CalendarGUIResizeEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUISettingEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIUpdateEvent;
@@ -305,6 +306,10 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				CalendarGUIMoveEvent moveEvent = (CalendarGUIMoveEvent)event;
 				doMove(ureq, moveEvent.getKalendarEvent(), moveEvent.getDayDelta(),
 						moveEvent.getMinuteDelta(), moveEvent.getAllDay());
+			} else if (event instanceof CalendarGUIResizeEvent) {
+				CalendarGUIResizeEvent resizeEvent = (CalendarGUIResizeEvent)event;
+				doResize(ureq, resizeEvent.getKalendarEvent(),
+						resizeEvent.getMinuteDelta(), resizeEvent.getAllDay());
 			}  else if (event instanceof CalendarGUIFormEvent) {
 				String cmd = event.getCommand();
 				if(CalendarGUIFormEvent.CONFIGURE.equals(cmd)) {
@@ -367,7 +372,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		} else if(source == updateCtr) {
 			if(event instanceof CalendarGUIUpdateEvent) {
 				doUpdate((CalendarGUIUpdateEvent)event, updateCtr.getKalendarEvent(),
-						updateCtr.getDayDelta(), updateCtr.getMinuteDelta(), updateCtr.getAllDay());
+						updateCtr.getDayDelta(), updateCtr.getMinuteDelta(), updateCtr.getAllDay(), updateCtr.getChangeBegin());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -567,7 +572,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	
 	private void doMove(UserRequest ureq, KalendarEvent calEvent, Long dayDelta, Long minuteDelta, Boolean allDay) {
 		if(calEvent instanceof KalendarRecurEvent && !StringHelper.containsNonWhitespace(calEvent.getRecurrenceID())) {
-			updateCtr = new ConfirmUpdateController(ureq, getWindowControl(), (KalendarRecurEvent)calEvent, dayDelta, minuteDelta, allDay);
+			updateCtr = new ConfirmUpdateController(ureq, getWindowControl(), (KalendarRecurEvent)calEvent, dayDelta, minuteDelta, allDay, true);
 			listenTo(updateCtr);
 			
 			String title = translate("cal.edit.update");
@@ -586,10 +591,32 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		}
 	}
 	
-	private void doUpdate(CalendarGUIUpdateEvent event, KalendarEvent kalendarEvent, Long dayDelta, Long minuteDelta, Boolean allDay) {
+	private void doResize(UserRequest ureq, KalendarEvent calEvent, Long minuteDelta, Boolean allDay) {
+		if(calEvent instanceof KalendarRecurEvent && !StringHelper.containsNonWhitespace(calEvent.getRecurrenceID())) {
+			updateCtr = new ConfirmUpdateController(ureq, getWindowControl(), (KalendarRecurEvent)calEvent, 0L, minuteDelta, allDay, false);
+			listenTo(updateCtr);
+			
+			String title = translate("cal.edit.update");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), updateCtr.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			Kalendar cal = calEvent.getCalendar();
+			calEvent.setEnd(doMove(calEvent.getEnd(), 0L, minuteDelta));
+			if(allDay != null && calEvent.isAllDayEvent() != allDay.booleanValue()) {
+				calEvent.setAllDayEvent(allDay.booleanValue());
+			}
+			calendarManager.updateEventFrom(cal, calEvent);
+			calendarEl.getComponent().setDirty(true);
+		}
+	}
+	
+	private void doUpdate(CalendarGUIUpdateEvent event, KalendarEvent kalendarEvent, Long dayDelta, Long minuteDelta, Boolean allDay, boolean changeBegin) {
 		switch(event.getCascade()) {
 			case all: {
-				kalendarEvent.setBegin(doMove(kalendarEvent.getBegin(), dayDelta, minuteDelta));
+				if (changeBegin) {
+					kalendarEvent.setBegin(doMove(kalendarEvent.getBegin(), dayDelta, minuteDelta));
+				}
 				kalendarEvent.setEnd(doMove(kalendarEvent.getEnd(), dayDelta, minuteDelta));
 				if(allDay != null && kalendarEvent.isAllDayEvent() != allDay.booleanValue()) {
 					kalendarEvent.setAllDayEvent(allDay.booleanValue());
@@ -601,7 +628,9 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				if(kalendarEvent instanceof KalendarRecurEvent) {
 					KalendarRecurEvent refEvent = (KalendarRecurEvent)kalendarEvent;
 					kalendarEvent = calendarManager.createKalendarEventRecurringOccurence(refEvent);
-					kalendarEvent.setBegin(doMove(kalendarEvent.getBegin(), dayDelta, minuteDelta));
+					if (changeBegin) {
+						kalendarEvent.setBegin(doMove(kalendarEvent.getBegin(), dayDelta, minuteDelta));
+					}
 					kalendarEvent.setEnd(doMove(kalendarEvent.getEnd(), dayDelta, minuteDelta));
 					if(allDay != null && kalendarEvent.isAllDayEvent() != allDay.booleanValue()) {
 						kalendarEvent.setAllDayEvent(allDay.booleanValue());

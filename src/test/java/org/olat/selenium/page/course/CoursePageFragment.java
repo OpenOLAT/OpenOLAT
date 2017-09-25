@@ -27,6 +27,7 @@ import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.lecture.LectureRepositoryAdminPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -55,6 +56,7 @@ public class CoursePageFragment {
 	public static final By membersCourseBy = By.className("o_sel_course_members");
 	public static final By treeContainerBy = By.id("o_main_left_content");
 	public static final By efficiencyStatementsBy = By.className("o_sel_course_options_certificates");
+	public static final By lecturesAdministrationBy = By.className("o_sel_course_lectures_admin");
 	
 	private final WebDriver browser;
 	
@@ -269,6 +271,16 @@ public class CoursePageFragment {
 		browser.findElement(efficiencyStatementsBy).click();
 		OOGraphene.waitBusy(browser);
 		return new EfficiencyStatementConfigurationPage(browser);
+	}
+	
+	public LectureRepositoryAdminPage lecturesAdministration() {
+		if(!browser.findElement(settingsMenu).isDisplayed()) {
+			openSettingsMenu();
+		}
+		browser.findElement(lecturesAdministrationBy).click();
+		OOGraphene.waitBusy(browser);
+		return new LectureRepositoryAdminPage(browser)
+				.assertOnAdminPage();
 	}
 	
 	public BookingPage bookingTool() {

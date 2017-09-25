@@ -36,7 +36,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.commons.services.webdav.WebDAVDispatcher;
-import org.olat.core.configuration.AbstractOLATModule;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.PreWarm;
 import org.olat.core.dispatcher.Dispatcher;
@@ -127,8 +126,6 @@ public class OpenOLATServlet extends HttpServlet {
 		
 		//preload extensions
 		ExtManager.getInstance().getExtensions();
-		
-		AbstractOLATModule.printStats();
 		AbstractSpringModule.printStats();
 		preWarm();
 	}

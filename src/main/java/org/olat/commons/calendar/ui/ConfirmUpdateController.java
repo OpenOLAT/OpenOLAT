@@ -46,18 +46,20 @@ public class ConfirmUpdateController extends BasicController {
 	private final Boolean allDay;
 	private final Long dayDelta, minuteDelta; 
 	private final KalendarRecurEvent kalendarEvent;
+	private final boolean changeBegin;
 
 	public ConfirmUpdateController(UserRequest ureq, WindowControl wControl, KalendarRecurEvent kalendarEvent) {
-		this(ureq, wControl, kalendarEvent, null, null, null);
+		this(ureq, wControl, kalendarEvent, null, null, null, true);
 	}
 	
 	public ConfirmUpdateController(UserRequest ureq, WindowControl wControl, KalendarRecurEvent kalendarEvent,
-			Long dayDelta, Long minuteDelta, Boolean allDay) {
+			Long dayDelta, Long minuteDelta, Boolean allDay, boolean changeBegin) {
 		super(ureq, wControl, Util.createPackageTranslator(CalendarModule.class, ureq.getLocale()));
 		this.allDay = allDay;
 		this.dayDelta = dayDelta;
 		this.minuteDelta = minuteDelta;
 		this.kalendarEvent = kalendarEvent;
+		this.changeBegin = changeBegin;
 		
 		VelocityContainer mainVC = createVelocityContainer("confirm_update");
 		cancelButton = LinkFactory.createButton("cancel", mainVC, this);
@@ -78,6 +80,10 @@ public class ConfirmUpdateController extends BasicController {
 
 	public Long getMinuteDelta() {
 		return minuteDelta;
+	}
+
+	public boolean getChangeBegin() {
+		return changeBegin;
 	}
 
 	public KalendarRecurEvent getKalendarEvent() {

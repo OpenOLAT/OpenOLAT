@@ -66,6 +66,7 @@ public class CourseReminderEditController extends FormBasicController {
 	private final String[] typeKeys;
 	private final String[] typeValues;
 	
+	private TextElement subjectEl;
 	private RichTextElement emailEl;
 	private TextElement descriptionEl;
 	private FormLayoutContainer rulesCont;
@@ -113,6 +114,7 @@ public class CourseReminderEditController extends FormBasicController {
 		
 		String desc = reminder.getDescription();
 		descriptionEl = uifactory.addTextElement("reminder.description", "reminder.description", 128, desc, generalCont);
+		descriptionEl.setMandatory(true);
 		descriptionEl.setElementCssClass("o_sel_course_reminder_desc");
 		
 		String sendTime = getSendTimeDescription();
@@ -147,12 +149,19 @@ public class CourseReminderEditController extends FormBasicController {
 		FormLayoutContainer contentCont = FormLayoutContainer.createVerticalFormLayout("contents", getTranslator());
 		contentCont.setRootForm(mainForm);
 		formLayout.add(contentCont);
+
+		//email subject
+		String subject = reminder.getEmailSubject();
+		subjectEl = uifactory.addTextElement("reminder.subject", "reminder.subject", 128, subject, contentCont);
+		subjectEl.setMandatory(true);
+		subjectEl.setElementCssClass("o_sel_course_reminder_subject");
 		
 		String emailContent = reminder == null ? null : reminder.getEmailBody();
 		if(!StringHelper.containsNonWhitespace(emailContent)) {
 			emailContent = translate("reminder.def.body");
 		}
 		emailEl = uifactory.addRichTextElementForStringDataMinimalistic("email.content", "email.content", emailContent, 10, 60, contentCont, getWindowControl());
+		emailEl.setMandatory(true);
 		
 		String buttonPage = velocity_root + "/edit_rules_buttons.html";
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createCustomFormLayout("buttons", getTranslator(), buttonPage);
@@ -230,6 +239,12 @@ public class CourseReminderEditController extends FormBasicController {
 			descriptionEl.setErrorKey("form.mandatory.hover", null);
 			allOk &= false;
 		}
+		
+		subjectEl.clearError();
+		if(!StringHelper.containsNonWhitespace(subjectEl.getValue())) {
+			subjectEl.setErrorKey("form.mandatory.hover", null);
+			allOk &= false;
+		}		
 
 		emailEl.clearError();
 		if(!StringHelper.containsNonWhitespace(emailEl.getValue())) {
@@ -328,7 +343,10 @@ public class CourseReminderEditController extends FormBasicController {
 		
 		String configuration = reminderManager.toXML(rules);
 		reminder.setConfiguration(configuration);
-		
+
+		String emailSubject = subjectEl.getValue();
+		reminder.setEmailSubject(emailSubject);
+
 		String emailBody = emailEl.getValue();
 		reminder.setEmailBody(emailBody);
 

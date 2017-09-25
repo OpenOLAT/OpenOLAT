@@ -220,6 +220,13 @@ public interface QTI21Service {
 	public AssessmentSessionAuditLogger getAssessmentSessionAuditLogger(AssessmentTestSession session, boolean authorMode);
 	
 	/**
+	 * 
+	 * @param session The test session
+	 * @return The file or null if it doesn't exists
+	 */
+	public File getAssessmentSessionAuditLogFile(AssessmentTestSession session);
+	
+	/**
 	 * This will return the last session if it's not finished, terminated or exploded.
 	 * 
 	 * @param identity The identity which play the session
@@ -237,7 +244,7 @@ public interface QTI21Service {
 	
 	public AssessmentTestSession updateAssessmentTestSession(AssessmentTestSession session);
 
-	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
+	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, List<? extends IdentityRef> identities);
 	
 	public List<AssessmentTestSession> getRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
 	

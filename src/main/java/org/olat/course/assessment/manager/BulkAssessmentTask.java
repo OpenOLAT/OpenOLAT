@@ -93,6 +93,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -387,7 +388,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 					}
 					
 					// Update score,passed properties in db, and the user's efficiency statement
-					courseNode.updateUserScoreEvaluation(se, uce, coachIdentity, false);
+					courseNode.updateUserScoreEvaluation(se, uce, coachIdentity, false, Role.auto);
 				}
 			}
 			
@@ -398,7 +399,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 				ScoreEvaluation se = new ScoreEvaluation(oldScore, passed);
 				// Update score,passed properties in db, and the user's efficiency statement
 				boolean incrementAttempts = false;
-				courseNode.updateUserScoreEvaluation(se, uce, coachIdentity, incrementAttempts);
+				courseNode.updateUserScoreEvaluation(se, uce, coachIdentity, incrementAttempts, Role.auto);
 			}
 			
 			boolean identityHasReturnFile = false;

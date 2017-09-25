@@ -43,6 +43,7 @@ import org.olat.resource.accesscontrol.Order;
 import org.olat.resource.accesscontrol.OrderLine;
 import org.olat.resource.accesscontrol.OrderPart;
 import org.olat.resource.accesscontrol.OrderStatus;
+import org.olat.resource.accesscontrol.model.AccessMethod;
 import org.olat.resource.accesscontrol.model.OrderImpl;
 import org.olat.resource.accesscontrol.model.OrderLineImpl;
 import org.olat.resource.accesscontrol.model.OrderPartImpl;
@@ -52,21 +53,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 
+ *
  * Description:<br>
  * manager for the order. Orders are a part of the confirmation of an access
  * to a resource. The second part is the transaction.
- * 
+ *
  * <P>
  * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
 public class ACOrderDAO {
-	
+
 	@Autowired
 	private DB dbInstance;
-	
+
 	public OrderImpl createOrder(Identity delivery) {
 		OrderImpl order = new OrderImpl();
 		Date now = new Date();
@@ -92,7 +93,7 @@ public class ACOrderDAO {
 		part.getOrderLines().add(line);
 		return line;
 	}
-	
+
 	private OrderLineImpl createOrderLine(Offer offer) {
 		OrderLineImpl line = new OrderLineImpl();
 		line.setCreationDate(new Date());
@@ -101,7 +102,7 @@ public class ACOrderDAO {
 		line.setTotal(line.getUnitPrice().clone());
 		return line;
 	}
-	
+
 	public Order save(Order order) {
 		if(order.getKey() == null) {
 			dbInstance.saveObject(order);
@@ -110,7 +111,7 @@ public class ACOrderDAO {
 		}
 		return order;
 	}
-	
+
 	public Order save(Order order, OrderStatus status) {
 		((OrderImpl)order).setOrderStatus(status);
 		if(order.getKey() == null) {
@@ -120,11 +121,11 @@ public class ACOrderDAO {
 		}
 		return order;
 	}
-	
+
 	public Order saveOneClick(Identity delivery, OfferAccess link) {
 		return saveOneClick(delivery, link, OrderStatus.PAYED);
 	}
-	
+
 	public Order saveOneClick(Identity delivery, OfferAccess link, OrderStatus status) {
 		OrderImpl order = createOrder(delivery);
 		order.setOrderStatus(status);
@@ -143,9 +144,10 @@ public class ACOrderDAO {
 		dbInstance.getCurrentEntityManager().persist(order);
 		dbInstance.getCurrentEntityManager().persist(part);
 		dbInstance.getCurrentEntityManager().persist(line);
+
 		return order;
 	}
-	
+
 	public List<Order> findOrdersByDelivery(Identity delivery, OrderStatus... status) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select order from ").append(OrderImpl.class.getName()).append(" order")
@@ -153,7 +155,7 @@ public class ACOrderDAO {
 		if(status != null && status.length > 0) {
 			sb.append(" and order.orderStatusStr in (:status)");
 		}
-		
+
 		TypedQuery<Order> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Order.class)
 				.setParameter("deliveryKey", delivery.getKey());
@@ -164,22 +166,22 @@ public class ACOrderDAO {
 			}
 			query.setParameter("status", statusStr);
 		}
-	
+
 		List<Order> orders = query.getResultList();
 		return orders;
 	}
-	
+
 
 	/**
 	 * The method is optimized for our settings: 1 order -> 1 order part -> 1 order line
-	 * 
+	 *
 	 * @param resource
 	 * @param delivery
 	 * @return
 	 */
 	public int countNativeOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
 			Date from, Date to, OrderStatus... status) {
-		
+
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select count(o.order_id)")
 		  .append(" from o_ac_order o")
@@ -248,14 +250,14 @@ public class ACOrderDAO {
 			cal.set(Calendar.MILLISECOND, 0);
 			query.setParameter("to", cal.getTime(), TemporalType.TIMESTAMP);
 		}
-		
+
 		Object rawOrders = query.getSingleResult();
 		return rawOrders instanceof Number ? ((Number)rawOrders).intValue() : 0;
 	}
-	
+
 	/**
 	 * The method is optimized for our settings: 1 order -> 1 order part -> 1 order line
-	 * 
+	 *
 	 * @param resource
 	 * @param delivery
 	 * @return
@@ -263,7 +265,7 @@ public class ACOrderDAO {
 	public List<RawOrderItem> findNativeOrderItems(OLATResource resource, IdentityRef delivery, Long orderNr,
 			Date from, Date to, OrderStatus[] status, int firstResult, int maxResults,
 			List<UserPropertyHandler> userPropertyHandlers,  SortKey... orderBy) {
-		
+
 		NativeQueryBuilder sb = new NativeQueryBuilder(1024, dbInstance);
 		sb.append("select")
 		  .append("  o.order_id as order_id,")
@@ -293,11 +295,11 @@ public class ACOrderDAO {
 		  .append(" inner join o_ac_offer offer on (order_line.fk_offer_id=offer.offer_id)");
 		if(delivery == null) {
 			sb.append(" inner join o_bs_identity delivery on (delivery.id=o.fk_delivery_id)")
-			  .append(" inner join o_user delivery_user on (delivery_user.fk_identity=delivery.id)");	  
+			  .append(" inner join o_user delivery_user on (delivery_user.fk_identity=delivery.id)");
 		}
 		sb.append(" left join o_ac_paypal_transaction pspTrx on (o.order_id = pspTrx.order_id)")
 		  .append(" left join o_ac_transaction trx on (o.order_id = trx.fk_order_id)");
-		
+
 		boolean where = false;
 		if(resource != null) {
 			where = PersistenceHelper.appendAnd(sb, where);
@@ -323,7 +325,7 @@ public class ACOrderDAO {
 			where = PersistenceHelper.appendAnd(sb, where);
 			sb.append("o.order_id=:orderNr");
 		}
-		
+
 		sb.append(" group by o.order_id");
 		if(dbInstance.isOracle()) {
 			sb.append(", o.total_currency_code, o.total_amount, o.creationdate, o.order_status, o.fk_delivery_id");
@@ -380,7 +382,7 @@ public class ACOrderDAO {
 			cal.set(Calendar.MILLISECOND, 0);
 			query.setParameter("to", cal.getTime(), TemporalType.TIMESTAMP);
 		}
-		
+
 		if(maxResults > 0) {
 			query.setFirstResult(firstResult).setMaxResults(maxResults);
 		}
@@ -391,7 +393,7 @@ public class ACOrderDAO {
 		for(Object rawOrder:rawOrders) {
 			Object[] order = (Object[])rawOrder;
 			int pos = 0;
-			
+
 			Long orderKey = ((Number)order[pos++]).longValue();
 			String totalCurrencyCode = (String)order[pos++];
 			BigDecimal totalAmount = (BigDecimal)order[pos++];
@@ -402,7 +404,7 @@ public class ACOrderDAO {
 			String trxStatus = (String)order[pos++];
 			String trxMethodIds = (String)order[pos++];
 			String pspTrxStatus = (String)order[pos++];
-			
+
 			String username = null;
 			String[] userProperties = null;
 			if(numOfProperties > 0) {
@@ -413,8 +415,8 @@ public class ACOrderDAO {
 				for(int i=0; i<numOfProperties; i++) {
 					userProperties[i] = (String)order[pos++];
 				}
-			}	
-			
+			}
+
 			RawOrderItem item = new RawOrderItem(orderKey, orderKey.toString(), totalCurrencyCode, totalAmount,
 					creationDate, orderStatus, deliveryKey, resourceName,
 					trxStatus, trxMethodIds, pspTrxStatus, username, userProperties);
@@ -433,7 +435,7 @@ public class ACOrderDAO {
 		if(status != null && status.length > 0) {
 			sb.append(" and o.orderStatusStr in (:status)");
 		}
-		
+
 		TypedQuery<Order> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Order.class)
 				.setParameter("resourceKey", resource.getKey());
@@ -444,7 +446,36 @@ public class ACOrderDAO {
 			}
 			query.setParameter("status", statusStr);
 		}
-	
+
+		return query.getResultList();
+	}
+
+	public List<Order> findOrdersByResource(OLATResource resource, Identity identity, AccessMethod method) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct(o) from ").append(OrderImpl.class.getName()).append(" o")
+			.append(" inner join o.parts orderPart ")
+			.append(" inner join orderPart.lines orderLine ")
+			.append(" inner join orderLine.offer offer ")
+			.append(" left join offer.offerAccess offeraccess ")
+			.append(" left join offeraccess.method method ")
+			.append(" where offer.resource.key=:resourceKey");
+		if(identity != null) {
+			sb.append(" and o.delivery.key=:deliveryKey");
+		}
+		if(method != null) {
+			sb.append(" and method.type=:methodKey");
+		}
+
+		TypedQuery<Order> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Order.class)
+				.setParameter("resourceKey", resource.getKey());
+		if(identity != null) {
+			query.setParameter("deliveryKey", identity.getKey());
+		}
+		if (method != null) {
+			query.setParameter("methodKey", method.getKey());
+		}
+
 		return query.getResultList();
 	}
 
@@ -452,7 +483,7 @@ public class ACOrderDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select o from ").append(OrderImpl.class.getName()).append(" o")
 		  .append(" left join fetch o.parts parts where o.key=:orderKey");
-		
+
 		List<Order> orders = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Order.class)
 				.setParameter("orderKey", orderKey)
@@ -460,7 +491,7 @@ public class ACOrderDAO {
 		if(orders.isEmpty()) return null;
 		return orders.get(0);
 	}
-	
+
 	public Order loadOrderByNr(String orderNr) {
 		Long orderKey = new Long(orderNr);
 		return loadOrderByKey(orderKey);

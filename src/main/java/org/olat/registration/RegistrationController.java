@@ -98,6 +98,8 @@ public class RegistrationController extends BasicController implements Activatea
 	private TemporaryKey tempKey;
 	
 	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
 	private I18nManager i18nManager;
 	@Autowired
 	private UserManager userManager;
@@ -131,7 +133,7 @@ public class RegistrationController extends BasicController implements Activatea
 			// support for legacy lang parameter
 			lang = ureq.getParameter("lang");
 		}
-		if (lang != null && ! lang.equals(i18nManager.getLocaleKey(getLocale()))) {
+		if (lang != null && ! lang.equals(i18nModule.getLocaleKey(getLocale()))) {
 			Locale loc = i18nManager.getLocaleOrDefault(lang);
 			ureq.getUserSession().setLocale(loc);
 			setLocale(loc, true);
@@ -154,7 +156,7 @@ public class RegistrationController extends BasicController implements Activatea
 			// render in a modal dialog, no need to add the 3cols layout controller
 			// wrapper
 			//fxdiff FXOLAT-113: business path in DMZ
-			if(I18nModule.getEnabledLanguageKeys().size() == 1) {
+			if(i18nModule.getEnabledLanguageKeys().size() == 1) {
 				wizInfoController.setCurStep(2);
 				createEmailForm(ureq);
 			} else {
@@ -169,7 +171,7 @@ public class RegistrationController extends BasicController implements Activatea
 				// error, there should be an entry
 				showError("regkey.missingentry");
 				//fxdiff FXOLAT-113: business path in DMZ
-				if(I18nModule.getEnabledLanguageKeys().size() == 1) {
+				if(i18nModule.getEnabledLanguageKeys().size() == 1) {
 					wizInfoController.setCurStep(2);
 					createEmailForm(ureq);
 				} else {
@@ -232,7 +234,7 @@ public class RegistrationController extends BasicController implements Activatea
 	}
 	
 	private void createRegForm2(UserRequest ureq, String proposedUsername, boolean userInUse, boolean usernameReadonly) {
-		registrationForm = new RegistrationForm2(ureq, getWindowControl(), I18nManager.getInstance().getLocaleKey(getLocale()), proposedUsername, userInUse, usernameReadonly);
+		registrationForm = new RegistrationForm2(ureq, getWindowControl(), i18nModule.getLocaleKey(getLocale()), proposedUsername, userInUse, usernameReadonly);
 		listenTo(registrationForm);
 		regarea.setContent(registrationForm.getInitialComponent());
 	}
@@ -303,11 +305,11 @@ public class RegistrationController extends BasicController implements Activatea
 					if (tk == null) tk = registrationManager.createTemporaryKeyByEmail(email, ip, RegistrationManager.REGISTRATION);
 					myContent.contextPut("regKey", tk.getRegistrationKey());
 					
-					String link = serverpath + "/dmz/registration/index.html?key=" + tk.getRegistrationKey() + "&language=" + i18nManager.getLocaleKey(ureq.getLocale());
+					String link = serverpath + "/dmz/registration/index.html?key=" + tk.getRegistrationKey() + "&language=" + i18nModule.getLocaleKey(ureq.getLocale());
 					String[] bodyAttrs = new String[]{
 						serverpath,										//0
 						tk.getRegistrationKey(),						//1
-						i18nManager.getLocaleKey(ureq.getLocale()),		//2
+						i18nModule.getLocaleKey(ureq.getLocale()),		//2
 						"<a href=\"" + link + "\">" + link + "</a>"		//3
 					};
 					
@@ -370,8 +372,8 @@ public class RegistrationController extends BasicController implements Activatea
 			if (event == Event.DONE_EVENT) {
 				String lang = registrationForm.getLangKey();
 				// change language if different then current language
-				if (! lang.equals(I18nManager.getInstance().getLocaleKey(ureq.getLocale()))) {
-					Locale loc = I18nManager.getInstance().getLocaleOrDefault(lang);
+				if (! lang.equals(i18nModule.getLocaleKey(ureq.getLocale()))) {
+					Locale loc = i18nManager.getLocaleOrDefault(lang);
 					ureq.getUserSession().setLocale(loc);
 					getTranslator().setLocale(loc);					
 				}

@@ -6,9 +6,9 @@
 
 #if($r.translate("about.custom.title") != "")
 <div id="o_about_custom">
-	<h2>
+	<h1>
 		$r.translate("about.custom.title")
-	</h2>
+	</h1>
 	<p>
 		$r.translate("about.custom")
 	</p>
@@ -19,15 +19,23 @@
 	<h2>
 		LMS OpenOLAT
 	</h2>
-	<a href="http://www.openolat.org" target="_blank" class="o_link_extern">http://www.openolat.org</a>
-	<p class="text-muted">
-		$r.translate("about.version") $r.getVersion()
+	<p>
+		<a href="http://www.openolat.org" target="_blank" class="o_link_extern">http://www.openolat.org</a>
+		<br />
+		<span class="text-muted">
+			$r.translate("about.version") $r.getVersion()
+		</span>
 	</p>
-	<a href="https://www.frentix.com/testbericht-openolat-sehr-gut/" target="_blank" title="The OpenOLAT LMS got a high score in the e-learning journal ranking">
-		<img border="0" src="$r.staticLink("images/openolat/openolat-test-sehr-gut_large.png")" alt="The OpenOLAT LMS got a high score in the e-learning journal ranking" style="float: right; padding-left: 2em; padding-bottom: 2em; max-width: 40%;" />
-	</a>
 	<p>
 		$r.translate("about.history")
+	</p>
+	<p>
+		<a href="https://www.frentix.com/testbericht-openolat-sehr-gut/" target="_blank" title="The OpenOLAT LMS got a high score in the e-learning journal ranking">
+			<img border="0" src="$r.staticLink("images/openolat/openolat-test-sehr-gut_large.png")" alt="The OpenOLAT LMS got a high score in the e-learning journal ranking" style="display: inline-block; padding-left: 2em; padding-bottom: 2em; max-width: 40%; max-height: 200px;" />
+		</a>
+		<a href="http://www.comenius-award.de" target="_blank" title="The OpenOLAT LMS wins a comenius edu media award">
+			<img border="0" src="$r.staticLink("images/openolat/openolat_comeniusedumed_2017.png")" alt="The OpenOLAT LMS wins a comenius edu media award" style="display: inline-block; padding-left: 2em; padding-bottom: 2em; max-width: 40%; max-height: 200px;" />
+		</a>
 	</p>
 	<p>
 		$r.translate("about.elearningjournal.test.2015")
@@ -40,20 +48,24 @@
 		<br />
 		<a href="http://www.elearning-journal.de" target="_blank" class="text-muted o_link_extern">eLearning Journal | Themenheft Praxistest: weiterbilden 2.0</a>		
 	</p>
+	
+	<h2>
+		Social
+	</h2>
 	<p>
 		$r.translate("about.social")
 	</p>
 	<p>
-		<a href="http://www.twitter.com/OpenOLAT" target="_blank"><i class="o_icon o_icon_twitter o_icon-2x"> </i></a>
-		<a href="http://facebook.com/OpenOLAT" target="_blank"><i class="o_icon o_icon_facebook o_icon-2x"> </i></a>
-		<a href="https://plus.google.com/communities/117966447506177997483" target="_blank"><i class="o_icon o_icon_google o_icon-2x"> </i></a>
+		<a href="http://www.twitter.com/OpenOLAT" target="_blank"><i class="o_icon o_icon_twitter o_icon-3x"> </i></a>
+		<a href="http://facebook.com/OpenOLAT" target="_blank"><i class="o_icon o_icon_facebook o_icon-3x"> </i></a>
+		<a href="https://plus.google.com/communities/117966447506177997483" target="_blank"><i class="o_icon o_icon_google o_icon-3x"> </i></a>
 	</p>
 </div>
 
 <div id="o_about_financing">
-	<h3 style="clear:both;">
+	<h2 style="clear:both;">
 		$r.translate("about.financing")
-	</h3>
+	</h2>
 	<p>
 		$r.translate("about.financing.intro")
 	<p>
@@ -68,9 +80,9 @@
 </div>
 
 <div class="o_about_partner">
-	<h3 >
+	<h2 >
 		$r.translate("about.partner")
-	</h3>
+	</h2>
 	<p>
 		$r.translate("about.partner.intro")
 	<p>
@@ -89,6 +101,10 @@
 		<tr>
 			<td>Gold</td>
 			<td><a href="http://www.vcrp.de" target="_blank" class="o_extern">Virtueller Campus Rheinland-Pfalz, VCRP</a></td>
+		</tr>
+		<tr>
+			<td>Silver</td>
+			<td><a href="http://www.hs-furtwangen.de" target="_blank" class="o_extern">Hochschule Furtwangen, HFU</a></td>
 		</tr>
 		<tr>
 			<td>Bronze</td>
@@ -117,11 +133,15 @@
 		</tr>
 		<tr>
 			<td>Bronze</td>
-			<td><a href="http://www.hs-furtwangen.de" target="_blank" class="o_extern">Hochschule Furtwangen, HFU</a></td>
+			<td><a href="http://www.uni-hamburg.de" target="_blank" class="o_extern">Universität Hamburg, UHH</a></td>
 		</tr>
 		<tr>
 			<td>Bronze</td>
-			<td><a href="http://www.uni-hamburg.de" target="_blank" class="o_extern">Universität Hamburg, UHH</a></td>
+			<td><a href="http://www.ibw.ch" target="_blank" class="o_extern">Höhere Fachschule Südostschweiz, ibW</a></td>
+		</tr>
+		<tr>
+			<td>Bronze</td>
+			<td><a href="http://www.zag.zh.ch" target="_blank" class="o_extern">Zentrum für Ausbildung im Gesundheitswesen Kanton Zürich, ZAG</a></td>
 		</tr>
 	</tbody>
 	</table>
@@ -132,13 +152,13 @@
 	$r.translate("about.linktext")
 </p>
 <p class="text-right">
-	<br />Zürich, 15.08.2013
+	<br />Zürich, 13.09.2017
 </p>
 
 <div class="o_about_copyright">
-	<h3>
+	<h2>
 		$r.translate("about.copyright")
-	</h3>
+	</h2>
 	<pre class="small">
 $licenses
 	</pre>

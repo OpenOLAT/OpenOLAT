@@ -16,30 +16,36 @@ var topLevel = typeof global !== 'undefined' ? global :
     typeof window !== 'undefined' ? window : {}
 var minDoc = _dereq_(1);
 
+var doccy;
+
 if (typeof document !== 'undefined') {
-    module.exports = document;
+    doccy = document;
 } else {
-    var doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'];
+    doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'];
 
     if (!doccy) {
         doccy = topLevel['__GLOBAL_DOCUMENT_CACHE@4'] = minDoc;
     }
-
-    module.exports = doccy;
 }
+
+module.exports = doccy;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"1":1}],3:[function(_dereq_,module,exports){
 (function (global){
+var win;
+
 if (typeof window !== "undefined") {
-    module.exports = window;
+    win = window;
 } else if (typeof global !== "undefined") {
-    module.exports = global;
+    win = global;
 } else if (typeof self !== "undefined"){
-    module.exports = self;
+    win = self;
 } else {
-    module.exports = {};
+    win = {};
 }
+
+module.exports = win;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],4:[function(_dereq_,module,exports){
@@ -2718,17 +2724,6 @@ Object.assign(_player2.default.prototype, {
 
 			e.preventDefault();
 			e.stopPropagation();
-		},
-		    toggleMute = function toggleMute() {
-			if (media.muted) {
-				positionVolumeHandle(0);
-				(0, _dom.removeClass)(mute, t.options.classPrefix + 'mute');
-				(0, _dom.addClass)(mute, t.options.classPrefix + 'unmute');
-			} else {
-				positionVolumeHandle(media.volume);
-				(0, _dom.removeClass)(mute, t.options.classPrefix + 'unmute');
-				(0, _dom.addClass)(mute, t.options.classPrefix + 'mute');
-			}
 		};
 
 		mute.addEventListener('mouseenter', function (e) {
@@ -2828,7 +2823,15 @@ Object.assign(_player2.default.prototype, {
 
 		media.addEventListener('volumechange', function (e) {
 			if (!mouseIsDown) {
-				toggleMute();
+				if (media.muted) {
+					positionVolumeHandle(0);
+					(0, _dom.removeClass)(mute, t.options.classPrefix + 'mute');
+					(0, _dom.addClass)(mute, t.options.classPrefix + 'unmute');
+				} else {
+					positionVolumeHandle(media.volume);
+					(0, _dom.removeClass)(mute, t.options.classPrefix + 'unmute');
+					(0, _dom.addClass)(mute, t.options.classPrefix + 'mute');
+				}
 			}
 			updateVolumeSlider(e);
 		});
@@ -2838,9 +2841,8 @@ Object.assign(_player2.default.prototype, {
 			if (!modified) {
 				setTimeout(function () {
 					rendered = true;
-					if (player.options.startVolume === 0 || media.originalNode.muted) {
+					if (player.options.startVolume === 0) {
 						media.setMuted(true);
-						player.options.startVolume = 0;
 					}
 					media.setVolume(player.options.startVolume);
 					t.setControlsSize();
@@ -2851,9 +2853,8 @@ Object.assign(_player2.default.prototype, {
 		media.addEventListener('loadedmetadata', function () {
 			setTimeout(function () {
 				if (!modified && !rendered) {
-					if (player.options.startVolume === 0 || media.originalNode.muted) {
+					if (player.options.startVolume === 0) {
 						media.setMuted(true);
-						player.options.startVolume = 0;
 					}
 					media.setVolume(player.options.startVolume);
 					t.setControlsSize();
@@ -2862,16 +2863,22 @@ Object.assign(_player2.default.prototype, {
 			}, 250);
 		});
 
-		if (player.options.startVolume === 0 || media.originalNode.muted) {
+		if (player.options.startVolume === 0) {
 			media.setMuted(true);
-			player.options.startVolume = 0;
-			toggleMute();
 		}
 
 		media.setVolume(player.options.startVolume);
 
 		t.container.addEventListener('controlsresize', function () {
-			toggleMute();
+			if (media.muted) {
+				positionVolumeHandle(0);
+				(0, _dom.removeClass)(mute, t.options.classPrefix + 'mute');
+				(0, _dom.addClass)(mute, t.options.classPrefix + 'unmute');
+			} else {
+				positionVolumeHandle(media.volume);
+				(0, _dom.removeClass)(mute, t.options.classPrefix + 'unmute');
+				(0, _dom.addClass)(mute, t.options.classPrefix + 'mute');
+			}
 		});
 	}
 });
@@ -3267,13 +3274,6 @@ var MediaElementPlayer = function () {
 		}
 
 		t.options = Object.assign({}, config, o);
-
-		if (t.options.loop && !t.media.getAttribute('loop')) {
-			t.media.loop = true;
-			t.node.loop = true;
-		} else if (t.media.loop) {
-			t.options.loop = true;
-		}
 
 		if (!t.options.timeFormat) {
 			t.options.timeFormat = 'mm:ss';
@@ -4948,7 +4948,7 @@ var DashNativeRenderer = {
 			    dashEvents = dashjs.MediaPlayer.events,
 			    assignEvents = function assignEvents(eventName) {
 				if (eventName === 'loadedmetadata') {
-					dashPlayer.initialize(node, null, autoplay);
+					dashPlayer.initialize(node, null, preload && preload === 'auto' || autoplay);
 					dashPlayer.setFastSwitchEnabled(true);
 
 					if (!_mejs2.default.Utils.isObjectEmpty(options.dash.drm)) {
@@ -5130,8 +5130,6 @@ var FlashMediaElementRenderer = {
 	create: function create(mediaElement, options, mediaFiles) {
 
 		var flash = {};
-		
-		console.log('FlashMediaElementRenderer.create');
 
 		flash.options = options;
 		flash.id = mediaElement.id + '_' + flash.options.prefix;
@@ -5221,9 +5219,6 @@ var FlashMediaElementRenderer = {
 		for (var _i = 0, _total = methods.length; _i < _total; _i++) {
 			assignMethods(methods[_i]);
 		}
-		
-
-		console.log('FlashMediaElementRenderer.create 2');
 
 		var initEvents = ['rendererready'];
 
@@ -5336,12 +5331,10 @@ var FlashMediaElementRenderer = {
 			flash.flashNode.remove();
 		};
 
-		console.log('File ' + mediaFiles);
 		if (mediaFiles && mediaFiles.length > 0) {
 			for (var _i4 = 0, _total4 = mediaFiles.length; _i4 < _total4; _i4++) {
 				if (_renderer.renderer.renderers[options.prefix].canPlayType(mediaFiles[_i4].type)) {
 					flash.setSrc(mediaFiles[_i4].src);
-					console.log('File ' + mediaFiles[_i4].src);
 					break;
 				}
 			}
@@ -5435,7 +5428,6 @@ if (hasFlash) {
 		},
 
 		canPlayType: function canPlayType(type) {
-			console.log('Can play mp3 flash');
 			return ~['audio/mp3'].indexOf(type.toLowerCase());
 		},
 
@@ -5516,6 +5508,7 @@ var FlvNativeRenderer = {
 			path: 'https://cdnjs.cloudflare.com/ajax/libs/flv.js/1.2.0/flv.min.js',
 
 			cors: true,
+			withCredentials: true,
 			debug: false
 		}
 	},
@@ -5555,6 +5548,7 @@ var FlvNativeRenderer = {
 							_flvOptions.cors = options.flv.cors;
 							_flvOptions.debug = options.flv.debug;
 							_flvOptions.path = options.flv.path;
+							_flvOptions.withCredentials = options.flv.withCredentials;
 
 							flvPlayer.destroy();
 							flvPlayer = NativeFlv._createPlayer({
@@ -5617,6 +5611,7 @@ var FlvNativeRenderer = {
 		flvOptions.cors = options.flv.cors;
 		flvOptions.debug = options.flv.debug;
 		flvOptions.path = options.flv.path;
+		flvOptions.withCredentials = options.flv.withCredentials;
 
 		NativeFlv.load({
 			options: flvOptions,
@@ -6394,12 +6389,9 @@ var YouTubeIframeRenderer = {
 
 					youTubeIframe = youTubeApi.getIframe();
 
-					if (mediaElement.originalNode.getAttribute('muted')) {
-						youTubeApi.mute();
-					}
-
 					var events = ['mouseover', 'mouseout'],
 					    assignEvents = function assignEvents(e) {
+
 						var newEvent = (0, _general.createEvent)(e.type, youtube);
 						mediaElement.dispatchEvent(newEvent);
 					};
@@ -6427,10 +6419,8 @@ var YouTubeIframeRenderer = {
 						case 0:
 							events = ['ended'];
 							paused = false;
-							ended = !youtube.options.youtube.loop;
-							if (!youtube.options.youtube.loop) {
-								youtube.stopInterval();
-							}
+							ended = true;
+							youtube.stopInterval();
 							break;
 						case 1:
 							events = ['play', 'playing'];
@@ -6472,14 +6462,6 @@ var YouTubeIframeRenderer = {
 			youtubeSettings.playerVars.playsinline = 1;
 		}
 
-		if (mediaElement.originalNode.autoplay) {
-			youtubeSettings.playerVars.autoplay = 1;
-		}
-
-		if (mediaElement.originalNode.loop) {
-			youtubeSettings.playerVars.loop = 1;
-		}
-
 		YouTubeApi.enqueueIframe(youtubeSettings);
 
 		youtube.onEvent = function (eventName, player, _youTubeState) {
@@ -6512,6 +6494,7 @@ var YouTubeIframeRenderer = {
 
 		youtube.startInterval = function () {
 			youtube.interval = setInterval(function () {
+
 				var event = (0, _general.createEvent)('timeupdate', youtube);
 				mediaElement.dispatchEvent(event);
 			}, 250);

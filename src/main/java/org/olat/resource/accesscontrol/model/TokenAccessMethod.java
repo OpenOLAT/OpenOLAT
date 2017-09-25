@@ -27,16 +27,16 @@ import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 
 
 /**
- * 
+ *
  * Description:<br>
  * This a "static" payment method. There is only one instance.
- * 
+ *
  * <P>
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Entity(name="actokenmethod")
-@DiscriminatorValue(value="token.method")  
+@DiscriminatorValue(value="token.method")
 public class TokenAccessMethod extends AbstractAccessMethod {
 
 	private static final long serialVersionUID = -8066110993424490600L;
@@ -44,20 +44,25 @@ public class TokenAccessMethod extends AbstractAccessMethod {
 	@Override
 	public String getType() {
 		return TokenAccessHandler.METHOD_TYPE;
-	}	
-	
+	}
+
 	@Override
 	public String getMethodCssClass() {
 		return TokenAccessHandler.METHOD_CSS_CLASS;
 	}
-	
+
 	@Override
 	public boolean isNeedUserInteraction() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isPaymentMethod() {
 		return false;
+	}
+
+	@Override
+	public boolean isVisibleInGui() {
+		return true;
 	}
 }

@@ -36,6 +36,7 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.commons.info.InfoMessage;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -77,6 +78,8 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	private String title;
 	@Column(name="message", nullable=true, insertable=true, updatable=true)
 	private String message;
+	@Column(name="attachmentpath", nullable=true, insertable=true, updatable=true)
+	private String attachmentPath;
 	
 	@Column(name="resid", nullable=false, insertable=true, updatable=false)
 	private Long resId;
@@ -97,35 +100,63 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	public InfoMessageImpl() {
 		//
 	}
-	
-	public Date getModificationDate() {
-		return modificationDate;
+
+	@Override
+	public Long getKey() {
+		return key;
 	}
 
-	public void setModificationDate(Date modificationDate) {
-		this.modificationDate = modificationDate;
+	
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
 	}
 	
 	public void setCreationDate(Date creationDate) {
 		this.creationDate= creationDate;
 	}
+	
+	@Override
+	public Date getModificationDate() {
+		return modificationDate;
+	}
 
+	@Override
+	public void setModificationDate(Date modificationDate) {
+		this.modificationDate = modificationDate;
+	}
+
+	@Override
 	public String getTitle() {
 		return title;
 	}
 
+	@Override
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
+	@Override
 	public String getMessage() {
 		return message;
 	}
 
+	@Override
 	public void setMessage(String message) {
 		this.message = message;
 	}
 
+	@Override
+	public String getAttachmentPath() {
+		return attachmentPath;
+	}
+
+	@Override
+	public void setAttachmentPath(String attachmentPath) {
+		this.attachmentPath = attachmentPath;
+	}
+
+	@Override
 	public Long getResId() {
 		return resId;
 	}
@@ -134,6 +165,7 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 		this.resId = resId;
 	}
 
+	@Override
 	public String getResName() {
 		return resName;
 	}
@@ -142,6 +174,7 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 		this.resName = resName;
 	}
 
+	@Override
 	public String getResSubPath() {
 		return resSubPath;
 	}
@@ -150,6 +183,7 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 		this.resSubPath = subPath;
 	}
 
+	@Override
 	public String getBusinessPath() {
 		return businessPath;
 	}
@@ -158,6 +192,7 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 		this.businessPath = businessPath;
 	}
 
+	@Override
 	public Identity getAuthor() {
 		return author;
 	}
@@ -166,14 +201,17 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 		this.author = author;
 	}
 
+	@Override
 	public Identity getModifier() {
 		return modifier;
 	}
 
+	@Override
 	public void setModifier(Identity modifier) {
 		this.modifier = modifier;
 	}
 
+	@Override
 	public OLATResourceable getOLATResourceable() {
 		final String name = resName;
 		final Long id = resId;
@@ -209,16 +247,5 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
-	}
-
-	@Override
-	public Long getKey() {
-		return key;
-	}
-
-	
-	@Override
-	public Date getCreationDate() {
-		return creationDate;
 	}
 }

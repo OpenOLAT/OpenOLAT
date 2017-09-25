@@ -22,7 +22,9 @@ package org.olat.core.util.openxml;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
 import javax.xml.stream.XMLStreamException;
@@ -61,6 +63,7 @@ public class OpenXMLWorksheet {
 	
 	private Row row;
 	private int rowPosition = 0;
+	private Map<Integer,Integer> columnsWidth = new HashMap<>();
 	
 	public OpenXMLWorksheet(String id, OpenXMLWorkbook workbook, ZipOutputStream zout) {
 		this.id = id;
@@ -71,7 +74,7 @@ public class OpenXMLWorksheet {
 	public String getId() {
 		return id;
 	}
-	
+
 	public int getHeaderRows() {
 		return headerRows;
 	}
@@ -80,6 +83,9 @@ public class OpenXMLWorksheet {
 		this.headerRows = headerRows;
 	}
 	
+	public void setColumnWidth(int pos, int width) {
+		columnsWidth.put(pos, width);
+	}
 	
 	public Row newRow() {
 		if(!opened) {
@@ -126,12 +132,12 @@ public class OpenXMLWorksheet {
 					if(style != null && style.getIndex() > 0) {
 						writer.writeAttribute("s", Integer.toString(style.getIndex()));
 					}
-					if(cell.getType() == CellType.sharedString) {
+					if(cell.getType() == OpenXMLCellType.sharedString) {
 						writer.writeAttribute("t", "s");
 					}
 					
 					writer.writeStartElement("v");
-					if(cell.getType() == CellType.date) {
+					if(cell.getType() == OpenXMLCellType.date) {
 						cal.setTime((Date)cell.getValue());
 						double val = internalGetExcelDate(cal, false);
 						writer.writeCharacters(Double.toString(val));
@@ -215,6 +221,21 @@ public class OpenXMLWorksheet {
 			writer.writeAttribute("defaultRowHeight", "15");
 			writer.writeAttribute("x14ac:dyDescent", "0");
 			writer.writeEndElement();
+			
+			if(columnsWidth != null && columnsWidth.size() > 0) {
+				writer.writeStartElement("cols");
+				for(Map.Entry<Integer, Integer> columnWidth:columnsWidth.entrySet()) {
+					Integer pos = columnWidth.getKey();
+					Integer width = columnWidth.getValue();
+					writer.writeStartElement("col");
+					writer.writeAttribute("min", pos.toString());
+					writer.writeAttribute("max", pos.toString());
+					writer.writeAttribute("width", width.toString());
+					writer.writeAttribute("customWidth", "1");
+					writer.writeEndElement();
+				}
+				writer.writeEndElement();
+			}
 
 			writer.writeStartElement("sheetData");
 		} catch(XMLStreamException e) {
@@ -352,7 +373,7 @@ public class OpenXMLWorksheet {
 		public Cell addCell(int column, String value, CellStyle style) {
 			Cell cell = getOrCreateCell(column);
 			cell.setStyle(style);
-			cell.setType(CellType.sharedString);
+			cell.setType(OpenXMLCellType.sharedString);
 			if(value != null) {
 				int sharedIndex = workbook.getSharedStrings().add(value);
 				if(sharedIndex >= 0) {
@@ -365,7 +386,22 @@ public class OpenXMLWorksheet {
 		public Cell addCell(int column, Number value, CellStyle style) {
 			Cell cell = getOrCreateCell(column);
 			cell.setStyle(style);
-			cell.setType(CellType.number);
+			cell.setType(OpenXMLCellType.number);
+			cell.setValue(value);
+			return cell;
+		}
+		
+		/**
+		 * The accepted types are number or percent
+		 * @param column The index of the column
+		 * @param value	The value
+		 * @param type The type, number or percent
+		 * @return
+		 */
+		public Cell addCell(int column, Number value, CellStyle style, OpenXMLCellType type) {
+			Cell cell = getOrCreateCell(column);
+			cell.setStyle(style);
+			cell.setType(type);
 			cell.setValue(value);
 			return cell;
 		}
@@ -380,7 +416,7 @@ public class OpenXMLWorksheet {
 		public Cell addCell(int column, Date value, CellStyle style) {
 			Cell cell = getOrCreateCell(column);
 			cell.setStyle(style);
-			cell.setType(CellType.date);
+			cell.setType(OpenXMLCellType.date);
 			cell.setValue(value);
 			return cell;
 		}
@@ -409,14 +445,14 @@ public class OpenXMLWorksheet {
 	public static class Cell {
 		
 		private Object value;
-		private CellType type;
+		private OpenXMLCellType type;
 		private CellStyle style;
 		
 		public Cell() {
 			//
 		}
 		
-		public Cell(Object value, CellType type, CellStyle style) {
+		public Cell(Object value, OpenXMLCellType type, CellStyle style) {
 			this.value = value;
 			this.type = type;
 			this.style = style;
@@ -430,11 +466,11 @@ public class OpenXMLWorksheet {
 			this.value = value;
 		}
 		
-		public CellType getType() {
+		public OpenXMLCellType getType() {
 			return type;
 		}
 		
-		public void setType(CellType type) {
+		public void setType(OpenXMLCellType type) {
 			this.type = type;
 		}
 
@@ -445,11 +481,5 @@ public class OpenXMLWorksheet {
 		public void setStyle(CellStyle style) {
 			this.style = style;
 		}
-	}
-
-	public enum CellType {
-		number,
-		sharedString,
-		date
 	}
 }

@@ -269,7 +269,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		}
 		
 		if(identity != null && StringHelper.containsNonWhitespace(username) && webDAVAuthManager != null) {
-			webDAVAuthManager.changeDigestPassword(doer, identity, username, newPwd);
+			webDAVAuthManager.changeDigestPassword(doer, identity, newPwd);
 		}
 		return true;
 	}
@@ -294,7 +294,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		}
 		
 		if(identity != null && StringHelper.containsNonWhitespace(username) && webDAVAuthManager != null) {
-			webDAVAuthManager.changeDigestPassword(doer, identity, username, newPwd);
+			webDAVAuthManager.changeDigestPassword(doer, identity, newPwd);
 		}
 		return true;
 	}

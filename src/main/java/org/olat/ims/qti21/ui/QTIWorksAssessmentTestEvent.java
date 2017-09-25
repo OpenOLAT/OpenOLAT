@@ -55,7 +55,8 @@ public class QTIWorksAssessmentTestEvent extends FormEvent {
 		exitTest("exit-test", "exit-test"),//impl
 		timesUp("times-up", "times-up"),
 		tmpResponse("response-tmp", "response-tmp"),
-		mark("mark", "mark");
+		mark("mark", "mark"),
+		rubric("rubric", "rubric");
 		
 		private final String path;
 		private final String event;

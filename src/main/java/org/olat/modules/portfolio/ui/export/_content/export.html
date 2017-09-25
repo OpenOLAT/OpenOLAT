@@ -1,0 +1,84 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>$rootTitle</title>	
+	<link rel='stylesheet' href='css/offline/light/theme.css' />
+	<link rel='stylesheet' href='js/jquery/sliderpips/jquery-ui-slider-pips.css' />
+	<link rel='stylesheet' href='js/jquery/ui/jquery-ui-1.11.4.custom.min.css' />
+	
+	<script type="text/javascript" src='js/jquery/jquery-2.1.3.min.js'></script>
+	<script type="text/javascript" src='js/d3/d3.min.js'></script>
+	<script type="text/javascript" src='js/jquery/ui/jquery-ui-1.11.4.custom.qti.min.js'></script>
+	<script type="text/javascript" src='js/jquery/sliderpips/jquery-ui-slider-pips.js'></script>
+	<script type="text/javascript" src='js/jquery/openolat/jquery.statistics.radarchart.js'></script>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<script type="text/javascript">
+/* <![CDATA[ */ 
+function setFlexiFormDirtyByListener(e){
+	//
+}
+function o_mathjax() {
+	jQuery.ajax("${r.mathJaxCdnFullUrl()}MathJax.js?config=TeX-AMS-MML_HTMLorMML", {
+		cache: true,
+		dataType: "script",
+		success: function() {
+	    	MathJax.Hub.Config({
+				extensions: ["jsMath2jax.js"],
+				messageStyle: 'none',
+				showProcessingMessages: false,
+				showMathMenu: false,
+				menuSettings: { },
+				jsMath2jax: {
+					preview: "none"
+				},
+				tex2jax: {
+					ignoreClass: "math"
+				},
+				"HTML-CSS": {
+				    EqnChunk: 5, EqnChunkFactor: 1, EqnChunkDelay: 100
+				},
+				"fast-preview": {
+					disabled: true
+				}
+			});
+		}
+	});
+}
+var BFormatter = {
+	// format on load
+	formatLatexFormulas : function(domId) {}
+};
+var BPlayer = {
+	insertPlayer: function (address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar,poster) {
+		var content = '<video src="' + address + '" controls width="' + width + '" height="' + height + '" />';
+		jQuery('#' + domId).append(content);
+	}
+}
+jQuery(function() {
+	if ((window.unsafeWindow == null ? window : unsafeWindow).MathJax == null) {
+		var count = jQuery('div.math,span.math,math,div.mathEntryInteraction').length;
+		if (count > 0) {
+		    o_mathjax();
+		}
+	}
+});
+/* ]]> */
+	</script>
+</head>
+<body class="o_page_margins o_offline_export $bodyCssClass">
+	<div id="o_main">
+	#if($r.available("cmp"))
+		$r.render("cmp")
+	#end
+	#if($r.available("metadata"))
+		<div class="o_pf_metadat">$r.render("metadata")</div>
+	#end
+	#if($r.available("content"))
+		<div class="o_pf_content">$r.render("content")</div>
+	#end
+	#if($r.available("comments"))
+		<div class="o_pf_comments">$r.render("comments")</div>
+	#end
+	</div>
+</body>
+</html>

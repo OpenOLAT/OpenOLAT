@@ -39,10 +39,10 @@ import org.olat.modules.webFeed.ui.FeedUIFactory;
 
 /**
  * UI factory for podcast controllers.
- * 
+ *
  * <P>
  * Initial Date: Jun 8, 2009 <br>
- * 
+ *
  * @author gwassmann
  */
 public class PodcastUIFactory extends FeedUIFactory {
@@ -62,46 +62,47 @@ public class PodcastUIFactory extends FeedUIFactory {
 	public static PodcastUIFactory getInstance(Locale locale) {
 		return new PodcastUIFactory(locale);
 	}
-	
+
 	@Override
 	public Translator getTranslator() {
 		return translator;
 	}
-	
+
 	@Override
 	public void setTranslator(Locale locale) {
 		final Translator fallbackTans = Util.createPackageTranslator(FeedMainController.class, locale);
 		translator = Util.createPackageTranslator(PodcastUIFactory.class, locale, fallbackTans);
 	}
-	
+
 	@Override
 	public VelocityContainer createInfoVelocityContainer(BasicController controller) {
 		return new VelocityContainer(VC_INFO_NAME, this.getClass(), VC_INFO_NAME, translator, controller);
 	}
-	
+
 	@Override
 	public VelocityContainer createItemsVelocityContainer(BasicController controller) {
 		return new VelocityContainer(VC_ITEMS_NAME, this.getClass(), "episodes", translator, controller);
 	}
-	
+
 	@Override
 	public VelocityContainer createItemVelocityContainer(BasicController controller) {
 		return new VelocityContainer(VC_ITEM_NAME, this.getClass(), "episode", translator, controller);
 	}
-	
+
 	@Override
 	public VelocityContainer createRightColumnVelocityContainer(BasicController controller) {
 		return new VelocityContainer(VC_RIGHT_NAME, this.getClass(), VC_RIGHT_NAME, translator, controller);
 	}
-	
+
 	@Override
 	public FormBasicController createItemFormController(UserRequest ureq, WindowControl wControl, Item item) {
 		return new EpisodeFormController(ureq, wControl, item, getTranslator());
 	}
-	
+
 	@Override
 	public TabbableController createNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce,
 			UserRequest ureq, WindowControl control) {
 		return new PodcastNodeEditController(courseNode, course, uce, ureq, control);
 	}
+
 }

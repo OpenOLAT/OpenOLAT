@@ -25,9 +25,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
-import org.olat.commons.info.model.InfoMessage;
-import org.olat.core.CoreSpringFactory;
+import org.olat.commons.info.InfoMessage;
+import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
@@ -51,6 +50,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.InfoCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -67,6 +67,9 @@ public class InfoPeekViewController extends BasicController {
 	private final InfoCourseNode courseNode;
 	
 	private TableController tableController;
+	
+	@Autowired
+	private InfoMessageFrontendManager infoService;
 
 	public InfoPeekViewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, 
 			InfoCourseNode courseNode) {
@@ -96,8 +99,7 @@ public class InfoPeekViewController extends BasicController {
 		tableController.addColumnDescriptor(new CustomRenderColumnDescriptor("peekview.title", 0,
 				null, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new InfoNodeRenderer()));
 		
-		String resSubPath = this.courseNode.getIdent();
-		InfoMessageFrontendManager infoService = CoreSpringFactory.getImpl(InfoMessageFrontendManager.class);
+		String resSubPath = courseNode.getIdent();
 		List<InfoMessage> infos = infoService.loadInfoMessageByResource(ores, resSubPath, null, null, null, 0, 5);
 
 		InfosTableModel model = new InfosTableModel(infos);

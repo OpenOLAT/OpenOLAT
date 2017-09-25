@@ -30,6 +30,8 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.Util;
 
 /**
  * Description:<br>
@@ -57,7 +59,7 @@ public class TextBoxListRenderer extends DefaultComponentRenderer {
 
 		TextBoxListComponent tblComponent = (TextBoxListElementComponent) source;
 		if (tblComponent.isEnabled()) {
-			renderEnabledMode(tblComponent, sb);
+			renderEnabledMode(tblComponent, sb, translator);
 		} else {
 			renderDisabledMode(tblComponent, sb);
 		}
@@ -72,18 +74,20 @@ public class TextBoxListRenderer extends DefaultComponentRenderer {
 	 *            the StringOutput
 	 * @param translator
 	 */
-	private void renderEnabledMode(TextBoxListComponent tblComponent, StringOutput sb) {
+	private void renderEnabledMode(TextBoxListComponent tblComponent, StringOutput sb, Translator translator) {
 		TextBoxListElementImpl te = ((TextBoxListElementComponent)tblComponent).getTextElementImpl();
 		Form rootForm = te.getRootForm();
 		String dispatchId = tblComponent.getFormDispatchId();
-		String initialValue = tblComponent.getInitialItemsAsString();
+		String initialValue = tblComponent.getItemsAsString();
 
 		sb.append("<input type='text' id='textboxlistinput").append(dispatchId).append("'")
 		  .append(" name='textboxlistinput").append(dispatchId).append("'");
 		if (te.hasFocus()) {
 			sb.append(" autofocus");
 		}
-		sb.append(" value='").append(initialValue).append("' />\n");
+		sb.append(" value='").append(initialValue).append("'");
+		Translator myTrans = Util.createPackageTranslator(this.getClass(), translator.getLocale());
+		sb.append(" placeholder='").append(Formatter.escapeDoubleQuotes(myTrans.translate("add.enter"))).append("' class='o_textbox'/>\n");
 
 		String o_ffEvent = FormJSHelper.getJSFnCallFor(rootForm, dispatchId, 2);
 		// generate the JS-code for the bootstrap tagsinput
@@ -116,11 +120,13 @@ public class TextBoxListRenderer extends DefaultComponentRenderer {
 	private void renderDisabledMode(TextBoxListComponent tblComponent, StringOutput output) {
 		// read only view, we just display the initialItems as
 		// comma-separated string
-		String readOnlyContent = tblComponent.getInitialItemsAsString();
+		String readOnlyContent = tblComponent.getItemsAsString();
 		if (readOnlyContent.length() > 0) {
-			output.append("<div><i class='o_icon o_icon_tags'> </i> ")
-			      .append(readOnlyContent)
-			      .append("</div>");
+			output.append("<span class='o_textbox_disabled'><i class='o_icon o_icon_tags'> </i> ");
+			for (String item : readOnlyContent.split(",")) {
+				output.append("<span class='tag label label-info'>").append(item.trim()).append("</span>");								
+			}
+			output.append("</span>");
 		} else {
 			output.append("-");
 		}

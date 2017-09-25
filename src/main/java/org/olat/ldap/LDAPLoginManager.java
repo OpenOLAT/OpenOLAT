@@ -27,6 +27,7 @@ import java.util.Map;
 import javax.naming.directory.Attributes;
 import javax.naming.ldap.LdapContext;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
@@ -43,6 +44,9 @@ public interface LDAPLoginManager {
 
 	public boolean changePassword(Identity identity, String pwd, LDAPError errors);
 	
+
+	public Identity createAndPersistUser(String uid);
+	
 	public Identity createAndPersistUser(Attributes userAttributes);
 	
 	public Map<String,String> prepareUserPropertyForSync(Attributes attributes, Identity identity);
@@ -51,11 +55,13 @@ public interface LDAPLoginManager {
 	
 	public Identity findIdentityByLdapAuthentication(Attributes attrs, LDAPError errors);
 	
-	public void syncUser(Map<String,String> olatPropertyMap, Identity identity);
+	public Identity syncUser(Map<String,String> olatPropertyMap, IdentityRef identity);
+	
+	public void syncUserGroups(Identity identity);
 	
 	public void deletIdentities(List<Identity> identityList);
 
-	public boolean doBatchSync(LDAPError errors, boolean full);
+	public boolean doBatchSync(LDAPError errors);
 	
 	public Date getLastSyncDate();
 	
@@ -64,6 +70,14 @@ public interface LDAPLoginManager {
 	public void freeSyncLock();
 	
 	public void doSyncSingleUser(Identity ident);
+	
+	/**
+	 * A filter is build from the login attribute value and the resulting
+	 * attributes are sync to the specified identity.
+	 * 
+	 * @param ident The identity to synchronize
+	 */
+	public void doSyncSingleUserWithLoginAttribute(Identity ident);
 
 	public void removeFallBackAuthentications();
 

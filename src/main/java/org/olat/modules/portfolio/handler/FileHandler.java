@@ -39,6 +39,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.portfolio.Media;
 import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.manager.MediaDAO;
 import org.olat.modules.portfolio.manager.PortfolioFileStorage;
@@ -184,8 +185,8 @@ public class FileHandler extends AbstractMediaHandler implements InteractiveAddP
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new FileMediaController(ureq, wControl, media);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
+		return new FileMediaController(ureq, wControl, media, hints);
 	}
 
 	@Override

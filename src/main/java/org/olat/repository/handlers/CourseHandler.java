@@ -26,6 +26,8 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
@@ -254,9 +256,29 @@ public class CourseHandler implements RepositoryHandler {
 		course = CourseFactory.loadCourse(cgm.getCourseResource());
 		course.postImport(fImportBaseDirectory, envMapper);
 		
-		//rename root nodes
-		course.getRunStructure().getRootNode().setShortTitle(Formatter.truncateOnly(displayname, 25)); //do not use truncate!
-		course.getRunStructure().getRootNode().setLongTitle(displayname);
+		//rename root nodes, but only when user modified the course title
+		boolean doUpdateTitle = true;
+		File repoConfigXml = new File(fImportBaseDirectory, "repo.xml");
+		if (repoConfigXml.exists()) {
+			RepositoryEntryImport importConfig;
+			try {
+				importConfig = RepositoryEntryImportExport.getConfiguration(new FileInputStream(repoConfigXml));
+				if(importConfig != null) {
+					if (displayname.equals(importConfig.getDisplayname())) {					
+						// do not update if title was not modified during import
+						// user does not expect to have an updated title and there is a chance
+						// the root node title is not the same as the course title
+						doUpdateTitle = false;
+					}
+				}
+			} catch (FileNotFoundException e) {
+				// ignore
+			}
+		}
+		if (doUpdateTitle) {
+			course.getRunStructure().getRootNode().setShortTitle(Formatter.truncateOnly(displayname, 25)); //do not use truncate!
+			course.getRunStructure().getRootNode().setLongTitle(displayname);
+		}
 		//course.saveRunStructure();
 		CourseEditorTreeNode editorRootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode());
 		editorRootNode.getCourseNode().setShortTitle(Formatter.truncateOnly(displayname, 25)); //do not use truncate!
@@ -458,6 +480,7 @@ public class CourseHandler implements RepositoryHandler {
 
 			Reminder clonedReminder = reminderService.createReminder(target, author);
 			clonedReminder.setDescription(reminder.getDescription());
+			clonedReminder.setEmailSubject(reminder.getEmailSubject());
 			clonedReminder.setEmailBody(reminder.getEmailBody());
 			clonedReminder.setConfiguration(reminderService.toXML(clonedRules));
 			reminderService.save(clonedReminder);

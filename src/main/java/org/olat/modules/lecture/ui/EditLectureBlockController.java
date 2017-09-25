@@ -58,6 +58,7 @@ import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -84,9 +85,10 @@ public class EditLectureBlockController extends FormBasicController {
 	private TextElement descriptionEl;
 	private TextElement preparationEl;
 	private AutoCompleter locationEl;
-	private DateChooser startDateEl;
+	private DateChooser dateEl;
 	private SingleSelection plannedLecturesEl;
 	private TextElement endHourEl, endMinuteEl;
+	private TextElement startHourEl, startMinuteEl;
 	private MultipleSelectionElement groupsEl, teacherEl, compulsoryEl;
 	
 	private RepositoryEntry entry;
@@ -126,16 +128,20 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_repo_edit_lecture_form");
+		
 		if(lectureBlock != null && StringHelper.containsNonWhitespace(lectureBlock.getManagedFlagsString())) {
 			setFormWarning("form.managedflags.intro.short", null);
 		}
 
 		String title = lectureBlock == null ? null : lectureBlock.getTitle();
 		titleEl = uifactory.addTextElement("title", "lecture.title", 128, title, formLayout);
+		titleEl.setElementCssClass("o_sel_repo_lecture_title");
 		titleEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.title));
 		titleEl.setMandatory(true);
 
@@ -162,6 +168,7 @@ public class EditLectureBlockController extends FormBasicController {
 		boolean compulsory = lectureBlock == null ? true : lectureBlock.isCompulsory();
 		compulsoryEl = uifactory.addCheckboxesVertical("compulsory", "lecture.compulsory", formLayout, onKeys, onValues, 1);
 		compulsoryEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.compulsory));
+		compulsoryEl.addActionListener(FormEvent.ONCHANGE);
 		if(compulsory) {
 			compulsoryEl.select(onKeys[0], true);
 		}
@@ -175,9 +182,9 @@ public class EditLectureBlockController extends FormBasicController {
 			teacherValues[i] = userManager.getUserDisplayName(coach);
 		}
 		teacherKeys[0] = "-";
-		teacherValues[0] = "-";
-		
+		teacherValues[0] = translate("no.teachers");
 		teacherEl = uifactory.addCheckboxesVertical("teacher", "lecture.teacher", formLayout, teacherKeys, teacherValues, 2);
+		teacherEl.setElementCssClass("o_sel_repo_lecture_teachers");
 		teacherEl.setMandatory(true);
 		teacherEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.teachers));
 		
@@ -227,27 +234,40 @@ public class EditLectureBlockController extends FormBasicController {
 
 		String description = lectureBlock == null ? "" : lectureBlock.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("lecture.descr", 4, 72, description, formLayout);
+		descriptionEl.setElementCssClass("o_sel_repo_lecture_description");
 		descriptionEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.description));
 		String preparation = lectureBlock == null ? "" : lectureBlock.getPreparation();
 		preparationEl = uifactory.addTextAreaElement("lecture.preparation", 4, 72, preparation, formLayout);
+		preparationEl.setElementCssClass("o_sel_repo_lecture_preparation");
 		preparationEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.preparation));
 		String location = lectureBlock == null ? "" : lectureBlock.getLocation();
 		locationEl = uifactory.addTextElementWithAutoCompleter("location", "lecture.location", 128, location, formLayout);
+		locationEl.setElementCssClass("o_sel_repo_lecture_location");
 		locationEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.location));
 		locationEl.setListProvider(new LocationListProvider(), ureq.getUserSession());
 		locationEl.setMinLength(1);
 
 		Date startDate = lectureBlock == null ? null : lectureBlock.getStartDate();
-		startDateEl = uifactory.addDateChooser("lecture.start", startDate, formLayout);
-		startDateEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
-		startDateEl.setDomReplacementWrapperRequired(false);
-		startDateEl.setDateChooserTimeEnabled(true);
-		startDateEl.setMandatory(true);
+		dateEl = uifactory.addDateChooser("lecture.date", startDate, formLayout);
+		dateEl.setElementCssClass("o_sel_repo_lecture_date");
+		dateEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
+		dateEl.setDomReplacementWrapperRequired(false);
+		dateEl.setMandatory(true);
 		
 		String datePage = velocity_root + "/date_start_end.html";
 		FormLayoutContainer dateCont = FormLayoutContainer.createCustomFormLayout("start_end", getTranslator(), datePage);
-		dateCont.setLabel("lecture.end", null);
+		dateCont.setLabel("lecture.time", null);
 		formLayout.add(dateCont);
+		
+		startHourEl = uifactory.addTextElement("lecture.start.hour", null, 2, "", dateCont);
+		startHourEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
+		startHourEl.setDomReplacementWrapperRequired(false);
+		startHourEl.setDisplaySize(2);
+		startHourEl.setMandatory(true);
+		startMinuteEl = uifactory.addTextElement("lecture.start.minute", null, 2, "", dateCont);
+		startMinuteEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
+		startMinuteEl.setDomReplacementWrapperRequired(false);
+		startMinuteEl.setDisplaySize(2);
 		
 		endHourEl = uifactory.addTextElement("lecture.end.hour", null, 2, "", dateCont);
 		endHourEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
@@ -258,23 +278,47 @@ public class EditLectureBlockController extends FormBasicController {
 		endMinuteEl.setEnabled(!lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
 		endMinuteEl.setDomReplacementWrapperRequired(false);
 		endMinuteEl.setDisplaySize(2);
-		
-		if(lectureBlock != null && lectureBlock.getEndDate() != null) {
+
+		if(lectureBlock != null) {
 			Calendar cal = Calendar.getInstance();
-			cal.setTime(lectureBlock.getEndDate());
-			int hour = cal.get(Calendar.HOUR_OF_DAY);
-			int minute = cal.get(Calendar.MINUTE);
-			endHourEl.setValue(Integer.toString(hour));
-			endMinuteEl.setValue(Integer.toString(minute));
-		} else {
-			endHourEl.setValue("00");
-			endMinuteEl.setValue("00");
+			if(lectureBlock.getStartDate() != null) {
+				cal.setTime(lectureBlock.getStartDate());
+				int hour = cal.get(Calendar.HOUR_OF_DAY);
+				int minute = cal.get(Calendar.MINUTE);
+				startHourEl.setValue(Integer.toString(hour));
+				startMinuteEl.setValue(formatMinute(minute));
+			}
+			if(lectureBlock.getEndDate() != null) {
+				cal.setTime(lectureBlock.getEndDate());
+				int hour = cal.get(Calendar.HOUR_OF_DAY);
+				int minute = cal.get(Calendar.MINUTE);
+				endHourEl.setValue(Integer.toString(hour));
+				endMinuteEl.setValue(formatMinute(minute));
+			}
 		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
+	
+	private String formatMinute(int minute) {
+		if(minute < 0) {
+			return "";
+		}
+		if(minute < 10) {
+			return "0" + minute;
+		}
+		return Integer.toString(minute);
+	}
+	
+	private void updateUI() {
+		if(compulsoryEl.isAtLeastSelected(1)) {
+			setFormWarning(null);
+		} else {
+			setFormWarning("warning.edit.lecture");
+		}
 	}
 
 	@Override
@@ -310,12 +354,14 @@ public class EditLectureBlockController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		startDateEl.clearError();
-		if(startDateEl.getDate() == null) {
-			startDateEl.setErrorKey("form.legende.mandatory", null);
+		dateEl.clearError();
+		if(dateEl.getDate() == null) {
+			dateEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
-		
+
+		allOk &= validateInt(startHourEl, 24);
+		allOk &= validateInt(startMinuteEl, 60);
 		allOk &= validateInt(endHourEl, 24);
 		allOk &= validateInt(endMinuteEl, 60);
 		return allOk & super.validateFormLogic(ureq);
@@ -346,31 +392,41 @@ public class EditLectureBlockController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(compulsoryEl == source) {
+			updateUI();
+		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		boolean create = false;
-		StringBuilder audit = new StringBuilder();
 		int currentPlannedLectures = -1;
+		
+		String beforeXml;
+		LectureBlockAuditLog.Action action;
+		StringBuilder audit = new StringBuilder();
 		if(lectureBlock == null) {
-			audit.append("Create;");
+			beforeXml = null;
+			action = LectureBlockAuditLog.Action.createLectureBlock;
 			lectureBlock = lectureService.createLectureBlock(entry);
 			create = true;
 		} else {
+			beforeXml = lectureService.toAuditXml(lectureBlock);
+			action = LectureBlockAuditLog.Action.createLectureBlock;
 			currentPlannedLectures = lectureBlock.getPlannedLecturesNumber();
-			audit.append("Update;");
 		}
 		lectureBlock.setTitle(titleEl.getValue());
 		lectureBlock.setCompulsory(compulsoryEl.isAtLeastSelected(1));
 		lectureBlock.setDescription(descriptionEl.getValue());
 		lectureBlock.setPreparation(preparationEl.getValue());
 		lectureBlock.setLocation(locationEl.getValue());
-		lectureBlock.setStartDate(startDateEl.getDate());
 		
 		Calendar cal = Calendar.getInstance();
-		cal.setTime(startDateEl.getDate());
+		cal.setTime(dateEl.getDate());
+		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(startHourEl.getValue()));
+		cal.set(Calendar.MINUTE, Integer.parseInt(startMinuteEl.getValue()));
+		lectureBlock.setStartDate(cal.getTime());
 		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(endHourEl.getValue()));
 		cal.set(Calendar.MINUTE, Integer.parseInt(endMinuteEl.getValue()));
 		lectureBlock.setEndDate(cal.getTime());
@@ -425,7 +481,9 @@ public class EditLectureBlockController extends FormBasicController {
 				}
 			}
 		}
-		
+
+		String afterxml = lectureService.toAuditXml(lectureBlock);
+		lectureService.auditLog(action, beforeXml, afterxml, audit.toString(), lectureBlock, null, entry, null, getIdentity());
 		dbInstance.commit();
 		if(currentPlannedLectures >= 0) {
 			lectureService.adaptRollCalls(lectureBlock);
@@ -434,7 +492,6 @@ public class EditLectureBlockController extends FormBasicController {
 		lectureService.syncCalendars(lectureBlock);
 		fireEvent(ureq, Event.DONE_EVENT);
 
-		lectureService.appendToLectureBlockLog(lectureBlock, getIdentity(), null, audit.toString());
 		if(create) {
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_CREATED, getClass(),
 					CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));

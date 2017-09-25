@@ -33,6 +33,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.modules.bc.meta.MetaInfo;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -248,7 +249,14 @@ public class ListRenderer {
 			} else { // for files, add PARAM_SERV command
 				sb.append(" href=\"");
 				ubu.buildURI(sb, new String[] { PARAM_SERV }, new String[] { "x" }, pathAndName, AJAXFlags.MODE_NORMAL);
-				sb.append("\" target=\"_blank\" download=\"").append(name).append("\"");
+				sb.append("\"");
+
+				boolean download = FolderManager.isDownloadForcedFileType(name);
+				if (download) {
+					sb.append(" download=\"").append(StringHelper.escapeHtml(name)).append("\"");					
+				} else {					
+					sb.append(" target=\"_blank\"");
+				}
 			}
 			sb.append(">");
 

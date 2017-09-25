@@ -1,0 +1,14 @@
+<div class="o_text">
+	#if($title)
+	<h5>
+		$title
+		<small>$r.translate("document.by",$author)</small>	
+	</h5>
+	#end
+	$r.render("text")
+	#if($r.available("meta"))
+	<div class="panel panel-default o_artefact_metadata">
+		$r.render("meta")
+	</div>
+	#end
+</div>

@@ -28,7 +28,6 @@ package org.olat.modules.lecture;
 public enum LectureBlockStatus {
 	
 	active,
-	partiallydone,
 	done,
 	cancelled
 

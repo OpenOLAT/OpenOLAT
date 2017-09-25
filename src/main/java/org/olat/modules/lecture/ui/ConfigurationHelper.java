@@ -30,10 +30,11 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
  *
  */
 public class ConfigurationHelper {
-	
+
 	public static boolean isRollCallEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
 		return (lectureConfig != null && lectureConfig.isOverrideModuleDefault() && lectureConfig.getRollCallEnabled() != null && lectureConfig.getRollCallEnabled().booleanValue())
-				|| ((lectureConfig == null || !lectureConfig.isOverrideModuleDefault()) && lectureModule.isRollCallDefaultEnabled());
+				|| ((lectureConfig == null || !lectureConfig.isOverrideModuleDefault()) && lectureModule.isRollCallDefaultEnabled())
+				|| (lectureModule.isCanOverrideStandardConfiguration() && (lectureConfig == null || lectureConfig.getRollCallEnabled() == null) && lectureModule.isRollCallDefaultEnabled());
 	}
 
 	public static boolean isSyncTeacherCalendarEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {

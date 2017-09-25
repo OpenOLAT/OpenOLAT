@@ -108,4 +108,24 @@ public class ReasonDAOTest extends OlatTestCase {
 		boolean inUse = reasonDao.isReasonInUse(reason);
 		Assert.assertFalse(inUse);
 	}
+	
+	@Test
+	public void deleteReasons() {
+		//create a reason
+		String title = "Forgotten reason";
+		String description = "Find a list";
+		Reason reason = reasonDao.createReason(title, description);
+		dbInstance.commitAndCloseSession();
+		//check it exists
+		List<Reason> reasons = reasonDao.getReasons();
+		Assert.assertTrue(reasons.contains(reason));
+		
+		//delete the reason
+		boolean deleted = reasonDao.delete(reason);
+		Assert.assertTrue(deleted);
+		
+		//check it exists
+		List<Reason> reloadedDasons = reasonDao.getReasons();
+		Assert.assertFalse(reloadedDasons.contains(reason));
+	}
 }

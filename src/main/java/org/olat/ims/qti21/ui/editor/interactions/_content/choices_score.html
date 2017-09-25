@@ -8,7 +8,11 @@
 	#foreach($choice in $choices)
 	<tr>
 		<td>#if(${choice.isCorrect()}) <i class="o_icon o_icon-lg o_icon_check_on"> </i> #end</td>
-		<td>$choice.summary</td>
+		<td>#if($r.isNotNull($choice.summaryEl))
+			$r.render($choice.summaryEl)
+		#else
+			$choice.summary
+		#end</td>
 		<td>$r.render($choice.getPointsEl().getComponent().getComponentName())
 		#if($f.hasError($choice.getPointsEl().getComponent().getComponentName()))
 			<div>$r.render("${choice.getPointsEl().getComponent().getComponentName()}_ERROR")</div>

@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -61,6 +62,7 @@ import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.QTIEditorPackage;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
@@ -175,11 +177,6 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		boolean ok = new AssessmentItemFileResourceValidator().validate(filename, file);
 		return ok;
 	}
-	@Override
-	public boolean isCompatible(String filename, VFSLeaf file) {
-		boolean ok = new AssessmentItemFileResourceValidator().validate(filename, file);
-		return ok;
-	}
 	
 	@Override
 	public boolean isConversionPossible(QuestionItemShort item) {
@@ -215,6 +212,10 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 			VFSItem file = container.resolve(item.getRootFilename());
 			if(file instanceof VFSLeaf) {
 				VFSLeaf leaf = (VFSLeaf)file;
+				if(leaf.getSize() <= 0l) {
+					return "";
+				}
+				
 				QTI21SAXHandler handler = new QTI21SAXHandler();
 				try(InputStream is = leaf.getInputStream()) {
 					XMLReader parser = XMLReaderFactory.createXMLReader();
@@ -223,7 +224,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 					parser.setFeature("http://xml.org/sax/features/validation", false);
 					parser.parse(new InputSource(is));
 				} catch (Exception e) {
-					log.error("", e);
+					log.error("Cannot read the XML file of the question item: " + leaf, e);
 				}
 				return handler.toString();
 			}
@@ -526,10 +527,10 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	 * 
 	 * @param qtiEditorPackage
 	 */
-	public boolean convertFromEditorPackage(QTIEditorPackage qtiEditorPackage, File unzippedDirRoot, Locale locale) {
+	public boolean convertFromEditorPackage(QTIEditorPackage qtiEditorPackage, File unzippedDirRoot, Locale locale, QTI21DeliveryOptions qti21Options) {
 		try {
 			QTI12To21Converter converter = new QTI12To21Converter(unzippedDirRoot, locale);
-			converter.convert(qtiEditorPackage);
+			converter.convert(qtiEditorPackage, qti21Options);
 			return true;
 		} catch (URISyntaxException e) {
 			log.error("", e);

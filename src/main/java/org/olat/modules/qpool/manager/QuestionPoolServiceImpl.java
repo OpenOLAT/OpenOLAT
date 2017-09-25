@@ -114,7 +114,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	
 
 	@Override
-	public void deleteItems(List<QuestionItemShort> items) {
+	public void deleteItems(List<? extends QuestionItemShort> items) {
 		if(items == null || items.isEmpty()) {
 			return; //nothing to do
 		}
@@ -330,6 +330,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public QuestionItem createAndPersistItem(Identity owner, String subject, String format, String language,
 			TaxonomyLevel taxonLevel, String dir, String rootFilename, QItemType type) {
 		QuestionItemImpl newItem = questionItemDao.createAndPersist(owner, subject, format, language, taxonLevel, dir, rootFilename, type);
+		dbInstance.commit();
 		lifeIndexer.indexDocument(QItemDocument.TYPE, newItem.getKey());
 		return newItem;
 	}
@@ -406,6 +407,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			poolDao.addItemToPool(item, pools, editable);
 			keys.add(item.getKey());
 		}
+		dbInstance.commit();
 		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
 	}
 

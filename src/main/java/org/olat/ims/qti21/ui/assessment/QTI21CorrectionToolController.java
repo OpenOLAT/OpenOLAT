@@ -40,6 +40,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 
 /**
@@ -138,7 +139,7 @@ public class QTI21CorrectionToolController extends BasicController {
 				Float score = finalScore == null ? null : finalScore.floatValue();
 				ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
 						scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getFullyAssessed(), testSession.getKey());
-				courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false);
+				courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 			}
 		}
 	}

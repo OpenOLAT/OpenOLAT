@@ -26,6 +26,8 @@ import java.util.List;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.util.filter.FilterFactory;
+import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
 
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -47,8 +49,10 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuilder {
-	
+public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuilder implements ResponseIdentifierForFeedback {
+
+	protected int maxChoices;
+	protected int minChoices;
 	protected boolean shuffle;
 	protected String question;
 	protected List<String> cssClass;
@@ -112,7 +116,26 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 			choices.addAll(choiceInteraction.getSimpleChoices());
 			orientation = choiceInteraction.getOrientation();
 			cssClass = choiceInteraction.getClassAttr();
+			maxChoices = choiceInteraction.getMaxChoices();
+			minChoices = choiceInteraction.getMinChoices();
 		}
+	}
+	
+	@Override
+	public Identifier getResponseIdentifier() {
+		return responseIdentifier;
+	}
+
+	@Override
+	public List<Answer> getAnswers() {
+		List<SimpleChoice> simpleChoices = getChoices();
+		List<Answer> answers = new ArrayList<>(simpleChoices.size());
+		for(SimpleChoice choice:simpleChoices) {
+			String choiceContent =  getHtmlHelper().flowStaticString(choice.getFlowStatics());
+			String label = FilterFactory.getHtmlTagAndDescapingFilter().filter(choiceContent);
+			answers.add(new Answer(choice.getIdentifier(), label));
+		}
+		return answers;
 	}
 	
 	@Override
@@ -123,7 +146,27 @@ public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessment
 	public ChoiceInteraction getChoiceInteraction() {
 		return choiceInteraction;
 	}
-	
+
+	@Override
+	public int getMaxChoices() {
+		return maxChoices;
+	}
+
+	@Override
+	public void setMaxChoices(int maxChoices) {
+		this.maxChoices = maxChoices;
+	}
+
+	@Override
+	public int getMinChoices() {
+		return minChoices;
+	}
+
+	@Override
+	public void setMinChoices(int minChoices) {
+		this.minChoices = minChoices;
+	}
+
 	public boolean isShuffle() {
 		return shuffle;
 	}

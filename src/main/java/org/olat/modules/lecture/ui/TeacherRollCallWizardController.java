@@ -78,7 +78,12 @@ public class TeacherRollCallWizardController extends BasicController {
 		listenTo(nextPreviousCtrl);
 		mainVC.put("nextPrevious", nextPreviousCtrl.getInitialComponent());
 		putInitialPanel(mainVC);
-		doSelect(ureq, calledIdentity);
+		
+		if(calledIdentity == null) {
+			doClosseRollCall(ureq);
+		} else {
+			doSelect(ureq, calledIdentity);
+		}
 	}
 
 	@Override
@@ -100,7 +105,7 @@ public class TeacherRollCallWizardController extends BasicController {
 				doClose(ureq);
 			}
 		} else if(closeRollCallCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
 				doClose(ureq);
 			}
 		}
@@ -113,16 +118,20 @@ public class TeacherRollCallWizardController extends BasicController {
 			calledIdentity = participants.get(index + 1);
 			doSelect(ureq, calledIdentity);
 		} else if(index + 1 >= participants.size() || index == -1) {
-			removeAsListenerAndDispose(participantCtrl);
-			removeAsListenerAndDispose(closeRollCallCtrl);
-			
-			closeRollCallCtrl = new CloseRollCallConfirmationController(ureq, getWindowControl(), lectureBlock, secCallback);
-			listenTo(closeRollCallCtrl);
-			calledIdentity = null;
-
-			mainVC.put("call", closeRollCallCtrl.getInitialComponent());
-			nextPreviousCtrl.updateNextPrevious(null);
+			doClosseRollCall(ureq);
 		}
+	}
+	
+	private void doClosseRollCall(UserRequest ureq) {
+		removeAsListenerAndDispose(participantCtrl);
+		removeAsListenerAndDispose(closeRollCallCtrl);
+		
+		closeRollCallCtrl = new CloseRollCallConfirmationController(ureq, getWindowControl(), lectureBlock, secCallback);
+		listenTo(closeRollCallCtrl);
+		calledIdentity = null;
+
+		mainVC.put("call", closeRollCallCtrl.getInitialComponent());
+		nextPreviousCtrl.updateNextPrevious(null);
 	}
 	
 	private void doPrevious(UserRequest ureq) {
@@ -144,6 +153,7 @@ public class TeacherRollCallWizardController extends BasicController {
 	private void doSelect(UserRequest ureq, Long callIdentityKey) {
 		for(Identity participant:participants) {
 			if(participant.getKey().equals(callIdentityKey)) {
+				calledIdentity = participant;
 				doSelect(ureq, participant);
 			}
 		}
@@ -207,13 +217,15 @@ public class TeacherRollCallWizardController extends BasicController {
 		protected void updateNextPrevious(Identity callIdentity) {
 			if(callIdentity == null) {
 				//last step
-				nextLink.setEnabled(false);
-				previousLink.setEnabled(true);
+				nextLink.setVisible(false);
+				participantsEl.setVisible(false);
+				previousLink.setEnabled(participants.size() > 0);
 			} else {
 				int index = participants.indexOf(callIdentity);
+				nextLink.setVisible(true);
 				nextLink.setEnabled(index >= 0 && index + 1 <= participants.size());
 				previousLink.setEnabled(index > 0);
-				
+				participantsEl.setVisible(true);
 				String calledIdentityKey = callIdentity.getKey().toString();
 				for(String participantKey:participantKeys) {
 					if(participantKey.equals(calledIdentityKey)) {

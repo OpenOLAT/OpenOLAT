@@ -39,6 +39,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.ims.lti.ui.OutcomeMapper;
+import org.olat.modules.assessment.Role;
 import org.olat.resource.OLATResource;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -101,7 +102,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 			
 			ScoreEvaluation eval = new ScoreEvaluation(scaledScore, passed);
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
-			ltiNode.updateUserScoreEvaluation(eval, userCourseEnv, assessedId, false);
+			ltiNode.updateUserScoreEvaluation(eval, userCourseEnv, assessedId, false, Role.user);
 		}
 		
 		return super.doUpdateResult(score);
@@ -116,7 +117,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 			Identity assessedId = getIdentity();
 			ScoreEvaluation eval = new ScoreEvaluation(0.0f, false);
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
-			ltiNode.updateUserScoreEvaluation(eval, userCourseEnv, assessedId, false);
+			ltiNode.updateUserScoreEvaluation(eval, userCourseEnv, assessedId, false, Role.user);
 		}
 
 		return super.doDeleteResult();

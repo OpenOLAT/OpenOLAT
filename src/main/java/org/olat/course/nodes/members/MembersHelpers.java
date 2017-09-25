@@ -30,7 +30,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.MembersCourseNode;
 import org.olat.group.BusinessGroupService;
-import org.olat.modules.IModuleConfiguration;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 
@@ -52,11 +52,11 @@ public class MembersHelpers {
 
 	// -----------------------------------------------------
 
-	public static void addCoaches(IModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs, List<Identity> list) {
+	public static void addCoaches(ModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs, List<Identity> list) {
 	
 		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_COACHES_GROUP)) {
-			String coachGroupNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_GROUP);
-			List<Long> coachGroupKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_GROUP_ID);
+			String coachGroupNames = moduleConfiguration.getStringValue(MembersCourseNode.CONFIG_KEY_COACHES_GROUP);
+			List<Long> coachGroupKeys = moduleConfiguration.getList(MembersCourseNode.CONFIG_KEY_COACHES_GROUP_ID, Long.class);
 			if(coachGroupKeys == null && StringHelper.containsNonWhitespace(coachGroupNames)) {
 				coachGroupKeys = bgs.toGroupKeys(coachGroupNames, cgm.getCourseEntry());
 			}
@@ -64,8 +64,8 @@ public class MembersHelpers {
 		}
 
 		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_COACHES_AREA)) {
-			String coachAreaNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_AREA);
-			List<Long> coachAreaKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_COACHES_AREA_IDS);
+			String coachAreaNames = moduleConfiguration.getStringValue(MembersCourseNode.CONFIG_KEY_COACHES_AREA);
+			List<Long> coachAreaKeys = moduleConfiguration.getList(MembersCourseNode.CONFIG_KEY_COACHES_AREA_IDS, Long.class);
 			if(coachAreaKeys == null && StringHelper.containsNonWhitespace(coachAreaNames)) {
 				coachAreaKeys = bgs.toGroupKeys(coachAreaNames, cgm.getCourseEntry());
 			}
@@ -113,11 +113,11 @@ public class MembersHelpers {
 	
 	// -----------------------------------------------------
 	
-	public static void addParticipants(IModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs, List<Identity> list) {
+	public static void addParticipants(ModuleConfiguration moduleConfiguration, CourseGroupManager cgm, BusinessGroupService bgs, List<Identity> list) {
 
 		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP)) {
-			String participantGroupNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP);
-			List<Long> participantGroupKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP_ID);
+			String participantGroupNames = moduleConfiguration.getStringValue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP);
+			List<Long> participantGroupKeys = moduleConfiguration.getList(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_GROUP_ID, Long.class);
 			if(participantGroupKeys == null && StringHelper.containsNonWhitespace(participantGroupNames)) {
 				participantGroupKeys = bgs.toGroupKeys(participantGroupNames, cgm.getCourseEntry());
 			}
@@ -125,8 +125,8 @@ public class MembersHelpers {
 		}
 		
 		if(moduleConfiguration.has(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA)) {
-			String participantAreaNames = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA);
-			List<Long> participantAreaKeys = moduleConfiguration.val(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA_ID);
+			String participantAreaNames = moduleConfiguration.getStringValue(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA);
+			List<Long> participantAreaKeys = moduleConfiguration.getList(MembersCourseNode.CONFIG_KEY_PARTICIPANTS_AREA_ID, Long.class);
 			if(participantAreaKeys == null && StringHelper.containsNonWhitespace(participantAreaNames)) {
 				participantAreaKeys = bgs.toGroupKeys(participantAreaNames, cgm.getCourseEntry());
 			}

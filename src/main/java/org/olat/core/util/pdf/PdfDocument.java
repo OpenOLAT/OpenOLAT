@@ -79,12 +79,20 @@ public class PdfDocument {
 	}
 
 	public PDPage addPage() throws IOException {
+		return addPage(PDPage.PAGE_SIZE_A4);
+	}
+	
+	public PDPage addPageLandscape() throws IOException {
+		return addPage(new PDRectangle(PDPage.PAGE_SIZE_A4.getHeight(), PDPage.PAGE_SIZE_A4.getWidth()));
+	}
+	
+	public PDPage addPage(PDRectangle size) throws IOException {
 		if(currentContentStream != null) {
 			currentContentStream.close();
 		}
 
-		PDPage page = new PDPage(PDPage.PAGE_SIZE_A4);
-        document.addPage(page);
+		PDPage page = new PDPage(size);
+		document.addPage(page);
         currentPage = page;
         currentContentStream = new PDPageContentStream(document, currentPage);
         

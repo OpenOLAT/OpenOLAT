@@ -25,6 +25,10 @@
 
 package org.olat.modules.wiki;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.core.util.StringHelper;
 import org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtil;
 
 /**
@@ -43,6 +47,9 @@ public class WikiPage {
 	public static final String WIKI_ERROR = "O_error";
 	private String content = "";
 	private String pageName;
+	private String initialPageName;
+	private List<String> oldPageNames;
+	private List<String> alternativeIds;
 	private String pageId;
 	private long forumKey = 0;
 	private boolean dirty = false;
@@ -58,13 +65,24 @@ public class WikiPage {
 	// remove or find better solution which works also in a cluster cache scenario
 	private int viewCount = 0;
 
+	public WikiPage(String name) {
+		this(name, null);
+	}
+	
 	/**
 	 * @param id
 	 * @param name
 	 */
-	public WikiPage(String name) {
-		this.pageName = FilterUtil.normalizeWikiLink(name);
-		this.pageId = WikiManager.generatePageId(pageName);
+	public WikiPage(String name, String initialPageName) {
+		pageName = FilterUtil.normalizeWikiLink(name);
+		if(StringHelper.containsNonWhitespace(initialPageName)) {
+			pageId = WikiManager.generatePageId(initialPageName);
+			if(StringHelper.containsNonWhitespace(pageName)) {
+				addAlternativeId(WikiManager.generatePageId(pageName));
+			}
+		} else {
+			pageId = WikiManager.generatePageId(pageName);
+		}
 	}
 
 	public String getContent() {
@@ -97,6 +115,52 @@ public class WikiPage {
 		return pageName;
 	}
 
+	public String getInitialPageName() {
+		return initialPageName;
+	}
+
+	public List<String> getOldPageNames() {
+		return oldPageNames;
+	}
+
+	public void setOldPageNames(List<String> oldPageNames) {
+		this.oldPageNames = oldPageNames;
+		if(oldPageNames != null) {
+			for(String oldPageName:oldPageNames) {
+				addAlternativeId(WikiManager.generatePageId(oldPageName));
+			}
+		}
+	}
+	
+	private void addAlternativeId(String id) {
+		if(alternativeIds == null) {
+			alternativeIds = new ArrayList<>();
+		}
+		alternativeIds.add(id);
+	}
+	
+	/**
+	 * 
+	 * Check if the specified id matchs the id
+	 * generated from the pagename, initial pagen name or
+	 * the old page names properties.
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public boolean matchIds(String id) {
+		boolean found = pageId.equals(id);
+		if(!found && alternativeIds != null) {
+			for(String alternativeId:alternativeIds) {
+				if(alternativeId.equals(id)) {
+					found = true;
+					break;
+				}
+			}
+		}
+		return found;
+	}
+
 	public boolean isDirty() {
 		return dirty;
 	}
@@ -110,7 +174,13 @@ public class WikiPage {
 	 *         filesystem.
 	 */
 	protected String getPageId() {
-		if (pageId == null) pageId = WikiManager.generatePageId(pageName);
+		if (pageId == null) {
+			if(StringHelper.containsNonWhitespace(initialPageName)) {
+				pageId = WikiManager.generatePageId(initialPageName);
+			} else {
+				pageId = WikiManager.generatePageId(pageName);
+			}
+		}
 		return pageId;
 	}
 
@@ -202,6 +272,7 @@ public class WikiPage {
 		this.updateComment = updateComment;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("\n");

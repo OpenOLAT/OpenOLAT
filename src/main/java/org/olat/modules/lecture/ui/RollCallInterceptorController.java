@@ -72,7 +72,7 @@ public class RollCallInterceptorController extends FormBasicController implement
 				lectureBlockToStart = lectureBlocks.get(0);
 				String[] args = new String[] {
 						lectureBlockToStart.getEntry().getDisplayname(),
-						lectureBlockToStart.getEntry().getExternalRef(),
+						lectureBlockToStart.getEntry().getExternalRef() == null ? "" : lectureBlockToStart.getEntry().getExternalRef(),
 						lectureBlockToStart.getTitle(),
 						(lectureBlockToStart.getStartDate() == null ? "" : format.formatDate(lectureBlockToStart.getStartDate())),
 						(lectureBlockToStart.getStartDate() == null ? "" : format.formatTimeShort(lectureBlockToStart.getStartDate())),
@@ -89,6 +89,7 @@ public class RollCallInterceptorController extends FormBasicController implement
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("start", formLayout);
 		startWizardButton = uifactory.addFormLink("start.wizard", formLayout, Link.BUTTON);
+		startWizardButton.setElementCssClass("o_sel_lecture_start_wizard");
 	}
 	
 	@Override

@@ -83,7 +83,7 @@ public class EditParticipantSummaryController extends FormBasicController {
 			long cRate = Math.round(participantSummary.getRequiredAttendanceRate().doubleValue() * 100.0d);
 			customRate = Long.toString(cRate);
 		}
-		rateEl = uifactory.addTextElement("participant.rate", "participant.rate", 4, customRate, formLayout);
+		rateEl = uifactory.addTextElement("participant.rate.edit", "participant.rate.edit", 4, customRate, formLayout);
 		rateEl.setVisible(rateEnabled);
 		
 		Date firstAdmission = participantSummary.getFirstAdmissionDate();
@@ -92,7 +92,9 @@ public class EditParticipantSummaryController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		removeCustomRateButton = uifactory.addFormLink("remove.custom.rate", "remove.custom.rate", null, buttonsCont, Link.BUTTON);
+		if(rateEnabled) {
+			removeCustomRateButton = uifactory.addFormLink("remove.custom.rate", "remove.custom.rate", null, buttonsCont, Link.BUTTON);
+		}
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 
@@ -109,8 +111,9 @@ public class EditParticipantSummaryController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(rateEl.getValue())) {
 			try {
 				int val = Integer.parseInt(rateEl.getValue());
-				if(val < 0 && val > 100) {
+				if(val < 0 || val > 100) {
 					rateEl.setErrorKey("error.integer.between", new String[] {"0", "100"});
+					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
 				rateEl.setErrorKey("form.error.nointeger", null);

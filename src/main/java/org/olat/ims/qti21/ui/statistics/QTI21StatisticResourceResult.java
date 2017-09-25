@@ -146,6 +146,10 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		return new File(itemUri);
 	}
 	
+	public File getUnzippedDirectory() {
+		return FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+	}
+	
 	public boolean canViewAnonymousUsers() {
 		return secCallback.canViewAnonymousUsers();
 	}
@@ -348,8 +352,7 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	private Controller createAssessmentItemController(UserRequest ureq, WindowControl wControl,
 			AssessmentItemRef assessmentItemRef, String sectionTitle, boolean printMode) {
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(assessmentItemRef);
-		AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
-		Controller ctrl = new QTI21AssessmentItemStatisticsController(ureq, wControl, assessmentItemRef, assessmentItem, sectionTitle, this, withFilter, printMode);
+		Controller ctrl = new QTI21AssessmentItemStatisticsController(ureq, wControl, assessmentItemRef, resolvedAssessmentItem, sectionTitle, this, withFilter, printMode);
 		String iconCssClass = "o_mi_qtisc";
 		if(courseNode != null) {
 			ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, ctrl, courseNode, iconCssClass);

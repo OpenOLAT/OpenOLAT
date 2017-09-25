@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> This controller offers a workflow to configure the
@@ -68,6 +69,11 @@ class I18nConfigController extends FormBasicController {
 	private FormLink createLanguageLink, deleteLanguageLink, importPackageLink, exportPackageLink, deletePackageLink;
 	private CloseableModalController cmc;
 	private Controller subCtr;
+	
+	@Autowired
+	private I18nManager i18nMgr;
+	@Autowired
+	private I18nModule i18nModule;
 
 	/**
 	 * Constructor for the language configuration workflow
@@ -86,15 +92,14 @@ class I18nConfigController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		I18nManager i18nMgr = I18nManager.getInstance();
 		//
 		// Add default languages pulldown
-		Set<String> availableKeys = I18nModule.getAvailableLanguageKeys();
+		Set<String> availableKeys = i18nModule.getAvailableLanguageKeys();
 		String[] defaultlangKeys = ArrayHelper.toArray(availableKeys);
 		String[] defaultLangValues = new String[defaultlangKeys.length];
 		for (int i = 0; i < defaultlangKeys.length; i++) {
 			String key = defaultlangKeys[i];
-			String explLang = i18nMgr.getLanguageInEnglish(key, I18nModule.isOverlayEnabled());
+			String explLang = i18nMgr.getLanguageInEnglish(key, i18nModule.isOverlayEnabled());
 			String all = explLang;
 			if (explLang != null && !explLang.equals(key)) all += " (" + key + ")";
 			defaultLangValues[i] = all;
@@ -111,10 +116,10 @@ class I18nConfigController extends FormBasicController {
 		// Add enabled languages checkboxes
 		String[] availablelangKeys = ArrayHelper.toArray(availableKeys);
 		String[] availableValues = new String[availablelangKeys.length];
-		int referenceKeyCount = i18nMgr.countI18nItems(I18nModule.getFallbackLocale(), null, true);
+		int referenceKeyCount = i18nMgr.countI18nItems(i18nModule.getFallbackLocale(), null, true);
 		for (int i = 0; i < availablelangKeys.length; i++) {
 			String key = availablelangKeys[i];
-			String explLang = i18nMgr.getLanguageInEnglish(key, I18nModule.isOverlayEnabled());
+			String explLang = i18nMgr.getLanguageInEnglish(key, i18nModule.isOverlayEnabled());
 			String all = explLang;
 			if (explLang != null && !explLang.equals(key)) all += " (" + key + ")";
 			// count translation status
@@ -133,12 +138,12 @@ class I18nConfigController extends FormBasicController {
 		enabledLangSelection.setEscapeHtml(false);
 		enabledLangSelection.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 		// Enable current enabled languages
-		for (String langKey : I18nModule.getEnabledLanguageKeys()) {
+		for (String langKey : i18nModule.getEnabledLanguageKeys()) {
 			enabledLangSelection.select(langKey, true);
 		}
 		//
 		// Add create / delete links, but only when translation tool is configured
-		if (I18nModule.isTransToolEnabled()) {
+		if (i18nModule.isTransToolEnabled()) {
 			createLanguageLink = uifactory.addFormLink("configuration.management.create", formLayout, Link.BUTTON);
 			deleteLanguageLink = uifactory.addFormLink("configuration.management.delete", formLayout, Link.BUTTON);
 		}
@@ -166,12 +171,12 @@ class I18nConfigController extends FormBasicController {
 		if (source == defaultLangSelection) {
 			// Get new default language and update I18nModule accordingly
 			String langKey = defaultLangSelection.getSelectedKey();
-			Locale defaultLocale = I18nManager.getInstance().getLocaleOrNull(langKey);
+			Locale defaultLocale = i18nMgr.getLocaleOrNull(langKey);
 			this.flc.contextPut("defaultLangKey", defaultLocale.toString());
-			I18nModule.setDefaultLocale(defaultLocale);
+			i18nModule.setDefaultLocale(defaultLocale);
 			// Make sure this language is in the list of enabled languages
 			enabledLangSelection.select(langKey, true);
-			I18nModule.getEnabledLanguageKeys().add(langKey);
+			i18nModule.getEnabledLanguageKeys().add(langKey);
 
 		} else if (source == enabledLangSelection) {
 			// Get enabled values, make sure the default language is enabled and
@@ -195,7 +200,7 @@ class I18nConfigController extends FormBasicController {
 //				showWarning("configuration.fallback.lang.must.be.enabed", fallbackLangKey);
 //			}
 
-			I18nModule.setEnabledLanguageKeys(enabledLangKeys);
+			i18nModule.setEnabledLanguageKeys(enabledLangKeys);
 
 		} else if (source == createLanguageLink) {
 			// Show new language sub form in an overlay window

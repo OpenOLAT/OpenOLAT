@@ -19,9 +19,11 @@
  */
 package org.olat.selenium.page.qti;
 
+import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -38,35 +40,95 @@ public class QTI21FeedbacksEditorPage {
 	}
 	
 	public QTI21FeedbacksEditorPage setHint(String title, String hint) {
+		openAddFeedbacksMenu().addFeedback("o_sel_add_hint");
+		
 		By titleBy = By.cssSelector("div.o_sel_assessment_item_hint_title input[type='text']");
+		OOGraphene.waitElement(titleBy, browser);
 		browser.findElement(titleBy).sendKeys(title);
-		OOGraphene.tinymce(hint, "div.o_sel_assessment_item_hint", browser);
+		
+		By hintBy = By.cssSelector("div.o_sel_assessment_item_hint_feedback input[type='text']");
+		browser.findElement(hintBy).sendKeys(hint);
 		return this;
 	}
 	
 	public QTI21FeedbacksEditorPage setCorrectSolution(String title, String correctSolution) {
-		By titleBy = By.cssSelector("div.o_sel_assessment_item_correct_solution_title input[type='text']");
+		openAddFeedbacksMenu().addFeedback("o_sel_add_correct_solution");
+		
+		By titleBy = By.cssSelector("div.o_sel_assessment_item_correctSolution_title input[type='text']");
+		OOGraphene.waitElement(titleBy, browser);
 		browser.findElement(titleBy).sendKeys(title);
-		OOGraphene.tinymce(correctSolution, "div.o_sel_assessment_item_correct_solution", browser);
+
+		By correctBy = By.cssSelector("div.o_sel_assessment_item_correctSolution_feedback input[type='text']");
+		browser.findElement(correctBy).sendKeys(correctSolution);
 		return this;
 	}
 	
 	public QTI21FeedbacksEditorPage setCorrectFeedback(String title, String feedback) {
-		By titleBy = By.cssSelector("div.o_sel_assessment_item_correct_feedback_title input[type='text']");
+		openAddFeedbacksMenu().addFeedback("o_sel_add_correct");
+		
+		By titleBy = By.cssSelector("div.o_sel_assessment_item_correct_title input[type='text']");
+		OOGraphene.waitElement(titleBy, browser);
 		browser.findElement(titleBy).sendKeys(title);
-		OOGraphene.tinymce(feedback, "div.o_sel_assessment_item_correct_feedback", browser);
+		
+		By correctBy = By.cssSelector("div.o_sel_assessment_item_correct_feedback input[type='text']");
+		browser.findElement(correctBy).sendKeys(feedback);
 		return this;
 	}
 	
 	public QTI21FeedbacksEditorPage setIncorrectFeedback(String title, String feedback) {
-		By titleBy = By.cssSelector("div.o_sel_assessment_item_incorrect_feedback_title input[type='text']");
+		openAddFeedbacksMenu().addFeedback("o_sel_add_incorrect");
+		
+		By titleBy = By.cssSelector("div.o_sel_assessment_item_incorrect_title input[type='text']");
+		OOGraphene.waitElement(titleBy, browser);
 		browser.findElement(titleBy).sendKeys(title);
-		OOGraphene.tinymce(feedback, "div.o_sel_assessment_item_incorrect_feedback", browser);
+		
+		By correctBy = By.cssSelector("div.o_sel_assessment_item_incorrect_feedback input[type='text']");
+		browser.findElement(correctBy).sendKeys(feedback);
+		return this;
+	}
+
+	public QTI21FeedbacksEditorPage setAnsweredFeedback(String title, String feedback) {
+		openAddFeedbacksMenu().addFeedback("o_sel_add_answered");
+		
+		By titleBy = By.cssSelector("div.o_sel_assessment_item_answered_title input[type='text']");
+		browser.findElement(titleBy).sendKeys(title);
+		
+		By answeredBy = By.cssSelector("div.o_sel_assessment_item_answered_feedback input[type='text']");
+		browser.findElement(answeredBy).sendKeys(feedback);
+		return this;
+	}
+	
+	public QTI21FeedbacksEditorPage setEmpytFeedback(String title, String feedback) {
+		openAddFeedbacksMenu().addFeedback("o_sel_add_empty");
+		
+		By titleBy = By.cssSelector("div.o_sel_assessment_item_empty_title input[type='text']");
+		browser.findElement(titleBy).sendKeys(title);
+		
+		By emptyBy = By.cssSelector("div.o_sel_assessment_item_empty_feedback input[type='text']");
+		browser.findElement(emptyBy).sendKeys(feedback);
+		return this;
+	}
+	
+	private QTI21FeedbacksEditorPage addFeedback(String cssSelector) {
+		By addFeedbackBy = By.cssSelector("a." + cssSelector);
+		browser.findElement(addFeedbackBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	private QTI21FeedbacksEditorPage openAddFeedbacksMenu() {
+		By addMenuCaretBy = By.cssSelector("button.o_sel_add_feedbacks");
+		WebElement addMenuCaret = browser.findElement(addMenuCaretBy);
+		Assert.assertTrue(addMenuCaret.isDisplayed());
+		addMenuCaret.click();
+
+		By addMenuBy = By.cssSelector("ul.o_sel_add_feedbacks");
+		OOGraphene.waitElement(addMenuBy, 5, browser);
 		return this;
 	}
 
 	public QTI21FeedbacksEditorPage save() {
-		By saveBy = By.cssSelector("fieldset.o_sel_assessment_item_feedbacks button.btn.btn-primary");
+		By saveBy = By.cssSelector("div.o_sel_assessment_item_feedbacks button.btn.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

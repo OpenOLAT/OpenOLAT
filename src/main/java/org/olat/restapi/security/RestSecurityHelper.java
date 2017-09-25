@@ -19,6 +19,11 @@
  */
 package org.olat.restapi.security;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -31,6 +36,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -145,6 +151,15 @@ public class RestSecurityHelper {
 		}
 	}
 	
+	public static boolean isQuestionPoolManager(HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			return (roles.isPoolAdmin() || roles.isOLATAdmin());
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
 	public static boolean isAdmin(HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);
@@ -185,5 +200,50 @@ public class RestSecurityHelper {
 		UserRequest ureq= (UserRequest)request.getAttribute(SEC_USER_REQUEST);
 		if(ureq == null) return I18nModule.getDefaultLocale();
 		return LocaleNegotiator.getPreferedLocale(ureq);
+	}
+	
+	public static Date parseDate(String date, Locale locale) {
+		if(StringHelper.containsNonWhitespace(date)) {
+			if(date.indexOf('T') > 0) {
+				if(date.indexOf('.') > 0) {
+					try {
+						return new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.S").parse(date);
+					} catch (ParseException e) {
+						//fail silently
+					}
+				} else {
+					try {
+						return new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss").parse(date);
+					} catch (ParseException e) {
+						//fail silently
+					}
+				}
+			}
+			
+			//try with the locale
+			if(date.length() > 10) {
+				//probably date time
+				try {
+					DateFormat format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale);
+					format.setLenient(true);
+					return format.parse(date);
+				} catch (ParseException e) {
+					//fail silently
+				}
+			} else {
+				try {
+					DateFormat format = DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
+					format.setLenient(true);
+					return format.parse(date);
+				} catch (ParseException e) {
+					//fail silently
+				}
+			}
+		}
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.MONTH, -1);
+		return cal.getTime();
 	}
 }

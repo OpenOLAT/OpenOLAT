@@ -28,8 +28,6 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
-import org.olat.commons.info.model.InfoMessage;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;

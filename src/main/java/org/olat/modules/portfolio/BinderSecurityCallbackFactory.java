@@ -20,9 +20,11 @@
 package org.olat.modules.portfolio;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.repository.model.RepositoryEntrySecurity;
 
@@ -70,6 +72,12 @@ public class BinderSecurityCallbackFactory {
 		return new BinderSecurityCallbackImpl(rights, template != null, deliveryOptions);
 	}
 	
+	public static final BinderSecurityCallback getCallbackForCourseCoach(Binder binder, List<AccessRights> rights) {
+		Binder template = binder.getTemplate();
+		BinderDeliveryOptions deliveryOptions = getDeliveryOptions(binder);
+		return new BinderSecurityCallbackForCoach(rights, template != null, deliveryOptions);
+	}
+	
 	/**
 	 * Invitee can only comment binders
 	 * @return
@@ -102,7 +110,12 @@ public class BinderSecurityCallbackFactory {
 		public boolean canRestorePage(Page page) {
 			return page.getPageStatus() == PageStatus.deleted;
 		}
-		
+
+		@Override
+		public Role getRole() {
+			return Role.user;
+		}
+
 	}
 	
 	private static class BinderSecurityCallbackForDeletedBinder extends DefaultBinderSecurityCallback {
@@ -188,6 +201,13 @@ public class BinderSecurityCallbackFactory {
 			if(element instanceof Page) {
 				Page page = (Page)element;
 				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
+					if(rights != null) {
+						for(AccessRights right:rights) {
+							if(right.getRole() == PortfolioRoles.readInvitee && right.matchElementAndAncestors(element)) {
+								return true;
+							}
+						}
+					}
 					return false;
 				}
 			}
@@ -264,6 +284,23 @@ public class BinderSecurityCallbackFactory {
 		}
 	}
 	
+	private static class BinderSecurityCallbackForCoach extends BinderSecurityCallbackImpl {
+
+		public BinderSecurityCallbackForCoach(List<AccessRights> rights, boolean task, BinderDeliveryOptions deliveryOptions) {
+			super(rights, task, deliveryOptions);
+		}
+
+		@Override
+		public boolean canViewAssess(PortfolioElement element) {
+			return true;
+		}
+
+		@Override
+		public boolean canDeleteBinder(Binder binder) {
+			return false;
+		}
+	}
+	
 	private static class BinderSecurityCallbackImpl implements BinderSecurityCallback {
 		
 		/**
@@ -290,6 +327,11 @@ public class BinderSecurityCallbackFactory {
 		
 		@Override
 		public boolean canEditBinder() {
+			return owner;
+		}
+
+		@Override
+		public boolean canExportBinder() {
 			return owner;
 		}
 
@@ -401,6 +443,14 @@ public class BinderSecurityCallbackFactory {
 				return true;
 			}
 			return false;
+		}
+		
+		/**
+		 * Owner can always edit page categories, regardless of the page state
+		 */
+		@Override
+		public boolean canEditCategories(Page page) {
+			return owner;
 		}
 
 		@Override
@@ -527,12 +577,74 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canViewElement(PortfolioElement element) {
 			if(owner) {
+				if(task) {
+					if(element instanceof Section) {
+						Section section = (Section)element;
+						if(section.getBeginDate() != null && section.getBeginDate().after(new Date())) {
+							return false;
+						}
+					} else if(element instanceof Page) {
+						Page page = (Page)element;
+						Section section = page.getSection();
+						if(section != null && section.getBeginDate() != null && section.getBeginDate().after(new Date())) {
+							return false;
+						}
+					}
+				}
 				return true;
 			}
 			
 			if(element instanceof Page) {
 				Page page = (Page)element;
 				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
+					return false;
+				}
+			}
+			
+			//need to be recursive, if page -> section too -> binder too???
+			if(rights != null) {
+				for(AccessRights right:rights) {
+					if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+							&& right.matchElementAndAncestors(element)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public boolean canViewTitleOfElement(PortfolioElement element) {
+			if(owner) {
+				if(task) {
+					if(element instanceof Section) {
+						Section section = (Section)element;
+						if(section.getBeginDate() != null && section.getBeginDate().after(new Date())) {
+							return false;
+						}
+					} else if(element instanceof Page) {
+						Page page = (Page)element;
+						Section section = page.getSection();
+						if(section != null && section.getBeginDate() != null && section.getBeginDate().after(new Date())) {
+							return false;
+						}
+					}
+				}
+				return true;
+			}
+			
+			if(element instanceof Page) {
+				Page page = (Page)element;
+				if(page.getPageStatus() == null || page.getPageStatus() == PageStatus.draft) {
+					//need to be recursive, if page -> section too -> binder too???
+					if(rights != null) {
+						for(AccessRights right:rights) {
+							if((PortfolioRoles.reviewer.equals(right.getRole()) || PortfolioRoles.coach.equals(right.getRole()))
+									&& right.matchElementAndAncestors(element)) {
+								return true;
+							}
+						}
+					}
 					return owner;
 				}
 			}
@@ -551,7 +663,13 @@ public class BinderSecurityCallbackFactory {
 
 		@Override
 		public boolean canViewPendingAssignments(Section section) {
-			if(owner) return true;
+			if(owner) {
+				Date beginDate = section.getBeginDate();
+				if(beginDate != null && beginDate.after(new Date())) {
+					return false;
+				}
+				return true;
+			}
 			
 			if(rights != null) {
 				for(AccessRights right:rights) {
@@ -631,12 +749,22 @@ public class BinderSecurityCallbackFactory {
 			}
 			return false;
 		}
+
+		@Override
+		public Role getRole() {
+			return owner ? Role.user : Role.coach;
+		}
 	}
 	
 	private static class DefaultBinderSecurityCallback implements BinderSecurityCallback {
 
 		@Override
 		public boolean canEditBinder() {
+			return false;
+		}
+
+		@Override
+		public boolean canExportBinder() {
 			return false;
 		}
 
@@ -699,7 +827,12 @@ public class BinderSecurityCallbackFactory {
 		public boolean canEditPageMetadata(Page page, List<Assignment> assignments) {
 			return false;
 		}
-
+		
+		@Override
+		public boolean canEditCategories(Page page) {
+			return false;
+		}
+		
 		@Override
 		public boolean canPublish(Page page) {
 			return false;
@@ -751,6 +884,11 @@ public class BinderSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canViewTitleOfElement(PortfolioElement element) {
+			return canViewElement(element);
+		}
+
+		@Override
 		public boolean canViewPendingAssignments(Section section) {
 			return false;
 		}
@@ -783,6 +921,11 @@ public class BinderSecurityCallbackFactory {
 		@Override
 		public boolean canViewAssessment() {
 			return false;
-		}	
+		}
+
+		@Override
+		public Role getRole() {
+			return Role.coach;
+		}
 	}
 }

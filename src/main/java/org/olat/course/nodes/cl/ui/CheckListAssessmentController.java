@@ -89,6 +89,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -587,7 +588,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 			List<Identity> assessedIdentities = securityManager.loadIdentityByKeys(assessedIdentityToUpdate);
 			for(Identity assessedIdentity:assessedIdentities) {
 				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity);
+				courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach);
 			}
 		}
 		

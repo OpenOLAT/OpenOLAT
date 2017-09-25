@@ -1,4 +1,5 @@
 /**
+
 * OLAT - Online Learning and Training<br>
 * http://www.olat.org
 * <p>
@@ -328,7 +329,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	}
 
 	@Override
-	public boolean isIdentityPermittedOnResourceable(Identity identity, String permission, OLATResourceable olatResourceable) {
+	public boolean isIdentityPermittedOnResourceable(IdentityRef identity, String permission, OLATResourceable olatResourceable) {
 		return isIdentityPermittedOnResourceable(identity, permission, olatResourceable, true);
 	}
 
@@ -336,7 +337,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.Manager#isIdentityPermittedOnResourceable(org.olat.core.id.Identity, java.lang.String, org.olat.core.id.OLATResourceable boolean)
 	 */
 	@Override
-	public boolean isIdentityPermittedOnResourceable(Identity identity, String permission, OLATResourceable olatResourceable, boolean checkTypeRight) {
+	public boolean isIdentityPermittedOnResourceable(IdentityRef identity, String permission, OLATResourceable olatResourceable, boolean checkTypeRight) {
 		if(identity == null || identity.getKey() == null) return false;//no identity, no permission
 
 		Long oresid = olatResourceable.getResourceableId();
@@ -368,7 +369,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	 * @see org.olat.basesecurity.Manager#getRoles(org.olat.core.id.Identity)
 	 */
 	@Override
-	public Roles getRoles(Identity identity) {
+	public Roles getRoles(IdentityRef identity) {
 		boolean isGuestOnly = false;
 		boolean isInvitee = false;
 
@@ -389,7 +390,7 @@ public class BaseSecurityManager implements BaseSecurity {
 	}
 
 	@Override
-	public List<String> getRolesAsString(Identity identity) {
+	public List<String> getRolesAsString(IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select ngroup.groupName from ").append(NamedGroupImpl.class.getName()).append(" as ngroup ")
 		  .append(" where exists (")
@@ -488,17 +489,20 @@ public class BaseSecurityManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#isIdentityInSecurityGroup(org.olat.core.id.Identity, org.olat.basesecurity.SecurityGroup)
 	 */
+	@Override
 	public boolean isIdentityInSecurityGroup(Identity identity, SecurityGroup secGroup) {
 		if (secGroup == null || identity == null) return false;
-		String queryString = "select count(sgmsi) from  org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi where sgmsi.identity = :identitykey and sgmsi.securityGroup = :securityGroup";
-		DBQuery query = DBFactory.getInstance().createQuery(queryString);
-		query.setLong("identitykey", identity.getKey());
-		query.setLong("securityGroup", secGroup.getKey());
-		query.setCacheable(true);
-		List res = query.list();
-		Long cntL = (Long) res.get(0);
-		if (cntL.longValue() != 0 && cntL.longValue() != 1) throw new AssertException("unique n-to-n must always yield 0 or 1");
-		return (cntL.longValue() == 1);
+		String queryString = "select sgmsi.key from org.olat.basesecurity.SecurityGroupMembershipImpl as sgmsi where sgmsi.identity.key=:identitykey and sgmsi.securityGroup.key=:securityGroupKey";
+
+		List<Long> membership = dbInstance.getCurrentEntityManager()
+			.createQuery(queryString, Long.class)
+			.setParameter("identitykey", identity.getKey())
+			.setParameter("securityGroupKey", secGroup.getKey())
+			.setHint("org.hibernate.cacheable", Boolean.TRUE)
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return membership != null && membership.size() > 0 && membership.get(0) != null;
 	}
 
 	@Override
@@ -1385,6 +1389,18 @@ public class BaseSecurityManager implements BaseSecurity {
 	}
 	
 	@Override
+	public List<Authentication> findAuthentications(IdentityRef identity, List<String> providers) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName())
+		  .append(" as auth where auth.identity.key=:identityKey and auth.provider in (:providers)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("providers", providers)
+				.getResultList();
+	}
+
+	@Override
 	public String findAuthenticationName(IdentityRef identity, String provider) {
 		if (identity==null) {
 			throw new IllegalArgumentException("identity must not be null");
@@ -1517,6 +1533,19 @@ public class BaseSecurityManager implements BaseSecurity {
 			throw new AssertException("more than one entry for the a given authusername and provider, should never happen (even db has a unique constraint on those columns combined) ");
 		}
 		return results.get(0);
+	}
+	
+	@Override
+	public List<Authentication> findAuthenticationByAuthusername(String authusername, List<String> providers) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join fetch auth.identity ident")
+		  .append(" where auth.provider in (:providers) and auth.authusername=:authusername");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("providers", providers)
+				.setParameter("authusername", authusername)
+				.getResultList();
 	}
 
 	/**

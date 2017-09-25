@@ -58,6 +58,8 @@ import org.olat.user.UserManager;
 @NamedQueries({
 	@NamedQuery(name="loadItemByGuid",
 			query="select data from item data where data.feed.key=:feedKey and data.guid=:guid"),
+	@NamedQuery(name="loadItemByGuidWithoutFeed",
+			query="select data from item data where data.guid=:guid"),
 	@NamedQuery(name="loadItemsByFeed",
 		query="select data from item data where data.feed=:feed"),
 	@NamedQuery(name="loadItemsGuidByFeed",

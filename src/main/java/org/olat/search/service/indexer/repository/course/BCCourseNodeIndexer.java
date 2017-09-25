@@ -28,10 +28,6 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
-import org.olat.core.id.context.BusinessControl;
-import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -89,16 +85,4 @@ public class BCCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 	public String getSupportedTypeName() {
 		return SUPPORTED_TYPE_NAME;
 	}
-
-	@Override
-	public boolean checkAccess(BusinessControl businessControl, Identity identity, Roles roles) {
-		return super.checkAccess(businessControl, identity, roles);
-	}
-
-	@Override
-	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
-		return super.checkAccess(contextEntry, businessControl, identity, roles);
-	}
-	
-	
 }

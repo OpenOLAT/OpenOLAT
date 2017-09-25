@@ -225,6 +225,34 @@ var BFormatter = {
 		} catch(e) {
 			if (window.console) console.log("error in BFormatter.formatLatexFormulas: ", e);
 		}
+	},
+	// Align columns of different tables with the same column count
+	// Note: it is best to set the width of the fixed sized colums via css 
+	// (e.g. to 1% to make them as small as possible). Table must set to max-size:100% 
+	// to not overflow. New width of table can be larger than before because the largest
+	// width of each column is applied to all tables. With max-size the browsers magically
+	// fix this overflow problem.
+	alignTableColumns : function(tableArray) {
+		try {
+			var cellWidths = new Array();
+			// find all widest cells
+			jQuery(tableArray).each(function() {
+				for(j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
+					var cell = jQuery(this)[0].rows[0].cells[j];
+					if(!cellWidths[j] || cellWidths[j] < cell.clientWidth) {
+						cellWidths[j] = cell.clientWidth;
+					}
+				}
+			});
+			// set same width to columns of all tables
+			jQuery(tableArray).each(function() {
+				for(j = 0; j < jQuery(this)[0].rows[0].cells.length; j++){
+					jQuery(this)[0].rows[0].cells[j].style.width = cellWidths[j]+'px';
+				}
+			});
+		} catch(e) {
+			if (window.console) console.log("error in BFormatter.alignTableColumns: ", e);
+		}	
 	}
 };
 
@@ -1280,12 +1308,42 @@ function o_removeIframe(id) {
 	jQuery('#' + id).remove();
 }
 
+/**
+ * Opens the form-dirty dialog. Use the callback to add code that should be executed in case the user 
+ * presses the "ignore button" (Code that executes the original action the user initiated)
+ */
+function o_showFormDirtyDialog(onIgnoreCallback) {
+	// open our form-dirty dialog
+	o_scrollToElement('#o_top');
+	jQuery("#o_form_dirty_message").modal('show');
+	jQuery("#o_form_dirty_message .o_form_dirty_ignore").on("click", function() {
+		// Remove dialog and all listeners for dirty button
+		jQuery("#o_form_dirty_message").modal('hide');
+		jQuery("#o_form_dirty_message .o_form_dirty_ignore").off();
+		// Execute the ignore callback with original user action
+		onIgnoreCallback();
+	});
+	return false;
+}
+
 function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirtyCheck, push, submit) {
-	if(dirtyCheck) {
-		if(!o2cl()) return false;
+	if(dirtyCheck && o2c==1) {
+		// Copy function arguments and set the dirtyCheck to false for execution in callback.
+		// Note that the argument list is dynamic, there are potentially more arguments than
+		// listed in the function (e.g. in QTI2)
+		var callbackArguments = Array.prototype.slice.call(arguments);
+		callbackArguments[5] = false; 		
+		var onIgnoreCallback = function() {
+			// fire original event when the "ok, delete anyway" button was pressed
+			o_ffXHREvent.apply(window, callbackArguments);
+		}
+		return o_showFormDirtyDialog(onIgnoreCallback);
 	} else {
 		if(!o2cl_noDirtyCheck()) return false;
-	}
+	}	
+	// Start event execution, start server to prevend concurrent executions of other events. 
+	// o_afterserver() called when AJAX call terminates
+	o_beforeserver();
 	
 	var data = new Object();
 	if(submit) {
@@ -1364,11 +1422,23 @@ function o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt) {
 }
 
 function o_XHREvent(targetUrl, dirtyCheck, push) {
-	if(dirtyCheck) {
-		if(!o2cl()) return false;
+	if(dirtyCheck && o2c==1) {
+		// Copy function arguments and set the dirtyCheck to false for execution in callback.
+		// Note that the argument list is dynamic, there are potentially more arguments than
+		// listed in the function
+		var callbackArguments = Array.prototype.slice.call(arguments);
+		callbackArguments[1] = false; 		
+		var onIgnoreCallback = function() {
+			// fire original event when the "ok, delete anyway" button was pressed
+			o_XHREvent.apply(window, callbackArguments);
+		}
+		return o_showFormDirtyDialog(onIgnoreCallback);		
 	} else {
 		if(!o2cl_noDirtyCheck()) return false;
 	}
+	// Start event execution, start server to prevend concurrent executions of other events. 
+	// o_afterserver() called when AJAX call terminates
+	o_beforeserver();
 	
 	var data = new Object();
 	if(arguments.length > 3) {
@@ -1474,6 +1544,30 @@ function o_toggleMark(el) {
 	} else {
 		jQuery('i', el).removeClass('o_icon_bookmark').addClass('o_icon_bookmark_add');
 	}
+}
+
+//try to mimic the FileUtils.normalizeFilename method
+function o_normalizeFilename(filename) {
+	filename = filename.replace(/\s/g, "_")
+	var replaceByUnderscore = [ "/", ",", ":", "(", ")" ];
+	for(var i=replaceByUnderscore.length; i-->0; ) {
+		filename = filename.split(replaceByUnderscore[i]).join("_");
+	}
+
+	var beautifyGermanUnicode = [ "\u00C4", "\u00D6", "\u00DC", "\u00E4", "\u00F6", "\u00E6", "\u00FC", "\u00DF", "\u00F8", "\u2205" ],
+		beautifyGermanReplacement = [ "Ae", "Oe",     "Ue",     "ae",     "oe",     "ae",     "ue",     "ss",     "o",      "o" ];
+	for(var i=beautifyGermanUnicode.length; i-->0; ) {
+		filename = filename.split(beautifyGermanUnicode[i]).join(beautifyGermanReplacement[i]);
+	}
+
+	try {//if something is not supported by the browser
+		filename = filename.normalize('NFKD');
+		filename = filename.replace("/\p{InCombiningDiacriticalMarks}+/g","");
+		filename = filename.replace("/\W+/g", "");
+	} catch(e) {
+		if(window.console) console.log(e);
+	}
+	return filename;
 }
 
 //

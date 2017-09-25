@@ -122,6 +122,11 @@ public class EMailIdentity implements Identity {
 		}
 
 		@Override
+		public String getInstitutionalEmail() {
+			return data.get(UserConstants.INSTITUTIONALEMAIL);
+		}
+
+		@Override
 		public Date getLastModified() {
 			return null;
 		}

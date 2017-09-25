@@ -86,6 +86,11 @@ public final class PreviewIdentity implements Identity, User {
 	}
 
 	@Override
+	public String getInstitutionalEmail() {
+		return data.get(UserConstants.INSTITUTIONALEMAIL);
+	}
+
+	@Override
 	public String getFirstName() {
 		return data.get(UserConstants.FIRSTNAME);
 	}

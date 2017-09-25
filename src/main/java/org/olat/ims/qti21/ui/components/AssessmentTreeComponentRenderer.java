@@ -160,7 +160,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		renderAssessmentItemMark(sb, component, itemNode, translator);
 		renderAssessmentItemAttempts(sb, component, itemNode, translator);
 		renderItemStatus(sb, component, itemNode, translator, options);
-		renderAssessmentItemLink(sb, component, itemNode);
+		renderAssessmentItemLink(sb, component, itemNode, translator);
 		sb.append("</li>");
 	}
 	
@@ -171,7 +171,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	 * @param itemNode
 	 * @return The event used or null
 	 */
-	private Event renderAssessmentItemLink(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode) {
+	private Event renderAssessmentItemLink(StringOutput sb, AssessmentTreeComponent component, TestPlanNode itemNode, Translator translator) {
 		String key = itemNode.getKey().toString();
 		Form form = component.getQtiItem().getRootForm();
 		String dispatchId = component.getQtiItem().getFormDispatchId();
@@ -205,7 +205,14 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 					new NameValuePair("cid", event.name()), new NameValuePair("item", key)))
 			  .append(";\" class='o_sel_assessmentitem'>");
 		}
-		sb.append("<span class='questionTitle'>").append(StringHelper.escapeHtml(itemNode.getSectionPartTitle())).append("</span>");
+		String title;
+		if(component.isShowTitles()) {
+			title = StringHelper.escapeHtml(itemNode.getSectionPartTitle());
+		} else {
+			int num = component.getCandidateSessionContext().getNumber(itemNode);
+			title = translator.translate("question.title", new String[] { Integer.toString(num) });
+		}
+		sb.append("<span class='questionTitle'>").append(title).append("</span>");
 
 		if(event == null) {
 			sb.append("</span>");
@@ -262,9 +269,6 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("'>").append(numOfAttempts);			
 		}
 		sb.append("</span>");
-		
-		
-		
 	}
 	
 	@Override

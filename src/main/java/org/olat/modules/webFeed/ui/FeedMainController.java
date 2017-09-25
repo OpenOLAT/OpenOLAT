@@ -19,6 +19,7 @@
  */
 package org.olat.modules.webFeed.ui;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -46,10 +47,13 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OLATResourceableJustBeforeDeletedEvent;
 import org.olat.modules.webFeed.Feed;
+import org.olat.modules.webFeed.FeedChangedEvent;
 import org.olat.modules.webFeed.FeedSecurityCallback;
 import org.olat.modules.webFeed.FeedViewHelper;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +87,8 @@ public class FeedMainController extends BasicController implements Activateable2
 	private SubscriptionContext subsContext;
 	private OLATResourceable ores;
 	
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -170,9 +176,8 @@ public class FeedMainController extends BasicController implements Activateable2
 		vcRightCol = uiFactory.createRightColumnVelocityContainer(this);
 		vcMain.put("rightColumn", vcRightCol);
 
-		// The current user has edit rights if he/she is an administrator or an
-		// owner of the resource.
-		if (callback.mayEditMetadata()) {
+		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(feed, false);
+		if (repositoryEntry == null && callback.mayEditMetadata()) {
 			editFeedButton = LinkFactory.createButtonSmall("feed.edit", vcInfo, this);
 			editFeedButton.setElementCssClass("o_sel_feed_edit");
 		}
@@ -326,17 +331,18 @@ public class FeedMainController extends BasicController implements Activateable2
 		String itemId = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if(itemId != null && itemId.startsWith("item=")) {
 			itemId = itemId.substring(5, itemId.length());
-			Long itemKey = Long.parseLong(itemId);
-			item = FeedManager.getInstance().loadItem(itemKey);
+			try {
+				Long itemKey = Long.parseLong(itemId);
+				item = FeedManager.getInstance().loadItem(itemKey);
+			} catch (Exception e) {
+				item = FeedManager.getInstance().loadItemByGuid(itemId);
+			}
 		}
 		if (item != null) {
 			itemsCtr.activate(ureq, item);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(Event event) {
 		if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
@@ -345,6 +351,14 @@ public class FeedMainController extends BasicController implements Activateable2
 			// registered only to one event, but good style.
 			if (ojde.targetEquals(feed, true)) {
 				dispose();
+			}
+		} else if (event instanceof FeedChangedEvent) {
+			FeedChangedEvent fce = (FeedChangedEvent) event;
+			if (fce.getFeedKey().equals(feed.getKey())) {
+				feed = feedManager.loadFeed(feed);
+				vcInfo.contextPut("supressCache", "&" + ZonedDateTime.now().toInstant().toEpochMilli());
+				vcInfo.contextPut("feed", feed);
+				vcInfo.setDirty(true);
 			}
 		}
 	}

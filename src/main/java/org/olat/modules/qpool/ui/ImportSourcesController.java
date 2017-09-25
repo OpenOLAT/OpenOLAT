@@ -27,6 +27,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.ims.qti.QTIModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -42,7 +44,11 @@ public class ImportSourcesController extends BasicController {
 	public static final String IMPORT_EXCEL_QTI_12 = "qpool.import.excellike.12";
 	public static final String IMPORT_EXCEL_QTI_21 = "qpool.import.excellike.21";
 
-	private final Link importRepository, importFile, importExcelLikeQTI12, importExcelLikeQTI21;
+	private Link importExcelLikeQTI12;
+	private final Link importRepository, importFile, importExcelLikeQTI21;
+	
+	@Autowired
+	private QTIModule qtiModule;
 	
 	public ImportSourcesController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -52,8 +58,10 @@ public class ImportSourcesController extends BasicController {
 		importRepository.setIconLeftCSS("o_icon o_icon-fw o_FileResource-TEST_icon");
 		importFile = LinkFactory.createLink("import.file", mainVC, this);
 		importFile.setIconLeftCSS("o_icon o_icon-fw o_filetype_file");
-		importExcelLikeQTI12 = LinkFactory.createLink("import.excellike.12", mainVC, this);
-		importExcelLikeQTI12.setIconLeftCSS("o_icon o_icon-fw o_icon_table");
+		if(qtiModule.isCreateResourcesEnabled()) {
+			importExcelLikeQTI12 = LinkFactory.createLink("import.excellike.12", mainVC, this);
+			importExcelLikeQTI12.setIconLeftCSS("o_icon o_icon-fw o_icon_table");
+		}
 		importExcelLikeQTI21 = LinkFactory.createLink("import.excellike.21", mainVC, this);
 		importExcelLikeQTI21.setIconLeftCSS("o_icon o_icon-fw o_icon_table");
 		putInitialPanel(mainVC);

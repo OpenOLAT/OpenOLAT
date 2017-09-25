@@ -153,6 +153,12 @@ public class MediaUploadController extends FormBasicController implements PageEl
 		} else if(getHandler() == null) {
 			fileEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} 
+		
+		titleEl.clearError();
+		if (titleEl.isEmpty()) {
+			titleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
 		}
 
 		return allOk & super.validateFormLogic(ureq);
@@ -184,6 +190,10 @@ public class MediaUploadController extends FormBasicController implements PageEl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(fileEl == source) {
 			getHandler();
+			if (this.titleEl.isEmpty()) {
+				this.titleEl.setValue(fileEl.getUploadFileName());
+				this.titleEl.getComponent().setDirty(true);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

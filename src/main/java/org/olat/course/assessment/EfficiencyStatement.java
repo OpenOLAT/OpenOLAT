@@ -45,34 +45,62 @@ public class EfficiencyStatement {
 	private Long courseRepoEntryKey;
 	private String displayableUserInfo;
 	private long lastUpdated;
+	private long lastUserModified;
+	private long lastCoachModified;
 	
 	public long getLastUpdated() {
 		return lastUpdated;
 	}
+	
 	public void setLastUpdated(long lastUpdated) {
 		this.lastUpdated = lastUpdated;
 	}
+	
+	public long getLastUserModified() {
+		return lastUserModified;
+	}
+
+	public void setLastUserModified(long lastUserModified) {
+		this.lastUserModified = lastUserModified;
+	}
+
+	public long getLastCoachModified() {
+		return lastCoachModified;
+	}
+
+	public void setLastCoachModified(long lastCoachModified) {
+		this.lastCoachModified = lastCoachModified;
+	}
+
 	public List<Map<String,Object>> getAssessmentNodes() {
 		return assessmentNodes;
 	}
+	
 	public void setAssessmentNodes(List<Map<String,Object>> assessmentNodes) {
 		this.assessmentNodes = assessmentNodes;
 	}
+	
 	public Long getCourseRepoEntryKey() {
 		return courseRepoEntryKey;
 	}
+	
 	public void setCourseRepoEntryKey(Long courseRepoEntryKey) {
 		this.courseRepoEntryKey = courseRepoEntryKey;
 	}
+	
 	public String getCourseTitle() {
 		return courseTitle;
 	}
+	
 	public void setCourseTitle(String courseTitle) {
 		this.courseTitle = courseTitle;
 	}
+	
 	public String getDisplayableUserInfo() {
 		return displayableUserInfo;
 	}
+	
+	
 	public void setDisplayableUserInfo(String displayableUserInfo) {
 		this.displayableUserInfo = displayableUserInfo;
 	}

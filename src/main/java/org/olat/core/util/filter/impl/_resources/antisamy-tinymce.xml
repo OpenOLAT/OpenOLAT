@@ -491,7 +491,13 @@
 		<tag name="dd" action="validate" />
 
 		<!-- Image & image related tags -->
-
+		<tag name="figure" action="validate" >
+			<attribute name="class" />
+		</tag>
+		<tag name="figcaption" action="validate" >
+			<attribute name="class" />
+		</tag>
+		
 		<tag name="img" action="validate">
 			<attribute name="src" onInvalid="removeTag">
 				<regexp-list>

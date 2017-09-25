@@ -24,7 +24,7 @@ import java.util.List;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
-import org.olat.commons.info.manager.InfoMessageFrontendManager;
+import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.commons.info.model.InfoMessageImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;

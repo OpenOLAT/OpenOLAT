@@ -19,6 +19,11 @@
  */
 package org.olat.search.service.indexer.repository.course;
 
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.ContextEntry;
+
 /**
  * 
  * Initial date: 20 mars 2017<br>
@@ -33,5 +38,13 @@ public class ENCourseNodeIndexer extends AbstractCourseNodeIndexer {
 	
 	public ENCourseNodeIndexer() {
 		super(TYPE, SUPPORTED_TYPE_NAME);
+	}
+	
+	@Override
+	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
+		if(roles.isGuestOnly()) {
+			return false;
+		}
+		return super.checkAccess(contextEntry, businessControl, identity, roles);
 	}
 }

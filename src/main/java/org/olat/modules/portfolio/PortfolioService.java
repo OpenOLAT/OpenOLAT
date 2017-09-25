@@ -28,6 +28,7 @@ import java.util.Map;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
@@ -544,9 +545,11 @@ public interface PortfolioService {
 	 * Change the status of the page.
 	 * @param page
 	 * @param status
+	 * @param identity The user which does the change
+	 * @param by The role of the user which does the change
 	 * @return
 	 */
-	public Page changePageStatus(Page page, PageStatus status);
+	public Page changePageStatus(Page page, PageStatus status, Identity identity, Role by);
 	
 	/**
 	 * Close the section

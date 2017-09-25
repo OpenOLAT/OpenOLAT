@@ -101,7 +101,7 @@ public class DeletedPageListController extends AbstractPageListController {
 		List<Page> pages = portfolioService.searchDeletedPages(getIdentity(), searchString);
 		List<PortfolioElementRow> rows = new ArrayList<>(pages.size());
 		for (Page page : pages) {
-			rows.add(forgePageRow(ureq, page, null, null, categorizedElementMap, numberOfCommentsMap));
+			rows.add(forgePageRow(ureq, page, null, null, categorizedElementMap, numberOfCommentsMap, true));
 		}
 		
 		disposeRows();//clean up the posters
