@@ -27,35 +27,35 @@ import org.olat.core.id.Identity;
 import org.olat.resource.OLATResource;
 
 /**
- * 
+ *
  * Initial date: 13.05.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public interface LTIManager {
-	
+
 	public static final String USER_PROPS_PREFIX = "$userprops_";
 	public static final int EXPIRATION_TIME = 3600 * 24 * 30 * 6;//6 months
 
 	public Map<String,String> forgeLTIProperties(Identity identity, Locale locale,
 			LTIContext context, boolean sendName, boolean sendEmail);
-	
+
 	public Map<String,String> sign(Map<String,String> props, String url, String oauthKey, String oauthSecret);
-	
-	
+
+
 	public LTIOutcome createOutcome(Identity identity, OLATResource resource, String resSubPath,
 			String action, String outcomeKey, String outcomeValue);
-	
+
 	public LTIOutcome loadOutcomeByKey(Long key);
 
 	public List<LTIOutcome> loadOutcomes(Identity identity, OLATResource resource, String resSubPath);
-	
+
 	/**
 	 * Remove the outcomes of a resource, typically before deleting a course.
 	 * @param resource
 	 */
 	public void deleteOutcomes(OLATResource resource);
-	
+
 	/**
 	 * Make a LTI request with a HTTP Post request.
 	 * @param signedProps the signed LTI properties
@@ -63,5 +63,14 @@ public interface LTIManager {
 	 * @return the http response content as string or null if the request was not successful
 	 */
 	public String post(Map<String,String> signedProps, String url);
+
+	/**
+	 * Join the custom properties to a String, so that it can be returned by a
+	 * LtiContext.
+	 *
+	 * @param customProps
+	 * @return
+	 */
+	public String joinCustomProps(Map<String, String> customProps);
 
 }

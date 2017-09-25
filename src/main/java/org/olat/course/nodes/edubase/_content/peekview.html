@@ -1,0 +1,17 @@
+<div class="o_edubase_pv">
+	#foreach($bookSection in $bookSections)
+		<div class="o_edubase_pv_fig">
+			<figure>
+				<object data="$!{bookSection.getCoverUrl()}">
+  					<img src="$r.staticLink('images/edubase/empty_cover.png')" alt="COVER">
+				</object>
+				<figcaption>$r.escapeHtml($bookSection.getTitle())</figcaption>
+			</figure>
+		</div>
+	#end
+	<div>
+		#if($r.available("peekview.allItemsLink"))
+			$r.render("peekview.allItemsLink")
+		#end
+	</div>
+</div>

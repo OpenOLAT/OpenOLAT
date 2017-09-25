@@ -24,8 +24,10 @@
 */
 package org.olat.core.logging.activity;
 
+import org.olat.util.logging.activity.LoggingResourceable;
+
 /**
- * Specialization of ILoggingResourceableType which represents a 
+ * Specialization of ILoggingResourceableType which represents a
  * OlatResourceable (or OlatResource/RepositoryEntry in some other cases)
  * <p>
  * See the LoggingResourceable class's corresponding wrap() method.
@@ -35,39 +37,39 @@ package org.olat.core.logging.activity;
  * @see LoggingResourceable#wrap
  */
 public enum OlatResourceableType implements ILoggingResourceableType {
-	
+
 	/** this represents an ICourse **/
-	course,	
+	course,
 	/** this represents a CourseNode **/
-	node, 
-	
+	node,
+
 	/** this represents a BusinessGroup **/
-	businessGroup, 
+	businessGroup,
 	/** this represents a BGContext **/
-	bgContext,  
-	
+	bgContext,
+
 	/** this represents a Forum **/
-	forum, 
+	forum,
 	/** this represents a (Forum) Message **/
 	forumMessage,
 	/** this represents a (Info) Message **/
 	infoMessage,
-	
+
 	/** this represents a I(MS)Q(TI) TEST **/
 	iq,
-	
+
 	/** represents a SCORM Resource **/
 	scormResource,
-	
+
 	/** represents a Wiki **/
 	wiki,
-	
+
 	/** represents a content package **/
 	cp,
-	
+
 	/** this represents a QTi test **/
-	test, 
-	
+	test,
+
 	/** represents a shared folder **/
 	sharedFolder,
 
@@ -75,24 +77,27 @@ public enum OlatResourceableType implements ILoggingResourceableType {
 	feed,
 	/** represents a feed item (blog post or podcast episode) **/
 	feedItem,
-	
+
 	/** represents a generic - non further specified - repositoryentry. use this only if you dont know the type beforehand. **/
 	genRepoEntry,
-	
+
 	/**   represents an calendar   **/
 	calendar,
-	
+
 	/**   represents a portfolio map   **/
 	portfolio,
 	section,
 	assignment,
 	media,
-	
+
 	/** represents openmeetings **/
 	openmeetings,
-	
+
 	/** business path component **/
 	businessPath,
 	/** represents a lecture block of a course */
-	lectureBlock
+	lectureBlock,
+
+	/** represents an Edubase course node */
+	edubase
 }

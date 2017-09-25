@@ -59,25 +59,25 @@ import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.RestModule;
 
 /**
- * 
+ *
  * Description:<br>
  * Filter which protects the REST Api.
- * 
+ *
  * <P>
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
 public class RestApiLoginFilter implements Filter {
-	
+
 	private static OLog log = Tracing.createLoggerFor(RestApiLoginFilter.class);
-	
+
 	private static final String BASIC_AUTH_REALM = "OLAT Rest API";
-	
+
 	private static List<String> openUrls;
 	private static List<String> alwaysEnabledUrls;
 	private static List<String> ipProtectedUrls;
 	private static String LOGIN_URL;
-	
+
 	/**
 	 * The survive time of the session used by token based authentication. For every request
 	 * is a new session created.
@@ -88,30 +88,30 @@ public class RestApiLoginFilter implements Filter {
 	public void init(FilterConfig filterConfig) {
 		//
 	}
-	
+
 	@Override
 	public void destroy() {
 		//
 	}
-	
-	
+
+
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 	throws ServletException {
-		
+
 		if(request instanceof HttpServletRequest) {
 			try {
 				HttpServletRequest httpRequest = (HttpServletRequest)request;
 				HttpServletResponse httpResponse = (HttpServletResponse)response;
-				
+
 				String requestURI = httpRequest.getRequestURI();
 				RestModule restModule = (RestModule)CoreSpringFactory.getBean("restModule");
 				if(restModule == null || !restModule.isEnabled() && !isRequestURIAlwaysEnabled(requestURI)) {
 					httpResponse.sendError(403);
 					return;
 				}
-				
+
 				// initialize tracing with request, this allows debugging information as IP, User-Agent.
 				Tracing.setUreq(httpRequest);
 				I18nManager.attachI18nInfoToThread(httpRequest);
@@ -131,7 +131,7 @@ public class RestApiLoginFilter implements Filter {
 						followWithoutAuthentication(httpRequest, httpResponse, chain);
 					} else if (isRequestTokenValid(httpRequest)) {
 						String token = httpRequest.getHeader(RestSecurityHelper.SEC_TOKEN);
-						
+
 						followToken(token, httpRequest, httpResponse, chain);
 					} else if (isBasicAuthenticated(httpRequest, httpResponse, requestURI)) {
 						followBasicAuthenticated(request, response, chain);
@@ -142,6 +142,12 @@ public class RestApiLoginFilter implements Filter {
 				}
 			} catch (Exception e) {
 				log.error("", e);
+				try {
+					HttpServletResponse httpResponse = (HttpServletResponse)response;
+					httpResponse.sendError(500);
+				} catch (Exception ex) {
+					log.error("", ex);
+				}
 			} finally {
 				ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
 				I18nManager.remove18nInfoFromThread();
@@ -174,7 +180,7 @@ public class RestApiLoginFilter implements Filter {
 						if(identity == null) {
 							return false;
 						}
-						
+
 						UserRequest ureq = null;
 						try{
 							//upon creation URL is checked for
@@ -183,7 +189,7 @@ public class RestApiLoginFilter implements Filter {
 							return false;
 						}
 						request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
-						
+
 						int loginStatus = AuthHelper.doHeadlessLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq, true);
 						if (loginStatus == AuthHelper.LOGIN_OK) {
 							UserDeletionManager.getInstance().setIdentityAsActiv(identity);
@@ -199,18 +205,18 @@ public class RestApiLoginFilter implements Filter {
 		}
 		return false;
 	}
-	
+
 	private void followBasicAuthenticated(ServletRequest request, ServletResponse response, FilterChain chain)
 	throws ServletException, IOException {
 		chain.doFilter(request, response);
 	}
-	
+
 	private boolean isRequestTokenValid(HttpServletRequest request) {
 		String token = request.getHeader(RestSecurityHelper.SEC_TOKEN);
 		RestSecurityBean securityBean =  CoreSpringFactory.getImpl(RestSecurityBean.class);
 		return securityBean.isTokenRegistrated(token, request.getSession(true));
 	}
-	
+
 	private boolean isRequestURIInLoginSpace(String requestURI) {
 		String loginUrl = getLoginUrl();
 		if(loginUrl != null && requestURI.startsWith(loginUrl)) {
@@ -218,7 +224,7 @@ public class RestApiLoginFilter implements Filter {
 		}
 		return false;
 	}
-	
+
 	private boolean isRequestURIInOpenSpace(String requestURI) {
 		List<String> uris = getOpenURIs();
 		if(uris == null) return false;
@@ -229,7 +235,7 @@ public class RestApiLoginFilter implements Filter {
 		}
 		return false;
 	}
-	
+
 	private boolean isRequestURIInIPProtectedSpace(String requestURI, HttpServletRequest httpRequest, RestModule restModule) {
 		List<String> uris = getIPProtectedURIs();
 		if(uris == null) return false;
@@ -243,7 +249,7 @@ public class RestApiLoginFilter implements Filter {
 		}
 		return false;
 	}
-	
+
 	private boolean isRequestURIAlwaysEnabled(String requestURI) {
 		List<String> uris = getAlwaysEnabledURIs();
 		if(uris == null) return false;
@@ -254,8 +260,8 @@ public class RestApiLoginFilter implements Filter {
 		}
 		return false;
 	}
-	
-	private void followForAuthentication(String requestURI, UserSession uress, HttpServletRequest request, HttpServletResponse response, FilterChain chain) 
+
+	private void followForAuthentication(String requestURI, UserSession uress, HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 	throws IOException, ServletException {
 	//create a session for login without security check
 		if(uress == null) {
@@ -263,18 +269,18 @@ public class RestApiLoginFilter implements Filter {
 		}
 		UserRequest ureq = null;
 		try{
-			//upon creation URL is checked for 
+			//upon creation URL is checked for
 			ureq = new UserRequestImpl(requestURI, request, response);
 		} catch(NumberFormatException nfe) {
 			response.sendError(401);
 			return;
 		}
-		
+
 		request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
 		chain.doFilter(request, response);
 	}
-	
-	private void followWithoutAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain) 
+
+	private void followWithoutAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 	throws IOException, ServletException {
 		UserSession uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(request);
 		if(uress != null && uress.isAuthenticated()) {
@@ -282,7 +288,7 @@ public class RestApiLoginFilter implements Filter {
 			followSession(request, response, chain);
 			return;
 		}
-		
+
 		String token = request.getHeader(RestSecurityHelper.SEC_TOKEN);
 		RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
 		if(StringHelper.containsNonWhitespace(token) && securityBean.isTokenRegistrated(token, request.getSession(true))) {
@@ -301,12 +307,12 @@ public class RestApiLoginFilter implements Filter {
 			return;
 		}
 		request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
-		
+
 		//no authentication, but no authentication needed, go further
 		chain.doFilter(request, response);
 	}
-	
-	private void upgradeIpAuthentication(HttpServletRequest request, HttpServletResponse response) 
+
+	private void upgradeIpAuthentication(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
 		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		UserSession usess = sessionManager.getUserSessionIfAlreadySet(request);
@@ -315,7 +321,7 @@ public class RestApiLoginFilter implements Filter {
 		}
 		if(usess.getIdentity() == null) {
 			usess.setRoles(new Roles(false, false, false, false, false, false, false));
-			
+
 			String remoteAddr = request.getRemoteAddr();
 			SessionInfo sinfo = new SessionInfo(new Long(-1), "REST", request.getSession());
 			sinfo.setFirstname("REST");
@@ -336,7 +342,7 @@ public class RestApiLoginFilter implements Filter {
 			// set session info for this session
 			usess.setSessionInfo(sinfo);
 		}
-		
+
 		UserRequest ureq = null;
 		try{
 			//upon creation URL is checked for
@@ -349,8 +355,8 @@ public class RestApiLoginFilter implements Filter {
 		}
 		request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
 	}
-	
-	private void followToken(String token, HttpServletRequest request, HttpServletResponse response, FilterChain chain) 
+
+	private void followToken(String token, HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 	throws IOException, ServletException {
 		HttpSession session = request.getSession(true);
 		session.setMaxInactiveInterval(TOKEN_BASED_SESSION_TIMEOUT);
@@ -365,7 +371,7 @@ public class RestApiLoginFilter implements Filter {
 				response.sendError(500);
 				return;
 			}
-			
+
 			request.setAttribute(RestSecurityHelper.SEC_USER_REQUEST, ureq);
 			RestSecurityBean securityBean = (RestSecurityBean)CoreSpringFactory.getBean(RestSecurityBean.class);
 			Identity identity = securityBean.getIdentity(token);
@@ -378,7 +384,7 @@ public class RestApiLoginFilter implements Filter {
 			} else response.sendError(401);
 		} else response.sendError(401);
 	}
-	
+
 	private void followSession(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 	throws IOException, ServletException {
 		UserSession uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(request);
@@ -400,14 +406,14 @@ public class RestApiLoginFilter implements Filter {
 			response.sendError(401);
 		}
 	}
-	
+
 	private boolean isWebappHelperInitiated() {
 		if(Settings.isJUnitTest()) {
 			return true;
 		}
 		return WebappHelper.getServletContextPath() != null;
 	}
-	
+
 	private String getLoginUrl() {
 		if(LOGIN_URL == null && isWebappHelperInitiated()) {
 			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);
@@ -415,7 +421,7 @@ public class RestApiLoginFilter implements Filter {
 		}
 		return LOGIN_URL;
 	}
-	
+
 	private List<String> getAlwaysEnabledURIs() {
 		if(alwaysEnabledUrls == null && isWebappHelperInitiated() ) {
 			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);
@@ -429,7 +435,7 @@ public class RestApiLoginFilter implements Filter {
 		}
 		return alwaysEnabledUrls;
 	}
-	
+
 	private List<String> getOpenURIs() {
 		if(openUrls == null && isWebappHelperInitiated()) {
 			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);
@@ -446,7 +452,7 @@ public class RestApiLoginFilter implements Filter {
 		}
 		return openUrls;
 	}
-	
+
 	private List<String> getIPProtectedURIs() {
 		if(ipProtectedUrls == null && isWebappHelperInitiated()) {
 			String context = (Settings.isJUnitTest() ? "/olat" : WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT);

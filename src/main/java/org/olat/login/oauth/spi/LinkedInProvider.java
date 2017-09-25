@@ -162,4 +162,9 @@ public class LinkedInProvider implements OAuthSPI {
 		}
 		return sb.toString();
 	}
+
+	@Override
+	public String getIssuerIdentifier() {
+		return "https://linkedin.com";
+	}
 }

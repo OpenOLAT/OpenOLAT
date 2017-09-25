@@ -39,7 +39,8 @@ package org.olat.core.logging.activity;
  * @author bja
  */
 public enum ActionObject {
-	
+
+	bookSection,
 	calendar,
 	chat,
 	check,

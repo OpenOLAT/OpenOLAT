@@ -130,4 +130,9 @@ public class FacebookProvider implements OAuthSPI {
 		String value = obj.optString(property);
 		return StringHelper.containsNonWhitespace(value) ? value : null;
 	}
+
+	@Override
+	public String getIssuerIdentifier() {
+		return "https://facebook.com";
+	}
 }

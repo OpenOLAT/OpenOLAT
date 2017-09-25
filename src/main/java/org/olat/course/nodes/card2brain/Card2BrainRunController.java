@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class Card2BrainRunController extends BasicController {
-
+	
 	private Panel main;
 
 	private final ModuleConfiguration config;

@@ -18,7 +18,7 @@
 		<constructor-arg index="4" value="o_icon_provider_olat"/>
 	</bean>
 
-	<bean id="ShibUZHAuthenticationProvider" class="org.olat.login.auth.AuthenticationProvider" >
+	<bean id="ShibUZHAuthenticationProvider" class="org.olat.shibboleth.ShibbolethAuthenticationProvider" >
 		<constructor-arg index="0" value="Shib"/>
 		<constructor-arg index="1" value="org.olat.shibboleth.ShibbolethAuthenticationController"/>
 		<constructor-arg index="2" value="${shibbolethUZH.enable}"/>
@@ -26,7 +26,7 @@
 		<constructor-arg index="4" value="o_icon_provider_shibboleth"/>
 	</bean>
 
-	<bean id="ShibAuthenticationProvider" class="org.olat.login.auth.AuthenticationProvider" >
+	<bean id="ShibAuthenticationProvider" class="org.olat.shibboleth.ShibbolethAuthenticationProvider" >
 		<constructor-arg index="0" value="ShibGeneric"/>
 		<constructor-arg index="1" value="org.olat.shibboleth.DefaultShibbolethAuthenticationController"/>
 		<constructor-arg index="2" value="${shibbolethGeneric.enable}"/>
@@ -34,7 +34,7 @@
 		<constructor-arg index="4" value="o_icon_provider_shibboleth"/>
 	</bean>
 
-	<bean id="LDAPAuthenticationProvider" class="org.olat.login.auth.AuthenticationProvider" >
+	<bean id="LDAPAuthenticationProvider" class="org.olat.ldap.LDAPAuthenticationProvider" >
 		<constructor-arg index="0" value="LDAP"/>
 		<constructor-arg index="1" value="org.olat.ldap.ui.LDAPAuthenticationController"/>
 		<constructor-arg index="2" value="${ldap.enable}"/>

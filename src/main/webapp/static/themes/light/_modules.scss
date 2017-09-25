@@ -2,7 +2,7 @@
 
 /*
  * =================================================
- * Import of all submodules and includes, can be reused 
+ * Import of all submodules and includes, can be reused
  * by other themes. Normally you do not have to modify
  * this file.
  * =================================================
@@ -18,10 +18,10 @@
 @import "modules/mixins";
 @import "modules/helpers";
 @import "modules/type";
-@import "modules/content_embedded";  /* add all styles that are created by html editor but can also be rendered in 
+@import "modules/content_embedded";  /* add all styles that are created by html editor but can also be rendered in
    										main window, not in iframe (e.g. forum post, blog entry) */
 @import "modules/radial-progress";
-   										
+
 
 /* general layout */
 @import "modules/layout";
@@ -74,6 +74,7 @@
 @import "modules/members";
 @import "modules/grouptask";
 @import "modules/lecture";
+@import "modules/edubase";
 
 @import "modules/thirdparty";
 

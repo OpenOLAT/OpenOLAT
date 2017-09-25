@@ -1,0 +1,89 @@
+<fieldset class="o_edubase_edit_books">
+<div class="col-sm-12">
+#foreach($bookSection in $bookSections)
+<div class="row">
+<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix o_sel_bookSection_${foreach.index}">
+	<div class="col-sm-2">
+		<table>
+			<tbody>
+				<td class="o_edubase_bs_buttons">
+					#if($r.available(${bookSection.getRemoveLinkEl().getComponent().getComponentName()}) && $r.visible(${bookSection.getRemoveLinkEl().getComponent().getComponentName()}))
+						<div>$r.render(${bookSection.getRemoveLinkEl().getComponent().getComponentName()})</div>
+					#end
+					#if($r.available(${bookSection.getAddLinkEl().getComponent().getComponentName()}) && $r.visible(${bookSection.getAddLinkEl().getComponent().getComponentName()}))
+						<div class="o_sel_add_bookSection_${foreach.count}">$r.render(${bookSection.getAddLinkEl().getComponent().getComponentName()})</div>
+					#end
+					#if($r.available(${bookSection.getUpLinkEl().getComponent().getComponentName()}) && $r.visible(${bookSection.getUpLinkEl().getComponent().getComponentName()}))
+						<div>$r.render(${bookSection.getUpLinkEl().getComponent().getComponentName()})</div>
+					#end
+					#if($r.available(${bookSection.getDownLinkEl().getComponent().getComponentName()}) && $r.visible(${bookSection.getDownLinkEl().getComponent().getComponentName()}))
+						<div>$r.render(${bookSection.getDownLinkEl().getComponent().getComponentName()})</div>
+					#end
+				</td>
+				<td class="o_edubase_bs_cover" calss="cover${bookSection.getBookIdEl().getValue()}">
+					<object data="$!{bookSection.getCoverUrl()}">
+  						<img src="$r.staticLink('images/edubase/empty_cover.png')" alt="COVER">
+					</object>
+				</td>
+			</tbody>
+		</table>
+	</div>
+	<div class="col-sm-10">
+		<div class="row">
+			<div class="col-sm-3">
+				$r.render("${bookSection.getBookIdEl().getComponent().getComponentName()}_LABEL")
+				<div class="o_edubase_bs_book_id">
+					$r.render(${bookSection.getBookIdEl().getComponent().getComponentName()})
+				</div>
+				#if($f.hasError($bookSection.getBookIdEl().getComponent().getComponentName()))
+					<span class="o_icon o_icon_error form-control-feedback"></span>
+					$r.render("${bookSection.getBookIdEl().getComponent().getComponentName()}_ERROR")
+				#end
+			</div>
+			<div class="col-sm-1">
+				<div>
+					<label class="control-label o_edubase_bs_details_label">Details</label>
+				</div>
+				$r.render(${bookSection.getDetailsLinkEl().getComponent().getComponentName()})
+			</div>
+			<div class="col-sm-4">
+				$r.render("${bookSection.getPageFromEl().getComponent().getComponentName()}_LABEL")
+				$r.render(${bookSection.getPageFromEl().getComponent().getComponentName()})
+				#if($f.hasError($bookSection.getPageFromEl().getComponent().getComponentName()))
+					<span class="o_icon o_icon_error form-control-feedback"></span>
+					$r.render("${bookSection.getPageFromEl().getComponent().getComponentName()}_ERROR")
+				#end
+			</div>
+			<div class="col-sm-4">
+				$r.render("${bookSection.getPageToEl().getComponent().getComponentName()}_LABEL")
+				$r.render(${bookSection.getPageToEl().getComponent().getComponentName()})
+				#if($f.hasError($bookSection.getPageToEl().getComponent().getComponentName()))
+					<span class="o_icon o_icon_error form-control-feedback"></span>
+					$r.render("${bookSection.getPageToEl().getComponent().getComponentName()}_ERROR")
+				#end
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				$r.render("${bookSection.getTitleEl().getComponent().getComponentName()}_LABEL")
+				$r.render(${bookSection.getTitleEl().getComponent().getComponentName()})
+				#if($f.hasError($item))
+					<span class="o_icon o_icon_error form-control-feedback"></span>
+				#end
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				$r.render("${bookSection.getDescriptionEl().getComponent().getComponentName()}_LABEL")
+				$r.render(${bookSection.getDescriptionEl().getComponent().getComponentName()})
+				#if($f.hasError($item))
+					<span class="o_icon o_icon_error form-control-feedback"></span>
+				#end
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+#end
+</div>
+</fieldset>

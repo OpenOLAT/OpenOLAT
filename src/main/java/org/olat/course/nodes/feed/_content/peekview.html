@@ -2,7 +2,7 @@
 	<div class="o_error">$errorMessage</div>
 #end
 <div class="o_feed_peekview $wrapperCssClass clearfix">
-#foreach( $post in $items ) 	
+#foreach( $post in $items )
 	<div class="o_item">
 		<h5>
 			$r.render("nodeLink_${post.getGuid()}")

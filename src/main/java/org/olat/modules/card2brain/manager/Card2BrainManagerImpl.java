@@ -39,24 +39,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 
+ *
  * Initial date: 20.04.2017<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 @Service
 public class Card2BrainManagerImpl implements Card2BrainManager {
-	
+
 	private static final OLog log = Tracing.createLoggerFor(Card2BrainManagerImpl.class);
-	
+
 	@Autowired
 	private Card2BrainModule card2brainModule;
-	
+
 	@Autowired
 	private LTIManager ltiManager;
-	
+
 	ObjectMapper mapper;
-	
+
 	public Card2BrainManagerImpl() {
 		mapper = new ObjectMapper();
 	}
@@ -66,7 +66,7 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 		boolean setOfFlashcardExists = false;
 
 		String url = String.format(card2brainModule.getPeekViewUrl(), alias);
-		
+
 		HttpGet request = new HttpGet(url);
 		try(CloseableHttpClient httpclient = HttpClients.createDefault();
 				CloseableHttpResponse response = httpclient.execute(request);) {
@@ -74,11 +74,11 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 		} catch(Exception e) {
 			log.error("", e);
 		}
-		
+
 		log.info(new StringBuilder("Check card2brain set of flaschcards (").append(url).append("): ").append(setOfFlashcardExists).toString());
 		return setOfFlashcardExists;
 	}
-	
+
 	/**
 	 * evaluates if a set of flashcards is existing according to a http response
 	 * @param response the http response
@@ -100,7 +100,7 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 	@Override
 	public Card2BrainVerificationResult checkEnterpriseLogin(String url, String key, String secret) {
 		Card2BrainVerificationResult card2BrainValidationResult = null;
-		
+
 		try {
 			Map<String,String> signedPros = ltiManager.sign(null, url, key, secret);
 			String content = ltiManager.post(signedPros, url);
@@ -110,7 +110,7 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 		} catch (Exception e) {
 			log.error("", e);
 		}
-		
+
 		return card2BrainValidationResult;
 	}
 

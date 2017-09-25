@@ -176,4 +176,9 @@ public class OpenIdConnectFullConfigurableProvider implements OAuthSPI, OAuthDis
 		String value = obj.optString(property);
 		return StringHelper.containsNonWhitespace(value) ? value : null;
 	}
+
+	@Override
+	public String getIssuerIdentifier() {
+		return issuer; 
+	}
 }

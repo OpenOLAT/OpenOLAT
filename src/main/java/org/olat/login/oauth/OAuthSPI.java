@@ -57,4 +57,6 @@ public interface OAuthSPI extends ConfigOnOff {
 	
 	public OAuthUser getUser(OAuthService service, Token accessToken);
 
+	public String getIssuerIdentifier();
+
 }

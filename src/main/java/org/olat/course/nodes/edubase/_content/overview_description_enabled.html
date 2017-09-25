@@ -1,0 +1,31 @@
+<div class="col-sm-12 o_edubase_run_enabled">
+#foreach($bookSection in $bookSections)
+<div class="row">
+	<div class="col-sm-2 o_edubase_cover o_block_top">
+		<object data="$!{bookSection.getCoverUrl()}">
+  			<img src="$r.staticLink('images/edubase/empty_cover.png')" alt="COVER">
+		</object>
+	</div>
+	<div class="col-sm-10 o_edubase_booksection">
+		<div class="row">
+			<div class="col-sm-12">
+				<h4 class="o_edubase_title">$r.escapeHtml($bookSection.getTitle())</h4>
+				#if ($bookSection.getPageFrom() || $bookSection.getPageTo())
+					<div class="o_edubase_page">
+						$helper.formatPageFromTo($bookSection.getPageFrom(), $bookSection.getPageTo())
+					</div>
+				#end
+				#if ($bookSection.getDescription() && $bookSection.getDescription() != "")
+					<div class="o_edubase_description o_block_top">
+						$bookSection.getDescription()
+					</div>
+				#end
+				<div>
+					$r.render("startReader_${bookSection.getPosition()}")
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+#end
+</div>

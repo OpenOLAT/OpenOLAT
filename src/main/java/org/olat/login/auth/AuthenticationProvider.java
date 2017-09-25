@@ -33,9 +33,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.StartupException;
 import org.olat.core.util.Util;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Initial Date:  04.08.2004
@@ -52,8 +54,10 @@ public class AuthenticationProvider implements ControllerCreator{
 	private String iconCssClass;
 	private boolean enabled;
 	private boolean isDefault;
-	
-	
+	@Value("${instance.issuer.identifier:null}")
+	private String issuerIdentifier;
+
+
 	/**
 	 * [used by spring]
 	 * Authentication provider implementation. Gets its config from spring config file.
@@ -70,25 +74,25 @@ public class AuthenticationProvider implements ControllerCreator{
 			throw new StartupException("Invalid AuthProvider: " + name + ". Please fix!");
 		}
 	}
-	
+
 	/**
 	 * @return True if this auth provider is enabled.
 	 */
 	public boolean isEnabled() {
 		return enabled;
 	}
-	
+
 	/**
 	 * @return True if this auth provider is the default provider
 	 */
 	public boolean isDefault() {
 		return isDefault;
 	}
-	
+
 	public boolean accept(@SuppressWarnings("unused") String subProviderName) {
 		return false;
 	}
-	
+
 	/**
 	 * @return Name used to identify this authprovider.
 	 */
@@ -99,7 +103,7 @@ public class AuthenticationProvider implements ControllerCreator{
 	public String getIconCssClass() {
 		return iconCssClass;
 	}
-	
+
 	/**
 	 * [used by velocity]
 	 * @param language
@@ -122,12 +126,13 @@ public class AuthenticationProvider implements ControllerCreator{
 		return text;
 	}
 
+	@Override
 	public Controller createController(UserRequest lureq, WindowControl lwControl) {
 		AutoCreator ac = new AutoCreator();
 		ac.setClassName(clazz);
 		return ac.createController(lureq, lwControl);
 	}
-	
+
 	/**
 	 * @param locale
 	 * @return a translator for the package matching the authenticationProvider
@@ -141,5 +146,21 @@ public class AuthenticationProvider implements ControllerCreator{
 		}
 		return Util.createPackageTranslator(authProvClass, locale);
 	}
-	
+
+	/**
+	 * The issuer is the entity that issues a set of claims. An issuer
+	 * identifier is a case sensitive URL using the https scheme that contains
+	 * scheme, host, and optionally, port number and path components and no
+	 * query or fragment components.
+	 * <p>
+	 * The default implementation returns the property
+	 * instance.issuer.identifier.
+	 *
+	 * @param identityEnvironment
+	 * @return the issuer identifier
+	 */
+	public String getIssuerIdentifier(IdentityEnvironment identityEnvironment) {
+		return issuerIdentifier;
+	}
+
 }

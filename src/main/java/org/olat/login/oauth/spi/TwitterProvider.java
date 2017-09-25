@@ -141,4 +141,9 @@ public class TwitterProvider implements OAuthSPI {
 		String value = obj.optString(property);
 		return StringHelper.containsNonWhitespace(value) ? value : null;
 	}
+
+	@Override
+	public String getIssuerIdentifier() {
+		return "https://twitter.com";
+	}
 }

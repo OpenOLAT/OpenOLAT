@@ -60,19 +60,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 
+ *
  * Initial date: 13.05.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @Service
 public class LTIManagerImpl implements LTIManager {
-	
+
 	private static final OLog log = Tracing.createLoggerFor(LTIManagerImpl.class);
 
 	@Autowired
 	private DB dbInstance;
-	
+
 	@Override
 	public LTIOutcome createOutcome(Identity identity, OLATResource resource,
 			String resSubPath, String action, String outcomeKey, String outcomeValue) {
@@ -97,7 +97,7 @@ public class LTIManagerImpl implements LTIManager {
 				.createNamedQuery("loadLTIOutcomeByKey", LTIOutcome.class).
 				setParameter("outcomeKey", key)
 				.getResultList();
-		
+
 		if(outcomes.isEmpty()) {
 			return null;
 		}
@@ -106,7 +106,7 @@ public class LTIManagerImpl implements LTIManager {
 
 	@Override
 	public List<LTIOutcome> loadOutcomes(Identity identity, OLATResource resource, String resSubPath) {
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select outcome from ltioutcome outcome where outcome.assessedIdentity.key=:identityKey and outcome.resource=:resource");
 		if(StringHelper.containsNonWhitespace(resSubPath)) {
@@ -114,18 +114,18 @@ public class LTIManagerImpl implements LTIManager {
 		} else {
 			sb.append(" and outcome.resSubPath is null");
 		}
-		
+
 		TypedQuery<LTIOutcome> outcomes = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LTIOutcome.class)
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("resource", resource);
-		
+
 		if(StringHelper.containsNonWhitespace(resSubPath)) {
 			outcomes.setParameter("resSubPath", resSubPath);
 		}
 		return outcomes.getResultList();
 	}
-	
+
 	@Override
 	public void deleteOutcomes(OLATResource resource) {
 		String q = "delete from ltioutcome as outcome where outcome.resource=:resource";
@@ -143,7 +143,7 @@ public class LTIManagerImpl implements LTIManager {
 		String tool_consumer_instance_url = null;
 		String tool_consumer_instance_name = WebappHelper.getInstanceId();
 		String tool_consumer_instance_contact_email = WebappHelper.getMailConfig("mailSupport");
-		
+
 		if (props == null) {
 			props = new HashMap<>();
 		}
@@ -184,7 +184,7 @@ public class LTIManagerImpl implements LTIManager {
 		}
 		//consumer infos
 		setProperty(props, "tool_consumer_info_product_family_code", "openolat");
-		setProperty(props, "tool_consumer_info_version", Settings.getVersion());		
+		setProperty(props, "tool_consumer_info_version", Settings.getVersion());
 		//outcome
 		if(StringHelper.containsNonWhitespace(context.getOutcomeMapperUri())) {
 			//setProperty(props, "ext_ims_lis_basic_outcome_url", context.getOutcomeMapperUri());
@@ -193,7 +193,7 @@ public class LTIManagerImpl implements LTIManager {
 			setProperty(props, "lis_outcome_service_url", context.getOutcomeMapperUri());
 		}
 		//user data
-		setProperty(props, "user_id", u.getKey().toString());		
+		setProperty(props, "user_id", context.getUserId(identity));
 		setProperty(props, "lis_person_sourcedid", createPersonSourceId(identity));
 		if (sendName) {
 			setProperty(props, "lis_person_name_given", firstName);
@@ -214,10 +214,10 @@ public class LTIManagerImpl implements LTIManager {
 
 		return props;
 	}
-	
+
 	private void setCustomProperties(String custom, Identity identity, Map<String,String> props) {
 		if (!StringHelper.containsNonWhitespace(custom)) return;
-		
+
 		String[] params = custom.split("[\n;]");
 		for (int i = 0; i < params.length; i++) {
 			String param = params[i];
@@ -228,17 +228,17 @@ public class LTIManagerImpl implements LTIManager {
 			if (pos < 1 || pos + 1 > param.length()) {
 				continue;
 			}
-			
+
 			String key = BasicLTIUtil.mapKeyName(param.substring(0, pos));
 			if(!StringHelper.containsNonWhitespace(key)) {
 				continue;
 			}
-			
+
 			String value = param.substring(pos + 1).trim();
 			if(value.length() < 1) {
 				continue;
 			}
-			
+
 			if(value.startsWith(LTIManager.USER_PROPS_PREFIX)) {
 				String userProp = value.substring(LTIManager.USER_PROPS_PREFIX.length(), value.length());
 				value = identity.getUser().getProperty(userProp, null);
@@ -246,7 +246,7 @@ public class LTIManagerImpl implements LTIManager {
 			setProperty(props, "custom_" + key, value);
 		}
 	}
-	
+
 	public void setProperty(Map<String,String> props, String key, String value) {
 		if (value == null) return;
 		if (value.trim().length() < 1) return;
@@ -258,7 +258,7 @@ public class LTIManagerImpl implements LTIManager {
 	 * it should contain at least one role from the LIS System Role, LIS
 	 * Institution Role, or LIS Context Role vocabularies (See Appendix A of
 	 * LTI_BasicLTI_Implementation_Guide_rev1.pdf).
-	 * 
+	 *
 	 * @param roles
 	 * @return
 	 */
@@ -277,13 +277,13 @@ public class LTIManagerImpl implements LTIManager {
 				rolesStr.append(",").append("Administrator");
 			}
 		}
-		
+
 		return rolesStr.toString();
 	}*/
-	
+
 	private String createPersonSourceId(Identity identity) {
-		// The person source ID is used as user identifier. The rule is as follows: 
-		// 1) if a shibboleth authentication token is availble, use the ShibbolethModule.getDefaultUIDAttribute() 
+		// The person source ID is used as user identifier. The rule is as follows:
+		// 1) if a shibboleth authentication token is availble, use the ShibbolethModule.getDefaultUIDAttribute()
 		// 2) if a LDAP authentication token is available, use the LDAPConstants.LDAP_USER_IDENTIFYER
 		// 3) as fallback use the system URL together with the identity username
 		String personSourceId = null;
@@ -298,7 +298,7 @@ public class LTIManagerImpl implements LTIManager {
 			} else if (LDAPAuthenticationController.PROVIDER_LDAP.equals(provider)) {
 				personSourceId = method.getAuthusername();
 				// normally done, case 2). however, lets continue because we might still find a case 1)
-			}			
+			}
 			// ignore all other authentication providers
 		}
 		if (!StringHelper.containsNonWhitespace(personSourceId)) {
@@ -307,16 +307,16 @@ public class LTIManagerImpl implements LTIManager {
 		}
 		return personSourceId;
 	}
-	
+
 	@Override
 	public String post(Map<String,String> signedProps, String url) {
 		String content = null;
-		
+
 		// Map the LTI properties to HttpClient parameters
 		List<NameValuePair> urlParameters = signedProps.keySet().stream()
 				.map(k -> new BasicNameValuePair(k, signedProps.get(k)))
 				.collect(Collectors.toList());
-		
+
 		// make the http request and evaluate the result
 		try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
 			HttpPost request = new HttpPost(url);
@@ -329,6 +329,15 @@ public class LTIManagerImpl implements LTIManager {
 		}
 
 		return content;
+	}
+
+	@Override
+	public String joinCustomProps(Map<String, String> customProps) {
+		if (customProps == null) return null;
+
+		return customProps.entrySet().stream()
+				.map(p -> p.getKey() + "=" + p.getValue())
+				.collect(Collectors.joining(";"));
 	}
 
 }

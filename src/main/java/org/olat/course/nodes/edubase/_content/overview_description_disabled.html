@@ -1,0 +1,16 @@
+<div class="o_edubase_run_disabled">
+#foreach($bookSection in $bookSections)
+	<div class="o_edubase_booksection">
+		#set( $runindex = $run + $foreach.index)
+		<object data="$!{bookSection.getCoverUrl()}">
+  			<img src="$r.staticLink('images/edubase/empty_cover.png')" alt="COVER" onClick="$r.javaScriptCommand($runindex);">
+		</object>
+		<div>
+			$r.escapeHtml($bookSection.getTitle())
+		</div>
+		<div class="o_edubase_page">
+			$!helper.formatPageFromTo($bookSection.getPageFrom(), $bookSection.getPageTo())
+		</div>
+	</div>
+#end
+</div>

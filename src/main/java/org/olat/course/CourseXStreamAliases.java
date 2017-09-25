@@ -65,6 +65,7 @@ import org.olat.course.nodes.ViteroCourseNode;
 import org.olat.course.nodes.WikiCourseNode;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.olat.modules.edubase.model.BookSectionImpl;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -93,6 +94,7 @@ public class CourseXStreamAliases {
 	static {
 		//write XStream
 		writeXstream.alias("com.frentix.olat.course.nodes.ViteroCourseNode", ViteroCourseNode.class);
+		writeXstream.alias("BookSection", BookSectionImpl.class);
 		//end write XStream
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,6 +115,7 @@ public class CourseXStreamAliases {
 		readXstream.alias("CourseNode", CourseNode.class);
 		readXstream.alias("CPCourseNode", CPCourseNode.class);
 		readXstream.alias("DialogCourseNode", DialogCourseNode.class);
+		readXstream.alias("BookSection", BookSectionImpl.class);
 		readXstream.alias("ENCourseNode", ENCourseNode.class);
 		readXstream.alias("FOCourseNode", FOCourseNode.class);
 		readXstream.alias("InfoCourseNode", InfoCourseNode.class);

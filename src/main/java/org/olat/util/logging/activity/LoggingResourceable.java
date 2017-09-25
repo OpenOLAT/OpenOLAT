@@ -20,9 +20,9 @@
 * <a href="http://www.openolat.org">
 * OpenOLAT - Online Learning and Training</a><br>
 * This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.  
+* under the Apache 2.0 license as the original file.
 * <p>
-*/  
+*/
 
 package org.olat.util.logging.activity;
 
@@ -44,6 +44,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
+import org.olat.modules.edubase.BookSection;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
@@ -62,7 +63,7 @@ import org.olat.resource.OLATResource;
  * an OlatResource, a RepositoryEntry and simple Strings - all of which want to be
  * used as (greatGrandParent,grandParent,parent,target) resourcs in the logging table.
  * <p>
- * The idea of this class is to have one class containing the three fields 
+ * The idea of this class is to have one class containing the three fields
  * <ul>
  *  <li>type: what sort of resource is it</li>
  *  <li>id: an id of the olat database - if available</li>
@@ -79,11 +80,11 @@ import org.olat.resource.OLATResource;
  * The above check is done as a testing means to assure the data we're logging
  * matches what we expect it to contain.
  * <p>
- * This way we avoid difficult if not unrealistic testing of the use of this 
+ * This way we avoid difficult if not unrealistic testing of the use of this
  * IUserActivityLogging framework.
  * <p>
  * If a comparison with the businessPath fails, a simple (technical) log.WARN is issued.
- * This should then be noticed by the system administrator hence feeding back 
+ * This should then be noticed by the system administrator hence feeding back
  * into a patch or a fix for the next release.
  * <P>
  * Initial Date:  20.10.2009 <br>
@@ -96,23 +97,23 @@ public class LoggingResourceable implements ILoggingResourceable {
 
 	/** the maximum number of bytes for the name field **/
 	public static final int MAX_NAME_LEN = 240;
-	
+
 	/** the maximum number of bytes for the id field **/
 	public static final int MAX_ID_LEN = 60;
-	
+
 	/** the maximum number of bytes for the type field **/
 	public static final int MAX_TYPE_LEN = 30;
-	
+
 	/** type of this LoggingResourceable - contains the OlatResourceable's type in the OlatResourceable case,
 	 * or the enum name() of the StringResourceableType otherwise
 	 */
 	private final String type_;
-	
+
 	/** the id of this LoggingResourceable - contains the OlatResource or RepositoryEntry's ID in those cases,
 	 * or -1 in the StringResourceableType case.
 	 */
 	private final String id_;
-	
+
 	/** the name of this LoggingResourceable - this can be the title in case of a course - or
 	 * the html name of a page in case of cp
 	 */
@@ -122,13 +123,13 @@ public class LoggingResourceable implements ILoggingResourceable {
 	 * checks against the businessPath
 	 */
 	private final ILoggingResourceableType resourceableType_;
-	
+
 	/** the OlatResourceable if we have one - null otherwise. Used for equals() and the businessPath check mainly **/
 	private final OLATResourceable resourceable_;
-	
-	
+
+
 	private final boolean ignorable;
-	
+
 	/**
 	 * Restrict the given argument to the given number of bytes using UTF-8 encoding.
 	 * <p>
@@ -140,14 +141,14 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public static String restrictStringLength(String arg, int maxBytes) {
 		return restrictStringLength(arg, maxBytes, null, false);
 	}
-	
+
 	/**
 	 * Utility method to restrict the given String 'arg' to be of byte-length 'maxBytes'.
 	 * <p>
 	 * Uses String.getBytes() to determine byte length
 	 * @param arg the String to be restricted to the maxBytes length
 	 * @param maxBytes the max length allowed
-	 * @param argNameForLogging the name of the arg value - used in case there's an error to give more accurate logging details 
+	 * @param argNameForLogging the name of the arg value - used in case there's an error to give more accurate logging details
 	 * @return
 	 */
 	private static String restrictStringLength(String arg, int maxBytes, String argNameForLogging, boolean log) {
@@ -181,7 +182,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 			return result;
 		}
 	}
-	
+
 	/**
 	 * Internal constructor to create a LoggingResourceable object with the given mandatory
 	 * parameters initialized.
@@ -203,7 +204,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 		resourceableType_ = resourceableType;
 		this.ignorable = ignorable;
 	}
-	
+
 	/**
 	 * These are ignored from the logging.
 	 * @param olatResourceable
@@ -212,19 +213,19 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public static LoggingResourceable wrapBusinessPath(OLATResourceable olatResourceable) {
 		return new LoggingResourceable(olatResourceable, OlatResourceableType.businessPath, "businessPath", "0", "", true);
 	}
-	
+
 //
 // Following is a set of wrap*() methods which take specific 'olat resourceable' objects
 // and selects the type/id/name information to be taken out of it
 //
-	
+
 	public static LoggingResourceable wrapScormRepositoryEntry(RepositoryEntry scormRepoEntry) {
 		if (scormRepoEntry==null) {
 			throw new IllegalArgumentException("scormRepoEntry must not be null");
 		}
 		return wrap(scormRepoEntry, OlatResourceableType.scormResource);
 	}
-	
+
 	/**
 	 * Wraps a Wiki into a LoggingResourceable
 	 * @param olatResourceable the wiki
@@ -240,7 +241,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 			return wrap(olatResourceable, OlatResourceableType.wiki);
 		}
 	}
-	
+
 	/**
 	 * Wraps a portfolio into a LoggingResourceable
 	 * @param olatResourceable the wiki
@@ -256,7 +257,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 			return wrap(olatResourceable, OlatResourceableType.portfolio);
 		}
 	}
-	
+
 	/**
 	 * Wraps a portfolio v 2.0 or binder into a LoggingResourceable
 	 * @param binder The binder (persisted)
@@ -269,7 +270,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 		return new LoggingResourceable(binder, OlatResourceableType.portfolio, binder.getResourceableTypeName(),
 				String.valueOf(binder.getResourceableId()), binder.getTitle(), false);
 	}
-	
+
 	/**
 	 * Wraps the section of a portfolio v 2.0 or binder into a LoggingResourceable
 	 * @param section The section (persisted)
@@ -283,7 +284,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 		return new LoggingResourceable(sectionOres, OlatResourceableType.section, sectionOres.getResourceableTypeName(),
 				String.valueOf(sectionOres.getResourceableId()), section.getTitle(), false);
 	}
-	
+
 	/**
 	 * Wraps the assignment in a portfolio v 2.0 or binder into a LoggingResourceable
 	 * @param assignment The assignment (persisted)
@@ -295,9 +296,9 @@ public class LoggingResourceable implements ILoggingResourceable {
 		}
 		OLATResourceable assignmentOres = OresHelper.createOLATResourceableInstance(Assignment.class, assignment.getKey());
 		return new LoggingResourceable(assignmentOres, OlatResourceableType.assignment, assignmentOres.getResourceableTypeName(),
-				String.valueOf(assignmentOres.getResourceableId()), assignment.getTitle(), false);	
+				String.valueOf(assignmentOres.getResourceableId()), assignment.getTitle(), false);
 	}
-	
+
 	/**
 	 * Wraps the media in portfolio v 2.0 into a LoggingResourceable
 	 * @param media The media (persisted)
@@ -309,9 +310,9 @@ public class LoggingResourceable implements ILoggingResourceable {
 		}
 		OLATResourceable mediaOres = OresHelper.createOLATResourceableInstance(Media.class, media.getKey());
 		return new LoggingResourceable(mediaOres, OlatResourceableType.media, mediaOres.getResourceableTypeName(),
-				String.valueOf(mediaOres.getResourceableId()), media.getTitle(), false);		
+				String.valueOf(mediaOres.getResourceableId()), media.getTitle(), false);
 	}
-	
+
 	/**
 	 * Wraps OpenMeetings into a LoggingResourceable
 	 * @param olatResourceable the meeting
@@ -327,9 +328,9 @@ public class LoggingResourceable implements ILoggingResourceable {
 			return wrap(olatResourceable, OlatResourceableType.openmeetings);
 		}
 	}
-	
+
 	/**
-	 * General wrapper for an OlatResourceable - as it's not obvious of what type that 
+	 * General wrapper for an OlatResourceable - as it's not obvious of what type that
 	 * OlatResourceable is (in terms of being able to later compare it against the businessPath etc)
 	 * an ILoggingResourceableType needs to be passed to this method as well.
 	 * @param olatResourceable a general OlatResourceable
@@ -349,13 +350,13 @@ public class LoggingResourceable implements ILoggingResourceable {
 		} else if (olatResourceable instanceof OLATResource) {
 			OLATResource olatResource = (OLATResource) olatResourceable;
 			return new LoggingResourceable(olatResource, type, olatResource.getResourceableTypeName(),
-					String.valueOf(olatResource.getResourceableId()), String.valueOf(olatResource.getKey()), false);			
+					String.valueOf(olatResource.getResourceableId()), String.valueOf(olatResource.getKey()), false);
 		} else {
 			return new LoggingResourceable(olatResourceable, type, olatResourceable.getResourceableTypeName(),
-					String.valueOf(olatResourceable.getResourceableId()), "", false);			
+					String.valueOf(olatResourceable.getResourceableId()), "", false);
 		}
 	}
-	
+
 	/**
 	 * General wrapper for non OlatResourceable types - i.e. for simple Strings.
 	 * <p>
@@ -373,10 +374,10 @@ public class LoggingResourceable implements ILoggingResourceable {
 	 * @return a LoggingResourceable wrapping the given type/id/name triple
 	 */
 	public static LoggingResourceable wrapNonOlatResource(StringResourceableType type, String idForDB, String nameForDB) {
-		return new LoggingResourceable(null, type, 
+		return new LoggingResourceable(null, type,
 				type.name(), idForDB, nameForDB, false);
 	}
-	
+
 	/**
 	 * Wraps a filename as type StringResourceableType.uploadFile into a LoggingResourceable
 	 * @param uploadFileName the filename - to be stored to the database in the name field
@@ -385,7 +386,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public static LoggingResourceable wrapUploadFile(String uploadFileName) {
 		return wrapNonOlatResource(StringResourceableType.uploadFile, createUniqueId(StringResourceableType.uploadFile.toString(), uploadFileName), uploadFileName);
 	}
-	
+
 	/**
 	 * Wraps a filename as type StringResourceableType.bcFile into a LoggingResourceable
 	 * @param bcFileName the filename - to be stored to the database in the name field
@@ -394,7 +395,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public static LoggingResourceable wrapBCFile(String bcFileName) {
 		return wrapNonOlatResource(StringResourceableType.bcFile, createUniqueId(StringResourceableType.bcFile.toString(), bcFileName), bcFileName);
 	}
-	
+
 	/**
 	 * Wraps a cpNodeName as type StringResourceableType.cpNode into a LoggingResourceable
 	 * @param cpNodeName the node name - to be stored to the database in the name field
@@ -403,7 +404,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public static LoggingResourceable wrapCpNode(String cpNodeName) {
 		return wrapNonOlatResource(StringResourceableType.cpNode, createUniqueId(StringResourceableType.cpNode.toString(), cpNodeName), cpNodeName);
 	}
-	
+
 	/**
 	 * Wraps a single page uri as type StringResourceableType.spUri into a LoggingResourceable
 	 * @param spUri the single page uri - to be stored to the database in the name field
@@ -412,7 +413,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public static LoggingResourceable wrapSpUri(String spUri) {
 		return wrapNonOlatResource(StringResourceableType.spUri, createUniqueId(StringResourceableType.spUri.toString(), spUri), spUri);
 	}
-	
+
 	/**
 	 * Wraps a businessgroup right as type StringResourceableType.bgRight into a LoggingResourceable
 	 * @param right the name of the businessgroup right - to be stored to the database in the name field
@@ -421,7 +422,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public static LoggingResourceable wrapBGRight(String right) {
 		return wrapNonOlatResource(StringResourceableType.bgRight, createUniqueId(StringResourceableType.bgRight.toString(), right), right);
 	}
-	
+
 	/**
 	 * Wraps a filename of type StringResourceableType.uploadFile into a LoggingResourceable
 	 * @param uploadFileName the filename - to be stored to the database in the name field
@@ -430,7 +431,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public static LoggingResourceable wrap(BGArea bgArea) {
 		return wrapNonOlatResource(StringResourceableType.bgArea, createUniqueId(StringResourceableType.bgArea.toString(), bgArea.toString()), bgArea.getName());
 	}
-	
+
 	/**
 	 * Wraps an Identity as type StringResourceableType.targetIdentity into a LoggingResourceable
 	 * @param identity the identity - to be stored to the database in the name field
@@ -439,9 +440,9 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public static LoggingResourceable wrap(Identity identity) {
 		return wrapNonOlatResource(StringResourceableType.targetIdentity, String.valueOf(identity.getKey()), identity.getName());
 	}
-	
+
 	/**
-	 * Wraps a Forum into a LoggingResourceable - setting type/id/name accordingly 
+	 * Wraps a Forum into a LoggingResourceable - setting type/id/name accordingly
 	 * @param forum the forum to be wrapped
 	 * @return a LoggingResourceable wrapping the given Forum
 	 */
@@ -452,7 +453,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	}
 
 	/**
-	 * Wraps a (Forum) Message into a LoggingResourceable - setting type/id/name accordingly 
+	 * Wraps a (Forum) Message into a LoggingResourceable - setting type/id/name accordingly
 	 * @param message the message to be wrapped
 	 * @return a LoggingResourceable wrapping the given (Forum) Message
 	 */
@@ -460,9 +461,9 @@ public class LoggingResourceable implements ILoggingResourceable {
 		return new LoggingResourceable(OresHelper.createOLATResourceableInstance(Message.class, forumMessage.getKey()), OlatResourceableType.forumMessage, OlatResourceableType.forumMessage.name(),
 				String.valueOf(forumMessage.getKey()), forumMessage.getTitle(), false);
 	}
-	
+
 	/**
-	 * Wraps a Feed into a LoggingResourceable - setting type/id/name accordingly 
+	 * Wraps a Feed into a LoggingResourceable - setting type/id/name accordingly
 	 * @param feed the feed to be wrapped
 	 * @return a LoggingResourceable wrapping the given feed
 	 */
@@ -476,7 +477,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	}
 
 	/**
-	 * Wraps a (Feed) Item into a LoggingResourceable - setting type/id/name accordingly 
+	 * Wraps a (Feed) Item into a LoggingResourceable - setting type/id/name accordingly
 	 * @param item the item to be wrapped
 	 * @return a LoggingResourceable wrapping the given (Feed) Item
 	 */
@@ -486,49 +487,49 @@ public class LoggingResourceable implements ILoggingResourceable {
 			String guid = item.getGuid();
 			// only use last 230 chars of the URL if too long
 			if (guid.length() > 230) guid = guid.substring(guid.length() - 230);
-			return wrapNonOlatResource(StringResourceableType.feedItem, null, guid);			
+			return wrapNonOlatResource(StringResourceableType.feedItem, null, guid);
 		} else {
 			String title = item.getTitle();
 			// truncate title after 230 chars
 			if (title.length() > 230) title = title.substring(0, 229);
-			return wrapNonOlatResource(StringResourceableType.feedItem, item.getGuid(), title);			
+			return wrapNonOlatResource(StringResourceableType.feedItem, item.getGuid(), title);
 		}
 	}
 
 	/**
-	 * Wraps a BusinessGroup into a LoggingResourceable - setting type/id/name accordingly 
+	 * Wraps a BusinessGroup into a LoggingResourceable - setting type/id/name accordingly
 	 * @param group the group to be wrapped
 	 * @return a LoggingResourceable wrapping the given BusinessGroup
 	 */
 	public static LoggingResourceable wrap(BusinessGroup group) {
-		return new LoggingResourceable(group, OlatResourceableType.businessGroup, group.getResourceableTypeName(), 
+		return new LoggingResourceable(group, OlatResourceableType.businessGroup, group.getResourceableTypeName(),
 				String.valueOf(group.getKey()), group.getName(), false);
 	}
-	
+
 	/**
-	 * Wraps a ICourse into a LoggingResourceable - setting type/id/name accordingly 
+	 * Wraps a ICourse into a LoggingResourceable - setting type/id/name accordingly
 	 * @param course the course to be wrapped
 	 * @return a LoggingResourceable wrapping the given ICourse
 	 */
 	public static LoggingResourceable wrap(ICourse course) {
-		return new LoggingResourceable(course, OlatResourceableType.course, course.getResourceableTypeName(), 
+		return new LoggingResourceable(course, OlatResourceableType.course, course.getResourceableTypeName(),
 				String.valueOf(course.getResourceableId()), course.getCourseTitle(), false);
 	}
-	
+
 	public static LoggingResourceable wrapTest(RepositoryEntry entry) {
-		return new LoggingResourceable(entry, OlatResourceableType.test, entry.getOlatResource().getResourceableTypeName(), 
+		return new LoggingResourceable(entry, OlatResourceableType.test, entry.getOlatResource().getResourceableTypeName(),
 				String.valueOf(entry.getOlatResource().getResourceableId()), entry.getDisplayname(), false);
 	}
-	
+
 	/**
-	 * Wraps a CourseNode into a LoggingResourceable - setting type/id/name accordingly 
+	 * Wraps a CourseNode into a LoggingResourceable - setting type/id/name accordingly
 	 * @param node the node to be wrapped
 	 * @return a LoggingResourceable wrapping the given node
 	 */
 	public static LoggingResourceable wrap(CourseNode node) {
 		final String name = node.getShortTitle();
 		final String ident = node.getIdent();
-		
+
 		final String typeForLogging = node.getType();
 		try{
 			Long id = Long.parseLong(ident);
@@ -540,16 +541,23 @@ public class LoggingResourceable implements ILoggingResourceable {
 					node.getIdent(), name, false);
 		}
 	}
-	
+
 	/**
-	 * Wraps a calendar into a LoggingResourceable - setting type/id/name accordingly 
+	 * Wraps a calendar into a LoggingResourceable - setting type/id/name accordingly
 	 * @param calendar the calendar to be wrapped
 	 * @return a LoggingResourceable wrapping the given calendar
 	 */
 	public static LoggingResourceable wrap(Kalendar calendar) {
 		return wrapNonOlatResource(StringResourceableType.calendar, calendar.getCalendarID(), calendar.getType());
 	}
-	
+
+	public static LoggingResourceable wrap(BookSection bookSection) {
+		return wrapNonOlatResource(
+				StringResourceableType.bookSection,
+				createUniqueId(StringResourceableType.bookSection.toString(), bookSection.getBookId()),
+				bookSection.getBookId());
+	}
+
 	/**
 	 * Create unique id.
 	 * @param type
@@ -559,12 +567,12 @@ public class LoggingResourceable implements ILoggingResourceable {
 	private static String createUniqueId(String type, String name) {
 		return OresHelper.createStringRepresenting(OresHelper.createOLATResourceableType(type), name);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "LoggingResourceInfo[type="+type_+",rtype="+resourceableType_.name()+",id="+id_+",name="+name_+"]";
 	}
-	
+
 	/**
 	 * Returns the type of this LoggingResourceable - this is the OlatResourceable's type
 	 * (in case this LoggingResource represents a OlatResourceable) - or the StringResourceableType's enum name()
@@ -593,7 +601,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public String getName() {
 		return name_;
 	}
-	
+
 	/**
 	 * Returns the ILoggingResourceableType of this LoggingResourceable - used for businessPath checking
 	 * @return the ILoggingResourceableType of this LoggingResourceable
@@ -601,7 +609,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public ILoggingResourceableType getResourceableType() {
 		return resourceableType_;
 	}
-	
+
 	@Override
 	public boolean isIgnorable() {
 		return ignorable;
@@ -611,7 +619,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 	public int hashCode() {
 		return type_.hashCode()+(id_!=null ? id_.hashCode() : 1)+(resourceable_!=null ? resourceable_.getResourceableTypeName().hashCode()+(int)resourceable_.getResourceableId().longValue() : 0) + (resourceableType_!=null ? resourceableType_.hashCode() : 0);
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof LoggingResourceable)) {
@@ -621,7 +629,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 		} else if (hashCode()!=obj.hashCode()) {
 			return false;
 		}
-		
+
 		LoggingResourceable lri = (LoggingResourceable)obj;
 		if (!type_.equals(lri.type_)) {
 			return false;
@@ -650,7 +658,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 		if (!resourceable_.getResourceableId().equals(lri.resourceable_.getResourceableId())) {
 			return false;
 		}
-		
+
 		// bingo
 		return true;
 	}
@@ -671,7 +679,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 		if (ceResourceable==null) {
 			return false;
 		}
-		
+
 		if (resourceable_!=null) {
 			if (ceResourceable.getResourceableTypeName().equals(resourceable_.getResourceableTypeName()) &&
 					ceResourceable.getResourceableId().equals(resourceable_.getResourceableId())) {
@@ -679,7 +687,7 @@ public class LoggingResourceable implements ILoggingResourceable {
 			}
 			if (ceResourceable instanceof RepositoryEntry) {
 				RepositoryEntry re = (RepositoryEntry) ceResourceable;
-				
+
 				OLATResource ores = re.getOlatResource();
 				if (ores!=null &&
 						ores.getResourceableTypeName().equals(resourceable_.getResourceableTypeName()) &&
@@ -690,23 +698,23 @@ public class LoggingResourceable implements ILoggingResourceable {
 				// @TODO: Performance hit! Speed optimize this!
 				// OLAT-4996
 				// OLAT-4955
-				// that's the jump-in case where the ContextEntry says it has a [RepositoryEntry:123212321] but 
+				// that's the jump-in case where the ContextEntry says it has a [RepositoryEntry:123212321] but
 				// the actual class of ceResourceable is not a RepositoryEntry but an OresHelper$3 ...
-				
+
 				// in which case all we have is the key of the repositoryentry and we must make a DB lookup to
-				// map the repo key to the corresponding olatresource 
-				
+				// map the repo key to the corresponding olatresource
+
 				OLATResource ores = RepositoryManager.getInstance().lookupRepositoryEntryResource(ceResourceable.getResourceableId());
-				if (ores!=null  && 
+				if (ores!=null  &&
 						ores.getResourceableTypeName().equals(resourceable_.getResourceableTypeName()) &&
 						ores.getResourceableId().equals(resourceable_.getResourceableId())) {
 					return true;
 				}
-				
+
 			}
 			return ceResourceable.equals(resourceable_);
 		}
-		
+
 		// if resourceable_ is null it's rather difficult to compare us with the contextentry
 		// we still try...
 		if (type_.equals(StringResourceableType.targetIdentity.name())  &&

@@ -101,5 +101,9 @@ public class Card2BrainContext implements LTIContext {
 		return HEIGTH;
 	}
 
+	@Override
+	public String getUserId(Identity identity) {
+		return identity.getUser().getKey().toString();
+	}
 
 }

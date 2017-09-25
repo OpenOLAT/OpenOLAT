@@ -124,4 +124,9 @@ public class LTICourseNodeContext implements LTIContext {
 	public String getPreferredHeight() {
 		return height;
 	}
+
+	@Override
+	public String getUserId(Identity identity) {
+		return identity.getUser().getKey().toString();
+	}
 }

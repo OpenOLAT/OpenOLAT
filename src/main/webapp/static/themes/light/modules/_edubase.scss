@@ -1,0 +1,61 @@
+/* peekview */
+.o_edubase_pv {
+	overflow:hidden;
+	padding-top: 10px;
+}
+.o_edubase_pv_fig {
+	display: inline-block;
+	vertical-align: top;
+	width:110px;
+	margin-right:3%;
+}
+
+/* runview */
+.o_edubase_run_enabled .o_edubase_page {
+    font-size: 12px;
+    color: $text-muted;
+}
+
+.o_edubase_run_disabled .o_edubase_booksection {
+	margin-right: 3%;
+	margin-bottom: 3%;
+	width: 177px;
+	display:inline-table;
+}
+.o_edubase_run_disabled .o_edubase_page {
+    font-size: 12px;
+    color: $text-muted;
+}
+
+/* edit book section list */
+.o_edubase_bs_buttons {
+	padding-top: 10px;
+}
+.o_edubase_bs_book_id {
+	margin-top: -2px;
+}
+.o_edubase_bs_details {
+	margin-left: -20px;
+}
+.o_edubase_bs_details_label {
+	visibility: hidden;
+}
+.o_edubase_bs_cover object {
+	margin-left: 10px;
+	margin-top: 10px;
+	height: 120px;
+}
+.o_edubase_bs_cover img {
+	margin-left: 10px;
+	margin-top: 10px;
+	height: 120px;
+}
+.o_edubase_edit_books .o_icon_error {
+    visibility: hidden;
+}
+.o_edubase_edit_books .o_icon_help {
+    margin-bottom: 0px;
+}
+.o_edubase_edit_books .row {
+    margin-bottom: 5px;
+}

@@ -24,15 +24,17 @@
 */
 package org.olat.core.logging.activity;
 
+import org.olat.util.logging.activity.LoggingResourceable;
+
 /**
- * Specialization of ILoggingResourceableType which represents a 
+ * Specialization of ILoggingResourceableType which represents a
  * String rather than an OlatResourceable.
  * <p>
  * Note that the string can be something like an URL, an Identity
  * or a group right - but it can also correspond to an OlatResourceable
  * in cases like scormResource, assessmentID. In the latter case
  * we do not have an OlatResourceable at the time where the LoggingResourceable
- * is added to the IUserActivityLogger - otherwise it would be 
+ * is added to the IUserActivityLogger - otherwise it would be
  * preferable to add an OlatResourceable always.
  * <p>
  * See the LoggingResourceable class's corresponding wrap() method.
@@ -45,83 +47,86 @@ public enum StringResourceableType implements ILoggingResourceableType {
 	/** the calendar id **/
 	calendar,
 	/** corresponds to the CourseNode ID - but we seem to not have an OlatResourceable at the time **/
-	nodeId, 
-	
+	nodeId,
+
 	/** the single page URI **/
 	spUri,
-	
+
 	/** the businessgroup area name **/
-	bgArea, 
-	
+	bgArea,
+
 	/** the businessgroup right (key) **/
 	bgRight,
-	
+
 	/** the content package node name (filename) **/
-	cpNode, 
-	
+	cpNode,
+
 	/** a checklist **/
 	checklist,
-	
+
 	 /** a checkpoint from a checklist **/
 	checkpoint,
 
 	 /** checkbox from a checklist **/
 	checkbox,
-	
+
 	/** the briefcase filename **/
-	bcFile, 
-	
+	bcFile,
+
 	/** the uploaded filename **/
 	uploadFile,
-	
+
 	/** the target identity **/
 	targetIdentity,
-	
+
 	/** the softkey of the glossary - we seem to not have an OlatResourceable at the time **/
 	glossarySoftKey,
-	
+
 	/** the scorm resource ID - we seem to not have an OlatResourceable at the time **/
 	scormResource,
-	
+
 	/** the number of attemts - in QTI **/
-	qtiAttempts, 
-	
+	qtiAttempts,
+
 	/** the score - in QTI **/
-	qtiScore, 
-	
+	qtiScore,
+
 	/** the passed value - in QTI **/
 	qtiPassed,
-	
+
 	/** the assessment ID - we seem to not have an Olatresourceable there **/
 	assessmentID,
-	
+
 	/** the comment - in QTI **/
-	qtiComment, 
-	
+	qtiComment,
+
 	/** the user comment - in QTI **/
-	qtiUserComment, 
-	
+	qtiUserComment,
+
 	/** the coach comment - in QTI **/
 	qtiCoachComment,
-	
+
 	/** the param part of the URI during a QTI test - equivalent to what was passed to IQDisplayController.logAudit before **/
 	qtiParams,
-	
+
 	/** Context sensitive help **/
 	csHelp,
-	
+
 	/** Blog Post and Podcast Episodes **/
-	feedItem, 
-	
+	feedItem,
+
 	/** the name of the statisticmanager viewed **/
-	statisticManager, 
-	
+	statisticManager,
+
 	/** the type of statistic viewed **/
 	statisticType,
-	
+
 	/** the title of the column of which the total is viewed **/
 	statisticColumn,
-	
-	/** Special case to allow any type before a certain type e.g. [*][*]...[portfolio] **/ 
-	anyBefore;
+
+	/** Special case to allow any type before a certain type e.g. [*][*]...[portfolio] **/
+	anyBefore,
+
+	/** Edubase book section */
+	bookSection;
 }

@@ -319,6 +319,7 @@ import org.junit.runners.Suite;
 	 */
 	org.olat.core.gui.components.form.flexible.impl.elements.TextElementRendererTest.class,
 	org.olat.modules.card2brain.manager.Card2BrainManagerImplTest.class,
+	org.olat.modules.edubase.manager.EdubaseManagerImplTest.class,
 	org.olat.modules.fo.WordCountTest.class,
 	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.modules.webFeed.manager.RomeFeedFetcherTest.class,

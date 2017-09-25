@@ -45,6 +45,8 @@ public interface LTIContext {
 	
 	public String getContextTitle();
 	
+	public String getUserId(Identity identity);
+	
 	public String getRoles(Identity identity);
 	
 	public String getCustomProperties();
