@@ -114,4 +114,12 @@ public class Card2BrainManagerImpl implements Card2BrainManager {
 		return card2BrainValidationResult;
 	}
 
+	@Override
+	public String parseAlias(String alias) {
+		String parsedString = alias.endsWith("/editor")? alias.substring(0, alias.length()-7): alias;
+		parsedString = parsedString.replace("https://card2brain.ch/box/", "");
+		parsedString = parsedString.replace(" ", "_");
+		return parsedString;
+	}
+
 }
