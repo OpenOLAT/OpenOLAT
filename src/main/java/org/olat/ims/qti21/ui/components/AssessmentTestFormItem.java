@@ -41,6 +41,7 @@ import org.olat.ims.qti21.ui.QTIWorksAssessmentTestEvent;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.running.TestSessionController;
+import uk.ac.ed.ph.jqtiplus.state.TestPlanNodeKey;
 
 /**
  * 
@@ -112,6 +113,10 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 	
 	public Interaction getInteractionOfResponseUniqueIdentifier(String uniqueId) {
 		return component.getInteractionOfResponseUniqueIdentifier(uniqueId);
+	}
+	
+	public boolean validateCommand(String cmd, TestPlanNodeKey nodeKey) {
+		return component.validateCommand(cmd, nodeKey);
 	}
 
 	@Override
