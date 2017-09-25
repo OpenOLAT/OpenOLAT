@@ -33,6 +33,8 @@ import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.meta.tagged.MetaTagged;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -106,6 +108,8 @@ public class FeedManagerImpl extends FeedManager {
 	private OLATResourceManager resourceManager;
 	private FileResourceManager fileResourceManager;
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private FeedDAO feedDAO;
 	@Autowired
@@ -514,6 +518,10 @@ public class FeedManagerImpl extends FeedManager {
 				if (externalItem.getPublishDate() == null) {
 					externalItem.setPublishDate(now);
 				}
+				
+				if(dbInstance.isMySQL()) {
+					mysqlCleanUp(externalItem);
+				}
 				itemDAO.createItem(feed, externalItem);
 			} else {
 				// Do not overwrite initial values
@@ -529,10 +537,19 @@ public class FeedManagerImpl extends FeedManager {
 				reloaded.setDescription(externalItem.getDescription());
 				reloaded.setContent(externalItem.getContent());
 				reloaded.setEnclosure(externalItem.getEnclosure());
-
+				
+				if(dbInstance.isMySQL()) {
+					mysqlCleanUp(externalItem);
+				}
 				itemDAO.updateItem(reloaded);
 			}
 		}
+	}
+	
+	private void mysqlCleanUp(Item item) {
+		item.setTitle(PersistenceHelper.convert(item.getTitle()));
+		item.setContent(PersistenceHelper.convert(item.getContent()));
+		item.setDescription(PersistenceHelper.convert(item.getDescription()));
 	}
 
 	private void markPublisherNews(Feed feed) {

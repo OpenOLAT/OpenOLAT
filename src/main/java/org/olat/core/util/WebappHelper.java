@@ -76,6 +76,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	private static long timeOfServerStartup = System.currentTimeMillis();
 	
 	private static String mathJaxCdn;
+	private static String mathJaxConfig;
 	private static String mobileContext;
 	
 	/** need to set this at least once before the actual request, since we cannot extract it from the servletContext, 
@@ -302,6 +303,14 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 
 	public void setMathJaxCdn(String mathJaxCdn) {
 		WebappHelper.mathJaxCdn = mathJaxCdn;
+	}
+
+	public static String getMathJaxConfig() {
+		return mathJaxConfig;
+	}
+
+	public void setMathJaxConfig(String mathJaxConfig) {
+		WebappHelper.mathJaxConfig = mathJaxConfig;
 	}
 
 	public void setFullPathToSrc(String fullPathToSrc) {

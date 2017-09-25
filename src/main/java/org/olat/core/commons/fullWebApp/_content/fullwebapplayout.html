@@ -52,29 +52,30 @@ function o_start() {
 	o_info.initialPageLoadFinished = true;
 }
 function o_mathjax(fct_success) {
-	jQuery.ajax("${r.mathJaxCdn()}MathJax.js?config=TeX-AMS-MML_HTMLorMML", {
+	window.MathJax = {
+		extensions: ["jsMath2jax.js"],
+		messageStyle: 'none',
+		showProcessingMessages: false,
+		showMathMenu: false,
+		menuSettings: { },
+		jsMath2jax: {
+			preview: "none"
+		},
+		tex2jax: {
+			ignoreClass: "math"
+		},
+		"HTML-CSS": {
+		    EqnChunk: 5, EqnChunkFactor: 1, EqnChunkDelay: 100
+		},
+		"fast-preview": {
+			disabled: true
+		}
+	}
+	jQuery.ajax("${r.mathJaxCdn()}MathJax.js?config=${r.mathJaxConfig()}", {
 		cache: true,
 		dataType: "script",
+		crossDomain: true,
 		success: function() {
-	    	MathJax.Hub.Config({
-				extensions: ["jsMath2jax.js"],
-				messageStyle: 'none',
-				showProcessingMessages: false,
-				showMathMenu: false,
-				menuSettings: { },
-				jsMath2jax: {
-					preview: "none"
-				},
-				tex2jax: {
-					ignoreClass: "math"
-				},
-				"HTML-CSS": {
-				    EqnChunk: 5, EqnChunkFactor: 1, EqnChunkDelay: 100
-				},
-				"fast-preview": {
-					disabled: true
-				}
-			});
 	    	if(!(typeof fct_success === "undefined")) {
 	    		fct_success();
 	    	}
