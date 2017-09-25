@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -164,8 +165,30 @@ public class CatalogEntryEditController extends FormBasicController {
 	public void setElementCssClass(String cssClass) {
 		flc.setElementCssClass(cssClass);
 	}
-	
-	
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		nameEl.clearError();
+		if(StringHelper.containsNonWhitespace(nameEl.getValue())) {
+			if(nameEl.getValue().length() > 99) {
+				nameEl.setErrorKey("input.toolong", new String[]{ "100" });
+				allOk &= false;
+			}
+		} else {
+			nameEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		styleEl.clearError();
+		if(!styleEl.isOneSelected()) {
+			styleEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+
+		return allOk & super.validateFormLogic(ureq);
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
