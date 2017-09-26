@@ -146,6 +146,11 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 			logButton = uifactory.addFormLink("log", formLayout, Link.BUTTON);
 			logButton.setIconLeftCSS("o_icon o_icon_log");
 		}
+		
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("authorizedAbsenceEnabled", authorizedAbsenceEnabled);
+		}
 	
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.externalRef, "details"));

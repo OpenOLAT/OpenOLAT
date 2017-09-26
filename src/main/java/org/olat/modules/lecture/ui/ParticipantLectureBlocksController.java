@@ -148,6 +148,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 						StringHelper.escapeHtml(userManager.getUserDisplayName(assessedIdentity))
 				}));
 			}
+			layoutCont.contextPut("authorizedAbsenceEnabled", authorizedAbsenceEnabled);
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();

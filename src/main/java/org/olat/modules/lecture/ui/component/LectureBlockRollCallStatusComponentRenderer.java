@@ -55,14 +55,14 @@ public class LectureBlockRollCallStatusComponentRenderer extends DefaultComponen
 					title = cmp.getTranslator().translate("rollcall.tooltip.authorized.absence");
 				} else {
 					iconCssClass = "o_lectures_rollcall_danger";
-					title = cmp.getTranslator().translate("rollcall.tooltip.absence");
+					title = cmp.getTranslator().translate("rollcall.tooltip.unauthorized.absence");
 				}
 			} else if(cmp.isLecturesAuthorizedAbsent()) {
 				iconCssClass = "o_lectures_rollcall_warning";
 				title = cmp.getTranslator().translate("rollcall.tooltip.authorized.absence");
 			} else {
 				iconCssClass = "o_lectures_rollcall_danger";
-				title = cmp.getTranslator().translate("rollcall.tooltip.absence");
+				title = cmp.getTranslator().translate("rollcall.tooltip.unauthorized.absence");
 			}
 		} else {
 			iconCssClass = "o_lectures_rollcall_danger";

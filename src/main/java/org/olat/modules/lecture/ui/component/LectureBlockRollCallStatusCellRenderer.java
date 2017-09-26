@@ -101,7 +101,7 @@ public class LectureBlockRollCallStatusCellRenderer implements FlexiCellRenderer
 					title = translator.translate("rollcall.tooltip.authorized.absence");
 				} else {
 					iconCssClass = "o_lectures_rollcall_danger";
-					title = translator.translate("rollcall.tooltip.absence");
+					title = translator.translate("rollcall.tooltip.unauthorized.absence");
 				}
 			} else {
 				iconCssClass = "o_lectures_rollcall_danger";
