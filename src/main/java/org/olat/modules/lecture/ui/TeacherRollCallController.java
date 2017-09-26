@@ -261,6 +261,10 @@ public class TeacherRollCallController extends FormBasicController {
 					}
 				}
 				row.getCommentEl().setEnabled(secCallback.canEdit());
+				
+				if(row.getAuthorizedAbsence() != null) {
+					row.getAuthorizedAbsence().setEnabled(secCallback.canEdit() && secCallback.canEditAuthorizedAbsences());
+				}
 			}
 		}
 		
