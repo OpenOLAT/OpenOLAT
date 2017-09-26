@@ -56,7 +56,7 @@ import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.webFeed.manager.FeedManager;
@@ -91,8 +91,6 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 	private QTI21Service qtiService;
 	@Autowired
 	private IQManager iqManager;
-	@Autowired
-	private AssessmentService assessmentService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -322,7 +320,7 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 					AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
 					if(session != null && session.getFinishTime() != null) {
 						assessmentEntry.setLastUserModified(session.getFinishTime());
-						assessmentService.updateAssessmentEntry(assessmentEntry);
+						updateAssessmentEntry(assessmentEntry);
 						changeSet.add(assessmentEntry.getIdentity());
 					}
 				}
@@ -331,7 +329,7 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 				QTIResultSet rset = iqManager.getLastResultSet(assessmentEntry.getIdentity(), olatResource, courseNode.getIdent());
 				if(rset != null && rset.getLastModified() != null ) {
 					assessmentEntry.setLastUserModified(rset.getLastModified());
-					assessmentService.updateAssessmentEntry(assessmentEntry);
+					updateAssessmentEntry(assessmentEntry);
 					changeSet.add(assessmentEntry.getIdentity());
 				}
 			}
@@ -344,7 +342,7 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 			if(assessmentEntry.getLastCoachModified() != null) continue;
 			
 			assessmentEntry.setLastCoachModified(assessmentEntry.getLastModified());
-			assessmentService.updateAssessmentEntry(assessmentEntry);
+			updateAssessmentEntry(assessmentEntry);
 			changeSet.add(assessmentEntry.getIdentity());
 		}
 	}
@@ -366,11 +364,15 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 				if(lastModified > 0) {
 					cal.setTimeInMillis(lastModified);
 					assessmentEntry.setLastUserModified(cal.getTime());
-					assessmentService.updateAssessmentEntry(assessmentEntry);
+					updateAssessmentEntry(assessmentEntry);
 					changeSet.add(assessmentEntry.getIdentity());
 				}
 			}
 		}
+	}
+	
+	private AssessmentEntry updateAssessmentEntry(AssessmentEntry nodeAssessment) {
+		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
 	}
 	
 	private List<AssessmentEntryImpl> loadAssessmentEntries(RepositoryEntryRef courseEntry, String subIdent) {
