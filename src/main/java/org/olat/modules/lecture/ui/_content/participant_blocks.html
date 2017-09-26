@@ -23,8 +23,12 @@ function print() {
 $r.render("table")
 <ul class="list-unstyled">
 	<li><i class="o_icon o_lectures_rollcall_ok"> </i> $r.translate("table.legend.attended")</li>
+	#if($r.isTrue($authorizedAbsenceEnabled))
 	<li><i class="o_icon o_lectures_rollcall_warning"> </i> $r.translate("table.legend.authorized")</li>
+	<li><i class="o_icon o_lectures_rollcall_danger"> </i> $r.translate("table.legend.unauthorized")</li>
+	#else
 	<li><i class="o_icon o_lectures_rollcall_danger"> </i> $r.translate("table.legend.absent")</li>
+	#end
 	<li><i class="o_icon o_icon_cancelled"> </i> $r.translate("cancelled")</li>
 	<li><i class="o_icon o_icon_status_in_review"> </i> $r.translate("in.progress")</li>
 	<li><i class="o_icon o_lectures_rollcall_free"> </i> $r.translate("table.legend.free")</li>

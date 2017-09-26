@@ -211,9 +211,11 @@ public class StudentCoursesController extends FormBasicController implements Act
 		if(lectureModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.plannedLectures));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.attendedLectures));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.absentLectures));
 			if(lectureModule.isAuthorizedAbsenceEnabled()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.unauthorizedAbsenceLectures));
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.authorizedAbsenceLectures));
+			} else {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.absentLectures));
 			}
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.lastModification));

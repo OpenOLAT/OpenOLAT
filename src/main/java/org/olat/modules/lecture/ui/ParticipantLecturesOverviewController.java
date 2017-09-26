@@ -83,6 +83,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	private final boolean withTitle;
 	private final boolean withSelect;
 	private final Identity assessedIdentity;
+	private final boolean authorizedAbsenceEnabled;
 	private ParticipantLectureBlocksController lectureBlocksCtrl;
 	
 	@Autowired
@@ -106,6 +107,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		this.withTitle = withTitle;
 		this.withSelect = withSelect;
 		this.assessedIdentity = assessedIdentity;
+		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		initForm(ureq);
 		loadModel();
 	}
@@ -144,15 +146,22 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 			logButton = uifactory.addFormLink("log", formLayout, Link.BUTTON);
 			logButton.setIconLeftCSS("o_icon o_icon_log");
 		}
+		
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("authorizedAbsenceEnabled", authorizedAbsenceEnabled);
+		}
 	
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.externalRef, "details"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.entry, "details"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.plannedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.attendedLectures));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.absentLectures));
-		if(lectureModule.isAuthorizedAbsenceEnabled()) {
+		if(authorizedAbsenceEnabled) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.unauthorizedAbsentLectures));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.authorizedAbsentLectures));
+		} else {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.absentLectures));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.progress, new LectureStatisticsCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LecturesCols.rateWarning, new RateWarningCellRenderer(getTranslator())));

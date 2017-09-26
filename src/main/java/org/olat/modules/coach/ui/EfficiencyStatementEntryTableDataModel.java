@@ -135,6 +135,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 					LectureBlockStatistics statistics = getLectureBlockStatistics(entry);
 					return statistics == null ? null : statistics.getTotalAttendedLectures();
 				}
+				case unauthorizedAbsenceLectures:
 				case absentLectures: {
 					LectureBlockStatistics statistics = getLectureBlockStatistics(entry);
 					return statistics == null ? null : statistics.getTotalAbsentLectures();
@@ -197,6 +198,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		plannedLectures("table.header.planned.lectures"),
 		attendedLectures("table.header.attended.lectures"),
 		absentLectures("table.header.absent.lectures"),
+		unauthorizedAbsenceLectures("table.header.unauthorized.absence"),
 		authorizedAbsenceLectures("table.header.authorized.absence");
 		
 		private final String i18nKey;
