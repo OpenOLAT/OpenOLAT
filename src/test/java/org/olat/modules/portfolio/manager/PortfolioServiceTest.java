@@ -41,6 +41,7 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderStatistics;
+import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
@@ -1027,5 +1028,47 @@ public class PortfolioServiceTest extends OlatTestCase {
 			Page deletedPage = pageDao.loadByKey(pageSection1.getKey());
 			Assert.assertNull(deletedPage);
 		}
+	}
+	
+	/**
+	 * Check if we can delete a section where there is an error of numbering
+	 * in the list of pages.
+	 * 
+	 */
+	@Test
+	public void deleteSectionWithPages_errorInNumbering() {
+		// prepare a binder with 2 sections and some pages
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("del-binder-");
+		Binder binder = portfolioService.createNewBinder("Binder to delete", "Deletion", "", owner);
+		SectionRef sectionRef = portfolioService.appendNewSection("1. section ", "Section 1", null, null, binder);
+		dbInstance.commit();
+		portfolioService.updateBinderUserInformations(binder, owner);
+		dbInstance.commit();
+		
+		Section reloadedSection = portfolioService.getSection(sectionRef);
+		List<Page> pagesSection = new ArrayList<>();
+		for(int i=0; i<10; i++) {
+			Page page = portfolioService.appendNewPage(owner, "New page", "A brand new page.", null, null, reloadedSection);
+			pagesSection.add(page);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		//simulate a gap in numbering of the list
+		Page pageToDelete = dbInstance.getCurrentEntityManager().getReference(PageImpl.class, pagesSection.get(4).getKey());
+		dbInstance.getCurrentEntityManager().remove(pageToDelete);
+		dbInstance.commitAndCloseSession();
+
+		// delete the section
+		portfolioService.deleteSection(binder, reloadedSection);
+		dbInstance.commit();
+		
+		//check if the section and the pages are deleted
+		Section deletedSection = binderDao.loadSectionByKey(sectionRef.getKey());
+		Assert.assertNull(deletedSection);
+		Page deletedPage = pageDao.loadByKey(pagesSection.get(4).getKey());
+		Assert.assertNull(deletedPage);
+		List<Page> deletedPages = pageDao.getPages(sectionRef);
+		Assert.assertNotNull(deletedPages);
+		Assert.assertTrue(deletedPages.isEmpty());
 	}
 }

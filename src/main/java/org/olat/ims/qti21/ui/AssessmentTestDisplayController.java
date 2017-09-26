@@ -933,6 +933,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			return;//
 		}
 		
+		String cmd = ureq.getParameter("tmpResponse");
+		if(!qtiWorksCtrl.validateResponseIdentifierCommand(cmd, currentItemKey)) {
+			return;//this is not the right node in the plan
+		}
+		
 		final Date timestamp = ureq.getRequestTimestamp();
 		
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
@@ -1877,6 +1882,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		protected Identifier getResponseIdentifierFromUniqueId(String uniqueId) {
 			Interaction interaction = qtiEl.getInteractionOfResponseUniqueIdentifier(uniqueId);
 			return interaction == null ? null : interaction.getResponseIdentifier();
+		}
+		
+		protected boolean validateResponseIdentifierCommand(String cmd, TestPlanNodeKey nodeKey) {
+			return qtiEl.validateCommand(cmd, nodeKey);
 		}
 
 		@Override
