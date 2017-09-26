@@ -278,7 +278,8 @@ public class ENRunController extends BasicController implements GenericEventList
 			};
 			enrollVC.contextPut("multipleHint", translate("multiple.select.hint.outstanding", hintNumbers));
 		} else {
-			enrollVC.contextPut("multipleHint", translate("multiple.select.hint", String.valueOf(maxEnrollCount)));
+			int numOfAuthorizedEnrollments = Math.min(groupListModel.getRowCount(), maxEnrollCount);
+			enrollVC.contextPut("multipleHint", translate("multiple.select.hint", String.valueOf(numOfAuthorizedEnrollments)));
 		}
 
 		if (numOfParticipatingGroups > 0) {
