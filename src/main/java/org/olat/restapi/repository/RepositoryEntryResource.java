@@ -68,6 +68,7 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.LockResult;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.modules.lecture.restapi.LectureBlocksWebService;
@@ -226,7 +227,7 @@ public class RepositoryEntryResource {
 
 			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
-			repositoryManager.addOwners(ureq.getIdentity(), iae, repoEntry);
+			repositoryManager.addOwners(ureq.getIdentity(), iae, repoEntry, new MailPackage(false));
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to add an owner to a repository entry", e);
@@ -250,7 +251,7 @@ public class RepositoryEntryResource {
 			List<Identity> identityToAdd = loadIdentities(owners);
 			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
 			IdentitiesAddEvent iae = new IdentitiesAddEvent(identityToAdd);
-			repositoryManager.addOwners(ureq.getIdentity(), iae, repoEntry);
+			repositoryManager.addOwners(ureq.getIdentity(), iae, repoEntry, new MailPackage(false));
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to add an owner to a repository entry", e);

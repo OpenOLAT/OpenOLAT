@@ -324,7 +324,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		authors.add(auth1);
 		authors.add(auth2);
 		IdentitiesAddEvent identitiesAddedEvent = new IdentitiesAddEvent(authors);
-		repositoryManager.addOwners(admin, identitiesAddedEvent, repositoryEntry);
+		repositoryManager.addOwners(admin, identitiesAddedEvent, repositoryEntry, null);
 		dbInstance.intermediateCommit();
 		
 		//get them
@@ -358,7 +358,7 @@ public class CourseTest extends OlatJerseyTestCase {
 		authors.add(auth1);
 		authors.add(auth2);
 		IdentitiesAddEvent identitiesAddedEvent = new IdentitiesAddEvent(authors);
-		repositoryManager.addOwners(admin, identitiesAddedEvent, repositoryEntry);
+		repositoryManager.addOwners(admin, identitiesAddedEvent, repositoryEntry, null);
 		dbInstance.intermediateCommit();
 		//end setup
 		

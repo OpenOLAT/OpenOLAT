@@ -724,7 +724,7 @@ public class CourseWebService {
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Identity> authors = Collections.singletonList(author);
 		IdentitiesAddEvent identitiesAddedEvent = new IdentitiesAddEvent(authors);
-		rm.addOwners(identity, identitiesAddedEvent, repositoryEntry);
+		rm.addOwners(identity, identitiesAddedEvent, repositoryEntry, new MailPackage(false));
 		
 		return Response.ok().build();
 	}
@@ -754,7 +754,7 @@ public class CourseWebService {
 		//add the author as owner of the course
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		IdentitiesAddEvent identitiesAddedEvent = new IdentitiesAddEvent(authorList);
-		RepositoryManager.getInstance().addOwners(identity, identitiesAddedEvent, repositoryEntry);
+		RepositoryManager.getInstance().addOwners(identity, identitiesAddedEvent, repositoryEntry, new MailPackage(false));
 		return Response.ok().build();
 	}
 	

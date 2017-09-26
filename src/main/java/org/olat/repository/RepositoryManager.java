@@ -1530,7 +1530,7 @@ public class RepositoryManager {
 	 * @param re
 	 * @param userActivityLogger
 	 */
-	public void addOwners(Identity ureqIdentity, IdentitiesAddEvent iae, RepositoryEntry re) {
+	public void addOwners(Identity ureqIdentity, IdentitiesAddEvent iae, RepositoryEntry re, MailPackage mailing) {
 		List<Identity> addIdentities = iae.getAddIdentities();
 		List<Identity> reallyAddedId = new ArrayList<Identity>();
 		for (Identity identity : addIdentities) {
@@ -1545,6 +1545,8 @@ public class RepositoryManager {
 				} finally {
 					ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 				}
+
+				RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.addOwner, mailing);
 				log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getName()
 						+ "' to repoentry with key " + re.getKey());
 			}//else silently ignore already owner identities
@@ -2321,7 +2323,7 @@ public class RepositoryManager {
 
 		if(changes.getRepoOwner() != null) {
 			if(changes.getRepoOwner().booleanValue()) {
-				addOwners(ureqIdentity, new IdentitiesAddEvent(changes.getMember()), re);
+				addOwners(ureqIdentity, new IdentitiesAddEvent(changes.getMember()), re, mailing);
 			} else {
 				removeOwner(ureqIdentity, changes.getMember(), re);
 				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(changes.getMember(), re));
