@@ -199,6 +199,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		this.testEntry = testEntry;
 		restrictedEdit = qtiService.isAssessmentTestActivelyUsed(testEntry);
 		
+		FileResourceManager frm = FileResourceManager.getInstance();
+		unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
+		unzippedContRoot = frm.unzipContainerResource(testEntry.getOlatResource());
+		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker().aquirePersistentLock(testEntry.getOlatResource(), getIdentity(), null);
 		if (lockEntry.isSuccess()) {
 			// acquired a lock for the duration of the session only
@@ -233,9 +237,6 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		menuTree.setElementCssClass("o_assessment_test_editor_menu");
 		menuTree.addListener(this);
 
-		FileResourceManager frm = FileResourceManager.getInstance();
-		unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		unzippedContRoot = frm.unzipContainerResource(testEntry.getOlatResource());
 		updateTreeModel(false);
 		manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
 		//is the test editable ?
