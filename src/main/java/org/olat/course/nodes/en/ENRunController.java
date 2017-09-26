@@ -268,10 +268,13 @@ public class ENRunController extends BasicController implements GenericEventList
 		int numOfWaitingGroups = stats.getWaitingGroupNames().size();
 
 		enrollVC.contextPut("multiEnroll", (maxEnrollCount > 1 && numOfParticipatingGroups + numOfWaitingGroups < maxEnrollCount));
-		if(numOfParticipatingGroups > 0 || numOfWaitingGroups > 0){
+		if(numOfParticipatingGroups > 0 || numOfWaitingGroups > 0) {
+			int numOfConfiguredAuthorizedEnrollments = maxEnrollCount - numOfParticipatingGroups - numOfWaitingGroups;
+			int numOfAvailableAuthorizedEnrollments = groupListModel.getRowCount() - numOfParticipatingGroups - numOfWaitingGroups;
+			int numOfAuthorizedEnrollments = Math.min(numOfConfiguredAuthorizedEnrollments, numOfAvailableAuthorizedEnrollments);
 			String[] hintNumbers = new String[]{
 				String.valueOf(numOfParticipatingGroups + numOfWaitingGroups),
-				String.valueOf(maxEnrollCount - numOfParticipatingGroups - numOfWaitingGroups)
+				String.valueOf(numOfAuthorizedEnrollments)
 			};
 			enrollVC.contextPut("multipleHint", translate("multiple.select.hint.outstanding", hintNumbers));
 		} else {
