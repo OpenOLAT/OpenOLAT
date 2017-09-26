@@ -577,8 +577,10 @@ public class BinderDAO {
 		List<Page> pages = new ArrayList<>(section.getPages());
 		//delete pages
 		for(Page page:pages) {
-			pageDao.deletePage(page);
-			section.getPages().remove(page);
+			if(page != null) {
+				pageDao.deletePage(page);
+				section.getPages().remove(page);
+			}
 		}
 		
 		List<Assignment> assignments = new ArrayList<>(((SectionImpl)section).getAssignments());

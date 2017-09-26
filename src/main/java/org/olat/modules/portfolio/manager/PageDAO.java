@@ -443,6 +443,8 @@ public class PageDAO {
 	 * @return
 	 */
 	public int deletePage(Page page) {
+		if(page == null || page.getKey() == null) return 0;//nothing to do
+		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Page.class, page.getKey());
 		
 		PageBody body = page.getBody();
