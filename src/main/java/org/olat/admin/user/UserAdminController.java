@@ -373,7 +373,7 @@ public class UserAdminController extends BasicController implements Activateable
 			userTabP.addTab(translate(NLS_VIEW_ACCESS), new TabCreator() {
 				@Override
 				public Component create(UserRequest uureq) {
-					Controller accessCtr = new UserOrderController(ureq, getWindowControl(), identity);
+					Controller accessCtr = new UserOrderController(uureq, getWindowControl(), identity);
 					listenTo(accessCtr);
 					return accessCtr.getInitialComponent();
 				}
