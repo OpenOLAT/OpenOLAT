@@ -540,6 +540,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 			UserCourseEnvironment uce = getUserCourseEnvironment();
+			if(uce == null) {
+				return;// cannot edit settings without uce
+			}
 			
 			settings.setElementCssClass("o_sel_course_settings");
 			
