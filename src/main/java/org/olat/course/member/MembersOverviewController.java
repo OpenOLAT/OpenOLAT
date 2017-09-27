@@ -43,6 +43,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -379,15 +380,16 @@ public class MembersOverviewController extends BasicController implements Activa
 		MailerResult result = new MailerResult();
 		MailPackage reMailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		
+		Roles roles = ureq.getUserSession().getRoles();
 		List<RepositoryEntryPermissionChangeEvent> repoChanges = changes.generateRepositoryChanges(members);
-		repositoryManager.updateRepositoryEntryMemberships(getIdentity(), ureq.getUserSession().getRoles(), repoEntry, repoChanges, reMailing);
+		repositoryManager.updateRepositoryEntryMemberships(getIdentity(), roles, repoEntry, repoChanges, reMailing);
 
 		//commit all changes to the group memberships
 		List<BusinessGroupMembershipChange> allModifications = changes.generateBusinessGroupMembershipChange(members);
 		
 		MailPackage mailing = new MailPackage(template, result, getWindowControl().getBusinessControl().getAsString(), template != null);
 		businessGroupService.updateMemberships(getIdentity(), allModifications, mailing);
-		MailHelper.printErrorsAndWarnings(result, getWindowControl(), ureq.getUserSession().getRoles().isOLATAdmin(), getLocale());
+		MailHelper.printErrorsAndWarnings(result, getWindowControl(), roles.isOLATAdmin(), getLocale());
 		
 		switchToAllMembers(ureq);
 	}

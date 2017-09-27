@@ -96,7 +96,7 @@ public class CourseSecurityTest extends OlatJerseyTestCase {
 			RepositoryManager rm = RepositoryManager.getInstance();
 			RepositoryEntry re = rm.lookupRepositoryEntry(course, false);
 			IdentitiesAddEvent identitiesAddEvent = new IdentitiesAddEvent(Collections.singletonList(auth2));
-			rm.addOwners(admin, identitiesAddEvent, re);
+			rm.addOwners(admin, identitiesAddEvent, re, null);
 			
 			DBFactory.getInstance().closeSession();
 		} catch (Exception e) {
