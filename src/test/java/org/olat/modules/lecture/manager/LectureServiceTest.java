@@ -24,17 +24,22 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
@@ -58,6 +63,8 @@ public class LectureServiceTest extends OlatTestCase {
 	private LectureService lectureService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDAO;
 	@Autowired
@@ -214,12 +221,54 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertEquals(entry, config.getEntry());
 	}
 	
+	@Test
+	public void deleteBusinessGroupWithLectures() {
+		//prepare a course with a business group
+		Identity coachGroup = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-grp");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		//add business group
+		BusinessGroup group = businessGroupService.createBusinessGroup(coachGroup, "For lectures", "tg", null, null, false, false, entry);
+	    businessGroupService.addResourceTo(group, entry);
+	    dbInstance.commit();
+	    
+	    // create a lecture block
+	    LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock.setPlannedLecturesNumber(4);
+		List<Group> groups = new ArrayList<>();
+		groups.add(group.getBaseGroup());
+		Group defGroup = repositoryService.getDefaultGroup(entry);
+		groups.add(defGroup);
+		LectureBlock block = lectureService.save(lectureBlock, groups);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(block);
+		
+		//delete the group
+		businessGroupService.deleteBusinessGroup(group);
+		dbInstance.commitAndCloseSession();
+		
+		//retrieve lecture block
+		List<LectureBlock> blocks = lectureService.getLectureBlocks(entry);
+		Assert.assertNotNull(blocks);
+	    Assert.assertEquals(1, blocks.size());
+	    LectureBlock reloadedBlock = blocks.get(0);
+	    Assert.assertNotNull(reloadedBlock);
+	    //check that the group associate with the repository entry is there
+	    Set<LectureBlockToGroup> lectureBlockToGroups = ((LectureBlockImpl)reloadedBlock).getGroups();
+	    Assert.assertNotNull(lectureBlockToGroups);
+	    Assert.assertEquals(1, lectureBlockToGroups.size());
+	    LectureBlockToGroup lectureBlockToGroup = lectureBlockToGroups.iterator().next();
+	    Assert.assertEquals(defGroup, lectureBlockToGroup.getGroup());
+	}
+	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());
 		lectureBlock.setEndDate(new Date());
 		lectureBlock.setTitle("Hello lecturers");
-		lectureBlock.setPlannedLecturesNumber(4);;
+		lectureBlock.setPlannedLecturesNumber(4);
 		return lectureService.save(lectureBlock, null);
 	}
 	

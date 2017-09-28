@@ -50,6 +50,15 @@ public class LectureBlockToGroupDAO {
 		return blockToGroup;
 	}
 	
+	public int deleteLectureBlockToGroup(Group group) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("delete from lectureblocktogroup blockToGroup where blockToGroup.group.key=:groupKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("groupKey", group.getKey())
+				.executeUpdate();
+	}
+	
 	public void remove(LectureBlockToGroup lectureBlockToGroup) {
 		LectureBlockToGroupImpl ref = dbInstance.getCurrentEntityManager()
 				.getReference(LectureBlockToGroupImpl.class, lectureBlockToGroup.getKey());
@@ -57,7 +66,7 @@ public class LectureBlockToGroupDAO {
 	}
 	
 	public List<Group> getGroups(LectureBlockRef lectureBlock) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select blockToGroup.group from lectureblocktogroup blockToGroup")
 		  .append(" where blockToGroup.lectureBlock.key=:blockKey");
 		return dbInstance.getCurrentEntityManager()
@@ -67,7 +76,7 @@ public class LectureBlockToGroupDAO {
 	}
 	
 	public List<LectureBlockToGroup> getLectureBlockToGroups(LectureBlockRef lectureBlock) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select blockToGroup from lectureblocktogroup blockToGroup")
 		  .append(" inner join fetch blockToGroup.group bGroup")
 		  .append(" where blockToGroup.lectureBlock.key=:blockKey");
