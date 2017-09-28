@@ -122,6 +122,7 @@ public class MaterialFormController extends FormBasicController {
 
 		richText = uifactory.addRichTextElementForStringData("mce", null, htmlContent, 14, -1, true, qtiPackage.getBaseDir(), null,
 				formLayout, ureq.getUserSession(), getWindowControl());
+		richText.getEditorConfiguration().setFigCaption(false);
 
 		RichTextConfiguration richTextConfig = richText.getEditorConfiguration();
 		// disable <p> element for enabling vertical layouts

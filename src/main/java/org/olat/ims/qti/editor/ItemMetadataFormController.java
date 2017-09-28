@@ -195,6 +195,7 @@ public class ItemMetadataFormController extends FormBasicController {
 		// Description
 		desc = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", item.getObjectives(), 8, -1, true, null, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
+		desc.getEditorConfiguration().setFigCaption(false);
 		RichTextConfiguration richTextConfig = desc.getEditorConfiguration();
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
@@ -269,6 +270,7 @@ public class ItemMetadataFormController extends FormBasicController {
 			hint = uifactory.addRichTextElementForStringData("hint", "form.imd.solutionhints", item.getQuestion().getHintText(), 8, -1,
 					true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
 			hint.setEnabled(!isRestrictedEditMode);
+			hint.getEditorConfiguration().setFigCaption(false);
 			// set upload dir to the media dir
 			hint.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			if (itemControl.isHint()) {
@@ -288,6 +290,7 @@ public class ItemMetadataFormController extends FormBasicController {
 			solution = uifactory.addRichTextElementForStringData("solution", solLabel, item.getQuestion().getSolutionText(), 8,
 					-1, true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
 			solution.setEnabled(!isRestrictedEditMode);
+			solution.getEditorConfiguration().setFigCaption(false);
 			// set upload dir to the media dir
 			solution.getEditorConfiguration().setFileBrowserUploadRelPath("media");
 			if (itemControl.isSolution()) {

@@ -224,6 +224,7 @@ public class FeedbackFormController extends FormBasicController {
 		overallFeedbackLayout.add(masteryEditLayout);
 		RichTextElement masteryFeedback = uifactory.addRichTextElementForStringData("richTextElement", "item_feedback_mastery", masteryMat
 				.renderAsHtml(mediaBaseUrl), 4, -1, true, baseContainer, null, masteryEditLayout, ureq.getUserSession(), getWindowControl());
+		masteryFeedback.getEditorConfiguration().setFigCaption(false);
 		FormLink editLink = uifactory.addFormLink("editLink", masteryEditLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
 		editLink.getComponent().setCustomDisplayText(" ");
 		editLink.getComponent().setIconLeftCSS("o_icon o_icon_edit o_icon-lg qti_edit_link");
@@ -237,6 +238,7 @@ public class FeedbackFormController extends FormBasicController {
 		overallFeedbackLayout.add(failureEditLayout);
 		RichTextElement failureFeedback = uifactory.addRichTextElementForStringData("richTextElement", "item_feedback_fail", failureMat
 				.renderAsHtml(mediaBaseUrl), 4, -1, true, baseContainer, null, failureEditLayout, ureq.getUserSession(), getWindowControl());
+		failureFeedback.getEditorConfiguration().setFigCaption(false);
 		failureFeedback.setLabel("item_feedback_fail", null);
 		FormLink failureLink = uifactory.addFormLink("editLink", failureEditLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
 		failureLink.getComponent().setCustomDisplayText("");
@@ -257,6 +259,7 @@ public class FeedbackFormController extends FormBasicController {
 				RichTextElement responseHintText = uifactory.addRichTextElementForStringData("feedback_" + i, null, responseFeedbackMat
 						.renderAsHtml(mediaBaseUrl), 4, -1, true, baseContainer, null, responseLevelHintsLayout, ureq.getUserSession(),
 						getWindowControl());
+				responseHintText.getEditorConfiguration().setFigCaption(false);
 				FormLink link = uifactory.addFormLink("link_" + i, responseLevelHintsLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
 				link.getComponent().setCustomDisplayText(" ");
 				link.getComponent().setIconLeftCSS("o_icon o_icon_edit o_icon-lg");
