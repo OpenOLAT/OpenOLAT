@@ -362,16 +362,18 @@ public class LectureSettingsAdminController extends FormBasicController {
 
 			//enabled user tool
 			Set<String> availableTools = userToolsModule.getAvailableUserToolSet();
-			if(!availableTools.contains("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.LecturesToolController")) {
-				availableTools.add("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.LecturesToolController");
+			if(availableTools.size() > 0) {
+				if(!availableTools.contains("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.LecturesToolController")) {
+					availableTools.add("org.olat.home.HomeMainController:org.olat.modules.lecture.ui.LecturesToolController");
+				}
+				
+				StringBuilder aTools = new StringBuilder();
+				for(String selectedKey:availableTools) {
+					if(aTools.length() > 0) aTools.append(",");
+					aTools.append(selectedKey);
+				}
+				userToolsModule.setAvailableUserTools(aTools.toString());
 			}
-			
-			StringBuilder aTools = new StringBuilder();
-			for(String selectedKey:availableTools) {
-				if(aTools.length() > 0) aTools.append(",");
-				aTools.append(selectedKey);
-			}
-			userToolsModule.setAvailableUserTools(aTools.toString());
 			
 			lectureModule.setRollCallDefaultEnabled(rollCallEnableEl.isAtLeastSelected(1));
 			

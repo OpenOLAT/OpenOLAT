@@ -58,6 +58,8 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.group.BusinessGroup;
+import org.olat.group.DeletableGroupData;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRef;
@@ -99,7 +101,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class LectureServiceImpl implements LectureService, UserDataDeletable {
+public class LectureServiceImpl implements LectureService, UserDataDeletable, DeletableGroupData {
 	private static final OLog log = Tracing.createLoggerFor(LectureServiceImpl.class);
 	private static final CalendarManagedFlag[] CAL_MANAGED_FLAGS = new CalendarManagedFlag[] { CalendarManagedFlag.all };
 
@@ -332,6 +334,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable {
 		lectureParticipantSummaryDao.deleteSummaries(identity);
 		lectureBlockRollCallDao.deleteRollCalls(identity);
 		lectureBlockReminderDao.deleteReminders(identity);
+	}
+
+	@Override
+	public boolean deleteGroupDataFor(BusinessGroup group) {
+		lectureBlockToGroupDao.deleteLectureBlockToGroup(group.getBaseGroup());
+		return true;
 	}
 
 	@Override

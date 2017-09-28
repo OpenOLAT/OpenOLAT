@@ -64,7 +64,7 @@ public class OAuthDispatcherTest {
 	@Test
 	public void parseUserInfos_twitter() throws IOException {
 		URL jsonUrl = OAuthDispatcherTest.class.getResource("verify_credentials.json");
-		String body = IOUtils.toString(jsonUrl);
+		String body = IOUtils.toString(jsonUrl, "UTF-8");
 		
 		OAuthUser infos = new TwitterProvider().parseInfos(body);
 		Assert.assertNotNull(infos);
@@ -77,7 +77,7 @@ public class OAuthDispatcherTest {
 	@Test
 	public void parseUserInfos_google() throws IOException {
 		URL jsonUrl = OAuthDispatcherTest.class.getResource("me_google.json");
-		String body = IOUtils.toString(jsonUrl);
+		String body = IOUtils.toString(jsonUrl, "UTF-8");
 		
 		OAuthUser infos = new Google2Provider().parseInfos(body);
 		Assert.assertNotNull(infos);
@@ -90,7 +90,7 @@ public class OAuthDispatcherTest {
 	@Test
 	public void parseUserInfos_facebook() throws IOException {
 		URL jsonUrl = OAuthDispatcherTest.class.getResource("me_facebook.json");
-		String body = IOUtils.toString(jsonUrl);
+		String body = IOUtils.toString(jsonUrl, "UTF-8");
 		
 		OAuthUser infos = new FacebookProvider().parseInfos(body);
 		Assert.assertNotNull(infos);
@@ -121,8 +121,22 @@ public class OAuthDispatcherTest {
 		Assert.assertEquals("test_openolat", payloadObj.opt("SAMAccountName"));
 		Assert.assertEquals("OpenOlat", payloadObj.opt("Sn"));
 		Assert.assertEquals("Testuser", payloadObj.opt("displayNamePrintable"));
-		
-		
-		
+	}
+	
+	@Test
+	public void oAuthUserInfos_toString() throws JSONException {
+		OAuthUser infos = new OAuthUser();
+		infos.setId("mySecretId");
+		infos.setEmail("mySecretEmail@openolat.com");
+		String toString = infos.toString();
+		Assert.assertTrue(toString.contains("mySecretId"));
+		Assert.assertTrue(toString.contains("mySecretEmail@openolat.com"));
+	}
+	
+	@Test
+	public void oAuthUserInfos_toString_NULL() throws JSONException {
+		OAuthUser infos = new OAuthUser();
+		String toString = infos.toString();
+		Assert.assertNotNull(toString);
 	}
 }

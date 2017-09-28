@@ -41,8 +41,6 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 
@@ -58,13 +56,10 @@ import org.olat.core.util.WebappHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class MessageWindowController extends DefaultChiefController {
-	private static final OLog log = Tracing.createLoggerFor(MessageWindowController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(MessageWindowController.class);
-
 
 	public MessageWindowController(UserRequest ureq, String message) {
 		this(ureq, message, WebappHelper.getMailConfig("mailSupport"));
-		
 	}
 	
 	/**
@@ -74,8 +69,6 @@ public class MessageWindowController extends DefaultChiefController {
 	 * @param supportEmail
 	 */
 	public MessageWindowController(UserRequest ureq, String message, String supportEmail) {
-		log.error(message);
-	
 		Translator trans = Util.createPackageTranslator(MessageWindowController.class, ureq.getLocale());
 		VelocityContainer msg = new VelocityContainer("olatmain", VELOCITY_ROOT + "/message.html", trans, this);
 		BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);

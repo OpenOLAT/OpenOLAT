@@ -1228,7 +1228,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				try {
 					newCount++;
 					Identity identity = createAndPersistUser(userAttrs);
-					if(StringHelper.containsNonWhitespace(ldapUser.getDn())) {
+					if(identity != null && StringHelper.containsNonWhitespace(ldapUser.getDn())) {
 						dnToIdentityKeyMap.put(ldapUser.getDn(), ldapUser);
 						ldapUser.setCachedIdentity(new IdentityRefImpl(identity.getKey()));
 					}

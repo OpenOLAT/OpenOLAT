@@ -143,7 +143,7 @@ public class OAuthDispatcher implements Dispatcher {
 			OAuthUser infos = provider.getUser(service, accessToken);
 			if(infos == null || !StringHelper.containsNonWhitespace(infos.getId())) {
 				error(ureq, translate(ureq, "error.no.id"));
-				log.error("OAuth Login failed, no infos extracted from access token ");
+				log.error("OAuth Login failed, no infos extracted from access token: " + accessToken);
 				return;
 			}
 
@@ -168,7 +168,7 @@ public class OAuthDispatcher implements Dispatcher {
 					register(request, response, registration);
 				} else {
 					error(ureq, translate(ureq, "error.account.creation"));
-					log.error("OAuth Login ok but the user has not an account on OpenOLAT");
+					log.error("OAuth Login ok but the user has not an account on OpenOLAT: " + infos);
 				}
 			} else {
 				if(ureq.getUserSession() != null) {
@@ -198,7 +198,7 @@ public class OAuthDispatcher implements Dispatcher {
 				}
 			}
 		} catch (Exception e) {
-			log.error("", e);
+			log.error("Unexpected error", e);
 			error(ureq, translate(ureq, "error.generic"));
 		}
 	}
