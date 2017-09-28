@@ -95,4 +95,14 @@ public class OAuthUser {
 		}
 		return value;	
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("oauthUser[id=").append(id == null ? "null" : id).append(";")
+		  .append("email=").append(email == null ? "null" : email).append(";")
+		  .append("firstName=").append(firstName == null ? "null" : firstName).append(";")
+		  .append("lastName=").append(lastName == null ? "null" : lastName).append("]");
+		return sb.toString();
+	}
 }
