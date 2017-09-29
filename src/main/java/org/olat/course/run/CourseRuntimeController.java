@@ -539,8 +539,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	protected void initSettingsTools(Dropdown settings) {
 		if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
-			UserCourseEnvironment uce = getUserCourseEnvironment();
+			UserCourseEnvironment uce = null;//getUserCourseEnvironment();
 			if(uce == null) {
+				logError("User course environnment is null: " + getRepositoryEntry(), null);
 				return;// cannot edit settings without uce
 			}
 			
