@@ -649,6 +649,12 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 
 	@Override
 	public String toString() {
-		return super.toString()+" [resourcename="+resourcename+", version="+version+", description="+description+"]";
+		StringBuilder sb = new StringBuilder();
+		sb.append("repositoryEntry[id=").append(key == null ? "null" : key.toString()).append(";")
+		  .append("displayname=").append(displayname == null ? "null" : displayname).append(";")
+		  .append("externalId=").append(externalId == null ? "null" : externalId).append(";")
+		  .append("externalRef=").append(externalRef == null ? "null" : externalRef).append("]")
+		  .append(super.toString());
+		return sb.toString();
 	}
 }

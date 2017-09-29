@@ -93,6 +93,7 @@ public class SectionController extends FormBasicController implements TabbableCo
 		String objectives = section.getObjectives();
 		objectivesEl = uifactory.addRichTextElementForStringData("objectives", "form.metadata.objectives", objectives, 6, 12, false,
 				qtiPackage.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
+		objectivesEl.getEditorConfiguration().setFigCaption(false);
 		
 		RichTextConfiguration richTextConfig = objectivesEl.getEditorConfiguration();
 		// disable <p> element for enabling vertical layouts

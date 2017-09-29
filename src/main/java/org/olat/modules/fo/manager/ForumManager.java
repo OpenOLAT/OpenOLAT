@@ -873,6 +873,7 @@ public class ForumManager {
 
 	private void deleteMessageRecursion(final Long forumKey, Message m) {
 		deleteMessageContainer(forumKey, m.getKey());
+		deleteReadMessages(m.getKey());
 		
 		String query = "select msg from fomessage as msg where msg.parent.key=:parentKey";
 		List<Message> messages = dbInstance.getCurrentEntityManager().createQuery(query, Message.class)
@@ -885,7 +886,6 @@ public class ForumManager {
 		Message reloadedMessage = dbInstance.getCurrentEntityManager().find(MessageImpl.class, m.getKey());
 		if(reloadedMessage != null) {
 			// delete all properties of one single message
-			deleteMessageProperties(forumKey, reloadedMessage);
 			dbInstance.getCurrentEntityManager().remove(reloadedMessage);
 			
 			//delete all flags
@@ -933,11 +933,10 @@ public class ForumManager {
 	/**
 	 * deletes entry of one message
 	 */
-	private void deleteMessageProperties(Long forumKey, Message m) {
-		String query = "delete from foreadmessage as rmsg where rmsg.forum.key=:forumKey and rmsg.message.key=:messageKey";
+	private void deleteReadMessages(Long messageKey) {
+		String query = "delete from foreadmessage as rmsg where rmsg.message.key=:messageKey";
 		dbInstance.getCurrentEntityManager().createQuery(query)
-			.setParameter("forumKey", forumKey)
-			.setParameter("messageKey", m.getKey())
+			.setParameter("messageKey", messageKey)
 			.executeUpdate();
 	}
 

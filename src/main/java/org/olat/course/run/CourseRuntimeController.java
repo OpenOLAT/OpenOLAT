@@ -541,6 +541,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 			UserCourseEnvironment uce = getUserCourseEnvironment();
 			if(uce == null) {
+				logError("User course environnment is null: " + getRepositoryEntry(), null);
 				return;// cannot edit settings without uce
 			}
 			

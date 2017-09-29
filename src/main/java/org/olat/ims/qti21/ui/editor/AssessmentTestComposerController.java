@@ -366,6 +366,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		try {
 			resolvedObject = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, true);
 			if(resolvedObject == null) {
+				logError("QTI 2.1 AssessmentTest is null: " + testEntry, null);
 				return false;
 			}
 			return resolvedObject.getRootNodeLookup().extractIfSuccessful() != null;
