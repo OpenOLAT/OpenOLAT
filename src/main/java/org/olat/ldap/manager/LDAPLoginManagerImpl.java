@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -1275,12 +1276,17 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			doSyncGroupByAttribute(ldapUsers, cnToGroupMap);
 		}
 		
+		int syncGroupCount = 0;
 		for(LDAPGroup group:cnToGroupMap.values()) {
 			BusinessGroup managedGroup = getManagerBusinessGroup(group.getCommonName());
 			if(managedGroup != null) {
 				syncBusinessGroup(ctx, managedGroup, group, dnToIdentityKeyMap, errors);
 			}
 			dbInstance.commitAndCloseSession();
+			if(syncGroupCount % 100 == 0) {
+				log.info("Synched " + syncGroupCount + "/" + cnToGroupMap.size() + " LDAP groups");
+			}
+			syncGroupCount++;
 		}
 	}
 	
@@ -1318,14 +1324,22 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	private void syncBusinessGroup(LdapContext ctx, BusinessGroup businessGroup, LDAPGroup ldapGroup, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors) {
 		List<Identity> currentMembers = businessGroupRelationDao
 				.getMembers(businessGroup, GroupRoles.coach.name(), GroupRoles.participant.name());
+		Set<Long> currentMemberKeys = new HashSet<>();
+		for(Identity currentMember:currentMembers) {
+			currentMemberKeys.add(currentMember.getKey());
+		}
 
 		List<LDAPUser> coaches = new ArrayList<>(ldapGroup.getCoaches());
 		List<LDAPUser> participants = new ArrayList<>(ldapGroup.getParticipants());
 		// transfer member cn's to the participants list
 		for(String member:ldapGroup.getMembers()) {
-			LDAPUser ldapUser = getLDAPUser(ctx, member, dnToIdentityKeyMap, errors); dnToIdentityKeyMap.get(member);
-			if(ldapUser != null && !participants.contains(ldapUser)) {
-				participants.add(ldapUser);
+			try {
+				LDAPUser ldapUser = getLDAPUser(ctx, member, dnToIdentityKeyMap, errors); dnToIdentityKeyMap.get(member);
+				if(ldapUser != null && !participants.contains(ldapUser)) {
+					participants.add(ldapUser);
+				}
+			} catch (Exception e) {
+				log.error("Cannot retrieve this LDAP group member: " + member, e);
 			}
 		}
 		// transfer to ldap user flagged as coach to the coach list
@@ -1342,25 +1356,31 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		int count = 0;
 		for(LDAPUser participant:participants) {
 			IdentityRef memberIdentity = participant.getCachedIdentity();
-			syncMembership(businessGroup, memberIdentity, false);
-			currentMembers.remove(memberIdentity);
-			
+			if(memberIdentity != null && memberIdentity.getKey() != null) {
+				syncMembership(businessGroup, memberIdentity, false);
+				currentMemberKeys.remove(memberIdentity.getKey());
+			}
 			if(count % 20 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
+			count++;
 		}
 		
 		for(LDAPUser coach:coaches) {
 			IdentityRef memberIdentity = coach.getCachedIdentity();
-			syncMembership(businessGroup, memberIdentity, true);
-			currentMembers.remove(memberIdentity);
+			if(memberIdentity != null && memberIdentity.getKey() != null) {
+				syncMembership(businessGroup, memberIdentity, true);
+				currentMemberKeys.remove(memberIdentity.getKey());
+			}
 			
 			if(count % 20 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
+			count++;
 		}
 		
-		for(Identity currentMember:currentMembers) {
+		for(Long currentMemberKey:currentMemberKeys) {
+			Identity currentMember = securityManager.loadIdentityByKey(currentMemberKey);
 			List<String> roles = businessGroupRelationDao.getRoles(currentMember, businessGroup);
 			for(String role:roles) {
 				businessGroupRelationDao.removeRole(currentMember, businessGroup, role);
@@ -1369,7 +1389,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			if(count % 20 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
+			count++;
 		}
+		dbInstance.commitAndCloseSession();
 	}
 	
 	private void syncMembership(BusinessGroup businessGroup, IdentityRef identityRef, boolean coach) {
