@@ -153,7 +153,7 @@ public class TeacherRollCallController extends FormBasicController {
 			List<Identity> teachers = lectureService.getTeachers(lectureBlock);
 			for(Identity teacher:teachers) {
 				if(sb.length() > 0) sb.append(", ");
-				sb.append(StringHelper.escapeJavaScript(userManager.getUserDisplayName(teacher)));
+				sb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(teacher)));
 			}
 			
 			Formatter formatter = Formatter.getInstance(getLocale());
