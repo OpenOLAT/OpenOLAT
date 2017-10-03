@@ -156,32 +156,27 @@ var BPlayer = {
 		        withCredentials: true
 		    },
 			success: function(mediaElement, originalNode, player) {
-				if(config.autostart) {
+				if(config.start) {
+					player.load();
+					mediaElement.addEventListener('canplay', function() {
+						try {
+							mediaElement.removeEventListener('canplay');// Firefox reload
+							player.setCurrentTime(config.start);
+							player.play();
+							if(!config.autostart) {
+								setTimeout(function() { player.pause(); }, 100)
+							}
+						} catch(e) {
+							if(window.console) console.log(e);
+						}
+	                });
+				} else if(config.autostart) {
 					try {
 						player.load();
 						player.play();
 					} catch(e) {
 						if(window.console) console.log(e);
 					}
-				}
-				
-				if(config.start) {
-					var pauseOnce = true;
-					if(!config.autostart) {
-						player.play();
-					}
-				
-					mediaElement.addEventListener('loadedmetadata', function() {
-							try {
-								player.setCurrentTime(config.start);
-								if(!config.autostart && pauseOnce) {
-									pauseOnce = true;
-									player.pause();//player need to play to position itself at the current time
-								}
-							} catch(e) {
-								if(window.console) console.log(e);
-							}
-	                });
 				}
 			}
 		};
@@ -295,19 +290,15 @@ var BPlayer = {
 			}
 			var objContent = "<object id='" + objectDomId + "' type='application/x-shockwave-flash'";
 			if(typeof config.height != 'undefined') {
-				content += " height='" + config.height + "'";
-				objContent += " height='" + config.height + "'";
 				meConfig.videoHeight = config.height;
 			}
 			if(typeof config.width != 'undefined') {
-				content += " width='" + config.width + "'";
-				objContent += " width='" + config.width + "'";
 				meConfig.videoWidth = config.width;
 			}
 			if(typeof config.image != 'undefined') {
 				content += " poster='" + config.image + "'";
 			}
-			content += "><source type='" +mimeType + "' src='" + config.file + "' />";
+			content += "><source type='" + mimeType + "' src='" + config.file + "' />";
 			
 			content += objContent + " data='" + mediaElementBaseUrl + "mediaelement-flash-video.swf'>";
 			content += "<param name='movie' value='" + mediaElementBaseUrl + "mediaelement-flash-video.swf' />";
@@ -321,15 +312,17 @@ var BPlayer = {
 		var target = jQuery('#' + domId);
 		// Set height on target element to auto to support responsive scaling
 		// with auto-resize
-		target.css({'height' : 'auto'});
+		target.css({'height' : ''});
+		target.css({'border' : 'none'});
 		// Set also width to auto in case the video is larger than the window.
 		// Normally the max-width on the target does already fix this responsive
 		// problem, but this does not work on iOS. 
 		// Don't set it permanently to auto because this will expand all videos
 		// to 100% and discard the configured width
 		if (jQuery(window).width() <= config.width) {
-			target.css({ 'width' : 'auto'});
+			target.css({'width' : ''});
 		}
+		
 		// Now finally add video tags and flash fallback HTML code to DOM and
 		// call player on new video element
 		target.html(content);
