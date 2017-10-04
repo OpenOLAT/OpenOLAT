@@ -27,7 +27,6 @@ import org.olat.core.gui.control.WindowControl;
 /**
  * 
  * Description:<br>
- * TODO: srosse Class Description for MailContextResolver
  * 
  * <P>
  * Initial Date:  30 mars 2011 <br>

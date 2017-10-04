@@ -62,6 +62,7 @@ public class MailController extends FormBasicController {
 	
 	private String mapperBaseURI;
 	private final boolean back;
+	private final boolean outbox;
 	private final DBMail mail;
 	private final List<DBMailAttachment> attachments;
 	private boolean showAllRecipients = false;
@@ -73,11 +74,12 @@ public class MailController extends FormBasicController {
 	@Autowired
 	private MailManager mailManager;
 
-	public MailController(UserRequest ureq, WindowControl wControl, DBMail mail, boolean back) {
+	public MailController(UserRequest ureq, WindowControl wControl, DBMail mail, boolean back, boolean outbox) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
 		this.mail = mail;
 		this.back = back;
+		this.outbox = outbox;
 		attachments = mailManager.getAttachments(mail);
 		if(!attachments.isEmpty()) {
 			mapperBaseURI = registerMapper(ureq, new MailAttachmentMapper(mailManager));
@@ -149,7 +151,7 @@ public class MailController extends FormBasicController {
 	
 	private String getRecipients() {
 		StringBuilder sb = new StringBuilder();
-		Set<String> groups = new HashSet<String>();
+		Set<String> groups = new HashSet<>();
 		int recipientsCounter = 0;
 		int groupCounter = 0;
 		sb.append("<ul class='list-inline'>");
@@ -173,27 +175,29 @@ public class MailController extends FormBasicController {
 				groups.add(group);
 				groupCounter = 0;
 			}
-			if (mailModule.isShowRecipientNames()) {
-				if (recipient.getRecipient() != null) {
-					// recipient is an individual
-					Identity repicientIdentity = recipient.getRecipient();
-					sb.append("<li class='o_recipient'>");
-					if(groupCounter> 0) sb.append(", ");
-					sb.append("<span>").append(getFullName(recipient)).append("</span>");
-					if (mailModule.isShowMailAddresses()) {
-						sb.append(" &lt;").append(repicientIdentity.getUser().getEmail()).append("&gt;");
+			if (outbox || mailModule.isShowRecipientsInInbox()) {
+				if (mailModule.isShowRecipientNames()) {
+					if (recipient.getRecipient() != null) {
+						// recipient is an individual
+						Identity repicientIdentity = recipient.getRecipient();
+						sb.append("<li class='o_recipient'>");
+						if(groupCounter> 0) sb.append(", ");
+						sb.append("<span>").append(getFullName(recipient)).append("</span>");
+						if (mailModule.isShowMailAddresses()) {
+							sb.append(" &lt;").append(repicientIdentity.getUser().getEmail()).append("&gt;");
+						}
+						sb.append("</li>");
+						groupCounter++;
 					}
-					sb.append("</li>");
-					groupCounter++;
-				}
-				if (recipient.getEmailAddress() != null) {
-					// recipient is not an OpenOLAT identity but an external email
-					sb.append("<li class='o_mail'>");
-					if(groupCounter > 0) sb.append(", ");
-					sb.append("&lt;");
-					sb.append(recipient.getEmailAddress());
-					sb.append("&gt;</li>");
-					groupCounter++;
+					if (recipient.getEmailAddress() != null) {
+						// recipient is not an OpenOLAT identity but an external email
+						sb.append("<li class='o_mail'>");
+						if(groupCounter > 0) sb.append(", ");
+						sb.append("&lt;");
+						sb.append(recipient.getEmailAddress());
+						sb.append("&gt;</li>");
+						groupCounter++;
+					}
 				}
 			}
 		}

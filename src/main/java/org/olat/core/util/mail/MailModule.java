@@ -47,6 +47,7 @@ public class MailModule extends AbstractSpringModule {
 	private static final String INTERN_MAIL_SYSTEM = "internSystem";
 	private static final String SHOW_RECIPIENT_NAMES = "showRecipientNames";
 	private static final String SHOW_MAIL_ADDRESSES = "showMailAddresses";
+	private static final String SHOW_RECIPIENTS_IN_INBOX = "showRecipientsInInbox";
 	private static final String RECEIVE_REAL_MAIL_USER_DEFAULT_SETTING = "receiveRealMailUserDefaultSetting";
 	
 	@Value("${mail.intern:false}")
@@ -55,6 +56,8 @@ public class MailModule extends AbstractSpringModule {
 	private boolean showRecipientNames;
 	@Value("${mail.showMailAddresses:false}")
 	private boolean showMailAddresses;
+	@Value("${mail.showRecipientsInInbox:true}")
+	private boolean showRecipientsInInbox;
 	@Value("${mail.receiveRealMailUserDefaultSetting:true}")
 	private boolean receiveRealMailUserDefaultSetting;
 	
@@ -137,7 +140,16 @@ public class MailModule extends AbstractSpringModule {
 		setStringProperty(SHOW_MAIL_ADDRESSES, showMailAddressesStr, true);
 	}
 
+	public boolean isShowRecipientsInInbox() {
+		return showRecipientsInInbox;
+	}
 	
+	public void setShowRecipientsInInbox(boolean showRecipientsInInbox) {
+		this.showRecipientsInInbox = showRecipientsInInbox;
+		String showRecipientsInInboxStr = showRecipientsInInbox ? "true" : "false";
+		setStringProperty(SHOW_RECIPIENTS_IN_INBOX, showRecipientsInInboxStr, true);
+	}
+
 	/**
 	 * Users can receive real e-mail too. This setting is the default for
 	 * users. They can change it in Preferences Panel.
@@ -189,4 +201,5 @@ public class MailModule extends AbstractSpringModule {
 	public String getMailhost() {
 		return WebappHelper.getMailConfig("mailhost");
 	}
+
 }

@@ -44,7 +44,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MailSettingsAdminController extends FormBasicController  {
 
-	private MultipleSelectionElement enabled, showRecipientNamesEl, showMailAddressesEl;
+	private MultipleSelectionElement enabled;
+	private MultipleSelectionElement showRecipientNamesEl;
+	private MultipleSelectionElement showMailAddressesEl;
+	private MultipleSelectionElement showRecipientsInInboxEl;
 	private SingleSelection userDefaultSettingEl;
 	
 	private String[] values = {""};
@@ -99,6 +102,11 @@ public class MailSettingsAdminController extends FormBasicController  {
 		showMailAddressesEl.addActionListener(FormEvent.ONCHANGE);
 		showMailAddressesEl.setEnabled(internEnabled);
 		
+		showRecipientsInInboxEl = uifactory.addCheckboxesHorizontal("mail.admin.show.recipient.inbox", formLayout, keys, values);
+		showRecipientsInInboxEl.select(keys[0], mailModule.isShowRecipientsInInbox());
+		showRecipientsInInboxEl.addActionListener(FormEvent.ONCHANGE);
+		showRecipientsInInboxEl.setEnabled(internEnabled);
+		
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
 		formLayout.add(buttonGroupLayout);
@@ -130,6 +138,10 @@ public class MailSettingsAdminController extends FormBasicController  {
 		boolean showMailaddresses = !showMailAddressesEl.getSelectedKeys().isEmpty();
 		mailModule.setShowMailAddresses(showMailaddresses);
 		showMailAddressesEl.setEnabled(on);
+		// recipients in inbox
+		boolean showRecipientsInInbox = !showRecipientsInInboxEl.getSelectedKeys().isEmpty();
+		mailModule.setShowRecipientsInInbox(showRecipientsInInbox);
+		showRecipientsInInboxEl.setEnabled(on);
 
 		getWindowControl().setInfo("saved");
 	}
@@ -141,6 +153,7 @@ public class MailSettingsAdminController extends FormBasicController  {
 			userDefaultSettingEl.setEnabled(on);
 			showMailAddressesEl.setEnabled(on);
 			showRecipientNamesEl.setEnabled(on);
+			showRecipientsInInboxEl.setEnabled(on);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

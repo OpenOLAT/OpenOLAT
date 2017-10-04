@@ -238,7 +238,7 @@ public class MailListController extends BasicController implements Activateable2
 			}
 			
 			//strip meta emails
-			Set<String> metaIds = new HashSet<String>();
+			Set<String> metaIds = new HashSet<>();
 			for(Iterator<DBMailLight> it=mails.iterator(); it.hasNext(); ) {
 				DBMailLight mail = it.next();
 				if(StringHelper.containsNonWhitespace(mail.getMetaId())) {
@@ -254,7 +254,7 @@ public class MailListController extends BasicController implements Activateable2
 		}
 		
 		//extract contexts
-		Map<String, String> bpToContexts = new HashMap<String, String>();
+		Map<String, String> bpToContexts = new HashMap<>();
 		for(DBMailLight mail:mails) {
 			String businessPath = mail.getContext().getBusinessPath();
 			if(StringHelper.containsNonWhitespace(businessPath) && !bpToContexts.containsKey(businessPath)) {
@@ -266,8 +266,8 @@ public class MailListController extends BasicController implements Activateable2
 		}
 		
 		if(!bpToContexts.isEmpty()) {
-			List<ShortName> filters = new ArrayList<ShortName>();
-			Map<String, MailContextShortName> uniqueNames = new HashMap<String,MailContextShortName>();
+			List<ShortName> filters = new ArrayList<>();
+			Map<String, MailContextShortName> uniqueNames = new HashMap<>();
 			ShortName allContextFilter = new MailContextShortName("-");
 			filters.add(allContextFilter);
 			for(Map.Entry<String, String> entry:bpToContexts.entrySet()) {
@@ -462,7 +462,7 @@ public class MailListController extends BasicController implements Activateable2
 		boolean back = !StringHelper.containsNonWhitespace(mail.getMetaId()) || !outbox;
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(DBMail.class, mail.getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		mailCtr = new MailController(ureq, bwControl, mail, back);
+		mailCtr = new MailController(ureq, bwControl, mail, back, outbox);
 		listenTo(mailCtr);
 		mainVC.put(MAIN_CMP, mailCtr.getInitialComponent());
 		
