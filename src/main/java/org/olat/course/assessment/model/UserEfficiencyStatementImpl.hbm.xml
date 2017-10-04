@@ -17,7 +17,7 @@
 		</generator>
 	</id>
 
-	<version name="version" access="field" column="version" type="int"/>
+	<property name="version" access="field" column="version" type="int"/>
 	<property name="creationDate" column="creationdate" type="timestamp" />
 	<property name="lastModified" column="lastmodified" type="timestamp" />
 
@@ -63,7 +63,7 @@
 		</generator>
 	</id>
 
-	<version name="version" access="field" column="version" type="int"/>
+	<property name="version" access="field" column="version" type="int"/>
 	<property name="creationDate" column="creationdate" type="timestamp" />
 	<property name="lastModified" column="lastmodified" type="timestamp" />
 
@@ -101,7 +101,7 @@
 		</generator>
 	</id>
 
-	<version name="version" access="field" column="version" type="int"/>
+	<property name="version" access="field" column="version" type="int"/>
 	<property name="creationDate" column="creationdate" type="timestamp" />
 	<property name="lastModified" column="lastmodified" type="timestamp" />
 
