@@ -78,6 +78,14 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 			return row.getTaskName();
 		} else if(col == CGCols.submissionDate.ordinal()) {
 			return SubmissionDateCellRenderer.cascading(row);
+		} else if(col == CGCols.userVisibility.ordinal()) {
+			return row.getUserVisibility();
+		} else if(col == CGCols.score.ordinal()) {
+			return row.getScore();
+		} else if(col == CGCols.passed.ordinal()) {
+			return row.getPassed();
+		} else if(col == CGCols.numOfSubmissionDocs.ordinal()) {
+			return row.getNumOfSubmissionDocs();
 		} else if(col >= GTACoachedGroupGradingController.USER_PROPS_OFFSET) {
 			int propIndex = col - GTACoachedGroupGradingController.USER_PROPS_OFFSET;
 			return row.getIdentity().getIdentityProp(propIndex);
@@ -90,7 +98,11 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 		username("username"),
 		taskName("table.header.group.taskName"),
 		taskStatus("table.header.group.step"),
-		submissionDate("table.header.submissionDate");
+		submissionDate("table.header.submissionDate"),
+		userVisibility("table.header.userVisibility"),
+		score("table.header.score"),
+		passed("table.header.passed"),
+		numOfSubmissionDocs("table.header.num.submissionDocs");
 		
 		private final String i18nKey;
 		

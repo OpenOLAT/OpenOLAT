@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -56,6 +57,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.bulk.PassedCellRenderer;
+import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -73,6 +76,9 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
@@ -113,6 +119,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	public GTACoachedParticipantListController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, GTACourseNode gtaNode, boolean markedOnly) {
@@ -228,6 +236,14 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				true, CGCols.taskStatus.name(), new TaskStatusCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate.i18nKey(), CGCols.submissionDate.ordinal(),
 				true, CGCols.submissionDate.name(), new SubmissionDateCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.userVisibility.i18nKey(), CGCols.userVisibility.ordinal(),
+				true, CGCols.userVisibility.name(), new UserVisibilityCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.score.i18nKey(), CGCols.score.ordinal(),
+				true, CGCols.score.name(), new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.passed.i18nKey(), CGCols.passed.ordinal(),
+				true, CGCols.passed.name(), new PassedCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.numOfSubmissionDocs.i18nKey(), CGCols.numOfSubmissionDocs.ordinal(),
+				true, CGCols.numOfSubmissionDocs.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		if(gtaManager.isDueDateEnabled(gtaNode)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.duedates", translate("duedates"), "duedates"));
@@ -253,6 +269,14 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		for(IdentityMark mark:marks) {
 			if(mark.getParticipant() != null) {
 				identityToMarks.put(mark.getParticipant().getKey(), mark);
+			}
+		}
+		
+		List<AssessmentEntry> assessments = assessmentService.loadAssessmentEntriesBySubIdent(entry, gtaNode.getIdent());
+		Map<Long, AssessmentEntry> identityToAssessments = new HashMap<>(assessments.size());
+		for(AssessmentEntry assessment:assessments) {
+			if(assessment.getIdentity() != null) {
+				identityToAssessments.put(assessment.getIdentity().getKey(), assessment);
 			}
 		}
 		
@@ -284,7 +308,15 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				}
 			}
 			
-			rows.add(new CoachedIdentityRow(assessableIdentity, task, submissionDueDate, syntheticSubmissionDate, hasSubmittedDocument, markLink));
+			int numSubmittedDocs = task != null && task.getSubmissionNumOfDocs() != null? task.getSubmissionNumOfDocs(): 0;
+
+			AssessmentEntry assessment = identityToAssessments.get(assessableIdentity.getIdentityKey());
+			Boolean userVisibility = assessment!=null? assessment.getUserVisibility(): null;
+			BigDecimal score = assessment!=null? assessment.getScore(): null;
+			Boolean passed = assessment!=null? assessment.getPassed(): null;
+			
+			rows.add(new CoachedIdentityRow(assessableIdentity, task, submissionDueDate, syntheticSubmissionDate,
+					hasSubmittedDocument, markLink, userVisibility, score, passed, numSubmittedDocs));
 		}
 		
 		tableModel.setObjects(rows);

@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -34,22 +35,30 @@ import org.olat.user.UserPropertiesRow;
  */
 public class CoachedIdentityRow implements CoachedElementRow {
 
-	private FormLink markLink;
-	
 	private final TaskLight task;
 	private final Date submissionDueDate;
 	private final Date syntheticSubmissionDate;
 	private final boolean hasSubmittedDocuments;
 	private final UserPropertiesRow identity;
+	private final FormLink markLink;
+	private final Boolean userVisibility;
+	private final BigDecimal score;
+	private final Boolean passed;
+	private final int numOfSubmissionDocs;
 	
 	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, Date submissionDueDate,
-			Date syntheticSubmissionDate, boolean hasSubmittedDocuments, FormLink markLink) {
+			Date syntheticSubmissionDate, boolean hasSubmittedDocuments, FormLink markLink, Boolean userVisibility,
+			BigDecimal score, Boolean passed, int numOfSubmissionDocs) {
 		this.identity = identity;
 		this.task = task;
 		this.submissionDueDate = submissionDueDate;
 		this.hasSubmittedDocuments = hasSubmittedDocuments;
 		this.syntheticSubmissionDate = syntheticSubmissionDate;
 		this.markLink = markLink;
+		this.userVisibility = userVisibility;
+		this.score = score;
+		this.passed = passed;
+		this.numOfSubmissionDocs = numOfSubmissionDocs;
 	}
 
 	@Override
@@ -105,5 +114,20 @@ public class CoachedIdentityRow implements CoachedElementRow {
 		return markLink;
 	}
 
+	public Boolean getUserVisibility() {
+		return userVisibility;
+	}
+
+	public BigDecimal getScore() {
+		return score;
+	}
+
+	public Boolean getPassed() {
+		return passed;
+	}
+
+	public int getNumOfSubmissionDocs() {
+		return numOfSubmissionDocs;
+	}
 	
 }
