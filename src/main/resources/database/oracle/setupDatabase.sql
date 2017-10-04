@@ -2750,8 +2750,8 @@ create index idx_gta_list_to_repo_entry_idx on o_gta_task_list (fk_entry);
 alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
 create index idx_gtaskrev_to_task_idx on o_gta_task_revision_date (fk_task);
 
-alter table o_gta_mark add constraint gtamark_tasklist_idx foreign key (fk_tasklist) references o_gta_task_list (id);
-create index idx_gtamark_tasklist_idx on o_gta_task (fk_tasklist);
+alter table o_gta_mark add constraint gtamark_tasklist_idx foreign key (fk_tasklist_id) references o_gta_task_list (id);
+create index idx_gtamark_tasklist_idx on o_gta_task (fk_tasklist_id);
 
 -- reminders
 alter table o_rem_reminder add constraint rem_reminder_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

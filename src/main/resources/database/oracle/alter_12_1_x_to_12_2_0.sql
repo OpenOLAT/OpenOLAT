@@ -8,5 +8,5 @@ create table o_gta_mark (
   primary key (id)
 );
 
-alter table o_gta_mark add constraint gtamark_tasklist_idx foreign key (fk_tasklist) references o_gta_task_list (id);
-create index idx_gtamark_tasklist_idx on o_gta_task (fk_tasklist);
+alter table o_gta_mark add constraint gtamark_tasklist_idx foreign key (fk_tasklist_id) references o_gta_task_list (id);
+create index idx_gtamark_tasklist_idx on o_gta_task (fk_tasklist_id);
