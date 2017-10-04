@@ -68,7 +68,9 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 	
 	@Override
 	public Object getValueAt(CoachedIdentityRow row, int col) {
-		if(col == CGCols.username.ordinal()) {
+		if(col == CGCols.mark.ordinal()) {
+			return row.getMarkLink();
+		} else if(col == CGCols.username.ordinal()) {
 			return row.getIdentity().getIdentityName();
 		} else if(col == CGCols.taskStatus.ordinal()) {
 			return row.getTaskStatus();
@@ -84,6 +86,7 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 	}
 	
 	public enum CGCols {
+		mark("table.header.mark"),
 		username("username"),
 		taskName("table.header.group.taskName"),
 		taskStatus("table.header.group.step"),

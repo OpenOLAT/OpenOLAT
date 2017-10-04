@@ -1905,6 +1905,16 @@ create table o_gta_task_revision_date (
   primary key (id)
 );
 
+create table o_gta_mark (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  fk_tasklist_id int8 not null,
+  fk_marker_identity_id int8 not null,
+  fk_participant_identity_id int8 not null,
+  primary key (id)
+);
+
 create table o_rem_reminder (
    id bigint not null,
    creationdate datetime not null,
@@ -2439,6 +2449,7 @@ alter table o_cl_check ENGINE = InnoDB;
 alter table o_gta_task_list ENGINE = InnoDB;
 alter table o_gta_task ENGINE = InnoDB;
 alter table o_gta_task_revision_date ENGINE = InnoDB;
+alter table o_gta_mark ENGINE = InnoDB;
 alter table o_cer_template ENGINE = InnoDB;
 alter table o_cer_certificate ENGINE = InnoDB;
 alter table o_rem_reminder ENGINE = InnoDB;
@@ -2668,6 +2679,8 @@ alter table o_gta_task add constraint gtaskreset_to_allower_idx foreign key (fk_
 alter table o_gta_task_list add constraint gta_list_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
 alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
+
+alter table o_gta_mark add constraint gtamark_tasklist_idx foreign key (fk_tasklist) references o_gta_task_list (id);
 
 -- reminders
 alter table o_rem_reminder add constraint rem_reminder_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

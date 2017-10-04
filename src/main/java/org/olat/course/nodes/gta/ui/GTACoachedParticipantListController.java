@@ -33,10 +33,12 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -45,6 +47,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -56,6 +59,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.IdentityMark;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskList;
@@ -92,6 +96,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final boolean markedOnly;
 
 	private CloseableModalController cmc;
 	private EditDueDatesController editDueDatesCtrl;
@@ -110,7 +115,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private BusinessGroupService businessGroupService;
 	
 	public GTACoachedParticipantListController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, GTACourseNode gtaNode) {
+			UserCourseEnvironment userCourseEnv, GTACourseNode gtaNode, boolean markedOnly) {
 		super(ureq, wControl, userCourseEnv.getCourseEnvironment(), gtaNode);
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -118,6 +123,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(GTACoachedGroupGradingController.USER_PROPS_ID, isAdministrativeUser);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		coachCourseEnv = (UserCourseEnvironmentImpl)userCourseEnv;
+		this.markedOnly = markedOnly;
 
 		assessableIdentities = new ArrayList<>();
 		collectIdentities(new Consumer<Identity>() {
@@ -128,7 +134,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		});
 		
 		initForm(ureq);
-		updateModel();
+		updateModel(ureq);
 	}
 	
 	public boolean hasIdentityKey(Long identityKey) {
@@ -185,6 +191,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		super.initForm(formLayout, listener, ureq);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.mark.i18nKey(), CGCols.mark.ordinal(),
+				true, CGCols.mark.name()));
+		
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.username.i18nKey(), CGCols.username.ordinal(),
 					true, CGCols.username.name()));
@@ -230,18 +239,32 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants");
 	}
 	
-	protected void updateModel() {
+	protected void updateModel(UserRequest ureq) {
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 		List<TaskLight> tasks = gtaManager.getTasksLight(entry, gtaNode);
-		Map<Long,TaskLight> identityToTasks = new HashMap<>();
+		Map<Long,TaskLight> identityToTasks = new HashMap<>(tasks.size());
 		for(TaskLight task:tasks) {
 			if(task.getIdentityKey() != null) {
 				identityToTasks.put(task.getIdentityKey(), task);
 			}
 		}
+		List<IdentityMark> marks = gtaManager.getMarks(entry, gtaNode, ureq.getIdentity());
+		Map<Long,IdentityMark> identityToMarks= new HashMap<>(marks.size());
+		for(IdentityMark mark:marks) {
+			if(mark.getParticipant() != null) {
+				identityToMarks.put(mark.getParticipant().getKey(), mark);
+			}
+		}
 		
 		List<CoachedIdentityRow> rows = new ArrayList<>(assessableIdentities.size());
 		for(UserPropertiesRow assessableIdentity:assessableIdentities) {
+			IdentityMark mark = identityToMarks.get(assessableIdentity.getIdentityKey());
+			if (markedOnly && mark == null) continue;
+			
+			FormLink markLink = uifactory.addFormLink("mark_" + assessableIdentity.getIdentityKey(), "mark", "", null, null, Link.NONTRANSLATED);
+			markLink.setIconLeftCSS(mark != null ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+			markLink.setUserObject(assessableIdentity.getIdentityKey());
+			
 			TaskLight task = identityToTasks.get(assessableIdentity.getIdentityKey());
 			Date submissionDueDate = null;
 			if(task == null || task.getTaskStatus() == null || task.getTaskStatus() == TaskProcess.assignment) {
@@ -260,7 +283,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 					hasSubmittedDocument = hasSubmittedDocument(task);
 				}
 			}
-			rows.add(new CoachedIdentityRow(assessableIdentity, task, submissionDueDate, syntheticSubmissionDate, hasSubmittedDocument));
+			
+			rows.add(new CoachedIdentityRow(assessableIdentity, task, submissionDueDate, syntheticSubmissionDate, hasSubmittedDocument, markLink));
 		}
 		
 		tableModel.setObjects(rows);
@@ -276,7 +300,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(editDueDatesCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				updateModel();
+				updateModel(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -305,6 +329,15 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				} else if(StringHelper.containsNonWhitespace(cmd)) {
 					fireEvent(ureq, new SelectIdentityEvent(row.getIdentity().getIdentityKey()));	
 				}
+			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if("mark".equals(cmd)) {
+				Long assessableIdentityKey = (Long)link.getUserObject();
+				boolean marked = doToogleMark(ureq, assessableIdentityKey);
+				link.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+				link.getComponent().setDirty(true);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -337,5 +370,12 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		cmc = new CloseableModalController(getWindowControl(), "close", editDueDatesCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private boolean doToogleMark(UserRequest ureq, Long particiantKey) {
+		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
+		Identity participant = securityManager.loadIdentityByKey(particiantKey);
+		boolean isMarked = gtaManager.toggleMark(entry, gtaNode, ureq.getIdentity(), participant);
+		return isMarked;
 	}
 }

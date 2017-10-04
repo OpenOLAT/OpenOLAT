@@ -1902,6 +1902,16 @@ create table o_gta_task_revision_date (
   primary key (id)
 );
 
+create table o_gta_mark (
+  id bigserial not null,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  fk_tasklist_id int8 not null,
+  fk_marker_identity_id int8 not null,
+  fk_participant_identity_id int8 not null,
+  primary key (id)
+);
+
 create table o_rem_reminder (
    id int8 not null,
    creationdate timestamp not null,
@@ -2588,6 +2598,9 @@ create index idx_gta_list_to_repo_entry_idx on o_gta_task_list (fk_entry);
 
 alter table o_gta_task_revision_date add constraint gtaskrev_to_task_idx foreign key (fk_task) references o_gta_task (id);
 create index idx_gtaskrev_to_task_idx on o_gta_task_revision_date (fk_task);
+
+alter table o_gta_mark add constraint gtamark_tasklist_idx foreign key (fk_tasklist) references o_gta_task_list (id);
+create index idx_gtamark_tasklist_idx on o_gta_task (fk_tasklist)
 
 -- reminders
 alter table o_rem_reminder add constraint rem_reminder_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

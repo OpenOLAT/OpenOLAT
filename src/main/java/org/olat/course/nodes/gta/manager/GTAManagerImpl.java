@@ -65,6 +65,7 @@ import org.olat.course.nodes.gta.AssignmentResponse.Status;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTARelativeToDates;
 import org.olat.course.nodes.gta.GTAType;
+import org.olat.course.nodes.gta.IdentityMark;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskDueDate;
 import org.olat.course.nodes.gta.TaskLight;
@@ -122,6 +123,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private GTAIdentityMarkDAO gtaMarkDao;
 	@Autowired
 	private BGAreaManager areaManager;
 	@Autowired
@@ -751,8 +754,11 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			int numOfTasks = dbInstance.getCurrentEntityManager().createQuery(deleteTasks)
 				.setParameter("taskListKey", taskList.getKey())
 				.executeUpdate();
+			numOfDeletedObjects = numOfTasks;
+			int numOfMarks = gtaMarkDao.deleteMark(taskList);
+			numOfDeletedObjects += numOfMarks;
 			dbInstance.getCurrentEntityManager().remove(taskList);
-			numOfDeletedObjects = numOfTasks + 1;
+			numOfDeletedObjects++;
 		} else {
 			numOfDeletedObjects = 0;
 		}
@@ -773,6 +779,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		for(TaskList taskList:taskLists) {
 			int numOfTasks = deleteTaskQuery.setParameter("taskListKey", taskList.getKey()).executeUpdate();
 			numOfDeletedObjects += numOfTasks;
+			int numOfMarks = gtaMarkDao.deleteMark(taskList);
+			numOfDeletedObjects += numOfMarks;
 		}
 		
 		String deleteTaskLists = "delete from gtatasklist as tasks where tasks.entry.key=:entryKey";
@@ -1558,6 +1566,27 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		createAndPersistTaskRevisionDate(taskImpl, iteration, newStatus);
 		syncAssessmentEntry(taskImpl, cNode, by);
 		return taskImpl;
+	}
+
+	@Override
+	public boolean toggleMark(RepositoryEntry entry, GTACourseNode gtaNode, Identity marker, Identity participant) {
+		if (entry == null || gtaNode == null || marker == null || participant == null) return false;
+		
+		TaskList taskList = getTaskList(entry, gtaNode);
+		boolean isMarked = gtaMarkDao.isMarked(taskList, marker, participant);
+		if (isMarked) {
+			gtaMarkDao.deleteMark(taskList, marker, participant);
+		} else {
+			gtaMarkDao.createAndPersisitMark(taskList, marker, participant);
+		}
+		return !isMarked;
+		
+	}
+
+	@Override
+	public List<IdentityMark> getMarks(RepositoryEntry entry, GTACourseNode gtaNode, Identity marker) {
+		TaskList taskList = getTaskList(entry, gtaNode);
+		return gtaMarkDao.loadMarks(taskList, marker);
 	}
 
 	@Override

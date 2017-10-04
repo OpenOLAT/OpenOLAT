@@ -21,6 +21,7 @@ package org.olat.course.nodes.gta.ui;
 
 import java.util.Date;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.user.UserPropertiesRow;
@@ -33,6 +34,8 @@ import org.olat.user.UserPropertiesRow;
  */
 public class CoachedIdentityRow implements CoachedElementRow {
 
+	private FormLink markLink;
+	
 	private final TaskLight task;
 	private final Date submissionDueDate;
 	private final Date syntheticSubmissionDate;
@@ -40,12 +43,13 @@ public class CoachedIdentityRow implements CoachedElementRow {
 	private final UserPropertiesRow identity;
 	
 	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, Date submissionDueDate,
-			Date syntheticSubmissionDate, boolean hasSubmittedDocuments) {
+			Date syntheticSubmissionDate, boolean hasSubmittedDocuments, FormLink markLink) {
 		this.identity = identity;
 		this.task = task;
 		this.submissionDueDate = submissionDueDate;
 		this.hasSubmittedDocuments = hasSubmittedDocuments;
 		this.syntheticSubmissionDate = syntheticSubmissionDate;
+		this.markLink = markLink;
 	}
 
 	@Override
@@ -96,4 +100,10 @@ public class CoachedIdentityRow implements CoachedElementRow {
 	public UserPropertiesRow getIdentity() {
 		return identity;
 	}
+
+	public FormLink getMarkLink() {
+		return markLink;
+	}
+
+	
 }
