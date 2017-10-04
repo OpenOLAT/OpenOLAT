@@ -753,6 +753,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 				DBFactory.getInstance().commitAndCloseSession();
 			}
 		}
+		DBFactory.getInstance().commitAndCloseSession();
 		super.updateOnPublish(locale, course, publisher, publishEvents);
 	}
 	

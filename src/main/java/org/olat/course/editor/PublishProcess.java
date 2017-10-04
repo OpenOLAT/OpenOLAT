@@ -39,6 +39,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -503,6 +504,9 @@ public class PublishProcess {
 				cetn.getCourseNode().updateOnPublish(locale, course, identity, publishEvents);
 			}
 		}
+		
+		//commit all changes before sending an event
+		DBFactory.getInstance().commitAndCloseSession();
 		
 		/*
 		 * broadcast event
