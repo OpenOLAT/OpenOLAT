@@ -647,18 +647,22 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public void sendReminders() {
-		boolean reminderEnabled = lectureModule.isRollCallReminderEnabled();
 		int reminderPeriod = lectureModule.getRollCallReminderPeriod();
-		if(reminderEnabled && reminderPeriod > 0) {
+		if(reminderPeriod > 0) {
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.DATE, -reminderPeriod);
 			Date endDate = cal.getTime();
-			
+
+			boolean reminderEnabled = lectureModule.isRollCallReminderEnabled();
 			List<LectureBlockToTeacher> toRemindList = lectureBlockReminderDao.getLectureBlockTeachersToReminder(endDate);
 			for(LectureBlockToTeacher toRemind:toRemindList) {
 				Identity teacher = toRemind.getTeacher();
 				LectureBlock lectureBlock = toRemind.getLectureBlock();
-				sendReminder(teacher, lectureBlock);
+				if(reminderEnabled) {
+					sendReminder(teacher, lectureBlock);
+				} else {
+					lectureBlockReminderDao.createReminder(lectureBlock, teacher, "disabled");
+				}
 			}
 		}
 	}

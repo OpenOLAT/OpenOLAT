@@ -297,7 +297,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
             candidateSession.setExploded(true);
             candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
 		} else {
-			qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult,
+			candidateSession = qtiService.finishTestSession(candidateSession, testSessionController.getTestSessionState(), assessmentResult,
          		currentRequestTimestamp, getDigitalSignatureOptions(), getIdentity());
 		}
 	}
@@ -1475,7 +1475,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
         /* Handle immediate end of test session */
         if (ended) {
-            qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
+        		candidateSession = qtiService.finishTestSession(candidateSession, testSessionState, assessmentResult,
             		timestamp, getDigitalSignatureOptions(), getIdentity());
         } else {
         	TestPart currentTestPart = testSessionController.getCurrentTestPart();

@@ -28,6 +28,8 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockReminderImpl;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
@@ -99,6 +101,64 @@ public class LectureBlockReminderDAOTest extends OlatTestCase {
 		
 		Assert.assertTrue(hasTeacher2);
 		Assert.assertFalse(hasTeacher1);
+	}
+	
+	@Test
+	public void loadLectureBlockToRemind_status() {
+		Identity teacher1 = JunitTestHelper.createAndPersistIdentityAsRndUser("reminder-8");
+		Identity teacher2 = JunitTestHelper.createAndPersistIdentityAsRndUser("reminder-9");
+		LectureBlock lectureBlockAutoClosed = createMinimalLectureBlock(5);
+		LectureBlock lectureBlockClosed = createMinimalLectureBlock(5);
+		LectureBlock lectureBlockCancelled = createMinimalLectureBlock(5);
+		LectureBlock lectureBlockReopen = createMinimalLectureBlock(5);
+		LectureBlock lectureBlockOpen = createMinimalLectureBlock(5);
+		LectureBlock lectureBlock = createMinimalLectureBlock(5);
+		dbInstance.commit();
+		//add the teachers
+		lectureService.addTeacher(lectureBlockAutoClosed, teacher1);
+		lectureService.addTeacher(lectureBlockClosed, teacher1);
+		lectureService.addTeacher(lectureBlockCancelled, teacher2);
+		lectureService.addTeacher(lectureBlockReopen, teacher1);
+		lectureService.addTeacher(lectureBlockReopen, teacher2);
+		lectureService.addTeacher(lectureBlockOpen, teacher1);
+		lectureService.addTeacher(lectureBlockOpen, teacher2);
+		lectureService.addTeacher(lectureBlock, teacher2);
+		dbInstance.commit();
+		lectureBlockAutoClosed.setRollCallStatus(LectureRollCallStatus.autoclosed);
+		lectureBlockAutoClosed = lectureService.save(lectureBlockAutoClosed, null);
+		lectureBlockClosed.setRollCallStatus(LectureRollCallStatus.closed);
+		lectureBlockClosed = lectureService.save(lectureBlockClosed, null);
+		lectureBlockCancelled.setStatus(LectureBlockStatus.cancelled);
+		lectureBlockCancelled = lectureService.save(lectureBlockCancelled, null);
+		lectureBlockReopen.setRollCallStatus(LectureRollCallStatus.reopen);
+		lectureBlockReopen = lectureService.save(lectureBlockReopen, null);
+		lectureBlockOpen.setRollCallStatus(LectureRollCallStatus.open);
+		lectureBlockOpen = lectureService.save(lectureBlockOpen, null);
+		dbInstance.commitAndCloseSession();;
+
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -3);
+		
+		List<LectureBlockToTeacher> toRemind = lectureBlockReminderDao.getLectureBlockTeachersToReminder(cal.getTime());
+		
+		boolean hasBlock = false;
+		boolean hasBlockOpen = false;
+		boolean hasOtherBlock = false;
+		for(LectureBlockToTeacher remind:toRemind) {
+			if(remind.getLectureBlock().equals(lectureBlock)) {
+				hasBlock = true;
+			} else if(remind.getLectureBlock().equals(lectureBlockOpen)) {
+				hasBlockOpen = true;
+			} else if(remind.getLectureBlock().equals(lectureBlockAutoClosed)
+					|| remind.getLectureBlock().equals(lectureBlockClosed)
+					|| remind.getLectureBlock().equals(lectureBlockCancelled)) {
+				hasOtherBlock = true;
+			}
+		}
+		
+		Assert.assertTrue(hasBlock);
+		Assert.assertTrue(hasBlockOpen);
+		Assert.assertFalse(hasOtherBlock);
 	}
 	
 	@Test

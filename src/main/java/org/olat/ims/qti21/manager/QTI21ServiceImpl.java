@@ -48,6 +48,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.components.form.flexible.impl.MultipartFileInfos;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -169,6 +170,8 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		configXstream.alias("assessmentResultsOptions", QTI21AssessmentResultsOptions.class);
 	}
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private AssessmentTestSessionDAO testSessionDao;
 	@Autowired
@@ -431,12 +434,14 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public boolean deleteAuthorAssessmentTestSession(RepositoryEntryRef testEntry) {
+		log.audit("Delete author assessment sessions for test: " + testEntry);
 		List<AssessmentTestSession> sessions = testSessionDao.getAuthorAssessmentTestSession(testEntry);
 		for(AssessmentTestSession session:sessions) {
 			File fileStorage = testSessionDao.getSessionStorage(session);
 			testSessionDao.deleteTestSession(session);
 			FileUtils.deleteDirsAndFiles(fileStorage, true, true);
 		}
+		dbInstance.commit();// make sure it's flushed on the database 
 		return true;
 	}
 	

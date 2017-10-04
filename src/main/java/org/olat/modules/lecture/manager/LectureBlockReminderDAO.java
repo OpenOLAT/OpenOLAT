@@ -26,6 +26,8 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureBlockReminderImpl;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +56,7 @@ public class LectureBlockReminderDAO {
 	}
 	
 	public List<LectureBlockToTeacher> getLectureBlockTeachersToReminder(Date date) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select block, teacher from lectureblock block")
 		  .append(" inner join fetch block.entry re")
 		  .append(" inner join block.teacherGroup tGroup")
@@ -64,7 +66,9 @@ public class LectureBlockReminderDAO {
 		  .append(" where block.endDate<:date and not exists (")
 		  .append("   select reminder.key from lecturereminder reminder")
 		  .append("   where block.key=reminder.lectureBlock.key and teacher.key=reminder.identity.key")
-		  .append(" )");
+		  .append(" ) and block.statusString<>'").append(LectureBlockStatus.cancelled.name()).append("'")
+		  .append(" and block.rollCallStatusString not in ('").append(LectureRollCallStatus.closed.name()).append("','")
+		  .append(LectureRollCallStatus.autoclosed.name()).append("','").append(LectureRollCallStatus.reopen.name()).append("')");
 		
 		List<Object[]> raws = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Object[].class)
