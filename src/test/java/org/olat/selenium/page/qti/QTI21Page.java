@@ -253,6 +253,14 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page saveAnswerMoveAndScrollTop() {
+		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
+		OOGraphene.click(saveAnswerBy, browser);
+		OOGraphene.waitBusy(browser);
+		OOGraphene.scrollTop(browser);
+		return this;
+	}
+	
 	public QTI21Page nextAnswer() {
 		By nextAnswerBy = By.cssSelector("button.o_sel_next_question");
 		browser.findElement(nextAnswerBy).click();
