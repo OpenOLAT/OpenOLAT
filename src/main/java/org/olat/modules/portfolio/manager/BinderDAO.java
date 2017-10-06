@@ -40,6 +40,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.Binder;
@@ -434,6 +435,27 @@ public class BinderDAO {
 				.createQuery(binderQ)
 				.setParameter("binderKey", binder.getKey())
 				.executeUpdate();
+		return rows;
+	}
+	
+	public int detachBinderFromRepositoryEntry(RepositoryEntry entry) {
+		//remove reference to the course and the course node
+		String sb = "update pfbinder binder set binder.entry=null,binder.subIdent=null where binder.entry.key=:entryKey";
+		int rows = dbInstance.getCurrentEntityManager()
+			.createQuery(sb)
+			.setParameter("entryKey", entry.getKey())
+			.executeUpdate();
+		return rows;
+	}
+	
+	public int detachBinderFromRepositoryEntry(RepositoryEntry entry, PortfolioCourseNode node) {
+		//remove reference to the course and the course node
+		String sb = "update pfbinder binder set binder.entry=null,binder.subIdent=null where binder.entry.key=:entryKey and binder.subIdent=:nodeIdent";
+		int rows = dbInstance.getCurrentEntityManager()
+			.createQuery(sb)
+			.setParameter("entryKey", entry.getKey())
+			.setParameter("nodeIdent", node.getIdent())
+			.executeUpdate();
 		return rows;
 	}
 	

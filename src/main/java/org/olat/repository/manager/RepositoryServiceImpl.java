@@ -63,6 +63,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.reminder.manager.ReminderDAO;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -422,6 +423,9 @@ public class RepositoryServiceImpl implements RepositoryService {
 		dbInstance.commit();
 		//delete lectures
 		CoreSpringFactory.getImpl(LectureService.class).delete(entry);
+		dbInstance.commit();
+		//detach portfolio if there are some lost
+		CoreSpringFactory.getImpl(PortfolioService.class).detachCourseFromBinders(entry);
 		dbInstance.commit();
 
 		// inform handler to do any cleanup work... handler must delete the
