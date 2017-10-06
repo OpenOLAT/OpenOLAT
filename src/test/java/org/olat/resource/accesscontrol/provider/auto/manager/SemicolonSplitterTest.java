@@ -69,4 +69,10 @@ public class SemicolonSplitterTest {
 
 		assertThat(values).hasSize(0);
 	}
+	@Test
+	public void shouldReturnEmptyCollectionIfEmptyStringInput() {
+		Collection<String> values = sut.split("");
+
+		assertThat(values).hasSize(0);
+	}
 }
