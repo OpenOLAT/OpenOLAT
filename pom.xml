@@ -70,8 +70,8 @@
 		<org.postgresql.version>42.0.0</org.postgresql.version>
 		<org.infinispan.version>8.2.5.Final</org.infinispan.version>
 		<lucene.version>4.8.0</lucene.version>
-		<version.selenium>3.4.0</version.selenium>
-		<version.drone>2.3.1</version.drone>
+		<version.selenium>3.5.3</version.selenium>
+		<version.drone>2.4.2</version.drone>
 		<activemq.version>5.11.1</activemq.version>
 		<qtiworks.version>1.0.5</qtiworks.version>
 
@@ -2555,7 +2555,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>21.0</version>
+			<version>23.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

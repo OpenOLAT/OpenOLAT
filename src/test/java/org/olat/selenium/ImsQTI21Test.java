@@ -2464,7 +2464,7 @@ public class ImsQTI21Test {
 
 		reiQtiPage
 			.answerDrawing()
-			.saveAnswer()
+			.saveAnswerMoveAndScrollTop()
 			.assertFeedback("Full")
 			.endTest()
 			.assertOnAssessmentResults()
