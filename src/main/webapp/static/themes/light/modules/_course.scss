@@ -214,10 +214,16 @@
 		
 		img {
 			border-radius: 0px;
+			max-width: 100%;
+			max-height:100%;
+			width: auto;
+			height: auto;
+			position: absolute;  
+			top: 0;  
+			bottom: 0;  
+			left: 0;  
+			right: 0;  
 			margin: auto;
-			display:block;
-			max-width: 100px;
-			max-height:100px;
 		}
 	}
 	

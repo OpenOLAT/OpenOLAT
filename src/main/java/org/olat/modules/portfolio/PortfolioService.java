@@ -28,6 +28,7 @@ import java.util.Map;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.portfolio.model.AccessRightChange;
@@ -74,6 +75,26 @@ public interface PortfolioService {
 	 * Delete the binder.
 	 */
 	public boolean deleteBinder(BinderRef binder);
+	
+
+	/**
+	 * This will detach all binders from the course without checking the nodes. Use only
+	 * during deletion of a course.
+	 * 
+	 * @param entry
+	 * @return
+	 */
+	public boolean detachCourseFromBinders(RepositoryEntry entry);
+	
+	/**
+	 * Use if the course node or the course itself is deleted. The portfolios themself are not deleted
+	 * adn stay.
+	 * 
+	 * @param entry
+	 * @param courseNode
+	 * @return
+	 */
+	public boolean detachRepositoryEntryFromBinders(RepositoryEntry entry, PortfolioCourseNode courseNode);
 	
 	
 	/**

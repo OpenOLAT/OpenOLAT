@@ -64,6 +64,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
 import org.olat.portfolio.EPTemplateMapResource;
@@ -562,5 +563,13 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		} else {
 			PortfolioCourseNodeEditController.removeReference(getModuleConfiguration());
 		}
+	}
+
+	@Override
+	public void cleanupOnDelete(ICourse course) {
+		super.cleanupOnDelete(course);
+		
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		CoreSpringFactory.getImpl(PortfolioService.class).detachRepositoryEntryFromBinders(entry, this);
 	}
 }

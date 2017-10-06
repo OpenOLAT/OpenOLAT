@@ -253,6 +253,18 @@ public class PortfolioServiceImpl implements PortfolioService {
 		}
 		return binder;
 	}
+	
+	@Override
+	public boolean detachCourseFromBinders(RepositoryEntry entry) {
+		int deletedRows = binderDao.detachBinderFromRepositoryEntry(entry);
+		return deletedRows > 0;
+	}
+
+	@Override
+	public boolean detachRepositoryEntryFromBinders(RepositoryEntry entry, PortfolioCourseNode courseNode) {
+		int deletedRows = binderDao.detachBinderFromRepositoryEntry(entry, courseNode);
+		return deletedRows > 0;
+	}
 
 	@Override
 	public boolean deleteBinderTemplate(Binder binder, RepositoryEntry templateEntry) {
