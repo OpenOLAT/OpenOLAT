@@ -34,6 +34,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
@@ -2379,6 +2380,7 @@ public class ImsQTI21Test {
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
+	@Ignore
 	@Test
 	@RunAsClient
 	public void qti21EditorDrawing(@InitialPage LoginPage authorLoginPage,

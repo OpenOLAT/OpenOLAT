@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.olat.core.util.StringHelper;
 import org.springframework.stereotype.Component;
 
 
@@ -44,7 +45,7 @@ public class SemicolonSplitter implements IdentifierValueSplitter {
 
 	@Override
 	public Collection<String> split(String rawValue) {
-		if (rawValue == null) return new ArrayList<>();
+		if (!StringHelper.containsNonWhitespace(rawValue)) return new ArrayList<>();
 
 		return Arrays.asList(rawValue.split(";"));
 	}

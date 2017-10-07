@@ -25,6 +25,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -51,7 +52,7 @@ public class SplitterFactory {
 
     public IdentifierValueSplitter getSplitter(String type) {
         IdentifierValueSplitter splitter = cache.get(type);
-        if (splitter == null) {
+        if (!StringHelper.containsNonWhitespace(type)) {
         	splitter = cache.get(SemicolonSplitter.TYPE);
         }
         return splitter;

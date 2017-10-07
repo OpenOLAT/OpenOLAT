@@ -19,6 +19,7 @@
  */
 package org.olat.resource.accesscontrol.provider.auto.manager;
 
+import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.provider.auto.AdvanceOrderInput;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +41,7 @@ class InputValidator {
 		} else {
 			isValid &= notNull(input.getIdentity());
 			isValid &= notNull(input.getMethodClass());
-			isValid &= notNull(input.getRawValues());
+			isValid &= StringHelper.containsNonWhitespace(input.getRawValues());
 
 			if (input.getKeys() == null) {
 				isValid &= false;

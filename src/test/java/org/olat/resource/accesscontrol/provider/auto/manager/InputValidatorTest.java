@@ -110,6 +110,16 @@ public class InputValidatorTest {
 		assertThat(isValid).isFalse();
 	}
 
+
+	@Test
+	public void shouldNotBeValidIfRawValuesIsEmptyString() {
+		when(inputMock.getRawValues()).thenReturn("");
+
+		boolean isValid = sut.isValid(inputMock);
+
+		assertThat(isValid).isFalse();
+	}
+
 	@Test
 	public void shouldNotBeValidIfMethodDoesNotExist() {
 		when(inputMock.getIdentity()).thenReturn(null);
