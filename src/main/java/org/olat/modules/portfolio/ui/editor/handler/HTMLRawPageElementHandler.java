@@ -25,10 +25,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.Util;
 import org.olat.modules.portfolio.model.HTMLPart;
 import org.olat.modules.portfolio.ui.editor.HTMLRawEditorController;
 import org.olat.modules.portfolio.ui.editor.PageElement;
@@ -81,10 +79,6 @@ public class HTMLRawPageElementHandler implements PageElementHandler, SimpleAddP
 
 	@Override
 	public PageElement createPageElement(Locale locale) {
-		Translator translator = Util.createPackageTranslator(HTMLRawEditorController.class, locale);
-		String content = translator.translate("raw.example");
-		HTMLPart htmlPart = new HTMLPart();
-		htmlPart.setContent(content);
-		return htmlPart;
+		return new HTMLPart();
 	}
 }

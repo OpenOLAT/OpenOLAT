@@ -30,6 +30,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.HTMLPart;
 import org.olat.modules.portfolio.ui.editor.event.ChangePartEvent;
@@ -81,7 +83,7 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		htmlItem.getEditorConfiguration().disableImageAndMovie();
 		htmlItem.getEditorConfiguration().setAutoResizeEnabled(true, -1, 40, 0);
 		
-		String formattedContent = Formatter.formatLatexFormulas(content);
+		String formattedContent = Formatter.formatLatexFormulas(contentOrExample(content));
 		staticItem = uifactory.addStaticTextElement(cmpId + "_static", formattedContent, formLayout);
 	}
 
@@ -96,7 +98,8 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 			String content = htmlItem.getValue();
 			htmlPart.setContent(content);
 			htmlPart = portfolioService.updatePart(htmlPart);
-			staticItem.setValue(content);
+			String formattedContent = Formatter.formatLatexFormulas(contentOrExample(content));
+			staticItem.setValue(formattedContent);
 			fireEvent(ureq, new ChangePartEvent(htmlPart));
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -108,9 +111,18 @@ public class HTMLRawEditorController extends FormBasicController implements Page
 		htmlPart.setContent(content);
 		htmlPart = portfolioService.updatePart(htmlPart);
 
-		String formattedContent = Formatter.formatLatexFormulas(content);
+		String formattedContent = Formatter.formatLatexFormulas(contentOrExample(content));
 		staticItem.setValue(formattedContent);
 		fireEvent(ureq, new ChangePartEvent(htmlPart));
+	}
+	
+	private String contentOrExample(String content) {
+		String raw = FilterFactory.getHtmlTagsFilter().filter(content);
+		String staticContent = content;
+		if (!StringHelper.containsNonWhitespace(raw)) {
+			staticContent = getTranslator().translate("raw.example");
+		}
+		return staticContent;
 	}
 
 	@Override

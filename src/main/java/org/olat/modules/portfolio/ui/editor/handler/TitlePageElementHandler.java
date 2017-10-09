@@ -26,8 +26,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
 import org.olat.modules.portfolio.model.TitlePart;
 import org.olat.modules.portfolio.ui.editor.PageElement;
 import org.olat.modules.portfolio.ui.editor.PageElementEditorController;
@@ -78,10 +76,6 @@ public class TitlePageElementHandler implements PageElementHandler, SimpleAddPag
 
 	@Override
 	public PageElement createPageElement(Locale locale) {
-		Translator translator = Util.createPackageTranslator(TitleEditorController.class, locale);
-		String content = translator.translate("title.example");
-		TitlePart part = new TitlePart();
-		part.setContent(content);
-		return part;
+		return new TitlePart();
 	}
 }

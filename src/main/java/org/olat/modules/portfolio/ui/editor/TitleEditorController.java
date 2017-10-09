@@ -34,6 +34,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.TitlePart;
@@ -93,7 +94,7 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		titleItem.getEditorConfiguration().setSendOnBlur(true);
 		titleItem.getEditorConfiguration().disableMenuAndMenuBar();
 		
-		staticItem = uifactory.addStaticTextElement(cmpId + "_static", content, formLayout);
+		staticItem = uifactory.addStaticTextElement(cmpId + "_static", contentOrExample(content), formLayout);
 		flc.getFormItemComponent().contextPut("cmpId", cmpId);
 	}
 
@@ -134,8 +135,17 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		String content = titleItem.getValue();
 		titlePart.setContent(content);
 		titlePart = portfolioService.updatePart(titlePart);
-		staticItem.setValue(content);
+		staticItem.setValue(contentOrExample(content));
 		fireEvent(ureq, new ChangePartEvent(titlePart));
+	}
+
+	private String contentOrExample(String content) {
+		String title = FilterFactory.getHtmlTagsFilter().filter(content);
+		String staticContent = content;
+		if (!StringHelper.containsNonWhitespace(title)) {
+			staticContent = getTranslator().translate("title.example");
+		}
+		return staticContent;
 	}
 
 	@Override
