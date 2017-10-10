@@ -252,7 +252,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
 		tableEl.setShowAllRowsEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants");
+		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-" + markedOnly);
 	}
 	
 	protected void updateModel(UserRequest ureq) {
