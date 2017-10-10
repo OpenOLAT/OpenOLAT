@@ -138,7 +138,7 @@ public class MailController extends FormBasicController {
 		sb.append("<ul class='list-inline'><li>");
 		if (from != null) {
 			sb.append(getFullName(from));
-			if (mailModule.isShowMailAddresses()) {
+			if (showMailAdresses()) {
 				Identity fromIdentity = from.getRecipient();
 				if (fromIdentity != null) {
 					sb.append(" &lt;").append(fromIdentity.getUser().getEmail()).append("&gt; ");
@@ -175,34 +175,44 @@ public class MailController extends FormBasicController {
 				groups.add(group);
 				groupCounter = 0;
 			}
-			if (outbox || mailModule.isShowRecipientsInInbox()) {
-				if (mailModule.isShowRecipientNames()) {
-					if (recipient.getRecipient() != null) {
-						// recipient is an individual
-						Identity repicientIdentity = recipient.getRecipient();
-						sb.append("<li class='o_recipient'>");
-						if(groupCounter> 0) sb.append(", ");
-						sb.append("<span>").append(getFullName(recipient)).append("</span>");
-						if (mailModule.isShowMailAddresses()) {
-							sb.append(" &lt;").append(repicientIdentity.getUser().getEmail()).append("&gt;");
-						}
-						sb.append("</li>");
-						groupCounter++;
+			if (showRecipientNames()) {
+				if (recipient.getRecipient() != null) {
+					// recipient is an individual
+					Identity repicientIdentity = recipient.getRecipient();
+					sb.append("<li class='o_recipient'>");
+					if(groupCounter> 0) sb.append(", ");
+					sb.append("<span>").append(getFullName(recipient)).append("</span>");
+					if (showMailAdresses()) {
+						sb.append(" &lt;").append(repicientIdentity.getUser().getEmail()).append("&gt;");
 					}
-					if (recipient.getEmailAddress() != null) {
-						// recipient is not an OpenOLAT identity but an external email
-						sb.append("<li class='o_mail'>");
-						if(groupCounter > 0) sb.append(", ");
-						sb.append("&lt;");
-						sb.append(recipient.getEmailAddress());
-						sb.append("&gt;</li>");
-						groupCounter++;
-					}
+					sb.append("</li>");
+					groupCounter++;
+				}
+			}
+			if (showMailAdresses()) {
+				if (recipient.getEmailAddress() != null) {
+					// recipient is not an OpenOLAT identity but an external email
+					sb.append("<li class='o_mail'>");
+					if(groupCounter > 0) sb.append(", ");
+					sb.append("&lt;");
+					sb.append(recipient.getEmailAddress());
+					sb.append("&gt;</li>");
+					groupCounter++;
 				}
 			}
 		}
 		sb.append("</ul>");
 		return sb.toString();
+	}
+
+	private boolean showRecipientNames() {
+		return (outbox && mailModule.isShowOutboxRecipientNames()) 
+				|| (!outbox && mailModule.isShowInboxRecipientNames());
+	}
+
+	private boolean showMailAdresses() {
+		return (outbox && mailModule.isShowOutboxMailAddresses()) 
+				|| (!outbox && mailModule.isShowInboxMailAddresses());
 	}
 	
 	private String getFullName(DBMailRecipient recipient) {

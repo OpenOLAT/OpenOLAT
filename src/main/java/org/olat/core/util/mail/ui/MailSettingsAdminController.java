@@ -19,6 +19,8 @@
  */
 package org.olat.core.util.mail.ui;
 
+import java.util.Collection;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,16 +46,22 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MailSettingsAdminController extends FormBasicController  {
 
+	private static final String INBOX_SHOW_RECIPIENT_NAMES_KEY = "inbox.show.recipient.names.key";
+	private static final String INBOX_SHOW_MAIL_ADDRESSES_KEY = "inbox.show.mail.addresses.key";
+	private static final String OUTBOX_SHOW_RECIPIENT_NAMES_KEY = "outbox.show.recipient.names.key";
+	private static final String OUTBOX_SHOW_MAIL_ADDRESSES_KEY = "outbox.show.mail.addresses.key";
+	
 	private MultipleSelectionElement enabled;
-	private MultipleSelectionElement showRecipientNamesEl;
-	private MultipleSelectionElement showMailAddressesEl;
-	private MultipleSelectionElement showRecipientsInInboxEl;
+	private MultipleSelectionElement showOutboxEl;
+	private MultipleSelectionElement showInboxEl;
 	private SingleSelection userDefaultSettingEl;
 	
 	private String[] values = {""};
 	private String[] keys = {"on"};
+	private String[] showInboxKeys = {""};
+	private String[] showOutboxKeys = {""};
+	private String[] showValues = {""};
 	
-
 	private String[] userSettingValues ;
 	private String[] userSettingKeys = {"intern.only","send.copy"};
 
@@ -63,6 +71,16 @@ public class MailSettingsAdminController extends FormBasicController  {
 	
 	public MailSettingsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, Util.createPackageTranslator(MailModule.class, ureq.getLocale()));
+		
+		showInboxKeys = new String [] {
+				INBOX_SHOW_RECIPIENT_NAMES_KEY,
+				INBOX_SHOW_MAIL_ADDRESSES_KEY};
+		showOutboxKeys = new String [] {
+				OUTBOX_SHOW_RECIPIENT_NAMES_KEY,
+				OUTBOX_SHOW_MAIL_ADDRESSES_KEY};
+		showValues = new String [] {
+				getTranslator().translate("mail.admin.show.recipient.names"),
+				getTranslator().translate("mail.admin.show.mail.addresses")};
 		
 		initForm(ureq);
 	}
@@ -91,21 +109,15 @@ public class MailSettingsAdminController extends FormBasicController  {
 		}
 		userDefaultSettingEl.setEnabled(internEnabled);
 
+		showInboxEl = uifactory.addCheckboxesVertical("mail.admin.inbox", formLayout, showInboxKeys, showValues, 1);
+		showInboxEl.select(INBOX_SHOW_RECIPIENT_NAMES_KEY, mailModule.isShowInboxRecipientNames());
+		showInboxEl.select(INBOX_SHOW_MAIL_ADDRESSES_KEY, mailModule.isShowInboxMailAddresses());
+		showInboxEl.addActionListener(FormEvent.ONCHANGE);
 		
-		showRecipientNamesEl = uifactory.addCheckboxesHorizontal("mail.admin.show.recipient.names", formLayout, keys, values);
-		showRecipientNamesEl.select(keys[0], mailModule.isShowRecipientNames());
-		showRecipientNamesEl.addActionListener(FormEvent.ONCHANGE);
-		showRecipientNamesEl.setEnabled(internEnabled);
-
-		showMailAddressesEl = uifactory.addCheckboxesHorizontal("mail.admin.show.mail.addresses", formLayout, keys, values);
-		showMailAddressesEl.select(keys[0], mailModule.isShowMailAddresses());
-		showMailAddressesEl.addActionListener(FormEvent.ONCHANGE);
-		showMailAddressesEl.setEnabled(internEnabled);
-		
-		showRecipientsInInboxEl = uifactory.addCheckboxesHorizontal("mail.admin.show.recipient.inbox", formLayout, keys, values);
-		showRecipientsInInboxEl.select(keys[0], mailModule.isShowRecipientsInInbox());
-		showRecipientsInInboxEl.addActionListener(FormEvent.ONCHANGE);
-		showRecipientsInInboxEl.setEnabled(internEnabled);
+		showOutboxEl = uifactory.addCheckboxesVertical("mail.admin.outbox", formLayout, showOutboxKeys, showValues, 1);
+		showOutboxEl.select(OUTBOX_SHOW_RECIPIENT_NAMES_KEY, mailModule.isShowOutboxRecipientNames());
+		showOutboxEl.select(OUTBOX_SHOW_MAIL_ADDRESSES_KEY, mailModule.isShowOutboxMailAddresses());
+		showOutboxEl.addActionListener(FormEvent.ONCHANGE);
 		
 		final FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
 		buttonGroupLayout.setRootForm(mainForm);
@@ -130,19 +142,19 @@ public class MailSettingsAdminController extends FormBasicController  {
 			mailModule.setReceiveRealMailUserDefaultSetting(realMailSetting);
 		}
 		userDefaultSettingEl.setEnabled(on);
-		// recipient names
-		boolean showRecipientNames = !showRecipientNamesEl.getSelectedKeys().isEmpty();
-		mailModule.setShowRecipientNames(showRecipientNames);
-		showRecipientNamesEl.setEnabled(on);
-		// mail addresses
-		boolean showMailaddresses = !showMailAddressesEl.getSelectedKeys().isEmpty();
-		mailModule.setShowMailAddresses(showMailaddresses);
-		showMailAddressesEl.setEnabled(on);
-		// recipients in inbox
-		boolean showRecipientsInInbox = !showRecipientsInInboxEl.getSelectedKeys().isEmpty();
-		mailModule.setShowRecipientsInInbox(showRecipientsInInbox);
-		showRecipientsInInboxEl.setEnabled(on);
-
+		
+		Collection<String> showInboxKeys = showInboxEl.getSelectedKeys();
+		boolean showInboxRecipientName = showInboxKeys.contains(INBOX_SHOW_RECIPIENT_NAMES_KEY);
+		mailModule.setShowInboxRecipientNames(showInboxRecipientName);
+		boolean showInboxMailAddresses = showInboxKeys.contains(INBOX_SHOW_MAIL_ADDRESSES_KEY);
+		mailModule.setShowInboxMailAddresses(showInboxMailAddresses);
+		
+		Collection<String> showOutboxKeys = showOutboxEl.getSelectedKeys();
+		boolean showOutboxRecipientName = showOutboxKeys.contains(OUTBOX_SHOW_RECIPIENT_NAMES_KEY);
+		mailModule.setShowOutboxRecipientNames(showOutboxRecipientName);
+		boolean showOutboxMailAddresses = showOutboxKeys.contains(OUTBOX_SHOW_MAIL_ADDRESSES_KEY);
+		mailModule.setShowOutboxMailAddresses(showOutboxMailAddresses);
+		
 		getWindowControl().setInfo("saved");
 	}
 
@@ -151,9 +163,8 @@ public class MailSettingsAdminController extends FormBasicController  {
 		if(source == enabled) {
 			boolean on = !enabled.getSelectedKeys().isEmpty();
 			userDefaultSettingEl.setEnabled(on);
-			showMailAddressesEl.setEnabled(on);
-			showRecipientNamesEl.setEnabled(on);
-			showRecipientsInInboxEl.setEnabled(on);
+			showOutboxEl.setEnabled(on);
+			showInboxEl.setEnabled(on);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
