@@ -93,7 +93,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 				manageLink = LinkFactory.createLink("run.manage.coach", mainVC, this);
 				segmentView.addSegment(manageLink, false);
 			}
-			doOpenCoach(ureq);
+			doOpenSelectionList(ureq);
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
 		} else if(isManagementTabAvalaible(config)) {
@@ -107,7 +107,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			manageLink = LinkFactory.createLink("run.manage.coach", mainVC, this);
 			segmentView.addSegment(manageLink, false);
 
-			doOpenCoach(ureq);
+			doOpenSelectionList(ureq);
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
 		} else if(membership.isCoach() || userCourseEnv.isAdmin()) {
@@ -119,7 +119,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			coachLink = LinkFactory.createLink("run.coach.all", mainVC, this);
 			segmentView.addSegment(coachLink, true);
 
-			doOpenCoach(ureq);
+			doOpenSelectionList(ureq);
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
 		} else if(membership.isParticipant()) {
@@ -201,6 +201,22 @@ public class GTARunController extends BasicController implements Activateable2 {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private void doOpenSelectionList(UserRequest ureq) {
+		RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		boolean hasMarks = gtaManager.hasMarks(entry, gtaNode, getIdentity());
+		if (hasMarks) {
+			doOpenMarked(ureq);
+			if(segmentView != null) {
+				segmentView.select(markedLink);
+			}
+		} else {
+			doOpenCoach(ureq);
+			if(segmentView != null) {
+				segmentView.select(coachLink);
+			}
+		}
 	}
 	
 	private Activateable2 doOpenRun(UserRequest ureq) {

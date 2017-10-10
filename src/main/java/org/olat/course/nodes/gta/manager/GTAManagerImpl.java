@@ -1589,6 +1589,13 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		return gtaMarkDao.loadMarks(taskList, marker);
 	}
 
+
+	@Override
+	public boolean hasMarks(RepositoryEntry entry, GTACourseNode gtaNode, Identity marker) {
+		TaskList taskList = getTaskList(entry, gtaNode);
+		return gtaMarkDao.hasMarks(taskList, marker);
+	}
+
 	@Override
 	public AssessmentEntryStatus convertToAssessmentEntrystatus(Task task, GTACourseNode cNode) {
 		TaskProcess status = task.getTaskStatus();

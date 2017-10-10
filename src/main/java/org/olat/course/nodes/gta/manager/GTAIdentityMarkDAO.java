@@ -82,6 +82,21 @@ public class GTAIdentityMarkDAO {
 		return !marks.isEmpty();
 	}
 
+	public boolean hasMarks(TaskList taskList, Identity marker) {
+		if (taskList == null || taskList.getKey() == null || marker == null || marker.getKey() == null)
+			return false;
+
+		List<IdentityMark> marks = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadByMarker", IdentityMark.class)
+				.setParameter("taskListKey", taskList.getKey())
+				.setParameter("markerKey", marker.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		
+		return !marks.isEmpty();
+	}
+
 	public void deleteMark(TaskList taskList, Identity marker, Identity participant) {
 		if (taskList == null || taskList.getKey() == null || marker == null || marker.getKey() == null
 				|| participant == null || participant.getKey() == null) {

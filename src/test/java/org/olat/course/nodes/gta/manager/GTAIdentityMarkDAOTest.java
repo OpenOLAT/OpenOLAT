@@ -126,6 +126,37 @@ public class GTAIdentityMarkDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldCheckIfHasMarks() {
+		TaskList taskList = createTaskList();
+		Identity marker = JunitTestHelper.createAndPersistIdentityAsAuthor("coach");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsUser("participant1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsUser("participant2");
+		sut.createAndPersisitMark(taskList, marker, participant1);
+		sut.createAndPersisitMark(taskList, marker, participant2);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasMarks = sut.hasMarks(taskList, marker);
+		
+		assertThat(hasMarks).isTrue();
+	}
+	
+	@Test
+	public void shouldCheckIfHasNoMarks() {
+		TaskList taskList = createTaskList();
+		TaskList otherTaskList = createTaskList();
+		Identity marker = JunitTestHelper.createAndPersistIdentityAsAuthor("coach");
+		Identity otherMarker = JunitTestHelper.createAndPersistIdentityAsAuthor("otherCoach");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsUser("participant3");
+		sut.createAndPersisitMark(otherTaskList, marker, participant);
+		sut.createAndPersisitMark(taskList, otherMarker, participant);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasMarks = sut.hasMarks(taskList, marker);
+		
+		assertThat(hasMarks).isFalse();
+	}
+	
+	@Test
 	public void shouldDeleteMarkOfAMarker() {
 		TaskList taskList = createTaskList();
 		TaskList otherTaskList = createTaskList();
