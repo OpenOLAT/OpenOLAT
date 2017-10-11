@@ -19,8 +19,11 @@
  */
 package org.olat.modules.reminder.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -1063,5 +1066,31 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		return testNode.getIdent();
+	}
+	
+	@Test
+	public void evaluateRuleListThrowsException() {
+		List<ReminderRule> ruleList = Collections.<ReminderRule>emptyList();
+		
+		boolean ollOk = ruleEngine.evaluate(null, ruleList);
+		
+		Assert.assertFalse(ollOk);
+	}
+	
+	@Test
+	public void getMembersThrowsException() {
+		
+		List<Identity> members = ruleEngine.getMembers(null, null);
+		
+		assertThat(members).isNotNull().isEmpty();
+	}
+	
+	@Test
+	public void getFilterThrowsException() {
+		ReminderRuleImpl rule = new ReminderRuleImpl();
+		rule.setType(ScoreRuleSPI.class.getSimpleName());
+		rule.setRightOperand("no integer");
+		
+		ruleEngine.filterByRule(null, null, rule);
 	}
 }
