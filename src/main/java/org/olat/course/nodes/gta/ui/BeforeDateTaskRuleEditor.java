@@ -214,11 +214,31 @@ public class BeforeDateTaskRuleEditor extends RuleEditorFragment {
 		if(!StringHelper.containsNonWhitespace(valueEl.getValue())) {
 			valueEl.setErrorKey("form.mandatory.hover", null);
 			allOk &= false;
+		} else {
+			allOk &= validateInt(valueEl);
 		}
 		
 		return allOk;
 	}
 
+	private boolean validateInt(TextElement el) {
+		boolean allOk = true;
+		
+		if(el.isVisible()) {
+			String value = el.getValue();
+			if(StringHelper.containsNonWhitespace(value)) {
+				try {
+					Integer.parseInt(value);
+				} catch(Exception e) {
+					allOk = false;
+					el.setErrorKey("error.wrong.int", null);
+				}
+			}
+		}
+
+		return allOk;
+	}
+	
 	@Override
 	public ReminderRule getConfiguration() {
 		ReminderRuleImpl configuredRule = null; 
