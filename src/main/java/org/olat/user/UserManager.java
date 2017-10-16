@@ -69,7 +69,7 @@ public abstract class UserManager extends BasicManager {
 	 * 
 	 * @return Instance of a UserManager
 	 */
-	public static final synchronized UserManager getInstance() {
+	public static final UserManager getInstance() {
 		return INSTANCE;
 	}
 
