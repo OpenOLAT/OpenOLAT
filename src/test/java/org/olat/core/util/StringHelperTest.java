@@ -22,6 +22,9 @@ package org.olat.core.util;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -175,5 +178,26 @@ public class StringHelperTest {
 		Assert.assertTrue(StringHelper.isHtml("Hello <p>world</p>"));
 		Assert.assertTrue(StringHelper.isHtml("<ul><li>Hello<li>world</ul>"));
 		Assert.assertTrue(StringHelper.isHtml("Hello<br>world"));
+	}
+	
+	
+	@Test
+	public void formatAsCSVString() {
+		List<String> entries = new ArrayList<>();
+		entries.add("Hell\"o\"");
+		entries.add("Test,dru,");
+		entries.add("Final");
+		String csv = StringHelper.formatAsCSVString(entries);
+		Assert.assertEquals("Hell\"o\",Test,dru,,Final", csv);
+	}
+	
+	@Test
+	public void formatAsEscapedCSVString() {
+		List<String> entries = new ArrayList<>();
+		entries.add("Hell\"o\"");
+		entries.add("Test,dru,");
+		entries.add("Final");
+		String csv = StringHelper.formatAsEscapedCSVString(entries);
+		Assert.assertEquals("Hell\"\"o\"\",\"Test,dru,\",Final", csv);
 	}
 }

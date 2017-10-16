@@ -106,7 +106,7 @@ public class RepositoryMailing {
 	 * @param actor
 	 * @return the generated MailTemplate
 	 */
-	private static MailTemplate createRemoveParticipantMailTemplate(RepositoryEntry re, Identity actor) {
+	private static MailTemplate createRemoveMailTemplate(RepositoryEntry re, Identity actor) {
 		String subjectKey = "notification.mail.removed.subject";
 		String bodyKey = "notification.mail.removed.body";
 		return createMailTemplate(re, actor, subjectKey, bodyKey);
@@ -118,12 +118,14 @@ public class RepositoryMailing {
 		switch(type) {
 			case addParticipant:
 				return createAddParticipantMailTemplate(re, ureqIdentity);
-			case removeParticipant:
-				return createRemoveParticipantMailTemplate(re, ureqIdentity);
 			case addTutor:
 				return createAddTutorMailTemplate(re, ureqIdentity);
 			case addOwner:
 				return createAddOwnerMailTemplate(re, ureqIdentity);
+			case removeParticipant:
+			case removeTutor:
+			case removeOwner:
+				return createRemoveMailTemplate(re, ureqIdentity);
 		}
 		return null;
 	}
@@ -176,7 +178,9 @@ public class RepositoryMailing {
 		addParticipant,
 		removeParticipant,
 		addTutor,
-		addOwner
+		removeTutor,
+		addOwner,
+		removeOwner
 	}
 	
 	private static MailTemplate createMailTemplate(RepositoryEntry re, Identity actor, String subjectKey, String bodyKey) {

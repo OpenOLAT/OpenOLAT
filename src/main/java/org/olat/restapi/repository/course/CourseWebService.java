@@ -788,7 +788,7 @@ public class CourseWebService {
 		RepositoryManager rm = RepositoryManager.getInstance();
 		RepositoryEntry repositoryEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		List<Identity> authors = Collections.singletonList(author);
-		rm.removeOwners(identity, authors, repositoryEntry);
+		rm.removeOwners(identity, authors, repositoryEntry, new MailPackage(false));
 		return Response.ok().build();
 	}
 	

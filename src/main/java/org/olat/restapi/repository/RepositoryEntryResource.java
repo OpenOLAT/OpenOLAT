@@ -286,7 +286,7 @@ public class RepositoryEntryResource {
 			}
 
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			repositoryManager.removeOwners(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry);
+			repositoryManager.removeOwners(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry, new MailPackage(false));
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to remove an owner to a repository entry", e);
@@ -406,7 +406,7 @@ public class RepositoryEntryResource {
 			}
 
 			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
-			repositoryManager.removeTutors(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry);
+			repositoryManager.removeTutors(ureq.getIdentity(), Collections.singletonList(identityToRemove), repoEntry, new MailPackage(false));
 			return Response.ok().build();
 		} catch (Exception e) {
 			log.error("Trying to remove a coach from a repository entry", e);

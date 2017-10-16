@@ -125,7 +125,7 @@ public class LogLineConverter {
 			PropertyDescriptor pd = it.next();
 			propertyNames.add(pd.getName());
 		}
-		return StringHelper.formatAsCSVString(propertyNames);
+		return StringHelper.formatAsEscapedCSVString(propertyNames);
 	}
 
 	/**
@@ -160,7 +160,7 @@ public class LogLineConverter {
 			loggingObjectList.add(strValue);
 		}
 		
-		return StringHelper.formatAsCSVString(loggingObjectList);
+		return StringHelper.formatAsEscapedCSVString(loggingObjectList);
 	}
 	
 	/**
