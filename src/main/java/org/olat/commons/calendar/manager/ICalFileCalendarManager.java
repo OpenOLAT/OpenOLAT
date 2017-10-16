@@ -354,7 +354,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	@Override
 	public boolean persistCalendar(Kalendar kalendar) {
 		Calendar calendar = buildCalendar(kalendar);
-		boolean success = writeCalendarFile(calendar,kalendar.getType(), kalendar.getCalendarID());
+		boolean success = writeCalendarFile(calendar, kalendar.getType(), kalendar.getCalendarID());
 		calendarCache.update(getKeyFor(kalendar.getType(), kalendar.getCalendarID()), kalendar);
 		return success;
 	}
@@ -1204,7 +1204,9 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		}
 
 		reloadedCal.removeEvent(kalendarEvent); // remove old event
-		reloadedCal.addEvent(kalendarEvent); // add changed event
+		// clone the event to initialize the immutable date used to control moving events
+		KalendarEvent clonedEvent = getKalendarEvent(getVEvent(kalendarEvent));
+		reloadedCal.addEvent(clonedEvent); // add changed event
 
 		boolean successfullyPersist = persistCalendar(reloadedCal);
 		// inform all controller about calendar change for reload
