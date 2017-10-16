@@ -213,7 +213,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	public List<Subscriber> getSubscribers(IdentityRef identity, List<String> types) {
 		if(identity == null) return Collections.emptyList();
 		
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select sub from notisub as sub ")
 		  .append("inner join fetch sub.publisher as publisher ")
 		  .append("where sub.identity.key = :identityKey");
@@ -241,11 +241,10 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	public List<Subscriber> getSubscribers(IdentityRef identity, long resId) {
 		if(identity == null) return Collections.emptyList();
 		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select sub from notisub as sub ")
-		  .append("inner join fetch sub.publisher as publisher ")
-		  .append("where sub.identity.key = :identityKey")
-		  .append(" and publisher.resId = :resId)");
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select sub from notisub as sub")
+		  .append(" inner join fetch sub.publisher as publisher")
+		  .append(" where sub.identity.key = :identityKey and publisher.resId = :resId");
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Subscriber.class)
 			.setParameter("identityKey", identity.getKey())
@@ -262,7 +261,7 @@ public class NotificationsManagerImpl extends NotificationsManager implements Us
 	public List<Subscriber> getValidSubscribers(Identity identity) {
 		if(identity == null) return Collections.emptyList();
 		
-		StringBuilder q = new StringBuilder();
+		StringBuilder q = new StringBuilder(256);
 		q.append("select sub from notisub sub ")
 		 .append(" inner join fetch sub.publisher as pub ")
 		 .append(" where sub.identity.key=:anIdentityKey and pub.state=").append(PUB_STATE_OK);

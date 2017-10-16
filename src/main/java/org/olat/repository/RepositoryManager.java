@@ -2037,14 +2037,12 @@ public class RepositoryManager {
 	}
 
 	public List<RepositoryEntryLight> getParticipantRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder(200);
+		StringBuilder sb = new StringBuilder(512);
 		sb.append("select v from repoentrylight as v ")
 		  .append(" inner join fetch v.olatResource as res ")
-		  .append(" where exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
-		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey ")
+		  .append(" where exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
+		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
 		  .append("      and membership.role='").append(GroupRoles.participant.name()).append("')")
-		  .append("  )")
-		  .append(" )")
 		  .append(" and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
 		appendOrderBy(sb, "v", orderby);
 
@@ -2058,14 +2056,12 @@ public class RepositoryManager {
 	}
 
 	public List<RepositoryEntryLight> getTutorRepositoryEntry(IdentityRef identity, int maxResults, RepositoryEntryOrder... orderby) {
-		StringBuilder sb = new StringBuilder(200);
+		StringBuilder sb = new StringBuilder(512);
 		sb.append("select v from repoentrylight as v ")
 		  .append(" inner join fetch v.olatResource as res ")
-		  .append(" where exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership  ")
-		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey ")
+		  .append(" where exists (select rel from repoentrytogroup as rel, bgroup as baseGroup, bgroupmember as membership")
+		  .append("    where rel.entry=v and rel.group=baseGroup and membership.group=baseGroup and membership.identity.key=:identityKey")
 		  .append("      and membership.role='").append(GroupRoles.coach.name()).append("')")
-		  .append("  )")
-		  .append(" )")
 		  .append("  and (v.access>=3 or (v.access=").append(RepositoryEntry.ACC_OWNERS).append(" and v.membersOnly=true))");
 		appendOrderBy(sb, "v", orderby);
 
