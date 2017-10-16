@@ -35,6 +35,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,7 +43,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -542,45 +542,44 @@ public class StringHelper {
 	}
 	
 	/**
-	 * set of strings to one string comma separated.<br>
+	 * Collection of strings to one string comma separated. This method doesn't do any escaping
+	 * and will never do escaping to be backwards compatible.<br>
 	 * e.g. ["a","b","c","s"] -> "a,b,c,s" 
 	 * @param selection
 	 * @return
 	 */
-	public static String formatAsCSVString(Set<String> entries) {
-		boolean isFirst = true;
-		String csvStr = null;
-		for (Iterator<String> iter = entries.iterator(); iter.hasNext();) {
-			String group = iter.next();
-			if (isFirst) {
-				csvStr = group;
-				isFirst = false;
-			} else {
-				csvStr += ", " + group;
+	public static String formatAsCSVString(Collection<String> entries) {
+		StringBuilder csv = new StringBuilder(256);
+		for (String group:entries) {
+			if (csv.length() > 0) {
+				csv.append(",");
 			}
+			csv.append(group);
 		}
-		return csvStr;
+		return csv.toString();
 	}
 	
 	/**
-	 * list of strings to one string comma separated.<br>
-	 * e.g. ["a","b","c","s"] -> "a,b,c,s" 
+	 * Collection of strings to one string comma separated. The method escaped
+	 * " and ,<br>
+	 * e.g. ["a","b,1","c","s"] -> "a,"b,1",c,s" 
 	 * @param selection
 	 * @return
 	 */
-	public static String formatAsCSVString(List<String> entries) {
-		boolean isFirst = true;
-		String csvStr = null;
-		for (Iterator<String> iter = entries.iterator(); iter.hasNext();) {
-			String group = iter.next();
-			if (isFirst) {
-				csvStr = group;
-				isFirst = false;
-			} else {
-				csvStr += ", " + group;
+	public static String formatAsEscapedCSVString(Collection<String> entries) {
+		StringBuilder csv = new StringBuilder(256);
+		for (String entry:entries) {
+			entry = entry.replace("\"", "\"\"");
+			if (entry.contains(",")) {
+				entry = "\"" + entry + "\"";  
 			}
+			
+			if (csv.length() > 0) {
+				csv.append(",");
+			}
+			csv.append(entry);
 		}
-		return csvStr;
+		return csv.toString();
 	}
 	
 	/**
@@ -590,40 +589,17 @@ public class StringHelper {
 	 * @param selection
 	 * @return
 	 */
-	public static String formatAsSortUniqCSVString(List<String> s) {
-		
-		Map <String,String>u = new HashMap<String,String>();
-		for (Iterator <String> si = s.iterator(); si.hasNext();) {
+	public static String formatAsSortUniqCSVString(Collection<String> s) {
+		Map<String,String> u = new HashMap<>();
+		for (Iterator<String> si = s.iterator(); si.hasNext();) {
 			u.put(si.next().trim(), null);
 		}
 		
-		List <String>rv = new ArrayList<String>();
+		List <String>rv = new ArrayList<>(u.size());
 		rv.addAll(u.keySet());
 		rv.remove("");
 		Collections.sort(rv);
 		
-		return formatAsCSVString (rv);
-	}
-	
-	/**
-	 * list of strings to one string comma separated.<br>
-	 * e.g. ["z","a","b","c","s","a"] -> "a, b, c, s, z"
-	 * No duplicates, alphabetically sorted
-	 * @param selection
-	 * @return
-	 */
-	public static String formatAsSortUniqCSVString(Set<String> s) {
-		
-		Map <String,String>u = new HashMap<String,String>();
-		for (Iterator <String> si = s.iterator(); si.hasNext();) {
-			u.put(si.next().trim(), null);
-		}
-		
-		List <String>rv = new ArrayList<String>();
-		rv.addAll(u.keySet());
-		rv.remove("");
-		Collections.sort(rv);
-		
-		return formatAsCSVString (rv);
+		return formatAsCSVString(rv);
 	}
 }
