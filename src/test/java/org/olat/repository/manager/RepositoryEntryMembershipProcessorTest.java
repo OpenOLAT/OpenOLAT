@@ -141,7 +141,7 @@ public class RepositoryEntryMembershipProcessorTest extends OlatTestCase {
 		List<Identity> removeIdentities = new ArrayList<>(2);
 		removeIdentities.add(member);
 		removeIdentities.add(coach);
-		repositoryManager.removeTutors(owner, removeIdentities, re);
+		repositoryManager.removeTutors(owner, removeIdentities, re, new MailPackage(false));
 
 		//wait for the remove of subscription
 		waitForCondition(new CheckUnsubscription(member, context, dbInstance, notificationManager), 5000);

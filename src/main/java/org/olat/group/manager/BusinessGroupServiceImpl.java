@@ -1623,7 +1623,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService, UserDataD
 				List<Identity> ownerList = getMembers(groups, GroupRoles.participant.name());
 				repoTutorList.retainAll(ownerList);
 				if(!dryRun) {
-					repositoryManager.removeTutors(ureqIdentity, repoTutorList, entry);
+					repositoryManager.removeTutors(ureqIdentity, repoTutorList, entry, new MailPackage(false));
 				}
 				count += repoTutorList.size();
 			}

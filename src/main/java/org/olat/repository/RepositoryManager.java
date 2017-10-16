@@ -1561,11 +1561,11 @@ public class RepositoryManager {
 	 * @param re
 	 * @param logger
 	 */
-	public void removeOwners(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re){
+	public void removeOwners(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re, MailPackage mailing) {
 		List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
 
 		for (Identity identity : removeIdentities) {
-			removeOwner(ureqIdentity, identity, re);
+			removeOwner(ureqIdentity, identity, re, mailing);
 			deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(identity, re));
 		}
 
@@ -1581,9 +1581,10 @@ public class RepositoryManager {
 		}
 	}
 
-	private void removeOwner(Identity ureqIdentity, Identity identity, RepositoryEntry re) {
+	private void removeOwner(Identity ureqIdentity, Identity identity, RepositoryEntry re, MailPackage mailing) {
 		repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.owner.name());
 
+		RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
 
 		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
@@ -1687,19 +1688,21 @@ public class RepositoryManager {
 	 * @param re
 	 * @param logger
 	 */
-	public void removeTutors(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re) {
+	public void removeTutors(Identity ureqIdentity, List<Identity> removeIdentities, RepositoryEntry re, MailPackage mailing) {
 		List<RepositoryEntryMembershipModifiedEvent> deferredEvents = new ArrayList<>();
 		for (Identity identity : removeIdentities) {
-			removeTutor(ureqIdentity, identity, re);
+			removeTutor(ureqIdentity, identity, re, mailing);
 			deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(identity, re));
 		}
 		dbInstance.commit();
 		sendDeferredEvents(deferredEvents, re);
 	}
 
-	private void removeTutor(Identity ureqIdentity, Identity identity, RepositoryEntry re) {
+	private void removeTutor(Identity ureqIdentity, Identity identity, RepositoryEntry re, MailPackage mailing) {
 		repositoryEntryRelationDao.removeRole(identity, re, GroupRoles.coach.name());
 
+		RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.removeTutor, mailing);
+		
 		ActionType actionType = ThreadLocalUserActivityLogger.getStickyActionType();
 		ThreadLocalUserActivityLogger.setStickyActionType(ActionType.admin);
 		try{
@@ -2325,7 +2328,7 @@ public class RepositoryManager {
 			if(changes.getRepoOwner().booleanValue()) {
 				addOwners(ureqIdentity, new IdentitiesAddEvent(changes.getMember()), re, mailing);
 			} else {
-				removeOwner(ureqIdentity, changes.getMember(), re);
+				removeOwner(ureqIdentity, changes.getMember(), re, mailing);
 				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(changes.getMember(), re));
 			}
 		}
@@ -2334,7 +2337,7 @@ public class RepositoryManager {
 			if(changes.getRepoTutor().booleanValue()) {
 				addTutors(ureqIdentity, ureqRoles, new IdentitiesAddEvent(changes.getMember()), re, mailing);
 			} else {
-				removeTutor(ureqIdentity, changes.getMember(), re);
+				removeTutor(ureqIdentity, changes.getMember(), re, mailing);
 				deferredEvents.add(RepositoryEntryMembershipModifiedEvent.removed(changes.getMember(), re));
 			}
 		}
