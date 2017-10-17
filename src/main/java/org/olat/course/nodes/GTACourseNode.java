@@ -990,7 +990,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public void incrementUserAttempts(UserCourseEnvironment userCourseEnv, Role by) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		am.updateLastModifications(this, assessedIdentity, userCourseEnv, by);
+		am.incrementNodeAttempts(this, assessedIdentity, userCourseEnv, by);
 	}
 
 	@Override
