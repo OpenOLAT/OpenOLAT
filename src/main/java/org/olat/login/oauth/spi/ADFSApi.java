@@ -93,8 +93,8 @@ public class ADFSApi extends DefaultApi20 {
         private static final String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
         private static final String GRANT_TYPE = "grant_type";
     	
-    	private final ADFSApi api;
-    	private OAuthConfig config;
+		private final ADFSApi api;
+		private OAuthConfig config;
     	
         public ADFSOAuth2Service(ADFSApi api, OAuthConfig config) {
             super(api, config);
