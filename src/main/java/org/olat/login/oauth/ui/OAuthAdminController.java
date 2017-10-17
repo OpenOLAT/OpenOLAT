@@ -79,6 +79,7 @@ public class OAuthAdminController extends FormBasicController {
 	private MultipleSelectionElement adfsEl;
 	private MultipleSelectionElement adfsDefaultEl;
 	private TextElement adfsApiKeyEl;
+	private TextElement adfsApiSecretEl;
 	private TextElement adfsOAuth2EndpointEl;
 	
 	private MultipleSelectionElement openIdConnectIFEl;
@@ -217,10 +218,15 @@ public class OAuthAdminController extends FormBasicController {
 		
 		String adfsApiKey = oauthModule.getAdfsApiKey();
 		adfsApiKeyEl = uifactory.addTextElement("adfs.id", "adfs.api.id", 256, adfsApiKey, adfsCont);
+		String adfsApiSecret = oauthModule.getAdfsApiSecret();
+		adfsApiSecretEl = uifactory.addTextElement("adfs.secret", "adfs.api.secret", 256, adfsApiSecret, adfsCont);
+		adfsApiSecretEl.setHelpText("adfs.api.secret.hint");
+		
 		if(oauthModule.isAdfsEnabled()) {
 			adfsEl.select(keys[0], true);
 		} else {
 			adfsApiKeyEl.setVisible(false);
+			adfsApiSecretEl.setVisible(false);
 			adfsDefaultEl.setVisible(false);
 			adfsOAuth2EndpointEl.setVisible(false);
 		}
@@ -399,6 +405,7 @@ public class OAuthAdminController extends FormBasicController {
 			facebookApiSecretEl.setVisible(facebookEl.isAtLeastSelected(1));
 		} else if(source == adfsEl) {
 			adfsApiKeyEl.setVisible(adfsEl.isAtLeastSelected(1));
+			adfsApiSecretEl.setVisible(adfsEl.isAtLeastSelected(1));
 			adfsDefaultEl.setVisible(adfsEl.isAtLeastSelected(1));
 			adfsOAuth2EndpointEl.setVisible(adfsEl.isAtLeastSelected(1));
 		} else if(source == openIdConnectIFEl) {
@@ -466,11 +473,13 @@ public class OAuthAdminController extends FormBasicController {
 		if(adfsEl.isAtLeastSelected(1)) {
 			oauthModule.setAdfsEnabled(true);
 			oauthModule.setAdfsApiKey(adfsApiKeyEl.getValue());
+			oauthModule.setAdfsApiSecret(adfsApiSecretEl.getValue());
 			oauthModule.setAdfsRootEnabled(adfsDefaultEl.isAtLeastSelected(1));
 			oauthModule.setAdfsOAuth2Endpoint(adfsOAuth2EndpointEl.getValue());
 		} else {
 			oauthModule.setAdfsEnabled(false);
 			oauthModule.setAdfsApiKey("");
+			oauthModule.setAdfsApiSecret("");
 			oauthModule.setAdfsRootEnabled(false);
 			oauthModule.setAdfsOAuth2Endpoint("");
 		}

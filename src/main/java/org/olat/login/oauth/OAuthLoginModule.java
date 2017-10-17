@@ -63,6 +63,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private boolean adfsEnabled;
 	private boolean adfsRootEnabled;
 	private String adfsApiKey;
+	private String adfsApiSecret;
 	private String adfsOAuth2Endpoint;
 	
 	private boolean openIdConnectIFEnabled;
@@ -128,6 +129,7 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		String adfsRootEnabledObj = getStringPropertyValue("adfsRootEnabled", true);
 		adfsRootEnabled = "true".equals(adfsRootEnabledObj);
 		adfsApiKey = getStringPropertyValue("adfsApiKey", false);
+		adfsApiSecret = getStringPropertyValue("adfsApiSecret", false);
 		adfsOAuth2Endpoint = getStringPropertyValue("adfsOAuth2Endpoint", false);
 		
 		String openIdConnectIFEnabledObj = getStringPropertyValue("openIdConnectIFEnabled", true);
@@ -406,6 +408,15 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	public void setAdfsApiKey(String adfsApiKey) {
 		this.adfsApiKey = adfsApiKey;
 		setStringProperty("adfsApiKey", adfsApiKey, true);
+	}
+	
+	public String getAdfsApiSecret() {
+		return adfsApiSecret;
+	}
+
+	public void setAdfsApiSecret(String adfsApiSecret) {
+		this.adfsApiSecret = adfsApiSecret;
+		setStringProperty("adfsApiSecret", adfsApiSecret, true);
 	}
 
 	public String getAdfsOAuth2Endpoint() {
