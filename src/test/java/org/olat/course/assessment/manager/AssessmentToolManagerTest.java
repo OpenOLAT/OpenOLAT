@@ -40,6 +40,7 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentMembersStatistics;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.repository.course.CoursesWebService;
@@ -122,6 +123,12 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		//number of assessed identities
 		int numOfAssessedIdentities = assessmentToolManager.getNumberOfAssessedIdentities(coach, params);
 		Assert.assertEquals(2, numOfAssessedIdentities);
+		
+		//check only the queries
+		AssessmentMembersStatistics participantStatistics = assessmentToolManager.getNumberOfParticipants(coach, params);
+		Assert.assertNotNull(participantStatistics);
+		int numOfInitialLanches = assessmentToolManager.getNumberOfInitialLaunches(coach, params);
+		Assert.assertEquals(0, numOfInitialLanches);//not launched, only simulated
 
 		List<IdentityShort> assessedShortIdentities = assessmentToolManager.getShortAssessedIdentities(coach, params, 120);
 		Assert.assertNotNull(assessedShortIdentities);

@@ -93,7 +93,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			sb.append("select participant.identity.key from repoentrytogroup as rel")
 	          .append("  inner join rel.group as bGroup")
 	          .append("  inner join bGroup.members as participant on (participant.role='").append(GroupRoles.participant.name()).append("')")
-	          .append("  where rel.entry.key=:repoEntryKey)");
+	          .append("  where rel.entry.key=:repoEntryKey");
 			
 			List<Long> keys = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
@@ -122,7 +122,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	          .append("  inner join rel.group as bGroup")
 	          .append("  inner join bGroup.members as coach on (coach.identity.key=:identityKey and coach.role='").append(GroupRoles.coach.name()).append("')")
 	          .append("  inner join bGroup.members as participant on (participant.role='").append(GroupRoles.participant.name()).append("')")
-	          .append("  where rel.entry.key=:repoEntryKey)");
+	          .append("  where rel.entry.key=:repoEntryKey");
 			
 			List<Long> keys = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
