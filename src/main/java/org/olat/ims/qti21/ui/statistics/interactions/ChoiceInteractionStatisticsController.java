@@ -137,7 +137,12 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 				points = null;
 				cssColor = "bar_default";
 			} else {
-				points = correct ? 1.0f : 0.0f; //response.getPoints();
+				Double mappedValue = CorrectResponsesUtil.getMappedValue(assessmentItem, interaction, choice);
+				if(mappedValue != null) {
+					points = mappedValue.floatValue();
+				} else {
+					points = correct ? 1.0f : 0.0f; //response.getPoints();
+				}
 				cssColor = correct ? "bar_green" : "bar_red";
 			}
 
@@ -204,7 +209,17 @@ public abstract class ChoiceInteractionStatisticsController extends BasicControl
 			d2.add(wrongA, label);
 			d3.add(notAnswered, label);
 			
-			Float pointsObj = survey ? null : (correct ? 1.0f : 0.0f);
+			Float pointsObj;
+			if(survey) {
+				pointsObj = null;
+			} else {
+				Double mappedValue = CorrectResponsesUtil.getMappedValue(assessmentItem, interaction, choice);
+				if(mappedValue != null) {
+					pointsObj = mappedValue.floatValue();
+				} else {
+					pointsObj = correct ? 1.0f : 0.0f;
+				}
+			}
 			responseInfos.add(new ResponseInfos(label, text, pointsObj, correct, survey, false));
 		}
 

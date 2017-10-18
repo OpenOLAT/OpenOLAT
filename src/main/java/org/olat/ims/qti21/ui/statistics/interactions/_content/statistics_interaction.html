@@ -34,7 +34,7 @@
 			#end
 		#end
 		<strong>$responseInfo.label.</strong> 
-		#if($responseInfo.points) $r.translate("answer.points", $responseInfo.formattedPoints) #end
+		#if($r.isNotNull($responseInfo.points)) $r.translate("answer.points", $responseInfo.formattedPoints) #end
 		#if($responseInfo.wrongAnswersAvailable)
 			<span class="o_qti_statistics_answer"><strong>$responseInfo.text</strong></span>
 			<p class="o_qti_statistics_wrong_answer">#if($responseInfo.survey)

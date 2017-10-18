@@ -59,7 +59,7 @@ public class AssessmentTestBuilder {
 	private Double maxScore;
 	private Long maximumTimeLimits;
 	private OutcomeRule testScoreRule;
-	private OutcomeCondition cutValueRule;
+	private OutcomeCondition cutValueRule, minScoreRule;
 	
 	private TestFeedbackBuilder passedFeedback;
 	private TestFeedbackBuilder failedFeedback;
@@ -103,6 +103,12 @@ public class AssessmentTestBuilder {
 					if(findIf && findElse) {
 						cutValue = QtiNodesExtractor.extractCutValue(outcomeCondition.getOutcomeIf());
 						cutValueRule = outcomeCondition;
+					}
+					
+					boolean findMinIf = QtiNodesExtractor.findLtValue(outcomeCondition.getOutcomeIf(), QTI21Constants.MINSCORE_IDENTIFIER)
+							&& QtiNodesExtractor.findLtValue(outcomeCondition.getOutcomeIf(), QTI21Constants.SCORE_IDENTIFIER);
+					if(findMinIf) {
+						minScoreRule = outcomeCondition;
 					}
 				}
 			}
@@ -239,6 +245,15 @@ public class AssessmentTestBuilder {
 				assessmentTest.getOutcomeDeclarations().remove(maxScoreDeclaration);
 			}
 		}
+		
+		// add min. score
+		OutcomeDeclaration minScoreDeclaration = assessmentTest.getOutcomeDeclaration(QTI21Constants.MINSCORE_IDENTIFIER);
+		if(minScoreDeclaration == null) {
+			minScoreDeclaration = AssessmentTestFactory.createOutcomeDeclaration(assessmentTest, QTI21Constants.MINSCORE_IDENTIFIER, 0.0d);
+			assessmentTest.getOutcomeDeclarations().add(0, minScoreDeclaration);
+		} else {//update value
+			AssessmentTestFactory.updateDefaultValue(minScoreDeclaration, 0.0d);
+		}
 	}
 	
 	/* Overall score of this test
@@ -262,6 +277,12 @@ public class AssessmentTestBuilder {
 			
 			assessmentTest.getOutcomeProcessing().getOutcomeRules().add(0, scoreRule);
 			testScoreRule = scoreRule;
+		}
+		
+		if(minScoreRule == null) {
+			OutcomeCondition scoreRule = AssessmentTestFactory.createMinScoreRule(assessmentTest);
+			assessmentTest.getOutcomeProcessing().getOutcomeRules().add(1, scoreRule);
+			minScoreRule = scoreRule;
 		}
 	}
 	

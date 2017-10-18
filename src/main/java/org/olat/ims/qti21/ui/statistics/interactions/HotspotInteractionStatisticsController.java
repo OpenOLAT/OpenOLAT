@@ -47,6 +47,7 @@ import org.olat.ims.qti.statistics.model.StatisticsItem;
 import org.olat.ims.qti.statistics.ui.ResponseInfos;
 import org.olat.ims.qti.statistics.ui.Series;
 import org.olat.ims.qti21.QTI21StatisticsManager;
+import org.olat.ims.qti21.manager.CorrectResponsesUtil;
 import org.olat.ims.qti21.model.statistics.HotspotChoiceStatistics;
 import org.olat.ims.qti21.ui.statistics.QTI21AssessmentItemStatisticsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
@@ -190,7 +191,12 @@ public class HotspotInteractionStatisticsController extends BasicController {
 				points = null;
 				cssColor = "bar_default";
 			} else {
-				points = correct ? 1.0f : 0.0f; //response.getPoints();
+				Double mappedValue = CorrectResponsesUtil.getMappedValue(assessmentItem, interaction, choice);
+				if(mappedValue != null) {
+					points = mappedValue.floatValue();
+				} else {
+					points = correct ? 1.0f : 0.0f;
+				}
 				cssColor = correct ? "bar_green" : "bar_red";
 			}
 

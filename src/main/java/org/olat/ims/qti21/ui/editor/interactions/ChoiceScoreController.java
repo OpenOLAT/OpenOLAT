@@ -104,9 +104,11 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		setFormContextHelp(contextHelpUrl);
 		super.initForm(formLayout, listener, ureq);
 		
-		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
+		ScoreBuilder minScore = itemBuilder.getMinScoreBuilder();
+		String minValue = minScore == null ? "" : (minScore.getScore() == null ? "" : minScore.getScore().toString());
+		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, minValue, formLayout);
 		minScoreEl.setElementCssClass("o_sel_assessment_item_min_score");
-		minScoreEl.setEnabled(false);
+		minScoreEl.setEnabled(!restrictedEdit);
 		
 		ScoreBuilder maxScore = itemBuilder.getMaxScoreBuilder();
 		String maxValue = maxScore == null ? "" : (maxScore.getScore() == null ? "" : maxScore.getScore().toString());
@@ -249,6 +251,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		allOk &= validateDouble(maxScoreEl);
+		allOk &= validateDouble(minScoreEl);
 
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
 			for(ChoiceWrapper wrapper:wrappers) {
@@ -275,7 +278,9 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		String maxScoreValue = maxScoreEl.getValue();
 		Double maxScore = Double.parseDouble(maxScoreValue);
 		itemBuilder.setMaxScore(maxScore);
-		itemBuilder.setMinScore(new Double(0d));
+		String minScoreValue = minScoreEl.getValue();
+		Double minScore = Double.parseDouble(minScoreValue);
+		itemBuilder.setMinScore(minScore);
 		if(maxChoicesEl != null && maxChoicesEl.isOneSelected()) {
 			int maxChoices = Integer.parseInt(maxChoicesEl.getSelectedKey());
 			itemBuilder.setMaxChoices(maxChoices);
