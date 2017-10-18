@@ -177,6 +177,9 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		
 		Date deadline = task == null ? null : task.getRevisionsDueDate();
 		int maxDocs = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_MAX_REVISED_DOCS, -1);
+		if(maxDocs == -1) {
+			maxDocs = gtaNode.getModuleConfiguration().getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
+		}
 		uploadRevisionsCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, maxDocs,
 				gtaNode, courseEnv, assessedUserCourseEnv.isCourseReadOnly(), deadline, "document");
 		listenTo(uploadRevisionsCtrl);

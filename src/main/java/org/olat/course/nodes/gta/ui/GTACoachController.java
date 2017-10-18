@@ -721,7 +721,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
 			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
 		} else {
-			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, getIdentity());
+			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedIdentity);
 			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
 		}
 		

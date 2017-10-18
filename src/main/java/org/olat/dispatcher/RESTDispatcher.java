@@ -91,9 +91,10 @@ public class RESTDispatcher implements Dispatcher {
 		//
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 		final String origUri = request.getRequestURI();
-		String restPart = origUri.substring(uriPrefix.length());
+		String encodedRestPart = origUri.substring(uriPrefix.length());
+		String restPart = encodedRestPart;
 		try {
-			restPart = URLDecoder.decode(restPart, "UTF8");
+			restPart = URLDecoder.decode(encodedRestPart, "UTF8");
 		} catch (UnsupportedEncodingException e) {
 			log.error("Unsupported encoding", e);
 		}
@@ -212,7 +213,7 @@ public class RESTDispatcher implements Dispatcher {
 				DispatcherModule.redirectTo(response, url);
 			} else {
 				//redirect to the authenticated dispatcher which support REST url
-				String url = WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + restPart;
+				String url = WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED + encodedRestPart;
 				DispatcherModule.redirectTo(response, url);
 			}
 		} else {
