@@ -389,6 +389,14 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		setRecurrenceExc(excRule);
 	}
 	
+	/**
+	 * Set the immutable dates equals to the begin and end dates.
+	 */
+	public void resetImmutableDates() {
+		immutableBegin = begin;
+		immutableEnd = end;
+	}
+	
 	@Override
 	public KalendarEvent clone() {
 		Object c = null;
@@ -399,7 +407,8 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		}
 		return (KalendarEvent)c;
 	}
-	
+
+	@Override
 	public int compareTo(KalendarEvent event1) {
 		if(event1 == null) {
 			return -1;
