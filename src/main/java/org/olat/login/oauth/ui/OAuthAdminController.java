@@ -220,7 +220,7 @@ public class OAuthAdminController extends FormBasicController {
 		adfsApiKeyEl = uifactory.addTextElement("adfs.id", "adfs.api.id", 256, adfsApiKey, adfsCont);
 		String adfsApiSecret = oauthModule.getAdfsApiSecret();
 		adfsApiSecretEl = uifactory.addTextElement("adfs.secret", "adfs.api.secret", 256, adfsApiSecret, adfsCont);
-		adfsApiSecretEl.setHelpText("adfs.api.secret.hint");
+		adfsApiSecretEl.setHelpText(translate("adfs.api.secret.hint"));
 		
 		if(oauthModule.isAdfsEnabled()) {
 			adfsEl.select(keys[0], true);
