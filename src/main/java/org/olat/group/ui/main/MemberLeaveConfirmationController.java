@@ -21,7 +21,6 @@ package org.olat.group.ui.main;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -34,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupModule;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -48,14 +48,17 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 	private final List<Identity> identities;
 	private MultipleSelectionElement mailEl;
 	
-	private final UserManager userManager;
-	private final BusinessGroupModule groupModule;
+	private final boolean withinCourse;
 	
-	public MemberLeaveConfirmationController(UserRequest ureq, WindowControl wControl, List<Identity> identities) {
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BusinessGroupModule groupModule;
+	
+	public MemberLeaveConfirmationController(UserRequest ureq, WindowControl wControl, List<Identity> identities, boolean withinCourse) {
 		super(ureq, wControl, "confirm_delete");
 		this.identities = identities;
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
-		groupModule = CoreSpringFactory.getImpl(BusinessGroupModule.class);
+		this.withinCourse = withinCourse;
 		initForm(ureq);
 	}
 
@@ -65,6 +68,11 @@ public class MemberLeaveConfirmationController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			layoutCont.contextPut("withinCourse", withinCourse);
+		}
+		
 		if(identities != null && formLayout instanceof FormLayoutContainer) {
 			StringBuilder sb = new StringBuilder(identities.size() * 25);
 			for(Identity id:identities) {

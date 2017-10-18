@@ -1,3 +1,7 @@
-<p>$r.translate("dialog.modal.bg.remove.text",$identities)</p>
+#if($r.isTrue($withinCourse))
+	<p>$r.translate("dialog.modal.bg.remove.course.text",$identities)</p>		
+#else
+	<p>$r.translate("dialog.modal.bg.remove.text",$identities)</p>
+#end
 $r.render("options")
 $r.render("buttons")

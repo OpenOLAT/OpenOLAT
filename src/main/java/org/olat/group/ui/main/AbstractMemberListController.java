@@ -494,7 +494,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			}
 			if(numOfRemovedOwner == 0 || numOfOwners - numOfRemovedOwner > 0) {
 				List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
-				leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids);
+				leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids, repoEntry != null);
 				listenTo(leaveDialogBox);
 				
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(),
