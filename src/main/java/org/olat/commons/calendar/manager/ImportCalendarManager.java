@@ -32,10 +32,12 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.olat.commons.calendar.CalendarManager;
@@ -45,6 +47,7 @@ import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.commons.calendar.model.ImportedCalendar;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarComparator;
+import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -151,10 +154,11 @@ public class ImportCalendarManager {
 			long timestamp = System.currentTimeMillis();
 
 			List<ImportedCalendar> importedCalendars = importedCalendarDao.getImportedCalendars(identity);
+			KalendarEventFilter filter = new KalendarEventFilter(identity, importedCalendars);
 			for (ImportedCalendar importedCalendar: importedCalendars) {
 				try {
 					if(reload) {
-						reloadImportCalendar(importedCalendar, timestamp);
+						reloadImportCalendar(importedCalendar, timestamp, filter);
 					}
 
 					String calendarId = importedCalendar.getCalendarId();
@@ -182,9 +186,10 @@ public class ImportCalendarManager {
 			long timestamp = System.currentTimeMillis();
 
 			List<ImportedCalendar> importedCalendars = importedCalendarDao.getImportedCalendars(identity);
+			KalendarEventFilter filter = new KalendarEventFilter(identity, importedCalendars);
 			for (ImportedCalendar importedCalendar: importedCalendars) {
 				if(reload) {
-					reloadImportCalendar(importedCalendar, timestamp);
+					reloadImportCalendar(importedCalendar, timestamp, filter);
 				}
 				String calendarId = importedCalendar.getCalendarId();
 				File calendarFile = calendarManager.getCalendarFile(CalendarManager.TYPE_USER, calendarId);
@@ -195,7 +200,7 @@ public class ImportCalendarManager {
 		return calendars;
 	}
 	
-	private void reloadImportCalendar(ImportedCalendar importedCalendar, long timestamp) {
+	private void reloadImportCalendar(ImportedCalendar importedCalendar, long timestamp, KalendarEventFilter filter) {
 		String url = importedCalendar.getUrl();
 		Date lastUpdate = importedCalendar.getLastUpdate();
 		if (url != null && (timestamp - lastUpdate.getTime() > RELOAD_INTERVAL)) {
@@ -205,7 +210,7 @@ public class ImportCalendarManager {
 			dbInstance.commit();
 			
 			String calendarId = importedCalendar.getCalendarId();
-			reloadCalendarFromUrl(url, CalendarManager.TYPE_USER, calendarId);
+			reloadCalendarFromUrl(url, CalendarManager.TYPE_USER, calendarId, filter);
 			log.info("Calendar reloaded from url=" + url);
 		}
 	}
@@ -216,9 +221,16 @@ public class ImportCalendarManager {
 	 * @param calType
 	 * @param calId
 	 */
-	private void reloadCalendarFromUrl(String importUrl, String calType, String calId) {
+	private void reloadCalendarFromUrl(String importUrl, String calType, String calId, KalendarEventFilter filter) {
 		try (InputStream in = new URL(importUrl).openStream()){
+			String targetId = "-" + CalendarManager.TYPE_USER + "-" + calId;
 			Kalendar kalendar = calendarManager.buildKalendarFrom(in, calType, calId);
+			Collection<KalendarEvent> events = kalendar.getEvents();
+			for(KalendarEvent event:events) {
+				if(!filter.test(event) || event.getID().contains(targetId)) {
+					kalendar.removeEvent(event);
+				}
+			}
 			calendarManager.persistCalendar(kalendar);
 		} catch (Exception e) {
 		  	log.error("Could not reload calendar from url=" + importUrl, e);
@@ -242,5 +254,46 @@ public class ImportCalendarManager {
 		// replace every other character other than alphabets and numbers by underscore
 		Pattern specialChars = Pattern.compile("([^a-zA-z0-9])");
 		return specialChars.matcher(name).replaceAll("_").toLowerCase();
+	}
+	
+	/**
+	 * The filter refuse all events where the ID
+	 * contains the calendar ID of the personal
+	 * calendar of the identity and the calendar IDs
+	 * of its imported calendars. It prevents cross
+	 * import or recursive import of its own calendars.
+	 * 
+	 * Initial date: 18 oct. 2017<br>
+	 * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+	 *
+	 */
+	private static class KalendarEventFilter implements Predicate<KalendarEvent> {
+		
+		private final String id;
+		private final List<String> calendarIds = new ArrayList<>();
+		
+		public KalendarEventFilter(Identity identity, List<ImportedCalendar> importedCalendars) {
+			id = "-" + CalendarManager.TYPE_USER + "-" + identity.getName() + "-";
+			if(importedCalendars != null && importedCalendars.size() > 0) {
+				for(ImportedCalendar importedCalendar:importedCalendars) {
+					String calendarId = CalendarManager.TYPE_USER + "-" + importedCalendar.getCalendarId();
+					calendarIds.add(calendarId);
+				}	
+			}
+		}
+
+		@Override
+		public boolean test(KalendarEvent event) {
+			String eventId = event.getID();
+			if(eventId == null || eventId.contains(id)) {
+				return false;
+			}
+			for(String calendarId:calendarIds) {
+				if(eventId.contains(calendarId)) {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 }

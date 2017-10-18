@@ -295,8 +295,10 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	@Override
 	public boolean synchronizeCalendarFrom(InputStream in, String source, Kalendar targetCalendar) {
 		try(BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
-			Calendar calendar = new CalendarBuilder().build(reader);
-			Kalendar tmpKalendar = createKalendar("TEMP", UUID.randomUUID().toString(), calendar);
+			Calendar inCalendar = new CalendarBuilder().build(reader);
+			Kalendar inTmpKalendar = createKalendar("TEMP", UUID.randomUUID().toString(), inCalendar);
+			
+			String targetId = "-" + targetCalendar.getType() + "-" + targetCalendar.getCalendarID() + "-";
 			
 			OLATResourceable calOres = getOresHelperFor(targetCalendar);
 			Boolean updatedSuccessful = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, new SyncerCallback<Boolean>() {
@@ -306,26 +308,31 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 					Collection<KalendarEvent> currentEvents = targetCalendar.getEvents();
 					for(KalendarEvent currentEvent:currentEvents) {
 						if(currentEvent.getExternalSource() != null && source.equals(currentEvent.getExternalSource())) {
-							
 							String eventId = currentEvent.getID();
 							String recurrenceId = currentEvent.getRecurrenceID();
-							if(tmpKalendar.getEvent(eventId, recurrenceId) == null) {
+							if(inTmpKalendar.getEvent(eventId, recurrenceId) == null) {
 								targetCalendar.removeEvent(currentEvent);
+							} else if(eventId.contains(targetId)) {
+								targetCalendar.removeEvent(currentEvent);//don't import myself;
 							}
 						}
 					}
-					
-					//
-					for(KalendarEvent event:tmpKalendar.getEvents()) {
-						event.setManagedFlags(new CalendarManagedFlag[]{ CalendarManagedFlag.all } );
-						event.setExternalSource(source);
+
+					Collection<KalendarEvent> inEvents = inTmpKalendar.getEvents();
+					for(KalendarEvent inEvent:inEvents) {
+						if(inEvent.getID().contains(targetId)) {
+							continue;
+						}
+
+						inEvent.setManagedFlags(new CalendarManagedFlag[]{ CalendarManagedFlag.all } );
+						inEvent.setExternalSource(source);
 						
-						KalendarEvent currentEvent = targetCalendar.getEvent(event.getID(), event.getRecurrenceID());
+						KalendarEvent currentEvent = targetCalendar.getEvent(inEvent.getID(), inEvent.getRecurrenceID());
 						if(currentEvent == null) {
-							targetCalendar.addEvent(event);
+							targetCalendar.addEvent(inEvent);
 						} else {
 							//need perhaps more refined synchronization per event
-							targetCalendar.addEvent(event);
+							targetCalendar.addEvent(inEvent);
 						}
 					}
 					
