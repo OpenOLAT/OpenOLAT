@@ -19,6 +19,8 @@
  */
 package org.olat.ims.qti21.ui.editor.interactions;
 
+import java.math.BigDecimal;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -113,27 +115,52 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		toleranceModeEl.addActionListener(FormEvent.ONCHANGE);
 		
 		Double lowerTolerance = interaction.getLowerTolerance();
-		String lowerToleranceString = lowerTolerance == null ? "" : lowerTolerance.toString();
+		String lowerToleranceString;
+		if(interaction.getToleranceMode() == ToleranceMode.ABSOLUTE) {
+			if(lowerTolerance == null) {
+				lowerToleranceString = "";
+			} else if(solution != null) {
+				BigDecimal solBig = BigDecimal.valueOf(solution);
+				BigDecimal lowerToleranceBig = BigDecimal.valueOf(lowerTolerance);
+				lowerToleranceString = solBig.subtract(lowerToleranceBig).toString();
+			} else {
+				lowerToleranceString = lowerTolerance.toString();
+			}
+		} else {
+			lowerToleranceString = lowerTolerance == null ? "" : lowerTolerance.toString();
+		}
 		lowerToleranceEl = uifactory.addTextElement("fib.tolerance.low", "fib.tolerance.low", 8, lowerToleranceString, formLayout);
 		lowerToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
 		lowerToleranceEl.setEnabled(!restrictedEdit);
 		
 		Double upperTolerance = interaction.getUpperTolerance();
-		String upperToleranceString = upperTolerance == null ? "" : upperTolerance.toString();
+		String upperToleranceString;
+		if(interaction.getToleranceMode() == ToleranceMode.ABSOLUTE) {
+			if(upperTolerance == null) {
+				upperToleranceString = "";
+			} else if(solution != null) {
+				BigDecimal solBig = BigDecimal.valueOf(solution);
+				BigDecimal upperToleranceBig = BigDecimal.valueOf(upperTolerance);
+				upperToleranceString = solBig.add(upperToleranceBig).toString();
+			} else {
+				upperToleranceString = upperTolerance.toString();
+			}
+		} else {
+			upperToleranceString = upperTolerance == null ? "" : upperTolerance.toString();
+		}
 		upperToleranceEl = uifactory.addTextElement("fib.tolerance.up", "fib.tolerance.up", 8, upperToleranceString, formLayout);
 		upperToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
 		upperToleranceEl.setEnabled(!restrictedEdit);
 		updateToleranceUpAndLow();
 
-		
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
+		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 		if(!restrictedEdit) {
 			uifactory.addFormSubmitButton("submit", buttonsContainer);
 		}
-		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 	}
 	
 	private String getToleranceHelp() {
@@ -210,8 +237,25 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 			String selectedKey = toleranceModeEl.getSelectedKey();
 			ToleranceMode mode = ToleranceMode.valueOf(selectedKey);
 			if(mode == ToleranceMode.ABSOLUTE || mode == ToleranceMode.RELATIVE) {
-				allOk &= validateDouble(lowerToleranceEl);
-				allOk &= validateDouble(upperToleranceEl);
+				allOk &= validateDouble(lowerToleranceEl, false);
+				allOk &= validateDouble(upperToleranceEl, false);
+				
+				if(allOk) {
+					BigDecimal solution = new BigDecimal(solutionEl.getValue());
+					BigDecimal upperBound = new BigDecimal(upperToleranceEl.getValue());
+					BigDecimal lowerBound = new BigDecimal(lowerToleranceEl.getValue());
+					if(upperBound.subtract(solution).compareTo(new BigDecimal("0.0")) < 0) {
+						upperToleranceEl.setErrorKey("error.upper.tolerance", null);
+						allOk &= false;
+					}
+					if(solution.subtract(lowerBound).compareTo(new BigDecimal("0.0")) < 0) {
+						lowerToleranceEl.setErrorKey("error.lower.tolerance", null);
+						allOk &= false;
+					}
+				}
+			} else if(mode == ToleranceMode.RELATIVE) {
+				allOk &= validateDouble(lowerToleranceEl, true);
+				allOk &= validateDouble(upperToleranceEl, true);
 			}
 		}
 
@@ -224,14 +268,14 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 	 * @param element The text element to validate
 	 * @return true if the text is a positive double
 	 */
-	private boolean validateDouble(TextElement element) {
+	private boolean validateDouble(TextElement element, boolean onlyPositive) {
 		boolean allOk = true;
 		
 		element.clearError();
 		if(StringHelper.containsNonWhitespace(element.getValue())) {
 			try {
 				double val = Double.parseDouble(element.getValue());
-				if(val < 0.0d) {
+				if(val < 0.0d && onlyPositive) {
 					element.setErrorKey("error.positive.double", null);
 					allOk &= false;
 				}
@@ -267,7 +311,15 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		String toleranceMode = toleranceModeEl.getSelectedKey();
 		interaction.setToleranceMode(ToleranceMode.valueOf(toleranceMode));
 		
-		if(interaction.getToleranceMode() == ToleranceMode.ABSOLUTE || interaction.getToleranceMode() == ToleranceMode.RELATIVE) {
+		if(interaction.getToleranceMode() == ToleranceMode.ABSOLUTE) {
+			BigDecimal solution = new BigDecimal(solutionEl.getValue());
+			BigDecimal upperBound = new BigDecimal(upperToleranceEl.getValue());
+			BigDecimal lowerBound = new BigDecimal(lowerToleranceEl.getValue());
+			String upperToleranceString = upperBound.subtract(solution).toString();
+			String lowerToleranceString = solution.subtract(lowerBound).toString();
+			interaction.setLowerTolerance(Double.parseDouble(lowerToleranceString));
+			interaction.setUpperTolerance(Double.parseDouble(upperToleranceString));
+		} else if(interaction.getToleranceMode() == ToleranceMode.RELATIVE) {
 			interaction.setLowerTolerance(Double.parseDouble(lowerToleranceEl.getValue()));
 			interaction.setUpperTolerance(Double.parseDouble(upperToleranceEl.getValue()));
 		}
