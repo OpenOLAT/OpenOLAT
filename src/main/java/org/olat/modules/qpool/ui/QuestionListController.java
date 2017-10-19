@@ -532,8 +532,12 @@ public class QuestionListController extends AbstractItemListController implement
 		ItemRow nextRow = getModel().getNextObject(row);
 		if(nextRow != null) {
 			QuestionItem nextItem = qpoolService.loadItemById(nextRow.getKey());
-			stackPanel.popUpToRootController(ureq);
-			doSelect(ureq, nextItem, nextRow.isEditable());
+			if(nextItem != null) {
+				stackPanel.popUpToRootController(ureq);
+				doSelect(ureq, nextItem, nextRow.isEditable());
+			} else {
+				getItemsTable().reset(true, true, true);
+			}
 		}
 	}
 	
@@ -542,8 +546,12 @@ public class QuestionListController extends AbstractItemListController implement
 		ItemRow previousRow = getModel().getPreviousObject(row);
 		if(previousRow != null) {
 			QuestionItem previousItem = qpoolService.loadItemById(previousRow.getKey());
-			stackPanel.popUpToRootController(ureq);
-			doSelect(ureq, previousItem, previousRow.isEditable());
+			if(previousItem != null) {
+				stackPanel.popUpToRootController(ureq);
+				doSelect(ureq, previousItem, previousRow.isEditable());
+			} else {
+				getItemsTable().reset(true, true, true);
+			}
 		}
 	}
 	
