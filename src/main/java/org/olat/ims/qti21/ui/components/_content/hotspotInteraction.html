@@ -1,6 +1,7 @@
 #set($responseIdentifier = $r.responseUniqueId($interaction))
 #set($qtiContainerId = "oc_" + $responseIdentifier)
 #set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
+#set($singleChoice = $r.isSingleChoice($interaction))
 
 <input name="qtiworks_presented_${responseIdentifier}" type="hidden" value="1"/>
 <div class="$localName">
@@ -37,6 +38,7 @@
 			responseIdentifier: '$responseIdentifier',
 			formDispatchFieldId: '$r.formDispatchFieldId',
 			maxChoices: $interaction.maxChoices,
+			singleChoice: $singleChoice,
 			responseValue: '$r.toString($responseValue,",")',
 			opened: $isItemSessionOpen
 		});

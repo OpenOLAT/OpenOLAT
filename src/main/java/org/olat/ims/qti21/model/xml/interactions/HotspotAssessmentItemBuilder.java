@@ -73,6 +73,7 @@ import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 import uk.ac.ed.ph.jqtiplus.types.ComplexReferenceIdentifier;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
 import uk.ac.ed.ph.jqtiplus.value.BaseType;
+import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 
@@ -85,6 +86,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
 public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 	
 	private String question;
+	private Cardinality cardinality;
 	private Identifier responseIdentifier;
 	private List<Identifier> correctAnswers;
 	protected ScoreEvaluation scoreEvaluation;
@@ -151,9 +153,12 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 		if(hotspotInteraction != null) {
 			ResponseDeclaration responseDeclaration = assessmentItem
 					.getResponseDeclaration(hotspotInteraction.getResponseIdentifier());
-			if(responseDeclaration != null && responseDeclaration.getCorrectResponse() != null) {
-				CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
-				extractIdentifiersFromCorrectResponse(correctResponse, correctAnswers);
+			if(responseDeclaration != null) {
+				if(responseDeclaration.getCorrectResponse() != null) {
+					CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
+					extractIdentifiersFromCorrectResponse(correctResponse, correctAnswers);
+				}
+				cardinality = responseDeclaration.getCardinality();
 			}
 		}
 	}
@@ -180,6 +185,14 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 			}
 		}
 		scoreEvaluation = hasMapping ? ScoreEvaluation.perAnswer : ScoreEvaluation.allCorrectAnswers;
+	}
+	
+	public boolean isSingleChoice() {
+		return cardinality == Cardinality.SINGLE;
+	}
+	
+	public void setCardinality(Cardinality cardinality) {
+		this.cardinality = cardinality;
 	}
 	
 	public String getBackground() {
@@ -307,7 +320,7 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 	@Override
 	protected void buildResponseAndOutcomeDeclarations() {
 		ResponseDeclaration responseDeclaration = AssessmentItemFactory
-				.createHotspotCorrectResponseDeclaration(assessmentItem, responseIdentifier, correctAnswers);
+				.createHotspotCorrectResponseDeclaration(assessmentItem, responseIdentifier, correctAnswers, cardinality);
 		if(scoreEvaluation == ScoreEvaluation.perAnswer) {
 			AssessmentItemFactory.appendMapping(responseDeclaration, scoreMapping);
 		}

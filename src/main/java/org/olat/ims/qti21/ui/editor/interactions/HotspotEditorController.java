@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -67,6 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 
 /**
  * 
@@ -87,6 +89,7 @@ public class HotspotEditorController extends FormBasicController {
 	private TextElement titleEl;
 	private RichTextElement textEl;
 	private FileElement backgroundEl;
+	private SingleSelection cardinalityEl;
 	private FormLayoutContainer hotspotsCont;
 	private FormLink newCircleButton, newRectButton;
 	private MultipleSelectionElement correctHotspotsEl;
@@ -136,6 +139,15 @@ public class HotspotEditorController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", question, 8, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
+		
+		String[] cardinalityKeys = new String[] { Cardinality.SINGLE.name(), Cardinality.MULTIPLE.name() };
+		String[] cardinalityValues = new String[] { translate(Cardinality.SINGLE.name()), translate(Cardinality.MULTIPLE.name()) };
+		cardinalityEl = uifactory.addRadiosHorizontal("form.imd.cardinality", formLayout, cardinalityKeys, cardinalityValues);
+		if(itemBuilder.isSingleChoice()) {
+			cardinalityEl.select(cardinalityKeys[0], true);
+		} else {
+			cardinalityEl.select(cardinalityKeys[1], true);
+		}
 		
 		initialBackgroundImage = getCurrentBackground();
 		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
@@ -217,6 +229,12 @@ public class HotspotEditorController extends FormBasicController {
 				correctHotspotsEl.setErrorKey("error.need.correct.answer", null);
 				allOk &= false;
 			}
+		}
+		
+		cardinalityEl.clearError();
+		if(cardinalityEl.isSelected(0) && correctHotspotsEl.getSelectedKeys().size() > 1) {
+			cardinalityEl.setErrorKey("error.cardinality.answer", null);
+			allOk &= false;
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
@@ -385,6 +403,11 @@ public class HotspotEditorController extends FormBasicController {
 			objectImg = backgroundImage;
 		} else if(initialBackgroundImage != null) {
 			objectImg = initialBackgroundImage;
+		}
+		
+		if(cardinalityEl.isOneSelected()) {
+			String selectedCardinality = cardinalityEl.getSelectedKey();
+			itemBuilder.setCardinality(Cardinality.valueOf(selectedCardinality));
 		}
 		
 		if(objectImg != null) {

@@ -317,10 +317,13 @@ public class AssessmentItemFactory {
 		return responseDeclaration;
 	}
 	
-	public static ResponseDeclaration createHotspotCorrectResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId, List<Identifier> correctResponseIds) {
+	public static ResponseDeclaration createHotspotCorrectResponseDeclaration(AssessmentItem assessmentItem, Identifier declarationId,
+			List<Identifier> correctResponseIds, Cardinality cardinality) {
 		ResponseDeclaration responseDeclaration = new ResponseDeclaration(assessmentItem);
 		responseDeclaration.setIdentifier(declarationId);
-		if(correctResponseIds == null || correctResponseIds.size() == 0 || correctResponseIds.size() > 1) {
+		if(cardinality != null && (cardinality == Cardinality.SINGLE || cardinality == Cardinality.MULTIPLE)) {
+			responseDeclaration.setCardinality(cardinality);
+		} else if(correctResponseIds == null || correctResponseIds.size() == 0 || correctResponseIds.size() > 1) {
 			responseDeclaration.setCardinality(Cardinality.MULTIPLE);
 		} else {
 			responseDeclaration.setCardinality(Cardinality.SINGLE);
