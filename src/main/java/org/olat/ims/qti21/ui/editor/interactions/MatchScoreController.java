@@ -215,8 +215,7 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		allOk &= validateDouble(maxScoreEl);
-		allOk &= validateDouble(minScoreEl);
+		allOk &= validateMinMaxScores(minScoreEl, maxScoreEl);
 
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
 			for(Map.Entry<DirectedPairValue, MatchScoreWrapper> entry:scoreWrappers.entrySet()) {

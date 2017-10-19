@@ -130,6 +130,23 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 		return allOk;
 	}
 	
+	protected boolean validateMinMaxScores(TextElement minScoreEl, TextElement maxScoreEl) {
+		boolean allOk = true;
+		allOk &= validateDouble(minScoreEl);
+		allOk &= validateDouble(maxScoreEl);
+		
+		if(allOk) {
+			double minScore =Double.parseDouble(minScoreEl.getValue());
+			double maxScore = Double.parseDouble(maxScoreEl.getValue());
+			if(minScore > maxScore) {
+				minScoreEl.setErrorKey("error.min.score.bigger.max", null);
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
+	}
+	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(limitAttemptsEl == source) {
