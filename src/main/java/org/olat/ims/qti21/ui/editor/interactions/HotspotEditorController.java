@@ -69,6 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
+import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 
 /**
  * 
@@ -92,6 +93,7 @@ public class HotspotEditorController extends FormBasicController {
 	private RichTextElement textEl;
 	private FileElement backgroundEl;
 	private SingleSelection resizeEl;
+	private SingleSelection cardinalityEl;
 	private FormLayoutContainer hotspotsCont;
 	private MultipleSelectionElement responsiveEl;
 	private FormLink newCircleButton, newRectButton;
@@ -142,6 +144,15 @@ public class HotspotEditorController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", question, 8, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
+		
+		String[] cardinalityKeys = new String[] { Cardinality.SINGLE.name(), Cardinality.MULTIPLE.name() };
+		String[] cardinalityValues = new String[] { translate(Cardinality.SINGLE.name()), translate(Cardinality.MULTIPLE.name()) };
+		cardinalityEl = uifactory.addRadiosHorizontal("form.imd.cardinality", formLayout, cardinalityKeys, cardinalityValues);
+		if(itemBuilder.isSingleChoice()) {
+			cardinalityEl.select(cardinalityKeys[0], true);
+		} else {
+			cardinalityEl.select(cardinalityKeys[1], true);
+		}
 		
 		responsiveEl = uifactory.addCheckboxesHorizontal("form.imd.responsive", formLayout, onKeys, new String[] {""});
 		responsiveEl.setHelpText(translate("form.imd.responsive.hint"));
@@ -238,6 +249,12 @@ public class HotspotEditorController extends FormBasicController {
 				correctHotspotsEl.setErrorKey("error.need.correct.answer", null);
 				allOk &= false;
 			}
+		}
+		
+		cardinalityEl.clearError();
+		if(cardinalityEl.isSelected(0) && correctHotspotsEl.getSelectedKeys().size() > 1) {
+			cardinalityEl.setErrorKey("error.cardinality.answer", null);
+			allOk &= false;
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
@@ -416,6 +433,11 @@ public class HotspotEditorController extends FormBasicController {
 			objectImg = backgroundImage;
 		} else if(initialBackgroundImage != null) {
 			objectImg = initialBackgroundImage;
+		}
+		
+		if(cardinalityEl.isOneSelected()) {
+			String selectedCardinality = cardinalityEl.getSelectedKey();
+			itemBuilder.setCardinality(Cardinality.valueOf(selectedCardinality));
 		}
 		
 		boolean updateHotspot = true;

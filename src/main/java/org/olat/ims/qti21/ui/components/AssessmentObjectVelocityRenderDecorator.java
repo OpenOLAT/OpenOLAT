@@ -55,6 +55,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.GapMatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicAssociateInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicGapMatchInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.GraphicOrderInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.HotspotInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.HottextInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.InlineChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
@@ -249,6 +250,13 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 				return false;
 			}
 			return sc;
+		} else if(interaction instanceof HotspotInteraction) {
+			HotspotInteraction hotspotInteraction = (HotspotInteraction)interaction;
+			ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(hotspotInteraction.getResponseIdentifier());
+			if(responseDeclaration != null && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+				return true;
+			}
+			return false;
 		}
 		return false;
 	}
