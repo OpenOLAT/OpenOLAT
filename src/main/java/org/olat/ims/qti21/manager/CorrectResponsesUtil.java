@@ -40,6 +40,9 @@ import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.TextEntryInteraction;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.Choice;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -339,6 +342,25 @@ public class CorrectResponsesUtil {
 			NumericalEntry numericalEntry = new NumericalEntry(interaction);
 			FIBAssessmentItemBuilder.extractNumericalEntrySettings(assessmentItem, numericalEntry, responseDeclaration, new AtomicInteger(), new DoubleAdder());
 			return numericalEntry;
+		}
+		return null;
+	}
+	
+	public static final Double getMappedValue(AssessmentItem assessmentItem, Interaction interaction, Choice choice) {
+		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(interaction.getResponseIdentifier());
+		if(responseDeclaration != null && responseDeclaration.getMapping() != null) {
+			Mapping mapping = responseDeclaration.getMapping();
+			if(mapping != null && mapping.getMapEntries() != null) {
+				for(MapEntry entry:mapping.getMapEntries()) {
+					SingleValue sValue = entry.getMapKey();
+					if(sValue instanceof IdentifierValue) {
+						Identifier identifier = ((IdentifierValue)sValue).identifierValue();
+						if(identifier.equals(choice.getIdentifier())) {
+							return entry.getMappedValue();
+						}
+					}
+				}
+			}
 		}
 		return null;
 	}

@@ -102,10 +102,12 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
 		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_score");
-		
-		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
+
+		ScoreBuilder minScore = itemBuilder.getMinScoreBuilder();
+		String minValue = minScore == null ? "" : (minScore.getScore() == null ? "" : minScore.getScore().toString());
+		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, minValue, formLayout);
 		minScoreEl.setElementCssClass("o_sel_assessment_item_min_score");
-		minScoreEl.setEnabled(false);
+		minScoreEl.setEnabled(!restrictedEdit);
 		
 		ScoreBuilder maxScore = itemBuilder.getMaxScoreBuilder();
 		String maxValue = maxScore == null ? "" : (maxScore.getScore() == null ? "" : maxScore.getScore().toString());
@@ -214,6 +216,7 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		allOk &= validateDouble(maxScoreEl);
+		allOk &= validateDouble(minScoreEl);
 
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
 			for(Map.Entry<DirectedPairValue, MatchScoreWrapper> entry:scoreWrappers.entrySet()) {
@@ -252,7 +255,9 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 		String maxScoreValue = maxScoreEl.getValue();
 		Double maxScore = Double.parseDouble(maxScoreValue);
 		itemBuilder.setMaxScore(maxScore);
-		itemBuilder.setMinScore(new Double(0d));
+		String minScoreValue = minScoreEl.getValue();
+		Double minScore = Double.parseDouble(minScoreValue);
+		itemBuilder.setMinScore(minScore);
 		
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
 			itemBuilder.setScoreEvaluationMode(ScoreEvaluation.perAnswer);

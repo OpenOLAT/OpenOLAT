@@ -85,7 +85,6 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 		super.initForm(formLayout, listener, ureq);
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
 		minScoreEl.setEnabled(false);
-		minScoreEl.setEnabled(!restrictedEdit);
 		
 		ScoreBuilder maxScore = itemBuilder.getMaxScoreBuilder();
 		String maxValue = maxScore == null ? "" : (maxScore.getScore() == null ? "" : maxScore.getScore().toString());
