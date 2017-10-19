@@ -62,6 +62,7 @@ public class MemberListConfigurationPage {
 		WebElement checkboxEl = browser.findElement(checkboxBy);
 		WebElement labelEl = browser.findElement(labelBy);
 		OOGraphene.check(labelEl, checkboxEl, visible);
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

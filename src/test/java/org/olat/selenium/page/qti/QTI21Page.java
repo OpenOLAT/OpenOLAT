@@ -231,17 +231,22 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * Draw a line of the house.
+	 * @return Itself
+	 */
 	public QTI21Page answerDrawing() {
-		By drawingBy = By.className("drawingInteraction");
+		By drawingBy = By.xpath("//div[contains(@class,'drawingInteraction')]//canvas[@id='tmp_canvas']");
 		WebElement drawingEl = browser.findElement(drawingBy);
 		
 		new Actions(browser)
 			.moveToElement(drawingEl, 30, 30)
 			.clickAndHold()
-			.moveByOffset(100, 200)
+			.moveByOffset(260, 100)
 			.release()
 			.build()
 			.perform();
+		
 		OOGraphene.waitingALittleBit();
 		return this;
 	}

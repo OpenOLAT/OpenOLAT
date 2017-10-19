@@ -217,12 +217,11 @@ public class CourseEditorPageFragment {
 	public CourseEditorPageFragment createNode(String nodeAlias) {
 		OOGraphene.waitElement(createNodeButton, 5, browser);
 		browser.findElement(createNodeButton).click();
-
 		OOGraphene.waitModalDialog(browser);
+		
 		By node = By.xpath("//div[@id='o_course_editor_choose_nodetype']//a[contains(@class,'o_sel_course_editor_node-" + nodeAlias + "')]");
 		if("lti".equals(nodeAlias)) {
 			OOGraphene.clickAndWait(node, browser);
-			
 		} else {
 			browser.findElement(node).click();
 			OOGraphene.waitBusy(browser);
