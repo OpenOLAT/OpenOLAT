@@ -571,7 +571,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe, courseNode.getIdent(),
 				deliveryOptions, overrideOptions, true, false, false);
 		listenTo(displayCtrl);
-		if(displayCtrl.isEnded()) {
+		if(displayCtrl.getAssessmentTest() == null) {
+			logError("Test cannot be read: " + testEntry + " in course: " + courseRe + " element: " + courseNode.getIdent() , null);
+			showError("error.resource.corrupted");
+		} else if(displayCtrl.isEnded()) {
 			if(!displayCtrl.isResultsVisible()) {
 				doExitAssessment(ureq, null, true);
 				initAssessment(ureq);

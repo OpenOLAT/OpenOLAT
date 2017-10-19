@@ -397,6 +397,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	/**
+	 * @return The assessment test if the test cab be read or null.
+	 */
+	public AssessmentTest getAssessmentTest() {
+		return resolvedAssessmentTest == null ? null : resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+	}
+	
+	/**
 	 * @return true if the termination time is set.
 	 */
 	@Override
