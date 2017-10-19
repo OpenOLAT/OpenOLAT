@@ -122,8 +122,9 @@ public class DirectDeleteController extends BasicController {
 		} else if (sourceController == deleteConfirmController) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				deleteIdentities(toDelete);
-				if (bdc != null)
-					bdc.sendMail(ureq);
+				if (bdc != null) {
+					bdc.sendMail();
+				}
 				
 				initializeUserSearchController(ureq);
 				initializeUserListForm(ureq);

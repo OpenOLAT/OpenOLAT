@@ -133,22 +133,24 @@ public class BulkDeleteController extends BasicController {
 	 * Send the mail with informations: who deletes, when, list of deleted users
 	 * list of not deleted users, reason for deletion
 	 */
-	public void sendMail(UserRequest ureq) {
-		
+	public void sendMail() {
 		String recipient = WebappHelper.getMailConfig("mailDeleteUser");
-		
 		if (recipient.equals("disabled")) {
 			return;
 		}
 		
-		StringBuffer loginsFound = new StringBuffer();
-		for(String login : lstLoginsFound) loginsFound.append(login + "\n");
-		StringBuffer loginsNotfound = new StringBuffer();
-		for(String login : lstLoginsNotfound) loginsNotfound.append(login + "\n");
-		DateFormat df = DateFormat.getDateInstance(DateFormat.FULL, ureq.getLocale());
+		StringBuilder loginsFound = new StringBuilder();
+		for(String login : lstLoginsFound) {
+			loginsFound.append(login + "\n");
+		}
+		StringBuilder loginsNotfound = new StringBuilder();
+		for(String login : lstLoginsNotfound) {
+			loginsNotfound.append(login + "\n");
+		}
+		DateFormat df = DateFormat.getDateInstance(DateFormat.FULL, getLocale());
 		
 		String[] bodyArgs = new String[] {
-				ureq.getIdentity().getName(),
+				getIdentity().getName(),
 				loginsFound.toString(),
 				loginsNotfound.toString(),
 				reason,
@@ -157,7 +159,7 @@ public class BulkDeleteController extends BasicController {
 
 		ContactList cl = new ContactList(recipient);
 		cl.add(recipient);
-		cl.add(ureq.getIdentity());
+		cl.add(getIdentity());
 
 		try {
 			MailBundle bundle = new MailBundle();

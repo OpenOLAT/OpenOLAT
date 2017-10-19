@@ -218,7 +218,13 @@ public class IQConfigurationController extends BasicController {
 		if(re == null) {
 			myContent.remove("iqeditform");
 		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
-			boolean needManualCorrection = needManualCorrectionQTI21(re);
+			boolean needManualCorrection = false;
+			try {// in case of an unreadable test
+				needManualCorrection = needManualCorrectionQTI21(re);
+			} catch (Exception e) {
+				logError("Test cannot be read: " + re, e);
+				showError("error.resource.corrupted");
+			}
 			if(replacedTest) {// set some default settings in case the user don't save the next panel
 				moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, needManualCorrection ? "manual" : "auto");
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
