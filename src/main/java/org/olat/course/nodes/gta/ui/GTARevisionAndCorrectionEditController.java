@@ -60,6 +60,18 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 		configCont.setFormContextHelp("Assessment#_task_abgabe");
 		formLayout.add(configCont);
 
+		maxNumberOfDocsEl = uifactory.addTextElement("max.documents", "max.documents", 5, "", configCont);
+		updateDefaultMaximumNumberOfDocuments();
+		
+		//save
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setRootForm(mainForm);
+		configCont.add(buttonsCont);
+		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+	
+	public void updateDefaultMaximumNumberOfDocuments() {
 		int maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_REVISED_DOCS, -1);
 		String maxVal = "";
 		if(maxDocs == -1) {
@@ -69,14 +81,7 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 		if(maxDocs > 0) {
 			maxVal = Integer.toString(maxDocs);
 		}
-		maxNumberOfDocsEl = uifactory.addTextElement("max.documents", "max.documents", 5, maxVal, configCont);
-
-		//save
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		configCont.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		maxNumberOfDocsEl.setValue(maxVal);
 	}
 	
 	@Override
