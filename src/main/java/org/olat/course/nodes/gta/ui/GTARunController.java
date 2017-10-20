@@ -132,7 +132,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("coach".equalsIgnoreCase(type)) {
-			if(coachLink != null) {
+			if(coachLink != null || coachCtrl != null) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				doOpenCoach(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 				if(segmentView != null) {
