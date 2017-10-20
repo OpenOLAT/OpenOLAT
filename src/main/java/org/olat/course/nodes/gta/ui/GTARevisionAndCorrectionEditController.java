@@ -62,6 +62,10 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 
 		int maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_REVISED_DOCS, -1);
 		String maxVal = "";
+		if(maxDocs == -1) {
+			// !this only works because there is not another configuration in the controller
+			maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
+		}
 		if(maxDocs > 0) {
 			maxVal = Integer.toString(maxDocs);
 		}
