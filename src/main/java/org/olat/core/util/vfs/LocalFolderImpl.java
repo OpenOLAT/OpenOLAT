@@ -76,9 +76,14 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	protected LocalFolderImpl(File folderfile, VFSContainer parent) {
 		super(folderfile, parent);
 		boolean alreadyExists = folderfile.exists();
-		boolean succesfullCreated = folderfile.mkdirs(); 
-		if (!alreadyExists && !succesfullCreated)
+		boolean succesfullCreated = alreadyExists ? true : folderfile.mkdirs();
+		//check against concurrent creation of the folder, mkdirs return false if the directory exists
+		if (!alreadyExists && !succesfullCreated && folderfile.exists()) {
+			succesfullCreated = true;
+		}
+		if (!alreadyExists && !succesfullCreated) {
 			throw new AssertException("Cannot create directory of LocalFolderImpl with reason (exists= ): "+alreadyExists+" && created= "+succesfullCreated+") path: " + folderfile.getAbsolutePath());
+		}
 	}
 	
 	/**
