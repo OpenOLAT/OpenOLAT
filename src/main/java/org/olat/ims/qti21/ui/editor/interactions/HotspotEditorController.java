@@ -59,6 +59,8 @@ import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21Constants.HotspotLayouts;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.interactions.HotspotAssessmentItemBuilder;
@@ -80,7 +82,6 @@ import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 public class HotspotEditorController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] { "on" };
-	
 	private static final Set<String> mimeTypes = new HashSet<>();
 	static {
 		mimeTypes.add("image/gif");
@@ -98,6 +99,9 @@ public class HotspotEditorController extends FormBasicController {
 	private MultipleSelectionElement responsiveEl;
 	private FormLink newCircleButton, newRectButton;
 	private MultipleSelectionElement correctHotspotsEl;
+	private SingleSelection layoutEl;
+	private MultipleSelectionElement shadowEl;
+	
 	
 	private final boolean restrictedEdit;
 	private final HotspotAssessmentItemBuilder itemBuilder;
@@ -205,6 +209,31 @@ public class HotspotEditorController extends FormBasicController {
 		correctHotspotsEl.setEnabled(!restrictedEdit);
 		correctHotspotsEl.addActionListener(FormEvent.ONCHANGE);
 		rebuildWrappersAndCorrectSelection();
+		
+		HotspotLayouts[] layouts = HotspotLayouts.values();
+		String[] layoutKeys = new String[layouts.length];
+		String[] layoutValues = new String[layouts.length];
+		for(int i=layouts.length; i-->0; ) {
+			layoutKeys[i] = layouts[i].cssClass();
+			layoutValues[i] =  translate("hotspot.layout." + layouts[i].name());
+		}
+		layoutEl = uifactory.addDropdownSingleselect("hotspot.layout", "hotspot.layout", formLayout, layoutKeys, layoutValues, null);
+		boolean found = false;
+		for(int i=layoutKeys.length; i-->0; ) {
+			if(itemBuilder.hasHotspotInteractionClass(layoutKeys[i])) {
+				layoutEl.select(layoutKeys[i], true);
+				found = true;
+			}
+		}
+		if(!found) {
+			layoutEl.select(layoutKeys[0], true);
+		}
+
+		shadowEl = uifactory.addCheckboxesHorizontal("hotspot.layout.shadow", "hotspot.layout.shadow", formLayout,
+				onKeys, new String[] { "" });
+		if(!itemBuilder.hasHotspotInteractionClass(QTI21Constants.CSS_HOTSPOT_DISABLE_SHADOW)) {
+			shadowEl.select(onKeys[0], true);
+		}
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -472,6 +501,20 @@ public class HotspotEditorController extends FormBasicController {
 		
 		if(updateHotspot) {
 			updateHotspots(ureq);
+		}
+		
+		if(layoutEl.isOneSelected()) {
+			String selectedLayout = layoutEl.getSelectedKey();
+			for(HotspotLayouts layout:HotspotLayouts.values()) {
+				itemBuilder.removeHotspotInteractionClass(layout.cssClass());
+			}
+			itemBuilder.addHotspotInteractionClass(selectedLayout);
+		}
+		
+		if(shadowEl.isAtLeastSelected(1)) {
+			itemBuilder.removeHotspotInteractionClass(QTI21Constants.CSS_HOTSPOT_DISABLE_SHADOW);
+		} else {
+			itemBuilder.addHotspotInteractionClass(QTI21Constants.CSS_HOTSPOT_DISABLE_SHADOW);
 		}
 		
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.hotspot));

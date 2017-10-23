@@ -6,7 +6,8 @@
 			maxChoices: 1,
 			singleChoice: false,
 			responseValue: null,
-			opened: false
+			opened: false,
+			maphilightSettings: {}
 		}, options );
 		
 		try {
@@ -31,7 +32,7 @@
 			var areaEl = jQuery('#ac_' + settings.responseIdentifier + '_' + areaIds[i]);
 			var data = areaEl.data('maphilight') || {};
 			data.selectedOn = true;
-			colorData(data);
+			colorData(data, settings.maphilightSettings);
 			areaEl.data('maphilight', data).trigger('alwaysOn.maphilight');
 			
 			var inputElement = jQuery('<input type="hidden"/>')
@@ -45,12 +46,12 @@
 		var containerId = $obj.attr('id');
 		jQuery('#' + containerId + " map area").each(function(index, el) {
 			jQuery(el).on('click', function() {
-				clickHotspotArea(this, containerId, settings.responseIdentifier, settings.maxChoices, settings.singleChoice);
+				clickHotspotArea(this, containerId, settings.responseIdentifier, settings.maxChoices, settings.singleChoice, settings.maphilightSettings);
 			});
 		})
 	};
 
-	function clickHotspotArea(spot, containerId, responseIdentifier, maxChoices, singleChoice) {
+	function clickHotspotArea(spot, containerId, responseIdentifier, maxChoices, singleChoice, maphilightSettings) {
 		var areaEl = jQuery(spot);
 		var data = areaEl.data('maphilight') || {};
 		if((typeof data.selectedOn === "undefined") || !data.selectedOn) {
@@ -59,7 +60,7 @@
 					var cData = jQuery(el).data('maphilight') || {};
 					if(cData.selectedOn) {
 						cData.selectedOn = false;
-						colorData(cData);
+						colorData(cData, maphilightSettings);
 						jQuery(el).data('maphilight', cData).trigger('alwaysOn.maphilight');
 					}
 				});
@@ -85,7 +86,7 @@
 		} else {
 			data.selectedOn = !data.selectedOn;
 		}
-		colorData(data);
+		colorData(data, maphilightSettings);
 		areaEl.data('maphilight', data).trigger('alwaysOn.maphilight');
 
 		var divContainer = jQuery('#' + containerId);
@@ -101,17 +102,17 @@
 			}
 		});
 	};
-	
+
 	/*
 	 * Color the data based on the selectedOn flag
 	 */
-	function colorData(data) {
+	function colorData(data, maphilightSettings) {
 		if(data.selectedOn) {
-			data.fillColor = '0000ff';
-			data.fillOpacity = 0.5;
-			data.strokeColor = '0000ff';
-			data.strokeOpacity = 1;
-			data.shadow = true;
+			data.fillColor = maphilightSettings.selectedFillColor;
+			data.fillOpacity = maphilightSettings.selectedFillOpacity;
+			data.strokeColor = maphilightSettings.selectedStrokeColor;
+			data.strokeOpacity = maphilightSettings.selectedStrokeOpacity;
+			data.shadow = maphilightSettings.selectedShadow;
 			data.shadowX = 0;
 			data.shadowY = 0;
 			data.shadowRadius = 7;
@@ -119,10 +120,10 @@
 			data.shadowOpacity = 0.8;
 			data.shadowPosition = 'outside';
 		} else {
-			data.fillColor = 'bbbbbb';
-			data.fillOpacity = 0.5;
-			data.strokeColor = '666666';
-			data.strokeOpacity = 0.8;
+			data.fillColor = maphilightSettings.fillColor;
+			data.fillOpacity = maphilightSettings.fillOpacity;
+			data.strokeColor = maphilightSettings.strokeColor;
+			data.strokeOpacity = maphilightSettings.strokeOpacity;
 			data.shadow = false;
 		}
 	}

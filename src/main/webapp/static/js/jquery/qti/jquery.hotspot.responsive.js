@@ -9,7 +9,14 @@
 * Licensed under the MIT license
 */
 ;(function($) {
-	$.fn.rwdImageMaps = function() {
+	$.fn.rwdImageMaps = function(options) {
+		var settings = $.extend({
+			fillColor: 'bbbbbb',
+			fillOpacity: 0.5,
+			strokeColor: '6E6E6E',
+			strokeOpacity: 1.0,
+		}, options );
+
 		var $img = this;
 
 		var rwdImageMap = function() {
@@ -59,10 +66,10 @@
 					});
 					
 					$that.maphilight({
-						fillColor: 'bbbbbb',
-						fillOpacity: 0.5,
-						strokeColor: '666666',
-						strokeOpacity: 0.8,
+						fillColor:  settings.fillColor,
+						fillOpacity: settings.fillOpacity,
+						strokeColor: settings.strokeColor,
+						strokeOpacity: settings.strokeOpacity,
 						strokeWidth: 3,
 						alwaysOn: true
 					});
