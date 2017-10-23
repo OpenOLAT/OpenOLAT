@@ -337,9 +337,9 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 		getHtmlHelper().appendHtml(assessmentItem.getItemBody(), question);
 		
 		//add interaction
-		if(correctAnswers.size() == 1) {
+		if(correctAnswers.size() == 1 && cardinality == Cardinality.SINGLE) {
 			hotspotInteraction.setMaxChoices(1);
-		} else if(correctAnswers.size() > 1) {
+		} else {
 			hotspotInteraction.setMaxChoices(0);
 		}
 		
