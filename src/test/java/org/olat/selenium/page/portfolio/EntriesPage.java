@@ -105,13 +105,15 @@ public class EntriesPage {
 	public EntriesPage restore(String title, String binder, String section) {
 		By restoreBy = By.xpath("//table//tr[td/a/span[contains(text(),'" + title + "')]]/td/a[contains(@href,'restore')]");
 		browser.findElement(restoreBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		By selectBinderBy = By.cssSelector("#o_cobinders_SELBOX select");
 		WebElement selectBinderEl = browser.findElement(selectBinderBy);
 		new Select(selectBinderEl).selectByVisibleText(binder);
+		OOGraphene.waitBusy(browser);
 
 		By selectSectionBy = By.cssSelector("#o_cosections_SELBOX select");
+		OOGraphene.waitElement(selectSectionBy, browser);
 		WebElement selectSectionEl = browser.findElement(selectSectionBy);
 		new Select(selectSectionEl).selectByVisibleText(section);
 		

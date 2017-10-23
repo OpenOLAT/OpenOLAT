@@ -420,7 +420,7 @@ public class PortfolioV2Test {
 	/**
 	 * Create a course with an assessment course element, setup
 	 * efficiency statement, add a user and assess her.
-	 * The user log in, search its efficency statemet, pick it
+	 * The user log in, search its efficiency statement, pick it
 	 * as a media for is portfolio and goes in the media center
 	 * to search it and select it.
 	 * 
