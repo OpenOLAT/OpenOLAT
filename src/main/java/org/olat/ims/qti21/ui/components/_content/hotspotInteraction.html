@@ -24,15 +24,83 @@
 		</map>
 	</div>
 	<script type="text/javascript">
-	jQuery(function() {
-		jQuery('#${qtiContainerId}_img').maphilight({
+	/* <![CDATA[ */
+	var maphilightSettings;
+	#if($r.hasCssClass($interaction, "hotspot-light"))
+	maphilightSettings = {
+		fillColor: 'dddddd',
+		fillOpacity: 0,
+		strokeColor: '7E7E7E',
+		strokeOpacity: 1.0,
+		
+		selectedFillColor: '337ab7',
+		selectedFillOpacity: 0.05,
+		selectedStrokeColor: '337ab7',
+		selectedStrokeOpacity: 1.0
+	};
+	#elseif($r.hasCssClass($interaction, "hotspot-inverted"))
+		maphilightSettings = {
+			fillColor: '6E6E6E',//'bbbbbb',
+			fillOpacity: 0.5,// 0.5,
+			strokeColor: '3E3E3E', //'666666',
+			strokeOpacity: 1.0,//0.8,
+			
+			selectedFillColor: 'DEDEDE',
+			selectedFillOpacity: 0.2,
+			selectedStrokeColor: 'CECECE',
+			selectedStrokeOpacity: 1
+		};
+	#elseif($r.hasCssClass($interaction, "hotspot-green"))
+	maphilightSettings = {
+		fillColor: '8E8E8E',
+		fillOpacity: 0.25,
+		strokeColor: 'CECECE',//'fd98c9',
+		strokeOpacity: 0.8,
+		
+		selectedFillColor: '86c351',
+		selectedFillOpacity: 0.5,
+		selectedStrokeColor: '518b33',
+		selectedStrokeOpacity: 1.0
+	};
+	#elseif($r.hasCssClass($interaction, "hotspot-purple"))
+		maphilightSettings = {
+			fillColor: '8E8E8E',
+			fillOpacity: 0.33,
+			strokeColor: 'CECECE',//'fd98c9',
+			strokeOpacity: 1.0,
+			
+			selectedFillColor: 'eaa8ff',
+			selectedFillOpacity: 0.5,
+			selectedStrokeColor: 'ab47cb',
+			selectedStrokeOpacity: 1.0
+		};
+	#else
+		maphilightSettings = {
 			fillColor: 'bbbbbb',
-        	fillOpacity: 0.5,
-			strokeColor: '666666',
-			strokeOpacity: 0.8,
-			strokeWidth: 3,
-			alwaysOn: true
-		});
+			fillOpacity: 0.5,
+			strokeColor: '6E6E6E',
+			strokeOpacity: 1.0,
+			
+			selectedFillColor: '0000ff',
+			selectedFillOpacity: 0.5,
+			selectedStrokeColor: '0000ff',
+			selectedStrokeOpacity: 1.0
+		};
+	#end
+	
+	#if($r.hasCssClass($interaction, "hotspot-noshadow"))
+		maphilightSettings.selectedShadow = false;
+	#else
+		maphilightSettings.selectedShadow = true;
+	#end
+
+	jQuery(function() {
+		maphilightSettings.strokeWidth = 3;
+		maphilightSettings.alwaysOn = true;
+		
+		
+		
+		jQuery('#${qtiContainerId}_img').maphilight(maphilightSettings);
 
 		jQuery('#${qtiContainerId}').hotspotInteraction({
 			responseIdentifier: '$responseIdentifier',
@@ -40,8 +108,10 @@
 			maxChoices: $interaction.maxChoices,
 			singleChoice: $singleChoice,
 			responseValue: '$r.toString($responseValue,",")',
-			opened: $isItemSessionOpen
+			opened: $isItemSessionOpen,
+			maphilightSettings: maphilightSettings
 		});
 	});
+	/* ]]> */
 	</script>
 </div>

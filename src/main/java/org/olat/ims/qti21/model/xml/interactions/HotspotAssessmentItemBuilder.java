@@ -29,12 +29,14 @@ import static org.olat.ims.qti21.model.xml.QtiNodesExtractor.extractIdentifiersF
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -221,6 +223,32 @@ public class HotspotAssessmentItemBuilder extends AssessmentItemBuilder {
 		} else {
 			graphichObject.setWidth(null);
 		}
+	}
+	
+	public boolean hasHotspotInteractionClass(String cssClass) {
+		List<String> cssClassses = hotspotInteraction.getClassAttr();
+		return cssClassses != null && cssClassses.contains(cssClass);
+	}
+	
+	public void addHotspotInteractionClass(String cssClass) {
+		if(!StringHelper.containsNonWhitespace(cssClass)) return;
+		
+		List<String> cssClassses = hotspotInteraction.getClassAttr();
+		cssClassses = cssClassses == null ? new ArrayList<>() : new ArrayList<>(cssClassses);
+		cssClassses.add(cssClass);
+		hotspotInteraction.setClassAttr(cssClassses);
+	}
+	
+	public void removeHotspotInteractionClass(String cssClass) {
+		if(cssClass == null || hotspotInteraction.getClassAttr() == null) return;
+
+		List<String> cssClassList = new ArrayList<>(hotspotInteraction.getClassAttr());
+		for(Iterator<String> cssClassIt= cssClassList.iterator(); cssClassIt.hasNext(); ) {
+			if(cssClass.equals(cssClassIt.next())) {
+				cssClassIt.remove();
+			}
+		}
+		hotspotInteraction.setClassAttr(cssClassList);
 	}
 	
 	public boolean isCorrect(HotspotChoice choice) {

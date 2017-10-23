@@ -146,6 +146,25 @@ public class QTI21Constants {
 	public static final String CSS_MATCH_SOURCE_BOTTOM = "source-bottom";
 	
 	
+	public static final String CSS_HOTSPOT_DISABLE_SHADOW =  "hotspot-noshadow";
 	
+	public enum HotspotLayouts {
+		
+		standard(""),
+		light("hotspot-light"),
+		inverted("hotspot-inverted"),
+		green("hotspot-green"),
+		purple("hotspot-purple");
+		
+		private final String cssClass;
+		
+		private HotspotLayouts(String cssClass) {
+			this.cssClass = cssClass;
+		}
+		
+		public String cssClass() {
+			return cssClass;
+		}
+	}
 
 }
