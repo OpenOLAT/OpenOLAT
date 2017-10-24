@@ -45,6 +45,7 @@ import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21EditorPage;
+import org.olat.selenium.page.qti.QTI21HotspotEditorPage;
 import org.olat.selenium.page.qti.QTI21KprimEditorPage;
 import org.olat.selenium.page.qti.QTI21LobEditorPage;
 import org.olat.selenium.page.qti.QTI21MatchEditorPage;
@@ -60,6 +61,8 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
+import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 
 /**
  * 
@@ -1413,6 +1416,353 @@ public class ImsQTI21Test {
 			.nextAnswer()
 			.answerCorrectKPrim("OnlyRight")
 			.answerIncorrectKPrim("NotRight", "NotAnswer", "TheWrongOne")
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(6);// 3 points from the first question, 3 from the second
+	}
+	
+	
+	/**
+	 * An author make a test with 2 hotspots with the single choice cardinality,
+	 * the first with the score set if all answers are correct, the second
+	 * with scoring per answers.<br>
+	 * A first user make the test, but doesn't answer all questions
+	 * correctly, log out and a second user make the perfect test.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorHotspot_singleChoice(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		
+		String qtiTestTitle = "Hotspot QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add an hotspot: all answers score
+		QTI21HotspotEditorPage hotspotEditor = qtiEditor
+			.addHotspot();
+		// 2 spots
+		URL backgroundImageUrl = JunitTestHelper.class.getResource("file_resources/house.jpg");
+		File backgroundImageFile = new File(backgroundImageUrl.toURI());
+		hotspotEditor
+			.updloadBackground(backgroundImageFile)
+			.resizeCircle()
+			.moveCircle(300, 120)
+			.addRectangle()
+			.moveRectangle(150, 150)
+			.setCardinality(Cardinality.SINGLE)
+			.save();
+		// change max score
+		hotspotEditor
+			.selectScores()
+			.setMaxScore("3")
+			.save();
+		// some feedbacks
+		hotspotEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is only an hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		//add a second hotspot: score per answer
+		hotspotEditor = qtiEditor
+			.addHotspot();
+		hotspotEditor
+			.updloadBackground(backgroundImageFile)
+			.resizeCircle()
+			.moveCircle(310, 125)
+			.addRectangle()
+			.moveRectangle(145, 155)
+			.setCardinality(Cardinality.SINGLE)
+			.save();
+		// change scoring
+		hotspotEditor
+			.selectScores()
+			.setMaxScore("2")
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setScore("1.", "2")
+			.setScore("2.", "0")
+			.save();
+		hotspotEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+
+
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.answerHotspot("rect")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerHotspot("circle")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerHotspot("rect")
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(3);// 3 points from the first question, 0 from the second
+		
+
+		//a second user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.assertOnAssessmentItem()
+			.answerHotspot("circle")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerHotspot("circle")
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(5);// 3 points from the first question, 2 from the second
+	}
+	
+	/**
+	 * An author make a test with 2 hotspots with the multiple choice cardinality,
+	 * the first with the score set if all answers are correct, the second
+	 * with scoring per answers.<br>
+	 * A first user make the test, but doesn't answer all questions
+	 * correctly, log out and a second user make the perfect test.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorHotspot_multipleChoice(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		
+		String qtiTestTitle = "Hotspot QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add an hotspot: all answers score
+		QTI21HotspotEditorPage hotspotEditor = qtiEditor
+			.addHotspot();
+		// 2 spots
+		URL backgroundImageUrl = JunitTestHelper.class.getResource("file_resources/house.jpg");
+		File backgroundImageFile = new File(backgroundImageUrl.toURI());
+		hotspotEditor
+			.updloadBackground(backgroundImageFile)
+			.resizeCircle()
+			.moveCircle(300, 120)
+			.addRectangle()
+			.moveRectangle(150, 150)
+			.setCardinality(Cardinality.MULTIPLE)
+			.setCorrect("2.", true)
+			.save();
+		// change max score
+		hotspotEditor
+			.selectScores()
+			.setMaxScore("3")
+			.save();
+		// some feedbacks
+		hotspotEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is only an hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		//add a second hotspot: score per answer
+		hotspotEditor = qtiEditor
+			.addHotspot();
+		hotspotEditor
+			.updloadBackground(backgroundImageFile)
+			.resizeCircle()
+			.moveCircle(310, 125)
+			.addRectangle()
+			.moveRectangle(145, 155)
+			.setCardinality(Cardinality.MULTIPLE)
+			.setCorrect("2.", true)
+			.save();
+		// change scoring
+		hotspotEditor
+			.selectScores()
+			.setMaxScore("3")
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setScore("1.", "2")
+			.setScore("2.", "1")
+			.save();
+		hotspotEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The hint")
+			.setCorrectSolution("Correct solution", "This is the correct solution")
+			.setCorrectFeedback("Correct feedback", "This is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+
+
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.answerHotspot("rect")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerHotspot("circle")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerHotspot("circle")
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(5);// 3 points from the first question, 2 from the second
+		
+
+		//a second user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.assertOnAssessmentItem()
+			.answerHotspot("circle")
+			.answerHotspot("rect")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerHotspot("circle")
+			.answerHotspot("rect")
 			.saveAnswer()
 			.endTest()
 			.assertOnAssessmentResults()

@@ -137,6 +137,11 @@ public class QTI21EditorPage {
 		return new QTI21LobEditorPage(browser);
 	}
 	
+	public QTI21HotspotEditorPage addHotspot() {
+		addQuestion(QTI21QuestionType.hotspot);
+		return new QTI21HotspotEditorPage(browser);
+	}
+	
 	private QTI21EditorPage addQuestion(QTI21QuestionType type) {
 		openElementsMenu();
 		

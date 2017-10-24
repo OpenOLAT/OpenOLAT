@@ -108,11 +108,13 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 		ScoreBuilder minScore = itemBuilder.getMinScoreBuilder();
 		String minValue = minScore == null ? "" : (minScore.getScore() == null ? "" : minScore.getScore().toString());
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, minValue, formLayout);
+		minScoreEl.setElementCssClass("o_sel_assessment_item_min_score");
 		minScoreEl.setEnabled(!restrictedEdit);
 		
 		ScoreBuilder maxScore = itemBuilder.getMaxScoreBuilder();
 		String maxValue = maxScore == null ? "" : (maxScore.getScore() == null ? "" : maxScore.getScore().toString());
 		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, maxValue, formLayout);
+		maxScoreEl.setElementCssClass("o_sel_assessment_item_max_score");
 		maxScoreEl.setEnabled(!restrictedEdit);
 		
 		String[] modeValues = new String[]{

@@ -1,0 +1,135 @@
+package org.olat.selenium.page.qti;
+
+import java.io.File;
+
+import org.olat.selenium.page.graphene.OOGraphene;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+
+import uk.ac.ed.ph.jqtiplus.value.Cardinality;
+
+/**
+ * 
+ * Initial date: 23 oct. 2017<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
+	
+	public QTI21HotspotEditorPage(WebDriver browser) {
+		super(browser);
+	}
+	
+	public QTI21HotspotEditorPage updloadBackground(File file) {
+		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
+		OOGraphene.uploadFile(inputBy, file, browser);
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public QTI21HotspotEditorPage setCardinality(Cardinality cardinality) {
+		By cardinalityBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_cardinality')]//input[@value='" + cardinality.name() + "']");
+		browser.findElement(cardinalityBy).click();
+		return this;
+	}
+	
+	public QTI21HotspotEditorPage setCorrect(String indexName, boolean correct) {
+		By correctCheckboxBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_correct_spots')]//label[contains(text(),'" + indexName+ "')]/input[@name='form.imd.correct.spots']");
+		WebElement correctCheckboxEl = browser.findElement(correctCheckboxBy);
+		OOGraphene.check(correctCheckboxEl, new Boolean(correct));
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Add a rectangle hotspot.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21HotspotEditorPage addRectangle() {
+		By addRectBy = By.xpath("//a[contains(@class,'btn-default')][i[contains(@class,'o_icon_rectangle')]]");
+		browser.findElement(addRectBy).click();
+		OOGraphene.waitBusy(browser);
+		By rectangleBy = By.cssSelector("div.o_draw_rectangle");
+		OOGraphene.waitElement(rectangleBy, browser);
+		return this;
+	}
+	
+	/**
+	 * Resize the default circle
+	 * @return Itself
+	 */
+	public QTI21HotspotEditorPage resizeCircle() {
+		By circleBy = By.cssSelector("div.o_draw_circle");
+		OOGraphene.waitElement(circleBy, browser);
+		WebElement circleEl = browser.findElement(circleBy);
+		new Actions(browser)
+			.moveToElement(circleEl, 10, 10)
+			.clickAndHold()
+			.moveByOffset(60, 60)
+			.release()
+			.build()
+			.perform();
+		return this;
+	}
+	
+	/**
+	 * Move a circle hotspot by the specified offsets.
+	 * 
+	 * @param xOffset
+	 * @param yOffset
+	 * @return
+	 */
+	public QTI21HotspotEditorPage moveCircle(int xOffset, int yOffset) {
+		By circleBy = By.cssSelector("div.o_draw_circle");
+		return moveElement(circleBy, xOffset, yOffset);
+	}
+	
+	/**
+	 * Move a rectangle hotspot by the specified offsets.
+	 * 
+	 * @param xOffset
+	 * @param yOffset
+	 * @return Itself
+	 */
+	public QTI21HotspotEditorPage moveRectangle(int xOffset, int yOffset) {
+		By rectangleBy = By.cssSelector("div.o_draw_rectangle");
+		return moveElement(rectangleBy, xOffset, yOffset);
+	}
+	
+	private QTI21HotspotEditorPage moveElement(By elementBy, int xOffset, int yOffset) {
+		OOGraphene.waitElement(elementBy, browser);
+		WebElement rectangleEl = browser.findElement(elementBy);
+		Dimension size = rectangleEl.getSize();
+		int centerX = size.getWidth() / 2;
+		int centerY = size.getHeight() / 2;
+		
+		new Actions(browser)
+			.moveToElement(rectangleEl, centerX, centerY)
+			.clickAndHold()
+			.moveByOffset(xOffset, yOffset)
+			.release()
+			.build()
+			.perform();
+		return this;
+	}
+
+	public QTI21HotspotEditorPage save() {
+		By saveBy = By.cssSelector("div.o_sel_hotspots_save button.btn.btn-primary");
+		OOGraphene.click(saveBy, browser);
+		return this;
+	}
+	
+	public QTI21HotspotScoreEditorPage selectScores() {
+		selectTab(By.className("o_sel_assessment_item_options"));
+		return new QTI21HotspotScoreEditorPage(browser);
+	}
+	
+	public QTI21FeedbacksEditorPage selectFeedbacks() {
+		selectTab(By.className("o_sel_assessment_item_feedbacks"));
+		return new QTI21FeedbacksEditorPage(browser);
+	}
+}

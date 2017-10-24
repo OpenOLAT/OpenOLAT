@@ -152,6 +152,7 @@ public class HotspotEditorController extends FormBasicController {
 		String[] cardinalityKeys = new String[] { Cardinality.SINGLE.name(), Cardinality.MULTIPLE.name() };
 		String[] cardinalityValues = new String[] { translate(Cardinality.SINGLE.name()), translate(Cardinality.MULTIPLE.name()) };
 		cardinalityEl = uifactory.addRadiosHorizontal("form.imd.cardinality", formLayout, cardinalityKeys, cardinalityValues);
+		cardinalityEl.setElementCssClass("o_sel_assessment_item_cardinality");
 		if(itemBuilder.isSingleChoice()) {
 			cardinalityEl.select(cardinalityKeys[0], true);
 		} else {
@@ -206,6 +207,7 @@ public class HotspotEditorController extends FormBasicController {
 
 		String[] emptyKeys = new String[0];
 		correctHotspotsEl = uifactory.addCheckboxesHorizontal("form.imd.correct.spots", formLayout, emptyKeys, emptyKeys);
+		correctHotspotsEl.setElementCssClass("o_sel_assessment_item_correct_spots");
 		correctHotspotsEl.setEnabled(!restrictedEdit);
 		correctHotspotsEl.addActionListener(FormEvent.ONCHANGE);
 		rebuildWrappersAndCorrectSelection();
@@ -237,6 +239,7 @@ public class HotspotEditorController extends FormBasicController {
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsContainer.setElementCssClass("o_sel_hotspots_save");
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
