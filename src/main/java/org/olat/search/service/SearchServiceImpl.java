@@ -35,6 +35,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -303,10 +305,10 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		try {
 			SearchCallable run = new SearchCallable(queryString,  condQueries, identity, roles, firstResult, maxResults, doHighlighting, this);
 			Future<SearchResults> futureResults = searchExecutor.submit(run);
-			SearchResults results = futureResults.get();
+			SearchResults results = futureResults.get(30, TimeUnit.SECONDS);
 			queryCount++;
 			return results;
-		} catch (InterruptedException e) {
+		} catch (InterruptedException | TimeoutException e) {
 			log.error("", e);
 			return null;
 		} catch (ExecutionException e) {
@@ -328,7 +330,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		try {
 			SearchOrderByCallable run = new SearchOrderByCallable(queryString, condQueries, orderBy, firstResult, maxResults, this);
 			Future<List<Long>> futureResults = searchExecutor.submit(run);
-			List<Long> results = futureResults.get();
+			List<Long> results = futureResults.get(30, TimeUnit.SECONDS);
 			queryCount++;
 			if(results == null) {
 				results = new ArrayList<Long>(1);

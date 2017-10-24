@@ -151,6 +151,16 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 			absenceDefaultAuthorized = "true".equals(absenceDefaultAuthorizedObj);
 		}
 		
+		String teacherCanAuthorizedAbsenceObj = getStringPropertyValue(TEACHER_CAN_AUTHORIZED_ABSENCE, true);
+		if(StringHelper.containsNonWhitespace(teacherCanAuthorizedAbsenceObj)) {
+			teacherCanAuthorizedAbsence = "true".equals(teacherCanAuthorizedAbsenceObj);
+		}
+		
+		String rollCallReminderEnabledObj = getStringPropertyValue(ROLLCALL_REMINDER_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(rollCallReminderEnabledObj)) {
+			rollCallReminderEnabled = "true".equals(rollCallReminderEnabledObj);
+		}
+		
 		String rollcallReminderPeriodObj = getStringPropertyValue(ROLLCALL_REMINDER_PERIOD, true);
 		if(StringHelper.containsNonWhitespace(rollcallReminderPeriodObj)) {
 			rollCallReminderPeriod = Integer.parseInt(rollcallReminderPeriodObj);
