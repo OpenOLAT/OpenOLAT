@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -42,11 +43,22 @@ import org.olat.search.service.SearchServiceFactory;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class SearchClientLocal implements SearchClient {
+	
+	private DB dbInstance;
+	
+	/**
+	 * [used by Spring]
+	 * @param dbInstance
+	 */
+	public void setDbInstance(DB dbInstance) {
+		this.dbInstance = dbInstance;
+	}
 
 	@Override
 	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
 			int firstResult, int maxReturns, boolean doHighlighting)
 	throws ServiceNotAvailableException, ParseException, QueryException {
+		dbInstance.commitAndCloseSession();
 		return SearchServiceFactory.getService().doSearch(queryString, condQueries, identity, roles, firstResult, maxReturns, doHighlighting);
 	}
 
@@ -54,11 +66,13 @@ public class SearchClientLocal implements SearchClient {
 	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
 			int firstResult, int maxResults, SortKey... orderBy)
 	throws ServiceNotAvailableException, ParseException, QueryException {
+		dbInstance.commitAndCloseSession();
 		return SearchServiceFactory.getService().doSearch(queryString, condQueries, identity, roles, firstResult, maxResults, orderBy);
 	}
 
 	@Override
 	public Set<String> spellCheck(String query) throws ServiceNotAvailableException {
+		dbInstance.commitAndCloseSession();
 		return SearchServiceFactory.getService().spellCheck(query);
 	}
 }

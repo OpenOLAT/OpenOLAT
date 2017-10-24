@@ -331,7 +331,9 @@
 	<!-- OO-109: bypass the JMS server in no-cluster environment ==> use searchClientLocal if singleVM -->	
 	<alias alias="searchClient" name="searchClient${cluster.mode}"/>
 
-	<bean id="searchClientSingleVM" class="org.olat.search.service.searcher.SearchClientLocal"/>
+	<bean id="searchClientSingleVM" class="org.olat.search.service.searcher.SearchClientLocal">
+		<property name="dbInstance" ref="database" />
+	</bean>
 	
 	<bean id="searchClientCluster" class="org.olat.search.service.searcher.SearchClientProxy" init-method="springInit" destroy-method="stop" lazy-init="true">
 		<property name="connectionFactory" ref="searchConnectionFactory"/>
