@@ -375,7 +375,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	private void cancelSearch(Future<?> search) {
 		if(search != null) {
 			try {
-				search.cancel(true);
+				search.cancel(false);
 			} catch (Exception e) {
 				log.error("Error canceling a search", e);
 			}
