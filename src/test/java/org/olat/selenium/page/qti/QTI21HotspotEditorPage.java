@@ -120,6 +120,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	public QTI21HotspotEditorPage save() {
 		By saveBy = By.cssSelector("div.o_sel_hotspots_save button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

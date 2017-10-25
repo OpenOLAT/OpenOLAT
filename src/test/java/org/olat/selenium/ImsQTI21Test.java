@@ -2928,4 +2928,222 @@ public class ImsQTI21Test {
 			.assertOnAssessmentTestScore(2)
 			.assertOnAssessmentTestMaxScore(2);
 	}
+	
+	/**
+	 * An author make a test and use the negative points.<br>
+	 * 3 users search the test, pass the test or not and
+	 * check their results.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorNegativePoints(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO asuka = new UserRestClient(deploymentUrl).createRandomUser("Asuka");
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//customize the section
+		qtiEditor
+			.selectSection()
+			.selectExpertOptions()
+			.sectionTitle(false)
+			.save();
+		
+		//edit the default single choice
+		qtiEditor
+			.selectItem("Single Choice");
+		QTI21SingleChoiceEditorPage scEditor = new QTI21SingleChoiceEditorPage(browser);
+		scEditor
+			.setAnswer(0, "Wrong")
+			.addChoice(1)
+			.setCorrect(1)
+			.setAnswer(1, "Correct")
+			.addChoice(2)
+			.setAnswer(2, "Faux")
+			.save();
+		scEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("2.0")
+			.setMinScore("-1.0")
+			.setScore("Wrong", "-1")
+			.setScore("Correct", "2")
+			.setScore("Faux", "-1")
+			.save();
+			
+		//add a multiple choice
+		QTI21MultipleChoiceEditorPage mcEditor = qtiEditor
+			.addMultipleChoice();
+		mcEditor
+			.setAnswer(0, "Correct")
+			.setCorrect(0)
+			.addChoice(1)
+			.setCorrect(1)
+			.setAnswer(1, "Ok")
+			.addChoice(2)
+			.setAnswer(2, "Faux")
+			.addChoice(3)
+			.setAnswer(3, "Falsch")
+			.save();
+		mcEditor.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("2.0")
+			.setMinScore("-2")
+			.setScore("Correct", "1")
+			.setScore("Ok", "1")
+			.setScore("Faux", "-2")
+			.setScore("Falsch", "-2")
+			.save();
+		
+		//add an hotspot
+		QTI21HotspotEditorPage hotspotEditor = qtiEditor
+			.addHotspot();
+		// 2 spots
+		URL backgroundImageUrl = JunitTestHelper.class.getResource("file_resources/house.jpg");
+		File backgroundImageFile = new File(backgroundImageUrl.toURI());
+		hotspotEditor
+			.updloadBackground(backgroundImageFile)
+			.resizeCircle()
+			.moveCircle(300, 120)
+			.addRectangle()
+			.moveRectangle(150, 150)
+			.setCardinality(Cardinality.SINGLE)
+			.save();
+		hotspotEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("3.0")
+			.setMinScore("-2")
+			.setScore("1.", "3.0") //circle
+			.setScore("2.", "-2")  //rectangle
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+		
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test with all correct answers
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.assertHiddenSection()
+			.answerSingleChoice("Correct")
+			.saveAnswer()
+			.answerMultipleChoice("Ok")
+			.answerMultipleChoice("Correct")
+			.saveAnswer()
+			.answerHotspot("circle")
+			.saveAnswer()
+			.endTest()
+		//check the results
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(7)
+			.assertOnAssessmentTestMaxScore(7);
+		
+
+		//a  second user search the content package
+		LoginPage asukaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		asukaLoginPage
+			.loginAs(asuka.getLogin(), asuka.getPassword())
+			.resume();
+		NavigationPage asukaNavBar = new NavigationPage(participantBrowser);
+		asukaNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test with all correct answers
+		QTI21Page asukaQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		asukaQtiPage
+			.assertOnAssessmentItem()
+			.assertHiddenSection()
+			.answerSingleChoice("Wrong")
+			.saveAnswer()
+			.answerMultipleChoice("Falsch")
+			.answerMultipleChoice("Faux")
+			.saveAnswer()
+			.answerHotspot("rect")
+			.saveAnswer()
+			.endTest()
+		//check the results
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(0) // -1 + -4 but never under 0
+			.assertOnAssessmentTestMaxScore(7);
+		
+		//a third user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test with some correct answers
+		QTI21Page reiQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		reiQtiPage
+			.assertOnAssessmentItem()
+			.assertHiddenSection()
+			.answerSingleChoice("Faux")
+			.saveAnswer()
+			.answerMultipleChoice("Ok")
+			.answerMultipleChoice("Correct")
+			.saveAnswer()
+			.answerHotspot("circle")
+			.saveAnswer()
+			.endTest()
+		//check the results
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(4) // -1 + 2 + 3 points
+			.assertOnAssessmentTestMaxScore(7);
+	}
 }

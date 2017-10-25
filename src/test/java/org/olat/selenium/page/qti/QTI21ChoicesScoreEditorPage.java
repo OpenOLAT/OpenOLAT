@@ -69,6 +69,14 @@ public class QTI21ChoicesScoreEditorPage {
 		return this;
 	}
 	
+	public QTI21ChoicesScoreEditorPage setMinScore(String minScore) {
+		By minScoreBy = By.cssSelector("div.o_sel_assessment_item_min_score input[type='text']");
+		WebElement minScoreEl = browser.findElement(minScoreBy);
+		minScoreEl.clear();
+		minScoreEl.sendKeys(minScore);
+		return this;
+	}
+	
 	public QTI21ChoicesScoreEditorPage save() {
 		By saveBy = By.cssSelector("fieldset.o_sel_assessment_item_options button.btn.btn-primary");
 		browser.findElement(saveBy).click();
