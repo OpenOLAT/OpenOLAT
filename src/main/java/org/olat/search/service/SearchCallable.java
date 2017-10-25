@@ -76,11 +76,15 @@ class SearchCallable implements Callable<SearchResults> {
 				log.warn("Index does not exist, can't search for queryString: "+queryString);
 				throw new ServiceNotAvailableException("Index does not exist");
 			}
-			
+
 			if(debug) log.debug("queryString=" + queryString);
 			searcher = searchService.getIndexSearcher();
 			BooleanQuery query = searchService.createQuery(queryString, condQueries);
 			if(debug) log.debug("query=" + query);
+			
+			if(Thread.interrupted()) {
+				throw new InterruptedException();
+			}
 			
 			long startTime = System.currentTimeMillis();
 			int n = SearchServiceFactory.getService().getSearchModuleConfig().getMaxHits();

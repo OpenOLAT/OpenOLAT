@@ -97,6 +97,8 @@ public class SearchModule extends AbstractSpringModule {
 	private int maxHits = 1000;
 	private int maxResults = 100;
 
+	@Value("${search.timeout:15}")
+	private int searchTimeout;
 	@Value("${search.folder.pool.size:3}")
 	private int folderPoolSize;
 	@Value("${restart.window.start}")
@@ -266,6 +268,10 @@ public class SearchModule extends AbstractSpringModule {
 	 */
 	public long getIndexInterval() {
 		return indexInterval;
+	}
+	
+	public int getSearchTimeout() {
+		return searchTimeout;
 	}
 
 	/**
