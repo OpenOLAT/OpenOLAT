@@ -238,6 +238,7 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 		searchSpellChecker.setSpellDictionaryPath(searchModuleConfig.getSpellCheckDictionaryPath());
 		searchSpellChecker.setSpellCheckEnabled(searchModuleConfig.getSpellCheckEnabled());
 		searchSpellChecker.setSearchExecutor(searchExecutor);
+		searchSpellChecker.setSearchModule(searchModuleConfig);
 		
 		indexer = new Index(searchModuleConfig, this, searchSpellChecker, mainIndexer, lifeIndexer, coordinatorManager);
 
@@ -301,14 +302,19 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
 			int firstResult, int maxResults, boolean doHighlighting)
 	throws ServiceNotAvailableException, ParseException {
-	
+		
+		Future<SearchResults> futureResults = null;
 		try {
 			SearchCallable run = new SearchCallable(queryString,  condQueries, identity, roles, firstResult, maxResults, doHighlighting, this);
-			Future<SearchResults> futureResults = searchExecutor.submit(run);
-			SearchResults results = futureResults.get(30, TimeUnit.SECONDS);
+			futureResults = searchExecutor.submit(run);
+			SearchResults results = futureResults.get(searchModuleConfig.getSearchTimeout(), TimeUnit.SECONDS);
 			queryCount++;
 			return results;
-		} catch (InterruptedException | TimeoutException e) {
+		} catch (InterruptedException e) {
+			log.error("", e);
+			return null;
+		} catch (TimeoutException e) {
+			cancelSearch(futureResults);
 			log.error("", e);
 			return null;
 		} catch (ExecutionException e) {
@@ -327,15 +333,21 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	public List<Long> doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles,
 			int firstResult, int maxResults, SortKey... orderBy)
 	throws ServiceNotAvailableException, ParseException, QueryException {
+		
+		Future<List<Long>> futureResults = null;
 		try {
 			SearchOrderByCallable run = new SearchOrderByCallable(queryString, condQueries, orderBy, firstResult, maxResults, this);
-			Future<List<Long>> futureResults = searchExecutor.submit(run);
-			List<Long> results = futureResults.get(30, TimeUnit.SECONDS);
+			futureResults = searchExecutor.submit(run);
+			List<Long> results = futureResults.get(searchModuleConfig.getSearchTimeout(), TimeUnit.SECONDS);
 			queryCount++;
 			if(results == null) {
 				results = new ArrayList<Long>(1);
 			}
 			return results;
+		} catch (TimeoutException e) {
+			cancelSearch(futureResults);
+			log.error("", e);
+			return null;
 		} catch (Exception e) {
 			log.error("", e);
 			return new ArrayList<Long>(1);
@@ -345,13 +357,28 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	@Override
 	public Document doSearch(String queryString)
 	throws ServiceNotAvailableException, ParseException, QueryException {
+		Future<Document> futureResults = null;
 		try {
 			GetDocumentByCallable run = new GetDocumentByCallable(queryString, this);
-			Future<Document> futureResults = searchExecutor.submit(run);
-			return futureResults.get();
+			futureResults = searchExecutor.submit(run);
+			return futureResults.get(searchModuleConfig.getSearchTimeout(), TimeUnit.SECONDS);
+		} catch (TimeoutException e) {
+			cancelSearch(futureResults);
+			log.error("", e);
+			return null;
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
+		}
+	}
+	
+	private void cancelSearch(Future<?> search) {
+		if(search != null) {
+			try {
+				search.cancel(true);
+			} catch (Exception e) {
+				log.error("Error canceling a search", e);
+			}
 		}
 	}
 	

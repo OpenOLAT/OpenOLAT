@@ -31,6 +31,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -46,6 +48,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.search.SearchModule;
 import org.olat.search.SearchService;
 import org.olat.search.model.OlatDocument;
 
@@ -67,6 +70,7 @@ public class SearchSpellChecker {
 	private SpellChecker spellChecker;
 	private boolean isSpellCheckEnabled = true;
 	private ExecutorService searchExecutor;
+	private SearchModule searchModule;
 	
 	public SearchSpellChecker() {
 		//
@@ -76,22 +80,41 @@ public class SearchSpellChecker {
 		this.searchExecutor = searchExecutor;
 	}
 	
+	public void setSearchModule(SearchModule searchModule) {
+		this.searchModule = searchModule;
+	}
+	
 	/**
 	 * Check for valid similar search terms 
 	 * @param query
 	 * @return Returns list of String with similar search-words.
 	 *         Returns null when spell-checker is disabled or has an exception.
 	 */
-  public Set<String> check(String query) {
-  	try {
-  		CheckCallable run = new CheckCallable(query, this);
-  		Future<Set<String>> futureResults = searchExecutor.submit(run);
-  		return futureResults.get();
+	public Set<String> check(String query) {
+		Future<Set<String>> futureResults = null;
+		try {
+			CheckCallable run = new CheckCallable(query, this);
+			futureResults = searchExecutor.submit(run);
+			return futureResults.get(searchModule.getSearchTimeout(), TimeUnit.SECONDS);
+		} catch (TimeoutException e) {
+			cancelSearch(futureResults);
+			log.error("", e);
+			return null;
 		} catch (Exception e) {
 			log.warn("Can not spell check",e);
 			return new HashSet<String>();
 		}
-  }
+	}
+	
+	private void cancelSearch(Future<?> search) {
+		if(search != null) {
+			try {
+				search.cancel(false);
+			} catch (Exception e) {
+				log.error("Error canceling a search", e);
+			}
+		}
+	}
   
   protected SpellChecker getSpellChecker() {
   	if(spellChecker==null) { //lazy initialization
