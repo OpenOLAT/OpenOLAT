@@ -220,9 +220,11 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 			if(!effectiveEndReasonEl.isOneSelected()) {
 				effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
 				allOk &= false;
-			} else if(effectiveEndReasonEl.isSelected(0) && differentEffectiveEndDate()) {
-				effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
-				allOk &= false;
+			} else if(effectiveEndReasonEl.isSelected(0)) {
+				if(getEffectiveEndDate() != null && this.differentEffectiveEndDate()) {
+					effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
+					allOk &= false;
+				}
 			}
 		} else {
 			effectiveEndHourEl.setErrorKey("form.legende.mandatory", null);

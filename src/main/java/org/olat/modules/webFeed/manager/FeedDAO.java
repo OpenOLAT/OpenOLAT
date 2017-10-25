@@ -83,6 +83,8 @@ public class FeedDAO {
 	}
 	
 	public Feed loadFeed(OLATResourceable resourceable) {
+		if (resourceable == null) return null;
+		
 		List<FeedImpl> feeds = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadFeedByRessourceable", FeedImpl.class)
 				.setParameter("key", resourceable.getResourceableId())

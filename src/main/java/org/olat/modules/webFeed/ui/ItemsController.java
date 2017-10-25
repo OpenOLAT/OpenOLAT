@@ -189,7 +189,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		createEditButtons(ureq, feed);
 
 		// Add item details page link
-		createItemLinks(feed);
+		createItemLinks();
 		// Add item user comments link and rating
 		if (displayConfig.isShowCRInMinimized()) {
 			createCommentsAndRatingsLinks(ureq, feed);
@@ -211,7 +211,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	}
 
 	private void setAllItemIds(List<Item> items) {
-		allItemIds = new ArrayList<ItemId>();
+		allItemIds = new ArrayList<>();
 		for (Item item : items) {
 			allItemIds.add(new ItemId(item));
 		}
@@ -220,7 +220,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	private boolean isSameAllItems(List<Item> items) {
 		if (allItemIds == null)
 			return false;
-		List<ItemId> itemIds = new ArrayList<ItemId>();
+		List<ItemId> itemIds = new ArrayList<>();
 		for (Item item : items) {
 			itemIds.add(new ItemId(item));
 		}
@@ -288,7 +288,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 			return;// check against concurrent changes
 		if (CoreSpringFactory.containsBean(CommentAndRatingService.class)) {
 			if (commentsLinks == null) {
-				commentsLinks = new HashMap<Item, Controller>();
+				commentsLinks = new HashMap<>();
 			} else if (commentsLinks.containsKey(item)) {
 				removeAsListenerAndDispose(commentsLinks.get(item));
 			}
@@ -323,7 +323,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		}
 	}
 
-	private void createItemLinks(Feed feed) {
+	private void createItemLinks() {
 		itemLinks = new ArrayList<>();
 		if (accessibleItems != null) {
 			for (Item item : accessibleItems) {
@@ -362,9 +362,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 		}
 	}
 
-	/**
-	 * @param item
-	 */
 	private void createButtonsForItem(UserRequest ureq, Feed feed, Item item) {
 		boolean author = getIdentity().getKey().equals(item.getAuthorKey());
 		boolean edit = callback.mayEditItems() || (author && callback.mayEditOwnItems());
@@ -568,11 +565,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		// reload feed for this event and make sure the updated feed object is
 		// in the view
@@ -654,16 +647,6 @@ public class ItemsController extends BasicController implements Activateable2 {
 							// Add the modified item if it is not part of the
 							// feed
 							feedResource = feedManager.createItem(feedResource, currentItem, mediaFile);
-							if (feedResource == null) {
-								// the item could not be added, is not internal
-								feedResource = feedManager.loadFeed(feedResource);
-								if (!feedResource.isInternal() && !feedResource.isExternal()
-										&& !feedManager.hasItems(feedResource)) {
-									feedResource = feedManager.updateFeedMode(Boolean.FALSE, feedResource);
-									feedResource = feedManager.createItem(feedResource, currentItem, mediaFile);
-								}
-							}
-
 							if (feedResource != null) {
 								createButtonsForItem(ureq, feedResource, currentItem);
 								createItemLink(currentItem);
@@ -828,7 +811,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		naviCtr.setDatedObjects(accessibleItems);
 		setAllItemIds(accessibleItems);
 		// Add item details page link
-		createItemLinks(feedResource);
+		createItemLinks();
 		// Add item user comments link and rating
 		if (displayConfig.isShowCRInMinimized()) {
 			createCommentsAndRatingsLinks(ureq, feedResource);
