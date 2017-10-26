@@ -493,7 +493,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 			courseLink.append(Settings.getServerContextPathURI())
 				.append("/url/RepositoryEntry/").append(entry.getKey());
-			return translate("email.body.template", new String[]{courseName, courseLink.toString()});		
+			// the ext-ref and location are not in default mail template, but used by some instances
+			return translate("email.body.template", new String[]{courseName, courseLink.toString(), entry.getExternalRef(), entry.getLocation()});		
 		}
 	}
 	

@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -77,6 +78,7 @@ public class CancelRollCallConfirmationController extends FormBasicController {
 		List<String> reasonValueList = new ArrayList<>();
 		
 		List<Reason> allReasons = lectureService.getAllReasons();
+		Collections.sort(allReasons, new ReasonComparator());
 		for(Reason reason:allReasons) {
 			reasonKeyList.add(reason.getKey().toString());
 			reasonValueList.add(reason.getTitle());

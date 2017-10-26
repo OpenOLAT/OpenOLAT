@@ -50,6 +50,8 @@ import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.emory.mathcs.backport.java.util.Collections;
+
 /**
  * 
  * Initial date: 12 juin 2017<br>
@@ -138,32 +140,34 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		}
 		effectiveEndMinuteEl.setValue(minuteStr);
 
-		List<String> reasonKeyList = new ArrayList<>();
-		List<String> reasonValueList = new ArrayList<>();
-		reasonKeyList.add("-");
-		reasonValueList.add("-");
-		
 		List<Reason> allReasons = lectureService.getAllReasons();
-		for(Reason reason:allReasons) {
-			reasonKeyList.add(reason.getKey().toString());
-			reasonValueList.add(reason.getTitle());
-		}
-		effectiveEndReasonEl = uifactory.addDropdownSingleselect("effective.reason", "lecture.block.effective.reason", formLayout,
-				reasonKeyList.toArray(new String[reasonKeyList.size()]), reasonValueList.toArray(new String[reasonValueList.size()]), null);
-		effectiveEndReasonEl.setEnabled(secCallback.canEdit());
-		boolean found = false;
-		if(lectureBlock.getReasonEffectiveEnd() != null) {
-			String selectedReasonKey = lectureBlock.getReasonEffectiveEnd().getKey().toString();
-			for(String reasonKey:reasonKeyList) {
-				if(reasonKey.equals(selectedReasonKey)) {
-					effectiveEndReasonEl.select(reasonKey, true);
-					found = true;
-					break;
+		if(allReasons.size() > 0) {
+			if(allReasons.size() > 2) {
+				Collections.sort(allReasons, new ReasonComparator());
+			}
+			
+			int numOfReasons = allReasons.size();
+			List<String> reasonKeys = new ArrayList<String>(numOfReasons + 1);
+			List<String> reasonValues = new ArrayList<String>(numOfReasons + 1);
+			reasonKeys.add("-");
+			reasonValues.add("");
+			for(int i=numOfReasons; i-->0; ) {
+				Reason reason = allReasons.get(i);
+				reasonKeys.add(reason.getKey().toString());
+				reasonValues.add(reason.getTitle());
+			}
+			effectiveEndReasonEl = uifactory.addDropdownSingleselect("effective.reason", "lecture.block.effective.reason", formLayout,
+					reasonKeys.toArray(new String[reasonKeys.size()]), reasonValues.toArray(new String[reasonValues.size()]), null);
+			effectiveEndReasonEl.setEnabled(secCallback.canEdit());
+			if(lectureBlock.getReasonEffectiveEnd() != null) {
+				String selectedReasonKey = lectureBlock.getReasonEffectiveEnd().getKey().toString();
+				for(String reasonKey:reasonKeys) {
+					if(reasonKey.equals(selectedReasonKey)) {
+						effectiveEndReasonEl.select(reasonKey, true);
+						break;
+					}
 				}
 			}
-		}
-		if(!found) {
-			effectiveEndReasonEl.select(reasonKeyList.get(0), true);
 		}
 		
 		String blockComment = lectureBlock.getComment();
@@ -210,25 +214,22 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		boolean allOk = true;
 		
 		effectiveEndHourEl.clearError();
-		effectiveEndReasonEl.clearError();
 		//need to be the first validation
 		if(StringHelper.containsNonWhitespace(effectiveEndHourEl.getValue())
 				|| StringHelper.containsNonWhitespace(effectiveEndMinuteEl.getValue())) {
 			allOk &= validateInt(effectiveEndHourEl, 24);
 			allOk &= validateInt(effectiveEndMinuteEl, 60);
-
-			if(!effectiveEndReasonEl.isOneSelected()) {
-				effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
-				allOk &= false;
-			} else if(effectiveEndReasonEl.isSelected(0)) {
-				if(getEffectiveEndDate() != null && this.differentEffectiveEndDate()) {
-					effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
-					allOk &= false;
-				}
-			}
 		} else {
 			effectiveEndHourEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		}
+		
+		if(effectiveEndReasonEl != null) {
+			effectiveEndReasonEl.clearError();
+			if(!effectiveEndReasonEl.isOneSelected() || effectiveEndReasonEl.isSelected(0)) {
+				effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
+				allOk &= false;
+			}
 		}
 		
 		if(effectiveLecturesEl != null) {
@@ -240,14 +241,6 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		}
 	
 		return allOk & super.validateFormLogic(ureq);
-	}
-	
-	private boolean differentEffectiveEndDate() {
-		Date endDate = lectureBlock.getEndDate();
-		if(endDate == null) return true;
-		Date effectiveEndDate = getEffectiveEndDate();
-		long diff = endDate.getTime() - effectiveEndDate.getTime();
-		return Math.abs(diff) > 60000l;//bigger than a minute
 	}
 	
 	private boolean validateInt(TextElement element, int max) {
@@ -320,7 +313,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 			lectureBlock.setReasonEffectiveEnd(null);
 		} else {
 			lectureBlock.setEffectiveEndDate(effectiveEndDate);
-			if("-".equals(effectiveEndReasonEl.getSelectedKey())) {
+			if(effectiveEndReasonEl == null || "-".equals(effectiveEndReasonEl.getSelectedKey())) {
 				lectureBlock.setReasonEffectiveEnd(null);
 			} else {
 				Long reasonKey = new Long(effectiveEndReasonEl.getSelectedKey());

@@ -29,6 +29,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 
 import org.apache.pdfbox.exceptions.COSVisitorException;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -174,6 +177,52 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 	    	
 	    	addPageNumbers(); 
 	}
+	
+	@Override
+    public void addPageNumbers() throws IOException {
+        float footerFontSize = 10.0f;
+    	
+        @SuppressWarnings("unchecked")
+		List<PDPage> allPages = document.getDocumentCatalog().getAllPages();
+        int numOfPages = allPages.size();
+        for( int i=0; i<allPages.size(); i++ ) {
+            PDPage page = allPages.get( i );
+            PDRectangle pageSize = page.findMediaBox();
+            
+            String text = (i+1) + " / " + numOfPages;
+            float stringWidth = getStringWidth(text, footerFontSize);
+            // calculate to center of the page
+            float pageWidth = pageSize.getWidth();
+            double x = (pageWidth - stringWidth) / 2.0f;
+            double y = (marginTopBottom / 2.0f);
+           
+            // append the content to the existing stream
+            PDPageContentStream contentStream = new PDPageContentStream(document, page, true, true,true);
+            
+            // set warning
+            contentStream.beginText();
+            contentStream.setFont(font, footerFontSize );
+            contentStream.setTextTranslation(marginLeftRight, y + 14);
+            contentStream.drawString(translator.translate("rollcall.coach.hint"));
+            contentStream.endText();
+            
+            contentStream.beginText();
+            // set font and font size
+            contentStream.setFont(font, footerFontSize );
+            contentStream.setTextTranslation(x, y);
+            contentStream.drawString(text);
+            contentStream.endText();
+            
+            //set current date
+            contentStream.beginText();
+            contentStream.setFont(font, footerFontSize );
+            contentStream.setTextTranslation(marginLeftRight, y);
+            contentStream.drawString(printDate);
+            contentStream.endText();
+            
+            contentStream.close();
+        }
+    }
 		
 	private Row[] getRows(List<Identity> rows, List<LectureBlockRollCall> rollCalls) {
 		int numOfRows = rows.size();
