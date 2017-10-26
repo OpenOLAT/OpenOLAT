@@ -535,6 +535,10 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public List<CertificateLight> getLastCertificates(BusinessGroup businessGroup) {
 		List<BusinessGroup> groups = Collections.singletonList(businessGroup);
 		List<RepositoryEntry> entries = businessGroupRelationDao.findRepositoryEntries(groups, 0, -1);
+		if(entries.isEmpty()) {// no courses, no certificates
+			return new ArrayList<>();
+		}
+		
 		List<Long> resourceKeys = new ArrayList<>(entries.size());
 		for(RepositoryEntry entry:entries) {
 			resourceKeys.add(entry.getOlatResource().getKey());
