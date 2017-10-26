@@ -67,7 +67,7 @@ public class PdfDocument {
 	protected PDPageContentStream currentContentStream;
 	
 	protected float currentY;
-	private String printDate;
+	protected String printDate;
 	
 	public PdfDocument(Locale locale) throws IOException {
 		document = new PDDocument();
@@ -180,7 +180,7 @@ public class PdfDocument {
     throws IOException {
     	if(!StringHelper.containsNonWhitespace(text)) return;
     	
-    	currentContentStream.beginText();
+		currentContentStream.beginText();
 		currentContentStream.setFont(font, fontSize);
 		currentContentStream.moveTextPositionByAmount(textx, texty);
 		currentContentStream.drawString(text);
@@ -223,7 +223,7 @@ public class PdfDocument {
     public void addPageNumbers() throws IOException {
         float footerFontSize = 10.0f;
     	
-    	@SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked")
 		List<PDPage> allPages = document.getDocumentCatalog().getAllPages();
         int numOfPages = allPages.size();
         for( int i=0; i<allPages.size(); i++ ) {
