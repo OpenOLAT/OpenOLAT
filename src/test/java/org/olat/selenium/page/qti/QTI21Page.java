@@ -273,9 +273,26 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * Check if the feedback with the specified title is visible.
+	 * 
+	 * @param title Title of the feedback
+	 * @return Itself
+	 */
 	public QTI21Page assertFeedback(String title) {
 		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(feedbackBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Check that there are no feedbacks visible.
+	 * 
+	 * @return Itself
+	 */
+	public QTI21Page assertNoFeedback() {
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4");
+		OOGraphene.waitElementDisappears(feedbackBy, 5, browser);
 		return this;
 	}
 	

@@ -37,6 +37,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
+import org.olat.ims.qti21.model.xml.ModalFeedbackCondition.Operator;
+import org.olat.ims.qti21.model.xml.ModalFeedbackCondition.Variable;
 import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
@@ -1077,6 +1079,78 @@ public class ImsQTI21Test {
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(4);// 3 points from the first question, 1 from the second
 	}
+	
+	
+	/**
+	 * Test the conditional feedback with a condition based
+	 * on attempts (and an inccorect feedback used as marker).
+	 * The author use the condition attempts = 2
+	 * and check it in the runtime. It's done with a single
+	 * choice.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorSingleChoices_conditionalAttemptsFeedback(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+	
+		//add a single choice: all answers score
+		QTI21SingleChoiceEditorPage scEditor = qtiEditor
+			.addSingleChoice();
+		scEditor
+			.setAnswer(0, "Wrong")
+			.addChoice(1)
+			.setCorrect(1)
+			.setAnswer(1, "Correct")
+			.addChoice(2)
+			.setAnswer(2, "Faux")
+			.addChoice(3)
+			.setAnswer(3, "Falsch")
+			.save();
+
+		// set a conditional feedback
+		scEditor
+			.selectFeedbacks()
+			.setIncorrectFeedback("Incorrect", "Not the right response")
+			.addConditionalFeedback(1, "Attempts", "2 attempts")
+			.setCondition(1, 1, Variable.attempts, Operator.equals, "2")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			.answerSingleChoice("Falsch")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.answerSingleChoice("Faux")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertFeedback("Attempts")
+			.answerSingleChoice("Correct")
+			.saveAnswer()
+			.assertNoFeedback()
+			.endTest();
+	}
+	
 	
 	/**
 	 * An author make a test with 2 multiple choices, the first

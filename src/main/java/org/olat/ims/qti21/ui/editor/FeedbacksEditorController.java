@@ -125,6 +125,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		dropdownEl.addElement(addEmptyButton);
 		
 		addAdditionalButton = uifactory.addFormLink("add.additional.feedback", formLayout, Link.LINK);
+		addAdditionalButton.setElementCssClass("o_sel_add_conditional");
 		dropdownEl.addElement(addAdditionalButton);
 
 		ModalFeedbackBuilder hint = itemBuilder.getHint();
@@ -376,6 +377,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			String id = Integer.toString(counter.incrementAndGet());
 			
 			formLayout = FormLayoutContainer.createDefaultFormLayout_2_10("feedback".concat(id), getTranslator());
+			formLayout.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_" + position);
 			parentFormLayout.add(formLayout);
 			formLayout.setRootForm(mainForm);
 			formLayout.setFormTitle(translate("form.imd.additional.text", new String[] { Integer.toString(position) }));
@@ -538,7 +540,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			private final ModalFeedbackCondition condition;
 			
 			public ConditionForm() {
-				this.condition = new ModalFeedbackCondition();
+				condition = new ModalFeedbackCondition();
 			}
 			
 			public ConditionForm(ModalFeedbackCondition condition) {

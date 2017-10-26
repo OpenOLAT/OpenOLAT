@@ -20,10 +20,13 @@
 package org.olat.selenium.page.qti;
 
 import org.junit.Assert;
+import org.olat.ims.qti21.model.xml.ModalFeedbackCondition;
+import org.olat.ims.qti21.model.xml.ModalFeedbackCondition.Variable;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -106,6 +109,46 @@ public class QTI21FeedbacksEditorPage {
 		
 		By emptyBy = By.cssSelector("div.o_sel_assessment_item_empty_feedback input[type='text']");
 		browser.findElement(emptyBy).sendKeys(feedback);
+		return this;
+	}
+	
+	public QTI21FeedbacksEditorPage addConditionalFeedback(int position, String title, String feedback) {
+		openAddFeedbacksMenu().addFeedback("o_sel_add_conditional");
+		
+		String prefix = "fieldset.o_sel_assessment_item_additional_" + position;
+		By titleBy = By.cssSelector(prefix + " div.o_sel_assessment_item_additional_feedback_title input[type='text']");
+		browser.findElement(titleBy).sendKeys(title);
+		
+		By emptyBy = By.cssSelector(prefix + " div.o_sel_assessment_item_additional_feedback input[type='text']");
+		browser.findElement(emptyBy).sendKeys(feedback);
+		return this;
+	}
+	
+	public QTI21FeedbacksEditorPage setCondition(int feedbackPosition, int conditionPosition,
+			ModalFeedbackCondition.Variable variable, ModalFeedbackCondition.Operator operator, String value) {
+		
+		String feedbackPrefix = "//fieldset[contains(@class,'o_sel_assessment_item_additional_" + feedbackPosition + "')]";
+		String conditionPrefix = "//div[contains(@class,'o_condition')][" + conditionPosition + "]";
+		
+		By conditionBy = By.xpath(feedbackPrefix + conditionPrefix);
+		OOGraphene.waitElement(conditionBy, browser);
+		
+		By variableBy = By.xpath(feedbackPrefix + conditionPrefix + "//select[contains(@id,'o_fiovar_')]");
+		WebElement variableEl = browser.findElement(variableBy);
+		new Select(variableEl).selectByValue(variable.name());
+		OOGraphene.waitBusy(browser);
+		
+		By operatorBy = By.xpath(feedbackPrefix + conditionPrefix + "//select[contains(@id,'o_fioope_')]");
+		WebElement operatorEl = browser.findElement(operatorBy);
+		new Select(operatorEl).selectByValue(operator.name());
+		
+		if(variable == Variable.attempts || variable == Variable.score) {
+			By valueBy = By.xpath(feedbackPrefix + conditionPrefix + "//input[@type='text']");
+			WebElement valueEl = browser.findElement(valueBy);
+			valueEl.clear();
+			valueEl.sendKeys(value);
+		}
+		
 		return this;
 	}
 	
