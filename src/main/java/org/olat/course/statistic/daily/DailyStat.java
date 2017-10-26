@@ -84,7 +84,7 @@ public class DailyStat implements Persistable {
 		return key;
 	}
 	
-	public final long getResId() {
+	public long getResId() {
 		return resId;
 	}
 	
@@ -92,27 +92,27 @@ public class DailyStat implements Persistable {
 		this.resId = resId;
 	}
 	
-	public final String getBusinessPath() {
+	public String getBusinessPath() {
 		return businessPath;
 	}
 
-	public final void setBusinessPath(String businessPath) {
+	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
 	}
 
-	public final Date getDay() {
+	public Date getDay() {
 		return day;
 	}
 	
-	public final void setDay(Date day) {
+	public void setDay(Date day) {
 		this.day = day;
 	}
 	
-	public final int getValue() {
+	public int getValue() {
 		return value;
 	}
 	
-	public final void setValue(int value) {
+	public void setValue(int value) {
 		this.value = value;
 	}
 

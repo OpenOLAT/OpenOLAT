@@ -78,7 +78,7 @@ public class StudyBranch3Stat implements Persistable {
 		return key;
 	}
 	
-	public final long getResId() {
+	public long getResId() {
 		return resId;
 	}
 	
@@ -86,27 +86,27 @@ public class StudyBranch3Stat implements Persistable {
 		this.resId = resId;
 	}
 	
-	public final String getBusinessPath() {
+	public String getBusinessPath() {
 		return businessPath;
 	}
 
-	public final void setBusinessPath(String businessPath) {
+	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
 	}
 
-	public final String getStudyBranch3() {
+	public String getStudyBranch3() {
 		return studyBranch3;
 	}
 	
-	public final void setStudyBranch3(String studyBranch3) {
+	public void setStudyBranch3(String studyBranch3) {
 		this.studyBranch3 = studyBranch3;
 	}
 	
-	public final int getValue() {
+	public int getValue() {
 		return value;
 	}
 	
-	public final void setValue(int value) {
+	public void setValue(int value) {
 		this.value = value;
 	}
 	

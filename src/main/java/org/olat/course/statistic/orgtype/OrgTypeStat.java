@@ -78,7 +78,7 @@ public class OrgTypeStat implements Persistable {
 		return key;
 	}
 	
-	public final long getResId() {
+	public long getResId() {
 		return resId;
 	}
 	
@@ -86,27 +86,27 @@ public class OrgTypeStat implements Persistable {
 		this.resId = resId;
 	}
 	
-	public final String getBusinessPath() {
+	public String getBusinessPath() {
 		return businessPath;
 	}
 
-	public final void setBusinessPath(String businessPath) {
+	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
 	}
 
-	public final String getOrgType() {
+	public String getOrgType() {
 		return orgType;
 	}
 	
-	public final void setOrgType(String orgType) {
+	public void setOrgType(String orgType) {
 		this.orgType = orgType;
 	}
 	
-	public final int getValue() {
+	public int getValue() {
 		return value;
 	}
 	
-	public final void setValue(int value) {
+	public void setValue(int value) {
 		this.value = value;
 	}
 	

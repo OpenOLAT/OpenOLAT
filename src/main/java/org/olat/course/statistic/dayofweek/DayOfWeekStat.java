@@ -79,7 +79,7 @@ public class DayOfWeekStat implements Persistable {
 		return key;
 	}
 	
-	public final long getResId() {
+	public long getResId() {
 		return resId;
 	}
 	
@@ -87,27 +87,27 @@ public class DayOfWeekStat implements Persistable {
 		this.resId = resId;
 	}
 	
-	public final String getBusinessPath() {
+	public String getBusinessPath() {
 		return businessPath;
 	}
 
-	public final void setBusinessPath(String businessPath) {
+	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
 	}
 
-	public final int getDay() {
+	public int getDay() {
 		return day;
 	}
 	
-	public final void setDay(int day) {
+	public void setDay(int day) {
 		this.day = day;
 	}
 	
-	public final int getValue() {
+	public int getValue() {
 		return value;
 	}
 	
-	public final void setValue(int value) {
+	public void setValue(int value) {
 		this.value = value;
 	}
 

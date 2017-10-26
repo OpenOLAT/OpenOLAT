@@ -75,7 +75,7 @@ public class HourOfDayStat extends PersistentObject {
 	// for hibernate	
 	}
 	
-	public final long getResId() {
+	public long getResId() {
 		return resId;
 	}
 	
@@ -83,27 +83,27 @@ public class HourOfDayStat extends PersistentObject {
 		this.resId = resId;
 	}
 	
-	public final String getBusinessPath() {
+	public String getBusinessPath() {
 		return businessPath;
 	}
 
-	public final void setBusinessPath(String businessPath) {
+	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
 	}
 
-	public final int getHour() {
+	public int getHour() {
 		return hour;
 	}
 	
-	public final void setHour(int hour) {
+	public void setHour(int hour) {
 		this.hour = hour;
 	}
 	
-	public final int getValue() {
+	public int getValue() {
 		return value;
 	}
 	
-	public final void setValue(int value) {
+	public void setValue(int value) {
 		this.value = value;
 	}
 	

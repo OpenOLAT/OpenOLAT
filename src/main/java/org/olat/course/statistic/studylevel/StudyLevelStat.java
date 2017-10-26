@@ -78,7 +78,7 @@ public class StudyLevelStat implements Persistable {
 		return key;
 	}
 	
-	public final long getResId() {
+	public long getResId() {
 		return resId;
 	}
 	
@@ -86,27 +86,27 @@ public class StudyLevelStat implements Persistable {
 		this.resId = resId;
 	}
 	
-	public final String getBusinessPath() {
+	public String getBusinessPath() {
 		return businessPath;
 	}
 
-	public final void setBusinessPath(String businessPath) {
+	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
 	}
 
-	public final String getStudyLevel() {
+	public String getStudyLevel() {
 		return studyLevel;
 	}
 	
-	public final void setStudyLevel(String studyLevel) {
+	public void setStudyLevel(String studyLevel) {
 		this.studyLevel = studyLevel;
 	}
 	
-	public final int getValue() {
+	public int getValue() {
 		return value;
 	}
 	
-	public final void setValue(int value) {
+	public void setValue(int value) {
 		this.value = value;
 	}
 	

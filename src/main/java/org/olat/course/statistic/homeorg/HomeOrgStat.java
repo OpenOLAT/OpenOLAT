@@ -79,7 +79,7 @@ public class HomeOrgStat extends PersistentObject {
 		return key;
 	}
 	
-	public final long getResId() {
+	public long getResId() {
 		return resId;
 	}
 	
@@ -87,27 +87,27 @@ public class HomeOrgStat extends PersistentObject {
 		this.resId = resId;
 	}
 	
-	public final String getBusinessPath() {
+	public String getBusinessPath() {
 		return businessPath;
 	}
 
-	public final void setBusinessPath(String businessPath) {
+	public void setBusinessPath(String businessPath) {
 		this.businessPath = businessPath;
 	}
 
-	public final String getHomeOrg() {
+	public String getHomeOrg() {
 		return homeOrg;
 	}
 	
-	public final void setHomeOrg(String homeOrg) {
+	public void setHomeOrg(String homeOrg) {
 		this.homeOrg = homeOrg;
 	}
 	
-	public final int getValue() {
+	public int getValue() {
 		return value;
 	}
 	
-	public final void setValue(int value) {
+	public void setValue(int value) {
 		this.value = value;
 	}
 	
