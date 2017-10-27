@@ -220,6 +220,7 @@ public class HotspotEditorController extends FormBasicController {
 			layoutValues[i] =  translate("hotspot.layout." + layouts[i].name());
 		}
 		layoutEl = uifactory.addDropdownSingleselect("hotspot.layout", "hotspot.layout", formLayout, layoutKeys, layoutValues, null);
+		layoutEl.addActionListener(FormEvent.ONCHANGE);
 		boolean found = false;
 		for(int i=layoutKeys.length; i-->0; ) {
 			if(itemBuilder.hasHotspotInteractionClass(layoutKeys[i])) {
@@ -236,6 +237,7 @@ public class HotspotEditorController extends FormBasicController {
 		if(!itemBuilder.hasHotspotInteractionClass(QTI21Constants.CSS_HOTSPOT_DISABLE_SHADOW)) {
 			shadowEl.select(onKeys[0], true);
 		}
+		updateLayoutCssClass();
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -349,6 +351,8 @@ public class HotspotEditorController extends FormBasicController {
 			Collection<String> correctResponseIds = correctEl.getSelectedKeys();
 			doCorrectAnswers(correctResponseIds);
 			flc.setDirty(true);
+		} else if(layoutEl == source) {
+			updateLayoutCssClass();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -411,6 +415,19 @@ public class HotspotEditorController extends FormBasicController {
 			HotspotChoice choice = choices.get(i);
 			boolean correct = correctResponseIds.contains(choice.getIdentifier().toString());
 			itemBuilder.setCorrect(choice, correct);
+		}
+	}
+	
+	private void updateLayoutCssClass() {
+		if(layoutEl.isOneSelected()) {
+			String selectedLayout = layoutEl.getSelectedKey();
+			if(StringHelper.containsNonWhitespace(selectedLayout)) {
+				hotspotsCont.contextPut("layoutCssClass","o_qti_" +  selectedLayout);
+			} else {
+				hotspotsCont.contextPut("layoutCssClass", "o_qti_hotspot-standard");
+			}
+		} else {
+			hotspotsCont.contextPut("layoutCssClass", "o_qti_hotspot-standard");
 		}
 	}
 	
