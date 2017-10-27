@@ -124,6 +124,66 @@ ul.sessionControl {
 	min-height: 100px;
 	min-width: 400px;
 	background-repeat:no-repeat;
+	
+	&.o_qti_hotspot-standard  {
+		.o_draw_circle, .o_draw_rectangle {
+			background-color: rgba(255, 255, 255, 0.5);
+			border-color: #6E6E6E;
+		}
+		
+		.o_qti_hotspot_correct.o_draw_circle, .o_qti_hotspot_correct.o_draw_rectangle {
+			background-color: rgba(45, 0, 255, 0.5);
+			border-color: #0000ff;
+		}
+	}
+	
+	&.o_qti_hotspot-light  {
+		.o_draw_circle, .o_draw_rectangle {
+			background-color: rgba(221, 221, 221, 0.0);
+			border-color: #7E7E7E;
+		}
+		
+		.o_qti_hotspot_correct.o_draw_circle, .o_qti_hotspot_correct.o_draw_rectangle {
+			background-color: rgba(51, 122, 183, 0.05);
+			border-color: #337ab7;
+		}
+	}
+	
+	&.o_qti_hotspot-inverted  {
+		.o_draw_circle, .o_draw_rectangle {
+			background-color: rgba(110, 110, 110, 0.5);
+			border-color: #3E3E3E;
+		}
+		
+		.o_qti_hotspot_correct.o_draw_circle, .o_qti_hotspot_correct.o_draw_rectangle {
+			background-color: rgba(222, 222, 222, 0.2);
+			border-color: #CECECE;
+		}
+	}
+	
+	&.o_qti_hotspot-green  {
+		.o_draw_circle, .o_draw_rectangle {
+			background-color: rgba(142, 142, 142, 0.25);
+			border-color: #CECECE;
+		}
+		
+		.o_qti_hotspot_correct.o_draw_circle, .o_qti_hotspot_correct.o_draw_rectangle {
+			background-color: rgba(134, 195, 81, 0.5);
+			border-color: #518b33;
+		}
+	}
+	
+	&.o_qti_hotspot-purple  {
+		.o_draw_circle, .o_draw_rectangle {
+			background-color: rgba(142, 142, 142, 0.33);
+			border-color: #CECECE;
+		}
+		
+		.o_qti_hotspot_correct.o_draw_circle, .o_qti_hotspot_correct.o_draw_rectangle {
+			background-color: rgba(234, 168, 255, 0.5);
+			border-color: #ab47cb;
+		}
+	}
 }
 
 div.hotspotInteraction {
