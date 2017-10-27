@@ -62,8 +62,10 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
+import org.olat.modules.lecture.LectureBlockAuditLog.Action;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockRollCallRef;
 import org.olat.modules.lecture.LectureBlockRollCallSearchParameters;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
@@ -279,6 +281,10 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	public List<LectureBlockAuditLog> getAuditLog(IdentityRef assessedIdentity) {
 		return auditLogDao.getAuditLog(assessedIdentity);
 	}
+	@Override
+	public List<LectureBlockAuditLog> getAuditLog(RepositoryEntryRef entry, IdentityRef assessedIdentity, Action action) {
+		return auditLogDao.getAuditLog(entry, assessedIdentity, action);
+	}
 
 	@Override
 	public List<LectureBlockAuditLog> getAuditLog(RepositoryEntryRef entry) {
@@ -457,6 +463,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			rollCall = lectureBlockRollCallDao.update(rollCall);
 		}
 		return rollCall;
+	}
+	
+	@Override
+	public LectureBlockRollCall getRollCall(LectureBlockRollCallRef rollCall) {
+		if(rollCall == null) return null;
+		return lectureBlockRollCallDao.loadByKey(rollCall.getKey());
 	}
 
 	@Override

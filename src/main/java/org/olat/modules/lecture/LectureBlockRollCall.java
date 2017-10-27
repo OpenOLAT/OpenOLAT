@@ -32,9 +32,7 @@ import org.olat.core.id.ModifiedInfo;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LectureBlockRollCall extends ModifiedInfo, CreateInfo {
-	
-	public Long getKey();
+public interface LectureBlockRollCall extends LectureBlockRollCallRef, ModifiedInfo, CreateInfo {
 	
 	public Identity getIdentity();
 	

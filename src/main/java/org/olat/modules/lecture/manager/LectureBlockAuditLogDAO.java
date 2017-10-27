@@ -109,7 +109,7 @@ public class LectureBlockAuditLogDAO {
 	}
 	
 	public List<LectureBlockAuditLog> getAuditLog(LectureBlockRef lectureBlock) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select log from lectureblockauditlog log where log.lectureBlockKey=:lectureBlockKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockAuditLog.class)
@@ -118,7 +118,7 @@ public class LectureBlockAuditLogDAO {
 	}
 	
 	public List<LectureBlockAuditLog> getAuditLog(IdentityRef identity) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select log from lectureblockauditlog log where log.identityKey=:identityKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockAuditLog.class)
@@ -126,8 +126,19 @@ public class LectureBlockAuditLogDAO {
 				.getResultList();
 	}
 	
+	public List<LectureBlockAuditLog> getAuditLog(RepositoryEntryRef entry, IdentityRef identity, LectureBlockAuditLog.Action action) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select log from lectureblockauditlog log where log.entryKey=:repoEntryKey and log.identityKey=:identityKey and log.action=:action");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlockAuditLog.class)
+				.setParameter("repoEntryKey", entry.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("action", action.name())
+				.getResultList();
+	}
+	
 	public List<LectureBlockAuditLog> getAuditLog(RepositoryEntryRef entry) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(128);
 		sb.append("select log from lectureblockauditlog log where log.entryKey=:repoEntryKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockAuditLog.class)

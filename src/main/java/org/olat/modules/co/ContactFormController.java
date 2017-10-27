@@ -153,6 +153,20 @@ public class ContactFormController extends BasicController {
 		}
 		return hasAtLeastOneAddress;
 	}
+	
+	public String getSubject() {
+		if(cntctForm != null) {
+			return cntctForm.getSubject();
+		}
+		return null;
+	}
+	
+	public String getBody() {
+		if(cntctForm != null) {
+			return cntctForm.getBody();
+		}
+		return null;
+	}
 
 	/**
 	 * @param useDefaultTitle

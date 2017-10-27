@@ -22,12 +22,15 @@ package org.olat.modules.lecture.ui;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -60,6 +63,9 @@ import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog;
+import org.olat.modules.lecture.LectureBlockAuditLog.Action;
+import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
@@ -101,6 +107,8 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	private final boolean absenceDefaultAuthorized;
 	
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private LectureModule lectureModule;
@@ -124,7 +132,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		
-		appealOffset = lectureModule.getRollCallAutoClosePeriod();//TODO absence or is it reminder period
+		appealOffset = lectureModule.getRollCallAutoClosePeriod();
 		appealPeriod = lectureModule.getAbsenceAppealPeriod();
 		initForm(ureq);
 		loadModel();
@@ -196,6 +204,14 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		Formatter formatter = Formatter.getInstance(getLocale());
 		
 		List<LectureBlockAndRollCall> rollCalls = lectureService.getParticipantLectureBlocks(entry, assessedIdentity);
+		List<LectureBlockAuditLog> sendAppealLogs = lectureService.getAuditLog(entry, assessedIdentity, LectureBlockAuditLog.Action.sendAppeal);
+		Map<Long, Date> appealDates = new HashMap<>();
+		for(LectureBlockAuditLog sendAppealLog:sendAppealLogs) {
+			if(sendAppealLog.getRollCallKey() != null) {
+				appealDates.put(sendAppealLog.getRollCallKey(), sendAppealLog.getCreationDate());
+			}
+		}
+		
 		List<LectureBlockAndRollCallRow> rows = new ArrayList<>(rollCalls.size());
 		for(LectureBlockAndRollCall rollCall:rollCalls) {
 			LectureBlockAndRollCallRow row = new LectureBlockAndRollCallRow(rollCall);
@@ -215,9 +231,20 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 					Date beginAppeal = CalendarUtils.removeTime(cal.getTime());
 					cal.add(Calendar.DATE, appealPeriod);
 					Date endAppeal = CalendarUtils.getEndOfDay(cal).getTime();
+					
+					Date sendAppealDate = null;
+					if(row.getRow().getRollCallRef() != null ) {
+						sendAppealDate = appealDates.get(row.getRow().getRollCallRef().getKey());
+					}
 
 					FormLink appealLink = null;
-					if(now.compareTo(beginAppeal) >= 0 && now.compareTo(endAppeal) <= 0) {
+					if(sendAppealDate != null) {
+						String appealFrom = translate("appeal.sent", new String[]{ formatter.formatDate(sendAppealDate) });
+						appealLink = uifactory.addFormLink("appeal_" + count++, "appealsend", appealFrom, null, flc, Link.LINK | Link.NONTRANSLATED);
+						appealLink.setTitle(translate("appeal.sent.tooltip", new String[] { formatter.formatDate(sendAppealDate), formatter.formatDate(beginAppeal), formatter.formatDate(endAppeal) }));
+						appealLink.setEnabled(false);
+						appealLink.setDomReplacementWrapperRequired(false);
+					} else if(now.compareTo(beginAppeal) >= 0 && now.compareTo(endAppeal) <= 0) {
 						appealLink = uifactory.addFormLink("appeal_" + count++, "appeal", translate("appeal"), null, flc, Link.LINK | Link.NONTRANSLATED);
 						appealLink.setTitle(translate("appeal.tooltip", new String[] { formatter.formatDate(beginAppeal), formatter.formatDate(endAppeal) }));
 						appealLink.setUserObject(row);
@@ -261,7 +288,8 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		if(appealCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				LectureBlockAndRollCall row = (LectureBlockAndRollCall)appealCtrl.getUserObject();
-				logAudit("Appeal send for lecture block: " + row.getLectureBlockTitle() + " (" + row.getLectureBlockRef().getKey() + ")", null);
+				String body = appealCtrl.getBody();
+				doAppealAudit(row, body);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -342,6 +370,18 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", appealCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doAppealAudit(LectureBlockAndRollCall row, String message) {
+		logAudit("Appeal send for lecture block: " + row.getLectureBlockTitle() + " (" + row.getLectureBlockRef().getKey() + ")", null);
+		
+		LectureBlock lectureBlock = lectureService.getLectureBlock(row.getLectureBlockRef());
+		LectureBlockRollCall rollCall = lectureService.getRollCall(row.getRollCallRef());
+		lectureService.auditLog(Action.sendAppeal, null, null, message, lectureBlock, rollCall, entry, assessedIdentity, null);
+		
+		dbInstance.commit();
+		loadModel();
+		tableEl.reset(false, false, true);
 	}
 	
 	private void doPrint(UserRequest ureq) {

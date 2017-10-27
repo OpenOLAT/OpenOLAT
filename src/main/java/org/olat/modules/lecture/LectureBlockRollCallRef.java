@@ -19,53 +19,14 @@
  */
 package org.olat.modules.lecture;
 
-import java.util.Date;
-
 /**
  * 
- * Initial date: 11 juil. 2017<br>
+ * Initial date: 27 oct. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LectureBlockAuditLog {
+public interface LectureBlockRollCallRef {
 	
-	public Date getCreationDate();
-	
-	public String getAction();
-	
-	public String getBefore();
-
-	public String getAfter();
-	
-	public String getMessage();
-	
-	public Long getLectureBlockKey();
-	
-	public Long getRollCallKey();
-	
-	public Long getEntryKey();
-
-	public Long getIdentityKey();
-
-	public Long getAuthorKey();
-	
-	public enum Action {
-		autoclose,
-		saveLectureBlock,
-		createLectureBlock,
-		updateLectureBlock,
-		cancelLectureBlock,
-		closeLectureBlock,
-		reopenLectureBlock,
-
-		createRollCall,
-		addToRollCall,
-		removeFromRollCall,
-		updateAuthorizedAbsence,
-		updateRollCall,
-		adaptRollCall,
-		
-		sendAppeal
-	}
+	public Long getKey();
 
 }

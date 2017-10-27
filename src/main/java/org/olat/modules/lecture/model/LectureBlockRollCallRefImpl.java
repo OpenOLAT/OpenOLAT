@@ -17,55 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture;
+package org.olat.modules.lecture.model;
 
-import java.util.Date;
+import org.olat.modules.lecture.LectureBlockRollCallRef;
 
 /**
  * 
- * Initial date: 11 juil. 2017<br>
+ * Initial date: 27 oct. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface LectureBlockAuditLog {
+public class LectureBlockRollCallRefImpl implements LectureBlockRollCallRef {
 	
-	public Date getCreationDate();
+	private final Long key;
 	
-	public String getAction();
-	
-	public String getBefore();
-
-	public String getAfter();
-	
-	public String getMessage();
-	
-	public Long getLectureBlockKey();
-	
-	public Long getRollCallKey();
-	
-	public Long getEntryKey();
-
-	public Long getIdentityKey();
-
-	public Long getAuthorKey();
-	
-	public enum Action {
-		autoclose,
-		saveLectureBlock,
-		createLectureBlock,
-		updateLectureBlock,
-		cancelLectureBlock,
-		closeLectureBlock,
-		reopenLectureBlock,
-
-		createRollCall,
-		addToRollCall,
-		removeFromRollCall,
-		updateAuthorizedAbsence,
-		updateRollCall,
-		adaptRollCall,
-		
-		sendAppeal
+	public LectureBlockRollCallRefImpl(Long key) {
+		this.key = key;
 	}
 
+	public Long getKey() {
+		return key;
+	}
 }

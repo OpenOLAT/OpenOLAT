@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockRollCall;
+import org.olat.modules.lecture.LectureBlockRollCallRef;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 
@@ -104,6 +105,10 @@ public class LectureBlockAndRollCall {
 	
 	public boolean isRollCalled() {
 		return rollCallKey != null;
+	}
+	
+	public LectureBlockRollCallRef getRollCallRef() {
+		return rollCallKey == null ? null : new LectureBlockRollCallRefImpl(rollCallKey);
 	}
 	
 	public boolean isCompulsory() {

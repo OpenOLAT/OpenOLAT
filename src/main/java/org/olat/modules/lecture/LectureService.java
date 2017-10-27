@@ -138,12 +138,28 @@ public interface LectureService {
 	/**
 	 * The audit log of a specific user.
 	 * 
-	 * @param assessedIdentity
+	 * @param assessedIdentity The assessed identity (Mandatory)
 	 * @return A list of roll call changes.
 	 */
 	public List<LectureBlockAuditLog> getAuditLog(IdentityRef assessedIdentity);
 	
-
+	/**
+	 * The audit log of a specific user with a specific action in the
+	 * specified course.
+	 * 
+	 * @param entry The course (mandatory)
+	 * @param assessedIdentity The assessed identity (mandatory)
+	 * @param action The action (mandatory)
+	 * @return A list of roll call changes.
+	 */
+	public List<LectureBlockAuditLog> getAuditLog(RepositoryEntryRef entry, IdentityRef assessedIdentity, LectureBlockAuditLog.Action action);
+	
+	/**
+	 * Returns the audit log of the specified course.
+	 * 
+	 * @param entry The course
+	 * @return A list of roll call changes.
+	 */
 	public List<LectureBlockAuditLog> getAuditLog(RepositoryEntryRef entry);
 	
 	/**
@@ -282,6 +298,8 @@ public interface LectureService {
 	 */
 	public LectureBlockRollCall getOrCreateRollCall(Identity identity, LectureBlock lectureBlock,
 			Boolean authorizedAbsence, String absenceReason);
+	
+	public LectureBlockRollCall getRollCall(LectureBlockRollCallRef rollCall);
 	
 	/**
 	 * Standard merge
