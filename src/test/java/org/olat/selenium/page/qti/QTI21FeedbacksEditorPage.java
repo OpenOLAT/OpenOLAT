@@ -126,29 +126,44 @@ public class QTI21FeedbacksEditorPage {
 	
 	public QTI21FeedbacksEditorPage setCondition(int feedbackPosition, int conditionPosition,
 			ModalFeedbackCondition.Variable variable, ModalFeedbackCondition.Operator operator, String value) {
+
+		String conditionPrefix = "//fieldset[contains(@class,'o_sel_assessment_item_additional_" + feedbackPosition + "')]"
+				+ "//div[contains(@class,'o_condition_" + conditionPosition + "')]";
 		
-		String feedbackPrefix = "//fieldset[contains(@class,'o_sel_assessment_item_additional_" + feedbackPosition + "')]";
-		String conditionPrefix = "//div[contains(@class,'o_condition')][" + conditionPosition + "]";
-		
-		By conditionBy = By.xpath(feedbackPrefix + conditionPrefix);
+		By conditionBy = By.xpath(conditionPrefix);
 		OOGraphene.waitElement(conditionBy, browser);
 		
-		By variableBy = By.xpath(feedbackPrefix + conditionPrefix + "//select[contains(@id,'o_fiovar_')]");
+		By variableBy = By.xpath(conditionPrefix + "//select[contains(@id,'o_fiovar_')]");
 		WebElement variableEl = browser.findElement(variableBy);
 		new Select(variableEl).selectByValue(variable.name());
 		OOGraphene.waitBusy(browser);
 		
-		By operatorBy = By.xpath(feedbackPrefix + conditionPrefix + "//select[contains(@id,'o_fioope_')]");
+		By operatorBy = By.xpath(conditionPrefix + "//select[contains(@id,'o_fioope_')]");
 		WebElement operatorEl = browser.findElement(operatorBy);
 		new Select(operatorEl).selectByValue(operator.name());
 		
 		if(variable == Variable.attempts || variable == Variable.score) {
-			By valueBy = By.xpath(feedbackPrefix + conditionPrefix + "//input[@type='text']");
+			By valueBy = By.xpath(conditionPrefix + "//input[@type='text']");
 			WebElement valueEl = browser.findElement(valueBy);
 			valueEl.clear();
 			valueEl.sendKeys(value);
+		} else if(variable == Variable.response) {
+			By answerBy = By.xpath(conditionPrefix + "//select[contains(@id,'o_fioans_')]");
+			WebElement answerEl = browser.findElement(answerBy);
+			new Select(answerEl).selectByVisibleText(value);
 		}
+		return this;
+	}
+	
+	public QTI21FeedbacksEditorPage addCondition(int feedbackPosition, int conditionPosition) {
+		String conditionXpath = "//fieldset[contains(@class,'o_sel_assessment_item_additional_" + feedbackPosition + "')]"
+				+ "//div[contains(@class,'o_condition_" + conditionPosition + "')]"
+				+ "//a[contains(@class,'btn-default')][i[contains(@class,'o_icon_add')]]";
 		
+		By addConditionBy = By.xpath(conditionXpath);
+		OOGraphene.waitElement(addConditionBy, browser);
+		browser.findElement(addConditionBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	

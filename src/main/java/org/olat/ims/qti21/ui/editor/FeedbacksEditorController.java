@@ -388,7 +388,9 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			titleEl.setEnabled(!restrictedEdit);
 			titleEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback_title");
 			
-			conditionListContainer = FormLayoutContainer.createBareBoneFormLayout("cond_list_".concat(id), getTranslator());
+			String conditionListPage = velocity_root + "/feedback_condition_list.html";
+			conditionListContainer = FormLayoutContainer.createCustomFormLayout("cond_list_".concat(id),
+					getTranslator(), conditionListPage);
 			formLayout.add(conditionListContainer);
 			conditionListContainer.setRootForm(mainForm);
 			conditionListContainer.contextPut("conditions", conditions);
@@ -545,6 +547,10 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			
 			public ConditionForm(ModalFeedbackCondition condition) {
 				this.condition = condition;
+			}
+			
+			public FormLayoutContainer getRuleContainer() {
+				return ruleContainer;
 			}
 			
 			public void initForm(FormItemContainer feedbackFormLayout) {

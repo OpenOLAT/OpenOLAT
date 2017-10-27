@@ -285,6 +285,12 @@ public class QTI21Page {
 		return this;
 	}
 	
+	public QTI21Page assertNoFeedback(String title) {
+		By feedbackBy = By.xpath("//div[contains(@class,'modalFeedback')]/h4[contains(text(),'" + title + "')]");
+		OOGraphene.waitElementDisappears(feedbackBy, 5, browser);
+		return this;
+	}
+	
 	/**
 	 * Check that there are no feedbacks visible.
 	 * 

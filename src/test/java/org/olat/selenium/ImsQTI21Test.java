@@ -1326,6 +1326,108 @@ public class ImsQTI21Test {
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(6);// 3 points from the first question, 3 from the second
 	}
+	
+	/**
+	 * Test the conditional feedback with 3 conditions based
+	 * on attempts (and an incorrect feedback used as marker),
+	 * on score and on response. It's done with a multiple
+	 * choice with score per answer and a negative min. score.
+	 * 
+	 * @param authorLoginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorMultipleChoices_complexConditionalFeedback(@InitialPage LoginPage authorLoginPage)
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+	
+		//add a single choice: all answers score
+		QTI21MultipleChoiceEditorPage mcEditor = qtiEditor
+			.addMultipleChoice();
+		mcEditor
+			.setAnswer(0, "Ok")
+			.setCorrect(0)
+			.addChoice(1)
+			.setCorrect(1)
+			.setAnswer(1, "Correct")
+			.addChoice(2)
+			.setAnswer(2, "Faux")
+			.addChoice(3)
+			.setAnswer(3, "Falsch")
+			.save();
+		
+		//add negative scores to play with
+		mcEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setScore("Ok", "3")
+			.setScore("Correct", "1")
+			.setScore("Faux", "-1")
+			.setScore("Falsch", "-1")
+			.setMaxScore("4")
+			.save();
+
+		// set a conditional feedback
+		mcEditor
+			.selectFeedbacks()
+			.setIncorrectFeedback("Incorrect", "Not the right response")
+			// attempts = 1 && score < 0
+			.addConditionalFeedback(1, "NegativeFirstAttempts", "Negative score")
+			.setCondition(1, 1, Variable.attempts, Operator.equals, "1")
+			.addCondition(1, 1)
+			.setCondition(1, 2, Variable.score, Operator.smaller, "0")
+			// response = 'Faux'
+			.addConditionalFeedback(2, "FauxAnswer", "You choose the 'Faux' answer")
+			.setCondition(2, 1, Variable.response, Operator.equals, "Faux")
+			// 0 < score < 3 
+			.addConditionalFeedback(3, "Positive", "Score between 0 and 3")
+			.setCondition(3, 1, Variable.score, Operator.biggerEquals, "0")
+			.addCondition(3, 1)
+			.setCondition(3, 2, Variable.score, Operator.smaller, "3")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack()
+			.assertOnAssessmentItem()
+			//1 attempt, score -2.0
+			.answerMultipleChoice("Falsch", "Faux")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertFeedback("FauxAnswer")
+			.assertFeedback("NegativeFirstAttempts")
+			.assertNoFeedback("Positive")
+			//2 attempt, score 0.0
+			.deselectAnswerMultipleChoice("Faux", "Falsch")
+			.answerMultipleChoice("Faux", "Correct")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertFeedback("FauxAnswer")
+			.assertFeedback("Positive")
+			.assertNoFeedback("NegativeFirstAttempts")
+			//3 attempt
+			.deselectAnswerMultipleChoice("Faux")
+			.answerMultipleChoice("Ok")
+			.saveAnswer()
+			.assertNoFeedback()
+			.endTest();
+	}
 
 	/**
 	 * An author make a test with 2 kprims.<br>
