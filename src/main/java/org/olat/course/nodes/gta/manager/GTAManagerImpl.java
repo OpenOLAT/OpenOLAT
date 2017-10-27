@@ -740,27 +740,30 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				.createQuery(deleteTasks)
 				.setParameter("groupKey", group.getKey())
 				.executeUpdate();
-		return true;	
-
+		return true;
 	}
 
 	@Override
 	public int deleteTaskList(RepositoryEntryRef entry, GTACourseNode cNode) {
 		TaskList taskList = getTaskList(entry, cNode);
 		
-		int numOfDeletedObjects;
+		int numOfDeletedObjects = 0;
 		if(taskList != null) {
-			String deleteTasks = "delete from gtatask as task where task.taskList.key=:taskListKey";
-			int numOfTasks = dbInstance.getCurrentEntityManager().createQuery(deleteTasks)
+			StringBuilder sb = new StringBuilder(128);
+			sb.append("delete from gtataskrevisiondate as taskrev where taskrev.task.key in (")
+			  .append("  select task.key from gtatask as task where task.taskList.key=:taskListKey)");
+			numOfDeletedObjects += dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
 				.setParameter("taskListKey", taskList.getKey())
 				.executeUpdate();
-			numOfDeletedObjects = numOfTasks;
-			int numOfMarks = gtaMarkDao.deleteMark(taskList);
-			numOfDeletedObjects += numOfMarks;
+			
+			String deleteTasks = "delete from gtatask as task where task.taskList.key=:taskListKey";
+			numOfDeletedObjects += dbInstance.getCurrentEntityManager().createQuery(deleteTasks)
+				.setParameter("taskListKey", taskList.getKey())
+				.executeUpdate();
+			numOfDeletedObjects += gtaMarkDao.deleteMark(taskList);
 			dbInstance.getCurrentEntityManager().remove(taskList);
 			numOfDeletedObjects++;
-		} else {
-			numOfDeletedObjects = 0;
 		}
 		return numOfDeletedObjects;
 	}

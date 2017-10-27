@@ -376,7 +376,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	@Override
 	public String getRowCssClass(FlexiTableRendererType type, int pos) {
 		AuthoringEntryRow row = model.getObject(pos);
-		if(row.getAccess() == 0) {
+		if(row == null || row.getAccess() == 0) {
 			return "o_entry_deleted";
 		}
 		if(row.getRepositoryEntryStatus().isClosed()) {
