@@ -82,13 +82,18 @@
 		});
 	
 		/* Mouse Capturing Work */
-		jQuery(tmp_canvas).on('mousemove', function(e) {
-			mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
-			mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
+		jQuery(tmp_canvas).on('mousemove touchmove', function(e) {
+			if(typeof e.offsetX == 'undefined' && typeof e.layerX == 'undefined') {
+				mouse.x = e.originalEvent.layerX;
+				mouse.y = e.originalEvent.layerY;
+			} else {
+				mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
+				mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
+			}
 		});
 		
 		/* Mouse Capturing Work out of the canvas */
-		jQuery(document).on('mousemove', function(e) {
+		jQuery(document).on('mousemove touchmove', function(e) {
 			if(mouse.leave) {
 				var rect = tmp_canvas.getBoundingClientRect();
 				mouse.out_x = e.clientX - rect.left;
@@ -96,9 +101,14 @@
 			}
 		});
 	
-		jQuery(this.canvas).on('mousemove', function(e) {
-			mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
-			mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
+		jQuery(this.canvas).on('mousemove touchmove', function(e) {
+			if(typeof e.offsetX == 'undefined' && typeof e.layerX == 'undefined') {
+				mouse.x = e.originalEvent.layerX;
+				mouse.y = e.originalEvent.layerY;
+			} else {
+				mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
+				mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
+			}
 		});
 	
 		//NEWTHING
@@ -130,11 +140,20 @@
 		empty_canv = this.canvas.toDataURL(); //NEWTHING
 		undo_arr.push(empty_canv); //NEWTHING
 		
-		jQuery(tmp_canvas).on('mousedown', function(e) {
-			jQuery(tmp_canvas).on('mousemove', onPaint);
+		jQuery(tmp_canvas).on('mousedown touchstart', function(e) {
+			if(isDoubleTouch(e)) {
+				return;
+			}
 			
-			mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
-			mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
+			jQuery(tmp_canvas).on('mousemove touchmove', onPaint);
+	
+			if(typeof e.offsetX == 'undefined' && typeof e.layerX == 'undefined') {
+				mouse.x = e.originalEvent.layerX;
+				mouse.y = e.originalEvent.layerY;
+			} else {
+				mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
+				mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
+			}
 			
 			mouse.paint = true;
 			start_mouse.x = mouse.x;
@@ -145,14 +164,14 @@
 			//spraying tool.
 			sprayIntervalID = setInterval(onPaint, 50);
 			
-			onPaint();
-		}).on('mousedown', {formId: formDispatchFieldId}, setFlexiFormDirtyByListener);
+			onPaint(e);
+		}).on('mousedown touchstart', {formId: formDispatchFieldId}, setFlexiFormDirtyByListener);
 	
-		jQuery(tmp_canvas).on('mouseup click', function() {
+		jQuery(tmp_canvas).on('mouseup click touchend', function() {
 			stopPainting();
 		});
 		
-		jQuery(tmp_canvas).on('dragstart', function() {
+		jQuery(tmp_canvas).on('dragstart scroll', function() {
 			return false;
 		});
 		
@@ -162,18 +181,18 @@
 				ppts.push({x: -1, y: -1});
 			}
 			
-			jQuery(document).on("mouseup", function(e){
+			jQuery(document).on("mouseup touchend", function(e){
 				stopPainting();
 			});
 		});
 		
 		jQuery(tmp_canvas).on('mouseenter', function(e) {
 			mouse.leave = false;
-			jQuery(document).off("mouseup");
+			jQuery(document).off("mouseup touchend");
 		});
 		
 		var stopPainting = function() {
-			jQuery(tmp_canvas).off('mousemove', onPaint);
+			jQuery(tmp_canvas).off('mousemove touchmove', onPaint);
 			
 			// for erasing
 			ctx.globalCompositeOperation = 'source-over';
@@ -444,8 +463,27 @@
 			ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
 			ctx.drawImage(undo_img, 0, 0);
 		};
+		
+		function isDoubleTouch(e) {
+			try {
+				if(!(typeof e == "undefined")
+						&& !(typeof e.originalEvent.touches == "undefined")
+						&& e.originalEvent.touches.length > 1) {
+					return true;
+				}
+			} catch(ex) {
+				if(window.console) console.log(ex);
+			}
+			return false;
+		}
 
-		var onPaint = function() {
+		function onPaint(e) {
+			if(!(typeof e == "undefined")) {
+				if(isDoubleTouch(e)) {
+					return;
+				}
+				e.preventDefault();
+			}
 			if ( tool == 'brush' ) {
 				onPaintBrush();
 			} else if ( tool == 'circle' ) {
