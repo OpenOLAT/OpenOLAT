@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui;
 
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -38,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
@@ -69,17 +71,25 @@ public class LectureRepositoryAdminController extends BasicController implements
 	
 	private RepositoryEntry entry;
 	private boolean configurationChanges = false;
+	private final boolean isAdministrativeUser;
+	private final boolean authorizedAbsenceEnabled;
 	
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	
 	public LectureRepositoryAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry entry) {
 		super(ureq, wControl);
 		this.entry = entry;
 		this.stackPanel = stackPanel;
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		
 		mainVC = createVelocityContainer("admin_repository");
 		
@@ -227,7 +237,8 @@ public class LectureRepositoryAdminController extends BasicController implements
 	}
 	
 	private void doExportArchive(UserRequest ureq) {
-		LecturesBlocksEntryExport archive = new LecturesBlocksEntryExport(entry, getTranslator());
+		
+		LecturesBlocksEntryExport archive = new LecturesBlocksEntryExport(entry, isAdministrativeUser, authorizedAbsenceEnabled, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(archive);
 	}
 	

@@ -59,19 +59,19 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 	private final LectureService lectureService;
 	private final List<Identity> teachers;
 	
-	private final boolean authorizedAbsence;
+	private final boolean authorizedAbsenceEnabled;
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	
 	private final UserManager userManager;
 	
-	public LectureBlockExport(LectureBlock lectureBlock, List<Identity> teachers, boolean isAdministrativeUser, Translator translator) {
+	public LectureBlockExport(LectureBlock lectureBlock, List<Identity> teachers, boolean isAdministrativeUser, boolean authorizedAbsenceEnabled, Translator translator) {
 		super(label(lectureBlock));
 		this.teachers = teachers;
 		this.lectureBlock = lectureBlock;
 		lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		this.isAdministrativeUser = isAdministrativeUser;
-		this.authorizedAbsence = true;
+		this.authorizedAbsenceEnabled = authorizedAbsenceEnabled;
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(ParticipantListRepositoryController.USER_PROPS_ID, isAdministrativeUser);
 		this.translator = userManager.getPropertyHandlerTranslator(translator);
@@ -188,7 +188,7 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 			headerRow.addCell(pos++, Integer.toString(i + 1));	
 		}
 		
-		if(authorizedAbsence) {
+		if(authorizedAbsenceEnabled) {
 			//authorized absence
 			headerRow.addCell(pos++, translator.translate("table.header.authorized.absence"));
 			//authorized absence reason
@@ -227,7 +227,7 @@ public class LectureBlockExport extends OpenXMLWorkbookResource {
 					row.addCell(pos++, val);
 				}
 	
-				if(authorizedAbsence && rollCall.getAbsenceAuthorized() != null
+				if(authorizedAbsenceEnabled && rollCall.getAbsenceAuthorized() != null
 						&& rollCall.getAbsenceAuthorized().booleanValue()) {
 					row.addCell(pos++, "x");
 					row.addCell(pos++, rollCall.getAbsenceReason());
