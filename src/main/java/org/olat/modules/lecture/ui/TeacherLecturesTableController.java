@@ -69,6 +69,7 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.event.ReopenLectureBlockEvent;
 import org.olat.modules.lecture.ui.export.LectureBlockExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockSignaturePDFExport;
@@ -216,7 +217,11 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == rollCallCtrl) {
-			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT) {
+			if(event instanceof ReopenLectureBlockEvent) {
+				LectureBlock lectureBlock = rollCallCtrl.getLectureBlock();
+				toolbarPanel.popController(rollCallCtrl);
+				doSelectLectureBlock(ureq, lectureBlock);
+			} else if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);
 			}
 		} else if(toolsCalloutCtrl == source) {

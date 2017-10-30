@@ -68,6 +68,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
 import org.olat.modules.lecture.ui.TeacherRollCallDataModel.RollCols;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
+import org.olat.modules.lecture.ui.event.ReopenLectureBlockEvent;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,6 +143,10 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		initForm(ureq);
 		loadModel();
+	}
+	
+	public LectureBlock getLectureBlock() {
+		return lectureBlock;
 	}
 
 	@Override
@@ -654,10 +659,14 @@ public class TeacherRollCallController extends FormBasicController {
 	private void doReopen(UserRequest ureq) {
 		String before = lectureService.toAuditXml(lectureBlock);
 		lectureBlock.setRollCallStatus(LectureRollCallStatus.reopen);
+		if(lectureBlock.getStatus() == LectureBlockStatus.cancelled) {
+			lectureBlock.setStatus(LectureBlockStatus.active);
+		}
+		
 		lectureBlock = lectureService.save(lectureBlock, null);
 		secCallback.updateLectureBlock(lectureBlock);
 		updateUI();
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		fireEvent(ureq, new ReopenLectureBlockEvent());
 		
 		String after = lectureService.toAuditXml(lectureBlock);
 		lectureService.auditLog(LectureBlockAuditLog.Action.reopenLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, getIdentity());
