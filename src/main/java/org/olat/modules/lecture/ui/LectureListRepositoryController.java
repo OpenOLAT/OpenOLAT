@@ -60,6 +60,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockManagedFlag;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
@@ -96,6 +97,8 @@ public class LectureListRepositoryController extends FormBasicController {
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
 	
@@ -356,7 +359,8 @@ public class LectureListRepositoryController extends FormBasicController {
 	private void doExportLog(UserRequest ureq, LectureBlockRow row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
 		List<LectureBlockAuditLog> auditLog = lectureService.getAuditLog(row);
-		LectureBlockAuditLogExport export = new LectureBlockAuditLogExport(entry, lectureBlock, auditLog, getTranslator());
+		boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		LectureBlockAuditLogExport export = new LectureBlockAuditLogExport(entry, lectureBlock, auditLog, authorizedAbsenceEnabled, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 	

@@ -60,6 +60,7 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 	
 	protected final Translator translator;
 
+	private final boolean authorizedAbsenceEnabled;
 	private final List<LectureBlockAuditLog> auditLog;
 	private Map<Long,String> displayNames = new HashMap<>();
 	private Map<Long,String> lectureBlockTitles = new HashMap<>();
@@ -68,10 +69,12 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 	protected final LectureService lectureService;
 	protected final RepositoryManager repositoryManager;
 	
-	public AbstractLectureBlockAuditLogExport(String name, List<LectureBlockAuditLog> auditLog, Translator translator) {
+	public AbstractLectureBlockAuditLogExport(String name, List<LectureBlockAuditLog> auditLog,
+			boolean authorizedAbsenceEnabled, Translator translator) {
 		super(name);
 		this.auditLog = auditLog;
 		this.translator = translator;
+		this.authorizedAbsenceEnabled = authorizedAbsenceEnabled;
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		lectureService = CoreSpringFactory.getImpl(LectureService.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
@@ -122,8 +125,10 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 		headerRow.addCell(pos++, translator.translate("table.header.log.user"));//roll call user
 		headerRow.addCell(pos++, translator.translate("table.header.attended.lectures"));//roll call attended
 		headerRow.addCell(pos++, translator.translate("table.header.absent.lectures"));//roll call absent
-		headerRow.addCell(pos++, translator.translate("table.header.authorized.absence"));//roll call authorized
-		headerRow.addCell(pos++, translator.translate("authorized.absence.reason"));//roll call reason
+		if(authorizedAbsenceEnabled) {
+			headerRow.addCell(pos++, translator.translate("table.header.authorized.absence"));//roll call authorized
+			headerRow.addCell(pos++, translator.translate("authorized.absence.reason"));//roll call reason
+		}
 		headerRow.addCell(pos++, translator.translate("rollcall.comment"));//roll call comment
 		
 		//author
@@ -174,15 +179,20 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 				row.addCell(pos++, fullname);
 				row.addCell(pos++, auditRollCall.getLecturesAttendedNumber(), null);
 				row.addCell(pos++, auditRollCall.getLecturesAbsentNumber(), null);
-				if(auditRollCall.getAbsenceAuthorized() != null && auditRollCall.getAbsenceAuthorized().booleanValue()) {
-					row.addCell(pos++, "x");
-				} else {
-					pos++;
+				if(authorizedAbsenceEnabled) {
+					if(auditRollCall.getAbsenceAuthorized() != null && auditRollCall.getAbsenceAuthorized().booleanValue()) {
+						row.addCell(pos++, "x");
+					} else {
+						pos++;
+					}
+					row.addCell(pos++, auditRollCall.getAbsenceReason(), null);
 				}
-				row.addCell(pos++, auditRollCall.getAbsenceReason(), null);
 				row.addCell(pos++, auditRollCall.getComment(), null);
 			} else {
-				pos += 6;
+				pos += 4;
+				if(authorizedAbsenceEnabled) {
+					pos += 2;
+				}
 			}
 			
 			Long authorKey = logEntry.getAuthorKey();

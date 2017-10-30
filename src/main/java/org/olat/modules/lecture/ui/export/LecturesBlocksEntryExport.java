@@ -41,6 +41,7 @@ import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 
@@ -139,7 +140,12 @@ public class LecturesBlocksEntryExport extends OpenXMLWorkbookResource {
 				if(lectureBlock.getRollCallStatus() == null) {
 					pos++;
 				} else {
-					row.addCell(pos++, translator.translate(lectureBlock.getRollCallStatus().name()));
+					String status = LectureBlockStatusCellRenderer.getStatus(lectureBlock, translator);
+					if(status != null) {
+						row.addCell(pos++, status);
+					} else {
+						pos++;
+					}
 				}
 				row.addCell(pos++, formatter.formatDate(lectureBlock.getAutoClosedDate()));
 				
