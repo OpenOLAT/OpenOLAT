@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -50,13 +51,22 @@ public class LectureBlockStatusCellRenderer implements FlexiCellRenderer {
 			target.append(translator.translate(status.name()));
 		} else if(cellValue instanceof LectureBlock) {
 			LectureBlock block = (LectureBlock)cellValue;
-			LectureBlockStatus status = block.getStatus();
-			if(LectureBlockStatus.done.equals(status)) {
-				LectureRollCallStatus rollCallStatus = block.getRollCallStatus();
-				target.append(translator.translate(rollCallStatus.name()));
-			} else {
-				target.append(translator.translate(status.name()));
+			String status  = getStatus(block, translator);
+			if(StringHelper.containsNonWhitespace(status)) {
+				target.append(status);
 			}
 		}
+	}
+	
+	public static final String getStatus(LectureBlock block, Translator trans) {
+		LectureBlockStatus status = block.getStatus();
+		if(LectureBlockStatus.done.equals(status)) {
+			LectureRollCallStatus rollCallStatus = block.getRollCallStatus();
+			return trans.translate(rollCallStatus.name());
+		}
+		if(status != null) {
+			return trans.translate(status.name());
+		}
+		return null;
 	}
 }
