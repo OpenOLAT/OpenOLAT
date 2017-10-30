@@ -419,13 +419,16 @@ public class TeacherRollCallController extends FormBasicController {
 
 		for(int i=tableModel.getRowCount(); i-->0; ) {
 			TeacherRollCallRow row = tableModel.getObject(i);
-			row.getAuthorizedAbsence().clearError();
+			
+			if(row.getAuthorizedAbsence() != null) {
+				row.getAuthorizedAbsence().clearError();
+			}
 			
 			if(row.getRollCall() == null) {
 				//??? stop?
 			} else if(!absenceDefaultAuthorized) {
 				String reason = row.getRollCall().getAbsenceReason();
-				if(row.getAuthorizedAbsence().isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(reason)) {
+				if(row.getAuthorizedAbsence() != null && row.getAuthorizedAbsence().isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(reason)) {
 					row.getAuthorizedAbsence().setErrorKey("error.reason.mandatory", null);
 					allOk &= false;
 				}
