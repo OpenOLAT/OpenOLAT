@@ -40,8 +40,9 @@ public class RepositoryEntryAuditLogExport extends AbstractLectureBlockAuditLogE
 
 	private RepositoryEntry entry;
 
-	public RepositoryEntryAuditLogExport(RepositoryEntry entry, List<LectureBlockAuditLog> auditLog, Translator translator) {
-		super(label(entry), auditLog, translator);
+	public RepositoryEntryAuditLogExport(RepositoryEntry entry, List<LectureBlockAuditLog> auditLog,
+			boolean authorizedAbsenceEnabled, Translator translator) {
+		super(label(entry), auditLog, authorizedAbsenceEnabled, translator);
 		this.entry = entry;
 		cacheRepositoryEntry(entry);
 	}

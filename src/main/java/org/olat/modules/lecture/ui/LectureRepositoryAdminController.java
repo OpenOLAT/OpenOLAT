@@ -42,6 +42,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.lecture.LectureBlockAuditLog;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.export.LecturesBlocksEntryExport;
 import org.olat.modules.lecture.ui.export.RepositoryEntryAuditLogExport;
@@ -69,6 +70,8 @@ public class LectureRepositoryAdminController extends BasicController implements
 	private RepositoryEntry entry;
 	private boolean configurationChanges = false;
 	
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
 	
@@ -230,7 +233,8 @@ public class LectureRepositoryAdminController extends BasicController implements
 	
 	private void doExportLog(UserRequest ureq) {
 		List<LectureBlockAuditLog> auditLog = lectureService.getAuditLog(entry);
-		RepositoryEntryAuditLogExport archive = new RepositoryEntryAuditLogExport(entry, auditLog, getTranslator());
+		boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
+		RepositoryEntryAuditLogExport archive = new RepositoryEntryAuditLogExport(entry, auditLog, authorizedAbsenceEnabled, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(archive);
 	}
 }

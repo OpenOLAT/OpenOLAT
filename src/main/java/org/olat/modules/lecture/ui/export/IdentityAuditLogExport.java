@@ -41,8 +41,9 @@ public class IdentityAuditLogExport extends AbstractLectureBlockAuditLogExport {
 	
 	private Identity identity;
 
-	public IdentityAuditLogExport(Identity identity, List<LectureBlockAuditLog> auditLog, Translator translator) {
-		super(label(identity), auditLog, translator);
+	public IdentityAuditLogExport(Identity identity, List<LectureBlockAuditLog> auditLog,
+			boolean authorizedAbsenceEnabled, Translator translator) {
+		super(label(identity), auditLog, authorizedAbsenceEnabled, translator);
 		this.identity = identity;
 	}
 
