@@ -475,7 +475,7 @@ public class LecturesBlockPDFExport extends PdfDocument implements MediaResource
 				boxx += allColWidth;
 			}
 			
-			{//authorised
+			if(authorizedAbsenceEnabled) {// authorized
 				float startBoxx = boxx + ((authorisedColWidth - boxWidth - (2 * cellMargin)) / 2);
 				drawLine(startBoxx, texty + offetSetYTop, startBoxx, texty - offetSetYBottom, 0.5f);
 				drawLine(startBoxx, texty - offetSetYBottom, startBoxx + boxWidth, texty - offetSetYBottom, 0.5f);
