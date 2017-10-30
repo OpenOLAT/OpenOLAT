@@ -26,6 +26,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -57,6 +58,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
@@ -99,12 +101,17 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private final String emptyI18nKey;
 	private final boolean withRepositoryEntry, withTeachers;
 	
+	private final boolean isAdministrativeUser;
+	private final boolean authorizedAbsenceEnabled;
+	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
+	@Autowired
+	private BaseSecurityModule securityModule;
 	
 	public TeacherLecturesTableController(UserRequest ureq, WindowControl wControl,
 			boolean admin, String emptyI18nKey, boolean sortAsc, String id,
@@ -116,6 +123,10 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		this.emptyI18nKey = emptyI18nKey;
 		this.withTeachers = withTeachers;
 		this.withRepositoryEntry = withRepositoryEntry;
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		initForm(ureq);
 	}
 
@@ -278,7 +289,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 	private void doExportLectureBlock(UserRequest ureq, LectureBlock row) {
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row);
 		List<Identity> teachers = lectureService.getTeachers(lectureBlock);
-		LectureBlockExport export = new LectureBlockExport(lectureBlock, teachers, true, getTranslator());
+		LectureBlockExport export = new LectureBlockExport(lectureBlock, teachers, isAdministrativeUser, authorizedAbsenceEnabled, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 	
