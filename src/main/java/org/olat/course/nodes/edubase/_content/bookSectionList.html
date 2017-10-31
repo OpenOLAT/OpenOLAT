@@ -20,10 +20,8 @@
 						<div>$r.render(${bookSection.getDownLinkEl().getComponent().getComponentName()})</div>
 					#end
 				</td>
-				<td class="o_edubase_bs_cover" calss="cover${bookSection.getBookIdEl().getValue()}">
-					<object data="$!{bookSection.getCoverUrl()}">
-  						<img src="$r.staticLink('images/edubase/empty_cover.png')" alt="COVER">
-					</object>
+				<td class="o_edubase_bs_cover">
+					<img src="$!{bookSection.getBookSection().getCoverUrl()}" onerror="if (this.src != '$r.staticLink('images/edubase/empty_cover.png')') this.src = '$r.staticLink('images/edubase/empty_cover.png')';" />
 				</td>
 			</tbody>
 		</table>

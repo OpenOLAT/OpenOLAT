@@ -2,9 +2,7 @@
 #foreach($bookSection in $bookSections)
 	<div class="o_edubase_booksection">
 		#set( $runindex = $run + $foreach.index)
-		<object data="$!{bookSection.getCoverUrl()}">
-  			<img src="$r.staticLink('images/edubase/empty_cover.png')" alt="COVER" onClick="$r.javaScriptCommand($runindex);">
-		</object>
+		<img src="$!{bookSection.getCoverUrl()}" onerror="if (this.src != '$r.staticLink('images/edubase/empty_cover.png')') this.src = '$r.staticLink('images/edubase/empty_cover.png')';">
 		<div>
 			$r.escapeHtml($bookSection.getTitle())
 		</div>

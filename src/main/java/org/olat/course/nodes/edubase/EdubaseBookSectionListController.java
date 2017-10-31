@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.EdubaseCourseNode;
 import org.olat.modules.ModuleConfiguration;
@@ -138,21 +139,23 @@ public class EdubaseBookSectionListController extends FormBasicController {
 					allOk = false;
 				}
 			}
-			allOk &= validateInt(bookSectionWrapper.getPageFromEl());
-			allOk &= validateInt(bookSectionWrapper.getPageToEl());
+			allOk &= validatePositiveInt(bookSectionWrapper.getPageFromEl());
+			allOk &= validatePositiveInt(bookSectionWrapper.getPageToEl());
+			allOk &= validateToHigherFrom(bookSectionWrapper.getPageFromEl(), bookSectionWrapper.getPageToEl());
 		}
 
 		return allOk & super.validateFormLogic(ureq);
 	}
 
-	private boolean validateInt(TextElement el) {
+	private boolean validatePositiveInt(TextElement el) {
 		boolean allOk = true;
 
 		if(el.isVisible()) {
 			String value = el.getValue();
 			if(StringHelper.containsNonWhitespace(value)) {
 				try {
-					Integer.parseInt(value);
+					Integer intValue = Integer.parseInt(value);
+					if (intValue <= 0) throw new AssertException("negativ number");
 				} catch(Exception e) {
 					el.setErrorKey("form.error.wrong.int", null);
 					allOk = false;
@@ -160,6 +163,23 @@ public class EdubaseBookSectionListController extends FormBasicController {
 			}
 		}
 
+		return allOk;
+	}
+	
+	private boolean validateToHigherFrom(TextElement fromEl, TextElement toEl) {
+		boolean allOk = true;
+		
+		try {
+			Integer from = Integer.parseInt(fromEl.getValue());
+			Integer to = Integer.parseInt(toEl.getValue());
+			if (from > 0 && to > 0 && from > to) {
+				toEl.setErrorKey("form.error.page.to.higher.from", null);
+				allOk = false;
+			}
+		} catch (Exception e) {
+			// validate only if integers
+		}
+		
 		return allOk;
 	}
 
@@ -443,14 +463,14 @@ public class EdubaseBookSectionListController extends FormBasicController {
 
 		public BookSection getBookSection() {
 			bookSection.setBookId(bookIdEl.getValue());
-			if (StringHelper.containsNonWhitespace(pageFromEl.getValue())) {
+			try {
 				bookSection.setPageFrom(Integer.valueOf(pageFromEl.getValue()));
-			} else {
+			} catch (Exception e) {
 				bookSection.setPageFrom(null);
 			}
-			if (StringHelper.containsNonWhitespace(pageToEl.getValue())) {
+			try {
 				bookSection.setPageTo(Integer.valueOf(pageToEl.getValue()));
-			} else {
+			} catch (Exception e) {
 				bookSection.setPageTo(null);
 			}
 			if (StringHelper.containsNonWhitespace(titleEl.getValue())) {

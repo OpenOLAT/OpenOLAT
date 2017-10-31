@@ -22,25 +22,17 @@ package org.olat.modules.edubase.manager;
 
 import java.io.EOFException;
 import java.net.SocketTimeoutException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.Optional;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
-import org.apache.http.conn.ssl.SSLContextBuilder;
-import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.olat.basesecurity.AuthHelper;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -158,9 +150,9 @@ public class EdubaseManagerImpl implements EdubaseManager {
 		String url = String.format(edubaseModule.getInfoverUrl(), bookId);
 		HttpGet request = new HttpGet(url);
 		request.setConfig(requestConfig);
-		try (CloseableHttpClient httpClient = createAllwaysTrustingHttpClient();
+		try (CloseableHttpClient httpClient = HttpClients.createDefault();
 				CloseableHttpResponse httpResponse = httpClient.execute(request);) {
-			String json = EntityUtils.toString(httpResponse.getEntity());
+			String json = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
 			ObjectMapper objectMapper = new ObjectMapper();
 			infoReponse = objectMapper.readValue(json, BookDetailsImpl.class);
 		} catch (SocketTimeoutException socketTimeoutException) {
@@ -171,27 +163,8 @@ public class EdubaseManagerImpl implements EdubaseManager {
 		} catch(Exception e) {
 			log.error("", e);
 		}
-
+		
 		return infoReponse;
-	}
-
-	private CloseableHttpClient createAllwaysTrustingHttpClient()
-			throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
-		CloseableHttpClient httpClient;
-		if (Settings.isDebuging()) {
-			httpClient = HttpClients.custom()
-					.setHostnameVerifier(new AllowAllHostnameVerifier())
-					.setSslcontext(new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
-						@Override
-						public boolean isTrusted(java.security.cert.X509Certificate[] chain, String authType)
-								throws CertificateException {
-							return true;
-						}
-					}).build()).build();
-		} else {
-			httpClient = HttpClients.createDefault();
-		}
-		return httpClient;
 	}
 
 }
