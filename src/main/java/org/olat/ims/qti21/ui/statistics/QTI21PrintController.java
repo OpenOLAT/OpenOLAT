@@ -34,7 +34,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.statistic.StatisticResourceNode;
 
 /**
  * 
@@ -59,11 +58,13 @@ public class QTI21PrintController extends BasicController {
 	}
 	
 	private void initView(UserRequest ureq, QTI21StatisticResourceResult resourceResult) {
-		StatisticResourceNode rootNode = (StatisticResourceNode)resourceResult.getSubTreeModel().getRootNode();
-		
+		TreeNode rootNode;
 		if(resourceResult.getCourseEntry() != null) {
+			rootNode = resourceResult.getSubTreeModel().getRootNode();
 			ICourse course = CourseFactory.loadCourse(resourceResult.getCourseEntry());
 			mainVC.contextPut("courseTitle", course.getCourseTitle());
+		} else {
+			rootNode = resourceResult.getTreeModel().getRootNode();
 		}
 		String testTitle = resourceResult.getTestEntry().getDisplayname();
 		mainVC.contextPut("testTitle", testTitle);
