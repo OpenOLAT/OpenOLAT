@@ -357,6 +357,29 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<entry key="org.olat.modules.taxonomy.ui.TaxonomyLevelCompetenceController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="List of users in competence management" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set></set>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</set>
+						</property>
+					</bean>
+				</entry>
 
 				<entry key="org.olat.modules.lecture.ui.ParticipantListRepositoryController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">

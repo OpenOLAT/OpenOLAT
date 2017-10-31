@@ -17,29 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.modules.taxonomy.ui;
 
-import java.util.Date;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
- * Initial date: 20.02.2013<br>
+ * Initial date: 27 oct. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface TaxonomyLevel {
-	
-	public Long getKey();
+public class IdentityCompetenceRow {
 
-	public Date getCreationDate();
-	
-	public Date getLastModified();
-	
-	public String getField();
-	
-	public TaxonomyLevel getParentField();
-	
-	public String getMaterializedPathKeys();
+	private final TaxonomyCompetence competence;
 
-	public String getMaterializedPathNames();
+	public IdentityCompetenceRow(TaxonomyCompetence competence) {
+		this.competence = competence;
+	}
+	
+	public Taxonomy getTaxonomy() {
+		return competence.getTaxonomyLevel().getTaxonomy();
+	}
+	
+	public TaxonomyLevel getTaxonomyLevel() {
+		return competence.getTaxonomyLevel();
+	}
+	
+	public TaxonomyCompetence getCompetence() {
+		return competence;
+	}
+
+	public TaxonomyCompetenceTypes getCompetenceType() {
+		return competence.getCompetenceType();
+	}
 }

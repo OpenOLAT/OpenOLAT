@@ -19,7 +19,18 @@
  */
 package org.olat.upgrade;
 
+import java.util.List;
+
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.mail.MailModule;
+import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.upgrade.model.UpgradeQuestionItem;
+import org.olat.upgrade.model.UpgradeTaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -30,11 +41,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 
+	private static final int BATCH_SIZE = 500;
+	
 	private static final String VERSION = "OLAT_12.2.0";
 	private static final String MAIL_CONFIG_SPLITTING = "MAIL CONFIG SPLITTING";
+	private static final String MIGRATE_QPOOL_TAXONOMY = "MIGRATE QPOOL TAXONOMY";
 	
 	@Autowired
-	MailModule mailModule;
+	private DB dbInstance;
+	@Autowired
+	private MailModule mailModule;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
 	
 	public OLATUpgrade_12_2_0() {
 		super();
@@ -65,13 +85,15 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 		// split in inbox and outbox specific configs. Get the old values and
 		// transfer them to the new values.
 		allOk &= splitMailConfigToInboxAndOutbox(upgradeManager, uhd);
+		// migrate the question pool taxonomy
+		allOk &= migrateTaxonomy(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
 			log.audit("Finished OLATUpgrade_12_2_0 successfully!");
 		} else {
-		log.audit("OLATUpgrade_12_2_0 not finished, try to restart OpenOLAT!");
+			log.audit("OLATUpgrade_12_2_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}
@@ -91,5 +113,114 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 		}
 		return allOk;
 	}
+	
+	private boolean migrateTaxonomy(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_QPOOL_TAXONOMY)) {
+			Taxonomy taxonomy = getQPoolTaxonomy();
+			
+			try {
+				migrateTaxonomyLevels(taxonomy, null, null);
+				migrateQuestions(taxonomy);
+			} catch (Exception e) {
+				log.error("", e);
+				allOk &= false;
+			}
+			
+			uhd.setBooleanDataValue(MIGRATE_QPOOL_TAXONOMY, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void migrateQuestions(TaxonomyRef taxonomy) {
+		int counter = 0;
+		List<UpgradeQuestionItem> questions;
+		do {
+			questions = getQuestionItems(counter, 50);
+			for(UpgradeQuestionItem question:questions) {
+				processQuestionTaxonomyLevel(taxonomy, question);
+			}
+			counter += questions.size();
+			log.audit("Taxonomy level migration processed: " + questions.size() + ", total questions processed (" + counter + ")");
+			dbInstance.commitAndCloseSession();
+		} while(questions.size() == BATCH_SIZE);
+	}
+	
+	private List<UpgradeQuestionItem> getQuestionItems(int firstResults, int maxResult) {
+		String q = "select item from upgradequestionitem item where item.oldTaxonomyLevel.key is not null and item.newTaxonomyLevel.key is null order by item.key";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q, UpgradeQuestionItem.class)
+				.setFirstResult(firstResults)
+				.setMaxResults(maxResult)
+				.getResultList();
+	}
+	
+	private void processQuestionTaxonomyLevel(TaxonomyRef taxonomy, UpgradeQuestionItem question) {
+		if(question == null || question.getOldTaxonomyLevel() == null) return;
+		Long oldKey = question.getOldTaxonomyLevel().getKey();
+		if(oldKey == null) return;
+		
+		List<TaxonomyLevel> levels = taxonomyLevelDao.getLevelsByExternalId(taxonomy, oldKey.toString());
+		if(levels.size() > 0) {
+			question.setNewTaxonomyLevel(levels.get(0));
+			question = dbInstance.getCurrentEntityManager().merge(question);
+		}
+	}
+	
+	private void migrateTaxonomyLevels(Taxonomy taxonomy, TaxonomyLevel parentLevel, UpgradeTaxonomyLevel parentUpgradeLevel) {
+		List<UpgradeTaxonomyLevel> upgradeLevels;
+		if(parentUpgradeLevel == null) {
+			upgradeLevels = getRootUpgradeTaxonomyLevels();
+		} else {
+			upgradeLevels = getTaxonomyLevels(parentUpgradeLevel);
+		}
+
+		for(UpgradeTaxonomyLevel upgradeLevel:upgradeLevels) {
+			List<TaxonomyLevel> levels = taxonomyLevelDao.getLevelsByExternalId(taxonomy, upgradeLevel.getKey().toString());
+			
+			TaxonomyLevel newLevel;
+			if(levels.isEmpty()) {
+				newLevel = copyTaxonomyLevel(taxonomy, parentLevel, upgradeLevel);
+			} else {
+				newLevel = levels.get(0);
+			}
+			migrateTaxonomyLevels(taxonomy, newLevel, upgradeLevel);
+		}
+	}
+	
+	private TaxonomyLevel copyTaxonomyLevel(Taxonomy taxonomy, TaxonomyLevel parent, UpgradeTaxonomyLevel upgradeLevel) {
+		String id = upgradeLevel.getKey().toString();
+		String displayName = upgradeLevel.getField();
+		return taxonomyLevelDao.createTaxonomyLevel(displayName, displayName, "", id, null, parent, null, taxonomy);
+	}
+	
+	private Taxonomy getQPoolTaxonomy() {
+		List<Taxonomy> taxonomyList = taxonomyService.getRootTaxonomyList();
+		for(Taxonomy taxonomy:taxonomyList) {
+			if(QuestionPoolModule.DEFAULT_TAXONOMY_QPOOL_IDENTIFIER.equals(taxonomy.getIdentifier())) {
+				return taxonomy;
+			}
+		}
+		
+		Taxonomy taxonomy = taxonomyService.createTaxonomy("QPOOL", "Question pool", "Taxonomy for the question pool", "QPOOL");
+		return taxonomy;
+	}
+	
+	private List<UpgradeTaxonomyLevel> getRootUpgradeTaxonomyLevels() {
+		String q = "select level from upgradetaxonomylevel level where level.parentField is null";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q, UpgradeTaxonomyLevel.class)
+				.getResultList();
+	}
+	
+	private List<UpgradeTaxonomyLevel> getTaxonomyLevels(UpgradeTaxonomyLevel parent) {
+		String q = "select level from upgradetaxonomylevel level where level.parentField.key=:parentKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q, UpgradeTaxonomyLevel.class)
+				.setParameter("parentKey", parent.getKey())
+				.getResultList();
+	}
+	
 
 }

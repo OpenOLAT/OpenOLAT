@@ -1,0 +1,15 @@
+<div class="o_button_group o_button_group_right">
+#if($r.available("add.competence.manage"))
+	$r.render("add.competence.manage")
+#end
+#if($r.available("add.competence.teach"))
+	$r.render("add.competence.teach")
+#end
+#if($r.available("add.competence.have"))
+	$r.render("add.competence.have")
+#end
+#if($r.available("add.competence.target"))
+	$r.render("add.competence.target")
+#end
+</div>
+$r.render("table")

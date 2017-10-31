@@ -134,6 +134,7 @@
 				<ref bean="identityIndexer" />
 				<ref bean="epDefaultMapIndexer" />
 				<ref bean="epStructuredMapIndexer" />
+				<ref bean="taxonomyLibraryIndexer" />
 			</list>
 		</property>
 	</bean>

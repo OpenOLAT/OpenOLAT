@@ -34,8 +34,8 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
 import org.olat.core.util.tree.TreeHelper;
-import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.ui.QuestionsController;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 

@@ -30,9 +30,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.tree.TreeHelper;
-import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.admin.TaxonomyTreeModel;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 

@@ -1,0 +1,18 @@
+#if($r.available("create.taxonomy"))
+<div class="o_button_group o_button_group_right">
+	$r.render("create.taxonomy")
+</div>
+#end
+<div class="row">
+	<div class="col-sm-6">
+		$r.render("trees")
+		#if($r.available("add.taxonomy.level"))
+			$r.render("add.taxonomy.level")
+		#end
+	</div>
+	<div class="col-sm-6">
+		#if($r.available("details"))
+			$r.render("details")
+		#end
+	</div>
+</div>

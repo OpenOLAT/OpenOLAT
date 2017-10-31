@@ -62,6 +62,8 @@
 		<class>org.olat.upgrade.model.EPMapUpgrade</class>
 		<class>org.olat.upgrade.model.EPMapUpgradeToGroupRelation</class>
 		<class>org.olat.upgrade.model.InvitationUpgrade</class>
+		<class>org.olat.upgrade.model.UpgradeTaxonomyLevel</class>
+		<class>org.olat.upgrade.model.UpgradeQuestionItem</class>
 		<!-- End upgraders mapping -->
 
 
@@ -201,6 +203,12 @@
 		<class>org.olat.modules.qpool.model.QLicense</class>
 		<class>org.olat.modules.reminder.model.ReminderImpl</class>
 		<class>org.olat.modules.reminder.model.SentReminderImpl</class>
+		<class>org.olat.modules.taxonomy.model.TaxonomyImpl</class>
+		<class>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</class>
+		<class>org.olat.modules.taxonomy.model.TaxonomyLevelTypeImpl</class>
+		<class>org.olat.modules.taxonomy.model.TaxonomyLevelTypeToTypeImpl</class>
+		<class>org.olat.modules.taxonomy.model.TaxonomyCompetenceImpl</class>
+		<class>org.olat.modules.taxonomy.model.TaxonomyCompetenceAuditLogImpl</class>
 		<class>org.olat.modules.video.model.VideoTranscodingImpl</class>
 		<class>org.olat.modules.video.model.VideoMetaImpl</class>
 		<class>org.olat.modules.webFeed.model.FeedImpl</class>

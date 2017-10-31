@@ -26,12 +26,16 @@ import java.util.List;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.qpool.site.QuestionPoolSite;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +47,16 @@ import org.springframework.stereotype.Service;
  */
 @Service("qpoolModule")
 public class QuestionPoolModule extends AbstractSpringModule implements ConfigOnOff {
+
+	private static final String TAXONOMY_QPOOL_KEY = "taxonomy.qpool.key";
+	public static final String DEFAULT_TAXONOMY_QPOOL_IDENTIFIER = "QPOOL";
 	
+	private String taxonomyQPoolKey;
+	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private TaxonomyDAO taxonomyDao;
 	@Autowired
 	private List<QPoolSPI> questionPoolProviders;
 
@@ -59,11 +72,28 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("QPool",
 				new SiteContextEntryControllerCreator(QuestionPoolSite.class));
 
+		updateProperties();
+		initTaxonomy();
 	}
 
 	@Override
 	protected void initFromChangedProperties() {
-		//
+		updateProperties();
+	}
+	
+	private void initTaxonomy() {
+		if(!StringHelper.isLong(taxonomyQPoolKey)) {
+			Taxonomy taxonomy = taxonomyDao.createTaxonomy(DEFAULT_TAXONOMY_QPOOL_IDENTIFIER, "Question pool", "taxonomy for the question pool", DEFAULT_TAXONOMY_QPOOL_IDENTIFIER);
+			dbInstance.commitAndCloseSession();
+			setTaxonomyQPoolKey(taxonomy.getKey().toString());
+		}	
+	}
+	
+	private void updateProperties() {
+		String taxonomyQPoolKeyObj = getStringPropertyValue(TAXONOMY_QPOOL_KEY, true);
+		if(StringHelper.containsNonWhitespace(taxonomyQPoolKeyObj)) {
+			taxonomyQPoolKey = taxonomyQPoolKeyObj;
+		}
 	}
 
 	@Override
@@ -108,5 +138,14 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		} else {
 			questionPoolProviders.add(provider);
 		}
+	}
+	
+	public String getTaxonomyQPoolKey() {
+		return taxonomyQPoolKey;
+	}
+
+	public void setTaxonomyQPoolKey(String taxonomyQPoolKey) {
+		this.taxonomyQPoolKey = taxonomyQPoolKey;
+		setStringProperty(TAXONOMY_QPOOL_KEY, taxonomyQPoolKey, true);
 	}
 }

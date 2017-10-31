@@ -26,6 +26,8 @@
 
 package org.olat.core.util.nodes;
 
+import java.util.Comparator;
+
 /**
  * Description: <br>
  * 
@@ -92,5 +94,12 @@ public interface INode {
 	 * @param node
 	 */
 	public void remove(INode node);
+	
+	/**
+	 * Sort the children of this node
+	 * 
+	 * @param comparator
+	 */
+	public void sort(Comparator<INode> comparator);
 
 }

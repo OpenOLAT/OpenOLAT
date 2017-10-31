@@ -30,8 +30,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
-import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.ui.QuestionsController;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -46,6 +46,7 @@ public class TaxonomyLevelEditController extends FormBasicController {
 
 	private TaxonomyLevel taxonomyLevel;
 	private final TaxonomyLevel parentLevel;
+	
 	@Autowired
 	private QPoolService qpoolService;
 	
@@ -54,7 +55,6 @@ public class TaxonomyLevelEditController extends FormBasicController {
 		
 		this.parentLevel = parentLevel;
 		this.taxonomyLevel = taxonomyLevel;
-		
 		initForm(ureq);
 	}
 	
@@ -65,23 +65,24 @@ public class TaxonomyLevelEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String parentLine = null;
-		if(parentLevel != null) {
-			parentLine = parentLevel.getMaterializedPathNames();
-			parentLine += "/" + parentLevel.getField();
+		String parentLine;
+		if(taxonomyLevel != null) {
+			parentLine = taxonomyLevel.getMaterializedPathIdentifiers();
+		} else if(parentLevel != null) {
+			parentLine = parentLevel.getMaterializedPathIdentifiers();
 		} else {
 			parentLine = "/";
 		}
 		uifactory.addStaticExampleText("parentLine", "classification.taxonomy.parents", parentLine, formLayout);
 		
-		String name = taxonomyLevel == null ? "" : taxonomyLevel.getField();
+		String name = taxonomyLevel == null ? "" : taxonomyLevel.getDisplayName();
 		nameEl = uifactory.addTextElement("classification.taxonomy.level", "classification.taxonomy.level", 128, name, formLayout);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 	}
 	
 	public TaxonomyLevel getTaxonomyLevel() {
@@ -104,10 +105,10 @@ public class TaxonomyLevelEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(taxonomyLevel == null) {
-			taxonomyLevel = qpoolService.createTaxonomyLevel(parentLevel, nameEl.getValue());
+			taxonomyLevel = qpoolService.createTaxonomyLevel(parentLevel, nameEl.getValue(), nameEl.getValue());
 		} else {
 			String newField = nameEl.getValue();
-			taxonomyLevel = qpoolService.updateTaxonomyLevel(newField, taxonomyLevel);
+			taxonomyLevel = qpoolService.updateTaxonomyLevel(taxonomyLevel, newField, newField);
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

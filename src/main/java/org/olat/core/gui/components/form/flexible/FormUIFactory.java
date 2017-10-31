@@ -711,7 +711,8 @@ public class FormUIFactory {
 		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getRootForm(), formLayout.getTranslator().getLocale());
 		setLabelIfNotNull(i18nLabel, rte);
 		// Now configure editor
-		rte.getEditorConfiguration().setConfigProfileFormEditorMinimalistic(wControl.getWindowBackOffice().getWindow().getGuiTheme());			
+		rte.getEditorConfiguration().setConfigProfileFormEditorMinimalistic(wControl.getWindowBackOffice().getWindow().getGuiTheme());		
+		rte.getEditorConfiguration().setPathInStatusBar(false);
 		// Add to form and finish
 		formLayout.add(rte);
 		return rte;

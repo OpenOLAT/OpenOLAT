@@ -38,6 +38,7 @@ import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.resource.OLATResource;
 
 /**
@@ -166,12 +167,20 @@ public interface QPoolService {
 	//study field admin
 	public List<TaxonomyLevel> getTaxonomyLevels();
 	
-	public TaxonomyLevel createTaxonomyLevel(TaxonomyLevel parent, String field);
+	/**
+	 * 
+	 * @param parent
+	 * @param displayName
+	 * @return
+	 */
+	public List<TaxonomyLevel> getTaxonomyLevelBy(TaxonomyLevel parent, String displayName);
 	
-	public TaxonomyLevel updateTaxonomyLevel(String newField, TaxonomyLevel level);
+	public TaxonomyLevel createTaxonomyLevel(TaxonomyLevel parent, String identifier, String displayName);
 	
-	public boolean delete(TaxonomyLevel level);
+	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level, String identifier, String displayName);
 	
+	public boolean deleteTaxonomyLevel(TaxonomyLevel level);
+
 	
 	//pool administration
 	public void createPool(Identity identity, String name, boolean publicPool);

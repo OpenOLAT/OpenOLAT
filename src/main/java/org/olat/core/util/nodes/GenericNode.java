@@ -28,10 +28,13 @@ package org.olat.core.util.nodes;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * Description: <br>
@@ -165,9 +168,16 @@ public abstract class GenericNode implements INode, Serializable {
 	/**
 	 * @see org.olat.core.util.nodes.INode#addChild(org.olat.core.util.nodes.INode)
 	 */
+	@Override
 	public void addChild(INode newChild) {
 		if (children == null) children = new ArrayList<INode>(INITIAL_CHILD_SIZE);
 		insert(newChild, children.size());
+	}
+	
+	public void sort(Comparator<INode> comparator) {
+		if(children != null && children.size() > 1) {
+			Collections.sort(children, comparator);
+		}
 	}
 
 	/**

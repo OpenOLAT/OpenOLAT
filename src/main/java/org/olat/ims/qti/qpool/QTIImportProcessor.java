@@ -50,6 +50,7 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -69,19 +70,20 @@ import org.olat.ims.qti.editor.beecom.objects.Question;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
 import org.olat.ims.qti.questionimport.ItemAndMetadata;
 import org.olat.ims.resources.IMSEntityResolver;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
-import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QLicenseDAO;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
-import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -102,41 +104,36 @@ class QTIImportProcessor {
 	private final String importedFilename;
 	private final File importedFile;
 
-	private final DB dbInstance;
-	private final QLicenseDAO qLicenseDao;
-	private final QItemTypeDAO qItemTypeDao;
-	private final QPoolFileStorage qpoolFileStorage;
-	private final QuestionItemDAO questionItemDao;
-	private final TaxonomyLevelDAO taxonomyLevelDao;
-	private final QEducationalContextDAO qEduContextDao;
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private QLicenseDAO qLicenseDao;
+	@Autowired
+	private QItemTypeDAO qItemTypeDao;
+	@Autowired
+	private QPoolFileStorage qpoolFileStorage;
+	@Autowired
+	private QuestionItemDAO questionItemDao;
+	@Autowired
+	private QPoolService qpoolService;
+	@Autowired
+	private QEducationalContextDAO qEduContextDao;
 	
-	public QTIImportProcessor(Identity owner, Locale defaultLocale, QuestionItemDAO questionItemDao,
-			QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
-			TaxonomyLevelDAO taxonomyLevelDao, QLicenseDAO qLicenseDao, QPoolFileStorage qpoolFileStorage,
-			DB dbInstance) {
-		this(owner, defaultLocale, null, null, questionItemDao, qItemTypeDao, qEduContextDao,
-				taxonomyLevelDao, qLicenseDao, qpoolFileStorage, dbInstance);
+	public QTIImportProcessor(Identity owner, Locale defaultLocale) {
+		this(owner, defaultLocale, null, null);
 	}
 
-	public QTIImportProcessor(Identity owner, Locale defaultLocale, String importedFilename, File importedFile,
-			QuestionItemDAO questionItemDao, QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
-			TaxonomyLevelDAO taxonomyLevelDao, QLicenseDAO qLicenseDao, QPoolFileStorage qpoolFileStorage,
-			DB dbInstance) {
+	public QTIImportProcessor(Identity owner, Locale defaultLocale, String importedFilename, File importedFile) {
 		this.owner = owner;
-		this.dbInstance = dbInstance;
 		this.defaultLocale = defaultLocale;
 		this.importedFilename = importedFilename;
 		this.importedFile = importedFile;
-		this.qLicenseDao = qLicenseDao;
-		this.qItemTypeDao = qItemTypeDao;
-		this.questionItemDao = questionItemDao;
-		this.qEduContextDao = qEduContextDao;
-		this.qpoolFileStorage = qpoolFileStorage;
-		this.taxonomyLevelDao = taxonomyLevelDao;
+
+		CoreSpringFactory.autowireObject(this);
 	}
 	
 	public List<QuestionItem> process() {
-		List<QuestionItem> qItems = new ArrayList<QuestionItem>();
+		List<QuestionItem> qItems = new ArrayList<>();
 		try {
 			List<DocInfos> docInfoList = getDocInfos();
 			if(docInfoList != null) {
@@ -170,7 +167,7 @@ class QTIImportProcessor {
 
 	protected List<ItemInfos> getItemList(DocInfos doc) {
 		Document document = doc.getDocument();
-		List<ItemInfos> itemElements = new ArrayList<ItemInfos>();
+		List<ItemInfos> itemElements = new ArrayList<>();
 		Element item = (Element)document.selectSingleNode("/questestinterop/item");
 		Element assessment = (Element)document.selectSingleNode("/questestinterop/assessment");
 		if(item != null) {
@@ -288,14 +285,14 @@ class QTIImportProcessor {
 		
 		String taxonomyPath = metadata.getTaxonomyPath();
 		if(StringHelper.containsNonWhitespace(taxonomyPath)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
 			TaxonomyLevel taxonomyLevel = converter.toTaxonomy(taxonomyPath);
 			poolItem.setTaxonomyLevel(taxonomyLevel);
 		}
 		
 		String level = metadata.getLevel();
 		if(StringHelper.containsNonWhitespace(level)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
 			QEducationalContext educationalContext = converter.toEducationalContext(level);
 			poolItem.setEducationalContext(educationalContext);
 		}
@@ -326,7 +323,7 @@ class QTIImportProcessor {
 		
 		String license = metadata.getLicense();
 		if(StringHelper.containsNonWhitespace(license)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
 			QLicense qLicense = converter.toLicense(license);
 			poolItem.setLicense(qLicense);
 		}
@@ -585,7 +582,7 @@ class QTIImportProcessor {
 				SAXReader reader = new SAXReader();
 		        Document document = reader.read(metadataIn);
 		        Element rootElement = document.getRootElement();
-		        QTIMetadataConverter enricher = new QTIMetadataConverter(rootElement, qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+		        QTIMetadataConverter enricher = new QTIMetadataConverter(rootElement, qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
 		        enricher.toQuestion(item);
 			}
 	        return true;

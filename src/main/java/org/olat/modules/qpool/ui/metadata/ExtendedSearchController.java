@@ -45,12 +45,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.modules.qpool.QPoolService;
-import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.admin.TaxonomyTreeModel;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.search.model.AbstractOlatDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -413,7 +413,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 				if(child instanceof GenericTreeNode) {
 					GenericTreeNode gChild = (GenericTreeNode)child;
 					TaxonomyLevel level = (TaxonomyLevel)gChild.getUserObject();
-					String field = level.getField();
+					String field = level.getDisplayName();
 					keys.add(level.getKey().toString());
 					values.add(path + "" + field);
 					flatTree(gChild, path + "\u00A0\u00A0\u00A0\u00A0", keys, values);

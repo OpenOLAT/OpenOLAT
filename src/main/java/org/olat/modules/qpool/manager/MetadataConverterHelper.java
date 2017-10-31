@@ -27,7 +27,7 @@ import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
-import org.olat.modules.qpool.model.TaxonomyLevelImpl;
+import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
 
 import com.thoughtworks.xstream.XStream;
 

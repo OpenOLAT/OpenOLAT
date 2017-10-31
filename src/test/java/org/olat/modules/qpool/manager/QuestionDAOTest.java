@@ -42,11 +42,14 @@ import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
-import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.manager.TaxonomyDAO;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -76,6 +79,9 @@ public class QuestionDAOTest extends OlatTestCase {
 	private QItemQueriesDAO qItemQueriesDao;
 	@Autowired
 	private QEducationalContextDAO qEduContextDao;
+	
+	@Autowired
+	private TaxonomyDAO taxonomyDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	
@@ -112,7 +118,8 @@ public class QuestionDAOTest extends OlatTestCase {
 	@Test
 	public void copyQuestion() {
 		// create an item and fill it
-		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createAndPersist(null, "Tax. to copy");
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-QP", "QPool taxonomy", null, null);
+		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QP-L-1", "QLevel 1", "For testing only", null, null, null, null, taxonomy);
 		QEducationalContext eduContext = qEduContextDao.create("primary.school", true);
 		QLicense mitLicense = qLicenseDao.create("mit-" + UUID.randomUUID().toString(), null, true);
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());

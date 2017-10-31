@@ -39,10 +39,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QItemEdited;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
@@ -133,12 +133,12 @@ public class GeneralMetadataEditController extends FormBasicController {
 				if(selectedTaxonomicPath == null) {
 					selectContextCont.contextPut("path", "");
 				} else {
-					String path = selectedTaxonomicPath.getMaterializedPathNames();
+					String path = selectedTaxonomicPath.getMaterializedPathIdentifiers();
 					if(StringHelper.containsNonWhitespace(path)) {
 						if(!path.endsWith("/")) {
 							path += "/";
 						}
-						path +=  selectedTaxonomicPath.getField();
+						path +=  selectedTaxonomicPath.getDisplayName();
 					}
 					selectContextCont.contextPut("path", path);
 				}	

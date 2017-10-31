@@ -1,0 +1,6 @@
+<h2><i class="o_icon $iconCssClass"> </i> $displayName#if($r.isNotEmpty($identifier)) <small>${identifier}</small>#end</h2>
+#if($r.available("folder"))
+<div class="clearfix">
+	$r.render("folder")
+</div>
+#end

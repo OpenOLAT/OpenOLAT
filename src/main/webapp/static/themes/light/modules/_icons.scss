@@ -499,6 +499,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_lectures_authorized:before { content: $fa-var-circle; color: $brand-warning; }
 .o_lectures_absent:before { content: $fa-var-circle; color: $brand-danger; }
 
+/* taxonomy */
+.o_icon_taxonomy:before { content: $fa-var-cube; }
+.o_icon_taxonomy_level:before { content: $fa-var-cubes; }
+.o_icon_taxonomy_level_leaf:before { content: $fa-var-folder-open-o; }
+.o_icon_taxonomy_templates:before { content: $fa-var-files-o; }
+
 /* coaching */
 .o_black_led:before { content: $fa-var-circle; color: $brand-primary; }
 .o_green_led:before { content: $fa-var-circle; color: $brand-success; }

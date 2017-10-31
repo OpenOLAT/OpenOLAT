@@ -99,7 +99,7 @@
 				<plugins>
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
-            			<artifactId>jaxb2-maven-plugin</artifactId>
+						<artifactId>jaxb2-maven-plugin</artifactId>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -1522,12 +1522,12 @@
 				<!-- start rest api documentation: broken:  mvn javadoc:javadoc -->
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
-            		<artifactId>jaxb2-maven-plugin</artifactId>
+					<artifactId>jaxb2-maven-plugin</artifactId>
 					<version>2.3.1</version>
 					<executions>
-                		<execution>
-	                    	<id>schemagen</id>
-	                    	<goals>
+						<execution>
+							<id>schemagen</id>
+							<goals>
 								<goal>schemagen</goal>
 							</goals>
 						</execution>
@@ -1538,6 +1538,7 @@
 							<source>src/main/java/org/olat/commons/calendar/restapi/</source>
 							<source>src/main/java/org/olat/modules/fo/restapi/</source>
 							<source>src/main/java/org/olat/modules/gotomeeting/restapi/</source>
+							<source>src/main/java/org/olat/modules/taxonomy/restapi/</source>
 							<source>src/main/java/org/olat/modules/vitero/restapi/</source>
 							<source>src/main/java/org/olat/modules/wiki/restapi/vo/</source>
 							<source>src/main/java/org/olat/restapi/system/vo/</source>
@@ -1593,6 +1594,7 @@
 							org.olat.modules.fo.restapi,
 							org.olat.modules.gotomeeting.restapi,
 							org.olat.modules.openmeetings.restapi,
+							org.olat.modules.taxonomy.restapi,
 							org.olat.modules.vitero.restapi,
 							org.olat.modules.wiki.restapi,
 							org.olat.registration.restapi,
@@ -1654,6 +1656,7 @@
 								org.olat.modules.fo.restapi;
 								org.olat.modules.gotomeeting.restapi;
 								org.olat.modules.openmeetings.restapi;
+								org.olat.modules.taxonomy.restapi;
 								org.olat.modules.vitero.restapi;
 								org.olat.modules.wiki.restapi;
 								org.olat.registration.restapi;

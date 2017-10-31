@@ -59,7 +59,7 @@ import org.olat.search.service.indexer.repository.course.CourseNodeEntry;
 import org.olat.search.service.indexer.repository.course.CourseNodeIndexer;
 
 /**
- * Index a hole course.
+ * Index a whole course.
  * @author Christian Guretzki
  */
 public class CourseIndexer extends AbstractHierarchicalIndexer {

@@ -36,8 +36,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
-import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.ui.QuestionsController;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -95,12 +95,12 @@ public class TaxonomyLevelController extends FormBasicController {
 		if(taxonomyLevel != null) {
 			String parentLine = null;
 			if(this.taxonomyLevel != null) {
-				parentLine = taxonomyLevel.getMaterializedPathNames();
+				parentLine = taxonomyLevel.getMaterializedPathIdentifiers();
 			} else {
 				parentLine = "/";
 			}
 			pathEl.setValue(parentLine);
-			fieldEl.setValue(taxonomyLevel.getField());
+			fieldEl.setValue(taxonomyLevel.getDisplayName());
 		}
 		initialPanel.setDirty(true);
 	}
@@ -147,12 +147,12 @@ public class TaxonomyLevelController extends FormBasicController {
 	
 	private void doConfirmDelete(UserRequest ureq) {
 		String title = translate("delete.taxonomyLevel");
-		String text = translate("delete.taxonomyLevel.confirm", new String[]{ taxonomyLevel.getField() });
+		String text = translate("delete.taxonomyLevel.confirm", new String[]{ taxonomyLevel.getDisplayName() });
 		confirmDeleteCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteCtrl);
 	}
 	
 	private void doDelete(UserRequest ureq) {
-		if(qpoolService.delete(taxonomyLevel)) {
+		if(qpoolService.deleteTaxonomyLevel(taxonomyLevel)) {
 			showInfo("taxonomyLevel.deleted");
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else {
@@ -163,7 +163,7 @@ public class TaxonomyLevelController extends FormBasicController {
 	private void doEditLevel(UserRequest ureq) {
 		if(taxonomyLevel == null) return;
 		
-		TaxonomyLevel parentLevel = taxonomyLevel.getParentField();
+		TaxonomyLevel parentLevel = taxonomyLevel.getParent();
 		removeAsListenerAndDispose(editCtrl);
 		editCtrl = new TaxonomyLevelEditController(ureq, getWindowControl(), parentLevel, taxonomyLevel);
 		listenTo(editCtrl);

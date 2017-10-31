@@ -40,6 +40,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -52,27 +53,28 @@ import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.AssessmentItemChecker;
 import org.olat.ims.qti21.model.xml.AssessmentItemMetadata;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
-import org.olat.ims.qti21.model.xml.AssessmentItemChecker;
 import org.olat.ims.qti21.model.xml.OnyxToQtiWorksHandler;
 import org.olat.ims.qti21.model.xml.QTI21Infos;
 import org.olat.ims.qti21.repository.handlers.QTI21IMSManifestExplorerVisitor;
 import org.olat.imscp.xml.manifest.ResourceType;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
-import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QLicenseDAO;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 import org.olat.modules.qpool.manager.QuestionItemDAO;
-import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.reading.AssessmentObjectXmlLoader;
@@ -94,26 +96,26 @@ public class QTI21ImportProcessor {
 	private final Identity owner;
 	private final Locale defaultLocale;
 	
-	private final QItemTypeDAO qItemTypeDao;
-	private final QLicenseDAO qLicenseDao;
-	private final QTI21Service qtiService;
-	private final QuestionItemDAO questionItemDao;
-	private final QPoolFileStorage qpoolFileStorage;
-	private final TaxonomyLevelDAO taxonomyLevelDao;
-	private final QEducationalContextDAO qEduContextDao;
+	@Autowired
+	private QItemTypeDAO qItemTypeDao;
+	@Autowired
+	private QLicenseDAO qLicenseDao;
+	@Autowired
+	private QTI21Service qtiService;
+	@Autowired
+	private QuestionItemDAO questionItemDao;
+	@Autowired
+	private QPoolFileStorage qpoolFileStorage;
+	@Autowired
+	private QPoolService qpoolService;
+	@Autowired
+	private QEducationalContextDAO qEduContextDao;
 	
-	public QTI21ImportProcessor(Identity owner, Locale defaultLocale,
-			QuestionItemDAO questionItemDao, QItemTypeDAO qItemTypeDao, QEducationalContextDAO qEduContextDao,
-			TaxonomyLevelDAO taxonomyLevelDao, QLicenseDAO qLicenseDao, QPoolFileStorage qpoolFileStorage, QTI21Service qtiService) {
+	public QTI21ImportProcessor(Identity owner, Locale defaultLocale) {
 		this.owner = owner;
-		this.qtiService = qtiService;
 		this.defaultLocale = defaultLocale;
-		this.qLicenseDao = qLicenseDao;
-		this.qItemTypeDao = qItemTypeDao;
-		this.qEduContextDao = qEduContextDao;
-		this.questionItemDao = questionItemDao;
-		this.qpoolFileStorage = qpoolFileStorage;
-		this.taxonomyLevelDao = taxonomyLevelDao;
+
+		CoreSpringFactory.autowireObject(this);
 	}
 
 	public List<QuestionItem> process(File file) {
@@ -343,14 +345,14 @@ public class QTI21ImportProcessor {
 		
 		String taxonomyPath = metadata.getTaxonomyPath();
 		if(StringHelper.containsNonWhitespace(taxonomyPath)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
 			TaxonomyLevel taxonomyLevel = converter.toTaxonomy(taxonomyPath);
 			poolItem.setTaxonomyLevel(taxonomyLevel);
 		}
 		
 		String level = metadata.getLevel();
 		if(StringHelper.containsNonWhitespace(level)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
 			QEducationalContext educationalContext = converter.toEducationalContext(level);
 			poolItem.setEducationalContext(educationalContext);
 		}
@@ -381,7 +383,7 @@ public class QTI21ImportProcessor {
 		
 		String license = metadata.getLicense();
 		if(StringHelper.containsNonWhitespace(license)) {
-			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, taxonomyLevelDao, qEduContextDao);
+			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
 			QLicense qLicense = converter.toLicense(license);
 			poolItem.setLicense(qLicense);
 		}

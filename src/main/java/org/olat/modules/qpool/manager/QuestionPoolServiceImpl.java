@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -56,7 +57,6 @@ import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
-import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.QEducationalContext;
@@ -65,6 +65,12 @@ import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.manager.TaxonomyDAO;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.resource.OLATResource;
 import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.indexer.LifeFullIndexer;
@@ -100,8 +106,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Autowired
 	private QEducationalContextDAO qEduContextDao;
 	@Autowired
-	private TaxonomyLevelDAO taxonomyLevelDao;
-	@Autowired
 	private QuestionItemDAO questionItemDao;
 	@Autowired
 	private QuestionPoolModule qpoolModule;
@@ -111,6 +115,12 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	private SearchClient searchClient;
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
+	
+
+	@Autowired
+	private TaxonomyDAO taxonomyDao;
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
 	
 
 	@Override
@@ -796,24 +806,52 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public boolean deleteLicense(QLicense license) {
 		return qpoolLicenseDao.delete(license);
 	}
+	
+	public TaxonomyRef getQPoolTaxonomy() {
+		String key = qpoolModule.getTaxonomyQPoolKey();
+		try {
+			return new TaxonomyRefImpl(new Long(key));
+		} catch (NumberFormatException e) {
+			log.error("", e);
+			return null;
+		}
+	}
 
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevels() {
-		return taxonomyLevelDao.loadAllLevels();
+		TaxonomyRef qpoolTaxonomy = getQPoolTaxonomy();
+		if(qpoolTaxonomy == null) {
+			return new ArrayList<>();
+		}
+		return taxonomyLevelDao.getLevels(qpoolTaxonomy);
 	}
 
 	@Override
-	public TaxonomyLevel createTaxonomyLevel(TaxonomyLevel parentField, String field) {
-		return taxonomyLevelDao.createAndPersist(parentField, field);
+	public List<TaxonomyLevel> getTaxonomyLevelBy(TaxonomyLevel parent, String displayName) {
+		TaxonomyRef qpoolTaxonomy = getQPoolTaxonomy();
+		if(qpoolTaxonomy == null) {
+			return new ArrayList<>();
+		}
+		return taxonomyLevelDao.getLevelsByDisplayName(qpoolTaxonomy, displayName);
 	}
 
 	@Override
-	public TaxonomyLevel updateTaxonomyLevel(String newField, TaxonomyLevel level) {
-		return taxonomyLevelDao.update(newField, level);
+	public TaxonomyLevel createTaxonomyLevel(TaxonomyLevel parent, String identifier, String displayName) {
+		TaxonomyRef qpoolTaxonomy = getQPoolTaxonomy();
+		if(qpoolTaxonomy == null) {
+			return null;
+		}
+		Taxonomy taxonomy = taxonomyDao.loadByKey(qpoolTaxonomy.getKey());
+		return taxonomyLevelDao.createTaxonomyLevel(identifier, displayName, "", null, null, parent, null, taxonomy);
 	}
 
 	@Override
-	public boolean delete(TaxonomyLevel level) {
-		return taxonomyLevelDao.delete(level);
+	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level, String identifier, String displayName) {
+		return null;//taxonomy taxonomyLevelDao.updateTaxonomyLevel(level).update(newField, level);
+	}
+
+	@Override
+	public boolean deleteTaxonomyLevel(TaxonomyLevel level) {
+		return false;//TODO taxonomy  taxonomyLevelDao.delete(level);
 	}
 }

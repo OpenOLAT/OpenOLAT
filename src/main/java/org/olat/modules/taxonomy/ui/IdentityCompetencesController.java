@@ -1,0 +1,222 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.taxonomy.ui;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog;
+import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.IdentityCompetenceTableModel.IdCompetenceCols;
+import org.olat.modules.taxonomy.ui.component.TaxonomyCompetenceTypeRenderer;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * 
+ * Initial date: 3 Oct 2017<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
+ */
+public class IdentityCompetencesController extends FormBasicController implements BreadcrumbPanelAware {
+	
+	private FlexiTableElement tableEl;
+	private IdentityCompetenceTableModel tableModel;
+	private FormLink addManageButton, addTeachButton, addHaveButton, addTargetButton;
+	
+	private CloseableModalController cmc;
+	private SelectTaxonomyLevelController levelsSearchCtrl;
+	private DialogBoxController removeCompentenceConfirmationCtrl;
+
+	private Identity assessedIdentity;
+
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	
+	public IdentityCompetencesController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity) {
+		super(ureq, wControl, "identity_competences");
+		this.assessedIdentity = assessedIdentity;
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+
+		initForm(ureq);
+		loadModel();
+	}
+	
+	@Override
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
+		//this.stackPanel = stackPanel;
+	}
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		addManageButton = uifactory.addFormLink("add.competence.manage", formLayout, Link.BUTTON);
+		addTeachButton = uifactory.addFormLink("add.competence.teach", formLayout, Link.BUTTON);
+		addHaveButton = uifactory.addFormLink("add.competence.have", formLayout, Link.BUTTON);
+		addTargetButton = uifactory.addFormLink("add.competence.target", formLayout, Link.BUTTON);
+
+		// table
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.taxonomyIdentifier));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.taxonomyDisplayName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.taxonomyExternalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.taxonomyLevelIdentifier));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.taxonomyLevelDisplayName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.taxonomyLevelExternalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.type, new TaxonomyCompetenceTypeRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", translate("remove"), "remove"));
+		
+		tableModel = new IdentityCompetenceTableModel(columnsModel); 
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
+		tableEl.setCustomizeColumns(true);
+	}
+	
+	private void loadModel() {
+		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyCompetences(assessedIdentity);
+		List<IdentityCompetenceRow> rows = competences.stream()
+				.map(c -> new IdentityCompetenceRow(c))
+				.collect(Collectors.toList());
+		tableModel.setObjects(rows);
+		tableEl.reset(false, true, true);
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(addManageButton == source) {
+			doSearchLevelsToAdd(ureq, TaxonomyCompetenceTypes.manage);
+		} else if(addTeachButton == source) {
+			doSearchLevelsToAdd(ureq, TaxonomyCompetenceTypes.teach);
+		} else if(addHaveButton == source) {
+			doSearchLevelsToAdd(ureq, TaxonomyCompetenceTypes.have);
+		} else if(addTargetButton == source) {
+			doSearchLevelsToAdd(ureq, TaxonomyCompetenceTypes.target);
+		} else if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				IdentityCompetenceRow row = tableModel.getObject(se.getIndex());
+				if("remove".equals(se.getCommand())) {
+					doConfirmRemove(ureq, row);
+				}
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(removeCompentenceConfirmationCtrl == source) {
+			if (DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				IdentityCompetenceRow row = (IdentityCompetenceRow)removeCompentenceConfirmationCtrl.getUserObject();
+				doRemoveCompetence(row);
+			}
+		} else if(levelsSearchCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel();
+				tableEl.reset(true, true, true);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(levelsSearchCtrl);
+		removeAsListenerAndDispose(cmc);
+		levelsSearchCtrl = null;
+		cmc = null;
+	}
+	
+	private void doSearchLevelsToAdd(UserRequest ureq, TaxonomyCompetenceTypes comptenceType) {
+		if(levelsSearchCtrl != null) return;
+		
+		levelsSearchCtrl = new SelectTaxonomyLevelController(ureq, getWindowControl(), assessedIdentity, comptenceType);
+		listenTo(levelsSearchCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), levelsSearchCtrl.getInitialComponent(),
+				true, translate("add.competence." + comptenceType.name()));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doConfirmRemove(UserRequest ureq, IdentityCompetenceRow row) {
+		String title = translate("remove");
+		String competence = translate(row.getCompetenceType().name());
+		String levelDisplayName = StringHelper.escapeHtml(row.getTaxonomyLevel().getDisplayName());
+		String text = translate("confirmation.remove.competence", new String[] { competence, levelDisplayName });
+		removeCompentenceConfirmationCtrl = activateOkCancelDialog(ureq, title, text, removeCompentenceConfirmationCtrl);
+		removeCompentenceConfirmationCtrl.setUserObject(row);
+	}
+	
+	private void doRemoveCompetence(IdentityCompetenceRow row) {
+		Taxonomy taxonomy = row.getTaxonomy();
+		TaxonomyCompetence competence = row.getCompetence();
+		String before = taxonomyService.toAuditXml(competence);
+
+		taxonomyService.removeTaxonomyLevelCompetence(competence);
+		taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.removeCompetence, before, null, null, taxonomy, competence, assessedIdentity, getIdentity());
+		loadModel();
+		tableEl.reset(true, true, true);
+		
+		String competenceTypeName = translate(row.getCompetenceType().name());
+		String levelDisplayName = StringHelper.escapeHtml(row.getTaxonomyLevel().getDisplayName());
+		showInfo("confirm.removed.competence", new String[] { competenceTypeName, levelDisplayName });
+	}
+	
+	
+}

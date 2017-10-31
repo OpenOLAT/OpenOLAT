@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.model;
+package org.olat.upgrade.model;
 
 import java.util.Date;
 
@@ -27,34 +27,24 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
-import org.olat.modules.qpool.TaxonomyLevel;
 
 /**
- * 
+ *  This is the old taxonomy level for question pool.
+ *  
  * Initial date: 20.02.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="qtaxonomylevel")
+@Entity(name="upgradetaxonomylevel")
 @Table(name="o_qp_taxonomy_level")
-@NamedQueries({
-	@NamedQuery(name="loadTaxonomyLevelByKey", query="select f from qtaxonomylevel f where f.key=:key"),
-	@NamedQuery(name="loadTaxonomicPath", query="select f from qtaxonomylevel f where f.parentField.key=:parentKey"),
-	@NamedQuery(name="loadTaxonomyDescendants", query="select f from qtaxonomylevel f  where f.materializedPathKeys like :path"),
-	@NamedQuery(name="loadAllTaxonomyLevels", query="select f from qtaxonomylevel f  left join fetch f.parentField pf")
-})
-public class TaxonomyLevelImpl implements TaxonomyLevel, CreateInfo, ModifiedInfo, Persistable  {
+public class UpgradeTaxonomyLevel implements Persistable  {
 
 	private static final long serialVersionUID = -1150399691749897973L;
 
@@ -87,9 +77,9 @@ public class TaxonomyLevelImpl implements TaxonomyLevel, CreateInfo, ModifiedInf
 	@Column(name="q_mat_path_names", nullable=false, insertable=true, updatable=true)
 	private String materializedPathNames;
 	
-	@ManyToOne(targetEntity=TaxonomyLevelImpl.class)
-  @JoinColumn(name="fk_parent_field", nullable=true, insertable=true, updatable=true)
-	private TaxonomyLevel parentField;
+	@ManyToOne(targetEntity=UpgradeTaxonomyLevel.class)
+	@JoinColumn(name="fk_parent_field", nullable=true, insertable=true, updatable=true)
+	private UpgradeTaxonomyLevel parentField;
 	
 	@Override
 	public Long getKey() {
@@ -100,7 +90,6 @@ public class TaxonomyLevelImpl implements TaxonomyLevel, CreateInfo, ModifiedInf
 		this.key = key;
 	}
 
-	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -109,12 +98,10 @@ public class TaxonomyLevelImpl implements TaxonomyLevel, CreateInfo, ModifiedInf
 		this.creationDate = creationDate;
 	}
 
-	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
 
-	@Override
 	public void setLastModified(Date date) {
 		this.lastModified = date;
 	}
@@ -127,11 +114,11 @@ public class TaxonomyLevelImpl implements TaxonomyLevel, CreateInfo, ModifiedInf
 		this.field = field;
 	}
 
-	public TaxonomyLevel getParentField() {
+	public UpgradeTaxonomyLevel getParentField() {
 		return parentField;
 	}
 
-	public void setParentField(TaxonomyLevel parentField) {
+	public void setParentField(UpgradeTaxonomyLevel parentField) {
 		this.parentField = parentField;
 	}
 
@@ -161,8 +148,8 @@ public class TaxonomyLevelImpl implements TaxonomyLevel, CreateInfo, ModifiedInf
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof TaxonomyLevelImpl) {
-			TaxonomyLevelImpl f = (TaxonomyLevelImpl)obj;
+		if(obj instanceof UpgradeTaxonomyLevel) {
+			UpgradeTaxonomyLevel f = (UpgradeTaxonomyLevel)obj;
 			return key != null && key.equals(f.key);
 		}
 		return false;

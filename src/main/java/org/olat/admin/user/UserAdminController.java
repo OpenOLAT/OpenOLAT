@@ -63,6 +63,8 @@ import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
+import org.olat.modules.taxonomy.TaxonomyModule;
+import org.olat.modules.taxonomy.ui.IdentityCompetencesController;
 import org.olat.properties.Property;
 import org.olat.resource.accesscontrol.ui.UserOrderController;
 import org.olat.user.ChangePrefsController;
@@ -88,20 +90,21 @@ public class UserAdminController extends BasicController implements Activateable
 
 	// NLS support
 	private static final String NLS_ERROR_NOACCESS_TO_USER = "error.noaccess.to.user";
-	private static final String NLS_FOUND_PROPERTY	= "found.property";
-	private static final String NLS_EDIT_UPROFILE = "edit.uprofile";
+	private static final String NLS_FOUND_PROPERTY		= "found.property";
+	private static final String NLS_EDIT_UPROFILE		= "edit.uprofile";
 	private static final String NLS_EDIT_UPREFS			= "edit.uprefs";
 	private static final String NLS_EDIT_UPWD 			= "edit.upwd";
 	private static final String NLS_EDIT_UAUTH 			= "edit.uauth";
 	private static final String NLS_EDIT_UPROP			= "edit.uprop";
 	private static final String NLS_EDIT_UROLES			= "edit.uroles";
 	private static final String NLS_EDIT_UQUOTA			= "edit.uquota";
-	private static final String NLS_VIEW_GROUPS 		= "view.groups";
-	private static final String NLS_VIEW_COURSES		= "view.courses";
+	private static final String NLS_VIEW_GROUPS			= "view.groups";
+	private static final String NLS_VIEW_COURSES			= "view.courses";
 	private static final String NLS_VIEW_ACCESS			= "view.access";
-	private static final String NLS_VIEW_EFF_STATEMENTS = "view.effStatements";
+	private static final String NLS_VIEW_EFF_STATEMENTS	= "view.effStatements";
 	private static final String NLS_VIEW_SUBSCRIPTIONS 	= "view.subscriptions";
 	private static final String NLS_VIEW_LECTURES		= "view.lectures";
+	private static final String NLS_VIEW_COMPETENCES		= "view.competences";
 
 	private VelocityContainer myContent;
 
@@ -116,6 +119,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private ProfileAndHomePageEditController userProfileCtr;
 	private CourseOverviewController courseCtr;
 	private GroupOverviewController grpCtr;
+	private IdentityCompetencesController competencesCtrl;
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
 
@@ -129,6 +133,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private LDAPLoginManager ldapLoginManager;
 	@Autowired
 	private LectureModule lectureModule;
+	@Autowired
+	private TaxonomyModule taxonomyModule;
 
 	/**
 	 * Constructor that creates a back - link as default
@@ -438,6 +444,21 @@ public class UserAdminController extends BasicController implements Activateable
 					BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("lectures", getTranslator(), lecturesCtrl);
 					stackPanel.pushController(translate(NLS_VIEW_LECTURES), lecturesCtrl);
 					lecturesCtrl.setBreadcrumbPanel(stackPanel);
+					stackPanel.setInvisibleCrumb(1);
+					return stackPanel;
+				}
+			});
+		}
+		
+		if(taxonomyModule.isEnabled()) {
+			userTabP.addTab(translate(NLS_VIEW_COMPETENCES), new TabCreator() {
+				@Override
+				public Component create(UserRequest uureq) {
+					competencesCtrl = new IdentityCompetencesController(uureq, getWindowControl(), identity);
+					listenTo(competencesCtrl);
+					BreadcrumbedStackedPanel stackPanel = new BreadcrumbedStackedPanel("competences", getTranslator(), competencesCtrl);
+					stackPanel.pushController(translate(NLS_VIEW_COMPETENCES), competencesCtrl);
+					competencesCtrl.setBreadcrumbPanel(stackPanel);
 					stackPanel.setInvisibleCrumb(1);
 					return stackPanel;
 				}

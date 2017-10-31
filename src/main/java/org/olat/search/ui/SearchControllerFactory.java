@@ -39,6 +39,11 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
+import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.search.SearchServiceUIFactory;
@@ -116,6 +121,17 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 					BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(Long.parseLong(tokenKey));
 					return bg == null ? "" : bg.getName();
 				}
+				if ("Taxonomy".equals(tokenType)) {
+					Taxonomy taxonomy = CoreSpringFactory.getImpl(TaxonomyService.class)
+							.getTaxonomy(new TaxonomyRefImpl(Long.parseLong(tokenKey)));
+					return taxonomy == null ? "" : taxonomy.getDisplayName();
+				}
+				if ("TaxonomyLevel".equals(tokenType)) {
+					TaxonomyLevel level = CoreSpringFactory.getImpl(TaxonomyService.class)
+							.getTaxonomyLevel(new TaxonomyLevelRefImpl(Long.parseLong(tokenKey)));
+					return level == null ? "" : level.getDisplayName();
+				}
+				
 				Translator translator = Util.createPackageTranslator(this.getClass(), locale);
 				if("userfolder".equals(tokenType)) {
 					return translator.translate("type.identity.publicfolder");

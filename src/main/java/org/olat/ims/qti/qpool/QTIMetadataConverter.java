@@ -26,17 +26,17 @@ import java.util.UUID;
 
 import org.dom4j.Element;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.qpool.TaxonomyLevel;
 import org.olat.modules.qpool.manager.QEducationalContextDAO;
 import org.olat.modules.qpool.manager.QItemTypeDAO;
 import org.olat.modules.qpool.manager.QLicenseDAO;
-import org.olat.modules.qpool.manager.TaxonomyLevelDAO;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -53,7 +53,7 @@ public class QTIMetadataConverter {
 
 	private QLicenseDAO licenseDao;
 	private QItemTypeDAO itemTypeDao;
-	private TaxonomyLevelDAO taxonomyLevelDao;
+	private QPoolService qpoolService;
 	private QEducationalContextDAO educationalContextDao;
 	
 	QTIMetadataConverter(Element qtimetadata) {
@@ -61,19 +61,19 @@ public class QTIMetadataConverter {
 	}
 	
 	QTIMetadataConverter(Element qtimetadata, QItemTypeDAO itemTypeDao, QLicenseDAO licenseDao,
-			TaxonomyLevelDAO taxonomyLevelDao, QEducationalContextDAO educationalContextDao) {
+			QEducationalContextDAO educationalContextDao, QPoolService qpoolService) {
 		this.qtimetadata = qtimetadata;
 		this.licenseDao = licenseDao;
 		this.itemTypeDao = itemTypeDao;
-		this.taxonomyLevelDao = taxonomyLevelDao;
+		this.qpoolService = qpoolService;
 		this.educationalContextDao = educationalContextDao;
 	}
 	
 	public QTIMetadataConverter(QItemTypeDAO itemTypeDao, QLicenseDAO licenseDao,
-			TaxonomyLevelDAO taxonomyLevelDao, QEducationalContextDAO educationalContextDao) {
+			QEducationalContextDAO educationalContextDao, QPoolService qpoolService) {
 		this.licenseDao = licenseDao;
 		this.itemTypeDao = itemTypeDao;
-		this.taxonomyLevelDao = taxonomyLevelDao;
+		this.qpoolService = qpoolService;
 		this.educationalContextDao = educationalContextDao;
 	}
 	
@@ -109,9 +109,13 @@ public class QTIMetadataConverter {
 		TaxonomyLevel lowerLevel = null;
 		if(path != null && path.length > 0) {
 			for(String field :cleanedPath) {
-				TaxonomyLevel level = taxonomyLevelDao.loadLevelBy(lowerLevel, field);
-				if(level == null) {
-					level = taxonomyLevelDao.createAndPersist(lowerLevel, field);
+				List<TaxonomyLevel> levels = qpoolService.getTaxonomyLevelBy(lowerLevel, field);
+				
+				TaxonomyLevel level;
+				if(levels.isEmpty()) {
+					level = qpoolService.createTaxonomyLevel(lowerLevel, field, field);
+				} else {
+					level = levels.get(0);
 				}
 				lowerLevel = level;
 			}

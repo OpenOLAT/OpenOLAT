@@ -46,7 +46,8 @@ import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.qpool.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
 
 /**
  * 
@@ -95,7 +96,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	
 	//classification
 	@ManyToOne(targetEntity=TaxonomyLevelImpl.class)
-	@JoinColumn(name="fk_taxonomy_level", nullable=true, insertable=true, updatable=true)
+	@JoinColumn(name="fk_taxonomy_level_v2", nullable=true, insertable=true, updatable=true)
 	private TaxonomyLevel taxonomyLevel;
 	
 	//educational
@@ -166,11 +167,13 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	public void setKey(Long key) {
 		this.key = key;
 	}
-	
+
+	@Override
 	public String getResourceableTypeName() {
 		return "QuestionItem";
 	}
 
+	@Override
 	public Long getResourceableId() {
 		return getKey();
 	}
@@ -211,6 +214,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.description = description;
 	}
 
+	@Override
 	public String getCoverage() {
 		return coverage;
 	}
@@ -219,6 +223,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.coverage = coverage;
 	}
 
+	@Override
 	public String getAdditionalInformations() {
 		return additionalInformations;
 	}
@@ -239,11 +244,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	@Override
 	public String getTaxonomicPath() {
 		if(taxonomyLevel != null) {
-			String path = taxonomyLevel.getMaterializedPathNames();
-			if(StringHelper.containsNonWhitespace(path)) {
-				return path + "/" + taxonomyLevel.getField();
-			} 
-			return "/" + taxonomyLevel.getField();
+			return taxonomyLevel.getMaterializedPathIdentifiers();
 		}
 		return null;
 	}
@@ -251,7 +252,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	@Override
 	public String getTaxonomyLevelName() {
 		if(taxonomyLevel != null) {
-			return taxonomyLevel.getField();
+			return taxonomyLevel.getDisplayName();
 		}
 		return null;
 	}
@@ -335,14 +336,8 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	public void setAssessmentType(String assessmentType) {
 		this.assessmentType = assessmentType;
 	}
-	
-	
-	
-	
-	
-	
-	
 
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -404,8 +399,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.status = status;
 	}
 
-
-
+	@Override
 	public String getKeywords() {
 		return keywords;
 	}
@@ -423,6 +417,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		return null;
 	}
 
+	@Override
 	public QLicense getLicense() {
 		return license;
 	}
@@ -439,7 +434,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.ownerGroup = ownerGroup;
 	}
 
-
+	@Override
 	public String getEditor() {
 		return editor;
 	}
@@ -448,6 +443,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.editor = editor;
 	}
 
+	@Override
 	public String getEditorVersion() {
 		return editorVersion;
 	}
@@ -456,6 +452,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.editorVersion = editorVersion;
 	}
 
+	@Override
 	public String getItemVersion() {
 		return itemVersion;
 	}
@@ -464,6 +461,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.itemVersion = itemVersion;
 	}
 
+	@Override
 	public String getDirectory() {
 		return directory;
 	}
@@ -472,6 +470,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.directory = directory;
 	}
 
+	@Override
 	public String getRootFilename() {
 		return rootFilename;
 	}
