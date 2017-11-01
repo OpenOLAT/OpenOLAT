@@ -278,7 +278,7 @@ public class RepositoryEntryAuthorQueries {
 			if(StringHelper.isLong(quickRefs)) {
 				try {
 					quickId = Long.parseLong(quickRefs);
-					sb.append(" or v.key=:quickVKey or res.resId=:quickVKey)");
+					sb.append(" or v.key=:quickVKey or res.resId=:quickVKey");
 				} catch (NumberFormatException e) {
 					//
 				}
