@@ -63,6 +63,7 @@ import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 import uk.ac.ed.ph.jqtiplus.value.DurationValue;
 import uk.ac.ed.ph.jqtiplus.value.FileValue;
 import uk.ac.ed.ph.jqtiplus.value.FloatValue;
+import uk.ac.ed.ph.jqtiplus.value.IdentifierValue;
 import uk.ac.ed.ph.jqtiplus.value.IntegerValue;
 import uk.ac.ed.ph.jqtiplus.value.ListValue;
 import uk.ac.ed.ph.jqtiplus.value.MultipleValue;
@@ -132,12 +133,13 @@ public class AssessmentRenderFunctions {
     // or not(@templateIdentifier)
     // or (qw:value-contains(qw:get-template-value(@templateIdentifier), @identifier) and not(@showHide='hide'))])"/>
 	public static boolean isVisible(Choice choice, ItemSessionState iSessionState) {
-		Value templateValue = choice.getTemplateIdentifier() == null ? null : iSessionState.getTemplateValue(choice.getTemplateIdentifier());
-
-		return choice.getTemplateIdentifier() != null 
-				//TODO the check must be checked
-				|| (templateValue != null && templateValue.toString().equals(choice.getIdentifier().toString()))
-				|| choice.getVisibilityMode() != VisibilityMode.HIDE_IF_MATCH;
+		if(choice.getTemplateIdentifier() == null) return true;
+		
+		Value templateValue = iSessionState.getTemplateValue(choice.getTemplateIdentifier());
+		boolean visible = templateValue instanceof IdentifierValue
+				&& ((IdentifierValue)templateValue).identifierValue().equals(choice.getIdentifier())
+				&& choice.getVisibilityMode() != VisibilityMode.HIDE_IF_MATCH;
+		return visible;
 	}
 	
 	//<xsl:if test="qw:is-invalid-response(@responseIdentifier)">
