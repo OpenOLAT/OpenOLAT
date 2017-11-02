@@ -245,7 +245,6 @@ public class TaxonomyTreeBuilder {
 			boolean subChildAllowed = trimRecursive(child);
 			if(!subChildAllowed && !child.isCanRead() && !child.isCanWrite()) {
 				node.remove(child);
-				System.out.println(child.getTitle());
 			} else {
 				someAllowed |= true;
 			}
