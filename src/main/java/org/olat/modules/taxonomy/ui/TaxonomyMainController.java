@@ -105,7 +105,7 @@ public class TaxonomyMainController extends MainLayoutBasicController implements
 		if(root.getChildCount() > 0) {
 			taxonomyTree.open((TreeNode)root.getChildAt(0));
 
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), taxonomyTree, content, "hfm");
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), taxonomyTree, content, "docpool");
 			columnLayoutCtr.addCssClassToMain("o_taxonomy");
 			listenTo(columnLayoutCtr); // auto dispose later
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
@@ -117,7 +117,7 @@ public class TaxonomyMainController extends MainLayoutBasicController implements
 		} else {
 			VelocityContainer errorVC = createVelocityContainer("error");
 			errorVC.contextPut("message", translate("not.configured"));
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, errorVC, "hfm");
+			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, errorVC, "docpool");
 			columnLayoutCtr.addCssClassToMain("o_taxonomy");
 			listenTo(columnLayoutCtr); // auto dispose later
 			putInitialPanel(columnLayoutCtr.getInitialComponent());

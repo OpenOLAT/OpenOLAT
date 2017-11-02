@@ -53,8 +53,6 @@ public class TaxonomyModule extends AbstractSpringModule implements ConfigOnOff 
 	@Override
 	public void init() {
 		// Add controller factory extension point to launch groups
-		NewControllerFactory.getInstance().addContextEntryControllerCreator("HFM",
-				new TaxonomyContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("TaxonomySite",
 				new TaxonomyContextEntryControllerCreator());
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("Taxonomy",

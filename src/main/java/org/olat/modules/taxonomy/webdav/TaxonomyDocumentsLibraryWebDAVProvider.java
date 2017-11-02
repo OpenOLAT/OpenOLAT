@@ -22,6 +22,7 @@ package org.olat.modules.taxonomy.webdav;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.vfs.VFSContainer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -33,7 +34,8 @@ import org.springframework.stereotype.Service;
 @Service("taxonomyDocumentsLibraryWebDAVProvider")
 public class TaxonomyDocumentsLibraryWebDAVProvider implements WebDAVProvider {
 
-	private static final String MOUNTPOINT = "hfm";
+	@Value("${taxonomy.webdav.mountpoint:doc-pool}")
+	private String MOUNTPOINT;
 
 	@Override
 	public String getMountPoint() {
