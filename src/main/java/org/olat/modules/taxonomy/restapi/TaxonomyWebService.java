@@ -34,6 +34,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -210,6 +211,37 @@ public class TaxonomyWebService {
 	}
 	
 	/**
+	 * Return the competences of a specific user in the taxonomy tree.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}taxonomyCompetenceVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc An array of competences
+	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYCOMPETENCEVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @param taxonomyKey The taxonomy tree
+	 * @param identityKey The user
+	 * @param httpRequest  The HTTP request
+	 * @return An array of competences
+	 */
+	@GET
+	@Path("competences/{identityKey}")
+	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	public Response getTaxonomyComptencesByIdentity(@PathParam("identityKey") Long identityKey) {
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		if(identity == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+
+		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyCompetences(identity);
+		List<TaxonomyCompetenceVO> competenceVOes = new ArrayList<>(competences.size());
+		for(TaxonomyCompetence competence:competences) {
+			competenceVOes.add(new TaxonomyCompetenceVO(competence));
+		}
+		return Response.ok(competenceVOes.toArray(new TaxonomyCompetenceVO[competenceVOes.size()])).build();
+	}
+	
+	/**
 	 * Return the competences of a specific user on the taxonomy level
 	 * specified in the key in path.
 	 * 
@@ -256,6 +288,7 @@ public class TaxonomyWebService {
 	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYCOMPETENCEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The taxonomy level type to update was not found
+	 * @response.representation.409.doc The taxonomy level key of the competence doesn't match the one in URL
 	 * @param taxonomyKey The taxonomy tree
 	 * @param taxonomyLevelKey The taxonomy level
 	 * @param comptenceVo The competence to add or update
@@ -292,7 +325,8 @@ public class TaxonomyWebService {
 		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyLevelCompetences(level, identity);
 		for(TaxonomyCompetence competence:competences) {
 			if(competence.getCompetenceType().name().equals(comptenceVo.getTaxonomyCompetenceType())) {
-				return Response.ok(new TaxonomyCompetenceVO(competence)).status(Status.NOT_MODIFIED).build();
+				EntityTag tag = new EntityTag(competence.getKey().toString());
+				return Response.notModified(tag).build();
 			}	
 		}
 		

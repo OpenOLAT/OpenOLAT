@@ -534,9 +534,49 @@ public class TaxonomyWebServiceTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void getTaxonomyLevelComptences_byIdentity()
+	public void getTaxonomyComptencesByIdentity()
 	throws IOException, URISyntaxException {
 		// prepare a level, 2 users and 2 competences
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competence-4");
+		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-20", "Taxonomy on rest", "Rest is cool", "Ext-tax-7");
+		TaxonomyLevel level1 = taxonomyService.createTaxonomyLevel("REST-Tax-l-21", "Level 1 on rest", "Level", "Ext-7", null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyService.createTaxonomyLevel("REST-Tax-l-22", "Level 1 on rest", "Level", "Ext-7", null, null, taxonomy);
+		taxonomyService.addTaxonomyLevelCompetences(level1, id, TaxonomyCompetenceTypes.teach);
+		taxonomyService.addTaxonomyLevelCompetences(level2, id, TaxonomyCompetenceTypes.have);
+		dbInstance.commitAndCloseSession();
+		
+		// get the competences
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
+				.path("competences").path(id.getKey().toString()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<TaxonomyCompetenceVO> competenceList = parseTaxonomyComptencesArray(response.getEntity().getContent());
+		Assert.assertNotNull(competenceList);
+		Assert.assertEquals(2, competenceList.size());
+		
+		boolean foundComptenceId1 = false;
+		boolean foundComptenceId2 = false;
+		for(TaxonomyCompetenceVO competence:competenceList) {
+			if(competence.getTaxonomyLevelKey().equals(level1.getKey()) && competence.getIdentityKey().equals(id.getKey())
+					&& TaxonomyCompetenceTypes.teach.name().equals(competence.getTaxonomyCompetenceType())) {
+				foundComptenceId1 = true;
+			} else if(competence.getTaxonomyLevelKey().equals(level2.getKey()) && competence.getIdentityKey().equals(id.getKey())
+					&& TaxonomyCompetenceTypes.have.name().equals(competence.getTaxonomyCompetenceType())) {
+				foundComptenceId2 = true;
+			}
+		}
+		Assert.assertTrue(foundComptenceId1);
+		Assert.assertTrue(foundComptenceId2);
+	}
+	
+	@Test
+	public void getTaxonomyLevelComptences_byIdentity()
+	throws IOException, URISyntaxException {
+		// prepare a level, 1 user and 1 competence
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competence-4");
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-7", "Taxonomy on rest", "Rest is cool", "Ext-tax-7");
 		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-l-7", "Level 1 on rest", "Level", "Ext-7", null, null, taxonomy);
