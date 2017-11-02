@@ -260,7 +260,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 					doExportLectureBlock(ureq, row.getLectureBlock());
 				} else if("open.course".equals(cmd)) {
 					LectureBlockRow row = tableModel.getObject(se.getIndex());
-					doOpenCourse(ureq, row);
+					doOpenCourseLectures(ureq, row);
 				}
 			}
 		} else if(source instanceof FormLink) {
@@ -331,9 +331,9 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
 	}
 	
-	private void doOpenCourse(UserRequest ureq, LectureBlockRow row) {
+	private void doOpenCourseLectures(UserRequest ureq, LectureBlockRow row) {
 		Long repoKey = row.getLectureBlock().getEntry().getKey();
-		String businessPath = "[RepositoryEntry:" + repoKey + "]";
+		String businessPath = "[RepositoryEntry:" + repoKey + "][Lectures:0]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 

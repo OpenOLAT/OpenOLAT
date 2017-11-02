@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui.coach;
 
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -32,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -119,7 +121,7 @@ public class LecturesListController extends FormBasicController {
 		}
 
 		if(showRepositoryEntry) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.entry));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.entry, "open.course"));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.plannedLectures));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(StatsCols.attendedLectures));
@@ -150,7 +152,16 @@ public class LecturesListController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == exportButton) {
+		if(source == tableEl) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				if("open.course".equals(cmd)) {
+					LectureBlockIdentityStatistics row = tableModel.getObject(se.getIndex());
+					doOpenCourseLectures(ureq, row);
+				}
+			}
+		} else if(source == exportButton) {
 			doExportStatistics(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -159,5 +170,11 @@ public class LecturesListController extends FormBasicController {
 	private void doExportStatistics(UserRequest ureq) {
 		LecturesStatisticsExport export = new LecturesStatisticsExport(statistics, userPropertyHandlers, isAdministrativeUser, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export);
+	}
+	
+	private void doOpenCourseLectures(UserRequest ureq, LectureBlockIdentityStatistics row) {
+		Long repoKey = row.getRepoKey();
+		String businessPath = "[RepositoryEntry:" + repoKey + "][Lectures:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 }
