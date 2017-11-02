@@ -378,7 +378,11 @@ public class RepositoryServiceImpl implements RepositoryService {
 	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(entry);
 		reloadedRe.setAccess(RepositoryEntry.ACC_OWNERS);
-		reloadedRe.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_CLOSED);
+		if("CourseModule".equals(reloadedRe.getOlatResource().getResourceableTypeName())) {
+			reloadedRe.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_CLOSED);
+		} else {
+			reloadedRe.setStatusCode(RepositoryEntryStatus.REPOSITORY_STATUS_OPEN);
+		}
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
 		return reloadedRe;
