@@ -121,6 +121,8 @@ public class CSVToAssessmentItemConverter {
 			case "subject": processTaxonomyPath(parts); break;
 			case "feedback correct answer": processFeedbackCorrectAnswer(parts); break;
 			case "feedback wrong answer": processFeedbackWrongAnswer(parts); break;
+			case "hint": processHint(parts); break;
+			case "correct solution": processCorrectSolution(parts); break;
 			case "schlagworte":
 			case "keywords": processKeywords(parts); break;
 			case "abdeckung":
@@ -217,6 +219,26 @@ public class CSVToAssessmentItemConverter {
 		if(StringHelper.containsNonWhitespace(feedback)) {
 			AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
 			itemBuilder.createIncorrectFeedback().setText(feedback);
+		}
+	}
+	
+	private void processHint(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String feedback = parts[1];
+		if(StringHelper.containsNonWhitespace(feedback)) {
+			AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
+			itemBuilder.createHint().setText(feedback);
+		}
+	}
+	
+	private void processCorrectSolution(String[] parts) {
+		if(currentItem == null || parts.length < 2) return;
+		
+		String feedback = parts[1];
+		if(StringHelper.containsNonWhitespace(feedback)) {
+			AssessmentItemBuilder itemBuilder = currentItem.getItemBuilder();
+			itemBuilder.createCorrectSolutionFeedback().setText(feedback);
 		}
 	}
 	
