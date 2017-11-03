@@ -47,6 +47,7 @@ import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21EditorPage;
+import org.olat.selenium.page.qti.QTI21GapEntriesEditorPage;
 import org.olat.selenium.page.qti.QTI21HotspotEditorPage;
 import org.olat.selenium.page.qti.QTI21KprimEditorPage;
 import org.olat.selenium.page.qti.QTI21LobEditorPage;
@@ -1943,6 +1944,177 @@ public class ImsQTI21Test {
 			.endTest()
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(6);// 3 points from the first question, 3 from the second
+	}
+	
+	/**
+	 * An author make a test with 2 questions using fill-in-blank,
+	 * the first with the score set if all answers are correct, the second
+	 * with scoring per answers.<br>
+	 * A first user make the test, but doesn't answer all questions
+	 * correctly, log out and a second user make the perfect test.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorFib_text(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+
+		String qtiTestTitle = "Hotspot QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add a gap entry: all answers score
+		QTI21GapEntriesEditorPage fibEditor = qtiEditor
+			.addFib()
+			.appendContent("Usefull for circles ")
+			.addGapEntry("Pi", "314")
+			.saveGapEntry()
+			.editGapEntry("Ln", "lognat", 2)
+			.saveGapEntry()
+			.save();
+		//set max score
+		fibEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.allCorrectAnswers)
+			.setMaxScore("2")
+			.save();
+		// set feedbacks
+		fibEditor
+			.selectFeedbacks()
+			.setHint("Hint", "This is a usefull hint")
+			.setCorrectSolution("Correct solution", "This is an information about the correct solution")
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		//add a gap entry: score per anser
+		fibEditor = qtiEditor
+			.addFib()
+			.appendContent("European rocket ")
+			.addGapEntry("Ariane", "ari")
+			.saveGapEntry()
+			.editGapEntry("Falcon9", "falc", 2)
+			.saveGapEntry()
+			.save();
+		//set max score
+		fibEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("4")
+			.setScore("Ariane", "3")
+			.setScore("Falcon9", "1")
+			.save();
+		// set feedbacks
+		fibEditor
+			.selectFeedbacks()
+			.setHint("Hint", "Think to space")
+			.setCorrectSolution("Correct solution", "This is an information about the correct solution")
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// first user make the test
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.answerGapTextWithPlaceholder("Log", "314")
+			.answerGapTextWithPlaceholder("Sin", "lognat")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerGapTextWithPlaceholder("Pi", "314")
+			.answerGapTextWithPlaceholder("Ln", "lognat")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerGapTextWithPlaceholder("Saturn 5", "ari")
+			.answerGapTextWithPlaceholder("Falcon9", "falc")
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(3);// 2 points from the first question, 1 from the second
+		
+
+		//a second user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test with all the correct answers
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.assertOnAssessmentItem()
+			.answerGapTextWithPlaceholder("Pi", "314")
+			.answerGapTextWithPlaceholder("Ln", "lognat")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerGapTextWithPlaceholder("Ariane", "ari")
+			.answerGapTextWithPlaceholder("Falcon9", "falc")
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(6);// 2 points from the first question, 4 from the second
 	}
 	
 	/**

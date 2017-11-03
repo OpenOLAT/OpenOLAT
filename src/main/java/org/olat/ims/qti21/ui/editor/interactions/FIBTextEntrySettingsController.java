@@ -75,8 +75,11 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_gap_entry_form");
+		
 		String solution = interaction.getSolution();
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solution, formLayout);
+		solutionEl.setElementCssClass("o_sel_gap_entry_solution");
 		solutionEl.setEnabled(!restrictedEdit);
 		if(!StringHelper.containsNonWhitespace(solution)) {
 			solutionEl.setFocus(true);
@@ -84,6 +87,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		
 		String placeholder = interaction.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
+		placeholderEl.setElementCssClass("o_sel_gap_entry_placeholder");
 		placeholderEl.setEnabled(!restrictedEdit);
 		
 		String alternativesPage = velocity_root + "/fib_alternatives.html";

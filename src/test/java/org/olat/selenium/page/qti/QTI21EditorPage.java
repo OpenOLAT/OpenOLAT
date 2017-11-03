@@ -142,6 +142,11 @@ public class QTI21EditorPage {
 		return new QTI21HotspotEditorPage(browser);
 	}
 	
+	public QTI21GapEntriesEditorPage addFib() {
+		addQuestion(QTI21QuestionType.fib);
+		return new QTI21GapEntriesEditorPage(browser);
+	}
+	
 	private QTI21EditorPage addQuestion(QTI21QuestionType type) {
 		openElementsMenu();
 		

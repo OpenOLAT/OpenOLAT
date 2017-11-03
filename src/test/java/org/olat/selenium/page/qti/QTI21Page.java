@@ -160,8 +160,29 @@ public class QTI21Page {
 		return this;
 	}
 	
+	/**
+	 * Fill the gap entry based on its response id.
+	 * 
+	 * @param text The answer
+	 * @param responseId The identifier of the text entry
+	 * @return Itself
+	 */
 	public QTI21Page answerGapText(String text, String responseId) {
 		By gapBy = By.xpath("//span[contains(@class,'textEntryInteraction')]/input[@type='text'][contains(@name,'" + responseId + "')]");
+		WebElement gapEl = browser.findElement(gapBy);
+		gapEl.clear();
+		gapEl.sendKeys(text);
+		return this;
+	}
+	
+	/**
+	 * 
+	 * @param text The answer
+	 * @param placeholder The placeholder to found the right gap
+	 * @return Itself
+	 */
+	public QTI21Page answerGapTextWithPlaceholder(String text, String placeholder) {
+		By gapBy = By.xpath("//span[contains(@class,'textEntryInteraction')]/input[@type='text'][@placeholder='" + placeholder + "']");
 		WebElement gapEl = browser.findElement(gapBy);
 		gapEl.clear();
 		gapEl.sendKeys(text);

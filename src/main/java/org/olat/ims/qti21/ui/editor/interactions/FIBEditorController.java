@@ -103,6 +103,7 @@ public class FIBEditorController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", question, 16, -1, itemContainer,
 				formLayout, ureq.getUserSession(),  getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
+		textEl.setElementCssClass("o_sel_assessment_item_fib_text");
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
 		richTextConfig.setReadOnly(restrictedEdit);
 		
@@ -129,6 +130,7 @@ public class FIBEditorController extends FormBasicController {
 		
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsContainer.setElementCssClass("o_sel_fib_save");
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);

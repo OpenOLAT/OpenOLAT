@@ -19,11 +19,14 @@
  */
 package org.olat.selenium.page.lecture;
 
+import java.util.List;
+
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -79,10 +82,19 @@ public class TeacherRollCallPage {
 	}
 	
 	/**
-	 * Simply confirm the clsoing of the roll call.
+	 * Simply confirm the closing of the roll call and choose
+	 * a reason if there is one.
+	 * 
 	 * @return Itself
 	 */
 	public TeacherRollCallPage confirmCloseRollCall() {
+		//check reasons
+		By reasonsBy = By.id("o_fioeffective_reason_SELBOX");
+		List<WebElement> reasonsEls = browser.findElements(reasonsBy);
+		if(reasonsEls.size() > 0) {
+			new Select(reasonsEls.get(0)).selectByIndex(1);
+		}
+		
 		By confirmCloseBy = By.cssSelector("fieldset.o_sel_lecture_confirm_close_form button.btn-primary");
 		browser.findElement(confirmCloseBy).click();
 		OOGraphene.waitBusy(browser);

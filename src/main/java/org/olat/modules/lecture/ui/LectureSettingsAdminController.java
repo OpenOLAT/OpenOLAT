@@ -112,11 +112,13 @@ public class LectureSettingsAdminController extends FormBasicController {
 		formLayout.add("global", globalCont);
 
 		partiallyDoneEnabledEl = uifactory.addCheckboxesVertical("lecture.status.partially.done.enabled", globalCont, onKeys, onValues, 1);
-
+		partiallyDoneEnabledEl.setElementCssClass("o_sel_lecture_status_partially_done");
+		
 		String[] statusKeys = new String[]{ LectureBlockStatus.cancelled.name() };
 		String[] statusValues = new String[]{ translate(LectureBlockStatus.cancelled.name()) };
 		statusEnabledEl = uifactory.addCheckboxesVertical("lecture.status.enabled", globalCont, statusKeys, statusValues, 1);
-
+		statusEnabledEl.setElementCssClass("o_sel_lecture_status_cancelled");
+		
 		// reminder enabled
 		reminderEnableEl = uifactory.addCheckboxesHorizontal("lecture.reminder.enabled", globalCont, onKeys, onValues);
 		reminderEnableEl.addActionListener(FormEvent.ONCHANGE);
@@ -129,6 +131,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		autoClosePeriodEl.setMandatory(true);
 
 		authorizedAbsenceEnableEl = uifactory.addCheckboxesHorizontal("lecture.authorized.absence.enabled", globalCont, onKeys, onValues);
+		authorizedAbsenceEnableEl.setElementCssClass("o_sel_lecture_autorized_absence");
 		authorizedAbsenceEnableEl.addActionListener(FormEvent.ONCHANGE);
 		countAuthorizedAbsenceAsAttendantEl = uifactory.addCheckboxesHorizontal("lecture.count.authorized.absence.attendant", globalCont, onKeys, onValues);
 		absenceDefaultAuthorizedEl = uifactory.addCheckboxesHorizontal("lecture.absence.default.authorized", globalCont, onKeys, onValues);
@@ -146,6 +149,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		formLayout.add("buttonsWrapper", buttonsWrapperCont);
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsWrapperCont.add(buttonsCont);
+		buttonsCont.setElementCssClass("o_sel_lecture_save_settings");
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	

@@ -213,7 +213,7 @@ public class OOGraphene {
 	/**
 	 * Scroll to the top anchor.
 	 * 
-	 * @param browser
+	 * @param browser The browser
 	 */
 	public static void scrollTop(WebDriver browser) {
 		WebElement el = browser.findElement(By.id("o_top"));
@@ -240,6 +240,25 @@ public class OOGraphene {
 			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
 			.until(new TinyMCELoadedByIdPredicate(tinyId));
 		((JavascriptExecutor)browser).executeScript("top.tinymce.editors['" + tinyId + "'].setContent('" + content + "')");
+	}
+	
+	/**
+	 * Insert a piece of text in TinyMCE where is the caret.
+	 * 
+	 * @param content The text to add
+	 * @param containerCssSelector A selector to point where the rich text editor is
+	 * @param browser The browser
+	 */
+	public static final void tinymceInsert(String content, String containerCssSelector, WebDriver browser) {
+		By tinyIdBy = By.cssSelector(containerCssSelector + " div.o_richtext_mce");
+		waitElement(tinyIdBy, 5, browser);
+		WebElement tinyIdEl = browser.findElement(tinyIdBy);
+		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
+
+		Graphene.waitModel(browser).withTimeout(waitTinyDuration, TimeUnit.SECONDS)
+			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+			.until(new TinyMCELoadedByIdPredicate(tinyId));
+		((JavascriptExecutor)browser).executeScript("top.tinymce.editors['" + tinyId + "'].insertContent('" + content + "')");
 	}
 	
 	/**
