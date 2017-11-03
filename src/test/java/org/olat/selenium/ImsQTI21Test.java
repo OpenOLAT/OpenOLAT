@@ -65,6 +65,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
 
 /**
@@ -1969,7 +1970,7 @@ public class ImsQTI21Test {
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 
-		String qtiTestTitle = "Hotspot QTI 2.1 " + UUID.randomUUID();
+		String qtiTestTitle = "FIB QTI 2.1 " + UUID.randomUUID();
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -2115,6 +2116,348 @@ public class ImsQTI21Test {
 			.endTest()
 			.assertOnAssessmentResults()
 			.assertOnAssessmentTestScore(6);// 2 points from the first question, 4 from the second
+	}
+	
+
+	/**
+	 * An author make a test with 2 questions using numerical input,
+	 * the first with the score set if all answers are correct, the second
+	 * with scoring per answers. The numerical input have all the tolerance
+	 * mode set to EXACT.<br>
+	 * A first user make the test, but doesn't answer all questions
+	 * correctly, log out and a second user make the perfect test.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorNumericalInput_exact(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+
+		String qtiTestTitle = "Numerical QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add a numerical input: all answers score, tolerance exact
+		QTI21GapEntriesEditorPage fibEditor = qtiEditor
+			.addNumerical()
+			.appendContent("One plus two: ")
+			.addNumericalInput("3", "three", ToleranceMode.EXACT, null, null)
+			.saveNumericInput()
+			.editNumericalInput("9", "nine", ToleranceMode.EXACT, null, null, 2)
+			.saveNumericInput()
+			.save();
+		//set max score
+		fibEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.allCorrectAnswers)
+			.setMaxScore("2")
+			.save();
+		// set feedbacks
+		fibEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The second is the first power two")
+			.setCorrectSolution("Correct solution", "I know you know")
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		//add a gap entry: score per answer, tolerance exact
+		fibEditor = qtiEditor
+			.addNumerical()
+			.appendContent("More difficult: 34 + 23 ")
+			.addNumericalInput("57", "57", ToleranceMode.EXACT, null, null)
+			.saveNumericInput()
+			.editNumericalInput("8", "64squareroot",ToleranceMode.EXACT, null, null, 2)
+			.saveNumericInput()
+			.save();
+		//set max score
+		fibEditor
+			.selectScores()
+			.selectAssessmentMode(ScoreEvaluation.perAnswer)
+			.setMaxScore("4")
+			.setScore("57", "2")
+			.setScore("8", "3")
+			.save();
+		// set feedbacks
+		fibEditor
+			.selectFeedbacks()
+			.setHint("Hint", "The second is the square root of 64")
+			.setCorrectSolution("Correct solution", "This is an information about the correct solution")
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// first user make the test
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.answerGapTextWithPlaceholder("2", "three")
+			.answerGapTextWithPlaceholder("25", "nine")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.assertCorrectSolution("Correct solution")
+			.hint()
+			.assertFeedback("Hint")
+			.answerGapTextWithPlaceholder("3", "three")
+			.answerGapTextWithPlaceholder("9", "nine")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerGapTextWithPlaceholder("57", "57")
+			.answerGapTextWithPlaceholder("9", "64squareroot")
+			.saveAnswer()
+			.assertCorrectSolution("Correct solution")
+			.assertFeedback("Incorrect")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(4);// 2 points from the first question, 4 from the second
+		
+
+		//a second user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test with all the correct answers
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.assertOnAssessmentItem()
+			.answerGapTextWithPlaceholder("3", "three")
+			.answerGapTextWithPlaceholder("9", "nine")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerGapTextWithPlaceholder("57", "57")
+			.answerGapTextWithPlaceholder("8", "64squareroot")
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(6);// 2 points from the first question, 4 from the second
+	}
+
+	/**
+	 * An author make a test with 2 questions using numerical input to
+	 * test the absolute tolerance mode.<br>
+	 * A first user make the test, but doesn't answer all questions
+	 * correctly, log out and a second user make the perfect test but
+	 * on the limit.
+	 * 
+	 * @param authorLoginPage
+	 * @param participantBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void qti21EditorNumericalInput_absolut(@InitialPage LoginPage authorLoginPage,
+			@Drone @User WebDriver participantBrowser)
+	throws IOException, URISyntaxException {
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+
+		String qtiTestTitle = "Numerical QTI 2.1 " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createQTI21Test(qtiTestTitle)
+			.clickToolbarBack();
+		
+		QTI21Page qtiPage = QTI21Page
+				.getQTI12Page(browser);
+		QTI21EditorPage qtiEditor = qtiPage
+				.edit();
+		//start a blank test
+		qtiEditor
+			.selectNode("Single choice")
+			.deleteNode();
+		
+		//add a numerical input: 3.1 - 3.2
+		QTI21GapEntriesEditorPage fibEditor = qtiEditor
+			.addNumerical()
+			.appendContent("Usefull for circles ")
+			.editNumericalInput("3.1416", "pi", ToleranceMode.ABSOLUTE, "3.2", "3.1", 1)
+			.saveNumericInput()
+			.save();
+		// use standard score setting
+		// set feedbacks
+		fibEditor
+			.selectFeedbacks()
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Out of bounds")
+			.save();
+		
+		//add a numerical input which represent a rounding issue
+		fibEditor = qtiEditor
+			.addNumerical()
+			.appendContent("Check rounding issue ")
+			.editNumericalInput("14.923", "rounding", ToleranceMode.ABSOLUTE, "14.925", "14.915", 1)
+			.saveNumericInput()
+			.save();
+		// set feedbacks
+		fibEditor
+			.selectFeedbacks()
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		//add a numerical input with negative values
+		fibEditor = qtiEditor
+			.addNumerical()
+			.appendContent("Check rounding issue ")
+			.editNumericalInput("-14.923", "negative", ToleranceMode.ABSOLUTE, "-14.921", "-14.931", 1)
+			.saveNumericInput()
+			.save();
+		// set feedbacks
+		fibEditor
+			.selectFeedbacks()
+			.setCorrectFeedback("Correct feedback", "Your answer is correct")
+			.setIncorrectFeedback("Incorrect", "Your answer is not correct")
+			.save();
+		
+		qtiPage
+			.clickToolbarBack();
+		// access to all
+		qtiPage
+			.accessConfiguration()
+			.setUserAccess(UserAccess.guest)
+			.clickToolbarBack();
+		// show results
+		qtiPage
+			.options()
+			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.save();
+
+		//a user search the content package
+		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		userLoginPage
+			.loginAs(ryomou.getLogin(), ryomou.getPassword())
+			.resume();
+		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		userNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// first user make the test
+		QTI21Page ryomouQtiPage = QTI21Page
+				.getQTI12Page(participantBrowser);
+		ryomouQtiPage
+			.assertOnAssessmentItem()
+			.answerGapTextWithPlaceholder("3", "pi")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.answerGapTextWithPlaceholder("3.15", "pi")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerGapTextWithPlaceholder("14.914", "rounding")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.answerGapTextWithPlaceholder("14.915", "rounding")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerGapTextWithPlaceholder("-14.932", "negative")
+			.saveAnswer()
+			.assertFeedback("Incorrect")
+			.answerGapTextWithPlaceholder("-14.920", "negative")
+			.saveAnswer()
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(2);// 1 point + 1 point + 0 point
+		
+
+		//a second user search the content package
+		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		reiLoginPage
+			.loginAs(rei.getLogin(), rei.getPassword())
+			.resume();
+		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		reiNavBar
+			.openMyCourses()
+			.openSearch()
+			.extendedSearch(qtiTestTitle)
+			.select(qtiTestTitle)
+			.start();
+		
+		// make the test with all the correct answers
+		QTI21Page
+			.getQTI12Page(participantBrowser)
+			.assertOnAssessmentItem()
+			.answerGapTextWithPlaceholder("3.2", "pi")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerGapTextWithPlaceholder("14.925", "rounding")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.nextAnswer()
+			.answerGapTextWithPlaceholder("-14.921", "negative")
+			.saveAnswer()
+			.assertFeedback("Correct feedback")
+			.endTest()
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestScore(3); 
 	}
 	
 	/**

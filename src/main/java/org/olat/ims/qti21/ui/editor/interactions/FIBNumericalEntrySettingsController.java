@@ -78,9 +78,12 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_gap_numeric_form");
+		
 		Double solution = interaction.getSolution();
 		String solString = solution == null ? "" : solution.toString();
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solString, formLayout);
+		solutionEl.setElementCssClass("o_sel_gap_numeric_solution");
 		solutionEl.setEnabled(!restrictedEdit);
 		if(!restrictedEdit && !StringHelper.containsNonWhitespace(solString)) {
 			solutionEl.setFocus(true);
@@ -88,6 +91,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		
 		String placeholder = interaction.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
+		placeholderEl.setElementCssClass("o_sel_gap_numeric_placeholder");
 		placeholderEl.setEnabled(!restrictedEdit);
 		
 		Integer expectedLength = interaction.getExpectedLength();
@@ -131,6 +135,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		}
 		lowerToleranceEl = uifactory.addTextElement("fib.tolerance.low", "fib.tolerance.low", 8, lowerToleranceString, formLayout);
 		lowerToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
+		lowerToleranceEl.setElementCssClass("o_sel_gap_numeric_lower_bound");
 		lowerToleranceEl.setEnabled(!restrictedEdit);
 		
 		Double upperTolerance = interaction.getUpperTolerance();
@@ -150,6 +155,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		}
 		upperToleranceEl = uifactory.addTextElement("fib.tolerance.up", "fib.tolerance.up", 8, upperToleranceString, formLayout);
 		upperToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
+		upperToleranceEl.setElementCssClass("o_sel_gap_numeric_upper_bound");
 		upperToleranceEl.setEnabled(!restrictedEdit);
 		updateToleranceUpAndLow();
 

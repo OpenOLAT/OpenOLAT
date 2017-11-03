@@ -147,6 +147,11 @@ public class QTI21EditorPage {
 		return new QTI21GapEntriesEditorPage(browser);
 	}
 	
+	public QTI21GapEntriesEditorPage addNumerical() {
+		addQuestion(QTI21QuestionType.numerical);
+		return new QTI21GapEntriesEditorPage(browser);
+	}
+	
 	private QTI21EditorPage addQuestion(QTI21QuestionType type) {
 		openElementsMenu();
 		
