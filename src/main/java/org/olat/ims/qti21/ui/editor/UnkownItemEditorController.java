@@ -24,6 +24,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -161,8 +162,11 @@ public class UnkownItemEditorController extends FormBasicController {
         final ItemSessionController sessionController = new ItemSessionController(qtiService.jqtiExtensionManager(),
                 itemSessionControllerSettings, itemProcessingMap, itemSessionState);
         sessionController.addNotificationListener(new NotificationRecorder(NotificationLevel.ERROR));
-
+        
+        Long randomSeed = new Random().nextLong();
+        sessionController.setRandomSeed(randomSeed);
         sessionController.initialize(new Date());
+        sessionController.performTemplateProcessing(new Date());
         return sessionController;
     }
 
