@@ -598,10 +598,13 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 	throws IOException {
 		try {
 			File indexFile = new File(searchModuleConfig.getFullIndexPath());
-			Directory directory = FSDirectory.open(indexFile);
-			File permIndexFile = new File(searchModuleConfig.getFullPermanentIndexPath());
-			Directory permDirectory = FSDirectory.open(permIndexFile);
-			return DirectoryReader.indexExists(directory) && DirectoryReader.indexExists(permDirectory);
+			if(indexFile.exists()) {
+				Directory directory = FSDirectory.open(indexFile);
+				File permIndexFile = new File(searchModuleConfig.getFullPermanentIndexPath());
+				Directory permDirectory = FSDirectory.open(permIndexFile);
+				return DirectoryReader.indexExists(directory) && DirectoryReader.indexExists(permDirectory);
+			}
+			return false;
 		} catch (IOException e) {
 			throw e;
 		}

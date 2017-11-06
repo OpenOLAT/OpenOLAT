@@ -249,7 +249,7 @@ public class FileDocumentFactory {
 		if (searchModule.getFileSizeSuffixes().contains(suffix)) {
 			long maxFileSize = searchModule.getMaxFileSize();
 			if ( (maxFileSize != 0) && (fileSize > maxFileSize) ) {
-				log.info("File too big, exlude from search index. filename=" + fileName);
+				log.info("File too big, exclude from search index. filename=" + fileName);
 				excludedFileSizeCount++;
 				return false;
 			}
