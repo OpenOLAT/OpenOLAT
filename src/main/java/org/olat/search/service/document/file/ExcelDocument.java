@@ -34,7 +34,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -87,12 +87,10 @@ public class ExcelDocument extends FileDocument {
 							for (int cellNumber = row.getFirstCellNum(); cellNumber <= row.getLastCellNum(); cellNumber++) {
 								HSSFCell cell = row.getCell(cellNumber);
 								if (cell != null) {
-									// if (cell.getCellStyle().equals(HSSFCell.CELL_TYPE_NUMERIC))
-									if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
+									if (cell.getCellTypeEnum() == CellType.STRING) {
 										content.append(cell.getStringCellValue()).append(' ');
 									}
 								} else {
-									// throw new DocumentException();
 									cellNullCounter++;
 								}
 							}

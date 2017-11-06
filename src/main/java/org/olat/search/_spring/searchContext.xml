@@ -80,6 +80,8 @@
 			<list>
 				<!-- list of files which will not be indexed -->
 				<value>ppt</value>
+				<value>doc</value>
+				<value>xls</value>
 			</list>
 		</constructor-arg>
 	</bean>

@@ -87,7 +87,6 @@ public class QuestionItemDocumentFactory {
 		oDocument.setParentContextType(searchResourceContext.getParentContextType());
 		oDocument.setParentContextName(searchResourceContext.getParentContextName());
 
-		System.out.println(item.getTitle());
 		//author
 		StringBuilder authorSb = new StringBuilder();
 		List<Identity> owners = qpoolService.getAuthors(item);
