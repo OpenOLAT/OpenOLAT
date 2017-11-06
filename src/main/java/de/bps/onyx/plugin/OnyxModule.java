@@ -234,6 +234,7 @@ public class OnyxModule extends AbstractSpringModule implements ConfigOnOff {
 			} else {
 				eval.setValid(false);
 			}
+			PathUtils.closeSubsequentFS(fPath);
 		} catch(NoSuchFileException nsfe) {
 			eval.setValid(false);
 		} catch (IOException | IllegalArgumentException e) {

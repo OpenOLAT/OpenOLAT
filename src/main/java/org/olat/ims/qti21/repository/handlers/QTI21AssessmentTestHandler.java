@@ -47,6 +47,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.PathUtils;
 import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
@@ -300,6 +301,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 			QTI21IMSManifestExplorerVisitor visitor = new QTI21IMSManifestExplorerVisitor();
 			Files.walkFileTree(path, visitor);
 			Files.walkFileTree(path, new CopyAndConvertVisitor(path, destDir, visitor.getInfos(), new YesMatcher()));
+			PathUtils.closeSubsequentFS(path);
 			return true;
 		} catch (IOException e) {
 			log.error("", e);

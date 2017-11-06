@@ -46,6 +46,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.PathUtils;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.fileresource.types.FileResource;
@@ -191,6 +192,7 @@ public class UploadCertificateController extends FormBasicController {
 					fileEl.setErrorKey("upload.error.noindex", null);
 				}
 				allOk = visitor.hasFound();
+				PathUtils.closeSubsequentFS(path);
 
 				formatEl.setVisible(allOk);
 				orientationEl.setVisible(allOk);

@@ -37,7 +37,7 @@ public class SimpleHtmlParserTest {
 	@Test
 	public void parse_minimalTinyMCEHTMLPage() throws IOException {
 		InputStream inHtml = SimpleHtmlParserTest.class.getResourceAsStream("simple_1.html");
-		String html = IOUtils.toString(inHtml);
+		String html = IOUtils.toString(inHtml, "UTF-8");
 		
 		SimpleHtmlParser parser = new SimpleHtmlParser(html);
 		Assert.assertEquals("<body>", parser.getBodyTag());
@@ -52,7 +52,7 @@ public class SimpleHtmlParserTest {
 	@Test
 	public void parse_externHtmlEditor() throws IOException {
 		InputStream inHtml = SimpleHtmlParserTest.class.getResourceAsStream("simple_2.html");
-		String html = IOUtils.toString(inHtml);
+		String html = IOUtils.toString(inHtml, "UTF-8");
 		
 		SimpleHtmlParser parser = new SimpleHtmlParser(html);
 		Assert.assertEquals("<body>", parser.getBodyTag());

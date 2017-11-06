@@ -27,6 +27,7 @@ import java.nio.file.Path;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.util.PathUtils;
 import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.fileresource.types.ScormCPFileResource;
@@ -81,6 +82,7 @@ public class FileResourceTest {
 		Path path = FileResource.getResource(file, file.getName());
 		//must be root
 		Assert.assertEquals(0, path.getNameCount());
+		PathUtils.closeSubsequentFS(path);
 	}
 	
 

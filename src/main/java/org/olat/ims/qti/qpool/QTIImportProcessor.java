@@ -21,6 +21,7 @@ package org.olat.ims.qti.qpool;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -56,6 +57,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.PathUtils;
 import org.olat.core.util.PathUtils.CopyVisitor;
 import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.StringHelper;
@@ -141,6 +143,10 @@ class QTIImportProcessor {
 					List<QuestionItem> processdItems = process(docInfos);
 					qItems.addAll(processdItems);
 					dbInstance.commit();
+				}
+
+				for(DocInfos docInfos:docInfoList) {
+					IOUtils.closeQuietly(docInfos);
 				}
 			}
 		} catch (IOException e) {
@@ -793,7 +799,7 @@ class QTIImportProcessor {
 		}
 	}
 	
-	public static class DocInfos {
+	public static class DocInfos implements Closeable {
 		private Document doc;
 		private String filename;
 		private Path root;
@@ -838,6 +844,11 @@ class QTIImportProcessor {
 
 		public void setQtiComment(String qtiComment) {
 			this.qtiComment = qtiComment;
+		}
+
+		@Override
+		public void close() throws IOException {
+			PathUtils.closeSubsequentFS(root);
 		}
 	}
 }

@@ -54,6 +54,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.PathUtils;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
@@ -171,6 +172,7 @@ public class WikiManager {
 			
 			Path destDir = targetDirectory.toPath();
 			Files.walkFileTree(path, new ImportVisitor(destDir));
+			PathUtils.closeSubsequentFS(path);
 			return true;
 		} catch (IOException e) {
 			log.error("", e);

@@ -51,6 +51,8 @@ public class MultipartReader {
 		servlet31(request);
 	}
 	private final void servlet31(HttpServletRequest request) {
+		
+		
 		try {
 			for(Part part:request.getParts()) {
 				if(part.getContentType() != null) {
@@ -65,7 +67,7 @@ public class MultipartReader {
 					part.write(file.getAbsolutePath());
 					file = new File(WebappHelper.getTmpDir(), filename);
 				} else {
-					String value = IOUtils.toString(part.getInputStream());
+					String value = IOUtils.toString(part.getInputStream(), request.getCharacterEncoding());
 					fields.put(part.getName(), value);
 				}
 				

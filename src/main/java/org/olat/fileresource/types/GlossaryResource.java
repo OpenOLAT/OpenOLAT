@@ -89,7 +89,7 @@ public class GlossaryResource extends FileResource {
 		ResourceEvaluation eval = new ResourceEvaluation();
 		try {
 			GlossaryFileFilter visitor = new GlossaryFileFilter();
-			PathUtils.visit(file, filename, visitor);
+			Path fPath = PathUtils.visit(file, filename, visitor);
 			if(visitor.hasFile()) {
 				XMLScanner scanner = new XMLScanner();
 				scanner.scan(visitor.glossaryFile);
@@ -97,6 +97,7 @@ public class GlossaryResource extends FileResource {
 			} else {
 				eval.setValid(false);
 			}
+			PathUtils.closeSubsequentFS(fPath);
 		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 		}

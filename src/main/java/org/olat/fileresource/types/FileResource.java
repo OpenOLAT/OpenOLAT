@@ -39,6 +39,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.PathUtils;
 import org.olat.core.util.PathUtils.CopyVisitor;
 import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.StringHelper;
@@ -94,7 +95,9 @@ public class FileResource implements OLATResourceable {
 
 	
 	/**
-	 * This method open a new FileSystem for zip
+	 * This method open a new FileSystem for zip, please close
+	 * it with PathUtils.closeSubsequentFS()
+	 * 
 	 * @param file
 	 * @param filename
 	 * @return
@@ -143,6 +146,7 @@ public class FileResource implements OLATResourceable {
 			
 			Path destDir = targetDirectory.toPath();
 			Files.walkFileTree(path, new CopyVisitor(path, destDir, filter));
+			PathUtils.closeSubsequentFS(path);
 			return true;
 		} catch (IOException e) {
 			log.error("", e);

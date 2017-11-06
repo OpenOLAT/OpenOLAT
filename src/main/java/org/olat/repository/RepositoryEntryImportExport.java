@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -275,10 +276,12 @@ public class RepositoryEntryImportExport {
 	 * Read previousely exported Propertiesproperties
 	 */
 	private void loadConfiguration() {
+		FileSystem fs = null;
 		try {
 			if(baseDirectory.exists()) {
 				if(baseDirectory.getName().endsWith(".zip")) {
-					Path fPath = FileSystems.newFileSystem(baseDirectory.toPath(), null).getPath("/");
+					fs = FileSystems.newFileSystem(baseDirectory.toPath(), null);
+					Path fPath = fs.getPath("/");
 					Path manifestPath = fPath.resolve("export").resolve(PROPERTIES_FILE);
 					try(InputStream inputFile = Files.newInputStream(manifestPath, StandardOpenOption.READ)) {
 						XStream xstream = getXStream();
@@ -301,6 +304,8 @@ public class RepositoryEntryImportExport {
 			propertiesLoaded = true;
 		} catch (Exception ce) {
 			throw new OLATRuntimeException("Error importing repository entry properties.", ce);
+		} finally {
+			IOUtils.closeQuietly(fs);
 		}
 	}
 	

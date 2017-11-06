@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -121,8 +122,8 @@ public class QTI21ImportProcessor {
 	public List<QuestionItem> process(File file) {
 		//export zip file
 		List<QuestionItem> items = new ArrayList<>();
-		try {
-			Path fPath = FileSystems.newFileSystem(file.toPath(), null).getPath("/");
+		try(FileSystem fs = FileSystems.newFileSystem(file.toPath(), null)) {
+			Path fPath = fs.getPath("/");
 			if(fPath != null) {
 				ImsManifestVisitor visitor = new ImsManifestVisitor();
 			    Files.walkFileTree(fPath, visitor);

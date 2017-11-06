@@ -50,6 +50,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.PathUtils;
 import org.olat.core.util.PathUtils.YesMatcher;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -177,6 +178,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 			
 			Path destDir = targetDirectory.toPath();
 			Files.walkFileTree(path, new CopyVisitor(path, destDir, new YesMatcher()));
+			PathUtils.closeSubsequentFS(path);
 			return true;
 		} catch (IOException e) {
 			log.error("", e);

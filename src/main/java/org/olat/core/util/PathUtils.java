@@ -34,6 +34,8 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ServiceConfigurationError;
 
+import org.apache.commons.io.IOUtils;
+
 /**
  * 
  * Initial date: 08.05.2014<br>
@@ -59,6 +61,16 @@ public class PathUtils {
 		return true;
 	}
 	
+	/**
+	 * Use the closeSubsequentFS method to close the file system.
+	 * 
+	 * @param file The file to visit
+	 * @param filename The filename
+	 * @param visitor The visitor
+	 * @return
+	 * @throws IOException
+	 * @throws IllegalArgumentException
+	 */
 	public static Path visit(File file, String filename, FileVisitor<Path> visitor) 
 	throws IOException, IllegalArgumentException {
 		if(!StringHelper.containsNonWhitespace(filename)) {
@@ -81,6 +93,12 @@ public class PathUtils {
 		    Files.walkFileTree(fPath, visitor);
 		}
 		return fPath;
+	}
+	
+	public static void closeSubsequentFS(Path path) {
+		if(path != null && FileSystems.getDefault() != path.getFileSystem()) {
+			IOUtils.closeQuietly(path.getFileSystem());
+		}
 	}
 	
 	public static class YesMatcher implements PathMatcher {

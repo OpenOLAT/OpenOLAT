@@ -63,8 +63,9 @@ public class WikiResource extends FileResource {
 		ResourceEvaluation eval = new ResourceEvaluation();
 		try {
 			IndexFileFilter visitor = new IndexFileFilter();
-			PathUtils.visit(file, filename, visitor);
+			Path fPath = PathUtils.visit(file, filename, visitor);
 			eval.setValid(visitor.isValid());
+			PathUtils.closeSubsequentFS(fPath);
 		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 		}

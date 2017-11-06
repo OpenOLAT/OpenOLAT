@@ -603,7 +603,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		File template = new File(baseFolder, "mail_template.html");
 		if(template.exists()) {
 			try(InputStream in = new FileInputStream(template)) {
-				return IOUtils.toString(in);
+				return IOUtils.toString(in, "UTF-8");
 			} catch (IOException e) {
 				log.error("", e);
 			}
@@ -622,7 +622,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			File templateFile = new File(baseFolder, "mail_template.html");
 			StringReader reader = new StringReader(template);
 			out = new FileOutputStream(templateFile);
-			IOUtils.copy(reader, out);
+			IOUtils.copy(reader, out, "UTF-8");
 		} catch (IOException e) {
 			log.error("", e);
 		} finally {
@@ -633,7 +633,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	@Override
 	public String getDefaultMailTemplate() {
 		try(InputStream in = MailModule.class.getResourceAsStream("_content/mail_template.html")) {
-			return IOUtils.toString(in);
+			return IOUtils.toString(in, "UTF-8");
 		} catch (IOException e) {
 			log.error("Cannot read the default mail template", e);
 			return null;

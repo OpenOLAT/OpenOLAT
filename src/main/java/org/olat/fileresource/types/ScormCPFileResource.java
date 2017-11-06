@@ -94,6 +94,7 @@ public class ScormCPFileResource extends FileResource {
 			} else {
 				eval.setValid(false);
 			}
+			PathUtils.closeSubsequentFS(fPath);
 		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 			eval.setValid(false);

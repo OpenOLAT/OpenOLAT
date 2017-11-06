@@ -115,7 +115,7 @@ public class EPXStreamHandler {
 				Transformer transformer = filterArtefactsTemplates.newTransformer();
 				transformer.transform(new StreamSource(zipIn), new StreamResult(buffer));
 			} else {
-				IOUtils.copy(zipIn, buffer);
+				IOUtils.copy(zipIn, buffer, "UTF-8");
 			}
 
 			PortfolioStructure struct = (PortfolioStructure) myStream.fromXML(buffer.toString());

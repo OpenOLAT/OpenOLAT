@@ -185,6 +185,8 @@ public class CourseHandler implements RepositoryHandler {
 				}
 			}
 			eval.setValid(visitor.isValid());
+			
+			PathUtils.closeSubsequentFS(fPath);
 		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 		}

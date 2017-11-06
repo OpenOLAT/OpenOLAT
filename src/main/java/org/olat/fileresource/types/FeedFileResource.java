@@ -94,6 +94,7 @@ public abstract class FeedFileResource extends FileResource {
 					eval.setDescription(feed.getDescription());
 				}
 			}
+			PathUtils.closeSubsequentFS(fPath);
 		} catch (IOException | IllegalArgumentException e) {
 			log.error("", e);
 		}

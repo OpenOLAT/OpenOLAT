@@ -70,7 +70,7 @@ public class AboutController extends BasicController {
 				licensesStream = new FileInputStream(noticeFile);			
 			}
 			if(licensesStream != null) {
-				licenses = IOUtils.toString(licensesStream);
+				licenses = IOUtils.toString(licensesStream, "UTF-8");
 			}
 		} catch (IOException e) {
 			logError("Error while reading NOTICE.TXT", e);
