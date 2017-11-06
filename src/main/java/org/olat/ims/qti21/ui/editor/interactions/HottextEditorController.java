@@ -88,6 +88,7 @@ public class HottextEditorController extends FormBasicController {
 		String question = itemBuilder.getQuestion();
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", question, 16, -1, itemContainer,
 				formLayout, ureq.getUserSession(),  getWindowControl());
+		textEl.setElementCssClass("o_sel_assessment_item_hottext_text");
 		textEl.addActionListener(FormEvent.ONCLICK);
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
 		richTextConfig.enableQTITools(false, false, true);
@@ -96,6 +97,7 @@ public class HottextEditorController extends FormBasicController {
 		
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsContainer.setElementCssClass("o_sel_hottext_save");
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);

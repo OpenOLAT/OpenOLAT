@@ -133,6 +133,13 @@ public class QTI21Page {
 		elements.get(0).click();
 		return this;
 	}
+	
+	public QTI21Page answerHottext(int index) {
+		OOGraphene.waitElement(By.className("hottextInteraction"), browser);
+		By checkBy = By.xpath("//div[contains(@class,'hottextInteraction')]//p/span[@class='hottext'][" + index + "]/input[@type='checkbox']");
+		browser.findElement(checkBy).click();
+		return this;
+	}
 
 	public QTI21Page answerCorrectKPrim(String... choices) {
 		for(String choice:choices) {

@@ -152,6 +152,11 @@ public class QTI21EditorPage {
 		return new QTI21GapEntriesEditorPage(browser);
 	}
 	
+	public QTI21HottextEditorPage addHottext() {
+		addQuestion(QTI21QuestionType.hottext);
+		return new QTI21HottextEditorPage(browser);
+	}
+	
 	private QTI21EditorPage addQuestion(QTI21QuestionType type) {
 		openElementsMenu();
 		
