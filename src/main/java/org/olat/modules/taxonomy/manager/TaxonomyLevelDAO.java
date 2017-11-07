@@ -36,6 +36,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
@@ -92,28 +93,39 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		String storage = createLevelStorage(taxonomy, level);
 		level.setDirectoryPath(storage);
 		
-		if(parent != null) {
-			level.setParent(parent);
-			
-			String parentPathOfKeys = ((TaxonomyLevelImpl)parent).getMaterializedPathKeys();
-			if(parentPathOfKeys == null || "/".equals(parentPathOfKeys)) {
-				parentPathOfKeys = "";
-			}
-			String parentPathOfIdentifiers = ((TaxonomyLevelImpl)parent).getMaterializedPathIdentifiers();
-			if(parentPathOfIdentifiers == null || "/".equals(parentPathOfIdentifiers)) {
-				parentPathOfIdentifiers = "";
-			}
-
-			level.setMaterializedPathKeys(parentPathOfKeys + level.getKey() + "/");
-			level.setMaterializedPathIdentifiers(parentPathOfIdentifiers + level.getIdentifier()  + "/");
-		} else {
-			level.setMaterializedPathKeys("/" + level.getKey() + "/");
-			level.setMaterializedPathIdentifiers("/" + level.getIdentifier()  + "/");
-		}
+		String identifiersPath = getMaterializedPathIdentifiers(parent, level);
+		String keysPath = getMaterializedPathKeys(parent, level);
+		level.setParent(parent);
+		level.setMaterializedPathKeys(keysPath);
+		level.setMaterializedPathIdentifiers(identifiersPath);
 
 		level = dbInstance.getCurrentEntityManager().merge(level);
 		level.getTaxonomy();
 		return level;
+	}
+	
+	private String getMaterializedPathIdentifiers(TaxonomyLevel parent, TaxonomyLevel level) {
+		if(parent != null) {
+			String parentPathOfIdentifiers = parent.getMaterializedPathIdentifiers();
+			if(parentPathOfIdentifiers == null || "/".equals(parentPathOfIdentifiers)) {
+				parentPathOfIdentifiers = "/";
+			}
+			return parentPathOfIdentifiers + level.getIdentifier()  + "/";
+		}
+		return "/" + level.getIdentifier()  + "/";
+	}
+	
+	private String getMaterializedPathKeys(TaxonomyLevel parent, TaxonomyLevel level) {
+		if(parent != null) {
+
+			String parentPathOfKeys = parent.getMaterializedPathKeys();
+			if(parentPathOfKeys == null || "/".equals(parentPathOfKeys)) {
+				parentPathOfKeys = "";
+			}
+
+			return parentPathOfKeys + level.getKey() + "/";
+		}
+		return "/" + level.getKey() + "/";
 	}
 	
 	public TaxonomyLevel loadByKey(Long key) {
@@ -171,8 +183,19 @@ public class TaxonomyLevelDAO implements InitializingBean {
 			.getResultList();
 	}
 	
+	public TaxonomyLevel getParent(TaxonomyLevelRef taxonomyLevel) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select level.parent from ctaxonomylevel as level")
+		  .append(" where level.key=:taxonomyLevelKey");
+		List<TaxonomyLevel> levels = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), TaxonomyLevel.class)
+				.setParameter("taxonomyLevelKey", taxonomyLevel.getKey())
+				.getResultList();
+		return levels == null || levels.isEmpty() ? null : levels.get(0);
+	}
+	
 	// Perhaps replace it with a select in ( materializedPathKeys.split("[/]") ) would be better
-	public List<TaxonomyLevel> getParentLine(TaxonomyLevel taxonomyLevel, Taxonomy taxonomy) {
+	public List<TaxonomyLevel> getParentLine(TaxonomyLevel taxonomyLevel, TaxonomyRef taxonomy) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select level from ctaxonomylevel as level")
 		  .append(" left join fetch level.parent as parent")
@@ -189,9 +212,99 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		return levels;
 	}
 	
+	public List<TaxonomyLevel> getDescendants(TaxonomyLevel taxonomyLevel, TaxonomyRef taxonomy) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select level from ctaxonomylevel as level")
+		  .append(" left join fetch level.parent as parent")
+		  .append(" left join fetch level.type as type")
+		  .append(" where level.taxonomy.key=:taxonomyKey")
+		  .append(" and level.key!=:levelKey and level.materializedPathKeys like :materializedPath");
+		  
+		List<TaxonomyLevel> levels = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), TaxonomyLevel.class)
+			.setParameter("materializedPath", taxonomyLevel.getMaterializedPathKeys() + "%")
+			.setParameter("levelKey", taxonomyLevel.getKey())
+			.setParameter("taxonomyKey", taxonomy.getKey())
+			.getResultList();
+		Collections.sort(levels, new PathMaterializedPathLengthComparator());
+		return levels;
+	}
+	
 	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level) {
+		boolean updatePath = false;
+		
+		String path = level.getMaterializedPathIdentifiers();
+		String newPath = null;
+		
+		TaxonomyLevel parentLevel = getParent(level);
+		if(parentLevel != null) {
+			newPath = getMaterializedPathIdentifiers(parentLevel, level);
+			updatePath = !newPath.equals(path);
+			if(updatePath) {
+				((TaxonomyLevelImpl)level).setMaterializedPathIdentifiers(newPath);
+			}
+		}
+
 		((TaxonomyLevelImpl)level).setLastModified(new Date());
-		return dbInstance.getCurrentEntityManager().merge(level);
+		TaxonomyLevel mergedLevel = dbInstance.getCurrentEntityManager().merge(level);
+		
+		if(updatePath) {
+			List<TaxonomyLevel> descendants = getDescendants(mergedLevel, mergedLevel.getTaxonomy());
+			for(TaxonomyLevel descendant:descendants) {
+				String descendantPath = descendant.getMaterializedPathIdentifiers();
+				if(descendantPath.indexOf(path) == 0) {
+					String end = descendantPath.substring(path.length(), descendantPath.length());
+					String updatedPath = newPath + end;
+					((TaxonomyLevelImpl)descendant).setMaterializedPathIdentifiers(updatedPath);
+				}
+				dbInstance.getCurrentEntityManager().merge(descendant);
+			}
+		}
+		return mergedLevel;
+	}
+	
+	public boolean delete(TaxonomyLevelRef taxonomyLevel) {
+		if(!hasChildren(taxonomyLevel) && !hasItemUsing(taxonomyLevel) &&!hasCompetenceUsing(taxonomyLevel)) {
+			TaxonomyLevel impl = loadByKey(taxonomyLevel.getKey());
+			if(impl != null) {
+				dbInstance.getCurrentEntityManager().remove(impl);
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean hasItemUsing(TaxonomyLevelRef taxonomyLevel) {
+		String sb = "select item.key from questionitem item where item.taxonomyLevel.key=:taxonomyLevelKey";
+		List<Long> items = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("taxonomyLevelKey", taxonomyLevel.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return items != null && items.size() > 0 && items.get(0) != null && items.get(0).intValue() > 0;
+	}
+	
+	public boolean hasCompetenceUsing(TaxonomyLevelRef taxonomyLevel) {
+		String sb = "select competence.key from ctaxonomycompetence competence where competence.taxonomyLevel.key=:taxonomyLevelKey";
+		List<Long> comptences = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("taxonomyLevelKey", taxonomyLevel.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return comptences != null && comptences.size() > 0 && comptences.get(0) != null && comptences.get(0).intValue() > 0;
+	}
+	
+	public boolean hasChildren(TaxonomyLevelRef taxonomyLevel) {
+		String sb = "select level.key from ctaxonomylevel as level where level.parent.key=:taxonomyLevelKey";
+		List<Long> children = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("taxonomyLevelKey", taxonomyLevel.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return children != null && children.size() > 0 && children.get(0) != null && children.get(0).intValue() > 0;
 	}
 	
 	public VFSContainer getDocumentsLibrary(TaxonomyLevel level) {

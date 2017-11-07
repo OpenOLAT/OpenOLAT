@@ -121,6 +121,11 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
+	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel) {
+		return taxonomyLevelDao.delete(taxonomyLevel);
+	}
+
+	@Override
 	public VFSContainer getDocumentsLibrary(TaxonomyLevel level) {
 		return taxonomyLevelDao.getDocumentsLibrary(level);
 	}

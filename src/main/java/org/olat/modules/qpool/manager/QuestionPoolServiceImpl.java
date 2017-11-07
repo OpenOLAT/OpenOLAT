@@ -847,11 +847,13 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level, String identifier, String displayName) {
-		return null;//taxonomy taxonomyLevelDao.updateTaxonomyLevel(level).update(newField, level);
+		level.setIdentifier(identifier);
+		level.setDisplayName(displayName);
+		return taxonomyLevelDao.updateTaxonomyLevel(level);
 	}
 
 	@Override
 	public boolean deleteTaxonomyLevel(TaxonomyLevel level) {
-		return false;//TODO taxonomy  taxonomyLevelDao.delete(level);
+		return taxonomyLevelDao.delete(level);
 	}
 }

@@ -54,22 +54,54 @@ public interface TaxonomyService {
 			TaxonomyLevelManagedFlag[] flags, TaxonomyLevel parent, Taxonomy taxonomy);
 	
 	/**
+	 * 
+	 * @return true if the level can be deleted
+	 */
+	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel);
+	
+	/**
 	 * @param ref The root taxonomy (optional)
 	 * @return A list of levels
 	 */
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref);
 	
+	/**
+	 * Load a taxonomy level by is reference.
+	 * 
+	 * @param ref The taxonomy level key
+	 * @return The freshly loaded taxonomy level
+	 */
 	public TaxonomyLevel getTaxonomyLevel(TaxonomyLevelRef ref);
+	
 	
 	public List<TaxonomyLevel> getTaxonomyLevelParentLine(TaxonomyLevel taxonomyLevel, Taxonomy taxonomy);
 	
 	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level);
 	
-	
+	/**
+	 * Get the documents directory for the specified taxonomy level.
+	 * 
+	 * @param level The taxonomy level
+	 * @return A directory
+	 */
 	public VFSContainer getDocumentsLibrary(TaxonomyLevel level);
 	
+	/**
+	 * Get the documents library for the specified taxonomy.
+	 * 
+	 * @param taxonomy The taxonomy
+	 * @return A directory
+	 */
 	public VFSContainer getDocumentsLibrary(Taxonomy taxonomy);
 	
+	/**
+	 * The directory reserved to the information page of the
+	 * taxonomy. The info page itself is normally "index.html"
+	 * and the directory can be used to save some images.
+	 * 
+	 * @param taxonomy The taxonomy
+	 * @return A directory
+	 */
 	public VFSContainer getTaxonomyInfoPageContainer(Taxonomy taxonomy);
 	
 	
@@ -181,6 +213,13 @@ public interface TaxonomyService {
 			TaxonomyRef taxonomy, TaxonomyCompetence competence,
 			IdentityRef assessedIdentity, IdentityRef author);
 	
+	/**
+	 * Standardized conversion from object to XML used by
+	 * the audit log.
+	 * 
+	 * @param competence The competence
+	 * @return A XML representation of the competence.
+	 */
 	public String toAuditXml(TaxonomyCompetence competence);
 
 }
