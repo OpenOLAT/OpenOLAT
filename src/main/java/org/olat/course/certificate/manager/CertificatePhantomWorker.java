@@ -189,6 +189,14 @@ public class CertificatePhantomWorker {
 	private void fillRepositoryEntry(VelocityContext context) {
 		String title = entry.getDisplayname();
 		context.put("title", title);
+		String description = entry.getDescription();
+		context.put("description", description);
+		String requirements = entry.getRequirements();
+		context.put("requirements", requirements);
+		String objectives = entry.getObjectives();
+		context.put("objectives", objectives);
+		String credits = entry.getCredits();
+		context.put("credits", credits);
 		String externalRef = entry.getExternalRef();
 		context.put("externalReference", externalRef);
 		String authors = entry.getAuthors();
