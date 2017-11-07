@@ -228,7 +228,7 @@ public class TaxonomyWebServiceTest extends OlatJerseyTestCase {
 	}
 	
 	/**
-	 * Update level. Parent key is null -> it will not change it.
+	 * Update level. 
 	 * 
 	 * @throws IOException
 	 * @throws URISyntaxException
@@ -253,6 +253,7 @@ public class TaxonomyWebServiceTest extends OlatJerseyTestCase {
 		levelVo.setDescription("Updated description");
 		levelVo.setExternalId("Updated ext.");
 		levelVo.setTypeKey(type.getKey());
+		levelVo.setParentKey(rootLevel.getKey());
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString()).path("levels").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -279,6 +280,65 @@ public class TaxonomyWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertEquals("Updated ext.", savedLevel.getExternalId());
 		Assert.assertEquals(rootLevel.getKey(), savedLevel.getParent().getKey());
 		Assert.assertEquals(type.getKey(), savedLevel.getType().getKey());
+	}
+	
+	@Test
+	public void deleteTaxonomyLevel()
+	throws IOException, URISyntaxException {
+		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Del-1", "Taxonomy on rest", "Delete is sad!", "DELETE-tax-1");
+		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Del-root", "Root level on rest", "Level", "Ext-55", null, null, taxonomy);
+		TaxonomyLevel levelToDelete = taxonomyService.createTaxonomyLevel("REST-Del-u-1", "Sub level on rest", "Level", "Ext-56", null, rootLevel, taxonomy);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(taxonomy);
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
+				.path("levels").path(levelToDelete.getKey().toString()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		//check the deleted value
+		TaxonomyLevel deletedLevel =taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(levelToDelete.getKey()));
+		Assert.assertNull(deletedLevel);
+		TaxonomyLevel survivingRootLevel = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(rootLevel.getKey()));
+		Assert.assertNotNull(survivingRootLevel);
+	}
+	
+	/**
+	 * The REST method only delete something if possible. If the level
+	 * has some children, competences... the call will not delete it.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void deleteTaxonomyLevel_notPossible()
+	throws IOException, URISyntaxException {
+		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Del-2", "Taxonomy on rest", "Delete is sad! But there is some hope.", "DELETE-tax-2");
+		TaxonomyLevel rootLevel = taxonomyService.createTaxonomyLevel("REST-Del-root", "Root level on rest", "Level", "Ext-57", null, null, taxonomy);
+		TaxonomyLevel levelToDelete = taxonomyService.createTaxonomyLevel("REST-Del-u-2", "Sub level on rest", "Level", "Ext-58", null, rootLevel, taxonomy);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(taxonomy);
+		
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path(taxonomy.getKey().toString())
+				.path("levels").path(rootLevel.getKey().toString()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(304, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		//check the updated value
+		TaxonomyLevel survivingLevel = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(levelToDelete.getKey()));
+		Assert.assertNotNull(survivingLevel);
+		TaxonomyLevel survivingRootLevel = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(rootLevel.getKey()));
+		Assert.assertNotNull(survivingRootLevel);
 	}
 	
 	@Test

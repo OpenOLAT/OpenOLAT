@@ -205,12 +205,14 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("U-2", displayName, "A basic level", null, null, level1, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
+		// update the level 2
 		TaxonomyLevel reloadedLevel2 = taxonomyLevelDao.loadByKey(level2.getKey());
 		reloadedLevel2.setDisplayName("Updated");
 		reloadedLevel2.setIdentifier("UU");
 		TaxonomyLevel updatedLevel2 = taxonomyLevelDao.updateTaxonomyLevel(reloadedLevel2);
 		dbInstance.commitAndCloseSession();
 		
+		// check its path
 		String identifiersPath = updatedLevel2.getMaterializedPathIdentifiers();
 		Assert.assertEquals("/U-1/UU/", identifiersPath);
 	}
@@ -226,13 +228,14 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 		TaxonomyLevel level4_2 = taxonomyLevelDao.createTaxonomyLevel("U-4-2", displayName, "A basic level", null, null, level3, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
+		//update the level 2
 		TaxonomyLevel reloadedLevel2 = taxonomyLevelDao.loadByKey(level2.getKey());
 		reloadedLevel2.setDisplayName("Updated");
 		reloadedLevel2.setIdentifier("UBU");
 		TaxonomyLevel updatedLevel2 = taxonomyLevelDao.updateTaxonomyLevel(reloadedLevel2);
 		dbInstance.commitAndCloseSession();
 		
-		//check the different levels
+		//check the different levels paths
 		String identifiersPath2 = updatedLevel2.getMaterializedPathIdentifiers();
 		Assert.assertEquals("/U-1/UBU/", identifiersPath2);
 
@@ -247,5 +250,92 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 		TaxonomyLevel updatedLevel4_2 = taxonomyLevelDao.loadByKey(level4_2.getKey());
 		String identifiersPath4_2 = updatedLevel4_2.getMaterializedPathIdentifiers();
 		Assert.assertEquals("/U-1/UBU/U-3/U-4-2/", identifiersPath4_2);
+	}
+	
+	@Test
+	public void moveTaxonomyLevel_simple() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-106", "Moving taxonomy", null, null);
+		String displayName = UUID.randomUUID().toString();
+		TaxonomyLevel parentLevel = taxonomyLevelDao.createTaxonomyLevel("U-1", displayName, "A root level", null, null, null, null, taxonomy);
+		TaxonomyLevel targetLevel = taxonomyLevelDao.createTaxonomyLevel("T-1", displayName, "A root level", null, null, null, null, taxonomy);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("U-2", displayName, "A basic level", null, null, parentLevel, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+		
+		//move the level
+		TaxonomyLevel reloadedLevel = taxonomyLevelDao.loadByKey(level.getKey());
+		TaxonomyLevel movedLevel = taxonomyLevelDao.moveTaxonomyLevel(reloadedLevel, targetLevel);
+		dbInstance.commitAndCloseSession();
+
+		TaxonomyLevel reloadedMovedLevel = taxonomyLevelDao.loadByKey(movedLevel.getKey());
+		String identifiersPath = reloadedMovedLevel.getMaterializedPathIdentifiers();
+		Assert.assertEquals("/T-1/U-2/", identifiersPath);
+	}
+	
+	@Test
+	public void moveTaxonomyLevel_withChildren() {
+		// prepare some levels
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-107", "Large moving taxonomy", null, null);
+		String displayName = UUID.randomUUID().toString();
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("U-1", displayName, "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("U-2", displayName, "A basic level", null, null, level1, null, taxonomy);
+		TaxonomyLevel level3 = taxonomyLevelDao.createTaxonomyLevel("U-3", displayName, "A basic level", null, null, level2, null, taxonomy);
+		TaxonomyLevel level4_1 = taxonomyLevelDao.createTaxonomyLevel("U-4-1", displayName, "A basic level", null, null, level3, null, taxonomy);
+		TaxonomyLevel level4_2 = taxonomyLevelDao.createTaxonomyLevel("U-4-2", displayName, "A basic level", null, null, level3, null, taxonomy);
+		TaxonomyLevel targetLevel1 = taxonomyLevelDao.createTaxonomyLevel("T-1", displayName, "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel targetLevel2 = taxonomyLevelDao.createTaxonomyLevel("T-2", displayName, "A basic level", null, null, targetLevel1, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+		
+		//move the level 2
+		TaxonomyLevel reloadedLevel2 = taxonomyLevelDao.loadByKey(level2.getKey());
+		TaxonomyLevel movedLevel2 = taxonomyLevelDao.moveTaxonomyLevel(reloadedLevel2, targetLevel2);
+		dbInstance.commitAndCloseSession();
+
+		//check the different levels paths
+		TaxonomyLevel reloadedMovedLevel2 = taxonomyLevelDao.loadByKey(movedLevel2.getKey());
+		String identifiersPath2 = reloadedMovedLevel2.getMaterializedPathIdentifiers();
+		Assert.assertEquals("/T-1/T-2/U-2/", identifiersPath2);
+
+		TaxonomyLevel movedLevel3 = taxonomyLevelDao.loadByKey(level3.getKey());
+		String identifiersPath3 = movedLevel3.getMaterializedPathIdentifiers();
+		Assert.assertEquals("/T-1/T-2/U-2/U-3/", identifiersPath3);
+
+		TaxonomyLevel movedLevel4_1 = taxonomyLevelDao.loadByKey(level4_1.getKey());
+		String identifiersPath4_1 = movedLevel4_1.getMaterializedPathIdentifiers();
+		Assert.assertEquals("/T-1/T-2/U-2/U-3/U-4-1/", identifiersPath4_1);
+		
+		TaxonomyLevel movedLevel4_2 = taxonomyLevelDao.loadByKey(level4_2.getKey());
+		String identifiersPath4_2 = movedLevel4_2.getMaterializedPathIdentifiers();
+		Assert.assertEquals("/T-1/T-2/U-2/U-3/U-4-2/", identifiersPath4_2);
+	}
+	
+	@Test
+	public void moveTaxonomyLevel_toRoot() {
+		// prepare some levels
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-107", "Large moving taxonomy", null, null);
+		String displayName = UUID.randomUUID().toString();
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("U-1", displayName, "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("U-2", displayName, "A basic level", null, null, level1, null, taxonomy);
+		TaxonomyLevel level3 = taxonomyLevelDao.createTaxonomyLevel("U-3", displayName, "A basic level", null, null, level2, null, taxonomy);
+		TaxonomyLevel level4_1 = taxonomyLevelDao.createTaxonomyLevel("U-4-1", displayName, "A basic level", null, null, level3, null, taxonomy);
+		TaxonomyLevel level4_2 = taxonomyLevelDao.createTaxonomyLevel("U-4-2", displayName, "A basic level", null, null, level3, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+		
+		//move the level 2
+		TaxonomyLevel reloadedLevel3 = taxonomyLevelDao.loadByKey(level3.getKey());
+		TaxonomyLevel movedLevel3 = taxonomyLevelDao.moveTaxonomyLevel(reloadedLevel3, null);
+		dbInstance.commitAndCloseSession();
+
+		//check the different levels paths
+		TaxonomyLevel reloadedMovedLevel3 = taxonomyLevelDao.loadByKey(movedLevel3.getKey());
+		String identifiersPath3 = reloadedMovedLevel3.getMaterializedPathIdentifiers();
+		Assert.assertEquals("/U-3/", identifiersPath3);
+
+		TaxonomyLevel movedLevel4_1 = taxonomyLevelDao.loadByKey(level4_1.getKey());
+		String identifiersPath4_1 = movedLevel4_1.getMaterializedPathIdentifiers();
+		Assert.assertEquals("/U-3/U-4-1/", identifiersPath4_1);
+		
+		TaxonomyLevel movedLevel4_2 = taxonomyLevelDao.loadByKey(level4_2.getKey());
+		String identifiersPath4_2 = movedLevel4_2.getMaterializedPathIdentifiers();
+		Assert.assertEquals("/U-3/U-4-2/", identifiersPath4_2);
 	}
 }

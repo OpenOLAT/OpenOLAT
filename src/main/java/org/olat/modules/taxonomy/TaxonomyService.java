@@ -73,10 +73,32 @@ public interface TaxonomyService {
 	 */
 	public TaxonomyLevel getTaxonomyLevel(TaxonomyLevelRef ref);
 	
-	
+	/**
+	 * 
+	 * @param taxonomyLevel The taxonomy level
+	 * @param taxonomy The taxonomy
+	 * @return The list of levels
+	 */
 	public List<TaxonomyLevel> getTaxonomyLevelParentLine(TaxonomyLevel taxonomyLevel, Taxonomy taxonomy);
 	
+	/**
+	 * Update the level. If the identifier was changed, the method will
+	 * update all the children materialized identifiers path.
+	 * 
+	 * @param level The level to update
+	 * @return The updated level
+	 */
 	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level);
+	
+	/**
+	 * Move the level. The method will lock the taxonomy the method
+	 * update all the children materialized keys and identifiers path.
+	 * 
+	 * @param level The level to move
+	 * @param newParentLevel The new parent or null if the level will be root
+	 * @return The moved level
+	 */
+	public TaxonomyLevel moveTaxonomyLevel(TaxonomyLevel level, TaxonomyLevel newParentLevel);
 	
 	/**
 	 * Get the documents directory for the specified taxonomy level.

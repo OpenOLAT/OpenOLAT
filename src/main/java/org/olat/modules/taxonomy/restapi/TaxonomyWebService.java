@@ -118,8 +118,9 @@ public class TaxonomyWebService {
 	}
 	
 	/**
-	 * Create or update a taxonomy level. The method doesn't change to tree structure
-	 * and will ignore a modified parentKey.
+	 * Create or update a taxonomy level. The method changes to tree structure, a
+	 * null parent key will make the level a root one, a new parent key will move
+	 * the level.
 	 * 
 	 * @response.representation.200.qname {http://www.example.com}taxonomyLevelVO
 	 * @response.representation.200.mediaType application/xml, application/json
@@ -175,8 +176,50 @@ public class TaxonomyWebService {
 				level = taxonomyService.updateTaxonomyLevel(level);
 			}
 		}
+		
+		if((level.getParent() != null &&  levelVo.getParentKey() == null)
+				|| (level.getParent() == null && levelVo.getParentKey() != null)
+				|| (level.getParent() != null && !level.getParent().getKey().equals(levelVo.getParentKey()))) {
+			TaxonomyLevel newParentLevel = null;
+			if(levelVo.getParentKey() != null) {
+				newParentLevel = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(levelVo.getParentKey()));
+			}
+			level = taxonomyService.moveTaxonomyLevel(level, newParentLevel);
+		}
+		
 		TaxonomyLevelVO newLevelVo = new TaxonomyLevelVO(level);
 		return Response.ok(newLevelVo).build();
+	}
+	
+	/**
+	 * Delete the taxonomy level definitively.
+	 * 
+	 * @response.representation.200.doc The level was successfully deleted
+	 * @response.representation.304.doc The level cannot be deleted and was not modified
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @response.representation.404.doc The level was not found
+	 * @response.representation.404.doc The level taxonomy doesn't match the taxonomy of the web service
+	 * 
+	 * @param taxonomyKey The taxonomy tree
+	 * @param taxonomyLevelKey The level of the taxonomy to delete
+	 * @return Nothing
+	 */
+	@DELETE
+	@Path("levels/{taxonomyLevelKey}")
+	public Response deleteTaxonomyLevel(@PathParam("taxonomyLevelKey") String taxonomyLevelKey) {
+		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(new Long(taxonomyLevelKey)));
+		if(level == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(level.getTaxonomy() != null && !level.getTaxonomy().equals(taxonomy)) {
+			return Response.serverError().status(Status.CONFLICT).build();
+		}
+		
+		boolean canDelete = taxonomyService.deleteTaxonomyLevel(level);
+		if(canDelete) {
+			return Response.ok().build();
+		}
+		return Response.notModified().build();
 	}
 	
 	/**

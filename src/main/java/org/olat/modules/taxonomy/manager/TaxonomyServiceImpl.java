@@ -121,6 +121,11 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
+	public TaxonomyLevel moveTaxonomyLevel(TaxonomyLevel level, TaxonomyLevel newParentLevel) {
+		return taxonomyLevelDao.moveTaxonomyLevel(level, newParentLevel);
+	}
+
+	@Override
 	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel) {
 		return taxonomyLevelDao.delete(taxonomyLevel);
 	}

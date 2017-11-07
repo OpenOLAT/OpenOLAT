@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.LockModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -263,6 +264,58 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		return mergedLevel;
 	}
 	
+	/**
+	 * Move use a lock on the taxonomy to prevent concurrent changes. Therefore
+	 * the method will commit the changes as soon as possible.
+	 * 
+	 * @param level The level to move
+	 * @param newParentLevel The new parent level, if null the level move as a root
+	 * @return The updated level
+	 */
+	public TaxonomyLevel moveTaxonomyLevel(TaxonomyLevel level, TaxonomyLevel newParentLevel) {
+		@SuppressWarnings("unused")
+		Taxonomy lockedTaxonomy = loadForUpdate(level.getTaxonomy());
+
+		TaxonomyLevel parentLevel = getParent(level);
+		if(parentLevel == null && newParentLevel == null) {
+			return level;//already root
+		} else if(parentLevel != null && parentLevel.equals(newParentLevel)) {
+			return level;//same parent
+		}
+
+		String keysPath = level.getMaterializedPathKeys();
+		String identifiersPath = level.getMaterializedPathIdentifiers();
+		
+		List<TaxonomyLevel> descendants = getDescendants(level, level.getTaxonomy());
+		TaxonomyLevelImpl levelImpl = (TaxonomyLevelImpl)level;
+		levelImpl.setParent(newParentLevel);
+		levelImpl.setLastModified(new Date());
+		String newKeysPath = getMaterializedPathKeys(newParentLevel, levelImpl);
+		String newIdentifiersPath = getMaterializedPathIdentifiers(newParentLevel, levelImpl);
+		levelImpl.setMaterializedPathKeys(newKeysPath);
+		levelImpl.setMaterializedPathIdentifiers(newIdentifiersPath);
+		levelImpl = dbInstance.getCurrentEntityManager().merge(levelImpl);
+
+		for(TaxonomyLevel descendant:descendants) {
+			String descendantKeysPath = descendant.getMaterializedPathIdentifiers();
+			String descendantIdentifiersPath = descendant.getMaterializedPathIdentifiers();
+			if(descendantIdentifiersPath.indexOf(identifiersPath) == 0) {
+				String end = descendantIdentifiersPath.substring(identifiersPath.length(), descendantIdentifiersPath.length());
+				String updatedPath = newIdentifiersPath + end;
+				((TaxonomyLevelImpl)descendant).setMaterializedPathIdentifiers(updatedPath);
+			}
+			if(descendantKeysPath.indexOf(keysPath) == 0) {
+				String end = descendantKeysPath.substring(keysPath.length(), descendantKeysPath.length());
+				String updatedPath = newKeysPath + end;
+				((TaxonomyLevelImpl)descendant).setMaterializedPathIdentifiers(updatedPath);
+			}
+			dbInstance.getCurrentEntityManager().merge(descendant);
+		}
+		
+		dbInstance.commit();
+		return levelImpl;
+	}
+	
 	public boolean delete(TaxonomyLevelRef taxonomyLevel) {
 		if(!hasChildren(taxonomyLevel) && !hasItemUsing(taxonomyLevel) &&!hasCompetenceUsing(taxonomyLevel)) {
 			TaxonomyLevel impl = loadByKey(taxonomyLevel.getKey());
@@ -305,6 +358,19 @@ public class TaxonomyLevelDAO implements InitializingBean {
 			.setMaxResults(1)
 			.getResultList();
 		return children != null && children.size() > 0 && children.get(0) != null && children.get(0).intValue() > 0;
+	}
+	
+	public Taxonomy loadForUpdate(Taxonomy taxonomy) {
+		//first remove it from caches
+		dbInstance.getCurrentEntityManager().detach(taxonomy);
+
+		String query = "select taxonomy from ctaxonomy taxonomy where taxonomy.key=:taxonomyKey";
+		List<Taxonomy> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Taxonomy.class)
+				.setParameter("taxonomyKey", taxonomy.getKey())
+				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
+				.getResultList();
+		return entries == null || entries.isEmpty() ? null : entries.get(0);
 	}
 	
 	public VFSContainer getDocumentsLibrary(TaxonomyLevel level) {
