@@ -40,6 +40,8 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.id.Roles;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockRefImpl;
@@ -75,7 +77,6 @@ public class LectureBlocksWebService {
 	 * @return The lecture blocks
 	 */
 	@GET
-	@Path("")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getLectureBlocks(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
@@ -105,7 +106,6 @@ public class LectureBlocksWebService {
 	 * @return It returns the updated / created lecture block.
 	 */
 	@PUT
-	@Path("")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putLectureBlocks(LectureBlockVO block, @Context HttpServletRequest httpRequest) {
@@ -118,7 +118,10 @@ public class LectureBlocksWebService {
 	}
 	
 	/**
-	 * Create or update a lecture block.
+	 * Create or update a lecture block. The status of the blocks will be set to
+	 * autoclose only for newly created blocks. By update, the states of the
+	 * block and the roll call will not be updated.
+	 * 
 	 * @response.representation.200.qname {http://www.example.com}lectureBlocksVO
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The updated configuration
@@ -130,7 +133,6 @@ public class LectureBlocksWebService {
 	 * @return It returns the updated / created lecture block.
 	 */
 	@POST
-	@Path("")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postLectureBlocks(LectureBlockVO block, @Context HttpServletRequest httpRequest) {
@@ -145,12 +147,18 @@ public class LectureBlocksWebService {
 	private LectureBlock saveLectureBlock(LectureBlockVO blockVo) {
 		LectureBlock block;
 		int currentPlannedLectures;
+		boolean syncParticipants = false;
 		if(blockVo.getKey() != null && blockVo.getKey() > 0) {
 			block = lectureService.getLectureBlock(blockVo);
 			currentPlannedLectures = block.getPlannedLecturesNumber();
 		} else {
 			block = lectureService.createLectureBlock(entry);
 			currentPlannedLectures = -1;
+			if("autoclosed".equals(blockVo.getRollCallStatus())) {
+				block.setStatus(LectureBlockStatus.done);
+				block.setRollCallStatus(LectureRollCallStatus.autoclosed);
+				syncParticipants = true;
+			}
 		}
 		
 		if(blockVo.getExternalId() != null) {
@@ -187,6 +195,9 @@ public class LectureBlocksWebService {
 		LectureBlock savedLectureBlock = lectureService.save(block, null);
 		if(currentPlannedLectures > 0 && currentPlannedLectures != savedLectureBlock.getPlannedLecturesNumber()) {
 			lectureService.adaptRollCalls(savedLectureBlock);
+		}
+		if(syncParticipants) {
+			lectureService.syncParticipantSummaries(savedLectureBlock);
 		}
 		return savedLectureBlock;
 	}

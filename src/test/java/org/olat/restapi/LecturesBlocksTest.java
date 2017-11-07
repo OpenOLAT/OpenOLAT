@@ -47,6 +47,8 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockRefImpl;
@@ -198,6 +200,61 @@ public class LecturesBlocksTest extends OlatJerseyTestCase {
 		Assert.assertEquals(externalId, dbBlock.getExternalId());
 		Assert.assertNotNull(dbBlock.getStartDate());
 		Assert.assertNotNull(dbBlock.getEndDate());
+	}
+	
+	/**
+	 * Check that the done and autoclosed status are set.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void putLecturesBlock_autoclosed()
+	throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("lect-1");
+		ICourse course = CoursesWebService.createEmptyCourse(author, "Course with absence", "Course with absence", new CourseConfigVO());
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		String externalId = UUID.randomUUID().toString();
+		LectureBlockVO lectureBlockVo = new LectureBlockVO();
+		lectureBlockVo.setTitle("A block to close");
+		lectureBlockVo.setDescription("A description");
+		lectureBlockVo.setManagedFlagsString("all");
+		lectureBlockVo.setPlannedLectures(4);
+		lectureBlockVo.setExternalId(externalId);
+		lectureBlockVo.setStartDate(new Date());
+		lectureBlockVo.setEndDate(new Date());
+		lectureBlockVo.setStatus("done");
+		lectureBlockVo.setRollCallStatus("autoclosed");
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("entries")
+				.path(entry.getKey().toString()).path("lectureblocks").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, lectureBlockVo);
+		HttpResponse response = conn.execute(method);
+		
+		// check the response
+		Assertions.assertThat(response.getStatusLine().getStatusCode()).isIn(200, 201);
+
+		LectureBlockVO blockVo = conn.parse(response.getEntity().getContent(), LectureBlockVO.class);
+		Assert.assertNotNull(blockVo);
+		
+		// check the database
+		LectureBlock dbBlock = lectureService.getLectureBlock(new LectureBlockRefImpl(blockVo.getKey()));
+		Assert.assertNotNull(dbBlock);
+		Assert.assertEquals("A block to close", dbBlock.getTitle());
+		Assert.assertEquals("A description", dbBlock.getDescription());
+		Assert.assertEquals("all", dbBlock.getManagedFlagsString());
+		Assert.assertEquals(4, dbBlock.getPlannedLecturesNumber());
+		Assert.assertEquals(externalId, dbBlock.getExternalId());
+		Assert.assertNotNull(dbBlock.getStartDate());
+		Assert.assertNotNull(dbBlock.getEndDate());
+		Assert.assertEquals(LectureBlockStatus.done, dbBlock.getStatus());
+		Assert.assertEquals(LectureRollCallStatus.autoclosed, dbBlock.getRollCallStatus());
 	}
 	
 	@Test
