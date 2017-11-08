@@ -144,7 +144,7 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 			// email is syntactically correct. 
 		  // Check whether it's available.
 			if (!isAddressAvailable(value, (formContext != null) ? (String)formContext.get("username") : null)) {
-				textElement.setErrorKey(i18nFormElementLabelKey() + ".error.exists", null);
+				textElement.setErrorKey(i18nFormElementLabelKey() + ".error.exists", new String[] { value });
 			  return false;
 			}
 		}

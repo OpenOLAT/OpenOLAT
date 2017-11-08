@@ -850,7 +850,8 @@ public class UserWebService {
 					|| (user != null && identities.size() == 1 && !user.equals(identities.get(0).getUser()))) {
 				String pack = userPropertyHandler.getClass().getPackage().getName();
 				Translator translator = new PackageTranslator(pack, locale);
-				String translation = translator.translate("form.name." + userPropertyHandler.getName() + ".error.exists");
+				String translation = translator.translate("form.name." + userPropertyHandler.getName() + ".error.exists", new String[] { value });
+				translation += " (" + value + ")";
 				errors.add(new ErrorVO("org.olat.user.propertyhandlers:new.form.name." + userPropertyHandler.getName() + ".exists", translation));
 			}
 		}
