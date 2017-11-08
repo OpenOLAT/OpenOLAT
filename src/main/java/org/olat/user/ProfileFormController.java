@@ -23,7 +23,6 @@ package org.olat.user;
 import java.io.File;
 import java.text.DateFormat;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -156,9 +155,6 @@ public class ProfileFormController extends FormBasicController {
 		return identityToModify;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// nothing to dispose.
@@ -222,6 +218,9 @@ public class ProfileFormController extends FormBasicController {
 					HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(tempKey.getEmailAddress());
 					formItem.setExampleKey("email.change.form.info", new String[] {mails.get("changedEMail")});
 				}
+				if (!userModule.isEmailMandatory() && isAllowedToChangeEmailWithoutVerification(ureq)) {
+					formItem.setMandatory(false);
+				}
 			}
 		}
 		
@@ -244,7 +243,7 @@ public class ProfileFormController extends FormBasicController {
 
 		File portraitFile = dps.getLargestPortrait(identityToModify.getName());
 		// Init upload controller
-		Set<String> mimeTypes = new HashSet<String>();
+		Set<String> mimeTypes = new HashSet<>();
 		mimeTypes.add("image/gif");
 		mimeTypes.add("image/jpg");
 		mimeTypes.add("image/jpeg");
@@ -481,8 +480,7 @@ public class ProfileFormController extends FormBasicController {
 				changedEmail = identityToModify.getUser().getProperty("email", null);
 				if ((currentEmail == null && StringHelper.containsNonWhitespace(changedEmail))
 						|| (currentEmail != null && !currentEmail.equals(changedEmail))) {
-					// allow an admin to change email without verification workflow. usermanager is only permitted to do so, if set by config.
-					if ( !(ureq.getUserSession().getRoles().isOLATAdmin() || (BaseSecurityModule.USERMANAGER_CAN_BYPASS_EMAILVERIFICATION && ureq.getUserSession().getRoles().isUserManager()))) {
+					if ( !isAllowedToChangeEmailWithoutVerification(ureq)) {
 						emailChanged = true;
 						// change email address to old address until it is verified
 						identityToModify.getUser().setProperty("email", currentEmail);
@@ -539,20 +537,14 @@ public class ProfileFormController extends FormBasicController {
 
 		logDebug("this servername is " + servername + " and serverpath is " + serverpath, null);
 		// load or create temporary key
-		Map<String, String> mailMap = new HashMap<String, String>();
+		Map<String, String> mailMap = new HashMap<>();
 		mailMap.put("currentEMail", currentEmail);
 		mailMap.put("changedEMail", changedEmail);
 		
 		XStream xml = new XStream();
 		String serMailMap = xml.toXML(mailMap);
 		
-		TemporaryKey tk = loadCleanTemporaryKey(serMailMap);				
-		if (tk == null) {
-			tk = rm.createTemporaryKeyByEmail(serMailMap, ip, RegistrationManager.EMAIL_CHANGE);
-		} else {
-			rm.deleteTemporaryKeyWithId(tk.getRegistrationKey());
-			tk = rm.createTemporaryKeyByEmail(serMailMap, ip, RegistrationManager.EMAIL_CHANGE);
-		}
+		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identityToModify.getKey(), serMailMap, ip, RegistrationManager.EMAIL_CHANGE);
 		
 		// create date, time string
 		Calendar cal = Calendar.getInstance();
@@ -564,7 +556,9 @@ public class ProfileFormController extends FormBasicController {
 		if(Settings.isDebuging()) {
 			logInfo(link, null);
 		}
-		body = translate("email.change.body", new String[] { link, time, currentEmail, changedEmail })
+		String currentEmailDisplay = userManager.getUserDisplayEmail(currentEmail, getLocale());
+		String changedEmaildisplay = userManager.getUserDisplayEmail(changedEmail, getLocale());
+		body = translate("email.change.body", new String[] { link, time, currentEmailDisplay, changedEmaildisplay })
 				+ SEPARATOR + translate("email.change.wherefrom", new String[] { serverpath, today, ip });
 		subject = translate("email.change.subject");
 		// send email
@@ -596,64 +590,18 @@ public class ProfileFormController extends FormBasicController {
 	}
 
 	/**
-	 * Load and clean temporary keys with action "EMAIL_CHANGE".
-	 * @param serMailMap
-	 * @return
-	 */
-	private TemporaryKey loadCleanTemporaryKey(String serMailMap) {
-		TemporaryKey tk = rm.loadTemporaryKeyByEmail(serMailMap);
-		if (tk == null) {
-			
-			@SuppressWarnings("unchecked")
-			Map<String, String> mails = (Map<String, String>) XStreamHelper.createXStreamInstance().fromXML(serMailMap);
-			String currentEMail = mails.get("currentEMail");
-			List<TemporaryKey> tks = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
-			if (tks != null) {
-				synchronized (tks) {
-					tks = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
-					int countCurrentEMail = 0;
-					for (TemporaryKey temporaryKey : tks) {
-						Map<String, String> tkMails = readFromXml(temporaryKey);
-						String tkMail = tkMails.get("currentEMail");
-						if(StringHelper.containsNonWhitespace(tkMail)) {
-							if(tkMail.equals(currentEMail)) {
-								if (countCurrentEMail > 0) {
-									// clean
-									rm.deleteTemporaryKeyWithId(temporaryKey.getRegistrationKey());
-								} else {
-									// load
-									tk = temporaryKey;
-								}
-								countCurrentEMail++;
-							}
-						} else {
-							rm.deleteTemporaryKeyWithId(temporaryKey.getRegistrationKey());
-						}
-					}
-				}
-			}
-		}
-		return tk;
-	}
-	
-	private Map<String, String> readFromXml(TemporaryKey temporaryKey) {
-		try {
-			XStream xml = XStreamHelper.createXStreamInstance();
-			@SuppressWarnings("unchecked")
-			Map<String, String> tkMails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
-			return tkMails;
-		} catch (Exception e) {
-			logError("", e);
-			return Collections.emptyMap();
-		}
-	}
-
-	/**
 	 * Sets the dirty mark for this form.
 	 * 
 	 * @param isDirtyMarking <code>true</code> sets this form dirty.
 	 */
 	public void setDirtyMarking(boolean isDirtyMarking) {
 		mainForm.setDirtyMarking(isDirtyMarking);
+	}
+
+	private boolean isAllowedToChangeEmailWithoutVerification(final UserRequest ureq) {
+		boolean isOLATAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		boolean isUserManagerAndBypassVerification = BaseSecurityModule.USERMANAGER_CAN_BYPASS_EMAILVERIFICATION
+				&& ureq.getUserSession().getRoles().isUserManager();
+		return isOLATAdmin || isUserManagerAndBypassVerification;
 	}
 }

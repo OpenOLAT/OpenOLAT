@@ -54,6 +54,7 @@ import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
 import org.olat.registration.TemporaryKey;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 
 
 /**
@@ -90,6 +91,7 @@ public class RegistrationWebService {
 	 * Register with the specified email
    * @response.representation.200.doc Registration successful
    * @response.representation.304.doc Already registered, HTTP-Header location set to redirect
+   * @response.representation.400.doc Email address not allowed
    * @param email The email address
    * @param request The HTTP Request
 	 * @return
@@ -108,19 +110,23 @@ public class RegistrationWebService {
 		UserManager userManager = UserManager.getInstance();
 		RegistrationManager rm = CoreSpringFactory.getImpl(RegistrationManager.class);
 		
-		boolean foundUser = userManager.userExist(email);
-		// get remote address
+		boolean foundUser = userManager.findUniqueIdentityByEmail(email) != null;
+		boolean noNewUserWithEmail = !userManager.isEmailAllowed(email);
 
 		String serverpath = Settings.getServerContextPathURI();
-		if (foundUser) {
+		if (foundUser && noNewUserWithEmail) {
 			//redirect
 			URI redirectUri = UriBuilder.fromUri(Settings.getServerContextPathURI()).build();
 			response = Response.ok().status(Status.NOT_MODIFIED).location(redirectUri);
-		} else {
+		} else if (userManager.isEmailAllowed(email)) {
 			String ip = request.getRemoteAddr();
-			TemporaryKey tk = rm.loadTemporaryKeyByEmail(email);
+			TemporaryKey tk = null;
+			UserModule userModule = CoreSpringFactory.getImpl(UserModule.class);
+			if (userModule.isEmailUnique()) {
+				tk = rm.loadTemporaryKeyByEmail(email);
+			}
 			if (tk == null) {
-				tk = rm.createTemporaryKeyByEmail(email, ip, RegistrationManager.REGISTRATION);
+				tk = rm.loadOrCreateTemporaryKeyByEmail(email, ip, RegistrationManager.REGISTRATION);
 			}
 			String today = DateFormat.getDateInstance(DateFormat.LONG, locale).format(new Date());
 			String[] bodyAttrs = new String[] {
@@ -144,6 +150,8 @@ public class RegistrationWebService {
 				response = Response.serverError().status(Status.INTERNAL_SERVER_ERROR);
 				log.error("", e);
 			}
+		} else {
+			response = Response.serverError().status(Status.BAD_REQUEST);
 		}
 		
 		return response.build();

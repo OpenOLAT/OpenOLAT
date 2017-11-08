@@ -21,6 +21,8 @@
 package org.olat.portfolio.ui.structel;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -178,8 +180,8 @@ public class EPShareListController extends FormBasicController {
 				if (StringHelper.containsNonWhitespace(mail)) {
 					if (MailHelper.isValidEmailAddress(mail)) {
 						SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-						Identity currentIdentity = userManager.findIdentityByEmail(mail);
-						if (currentIdentity != null && securityManager.isIdentityInSecurityGroup(currentIdentity, allUsers)) {
+						List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(mail));
+						if(isAtLeastOneInSecurityGroup(shareWithIdentities, allUsers)) {
 							mailEl.setErrorKey("error.invitation.mail.used", new String[] { mail });
 							allOk &= false;
 						}
@@ -659,8 +661,8 @@ public class EPShareListController extends FormBasicController {
 		
 		if(StringHelper.containsNonWhitespace(invitation.getMail()) && MailHelper.isValidEmailAddress(invitation.getMail())) {
 			SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-			Identity currentIdentity = userManager.findIdentityByEmail(invitation.getMail());
-			if(currentIdentity != null && securityManager.isIdentityInSecurityGroup(currentIdentity, allUsers)) {
+			List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(invitation.getMail()));
+			if(isAtLeastOneInSecurityGroup(shareWithIdentities, allUsers)) {
 				mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[]{invitation.getMail()});
 			}
 		}
@@ -672,6 +674,15 @@ public class EPShareListController extends FormBasicController {
 		String link = getInvitationLink(invitation, map);
 		StaticTextElement linkEl = uifactory.addStaticTextElement("map.share.with.link." + cmpName, link, invitationContainer);
 		linkEl.setLabel("map.share.with.link", null);
+	}
+	
+	private boolean isAtLeastOneInSecurityGroup(Collection<Identity> identites, SecurityGroup group) {
+		for (Identity identity: identites) {
+			if (securityManager.isIdentityInSecurityGroup(identity, group)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private String getInvitationLink(Invitation invitation, PortfolioStructure theMap){

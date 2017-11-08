@@ -112,7 +112,7 @@ public class SendMailStepForm extends StepFormBasicController {
 		
 		String userName = getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, null) + " "
 				+ getIdentity().getUser().getProperty(UserConstants.LASTNAME, null);
-		String email = getIdentity().getUser().getProperty(UserConstants.EMAIL, null);
+		String email = UserManager.getInstance().getUserDisplayEmail(getIdentity(), ureq.getLocale());
 		
 		String[] subject = { comment, startMessageTitle };
 		String[] body = { comment, startMessageTitle, startCourseTitle, targetCourseTitle, targetForum, parentMessageTitle, userName, email };

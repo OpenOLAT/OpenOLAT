@@ -7,11 +7,13 @@
 		<div class="col-xs-12 col-sm-6">
 			$r.render("dateChooserCtr")
 		</div>
-		<div class="col-xs-12 col-sm-6">
-			<div class="pull-right">
-				$r.render("emailLink")
+		#if ($r.available("emailLink"))
+			<div class="col-xs-12 col-sm-6">
+				<div class="pull-right">
+					$r.render("emailLink")
+				</div>
 			</div>
-		</div>
+		#end
 	</div>
 	
 #foreach($sub in $subs)

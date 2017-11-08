@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 
@@ -52,8 +51,8 @@ public class GenericUnique127CharTextPropertyHandler extends Generic127CharTextP
 				if(found.size() > 0) {
 					// only display first one 
 					propId = found.get(0);
-					String email = propId.getUser().getProperty(UserConstants.EMAIL, null);
-					formItem.setErrorKey("general.error.unique", new String[]{ email });
+					String username = propId.getName();
+					formItem.setErrorKey("general.error.unique", new String[]{ username });
 					allOk &= false;
 				}
 			}
@@ -72,9 +71,9 @@ public class GenericUnique127CharTextPropertyHandler extends Generic127CharTextP
 			if(found.size() > 0) {
 				// only display first one 
 				propId = found.get(0);
-				String email = propId.getUser().getProperty(UserConstants.EMAIL, null);
+				String username = propId.getName();
 				validationError.setErrorKey("general.error.unique");
-				validationError.setArgs(new String[]{ email });
+				validationError.setArgs(new String[]{ username });
 				allOk &= false;
 			}
 		}

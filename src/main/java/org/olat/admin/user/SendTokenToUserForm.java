@@ -156,11 +156,9 @@ public class SendTokenToUserForm extends FormBasicController {
 		Locale locale = i18nManager.getLocaleOrDefault(prefs.getLanguage());
 		String emailAdress = user.getUser().getProperty(UserConstants.EMAIL, locale);
 
-		TemporaryKey tk = registrationManager.loadTemporaryKeyByEmail(emailAdress);
-		if (tk == null) {
-			String ip = ureq.getHttpReq().getRemoteAddr();
-			tk = registrationManager.createTemporaryKeyByEmail(emailAdress, ip, RegistrationManager.PW_CHANGE);
-		}
+		String ip = ureq.getHttpReq().getRemoteAddr();
+		TemporaryKey tk = registrationManager.createAndDeleteOldTemporaryKey(user.getKey(), emailAdress, ip, RegistrationManager.PW_CHANGE);
+		
 		if(text.indexOf(dummyKey) < 0) {
 			showWarning("changeuserpwd.failed");
 			logWarn("Can not replace temporary registration token in change pwd mail token dialog, user probably changed temporary token in mai template", null);

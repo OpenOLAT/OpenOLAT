@@ -54,7 +54,9 @@ import org.olat.core.id.Persistable;
 @NamedQueries({
 	@NamedQuery(name="loadTemporaryKeyByRegAction", query="select r from otemporarykey r where r.regAction=:action"),
 	@NamedQuery(name="loadTemporaryKeyByRegKey", query="select r from otemporarykey r where r.registrationKey=:regkey"),
-	@NamedQuery(name="loadTemporaryKeyByEmailAddress", query="select r from otemporarykey r where r.emailAddress=:email")
+	@NamedQuery(name="loadTemporaryKeyByEmailAddress", query="select r from otemporarykey r where r.emailAddress=:email"),
+	@NamedQuery(name="loadTemporaryKeyByIdentity", query="select r from otemporarykey r where r.identityKey=:identityKey and action=:action"),
+	@NamedQuery(name="deleteTemporaryKeyByIdentityAndAction", query="delete from otemporarykey r where r.identityKey=:identityKey and action=:action")
 })
 public class TemporaryKeyImpl implements Persistable, CreateInfo, TemporaryKey {
 
@@ -90,6 +92,9 @@ public class TemporaryKeyImpl implements Persistable, CreateInfo, TemporaryKey {
 	@Column(name="mailsent", nullable=false, unique=true, insertable=true, updatable=true)
 	private boolean mailSent = false;
 	
+	@Column(name="fk_identity_id", nullable=true, unique=true, insertable=true, updatable=true)
+	private Long identityKey;
+	
 	public TemporaryKeyImpl() {
 		//
 	}
@@ -103,76 +108,54 @@ public class TemporaryKeyImpl implements Persistable, CreateInfo, TemporaryKey {
 		this.key = key;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#setCreationDate(java.util.Date)
-	 */
 	public void setCreationDate(Date date) {
 		creationDate = date;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#getEmailAddress()
-	 */
+	@Override
 	public String getEmailAddress() {
 		return emailAddress;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#setEmailAddress(java.lang.String)
-	 */
+	@Override
 	public void setEmailAddress(String string) {
 		emailAddress = string;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#getIpAddress()
-	 */
+	@Override
 	public String getIpAddress() {
 		return ipAddress;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#setIpAddress(java.lang.String)
-	 */
+	@Override
 	public void setIpAddress(String string) {
 		ipAddress = string;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#getCreationDate()
-	 */
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#getRegistrationKey()
-	 */
+	@Override
 	public String getRegistrationKey() {
 		return registrationKey;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#setRegistrationKey(java.lang.String)
-	 */
+	@Override
 	public void setRegistrationKey(String string) {
 		registrationKey = string;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#isMailSent()
-	 */
+	@Override
 	public boolean isMailSent() {
 		return mailSent;
 	}
 
-	/**
-	 * @see org.olat.registration.TemporaryKey#setMailSent(boolean)
-	 */
+	@Override
 	public void setMailSent(boolean b) {
 		mailSent = b;
 	}
-
 
 	@Override
 	public String getRegAction() {
@@ -182,6 +165,16 @@ public class TemporaryKeyImpl implements Persistable, CreateInfo, TemporaryKey {
 	@Override
 	public void setRegAction(String string) {
 		regAction = string;
+	}
+
+	@Override
+	public Long getIdentityKey() {
+		return identityKey;
+	}
+
+	@Override
+	public void setIdentityKey(Long identityKey) {
+		this.identityKey = identityKey;
 	}
 
 	@Override

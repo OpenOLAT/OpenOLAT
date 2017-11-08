@@ -111,7 +111,7 @@ public class EMailCalloutCtrl extends FormBasicController {
 		}
 		if(MailHelper.isValidEmailAddress(mail)) {
 			if(identity == null) {
-				identity = userManager.findIdentityByEmail(mail);
+				identity = userManager.findUniqueIdentityByEmail(mail);
 			}
 			if(identity == null) {
 				identity = new EMailIdentity(mail, getLocale());
@@ -143,7 +143,7 @@ public class EMailCalloutCtrl extends FormBasicController {
 		if(emailEl != null) {
 			String mail = emailEl.getValue();
 			if(MailHelper.isValidEmailAddress(mail)) {
-				Identity identity = userManager.findIdentityByEmail(mail);
+				Identity identity = userManager.findUniqueIdentityByEmail(mail);
 				if(identity == null) {
 					identity = new EMailIdentity(mail, getLocale());
 				}

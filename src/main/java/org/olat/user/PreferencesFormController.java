@@ -43,7 +43,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
-import org.olat.core.id.UserConstants;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -235,7 +234,7 @@ public class PreferencesFormController extends FormBasicController {
 		//fxdiff VCRP-16: intern mail system
 		MailModule mailModule = (MailModule)CoreSpringFactory.getBean("mailModule");
 		if(mailModule.isInternSystem()) {
-			String userEmail = tobeChangedIdentity.getUser().getProperty(UserConstants.EMAIL, getLocale());
+			String userEmail = UserManager.getInstance().getUserDisplayEmail(tobeChangedIdentity, ureq.getLocale());
 			String[] mailInternLabels = new String[] { translate("mail." + mailIntern[0], userEmail), translate("mail." + mailIntern[1], userEmail) };
 			mailSystem = uifactory.addRadiosVertical("mail-system", "mail.system", formLayout, mailIntern, mailInternLabels);
 			mailSystem.setElementCssClass("o_sel_home_settings_mail");

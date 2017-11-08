@@ -156,9 +156,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == olatMenuTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
@@ -430,6 +428,22 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			activatePaneInDetailView = "edit.withoutgroup";
 			List<Identity> usersWithoutGroup = securityManager.findIdentitiesWithoutBusinessGroup(Identity.STATUS_VISIBLE_LIMIT);
 			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, usersWithoutGroup, null, true, true);
+			addToHistory(ureq, bwControl);
+			listenTo(contentCtr);
+			return contentCtr.getInitialComponent();
+		}
+		else if (uobject.equals("userswithoutemail")) {
+			activatePaneInDetailView = "userswithoutemail";
+			List<Identity> usersWithoutEmail = userManager.findVisibleIdentitiesWithoutEmail();
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, usersWithoutEmail, null, true, true);
+			addToHistory(ureq, bwControl);
+			listenTo(contentCtr);
+			return contentCtr.getInitialComponent();
+		}
+		else if (uobject.equals("usersemailduplicates")) {
+			activatePaneInDetailView = "users.email.duplicate";
+			List<Identity> usersEmailDuplicates = userManager.findVisibleIdentitiesWithEmailDuplicates();
+			contentCtr = new UsermanagerUserSearchController(ureq, bwControl, usersEmailDuplicates, null, true, true);
 			addToHistory(ureq, bwControl);
 			listenTo(contentCtr);
 			return contentCtr.getInitialComponent();
@@ -737,6 +751,18 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		gtnChild.setTitle(translator.translate("menu.userswithoutgroup"));
 		gtnChild.setUserObject("userswithoutgroup");
 		gtnChild.setAltText(translator.translate("menu.userswithoutgroup.alt"));
+		gtn3.addChild(gtnChild);
+		
+		gtnChild = new GenericTreeNode();		
+		gtnChild.setTitle(translator.translate("menu.users.without.email"));
+		gtnChild.setUserObject("userswithoutemail");
+		gtnChild.setAltText(translator.translate("menu.users.without.email.alt"));
+		gtn3.addChild(gtnChild);
+		
+		gtnChild = new GenericTreeNode();		
+		gtnChild.setTitle(translator.translate("menu.users.email.duplicate"));
+		gtnChild.setUserObject("usersemailduplicates");
+		gtnChild.setAltText(translator.translate("menu.users.email.duplicate.alt"));
 		gtn3.addChild(gtnChild);
 		
 		gtnChild = new GenericTreeNode();		

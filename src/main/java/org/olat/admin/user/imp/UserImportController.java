@@ -363,12 +363,12 @@ public class UserImportController extends BasicController {
 	private MailTemplate createMailTemplateForNewIdentity(Identity identity, TransientIdentity transientIdentity) {
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		String[] bodyArgs = new String[] {
-				identity.getName(),												//{0}
-				identity.getUser().getProperty(UserConstants.FIRSTNAME, null),	//{1}
-				identity.getUser().getProperty(UserConstants.LASTNAME, null),	//{2}
-				identity.getUser().getProperty(UserConstants.EMAIL, null),		//{3}
-				Settings.getServerContextPathURI(),								//{4}
-				transientIdentity.getPassword()									//{5}
+				identity.getName(),														//{0}
+				identity.getUser().getProperty(UserConstants.FIRSTNAME, null),			//{1}
+				identity.getUser().getProperty(UserConstants.LASTNAME, null),			//{2}
+				UserManager.getInstance().getUserDisplayEmail(identity, getLocale()),	//{3}
+				Settings.getServerContextPathURI(),										//{4}
+				transientIdentity.getPassword()											//{5}
 		};
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(UserImportController.class, locale);

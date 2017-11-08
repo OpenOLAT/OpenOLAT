@@ -105,7 +105,8 @@ public class MailHelper {
 		UserManager um = UserManager.getInstance();
 		List<UserPropertyHandler> userPropertyHandlers = um.getUserPropertyHandlersFor(MailHelper.class.getCanonicalName(), false);
 		List<String> userPropList = new ArrayList<String>(userPropertyHandlers.size()+2);
-		userPropList.add(sender.getUser().getProperty(UserConstants.EMAIL, null));
+		String email = UserManager.getInstance().getUserDisplayEmail(sender, locale);
+		userPropList.add(email);
 		userPropList.add(Settings.getServerContextPathURI());
 		for (Iterator<UserPropertyHandler> iterator = userPropertyHandlers.iterator(); iterator.hasNext();) {
 			userPropList.add(iterator.next().getUserProperty(user, locale));
@@ -247,10 +248,12 @@ public class MailHelper {
 				User user = identity.getUser();
 				warnings.append("<li>");
 				String fullname = UserManager.getInstance().getUserDisplayName(identity);
+				String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
+				email = StringHelper.containsNonWhitespace(email)? email: "-";
 				warnings.append(trans.translate("mailhelper.error.failedusers.user", new String[] {
 						user.getProperty(UserConstants.FIRSTNAME, null),
 						user.getProperty(UserConstants.LASTNAME, null),
-						user.getProperty(UserConstants.EMAIL, null),
+						UserManager.getInstance().getUserDisplayEmail(user, locale),
 						fullname
 					}));
 				warnings.append("</li>");

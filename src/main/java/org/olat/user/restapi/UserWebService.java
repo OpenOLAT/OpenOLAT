@@ -267,6 +267,10 @@ public class UserWebService {
 		}
 		
 		List<ErrorVO> errors = validateUser(null, user, request);
+		for (ErrorVO err: errors) {
+			System.out.println(err);
+			System.out.println(err.getTranslation());
+		}
 		if(errors.isEmpty()) {
 			User newUser = UserManager.getInstance().createUser(user.getFirstName(), user.getLastName(), user.getEmail());
 			Identity id = BaseSecurityManager.getInstance().createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(user.getLogin(), user.getExternalId(), user.getPassword(), newUser);
@@ -795,7 +799,7 @@ public class UserWebService {
 		UserManager um = UserManager.getInstance();
 		
 		Locale locale = getLocale(request);
-		List<ErrorVO> errors = new ArrayList<ErrorVO>();
+		List<ErrorVO> errors = new ArrayList<>();
 		List<UserPropertyHandler> propertyHandlers = um.getUserPropertyHandlersFor(PROPERTY_HANDLER_IDENTIFIER, false);
 		validateProperty(user, UserConstants.FIRSTNAME, userVo.getFirstName(), propertyHandlers, errors, um, locale);
 		validateProperty(user, UserConstants.LASTNAME, userVo.getLastName(), propertyHandlers, errors, um, locale);
@@ -841,13 +845,9 @@ public class UserWebService {
 			String translation = translator.translate(error.getErrorKey(), error.getArgs());
 			errors.add(new ErrorVO(pack, error.getErrorKey(), translation));
 			return false;
-		} else if((userPropertyHandler.getName().equals(UserConstants.INSTITUTIONALEMAIL) || userPropertyHandler.getName().equals(UserConstants.EMAIL))
-				&& StringHelper.containsNonWhitespace(value)) {
-			
-			List<Identity> identities = UserManager.getInstance().findIdentitiesByEmail(Collections.singletonList(value));
-			if((user == null && identities.size() > 0)
-					||  identities.size() > 1
-					|| (user != null && identities.size() == 1 && !user.equals(identities.get(0).getUser()))) {
+		} else if((userPropertyHandler.getName().equals(UserConstants.INSTITUTIONALEMAIL) && StringHelper.containsNonWhitespace(value)) 
+				|| userPropertyHandler.getName().equals(UserConstants.EMAIL)) {
+			if (!UserManager.getInstance().isEmailAllowed(value, user)) {
 				String pack = userPropertyHandler.getClass().getPackage().getName();
 				Translator translator = new PackageTranslator(pack, locale);
 				String translation = translator.translate("form.name." + userPropertyHandler.getName() + ".error.exists");

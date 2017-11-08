@@ -60,9 +60,9 @@ public class ContactList extends LogDelegator {
 	private String name;
 	private String description;
 	//container for addresses contributed as strings
-	private Map<String, String> stringEmails = new HashMap<String, String>();
+	private Map<String, String> stringEmails = new HashMap<>();
 	//container for addresses contributed as identites
-	private Map<String, Identity> identiEmails = new HashMap<String, Identity>();
+	private Map<Long, Identity> identiEmails = new HashMap<>();
 	private boolean emailPrioInstitutional = false;
 
 	public ContactList() {
@@ -123,21 +123,11 @@ public class ContactList extends LogDelegator {
 	 * @param identity
 	 */
 	public void add(Identity identity) {
-		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
-		if (email == null) {
-			logError("No email available for identity::" + identity.getName() + " - can not add to contact list", null);
-			return;
-		}
-		identiEmails.put(keyFrom(email), identity);
+		identiEmails.put(identity.getKey(), identity);
 	}
 	
 	public void remove(Identity identity) {
-		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
-		if (email == null) {
-			logError("No email available for identity::" + identity.getName() + " - can not remove from contact list", null);
-			return;
-		}
-		identiEmails.remove(keyFrom(email));
+		identiEmails.remove(identity.getKey());
 	}
 
 	/**
@@ -206,13 +196,13 @@ public class ContactList extends LogDelegator {
 	 * @return
 	 */
 	public List<String> getEmailsAsStrings() {
-		List<String> ret = new ArrayList<String>(stringEmails.values());
+		List<String> ret = new ArrayList<>(stringEmails.values());
 		/*
 		 * if priority is on institutional email get all the institutional emails
 		 * first, if they are present, remove the identity from the hashtable. If
 		 * they were not present, the user email is used in the next loop.
 		 */
-		List<Identity> copy = new ArrayList<Identity>(identiEmails.values());
+		List<Identity> copy = new ArrayList<>(identiEmails.values());
 		if (emailPrioInstitutional) {
 			for (Iterator<Identity> it=copy.iterator(); it.hasNext(); ) {
 				Identity tmp = it.next();
@@ -234,9 +224,17 @@ public class ContactList extends LogDelegator {
 			if(tmp.getStatus() == Identity.STATUS_LOGIN_DENIED) {
 				continue;
 			}
-			ret.add(tmp.getUser().getProperty(UserConstants.EMAIL, null));
+			String email = tmp.getUser().getProperty(UserConstants.EMAIL, null);
+			if (StringHelper.containsNonWhitespace(email)) {
+				ret.add(email);
+			}
 		}
 		return ret;
+	}
+	
+	public boolean hasAddresses() {
+		return (identiEmails != null && identiEmails.size() > 0)
+			|| (stringEmails != null && stringEmails.size() > 0);
 	}
 
 	/**
@@ -294,7 +292,7 @@ public class ContactList extends LogDelegator {
 		return stringEmails;
 	}
 
-	public Map<String,Identity> getIdentiEmails() {
+	public Map<Long, Identity> getIdentiEmails() {
 		return identiEmails;
 	}
 

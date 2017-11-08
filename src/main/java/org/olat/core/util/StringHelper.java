@@ -48,12 +48,12 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.impl.NekoHTMLScanner;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
+import org.olat.user.UserManager;
 
 import com.thoughtworks.xstream.core.util.Base64Encoder;
 
@@ -335,15 +335,17 @@ public class StringHelper {
 	 * </ul>
 	 * 
 	 * @param emailRecipientIdentities
+	 * @param locale
 	 * @return "email1, email2, email3," or null if emailRecipientIdentites was
 	 *         null
 	 */
-	public static String formatIdentitesAsEmailToString(final Identity[] emailRecipientIdentities) {
+	public static String formatIdentitesAsEmailToString(final Identity[] emailRecipientIdentities, Locale locale) {
 		int elCnt = emailRecipientIdentities.length;
 		//2..n recipients
 		StringBuilder tmpDET = new StringBuilder();
 		for (int i = 0; i < elCnt; i++) {
-			tmpDET.append(emailRecipientIdentities[i].getUser().getProperty(UserConstants.EMAIL, null));
+			String email = UserManager.getInstance().getUserDisplayEmail(emailRecipientIdentities[i], locale);
+			tmpDET.append(email);
 			if (i < elCnt - 1) {
 				tmpDET.append(", ");
 			}

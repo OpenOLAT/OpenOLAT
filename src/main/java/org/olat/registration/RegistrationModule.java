@@ -95,10 +95,6 @@ public class RegistrationModule extends AbstractSpringModule {
 		return usernamePresetBean;
 	}
 
-
-	/**
-	 * @return true if self registration is turned on, false otherwhise
-	 */
 	public boolean isSelfRegistrationEnabled(){
 	    return selfRegistrationEnabled;
 	}
@@ -109,9 +105,6 @@ public class RegistrationModule extends AbstractSpringModule {
 		setStringProperty("registration.enabled", value, true);
 	}
 	
-	/**
-	 * @return true if self registration is turned on, false otherwhise
-	 */
 	public boolean isStaticPropertyMappingEnabled(){
 	    return staticPropertyMappingEnabled;
 	}

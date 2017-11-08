@@ -82,6 +82,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.user.UserManager;
 
 /**
  * Initial Date:  02.09.2004
@@ -353,7 +354,7 @@ public class DropboxController extends BasicController {
 		c.put("login", identity.getName());
 		c.put("first", identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale()));
 		c.put("last", identity.getUser().getProperty(UserConstants.LASTNAME, getLocale()));
-		c.put("email", identity.getUser().getProperty(UserConstants.EMAIL, getLocale()));
+		c.put("email", UserManager.getInstance().getUserDisplayEmail(identity, getLocale()));
 		c.put("filename", filename);
 		Date now = new Date();
 		Formatter f = Formatter.getInstance(ureq.getLocale());

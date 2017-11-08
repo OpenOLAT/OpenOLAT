@@ -101,6 +101,7 @@ create table if not exists o_temporarykey (
    ip varchar(255) not null,
    mailsent bit not null,
    action varchar(255) not null,
+   fk_identity_id bigint,
    primary key (reglist_id)
 );
 create table if not exists o_bs_authentication (
@@ -2676,6 +2677,9 @@ create index idx_user_creationdate_idx on o_user (creationdate);
 
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
+
+-- temporary key
+create index idx_tempkey_identity_idx on o_temporarykey (fk_identity_id);
 
 -- pub sub
 create index name_idx on o_noti_pub (resname, resid, subident);

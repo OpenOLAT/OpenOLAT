@@ -60,6 +60,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,7 +75,6 @@ public class UserCreateController extends BasicController  {
 
 	private NewUserForm createUserForm;
 	
-
 	/**
 	 * @param ureq
 	 * @param wControl
@@ -115,9 +115,7 @@ public class UserCreateController extends BasicController  {
 		}
 	}	
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// nothing to do
 	}
@@ -154,6 +152,8 @@ class NewUserForm extends FormBasicController {
 	private SingleSelection languageSingleSelection;
 	private SelectionElement authCheckbox;
 	
+	@Autowired
+	private UserModule userModule;
 	@Autowired
 	private BaseSecurity securityManager;
 
@@ -192,6 +192,9 @@ class NewUserForm extends FormBasicController {
 			// special case to handle email field
 			if(userPropertyHandler.getName().equals(UserConstants.EMAIL)) {
 				emailTextElement = (TextElement) formItem;
+				if (!userModule.isEmailMandatory()) {
+					formItem.setMandatory(false);
+				}
 			}
 
 			formItem.setElementCssClass("o_sel_id_" + userPropertyHandler.getName().toLowerCase());
@@ -269,20 +272,12 @@ class NewUserForm extends FormBasicController {
 			}
 			formItem.clearError();
 		}
-		// special test on email address: validate if email is already used
-		if (emailTextElement != null) {			
-			String email = emailTextElement.getValue();
-			// Check if email is not already taken
-			UserManager um = UserManager.getInstance();
 
-			// TODO:fj offer a method in basesecurity to threadsafely generate a new
-			// user!!!
-			Identity exists = um.findIdentityByEmail(email);
-			if (exists != null) {
-				// Oups, email already taken, display error
-				emailTextElement.setErrorKey("new.error.email.choosen", new String[] {});
-				return false;
-			}
+		// special test on email address: validate if email is already used
+		String email = emailTextElement.getValue();
+		if (!UserManager.getInstance().isEmailAllowed(email)) {
+			emailTextElement.setErrorKey("new.error.email.choosen", new String[] {});
+			return false;
 		}
 
 		// validate if new password does match the syntactical password requirements

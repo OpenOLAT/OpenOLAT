@@ -20,6 +20,7 @@
 package org.olat.modules.portfolio.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -109,9 +110,8 @@ public class InvitationEditRightsController extends FormBasicController {
 		super(ureq, wControl, "invitee_access_rights");
 		this.email = email;
 		this.binder = binder;
-		List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(email));
-		if(identities.size() == 1) {
-			invitee = identities.get(0);
+		invitee = userManager.findUniqueIdentityByEmail(email);
+		if(invitee != null) {
 			invitation = invitationDao.findInvitation(binder.getBaseGroup(), invitee);
 		} 
 		if(invitation == null) {
@@ -178,11 +178,9 @@ public class InvitationEditRightsController extends FormBasicController {
 			
 		if(StringHelper.containsNonWhitespace(invitation.getMail()) && MailHelper.isValidEmailAddress(invitation.getMail())) {
 			SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-			List<Identity> currentIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(invitation.getMail()));
-			for(Identity currentIdentity:currentIdentities) {
-				if(currentIdentity != null && securityManager.isIdentityInSecurityGroup(currentIdentity, allUsers)) {
-					mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[]{ invitation.getMail() });
-				}
+			List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(invitation.getMail()));
+			if (isAtLeastOneInSecurityGroup(shareWithIdentities, allUsers)) {
+				mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[]{ invitation.getMail() });
 			}
 		}
 			
@@ -284,8 +282,8 @@ public class InvitationEditRightsController extends FormBasicController {
 			if (StringHelper.containsNonWhitespace(mail)) {
 				if (MailHelper.isValidEmailAddress(mail)) {
 					SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-					Identity currentIdentity = userManager.findIdentityByEmail(mail);
-					if (currentIdentity != null && securityManager.isIdentityInSecurityGroup(currentIdentity, allUsers)) {
+					List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(mail));
+					if (isAtLeastOneInSecurityGroup(shareWithIdentities, allUsers)) {
 						mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[] { mail });
 						allOk &= false;
 					}
@@ -312,6 +310,15 @@ public class InvitationEditRightsController extends FormBasicController {
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean isAtLeastOneInSecurityGroup(Collection<Identity> identites, SecurityGroup group) {
+		for (Identity identity: identites) {
+			if (securityManager.isIdentityInSecurityGroup(identity, group)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

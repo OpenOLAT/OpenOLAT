@@ -28,6 +28,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.apache.velocity.VelocityContext;
@@ -243,7 +244,8 @@ public class ReminderServiceImpl implements ReminderService {
 		contactList.addAllIdentites(identitiesToRemind);
 		
 		MailContext context = new MailContextImpl("[RepositoryEntry:" + entry.getKey() + "]");
-		Translator trans = Util.createPackageTranslator(ReminderAdminController.class, I18nModule.getDefaultLocale());
+		Locale locale = I18nModule.getDefaultLocale();
+		Translator trans = Util.createPackageTranslator(ReminderAdminController.class, locale);
 		String subject = reminder.getEmailSubject();
 		String body = reminder.getEmailBody();
 		if (body.contains("$courseurl")) {
@@ -255,7 +257,7 @@ public class ReminderServiceImpl implements ReminderService {
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 
 		MailerResult overviewResult = new MailerResult();
-		ReminderTemplate template = new ReminderTemplate(subject, body, url, entry);
+		ReminderTemplate template = new ReminderTemplate(subject, body, url, entry, locale);
 
 		for(Identity identityToRemind:identitiesToRemind) {
 			String status;
@@ -279,11 +281,13 @@ public class ReminderServiceImpl implements ReminderService {
 		
 		private final String url;
 		private final RepositoryEntry entry;
+		private final Locale locale;
 		
-		public ReminderTemplate(String subjectTemplate, String bodyTemplate, String url, RepositoryEntry entry) {
+		public ReminderTemplate(String subjectTemplate, String bodyTemplate, String url, RepositoryEntry entry, Locale locale) {
 			super(subjectTemplate, bodyTemplate, null);
 			this.url = url;
 			this.entry = entry;
+			this.locale = locale;
 		}
 
 		@Override
@@ -296,8 +300,8 @@ public class ReminderServiceImpl implements ReminderService {
 			String fullName = userManager.getUserDisplayName(recipient);
 			vContext.put("fullname", fullName);
 			vContext.put("fullName", fullName); 
-			vContext.put("mail", user.getProperty(UserConstants.EMAIL, null));
-			vContext.put("email", user.getProperty(UserConstants.EMAIL, null));
+			vContext.put("mail", userManager.getUserDisplayEmail(user, locale));
+			vContext.put("email", userManager.getUserDisplayEmail(user, locale));
 			vContext.put("username", recipient.getName());
 			// Put variables from greater context
 			if(entry != null) {

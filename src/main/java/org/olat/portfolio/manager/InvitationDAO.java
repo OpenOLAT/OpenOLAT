@@ -121,7 +121,7 @@ public class InvitationDAO {
 		dbInstance.getCurrentEntityManager().persist(invitation);
 
 		// create identity only if such a user does not already exist
-		Identity invitee = userManager.findIdentityByEmail(invitation.getMail());
+		Identity invitee = userManager.findUniqueIdentityByEmail(invitation.getMail());
 		if (invitee == null) {
 			String tempUsername = UUID.randomUUID().toString();
 			User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());

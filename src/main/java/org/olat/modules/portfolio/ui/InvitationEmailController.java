@@ -19,6 +19,10 @@
  */
 package org.olat.modules.portfolio.ui;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Constants;
 import org.olat.basesecurity.SecurityGroup;
@@ -99,8 +103,8 @@ public class InvitationEmailController extends FormBasicController {
 			if (StringHelper.containsNonWhitespace(mail)) {
 				if (MailHelper.isValidEmailAddress(mail)) {
 					SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
-					Identity currentIdentity = userManager.findIdentityByEmail(mail);
-					if (currentIdentity != null && securityManager.isIdentityInSecurityGroup(currentIdentity, allUsers)) {
+					List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(mail));
+					if (isAtLeastOneInSecurityGroup(shareWithIdentities, allUsers)) {
 						mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[] { mail });
 						allOk &= false;
 					}
@@ -115,6 +119,15 @@ public class InvitationEmailController extends FormBasicController {
 		}
 		
 		return allOk & super.validateFormLogic(ureq);
+	}
+	
+	private boolean isAtLeastOneInSecurityGroup(Collection<Identity> identites, SecurityGroup group) {
+		for (Identity identity: identites) {
+			if (securityManager.isIdentityInSecurityGroup(identity, group)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

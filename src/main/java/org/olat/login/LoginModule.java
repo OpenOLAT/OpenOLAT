@@ -39,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.login.auth.AuthenticationProvider;
+import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -78,6 +79,9 @@ public class LoginModule extends AbstractSpringModule {
 	private CoordinatorManager coordinatorManager;
 	private CacheWrapper<String,Integer> failedLoginCache;
 
+	@Autowired
+	private UserModule userModule;
+	
 	@Autowired
 	public LoginModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -323,7 +327,11 @@ public class LoginModule extends AbstractSpringModule {
 	 * @return True if login with email is allowed (set in olat.properties)
 	 */
 	public boolean isAllowLoginUsingEmail() {
-		return allowLoginUsingEmail;
+		boolean isAllowLoginUsingEmail = allowLoginUsingEmail;
+		if (!userModule.isEmailUnique()) {
+			isAllowLoginUsingEmail = false;
+		}
+		return isAllowLoginUsingEmail;
 	}
 	
 	public void setAllowLoginUsingEmail(boolean allow) {

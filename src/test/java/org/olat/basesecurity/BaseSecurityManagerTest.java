@@ -279,9 +279,9 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertNotNull(foundId);
 		Assert.assertEquals(id.getKey(), foundId.getKey());
 		Assert.assertEquals(idName, foundId.getName());
-		Assert.assertNotNull(foundId.getEmail());
-		Assert.assertNotNull(foundId.getFirstName());
-		Assert.assertNotNull(foundId.getLastName());
+		Assert.assertEquals(id.getUser().getEmail(), foundId.getEmail());
+		Assert.assertEquals(id.getUser().getFirstName(), foundId.getFirstName());
+		Assert.assertEquals(id.getUser().getLastName(), foundId.getLastName());
 		Assert.assertNotNull(foundId.getLastLogin());
 		Assert.assertEquals(id.getUser().getKey(), foundId.getUserKey());
 		Assert.assertTrue(foundId.getStatus() < Identity.STATUS_VISIBLE_LIMIT);

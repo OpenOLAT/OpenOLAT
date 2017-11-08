@@ -34,59 +34,41 @@ import java.util.Date;
  * @author Sabina Jeger
  */
 public interface TemporaryKey {
-	/**
-	 * @return Object key.
-	 */
+
 	public Long getKey();
 	
-	/**
-	 * @return email address
-	 */
 	public String getEmailAddress();
-	/**
-	 * @param string
-	 */
+
 	public void setEmailAddress(String string);
 	
 	/**
 	 * @return The ip address the registration request came from
 	 */
 	public String getIpAddress();
-	/**
-	 * @param string
-	 */
+
 	public void setIpAddress(String string);
 
-	/**
-	 * @return Creation date
-	 */
 	public Date getCreationDate();
 
 	/**
 	 * @return The key itself
 	 */
 	public String getRegistrationKey();
-	/**
-	 * @param string
-	 */
+
 	public void setRegistrationKey(String string);
 	
 	/**
 	 * @return Wether email has been sent.
 	 */
 	public boolean isMailSent();
-	/**
-	 * @param b
-	 */
+
 	public void setMailSent(boolean b);
 
-
-	/**
-	 * @return Registration action.
-	 */
 	public String getRegAction();
-	/**
-	 * @param string
-	 */
+	
 	public void setRegAction(String string);
+
+	public Long getIdentityKey();
+	
+	public void setIdentityKey(Long identityKey);
 }

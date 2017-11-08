@@ -120,7 +120,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colIndex++));
 		}
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<UserPropertyHandler>();
+		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<>();
 		// followed by the users fields
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);
@@ -184,7 +184,7 @@ public class ImportMemberOverviewIdentitiesController extends StepFormBasicContr
 		SecurityGroup anonymousGroup = securityManager.findSecurityGroupByName(Constants.GROUP_ANONYMOUS);
 		Set<Identity> anonymousUsers = new HashSet<>(securityManager.getIdentitiesOfSecurityGroup(anonymousGroup));
 
-		List<String> identList = new ArrayList<String>();
+		List<String> identList = new ArrayList<>();
 		String[] lines = inp.split("\r?\n");
 		for (int i = 0; i < lines.length; i++) {
 			String username = lines[i].trim();

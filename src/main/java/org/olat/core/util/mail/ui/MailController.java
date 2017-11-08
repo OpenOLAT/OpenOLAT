@@ -46,6 +46,7 @@ import org.olat.core.util.mail.MailModule;
 import org.olat.core.util.mail.model.DBMail;
 import org.olat.core.util.mail.model.DBMailAttachment;
 import org.olat.core.util.mail.model.DBMailRecipient;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -141,7 +142,9 @@ public class MailController extends FormBasicController {
 			if (showMailAdresses()) {
 				Identity fromIdentity = from.getRecipient();
 				if (fromIdentity != null) {
-					sb.append(" &lt;").append(fromIdentity.getUser().getEmail()).append("&gt; ");
+					sb.append(" &lt;");
+					sb.append(UserManager.getInstance().getUserDisplayEmail(fromIdentity, getLocale()));
+					sb.append("&gt; ");
 				}
 			}			
 		}
@@ -177,13 +180,13 @@ public class MailController extends FormBasicController {
 			}
 			if (showRecipientNames()) {
 				if (recipient.getRecipient() != null) {
-					// recipient is an individual
-					Identity repicientIdentity = recipient.getRecipient();
 					sb.append("<li class='o_recipient'>");
 					if(groupCounter> 0) sb.append(", ");
 					sb.append("<span>").append(getFullName(recipient)).append("</span>");
 					if (showMailAdresses()) {
-						sb.append(" &lt;").append(repicientIdentity.getUser().getEmail()).append("&gt;");
+						sb.append(" &lt;");
+						sb.append(UserManager.getInstance().getUserDisplayEmail(recipient.getRecipient(), getLocale()));
+						sb.append("&gt;");
 					}
 					sb.append("</li>");
 					groupCounter++;
@@ -195,7 +198,7 @@ public class MailController extends FormBasicController {
 					sb.append("<li class='o_mail'>");
 					if(groupCounter > 0) sb.append(", ");
 					sb.append("&lt;");
-					sb.append(recipient.getEmailAddress());
+					sb.append(UserManager.getInstance().getUserDisplayEmail(recipient.getEmailAddress(), getLocale()));
 					sb.append("&gt;</li>");
 					groupCounter++;
 				}

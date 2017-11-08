@@ -26,19 +26,14 @@ package org.olat.admin.user.imp;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -61,15 +56,12 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
-import org.olat.registration.RegistrationManager;
-import org.olat.registration.TemporaryKey;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.shibboleth.ShibbolethModule;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.thoughtworks.xstream.XStream;
 
 /**
  * Description:<br>
@@ -94,19 +86,12 @@ class ImportStep00 extends BasicStep {
 		setNextStep(new ImportStep01(ureq, canCreateOLATPassword, false));
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.Step#getInitialPrevNextFinishConfig()
-	 */
+	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return new PrevNextFinishConfig(false, true, false);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.Step#getStepController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.core.gui.control.generic.wizard.StepsRunContext,
-	 *      org.olat.core.gui.components.form.flexible.impl.Form)
-	 */
+	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
 		StepFormController stepI = new ImportStepForm00(ureq, windowControl, form, stepsRunContext);
 		return stepI;
@@ -122,6 +107,8 @@ class ImportStep00 extends BasicStep {
 
 		@Autowired
 		private UserManager um;
+		@Autowired
+		private UserModule userModule;
 		@Autowired
 		private I18nModule i18nModule;
 		@Autowired
@@ -167,15 +154,13 @@ class ImportStep00 extends BasicStep {
 			}
 
 			String defaultlang = i18nModule.getDefaultLocale().toString();
-			List<String> importedEmails = new ArrayList<String>();
+			List<String> importedEmails = new ArrayList<>();
 
 			boolean importDataError = false;
 
-			idents = new ArrayList<Identity>();
-			newIdents = new ArrayList<TransientIdentity>();
-			updateIdents = new ArrayList<UpdateIdentity>();
-			//check also emails in change-workflow, see OLAT-5723
-			Set<String> tempEmailsInUse = getTemporaryEmailInUse();
+			idents = new ArrayList<>();
+			newIdents = new ArrayList<>();
+			updateIdents = new ArrayList<>();
 			
 			// Note: some values are fix and required: login, pwd and lang, those
 			// can not be configured in the config file
@@ -278,8 +263,8 @@ class ImportStep00 extends BasicStep {
 					UpdateIdentity uIdentity = new UpdateIdentity(ident, pwd, lang);
 					idents.add(uIdentity);
 					updateIdents.add(uIdentity);
-					
-					importDataError = updateUserProperties(uIdentity, parts, i, columnId, tempEmailsInUse, importedEmails);
+
+					importDataError = updateUserProperties(uIdentity, parts, i, columnId, importedEmails);
 					if(importDataError) break;
 				} else {
 					// no identity/user yet, create
@@ -298,7 +283,7 @@ class ImportStep00 extends BasicStep {
 					ud.setName(login);
 					ud.setPassword(pwd);
 					ud.setLanguage(lang);
-					importDataError = updateUserProperties(ud, parts, i, columnId, tempEmailsInUse, importedEmails);
+					importDataError = updateUserProperties(ud, parts, i, columnId, importedEmails);
 					if(importDataError) break;
 					
 					idents.add(ud);
@@ -309,26 +294,8 @@ class ImportStep00 extends BasicStep {
 			return !importDataError;
 		}
 		
-		private Set<String> getTemporaryEmailInUse() {
-			Set<String> tempEmailsInUse = new HashSet<String>();
-			RegistrationManager rm = CoreSpringFactory.getImpl(RegistrationManager.class);
-			List<TemporaryKey> tk = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
-			if (tk != null) {
-				for (TemporaryKey temporaryKey : tk) {
-					XStream xml = new XStream();
-					@SuppressWarnings("unchecked")
-					Map<String, String> mails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
-					for(Map.Entry<String, String> mailEntry:mails.entrySet()) {
-						tempEmailsInUse.add(mailEntry.getKey());
-						tempEmailsInUse.add(mailEntry.getValue());
-					}
-				}
-			}
-			return tempEmailsInUse;
-		}
-		
 		private boolean updateUserProperties(Identity ud, String[] parts, int i, int columnId,
-				Set<String> tempEmailsInUse, List<String> importedEmails) {
+				List<String> importedEmails) {
 			
 			boolean importDataError = false;
 			for (int j = 0; j < userPropertyHandlers.size(); j++) {
@@ -342,6 +309,9 @@ class ImportStep00 extends BasicStep {
 					thisValue = parts[columnId].trim();
 				}
 				boolean isMandatoryField = um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler);
+				if (thisKey.equals(UserConstants.EMAIL) && !userModule.isEmailMandatory()) {
+					isMandatoryField = false;
+				}
 				if (isMandatoryField && !StringHelper.containsNonWhitespace(thisValue)) {
 					String label = "";
 					if(userPropertyHandler.i18nFormElementLabelKey() != null) {
@@ -369,30 +339,18 @@ class ImportStep00 extends BasicStep {
 					break;
 				}
 				// check that no user with same (institutional) e-mail is already in OLAT
-				if ( (thisKey.equals(UserConstants.INSTITUTIONALEMAIL) || thisKey.equals(UserConstants.EMAIL)) && !thisValue.isEmpty() ) {
-					// check that no user with same email is already in OLAT
-					List<Identity> identities = UserManager.getInstance().findIdentitiesByEmail(Collections.singletonList(thisValue));
-					if(identities.size() > 1) {
-						textAreaElement.setErrorKey("error.email.douplicate", new String[] { String.valueOf(i + 1), thisValue });
-						importDataError = true;
-						break;
-					}
-					
-					if (identities.size() == 1 && !ud.equals(identities.get(0))) {
+				if ( (thisKey.equals(UserConstants.INSTITUTIONALEMAIL) && !thisValue.isEmpty()) || thisKey.equals(UserConstants.EMAIL)) {
+					if (!UserManager.getInstance().isEmailAllowed(thisValue)) {
 						textAreaElement.setErrorKey("error.email.exists", new String[] { String.valueOf(i + 1), thisValue });
 						importDataError = true;
 						break;
 					}
 				}
 				// check that no user with same email is already in list
-				if (thisKey.equals(UserConstants.EMAIL)) {
+				if (thisKey.equals(UserConstants.EMAIL) && userModule.isEmailUnique()) {
 					// check that no user with same email is already in list
 					Integer mailPos = importedEmails.indexOf(thisValue);
 					boolean duplicate = mailPos != -1;
-					if (!duplicate) {
-						duplicate |= tempEmailsInUse.contains(thisValue);
-					}
-
 					if (duplicate) {
 						mailPos++;
 						textAreaElement.setErrorKey("error.email.douplicate",

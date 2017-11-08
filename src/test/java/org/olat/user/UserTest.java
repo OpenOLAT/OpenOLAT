@@ -129,7 +129,7 @@ public class UserTest extends OlatTestCase {
 		// search for user u1 manually. SetUp puts the user in the database
 		// so we look if we can find the user in the database
 		log.debug("Entering testUmCreateUser()");
-		User found = userManager.findUserByEmail("judihui@id.uzh.ch");
+		User found = userManager.findUniqueIdentityByEmail("judihui@id.uzh.ch").getUser();
 		assertTrue(u1.getKey().equals(found.getKey()));
 	}
 
@@ -141,29 +141,13 @@ public class UserTest extends OlatTestCase {
 	@Test public void testFindUserByEmail() throws Exception {
 		log.debug("Entering testFindUserByEmail()");
 		// find via users email
-		User found = userManager.findUserByEmail("judihui@id.uzh.ch");
+		User found = userManager.findUniqueIdentityByEmail("judihui@id.uzh.ch").getUser();
 		assertTrue(u1.getKey().equals(found.getKey()));
 		// find via users institutional email
-		found = userManager.findUserByEmail("judihui@id.uzh.ch");
+		found = userManager.findUniqueIdentityByEmail("judihui@id.uzh.ch").getUser();
 		assertTrue(u1.getKey().equals(found.getKey()));
 	}
 	
-	@Test public void testEmailInUse() throws Exception {
-		log.debug("Entering testEmailInUse()");
-		// find via users email
-		boolean found = userManager.userExist("judihui@id.uzh.ch");
-		assertTrue(found);
-		// find via users institutional email
-		found = userManager.userExist("judihui@id.uzh.ch");
-		assertTrue(found);
-		// i don't like like
-		found = userManager.userExist("judihui@id.uzh.ch.ch");
-		assertFalse(found);
-		// doesn't exists
-		found = userManager.userExist("judihui@hkfls.com");
-		assertFalse(found);
-	}
-
 	/**
 	 *  Test if usermanager.createUser() works
 	 * @throws Exception
@@ -171,15 +155,15 @@ public class UserTest extends OlatTestCase {
 	@Test public void testFindIdentityByEmail() throws Exception {
 		log.debug("Entering testFindIdentityByEmail()");
 		// find via users email
-		Identity found = userManager.findIdentityByEmail("judihui@id.uzh.ch");
+		Identity found = userManager.findUniqueIdentityByEmail("judihui@id.uzh.ch");
 		Assert.assertNotNull(found);
 		assertTrue(i1.getKey().equals(found.getKey()));
 		// find via users institutional email
-		found = userManager.findIdentityByEmail("instjudihui@id.uzh.ch");
+		found = userManager.findUniqueIdentityByEmail("instjudihui@id.uzh.ch");
 		Assert.assertNotNull(found);
 		assertTrue(i1.getKey().equals(found.getKey()));
 		// find must be equals
-		found = userManager.findIdentityByEmail("instjudihui@id.uzh.ch.ch");
+		found = userManager.findUniqueIdentityByEmail("instjudihui@id.uzh.ch.ch");
 		assertNull(found);
 	}
 
@@ -200,7 +184,7 @@ public class UserTest extends OlatTestCase {
 	 */
 	@Test
 	public void testUmFindUserByInstitutionalUserIdentifier() throws Exception {
-		Map<String, String> searchValue = new HashMap<String, String>();
+		Map<String, String> searchValue = new HashMap<>();
 		searchValue.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, "id.uzh.ch");
 		List<Identity> result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
 		assertTrue("must have elements", result != null);
@@ -288,7 +272,7 @@ public class UserTest extends OlatTestCase {
 
 		//1. begin the tests: update the institutional email
 		// search with power search (to compare result later on with same search)
-		Map<String, String> searchValue = new HashMap<String, String>();
+		Map<String, String> searchValue = new HashMap<>();
 		searchValue.put(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
 		// find identity 1
 		List<Identity> result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
@@ -300,7 +284,7 @@ public class UserTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// try to find it via deleted property
-		searchValue = new HashMap<String, String>();
+		searchValue = new HashMap<>();
 		searchValue.put(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
 		// find identity 1
 		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
@@ -308,7 +292,7 @@ public class UserTest extends OlatTestCase {
 
 		//2. begin the tests: update the first name
 		// search via first name
-		searchValue = new HashMap<String, String>();
+		searchValue = new HashMap<>();
 		searchValue.put(UserConstants.FIRSTNAME, login);
 		// find identity 1
 		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
@@ -321,13 +305,13 @@ public class UserTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		// try to find it via old property
-		searchValue = new HashMap<String, String>();
+		searchValue = new HashMap<>();
 		searchValue.put(UserConstants.FIRSTNAME, login);
 		// find identity 1
 		result = securityManager.getIdentitiesByPowerSearch(null, searchValue, true, null, null, null, null, null, null, null, null);
 		assertEquals(0, result.size());
 		// try to find it via updated property
-		Map<String,String> searchRotweinValue = new HashMap<String, String>();
+		Map<String,String> searchRotweinValue = new HashMap<>();
 		searchRotweinValue.put(UserConstants.FIRSTNAME, "rotwein");
 		// find identity 1
 		List<Identity> rotweinList = securityManager.getIdentitiesByPowerSearch(null, searchRotweinValue, true, null, null, null, null, null, null, null, null);
@@ -347,7 +331,6 @@ public class UserTest extends OlatTestCase {
 		String institutionName = "id." + login.toLowerCase() + ".ch";
 		Identity identity = createIdentityWithProperties(login, institutionName);
 		String institutionalEmail = "inst" + login + "@" + institutionName;
-		String email = login + "@" + institutionName;
 		dbInstance.commitAndCloseSession();
 		
 		//test user deletion
@@ -358,7 +341,7 @@ public class UserTest extends OlatTestCase {
 		result = securityManager.getIdentitiesByPowerSearch(login, null, true, null, null, null, null, null, null, null, null);
 		assertEquals(1, result.size());
 		// search with power search (to compare result later on with same search)
-		Map<String, String> searchValue = new HashMap<String, String>();
+		Map<String, String> searchValue = new HashMap<>();
 		searchValue.put(UserConstants.FIRSTNAME, login);
 		searchValue.put(UserConstants.LASTNAME, login);
 		searchValue.put(UserConstants.FIRSTNAME, login);
@@ -411,15 +394,15 @@ public class UserTest extends OlatTestCase {
 		Assert.assertEquals(1, searchResult_11.size());
 		
 		// check using other methods
-		Identity loadByInstitutionalEmail = userManager.findIdentityByEmail(institutionalEmail);
+		Identity loadByInstitutionalEmail = userManager.findUniqueIdentityByEmail(institutionalEmail);
 		assertNull("Deleted identity with email '" + institutionalEmail + "' should not be found with 'UserManager.findIdentityByEmail'", loadByInstitutionalEmail);
 	}
 
 	@Test
 	public void testEquals() {
-		User user1 = userManager.findUserByEmail("salat@id.salat.uzh.ch");
-		User user2 = userManager.findUserByEmail("migros@id.migros.uzh.ch");
-		User user1_2 = userManager.findUserByEmail("salat@id.salat.uzh.ch");
+		User user1 = userManager.findUniqueIdentityByEmail("salat@id.salat.uzh.ch").getUser();
+		User user2 = userManager.findUniqueIdentityByEmail("migros@id.migros.uzh.ch").getUser();
+		User user1_2 = userManager.findUniqueIdentityByEmail("salat@id.salat.uzh.ch").getUser();
 
 		assertFalse("Wrong equals implementation, different types are recognized as equals ",user1.equals(new Integer(1)));
 		assertFalse("Wrong equals implementation, different users are recognized as equals ",user1.equals(user2));
@@ -430,9 +413,9 @@ public class UserTest extends OlatTestCase {
 	
 	@Test
 	public void testEqualsIdentity() {
-		Identity ident1 = userManager.findIdentityByEmail("salat@id.salat.uzh.ch");
-		Identity ident2 = userManager.findIdentityByEmail("migros@id.migros.uzh.ch");
-		Identity ident1_2 = userManager.findIdentityByEmail("salat@id.salat.uzh.ch");
+		Identity ident1 = userManager.findUniqueIdentityByEmail("salat@id.salat.uzh.ch");
+		Identity ident2 = userManager.findUniqueIdentityByEmail("migros@id.migros.uzh.ch");
+		Identity ident1_2 = userManager.findUniqueIdentityByEmail("salat@id.salat.uzh.ch");
 
 		assertFalse("Wrong equals implementation, different types are recognized as equals ",ident1.equals(new Integer(1)));
 		assertFalse("Wrong equals implementation, different users are recognized as equals ",ident1.equals(ident2));
@@ -443,9 +426,9 @@ public class UserTest extends OlatTestCase {
 	
 	@Test
 	public void testHashCode() {
-		User user1 = userManager.findUserByEmail("salat@id.salat.uzh.ch");
-		User user2 = userManager.findUserByEmail("migros@id.migros.uzh.ch");
-		User user1_2 = userManager.findUserByEmail("salat@id.salat.uzh.ch");
+		User user1 = userManager.findUniqueIdentityByEmail("salat@id.salat.uzh.ch").getUser();
+		User user2 = userManager.findUniqueIdentityByEmail("migros@id.migros.uzh.ch").getUser();
+		User user1_2 = userManager.findUniqueIdentityByEmail("salat@id.salat.uzh.ch").getUser();
 
 		assertTrue("Wrong hashCode implementation, same users have NOT same hash-code ",user1.hashCode() == user1.hashCode());
 		assertFalse("Wrong hashCode implementation, different users have same hash-code",user1.hashCode() == user2.hashCode());

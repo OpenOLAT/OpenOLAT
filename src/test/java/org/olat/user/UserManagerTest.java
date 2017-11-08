@@ -60,7 +60,7 @@ public class UserManagerTest extends OlatTestCase {
 
 		//get the identity by email
 		String email = id.getUser().getProperty(UserConstants.EMAIL, null);
-		Identity foundIdentity = userManager.findIdentityByEmail(email);
+		Identity foundIdentity = userManager.findUniqueIdentityByEmail(email);
 		Assert.assertNotNull(foundIdentity);
 		Assert.assertEquals(id, foundIdentity);
 	}
@@ -73,7 +73,7 @@ public class UserManagerTest extends OlatTestCase {
 
 		//get the identity by email
 		String email = id.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null);
-		Identity foundIdentity = userManager.findIdentityByEmail(email);
+		Identity foundIdentity = userManager.findUniqueIdentityByEmail(email);
 		Assert.assertNotNull(foundIdentity);
 		Assert.assertEquals(id, foundIdentity);
 	}
@@ -91,7 +91,7 @@ public class UserManagerTest extends OlatTestCase {
 		Assert.assertTrue(emptyIdentities.isEmpty());
 		
 		//get the identities by emails
-		List<String> emails = new ArrayList<String>();
+		List<String> emails = new ArrayList<>();
 		emails.add(id1.getUser().getProperty(UserConstants.EMAIL, null));
 		emails.add(id2.getUser().getProperty(UserConstants.EMAIL, null));
 		
@@ -110,7 +110,7 @@ public class UserManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//get the identities by emails
-		List<String> emails = new ArrayList<String>();
+		List<String> emails = new ArrayList<>();
 		emails.add(id1.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null));
 		emails.add(id2.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, null));
 		

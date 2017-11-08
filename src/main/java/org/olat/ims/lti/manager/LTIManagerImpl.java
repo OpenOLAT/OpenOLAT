@@ -56,6 +56,7 @@ import org.olat.ims.lti.model.LTIOutcomeImpl;
 import org.olat.ldap.ui.LDAPAuthenticationController;
 import org.olat.resource.OLATResource;
 import org.olat.shibboleth.ShibbolethDispatcher;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,6 +73,8 @@ public class LTIManagerImpl implements LTIManager {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 
 	@Override
 	public LTIOutcome createOutcome(Identity identity, OLATResource resource,
@@ -166,7 +169,7 @@ public class LTIManagerImpl implements LTIManager {
 		final User u = ident.getUser();
 		final String lastName = u.getProperty(UserConstants.LASTNAME, loc);
 		final String firstName = u.getProperty(UserConstants.FIRSTNAME, loc);
-		final String email = u.getProperty(UserConstants.EMAIL, loc);
+		final String email = userManager.getEnsuredEmail(u);
 
 		Map<String,String> props = new HashMap<>();
 		setProperty(props, "resource_link_id", context.getResourceId());

@@ -50,7 +50,6 @@ import org.olat.core.gui.control.LocaleChangedEvent;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
@@ -179,7 +178,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 				} else if(interceptor.allowChangeOfUsername()) {
 					setRegistrationForm(ureq, wControl, proposedUsername);
 				} else {
-					if(areMandatoryUserPropertiesAvaible()) {
+					if(areMandatoryUserPropertiesAvailable()) {
 						state = STATE_NEW_SHIB_USER;
 						mainContainer.setPage(VELOCITY_ROOT + "/disclaimer.html");
 					} else {
@@ -320,14 +319,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 						return;
 					}
 
-					User user = null;
 					String email = shibbolethAttributes.getValueForUserPropertyName(UserConstants.EMAIL);
-					Identity id = UserManager.getInstance().findIdentityByEmail(email);
-					if (id != null) {
-						user = id.getUser();
-					}
-
-					if (user != null) {
+					if (!UserManager.getInstance().isEmailAllowed(email)) {
 						// error, email already exists. should actually not happen if OLAT Authenticator has
 						// been set after removing shibboleth authenticator
 						getWindowControl().setError(translator.translate("sr.error.emailexists", new String[] {WebappHelper.getMailConfig("mailSupport")}));
@@ -363,19 +356,17 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 	}
 
 	private boolean isMandatoryUserPropertyMissing() {
-		return !areMandatoryUserPropertiesAvaible();
+		return !areMandatoryUserPropertiesAvailable();
 	}
 
-	private boolean areMandatoryUserPropertiesAvaible() {
-		String lastname = shibbolethAttributes.getValueForUserPropertyName(UserConstants.LASTNAME);
-		String firstname = shibbolethAttributes.getValueForUserPropertyName(UserConstants.FIRSTNAME);
-		String email = shibbolethAttributes.getValueForUserPropertyName(UserConstants.EMAIL);
-		if (StringHelper.containsNonWhitespace(lastname)
-				&& StringHelper.containsNonWhitespace(firstname)
-				&& StringHelper.containsNonWhitespace(email)) {
-			return true;
+	private boolean areMandatoryUserPropertiesAvailable() {
+		for (String userPropertyName: shibbolethModule.getMandatoryUserProperties()) {
+			String value = shibbolethAttributes.getValueForUserPropertyName(userPropertyName);
+			if (!StringHelper.containsNonWhitespace(value)) {
+				return false;
+			}
 		}
-		return false;
+		return true;
 	}
 
 	private void doLogin(Identity identity, UserRequest ureq) {

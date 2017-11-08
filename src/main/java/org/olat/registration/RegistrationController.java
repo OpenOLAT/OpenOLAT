@@ -26,6 +26,7 @@
 package org.olat.registration;
 
 import java.text.DateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -71,9 +72,11 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 /**
  * Description:<br>
@@ -103,6 +106,8 @@ public class RegistrationController extends BasicController implements Activatea
 	private I18nManager i18nManager;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private UserModule userModule;
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
@@ -289,8 +294,6 @@ public class RegistrationController extends BasicController implements Activatea
 				myContent.contextPut("text", translate("step2.reg.text", email));
 				//ef.setVisible(false);
 				regarea.setVisible(false);
-				// look for user in "Person" and "user" tables
-				boolean foundUser = UserManager.getInstance().userExist(email);
 				// get remote address
 				String ip = ureq.getHttpReq().getRemoteAddr();
 				String serverpath = Settings.getServerContextPathURI();
@@ -300,9 +303,12 @@ public class RegistrationController extends BasicController implements Activatea
 				};
 
 				boolean isMailSent = false;
-				if (!foundUser) {
-					TemporaryKey tk = registrationManager.loadTemporaryKeyByEmail(email);
-					if (tk == null) tk = registrationManager.createTemporaryKeyByEmail(email, ip, RegistrationManager.REGISTRATION);
+				if (UserManager.getInstance().isEmailAllowed(email)) {
+					TemporaryKey tk = null;
+					if (userModule.isEmailUnique()) {
+						tk = registrationManager.loadTemporaryKeyByEmail(email);
+					}
+					if (tk == null) tk = registrationManager.loadOrCreateTemporaryKeyByEmail(email, ip, RegistrationManager.REGISTRATION);
 					myContent.contextPut("regKey", tk.getRegistrationKey());
 					
 					String link = serverpath + "/dmz/registration/index.html?key=" + tk.getRegistrationKey() + "&language=" + i18nModule.getLocaleKey(ureq.getLocale());
@@ -331,20 +337,21 @@ public class RegistrationController extends BasicController implements Activatea
 						// nothing to do, emailSent flag is false, errors will be reported to user
 					}
 				} else {
-					// a user exists, this is an error in the registration page
-					// send email
-					Identity identity = UserManager.getInstance().findIdentityByEmail(email);
-					String body = translate("login.body", identity.getName()) + SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
-					try {
-						MailBundle bundle = new MailBundle();
-						bundle.setTo(email);
-						bundle.setContent(translate("login.subject"), body);
-						MailerResult result = mailManager.sendExternMessage(bundle, null, true);
-						if (result.isSuccessful()) {
-							isMailSent = true;
+					// if users with this email address exists, they are informed.
+					List<Identity> identities = UserManager.getInstance().findIdentitiesByEmail(Collections.singletonList(email));
+					for (Identity identity: identities) {
+						String body = translate("login.body", identity.getName()) + SEPARATOR + translate("reg.wherefrom", whereFromAttrs);
+						try {
+							MailBundle bundle = new MailBundle();
+							bundle.setTo(email);
+							bundle.setContent(translate("login.subject"), body);
+							MailerResult result = mailManager.sendExternMessage(bundle, null, true);
+							if (result.isSuccessful()) {
+								isMailSent = true;
+							}
+						} catch (Exception e) {
+							// nothing to do, emailSent flag is false, errors will be reported to user
 						}
-					} catch (Exception e) {
-						// nothing to do, emailSent flag is false, errors will be reported to user
 					}
 				}
 				if (isMailSent) {

@@ -19,10 +19,9 @@
  */
 package de.bps.olat.user;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
+import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -106,24 +105,22 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 		@SuppressWarnings("unchecked")
 		HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(tempKey.getEmailAddress());
 		
-		String currentMail = mails.get("currentEMail");
-		List<Identity> identities = UserManager.getInstance()
-				.findIdentitiesByEmail(Collections.singletonList(currentMail));
-		if (identities != null && identities.size() == 1) {
-			// change mail address
-			Identity ident = identities.get(0);
-			ident.getUser().setProperty("email", mails.get("changedEMail"));
+		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(tempKey.getIdentityKey());
+		if (identity != null) {
+			identity.getUser().setProperty("email", mails.get("changedEMail"));
 			// if old mail address closed then set the new mail address
 			// unclosed
-			String value = ident.getUser().getProperty("emailDisabled", null);
+			String value = identity.getUser().getProperty("emailDisabled", null);
 			if (value != null && value.equals("true")) {
-				ident.getUser().setProperty("emailDisabled", "false");
+				identity.getUser().setProperty("emailDisabled", "false");
 			}
-			ident.getUser().setProperty("email", mails.get("changedEMail"));
+			identity.getUser().setProperty("email", mails.get("changedEMail"));
 			// success info message
-			wControl.setInfo(pT.translate("success.change.email", new String[] { mails.get("currentEMail"), mails.get("changedEMail") }));
+			String currentEmailDisplay = UserManager.getInstance().getUserDisplayEmail(mails.get("currentEMail"), userRequest.getLocale());
+			String changedEmailDisplay = UserManager.getInstance().getUserDisplayEmail(mails.get("changedEMail"), userRequest.getLocale());
+			wControl.setInfo(pT.translate("success.change.email", new String[] { currentEmailDisplay, changedEmailDisplay }));
 			// remove keys
-			ident.getUser().setProperty("emchangeKey", null);
+			identity.getUser().setProperty("emchangeKey", null);
 			userRequest.getUserSession().removeEntryFromNonClearedStore(ChangeEMailController.CHANGE_EMAIL_ENTRY);
 		} else {
 			// error message

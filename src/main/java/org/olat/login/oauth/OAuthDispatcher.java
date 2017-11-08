@@ -217,14 +217,7 @@ public class OAuthDispatcher implements Dispatcher {
 			if(auth == null) {
 				String email = infos.getEmail();
 				if(StringHelper.containsNonWhitespace(email)) {
-					Identity identity = null;
-					try {
-						identity = userManager.findIdentityByEmail(email);
-					} catch(AssertException e) {
-						// username was not an valid mail address. That is
-						// totally ok here, continue with search by identity
-						// name. 
-					}
+					Identity identity = userManager.findUniqueIdentityByEmail(email);
 					if(identity == null) {
 						identity = securityManager.findIdentityByName(id);
 					}

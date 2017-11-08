@@ -145,10 +145,12 @@ public class ContactFormController extends BasicController {
 		boolean hasAtLeastOneAddress = false;
 		if (recipList != null && recipList.size() > 0 ) {
 			for (ContactList cl: recipList) {
-				if (!hasAtLeastOneAddress && cl != null && cl.getEmailsAsStrings().size() > 0) {
+				if (!hasAtLeastOneAddress && cl != null && cl.hasAddresses()) {
 					hasAtLeastOneAddress = true;
 				}
-				if (cl.getEmailsAsStrings().size() > 0) cntctForm.addEmailTo(cl);
+				if (cl.hasAddresses()) {
+					cntctForm.addEmailTo(cl);
+				}
 			}
 		}
 		return hasAtLeastOneAddress;

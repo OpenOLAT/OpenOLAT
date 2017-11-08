@@ -32,6 +32,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -62,21 +63,6 @@ public class RegistrationManagerTest extends OlatTestCase {
 	}
 
 	/**
-	 * Test internal registration.
-	 */
-	@Test
-	public void testRegister() {
-		String emailaddress = UUID.randomUUID() +  "@openolat.com";
-		String ipaddress = "130.60.112.10";
-		
-		TemporaryKey result = registrationManager.register(emailaddress, ipaddress, "register");
-		Assert.assertTrue(result != null);
-		Assert.assertEquals(emailaddress, result.getEmailAddress());
-		Assert.assertEquals(ipaddress, result.getIpAddress());
-	}
-
-
-	/**
 	 * Test load of temp key.
 	 */
 	@Test
@@ -89,7 +75,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 		Assert.assertNull("not found, as registration key is empty", result1);
 		
 		//now create a temp key
-		TemporaryKey result2 = registrationManager.createTemporaryKeyByEmail(emailaddress, ipaddress, RegistrationManager.REGISTRATION);
+		TemporaryKey result2 = registrationManager.loadOrCreateTemporaryKeyByEmail(emailaddress, ipaddress, RegistrationManager.REGISTRATION);
 		Assert.assertNotNull("result not null because key generated", result2);
 		dbInstance.commitAndCloseSession();
 
@@ -109,7 +95,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 		String ipaddress = "130.60.112.12";
 
 		//now create a temporary key
-		TemporaryKey result = registrationManager.createTemporaryKeyByEmail(emailaddress, ipaddress, regAction);
+		TemporaryKey result = registrationManager.loadOrCreateTemporaryKeyByEmail(emailaddress, ipaddress, regAction);
 		Assert.assertNotNull("result not null because key generated", result);
 		dbInstance.commitAndCloseSession();
 
@@ -125,6 +111,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void testLoadTemporaryKeyEntry() {
+		Long identityKey = (new Random()).nextLong();
 		String emailaddress = UUID.randomUUID() + "@frentix.com";
 		String ipaddress = "130.60.112.11";
 
@@ -133,7 +120,7 @@ public class RegistrationManagerTest extends OlatTestCase {
 		Assert.assertTrue("result should be null, because not found", result == null);
 		
 		//now create a temp key
-		TemporaryKey realResult = registrationManager.createTemporaryKeyByEmail(emailaddress,ipaddress, RegistrationManager.REGISTRATION);
+		TemporaryKey realResult = registrationManager.loadOrCreateTemporaryKeyByEmail(emailaddress,ipaddress, RegistrationManager.REGISTRATION);
 		Assert.assertNotNull("result not null because key generated", realResult);
 		dbInstance.commitAndCloseSession();
 		
@@ -141,6 +128,14 @@ public class RegistrationManagerTest extends OlatTestCase {
 		TemporaryKey reloadResult = registrationManager.loadTemporaryKeyByEmail(emailaddress);
 		Assert.assertNotNull("we shoult find the key just created", reloadResult);
 		Assert.assertEquals(realResult, reloadResult);
+		
+		//example with identity
+		TemporaryKey keyOfIdentity = registrationManager.createAndDeleteOldTemporaryKey(identityKey, emailaddress, ipaddress, RegistrationManager.REGISTRATION);
+		registrationManager.createAndDeleteOldTemporaryKey(identityKey, emailaddress, ipaddress, RegistrationManager.PW_CHANGE);
+		dbInstance.commitAndCloseSession();
+		List<TemporaryKey> keys = registrationManager.loadTemporaryKeyByIdentity(identityKey, RegistrationManager.REGISTRATION);
+		Assert.assertEquals(1, keys.size());
+		Assert.assertEquals(keyOfIdentity, keys.get(0));
 	}
 	
 	/**
@@ -150,13 +145,37 @@ public class RegistrationManagerTest extends OlatTestCase {
 		String emailaddress = UUID.randomUUID() + "@openolat.com";
 		String ipaddress = "130.60.112.10";
 
-		TemporaryKey result = registrationManager.createTemporaryKeyByEmail(emailaddress, ipaddress, RegistrationManager.REGISTRATION);
+		TemporaryKey result = registrationManager.loadOrCreateTemporaryKeyByEmail(emailaddress, ipaddress, RegistrationManager.REGISTRATION);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(result);
 		Assert.assertNotNull(result.getKey());
 		Assert.assertNotNull(result.getCreationDate());
 		Assert.assertEquals(ipaddress, result.getIpAddress());
 		Assert.assertEquals(emailaddress, result.getEmailAddress());
+	}
+	
+	@Test
+	public void testCreateAndDeleteOldTemporaryKey() {
+		Long identityKey = (new Random()).nextLong();
+		String emailaddress = UUID.randomUUID() + "@openolat.com";
+		String ipaddress = "130.60.112.10";
+
+		TemporaryKey firstKey = registrationManager.createAndDeleteOldTemporaryKey(identityKey, emailaddress, ipaddress, RegistrationManager.PW_CHANGE);
+		String firstResistrationKey = firstKey.getRegistrationKey();
+		System.out.println(firstResistrationKey);
+
+		TemporaryKey secondKey = registrationManager.createAndDeleteOldTemporaryKey(identityKey, emailaddress, ipaddress, RegistrationManager.PW_CHANGE);
+		System.out.println(secondKey.getRegistrationKey());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(secondKey);
+		Assert.assertNotNull(secondKey.getKey());
+		Assert.assertNotNull(secondKey.getCreationDate());
+		Assert.assertEquals(ipaddress, secondKey.getIpAddress());
+		Assert.assertEquals(emailaddress, secondKey.getEmailAddress());
+		Assert.assertEquals(identityKey, secondKey.getIdentityKey());
+		
+		TemporaryKey reloadedFirstKey = registrationManager.loadTemporaryKeyByRegistrationKey(firstResistrationKey);
+		Assert.assertNull(reloadedFirstKey);
 	}
 	
 	@Test

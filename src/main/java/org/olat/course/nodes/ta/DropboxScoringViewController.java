@@ -55,7 +55,6 @@ import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -306,7 +305,7 @@ public class DropboxScoringViewController extends BasicController {
 					}
 
 					am.appendToUserNodeLog(node, coach, student, "FILE UPLOADED: " + folderEvent.getFilename());
-					String toMail = student.getUser().getProperty(UserConstants.EMAIL, ureq.getLocale());
+					String toMail = UserManager.getInstance().getUserDisplayEmail(student, ureq.getLocale());
 					
 					OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseNode.class, Long.valueOf(node.getIdent()));
 					ContextEntry ce =		BusinessControlFactory.getInstance().createContextEntry(ores);

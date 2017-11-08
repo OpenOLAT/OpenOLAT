@@ -105,7 +105,10 @@ public class NotificationNewsController extends BasicController implements
 		listenTo(dateChooserCtr);
 		newsVC.put("dateChooserCtr", dateChooserCtr.getInitialComponent());
 		// Add email link
-		emailLink = LinkFactory.createButton("emailLink", newsVC, this);
+		boolean userHasEmailAddress = StringHelper.containsNonWhitespace(ureq.getIdentity().getUser().getEmail());
+		if (userHasEmailAddress) {
+			emailLink = LinkFactory.createButton("emailLink", newsVC, this);
+		}
 		//
 		putInitialPanel(newsVC);
 	}
@@ -117,7 +120,7 @@ public class NotificationNewsController extends BasicController implements
 		if(compareDate == null) {
 			return Collections.emptyList();//compare date is mandatory
 		}
-		List<String> notiTypes = new ArrayList<String>();
+		List<String> notiTypes = new ArrayList<>();
 		if (StringHelper.containsNonWhitespace(newsType) && !newsType.equals("all")) {
 			notiTypes.add(newsType);
 		}
@@ -159,8 +162,8 @@ public class NotificationNewsController extends BasicController implements
 		if (source == emailLink) {
 			// send email to user with the currently visible date
 			NotificationsManager man = NotificationsManager.getInstance();
-			List<SubscriptionItem> infoList = new ArrayList<SubscriptionItem>();
-			List<Subscriber> subsList = new ArrayList<Subscriber>();
+			List<SubscriptionItem> infoList = new ArrayList<>();
+			List<Subscriber> subsList = new ArrayList<>();
 			for (Subscriber subscriber : subsInfoMap.keySet()) {
 				subsList.add(subscriber);
 				SubscriptionItem item = man.createSubscriptionItem(subscriber,

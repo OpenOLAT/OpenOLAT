@@ -41,20 +41,25 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.commons.persistence.DBQuery;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailHelper;
+import org.olat.login.LoginModule;
+import org.olat.login.auth.AuthenticationProvider;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
+import org.olat.registration.RegistrationManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -74,7 +79,15 @@ public class UserManagerImpl extends UserManager {
   @Autowired
   private DB dbInstance;
   @Autowired
+  private UserDAO userDAO;
+  @Autowired
+  private UserModule userModule;
+  @Autowired
   private BaseSecurity securityManager;
+  @Autowired
+  private RegistrationManager registrationManager;
+  @Autowired
+  private LoginModule loginModule;
   @Autowired
   private CoordinatorManager coordinatorManager;
 
@@ -85,7 +98,7 @@ public class UserManagerImpl extends UserManager {
 	 * Use UserManager.getInstance(), this is a spring factory method to load the
 	 * correct user manager
 	 */
-	private UserManagerImpl() {
+	UserManagerImpl() {
 		INSTANCE = this;
 	}
 	
@@ -98,9 +111,7 @@ public class UserManagerImpl extends UserManager {
 		
 	}
 
-	/**
-	 * @see org.olat.user.UserManager#createUser(java.lang.String, java.lang.String, java.lang.String)
-	 */
+	@Override
 	public User createUser(String firstName, String lastName, String eMail) {
 		UserImpl newUser = new UserImpl();
 		newUser.setFirstName(firstName);
@@ -122,28 +133,6 @@ public class UserManagerImpl extends UserManager {
 		prefs.setPresenceMessagesPublic(false);
 		prefs.setInformSessionTimeout(false);
 		return newUser;
-	}
-	
-	@Override
-	public boolean isEmailInUse(String email) {
-		DB db = DBFactory.getInstance();
-		String[] emailProperties = {UserConstants.EMAIL, UserConstants.INSTITUTIONALEMAIL};
-		for(String emailProperty:emailProperties) {
-			StringBuilder sb = new StringBuilder();
-			sb.append("select count(user) from org.olat.core.id.User user where ")
-			  .append("user.")
-			  .append(emailProperty)
-			  .append("=:email_value");
-			
-			String query = sb.toString();
-			DBQuery dbq = db.createQuery(query);
-			dbq.setString("email_value", email);
-			Number countEmail = (Number)dbq.uniqueResult();
-			if(countEmail.intValue() > 0) {
-				return true;
-			}
-		}
-		return false;
 	}
 	
 	@Override
@@ -173,65 +162,14 @@ public class UserManagerImpl extends UserManager {
 		return userKeys;
 	}
 
-	/**
-	 * @see org.olat.user.UserManager#findIdentityByEmail(java.lang.String)
-	 */
-	public Identity findIdentityByEmail(String email) {
-		if (!MailHelper.isValidEmailAddress(email)) {
-			throw new AssertException("Identity cannot be searched by email, if email is not valid. Used address: " + email);
-		}
-
-		StringBuilder sb = new StringBuilder("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
-			.append(" inner join fetch identity.user user ")
-			.append(" where ");
-		
-		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
-		//search email
-		StringBuilder emailSb = new StringBuilder(sb);
-		if(mysql) {
-			emailSb.append(" user.").append(UserConstants.EMAIL).append("=:email");
-		} else {
-			emailSb.append(" lower(user.").append(UserConstants.EMAIL).append(") = lower(:email)");
-		}
-
-		List<Identity> identities = dbInstance.getCurrentEntityManager()
-				.createQuery(emailSb.toString(), Identity.class)
-				.setParameter("email", email).getResultList();
-		if (identities.size() > 1) {
-			throw new AssertException("more than one identity found with email::" + email);
-		}
-
-		//search institutional email
-		StringBuilder institutionalSb = new StringBuilder(sb);
-		if(mysql) {
-			institutionalSb.append(" user.").append(UserConstants.INSTITUTIONALEMAIL).append("=:email");
-		} else {
-			institutionalSb.append(" lower(user.").append(UserConstants.INSTITUTIONALEMAIL).append(") = lower(:email)");
-		}
-		List<Identity> instIdentities = dbInstance.getCurrentEntityManager()
-				.createQuery(institutionalSb.toString(), Identity.class)
-				.setParameter("email", email).getResultList();
-		if (instIdentities.size() > 1) {
-			throw new AssertException("more than one identity found with institutional-email::" + email);
-		}
-
-		// check if email found in both fields && identity is not the same
-		if ( (identities.size() > 0) && (instIdentities.size() > 0) && 
-				 ( identities.get(0) != instIdentities.get(0) ) ) {
-			throw new AssertException("found two identites with same email::" + email + " identity1=" + identities.get(0) + " identity2=" + instIdentities.get(0));
-		}
-		if (identities.size() == 1) {
-			return identities.get(0);
-		}
-		if (instIdentities.size() == 1) {
-			return instIdentities.get(0);
-		}
-		return null;
+	@Override
+	public Identity findUniqueIdentityByEmail(String email) {
+		return userDAO.findUniqueIdentityByEmail(email);
 	}
 	
 	@Override
 	public List<Identity> findIdentitiesByEmail(List<String> emailList) {
-		List<String> emails = new ArrayList<String>(emailList);
+		List<String> emails = new ArrayList<>(emailList);
 		for (int i=0; i<emails.size(); i++) {
 			String email = emails.get(i).toLowerCase();
 			if (!MailHelper.isValidEmailAddress(email)) {
@@ -283,79 +221,55 @@ public class UserManagerImpl extends UserManager {
 		return identities;
 	}
 
-	/**
-	 * @see org.olat.user.UserManager#findUserByEmail(java.lang.String)
-	 */
-	public User findUserByEmail(String email) {
-		if (isLogDebugEnabled()){
-			logDebug("Trying to find user with email '" + email + "'");
-		}
-		
-		Identity ident = findIdentityByEmail(email);
-		// if no user found return null
-		if (ident == null) {
-			if (isLogDebugEnabled()){
-				logDebug("Could not find user '" + email + "'");
-			}
-			return null;
-		} 
-		return ident.getUser();
-	}
-	
-	public boolean userExist(String email) {
-		StringBuilder sb = new StringBuilder("select distinct count(user) from ").append(UserImpl.class.getName()).append(" user where ");
-		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
-		//search email
-		StringBuilder emailSb = new StringBuilder(sb);
-		if(mysql) {
-			emailSb.append(" user.").append(UserConstants.EMAIL).append("=:email");
-		} else {
-			emailSb.append(" lower(user.").append(UserConstants.EMAIL).append(") = lower(:email)");
-		}
-		
-		Number count = dbInstance.getCurrentEntityManager()
-				.createQuery(emailSb.toString(), Number.class)
-				.setParameter("email", email)
-				.getSingleResult();
-		if(count.intValue() > 0) {
-			return true;
-		}
-		
-		//search institutional email
-		StringBuilder institutionalSb = new StringBuilder(sb);
-		if(mysql) {
-			institutionalSb.append(" user.").append(UserConstants.INSTITUTIONALEMAIL).append(" =:email");
-		} else {
-			institutionalSb.append(" lower(user.").append(UserConstants.INSTITUTIONALEMAIL).append(") = lower(:email)");
-		}
-		count = dbInstance.getCurrentEntityManager()
-				.createQuery(institutionalSb.toString(), Number.class)
-				.setParameter("email", email)
-				.getSingleResult();
-		return count.intValue() > 0;
+	@Override
+	public List<Identity> findVisibleIdentitiesWithoutEmail() {
+		return userDAO.findVisibleIdentitiesWithoutEmail();
 	}
 
-	/**
-	 * @see org.olat.user.UserManager#loadUserByKey(java.lang.Long)
-	 */
+	@Override
+	public List<Identity> findVisibleIdentitiesWithEmailDuplicates() {
+		return userDAO.findVisibleIdentitiesWithEmailDuplicates();
+	}
+
+	@Override
+	public boolean isEmailAllowed(String email, User user) {
+		if (isEmailOfUser(email, user)) return true;
+		if (isEmailAllowed(email)) return true;
+		return false;
+	}
+
+	private boolean isEmailOfUser(String email, User user) {
+		return email != null && user != null
+				&& (email.equals(user.getEmail()) || email.equals(user.getInstitutionalEmail()));
+	}
+	
+	@Override
+	public boolean isEmailAllowed(String email) {
+		if (email == null && !userModule.isEmailMandatory()) return true;
+		if (email != null && !userModule.isEmailUnique()) return true;
+		if (email != null && isEmailNotInUse(email)) return true;
+		return false;
+	}
+	
+	private boolean isEmailNotInUse(String email) {
+		boolean emailIsNotInUse = !userDAO.isEmailInUse(email);
+		boolean emailIsNotReserved = !registrationManager.isEmailReserved(email);
+		return emailIsNotInUse && emailIsNotReserved;
+	}
+	
+	@Override
 	public User loadUserByKey(Long key) {
 		return DBFactory.getInstance().loadObject(UserImpl.class, key);
 		// User not loaded yet (lazy initialization). Need to access
 		// a field first to really load user from database.
 	}
 
-	/**
-	 * @see org.olat.user.UserManager#updateUser(org.olat.core.id.User)
-	 */
 	@Override
 	public User updateUser(User usr) {
 		if (usr == null) throw new AssertException("User object is null!");
 		return dbInstance.getCurrentEntityManager().merge(usr);
 	}
 
-	/**
-	 * @see org.olat.user.UserManager#updateUserFromIdentity(org.olat.core.id.Identity)
-	 */
 	@Override
 	public boolean updateUserFromIdentity(Identity identity) {
 		try {
@@ -369,9 +283,7 @@ public class UserManagerImpl extends UserManager {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.user.UserManager#setUserCharset(org.olat.core.id.Identity, java.lang.String)
-	 */
+	@Override
 	public void setUserCharset(Identity identity, String charset){
 	    PropertyManager pm = PropertyManager.getInstance();
 	    Property p = pm.findProperty(identity, null, null, null, CHARSET);
@@ -385,9 +297,7 @@ public class UserManagerImpl extends UserManager {
 	    }
 	}
 
-	/**
-	 * @see org.olat.user.UserManager#getUserCharset(org.olat.core.id.Identity)
-	 */
+	@Override
 	public String getUserCharset(Identity identity){
 	   String charset;
 	   charset = WebappHelper.getDefaultCharset();
@@ -476,12 +386,12 @@ public class UserManagerImpl extends UserManager {
 
 	@Override
 	public Map<String, String> getUserDisplayNamesByUserName(Collection<String> usernames) {
-		if(usernames == null | usernames.isEmpty()) {
+		if(usernames == null || usernames.isEmpty()) {
 			return Collections.emptyMap();
 		}
 		
-		Map<String, String> fullNames = new HashMap<String,String>();
-		List<String> newUsernames = new ArrayList<String>();
+		Map<String, String> fullNames = new HashMap<>();
+		List<String> newUsernames = new ArrayList<>();
 		for(String username:usernames) {
 			String fullName = userToFullnameCache.get(username);
 			if(fullName != null) {
@@ -547,13 +457,12 @@ public class UserManagerImpl extends UserManager {
 
 	@Override
 	public Map<Long, String> getUserDisplayNamesByKey(Collection<Long> identityKeys) {
-		
-		if(identityKeys == null | identityKeys.isEmpty()) {
+		if(identityKeys == null || identityKeys.isEmpty()) {
 			return Collections.emptyMap();
 		}
 		
-		Map<Long, String> fullNames = new HashMap<Long,String>();
-		List<Long> newIdentityKeys = new ArrayList<Long>();
+		Map<Long, String> fullNames = new HashMap<>();
+		List<Long> newIdentityKeys = new ArrayList<>();
 		for(Long identityKey:identityKeys) {
 			String fullName = userToFullnameCache.get(identityKey);
 			if(fullName != null) {
@@ -593,6 +502,54 @@ public class UserManagerImpl extends UserManager {
 	 */
 	public void setUserDisplayNameCreator(UserDisplayNameCreator userDisplayNameCreator) {
 		this.userDisplayNameCreator = userDisplayNameCreator;
+	}
+	
+	@Override
+	public String getUserDisplayEmail(Identity identity, Locale locale) {
+		User user = identity.getUser();
+		return getUserDisplayEmail(user, locale);
+	}
+	
+	@Override
+	public String getUserDisplayEmail(User user, Locale locale) {
+		String email = user.getProperty(UserConstants.EMAIL, locale);
+		return getUserDisplayEmail(email, locale);
+	}
+	
+	@Override
+	public String getUserDisplayEmail(String email, Locale locale) {
+		Translator translator = Util.createPackageTranslator(UserManager.class, locale);
+		return getUserDisplayEmail(email, translator);
+	}
+
+	public String getUserDisplayEmail(String email, Translator translator) {
+		String transaltedEmail;
+		if (StringHelper.containsNonWhitespace(email)) {
+			transaltedEmail = email;
+		} else {
+			transaltedEmail = translator.translate("email.not.available");
+		}
+		return transaltedEmail;
+	}
+
+	@Override
+	public String getEnsuredEmail(User user) {
+		String ensuredEmail;
+		if (user == null) {
+			ensuredEmail = "-1@" + getDomain();
+		} else if (StringHelper.containsNonWhitespace(user.getEmail())) {
+			ensuredEmail = user.getEmail();
+		} else {
+			ensuredEmail = user.getKey() + "@" + getDomain();
+		}
+		return ensuredEmail;
+	}
+
+	private String getDomain() {
+		AuthenticationProvider authenticationProvider = loginModule.getAuthenticationProvider("OLAT");
+		String issuer = authenticationProvider.getIssuerIdentifier(null);
+		String domain = issuer.startsWith("https://")? issuer.substring(8): issuer;
+		return domain;
 	}
 
 }

@@ -34,7 +34,6 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
@@ -235,7 +234,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		String changePwUrl = BusinessControlFactory.getInstance().getAsURIString(Collections.singletonList(ce), false);
 		String[] args = new String[] {
 				identity.getName(),//0: changed users username
-				identity.getUser().getProperty(UserConstants.EMAIL, locale),// 1: changed users email address
+				UserManager.getInstance().getUserDisplayEmail(identity, locale),// 1: changed users email address
 				userManager.getUserDisplayName(doer.getUser()),// 2: Name (first and last name) of user who changed the password
 				WebappHelper.getMailConfig("mailSupport"), //3: configured support email address
 				changePwUrl //4: direct link to change password workflow (e.g. https://xx.xx.xx/olat/url/changepw/0)

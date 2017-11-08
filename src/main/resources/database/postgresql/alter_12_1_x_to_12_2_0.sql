@@ -11,6 +11,11 @@ create table o_gta_mark (
 alter table o_gta_mark add constraint gtamark_tasklist_idx foreign key (fk_tasklist_id) references o_gta_task_list (id);
 create index idx_gtamark_tasklist_idx on o_gta_mark (fk_tasklist_id);
 
+-- temporary key
+alter table o_temporarykey add column fk_identity_id int8;
+
+create index idx_tempkey_identity_idx on o_temporarykey (fk_identity_id);
+
 
 -- taxonomy
 create table o_tax_taxonomy (

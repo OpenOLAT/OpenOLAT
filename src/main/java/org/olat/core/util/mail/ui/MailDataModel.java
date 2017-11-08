@@ -34,6 +34,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.model.DBMailLight;
 import org.olat.core.util.mail.model.DBMailRecipient;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -118,8 +119,8 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMailLight
 							return from.getRecipient();
 						} else if (StringHelper.containsNonWhitespace(from.getGroup())) {
 							return from.getGroup();
-						} else if (StringHelper.containsNonWhitespace(from.getEmailAddress())) {
-							return from.getEmailAddress();
+						} else {
+							return UserManager.getInstance().getUserDisplayEmail(from.getEmailAddress(), translator.getLocale());
 						}
 					}
 					return "-";
@@ -130,7 +131,7 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMailLight
 					}
 					
 					StringBuilder sb = new StringBuilder();
-					Set<String> groupSet = new HashSet<String>();
+					Set<String> groupSet = new HashSet<>();
 					for(DBMailRecipient recipient:mail.getRecipients()) {
 						if(recipient != null && recipient.getGroup() != null) {
 							String group = recipient.getGroup();
@@ -188,7 +189,7 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMailLight
 		if(filter == null || filter.getBusinessPaths() == null || filter.getBusinessPaths().isEmpty()) {
 			filteredMails = null;
 		} else {
-			filteredMails = new ArrayList<DBMailLight>();
+			filteredMails = new ArrayList<>();
 			for(DBMailLight mail:mails) {
 				if(filter.getBusinessPaths().contains((mail.getContext().getBusinessPath()))) {
 					filteredMails.add(mail);

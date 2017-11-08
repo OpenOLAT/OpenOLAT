@@ -56,6 +56,7 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.ui.main.BusinessGroupListController;
 import org.olat.repository.RepositoryEntryShort;
+import org.olat.user.UserManager;
 
 
 public class BGMailHelper {
@@ -195,15 +196,17 @@ public class BGMailHelper {
 		String[] bodyArgs = null;
 		String lang = null;
 		if (actor != null) {
-			bodyArgs = new String[] {
-					actor.getUser().getProperty(UserConstants.FIRSTNAME, null),
-					actor.getUser().getProperty(UserConstants.LASTNAME, null),
-					actor.getUser().getProperty(UserConstants.EMAIL, null),
-					actor.getUser().getProperty(UserConstants.EMAIL, null)// 2x for compatibility with old i18m properties
-			};
 			lang = actor.getUser().getPreferences().getLanguage();
 		}
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(lang);
+		if (actor != null) {
+			bodyArgs = new String[] {
+					actor.getUser().getProperty(UserConstants.FIRSTNAME, null),
+					actor.getUser().getProperty(UserConstants.LASTNAME, null),
+					UserManager.getInstance().getUserDisplayEmail(actor, locale),
+					UserManager.getInstance().getUserDisplayEmail(actor, locale),// 2x for compatibility with old i18m properties
+			};
+		}
 		Translator trans = Util.createPackageTranslator(BGMailHelper.class, locale,
 				Util.createPackageTranslator(BusinessGroupListController.class, locale));
 		String subject = trans.translate(subjectKey);

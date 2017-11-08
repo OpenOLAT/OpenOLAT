@@ -74,11 +74,8 @@ public class ChangePasswordWebService {
 
 		RegistrationManager rm = CoreSpringFactory.getImpl(RegistrationManager.class);
 		String emailAdress = identity.getUser().getProperty(UserConstants.EMAIL, null); 
-		TemporaryKey tk = rm.loadTemporaryKeyByEmail(emailAdress);
-		if (tk == null) {
-			String ip = request.getRemoteAddr();
-			tk = rm.createTemporaryKeyByEmail(emailAdress, ip, RegistrationManager.PW_CHANGE);
-		}
+		String ip = request.getRemoteAddr();
+		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip, RegistrationManager.PW_CHANGE);
 
 		return Response.ok(new TemporaryKeyVO(tk)).build();
 	}

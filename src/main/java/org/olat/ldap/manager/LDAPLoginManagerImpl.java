@@ -535,7 +535,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			log.error("Cannot try to lookup user " + uid + " by email with an invalid email::" + email, null);
 			return null;
 		}
-		if (userManager.userExist(email) ) {
+		if (userManager.isEmailAllowed(email) ) {
 			log.error("Can't create user with email='" + email + "', a user with that email does already exist in OLAT database", null);
 			return null;
 		}

@@ -79,6 +79,7 @@ import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.UserManager;
 
 public class QTI21ResultsExportMediaResource implements MediaResource {
 
@@ -279,8 +280,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			String userName = identity.getName();
 			String firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
 			String lastName = identity.getUser().getProperty(UserConstants.LASTNAME, null);
-			
-			String memberEmail = identity.getUser().getProperty(UserConstants.EMAIL, null);
+			String memberEmail = UserManager.getInstance().getUserDisplayEmail(identity, ureq.getLocale());
 			AssessedMember assessedMember = new AssessedMember (userName, lastName, firstName, memberEmail, null);
 						
 			List<ResultDetail> assessments = createResultDetail(identity, zout, idDir);				

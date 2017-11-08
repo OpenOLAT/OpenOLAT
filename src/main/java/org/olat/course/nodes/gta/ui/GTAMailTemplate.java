@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.user.UserManager;
 
 /**
  * 
@@ -58,7 +59,7 @@ public class GTAMailTemplate extends MailTemplate {
 		context.put("firstName", identity.getUser().getProperty(UserConstants.FIRSTNAME, locale));
 		context.put("last", identity.getUser().getProperty(UserConstants.LASTNAME, locale));
 		context.put("lastName", identity.getUser().getProperty(UserConstants.LASTNAME, locale));
-		context.put("email", identity.getUser().getProperty(UserConstants.EMAIL, locale));
+		context.put("email", UserManager.getInstance().getUserDisplayEmail(identity, locale));
 		context.put("numberOfFiles", files == null ? "0" : Integer.toString(files.length));
 
 		if(files != null && files.length > 0) {

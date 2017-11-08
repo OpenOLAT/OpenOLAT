@@ -109,6 +109,7 @@ CREATE TABLE o_temporarykey (
   ip varchar2(255 char) NOT NULL,
   mailsent number NOT NULL,
   action varchar2(255 char) NOT NULL,
+  fk_identity_id number(20),
   PRIMARY KEY (reglist_id)
 );
 
@@ -2705,6 +2706,9 @@ create index propvalue_idx on o_userproperty (propvalue);
 alter table o_user add constraint user_to_ident_idx foreign key (fk_identity) references o_bs_identity(id);
 create index idx_user_to_ident_idx on o_user (fk_identity);
 alter table o_user add constraint idx_un_user_to_ident_idx UNIQUE (fk_identity);
+
+-- temporary key
+create index idx_tempkey_identity_idx on o_temporarykey (fk_identity_id);
 
 -- pub sub
 create index name_idx2 on o_noti_pub (resname, resid, subident);

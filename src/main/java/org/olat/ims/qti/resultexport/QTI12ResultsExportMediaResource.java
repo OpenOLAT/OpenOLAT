@@ -63,6 +63,7 @@ import org.olat.ims.qti.QTIResultSet;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
 import org.olat.ims.qti.render.LocalizedXSLTransformer;
+import org.olat.user.UserManager;
 
 public class QTI12ResultsExportMediaResource implements MediaResource {
 
@@ -219,8 +220,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 			String userName = identity.getName();
 			String firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
 			String lastName = identity.getUser().getProperty(UserConstants.LASTNAME, null);
-			
-			String memberEmail = identity.getUser().getProperty(UserConstants.EMAIL, null);
+			String memberEmail = UserManager.getInstance().getUserDisplayEmail(identity, ureq.getLocale());
 			AssessedMember assessedMember = new AssessedMember (userName, lastName, firstName, memberEmail, null);
 			
 			List<ResultDetail> assessments = createResultDetail(identity, zout, idDir);

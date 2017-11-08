@@ -249,7 +249,7 @@ public class AuthHelper {
 		}
 
 		//check if identity exists
-		Identity identity = um.findIdentityByEmail(invitation.getMail());
+		Identity identity = um.findUniqueIdentityByEmail(invitation.getMail());
 		if(identity != null) {
 			SecurityGroup allUsers = securityManager.findSecurityGroupByName(Constants.GROUP_OLATUSERS);
 			if(securityManager.isIdentityInSecurityGroup(identity, allUsers)) {

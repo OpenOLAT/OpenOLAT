@@ -12,6 +12,11 @@ alter table o_gta_mark ENGINE = InnoDB;
 
 alter table o_gta_mark add constraint gtamark_tasklist_idx foreign key (fk_tasklist_id) references o_gta_task_list (id);
 
+-- temporary key
+alter table o_temporarykey add column fk_identity_id bigint;
+
+create index idx_tempkey_identity_idx on o_temporarykey (fk_identity_id);
+
 
 -- taxonomy
 create table o_tax_taxonomy (

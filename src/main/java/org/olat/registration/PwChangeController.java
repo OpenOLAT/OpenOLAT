@@ -26,9 +26,7 @@
 package org.olat.registration;
 
 import java.text.DateFormat;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -56,7 +54,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailBundle;
-import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.user.UserManager;
@@ -264,10 +261,8 @@ public class PwChangeController extends BasicController {
 		// mailer configuration
 		String serverpath = Settings.getServerContextPathURI();
 		
-		TemporaryKey tk = rm.loadTemporaryKeyByEmail(emailAdress);
-		if (tk == null) {
-			tk = rm.createTemporaryKeyByEmail(emailAdress, ip, RegistrationManager.PW_CHANGE);
-		}
+		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identity.getKey(), emailAdress, ip, RegistrationManager.PW_CHANGE);
+
 		myContent.contextPut("pwKey", tk.getRegistrationKey());
 		StringBuilder body = new StringBuilder();
 		body.append("<style>")
@@ -310,13 +305,7 @@ public class PwChangeController extends BasicController {
 		Identity identity = securityManager.findIdentityByName(emailOrUsername);
 		if (identity == null) {
 			// Try fallback with email, maybe user used his email address instead
-			// only do this, if its really an email, may lead to multiple results else.
-			if (MailHelper.isValidEmailAddress(emailOrUsername)) {
-				List<Identity> identities = userManager.findIdentitiesByEmail(Collections.singletonList(emailOrUsername));
-				if(identities.size() == 1) {
-					identity = identities.get(0);
-				}
-			}
+			identity = userManager.findUniqueIdentityByEmail(emailOrUsername);
 		}
 		return identity;
 	}

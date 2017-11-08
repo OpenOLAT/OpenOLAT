@@ -76,7 +76,6 @@ import org.junit.runners.Suite;
 	org.olat.core.gui.render.VelocityTemplateTest.class,
 	org.olat.core.gui.control.generic.iframe.IFrameDeliveryMapperTest.class,
 	org.olat.note.NoteTest.class,
-	org.olat.user.EmailCheckPerformanceTest.class,//fail
 	org.olat.user.UserTest.class,
 	org.olat.user.UserPropertiesTest.class,
 	org.olat.commons.calendar.CalendarImportTest.class,
@@ -115,6 +114,7 @@ import org.junit.runners.Suite;
 	org.olat.basesecurity.SecurityManagerTest.class,
 	org.olat.basesecurity.GetIdentitiesByPowerSearchTest.class,
 	org.olat.basesecurity.BaseSecurityManagerTest.class,
+	org.olat.user.UserDAOTest.class,
 	org.olat.user.UserManagerTest.class,
 	org.olat.user.UserNameAndPasswordSyntaxCheckerWithRegexpTest.class,
 	org.olat.repository.manager.RepositoryEntryDAOTest.class,
@@ -350,6 +350,7 @@ import org.junit.runners.Suite;
 	org.olat.shibboleth.handler.DoNothingHandlerTest.class,
 	org.olat.shibboleth.handler.FirstValueHandlerTest.class,
 	org.olat.shibboleth.handler.SchacGenderHandlerTest.class,
+	org.olat.user.UserManagerImplTest.class,
 	/**
 	 *
 	 * Place tests which load their own Spring context

@@ -45,6 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -177,7 +178,10 @@ public class CourseCreationHelper {
 				final List<String> emails = new ArrayList<String>();
 				String subject = translator.translate("cce.contactform.subject") + " " + courseConfig.getCourseTitle();
 
-				emails.add(ureq.getIdentity().getUser().getProperty(UserConstants.EMAIL, ureq.getLocale()));
+				String email = ureq.getIdentity().getUser().getProperty(UserConstants.EMAIL, ureq.getLocale());
+				if (StringHelper.containsNonWhitespace(email)) {
+					emails.add(email);
+				}
 
 				COCourseNode cocn = (COCourseNode) contactNode;
 
