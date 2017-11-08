@@ -21,7 +21,9 @@ package org.olat.commons.memberlist.ui;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -39,7 +41,9 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -60,7 +64,6 @@ public class MembersPrintController extends BasicController {
 	private final String avatarBaseURL;
 	private final VelocityContainer mainVC;
 	
-	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<UserPropertyHandler> userPropertyPrintHandlers;
 	
 	@Autowired
@@ -70,8 +73,8 @@ public class MembersPrintController extends BasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
-	public MembersPrintController(UserRequest ureq, WindowControl wControl, Translator translator, List<Member> owners,
-			List<Member> coaches, List<Member> participants, List<Member> waiting, boolean showOwners,
+	public MembersPrintController(UserRequest ureq, WindowControl wControl, Translator translator, List<Identity> owners,
+			List<Identity> coaches, List<Identity> participants, List<Identity> waiting, boolean showOwners,
 			boolean showCoaches, boolean showParticipants, boolean showWaiting, String title) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(translator, getTranslator(), getLocale()));
@@ -84,7 +87,6 @@ public class MembersPrintController extends BasicController {
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_LIST_ID, isAdministrativeUser);
 		userPropertyPrintHandlers = userManager.getUserPropertyHandlersFor(MembersDisplayRunController.USER_PROPS_PRINT_ID, isAdministrativeUser);
 		
 		if(showOwners && owners != null && owners.size() > 0) {
@@ -105,23 +107,42 @@ public class MembersPrintController extends BasicController {
 		putInitialPanel(mainPanel);
 	}
 	
-	private void initFormMemberList(String name, String label, List<Member> members) {
+	private void initFormMemberList(String name, String label, List<Identity> members) {
+		List<Member> memberWrappers = members.stream()
+				.map(m -> createMember(m)).collect(Collectors.toList());
+		
 		VelocityContainer listVC = createVelocityContainer("printList");
 		listVC.contextPut("label", label);
 		listVC.contextPut("avatarBaseURL", avatarBaseURL);
-		listVC.contextPut("members", members);
+		listVC.contextPut("members", memberWrappers);
 		listVC.contextPut("typecss", "o_" + name);
 
 		listVC.contextPut("userPropertyPrintHandlers", userPropertyPrintHandlers);
 		// add lookup table so the avatar properties can be read out from the member object that contains the full list of attributes
 		Map<String, Integer> handlerLookupMap = new HashMap<String, Integer>();
-		for(int i=userPropertyHandlers.size(); i-->0; ) {
-			UserPropertyHandler handler = userPropertyHandlers.get(i);
+		for(int i=userPropertyPrintHandlers.size(); i-->0; ) {
+			UserPropertyHandler handler = userPropertyPrintHandlers.get(i);
 			handlerLookupMap.put(handler.getName(), i);
 		}
 		listVC.contextPut("handlerLookupMap", handlerLookupMap);
 		
 		mainVC.put(name, listVC);
+	}
+	
+	private Member createMember(Identity identity) {
+		boolean hasPortrait = portraitManager.hasPortrait(identity.getName());
+
+		String portraitCssClass;
+		String gender = identity.getUser().getProperty(UserConstants.GENDER, Locale.ENGLISH);
+		if ("male".equalsIgnoreCase(gender)) {
+			portraitCssClass = DisplayPortraitManager.DUMMY_MALE_BIG_CSS_CLASS;
+		} else if ("female".equalsIgnoreCase(gender)) {
+			portraitCssClass = DisplayPortraitManager.DUMMY_FEMALE_BIG_CSS_CLASS;
+		} else {
+			portraitCssClass = DisplayPortraitManager.DUMMY_BIG_CSS_CLASS;
+		}
+		String fullname = userManager.getUserDisplayName(identity);
+		return new Member(identity, fullname, userPropertyPrintHandlers, getLocale(), hasPortrait, portraitCssClass);
 	}
 
 	@Override

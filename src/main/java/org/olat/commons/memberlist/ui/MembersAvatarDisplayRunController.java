@@ -360,8 +360,6 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
-	
-	
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
@@ -510,8 +508,8 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				lwControl.getWindowBackOffice().getChiefController().addBodyCssClass("o_cmembers_print");
-				return new MembersPrintController(lureq, lwControl, getTranslator(), ownerList, coachList,
-						participantList, waitingtList, showOwners, showCoaches, showParticipants, showWaiting, 
+				return new MembersPrintController(lureq, lwControl, getTranslator(), owners, coaches,
+						participants, waiting, showOwners, showCoaches, showParticipants, showWaiting, 
 						courseEnv != null ? courseEnv.getCourseTitle() : businessGroup.getName());
 			}					
 		};
