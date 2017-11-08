@@ -82,6 +82,11 @@ public class OAuthAdminController extends FormBasicController {
 	private TextElement adfsApiSecretEl;
 	private TextElement adfsOAuth2EndpointEl;
 	
+	private MultipleSelectionElement tequilaEl;
+	private TextElement tequilaApiKeyEl;
+	private TextElement tequilaApiSecretEl;
+	private TextElement tequilaOAuth2EndpointEl;
+	
 	private MultipleSelectionElement openIdConnectIFEl;
 	private MultipleSelectionElement openIdConnectIFDefaultEl;
 	private TextElement openIdConnectIFApiKeyEl;
@@ -118,8 +123,34 @@ public class OAuthAdminController extends FormBasicController {
 		if(oauthModule.isAllowUserCreation()) {
 			userCreationEl.select(keys[0], true);
 		}
+
+		initLinkedInForm(formLayout);
+		initTwitterForm(formLayout);
+		initGoogleForm(formLayout);
+		initFacebookForm(formLayout);
+		initAdfsForm(formLayout);
+		initTequilaForm(formLayout);
+		initOpenIDConnectForm(formLayout);
 		
-		//linkedin
+		customProvidersCont = FormLayoutContainer.createBareBoneFormLayout("custom.providers", getTranslator());
+		customProvidersCont.setRootForm(mainForm);
+		formLayout.add(customProvidersCont);
+		
+		//highly configurable providers
+		initCustomProviders();
+		
+		//buttons
+		FormLayoutContainer buttonBonesCont = FormLayoutContainer.createDefaultFormLayout("button_bones", getTranslator());
+		buttonBonesCont.setRootForm(mainForm);
+		formLayout.add(buttonBonesCont);
+		uifactory.addSpacerElement("buttons-spacer", buttonBonesCont, true);
+		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
+		buttonBonesCont.add(buttonLayout);
+		uifactory.addFormSubmitButton("save", buttonLayout);
+		addProviderLink = uifactory.addFormLink("add.openidconnectif.custom", buttonLayout, Link.BUTTON);
+	}
+	
+	private void initLinkedInForm(FormItemContainer formLayout) {
 		FormLayoutContainer linkedinCont = FormLayoutContainer.createDefaultFormLayout("linkedin", getTranslator());
 		linkedinCont.setFormTitle(translate("linkedin.admin.title"));
 		linkedinCont.setFormTitleIconCss("o_icon o_icon_provider_linkedin");
@@ -138,8 +169,9 @@ public class OAuthAdminController extends FormBasicController {
 			linkedInApiKeyEl.setVisible(false);
 			linkedInApiSecretEl.setVisible(false);
 		}
-		
-		//twitter
+	}
+	
+	private void initTwitterForm(FormItemContainer formLayout) {
 		FormLayoutContainer twitterCont = FormLayoutContainer.createDefaultFormLayout("twitter", getTranslator());
 		twitterCont.setFormTitle(translate("twitter.admin.title"));
 		twitterCont.setFormTitleIconCss("o_icon o_icon_provider_twitter");
@@ -158,8 +190,9 @@ public class OAuthAdminController extends FormBasicController {
 			twitterApiKeyEl.setVisible(false);
 			twitterApiSecretEl.setVisible(false);
 		}
-		
-		//google
+	}
+	
+	private void initGoogleForm(FormItemContainer formLayout) {
 		FormLayoutContainer googleCont = FormLayoutContainer.createDefaultFormLayout("google", getTranslator());
 		googleCont.setFormTitle(translate("google.admin.title"));
 		googleCont.setFormTitleIconCss("o_icon o_icon_provider_google");
@@ -178,8 +211,9 @@ public class OAuthAdminController extends FormBasicController {
 			googleApiKeyEl.setVisible(false);
 			googleApiSecretEl.setVisible(false);
 		}
-		
-		//facebook
+	}
+	
+	private void initFacebookForm(FormItemContainer formLayout) {
 		FormLayoutContainer facebookCont = FormLayoutContainer.createDefaultFormLayout("facebook", getTranslator());
 		facebookCont.setFormTitle(translate("facebook.admin.title"));
 		facebookCont.setFormTitleIconCss("o_icon o_icon_provider_facebook");
@@ -198,8 +232,9 @@ public class OAuthAdminController extends FormBasicController {
 			facebookApiKeyEl.setVisible(false);
 			facebookApiSecretEl.setVisible(false);
 		}
-		
-		//adfs
+	}
+	
+	private void initAdfsForm(FormItemContainer formLayout) {
 		FormLayoutContainer adfsCont = FormLayoutContainer.createDefaultFormLayout("adfs", getTranslator());
 		adfsCont.setFormTitle(translate("adfs.admin.title"));
 		adfsCont.setFormTitleIconCss("o_icon o_icon_provider_adfs");
@@ -234,8 +269,37 @@ public class OAuthAdminController extends FormBasicController {
 		if(oauthModule.isAdfsRootEnabled()) {
 			adfsDefaultEl.select(keys[0], true);
 		}
+	}
+	
+	private void initTequilaForm(FormItemContainer formLayout) {
+		FormLayoutContainer tequilaCont = FormLayoutContainer.createDefaultFormLayout("tequila", getTranslator());
+		tequilaCont.setFormTitle(translate("tequila.admin.title"));
+		tequilaCont.setFormTitleIconCss("o_icon o_icon_provider_tequila");
+		tequilaCont.setRootForm(mainForm);
+		formLayout.add(tequilaCont);
 		
-		//openIdConnectIF
+		tequilaEl = uifactory.addCheckboxesHorizontal("tequila.enabled", tequilaCont, keys, values);
+		tequilaEl.addActionListener(FormEvent.ONCHANGE);
+		
+		String tequilaOAuth2Endpoint = oauthModule.getTequilaOAuth2Endpoint();
+		tequilaOAuth2EndpointEl = uifactory.addTextElement("tequila.oauth2.endpoint", "tequila.oauth2.endpoint", 256, tequilaOAuth2Endpoint, tequilaCont);
+		tequilaOAuth2EndpointEl.setExampleKey("tequila.oauth2.endpoint.example", null);
+		
+		String tequilaApiKey = oauthModule.getTequilaApiKey();
+		tequilaApiKeyEl = uifactory.addTextElement("tequila.id", "tequila.api.id", 256, tequilaApiKey, tequilaCont);
+		String tequilaApiSecret = oauthModule.getTequilaApiSecret();
+		tequilaApiSecretEl = uifactory.addTextElement("tequila.secret", "tequila.api.secret", 256, tequilaApiSecret, tequilaCont);
+		
+		if(oauthModule.isTequilaEnabled()) {
+			tequilaEl.select(keys[0], true);
+		} else {
+			tequilaApiKeyEl.setVisible(false);
+			tequilaApiSecretEl.setVisible(false);
+			tequilaOAuth2EndpointEl.setVisible(false);
+		}
+	}
+	
+	private void initOpenIDConnectForm(FormItemContainer formLayout) {
 		FormLayoutContainer openIdConnectIFCont = FormLayoutContainer.createDefaultFormLayout("openidconnectif", getTranslator());
 		openIdConnectIFCont.setFormTitle(translate("openidconnectif.admin.title"));
 		openIdConnectIFCont.setFormTitleIconCss("o_icon o_icon_provider_openid");
@@ -276,23 +340,6 @@ public class OAuthAdminController extends FormBasicController {
 		if(oauthModule.isOpenIdConnectIFRootEnabled()) {
 			openIdConnectIFDefaultEl.select(keys[0], true);
 		}
-		
-		customProvidersCont = FormLayoutContainer.createBareBoneFormLayout("custom.providers", getTranslator());
-		customProvidersCont.setRootForm(mainForm);
-		formLayout.add(customProvidersCont);
-		
-		//highly configurable providers
-		initCustomProviders();
-		
-		//buttons
-		FormLayoutContainer buttonBonesCont = FormLayoutContainer.createDefaultFormLayout("button_bones", getTranslator());
-		buttonBonesCont.setRootForm(mainForm);
-		formLayout.add(buttonBonesCont);
-		uifactory.addSpacerElement("buttons-spacer", buttonBonesCont, true);
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
-		buttonBonesCont.add(buttonLayout);
-		uifactory.addFormSubmitButton("save", buttonLayout);
-		addProviderLink = uifactory.addFormLink("add.openidconnectif.custom", buttonLayout, Link.BUTTON);
 	}
 	
 	private void initCustomProviders() {
@@ -339,6 +386,8 @@ public class OAuthAdminController extends FormBasicController {
 		allOk &= mandatory(facebookEl, facebookApiKeyEl, facebookApiSecretEl);
 		//adfs
 		allOk &= mandatory(adfsEl, adfsApiKeyEl, adfsOAuth2EndpointEl);
+		//teqiula
+		allOk &= mandatory(tequilaEl, tequilaApiKeyEl, tequilaApiSecretEl, tequilaOAuth2EndpointEl);
 		//open id connect
 		allOk &= mandatory(openIdConnectIFEl, openIdConnectIFAuthorizationEndPointEl, openIdConnectIFApiKeyEl, openIdConnectIFApiSecretEl);
 		
@@ -408,6 +457,10 @@ public class OAuthAdminController extends FormBasicController {
 			adfsApiSecretEl.setVisible(adfsEl.isAtLeastSelected(1));
 			adfsDefaultEl.setVisible(adfsEl.isAtLeastSelected(1));
 			adfsOAuth2EndpointEl.setVisible(adfsEl.isAtLeastSelected(1));
+		}  else if(source == tequilaEl) {
+			tequilaApiKeyEl.setVisible(tequilaEl.isAtLeastSelected(1));
+			tequilaApiSecretEl.setVisible(tequilaEl.isAtLeastSelected(1));
+			tequilaOAuth2EndpointEl.setVisible(tequilaEl.isAtLeastSelected(1));
 		} else if(source == openIdConnectIFEl) {
 			openIdConnectIFIssuerEl.setVisible(openIdConnectIFEl.isAtLeastSelected(1));
 			openIdConnectIFApiKeyEl.setVisible(openIdConnectIFEl.isAtLeastSelected(1));
@@ -482,6 +535,18 @@ public class OAuthAdminController extends FormBasicController {
 			oauthModule.setAdfsApiSecret("");
 			oauthModule.setAdfsRootEnabled(false);
 			oauthModule.setAdfsOAuth2Endpoint("");
+		}
+		
+		if(tequilaEl.isAtLeastSelected(1)) {
+			oauthModule.setTequilaEnabled(true);
+			oauthModule.setTequilaApiKey(tequilaApiKeyEl.getValue());
+			oauthModule.setTequilaApiSecret(tequilaApiSecretEl.getValue());
+			oauthModule.setTequilaOAuth2Endpoint(tequilaOAuth2EndpointEl.getValue());
+		} else {
+			oauthModule.setTequilaEnabled(false);
+			oauthModule.setTequilaApiKey("");
+			oauthModule.setTequilaApiSecret("");
+			oauthModule.setTequilaOAuth2Endpoint("");
 		}
 		
 		if(openIdConnectIFEl.isAtLeastSelected(1)) {

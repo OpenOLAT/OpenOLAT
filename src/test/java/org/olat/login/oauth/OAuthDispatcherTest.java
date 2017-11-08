@@ -33,6 +33,8 @@ import org.olat.login.oauth.spi.FacebookProvider;
 import org.olat.login.oauth.spi.Google2Provider;
 import org.olat.login.oauth.spi.JSONWebToken;
 import org.olat.login.oauth.spi.LinkedInProvider;
+import org.olat.login.oauth.spi.TequilaApi;
+import org.olat.login.oauth.spi.TequilaProvider;
 import org.olat.login.oauth.spi.TwitterProvider;
 import org.scribe.model.Token;
 
@@ -138,5 +140,26 @@ public class OAuthDispatcherTest {
 		OAuthUser infos = new OAuthUser();
 		String toString = infos.toString();
 		Assert.assertNotNull(toString);
+	}
+	
+	@Test
+	public void extractTequilaBearerToken() {
+		String response = "\"access_token\": \"Bearer 880a11c9aaae0abf0f6a384c559110d8c7570456\", \"scope\": \"Tequila.profile\"";
+		TequilaApi.TequilaBearerExtractor extractor = new TequilaApi.TequilaBearerExtractor();
+		Token token = extractor.extract(response);
+		String accessToken = token.getToken();
+		Assert.assertEquals("880a11c9aaae0abf0f6a384c559110d8c7570456", accessToken);
+	}
+	
+	@Test
+	public void parseTequilaUserInfos() {
+		String data = "{ \"Sciper\": \"M02491\", \"authscheme\": \"OAuth2\", \"Firstname\": \"Service\", \"Username\": \"Erecruiting_oAuth2\", \"Name\": \"Erecruiting_oAuth2\", \"scope\": \"Tequila.profile\" }";
+		OAuthUser infos = new TequilaProvider().parseResponse(data);
+		Assert.assertNotNull(infos);
+		Assert.assertEquals("Service",  infos.getFirstName());
+		Assert.assertEquals("Erecruiting_oAuth2",  infos.getLastName());
+		Assert.assertEquals("M02491",  infos.getId());
+		
+		
 	}
 }
