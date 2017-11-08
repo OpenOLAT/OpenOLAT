@@ -239,8 +239,11 @@ public class UserManagerImpl extends UserManager {
 	}
 
 	private boolean isEmailOfUser(String email, User user) {
-		return email != null && user != null
-				&& (email.equalsIgnoreCase(user.getEmail()) || email.equalsIgnoreCase(user.getInstitutionalEmail()));
+		if (!StringHelper.containsNonWhitespace(email) || user == null) return false;
+		
+		boolean isOwnEmail = email.equalsIgnoreCase(user.getEmail()) ;
+		boolean isOwnInstitutionalEmail = email.equalsIgnoreCase(user.getInstitutionalEmail());
+		return isOwnEmail || isOwnInstitutionalEmail;
 	}
 	
 	@Override

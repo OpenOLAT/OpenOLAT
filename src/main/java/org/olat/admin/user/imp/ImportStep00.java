@@ -53,6 +53,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.ExcelMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
@@ -264,7 +265,7 @@ class ImportStep00 extends BasicStep {
 					idents.add(uIdentity);
 					updateIdents.add(uIdentity);
 
-					importDataError = updateUserProperties(uIdentity, parts, i, columnId, importedEmails);
+					importDataError = updateUserProperties(uIdentity, ident.getUser(), parts, i, columnId, importedEmails);
 					if(importDataError) break;
 				} else {
 					// no identity/user yet, create
@@ -283,7 +284,7 @@ class ImportStep00 extends BasicStep {
 					ud.setName(login);
 					ud.setPassword(pwd);
 					ud.setLanguage(lang);
-					importDataError = updateUserProperties(ud, parts, i, columnId, importedEmails);
+					importDataError = updateUserProperties(ud, null, parts, i, columnId, importedEmails);
 					if(importDataError) break;
 					
 					idents.add(ud);
@@ -294,7 +295,7 @@ class ImportStep00 extends BasicStep {
 			return !importDataError;
 		}
 		
-		private boolean updateUserProperties(Identity ud, String[] parts, int i, int columnId,
+		private boolean updateUserProperties(Identity ud, User originalUser, String[] parts, int i, int columnId,
 				List<String> importedEmails) {
 			
 			boolean importDataError = false;
@@ -340,7 +341,7 @@ class ImportStep00 extends BasicStep {
 				}
 				// check that no user with same (institutional) e-mail is already in OLAT
 				if ( (thisKey.equals(UserConstants.INSTITUTIONALEMAIL) && !thisValue.isEmpty()) || thisKey.equals(UserConstants.EMAIL)) {
-					if (!UserManager.getInstance().isEmailAllowed(thisValue)) {
+					if (!UserManager.getInstance().isEmailAllowed(thisValue, originalUser)) {
 						textAreaElement.setErrorKey("error.email.exists", new String[] { String.valueOf(i + 1), thisValue });
 						importDataError = true;
 						break;
