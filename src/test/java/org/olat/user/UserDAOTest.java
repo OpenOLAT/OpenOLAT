@@ -132,12 +132,12 @@ public class UserDAOTest extends OlatTestCase {
 		
 		assertThat(isInUse).isFalse();
 	}
-	
+			
 	@Test
 	public void shouldReturnIfEmailIsInInstitutionalEmailInUse() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		User user = identity.getUser();
-		String institutionalEmail = "institution@openolat.org";
+		String institutionalEmail = "INSTITUTION@openolat.org";
 		user.setProperty(UserConstants.INSTITUTIONALEMAIL, institutionalEmail);
 		userManager.updateUser(user);
 		
@@ -147,7 +147,7 @@ public class UserDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldReturnIfEmailIsInUseCasesensitive() {
+	public void shouldReturnIfEmailIsInUseCaseInsensitive() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		String email = identity.getUser().getEmail();
 		

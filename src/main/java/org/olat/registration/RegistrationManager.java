@@ -364,7 +364,7 @@ public class RegistrationManager {
 				XStream xml = new XStream();
 				@SuppressWarnings("unchecked")
 				Map<String, String> mails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
-				if (emailAddress.equals(mails.get("changedEMail"))) {
+				if (emailAddress.equalsIgnoreCase(mails.get("changedEMail"))) {
 					return true;
 				}
 			}
@@ -372,7 +372,7 @@ public class RegistrationManager {
 		tk = loadTemporaryKeyByAction(RegistrationManager.REGISTRATION);
 		if (tk != null) {
 			for (TemporaryKey temporaryKey : tk) {
-				if (emailAddress.equals(temporaryKey.getEmailAddress())) {
+				if (emailAddress.equalsIgnoreCase(temporaryKey.getEmailAddress())) {
 					return true;
 				}
 			}

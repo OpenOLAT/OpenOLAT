@@ -61,23 +61,19 @@ public class UserDAO {
 	public boolean isEmailInUse(String email) {
 		if (!StringHelper.containsNonWhitespace(email)) return false;
 		
+		String query = new StringBuilder()
+				.append("select count(*) ")
+				.append("  from org.olat.core.id.User user")
+				.append(" where user.email=:email")
+				.append("    or user.institutionalEmail=:email")
+				.toString();
+		
 		Long numberOfUsers = dbInstance.getCurrentEntityManager()
-				.createQuery("select count(*) from org.olat.core.id.User user where user.email=:email", Long.class)
-				.setParameter("email", email)
+				.createQuery(query, Long.class)
+				.setParameter("email", email.toLowerCase())
 				.getSingleResult();
-		if (numberOfUsers != null && numberOfUsers > 0) {
-			return true;
-		}
 		
-		numberOfUsers = dbInstance.getCurrentEntityManager()
-				.createQuery("select count(*) from org.olat.core.id.User where institutionalEmail=:email", Long.class)
-				.setParameter("email", email)
-				.getSingleResult();
-		if (numberOfUsers != null && numberOfUsers > 0) {
-			return true;
-		}
-		
-		return false;
+		return numberOfUsers > 0;
 	}
 
 	public List<Identity> findVisibleIdentitiesWithoutEmail() {

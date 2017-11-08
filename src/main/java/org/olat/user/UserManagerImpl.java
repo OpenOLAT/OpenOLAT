@@ -240,7 +240,7 @@ public class UserManagerImpl extends UserManager {
 
 	private boolean isEmailOfUser(String email, User user) {
 		return email != null && user != null
-				&& (email.equals(user.getEmail()) || email.equals(user.getInstitutionalEmail()));
+				&& (email.equalsIgnoreCase(user.getEmail()) || email.equalsIgnoreCase(user.getInstitutionalEmail()));
 	}
 	
 	@Override

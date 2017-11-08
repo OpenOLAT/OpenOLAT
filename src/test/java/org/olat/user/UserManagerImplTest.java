@@ -212,6 +212,18 @@ public class UserManagerImplTest {
 	}
 	
 	@Test
+	public void shouldAllowEmailIfItsOwnEmailCaseInsensitive() {
+		when(userModuleMock.isEmailUnique()).thenReturn(true);
+		when(userModuleMock.isEmailMandatory()).thenReturn(true);
+		User myselfMock = mock(User.class);
+		when(myselfMock.getEmail()).thenReturn(DUPLICATE_EMAIL.toUpperCase());
+		
+		boolean isEmailAllowed = sut.isEmailAllowed(DUPLICATE_EMAIL.toLowerCase(), myselfMock);
+
+		assertThat(isEmailAllowed).isTrue();
+	}
+	
+	@Test
 	public void shouldDisplayEmail() {
 		Translator translatorMock = mock(Translator.class);
 		
