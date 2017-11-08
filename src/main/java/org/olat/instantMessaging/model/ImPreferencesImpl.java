@@ -63,7 +63,9 @@ import org.olat.instantMessaging.ImPreferences;
 	@NamedQuery(name="loadIMPreferencesForUpdate", query="select msg from impreferences msg where msg.identity.key=:identityKey",
 		lockMode=LockModeType.PESSIMISTIC_WRITE),
 	@NamedQuery(name="countAvailableBuddiesIn", query="select count(msg.identity.key) from impreferences msg where msg.identity.key in(:buddyKeys) and msg.rosterDefaultStatus='available'"),
-	@NamedQuery(name="mapStatusByBuddiesIn", query="select msg.identity.key, msg.rosterDefaultStatus from impreferences msg where msg.identity.key in (:buddyKeys)")
+	@NamedQuery(name="mapStatusByBuddiesIn", query="select msg.identity.key, msg.rosterDefaultStatus from impreferences msg where msg.identity.key in (:buddyKeys)"),
+	@NamedQuery(name="updateIMPreferencesStatusByIdentity", query="update impreferences set rosterDefaultStatus=:status where identity.key=:identityKey"),
+	@NamedQuery(name="updateIMPreferencesVisibilityByIdentity", query="update impreferences set visibleToOthers=:visible where identity.key=:identityKey")
 })
 public class ImPreferencesImpl implements ImPreferences, Persistable, CreateInfo {
 

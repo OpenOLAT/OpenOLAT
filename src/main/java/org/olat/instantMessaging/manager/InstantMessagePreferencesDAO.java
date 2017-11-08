@@ -136,37 +136,25 @@ public class InstantMessagePreferencesDAO {
 		return msgs.get(0);
 	}
 	
-	public ImPreferencesImpl updatePreferences(Identity identity, String status) {
-		ImPreferencesImpl prefs = loadForUpdate(identity);
-		if(prefs == null) {
-			prefs = createPreferences(identity, status, true);
-		} else {
-			prefs.setRosterDefaultStatus(status);
-			prefs = dbInstance.getCurrentEntityManager().merge(prefs);
+	public void updatePreferences(Identity identity, String status) {
+		int updateRows = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("updateIMPreferencesStatusByIdentity")
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("status", status)
+				.executeUpdate();
+		if(updateRows == 0) {
+			createPreferences(identity, status, true);
 		}
-		return prefs;
 	}
 	
-	public ImPreferencesImpl updatePreferences(Identity identity, boolean visible) {
-		ImPreferencesImpl prefs = loadForUpdate(identity);
-		if(prefs == null) {
-			prefs = createPreferences(identity, Presence.available.name(), visible);
-		} else {
-			prefs.setVisibleToOthers(visible);
-			prefs = dbInstance.getCurrentEntityManager().merge(prefs);
+	public void updatePreferences(Identity identity, boolean visible) {
+		int updateRows = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("updateIMPreferencesVisibilityByIdentity")
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("visible", visible)
+				.executeUpdate();
+		if(updateRows == 0) {
+			createPreferences(identity, Presence.available.name(), visible);
 		}
-		return prefs;
-	}
-	
-	private ImPreferencesImpl loadForUpdate(Identity from) {
-		List<ImPreferencesImpl> msgs = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadIMPreferencesForUpdate", ImPreferencesImpl.class)
-				.setParameter("identityKey", from.getKey())
-				.getResultList();
-		
-		if(msgs.isEmpty()) {
-			return null;
-		}
-		return msgs.get(0);
 	}
 }

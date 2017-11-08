@@ -19,6 +19,7 @@
  */
 package org.olat.instantMessaging;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -121,6 +122,32 @@ public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 		Assert.assertEquals(prefs.getKey(), reloadedPrefs.getKey());
 		Assert.assertEquals(id, reloadedPrefs.getIdentity());
 		Assert.assertEquals(Presence.unavailable.name(), reloadedPrefs.getRosterDefaultStatus());
+	}
+	
+	/**
+	 * Paranoia test to make sure that the preferences are not duplicated.
+	 */
+	@Test
+	public void testUpdateTwicePreferences_status() {
+		//create a message
+		Identity id = JunitTestHelper.createAndPersistIdentityAsAdmin("im-prefs-6-" + UUID.randomUUID().toString());
+		ImPreferencesImpl prefs = imDao.createPreferences(id, Presence.dnd.name(), true);
+		Assert.assertNotNull(prefs);
+		dbInstance.commitAndCloseSession();
+		
+		//1. update visibility
+		imDao.updatePreferences(id, Presence.unavailable.name());
+		dbInstance.commitAndCloseSession();
+		//2. update visibility
+		imDao.updatePreferences(id, Presence.unavailable.name());
+		dbInstance.commitAndCloseSession();
+
+		//check the number of preferences
+		List<ImPreferencesImpl> msgs = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadIMPreferencesByIdentity", ImPreferencesImpl.class)
+				.setParameter("identityKey", id.getKey())
+				.getResultList();
+		Assert.assertEquals(1, msgs.size());
 	}
 	
 	@Test
