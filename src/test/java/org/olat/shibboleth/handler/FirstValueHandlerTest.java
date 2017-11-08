@@ -53,9 +53,44 @@ public class FirstValueHandlerTest {
 	}
 
 	@Test
-	public void parseShoudReturnFirstValueIfNull() {
+	public void parseShoudReturnNoValueIfNull() {
 		String parsed = sut.parse(null);
 
 		assertThat(parsed).isNull();
+	}
+	
+
+	@Test
+	public void parseShoudReturnNoValueIfEmpty() {
+		String parsed = sut.parse("");
+
+		assertThat(parsed).isNull();
+	}
+
+	@Test
+	public void parseShoudReturnNoValueIfOnlySemicolon() {
+		String parsed = sut.parse(";");
+
+		assertThat(parsed).isNull();
+	}
+	
+	@Test
+	public void parseShoudReturnSecondValueIfFirstIsEmpty() {
+		String expected = "abc";
+		String input = ";" + expected + ";abc;222;a;erer;sdfsfd";
+
+		String parsed = sut.parse(input);
+
+		assertThat(parsed).isEqualTo(expected);
+	}
+	
+	@Test
+	public void parseShoudReturnFourthValueIfFirstThreeAreEmpty() {
+		String expected = "abc";
+		String input = ";  ;;" + expected + ";abc;222;a;erer;sdfsfd";
+
+		String parsed = sut.parse(input);
+
+		assertThat(parsed).isEqualTo(expected);
 	}
 }

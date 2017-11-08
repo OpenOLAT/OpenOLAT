@@ -19,6 +19,7 @@
  */
 package org.olat.shibboleth.handler;
 
+import org.olat.core.util.StringHelper;
 import org.olat.shibboleth.ShibbolethModule;
 import org.springframework.stereotype.Component;
 
@@ -37,10 +38,16 @@ class FirstValueHandler implements ShibbolethAttributeHandler {
 
 	@Override
 	public String parse(String shibbolethAttributeValue) {
-		if (shibbolethAttributeValue == null) return null;
-
-		String[] values = shibbolethAttributeValue.split(ShibbolethModule.MULTIVALUE_SEPARATOR);
-		return values[0];
+		if (shibbolethAttributeValue != null) {
+			String[] values = shibbolethAttributeValue.split(ShibbolethModule.MULTIVALUE_SEPARATOR);
+			// Return the first not empty value
+			for (String value: values) {
+				if (StringHelper.containsNonWhitespace(value)) {
+					return value;
+				}
+			}
+		}
+		return null;
 	}
 
 }
