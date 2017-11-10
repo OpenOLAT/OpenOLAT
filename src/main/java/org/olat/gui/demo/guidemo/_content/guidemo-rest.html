@@ -1,0 +1,117 @@
+<h2>REST API demo</h2>
+<p>
+	The purpose of this GUI demo is to show how you can add a custom JS library and do some REST queries via JavaScript. 
+	More info about the REST API can be found <a href="$r.relLink("auth/AdminSite/0/restapi/0")">in the REST admin section</a>
+</p>
+<p>
+	The demo also shows how to integrate a JS library to implement custom UI widgets. In this case a simple jQuery plugin
+	has been integrated: http://listjs.com. We use a public CDN for loading of the library. See the <code>GuiDemoRESTController</code> 
+	class to see how simple it is.
+</p>
+
+#if($restEnabled)
+	<p class="o_success">
+		REST API status: <i class="o_icon o_icon_ok o_icon-fw">&nbsp;</i> activated
+	</p>
+
+	## DOM container for example 1)	
+	<h3>OpenOLAT License fetched via REST API</h3>
+	<p>
+		Path: <code>$r.relLink("restapi/api/copyright")</code>
+	<p>
+	<pre style="height: 200px; overflow: scroll;" class="o_small" id="o_guidemo_version">loading...</pre>
+
+
+	## DOM container for example 2)
+	<h3>My group list via REST API</h3>
+	<p>
+		Path: <code>$r.relLink("restapi/groups/")</code>
+	<p>
+	<div id="o_guidemo_groups">loading...</div>
+
+
+	## DOM container for example 3)
+	<h3>My course list via REST API</h3>
+	<p>
+		Path: <code>$r.relLink("restapi/courses/")</code>
+	<p>
+	<div id="o_guidemo_courses">loading...</div>
+	
+	
+<script type="text/javascript">
+/* <![CDATA[ */ 
+	
+	/* OpenOLAT REST API URL for this server */
+	var restAPI ='$r.relLink("restapi")';
+	
+	/* Helper function to read from REST API with simple error handling */
+	function readFromREST(queryPath, callback, dataType) {
+		jQuery.ajax({			
+		    url: restAPI + queryPath,
+		    type: 'GET',
+		    processData: false,
+		    contentType:'application/json',
+		    dataType:dataType,
+		    cache: false,
+			error: function(result) {
+				console.error('Error while reading from OpenOLAT REST API with URL::' + restAPI + ' and key::' + queryPath);
+				console.log(result);
+			}
+		}).done(callback);
+	}
+	
+	/* Example 1: get the copyright */
+	readFromREST('/api/copyright', function(data) {
+		jQuery('#o_guidemo_version').html(data);	
+	}, 'html');
+	
+	
+	/* Example 2: get the list of my groups, convert to HTML list */
+	readFromREST('/groups', function(data) {
+		var groups = "Search groups: <input type='text' class='o_small fuzzy-search' /><ul class='list'>";
+		jQuery(data).each(function(i,val){
+			groups += '<li><span class="name">' + val.name + '</span> <small class="text-muted">ID:' + val.key + '</small></li>';
+		});
+		groups += '</ul>'
+		jQuery('#o_guidemo_groups').html(groups);
+	},'json');
+	/* Init the list plugin for list search. execute defered, timing issues.  More info: http://listjs.com */
+	setTimeout(function() {
+		var groupsList = new List('o_guidemo_groups', { 
+		  valueNames: ['name']
+		});	
+	},400);
+	
+		
+	/* Example 3: get the list of my courses, convert to HTML list */
+	readFromREST('/repo/courses', function(data) {
+		var courses = "Search courses: <input type='text' class='o_small fuzzy-search' /><ul class='list'>";
+		jQuery(data).each(function(i,val){
+			courses += '<li><span class="title">' + val.title + '</span> <small class="text-muted">ID:' + val.key + '</small></li>';
+		});
+		courses += '</ul>'
+		jQuery('#o_guidemo_courses').html(courses);
+	},'json');
+	/* Init the list plugin for list search. execute defered, timing issues. More info: http://listjs.com */
+	setTimeout(function() {
+		var groupsList = new List('o_guidemo_courses', { 
+		  valueNames: ['title']
+		});	
+	},400);
+
+/* ]]> */
+</script>
+
+
+#else 
+	<div class="o_error">
+		<h4>Sorry</h4>
+		<p>
+			This demo only works when the REST module is enabled!
+		</p>
+		<p>
+			The configuration change changed <a href="$r.relLink("auth/AdminSite/0/restapi/0")">in the REST admin section</a>
+		</p>
+		
+	</div>
+#end

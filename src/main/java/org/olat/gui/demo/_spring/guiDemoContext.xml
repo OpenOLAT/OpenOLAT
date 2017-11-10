@@ -262,4 +262,18 @@
 			</property>
 			<property name="order" value="33" />
 		</bean>
+		
+		<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+			<property name="actionController">	
+				<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+					<property name="className" value="org.olat.gui.demo.guidemo.GuiDemoRESTController"/>
+				</bean>
+			</property>
+			<property name="extensionPoints">
+				<list>	
+					<value>org.olat.gui.demo.GUIDemoMainController</value>		
+				</list>
+			</property>
+			<property name="order" value="35" />
+		</bean>
 </beans>

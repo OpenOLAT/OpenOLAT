@@ -153,7 +153,7 @@ public class UserWebService {
 			@QueryParam("statusVisibleLimit") String statusVisibleLimit,
 			@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) {
 
-		// User lookup allowd for authors, usermanagers and admins. For
+		// User lookup allowed for authors, usermanagers and admins. For
 		// usernamanger and up are considered "administrative" when it comes to
 		// lookup of the user properties
 		boolean isAdministrativeUser = isUserManager(httpRequest);
