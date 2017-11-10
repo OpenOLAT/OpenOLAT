@@ -50,6 +50,8 @@ public class UserEmailAdminController extends FormBasicController {
 	private static final String USER_EMAIL_UNIQUE = "user.email.unique";
 	private static final String USER_WITH_EMAIL_DUPLICATES = "user.email.duplicates";
 	private static final String USERS_DUPLICATE_EMAILS_EXIST = "users.duplicate.emails.exist";
+	private static final String USER_EMAIL_MANDATORY_DISABLE_CONFIRMATION_TITLE = "user.email.mandatory.disable.confirmation.title";
+	private static final String USER_EMAIL_MANDATORY_DISABLE_CONFIRMATION_TEXT = "user.email.mandatory.disable.confirmation.text";
 	private static final String USER_EMAIL_UNIQUE_DISABLE_CONFIRMATION_TITLE = "user.email.unique.disable.confirmation.title";
 	private static final String USER_EMAIL_UNIQUE_DISABLE_CONFIRMATION_TEXT = "user.email.unique.disable.confirmation.text";
 	
@@ -61,6 +63,7 @@ public class UserEmailAdminController extends FormBasicController {
 	private String[] userEmailUniqueKey;
 	private String[] userEmailUniqueValue;
 	private FormLink showUserEmailDuplicatesEl;
+	private DialogBoxController confirmDisableMandatoryCtrl;
 	private DialogBoxController confirmDisableUniqueCtrl;
 	
 	private int numberOfUsersWithDuplicateEmail;
@@ -107,7 +110,7 @@ public class UserEmailAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (userEmailMandatoryEl.equals(source)) {
 			boolean isEmailMandatory = userEmailMandatoryEl.isAtLeastSelected(1);
-			doSetEmailMandatory(isEmailMandatory);
+			doSetEmailMandatory(ureq, isEmailMandatory);
 		} else if (userEmailUniqueEl.equals(source)) {
 			boolean isEmailUnique = userEmailUniqueEl.isAtLeastSelected(1);
 			doSetEmailUnique(ureq, isEmailUnique);
@@ -118,8 +121,20 @@ public class UserEmailAdminController extends FormBasicController {
 		}
 	}
 
-	private void doSetEmailMandatory(boolean isEmailMandatory) {
-		userModule.setEmailMandatory(isEmailMandatory);
+	private void doSetEmailMandatory(UserRequest ureq, boolean isEmailMandatory) {
+		if (!isEmailMandatory) {
+			doOpenEmailMandatoryDisableconfirmation(ureq);
+		} else {
+			userModule.setEmailMandatory(isEmailMandatory);
+		}
+	}
+	
+	private void doOpenEmailMandatoryDisableconfirmation(UserRequest ureq) {
+		confirmDisableMandatoryCtrl = DialogBoxUIFactory.createYesNoDialog(ureq, getWindowControl(),
+				translate(USER_EMAIL_MANDATORY_DISABLE_CONFIRMATION_TITLE),
+				translate(USER_EMAIL_MANDATORY_DISABLE_CONFIRMATION_TEXT));
+		listenTo(confirmDisableMandatoryCtrl);
+		confirmDisableMandatoryCtrl.activate();
 	}
 
 	private void doSetEmailUnique(UserRequest ureq, boolean isEmailUnique) {
@@ -157,7 +172,12 @@ public class UserEmailAdminController extends FormBasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == confirmDisableUniqueCtrl) {
+		if (source == confirmDisableMandatoryCtrl) {
+			boolean isEmailMandatory = !DialogBoxUIFactory.isYesEvent(event);
+			userModule.setEmailMandatory(isEmailMandatory);
+			userEmailMandatoryEl.select(USER_EMAIL_MANDATORY, isEmailMandatory);
+			cleanUp();
+		} else if (source == confirmDisableUniqueCtrl) {
 			boolean isEmailUnique = !DialogBoxUIFactory.isYesEvent(event);
 			userModule.setEmailUnique(isEmailUnique);
 			userEmailUniqueEl.select(USER_EMAIL_UNIQUE, isEmailUnique);
