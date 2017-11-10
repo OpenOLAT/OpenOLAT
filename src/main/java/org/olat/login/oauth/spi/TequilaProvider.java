@@ -54,7 +54,7 @@ public class TequilaProvider implements OAuthSPI {
 
 	@Override
 	public boolean isEnabled() {
-		return true;
+		return oauthModule.isTequilaEnabled();
 	}
 
 	@Override
