@@ -247,13 +247,18 @@ public class PwChangeController extends BasicController {
 			getWindowControl().setWarning(translate("password.cantchange"));
 			return null;
 		}
+
 		Preferences prefs = identity.getUser().getPreferences();
 		Locale locale = i18nManager.getLocaleOrDefault(prefs.getLanguage());
 		ureq.getUserSession().setLocale(locale);
 		myContent.contextPut("locale", locale);
-		
 		Translator userTrans = Util.createPackageTranslator(PwChangeController.class, locale) ;
+
 		String emailAdress = identity.getUser().getProperty(UserConstants.EMAIL, locale); 
+		if (!StringHelper.containsNonWhitespace(emailAdress)) {
+			emailOrUsernameCtr.setUserNotIdentifiedError();
+			return null;
+		}
 		
 		// get remote address
 		String ip = ureq.getHttpReq().getRemoteAddr();
