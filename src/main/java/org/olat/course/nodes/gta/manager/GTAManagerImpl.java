@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 
+import org.hibernate.LazyInitializationException;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -99,6 +100,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
@@ -136,6 +138,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private RepositoryEntryLifecycleDAO repositoryEntryLifecycleDao;
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
 
@@ -1213,7 +1217,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			String messageArg = null;
 			switch(rel) {
 				case courseStart: {
-					RepositoryEntryLifecycle lifecycle = courseEntry.getLifecycle();
+					RepositoryEntryLifecycle lifecycle = getRepositoryEntryLifecycle(courseEntry);
 					if(lifecycle != null && lifecycle.getValidFrom() != null) {
 						referenceDate = lifecycle.getValidFrom();
 					}
@@ -1259,6 +1263,24 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 			}
 		}
 		return dueDate;
+	}
+	
+	/**
+	 * This is a secure way to load the life cycle.
+	 * 
+	 * @param re The repository entry
+	 * @return The repository entry life cycle
+	 */
+	private RepositoryEntryLifecycle getRepositoryEntryLifecycle(RepositoryEntry re) {
+		try {
+			RepositoryEntryLifecycle lifecycle = re.getLifecycle();
+			if(lifecycle != null) {
+				lifecycle.getValidTo();//
+			}
+			return lifecycle;
+		} catch (LazyInitializationException e) {
+			return repositoryEntryLifecycleDao.loadByEntry(re);
+		}
 	}
 	
 	protected Date getEnrollmentDate(BusinessGroup businessGroup) {
