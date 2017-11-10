@@ -332,7 +332,7 @@ public class Form {
 					
 					// Cleanup IE filenames that are absolute
 					int slashpos = fileName.lastIndexOf("/");
-					if (slashpos != -1) fileName = name.substring(slashpos + 1);
+					if (slashpos != -1) fileName = fileName.substring(slashpos + 1);
 					slashpos = fileName.lastIndexOf("\\");
 					if (slashpos != -1) fileName = fileName.substring(slashpos + 1);
 					

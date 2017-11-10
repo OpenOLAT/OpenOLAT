@@ -232,7 +232,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				updateDigestPassword(doer, identity, identity.getUser().getEmail(), newPwd, PROVIDER_HA1_EMAIL, authentications);
 			}
 			if(identity.getUser().getInstitutionalEmail() != null) {
-				updateDigestPassword(doer, identity, identity.getUser().getEmail(), newPwd, PROVIDER_HA1_INSTITUTIONAL_EMAIL, authentications);
+				updateDigestPassword(doer, identity, identity.getUser().getInstitutionalEmail(), newPwd, PROVIDER_HA1_INSTITUTIONAL_EMAIL, authentications);
 			}
 		}
 		
