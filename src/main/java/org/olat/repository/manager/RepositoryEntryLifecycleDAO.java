@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,6 +57,19 @@ public class RepositoryEntryLifecycleDAO {
 		List<RepositoryEntryLifecycle> reLifeCycleList = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadReLifeCycle", RepositoryEntryLifecycle.class)
 				.setParameter("key", key)
+				.getResultList();
+		if(reLifeCycleList.isEmpty()) {
+			return null;
+		}
+		return reLifeCycleList.get(0);
+	}
+	
+	public RepositoryEntryLifecycle loadByEntry(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v.lifecycle from repositoryentry as v where v.key=:repoKey");
+		List<RepositoryEntryLifecycle> reLifeCycleList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryLifecycle.class)
+				.setParameter("repoKey", entry.getKey())
 				.getResultList();
 		if(reLifeCycleList.isEmpty()) {
 			return null;

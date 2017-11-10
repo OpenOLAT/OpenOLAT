@@ -27,7 +27,9 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -91,6 +93,38 @@ public class RepositoryEntryLifecycleDAOTest extends OlatTestCase {
 		Assert.assertNotNull(loadedLifeCycle.getLastModified());
 		Assert.assertEquals(relf.getKey(), loadedLifeCycle.getKey());
 		Assert.assertEquals("My second life cycle", loadedLifeCycle.getLabel());
+		Assert.assertEquals(softKey, loadedLifeCycle.getSoftKey());
+		Assert.assertTrue(loadedLifeCycle.isPrivateCycle());
+		Assert.assertNotNull(loadedLifeCycle.getValidFrom());
+		Assert.assertNotNull(loadedLifeCycle.getValidTo());
+	}
+	
+	@Test
+	public void loadLifeCycle_byEntry() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
+		
+		String label = "A life cycle";
+		String softKey = UUID.randomUUID().toString();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.DATE, -1);
+		Date from = cal.getTime();
+		cal.add(Calendar.DATE, +2);
+		Date to = cal.getTime();
+		RepositoryEntryLifecycle cycle = reLifeCycleDao.create(label, softKey, true, from, to);
+		re.setLifecycle(cycle);
+		re = dbInstance.getCurrentEntityManager().merge(re);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(cycle);
+		Assert.assertNotNull(cycle.getKey());
+		
+		//check
+		RepositoryEntryLifecycle loadedLifeCycle = reLifeCycleDao.loadByEntry(re);
+		Assert.assertNotNull(loadedLifeCycle);
+		Assert.assertNotNull(loadedLifeCycle.getCreationDate());
+		Assert.assertNotNull(loadedLifeCycle.getLastModified());
+		Assert.assertEquals(cycle.getKey(), loadedLifeCycle.getKey());
+		Assert.assertEquals("A life cycle", loadedLifeCycle.getLabel());
 		Assert.assertEquals(softKey, loadedLifeCycle.getSoftKey());
 		Assert.assertTrue(loadedLifeCycle.isPrivateCycle());
 		Assert.assertNotNull(loadedLifeCycle.getValidFrom());
