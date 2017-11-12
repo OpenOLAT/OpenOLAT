@@ -138,6 +138,37 @@ public class MembersPage {
 	}
 	
 	/**
+	 * Add a user by username with the specified roles.
+	 * 
+	 * @param user The user to add
+	 * @param owner true if the user will be owner
+	 * @param coach true if the user will be coach
+	 */
+	public void quickAdd(UserVO user, boolean owner, boolean coach) {
+		addMember()	
+			.searchMember(user, true)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(owner, coach, false)
+			.nextPermissions()
+			.finish();
+	}
+	
+	/**
+	 * Import the specified users as participants.
+	 * 
+	 * @param users Users to import
+	 */
+	public void quickImport(UserVO... users) {
+		importMembers()
+			.setMembers(users)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+	}
+	
+	/**
 	 * Check if the user with the specified first name is in the member list.
 	 * @param user
 	 * @return

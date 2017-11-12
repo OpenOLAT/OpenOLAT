@@ -572,8 +572,8 @@ public class TeacherRollCallController extends FormBasicController {
 					Integer.toString(index), lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
 		}
 		row.setRollCall(rollCall);
-		if(authorizedAbsenceEnabled) {
-			if(rollCall.getAbsenceAuthorized() != null && rollCall.getAbsenceAuthorized().booleanValue()) {
+		if(authorizedAbsenceEnabled && row.getAuthorizedAbsence() != null) {
+			if(rollCall.getAbsenceAuthorized().booleanValue()) {
 				row.getAuthorizedAbsence().select(onKeys[0], true);
 			} else {
 				row.getAuthorizedAbsence().uncheckAll();

@@ -29,14 +29,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.graphene.page.InitialPage;
 import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,18 +59,12 @@ import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.course.RemindersPage;
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.olat.selenium.page.lecture.LectureListRepositoryPage;
-import org.olat.selenium.page.lecture.LectureRepositoryAdminPage;
-import org.olat.selenium.page.lecture.RollCallInterceptorPage;
-import org.olat.selenium.page.lecture.TeacherRollCallPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage.UserAccess;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
-import org.olat.selenium.page.user.UserToolsPage;
-import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -87,12 +79,7 @@ import org.openqa.selenium.WebElement;
  *
  */
 @RunWith(Arquillian.class)
-public class CourseTest {
-	
-	@Deployment(testable = false)
-	public static WebArchive createDeployment() {
-		return ArquillianDeployments.createDeployment();
-	}
+public class CourseTest extends Deployments {
 
 	@Drone
 	private WebDriver browser;
@@ -1477,241 +1464,5 @@ public class CourseTest {
 			.openAuthoringEnvironment()
 			.uploadResource(zipTitle, zipFile)
 			.assertOnResourceType();
-	}
-	
-	/**
-	 * An author create a course, enable the absence management,
-	 * create a lecture block, add a coach and two participants.<br>
-	 * The coach login in, see the interceptor to start the roll call.
-	 * It starts the roll call, set an absence and close.<br>
-	 * The participant with an absence log in, use the lectures user's
-	 * tool to see that it has an absence.
-	 * 
-	 * @param authorLoginPage
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	@Test
-	@RunAsClient
-	public void lecturesRollCall(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver coachBrowser, @Drone @Participant WebDriver participantBrowser)
-	throws IOException, URISyntaxException {
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		UserVO coach = new UserRestClient(deploymentUrl).createRandomUser("Rei");
-		UserVO participant1 = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
-		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Rymou");
-		
-		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
-		
-		//go to authoring
-		AuthoringEnvPage authoringEnv = navBar
-			.assertOnNavigationPage()
-			.openAuthoringEnvironment();
-		
-		String title = "Lecture " + UUID.randomUUID();
-		//create course
-		authoringEnv
-			.openCreateDropDown()
-			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
-			.assertOnGeneralTab()
-			.clickToolbarBack();
-		
-		//set access
-		CoursePageFragment course = new CoursePageFragment(browser);
-		course
-			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.clickToolbarBack();
-		
-		//add a coach
-		course
-			.members()
-			.addMember()	
-			.searchMember(coach, true)
-			.nextUsers()
-			.nextOverview()
-			.selectRepositoryEntryRole(false, true, false)
-			.nextPermissions()
-			.finish();
-		//add the participants
-		course
-			.members()
-			.importMembers()
-			.setMembers(participant1, participant2)
-			.nextUsers()
-			.nextOverview()
-			.nextPermissions()
-			.finish();
-		
-		//enable the lectures
-		LectureRepositoryAdminPage lecturesAdmin = course
-			.lecturesAdministration();
-		lecturesAdmin
-			.settings()
-			.enableLectures()
-			.overrideDefaultSettings()
-			.saveSettings();
-		
-		LectureListRepositoryPage lectureList = lecturesAdmin
-			.lectureList();
-		
-		Calendar cal = Calendar.getInstance();
-		int today = cal.get(Calendar.DATE);
-		int hour = cal.get(Calendar.HOUR_OF_DAY);
-		String lectureTitle = "1. Lecture";
-		lectureList
-			.newLectureBlock()
-			.setTitle(lectureTitle)
-			.setTeacher(coach)
-			.setDate(today, hour, 0, hour, 59)
-			.save();
-		
-		//coach at work
-		LoginPage coachLoginPage = LoginPage.getLoginPage(coachBrowser, deploymentUrl);
-		coachLoginPage
-			.loginAs(coach);
-		new RollCallInterceptorPage(coachBrowser)
-			.start()
-			.setAbsence(participant1, "1")
-			.closeRollCall()
-			.confirmCloseRollCall()
-			.assertOnClosedTable();
-		
-		//participant check it roll call
-		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
-		participantLoginPage
-			.loginAs(participant1)
-			.resume();
-		UserToolsPage participantUserTools = new UserToolsPage(participantBrowser);
-		participantUserTools
-			.openUserToolsMenu()
-			.openLectures()
-			.assertOnParticipantLecturesList()
-			.selectCourseAsParticipant(title)
-			.assertOnParticipantLectureBlocks()
-			.assertOnParticipantLectureBlockAbsent(coach, lectureTitle, title);
-	}
-	
-
-	/**
-	 * An author create a course, enable the absence management,
-	 * create a lecture block, add a coach and two participants.<br>
-	 * The coach login in, see the interceptor to start the roll call
-	 * version mobile.<br>
-	 * It starts the roll call, set an absence and close.<br>
-	 * The participant with an absence log in, use the lectures user's
-	 * tool to see that it has an absence.
-	 * 
-	 * @param authorLoginPage
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 */
-	@Test
-	@RunAsClient
-	public void lectureMobileRollCall(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver coachBrowser, @Drone @User WebDriver participantBrowser)
-	throws IOException, URISyntaxException {
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		UserVO coach = new UserRestClient(deploymentUrl).createRandomUser("Rei");
-		UserVO participant1 = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
-		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Rymou");
-		
-		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
-		
-		//go to authoring
-		AuthoringEnvPage authoringEnv = navBar
-			.assertOnNavigationPage()
-			.openAuthoringEnvironment();
-		
-		String title = "Lecture " + UUID.randomUUID();
-		//create course
-		authoringEnv
-			.openCreateDropDown()
-			.clickCreate(ResourceType.course)
-			.fillCreateForm(title)
-			.assertOnGeneralTab()
-			.clickToolbarBack();
-		
-		//set access
-		CoursePageFragment course = new CoursePageFragment(browser);
-		course
-			.accessConfiguration()
-			.setUserAccess(UserAccess.registred)
-			.clickToolbarBack();
-		
-		//add a coach
-		course
-			.members()
-			.addMember()	
-			.searchMember(coach, true)
-			.nextUsers()
-			.nextOverview()
-			.selectRepositoryEntryRole(false, true, false)
-			.nextPermissions()
-			.finish();
-		//add the participants
-		course
-			.members()
-			.importMembers()
-			.setMembers(participant1, participant2)
-			.nextUsers()
-			.nextOverview()
-			.nextPermissions()
-			.finish();
-		
-		//enable the lectures
-		LectureRepositoryAdminPage lecturesAdmin = course
-			.lecturesAdministration();
-		lecturesAdmin
-			.settings()
-			.enableLectures()
-			.overrideDefaultSettings()
-			.saveSettings();
-		
-		LectureListRepositoryPage lectureList = lecturesAdmin
-			.lectureList();
-		
-		Calendar cal = Calendar.getInstance();
-		int today = cal.get(Calendar.DATE);
-		int hour = cal.get(Calendar.HOUR_OF_DAY);
-		String lectureTitle = "2.Lecture";
-		lectureList
-			.newLectureBlock()
-			.setTitle(lectureTitle)
-			.setTeacher(coach)
-			.setDate(today, hour, 0, hour, 59)
-			.save();
-		
-		//coach at work
-		LoginPage coachLoginPage = LoginPage.getLoginPage(coachBrowser, deploymentUrl);
-		coachLoginPage
-			.loginAs(coach);
-		new RollCallInterceptorPage(coachBrowser)
-			.startMobile()
-			.setAbsence("1")
-			.saveAndNext()
-			.setAbsence("1")
-			.setAbsence("2")
-			.saveAndNext()
-			.closeRollCall();
-		//check that a roll call at least is closed
-		new TeacherRollCallPage(coachBrowser)
-			.assertOnClosedTable();
-		
-		
-		//participant check it roll call
-		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
-		participantLoginPage
-			.loginAs(participant1)
-			.resume();
-		UserToolsPage participantUserTools = new UserToolsPage(participantBrowser);
-		participantUserTools
-			.openUserToolsMenu()
-			.openLectures()
-			.assertOnParticipantLecturesList()
-			.selectCourseAsParticipant(title)
-			.assertOnParticipantLectureBlocks()
-			.assertOnParticipantLectureBlockAbsent(coach, lectureTitle, title);
 	}
 }

@@ -39,23 +39,56 @@ public class LectureAdminSettingsPage {
 	}
 	
 	/**
-	 * Set some configurations of the lecture module.
+	 * Set of options.
 	 * 
-	 * @param authorizedAbsence Enable/disable authorized absence
+	 * @param authorizedAbsence Enable or not the option "Authorized absences"
+	 * @param teacherCanAutorizeAbsence Enable or not the option "Coaches can authorize absences"
+	 * @return
+	 */
+	public LectureAdminSettingsPage configure(boolean authorizedAbsence, boolean teacherCanAutorizeAbsence) {
+		setAuthorizedAbsence(authorizedAbsence);
+		if(authorizedAbsence) {
+			setTeacherCanAuthorizeAbsence(teacherCanAutorizeAbsence);
+		}
+		return this;
+	}
+	
+	/**
+	 * Set the option "Coaches can authorize absences". Only available
+	 * with the authorized absences enabled.
+	 * 
+	 * @param teacherCanAuthorizeAbsence Enable/disable the hability for coaches to excuse absences
 	 * @return Itself
 	 */
-	public LectureAdminSettingsPage set(boolean authorizedAbsence) {		
-		By authorizedAbsenceLabelBy = By.xpath("//label[input[@name='lecture.authorized.absence.enabled' and @value='on']]");
-		By authorizedAbsenceCheckBy = By.xpath("//label/input[@name='lecture.authorized.absence.enabled' and @value='on']");
+	public LectureAdminSettingsPage setTeacherCanAuthorizeAbsence(boolean teacherCanAuthorizeAbsence) {	
+		String checkName = "lecture.teacher.can.authorize.absence";
+		return set(checkName, teacherCanAuthorizeAbsence);
+	}
+	
+	/**
+	 * Set the option "Authorized absences"
+	 * 
+	 * @param authorizedAbsence Enable/disable authorized absences
+	 * @return Itself
+	 */
+	public LectureAdminSettingsPage setAuthorizedAbsence(boolean authorizedAbsence) {		
+		String checkName = "lecture.authorized.absence.enabled";
+		return set(checkName, authorizedAbsence);
+	}
+	
+	private LectureAdminSettingsPage set(String name, boolean enable) {
+		By enableLabelBy = By.xpath("//label[input[@name='" + name + "' and @value='on']]");
+		By enableCheckBy = By.xpath("//label/input[@name='" + name + "' and @value='on']");
 		
-		OOGraphene.waitElement(authorizedAbsenceLabelBy, browser);
-		OOGraphene.scrollTo(authorizedAbsenceLabelBy, browser);
+		OOGraphene.waitElement(enableLabelBy, browser);
+		OOGraphene.scrollTo(enableLabelBy, browser);
 		
-		WebElement authorizedAbsenceLabelEl = browser.findElement(authorizedAbsenceLabelBy);
-		WebElement authorizedAbsenceCheckEl = browser.findElement(authorizedAbsenceCheckBy);
-		OOGraphene.check(authorizedAbsenceLabelEl, authorizedAbsenceCheckEl, new Boolean(authorizedAbsence));
+		WebElement enableLabelEl = browser.findElement(enableLabelBy);
+		WebElement enableCheckEl = browser.findElement(enableCheckBy);
+		OOGraphene.check(enableLabelEl, enableCheckEl, new Boolean(enable));
 		OOGraphene.waitBusy(browser);
 		return this;
+		
 	}
 	
 	public LectureAdminSettingsPage save() {

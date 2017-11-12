@@ -28,6 +28,7 @@ import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LectureRepositoryAdminPage;
+import org.olat.selenium.page.lecture.LecturesRepositoryPage;
 import org.olat.selenium.page.repository.RepositoryAccessPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -281,6 +282,16 @@ public class CoursePageFragment {
 		OOGraphene.waitBusy(browser);
 		return new LectureRepositoryAdminPage(browser)
 				.assertOnAdminPage();
+	}
+	
+	public LecturesRepositoryPage lectures() {
+		By lecturesBy = By.xpath("//li[contains(@class,'o_tool')]/a[contains(@onclick,'command.lectures')]");
+		OOGraphene.waitElement(lecturesBy, browser);
+		browser.findElement(lecturesBy).click();
+		
+		By teacherOverviewBy = By.cssSelector("div.o_lectures_teacher_overview");
+		OOGraphene.waitElement(teacherOverviewBy, browser);
+		return new LecturesRepositoryPage(browser);
 	}
 	
 	public BookingPage bookingTool() {

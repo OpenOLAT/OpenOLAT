@@ -125,7 +125,7 @@ public class FeedPage {
 		//click the button to create a feed
 		By feedButton = By.xpath("//div[contains(@class,'o_blog_no_posts')]//a[contains(@href,'feed.make.internal')]");
 		browser.findElement(feedButton).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		return this;
 	}
 	

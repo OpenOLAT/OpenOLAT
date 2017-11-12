@@ -22,6 +22,7 @@ package org.olat.modules.lecture.ui.component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.ui.TeacherRollCallRow;
 
 /**
@@ -74,7 +75,12 @@ public class LectureBlockRollCallStatusComponent extends FormBaseComponentImpl {
 	}
 	
 	public boolean isLecturesAuthorizedAbsent() {
-		return rollCall.getAuthorizedAbsence().isAtLeastSelected(1);
+		if(rollCall.getAuthorizedAbsence() != null) {
+			rollCall.getAuthorizedAbsence().isAtLeastSelected(1);
+		}
+		LectureBlockRollCall call = rollCall.getRollCall();
+		return call == null || call.getAbsenceAuthorized() == null
+				? false : call.getAbsenceAuthorized().booleanValue(); 
 	}
 	
 	public int getLecturesAttendedNumber() {

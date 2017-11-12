@@ -17,39 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.lecture;
+package org.olat.selenium;
 
-import org.olat.selenium.page.graphene.OOGraphene;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
+import org.eu.ingwar.tools.arquillian.extension.suite.annotations.ArquillianSuiteDeployment;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.olat.test.ArquillianDeployments;
 
 /**
  * 
- * Initial date: 15 août 2017<br>
+ * Initial date: 12 nov. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LectureListRepositoryPage {
+@ArquillianSuiteDeployment
+public class Deployments {
 	
-	private WebDriver browser;
-	
-	public LectureListRepositoryPage(WebDriver browser) {
-		this.browser = browser;
+	@Deployment(testable = false)
+	public static WebArchive createDeployment() {
+		return ArquillianDeployments.createDeployment();
 	}
-	
-	public LectureListRepositoryPage asssertOnLectureList() {
-		By lecturesBy = By.cssSelector("div.o_sel_repo_lectures_list");
-		OOGraphene.waitElement(lecturesBy, browser);
-		return this;
-	}
-	
-	public EditLectureBlockPage newLectureBlock() {
-		By addLectureBy = By.cssSelector("div.o_sel_repo_lectures_list a.o_sel_repo_add_lecture");
-		browser.findElement(addLectureBy).click();
-		OOGraphene.waitModalDialog(browser);
-		return new EditLectureBlockPage(browser);
-	}
-	
-	
 
 }

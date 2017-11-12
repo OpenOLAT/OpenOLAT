@@ -72,6 +72,7 @@ public class AssessmentCEConfigurationPage {
 		
 		By saveBy = By.cssSelector(".o_sel_course_ms_form button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
