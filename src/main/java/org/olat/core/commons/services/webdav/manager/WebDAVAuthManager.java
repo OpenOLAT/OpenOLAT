@@ -175,9 +175,13 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		updateWebDAVPassword(doer, identity, identity.getName(), password, PROVIDER_WEBDAV, authentications);
 		if(identity.getUser().getEmail() != null) {
 			updateWebDAVPassword(doer, identity, identity.getUser().getEmail(), password, PROVIDER_WEBDAV_EMAIL, authentications);
+		} else {
+			removePassword(PROVIDER_WEBDAV_EMAIL, authentications);
 		}
 		if(identity.getUser().getInstitutionalEmail() != null) {
 			updateWebDAVPassword(doer, identity, identity.getUser().getInstitutionalEmail(), password, PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, authentications);
+		} else {
+			removePassword(PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, authentications);
 		}
 
 		for(Authentication authentication:authentications) {
@@ -221,9 +225,13 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		updateDigestPassword(doer, identity, identity.getName(), newPwd, PROVIDER_HA1, authentications);
 		if(identity.getUser().getEmail() != null) {
 			updateDigestPassword(doer, identity, identity.getUser().getEmail(), newPwd, PROVIDER_HA1_EMAIL, authentications);
+		} else {
+			removePassword(PROVIDER_HA1_EMAIL, authentications);
 		}
 		if(identity.getUser().getInstitutionalEmail() != null) {
 			updateDigestPassword(doer, identity, identity.getUser().getInstitutionalEmail(), newPwd, PROVIDER_HA1_INSTITUTIONAL_EMAIL, authentications);
+		} else {
+			removePassword(PROVIDER_HA1_INSTITUTIONAL_EMAIL, authentications);
 		}
 		
 		for(Authentication authentication:authentications) {
@@ -250,6 +258,13 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				log.audit(doer.getName() + " set new WebDAV (HA1) password for identity: " + identity.getKey() + " (" + authUsername + ")");
 			}
 		}
+	}
+	
+	private void removePassword(String provider, List<Authentication> authentications) {
+		Authentication authentication = getAndRemoveAuthentication(provider, authentications);
+		if(authentication != null) {
+			securityManager.deleteAuthentication(authentication);
+		}	
 	}
 	
 	private Authentication getAndRemoveAuthentication(String provider, List<Authentication> authentications) {
