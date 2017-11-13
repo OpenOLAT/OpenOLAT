@@ -17,14 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.site;
+package org.olat.modules.docpool.site;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
-import org.olat.modules.taxonomy.TaxonomyModule;
+import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
@@ -38,10 +38,10 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("taxonomySiteSecurityCallback")
-public class TaxonomySiteSecurityCallback implements SiteSecurityCallback {
+public class DocumentPoolSiteSecurityCallback implements SiteSecurityCallback {
 
 	@Autowired
-	private TaxonomyModule taxonomyModule;
+	private DocumentPoolModule docPoolModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
 
@@ -61,7 +61,7 @@ public class TaxonomySiteSecurityCallback implements SiteSecurityCallback {
 			return true;
 		}
 		
-		String taxonomyKey = taxonomyModule.getTaxonomyTreeKey();
+		String taxonomyKey = docPoolModule.getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyKey)) {
 			TaxonomyRef taxonomy = new TaxonomyRefImpl(new Long(taxonomyKey));
 			return taxonomyService.hasTaxonomyCompetences(taxonomy, ureq.getIdentity());

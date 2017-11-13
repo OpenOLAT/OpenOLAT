@@ -17,38 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.webdav;
-
-import org.olat.core.commons.services.webdav.WebDAVProvider;
-import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.util.vfs.VFSContainer;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+package org.olat.modules.docpool.restapi;
 
 /**
  * 
- * Initial date: 20 oct. 2017<br>
+ * Initial date: 10 nov. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service("taxonomyDocumentsLibraryWebDAVProvider")
-public class TaxonomyDocumentsLibraryWebDAVProvider implements WebDAVProvider {
-
-	@Value("${taxonomy.webdav.mountpoint:doc-pool}")
-	private String MOUNTPOINT;
-
-	@Override
-	public String getMountPoint() {
-		return MOUNTPOINT;
-	}
+public class Examples {
 	
-	@Override
-	public boolean hasAccess(IdentityEnvironment identityEnv) {
-		return identityEnv != null;
+	public static final DocumentPoolModuleConfigurationVO SAMPLE_TAXONOMYMODULECONFIGURATIONVO = new DocumentPoolModuleConfigurationVO();
+	
+	static {
+		SAMPLE_TAXONOMYMODULECONFIGURATIONVO.setEnabled(true);
+		SAMPLE_TAXONOMYMODULECONFIGURATIONVO.setTaxonomyTreeKey("1");
 	}
 
-	@Override
-	public VFSContainer getContainer(IdentityEnvironment identityEnv) {
-		return new TaxonomyDocumentsLibraryWebDAVMergeSource(identityEnv);
-	}
 }

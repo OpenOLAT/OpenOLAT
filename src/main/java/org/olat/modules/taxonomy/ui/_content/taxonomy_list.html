@@ -1,0 +1,9 @@
+<div class="clearfix">
+	$r.contextHelpWithWrapper("Taxonomy")		
+</div>
+$r.render("table")
+#if($r.available("create.taxonomy"))
+<div class="o_button_group">
+	$r.render("create.taxonomy")
+</div>
+#end

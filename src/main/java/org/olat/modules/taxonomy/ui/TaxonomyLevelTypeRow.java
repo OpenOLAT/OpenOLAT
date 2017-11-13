@@ -19,7 +19,9 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
+import org.olat.modules.taxonomy.TaxonomyLevelTypeRef;
 
 /**
  * 
@@ -27,12 +29,19 @@ import org.olat.modules.taxonomy.TaxonomyLevelType;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyLevelTypeRow {
+public class TaxonomyLevelTypeRow implements TaxonomyLevelTypeRef {
 	
 	private TaxonomyLevelType type;
+	private FormLink toolsLink;
 	
-	public TaxonomyLevelTypeRow(TaxonomyLevelType type) {
+	public TaxonomyLevelTypeRow(TaxonomyLevelType type, FormLink toolsLink) {
 		this.type = type;
+		this.toolsLink = toolsLink;
+	}
+	
+	@Override
+	public Long getKey() {
+		return type.getKey();
 	}
 	
 	public String getIdentifier() {
@@ -47,4 +56,7 @@ public class TaxonomyLevelTypeRow {
 		return type;
 	}
 
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
 }

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.site;
+package org.olat.modules.docpool.site;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -41,24 +42,24 @@ import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomySiteDef extends AbstractSiteDefinition implements SiteDefinition {
+public class DocumentPoolSiteDef extends AbstractSiteDefinition implements SiteDefinition {
 
 	@Override
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		UserSession usess = ureq.getUserSession();
 		Roles roles = usess.getRoles();
 		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId()) || roles.isOLATAdmin()) {
-			return new TaxonomySite(this, ureq.getLocale());
+			return new DocumentPoolSite(this, ureq.getLocale());
 		} else if(roles.isGuestOnly() || !roles.isInvitee()) {
 			return null;
 		} else if(hasCompetence(usess.getIdentity())) {
-			return new TaxonomySite(this, ureq.getLocale());
+			return new DocumentPoolSite(this, ureq.getLocale());
 		}
 		return null;
 	}
 	
 	private boolean hasCompetence(Identity identity) {
-		String taxonomyKey = CoreSpringFactory.getImpl(TaxonomyModule.class).getTaxonomyTreeKey();
+		String taxonomyKey = CoreSpringFactory.getImpl(DocumentPoolModule.class).getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyKey)) {
 			TaxonomyRef taxonomy = new TaxonomyRefImpl(new Long(taxonomyKey));
 			return CoreSpringFactory.getImpl(TaxonomyService.class).hasTaxonomyCompetences(taxonomy, identity);

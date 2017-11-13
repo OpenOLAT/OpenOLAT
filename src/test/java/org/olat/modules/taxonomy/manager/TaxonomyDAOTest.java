@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.model.TaxonomyImpl;
+import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -84,5 +85,22 @@ public class TaxonomyDAOTest extends OlatTestCase {
 		List<Taxonomy> taxonomyList = taxonomyDao.getTaxonomyList();
 		Assert.assertTrue(taxonomyList.contains(taxonomy0));
 		Assert.assertTrue(taxonomyList.contains(taxonomy1));
+	}
+	
+	@Test
+	public void getTaxonomyInfosList() {
+		Taxonomy taxonomy0 = taxonomyDao.createTaxonomy("ID40", "An other taxonomy", "A little taxonomy", "REF-40");
+		Taxonomy taxonomy1 = taxonomyDao.createTaxonomy("ID41", "An other taxonomy", "A little taxonomy", "REF-41");
+		dbInstance.commitAndCloseSession();
+		
+		List<TaxonomyInfos> infosList = taxonomyDao.getTaxonomyInfosList();
+		Assert.assertNotNull(infosList);
+		int found = 0;
+		for(TaxonomyInfos info:infosList) {
+			if(info.getKey().equals(taxonomy0.getKey()) || info.getKey().equals(taxonomy1.getKey())) {
+				found++;
+			}
+		}
+		Assert.assertEquals(2, found);
 	}
 }

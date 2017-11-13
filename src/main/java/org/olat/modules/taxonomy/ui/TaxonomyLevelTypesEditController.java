@@ -19,10 +19,12 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -33,13 +35,19 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
+import org.olat.modules.taxonomy.TaxonomyLevelTypeManagedFlag;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyLevelTypesTableModel.TypesCols;
@@ -57,9 +65,13 @@ public class TaxonomyLevelTypesEditController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private TaxonomyLevelTypesTableModel model;
 	
+	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private EditTaxonomyLevelTypeController rootLevelTypeCtrl;
 	private EditTaxonomyLevelTypeController editLevelTypeCtrl;
+	protected CloseableCalloutWindowController toolsCalloutCtrl;
+
+	private int counter = 1;
 	
 	private Taxonomy taxonomy;
 	
@@ -80,10 +92,17 @@ public class TaxonomyLevelTypesEditController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TypesCols.displayName));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
+		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
+				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit")));
+		editColumn.setExportable(false);
+		columnsModel.addFlexiColumnModel(editColumn);
+		DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(TypesCols.tools);
+		toolsColumn.setExportable(false);
+		columnsModel.addFlexiColumnModel(toolsColumn);
 		
 		model = new TaxonomyLevelTypesTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "types", model, 25, false, getTranslator(), formLayout);
+		tableEl.setEmtpyTableMessageKey("table.taxonomy.level.type.empty");
 	}
 	
 	private void loadModel() {
@@ -96,7 +115,12 @@ public class TaxonomyLevelTypesEditController extends FormBasicController {
 	}
 	
 	private TaxonomyLevelTypeRow forgeRow(TaxonomyLevelType type) {
-		return new TaxonomyLevelTypeRow(type);
+		//tools
+		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		TaxonomyLevelTypeRow row = new TaxonomyLevelTypeRow(type, toolsLink);
+		toolsLink.setUserObject(row);
+		return row;
 	}
 
 	@Override
@@ -129,6 +153,13 @@ public class TaxonomyLevelTypesEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addRootTypeButton == source) {
 			doAddRootType(ureq);
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if("tools".equals(cmd)) {
+				TaxonomyLevelTypeRow row = (TaxonomyLevelTypeRow)link.getUserObject();
+				doOpenTools(ureq, row, link);
+			} 
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -145,6 +176,25 @@ public class TaxonomyLevelTypesEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doOpenTools(UserRequest ureq, TaxonomyLevelTypeRow row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		TaxonomyLevelType type = taxonomyService.getTaxonomyLevelType(row);
+		if(type == null) {
+			tableEl.reloadData();
+			showWarning("repositoryentry.not.existing");
+		} else {
+			toolsCtrl = new ToolsController(ureq, getWindowControl(), row, type);
+			listenTo(toolsCtrl);
+	
+			toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+					toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+			listenTo(toolsCalloutCtrl);
+			toolsCalloutCtrl.activate();
+		}
 	}
 
 	private void doAddRootType(UserRequest ureq) {
@@ -164,5 +214,73 @@ public class TaxonomyLevelTypesEditController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", editLevelTypeCtrl.getInitialComponent(), true, translate("edit"));
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doCopy(TaxonomyLevelTypeRow row) {
+		taxonomyService.cloneTaxonomyLevelType(row);
+		loadModel();
+		showInfo("info.copy.level.type.sucessfull", row.getDisplayName());
+	}
+	
+	private void doDelete(TaxonomyLevelTypeRow row) {
+		if(taxonomyService.deleteTaxonomyLevelType(row)) {
+			showInfo("info.delete.level.type.sucessfull", row.getDisplayName());
+		} else {
+			showWarning("warning.delete.level.type", row.getDisplayName());
+		}
+	}
+
+	private class ToolsController extends BasicController {
+		
+		private final TaxonomyLevelTypeRow row;
+
+		private final VelocityContainer mainVC;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, TaxonomyLevelTypeRow row, TaxonomyLevelType type) {
+			super(ureq, wControl);
+			setTranslator(TaxonomyLevelTypesEditController.this.getTranslator());
+			this.row = row;
+			
+			mainVC = createVelocityContainer("tools");
+			List<String> links = new ArrayList<>();
+			
+			if(!TaxonomyLevelTypeManagedFlag.isManaged(type.getManagedFlags(), TaxonomyLevelTypeManagedFlag.copy)) {
+				addLink("details.copy", "copy", "o_icon o_icon-fw o_icon_copy", links);
+			}
+			if(!TaxonomyLevelTypeManagedFlag.isManaged(type.getManagedFlags(), TaxonomyLevelTypeManagedFlag.delete)) {
+				addLink("details.delete", "delete", "o_icon o_icon-fw o_icon_delete_item", links);
+			}
+
+			mainVC.contextPut("links", links);
+			putInitialPanel(mainVC);
+		}
+		
+		private void addLink(String name, String cmd, String iconCSS, List<String> links) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+			if(iconCSS != null) {
+				link.setIconLeftCSS(iconCSS);
+			}
+			mainVC.put(name, link);
+			links.add(name);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(source instanceof Link) {
+				Link link = (Link)source;
+				String cmd = link.getCommand();
+				if("copy".equals(cmd)) {
+					doCopy(row);
+				} else if("delete".equals(cmd)) {
+					doDelete(row);
+				}
+			}
+		}
+
+		@Override
+		protected void doDispose() {
+			//
+		}
 	}
 }

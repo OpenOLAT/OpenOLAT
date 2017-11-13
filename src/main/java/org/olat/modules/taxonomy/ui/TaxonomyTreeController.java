@@ -52,43 +52,43 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyTreesAdminController extends BasicController {
+public class TaxonomyTreeController extends BasicController {
 	
 	private MenuTree taxonomiesTree; 
-	private Link createTaxonomyButton, addLevelButton;
 	private VelocityContainer mainVC;
-	private TaxonomyTreesModel taxonomyTreesModel;
+	private TaxonomyTreesModel taxonomyModel;
+	private final Link insertLevelsButton, newLevelButton;
 
 	private CloseableModalController cmc;
-	private EditTaxonomyController editTaxonomyCtrl;
+	private DetailsTaxonomyLevelController detailsLevelCtrl;
 	private EditTaxonomyLevelController createTaxonomyLevelCtrl;
 	
-	private DetailsTaxonomyController detailsCtrl;
-	private DetailsTaxonomyLevelController detailsLevelCtrl;
+	private Taxonomy taxonomy;
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
 
-	public TaxonomyTreesAdminController(UserRequest ureq, WindowControl wControl) {
+	public TaxonomyTreeController(UserRequest ureq, WindowControl wControl, Taxonomy taxonomy) {
 		super(ureq, wControl);
 		
-		mainVC = createVelocityContainer("admin_trees");
+		this.taxonomy = taxonomy;
 		
-		createTaxonomyButton = LinkFactory.createButton("create.taxonomy", mainVC, this);
-		addLevelButton = LinkFactory.createButton("add.taxonomy.level", mainVC, this);
-		mainVC.put("createTaxonomyButton", createTaxonomyButton);
-		mainVC.put("addTaxonomyLevelButton", addLevelButton);
+		mainVC = createVelocityContainer("admin_trees");
+
+		newLevelButton = LinkFactory.createButton("add.taxonomy.level", mainVC, this);
+		insertLevelsButton = LinkFactory.createButton("insert.taxonomy.levels", mainVC, this);
+
+		mainVC.put("addTaxonomyLevelButton", insertLevelsButton);
 		
 		detailsLevelCtrl = new DetailsTaxonomyLevelController(ureq, getWindowControl());
 		listenTo(detailsLevelCtrl);
-		detailsCtrl = new DetailsTaxonomyController(ureq, getWindowControl());
-		listenTo(detailsCtrl);
 
-		taxonomiesTree = new MenuTree("taxonomyTrees");
-		taxonomyTreesModel = new TaxonomyTreesModel();
-		taxonomiesTree.setTreeModel(taxonomyTreesModel);
+		taxonomiesTree = new MenuTree("taxonomyTree");
+		taxonomyModel = new TaxonomyTreesModel();
+		taxonomiesTree.setTreeModel(taxonomyModel);
 		taxonomiesTree.setSelectedNode(taxonomiesTree.getTreeModel().getRootNode());
 		taxonomiesTree.setDropEnabled(false);
+		taxonomiesTree.setRootVisible(false);
 		taxonomiesTree.addListener(this);
 		loadTreeModel();
 
@@ -103,13 +103,7 @@ public class TaxonomyTreesAdminController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(editTaxonomyCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				reloadTreeModel();
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if(createTaxonomyLevelCtrl == source) {
+		if(createTaxonomyLevelCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				reloadTreeModel();
 			}
@@ -123,23 +117,23 @@ public class TaxonomyTreesAdminController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(createTaxonomyButton == source) {
-			doCreateTaxonomy(ureq);
-		} else if(addLevelButton == source) {
+		if(newLevelButton == source) {
+			doNewLevel(ureq);
+		} else if(insertLevelsButton == source) {
 			doEnableAddLevel(ureq);
 		} else if(taxonomiesTree == source) {
 			if(event instanceof TreeEvent) {
 				TreeEvent te = (TreeEvent)event;
 				if(MenuTree.COMMAND_TREENODE_CLICKED.equals(te.getCommand())) {
-					TreeNode node = taxonomyTreesModel.getNodeById(te.getNodeId());
+					TreeNode node = taxonomyModel.getNodeById(te.getNodeId());
 					doSelect(node);
 				}
 			} else if(event instanceof InsertEvent) {
 				boolean canAdd = taxonomiesTree.getInsertionPoint() != null;
 				if(canAdd) {
-					addLevelButton.setElementCssClass("btn-primary");
+					insertLevelsButton.setElementCssClass("btn-primary");
 				} else {
-					addLevelButton.setElementCssClass(null);
+					insertLevelsButton.setElementCssClass(null);
 				}
 			}
 		}
@@ -147,10 +141,8 @@ public class TaxonomyTreesAdminController extends BasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(createTaxonomyLevelCtrl);
-		removeAsListenerAndDispose(editTaxonomyCtrl);
 		removeAsListenerAndDispose(cmc);
 		createTaxonomyLevelCtrl = null;
-		editTaxonomyCtrl = null;
 		cmc = null;
 	}
 	
@@ -159,13 +151,13 @@ public class TaxonomyTreesAdminController extends BasicController {
 		String selectedId = taxonomiesTree.getSelectedNodeId();
 		
 		loadTreeModel();
-		taxonomiesTree.setTreeModel(taxonomyTreesModel);
+		taxonomiesTree.setTreeModel(taxonomyModel);
 		taxonomiesTree.select(selectedId, true);
 		taxonomiesTree.setOpenNodeIds(openedNodeIds);
 	}
 	
 	private void loadTreeModel() {
-		new TaxonomyAllTreesBuilder().loadTreeModel(taxonomyTreesModel);
+		new TaxonomyAllTreesBuilder().loadTreeModel(taxonomyModel, taxonomy);
 	}
 	
 	private void doSelect(TreeNode node) {
@@ -175,11 +167,6 @@ public class TaxonomyTreesAdminController extends BasicController {
 				taxonomyLevel = taxonomyService.getTaxonomyLevel(taxonomyLevel);
 				detailsLevelCtrl.setTaxonomyLevel(taxonomyLevel);
 				mainVC.put("details", detailsLevelCtrl.getInitialComponent());
-			} else if(node.getUserObject() instanceof Taxonomy) {
-				Taxonomy taxonomy = (Taxonomy)node.getUserObject();
-				taxonomy = taxonomyService.getTaxonomy(taxonomy);
-				detailsCtrl.setTaxonomy(taxonomy);
-				mainVC.put("details", detailsCtrl.getInitialComponent());
 			} else {
 				mainVC.remove("details");
 			}
@@ -188,36 +175,27 @@ public class TaxonomyTreesAdminController extends BasicController {
 		}
 	}
 	
+	private void doNewLevel(UserRequest ureq) {
+		doCreateTaxonomyLevel(ureq, null);
+	}
+	
 	private void doEnableAddLevel(UserRequest ureq) {
 		if(taxonomiesTree.getInsertionPosition() != null) {
 			TreePosition position = taxonomiesTree.getInsertionPosition();	
 
 			TreeNode parent = position.getParentTreeNode();
 			Object uobject = parent.getUserObject();
-			if(uobject instanceof Taxonomy) {
-				doCreateTaxonomyLevel(ureq, null, (Taxonomy)uobject);
-			} else if(uobject instanceof TaxonomyLevel) {
+			if(uobject instanceof TaxonomyLevel) {
 				TaxonomyLevel parentLevel = (TaxonomyLevel)uobject;
-				doCreateTaxonomyLevel(ureq, parentLevel, parentLevel.getTaxonomy());
+				doCreateTaxonomyLevel(ureq, parentLevel);
 			}	
 		} else {
 			taxonomiesTree.enableInsertTool(true);
 			taxonomiesTree.setDirty(true);
 		}
 	}
-
-	private void doCreateTaxonomy(UserRequest ureq) {
-		if(editTaxonomyCtrl != null) return;
-		
-		editTaxonomyCtrl = new EditTaxonomyController(ureq, getWindowControl(), null);
-		listenTo(editTaxonomyCtrl);
-		
-		cmc = new CloseableModalController(getWindowControl(), "close", editTaxonomyCtrl.getInitialComponent(), true, translate("create.taxonomy"));
-		listenTo(cmc);
-		cmc.activate();
-	}
 	
-	private void doCreateTaxonomyLevel(UserRequest ureq, TaxonomyLevel parentLevel, Taxonomy taxonomy) {
+	private void doCreateTaxonomyLevel(UserRequest ureq, TaxonomyLevel parentLevel) {
 		if(createTaxonomyLevelCtrl != null) return;
 
 		createTaxonomyLevelCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), parentLevel, taxonomy);

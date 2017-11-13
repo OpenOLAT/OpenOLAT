@@ -1,0 +1,24 @@
+.o_taxonomy div#o_main_toolbar.o_toolbar {
+	margin-top: 0px;
+}
+
+.o_taxonomy_listing.o_rendertype_custom {
+	
+	.o_table_body.container-fluid {
+		padding-right: 0px;
+		padding-left: 0px;
+	}
+	
+	.o_taxonomy_row {
+		position: relative;
+		display: inline-block;
+		height: 200px;			
+		width: 450px;
+		vertical-align: top;
+		margin-right: 10px;
+		
+		ul {
+			padding-left: 2em;
+		}
+	}
+}

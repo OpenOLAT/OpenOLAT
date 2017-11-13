@@ -67,10 +67,10 @@
 	   	<property name="defaultSiteSecurityCallbackBeanId" value="registredSiteSecurityCallback"/>
 	</bean>
 
-	<bean id="olatsites_taxonomy" class="org.olat.modules.taxonomy.site.TaxonomySiteDef">
+	<bean id="olatsites_taxonomy" class="org.olat.modules.docpool.site.DocumentPoolSiteDef">
 		<property name="order" value="8" />
-		<property name="enabled" value="${site.taxonomy.enable}"/>
-	   	<property name="defaultSiteSecurityCallbackBeanId" value="taxonomySiteSecurityCallback"/>
+		<property name="enabled" value="${site.docpool.enable}"/>
+	   	<property name="defaultSiteSecurityCallbackBeanId" value="docPoolSiteSecurityCallback"/>
 	</bean>
 
 	<bean id="olatsites_authenv" class="org.olat.repository.site.RepositorySiteDef">

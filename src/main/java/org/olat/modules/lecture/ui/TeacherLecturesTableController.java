@@ -298,7 +298,6 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		List<Identity> participants = lectureService.getParticipants(lectureBlock);
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(row);
 		try {
-			boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 			LecturesBlockPDFExport export = new LecturesBlockPDFExport(lectureBlock, authorizedAbsenceEnabled, getTranslator());
 			export.setTeacher(userManager.getUserDisplayName(getIdentity()));
 			export.create(participants, rollCalls);

@@ -27,6 +27,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
+import org.olat.modules.taxonomy.TaxonomyLevelTypeRef;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.model.TaxonomyLevelTypeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +74,30 @@ public class TaxonomyLevelTypeDAO {
 		return types == null || types.isEmpty() ? null : types.get(0);	
 	}
 	
+	public TaxonomyLevelType cloneTaxonomyLevelType(TaxonomyLevelTypeRef typeRef) {
+		TaxonomyLevelType reloadedType = loadTaxonomyLevelTypeByKey(typeRef.getKey());
+		
+		TaxonomyLevelTypeImpl type = new TaxonomyLevelTypeImpl();
+		type.setCreationDate(new Date());
+		type.setLastModified(type.getCreationDate());
+		type.setIdentifier(reloadedType.getIdentifier() + " (Copy)");
+		type.setDisplayName(reloadedType.getDisplayName());
+		type.setDescription(reloadedType.getDescription());
+		type.setExternalId("");
+		// default settings
+		type.setDocumentsLibraryManageCompetenceEnabled(reloadedType.isDocumentsLibraryManageCompetenceEnabled());
+		type.setDocumentsLibraryTeachCompetenceReadEnabled(reloadedType.isDocumentsLibraryTargetCompetenceReadEnabled());
+		type.setDocumentsLibraryTeachCompetenceReadParentLevels(reloadedType.getDocumentsLibraryTeachCompetenceReadParentLevels());
+		type.setDocumentsLibraryTeachCompetenceWriteEnabled(reloadedType.isDocumentsLibraryTeachCompetenceWriteEnabled());
+		type.setDocumentsLibraryHaveCompetenceReadEnabled(reloadedType.isDocumentsLibraryHaveCompetenceReadEnabled());
+		type.setDocumentsLibraryTargetCompetenceReadEnabled(reloadedType.isDocumentsLibraryTargetCompetenceReadEnabled());
+		// root
+		type.setTaxonomy(reloadedType.getTaxonomy());
+		
+		dbInstance.getCurrentEntityManager().persist(type);
+		return type;
+	}
+	
 	public TaxonomyLevelType updateTaxonomyLevelType(TaxonomyLevelType type) {
 		((TaxonomyLevelTypeImpl)type).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(type);
@@ -84,5 +109,23 @@ public class TaxonomyLevelTypeDAO {
 				.createQuery(q, TaxonomyLevelType.class)
 				.setParameter("taxonomyKey", taxonomy.getKey())
 				.getResultList();
+	}
+	
+	public boolean deleteTaxonomyLevelType(TaxonomyLevelTypeRef levelType) {
+		TaxonomyLevelType reloadedLevel = dbInstance.getCurrentEntityManager()
+			.getReference(TaxonomyLevelTypeImpl.class, levelType.getKey());
+		dbInstance.getCurrentEntityManager().remove(reloadedLevel);
+		return true;
+	}
+	
+	public boolean hasLevels(TaxonomyLevelTypeRef type) {
+		String sb = "select level.key from ctaxonomylevel as level where level.type.key=:typeKey";
+		List<Long> levels = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("typeKey", type.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return levels != null && levels.size() > 0 && levels.get(0) != null && levels.get(0).intValue() > 0;
 	}
 }

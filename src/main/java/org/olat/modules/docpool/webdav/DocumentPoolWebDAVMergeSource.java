@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.webdav;
+package org.olat.modules.docpool.webdav;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +30,17 @@ import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.callbacks.DefaultVFSSecurityCallback;
+import org.olat.modules.docpool.DocumentPoolModule;
+import org.olat.modules.docpool.manager.TaxonomyDocumentsLibraryNotificationsHandler;
+import org.olat.modules.docpool.ui.DocumentPoolMainController;
 import org.olat.modules.taxonomy.Taxonomy;
-import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.manager.TaxonomyDocumentsLibraryNotificationsHandler;
 import org.olat.modules.taxonomy.manager.TaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
@@ -50,18 +52,18 @@ import org.olat.modules.taxonomy.ui.component.TaxonomyVFSSecurityCallback;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class TaxonomyDocumentsLibraryWebDAVMergeSource extends WebDAVMergeSource {
+class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 	
 	private final IdentityEnvironment identityEnv;
 	
-	private final TaxonomyModule taxonomyModule;
+	private final DocumentPoolModule docPoolModule;
 	private final TaxonomyService taxonomyService;
 	private final TaxonomyDocumentsLibraryNotificationsHandler notificationsHandler;
 	
-	public TaxonomyDocumentsLibraryWebDAVMergeSource(IdentityEnvironment identityEnv) {
+	public DocumentPoolWebDAVMergeSource(IdentityEnvironment identityEnv) {
 		super(identityEnv.getIdentity());
 		this.identityEnv = identityEnv;
-		taxonomyModule = CoreSpringFactory.getImpl(TaxonomyModule.class);
+		docPoolModule = CoreSpringFactory.getImpl(DocumentPoolModule.class);
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
 		notificationsHandler = CoreSpringFactory.getImpl(TaxonomyDocumentsLibraryNotificationsHandler.class);
 	}
@@ -70,11 +72,14 @@ class TaxonomyDocumentsLibraryWebDAVMergeSource extends WebDAVMergeSource {
 	protected List<VFSContainer> loadMergedContainers() {
 		List<VFSContainer> containers = new ArrayList<>();
 		
-		String taxonomyTreeKey = taxonomyModule.getTaxonomyTreeKey();
+		String taxonomyTreeKey = docPoolModule.getTaxonomyTreeKey();
 		if(StringHelper.containsNonWhitespace(taxonomyTreeKey)) {
 			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(new Long(taxonomyTreeKey)));
 			if(taxonomy != null) {
-				TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, identityEnv.getIdentity(), null, identityEnv.getRoles().isOLATAdmin());
+				String  templatesDir = Util.createPackageTranslator(DocumentPoolMainController.class, identityEnv.getLocale())
+					.translate("document.pool.templates");
+				TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, identityEnv.getIdentity(), null,
+						identityEnv.getRoles().isOLATAdmin(), templatesDir);
 				TreeModel model = builder.buildTreeModel();
 				TreeNode rootNode = model.getRootNode();
 				for(int i=0; i<rootNode.getChildCount(); i++) {

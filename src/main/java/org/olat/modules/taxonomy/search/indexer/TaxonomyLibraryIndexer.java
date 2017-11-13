@@ -19,7 +19,6 @@
  */
 package org.olat.modules.taxonomy.search.indexer;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -41,7 +40,6 @@ import org.olat.search.service.indexer.FolderIndexerWorker;
 import org.olat.search.service.indexer.OlatFullIndexer;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -49,42 +47,19 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service("taxonomyLibraryIndexer")
-public class TaxonomyLibraryIndexer extends AbstractHierarchicalIndexer implements InitializingBean {
+public abstract class TaxonomyLibraryIndexer extends AbstractHierarchicalIndexer implements InitializingBean {
 	
 	@Autowired
-	private TaxonomyService taxonomyService;
+	protected TaxonomyService taxonomyService;
 	@Autowired
-	private TaxonomyLevelLibraryIndexer taxonomyLevelLibraryIndexer;
+	protected TaxonomyLevelLibraryIndexer taxonomyLevelLibraryIndexer;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		addIndexer(taxonomyLevelLibraryIndexer);
 	}
-
-	@Override
-	public String getSupportedTypeName() {
-		return "Taxonomy";
-	}
-
-	@Override
-	public void doIndex(SearchResourceContext parentResourceContext, Object object, OlatFullIndexer indexerWriter)
-			throws IOException, InterruptedException {
-		List<Taxonomy> taxonomyList = taxonomyService.getRootTaxonomyList();
-		for(Taxonomy taxonomy:taxonomyList) {
-			if(taxonomy.isDocumentsLibraryEnabled()) {
-				SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
-				searchResourceContext.setBusinessControlFor(taxonomy);
-				searchResourceContext.setTitle(taxonomy.getDisplayName());
-				searchResourceContext.setDescription(taxonomy.getDescription());
-				searchResourceContext.setLastModified(taxonomy.getLastModified());
-				searchResourceContext.setCreatedDate(taxonomy.getCreationDate());
-				doIndexTaxonomyLibrary(searchResourceContext, taxonomy, indexerWriter);
-			}
-		}
-	}
 	
-	private void doIndexTaxonomyLibrary(SearchResourceContext searchResourceContext, Taxonomy taxonomy, OlatFullIndexer indexerWriter)
+	protected void doIndexTaxonomyLibrary(SearchResourceContext searchResourceContext, Taxonomy taxonomy, OlatFullIndexer indexerWriter)
 	throws InterruptedException  {
 		VFSContainer templatesContainer = taxonomyService.getDocumentsLibrary(taxonomy);
 		if(templatesContainer != null) {

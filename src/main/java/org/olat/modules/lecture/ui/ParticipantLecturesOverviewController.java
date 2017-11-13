@@ -270,7 +270,6 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 	}
 	
 	private void doExportLog(UserRequest ureq) {
-		boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		List<LectureBlockAuditLog> auditLog = lectureService.getAuditLog(assessedIdentity);
 		IdentityAuditLogExport export = new IdentityAuditLogExport(assessedIdentity, auditLog, authorizedAbsenceEnabled, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(export);

@@ -53,8 +53,27 @@ public class TaxonomyAllTreesBuilder {
 		return taxonomyTreesModel;
 	}
 	
+	public GenericTreeModel buildTreeModel(Taxonomy taxonomy) {
+		GenericTreeModel taxonomyTreesModel = new GenericTreeModel();
+		loadTreeModel(taxonomyTreesModel, taxonomy);
+		return taxonomyTreesModel;
+	}
+	
+	public void loadTreeModel(GenericTreeModel taxonomyTreesModel, Taxonomy taxonomy) {
+		Map<Taxonomy, GenericTreeNode> rootNodesMap = new HashMap<>();
+
+		GenericTreeNode rootNode = new GenericTreeNode("taxonomy-" + taxonomy.getKey());
+		rootNode.setTitle(taxonomy.getDisplayName());
+		rootNode.setIconCssClass("o_icon_taxonomy");
+		rootNode.setUserObject(taxonomy);
+		taxonomyTreesModel.setRootNode(rootNode);
+		rootNodesMap.put(taxonomy, rootNode);
+
+		loadTreeModel(rootNodesMap, taxonomy);
+	}
+	
 	public void loadTreeModel(GenericTreeModel taxonomyTreesModel) {
-		List<Taxonomy> taxonomyList = taxonomyService.getRootTaxonomyList();
+		List<Taxonomy> taxonomyList = taxonomyService.getTaxonomyList();
 		GenericTreeNode rootNode = new GenericTreeNode("Root", ROOT);
 		taxonomyTreesModel.setRootNode(rootNode);
 		Map<Taxonomy, GenericTreeNode> rootNodesMap = new HashMap<>();
@@ -66,8 +85,11 @@ public class TaxonomyAllTreesBuilder {
 			rootNode.addChild(node);
 			rootNodesMap.put(taxonomy, node);
 		}
+		loadTreeModel(rootNodesMap, null);
+	}
 
-		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(null);
+	private void loadTreeModel(Map<Taxonomy, GenericTreeNode> rootNodesMap, Taxonomy taxonomy) {
+		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
 		Map<Long,GenericTreeNode> fieldKeyToNode = new HashMap<Long, GenericTreeNode>();
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
 			Long key = taxonomyLevel.getKey();
@@ -99,5 +121,4 @@ public class TaxonomyAllTreesBuilder {
 			}
 		}
 	}
-
 }

@@ -42,7 +42,9 @@ public enum TaxonomyLevelTypeManagedFlag {
 	 externalId(all),
 	 visibility(all),
 	 subTypes(all),
-	 librarySettings(all);
+	 librarySettings(all),
+	 copy(all),
+	 delete(all);
 	
 	private TaxonomyLevelTypeManagedFlag[] parents;
 	private static final OLog log = Tracing.createLoggerFor(TaxonomyLevelTypeManagedFlag.class);

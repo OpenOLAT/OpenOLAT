@@ -1,0 +1,9 @@
+<div class="o_form row"><div class="col-sm-offset-3 col-sm-9">
+	<div class="o_desc">$r.translate("admin.permissions.description")</div> 
+</div></div>
+#foreach($permission in $permissions)
+	$r.render($permission)
+#end
+<div class="form-group clearfix"><div class="col-sm-offset-3 col-sm-9">
+$r.render("buttons")
+</div></div>

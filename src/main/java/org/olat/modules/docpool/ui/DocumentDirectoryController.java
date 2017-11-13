@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.ui;
+package org.olat.modules.docpool.ui;
 
 import java.util.List;
 
@@ -41,23 +41,23 @@ import org.olat.modules.taxonomy.Taxonomy;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyDirectoryController extends BasicController implements Activateable2  {
+public class DocumentDirectoryController extends BasicController implements Activateable2  {
 	
 	private final VelocityContainer mainVC;
 	private FolderRunController folderCtrl;
 
 	
-	public TaxonomyDirectoryController(UserRequest ureq, WindowControl wControl,
+	public DocumentDirectoryController(UserRequest ureq, WindowControl wControl,
 			Taxonomy taxonomy, VFSContainer documents, String name) {
 		super(ureq, wControl);
 
-		mainVC = createVelocityContainer("taxonomy_directory");
+		mainVC = createVelocityContainer("document_directory");
 		mainVC.contextPut("iconCssClass", "o_icon_taxonomy_templates");
 		mainVC.contextPut("displayName", name);
 
 		VFSContainer namedContainer = new NamedContainerImpl("Templates", documents);
 		folderCtrl = new FolderRunController(namedContainer, true, true, true, ureq, getWindowControl());
-		folderCtrl.setResourceURL("[Taxonomy:" + taxonomy.getKey() + "]");
+		folderCtrl.setResourceURL("[DocumentPool:" + taxonomy.getKey() + "]");
 		mainVC.put("folder", folderCtrl.getInitialComponent());
 
 		putInitialPanel(mainVC);

@@ -356,7 +356,6 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 	 */
 	protected Controller createController(ActionExtension ae, UserRequest ureq) {
 		// default implementation for simple case where action extension.
-		// fxdiff BAKS-7 Resume function
 		WindowControl bwControl = getWindowControl();
 		if (olatMenuTree.getTreeModel() instanceof GenericTreeModel) {
 			if (ae instanceof Extension) {

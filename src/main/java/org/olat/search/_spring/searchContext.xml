@@ -131,12 +131,14 @@
 	<bean id="mainIndexer" class="org.olat.search.service.indexer.MainIndexer" lazy-init="true">
 		<property name="indexerList">
 			<list>
+				<!-- 
 				<ref bean="groupIndexer" />
 				<ref bean="repositoryIndexer" />
 				<ref bean="identityIndexer" />
 				<ref bean="epDefaultMapIndexer" />
 				<ref bean="epStructuredMapIndexer" />
-				<ref bean="taxonomyLibraryIndexer" />
+				-->
+				<ref bean="documentPoolIndexer" />
 			</list>
 		</property>
 	</bean>

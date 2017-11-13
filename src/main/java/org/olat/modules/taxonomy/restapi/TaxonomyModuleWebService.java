@@ -22,20 +22,16 @@ package org.olat.modules.taxonomy.restapi;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Roles;
 import org.olat.modules.taxonomy.Taxonomy;
-import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 
@@ -47,33 +43,7 @@ import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
  */
 @Path("taxonomy")
 public class TaxonomyModuleWebService {
-	
-	/**
-	 * Return the configuration of the taxonomy module.
-	 * 
-	 * @response.representation.200.qname {http://www.example.com}taxonomyModuleConfigurationVO
-	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The configuration of the taxonomy module
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYMODULECONFIGURATIONVO}
-	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
-	 * @param httpRequest  The HTTP request
-	 * @return The module configuration
-	 */
-	@GET
-	@Path("module/configuration")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response getModuleConfiguration(@Context HttpServletRequest httpRequest) {
-		Roles roles = getRoles(httpRequest);
-		if(!roles.isOLATAdmin()) {
-			return Response.serverError().status(Status.UNAUTHORIZED).build();
-		}
-		
-		TaxonomyModule taxonomyModule = CoreSpringFactory.getImpl(TaxonomyModule.class);
-		TaxonomyModuleConfigurationVO configVO = new TaxonomyModuleConfigurationVO();
-		configVO.setEnabled(taxonomyModule.isEnabled());
-		configVO.setTaxonomyTreeKey(taxonomyModule.getTaxonomyTreeKey());
-		return Response.ok(configVO).build();
-	}
+
 	
 	@Path("{taxonomyKey}")
 	public TaxonomyWebService getTaxonomyWebService(@PathParam("taxonomyKey") Long taxonomyKey, @Context HttpServletRequest httpRequest) {

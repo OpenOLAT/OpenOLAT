@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
+import org.olat.modules.taxonomy.TaxonomyLevelTypeRef;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.model.TaxonomyLevelTypeToTypeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,7 @@ public class TaxonomyLevelTypeToTypeDAO {
 		}
 	}
 	
-	public List<TaxonomyLevelTypeToType> getAllowedSubTypes(TaxonomyLevelType parentType) {
+	public List<TaxonomyLevelTypeToType> getAllowedSubTypes(TaxonomyLevelTypeRef parentType) {
 		String q = "select type2type from ctaxonomyleveltypetotype type2type inner join fetch type2type.allowedSubTaxonomyLevelType subType where type2type.taxonomyLevelType.key=:typeKey";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q, TaxonomyLevelTypeToType.class)
@@ -98,6 +99,22 @@ public class TaxonomyLevelTypeToTypeDAO {
 				.setParameter("typeKey", parentType.getKey())
 				.setParameter("subTypeKey", allowedSubType.getKey())
 				.getResultList();
+	}
+	
+	public int deleteAllowedSubTypes(TaxonomyLevelTypeRef parentType) {
+		String q = "delete from ctaxonomyleveltypetotype where taxonomyLevelType.key=:typeKey";
+		int rows = dbInstance.getCurrentEntityManager()
+				.createQuery(q, TaxonomyLevelTypeToType.class)
+				.setParameter("typeKey", parentType.getKey())
+				.executeUpdate();
+		
+		String qReverse = "delete from ctaxonomyleveltypetotype where allowedSubTaxonomyLevelType.key=:typeKey";
+		rows += dbInstance.getCurrentEntityManager()
+				.createQuery(qReverse, TaxonomyLevelTypeToType.class)
+				.setParameter("typeKey", parentType.getKey())
+				.executeUpdate();
+		
+		return rows;
 	}
 	
 	public void addAllowedSubType(TaxonomyLevelType parentType, TaxonomyLevelType allowedSubType) {

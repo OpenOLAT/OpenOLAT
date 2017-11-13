@@ -17,42 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.restapi;
+package org.olat.modules.docpool.site;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
+
+import org.olat.core.gui.UserRequest;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.ContextEntryControllerCreator;
+import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 
 /**
  * 
- * Initial date: 5 Oct 2017<br>
+ * Initial date: 18 sept. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "taxonomyModuleConfigurationVO")
-public class TaxonomyModuleConfigurationVO {
-	
-	private boolean enabled;
-	private String taxonomyTreeKey;
-	
-	public TaxonomyModuleConfigurationVO() {
-		//
+public class DocumentPoolContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
+
+	@Override
+	public ContextEntryControllerCreator clone() {
+		return this;
 	}
 
-	public boolean isEnabled() {
-		return enabled;
-	}
-
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
-
-	public String getTaxonomyTreeKey() {
-		return taxonomyTreeKey;
-	}
-
-	public void setTaxonomyTreeKey(String taxonomyTreeKey) {
-		this.taxonomyTreeKey = taxonomyTreeKey;
+	@Override
+	public String getSiteClassName(List<ContextEntry> ces, UserRequest ureq) {
+		return DocumentPoolSite.class.getName();
 	}
 }

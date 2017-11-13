@@ -244,7 +244,6 @@ public class LectureRepositoryAdminController extends BasicController implements
 	
 	private void doExportLog(UserRequest ureq) {
 		List<LectureBlockAuditLog> auditLog = lectureService.getAuditLog(entry);
-		boolean authorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		RepositoryEntryAuditLogExport archive = new RepositoryEntryAuditLogExport(entry, auditLog, authorizedAbsenceEnabled, getTranslator());
 		ureq.getDispatchResult().setResultingMediaResource(archive);
 	}

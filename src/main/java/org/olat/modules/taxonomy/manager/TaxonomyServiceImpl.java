@@ -37,6 +37,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelTypeRef;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -87,8 +88,13 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
-	public List<Taxonomy> getRootTaxonomyList() {
+	public List<Taxonomy> getTaxonomyList() {
 		return taxonomyDao.getTaxonomyList();
+	}
+
+	@Override
+	public List<TaxonomyInfos> getTaxonomyInfosList() {
+		return taxonomyDao.getTaxonomyInfosList();
 	}
 
 	@Override
@@ -156,6 +162,28 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	public TaxonomyLevelType updateTaxonomyLevelType(TaxonomyLevelType leveltype, List<TaxonomyLevelType> allowSubTypes) {
 		taxonomyLevelTypeToTypeDao.setAllowedSubType(leveltype, allowSubTypes);
 		return taxonomyLevelTypeDao.updateTaxonomyLevelType(leveltype);
+	}
+
+	@Override
+	public TaxonomyLevelType cloneTaxonomyLevelType(TaxonomyLevelTypeRef levelType) {
+		TaxonomyLevelType clonedType = taxonomyLevelTypeDao.cloneTaxonomyLevelType(levelType);
+		List<TaxonomyLevelTypeToType> allowSubTypesToTypes = taxonomyLevelTypeToTypeDao.getAllowedSubTypes(levelType);
+		if(allowSubTypesToTypes.size() > 0) {
+			for(TaxonomyLevelTypeToType allowSubTypeToType:allowSubTypesToTypes) {
+				taxonomyLevelTypeToTypeDao.addAllowedSubType(clonedType, allowSubTypeToType.getAllowedSubTaxonomyLevelType());
+			}
+		}
+		return clonedType;
+	}
+
+	@Override
+	public boolean deleteTaxonomyLevelType(TaxonomyLevelTypeRef levelType) {
+		if(taxonomyLevelTypeDao.hasLevels(levelType)) {
+			return false;
+		}
+		taxonomyLevelTypeToTypeDao.deleteAllowedSubTypes(levelType);
+		taxonomyLevelTypeDao.deleteTaxonomyLevelType(levelType);
+		return true;
 	}
 
 	@Override

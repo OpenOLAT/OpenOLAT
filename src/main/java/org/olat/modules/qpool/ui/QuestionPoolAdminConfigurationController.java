@@ -17,48 +17,39 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.ui;
+package org.olat.modules.qpool.ui;
 
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.taxonomy.Taxonomy;
-import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 26 sept. 2017<br>
+ * Initial date: 10 nov. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyConfigurationAdminController extends FormBasicController {
-
-	private static final String[] onKeys = new String[] { "on" };
+public class QuestionPoolAdminConfigurationController extends FormBasicController {
 	
-	private MultipleSelectionElement enableEl;
 	private SingleSelection taxonomyTreeEl;
-	private SingleSelection taxonomyQPoolEl;
 	
-	@Autowired
-	private TaxonomyModule taxonomyModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private QuestionPoolModule qpoolModule;
-
-	public TaxonomyConfigurationAdminController(UserRequest ureq, WindowControl wControl) {
+	
+	public QuestionPoolAdminConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		initForm(ureq);
@@ -68,15 +59,7 @@ public class TaxonomyConfigurationAdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.configuration.title");
 		
-		String[] onValues = new String[] { translate("on") };
-		enableEl = uifactory.addCheckboxesHorizontal("taxonomy.admin.enabled", formLayout, onKeys, onValues);
-		enableEl.addActionListener(FormEvent.ONCHANGE);
-		if(taxonomyModule.isEnabled()) {
-			enableEl.select(onKeys[0], true);
-		}
-		
-		String selectedTaxonomyTreeKey = taxonomyModule.getTaxonomyTreeKey();
-		List<Taxonomy> taxonomyList = taxonomyService.getRootTaxonomyList();
+		List<Taxonomy> taxonomyList = taxonomyService.getTaxonomyList();
 		String[] taxonomyKeys = new String[taxonomyList.size() + 1];
 		String[] taxonomyValues = new String[taxonomyList.size() + 1];
 		taxonomyKeys[0] = "";
@@ -86,27 +69,14 @@ public class TaxonomyConfigurationAdminController extends FormBasicController {
 			taxonomyKeys[i + 1] = taxonomy.getKey().toString();
 			taxonomyValues[i + 1] = taxonomy.getDisplayName();
 		}
-		taxonomyTreeEl = uifactory.addDropdownSingleselect("selected.taxonomy.tree", formLayout, taxonomyKeys, taxonomyValues, null);
-		boolean found = false;
-		if(StringHelper.containsNonWhitespace(selectedTaxonomyTreeKey)) {
-			for(String taxonomyKey:taxonomyKeys) {
-				if(taxonomyKey.equals(selectedTaxonomyTreeKey)) {
-					taxonomyTreeEl.select(taxonomyKey, true);
-					found = true;
-				}
-			}
-		}
-		if(!found && taxonomyKeys.length > 0) {
-			taxonomyTreeEl.select(taxonomyKeys[0], true);
-		}
 		
 		String selectedTaxonomyQPoolKey = qpoolModule.getTaxonomyQPoolKey();
-		taxonomyQPoolEl = uifactory.addDropdownSingleselect("selected.taxonomy.qpool", formLayout, taxonomyKeys, taxonomyValues, null);
-		taxonomyQPoolEl.setEnabled(false);
+		taxonomyTreeEl = uifactory.addDropdownSingleselect("selected.taxonomy.tree", formLayout, taxonomyKeys, taxonomyValues, null);
+		taxonomyTreeEl.setEnabled(false);
 		if(StringHelper.containsNonWhitespace(selectedTaxonomyQPoolKey)) {
 			for(String taxonomyKey:taxonomyKeys) {
 				if(taxonomyKey.equals(selectedTaxonomyQPoolKey)) {
-					taxonomyQPoolEl.select(taxonomyKey, true);
+					taxonomyTreeEl.select(taxonomyKey, true);
 				}
 			}
 		}
@@ -121,8 +91,6 @@ public class TaxonomyConfigurationAdminController extends FormBasicController {
 		//
 	}
 	
-	
-	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
@@ -133,24 +101,12 @@ public class TaxonomyConfigurationAdminController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		taxonomyQPoolEl.clearError();
-		if(!taxonomyQPoolEl.isOneSelected()) {
-			taxonomyTreeEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
 		return allOk & super.validateFormLogic(ureq);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean enabled = enableEl.isAtLeastSelected(1);
-		taxonomyModule.setEnabled(enabled);
-		
-		String selectedTaxonomyTreeKey = taxonomyTreeEl.getSelectedKey();
-		taxonomyModule.setTaxonomyTreeKey(selectedTaxonomyTreeKey);
-		
-		String selectedTaxonomyQPoolKey = taxonomyQPoolEl.getSelectedKey();
+		String selectedTaxonomyQPoolKey = taxonomyTreeEl.getSelectedKey();
 		qpoolModule.setTaxonomyQPoolKey(selectedTaxonomyQPoolKey);
 	}
 }

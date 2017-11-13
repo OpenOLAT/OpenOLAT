@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.site;
+package org.olat.modules.docpool.site;
 
 import java.util.Locale;
 
@@ -36,7 +36,7 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.taxonomy.ui.TaxonomyMainController;
+import org.olat.modules.docpool.ui.DocumentPoolMainController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
 /**
@@ -45,7 +45,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomySite extends AbstractSiteInstance {
+public class DocumentPoolSite extends AbstractSiteInstance {
 	
 	private final NavElement origNavElem;
 	private NavElement curNavElem;
@@ -53,9 +53,9 @@ public class TaxonomySite extends AbstractSiteInstance {
 	/**
 	 * @param loccale
 	 */
-	public TaxonomySite(SiteDefinition siteDef, Locale locale) {
+	public DocumentPoolSite(SiteDefinition siteDef, Locale locale) {
 		super(siteDef);
-		Translator trans = Util.createPackageTranslator(TaxonomyMainController.class, locale);
+		Translator trans = Util.createPackageTranslator(DocumentPoolMainController.class, locale);
 		origNavElem = new DefaultNavElement(trans.translate("site.title"), trans.translate("site.title.alt"), "o_site_taxonomy");
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
@@ -67,10 +67,10 @@ public class TaxonomySite extends AbstractSiteInstance {
 
 	@Override
 	protected MainLayoutController createController(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(TaxonomySite.class, 0l);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(DocumentPoolSite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		TaxonomyMainController mainController = new TaxonomyMainController(ureq, bwControl);
+		DocumentPoolMainController mainController = new DocumentPoolMainController(ureq, bwControl);
 		return mainController;
 	}
 

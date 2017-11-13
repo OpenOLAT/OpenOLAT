@@ -87,7 +87,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		closeLink.setCustomDisplayText(translator.translate("close"));
 		closeLink.setAccessKey("x"); // allow navigation using keyboard
 		
-		this.setDomReplacementWrapperRequired(false);
+		setDomReplacementWrapperRequired(false);
 	}
 
 	/**
@@ -451,6 +451,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		updateCloseLinkTitle();
 	}
 
+	@Override
 	public void changeDisplayname(String diplayName) {
 		stack.get(stack.size() - 1).setCustomDisplayText(diplayName);
 		setDirty(true);

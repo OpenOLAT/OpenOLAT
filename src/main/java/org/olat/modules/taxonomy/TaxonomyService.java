@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.taxonomy.model.TaxonomyInfos;
 
 /**
  * 
@@ -32,6 +33,8 @@ import org.olat.core.util.vfs.VFSContainer;
  *
  */
 public interface TaxonomyService {
+	
+	public static final String DIRECTORY = "taxonomy";
 	
 	public Taxonomy createTaxonomy(String identifier, String displayName, String description, String externalId);
 	
@@ -47,7 +50,12 @@ public interface TaxonomyService {
 	/**
 	 * @return The list of taxonomy trees available in the system.
 	 */
-	public List<Taxonomy> getRootTaxonomyList();
+	public List<Taxonomy> getTaxonomyList();
+	
+	/**
+	 * @return The list of taxonomy informations available in hte system.
+	 */
+	public List<TaxonomyInfos> getTaxonomyInfosList();
 	
 
 	public TaxonomyLevel createTaxonomyLevel(String identifier, String displayName, String description, String externalId,
@@ -130,11 +138,32 @@ public interface TaxonomyService {
 
 	public TaxonomyLevelType createTaxonomyLevelType(String identifier, String displayName, String description, String externalId, Taxonomy taxonomy);
 	
+	/**
+	 * 
+	 * @param ref The reference
+	 * @return A freshly loaded taxonomy level type
+	 */
 	public TaxonomyLevelType getTaxonomyLevelType(TaxonomyLevelTypeRef ref);
 
 	public TaxonomyLevelType updateTaxonomyLevelType(TaxonomyLevelType levelType);
 	
+	/**
+	 * Update the taxonomy level type
+	 * @param levelType
+	 * @param allowSubTypes
+	 * @return The merged taxonomy level type
+	 */
 	public TaxonomyLevelType updateTaxonomyLevelType(TaxonomyLevelType levelType, List<TaxonomyLevelType> allowSubTypes);
+	
+	/**
+	 * Make a clone the level type.
+	 * @param levelType The level type to clone
+	 * @return A persisted clonde level type.
+	 */
+	public TaxonomyLevelType cloneTaxonomyLevelType(TaxonomyLevelTypeRef levelType);
+	
+	
+	public boolean deleteTaxonomyLevelType(TaxonomyLevelTypeRef levelType);
 	
 	/**
 	 * Add directly an allowed taxonomy level type to the specified taxonomy level type.

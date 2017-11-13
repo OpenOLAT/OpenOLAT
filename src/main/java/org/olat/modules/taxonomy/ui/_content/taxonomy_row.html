@@ -1,0 +1,18 @@
+<div class="panel panel-default o_binder #if($r.isNotNull($row.referenceEntryName)) o_portfolio_assignments #end #if($row.background) panel-imagebg" style="background-image:url('$mapperThumbnailUrl/$row.key/${row.imageName}');" #else " #end>
+	<div class="panel-heading">
+		<h4 class="panel-title">$r.escapeHtml($row.displayName) #if($r.isNotNull($row.identifier)) <small class="text-muted">$r.escapeHtml($row.identifier)</small>#end</h4>
+	</div>
+	<div class="panel-body">
+		#set($creationDate = $r.formatDate($row.creationDate))
+		<p class="text-muted">$r.translate("taxonomy.infos.created", $creationDate)</p>
+		#if($r.isNotEmpty($r.description))
+			<p>$r.description</p>
+		#end
+		<ul>
+			<li><span>$r.translate("taxonomy.infos.number.of.levels"): $row.numberOfLevels</span></li>
+			<li><span>$r.translate("taxonomy.infos.question.pool.enabled"):#if($r.isTrue($row.questionPoolEnabled)) $r.translate("taxonomy.infos.enabled")#else $r.translate("taxonomy.infos.not.enabled")#end</span></li>
+			<li><span>$r.translate("taxonomy.infos.doc.pool.enabled"):#if($r.isTrue($row.documentPoolEnabled)) $r.translate("taxonomy.infos.enabled")#else $r.translate("taxonomy.infos.not.enabled")#end</span></li>
+		</ul>
+		<div class="pull-right">$r.render($row.openLink)</div>	
+	</div>
+</div>

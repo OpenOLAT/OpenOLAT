@@ -40,6 +40,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -375,12 +376,17 @@ public class TaxonomyLevelDAO implements InitializingBean {
 	
 	public VFSContainer getDocumentsLibrary(TaxonomyLevel level) {
 		String path = ((TaxonomyLevelImpl)level).getDirectoryPath();
+		if(!path.startsWith("/")) {
+			path = "/" + path;
+		}
+		path = "/" + TaxonomyService.DIRECTORY + path;
 		return new OlatRootFolderImpl(path, null);
 	}
 	
 	public String createLevelStorage(Taxonomy taxonomy, TaxonomyLevel level) {
 		File taxonomyDirectory = new File(taxonomyLevelDirectory, taxonomy.getKey().toString());
 		File storage = new File(taxonomyDirectory, level.getKey().toString());
+		storage.mkdirs();
 		
 		Path relativePath = rootDirectory.toPath().relativize(storage.toPath());
 		String relativePathString = relativePath.toString();

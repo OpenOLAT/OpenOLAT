@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.ui;
+package org.olat.modules.docpool.ui;
 
 import java.util.List;
 
@@ -47,7 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyLevelController extends BasicController implements Activateable2  {
+public class DocumentPoolLevelController extends BasicController implements Activateable2  {
 	
 	private final VelocityContainer mainVC;
 	private FolderRunController folderCtrl;
@@ -57,12 +57,12 @@ public class TaxonomyLevelController extends BasicController implements Activate
 	@Autowired
 	private TaxonomyService taxonomyService;
 	
-	public TaxonomyLevelController(UserRequest ureq, WindowControl wControl,
+	public DocumentPoolLevelController(UserRequest ureq, WindowControl wControl,
 			TaxonomyLevel level, TaxonomyTreeNode node, TaxonomyVFSSecurityCallback secCallback) {
 		super(ureq, wControl);
 		taxonomyLevel = taxonomyService.getTaxonomyLevel(level);
 
-		mainVC = createVelocityContainer("taxonomy_level_directory");
+		mainVC = createVelocityContainer("document_pool_level_directory");
 		
 		String iconCssClass;
 		TaxonomyLevelType type = level.getType();
@@ -81,7 +81,7 @@ public class TaxonomyLevelController extends BasicController implements Activate
 			documents.setLocalSecurityCallback(secCallback);
 			VFSContainer namedContainer = new NamedContainerImpl(name, documents);
 			folderCtrl = new FolderRunController(namedContainer, true, true, true, ureq, getWindowControl());
-			folderCtrl.setResourceURL("[Taxonomy:" + taxonomyLevel.getTaxonomy().getKey() + "][TaxonomyLevel:" + taxonomyLevel.getKey() + "]");
+			folderCtrl.setResourceURL("[DocumentPool:" + taxonomyLevel.getTaxonomy().getKey() + "][TaxonomyLevel:" + taxonomyLevel.getKey() + "]");
 			mainVC.put("folder", folderCtrl.getInitialComponent());
 		}
 		putInitialPanel(mainVC);

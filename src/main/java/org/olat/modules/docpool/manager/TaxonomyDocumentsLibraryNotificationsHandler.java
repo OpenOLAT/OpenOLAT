@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.manager;
+package org.olat.modules.docpool.manager;
 
 import java.util.Date;
 import java.util.List;
@@ -52,12 +52,13 @@ import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.docpool.ui.DocumentPoolMainController;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.manager.TaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
-import org.olat.modules.taxonomy.ui.TaxonomyMainController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -111,9 +112,10 @@ public class TaxonomyDocumentsLibraryNotificationsHandler implements Notificatio
 				Roles roles = securityManager.getRoles(identity);
 				boolean isTaxonomyAdmin = roles.isOLATAdmin();
 				
-				TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, identity, null, isTaxonomyAdmin);
+				Translator translator = Util.createPackageTranslator(DocumentPoolMainController.class, locale);
+				String templates = translator.translate("document.pool.templates");
+				TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, identity, null, isTaxonomyAdmin, templates);
 				TreeModel model = builder.buildTreeModel();
-				Translator translator = Util.createPackageTranslator(TaxonomyMainController.class, locale);
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), getTitleItemForPublisher(p), null);
 	
 				new TreeVisitor(new Visitor() {

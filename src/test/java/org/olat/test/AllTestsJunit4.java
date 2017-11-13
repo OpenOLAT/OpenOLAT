@@ -312,7 +312,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.SystemTest.class,
 	org.olat.restapi.ChangePasswordTest.class,
 	org.olat.restapi.RegistrationTest.class,
-	org.olat.restapi.TaxonomyModuleWebServiceTest.class,
+	org.olat.restapi.DocumentPoolModuleWebServiceTest.class,
 	org.olat.restapi.TaxonomyWebServiceTest.class,
 	de.bps.onyx.plugin.OnyxModuleTest.class,
 	de.bps.olat.portal.institution.InstitutionPortletTest.class,

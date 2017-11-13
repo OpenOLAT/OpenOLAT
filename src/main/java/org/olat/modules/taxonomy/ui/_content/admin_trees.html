@@ -1,13 +1,13 @@
-#if($r.available("create.taxonomy"))
+#if($r.available("add.taxonomy.level"))
 <div class="o_button_group o_button_group_right">
-	$r.render("create.taxonomy")
+	$r.render("add.taxonomy.level")
 </div>
 #end
 <div class="row">
 	<div class="col-sm-6">
 		$r.render("trees")
-		#if($r.available("add.taxonomy.level"))
-			$r.render("add.taxonomy.level")
+		#if($r.available("insert.taxonomy.levels"))
+			$r.render("insert.taxonomy.levels")
 		#end
 	</div>
 	<div class="col-sm-6">

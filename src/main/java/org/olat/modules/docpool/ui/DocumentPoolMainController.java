@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.ui;
+package org.olat.modules.docpool.ui;
 
 import java.util.List;
 
@@ -43,12 +43,12 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.DefaultVFSSecurityCallback;
 import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.modules.docpool.DocumentPoolModule;
+import org.olat.modules.docpool.manager.TaxonomyDocumentsLibraryNotificationsHandler;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.manager.TaxonomyDocumentsLibraryNotificationsHandler;
 import org.olat.modules.taxonomy.manager.TaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyMainController extends MainLayoutBasicController implements Activateable2 {
+public class DocumentPoolMainController extends MainLayoutBasicController implements Activateable2 {
 
 	private final MenuTree taxonomyTree;
 	private final TooledStackedPanel content;
@@ -73,24 +73,24 @@ public class TaxonomyMainController extends MainLayoutBasicController implements
 	private final boolean isTaxonomyAdmin;
 	
 	@Autowired
-	private TaxonomyModule taxonomyModule;
-	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private DocumentPoolModule docPoolModule;
 	@Autowired
 	private TaxonomyDocumentsLibraryNotificationsHandler notificationsHandler;
 	
-	public TaxonomyMainController(UserRequest ureq, WindowControl wControl) {
+	public DocumentPoolMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		isTaxonomyAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		
-		String taxonomyKey = taxonomyModule.getTaxonomyTreeKey();
+		String taxonomyKey = docPoolModule.getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyKey)) {
 			TaxonomyRef taxonomyRef = new TaxonomyRefImpl(new Long(taxonomyKey));
 			taxonomy = taxonomyService.getTaxonomy(taxonomyRef);
 		}
-		
-		TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, getIdentity(), getLocale(), isTaxonomyAdmin);
+
+		TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, getIdentity(), getLocale(), isTaxonomyAdmin, translate("document.pool.templates"));
 		
 		taxonomyTree = new MenuTree(null, "taxonomy-menu", this);
 		taxonomyTree.setExpandSelectedNode(false);
@@ -110,7 +110,7 @@ public class TaxonomyMainController extends MainLayoutBasicController implements
 			listenTo(columnLayoutCtr); // auto dispose later
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 			
-			TaxonomyRootController rootCtrl = new TaxonomyRootController(ureq, getWindowControl(), taxonomy);
+			DocumentPoolTaxonomyController rootCtrl = new DocumentPoolTaxonomyController(ureq, getWindowControl(), taxonomy);
 			listenTo(rootCtrl);
 			String displayName = taxonomy == null ? "ROOT" : taxonomy.getDisplayName();
 			content.rootController(displayName, rootCtrl);
@@ -142,7 +142,7 @@ public class TaxonomyMainController extends MainLayoutBasicController implements
 				if(rootNode.getChildCount() > 0) {
 					TaxonomyTreeNode node = (TaxonomyTreeNode)rootNode.getChildAt(0);
 					if(node.getType() == TaxonomyTreeNodeType.directory) {
-						TaxonomyDirectoryController directoryCtrl = doSelectTaxonomyDirectory(ureq, node);
+						DocumentDirectoryController directoryCtrl = doSelectTaxonomyDirectory(ureq, node);
 						if(directoryCtrl != null) {
 							taxonomyTree.setSelectedNode(node);
 							directoryCtrl.activate(ureq, entries, null);
@@ -153,7 +153,7 @@ public class TaxonomyMainController extends MainLayoutBasicController implements
 				String levelKey = entries.get(0).getOLATResourceable().getResourceableId().toString();
 				TaxonomyTreeNode node = (TaxonomyTreeNode)taxonomyTree.getTreeModel().getNodeById(levelKey);
 				if(node != null) {
-					TaxonomyLevelController levelCtrl = doSelectTaxonomyLevel(ureq, node);
+					DocumentPoolLevelController levelCtrl = doSelectTaxonomyLevel(ureq, node);
 					if(levelCtrl != null) {
 						taxonomyTree.setSelectedNode(node);
 						List<ContextEntry> subEntries = entries.subList(1, entries.size());
@@ -177,8 +177,8 @@ public class TaxonomyMainController extends MainLayoutBasicController implements
 		} else if(content == source) {
 			if(event instanceof PopEvent) {
 				PopEvent popEvent = (PopEvent)event;
-				if(popEvent.getController() instanceof TaxonomyLevelController) {
-					TaxonomyLevelController taxonomyLevelCtrl = (TaxonomyLevelController)popEvent.getController();
+				if(popEvent.getController() instanceof DocumentPoolLevelController) {
+					DocumentPoolLevelController taxonomyLevelCtrl = (DocumentPoolLevelController)popEvent.getController();
 					TaxonomyLevel level = taxonomyLevelCtrl.getTaxonomyLevel();
 					TaxonomyTreeNode node = (TaxonomyTreeNode)TreeHelper
 						.findNodeByUserObject(level, taxonomyTree.getTreeModel().getRootNode());
@@ -217,28 +217,28 @@ public class TaxonomyMainController extends MainLayoutBasicController implements
 		content.popUpToRootController(ureq);
 	}
 	
-	private TaxonomyDirectoryController doSelectTaxonomyDirectory(UserRequest ureq, TaxonomyTreeNode node) {
+	private DocumentDirectoryController doSelectTaxonomyDirectory(UserRequest ureq, TaxonomyTreeNode node) {
 		content.popUpToRootController(ureq);
 		
 		VFSContainer directory = node.getDirectory();
 		VFSSecurityCallback secCallback = isTaxonomyAdmin ? new FullAccessCallback() : new DefaultVFSSecurityCallback();
 		directory.setLocalSecurityCallback(secCallback);
 		
-		String name = translate("taxonomy.templates");
-		TaxonomyDirectoryController directoryCtrl = new TaxonomyDirectoryController(ureq, getWindowControl(), node.getTaxonomy(), directory, name);
+		String name = translate("document.pool.templates");
+		DocumentDirectoryController directoryCtrl = new DocumentDirectoryController(ureq, getWindowControl(), node.getTaxonomy(), directory, name);
 		listenTo(directoryCtrl);
 
 		content.pushController(name, directoryCtrl);
 		return directoryCtrl;
 	}
 	
-	private TaxonomyLevelController doSelectTaxonomyLevel(UserRequest ureq, TaxonomyTreeNode node) {
+	private DocumentPoolLevelController doSelectTaxonomyLevel(UserRequest ureq, TaxonomyTreeNode node) {
 		if(isTaxonomyAdmin || node.isCanRead() || node.isCanWrite()) {
 			TaxonomyLevel level = node.getTaxonomyLevel();
 
 			SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext(node.getTaxonomy());
 			TaxonomyVFSSecurityCallback secCallback = new TaxonomyVFSSecurityCallback(node, subscriptionCtx);
-			TaxonomyLevelController levelCtrl = new TaxonomyLevelController(ureq, getWindowControl(), level, node, secCallback);
+			DocumentPoolLevelController levelCtrl = new DocumentPoolLevelController(ureq, getWindowControl(), level, node, secCallback);
 			listenTo(levelCtrl);
 			String displayName = level.getDisplayName();
 			

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.ui;
+package org.olat.modules.docpool.ui;
 
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.commons.services.notifications.PublisherData;
@@ -31,9 +31,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.docpool.manager.TaxonomyDocumentsLibraryNotificationsHandler;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.manager.TaxonomyDocumentsLibraryNotificationsHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -42,7 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyRootController extends BasicController {
+public class DocumentPoolTaxonomyController extends BasicController {
 	
 	private VelocityContainer mainVC;
 	
@@ -53,10 +53,10 @@ public class TaxonomyRootController extends BasicController {
 	@Autowired
 	private TaxonomyDocumentsLibraryNotificationsHandler notificationsHandler;
 	
-	public TaxonomyRootController(UserRequest ureq, WindowControl wControl, Taxonomy taxonomy) {
+	public DocumentPoolTaxonomyController(UserRequest ureq, WindowControl wControl, Taxonomy taxonomy) {
 		super(ureq, wControl);
 		
-		mainVC = createVelocityContainer("taxonomy_root");
+		mainVC = createVelocityContainer("document_pool");
 		mainVC.contextPut("displayName", StringHelper.escapeHtml(taxonomy.getDisplayName()));
 		mainVC.contextPut("identifier", StringHelper.escapeHtml(taxonomy.getIdentifier()));
 		
@@ -68,7 +68,7 @@ public class TaxonomyRootController extends BasicController {
 		mainVC.put("subscription", csController.getInitialComponent());
 		
 		VFSContainer container = taxonomyService.getTaxonomyInfoPageContainer(taxonomy);
-		indexCtrl = new SinglePageController(ureq, this.getWindowControl(), container, "index.html", false);
+		indexCtrl = new SinglePageController(ureq, getWindowControl(), container, "index.html", false);
 		listenTo(indexCtrl);
 		mainVC.put("index", indexCtrl.getInitialComponent());
 		

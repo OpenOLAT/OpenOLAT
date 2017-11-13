@@ -31,7 +31,6 @@ public class Examples {
 	public static final TaxonomyLevelVO SAMPLE_TAXONOMYLEVELVO = new TaxonomyLevelVO();
 	public static final TaxonomyLevelTypeVO SAMPLE_TAXONOMYLEVELTYPEVO = new TaxonomyLevelTypeVO();
 	public static final TaxonomyCompetenceVO SAMPLE_TAXONOMYCOMPETENCEVO = new TaxonomyCompetenceVO();
-	public static final TaxonomyModuleConfigurationVO SAMPLE_TAXONOMYMODULECONFIGURATIONVO = new TaxonomyModuleConfigurationVO();
 	
 	static {
 		SAMPLE_TAXONOMYVO.setKey(1l);
@@ -58,9 +57,6 @@ public class Examples {
 		SAMPLE_TAXONOMYCOMPETENCEVO.setIdentityKey(400l);
 		SAMPLE_TAXONOMYCOMPETENCEVO.setTaxonomyLevelKey(2l);
 		SAMPLE_TAXONOMYCOMPETENCEVO.setTaxonomyCompetenceType("teach");
-		
-		SAMPLE_TAXONOMYMODULECONFIGURATIONVO.setEnabled(true);
-		SAMPLE_TAXONOMYMODULECONFIGURATIONVO.setTaxonomyTreeKey("1");
 	}
 
 }

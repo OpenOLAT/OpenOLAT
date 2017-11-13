@@ -45,9 +45,9 @@ public class EditTaxonomyController extends FormBasicController {
 
 	private static final String[] onKeys = new String[] { "on" };
 	
-	private TextElement identifierEl, displayNameEl;
 	private RichTextElement descriptionEl;
 	private MultipleSelectionElement libraryEl;
+	private TextElement identifierEl, displayNameEl;
 	
 	private Taxonomy taxonomy;
 	
@@ -67,6 +67,13 @@ public class EditTaxonomyController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(taxonomy != null) {
+			String key = taxonomy.getKey().toString();
+			uifactory.addStaticTextElement("taxonomy.key", key, formLayout);
+			String externalId = taxonomy.getExternalId();
+			uifactory.addStaticTextElement("taxonomy.external.id", externalId, formLayout);
+		}
+		
 		String identifier = taxonomy == null ? "" : taxonomy.getIdentifier();
 		identifierEl = uifactory.addTextElement("taxonomy.identifier", "taxonomy.identifier", 255, identifier, formLayout);
 		identifierEl.setEnabled(!TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.identifier));

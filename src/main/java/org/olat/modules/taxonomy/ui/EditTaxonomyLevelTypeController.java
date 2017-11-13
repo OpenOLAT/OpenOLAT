@@ -28,7 +28,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -56,16 +55,12 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 	
 	private TextElement identifierEl, displayNameEl, cssClassEl;
 	private RichTextElement descriptionEl;
-	private SingleSelection teachCanReadParentLevelsEl;
-	private MultipleSelectionElement visibleEl, manageCanEl, teachCanReadEl, teachCanWriteEl,
-		haveCanReadEl, targetCanReadEl, docsEnabledEl;
+	private MultipleSelectionElement visibleEl;
 	private MultipleSelectionElement allowedSubTypesEl;
 	
 	private TaxonomyLevelType levelType;
 	private Taxonomy taxonomy;
 	private List<TaxonomyLevelType> types;
-	
-	private final boolean documentsLibraryEnabled;
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
@@ -75,7 +70,6 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 		super(ureq, wControl);
 		this.levelType = levelType;
 		this.taxonomy = taxonomy;
-		documentsLibraryEnabled = taxonomy.isDocumentsLibraryEnabled();
 		initForm(ureq);
 	}
 
@@ -127,68 +121,6 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 			}
 		}
 		
-		if(documentsLibraryEnabled) {
-			docsEnabledEl = uifactory.addCheckboxesHorizontal("level.type.docs.enabled", "level.type.docs.enabled", formLayout, onKeys, new String[] { "" });
-			docsEnabledEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.librarySettings));
-			if(levelType != null && levelType.isDocumentsLibraryEnabled()) {
-				docsEnabledEl.select(onKeys[0], true);
-			}
-			
-			manageCanEl = uifactory.addCheckboxesHorizontal("manage.can.manage", "manage.can.manage", formLayout, onKeys, new String[] { "" });
-			manageCanEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.librarySettings));
-			if(levelType != null && levelType.isDocumentsLibraryManageCompetenceEnabled()) {
-				manageCanEl.select(onKeys[0], true);
-			}
-		
-			teachCanReadEl = uifactory.addCheckboxesHorizontal("teach.can.read", "teach.can.read", formLayout, onKeys, new String[] { "" });
-			teachCanReadEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.librarySettings));
-			if(levelType != null && levelType.isDocumentsLibraryTeachCompetenceReadEnabled()) {
-				teachCanReadEl.select(onKeys[0], true);
-			}
-			
-			String[] levelKeys = new String[10];
-			String[] levelValues = new String[10];
-			for(int i=10; i-->0; ) {
-				levelKeys[i] = levelValues[i] = Integer.toString(i);
-				
-			}
-			teachCanReadParentLevelsEl = uifactory.addDropdownSingleselect("teach.can.read.parent.levels", "teach.can.read.parent.levels", formLayout,
-					levelKeys, levelValues, null);
-			teachCanReadParentLevelsEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.librarySettings));
-			boolean levelFound = false;
-			if(levelType != null && levelType.getDocumentsLibraryTeachCompetenceReadParentLevels() >= 0) {
-				String selectedLevel = Integer.toString(levelType.getDocumentsLibraryTeachCompetenceReadParentLevels());
-				for(String levelKey:levelKeys) {
-					if(levelKey.equals(selectedLevel)) {
-						teachCanReadParentLevelsEl.select(levelKey, true);
-						levelFound = true;
-						break;
-					}
-				}
-			}
-			if(!levelFound) {
-				teachCanReadParentLevelsEl.select(levelKeys[0], true);
-			}
-			
-			teachCanWriteEl = uifactory.addCheckboxesHorizontal("teach.can.write", "teach.can.write", formLayout, onKeys, new String[] { "" });
-			teachCanWriteEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.librarySettings));
-			if(levelType != null && levelType.isDocumentsLibraryTeachCompetenceWriteEnabled()) {
-				teachCanWriteEl.select(onKeys[0], true);
-			}
-			
-			haveCanReadEl = uifactory.addCheckboxesHorizontal("have.can.read", "have.can.read", formLayout, onKeys, new String[] { "" });
-			haveCanReadEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.librarySettings));
-			if(levelType != null && levelType.isDocumentsLibraryHaveCompetenceReadEnabled()) {
-				haveCanReadEl.select(onKeys[0], true);
-			}
-			
-			targetCanReadEl = uifactory.addCheckboxesHorizontal("target.can.read", "target.can.read", formLayout, onKeys, new String[] { "" });
-			targetCanReadEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.librarySettings));
-			if(levelType != null && levelType.isDocumentsLibraryTargetCompetenceReadEnabled()) {
-				targetCanReadEl.select(onKeys[0], true);
-			}
-		}
-		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
@@ -226,21 +158,6 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 		
 		levelType.setCssClass(cssClassEl.getValue());
 		levelType.setVisible(visibleEl.isAtLeastSelected(1));
-		if(documentsLibraryEnabled) {
-			levelType.setDocumentsLibraryEnabled(docsEnabledEl.isAtLeastSelected(1));
-			levelType.setDocumentsLibraryManageCompetenceEnabled(manageCanEl.isAtLeastSelected(1));
-			levelType.setDocumentsLibraryTeachCompetenceReadEnabled(teachCanReadEl.isAtLeastSelected(1));
-			String selectedParentLevels = teachCanReadParentLevelsEl.getSelectedKey();
-			if(StringHelper.isLong(selectedParentLevels)) {
-				int parentLevels = Integer.parseInt(selectedParentLevels);
-				levelType.setDocumentsLibraryTeachCompetenceReadParentLevels(parentLevels);
-			} else {
-				levelType.setDocumentsLibraryTeachCompetenceReadParentLevels(-1);
-			}
-			levelType.setDocumentsLibraryTeachCompetenceWriteEnabled(teachCanWriteEl.isAtLeastSelected(1));
-			levelType.setDocumentsLibraryHaveCompetenceReadEnabled(haveCanReadEl.isAtLeastSelected(1));
-			levelType.setDocumentsLibraryTargetCompetenceReadEnabled(targetCanReadEl.isAtLeastSelected(1));
-		}
 		
 		Collection<String> selectedAllowedSubTypeKeys = allowedSubTypesEl.getSelectedKeys();
 		List<TaxonomyLevelType> allowedSubTypes = new ArrayList<>();

@@ -29,12 +29,9 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.olat.modules.taxonomy.TaxonomyModule;
-import org.olat.modules.taxonomy.restapi.TaxonomyModuleConfigurationVO;
+import org.olat.modules.docpool.restapi.DocumentPoolModuleConfigurationVO;
 import org.olat.test.OlatJerseyTestCase;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -42,29 +39,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyModuleWebServiceTest extends OlatJerseyTestCase {
-	
-	@Autowired
-	private TaxonomyModule taxonomyModule;
-	
-	@Before
-	public void taxonomySetup() {
-		String key = taxonomyModule.getTaxonomyTreeKey();
-		System.out.println(key);
-	}
+public class DocumentPoolModuleWebServiceTest extends OlatJerseyTestCase {
 	
 	@Test
-	public void taxonomyModuleConfiguration()
+	public void documentPoolModuleConfiguration()
 	throws IOException, URISyntaxException {
 		
 		RestConnection conn = new RestConnection();
 		Assert.assertTrue(conn.login("administrator", "openolat"));
 		
-		URI request = UriBuilder.fromUri(getContextURI()).path("taxonomy").path("module").path("configuration").build();
+		URI request = UriBuilder.fromUri(getContextURI()).path("docpool").path("module").path("configuration").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
-		TaxonomyModuleConfigurationVO configVO = conn.parse(response, TaxonomyModuleConfigurationVO.class);
+		DocumentPoolModuleConfigurationVO configVO = conn.parse(response, DocumentPoolModuleConfigurationVO.class);
 		Assert.assertNotNull(configVO);
 	}
 

@@ -21,6 +21,7 @@ package org.olat.modules.taxonomy.manager;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -33,7 +34,9 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyImpl;
+import org.olat.modules.taxonomy.model.TaxonomyInfos;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,8 +60,8 @@ public class TaxonomyDAO implements InitializingBean{
 	@Override
 	public void afterPropertiesSet() {
 		File bcrootDirectory = new File(FolderConfig.getCanonicalRoot());
-		rootDirectory = new File(bcrootDirectory, "taxonomy");
-		taxonomyDirectory = new File(rootDirectory, "taxonomy");
+		rootDirectory = new File(bcrootDirectory, TaxonomyService.DIRECTORY);
+		taxonomyDirectory = new File(rootDirectory, TaxonomyService.DIRECTORY);
 		if(!taxonomyDirectory.exists()) {
 			taxonomyDirectory.mkdirs();
 		}
@@ -108,9 +111,31 @@ public class TaxonomyDAO implements InitializingBean{
 				.getResultList();
 	}
 	
+	public List<TaxonomyInfos> getTaxonomyInfosList() {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select tax, ")
+		  .append(" (select count(level.key) from ctaxonomylevel level")
+		  .append("  where level.taxonomy.key=tax.key")
+		  .append(" ) as numOfLevels")
+		  .append(" from ctaxonomy tax");
+
+		List<Object[]> objectsList = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.getResultList();
+		
+		List<TaxonomyInfos> infos = new ArrayList<>(objectsList.size());
+		for(Object[] objects:objectsList) {
+			Taxonomy taxonomy = (Taxonomy)objects[0];
+			Number numOfLevels = (Number)objects[1];
+			infos.add(new TaxonomyInfos(taxonomy, numOfLevels == null ? 0 : numOfLevels.intValue()));
+		}
+		return infos;
+	}
+	
 	public String createStorage(Taxonomy taxonomy, String type) {
 		File storage = new File(taxonomyDirectory, taxonomy.getKey().toString());
 		File directory = new File(storage, type);
+		directory.mkdirs();
 		Path relativePath = rootDirectory.toPath().relativize(directory.toPath());
 		String relativePathString = relativePath.toString();
 		return relativePathString;
@@ -118,11 +143,19 @@ public class TaxonomyDAO implements InitializingBean{
 	
 	public VFSContainer getDocumentsLibrary(Taxonomy taxonomy) {
 		String path = ((TaxonomyImpl)taxonomy).getDirectoryPath();
+		if(!path.startsWith("/")) {
+			path = "/" + path;
+		}
+		path = "/" + TaxonomyService.DIRECTORY + path;
 		return new OlatRootFolderImpl(path, null);
 	}
 	
 	public VFSContainer getTaxonomyInfoPageContainer(Taxonomy taxonomy) {
 		String path = ((TaxonomyImpl)taxonomy).getDirectoryInfoPagePath();
+		if(!path.startsWith("/")) {
+			path = "/" + path;
+		}
+		path = "/" + TaxonomyService.DIRECTORY + path;
 		return new OlatRootFolderImpl(path, null);
 	}
 }

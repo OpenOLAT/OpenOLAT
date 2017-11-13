@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.ui;
+package org.olat.modules.docpool.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -27,39 +27,52 @@ import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.docpool.DocumentPoolModule;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 18 sept. 2017<br>
+ * Initial date: 10 nov. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyAdminController extends BasicController {
-
-	private final Link configurationLink, taxonomyTreesLink;
+public class DocumentPoolAdminController extends BasicController {
+	
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
+	private final Link configurationLink, permissionsLink;
 	
-	private TaxonomyTreesAdminController treesCtrl;
-	private TaxonomyConfigurationAdminController configurationCtrl;
+	private DocumentPoolAdminPermissionsController permissionsCtrl;
+	private DocumentPoolAdminConfigurationController configurationCtrl;
 	
-	public TaxonomyAdminController(UserRequest ureq, WindowControl wControl) {
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private DocumentPoolModule docPoolModule;
+	
+	public DocumentPoolAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		mainVC = createVelocityContainer("taxonomy_admin");
+		mainVC = createVelocityContainer("document_pool_admin");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		configurationLink = LinkFactory.createLink("admin.configuration", mainVC, this);
+		segmentView.setDontShowSingleSegment(true);
+		configurationLink = LinkFactory.createLink("document.pool.configuration", mainVC, this);
 		segmentView.addSegment(configurationLink, true);
-	
-		taxonomyTreesLink = LinkFactory.createLink("admin.taxonomy.trees", mainVC, this);
-		segmentView.addSegment(taxonomyTreesLink, false);
 		doOpenConfiguration(ureq);
+		permissionsLink = LinkFactory.createLink("document.pool.permissions", mainVC, this);
+		
+		if(docPoolModule.isEnabled()) {
+			segmentView.addSegment(permissionsLink, false);
+		}
 		
 		putInitialPanel(mainVC);
 	}
@@ -78,36 +91,42 @@ public class TaxonomyAdminController extends BasicController {
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == configurationLink) {
 					doOpenConfiguration(ureq);
-				} else if (clickedLink == taxonomyTreesLink){
-					doOpenTaxonomyTrees(ureq);
+				} else if (clickedLink == permissionsLink){
+					doOpenPermissions(ureq);
 				}
 			}
 		}
 	}
-	
-	private void doOpenConfiguration(UserRequest ureq) {
-		if(configurationCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("configuration", 0l);
-			WindowControl bwControl = addToHistory(ureq, ores, null);
-			configurationCtrl = new TaxonomyConfigurationAdminController(ureq, bwControl);
-			listenTo(configurationCtrl);
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source == configurationCtrl) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				segmentView.removeSegment(permissionsLink);
+				if(docPoolModule.isEnabled()) {
+					segmentView.addSegment(permissionsLink, false);
+				}
+			}
 		}
-		
-		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("configuration", 0l);
-		addToHistory(ureq, ores, null);
+		super.event(ureq, source, event);
 	}
 
-	private void doOpenTaxonomyTrees(UserRequest ureq) {
-		if(treesCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance("trees", 0l);
-			WindowControl bwControl = addToHistory(ureq, ores, null);
-			treesCtrl = new TaxonomyTreesAdminController(ureq, bwControl);
-			listenTo(treesCtrl);
+	private void doOpenConfiguration(UserRequest ureq) {
+		if(configurationCtrl == null) {
+			configurationCtrl = new DocumentPoolAdminConfigurationController(ureq, getWindowControl());
+			listenTo(configurationCtrl);
 		}
+		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());
+	}
+	
+	private void doOpenPermissions(UserRequest ureq) {
+		removeAsListenerAndDispose(permissionsCtrl);
 		
-		mainVC.put("segmentCmp", treesCtrl.getInitialComponent());
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance("trees", 0l);
-		addToHistory(ureq, ores, null);
+		if(StringHelper.containsNonWhitespace(docPoolModule.getTaxonomyTreeKey())) {
+			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(new Long(docPoolModule.getTaxonomyTreeKey())));
+			permissionsCtrl = new DocumentPoolAdminPermissionsController(ureq, getWindowControl(), taxonomy);
+			listenTo(permissionsCtrl);
+			mainVC.put("segmentCmp", permissionsCtrl.getInitialComponent());
+		}
 	}
 }

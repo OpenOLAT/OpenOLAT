@@ -29,10 +29,8 @@ import java.util.stream.Collectors;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeModel;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -42,7 +40,6 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
-import org.olat.modules.taxonomy.ui.TaxonomyMainController;
 
 /**
  * Build the tree of taxonomy
@@ -58,15 +55,17 @@ public class TaxonomyTreeBuilder {
 	private Locale locale;
 	private Taxonomy taxonomy;
 	private final Identity identity;
+	private final String templateDirectory;
 	private final boolean isTaxonomyAdmin;
 	
 	private final TaxonomyService taxonomyService;
 	
-	public TaxonomyTreeBuilder(Taxonomy taxonomy, Identity identity, Locale locale, boolean isTaxonomyAdmin) {
+	public TaxonomyTreeBuilder(Taxonomy taxonomy, Identity identity, Locale locale, boolean isTaxonomyAdmin, String templateDirectory) {
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
 		this.locale = locale;
 		this.taxonomy = taxonomy;
 		this.identity = identity;
+		this.templateDirectory = templateDirectory;
 		this.isTaxonomyAdmin = isTaxonomyAdmin;
 	}
 	
@@ -87,9 +86,7 @@ public class TaxonomyTreeBuilder {
 			if(locale == null) {
 				locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
 			}
-			Translator translator = Util.createPackageTranslator(TaxonomyMainController.class, locale);
-			taxonomyDirectorNode.setTitle(translator.translate("taxonomy.templates"));
-
+			taxonomyDirectorNode.setTitle(templateDirectory);
 			taxonomyDirectorNode.setUserObject(taxonomyDirectory);
 			root.addChild(taxonomyDirectorNode);
 		

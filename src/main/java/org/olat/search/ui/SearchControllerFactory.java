@@ -121,7 +121,7 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 					BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(Long.parseLong(tokenKey));
 					return bg == null ? "" : bg.getName();
 				}
-				if ("Taxonomy".equals(tokenType)) {
+				if ("Taxonomy".equals(tokenType) || "DocumentPool".equals(tokenType)) {
 					Taxonomy taxonomy = CoreSpringFactory.getImpl(TaxonomyService.class)
 							.getTaxonomy(new TaxonomyRefImpl(Long.parseLong(tokenKey)));
 					return taxonomy == null ? "" : taxonomy.getDisplayName();

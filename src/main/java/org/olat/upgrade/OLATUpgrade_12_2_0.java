@@ -196,7 +196,7 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 	}
 	
 	private Taxonomy getQPoolTaxonomy() {
-		List<Taxonomy> taxonomyList = taxonomyService.getRootTaxonomyList();
+		List<Taxonomy> taxonomyList = taxonomyService.getTaxonomyList();
 		for(Taxonomy taxonomy:taxonomyList) {
 			if(QuestionPoolModule.DEFAULT_TAXONOMY_QPOOL_IDENTIFIER.equals(taxonomy.getIdentifier())) {
 				return taxonomy;
