@@ -66,6 +66,13 @@ public class AdministrationPage {
 		return this;
 	}
 	
+	public AdministrationPage selectAssessment() {
+		By systemLinkby = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'eAssessmentParent')]");
+		browser.findElement(systemLinkby).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public AdministrationPage clearCache(String cacheName) {
 		selectSystemInfo();
 		
@@ -93,7 +100,7 @@ public class AdministrationPage {
 	}
 	
 	public LectureAdminSettingsPage openLecturesSettings() {
-		selectModules();
+		selectAssessment();
 		
 		By lecturesBy = By.cssSelector(".o_sel_lectures span.o_tree_level_label_leaf>a");
 		browser.findElement(lecturesBy).click();

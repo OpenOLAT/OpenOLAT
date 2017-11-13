@@ -28,6 +28,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
 /**
  * 
@@ -118,6 +119,20 @@ public class FolderPage {
 	
 	public FolderPage selectRootDirectory() {
 		By rootBy = By.xpath("//div[@class='o_briefcase_folder']//ol[@class='breadcrumb']/li[1]/a");
+		OOGraphene.waitElement(rootBy, browser);
+		
+		// tooltip of the image sometimes appears and block the click
+		By tooltipBy = By.cssSelector("div.tooltip-inner");
+		WebElement rootEl = browser.findElement(rootBy);
+		List<WebElement> tooltipEls = browser.findElements(tooltipBy);
+		if(tooltipEls.size() > 0) {
+			new Actions(browser)
+				.moveToElement(rootEl)
+				.build()
+				.perform();
+			OOGraphene.waitElementDisappears(tooltipBy, 5, browser);
+		}
+		
 		browser.findElement(rootBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

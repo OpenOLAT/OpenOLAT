@@ -19,6 +19,8 @@
  */
 package org.olat.selenium.page.lecture;
 
+import java.util.Calendar;
+
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -52,6 +54,22 @@ public class EditLectureBlockPage {
 		WebElement labelEl = browser.findElement(labelBy);
 		OOGraphene.check(labelEl, checkboxEl, Boolean.TRUE);
 		return this;
+	}
+	
+	/**
+	 * Set the date of the lecture block to today, an hour before now.
+	 * @return Itself
+	 */
+	public EditLectureBlockPage setDateOneHourBefore() {
+		Calendar cal = Calendar.getInstance();
+		int today = cal.get(Calendar.DATE);
+		int hour = cal.get(Calendar.HOUR_OF_DAY) - 1;
+		int endMinute = 59;
+		if(hour < 0) {
+			hour = 0;
+			endMinute = 1;
+		}
+		return setDate(today, hour, 0, hour, endMinute);
 	}
 	
 	public EditLectureBlockPage setDate(int day, int startHour, int startMinute, int endHour, int endMinute) {
