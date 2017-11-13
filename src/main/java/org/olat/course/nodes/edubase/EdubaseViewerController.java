@@ -90,7 +90,7 @@ public class EdubaseViewerController extends BasicController {
 
 		LTIContext context = new EdubaseContext(ureq.getUserSession().getIdentityEnvironment(), bookSection.getPageTo());
 		Map<String, String> unsignedProps = ltiManager.forgeLTIProperties(getIdentity(), getLocale(), context, true,
-				true);
+				true, false);
 
 		Mapper contentMapper = new PostDataMapper(unsignedProps, launchUrl, baseUrl, oauthConsumerKey, oauthSecret, false);
 		String mapperUri = registerMapper(ureq, contentMapper);

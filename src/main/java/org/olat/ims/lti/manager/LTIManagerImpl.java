@@ -163,13 +163,18 @@ public class LTIManagerImpl implements LTIManager {
 
 	@Override
 	public Map<String,String> forgeLTIProperties(Identity identity, Locale locale, LTIContext context,
-			boolean sendName, boolean sendEmail) {
+			boolean sendName, boolean sendEmail, boolean ensureEmail) {
 		final Locale loc = locale;
 		final Identity ident = identity;
 		final User u = ident.getUser();
 		final String lastName = u.getProperty(UserConstants.LASTNAME, loc);
 		final String firstName = u.getProperty(UserConstants.FIRSTNAME, loc);
-		final String email = userManager.getEnsuredEmail(u);
+		String email;
+		if (ensureEmail) {
+			email = userManager.getEnsuredEmail(u);
+		} else {
+			email = u.getProperty(UserConstants.EMAIL, loc);
+		}
 
 		Map<String,String> props = new HashMap<>();
 		setProperty(props, "resource_link_id", context.getResourceId());

@@ -38,7 +38,7 @@ public interface LTIManager {
 	public static final int EXPIRATION_TIME = 3600 * 24 * 30 * 6;//6 months
 
 	public Map<String,String> forgeLTIProperties(Identity identity, Locale locale,
-			LTIContext context, boolean sendName, boolean sendEmail);
+			LTIContext context, boolean sendName, boolean sendEmail, boolean ensureEmail);
 
 	public Map<String,String> sign(Map<String,String> props, String url, String oauthKey, String oauthSecret);
 

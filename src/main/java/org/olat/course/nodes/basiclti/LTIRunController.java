@@ -460,7 +460,7 @@ public class LTIRunController extends BasicController {
 		container.contextPut("width", width);
 		LTIContext context = new LTICourseNodeContext(courseEnv, courseNode, ltiRoles,
 				sourcedId, backMapperUri, outcomeMapperUri, custom, target, width, height);
-		Map<String,String> unsignedProps = ltiManager.forgeLTIProperties(getIdentity(), getLocale(), context, sendname, sendmail);
+		Map<String,String> unsignedProps = ltiManager.forgeLTIProperties(getIdentity(), getLocale(), context, sendname, sendmail, true);
 		Mapper contentMapper = new PostDataMapper(unsignedProps, url, oauth_consumer_key, oauth_secret, "true".equals(debug));
 
 		String mapperUri = registerMapper(ureq, contentMapper);
