@@ -74,6 +74,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
@@ -889,6 +890,42 @@ public class UserMgmtTest extends OlatJerseyTestCase {
 
 		conn.shutdown();
 	}
+	
+	@Test
+	public void testUpdateUser_emptyInstitutionalEmail() throws IOException, URISyntaxException {
+		String login = "update-" + UUID.randomUUID();
+		User user = userManager.createUser(login, login, login + "@openolat.com");
+		user.setProperty(UserConstants.INSTITUTIONALEMAIL, "inst" + login + "@openolat.com");
+		Identity id = securityManager.createAndPersistIdentityAndUser(login, null, user, "OLAT", login,"secret");
+		dbInstance.commitAndCloseSession();
+		Assert.assertEquals("inst" + login + "@openolat.com", id.getUser().getInstitutionalEmail());
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		// set the institutional email empty 
+		UserVO updateVo = new UserVO();
+		updateVo.setKey(id.getKey());
+		updateVo.setLogin(id.getName());
+		updateVo.setFirstName(id.getUser().getFirstName());
+		updateVo.setLastName(id.getUser().getLastName());
+		updateVo.setEmail(id.getUser().getEmail());
+		updateVo.putProperty(UserConstants.INSTITUTIONALEMAIL, "");
+		
+		URI updateRequest = UriBuilder.fromUri(getContextURI()).path("users").path(id.getKey().toString()).build();
+		HttpPost updateMethod = conn.createPost(updateRequest, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(updateMethod, updateVo);
+		updateMethod.addHeader("Accept-Language", "en");
+		
+		HttpResponse updateResponse = conn.execute(updateMethod);
+		int  statusCode = updateResponse.getStatusLine().getStatusCode();
+		Assert.assertEquals(200, statusCode);
+		EntityUtils.consume(updateResponse.getEntity());
+		
+		Identity identity = securityManager.loadIdentityByKey(id.getKey());
+		String institutionalEmail = identity.getUser().getInstitutionalEmail();
+		Assert.assertTrue(institutionalEmail == null || institutionalEmail.isEmpty());
+	}	
 	
 	@Test
 	public void testDeleteUser() throws IOException, URISyntaxException {
