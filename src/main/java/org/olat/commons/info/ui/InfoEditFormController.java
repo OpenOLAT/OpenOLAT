@@ -94,6 +94,7 @@ public class InfoEditFormController extends FormBasicController {
 		messageEl.getEditorConfiguration().setRelativeUrls(false);
 		messageEl.getEditorConfiguration().setRemoveScriptHost(false);
 		messageEl.getEditorConfiguration().enableCharCount();
+		messageEl.getEditorConfiguration().setPathInStatusBar(true);
 		messageEl.setMandatory(true);
 		messageEl.setMaxLength(2000);
 		
