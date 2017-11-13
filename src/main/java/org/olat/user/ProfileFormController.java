@@ -218,7 +218,7 @@ public class ProfileFormController extends FormBasicController {
 					HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(tempKey.getEmailAddress());
 					formItem.setExampleKey("email.change.form.info", new String[] {mails.get("changedEMail")});
 				}
-				if (!userModule.isEmailMandatory() && isAllowedToChangeEmailWithoutVerification(ureq)) {
+				if (!userModule.isEmailMandatory()) {
 					formItem.setMandatory(false);
 				}
 			}
@@ -478,18 +478,19 @@ public class ProfileFormController extends FormBasicController {
 
 				identityToModify = updateIdentityFromFormData(identityToModify);
 				changedEmail = identityToModify.getUser().getProperty("email", null);
+				emailChanged = false;
 				if ((currentEmail == null && StringHelper.containsNonWhitespace(changedEmail))
 						|| (currentEmail != null && !currentEmail.equals(changedEmail))) {
-					if ( !isAllowedToChangeEmailWithoutVerification(ureq)) {
-						emailChanged = true;
-						// change email address to old address until it is verified
-						identityToModify.getUser().setProperty("email", currentEmail);
-					} else {
+					if (isAllowedToChangeEmailWithoutVerification(ureq) || !StringHelper.containsNonWhitespace(changedEmail)) {
 						String key = identityToModify.getUser().getProperty("emchangeKey", null);
 						TemporaryKey tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
 						if (tempKey != null) {
 							rm.deleteTemporaryKey(tempKey);
 						}		
+					} else {
+						emailChanged = true;
+						// change email address to old address until it is verified
+						identityToModify.getUser().setProperty("email", currentEmail);
 					}
 				}
 				if (!um.updateUserFromIdentity(identityToModify)) {
