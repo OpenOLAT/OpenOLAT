@@ -333,7 +333,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		}
 		
 		calendarWrapper.setPrivateEventsVisible(chosenIdentity.equals(ureq.getIdentity()));
-		if (ureq.getUserSession().getRoles().isOLATAdmin() || chosenIdentity.equals(ureq.getIdentity())) {
+		if (chosenIdentity.equals(ureq.getIdentity())) {
 			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 		} else {
 			calendarWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
