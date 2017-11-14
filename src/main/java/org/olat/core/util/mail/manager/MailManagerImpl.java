@@ -1601,7 +1601,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	public MimeMessage createMimeMessage(Address from, Address[] tos, Address[] ccs, Address[] bccs, String subject, String body,
 			List<File> attachments, MailerResult result) {
 		
-		if (from == null || tos.length == 0) return null;
+		if (from == null || ((tos == null || tos.length == 0) && ((ccs == null || ccs.length == 0)) && (bccs == null || bccs.length == 0))) return null;
 		try {
 			MimeMessage msg = createMessage(subject, from);
 			if(tos != null && tos.length > 0) {
