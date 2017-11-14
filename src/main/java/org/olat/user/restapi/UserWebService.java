@@ -780,8 +780,10 @@ public class UserWebService {
 					retrievedIdentity = baseSecurity.setExternalId(retrievedIdentity, user.getExternalId());
 					retrievedUser = retrievedIdentity.getUser();
 				}
+				String oldEmail = retrievedUser.getEmail();
 				post(retrievedUser, user, getLocale(request));
 				UserManager.getInstance().updateUser(retrievedUser);
+				BaseSecurityManager.getInstance().deleteInvalidAuthenticationsByEmail(oldEmail);
 				return Response.ok(get(retrievedIdentity, true, true)).build();
 			}
 			
@@ -794,7 +796,7 @@ public class UserWebService {
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
 		}
 	}
-	
+
 	private List<ErrorVO> validateUser(User user, UserVO userVo, HttpServletRequest request) {
 		UserManager um = UserManager.getInstance();
 		

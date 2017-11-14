@@ -403,6 +403,18 @@ public interface BaseSecurity {
 	public void deleteAuthentication(Authentication authentication);
 	
 	/**
+	 * Deletes invalid authentications with the specified email address in the field
+	 * username. An authentication is invalid if no unique user with that email
+	 * exists. Use this method to clean old authentications after the change of the
+	 * email address of a user to avoid duplicate authentications. Because a user
+	 * can have an email address as his username, the authentication of the OLAT
+	 * authentication provider is never deleted.
+	 * 
+	 * @param email
+	 */
+	public void deleteInvalidAuthenticationsByEmail(String email);
+	
+	/**
 	 * 
 	 * @param authentication
 	 */

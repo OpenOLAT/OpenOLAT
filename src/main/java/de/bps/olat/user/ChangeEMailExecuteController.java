@@ -107,6 +107,7 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 		
 		Identity identity = BaseSecurityManager.getInstance().loadIdentityByKey(tempKey.getIdentityKey());
 		if (identity != null) {
+			String oldEmail = identity.getUser().getEmail();
 			identity.getUser().setProperty("email", mails.get("changedEMail"));
 			// if old mail address closed then set the new mail address
 			// unclosed
@@ -122,6 +123,7 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 			// remove keys
 			identity.getUser().setProperty("emchangeKey", null);
 			userRequest.getUserSession().removeEntryFromNonClearedStore(ChangeEMailController.CHANGE_EMAIL_ENTRY);
+			BaseSecurityManager.getInstance().deleteInvalidAuthenticationsByEmail(oldEmail);
 		} else {
 			// error message
 			wControl.setWarning(pT.translate("error.change.email.unexpected", new String[] { mails.get("currentEMail"), mails.get("changedEMail") }));

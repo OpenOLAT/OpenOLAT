@@ -107,6 +107,8 @@ public class ProfileFormController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private BaseSecurityManager securityManager;
+	@Autowired
 	private RegistrationManager rm;
 	@Autowired
 	private MailManager mailManager;
@@ -486,7 +488,8 @@ public class ProfileFormController extends FormBasicController {
 						TemporaryKey tempKey = rm.loadTemporaryKeyByRegistrationKey(key);
 						if (tempKey != null) {
 							rm.deleteTemporaryKey(tempKey);
-						}		
+						}
+						securityManager.deleteInvalidAuthenticationsByEmail(currentEmail);
 					} else {
 						emailChanged = true;
 						// change email address to old address until it is verified

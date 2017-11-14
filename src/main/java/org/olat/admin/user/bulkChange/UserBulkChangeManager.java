@@ -133,6 +133,7 @@ public class UserBulkChangeManager implements InitializingBean {
 			//reload identity from cache, to prevent stale object
 			identity = securityManager.loadIdentityByKey(identity.getKey());
 			User user = identity.getUser();
+			String oldEmail = user.getEmail();
 			String errorDesc = "";
 			boolean updateError = false;
 			// change pwd
@@ -245,6 +246,7 @@ public class UserBulkChangeManager implements InitializingBean {
 				notUpdatedIdentities.add(errorOutput); 
 			} else {
 				userManager.updateUserFromIdentity(identity);
+				securityManager.deleteInvalidAuthenticationsByEmail(oldEmail);
 				changedIdentities.add(identity);
 				log.audit("User::" + addingIdentity.getName() + " successfully changed account data for user::" + identity.getName() + " in bulk change", null);
 			}

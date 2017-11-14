@@ -27,6 +27,7 @@
 package org.olat.basesecurity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -53,6 +54,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.persistence.PersistenceHelper;
+import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
@@ -65,6 +67,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
@@ -1511,6 +1514,32 @@ public class BaseSecurityManager implements BaseSecurity {
 		} catch (EntityNotFoundException e) {
 			log.error("", e);
 		}
+	}
+	
+	@Override
+	public void deleteInvalidAuthenticationsByEmail(String email) {
+		if (!StringHelper.containsNonWhitespace(email)) return;
+		
+		// If a user with this email exists the email is valid.
+		Identity identity = UserManager.getInstance().findUniqueIdentityByEmail(email);
+		if (identity != null) return;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete from ").append(AuthenticationImpl.class.getName()).append(" as auth");
+		sb.append(" where auth.authusername=:authusername");
+		sb.append("   and auth.provider in (:providers)");
+		
+		List<String> providers = Arrays.asList(
+				WebDAVAuthManager.PROVIDER_HA1_EMAIL,
+				WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL,
+				WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL,
+				WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL);
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("authusername", email)
+				.setParameter("providers", providers)
+				.executeUpdate();
 	}
 
 	/**
