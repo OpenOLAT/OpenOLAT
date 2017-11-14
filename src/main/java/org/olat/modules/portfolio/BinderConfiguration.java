@@ -19,6 +19,9 @@
  */
 package org.olat.modules.portfolio;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -32,6 +35,8 @@ import org.olat.repository.RepositoryEntry;
  *
  */
 public class BinderConfiguration {
+	
+	private static final OLog log = Tracing.createLoggerFor(BinderConfiguration.class);
 	
 	private final boolean withScore;
 	private final boolean withPassed;
@@ -132,22 +137,28 @@ public class BinderConfiguration {
 		String displayname;
 		RepositoryEntry entry = binder.getEntry();
 		if(binder.getSubIdent() != null) {
-			ICourse course = CourseFactory.loadCourse(entry);
-			displayname = course.getCourseTitle();
-			CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
-			if(courseNode instanceof PortfolioCourseNode) {
-				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
-				withScore = pfNode.hasScoreConfigured();
-				if(withScore) {
-					maxScore = pfNode.getMaxScoreConfiguration();
-					minScore = pfNode.getMinScoreConfiguration();
+			try {
+				ICourse course = CourseFactory.loadCourse(entry);
+				displayname = course.getCourseTitle();
+				CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
+				if(courseNode instanceof PortfolioCourseNode) {
+					PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
+					withScore = pfNode.hasScoreConfigured();
+					if(withScore) {
+						maxScore = pfNode.getMaxScoreConfiguration();
+						minScore = pfNode.getMinScoreConfiguration();
+					}
+					withPassed = pfNode.hasPassedConfigured();
+					assessable = withPassed || withScore;
+				} else {
+					withPassed = true;
+					withScore = false;
+					assessable = true;
 				}
-				withPassed = pfNode.hasPassedConfigured();
-				assessable = withPassed || withScore;
-			} else {
-				withPassed = true;
-				withScore = false;
-				assessable = true;
+			} catch (CorruptedCourseException e) {
+				displayname = entry.getDisplayname();
+				withPassed = withScore = assessable = false;
+				log.error("Corrupted course: " + entry, e);
 			}
 		} else if(entry != null) {
 			displayname = entry.getDisplayname();
