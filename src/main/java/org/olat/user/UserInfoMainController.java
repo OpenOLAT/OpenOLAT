@@ -355,8 +355,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		String chosenUserFolderRelPath = FolderConfig.getUserHome(chosenIdentity.getName()) + "/public";
 
 		OlatRootFolderImpl rootFolder = new OlatRootFolderImpl(chosenUserFolderRelPath, null);
-		String rootFolderName = StringHelper.escapeHtml(firstLastName);
-		OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(rootFolderName, rootFolder);
+		OlatNamedContainerImpl namedFolder = new OlatNamedContainerImpl(firstLastName, rootFolder);
 		
 		//decided in plenum to have read only view in the personal visiting card, even for admin
 		VFSSecurityCallback secCallback = new ReadOnlyCallback();
