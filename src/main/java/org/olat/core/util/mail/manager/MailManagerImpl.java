@@ -859,6 +859,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	
 	private boolean wantRealMailToo(Identity id) {
 		if(id == null) return false;
+		boolean hasNoEmail = !StringHelper.containsNonWhitespace(id.getUser().getEmail());
+		if (hasNoEmail) return false;
 		String want = id.getUser().getPreferences().getReceiveRealMail();
 		if(want != null) {
 			return "true".equals(want);

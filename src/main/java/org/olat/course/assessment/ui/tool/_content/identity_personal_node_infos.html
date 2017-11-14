@@ -10,11 +10,14 @@
 			#if ($user.getProperty("institutionalUserIdentifier", $locale) && $user.getProperty("institutionalUserIdentifier", $locale).length() > 0)
 				#set ($matnr = $r.escapeHtml($user.getProperty("institutionalUserIdentifier", $locale)))
 			#end
+
 			<span><i class="o_icon o_icon_mail"> </i> 
-			<a href="mailto:$user.getProperty("email", $locale)">$user.getProperty("email", $locale)</a> 
-			#if ($user.getProperty("institutionalEmail", $locale) && $user.getProperty("institutionalEmail", $locale) != "" && $user.getProperty("email", $locale) != $user.getProperty("institutionalEmail", $locale))
-			 / <a href="mailto:$user.getProperty("institutionalEmail", $locale)">$user.getProperty("institutionalEmail", $locale)</a>
-			#end</span>
+			#if (($user.getProperty("email", $locale) && $user.getProperty("email", $locale).length() > 0) || ($user.getProperty("institutionalEmail", $locale) && $user.getProperty("institutionalEmail", $locale).length() > 0))
+				<a href="mailto:$user.getProperty("email", $locale)">$user.getProperty("email", $locale)</a> 
+				#if ($user.getProperty("institutionalEmail", $locale) && $user.getProperty("institutionalEmail", $locale) != "" && $user.getProperty("email", $locale) != $user.getProperty("institutionalEmail", $locale))
+				 / <a href="mailto:$user.getProperty("institutionalEmail", $locale)">$user.getProperty("institutionalEmail", $locale)</a>
+				#end</span>
+			#end
 		</li>
 		#if ($inst)
 			<li class="list-group-item"><span><i class="o_icon o_icon_institution"> </i> $inst</span></li>

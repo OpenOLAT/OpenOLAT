@@ -458,7 +458,7 @@ public class MembersAvatarDisplayRunController extends FormBasicController {
 	}
 
 	private void doSendEmailToMember(ContactList contactList, UserRequest ureq) {
-		if (contactList.getEmailsAsStrings().size() > 0) {
+		if (contactList.hasAddresses()) {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(emailController);
 			
