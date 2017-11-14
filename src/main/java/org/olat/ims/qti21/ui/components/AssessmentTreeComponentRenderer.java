@@ -28,6 +28,8 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.model.audit.CandidateEvent;
@@ -55,6 +57,8 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  *
  */
 public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRenderer {
+	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentTreeComponentRenderer.class);
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
@@ -78,8 +82,8 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	            } else {
 	            	options = RenderingRequest.getItem(testSessionController);
 	            }
-	        	AssessmentRenderer renderHints = new AssessmentRenderer(renderer);
-    			renderTestEvent(testSessionController, renderHints, sb, component, ubu, translator, options);
+	        		AssessmentRenderer renderHints = new AssessmentRenderer(renderer);
+	        		renderTestEvent(testSessionController, renderHints, sb, component, ubu, translator, options);
 
 			}
 		}
@@ -97,7 +101,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
         	if (testEventType == CandidateTestEventType.REVIEW_ITEM) {
         		renderer.setReviewMode(true);
         	} else if (testEventType == CandidateTestEventType.SOLUTION_ITEM) {
-                renderer.setSolutionMode(true);
+        		renderer.setSolutionMode(true);
         	}
             renderNavigation(renderer, target, component, ubu, translator, options);
         }
@@ -157,10 +161,15 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		}
 		
 		sb.append("<li class='o_assessmentitem").append(" active", active).append("'>");
-		renderAssessmentItemMark(sb, component, itemNode, translator);
-		renderAssessmentItemAttempts(sb, component, itemNode, translator);
-		renderItemStatus(sb, component, itemNode, translator, options);
-		renderAssessmentItemLink(sb, component, itemNode, translator);
+		try {
+			renderAssessmentItemMark(sb, component, itemNode, translator);
+			renderAssessmentItemAttempts(sb, component, itemNode, translator);
+			renderItemStatus(sb, component, itemNode, translator, options);
+			renderAssessmentItemLink(sb, component, itemNode, translator);
+		} catch(IllegalStateException ex) {
+			log.error("", ex);
+			sb.append("<span class='o_danger'>ERROR</span>");
+		}
 		sb.append("</li>");
 	}
 	

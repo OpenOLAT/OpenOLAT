@@ -21,7 +21,6 @@ package org.olat.modules.coach.manager;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,7 +41,6 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
-import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
@@ -105,69 +103,6 @@ public class CoachingDAO {
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(statement.getCourseRepoKey(), false);
 		Identity identity = statement.getIdentity();
 		return new EfficiencyStatementEntry(identity, re, statement, userPropertyHandlers, locale);
-	}
-
-	public List<EfficiencyStatementEntry> getEfficencyStatementEntries(List<Identity> students, List<RepositoryEntry> courses,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		
-		if(students.isEmpty() || courses.isEmpty()) {
-			return Collections.emptyList();
-		}
-		
-		List<Long> studentsKey = new ArrayList<Long>();
-		for(Identity student:students) {
-			studentsKey.add(student.getKey());
-		}
-		
-		List<UserEfficiencyStatement> statements = getEfficiencyStatementByStudentKeys(studentsKey, courses);
-		List<EfficiencyStatementEntry> entries = new ArrayList<>(students.size() * courses.size());
-		for(RepositoryEntry course:courses) {
-			for(Identity student:students) {
-				UserEfficiencyStatement statement = getUserEfficiencyStatementFor(student.getKey(), course, statements);
-				entries.add(new EfficiencyStatementEntry(student, course, statement, userPropertyHandlers, locale));
-			}
-		}
-		return entries;
-	}
-	
-	public List<UserEfficiencyStatement> getEfficencyStatementEntries(Identity student) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
-		  .append(" where statement.identity.key=:studentKey");
-
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), UserEfficiencyStatement.class)
-				.setParameter("studentKey", student.getKey())
-				.getResultList();
-	}
-	
-	private UserEfficiencyStatement getUserEfficiencyStatementFor(Long studentKey, RepositoryEntry course, List<UserEfficiencyStatement> statements) {
-		for(UserEfficiencyStatement statement:statements) {
-			if(studentKey.equals(statement.getIdentity().getKey()) && course.getKey().equals(statement.getCourseRepoKey())) {
-				return statement;
-			}
-		}
-		return null;
-	}
-	
-	private List<UserEfficiencyStatement> getEfficiencyStatementByStudentKeys(List<Long> studentKeys, List<RepositoryEntry> courses) {
-		if(studentKeys == null || studentKeys.isEmpty() || courses == null || courses.isEmpty()) {
-			return Collections.emptyList();
-		}
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
-		  .append(" where statement.identity.key in (:studentsKey) and statement.resource.key in (:courseResourcesKey)");
-		
-		List<Long> coursesKey = new ArrayList<Long>();
-		for(RepositoryEntry course:courses) {
-			coursesKey.add(course.getOlatResource().getKey());
-		}
-
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), UserEfficiencyStatement.class)
-				.setParameter("courseResourcesKey",coursesKey)
-				.setParameter("studentsKey", studentKeys).getResultList();
 	}
 	
 	protected List<GroupStatEntry> getGroupsStatisticsNative(Identity coach) {

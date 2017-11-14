@@ -442,6 +442,71 @@ public class EfficiencyStatementManager implements UserDataDeletable {
 		}
 	}
 	
+	public List<UserEfficiencyStatement> getUserEfficiencyStatementLight(IdentityRef student, List<RepositoryEntry> courses) {
+		if(student == null || courses == null || courses.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
+		  .append(" where statement.identity.key=:studentKey and statement.resource.key in (:courseResourcesKey)");
+		
+		List<Long> coursesKey = new ArrayList<Long>();
+		for(RepositoryEntry course:courses) {
+			coursesKey.add(course.getOlatResource().getKey());
+		}
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserEfficiencyStatement.class)
+				.setParameter("courseResourcesKey",coursesKey)
+				.setParameter("studentKey", student.getKey())
+				.getResultList();
+	}
+	
+	public List<UserEfficiencyStatement> getUserEfficiencyStatementLight(IdentityRef student) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
+		  .append(" where statement.identity.key=:studentKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserEfficiencyStatement.class)
+				.setParameter("studentKey", student.getKey())
+				.getResultList();
+	}
+	
+	public List<UserEfficiencyStatement> getUserEfficiencyStatementLight(RepositoryEntry course) {
+		if(course == null) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
+		  .append(" where statement.resource.key=:resourcesKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserEfficiencyStatement.class)
+				.setParameter("resourcesKey",course.getOlatResource().getKey())
+				.getResultList();
+	}
+	
+	public List<UserEfficiencyStatement> getUserEfficiencyStatementLight(List<RepositoryEntry> courses) {
+		if(courses == null || courses.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		List<Long> resourcesKey = new ArrayList<Long>();
+		for(RepositoryEntry course:courses) {
+			resourcesKey.add(course.getOlatResource().getKey());
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select statement from ").append(UserEfficiencyStatementLight.class.getName()).append(" as statement ")
+		  .append(" where statement.resource.key in (:courseResourcesKey)");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserEfficiencyStatement.class)
+				.setParameter("courseResourcesKey", resourcesKey)
+				.getResultList();
+	}
+	
 	public UserEfficiencyStatement getUserEfficiencyStatementLightByResource(Long resourceKey, IdentityRef identity) {
 		try {
 			StringBuilder sb = new StringBuilder();
