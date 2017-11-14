@@ -32,6 +32,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
+import org.olat.core.util.StringHelper;
 import org.olat.login.LoginModule;
 import org.olat.login.auth.AuthenticationSPI;
 import org.olat.login.auth.OLATAuthManager;
@@ -180,12 +181,12 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	
 	private void updateWebdavPassword(Identity doer, Identity identity, String password, List<Authentication> authentications) {
 		updateWebDAVPassword(doer, identity, identity.getName(), password, PROVIDER_WEBDAV, authentications);
-		if(identity.getUser().getEmail() != null) {
+		if(StringHelper.containsNonWhitespace(identity.getUser().getEmail())) {
 			updateWebDAVPassword(doer, identity, identity.getUser().getEmail(), password, PROVIDER_WEBDAV_EMAIL, authentications);
 		} else {
 			removePassword(PROVIDER_WEBDAV_EMAIL, authentications);
 		}
-		if(identity.getUser().getInstitutionalEmail() != null) {
+		if(StringHelper.containsNonWhitespace(identity.getUser().getInstitutionalEmail())) {
 			updateWebDAVPassword(doer, identity, identity.getUser().getInstitutionalEmail(), password, PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, authentications);
 		} else {
 			removePassword(PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, authentications);
@@ -232,12 +233,12 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		updateDigestPassword(doer, identity, identity.getName(), newPwd, PROVIDER_HA1, authentications);
 		
 		if (userModule.isEmailUnique()) {
-			if(identity.getUser().getEmail() != null) {
+			if(StringHelper.containsNonWhitespace(identity.getUser().getEmail())) {
 				updateDigestPassword(doer, identity, identity.getUser().getEmail(), newPwd, PROVIDER_HA1_EMAIL, authentications);
 			} else {
 				removePassword(PROVIDER_HA1_EMAIL, authentications);
 			}
-			if(identity.getUser().getInstitutionalEmail() != null) {
+			if(StringHelper.containsNonWhitespace(identity.getUser().getInstitutionalEmail())) {
 				updateDigestPassword(doer, identity, identity.getUser().getInstitutionalEmail(), newPwd, PROVIDER_HA1_INSTITUTIONAL_EMAIL, authentications);
 			} else {
 				removePassword(PROVIDER_HA1_INSTITUTIONAL_EMAIL, authentications);
