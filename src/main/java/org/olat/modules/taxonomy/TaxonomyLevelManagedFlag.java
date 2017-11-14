@@ -42,10 +42,12 @@ public enum TaxonomyLevelManagedFlag {
 	 sortOrder(all),
 	 type(all),
 	 competences(all),
-	   manageComptence(competences, all),
-	   teachComptence(competences, all),
-	   haveComptence(competences, all),
-	   targetComptence(competences, all);
+	   manageCompetence(competences, all),
+	   teachCompetence(competences, all),
+	   haveCompetence(competences, all),
+	   targetCompetence(competences, all),
+	 move(all),
+	 delete(all);
 	
 	private TaxonomyLevelManagedFlag[] parents;
 	private static final OLog log = Tracing.createLoggerFor(TaxonomyLevelManagedFlag.class);

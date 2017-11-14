@@ -63,6 +63,13 @@ public interface TaxonomyService {
 	
 	/**
 	 * 
+	 * @param taxonomyLevel The taxonomy level to check
+	 * @return true if the level has no dependency anymore
+	 */
+	public boolean canDeleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel);
+	
+	/**
+	 * 
 	 * @return true if the level can be deleted
 	 */
 	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel);

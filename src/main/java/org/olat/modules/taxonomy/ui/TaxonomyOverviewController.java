@@ -26,6 +26,8 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -38,14 +40,16 @@ import org.olat.modules.taxonomy.Taxonomy;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyOverviewController extends BasicController {
+public class TaxonomyOverviewController extends BasicController implements BreadcrumbPanelAware {
 	
+	private BreadcrumbPanel stackPanel;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-	private final Link metadataLink, typesLink, levelsLink;
+	private final Link metadataLink, typesLink, levelsLink, oldTreeLink;
 	
+	private TaxonomyTreeController oldTreeCtrl;
 	private EditTaxonomyController metadataCtrl;
-	private TaxonomyTreeController taxonomyCtrl;
+	private TaxonomyTreeTableController taxonomyCtrl;
 	private TaxonomyLevelTypesEditController typeListCtrl;
 	
 	private Taxonomy taxonomy;
@@ -65,8 +69,18 @@ public class TaxonomyOverviewController extends BasicController {
 		segmentView.addSegment(typesLink, false);
 		levelsLink = LinkFactory.createLink("taxonomy.levels", mainVC, this);
 		segmentView.addSegment(levelsLink, false);
+		oldTreeLink = LinkFactory.createLink("taxonomy.levels.tree", mainVC, this);
+		segmentView.addSegment(oldTreeLink, false);
 		
 		putInitialPanel(mainVC);
+	}
+
+	@Override
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
+		this.stackPanel = stackPanel;
+		if(taxonomyCtrl != null) {
+			taxonomyCtrl.setBreadcrumbPanel(stackPanel);
+		}	
 	}
 
 	@Override
@@ -87,6 +101,8 @@ public class TaxonomyOverviewController extends BasicController {
 					doOpenTypes(ureq);
 				} else if (clickedLink == levelsLink){
 					doOpenTaxonomyLevels(ureq);
+				} else if (clickedLink == oldTreeLink){
+					doOpenTaxonomyLevelsOldTree(ureq);
 				}
 			}
 		}
@@ -110,9 +126,18 @@ public class TaxonomyOverviewController extends BasicController {
 	
 	private void doOpenTaxonomyLevels(UserRequest ureq) {
 		if(taxonomyCtrl == null) {
-			taxonomyCtrl = new TaxonomyTreeController(ureq, getWindowControl(), taxonomy);
+			taxonomyCtrl = new TaxonomyTreeTableController(ureq, getWindowControl(), taxonomy);
+			taxonomyCtrl.setBreadcrumbPanel(stackPanel);
 			listenTo(taxonomyCtrl);
 		}
 		mainVC.put("segmentCmp", taxonomyCtrl.getInitialComponent());
+	}
+	
+	private void doOpenTaxonomyLevelsOldTree(UserRequest ureq) {
+		if(oldTreeCtrl == null) {
+			oldTreeCtrl = new TaxonomyTreeController(ureq, getWindowControl(), taxonomy);
+			listenTo(oldTreeCtrl);
+		}
+		mainVC.put("segmentCmp", oldTreeCtrl.getInitialComponent());
 	}
 }

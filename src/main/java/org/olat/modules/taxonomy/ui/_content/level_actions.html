@@ -1,0 +1,12 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("move.taxonomy.level"))
+	<li>$r.render("move.taxonomy.level")</li>
+	#end
+	#if($r.available("add.taxonomy.level.under"))
+	<li>$r.render("add.taxonomy.level.under")</li>
+	#end
+	#if($r.available("delete"))
+	<li class="divider"></li>
+	<li>$r.render("delete")</li>
+	#end
+</ul>

@@ -92,6 +92,9 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
 		this.stackPanel = stackPanel;
+		if(taxonomyCtrl != null) {
+			taxonomyCtrl.setBreadcrumbPanel(stackPanel);
+		}
 	}
 
 	@Override
@@ -206,6 +209,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		Taxonomy taxonomy = taxonomyService.getTaxonomy(row);
 		taxonomyCtrl = new TaxonomyOverviewController(ureq, bwControl, taxonomy);
+		taxonomyCtrl.setBreadcrumbPanel(stackPanel);
 		listenTo(taxonomyCtrl);
 		
 		stackPanel.changeDisplayname(translate("admin.menu.title"));

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -36,15 +38,31 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class TaxonomyLevelCompetenceRow extends UserPropertiesRow {
 	
 	private final TaxonomyCompetenceTypes type;
+	private final TaxonomyCompetence competence;
 
 	public TaxonomyLevelCompetenceRow(TaxonomyCompetence competence, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(competence.getIdentity(), userPropertyHandlers, locale);
+		this.competence = competence;
 		type = competence.getCompetenceType();
 	}
 
 	public TaxonomyCompetenceTypes getCompetenceType() {
 		return type;
 	}
-
 	
+	public BigDecimal getAchievement() {
+		return competence.getAchievement();
+	}
+	
+	public BigDecimal getReliability() {
+		return competence.getReliability();
+	}
+	
+	public Date getExpiration() {
+		return competence.getExpiration();
+	}
+	
+	public TaxonomyCompetence getCompetence() {
+		return competence;
+	}
 }

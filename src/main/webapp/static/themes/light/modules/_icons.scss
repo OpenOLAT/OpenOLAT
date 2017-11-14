@@ -505,6 +505,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_taxonomy_level:before { content: $fa-var-cubes; }
 .o_icon_taxonomy_level_leaf:before { content: $fa-var-folder-open-o; }
 .o_icon_taxonomy_templates:before { content: $fa-var-files-o; }
+.o_icon_taxonomy_levels:before { content: $fa-var-sitemap;}
 
 /* coaching */
 .o_black_led:before { content: $fa-var-circle; color: $brand-primary; }

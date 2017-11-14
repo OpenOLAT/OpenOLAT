@@ -132,6 +132,11 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
+	public boolean canDeleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel) {
+		return taxonomyLevelDao.canDelete(taxonomyLevel);
+	}
+
+	@Override
 	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel) {
 		return taxonomyLevelDao.delete(taxonomyLevel);
 	}

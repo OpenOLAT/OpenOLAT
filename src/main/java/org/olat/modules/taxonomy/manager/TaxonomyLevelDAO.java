@@ -317,8 +317,15 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		return levelImpl;
 	}
 	
-	public boolean delete(TaxonomyLevelRef taxonomyLevel) {
+	public boolean canDelete(TaxonomyLevelRef taxonomyLevel) {
 		if(!hasChildren(taxonomyLevel) && !hasItemUsing(taxonomyLevel) &&!hasCompetenceUsing(taxonomyLevel)) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean delete(TaxonomyLevelRef taxonomyLevel) {
+		if(canDelete(taxonomyLevel)) {
 			TaxonomyLevel impl = loadByKey(taxonomyLevel.getKey());
 			if(impl != null) {
 				dbInstance.getCurrentEntityManager().remove(impl);
