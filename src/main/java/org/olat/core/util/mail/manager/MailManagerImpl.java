@@ -1307,7 +1307,9 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	}
 	
 	private Address createFromAddress(String address, MailerResult result) throws AddressException {
-		if (!StringHelper.containsNonWhitespace(address)) return null;
+		if (!StringHelper.containsNonWhitespace(address)) {
+			address = WebappHelper.getMailConfig("mailFrom");
+		}
 		
 		try {
 			Address add = new InternetAddress(address);
@@ -1407,7 +1409,9 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	private Address createFromAddress(Identity recipient, MailerResult result) {
 		if(recipient != null) {
 			String emailAddress = recipient.getUser().getProperty(UserConstants.EMAIL, null);
-			if (emailAddress == null) return null;
+			if (emailAddress == null) {
+				emailAddress = WebappHelper.getMailConfig("mailFrom");
+			}
 			String name = recipient.getUser().getProperty(UserConstants.FIRSTNAME, null) + " " + recipient.getUser().getProperty(UserConstants.LASTNAME, null); 
 			Address address;
 			try {
