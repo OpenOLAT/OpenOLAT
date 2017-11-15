@@ -54,7 +54,10 @@ public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataMod
 	
 	@Override
 	public U getObject(int row) {
-		return rows.get(row);
+		if(row >= 0 && row < rows.size()) {
+			return rows.get(row);
+		}
+		return null;
 	}
 	
 	public List<U> getObjects() {
@@ -68,7 +71,7 @@ public abstract class DefaultFlexiTableDataModel<U> implements FlexiTableDataMod
 	
 	@Override
 	public boolean isSelectable(int row) {
-		return true;//TODO 11 remove
+		return true;
 	}
 
 	@Override

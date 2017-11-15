@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
@@ -364,6 +365,19 @@ public interface FlexiTableElement extends FormItem {
 	public void collapseDetails(int row);
 	
 	public void collapseAllDetails();
+	
+	/**
+	 * @return The root bread crumb or null
+	 */
+	public FlexiTreeTableNode getRootCrumb();
+
+	/**
+	 * Set a root bread crumb which is not part of
+	 * the tree table model.
+	 * 
+	 * @param rootCrumb A bread crumb
+	 */
+	public void setRootCrumb(FlexiTreeTableNode rootCrumb);
 	
 	/**
 	 * Return the page size

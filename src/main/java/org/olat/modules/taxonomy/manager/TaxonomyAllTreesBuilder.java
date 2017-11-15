@@ -32,6 +32,7 @@ import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyLevelRow;
 
 /**
  * 
@@ -139,5 +140,47 @@ public class TaxonomyAllTreesBuilder {
 				parentNode.addChild(node);
 			}
 		}
+	}
+	
+	public List<TaxonomyLevelRow> toTree(List<TaxonomyLevelRow>  taxonomyLevels) {
+		GenericTreeNode rootNode = new GenericTreeNode();
+		
+		
+		Map<Long,GenericTreeNode> fieldKeyToNode = new HashMap<Long, GenericTreeNode>();
+		for(TaxonomyLevelRow taxonomyLevel:taxonomyLevels) {
+			Long key = taxonomyLevel.getKey();
+			GenericTreeNode node = fieldKeyToNode.get(key);
+			if(node == null) {
+				node = new GenericTreeNode(LEVEL_PREFIX + taxonomyLevel.getKey());
+				node.setUserObject(taxonomyLevel);
+				fieldKeyToNode.put(key, node);
+			}
+
+			TaxonomyLevelRow parentLevel = taxonomyLevel.getParent();
+			if(parentLevel == null) {
+				//this is a root
+
+				rootNode.addChild(node);
+			} else {
+				Long parentKey = parentLevel.getKey();
+				GenericTreeNode parentNode = fieldKeyToNode.get(parentKey);
+				if(parentNode == null) {
+					parentNode = new GenericTreeNode("level-" + parentLevel.getKey());
+					parentNode.setUserObject(parentLevel);
+					fieldKeyToNode.put(parentKey, parentNode);
+				}
+				parentNode.addChild(node);
+			}
+		}
+		
+		List<TreeNode> nodeList = new ArrayList<>();
+		TreeHelper.makeTreeFlat(rootNode, nodeList);
+		List<TaxonomyLevelRow> sortedRows = new ArrayList<>();
+		for(TreeNode node:nodeList) {
+			if(node.getUserObject() != null) {
+				sortedRows.add((TaxonomyLevelRow)node.getUserObject());
+			}
+		}
+		return sortedRows;
 	}
 }

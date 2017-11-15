@@ -84,6 +84,20 @@
 	}
 }
 
+.o_breadcrumb.o_table_flexi_breadcrumb ol.breadcrumb {
+	margin: 5px 0 0 0;
+}
+
+@for $i from 0 through 11 {
+	div.o_table_flexi div.o_table_flexi_l#{$i}  {
+		padding-left: ($i * $o-tree-padding-steps-px); 
+	}
+	
+	div.o_table_flexi div.o_table_flexi_leaf_l#{$i}  {
+		padding-left: ((1 + $i) * $o-tree-padding-steps-px); 
+	}
+}
+
 @media (max-width: $screen-xs-max) { 
 	.o_table_wrapper .o_table_rows_infos {
 		clear:both;

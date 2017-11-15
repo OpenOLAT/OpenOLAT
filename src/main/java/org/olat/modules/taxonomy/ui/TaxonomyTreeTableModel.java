@@ -19,17 +19,15 @@
  */
 package org.olat.modules.taxonomy.ui;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -37,10 +35,8 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyTreeTableModel extends DefaultFlexiTableDataModel<TaxonomyLevelRow>
+public class TaxonomyTreeTableModel extends DefaultFlexiTreeTableDataModel<TaxonomyLevelRow>
 implements FilterableFlexiTableModel  {
-	
-	private List<TaxonomyLevelRow> backup;
 	
 	public TaxonomyTreeTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -48,6 +44,7 @@ implements FilterableFlexiTableModel  {
 	
 	@Override
 	public void filter(List<FlexiTableFilter> filters) {
+		/*
 		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
 			Set<Long> typeKeys = new HashSet<>();
 			boolean noType = false;
@@ -59,16 +56,16 @@ implements FilterableFlexiTableModel  {
 				}
 			}
 			
-			List<TaxonomyLevelRow> filteredRows = new ArrayList<>(backup.size());
-			for(TaxonomyLevelRow row:backup) {
+			List<TaxonomyLevelRow> filteredRows = new ArrayList<>(backupRows.size());
+			for(TaxonomyLevelRow row:backupRows) {
 				if(accept(row, typeKeys, noType)) {
 					filteredRows.add(row);
 				}
 			}
 			super.setObjects(filteredRows);
 		} else {
-			super.setObjects(backup);
-		}
+			super.setObjects(backupRows);
+		}*/
 	}
 	
 	private boolean accept(TaxonomyLevelRow row, Set<Long> typeKeys, boolean noType) {
@@ -84,6 +81,15 @@ implements FilterableFlexiTableModel  {
 	}
 
 	@Override
+	public boolean hasChildren(int row) {
+		TaxonomyLevelRow level = getObject(row);
+		if(level.getNumberOfChildren() == 0) {
+			return false;
+		}
+		return super.hasChildren(row);//filter
+	}
+
+	@Override
 	public Object getValueAt(int row, int col) {
 		TaxonomyLevelRow level = getObject(row);
 		switch(TaxonomyLevelCols.values()[col]) {
@@ -95,12 +101,6 @@ implements FilterableFlexiTableModel  {
 			case tools: return level.getToolsLink();
 			default: return "ERROR";
 		}
-	}
-	
-	@Override
-	public void setObjects(List<TaxonomyLevelRow> objects) {
-		super.setObjects(objects);
-		backup = objects;
 	}
 
 	public enum TaxonomyLevelCols implements FlexiSortableColumnDef {

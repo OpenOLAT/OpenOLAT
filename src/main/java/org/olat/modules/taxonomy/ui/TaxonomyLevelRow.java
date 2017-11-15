@@ -20,6 +20,7 @@
 package org.olat.modules.taxonomy.ui;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
@@ -30,22 +31,44 @@ import org.olat.modules.taxonomy.TaxonomyLevelType;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyLevelRow implements TaxonomyLevelRef {
+public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 
-	private TaxonomyLevel taxonomyLevel;
-	private TaxonomyLevelType type;
-	private int numOfChildren;
+	private final TaxonomyLevelType type;
+	private final TaxonomyLevel taxonomyLevel;
+	private final Long parentLevelKey;
+	
+	private int numOfChildren = 0;
 	private FormLink toolsLink;
+	private TaxonomyLevelRow parent;
 	
 	public TaxonomyLevelRow(TaxonomyLevel taxonomyLevel, FormLink toolsLink) {
 		type = taxonomyLevel.getType();
 		this.taxonomyLevel = taxonomyLevel;
 		this.toolsLink = toolsLink;
+		parentLevelKey = taxonomyLevel.getParent() == null ? null : taxonomyLevel.getParent().getKey();
 	}
 	
 	@Override
 	public Long getKey() {
 		return taxonomyLevel.getKey();
+	}
+
+	@Override
+	public TaxonomyLevelRow getParent() {
+		return parent;
+	}
+	
+	@Override
+	public String getCrump() {
+		return taxonomyLevel.getDisplayName();
+	}
+
+	public Long getParentLevelKey() {
+		return parentLevelKey;
+	}
+	
+	public void setParent(TaxonomyLevelRow parent) {
+		this.parent = parent;
 	}
 	
 	public String getDisplayName() {
@@ -65,10 +88,39 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef {
 	}
 	
 	public int getNumberOfChildren() {
-		return numOfChildren < 0 ? 0 : numOfChildren;
+		return numOfChildren;
+	}
+	
+	public void incrementNumberOfChildren() {
+		numOfChildren++;
 	}
 
 	public FormLink getToolsLink() {
 		return toolsLink;
+	}
+	
+	@Override
+	public int hashCode() {
+		return taxonomyLevel.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof TaxonomyLevelRow) {
+			TaxonomyLevelRow row = (TaxonomyLevelRow)obj;
+			return taxonomyLevel != null && taxonomyLevel.equals(row.taxonomyLevel);
+		}
+		return false;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("row[name=").append(taxonomyLevel.getDisplayName() == null ? "" : taxonomyLevel.getDisplayName())
+		  .append("]").append(super.toString());
+		return sb.toString();
 	}
 }

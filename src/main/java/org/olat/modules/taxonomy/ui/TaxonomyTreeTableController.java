@@ -20,7 +20,10 @@
 package org.olat.modules.taxonomy.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
@@ -35,7 +38,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -106,7 +112,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.key));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.displayName, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.displayName, new TreeNodeFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.typeIdentifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.numOfChildren));
@@ -127,6 +133,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		tableEl.setExportEnabled(true);
 		tableEl.setPageSize(24);
 		tableEl.setFilters(null, getFilters(), true);
+		tableEl.setRootCrumb(new TaxonomyCrumb(taxonomy.getDisplayName()));
 	}
 	
 	private List<FlexiTableFilter> getFilters() {
@@ -137,6 +144,45 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		}
 		resources.add(new FlexiTableFilter(translate("filter.no.level.type"), "-"));
 		return resources;
+	}
+	
+	private void loadModel() {
+		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
+		List<TaxonomyLevelRow> rows = new ArrayList<>(taxonomyLevels.size());
+		Map<Long,TaxonomyLevelRow> levelToRows = new HashMap<>();
+		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
+			TaxonomyLevelRow row = forgeRow(taxonomyLevel);
+			rows.add(row);
+			levelToRows.put(taxonomyLevel.getKey(), row);
+		}
+		
+		for(TaxonomyLevelRow row:rows) {
+			Long parentLevelKey = row.getParentLevelKey();
+			TaxonomyLevelRow parentRow = levelToRows.get(parentLevelKey);
+			row.setParent(parentRow);
+		}
+		
+		for(TaxonomyLevelRow row:rows) {
+			for(FlexiTreeTableNode parent=row.getParent(); parent != null; parent=parent.getParent()) {
+				((TaxonomyLevelRow)parent).incrementNumberOfChildren();
+			}
+		}
+		
+		Collections.sort(rows, new FlexiTreeNodeComparator());
+		
+		//rows = new TaxonomyAllTreesBuilder().toTree(rows);
+		
+		model.setObjects(rows);
+		tableEl.reset(true, true, true);
+	}
+	
+	private TaxonomyLevelRow forgeRow(TaxonomyLevel taxonomyLevel) {
+		//tools
+		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		TaxonomyLevelRow row = new TaxonomyLevelRow(taxonomyLevel, toolsLink);
+		toolsLink.setUserObject(row);
+		return row;
 	}
 
 	@Override
@@ -211,27 +257,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		createTaxonomyLevelCtrl = null;
 		cmc = null;
 	}
-	
-	private void loadModel() {
-		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
-		List<TaxonomyLevelRow> rows = new ArrayList<>(taxonomyLevels.size());
-		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-			rows.add(forgeRow(taxonomyLevel));
-		}
-		
-		model.setObjects(rows);
-		tableEl.reset(true, true, true);
-	}
-	
-	private TaxonomyLevelRow forgeRow(TaxonomyLevel taxonomyLevel) {
-		//tools
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		TaxonomyLevelRow row = new TaxonomyLevelRow(taxonomyLevel, toolsLink);
-		toolsLink.setUserObject(row);
-		return row;
-	}
-	
+
 	private void doSelectTaxonomyLevel(UserRequest ureq, TaxonomyLevelRow row) {
 		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(row);
 		doSelectTaxonomyLevel(ureq, taxonomyLevel);
@@ -364,6 +390,25 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		private void close() {
 			toolsCalloutCtrl.deactivate();
 			cleanUp();
+		}
+	}
+	
+	private static class TaxonomyCrumb implements FlexiTreeTableNode {
+		
+		private final String taxonomyDisplayName;
+		
+		public TaxonomyCrumb(String taxonomyDisplayName) {
+			this.taxonomyDisplayName = taxonomyDisplayName;
+		}
+
+		@Override
+		public FlexiTreeTableNode getParent() {
+			return null;
+		}
+
+		@Override
+		public String getCrump() {
+			return taxonomyDisplayName;
 		}
 	}
 }

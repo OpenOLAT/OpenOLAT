@@ -54,6 +54,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		String id = ftC.getFormDispatchId();
 
 		renderHeaderButtons(renderer, sb, ftE, ubu, translator, renderResult, args);
+		renderBreadcrumbs(sb, ftE);
 		
 		if(ftE.getTableDataModel().getRowCount() == 0 && StringHelper.containsNonWhitespace(ftE.getEmtpyTableMessageKey())) {
 			String emptyMessageKey = ftE.getEmtpyTableMessageKey();
@@ -350,6 +351,32 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				}
 			}
 		}
+	}
+	
+	protected void renderBreadcrumbs(StringOutput sb, FlexiTableElementImpl ftE) {
+		FlexiTreeTableNode rootCrumb = ftE.getRootCrumb();
+		List<FlexiTreeTableNode> crumbs = ftE.getCrumbs();
+		if(rootCrumb != null || crumbs.size() > 0) {
+			sb.append("<div class='o_breadcrumb o_table_flexi_breadcrumb'><ol class='breadcrumb'>");
+			if(rootCrumb != null) {
+				renderBreadcrumbs(sb, ftE, rootCrumb, "tt-root-crumb");
+			}
+			int index = 0;
+			for(FlexiTreeTableNode crumb:crumbs) {
+				renderBreadcrumbs(sb, ftE, crumb, Integer.toString(index++));
+			}
+			sb.append("</ol></div>");
+		}
+	}
+	
+	protected void renderBreadcrumbs(StringOutput sb, FlexiTableElementImpl ftE, FlexiTreeTableNode crumb, String index) {
+		Form theForm = ftE.getRootForm();
+		String dispatchId = ftE.getFormItemComponent().getDispatchID();
+		sb.append("<li><a href=\"javascript:")
+		  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
+				  new NameValuePair("tt-crumb", index)))
+		  .append("\">").append(crumb.getCrump()).append("</a></li>");
+
 	}
 	
 	protected void renderFormItem(Renderer renderer, StringOutput sb, FormItem item, URLBuilder ubu, Translator translator,
