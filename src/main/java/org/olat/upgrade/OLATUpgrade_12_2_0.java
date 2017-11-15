@@ -19,9 +19,13 @@
  */
 package org.olat.upgrade;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.MailModule;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -44,6 +48,7 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 	private static final int BATCH_SIZE = 500;
 	
 	private static final String VERSION = "OLAT_12.2.0";
+	private static final String KEEP_INTERNAL_MAIL_DISABLED = "KEEP INTERNAL MAIL DISABLED";
 	private static final String MAIL_CONFIG_SPLITTING = "MAIL CONFIG SPLITTING";
 	private static final String MIGRATE_QPOOL_TAXONOMY = "MIGRATE QPOOL TAXONOMY";
 	
@@ -81,6 +86,10 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 		}
 		
 		boolean allOk = true;
+		// The internal mail is now enabled per default. This new behavior should
+		// only be disposed in new installations. Keep existing configurations
+		// and do not enable the internal inbox automatically when upgrading a system.
+		allOk &= keepInternalMailSettings(upgradeManager, uhd);
 		// The config of the visibility of email recipient name and address is
 		// split in inbox and outbox specific configs. Get the old values and
 		// transfer them to the new values.
@@ -94,6 +103,21 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 			log.audit("Finished OLATUpgrade_12_2_0 successfully!");
 		} else {
 			log.audit("OLATUpgrade_12_2_0 not finished, try to restart OpenOLAT!");
+		}
+		return allOk;
+	}
+
+	private boolean keepInternalMailSettings(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(KEEP_INTERNAL_MAIL_DISABLED)) {
+			String userDataDirectory = WebappHelper.getUserDataRoot();
+			Path configurationPropertiesFile = Paths.get(userDataDirectory, "system", "configuration", "org.olat.core.util.mail.MailModule.properties");
+			if (Files.notExists(configurationPropertiesFile)) {
+				mailModule.setInterSystem(false);
+			}
+			
+			uhd.setBooleanDataValue(KEEP_INTERNAL_MAIL_DISABLED, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
 	}
