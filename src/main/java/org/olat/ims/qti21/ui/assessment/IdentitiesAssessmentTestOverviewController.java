@@ -40,6 +40,7 @@ import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.assessment.IdentitiesAssessmentTestOverviewDataModel.IACols;
+import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -99,9 +100,9 @@ public class IdentitiesAssessmentTestOverviewController extends FormBasicControl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IACols.numOfItemSessions));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IACols.responded));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IACols.corrected));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IACols.score));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IACols.manualScore));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IACols.finalScore));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IACols.score, new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IACols.manualScore, new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IACols.finalScore, new ScoreCellRenderer()));
 		
 		tableModel = new IdentitiesAssessmentTestOverviewDataModel(columnsModel, testCorrections, userPropertyHandlers, getTranslator()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
