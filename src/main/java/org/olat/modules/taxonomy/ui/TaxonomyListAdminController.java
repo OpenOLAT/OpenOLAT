@@ -189,6 +189,11 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(taxonomyCtrl == source) {
+			if(event == Event.CANCELLED_EVENT) {
+				stackPanel.popController(taxonomyCtrl);
+				loadModel();
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}

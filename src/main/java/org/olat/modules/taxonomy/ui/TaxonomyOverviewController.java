@@ -29,6 +29,7 @@ import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -108,6 +109,16 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 		}
 	}
 	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(metadataCtrl == source) {
+			if(event == Event.CANCELLED_EVENT) {
+				fireEvent(ureq, event);//propagate cancel
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
 	private void doOpenMetadata(UserRequest ureq) {
 		if(metadataCtrl == null) {
 			metadataCtrl = new EditTaxonomyController(ureq, getWindowControl(), taxonomy);

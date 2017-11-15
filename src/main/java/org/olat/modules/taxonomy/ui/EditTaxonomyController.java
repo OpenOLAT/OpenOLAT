@@ -77,6 +77,7 @@ public class EditTaxonomyController extends FormBasicController {
 		String identifier = taxonomy == null ? "" : taxonomy.getIdentifier();
 		identifierEl = uifactory.addTextElement("taxonomy.identifier", "taxonomy.identifier", 255, identifier, formLayout);
 		identifierEl.setEnabled(!TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.identifier));
+		identifierEl.setMandatory(true);
 
 		String displayName = taxonomy == null ? "" : taxonomy.getDisplayName();
 		displayNameEl = uifactory.addTextElement("taxonomy.displayname", "taxonomy.displayname", 255, displayName, formLayout);
@@ -113,6 +114,12 @@ public class EditTaxonomyController extends FormBasicController {
 		displayNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
 			displayNameEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		identifierEl.clearError();
+		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
+			identifierEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		

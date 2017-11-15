@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -37,10 +38,13 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeRef;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.manager.TaxonomyAllTreesBuilder;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyLevelTypeRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,7 +58,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	
 	private TextElement identifierEl, displayNameEl, sortOrderEl;
 	private RichTextElement descriptionEl;
-	private SingleSelection taxonomyLevelTypeEl;
+	private SingleSelection taxonomyLevelTypeEl, pathEl;
 	
 	private TaxonomyLevel level;
 	private TaxonomyLevel parentLevel;
@@ -113,6 +117,23 @@ public class EditTaxonomyLevelController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(level == null || level.getKey() == null) {
+			String[] pathKeys;
+			String[] pathValues;
+			if(parentLevel == null) {
+				List<String> pathKeyList = new ArrayList<>();
+				List<String> pathValueList = new ArrayList<>();
+				buildPathKeysAndValues(pathKeyList, pathValueList);
+				pathKeys = pathKeyList.toArray(new String[pathKeyList.size()]);
+				pathValues = pathValueList.toArray(new String[pathValueList.size()]);
+			} else {
+				pathKeys = new String[] { parentLevel.getKey().toString() };
+				pathValues = new String[] { parentLevel.getMaterializedPathIdentifiers() };
+			}
+			pathEl = uifactory.addDropdownSingleselect("level.path", "taxonomy.level.path", formLayout, pathKeys, pathValues, null);
+			pathEl.setEnabled(parentLevel == null);
+		}
+
 		String identifier = level == null ? "" : level.getIdentifier();
 		identifierEl = uifactory.addTextElement("level.identifier", "level.identifier", 255, identifier, formLayout);
 		identifierEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.identifier));
@@ -125,10 +146,6 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(displayName)) {
 			displayNameEl.setFocus(true);
 		}
-		
-		String sortOrder = level == null || level.getSortOrder() == null ? "" : level.getSortOrder().toString();
-		sortOrderEl = uifactory.addTextElement("level.sort.order", "level.sort.order", 255, sortOrder, formLayout);
-		sortOrderEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.displayName));
 
 		List<TaxonomyLevelType> types = getTypes();
 		String[] typeKeys = new String[types.size() + 1];
@@ -156,6 +173,10 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			taxonomyLevelTypeEl.select(typeKeys[0], true);
 		}
 		
+		String sortOrder = level == null || level.getSortOrder() == null ? "" : level.getSortOrder().toString();
+		sortOrderEl = uifactory.addTextElement("level.sort.order", "level.sort.order", 255, sortOrder, formLayout);
+		sortOrderEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(level, TaxonomyLevelManagedFlag.displayName));
+		
 		String description = level == null ? "" : level.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("level.description", "level.description", description, 10, 60, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
@@ -165,6 +186,18 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
+	
+	private void buildPathKeysAndValues(List<String> pathKeyList, List<String> pathValueList) {
+		pathKeyList.add("-");
+		pathValueList.add("");
+
+		List<TreeNode> nodeList = new TaxonomyAllTreesBuilder().getFlattedModel(taxonomy, false);
+		for(TreeNode node:nodeList) {
+			TaxonomyLevel taxonomyLevel = (TaxonomyLevel)node.getUserObject();
+			pathKeyList.add(taxonomyLevel.getKey().toString());
+			pathValueList.add(taxonomyLevel.getMaterializedPathIdentifiers());
+		}
 	}
 
 	@Override
@@ -204,8 +237,17 @@ public class EditTaxonomyLevelController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(level == null) {
+			TaxonomyLevel selectedParentLevel = null;
+			if(parentLevel == null) {
+				if(pathEl != null && pathEl.isEnabled() && pathEl.isOneSelected() && !"".equals(pathEl.getSelectedKey())) {
+					TaxonomyLevelRef ref = new TaxonomyLevelRefImpl(new Long(pathEl.getSelectedKey()));
+					selectedParentLevel = taxonomyService.getTaxonomyLevel(ref);
+				}
+			} else {
+				selectedParentLevel = parentLevel;
+			}
 			level = taxonomyService.createTaxonomyLevel(identifierEl.getValue(), displayNameEl.getValue(), descriptionEl.getValue(),
-					null, null, parentLevel, taxonomy);
+					null, null, selectedParentLevel, taxonomy);
 		} else {
 			level = taxonomyService.getTaxonomyLevel(level);
 			level.setIdentifier(identifierEl.getValue());

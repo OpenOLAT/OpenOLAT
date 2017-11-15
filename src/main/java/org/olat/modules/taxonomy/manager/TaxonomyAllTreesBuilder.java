@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.manager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,8 @@ import java.util.Map;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
+import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -45,6 +48,22 @@ public class TaxonomyAllTreesBuilder {
 	
 	public TaxonomyAllTreesBuilder() {
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
+	}
+	
+	/**
+	 * 
+	 * @param taxonomy
+	 * @return
+	 */
+	public List<TreeNode> getFlattedModel(Taxonomy taxonomy, boolean withRootNode) {
+		GenericTreeModel taxonomyTreeModel = new GenericTreeModel();
+		new TaxonomyAllTreesBuilder().loadTreeModel(taxonomyTreeModel, taxonomy);
+		List<TreeNode> nodeList = new ArrayList<>();
+		TreeHelper.makeTreeFlat(taxonomyTreeModel.getRootNode(), nodeList);
+		if(withRootNode) {
+			return nodeList;
+		}
+		return nodeList.subList(1, nodeList.size());
 	}
 	
 	public GenericTreeModel buildTreeModel() {
