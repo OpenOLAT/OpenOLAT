@@ -21,6 +21,7 @@ package org.olat.modules.docpool.webdav;
 
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.docpool.DocumentPoolModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,12 +41,16 @@ public class DocumentPoolWebDAVProvider implements WebDAVProvider {
 
 	@Override
 	public String getMountPoint() {
-		return docPoolModule.getWebDAVMountPoint();
+		String mountPoint = docPoolModule.getWebDAVMountPoint();
+		if(!StringHelper.containsNonWhitespace(mountPoint)) {
+			mountPoint = "docpool";
+		}
+		return mountPoint;
 	}
 	
 	@Override
 	public boolean hasAccess(IdentityEnvironment identityEnv) {
-		return identityEnv != null;
+		return docPoolModule.isEnabled() && identityEnv != null;
 	}
 
 	@Override

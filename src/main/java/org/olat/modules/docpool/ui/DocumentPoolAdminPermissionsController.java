@@ -70,7 +70,6 @@ public class DocumentPoolAdminPermissionsController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
 		List<String> names = new ArrayList<>(levelTypes.size());
 		for(TaxonomyLevelType levelType:levelTypes) {
 			EditTaxonomyLevelDocumentTypeController levelTypeCtrl
