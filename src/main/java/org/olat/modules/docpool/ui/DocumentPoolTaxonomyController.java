@@ -68,9 +68,11 @@ public class DocumentPoolTaxonomyController extends BasicController {
 		mainVC.put("subscription", csController.getInitialComponent());
 		
 		VFSContainer container = taxonomyService.getTaxonomyInfoPageContainer(taxonomy);
-		indexCtrl = new SinglePageController(ureq, getWindowControl(), container, "index.html", false);
-		listenTo(indexCtrl);
-		mainVC.put("index", indexCtrl.getInitialComponent());
+		if(container.resolve("index.html") != null) {
+			indexCtrl = new SinglePageController(ureq, getWindowControl(), container, "index.html", false);
+			listenTo(indexCtrl);
+			mainVC.put("index", indexCtrl.getInitialComponent());
+		}
 		
 		putInitialPanel(mainVC);
 	}

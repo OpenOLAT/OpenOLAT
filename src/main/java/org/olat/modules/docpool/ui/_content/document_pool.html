@@ -1,3 +1,5 @@
 <h1><i class="o_icon $o_icon_taxonomy"> </i> $displayName#if($r.isNotEmpty($identifier)) <small>${identifier}</small>#end</h1>
 $r.render("subscription")
-$r.render("index")
+#if($r.available("index"))
+	$r.render("index")
+#end

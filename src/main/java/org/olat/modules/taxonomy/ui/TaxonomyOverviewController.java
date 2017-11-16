@@ -46,10 +46,10 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 	private BreadcrumbPanel stackPanel;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-	private final Link metadataLink, typesLink, levelsLink, oldTreeLink;
+	private final Link metadataLink, typesLink, levelsLink, infosPageLink;
 	
-	private TaxonomyTreeController oldTreeCtrl;
 	private EditTaxonomyController metadataCtrl;
+	private TaxonomyInfoPageController infoPageCtrl;
 	private TaxonomyTreeTableController taxonomyCtrl;
 	private TaxonomyLevelTypesEditController typeListCtrl;
 	
@@ -70,8 +70,8 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 		segmentView.addSegment(typesLink, false);
 		levelsLink = LinkFactory.createLink("taxonomy.levels", mainVC, this);
 		segmentView.addSegment(levelsLink, false);
-		oldTreeLink = LinkFactory.createLink("taxonomy.levels.tree", mainVC, this);
-		segmentView.addSegment(oldTreeLink, false);
+		infosPageLink = LinkFactory.createLink("taxonomy.infos.page", mainVC, this);
+		segmentView.addSegment(infosPageLink, false);
 		
 		putInitialPanel(mainVC);
 	}
@@ -98,12 +98,12 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == metadataLink) {
 					doOpenMetadata(ureq);
-				} else if (clickedLink == typesLink){
+				} else if (clickedLink == typesLink) {
 					doOpenTypes(ureq);
-				} else if (clickedLink == levelsLink){
+				} else if (clickedLink == levelsLink) {
 					doOpenTaxonomyLevels(ureq);
-				} else if (clickedLink == oldTreeLink){
-					doOpenTaxonomyLevelsOldTree(ureq);
+				} else if(clickedLink == infosPageLink) {
+					doOpenInfosPage(ureq);
 				}
 			}
 		}
@@ -144,11 +144,11 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 		mainVC.put("segmentCmp", taxonomyCtrl.getInitialComponent());
 	}
 	
-	private void doOpenTaxonomyLevelsOldTree(UserRequest ureq) {
-		if(oldTreeCtrl == null) {
-			oldTreeCtrl = new TaxonomyTreeController(ureq, getWindowControl(), taxonomy);
-			listenTo(oldTreeCtrl);
+	private void doOpenInfosPage(UserRequest ureq) {
+		if(infoPageCtrl == null) {
+			infoPageCtrl = new TaxonomyInfoPageController(ureq, getWindowControl(), taxonomy);
+			listenTo(infoPageCtrl);
 		}
-		mainVC.put("segmentCmp", oldTreeCtrl.getInitialComponent());
+		mainVC.put("segmentCmp", infoPageCtrl.getInitialComponent());
 	}
 }
