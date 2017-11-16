@@ -41,9 +41,6 @@ public class TaxonomyLevelTypeToTypeDAO {
 	@Autowired
 	private DB dbInstance;
 	
-
-
-	
 	public int disallowedSubType(TaxonomyLevelType parentType, TaxonomyLevelType disallowedSubType) {
 		String q = "delete from ctaxonomyleveltypetotype type2type where type2type.taxonomyLevelType.key=:typeKey and type2type.allowedSubTaxonomyLevelType.key=:subTypeKey";
 		return dbInstance.getCurrentEntityManager()
@@ -104,13 +101,13 @@ public class TaxonomyLevelTypeToTypeDAO {
 	public int deleteAllowedSubTypes(TaxonomyLevelTypeRef parentType) {
 		String q = "delete from ctaxonomyleveltypetotype where taxonomyLevelType.key=:typeKey";
 		int rows = dbInstance.getCurrentEntityManager()
-				.createQuery(q, TaxonomyLevelTypeToType.class)
+				.createQuery(q)
 				.setParameter("typeKey", parentType.getKey())
 				.executeUpdate();
 		
 		String qReverse = "delete from ctaxonomyleveltypetotype where allowedSubTaxonomyLevelType.key=:typeKey";
 		rows += dbInstance.getCurrentEntityManager()
-				.createQuery(qReverse, TaxonomyLevelTypeToType.class)
+				.createQuery(qReverse)
 				.setParameter("typeKey", parentType.getKey())
 				.executeUpdate();
 		

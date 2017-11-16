@@ -55,7 +55,8 @@ public class DocumentDirectoryController extends BasicController implements Acti
 		mainVC.contextPut("iconCssClass", "o_icon_taxonomy_templates");
 		mainVC.contextPut("displayName", name);
 
-		VFSContainer namedContainer = new NamedContainerImpl("Templates", documents);
+		String rootName = translate("document.pool.templates");
+		VFSContainer namedContainer = new NamedContainerImpl(rootName, documents);
 		folderCtrl = new FolderRunController(namedContainer, true, true, true, ureq, getWindowControl());
 		folderCtrl.setResourceURL("[DocumentPool:" + taxonomy.getKey() + "]");
 		mainVC.put("folder", folderCtrl.getInitialComponent());

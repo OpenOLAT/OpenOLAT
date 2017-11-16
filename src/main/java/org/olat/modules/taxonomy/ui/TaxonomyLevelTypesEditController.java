@@ -45,6 +45,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyLevelTypeManagedFlag;
@@ -67,6 +70,7 @@ public class TaxonomyLevelTypesEditController extends FormBasicController {
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
+	private DialogBoxController confirmDeleteDialog;
 	private EditTaxonomyLevelTypeController rootLevelTypeCtrl;
 	private EditTaxonomyLevelTypeController editLevelTypeCtrl;
 	protected CloseableCalloutWindowController toolsCalloutCtrl;
@@ -135,6 +139,12 @@ public class TaxonomyLevelTypesEditController extends FormBasicController {
 				loadModel();
 			}
 			cmc.deactivate();
+			cleanUp();
+		} else if(confirmDeleteDialog == source) {
+			if (DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				TaxonomyLevelTypeRow row = (TaxonomyLevelTypeRow)confirmDeleteDialog.getUserObject();
+				doDelete(row);
+			}
 			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
@@ -222,9 +232,19 @@ public class TaxonomyLevelTypesEditController extends FormBasicController {
 		showInfo("info.copy.level.type.sucessfull", row.getDisplayName());
 	}
 	
+	private void doConfirmDelete(UserRequest ureq, TaxonomyLevelTypeRow row) {
+		String[] args = new String[] { StringHelper.escapeHtml(row.getDisplayName()) };
+		String title = translate("confirmation.delete.type.title", args);
+		String text = translate("confirmation.delete.type", args);
+		confirmDeleteDialog = activateOkCancelDialog(ureq, title, text, confirmDeleteDialog);
+		confirmDeleteDialog.setUserObject(row);
+	}
+	
 	private void doDelete(TaxonomyLevelTypeRow row) {
 		if(taxonomyService.deleteTaxonomyLevelType(row)) {
-			showInfo("info.delete.level.type.sucessfull", row.getDisplayName());
+			showInfo("confirm.delete.level.type.sucessfull", row.getDisplayName());
+			loadModel();
+			tableEl.reset(true, true, true);
 		} else {
 			showWarning("warning.delete.level.type", row.getDisplayName());
 		}
@@ -271,11 +291,18 @@ public class TaxonomyLevelTypesEditController extends FormBasicController {
 				Link link = (Link)source;
 				String cmd = link.getCommand();
 				if("copy".equals(cmd)) {
+					close();
 					doCopy(row);
 				} else if("delete".equals(cmd)) {
-					doDelete(row);
+					close();
+					doConfirmDelete(ureq, row);
 				}
 			}
+		}
+		
+		private void close() {
+			toolsCalloutCtrl.deactivate();
+			cleanUp();
 		}
 
 		@Override

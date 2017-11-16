@@ -73,7 +73,7 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 		List<VFSContainer> containers = new ArrayList<>();
 		
 		String taxonomyTreeKey = docPoolModule.getTaxonomyTreeKey();
-		if(StringHelper.containsNonWhitespace(taxonomyTreeKey)) {
+		if(StringHelper.isLong(taxonomyTreeKey)) {
 			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(new Long(taxonomyTreeKey)));
 			if(taxonomy != null) {
 				String  templatesDir = Util.createPackageTranslator(DocumentPoolMainController.class, identityEnv.getLocale())
@@ -100,8 +100,9 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 			String name = RequestUtil.normalizeFilename(taxonomyNode.getTitle());
 			VirtualContainer levelContainer = new VirtualContainer(name);
 			levelContainer.setLocalSecurityCallback(new DefaultVFSSecurityCallback());
-			if(taxonomyNode.getTaxonomyLevel() != null && taxonomyNode.isDocumentsLibraryEnabled()
-					&& taxonomyNode.isCanRead()) {
+			
+			boolean hasDocuments = false;
+			if(taxonomyNode.getTaxonomyLevel() != null && taxonomyNode.isDocumentsLibraryEnabled() && taxonomyNode.isCanRead()) {
 				// the real thing
 				VFSContainer documents = taxonomyService.getDocumentsLibrary(taxonomyNode.getTaxonomyLevel());
 				SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext();
@@ -109,15 +110,17 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 				documents.setLocalSecurityCallback(secCallback);
 				VFSContainer namedContainer = new NamedContainerImpl("_documents", documents);
 				levelContainer.addItem(namedContainer);
+				hasDocuments = true;
 			}
 			
 			for(int i=0; i<node.getChildCount(); i++) {
 				VFSContainer childContainer = loadRecursiveMergedContainers(taxonomy, node.getChildAt(i));
 				if(childContainer != null) {
 					levelContainer.addItem(childContainer);
+					hasDocuments = true;
 				}
 			}
-			container = levelContainer;
+			container = hasDocuments ? levelContainer : null;
 		}
 		return container;
 	}

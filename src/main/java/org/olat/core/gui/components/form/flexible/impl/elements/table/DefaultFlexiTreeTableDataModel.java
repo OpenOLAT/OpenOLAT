@@ -144,7 +144,8 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 		List<U> closedRows = new ArrayList<>();
 		for(U currentRow:currentRows) {
 			if(start) {
-				if(parentOf == null && currentRow.getParent() == null
+				if((parentOf == null && currentRow.getParent() == null)
+					|| (currentRow.getParent() == null)
 					|| (parentOf != null && parentOf.equals(currentRow.getParent()))) {
 					start = false;
 				} else {

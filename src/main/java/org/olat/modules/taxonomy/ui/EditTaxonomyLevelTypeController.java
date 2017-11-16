@@ -78,15 +78,16 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 		String identifier = levelType == null ? "" : levelType.getIdentifier();
 		identifierEl = uifactory.addTextElement("level.identifier", "level.identifier", 255, identifier, formLayout);
 		identifierEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.identifier));
-
+		identifierEl.setMandatory(true);
+		if(!StringHelper.containsNonWhitespace(identifier)) {
+			identifierEl.setFocus(true);
+		}
+		
 		String displayName = levelType == null ? "" : levelType.getDisplayName();
 		displayNameEl = uifactory.addTextElement("level.displayname", "level.displayname", 255, displayName, formLayout);
 		displayNameEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.displayName));
 		displayNameEl.setMandatory(true);
-		if(!StringHelper.containsNonWhitespace(displayName)) {
-			displayNameEl.setFocus(true);
-		}
-		
+
 		String cssClass = levelType == null ? "" : levelType.getCssClass();
 		cssClassEl = uifactory.addTextElement("level.type.cssClass", "level.type.cssClass", 255, cssClass, formLayout);
 		cssClassEl.setEnabled(!TaxonomyLevelTypeManagedFlag.isManaged(levelType, TaxonomyLevelTypeManagedFlag.cssClass));
@@ -139,6 +140,12 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 		displayNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
 			displayNameEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		identifierEl.clearError();
+		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
+			identifierEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		

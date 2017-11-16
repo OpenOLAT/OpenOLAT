@@ -46,6 +46,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -87,6 +88,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	
 	private int counter = 0;
 	private Taxonomy taxonomy;
+	private boolean dirty = false;
 	
 	@Autowired
 	private DB dbInstance;
@@ -103,6 +105,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
 		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
 	}
 
 	@Override
@@ -218,6 +221,18 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if(source == stackPanel) {
+			if(dirty && event instanceof PopEvent) {
+				loadModel();
+				tableEl.reset(false, false, true);
+				dirty = false;
+			}
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -231,6 +246,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				loadModel();
 				tableEl.reset(false, false, true);
 				doSelectTaxonomyLevel(ureq, ((NewTaxonomyLevelEvent)event).getTaxonomyLevel());
+			} else if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				dirty = true;
 			}
 		} else if(createTaxonomyLevelCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {

@@ -233,18 +233,12 @@ public class TaxonomyLevelDAO implements InitializingBean {
 	}
 	
 	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level) {
-		boolean updatePath = false;
-		
-		String path = level.getMaterializedPathIdentifiers();
-		String newPath = null;
-		
 		TaxonomyLevel parentLevel = getParent(level);
-		if(parentLevel != null) {
-			newPath = getMaterializedPathIdentifiers(parentLevel, level);
-			updatePath = !newPath.equals(path);
-			if(updatePath) {
-				((TaxonomyLevelImpl)level).setMaterializedPathIdentifiers(newPath);
-			}
+		String path = level.getMaterializedPathIdentifiers();
+		String newPath = getMaterializedPathIdentifiers(parentLevel, level);
+		boolean updatePath = !newPath.equals(path);
+		if(updatePath) {
+			((TaxonomyLevelImpl)level).setMaterializedPathIdentifiers(newPath);
 		}
 
 		((TaxonomyLevelImpl)level).setLastModified(new Date());

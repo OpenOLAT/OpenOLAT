@@ -43,34 +43,31 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 		FlexiTableElementImpl ftE = source.getFlexiTableElement();
 		FlexiTreeTableDataModel<?> treeTableModel = ftE.getTreeTableDataModel();
 		if(treeTableModel != null) {
-			// indentation
-			int indentation = treeTableModel.getIndentation(row);
-			
 			String id = source.getFormDispatchId();
 			Form rootForm = ftE.getRootForm();
 
+			// indentation
+			int indentation = treeTableModel.getIndentation(row);
 			boolean hasChildren = treeTableModel.hasChildren(row);
+			target.append("<div class='o_table_flexi_l").append(indentation)
+			      .append(" o_table_flexi_leaf", !hasChildren).append("'>");
+			
 			if(hasChildren) {
-				target.append("<div class='o_table_flexi_l").append(indentation).append("'>");
-				
-				boolean open = treeTableModel.isOpen(row);
-
 				NameValuePair pair;
+				boolean open = treeTableModel.isOpen(row);
 				if(open) {
 					pair = new NameValuePair("tt-close", Integer.toString(row));
 				} else {
 					pair = new NameValuePair("tt-open", Integer.toString(row));
 				}
 				String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, true, true, pair);
-				target.append("<a href=\"javascript:").append(jsCode).append(";\"><i class='o_icon ");
+				target.append("<a href=\"javascript:").append(jsCode).append(";\"><i class='o_icon o_icon-fw ");
 				if(open) {
 					target.append("o_icon_close_tree");
 				} else {
 					target.append("o_icon_open_tree");
 				}
 				target.append("'> </i></a> ");
-			} else {
-				target.append("<div class='o_table_flexi_leaf_l").append(indentation).append("'>");
 			}
 
 			NameValuePair pair = new NameValuePair("tt-focus", Integer.toString(row));

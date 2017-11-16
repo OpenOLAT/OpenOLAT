@@ -78,7 +78,7 @@ public class DocumentPoolLevelController extends BasicController implements Acti
 			mainVC.contextPut("displayName", StringHelper.escapeHtml(level.getDisplayName()));
 			mainVC.contextPut("identifier", StringHelper.escapeHtml(level.getIdentifier()));
 			
-			if(node.isDocumentsLibraryEnabled()) {
+			if(node.isDocumentsLibraryEnabled() && node.isCanRead()) {
 				String name = level.getDisplayName();
 				VFSContainer documents = taxonomyService.getDocumentsLibrary(level);
 				documents.setLocalSecurityCallback(secCallback);

@@ -33,6 +33,7 @@ import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
 public class TaxonomyVFSSecurityCallback implements VFSSecurityCallback {
 	
 	private final TaxonomyTreeNode node;
+	
 	private final SubscriptionContext subscriptionContext;
 	
 	public TaxonomyVFSSecurityCallback(TaxonomyTreeNode node, SubscriptionContext subscriptionContext) {

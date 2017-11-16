@@ -40,8 +40,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.callbacks.DefaultVFSSecurityCallback;
 import org.olat.core.util.vfs.callbacks.FullAccessCallback;
+import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.docpool.manager.DocumentPoolNotificationsHandler;
@@ -221,7 +221,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 		content.popUpToRootController(ureq);
 		
 		VFSContainer directory = node.getDirectory();
-		VFSSecurityCallback secCallback = isTaxonomyAdmin ? new FullAccessCallback() : new DefaultVFSSecurityCallback();
+		VFSSecurityCallback secCallback = isTaxonomyAdmin ? new FullAccessCallback() : new ReadOnlyCallback();
 		directory.setLocalSecurityCallback(secCallback);
 		
 		String name = translate("document.pool.templates");

@@ -20,7 +20,6 @@
 package org.olat.modules.taxonomy.ui;
 
 import java.util.List;
-import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -67,13 +66,14 @@ implements FilterableFlexiTableModel  {
 			super.setObjects(backupRows);
 		}*/
 	}
-	
+	/*
 	private boolean accept(TaxonomyLevelRow row, Set<Long> typeKeys, boolean noType) {
 		if(row.getTypeKey() == null) {
 			return noType;
 		}
 		return typeKeys.contains(row.getTypeKey());
 	}
+	*/
 
 	@Override
 	public DefaultFlexiTableDataModel<TaxonomyLevelRow> createCopyWithEmptyList() {
@@ -124,7 +124,7 @@ implements FilterableFlexiTableModel  {
 
 		@Override
 		public boolean sortable() {
-			return true;
+			return false;
 		}
 
 		@Override

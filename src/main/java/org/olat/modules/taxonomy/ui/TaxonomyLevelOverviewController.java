@@ -134,6 +134,7 @@ public class TaxonomyLevelOverviewController extends BasicController {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				taxonomyLevel = metadataCtrl.getTaxonomyLevel();
 				updateProperties();
+				fireEvent(ureq, event);
 			} else if(event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
