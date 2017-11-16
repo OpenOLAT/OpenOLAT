@@ -99,6 +99,9 @@ public class ICalFileCalendarManagerTest extends OlatTestCase {
 		Kalendar cal = calendarManager.getPersonalCalendar(test).getKalendar();
 		// 1. Test Add Event
 		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.HOUR_OF_DAY, 13);
+		calendar.set(Calendar.MINUTE, 12);
+		calendar.set(Calendar.SECOND, 0);
 		calendar.set(Calendar.MILLISECOND, 0);
 		Date start = calendar.getTime();
 
