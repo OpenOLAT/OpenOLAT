@@ -30,6 +30,8 @@ public class XMLValidCharacterFilter implements Filter {
 
 	@Override
 	public String filter(String in) {
+		if(in == null) return null;
+		
 		StringBuilder out = new StringBuilder(); // Used to hold the output.
 		int codePoint; // Used to reference the current character.
 

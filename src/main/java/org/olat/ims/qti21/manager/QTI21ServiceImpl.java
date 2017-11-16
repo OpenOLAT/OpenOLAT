@@ -559,7 +559,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		        DocumentBuilder documentBuilder = XmlFactories.newDocumentBuilder();
 	            return documentBuilder.parse(sessionFile);
 	        } catch (final Exception e) {
-	            throw new OLATRuntimeException("Could not parse serailized state XML. This is an internal error as we currently don't expose this data to clients", e);
+	        		throw new OLATRuntimeException("Could not parse serialized state XML. This is an internal error as we currently don't expose this data to clients", e);
 	        }
         }
         return null;
