@@ -63,16 +63,15 @@ public class DocumentPoolIndexer extends TaxonomyLibraryIndexer implements Initi
 		if(StringHelper.isLong(taxonomyTreeKey)) {
 			Long taxonomyKey = new Long(taxonomyTreeKey);
 			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(taxonomyKey));
-			if(taxonomy.isDocumentsLibraryEnabled()) {
-				OLATResourceable docPoolOres = OresHelper.createOLATResourceableInstanceWithoutCheck(getSupportedTypeName(), taxonomy.getKey());
-				SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
-				searchResourceContext.setBusinessControlFor(docPoolOres);
-				searchResourceContext.setTitle(taxonomy.getDisplayName());
-				searchResourceContext.setDescription(taxonomy.getDescription());
-				searchResourceContext.setLastModified(taxonomy.getLastModified());
-				searchResourceContext.setCreatedDate(taxonomy.getCreationDate());
-				doIndexTaxonomyLibrary(searchResourceContext, taxonomy, indexerWriter);
-			}	
+
+			OLATResourceable docPoolOres = OresHelper.createOLATResourceableInstanceWithoutCheck(getSupportedTypeName(), 0l);
+			SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
+			searchResourceContext.setBusinessControlFor(docPoolOres);
+			searchResourceContext.setTitle(taxonomy.getDisplayName());
+			searchResourceContext.setDescription(taxonomy.getDescription());
+			searchResourceContext.setLastModified(taxonomy.getLastModified());
+			searchResourceContext.setCreatedDate(taxonomy.getCreationDate());
+			doIndexTaxonomyLibrary(searchResourceContext, taxonomy, indexerWriter);
 		}
 	}
 }

@@ -44,7 +44,7 @@ import org.olat.core.util.vfs.callbacks.DefaultVFSSecurityCallback;
 import org.olat.core.util.vfs.callbacks.FullAccessCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.modules.docpool.DocumentPoolModule;
-import org.olat.modules.docpool.manager.TaxonomyDocumentsLibraryNotificationsHandler;
+import org.olat.modules.docpool.manager.DocumentPoolNotificationsHandler;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyRef;
@@ -77,7 +77,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 	@Autowired
 	private DocumentPoolModule docPoolModule;
 	@Autowired
-	private TaxonomyDocumentsLibraryNotificationsHandler notificationsHandler;
+	private DocumentPoolNotificationsHandler notificationsHandler;
 	
 	public DocumentPoolMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -236,7 +236,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 		if(isTaxonomyAdmin || node.isCanRead() || node.isCanWrite()) {
 			TaxonomyLevel level = node.getTaxonomyLevel();
 
-			SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext(node.getTaxonomy());
+			SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext();
 			TaxonomyVFSSecurityCallback secCallback = new TaxonomyVFSSecurityCallback(node, subscriptionCtx);
 			DocumentPoolLevelController levelCtrl = new DocumentPoolLevelController(ureq, getWindowControl(), level, node, secCallback);
 			listenTo(levelCtrl);

@@ -2154,6 +2154,7 @@ create table o_tax_taxonomy (
   t_library bit default 1,
   t_directory_path varchar(255),
   t_directory_info_page_path varchar(255),
+  t_directory_lost_found_path varchar(255),
   fk_group bigint not null,
   primary key (id)
 );

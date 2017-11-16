@@ -86,6 +86,8 @@ public class TaxonomyImpl implements Persistable, Taxonomy {
 	private String directoryPath;
 	@Column(name="t_directory_info_page_path", nullable=true, insertable=true, updatable=true)
 	private String directoryInfoPagePath;
+	@Column(name="t_directory_lost_found_path", nullable=true, insertable=true, updatable=true)
+	private String directoryLostFoundPath;
 	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_group", nullable=false, insertable=true, updatable=false)
@@ -208,6 +210,14 @@ public class TaxonomyImpl implements Persistable, Taxonomy {
 
 	public void setDirectoryInfoPagePath(String directoryInfoPagePath) {
 		this.directoryInfoPagePath = directoryInfoPagePath;
+	}
+
+	public String getDirectoryLostFoundPath() {
+		return directoryLostFoundPath;
+	}
+
+	public void setDirectoryLostFoundPath(String directoryLostFoundPath) {
+		this.directoryLostFoundPath = directoryLostFoundPath;
 	}
 
 	public Group getGroup() {

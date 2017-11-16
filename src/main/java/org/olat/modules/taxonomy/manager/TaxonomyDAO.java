@@ -87,6 +87,8 @@ public class TaxonomyDAO implements InitializingBean{
 		taxonomy.setDirectoryPath(storage);
 		String infoStorage = createStorage(taxonomy, "infopage");
 		taxonomy.setDirectoryInfoPagePath(infoStorage);
+		String lostFoundStorage = createStorage(taxonomy, "lostfound");
+		taxonomy.setDirectoryLostFoundPath(lostFoundStorage);
 		taxonomy = dbInstance.getCurrentEntityManager().merge(taxonomy);
 		taxonomy.getGroup();
 		return taxonomy;
@@ -143,6 +145,15 @@ public class TaxonomyDAO implements InitializingBean{
 	
 	public VFSContainer getDocumentsLibrary(Taxonomy taxonomy) {
 		String path = ((TaxonomyImpl)taxonomy).getDirectoryPath();
+		if(!path.startsWith("/")) {
+			path = "/" + path;
+		}
+		path = "/" + TaxonomyService.DIRECTORY + path;
+		return new OlatRootFolderImpl(path, null);
+	}
+	
+	public VFSContainer getLostAndFoundDirectoryLibrary(Taxonomy taxonomy) {
+		String path = ((TaxonomyImpl)taxonomy).getDirectoryLostFoundPath();
 		if(!path.startsWith("/")) {
 			path = "/" + path;
 		}

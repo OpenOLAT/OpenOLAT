@@ -121,7 +121,7 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 					BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(Long.parseLong(tokenKey));
 					return bg == null ? "" : bg.getName();
 				}
-				if ("Taxonomy".equals(tokenType) || "DocumentPool".equals(tokenType)) {
+				if ("Taxonomy".equals(tokenType)) {
 					Taxonomy taxonomy = CoreSpringFactory.getImpl(TaxonomyService.class)
 							.getTaxonomy(new TaxonomyRefImpl(Long.parseLong(tokenKey)));
 					return taxonomy == null ? "" : taxonomy.getDisplayName();
@@ -131,8 +131,10 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 							.getTaxonomyLevel(new TaxonomyLevelRefImpl(Long.parseLong(tokenKey)));
 					return level == null ? "" : level.getDisplayName();
 				}
-				
 				Translator translator = Util.createPackageTranslator(this.getClass(), locale);
+				if ("DocumentPool".equals(tokenType)) {
+					return translator.translate("DocumentPool");
+				}
 				if("userfolder".equals(tokenType)) {
 					return translator.translate("type.identity.publicfolder");
 				}

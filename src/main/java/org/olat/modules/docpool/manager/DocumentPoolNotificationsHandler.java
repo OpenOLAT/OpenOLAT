@@ -52,9 +52,9 @@ import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.OlatRelPathImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.docpool.ui.DocumentPoolMainController;
 import org.olat.modules.taxonomy.Taxonomy;
-import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
@@ -69,15 +69,17 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class TaxonomyDocumentsLibraryNotificationsHandler implements NotificationsHandler {
+public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(TaxonomyDocumentsLibraryNotificationsHandler.class);
-	public static final String TYPE_NAME = "TaxonomyLibrary";
+	private static final OLog log = Tracing.createLoggerFor(DocumentPoolNotificationsHandler.class);
+	public static final String TYPE_NAME = "DocumentPool";
 	
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private DocumentPoolModule documentPoolModule;
 	@Autowired
 	private NotificationsManager notificationsManager;
 
@@ -86,13 +88,13 @@ public class TaxonomyDocumentsLibraryNotificationsHandler implements Notificatio
 		return TYPE_NAME;
 	}
 	
-	public PublisherData getTaxonomyDocumentsLibraryPublisherData(TaxonomyRef taxonomy) {
-		String businessPath = "[Taxonomy:" + taxonomy.getKey() + "]";
-		return new PublisherData(TaxonomyDocumentsLibraryNotificationsHandler.TYPE_NAME, String.valueOf(taxonomy.getKey()), businessPath);
+	public PublisherData getTaxonomyDocumentsLibraryPublisherData() {
+		String businessPath = "[DocumentPool:0]";
+		return new PublisherData(DocumentPoolNotificationsHandler.TYPE_NAME, "", businessPath);
 	}
 	
-	public SubscriptionContext getTaxonomyDocumentsLibrarySubscriptionContext(TaxonomyRef taxonomy) {
-		return new SubscriptionContext(TaxonomyDocumentsLibraryNotificationsHandler.TYPE_NAME, taxonomy.getKey(), TaxonomyDocumentsLibraryNotificationsHandler.TYPE_NAME);
+	public SubscriptionContext getTaxonomyDocumentsLibrarySubscriptionContext() {
+		return new SubscriptionContext(DocumentPoolNotificationsHandler.TYPE_NAME, 0l, DocumentPoolNotificationsHandler.TYPE_NAME);
 	}
 	
 	@Override
@@ -102,8 +104,9 @@ public class TaxonomyDocumentsLibraryNotificationsHandler implements Notificatio
 
 		try {
 			SubscriptionInfo si;
-			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
-				Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(p.getResId()));
+			String taxonomyKey = documentPoolModule.getTaxonomyTreeKey();
+			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews) && StringHelper.isLong(taxonomyKey)) {
+				Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(new Long(taxonomyKey)));
 				if(taxonomy == null) {
 					return notificationsManager.getNoSubscriptionInfo();
 				}
@@ -116,7 +119,7 @@ public class TaxonomyDocumentsLibraryNotificationsHandler implements Notificatio
 				String templates = translator.translate("document.pool.templates");
 				TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, identity, null, isTaxonomyAdmin, templates);
 				TreeModel model = builder.buildTreeModel();
-				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), getTitleItemForPublisher(p), null);
+				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), getTitleItemForPublisher(), null);
 	
 				new TreeVisitor(new Visitor() {
 					@Override
@@ -126,7 +129,7 @@ public class TaxonomyDocumentsLibraryNotificationsHandler implements Notificatio
 							VFSContainer container = taxonomyService.getDocumentsLibrary(tNode.getTaxonomyLevel());
 							List<FileInfo> fInfos = FolderManager.getFileInfos(((OlatRelPathImpl)container).getRelPath(), compareDate);
 							
-							String prefixBusinessPath = "[Taxonomy:" + taxonomy.getKey() + "][TaxonomyLevel:" + tNode.getTaxonomyLevel().getKey() + "][path=";
+							String prefixBusinessPath = "[DocumentPool:" + taxonomy.getKey() + "][TaxonomyLevel:" + tNode.getTaxonomyLevel().getKey() + "][path=";
 							for (FileInfo infos:fInfos) {
 								String title = infos.getRelPath();
 								
@@ -172,7 +175,7 @@ public class TaxonomyDocumentsLibraryNotificationsHandler implements Notificatio
 
 	@Override
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
-		TitleItem title = getTitleItemForPublisher(subscriber.getPublisher());
+		TitleItem title = getTitleItemForPublisher();
 		return title.getInfoContent("text/plain");
 	}
 	
@@ -184,9 +187,15 @@ public class TaxonomyDocumentsLibraryNotificationsHandler implements Notificatio
 	 * @param p The publisher
 	 * @return The title
 	 */
-	private TitleItem getTitleItemForPublisher(Publisher p) {
-		Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(p.getResId()));
-		return getTitleItemForTaxonomy(taxonomy);
+	private TitleItem getTitleItemForPublisher() {
+		String taxonomyKey = documentPoolModule.getTaxonomyTreeKey();
+		if(StringHelper.isLong(taxonomyKey)) {
+			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(new Long(taxonomyKey)));
+			if(taxonomy != null) {
+				return getTitleItemForTaxonomy(taxonomy);
+			}
+		}
+		return new TitleItem("???", "o_icon_taxonomy");
 	}
 
 	/**

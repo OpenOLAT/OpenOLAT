@@ -61,28 +61,32 @@ public class DocumentPoolLevelController extends BasicController implements Acti
 			TaxonomyLevel level, TaxonomyTreeNode node, TaxonomyVFSSecurityCallback secCallback) {
 		super(ureq, wControl);
 		taxonomyLevel = taxonomyService.getTaxonomyLevel(level);
-
-		mainVC = createVelocityContainer("document_pool_level_directory");
 		
-		String iconCssClass;
-		TaxonomyLevelType type = level.getType();
-		if(type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
-			iconCssClass = type.getCssClass();
+		if(taxonomyLevel == null) {
+			mainVC = createVelocityContainer("deleted");
 		} else {
-			iconCssClass = node.getIconCssClass();
-		}
-		mainVC.contextPut("iconCssClass", iconCssClass);
-		mainVC.contextPut("displayName", StringHelper.escapeHtml(level.getDisplayName()));
-		mainVC.contextPut("identifier", StringHelper.escapeHtml(level.getIdentifier()));
+			mainVC = createVelocityContainer("document_pool_level_directory");
 		
-		if(node.isDocumentsLibraryEnabled()) {
-			String name = level.getDisplayName();
-			VFSContainer documents = taxonomyService.getDocumentsLibrary(level);
-			documents.setLocalSecurityCallback(secCallback);
-			VFSContainer namedContainer = new NamedContainerImpl(name, documents);
-			folderCtrl = new FolderRunController(namedContainer, true, true, true, ureq, getWindowControl());
-			folderCtrl.setResourceURL("[DocumentPool:" + taxonomyLevel.getTaxonomy().getKey() + "][TaxonomyLevel:" + taxonomyLevel.getKey() + "]");
-			mainVC.put("folder", folderCtrl.getInitialComponent());
+			String iconCssClass;
+			TaxonomyLevelType type = level.getType();
+			if(type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
+				iconCssClass = type.getCssClass();
+			} else {
+				iconCssClass = node.getIconCssClass();
+			}
+			mainVC.contextPut("iconCssClass", iconCssClass);
+			mainVC.contextPut("displayName", StringHelper.escapeHtml(level.getDisplayName()));
+			mainVC.contextPut("identifier", StringHelper.escapeHtml(level.getIdentifier()));
+			
+			if(node.isDocumentsLibraryEnabled()) {
+				String name = level.getDisplayName();
+				VFSContainer documents = taxonomyService.getDocumentsLibrary(level);
+				documents.setLocalSecurityCallback(secCallback);
+				VFSContainer namedContainer = new NamedContainerImpl(name, documents);
+				folderCtrl = new FolderRunController(namedContainer, true, true, true, ureq, getWindowControl());
+				folderCtrl.setResourceURL("[DocumentPool:0][TaxonomyLevel:" + taxonomyLevel.getKey() + "]");
+				mainVC.put("folder", folderCtrl.getInitialComponent());
+			}
 		}
 		putInitialPanel(mainVC);
 	}

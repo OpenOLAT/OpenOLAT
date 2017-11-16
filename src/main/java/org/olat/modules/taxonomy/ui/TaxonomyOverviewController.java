@@ -46,12 +46,13 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 	private BreadcrumbPanel stackPanel;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-	private final Link metadataLink, typesLink, levelsLink, infosPageLink;
+	private final Link metadataLink, typesLink, levelsLink, infosPageLink, lostFoundLink;
 	
 	private EditTaxonomyController metadataCtrl;
 	private TaxonomyInfoPageController infoPageCtrl;
 	private TaxonomyTreeTableController taxonomyCtrl;
 	private TaxonomyLevelTypesEditController typeListCtrl;
+	private TaxonomyLostAndfoundDocumentsController lostFoundCtrl;
 	
 	private Taxonomy taxonomy;
 	
@@ -72,7 +73,9 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 		segmentView.addSegment(levelsLink, false);
 		infosPageLink = LinkFactory.createLink("taxonomy.infos.page", mainVC, this);
 		segmentView.addSegment(infosPageLink, false);
-		
+		lostFoundLink = LinkFactory.createLink("taxonomy.lost.found", mainVC, this);
+		segmentView.addSegment(lostFoundLink, false);
+
 		putInitialPanel(mainVC);
 	}
 
@@ -104,6 +107,8 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 					doOpenTaxonomyLevels(ureq);
 				} else if(clickedLink == infosPageLink) {
 					doOpenInfosPage(ureq);
+				} else if(clickedLink == lostFoundLink) {
+					doOpenLostFound(ureq);
 				}
 			}
 		}
@@ -150,5 +155,13 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 			listenTo(infoPageCtrl);
 		}
 		mainVC.put("segmentCmp", infoPageCtrl.getInitialComponent());
+	}
+	
+	private void doOpenLostFound(UserRequest ureq) {
+		if(lostFoundCtrl == null) {
+			lostFoundCtrl = new TaxonomyLostAndfoundDocumentsController(ureq, getWindowControl(), taxonomy);
+			listenTo(lostFoundCtrl);
+		}
+		mainVC.put("segmentCmp", lostFoundCtrl.getInitialComponent());
 	}
 }

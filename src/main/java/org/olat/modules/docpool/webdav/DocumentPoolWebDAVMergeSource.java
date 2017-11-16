@@ -37,7 +37,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VirtualContainer;
 import org.olat.core.util.vfs.callbacks.DefaultVFSSecurityCallback;
 import org.olat.modules.docpool.DocumentPoolModule;
-import org.olat.modules.docpool.manager.TaxonomyDocumentsLibraryNotificationsHandler;
+import org.olat.modules.docpool.manager.DocumentPoolNotificationsHandler;
 import org.olat.modules.docpool.ui.DocumentPoolMainController;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -58,14 +58,14 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 	
 	private final DocumentPoolModule docPoolModule;
 	private final TaxonomyService taxonomyService;
-	private final TaxonomyDocumentsLibraryNotificationsHandler notificationsHandler;
+	private final DocumentPoolNotificationsHandler notificationsHandler;
 	
 	public DocumentPoolWebDAVMergeSource(IdentityEnvironment identityEnv) {
 		super(identityEnv.getIdentity());
 		this.identityEnv = identityEnv;
 		docPoolModule = CoreSpringFactory.getImpl(DocumentPoolModule.class);
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
-		notificationsHandler = CoreSpringFactory.getImpl(TaxonomyDocumentsLibraryNotificationsHandler.class);
+		notificationsHandler = CoreSpringFactory.getImpl(DocumentPoolNotificationsHandler.class);
 	}
 	
 	@Override
@@ -104,7 +104,7 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 					&& taxonomyNode.isCanRead()) {
 				// the real thing
 				VFSContainer documents = taxonomyService.getDocumentsLibrary(taxonomyNode.getTaxonomyLevel());
-				SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext(taxonomy);
+				SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext();
 				TaxonomyVFSSecurityCallback secCallback = new TaxonomyVFSSecurityCallback(taxonomyNode, subscriptionCtx);
 				documents.setLocalSecurityCallback(secCallback);
 				VFSContainer namedContainer = new NamedContainerImpl("_documents", documents);

@@ -31,7 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.modules.docpool.manager.TaxonomyDocumentsLibraryNotificationsHandler;
+import org.olat.modules.docpool.manager.DocumentPoolNotificationsHandler;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ public class DocumentPoolTaxonomyController extends BasicController {
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
-	private TaxonomyDocumentsLibraryNotificationsHandler notificationsHandler;
+	private DocumentPoolNotificationsHandler notificationsHandler;
 	
 	public DocumentPoolTaxonomyController(UserRequest ureq, WindowControl wControl, Taxonomy taxonomy) {
 		super(ureq, wControl);
@@ -61,8 +61,8 @@ public class DocumentPoolTaxonomyController extends BasicController {
 		mainVC.contextPut("identifier", StringHelper.escapeHtml(taxonomy.getIdentifier()));
 		
 		//add subscription
-		SubscriptionContext subsContext = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext(taxonomy);
-		PublisherData data = notificationsHandler.getTaxonomyDocumentsLibraryPublisherData(taxonomy);
+		SubscriptionContext subsContext = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext();
+		PublisherData data = notificationsHandler.getTaxonomyDocumentsLibraryPublisherData();
 		ContextualSubscriptionController csController = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
 		listenTo(csController);
 		mainVC.put("subscription", csController.getInitialComponent());

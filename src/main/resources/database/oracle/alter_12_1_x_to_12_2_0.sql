@@ -30,6 +30,7 @@ create table o_tax_taxonomy (
   t_library number default 1,
   t_directory_path varchar2(255 char),
   t_directory_info_page_path varchar2(255 char),
+  t_directory_lost_found_path varchar2(255 char),
   fk_group number(20) not null,
   primary key (id)
 );

@@ -23,7 +23,9 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog.Action;
@@ -83,6 +85,11 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
+	public VFSContainer getLostAndFoundDirectory(Taxonomy taxonomy) {
+		return taxonomyDao.getLostAndFoundDirectoryLibrary(taxonomy);
+	}
+
+	@Override
 	public VFSContainer getTaxonomyInfoPageContainer(Taxonomy taxonomy) {
 		return taxonomyDao.getTaxonomyInfoPageContainer(taxonomy);
 	}
@@ -138,7 +145,16 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 
 	@Override
 	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel) {
-		return taxonomyLevelDao.delete(taxonomyLevel);
+		// save the documents
+		TaxonomyLevel reloadedTaxonomyLevel = taxonomyLevelDao.loadByKey(taxonomyLevel.getKey());
+		VFSContainer library = taxonomyLevelDao.getDocumentsLibrary(reloadedTaxonomyLevel);
+		Taxonomy taxonomy = reloadedTaxonomyLevel.getTaxonomy();
+		VFSContainer lostAndFound = taxonomyDao.getLostAndFoundDirectoryLibrary(taxonomy);
+		String dir = StringHelper.transformDisplayNameToFileSystemName(reloadedTaxonomyLevel.getIdentifier());
+		dir += "_" + taxonomyLevel.getKey();
+		VFSContainer lastStorage = lostAndFound.createChildContainer(dir);
+		VFSManager.copyContent(library, lastStorage);
+		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
 	}
 
 	@Override

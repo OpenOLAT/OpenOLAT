@@ -132,6 +132,12 @@ public interface TaxonomyService {
 	public VFSContainer getDocumentsLibrary(Taxonomy taxonomy);
 	
 	/**
+	 * @param taxonomy The taxonomy
+	 * @return A directory where the documents of deleted levels are stored
+	 */
+	public VFSContainer getLostAndFoundDirectory(Taxonomy taxonomy);
+	
+	/**
 	 * The directory reserved to the information page of the
 	 * taxonomy. The info page itself is normally "index.html"
 	 * and the directory can be used to save some images.
