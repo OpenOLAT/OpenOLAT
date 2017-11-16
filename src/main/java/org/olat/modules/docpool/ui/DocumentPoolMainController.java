@@ -90,7 +90,8 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 			taxonomy = taxonomyService.getTaxonomy(taxonomyRef);
 		}
 
-		TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, getIdentity(), getLocale(), isTaxonomyAdmin, translate("document.pool.templates"));
+		TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, getIdentity(), getLocale(),
+				isTaxonomyAdmin, docPoolModule.isTemplatesDirectoryEnabled(), translate("document.pool.templates"));
 		
 		taxonomyTree = new MenuTree(null, "taxonomy-menu", this);
 		taxonomyTree.setExpandSelectedNode(false);

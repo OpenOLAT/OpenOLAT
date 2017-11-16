@@ -94,7 +94,7 @@ public class TaxonomyLevelLibraryIndexer extends DefaultIndexer {
 		if("TaxonomyLevel".equals(contextEntry.getOLATResourceable().getResourceableTypeName())) {
 			Long levelKey = contextEntry.getOLATResourceable().getResourceableId();
 			TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(levelKey));
-			TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(level.getTaxonomy(), identity, null, false, "Templates");
+			TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(level.getTaxonomy(), identity, null, false, true, "Templates");
 			TreeModel model = builder.buildTreeModel();
 			List<TreeNode> flat = new ArrayList<>();
 			TreeHelper.makeTreeFlat(model.getRootNode(), flat);

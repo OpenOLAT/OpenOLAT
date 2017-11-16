@@ -19,12 +19,18 @@
  */
 package org.olat.modules.docpool;
 
+import java.io.File;
+
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.docpool.site.DocumentPoolContextEntryControllerCreator;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -38,15 +44,20 @@ import org.springframework.stereotype.Service;
 @Service
 public class DocumentPoolModule extends AbstractSpringModule implements ConfigOnOff {
 
+	private static final String DIRECTORY = "docpool";
+	private static final String INFOS_PAGE_DIRECTORY = "infospage";
 	private static final String DOCUMENT_POOL_ENABLED = "docpool.enabled";
 	private static final String TAXONOMY_TREE_KEY = "taxonomy.tree.key";
 	private static final String WEBDAV_MOUNT_POINT = "docpool.webdav.mountpoint";
+	private static final String TEMPLATES_DIRECTORY_ENABLED = "docpool.templates.directory.enabled";
 	
 	@Value("${docpool.enabled:true}")
 	private boolean enabled;
 	private String taxonomyTreeKey;
 	@Value("${docpool.webdav.mountpoint:doc-pool}")
 	private String webdavMountPoint;
+	@Value("${docpool.templates.directory.enabled:true}")
+	private boolean templatesDirectoryEnabled;
 	
 	@Autowired
 	public DocumentPoolModule(CoordinatorManager coordinatorManager) {
@@ -64,6 +75,13 @@ public class DocumentPoolModule extends AbstractSpringModule implements ConfigOn
 				new DocumentPoolContextEntryControllerCreator());
 
 		updateProperties();
+		
+		File bcrootDirectory = new File(FolderConfig.getCanonicalRoot());
+		File rootDirectory = new File(bcrootDirectory, DIRECTORY);
+		File infosPageDirectory = new File(rootDirectory, INFOS_PAGE_DIRECTORY);
+		if(!infosPageDirectory.exists()) {
+			infosPageDirectory.mkdirs();
+		}
 	}
 
 	@Override
@@ -85,6 +103,11 @@ public class DocumentPoolModule extends AbstractSpringModule implements ConfigOn
 		String mountPointObj = getStringPropertyValue(WEBDAV_MOUNT_POINT, true);
 		if(StringHelper.containsNonWhitespace(mountPointObj)) {
 			webdavMountPoint = mountPointObj;
+		}
+		
+		String templatesDirectoryEnabledObj = getStringPropertyValue(TEMPLATES_DIRECTORY_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(templatesDirectoryEnabledObj)) {
+			templatesDirectoryEnabled = "true".equals(templatesDirectoryEnabledObj);
 		}
 	}
 
@@ -114,5 +137,19 @@ public class DocumentPoolModule extends AbstractSpringModule implements ConfigOn
 	public void setWebDAVMountPoint(String mountPoint) {
 		this.webdavMountPoint = mountPoint;
 		setStringProperty(WEBDAV_MOUNT_POINT, mountPoint, true);
+	}
+
+	public boolean isTemplatesDirectoryEnabled() {
+		return templatesDirectoryEnabled;
+	}
+
+	public void setTemplatesDirectoryEnabled(boolean enabled) {
+		this.templatesDirectoryEnabled = enabled;
+		setStringProperty(TEMPLATES_DIRECTORY_ENABLED, Boolean.toString(enabled), true);
+	}
+	
+	public VFSContainer getInfoPageContainer() {
+		String path = "/" + TaxonomyService.DIRECTORY + "/" + INFOS_PAGE_DIRECTORY;
+		return new OlatRootFolderImpl(path, null);
 	}
 }

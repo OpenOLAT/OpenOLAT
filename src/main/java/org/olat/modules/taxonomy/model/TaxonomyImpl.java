@@ -80,12 +80,8 @@ public class TaxonomyImpl implements Persistable, Taxonomy {
 	@Column(name="t_managed_flags", nullable=true, insertable=true, updatable=true)
 	private String managedFlagsString;
 
-	@Column(name="t_library", nullable=false, insertable=true, updatable=true)
-	private boolean documentsLibraryEnabled;
 	@Column(name="t_directory_path", nullable=true, insertable=true, updatable=true)
 	private String directoryPath;
-	@Column(name="t_directory_info_page_path", nullable=true, insertable=true, updatable=true)
-	private String directoryInfoPagePath;
 	@Column(name="t_directory_lost_found_path", nullable=true, insertable=true, updatable=true)
 	private String directoryLostFoundPath;
 	
@@ -186,30 +182,12 @@ public class TaxonomyImpl implements Persistable, Taxonomy {
 		managedFlagsString = TaxonomyManagedFlag.toString(flags);
 	}
 
-	@Override
-	public boolean isDocumentsLibraryEnabled() {
-		return documentsLibraryEnabled;
-	}
-
-	@Override
-	public void setDocumentsLibraryEnabled(boolean documentsLibraryEnabled) {
-		this.documentsLibraryEnabled = documentsLibraryEnabled;
-	}
-
 	public String getDirectoryPath() {
 		return directoryPath;
 	}
 
 	public void setDirectoryPath(String directoryPath) {
 		this.directoryPath = directoryPath;
-	}
-
-	public String getDirectoryInfoPagePath() {
-		return directoryInfoPagePath;
-	}
-
-	public void setDirectoryInfoPagePath(String directoryInfoPagePath) {
-		this.directoryInfoPagePath = directoryInfoPagePath;
 	}
 
 	public String getDirectoryLostFoundPath() {

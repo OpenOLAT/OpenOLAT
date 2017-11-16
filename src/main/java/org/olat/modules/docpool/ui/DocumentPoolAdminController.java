@@ -48,8 +48,9 @@ public class DocumentPoolAdminController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-	private final Link configurationLink, permissionsLink;
+	private final Link configurationLink, permissionsLink, infosPageLink;
 	
+	private DocumentPoolInfoPageController infosPageCtrl;
 	private DocumentPoolAdminPermissionsController permissionsCtrl;
 	private DocumentPoolAdminConfigurationController configurationCtrl;
 	
@@ -69,11 +70,11 @@ public class DocumentPoolAdminController extends BasicController {
 		segmentView.addSegment(configurationLink, true);
 		doOpenConfiguration(ureq);
 		permissionsLink = LinkFactory.createLink("document.pool.permissions", mainVC, this);
-		
+		infosPageLink = LinkFactory.createLink("document.pool.infos.page", mainVC, this);
 		if(docPoolModule.isEnabled()) {
 			segmentView.addSegment(permissionsLink, false);
+			segmentView.addSegment(infosPageLink, false);
 		}
-		
 		putInitialPanel(mainVC);
 	}
 
@@ -93,6 +94,8 @@ public class DocumentPoolAdminController extends BasicController {
 					doOpenConfiguration(ureq);
 				} else if (clickedLink == permissionsLink){
 					doOpenPermissions(ureq);
+				} else if(clickedLink == infosPageLink) {
+					doOpenInfosPage(ureq);
 				}
 			}
 		}
@@ -103,8 +106,10 @@ public class DocumentPoolAdminController extends BasicController {
 		if(source == configurationCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				segmentView.removeSegment(permissionsLink);
+				segmentView.removeSegment(infosPageLink);
 				if(docPoolModule.isEnabled()) {
 					segmentView.addSegment(permissionsLink, false);
+					segmentView.addSegment(infosPageLink, false);
 				}
 			}
 		}
@@ -128,5 +133,13 @@ public class DocumentPoolAdminController extends BasicController {
 			listenTo(permissionsCtrl);
 			mainVC.put("segmentCmp", permissionsCtrl.getInitialComponent());
 		}
+	}
+	
+	private void doOpenInfosPage(UserRequest ureq) {
+		if(infosPageCtrl == null) {
+			infosPageCtrl = new DocumentPoolInfoPageController(ureq, getWindowControl());
+			listenTo(infosPageCtrl);
+		}
+		mainVC.put("segmentCmp", infosPageCtrl.getInitialComponent());
 	}
 }

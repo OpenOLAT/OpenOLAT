@@ -24,9 +24,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
-import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
-import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.tabbedpane.TabCreator;
+import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -52,10 +51,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TaxonomyLevelOverviewController extends BasicController {
-	
+
+	private final TabbedPane tabPane;
 	private final VelocityContainer mainVC;
-	private final SegmentViewComponent segmentView;
-	private final Link metadataLink, competencesLink, relationsLink, actionButton;
+	private final Link actionButton;
 	
 	private CloseableModalController cmc;
 	private ActionsController actionsCtrl;
@@ -83,18 +82,38 @@ public class TaxonomyLevelOverviewController extends BasicController {
 		actionButton = LinkFactory.createButton("actions", mainVC, this);
 		actionButton.setIconLeftCSS("o_icon o_icon_actions");
 		
-		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-		metadataLink = LinkFactory.createLink("taxonomy.metadata", mainVC, this);
-		segmentView.addSegment(metadataLink, true);
-		doOpenMetadata(ureq);
+		tabPane = new TabbedPane("tabs", ureq.getLocale());
+		tabPane.addListener(this);
 		
-		competencesLink = LinkFactory.createLink("taxonomy.level.competences", mainVC, this);
-		segmentView.addSegment(competencesLink, false);
-		relationsLink = LinkFactory.createLink("taxonomy.level.relations", mainVC, this);
-		segmentView.addSegment(relationsLink, false);
-
+		metadataCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), taxonomyLevel);
+		listenTo(metadataCtrl);
+		tabPane.addTab(translate("taxonomy.metadata"), metadataCtrl);
+		initTabPane();
+		
+		mainVC.put("tabs", tabPane);
+		
 		putInitialPanel(mainVC);
 		updateProperties();
+	}
+	
+	private void initTabPane() {
+		tabPane.addTab(translate("taxonomy.level.competences"), new TabCreator() {
+			@Override
+			public Component create(UserRequest uureq) {
+				competencesCtrl = new TaxonomyLevelCompetenceController(uureq, getWindowControl(), taxonomyLevel);
+				listenTo(competencesCtrl);
+				return competencesCtrl.getInitialComponent();
+			}
+		});
+		
+		tabPane.addTab(translate("taxonomy.level.relations"), new TabCreator() {
+			@Override
+			public Component create(UserRequest uureq) {
+				relationsCtrl = new TaxonomyLevelRelationsController(uureq, getWindowControl());
+				listenTo(relationsCtrl);
+				return relationsCtrl.getInitialComponent();
+			}
+		});
 	}
 	
 	private void updateProperties() {
@@ -112,19 +131,8 @@ public class TaxonomyLevelOverviewController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(actionButton == source) {
 			doOpenActions(ureq);
-		} else if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
-				String segmentCName = sve.getComponentName();
-				Component clickedLink = mainVC.getComponent(segmentCName);
-				if (clickedLink == metadataLink) {
-					doOpenMetadata(ureq);
-				} else if (clickedLink == competencesLink){
-					doOpenCompetences(ureq);
-				} else if (clickedLink == relationsLink){
-					doOpenRelations(ureq);
-				}
-			}
+		} else if (source == tabPane) {
+			tabPane.addToHistory(ureq, getWindowControl());
 		}
 	}
 	
@@ -210,30 +218,6 @@ public class TaxonomyLevelOverviewController extends BasicController {
 		cmc.activate();
 	}
 
-	private void doOpenMetadata(UserRequest ureq) {
-		if(metadataCtrl == null) {
-			metadataCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), taxonomyLevel);
-			listenTo(metadataCtrl);
-		}
-		mainVC.put("segmentCmp", metadataCtrl.getInitialComponent());
-	}
-	
-	private void doOpenCompetences(UserRequest ureq) {
-		if(competencesCtrl == null) {
-			competencesCtrl = new TaxonomyLevelCompetenceController(ureq, getWindowControl(), taxonomyLevel);
-			listenTo(competencesCtrl);
-		}
-		mainVC.put("segmentCmp", competencesCtrl.getInitialComponent());
-	}
-	
-	private void doOpenRelations(UserRequest ureq) {
-		if(relationsCtrl == null) {
-			relationsCtrl = new TaxonomyLevelRelationsController(ureq, getWindowControl());
-			listenTo(relationsCtrl);
-		}
-		mainVC.put("segmentCmp", relationsCtrl.getInitialComponent());
-	}
-	
 	private class ActionsController extends BasicController {
 
 		private final VelocityContainer toolVC;

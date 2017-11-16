@@ -31,9 +31,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.docpool.manager.DocumentPoolNotificationsHandler;
 import org.olat.modules.taxonomy.Taxonomy;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -49,7 +49,7 @@ public class DocumentPoolTaxonomyController extends BasicController {
 	private SinglePageController indexCtrl;
 	
 	@Autowired
-	private TaxonomyService taxonomyService;
+	private DocumentPoolModule docPoolModule;
 	@Autowired
 	private DocumentPoolNotificationsHandler notificationsHandler;
 	
@@ -67,7 +67,7 @@ public class DocumentPoolTaxonomyController extends BasicController {
 		listenTo(csController);
 		mainVC.put("subscription", csController.getInitialComponent());
 		
-		VFSContainer container = taxonomyService.getTaxonomyInfoPageContainer(taxonomy);
+		VFSContainer container = docPoolModule.getInfoPageContainer();
 		if(container.resolve("index.html") != null) {
 			indexCtrl = new SinglePageController(ureq, getWindowControl(), container, "index.html", false);
 			listenTo(indexCtrl);

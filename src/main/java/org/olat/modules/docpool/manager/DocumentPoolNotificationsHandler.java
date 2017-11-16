@@ -117,7 +117,8 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 				
 				Translator translator = Util.createPackageTranslator(DocumentPoolMainController.class, locale);
 				String templates = translator.translate("document.pool.templates");
-				TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, identity, null, isTaxonomyAdmin, templates);
+				TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, identity, null,
+						isTaxonomyAdmin, documentPoolModule.isTemplatesDirectoryEnabled(), templates);
 				TreeModel model = builder.buildTreeModel();
 				si = new SubscriptionInfo(subscriber.getKey(), p.getType(), getTitleItemForPublisher(), null);
 	

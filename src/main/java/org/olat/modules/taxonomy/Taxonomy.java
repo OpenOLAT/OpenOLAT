@@ -53,8 +53,4 @@ public interface Taxonomy extends TaxonomyRef, CreateInfo, ModifiedInfo, OLATRes
 	
 	public void setManagedFlags(TaxonomyManagedFlag[] flags);
 	
-	public boolean isDocumentsLibraryEnabled();
-
-	public void setDocumentsLibraryEnabled(boolean documentsLibraryEnabled);
-	
 }

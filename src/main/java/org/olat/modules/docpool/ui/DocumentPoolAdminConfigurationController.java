@@ -49,7 +49,7 @@ public class DocumentPoolAdminConfigurationController extends  FormBasicControll
 
 	private static final String[] onKeys = new String[] { "on" };
 	
-	private MultipleSelectionElement enableEl;
+	private MultipleSelectionElement enableEl, templatesDirectoryEl;
 	private TextElement webDAVMountPointEl;
 	private SingleSelection taxonomyTreeEl;
 	
@@ -77,7 +77,7 @@ public class DocumentPoolAdminConfigurationController extends  FormBasicControll
 		}
 		
 		String mountPoint = docPoolModule.getWebDAVMountPoint();
-		webDAVMountPointEl = uifactory.addTextElement("mount.pount", "document.pool.webdav.mount.point", 32, mountPoint, formLayout);
+		webDAVMountPointEl = uifactory.addTextElement("mount.point", "document.pool.webdav.mount.point", 32, mountPoint, formLayout);
 		webDAVMountPointEl.setMandatory(true);
 		
 		String selectedTaxonomyTreeKey = docPoolModule.getTaxonomyTreeKey();
@@ -106,6 +106,12 @@ public class DocumentPoolAdminConfigurationController extends  FormBasicControll
 			taxonomyTreeEl.select(taxonomyKeys[0], true);
 		}
 		
+		templatesDirectoryEl = uifactory.addCheckboxesHorizontal("document.pool.templates.directory", formLayout,
+				onKeys, onValues);
+		if(docPoolModule.isTemplatesDirectoryEnabled()) {
+			templatesDirectoryEl.select(onKeys[0], true);
+		}
+		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
@@ -115,6 +121,7 @@ public class DocumentPoolAdminConfigurationController extends  FormBasicControll
 		boolean enabled = enableEl.isAtLeastSelected(1);
 		webDAVMountPointEl.setVisible(enabled);
 		taxonomyTreeEl.setVisible(enabled);
+		templatesDirectoryEl.setVisible(enabled);
 	}
 
 	@Override
@@ -161,6 +168,7 @@ public class DocumentPoolAdminConfigurationController extends  FormBasicControll
 			docPoolModule.setTaxonomyTreeKey(selectedTaxonomyTreeKey);
 			String mountPoint = webDAVMountPointEl.getValue();
 			docPoolModule.setWebDAVMountPoint(mountPoint);
+			docPoolModule.setTemplatesDirectoryEnabled(templatesDirectoryEl.isAtLeastSelected(1));
 		} else {
 			docPoolModule.setTaxonomyTreeKey("");
 		}

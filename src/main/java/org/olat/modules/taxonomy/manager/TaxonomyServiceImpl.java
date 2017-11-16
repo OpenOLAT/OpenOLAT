@@ -90,11 +90,6 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
-	public VFSContainer getTaxonomyInfoPageContainer(Taxonomy taxonomy) {
-		return taxonomyDao.getTaxonomyInfoPageContainer(taxonomy);
-	}
-
-	@Override
 	public List<Taxonomy> getTaxonomyList() {
 		return taxonomyDao.getTaxonomyList();
 	}

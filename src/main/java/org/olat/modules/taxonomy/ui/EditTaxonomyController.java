@@ -21,7 +21,6 @@ package org.olat.modules.taxonomy.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -43,10 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditTaxonomyController extends FormBasicController {
 
-	private static final String[] onKeys = new String[] { "on" };
-	
 	private RichTextElement descriptionEl;
-	private MultipleSelectionElement libraryEl;
 	private TextElement identifierEl, displayNameEl;
 	
 	private Taxonomy taxonomy;
@@ -88,13 +84,6 @@ public class EditTaxonomyController extends FormBasicController {
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("taxonomy.description", "taxonomy.description", description, 10, 60, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		descriptionEl.setEnabled(!TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.description));
-
-		boolean libraryEnabled = taxonomy == null ? false : taxonomy.isDocumentsLibraryEnabled();
-		libraryEl = uifactory.addCheckboxesHorizontal("taxonomy.library", "taxonomy.library", formLayout, onKeys, new String[] { "" });
-		libraryEl.setEnabled(!TaxonomyManagedFlag.isManaged(taxonomy, TaxonomyManagedFlag.librarySettings));
-		if(libraryEnabled) {
-			libraryEl.select(onKeys[0], true);
-		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -137,7 +126,6 @@ public class EditTaxonomyController extends FormBasicController {
 			taxonomy.setIdentifier(identifierEl.getValue());
 			taxonomy.setDisplayName(displayNameEl.getValue());
 			taxonomy.setDescription(descriptionEl.getValue());
-			taxonomy.setDocumentsLibraryEnabled(libraryEl.isAtLeastSelected(1));
 			taxonomy = taxonomyService.updateTaxonomy(taxonomy);
 		}
 

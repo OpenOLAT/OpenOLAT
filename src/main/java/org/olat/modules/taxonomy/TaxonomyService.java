@@ -137,17 +137,6 @@ public interface TaxonomyService {
 	 */
 	public VFSContainer getLostAndFoundDirectory(Taxonomy taxonomy);
 	
-	/**
-	 * The directory reserved to the information page of the
-	 * taxonomy. The info page itself is normally "index.html"
-	 * and the directory can be used to save some images.
-	 * 
-	 * @param taxonomy The taxonomy
-	 * @return A directory
-	 */
-	public VFSContainer getTaxonomyInfoPageContainer(Taxonomy taxonomy);
-	
-	
 
 	public TaxonomyLevelType createTaxonomyLevelType(String identifier, String displayName, String description, String externalId, Taxonomy taxonomy);
 	

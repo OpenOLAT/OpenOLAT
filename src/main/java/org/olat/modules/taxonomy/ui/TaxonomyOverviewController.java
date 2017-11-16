@@ -46,10 +46,9 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 	private BreadcrumbPanel stackPanel;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
-	private final Link metadataLink, typesLink, levelsLink, infosPageLink, lostFoundLink;
+	private final Link metadataLink, typesLink, levelsLink, lostFoundLink;
 	
 	private EditTaxonomyController metadataCtrl;
-	private TaxonomyInfoPageController infoPageCtrl;
 	private TaxonomyTreeTableController taxonomyCtrl;
 	private TaxonomyLevelTypesEditController typeListCtrl;
 	private TaxonomyLostAndfoundDocumentsController lostFoundCtrl;
@@ -71,8 +70,6 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 		segmentView.addSegment(typesLink, false);
 		levelsLink = LinkFactory.createLink("taxonomy.levels", mainVC, this);
 		segmentView.addSegment(levelsLink, false);
-		infosPageLink = LinkFactory.createLink("taxonomy.infos.page", mainVC, this);
-		segmentView.addSegment(infosPageLink, false);
 		lostFoundLink = LinkFactory.createLink("taxonomy.lost.found", mainVC, this);
 		segmentView.addSegment(lostFoundLink, false);
 
@@ -105,8 +102,6 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 					doOpenTypes(ureq);
 				} else if (clickedLink == levelsLink) {
 					doOpenTaxonomyLevels(ureq);
-				} else if(clickedLink == infosPageLink) {
-					doOpenInfosPage(ureq);
 				} else if(clickedLink == lostFoundLink) {
 					doOpenLostFound(ureq);
 				}
@@ -147,14 +142,6 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 			listenTo(taxonomyCtrl);
 		}
 		mainVC.put("segmentCmp", taxonomyCtrl.getInitialComponent());
-	}
-	
-	private void doOpenInfosPage(UserRequest ureq) {
-		if(infoPageCtrl == null) {
-			infoPageCtrl = new TaxonomyInfoPageController(ureq, getWindowControl(), taxonomy);
-			listenTo(infoPageCtrl);
-		}
-		mainVC.put("segmentCmp", infoPageCtrl.getInitialComponent());
 	}
 	
 	private void doOpenLostFound(UserRequest ureq) {

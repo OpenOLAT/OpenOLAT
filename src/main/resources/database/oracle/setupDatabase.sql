@@ -2194,9 +2194,7 @@ create table o_tax_taxonomy (
   t_description CLOB,
   t_external_id varchar2(64 char),
   t_managed_flags varchar2(255 char),
-  t_library number default 1,
   t_directory_path varchar2(255 char),
-  t_directory_info_page_path varchar2(255 char),
   t_directory_lost_found_path varchar2(255 char),
   fk_group number(20) not null,
   primary key (id)

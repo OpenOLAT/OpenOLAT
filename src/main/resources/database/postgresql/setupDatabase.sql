@@ -2149,9 +2149,7 @@ create table o_tax_taxonomy (
   t_description text,
   t_external_id varchar(64),
   t_managed_flags varchar(255),
-  t_library bool default true,
   t_directory_path varchar(255),
-  t_directory_info_page_path varchar(255),
   t_directory_lost_found_path varchar(255),
   fk_group int8 not null,
   primary key (id)

@@ -57,14 +57,17 @@ public class TaxonomyTreeBuilder {
 	private final Identity identity;
 	private final String templateDirectory;
 	private final boolean isTaxonomyAdmin;
+	private final boolean enableTemplates;
 	
 	private final TaxonomyService taxonomyService;
 	
-	public TaxonomyTreeBuilder(Taxonomy taxonomy, Identity identity, Locale locale, boolean isTaxonomyAdmin, String templateDirectory) {
+	public TaxonomyTreeBuilder(Taxonomy taxonomy, Identity identity, Locale locale,
+			boolean isTaxonomyAdmin, boolean enableTemplates, String templateDirectory) {
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
 		this.locale = locale;
 		this.taxonomy = taxonomy;
 		this.identity = identity;
+		this.enableTemplates = enableTemplates;
 		this.templateDirectory = templateDirectory;
 		this.isTaxonomyAdmin = isTaxonomyAdmin;
 	}
@@ -81,14 +84,16 @@ public class TaxonomyTreeBuilder {
 			root.setUserObject(taxonomy);
 
 			//taxonomy directory
-			VFSContainer taxonomyDirectory = taxonomyService.getDocumentsLibrary(taxonomy);
-			TaxonomyTreeNode taxonomyDirectorNode = new TaxonomyTreeNode(taxonomy, taxonomyDirectory);
-			if(locale == null) {
-				locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
+			if(enableTemplates) {
+				VFSContainer taxonomyDirectory = taxonomyService.getDocumentsLibrary(taxonomy);
+				TaxonomyTreeNode taxonomyDirectorNode = new TaxonomyTreeNode(taxonomy, taxonomyDirectory);
+				if(locale == null) {
+					locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
+				}
+				taxonomyDirectorNode.setTitle(templateDirectory);
+				taxonomyDirectorNode.setUserObject(taxonomyDirectory);
+				root.addChild(taxonomyDirectorNode);
 			}
-			taxonomyDirectorNode.setTitle(templateDirectory);
-			taxonomyDirectorNode.setUserObject(taxonomyDirectory);
-			root.addChild(taxonomyDirectorNode);
 		
 			//taxonomy levels
 			List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomy);

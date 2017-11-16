@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.taxonomy.ui;
+package org.olat.modules.docpool.ui;
 
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
 import org.olat.core.commons.editor.htmleditor.WysiwygFactory;
@@ -32,8 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.modules.taxonomy.Taxonomy;
-import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.docpool.DocumentPoolModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -42,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyInfoPageController extends BasicController {
+public class DocumentPoolInfoPageController extends BasicController {
 	
 	private Link createPageButton, editPageButton;
 	private final VelocityContainer mainVC;
@@ -50,21 +49,19 @@ public class TaxonomyInfoPageController extends BasicController {
 	private SinglePageController indexCtrl;
 	private HTMLEditorController editInfoPageCtrl;
 	
-	private final Taxonomy taxonomy;
 	
 	@Autowired
-	private TaxonomyService taxonomyService;
+	private DocumentPoolModule docPoolModule;
 	
-	public TaxonomyInfoPageController(UserRequest ureq, WindowControl wControl, Taxonomy taxonomy) {
+	public DocumentPoolInfoPageController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		this.taxonomy = taxonomy;
 		
-		mainVC = createVelocityContainer("taxonomy_infos_page_admin");
+		mainVC = createVelocityContainer("infos_page_admin");
 		
 		editPageButton = LinkFactory.createButton("edit.info.page", mainVC, this);
 		editPageButton.setIconLeftCSS("o_icon o_icon_edit");
 		
-		VFSContainer container = taxonomyService.getTaxonomyInfoPageContainer(taxonomy);
+		VFSContainer container = docPoolModule.getInfoPageContainer();
 		if(container.resolve("index.html") == null) {
 			createPageButton = LinkFactory.createButton("create.infos.page", mainVC, this);
 			createPageButton.setCustomEnabledLinkCSS("btn btn-primary");
@@ -106,7 +103,7 @@ public class TaxonomyInfoPageController extends BasicController {
 	private void doEditInfoPage(UserRequest ureq) {
 		cleanUp();
 		
-		VFSContainer container = taxonomyService.getTaxonomyInfoPageContainer(taxonomy);
+		VFSContainer container = docPoolModule.getInfoPageContainer();
 		String pageRelPath = "index.html";
 		if(container.resolve(pageRelPath) == null) {
 			container.createChildLeaf(pageRelPath);
@@ -120,7 +117,7 @@ public class TaxonomyInfoPageController extends BasicController {
 	private void doViewInfoPage(UserRequest ureq) {
 		cleanUp();
 		
-		VFSContainer container = taxonomyService.getTaxonomyInfoPageContainer(taxonomy);
+		VFSContainer container = docPoolModule.getInfoPageContainer();
 		indexCtrl = new SinglePageController(ureq, getWindowControl(), container, "index.html", false);
 		listenTo(indexCtrl);
 		mainVC.put("index", indexCtrl.getInitialComponent());
