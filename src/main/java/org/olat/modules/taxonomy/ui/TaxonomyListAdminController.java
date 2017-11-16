@@ -79,7 +79,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 	@Autowired
 	private DocumentPoolModule docPoolModule;
 	@Autowired
-	private QuestionPoolModule qPoolModule;
+	private QuestionPoolModule questionPoolModule;
 	@Autowired
 	private TaxonomyService taxonomyService;
 	
@@ -146,7 +146,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.taxonomy", "open.taxonomy", null, flc, Link.LINK);
 		openLink.setIconRightCSS("o_icon o_icon_start");
 		boolean docPoolEnabled = taxonomy.getKey().toString().equals(docPoolModule.getTaxonomyTreeKey());
-		boolean qPoolEnabled = taxonomy.getKey().toString().equals(qPoolModule.getTaxonomyQPoolKey());
+		boolean qPoolEnabled = taxonomy.getKey().toString().equals(questionPoolModule.getTaxonomyQPoolKey());
 		TaxonomyRow row = new TaxonomyRow(taxonomy, docPoolEnabled, qPoolEnabled, openLink);
 		openLink.setUserObject(row);
 		return row;

@@ -67,6 +67,7 @@ import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
@@ -430,6 +431,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			keys.add(item.getKey());
 		}
 		lifeIndexer.indexDocument(QItemDocument.TYPE, keys);
+	}
+
+	@Override
+	public List<QuestionItemShort> getItems(TaxonomyLevelRef level) {
+		return questionItemDao.getItems(level);
 	}
 
 	@Override

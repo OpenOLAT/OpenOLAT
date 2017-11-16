@@ -8,7 +8,7 @@
 		#if($r.isNotEmpty($r.description))
 			<p>$r.description</p>
 		#end
-		<ul>
+		<ul class="list-unstyled">
 			<li><span>$r.translate("taxonomy.infos.number.of.levels"): $row.numberOfLevels</span></li>
 			<li><span>$r.translate("taxonomy.infos.question.pool.enabled"):#if($r.isTrue($row.questionPoolEnabled)) $r.translate("taxonomy.infos.enabled")#else $r.translate("taxonomy.infos.not.enabled")#end</span></li>
 			<li><span>$r.translate("taxonomy.infos.doc.pool.enabled"):#if($r.isTrue($row.documentPoolEnabled)) $r.translate("taxonomy.infos.enabled")#else $r.translate("taxonomy.infos.not.enabled")#end</span></li>

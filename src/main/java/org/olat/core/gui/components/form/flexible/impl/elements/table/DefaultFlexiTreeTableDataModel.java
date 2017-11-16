@@ -44,6 +44,10 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	@Override
 	public int getIndentation(int row) {
 		FlexiTreeTableNode node = getObject(row);
+		return getIndentation(node);
+	}
+	
+	private final int getIndentation(FlexiTreeTableNode node) {
 		int indentation = 0;
 		for(FlexiTreeTableNode parent=node.getParent(); parent != null; parent=parent.getParent()) {
 			indentation++;
@@ -76,6 +80,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	public void focus(int row) {
 		U object = getObject(row);
 		FlexiTreeTableNode parentObject = object.getParent();
+		int depth = getIndentation(object);
 
 		List<U> currentRows = getObjects();//this is already a copy
 		List<U> focusedRows = new ArrayList<>();
@@ -83,7 +88,10 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 		for(int i=row + 1; i<currentRows.size(); i++) {
 			U currentRow = currentRows.get(i);
 			if((parentObject == null && currentRow.getParent() == null)
+				|| (currentRow.getParent() == null)
 				|| (parentObject != null && parentObject.equals(currentRow.getParent()))) {
+				break;
+			} else if(depth >= getIndentation(currentRow)) {
 				break;
 			}
 			focusedRows.add(currentRow);

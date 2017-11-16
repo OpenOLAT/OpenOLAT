@@ -47,6 +47,7 @@ import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.ResourceShareImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -220,6 +221,16 @@ public class QuestionItemDAO {
 			query.setMaxResults(maxResults);
 		}
 		return query.getResultList();
+	}
+	
+	public List<QuestionItemShort> getItems(TaxonomyLevelRef taxonomyLevel) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select item from questionitem item")
+		  .append(" where item.taxonomyLevel.key=:taxonomyLevelKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemShort.class)
+				.setParameter("taxonomyLevelKey", taxonomyLevel.getKey())
+				.getResultList();
 	}
 	
 	public void delete(List<? extends QuestionItemShort> items) {

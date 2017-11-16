@@ -109,7 +109,7 @@ public class TaxonomyLevelOverviewController extends BasicController {
 		tabPane.addTab(translate("taxonomy.level.relations"), new TabCreator() {
 			@Override
 			public Component create(UserRequest uureq) {
-				relationsCtrl = new TaxonomyLevelRelationsController(uureq, getWindowControl());
+				relationsCtrl = new TaxonomyLevelRelationsController(uureq, getWindowControl(), taxonomyLevel);
 				listenTo(relationsCtrl);
 				return relationsCtrl.getInitialComponent();
 			}

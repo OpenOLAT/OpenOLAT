@@ -39,6 +39,7 @@ import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.resource.OLATResource;
 
 /**
@@ -77,7 +78,13 @@ public interface QPoolService {
 	
 	public ResultInfos<QuestionItemView> getItems(SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
-	
+	/**
+	 * Search the question items using the specified taxonomy level
+	 * 
+	 * @param level The taxonomy level
+	 * @return A list of the question items
+	 */
+	public List<QuestionItemShort> getItems(TaxonomyLevelRef level);
 	
 	//manage authors
 	public boolean isAuthor(QuestionItem item, Identity identity);
