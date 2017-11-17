@@ -217,7 +217,12 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	}
 	
 	public void reload(UserRequest ureq) {
-		participantListCtrl.updateModel(ureq);
+		if (participantListCtrl != null) {
+			participantListCtrl.updateModel(ureq);
+		}
+		if (groupListCtrl != null) {
+			groupListCtrl.updateModel();
+		}
 	}
 	
 	private void back(UserRequest ureq) {
@@ -229,7 +234,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		backLink.setVisible(false);
 		if (participantListCtrl != null) {
 			participantListCtrl.updateModel(ureq);			
-		} 
+		}
 		if (groupListCtrl != null) {
 			groupListCtrl.updateModel();
 		}
