@@ -55,7 +55,7 @@ public class DocumentPoolModuleWebService {
 	 * @response.representation.200.qname {http://www.example.com}taxonomyModuleConfigurationVO
 	 * @response.representation.200.mediaType application/xml, application/json
 	 * @response.representation.200.doc The configuration of the taxonomy module
-	 * @response.representation.200.example {@link org.olat.modules.taxonomy.restapi.Examples#SAMPLE_TAXONOMYMODULECONFIGURATIONVO}
+	 * @response.representation.200.example {@link org.olat.modules.docpool.restapi.Examples#SAMPLE_DOCUMENTPOOLMODULECONFIGURATIONVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param httpRequest  The HTTP request
 	 * @return The module configuration

@@ -31,12 +31,11 @@ import org.olat.modules.taxonomy.TaxonomyLevelTypeRef;
  */
 public class TaxonomyLevelTypeRow implements TaxonomyLevelTypeRef {
 	
-	private TaxonomyLevelType type;
 	private FormLink toolsLink;
+	private final TaxonomyLevelType type;
 	
-	public TaxonomyLevelTypeRow(TaxonomyLevelType type, FormLink toolsLink) {
+	public TaxonomyLevelTypeRow(TaxonomyLevelType type) {
 		this.type = type;
-		this.toolsLink = toolsLink;
 	}
 	
 	@Override
@@ -58,5 +57,9 @@ public class TaxonomyLevelTypeRow implements TaxonomyLevelTypeRef {
 
 	public FormLink getToolsLink() {
 		return toolsLink;
+	}
+	
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 }

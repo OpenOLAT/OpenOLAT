@@ -1537,6 +1537,7 @@
 							<source>src/main/java/org/olat/core/commons/services/notifications/restapi/vo/</source>
 							<source>src/main/java/org/olat/commons/calendar/restapi/</source>
 							<source>src/main/java/org/olat/modules/fo/restapi/</source>
+							<source>src/main/java/org/olat/modules/docpool/restapi/</source>
 							<source>src/main/java/org/olat/modules/gotomeeting/restapi/</source>
 							<source>src/main/java/org/olat/modules/taxonomy/restapi/</source>
 							<source>src/main/java/org/olat/modules/vitero/restapi/</source>
@@ -1591,6 +1592,7 @@
 							org.olat.course.nodes.en,
 							org.olat.course.certificate.restapi,
 							org.olat.course.db.restapi,
+							org.olat.modules.docpool.restapi,
 							org.olat.modules.fo.restapi,
 							org.olat.modules.gotomeeting.restapi,
 							org.olat.modules.openmeetings.restapi,
@@ -1654,6 +1656,7 @@
 								org.olat.course.certificate.restapi;
 								org.olat.course.db.restapi;
 								org.olat.modules.fo.restapi;
+								org.olat.modules.docpool.restapi;
 								org.olat.modules.gotomeeting.restapi;
 								org.olat.modules.openmeetings.restapi;
 								org.olat.modules.taxonomy.restapi;

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -33,6 +35,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 
 /**
@@ -41,7 +47,7 @@ import org.olat.modules.taxonomy.Taxonomy;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyOverviewController extends BasicController implements BreadcrumbPanelAware {
+public class TaxonomyOverviewController extends BasicController implements BreadcrumbPanelAware, Activateable2 {
 	
 	private BreadcrumbPanel stackPanel;
 	private final VelocityContainer mainVC;
@@ -75,6 +81,10 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 
 		putInitialPanel(mainVC);
 	}
+	
+	public Taxonomy getTaxonomy() {
+		return taxonomy;
+	}
 
 	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
@@ -87,6 +97,28 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Metadata".equalsIgnoreCase(type)) {
+			doOpenMetadata(ureq);
+			segmentView.select(metadataLink);
+		} else if("Types".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenTypes(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+			segmentView.select(typesLink);
+		} else if("Levels".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			doOpenTaxonomyLevels(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
+			segmentView.select(levelsLink);
+		} else if("Lostfound".equalsIgnoreCase(type)) {
+			doOpenLostFound(ureq);
+			segmentView.select(lostFoundLink);
+		}
 	}
 
 	@Override
@@ -121,32 +153,38 @@ public class TaxonomyOverviewController extends BasicController implements Bread
 
 	private void doOpenMetadata(UserRequest ureq) {
 		if(metadataCtrl == null) {
-			metadataCtrl = new EditTaxonomyController(ureq, getWindowControl(), taxonomy);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Metadata"), null);
+			metadataCtrl = new EditTaxonomyController(ureq, bwControl, taxonomy);
 			listenTo(metadataCtrl);
 		}
 		mainVC.put("segmentCmp", metadataCtrl.getInitialComponent());
 	}
 	
-	private void doOpenTypes(UserRequest ureq) {
+	private TaxonomyLevelTypesEditController doOpenTypes(UserRequest ureq) {
 		if(typeListCtrl == null) {
-			typeListCtrl = new TaxonomyLevelTypesEditController(ureq, getWindowControl(), taxonomy);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Types"), null);
+			typeListCtrl = new TaxonomyLevelTypesEditController(ureq, bwControl, taxonomy);
 			listenTo(typeListCtrl);
 		}
 		mainVC.put("segmentCmp", typeListCtrl.getInitialComponent());
+		return typeListCtrl;
 	}
 	
-	private void doOpenTaxonomyLevels(UserRequest ureq) {
+	private TaxonomyTreeTableController doOpenTaxonomyLevels(UserRequest ureq) {
 		if(taxonomyCtrl == null) {
-			taxonomyCtrl = new TaxonomyTreeTableController(ureq, getWindowControl(), taxonomy);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Levels"), null);
+			taxonomyCtrl = new TaxonomyTreeTableController(ureq, bwControl, taxonomy);
 			taxonomyCtrl.setBreadcrumbPanel(stackPanel);
 			listenTo(taxonomyCtrl);
 		}
 		mainVC.put("segmentCmp", taxonomyCtrl.getInitialComponent());
+		return taxonomyCtrl;
 	}
 	
 	private void doOpenLostFound(UserRequest ureq) {
 		if(lostFoundCtrl == null) {
-			lostFoundCtrl = new TaxonomyLostAndfoundDocumentsController(ureq, getWindowControl(), taxonomy);
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Lostfound"), null);
+			lostFoundCtrl = new TaxonomyLostAndfoundDocumentsController(ureq, bwControl, taxonomy);
 			listenTo(lostFoundCtrl);
 		}
 		mainVC.put("segmentCmp", lostFoundCtrl.getInitialComponent());

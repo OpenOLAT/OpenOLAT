@@ -27,11 +27,11 @@ package org.olat.modules.docpool.restapi;
  */
 public class Examples {
 	
-	public static final DocumentPoolModuleConfigurationVO SAMPLE_TAXONOMYMODULECONFIGURATIONVO = new DocumentPoolModuleConfigurationVO();
+	public static final DocumentPoolModuleConfigurationVO SAMPLE_DOCUMENTPOOLMODULECONFIGURATIONVO = new DocumentPoolModuleConfigurationVO();
 	
 	static {
-		SAMPLE_TAXONOMYMODULECONFIGURATIONVO.setEnabled(true);
-		SAMPLE_TAXONOMYMODULECONFIGURATIONVO.setTaxonomyTreeKey("1");
+		SAMPLE_DOCUMENTPOOLMODULECONFIGURATIONVO.setEnabled(true);
+		SAMPLE_DOCUMENTPOOLMODULECONFIGURATIONVO.setTaxonomyTreeKey("1");
 	}
 
 }

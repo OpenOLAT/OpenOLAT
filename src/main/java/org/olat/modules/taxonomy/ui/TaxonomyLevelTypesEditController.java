@@ -45,8 +45,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
@@ -62,7 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyLevelTypesEditController extends FormBasicController {
+public class TaxonomyLevelTypesEditController extends FormBasicController implements Activateable2 {
 	
 	private FormLink addRootTypeButton;
 	private FlexiTableElement tableEl;
@@ -119,17 +122,30 @@ public class TaxonomyLevelTypesEditController extends FormBasicController {
 	}
 	
 	private TaxonomyLevelTypeRow forgeRow(TaxonomyLevelType type) {
-		//tools
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		TaxonomyLevelTypeRow row = new TaxonomyLevelTypeRow(type, toolsLink);
-		toolsLink.setUserObject(row);
+		TaxonomyLevelTypeRow row = new TaxonomyLevelTypeRow(type);
+		if(isToolsEnable(type)) {
+			FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
+			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+			toolsLink.setUserObject(row);
+			row.setToolsLink(toolsLink);
+		}
 		return row;
+	}
+	
+	private boolean isToolsEnable(TaxonomyLevelType type) {
+		boolean toolable = !TaxonomyLevelTypeManagedFlag.isManaged(type.getManagedFlags(), TaxonomyLevelTypeManagedFlag.copy)
+				|| !TaxonomyLevelTypeManagedFlag.isManaged(type.getManagedFlags(), TaxonomyLevelTypeManagedFlag.delete);
+		return toolable;
 	}
 
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
 	}
 
 	@Override

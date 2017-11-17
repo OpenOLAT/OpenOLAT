@@ -54,9 +54,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
@@ -73,7 +78,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyTreeTableController extends FormBasicController implements BreadcrumbPanelAware {
+public class TaxonomyTreeTableController extends FormBasicController implements BreadcrumbPanelAware, Activateable2 {
 	
 	private FormLink newLevelButton;
 	private FlexiTableElement tableEl;
@@ -172,9 +177,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		}
 		
 		Collections.sort(rows, new FlexiTreeNodeComparator());
-		
-		//rows = new TaxonomyAllTreesBuilder().toTree(rows);
-		
+
 		model.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
@@ -191,6 +194,24 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("TaxonomyLevel".equalsIgnoreCase(type)) {
+			Long levelKey = entries.get(0).getOLATResourceable().getResourceableId();
+			List<TaxonomyLevelRow> rows = model.getObjects();
+			for(TaxonomyLevelRow row:rows) {
+				if(levelKey.equals(row.getKey())) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					doSelectTaxonomyLevel(ureq, row).activate(ureq, subEntries, entries.get(0).getTransientState());
+					break;
+				}
+			}
+		}
 	}
 
 	@Override
@@ -275,15 +296,18 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		cmc = null;
 	}
 
-	private void doSelectTaxonomyLevel(UserRequest ureq, TaxonomyLevelRow row) {
+	private TaxonomyLevelOverviewController doSelectTaxonomyLevel(UserRequest ureq, TaxonomyLevelRow row) {
 		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(row);
-		doSelectTaxonomyLevel(ureq, taxonomyLevel);
+		return doSelectTaxonomyLevel(ureq, taxonomyLevel);
 	}
 
-	private void doSelectTaxonomyLevel(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
-		TaxonomyLevelOverviewController detailsLevelCtrl = new TaxonomyLevelOverviewController(ureq, getWindowControl(), taxonomyLevel);
+	private TaxonomyLevelOverviewController doSelectTaxonomyLevel(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("TaxonomyLevel", taxonomyLevel.getKey());
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		TaxonomyLevelOverviewController detailsLevelCtrl = new TaxonomyLevelOverviewController(ureq, bwControl, taxonomyLevel);
 		listenTo(detailsLevelCtrl);
 		stackPanel.pushController(taxonomyLevel.getDisplayName(), detailsLevelCtrl);
+		return detailsLevelCtrl;
 	}
 	
 	private void doNewLevel(UserRequest ureq) {

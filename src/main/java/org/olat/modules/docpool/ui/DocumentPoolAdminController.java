@@ -19,6 +19,8 @@
  */
 package org.olat.modules.docpool.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,7 +33,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -44,7 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DocumentPoolAdminController extends BasicController {
+public class DocumentPoolAdminController extends BasicController implements Activateable2 {
 	
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
@@ -84,6 +90,23 @@ public class DocumentPoolAdminController extends BasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Configuration".equalsIgnoreCase(type)) {
+			doOpenConfiguration(ureq);
+			segmentView.select(configurationLink);
+		} else if("Types".equalsIgnoreCase(type)) {
+			doOpenPermissions(ureq);
+			segmentView.select(permissionsLink);
+		} else if("InfosPage".equalsIgnoreCase(type)) {
+			doOpenInfosPage(ureq);
+			segmentView.select(infosPageLink);
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
@@ -118,9 +141,11 @@ public class DocumentPoolAdminController extends BasicController {
 
 	private void doOpenConfiguration(UserRequest ureq) {
 		if(configurationCtrl == null) {
-			configurationCtrl = new DocumentPoolAdminConfigurationController(ureq, getWindowControl());
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Configuration"), null);
+			configurationCtrl = new DocumentPoolAdminConfigurationController(ureq, bwControl);
 			listenTo(configurationCtrl);
 		}
+		addToHistory(ureq, configurationCtrl);
 		mainVC.put("segmentCmp", configurationCtrl.getInitialComponent());
 	}
 	
@@ -128,8 +153,9 @@ public class DocumentPoolAdminController extends BasicController {
 		removeAsListenerAndDispose(permissionsCtrl);
 		
 		if(StringHelper.containsNonWhitespace(docPoolModule.getTaxonomyTreeKey())) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Types"), null);
 			Taxonomy taxonomy = taxonomyService.getTaxonomy(new TaxonomyRefImpl(new Long(docPoolModule.getTaxonomyTreeKey())));
-			permissionsCtrl = new DocumentPoolAdminPermissionsController(ureq, getWindowControl(), taxonomy);
+			permissionsCtrl = new DocumentPoolAdminPermissionsController(ureq, bwControl, taxonomy);
 			listenTo(permissionsCtrl);
 			mainVC.put("segmentCmp", permissionsCtrl.getInitialComponent());
 		}
@@ -137,9 +163,11 @@ public class DocumentPoolAdminController extends BasicController {
 	
 	private void doOpenInfosPage(UserRequest ureq) {
 		if(infosPageCtrl == null) {
-			infosPageCtrl = new DocumentPoolInfoPageController(ureq, getWindowControl());
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType("InfosPage"), null);
+			infosPageCtrl = new DocumentPoolInfoPageController(ureq, bwControl);
 			listenTo(infosPageCtrl);
 		}
+		addToHistory(ureq, infosPageCtrl);
 		mainVC.put("segmentCmp", infosPageCtrl.getInitialComponent());
 	}
 }

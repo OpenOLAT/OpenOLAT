@@ -19,6 +19,8 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.List;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -33,8 +35,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -50,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyLevelOverviewController extends BasicController {
+public class TaxonomyLevelOverviewController extends BasicController implements Activateable2 {
 
 	private final TabbedPane tabPane;
 	private final VelocityContainer mainVC;
@@ -125,6 +130,15 @@ public class TaxonomyLevelOverviewController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		tabPane.activate(ureq, entries, state);
 	}
 
 	@Override

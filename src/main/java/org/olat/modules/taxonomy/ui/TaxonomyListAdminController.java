@@ -159,7 +159,24 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+		
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Taxonomy".equalsIgnoreCase(type)) {
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			Long taxonomyKey = entries.get(0).getOLATResourceable().getResourceableId();
+			if(taxonomyCtrl != null && taxonomyKey.equals(taxonomyCtrl.getTaxonomy().getKey())) {
+				taxonomyCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			} else {
+				List<TaxonomyRow> rows = model.getObjects();
+				for(TaxonomyRow row:rows) {
+					if(taxonomyKey.equals(row.getKey())) {
+						doOpenTaxonomy(ureq, row).activate(ureq, subEntries, entries.get(0).getTransientState());
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	@Override
@@ -207,7 +224,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		cmc = null;
 	}
 
-	private void doOpenTaxonomy(UserRequest ureq, TaxonomyRow row) {
+	private TaxonomyOverviewController doOpenTaxonomy(UserRequest ureq, TaxonomyRow row) {
 		removeAsListenerAndDispose(taxonomyCtrl);
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Taxonomy", row.getKey());
@@ -219,6 +236,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		
 		stackPanel.changeDisplayname(translate("admin.menu.title"));
 		stackPanel.pushController(row.getDisplayName(), taxonomyCtrl);
+		return taxonomyCtrl;
 	}
 	
 	private void doCreateTaxonomy(UserRequest ureq) {
