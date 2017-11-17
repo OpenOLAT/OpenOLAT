@@ -601,7 +601,12 @@ public class ItemsController extends BasicController implements Activateable2 {
 				// permanently remove item
 				feedResource = feedManager.deleteItem(item);
 				// remove delete and edit buttons of this item
-				deleteButtons.remove(source);
+				for (Link deleteButton : deleteButtons) {
+					if (item.equals(deleteButton.getUserObject())) {
+						deleteButtons.remove(deleteButton);
+						break;
+					}
+				}
 				for (Link editButton : editButtons) {
 					if (item.equals(editButton.getUserObject())) {
 						editButtons.remove(editButton);
@@ -772,6 +777,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 	 * @param tmpItem
 	 */
 	private void cleanupTmpItemMediaDir(Item tmpItem) {
+		if(tmpItem == null) return;
 		String guid = tmpItem.getGuid();
 		if (guid == null) return;
 
