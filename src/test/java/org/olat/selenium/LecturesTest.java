@@ -31,7 +31,6 @@ import org.jboss.arquillian.graphene.page.InitialPage;
 import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
@@ -41,6 +40,7 @@ import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.lecture.LectureRepositoryAdminListPage;
 import org.olat.selenium.page.lecture.LectureRepositoryAdminPage;
+import org.olat.selenium.page.lecture.LectureRepositoryParticipantsPage;
 import org.olat.selenium.page.lecture.LecturesRepositoryPage;
 import org.olat.selenium.page.lecture.RollCallInterceptorPage;
 import org.olat.selenium.page.lecture.TeacherRollCallPage;
@@ -332,16 +332,16 @@ public class LecturesTest extends Deployments {
 			.assertOnParticipantLectureBlockAbsent(coach, lectureTitle, title);
 	}
 	
+	
 	/**
 	 * An author create a course to use the absence management
-	 * without authorized absence.<br>
-	 * The test didn't work because of the calculation of the
+	 * without authorized absence.
 	 * 
 	 * @param loginPage
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	@Test @Ignore
+	@Test
 	@RunAsClient
 	public void lecturesRollCall(@InitialPage LoginPage loginPage)
 	throws IOException, URISyntaxException {
@@ -401,15 +401,12 @@ public class LecturesTest extends Deployments {
 		LectureRepositoryAdminListPage lectureList = lecturesAdmin
 			.lectureList();
 		
-		Calendar cal = Calendar.getInstance();
-		int today = cal.get(Calendar.DATE);
-		int hour = cal.get(Calendar.HOUR_OF_DAY);
 		String lectureTitle = "2.Lecture";
 		lectureList
 			.newLectureBlock()
 			.setTitle(lectureTitle)
 			.setTeacher(author)
-			.setDate(today, hour, 0, hour, 59)
+			.setDateOneHourBefore()
 			.save();
 		
 		//go to the lectures list as "teacher"
@@ -429,10 +426,18 @@ public class LecturesTest extends Deployments {
 		lecturesAdmin = teachersLectures
 			.clickToolbarRootCrumb()
 			.lecturesAdministration();
-		lecturesAdmin
+		//edit the first admission to see some result
+		LectureRepositoryParticipantsPage participantsAdmin = lecturesAdmin
 			.participantList()
+			.editParticipant(participant1)
+			.firstAdmissionBack()
+			.saveParticipant()
+			.editParticipant(participant2)
+			.firstAdmissionBack()
+			.saveParticipant();
+		//check
+		participantsAdmin
 			.assertOnParticipantLectureBlockAbsent(participant1, 3)
 			.assertOnParticipantLectureBlockAbsent(participant2, 0);
 	}
-
 }

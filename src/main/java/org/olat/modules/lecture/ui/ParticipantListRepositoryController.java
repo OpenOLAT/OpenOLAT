@@ -56,6 +56,7 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.ui.ParticipantListDataModel.ParticipantsCols;
 import org.olat.modules.lecture.ui.component.LectureStatisticsCellRenderer;
+import org.olat.modules.lecture.ui.component.LongCellRenderer;
 import org.olat.modules.lecture.ui.component.ParticipantInfosRenderer;
 import org.olat.modules.lecture.ui.component.PercentCellRenderer;
 import org.olat.modules.lecture.ui.component.RateWarningCellRenderer;
@@ -170,7 +171,8 @@ public class ParticipantListRepositoryController extends FormBasicController {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.unauthorizedAbsenceLectures));
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.authorizedAbsenceLectures));
 			} else {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.absentLectures));
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.absentLectures,
+						new LongCellRenderer("o_sel_absences")));
 			}
 			FlexiColumnModel progressCol = new DefaultFlexiColumnModel(ParticipantsCols.progress, new LectureStatisticsCellRenderer());
 			progressCol.setExportable(false);

@@ -75,6 +75,8 @@ public class EditParticipantSummaryController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_lecture_participant_summary_form");
+		
 		long rate = Math.round(defaultRate * 100.0d);
 		uifactory.addStaticTextElement("entry.rate", Long.toString(rate) + "%", formLayout);
 		
@@ -88,6 +90,7 @@ public class EditParticipantSummaryController extends FormBasicController {
 		
 		Date firstAdmission = participantSummary.getFirstAdmissionDate();
 		firstAdmissionEl = uifactory.addDateChooser("first.admission", firstAdmission, formLayout);
+		firstAdmissionEl.setElementCssClass("o_sel_lecture_first_admission");
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);

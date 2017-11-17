@@ -44,8 +44,64 @@ public class LectureRepositoryParticipantsPage {
 		return this;
 	}
 	
+	/**
+	 * Edit the participant rate and first admission.
+	 * 
+	 * @param participant The participant to edit
+	 * @return Itself
+	 */
+	public LectureRepositoryParticipantsPage editParticipant(UserVO participant) {
+		By editBy = By.xpath("//div[contains(@class,'o_sel_lecture_participants_overview')]//table//tr[td[contains(text(),'" + participant.getFirstName() + "')]]/td/a[contains(@href,'edit')]");
+		OOGraphene.waitElement(editBy, browser);
+		browser.findElement(editBy).click();
+		OOGraphene.waitModalDialog(browser);
+		return this;
+	}
+	
+	/**
+	 * Set the first admission a month before the 12th.
+	 * 
+	 * @return Itself
+	 */
+	public LectureRepositoryParticipantsPage firstAdmissionBack() {
+		//open the date picker
+		By firstAdmissionBy = By.cssSelector("fieldset.o_sel_lecture_participant_summary_form div.o_sel_lecture_first_admission span.input-group-addon i");
+		OOGraphene.waitElement(firstAdmissionBy, browser);
+		browser.findElement(firstAdmissionBy).click();
+		OOGraphene.waitGui(browser);
+		
+		// a month before
+		By monthBeforeBy = By.cssSelector("a.ui-datepicker-prev.ui-corner-all");
+		browser.findElement(monthBeforeBy).click();
+		OOGraphene.waitGui(browser);
+		
+		// select the 12
+		By dayBy = By.xpath("//div[@id='ui-datepicker-div']//td//a[normalize-space(text())='12']");
+		OOGraphene.waitElement(dayBy, 5, browser);
+		browser.findElement(dayBy).click();
+
+		//wait until
+		By datePickerBy = By.id("ui-datepicker-div");
+		OOGraphene.waitElementUntilNotVisible(datePickerBy, 5, browser);
+		return this;
+	}
+	
+	/**
+	 * Save the modal dialog to edit the participant rate and
+	 * first admission.
+	 * 
+	 * @return Itself
+	 */
+	public LectureRepositoryParticipantsPage saveParticipant() {
+		By saveBy = By.cssSelector("fieldset.o_sel_lecture_participant_summary_form button.btn.btn-primary");
+		OOGraphene.waitElement(saveBy, browser);
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public LectureRepositoryParticipantsPage assertOnParticipantLectureBlockAbsent(UserVO participant, int absence) {
-		By blocks = By.xpath("//div[contains(@class,'o_sel_lecture_participants_overview')]//table//tr[td[contains(text(),'" + participant.getFirstName() + "')]][td[contains(text(),'" + absence + "')]]");
+		By blocks = By.xpath("//div[contains(@class,'o_sel_lecture_participants_overview')]//table//tr[td[contains(text(),'" + participant.getFirstName() + "')]]/td/span[contains(@class,'o_sel_absences')][contains(text(),'" + absence + "')]");
 		OOGraphene.waitElement(blocks, browser);
 		return this;
 	}
