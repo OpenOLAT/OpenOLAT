@@ -100,7 +100,7 @@ public class AdministrationPage {
 	}
 	
 	public LectureAdminSettingsPage openLecturesSettings() {
-		selectAssessment();
+		selectModules();
 		
 		By lecturesBy = By.cssSelector(".o_sel_lectures span.o_tree_level_label_leaf>a");
 		browser.findElement(lecturesBy).click();
