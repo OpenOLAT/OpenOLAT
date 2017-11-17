@@ -19,8 +19,6 @@
  */
 package org.olat.modules.taxonomy.ui;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -32,9 +30,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.modules.taxonomy.Taxonomy;
-import org.olat.modules.taxonomy.TaxonomyCompetence;
-import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -67,6 +62,20 @@ public class SelectTaxonomyLevelController extends FormBasicController {
 		initForm(ureq);
 		loadModel();
 	}
+	public TaxonomyCompetenceTypes getCompetenceType() {
+		return competenceType;
+	}
+	
+	public TaxonomyLevel getSelectedTaxonomyLevel() {
+		TreeNode selectedNode = taxonomyTreesEl.getSelectedNode();
+		if(selectedNode instanceof GenericTreeNode) {
+			GenericTreeNode selectedTaxonomyTreeNode = (GenericTreeNode)selectedNode;
+			if(selectedTaxonomyTreeNode.getUserObject() instanceof TaxonomyLevel) {
+				return (TaxonomyLevel)selectedTaxonomyTreeNode.getUserObject();
+			}
+		}
+		return null;		
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -88,29 +97,6 @@ public class SelectTaxonomyLevelController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		TreeNode selectedNode = taxonomyTreesEl.getSelectedNode();
-		if(selectedNode instanceof GenericTreeNode) {
-			GenericTreeNode selectedTaxonomyTreeNode = (GenericTreeNode)selectedNode;
-			if(selectedTaxonomyTreeNode.getUserObject() instanceof TaxonomyLevel) {
-				TaxonomyLevel selectedLevel = (TaxonomyLevel)selectedTaxonomyTreeNode.getUserObject();
-
-				boolean found = false;
-				List<TaxonomyCompetence> currentCompetences = taxonomyService.getTaxonomyCompetences(assessedIdentity, competenceType);
-				for(TaxonomyCompetence currentCompetence:currentCompetences) {
-					if(selectedLevel.equals(currentCompetence.getTaxonomyLevel())) {
-						found = true;
-					}
-				}
-				
-				if(!found) {
-					TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(selectedLevel);
-					Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
-					TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, assessedIdentity, competenceType);
-					String after = taxonomyService.toAuditXml(competence);
-					taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.addCompetence, null, after, null, taxonomy, competence, assessedIdentity, getIdentity());
-				}
-			}
-		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

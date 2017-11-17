@@ -48,6 +48,7 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.IdentityCompetenceTableModel.IdCompetenceCols;
 import org.olat.modules.taxonomy.ui.component.TaxonomyCompetenceTypeRenderer;
@@ -136,13 +137,13 @@ public class IdentityCompetencesController extends FormBasicController implement
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addManageButton == source) {
-			doSearchLevelsToAdd(ureq, TaxonomyCompetenceTypes.manage);
+			doSelectTaxonomyLevelsToAdd(ureq, TaxonomyCompetenceTypes.manage);
 		} else if(addTeachButton == source) {
-			doSearchLevelsToAdd(ureq, TaxonomyCompetenceTypes.teach);
+			doSelectTaxonomyLevelsToAdd(ureq, TaxonomyCompetenceTypes.teach);
 		} else if(addHaveButton == source) {
-			doSearchLevelsToAdd(ureq, TaxonomyCompetenceTypes.have);
+			doSelectTaxonomyLevelsToAdd(ureq, TaxonomyCompetenceTypes.have);
 		} else if(addTargetButton == source) {
-			doSearchLevelsToAdd(ureq, TaxonomyCompetenceTypes.target);
+			doSelectTaxonomyLevelsToAdd(ureq, TaxonomyCompetenceTypes.target);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -164,8 +165,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 			}
 		} else if(levelsSearchCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
-				tableEl.reset(true, true, true);
+				doAddTaxonomyLevelsAsCompetence(levelsSearchCtrl.getSelectedTaxonomyLevel(), levelsSearchCtrl.getCompetenceType());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -182,7 +182,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 		cmc = null;
 	}
 	
-	private void doSearchLevelsToAdd(UserRequest ureq, TaxonomyCompetenceTypes comptenceType) {
+	private void doSelectTaxonomyLevelsToAdd(UserRequest ureq, TaxonomyCompetenceTypes comptenceType) {
 		if(levelsSearchCtrl != null) return;
 		
 		levelsSearchCtrl = new SelectTaxonomyLevelController(ureq, getWindowControl(), assessedIdentity, comptenceType);
@@ -192,6 +192,27 @@ public class IdentityCompetencesController extends FormBasicController implement
 				true, translate("add.competence." + comptenceType.name()));
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doAddTaxonomyLevelsAsCompetence(TaxonomyLevel selectedLevel, TaxonomyCompetenceTypes competenceType) {
+		boolean found = false;
+		List<TaxonomyCompetence> currentCompetences = taxonomyService.getTaxonomyCompetences(assessedIdentity, competenceType);
+		for(TaxonomyCompetence currentCompetence:currentCompetences) {
+			if(selectedLevel.equals(currentCompetence.getTaxonomyLevel())) {
+				found = true;
+			}
+		}
+		
+		if(!found) {
+			TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(selectedLevel);
+			Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
+			TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, assessedIdentity, competenceType);
+			String after = taxonomyService.toAuditXml(competence);
+			taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.addCompetence, null, after, null, taxonomy, competence, assessedIdentity, getIdentity());
+		}
+		
+		loadModel();
+		tableEl.reset(true, true, true);
 	}
 	
 	private void doConfirmRemove(UserRequest ureq, IdentityCompetenceRow row) {

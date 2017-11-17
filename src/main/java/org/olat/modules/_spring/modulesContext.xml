@@ -193,7 +193,7 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="docpool" />
-		<property name="parentTreeNodeIdentifier" value="eAssessmentParent" /> 
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.modules.docpool.ui"/>
@@ -213,7 +213,7 @@
 			</bean>
 		</property>
 		<property name="navigationKey" value="taxonomy" />
-		<property name="parentTreeNodeIdentifier" value="eAssessmentParent" /> 
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
 		<property name="i18nActionKey" value="admin.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.modules.taxonomy.ui"/>
