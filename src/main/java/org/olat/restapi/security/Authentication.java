@@ -70,17 +70,30 @@ public class Authentication {
 	
 	/**
 	 * Authenticates against OLAT Provider and provides a security token if
-	 * authentication is successful. The security token is returned as
-	 * a header named X-OLAT-TOKEN. Given that the password is sent in clear text and not encrypted, it is not advisable 
-	 * to use this service over a none secure connection (https).
-   * @response.representation.200.mediaType text/plain, application/xml
-   * @response.representation.200.doc Say hello to the authenticated user, and give it a security token
-   * @response.representation.200.example &lt;hello&gt;Hello john&lt;/hello&gt;
-   * @response.representation.401.doc The authentication has failed
-   * @response.representation.404.doc The identity not found
-	 * @param username The username 
-	 * @param password The password (the password is in clear text, not encrypted)
-	 * @param httpRequest The HTTP request
+	 * authentication is successful. The security token is returned as a header
+	 * named X-OLAT-TOKEN. Given that the password is sent in clear text and not
+	 * encrypted, it is not advisable to use this service over a none secure
+	 * connection (https).
+	 * 
+	 * This authentication method should only be used if basic authentication is
+	 * not possible.
+	 * 
+	 * When using the REST API, best-practice is to use basic authentication and
+	 * activate cookies in your HTTP client for automatic session management.
+	 * 
+	 * @response.representation.200.mediaType text/plain, application/xml
+	 * @response.representation.200.doc Say hello to the authenticated user, and
+	 *                                  give it a security
+	 *                                  token @response.representation.200.example
+	 *                                  &lt;hello&gt;Hello john&lt;/hello&gt;
+	 * @response.representation.401.doc The authentication has failed
+	 * @response.representation.404.doc The identity not found
+	 * @param username
+	 *            The username
+	 * @param password
+	 *            The password (the password is in clear text, not encrypted)
+	 * @param httpRequest
+	 *            The HTTP request
 	 * @return
 	 */
 	@GET

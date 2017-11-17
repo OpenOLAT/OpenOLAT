@@ -16,6 +16,19 @@
          <p>In OpenOLAT, the JRS-311 is used as a backend for the implementation of our REST API. JSR-311 is a standard
          from J2EE. We use the reference implementation from the following standard: <a href="https://jersey.dev.java.net/">Jersey</a>.</p>
          <img src="schema.jpg" title="schema" />
+         <h4>Usage</h4>
+         <p>
+			The OpenOLAT REST API has been developed with remote management
+			applications in mind. It does not implement all features available in
+			the web UI and many of the requests are limited to administrative users
+			such as admin, user- or group managers and authors. 
+         </p>
+         <p>
+			While theoretically possible, it is not meant as an API to
+			implement alternative UI clients for end users. Keep this in mind when
+			using the API.
+         </p>
+         
          
          <h2>Security</h2>
          <p>The security is based on a two level mechanism, as it is in OpenOLAT.</p>
@@ -33,6 +46,29 @@
          	<li>If you cannot use the session cookie, the filter always adds an HTTP Header (X-OLAT-TOKEN) to
          	the response. Send this token with the next request to maintain your privileges.</li>
          </ol>
+         <h4>Best practice usage</h4>
+		<p>If the REST API is used to implement specific features in the
+			OpenOLAT web user interface such as using the course database, the
+			OpenOLAT web session cookie can be reused (method 1). The user is
+			already authenticated in the browser</p>
+		<p>If the REST API is used by an external (server based) application,
+			best-practice is to use basic authentication to authenticate the user
+			and enable session cookies in the http client of the remote
+			application.</p>
+		<p>If none of the above is possible, use method 2 using the
+			X-OLAT-TOKEN. Note that a user can have only one X-OLAT-TOKEN at any
+			time. If your remote application has several (concurrent) workers,
+			basic authentication should be used.</p>
+		<p>
+			If you are building a remote portal and want to implement some kind
+			of home-brew single-sign-on process, method 2 can be used to generate
+			the X-OLAT-TOKEN for every user as a server request. The Token can
+			then be added to each link in the portal to login the user based on the token (?X-OLAT-TOKEN=xyz).
+			When clicking the link, OpenOLAT will identify the user based on the
+			token and create a valid user session. Security wise there are better options to
+			achieve the same. We recommend using oAuth instead which is supported
+			by OpenOLAT as well. 
+         </p>
          
          <h2>Configuration</h2>
          <p>A spring bean allows to configure Resources, Singletons and Providers; either statically
@@ -47,15 +83,30 @@
          <h2>Example</h2>
          <p>Here is a little example on how to create a user and add it to a learning group:</p>
          <ol>
-         	<li>PUT http://www.frentix.com/olat/restapi/users<br />
-         	HTTP Header: Content-Type application/json<br />
-         	Response: 200</li>
-         	<li>GET http://www.frentix.com/olat/restapi/groups<br />
-         	HTTP Header: Accept application/json<br />
-         	Response: 200</li>
-         	<li>Choose a group</li>
-         	<li>PUT http://www.frentix.com/olat/restapi/groups/{groupId}/users/{identityKey}<br />
-         	Response: 200</li>
+         	<li>
+	         	Create a user<br />
+	         	<code>
+	         	PUT http://www.frentix.com/olat/restapi/users<br />
+	         	HTTP Header: Content-Type application/json<br />
+	         	Response: 200
+	         	</code>
+         	</li>
+         	<li>
+	         	Get the list of groups<br />
+	         	<code>
+	         	GET http://www.frentix.com/olat/restapi/groups<br />
+	         	HTTP Header: Accept application/json<br />
+	         	Response: 200
+	         	</code>
+	         </li>
+         	<li>Choose a group from the response</li>
+         	<li>
+				Add the user to the group<br />
+	         	<code>
+	         	PUT http://www.frentix.com/olat/restapi/groups/{groupId}/users/{identityKey}<br />
+	         	Response: 200
+	         	</code>
+	         	</li>
          </ol>
          
          <h2>Documentation</h2>
