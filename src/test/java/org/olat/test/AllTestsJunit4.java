@@ -92,6 +92,7 @@ import org.junit.runners.Suite;
 	org.olat.core.commons.services.webdav.WebDAVCommandsTest.class,
 	org.olat.core.commons.services.webdav.manager.DigestAuthenticationTest.class,
 	org.olat.core.commons.services.webdav.manager.WebDAVManagerTest.class,
+	org.olat.core.commons.services.webdav.manager.WebDAVAuthManagerTest.class,
 	org.olat.core.commons.services.webdav.servlets.RequestUtilsTest.class,
 	org.olat.core.commons.services.sms.manager.MessageLogDAOTest.class,
 	org.olat.core.commons.services.taskexecutor.PersistentTaskDAOTest.class,

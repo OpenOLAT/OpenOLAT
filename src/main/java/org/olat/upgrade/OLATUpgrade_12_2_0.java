@@ -161,7 +161,7 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 		int counter = 0;
 		List<UpgradeQuestionItem> questions;
 		do {
-			questions = getQuestionItems(counter, 50);
+			questions = getQuestionItems(counter, BATCH_SIZE);
 			for(UpgradeQuestionItem question:questions) {
 				processQuestionTaxonomyLevel(taxonomy, question);
 			}
@@ -172,7 +172,7 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 	}
 	
 	private List<UpgradeQuestionItem> getQuestionItems(int firstResults, int maxResult) {
-		String q = "select item from upgradequestionitem item where item.oldTaxonomyLevel.key is not null and item.newTaxonomyLevel.key is null order by item.key";
+		String q = "select item from upgradequestionitem item order by item.key";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q, UpgradeQuestionItem.class)
 				.setFirstResult(firstResults)
@@ -181,7 +181,7 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 	}
 	
 	private void processQuestionTaxonomyLevel(TaxonomyRef taxonomy, UpgradeQuestionItem question) {
-		if(question == null || question.getOldTaxonomyLevel() == null) return;
+		if(question == null || question.getOldTaxonomyLevel() == null || question.getNewTaxonomyLevel() != null) return;
 		Long oldKey = question.getOldTaxonomyLevel().getKey();
 		if(oldKey == null) return;
 		
