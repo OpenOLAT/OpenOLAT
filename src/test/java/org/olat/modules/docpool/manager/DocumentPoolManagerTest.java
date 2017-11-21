@@ -66,10 +66,15 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 	private TaxonomyCompetenceDAO taxonomyCompetenceDao;
 	
 	@Before
-	public void setUpDocumentPool() {
+	public void setupTaxonomy() {
+		Taxonomy taxonomy = null;
 		String taxonomyTreeKey = documentPoolModule.getTaxonomyTreeKey();
-		if(!StringHelper.isLong(taxonomyTreeKey)) {
-			Taxonomy taxonomy = taxonomyDao.createTaxonomy("DP-1", "Doc-pool", "Taxonomy for document pool", null);
+		if(StringHelper.isLong(taxonomyTreeKey)) {
+			taxonomy = taxonomyDao.loadByKey(new Long(taxonomyTreeKey));
+		}
+		
+		if(taxonomy == null) {
+			taxonomy = taxonomyDao.createTaxonomy("DP-1", "Doc-pool", "Taxonomy for document pool", null);
 			dbInstance.commitAndCloseSession();
 			documentPoolModule.setTaxonomyTreeKey(taxonomy.getKey().toString());
 		}
