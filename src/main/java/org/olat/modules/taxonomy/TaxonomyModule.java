@@ -21,8 +21,10 @@ package org.olat.modules.taxonomy;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -33,6 +35,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class TaxonomyModule extends AbstractSpringModule implements ConfigOnOff {
+
+	private static final String TAXONOMY_ENABLED = "docpool.enabled";
+
+	@Value("${taxonomy.enabled:true}")
+	private boolean enabled;
 	
 	@Autowired
 	public TaxonomyModule(CoordinatorManager coordinatorManager) {
@@ -46,14 +53,22 @@ public class TaxonomyModule extends AbstractSpringModule implements ConfigOnOff 
 
 	@Override
 	protected void initFromChangedProperties() {
-
+		String enabledObj = getStringPropertyValue(TAXONOMY_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(enabledObj)) {
+			enabled = "true".equals(enabledObj);
+		}
 	}
 	
 	@Override
 	public boolean isEnabled() {
-		return true;
+		return enabled;
 	}
 
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+		setStringProperty(TAXONOMY_ENABLED, Boolean.toString(enabled), true);
+	}
+	
 	public boolean isManagedTaxonomyLevels() {
 		return true;
 	}

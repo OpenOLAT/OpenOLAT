@@ -162,6 +162,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.wiki.gui.components.wikiToHtml.FilterUtilTest.class,
 	org.olat.modules.coach.manager.CoachingDAOTest.class,
 	org.olat.modules.coach.CoachingLargeTest.class,
+	org.olat.modules.docpool.manager.DocumentPoolManagerTest.class,
 	org.olat.modules.gotomeeting.manager.GoToJsonUtilTest.class,
 	org.olat.modules.gotomeeting.manager.GoToMeetingDAOTest.class,
 	org.olat.modules.gotomeeting.manager.GoToOrganizerDAOTest.class,
