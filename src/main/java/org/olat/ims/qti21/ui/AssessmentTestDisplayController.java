@@ -2055,6 +2055,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			//updateButtons();
 			resultsVisible = false;
 			if(testSessionController.getTestSessionState().isEnded()
+					&& deliveryOptions.isShowAssessmentResultsOnFinish()
 					&& deliveryOptions.getAssessmentResultsOptions() != null
 					&& !deliveryOptions.getAssessmentResultsOptions().none()) {
 				removeAsListenerAndDispose(resultCtrl);

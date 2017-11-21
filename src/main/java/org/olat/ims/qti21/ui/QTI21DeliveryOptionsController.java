@@ -208,9 +208,11 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 		applyMultipleSelection(enableCancelEl, options.isEnableCancel());
 		applyMultipleSelection(showFeedbacksEl, !options.isHideFeedbacks());
 		
+		if(options.isShowAssessmentResultsOnFinish()) {
+			showResultsOnFinishEl.select(onKeys[0], true);
+		}
 		QTI21AssessmentResultsOptions resultsOptions = options.getAssessmentResultsOptions();
 		if(!resultsOptions.none()) {
-			showResultsOnFinishEl.select(onKeys[0], true);
 			assessmentResultsOnFinishEl.uncheckAll();
 			if(resultsOptions.isMetadata()) {
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[0], true);
@@ -231,7 +233,6 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 				assessmentResultsOnFinishEl.select(resultsOptionsKeys[5], true);
 			}
 		} else {
-			showResultsOnFinishEl.uncheckAll();
 			assessmentResultsOnFinishEl.uncheckAll();
 		}
 		assessmentResultsOnFinishEl.setVisible(showResultsOnFinishEl.isAtLeastSelected(1));
@@ -336,8 +337,10 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 					assessmentResultsOnFinishEl.isSelected(2), assessmentResultsOnFinishEl.isSelected(3),
 					assessmentResultsOnFinishEl.isSelected(4), assessmentResultsOnFinishEl.isSelected(5));
 			deliveryOptions.setAssessmentResultsOptions(resultsOptions);
+			deliveryOptions.setShowAssessmentResultsOnFinish(true);
 		} else {
 			deliveryOptions.setAssessmentResultsOptions(QTI21AssessmentResultsOptions.noOptions());
+			deliveryOptions.setShowAssessmentResultsOnFinish(false);
 		}
 		deliveryOptions.setShowResultsOnFinish(null);// nullify old stuff
 
