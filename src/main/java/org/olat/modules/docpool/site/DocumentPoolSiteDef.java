@@ -28,13 +28,9 @@ import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.modules.docpool.DocumentPoolManager;
 import org.olat.modules.docpool.DocumentPoolModule;
-import org.olat.modules.taxonomy.TaxonomyModule;
-import org.olat.modules.taxonomy.TaxonomyRef;
-import org.olat.modules.taxonomy.TaxonomyService;
-import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 
 /**
  * 
@@ -48,9 +44,9 @@ public class DocumentPoolSiteDef extends AbstractSiteDefinition implements SiteD
 	protected SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {
 		UserSession usess = ureq.getUserSession();
 		Roles roles = usess.getRoles();
-		if(StringHelper.containsNonWhitespace(config.getSecurityCallbackBeanId()) || roles.isOLATAdmin()) {
+		if(roles.isOLATAdmin()) {
 			return new DocumentPoolSite(this, ureq.getLocale());
-		} else if(roles.isGuestOnly() || !roles.isInvitee()) {
+		} else if(roles.isGuestOnly() || roles.isInvitee()) {
 			return null;
 		} else if(hasCompetence(usess.getIdentity())) {
 			return new DocumentPoolSite(this, ureq.getLocale());
@@ -59,17 +55,12 @@ public class DocumentPoolSiteDef extends AbstractSiteDefinition implements SiteD
 	}
 	
 	private boolean hasCompetence(Identity identity) {
-		String taxonomyKey = CoreSpringFactory.getImpl(DocumentPoolModule.class).getTaxonomyTreeKey();
-		if(StringHelper.isLong(taxonomyKey)) {
-			TaxonomyRef taxonomy = new TaxonomyRefImpl(new Long(taxonomyKey));
-			return CoreSpringFactory.getImpl(TaxonomyService.class).hasTaxonomyCompetences(taxonomy, identity);
-		}
-		return false;
+		return CoreSpringFactory.getImpl(DocumentPoolManager.class).hasValidCompetence(identity);
 	}
 	
 	@Override
 	public boolean isEnabled() {
-		TaxonomyModule module = CoreSpringFactory.getImpl(TaxonomyModule.class);
+		DocumentPoolModule module = CoreSpringFactory.getImpl(DocumentPoolModule.class);
 		return module.isEnabled() && super.isEnabled();
 	}
 }
