@@ -135,6 +135,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		
 		//general
 		original.setTitle("Original");
+		original.setTopic("Topic");
 		original.setDescription("Original description");
 		original.setKeywords("original copy to");
 		original.setCoverage("New coverage");
@@ -174,6 +175,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertEquals(original.getIdentifier(), clone.getMasterIdentifier());
 		Assert.assertNotNull(clone.getTitle());
 		Assert.assertFalse(clone.getTitle().equals(original.getTitle()));
+		Assert.assertEquals(original.getTopic(), clone.getTopic());
 		Assert.assertEquals(original.getDescription(), clone.getDescription());
 		Assert.assertEquals(original.getKeywords(), clone.getKeywords());
 		Assert.assertEquals(original.getCoverage(), clone.getCoverage());

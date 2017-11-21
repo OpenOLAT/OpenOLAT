@@ -83,6 +83,8 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	private String masterIdentifier;
 	@Column(name="q_title", nullable=false, insertable=true, updatable=true)
 	private String title;
+	@Column(name="q_topic", nullable=true, insertable=true, updatable=true)
+	private String topic;
 	@Column(name="q_description", nullable=true, insertable=true, updatable=true)
 	private String description;
 	@Column(name="q_keywords", nullable=true, insertable=true, updatable=true)
@@ -203,6 +205,15 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	@Override
+	public String getTopic() {
+		return topic;
+	}
+
+	public void setTopic(String topic) {
+		this.topic = topic;
 	}
 
 	@Override
@@ -408,7 +419,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.keywords = keywords;
 	}
 
-
+	@Override
 	@Transient
 	public QuestionStatus getQuestionStatus() {
 		if(StringHelper.containsNonWhitespace(status)) {
@@ -504,8 +515,10 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("question[key=").append(this.key)
-			.append("]").append(super.toString());
+		sb.append("question[");
+		sb.append("key=").append(this.key);
+		sb.append(", title=").append(title);
+		sb.append("] ").append(super.toString());
 		return sb.toString();
 	}
 }

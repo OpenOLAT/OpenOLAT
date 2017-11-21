@@ -65,8 +65,8 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	private FormLink searchButton;
 	
 	private final SearchAttributes searchAttributes = new SearchAttributes();
-	private final List<ConditionalQuery> uiQueries = new ArrayList<ConditionalQuery>();
-	private final List<String> condQueries = new ArrayList<String>();
+	private final List<ConditionalQuery> uiQueries = new ArrayList<>();
+	private final List<String> condQueries = new ArrayList<>();
 	
 	private final String prefsKey;
 	private ExtendedSearchPrefs prefs;
@@ -171,7 +171,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	private void doSearch(UserRequest ureq) {
 		condQueries.clear();
 		
-		List<ExtendedSearchPref> params = new ArrayList<ExtendedSearchPref>();
+		List<ExtendedSearchPref> params = new ArrayList<>();
 		for(ConditionalQuery uiQuery:uiQueries) {
 			String query = uiQuery.getQuery();
 			if(StringHelper.containsNonWhitespace(query)) {
@@ -317,11 +317,12 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	}
 	
 	private class SearchAttributes {
-		private List<SearchAttribute> attributes = new ArrayList<SearchAttribute>();
+		private List<SearchAttribute> attributes = new ArrayList<>();
 		
 		public SearchAttributes() {
 			//general
 			attributes.add(new SearchAttribute("general.title", new StringQueryParameter(AbstractOlatDocument.TITLE_FIELD_NAME)));
+			attributes.add(new SearchAttribute("general.topic", new StringQueryParameter(QItemDocument.TOPIC_FIELD)));
 			attributes.add(new SearchAttribute("general.keywords", new StringQueryParameter(QItemDocument.KEYWORDS_FIELD)));
 			attributes.add(new SearchAttribute("general.coverage", new StringQueryParameter(QItemDocument.COVERAGE_FIELD)));
 			attributes.add(new SearchAttribute("general.additional.informations", new StringQueryParameter(QItemDocument.ADD_INFOS_FIELD)));
@@ -398,8 +399,8 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		@Override
 		public FormItem createItem(String startValue) {
 			TaxonomyTreeModel treeModel = new TaxonomyTreeModel("");
-			List<String> keys = new ArrayList<String>();
-			List<String> values = new ArrayList<String>();
+			List<String> keys = new ArrayList<>();
+			List<String> values = new ArrayList<>();
 			flatTree(treeModel.getRootNode(), "", keys, values);
 
 			String[] keysArr = keys.toArray(new String[keys.size()]);
@@ -431,7 +432,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		@Override
 		public FormItem createItem(String startValue) {
 			List<QLicense> allLicenses = qpoolService.getAllLicenses();
-			List<QLicense> licenses = new ArrayList<QLicense>(allLicenses);
+			List<QLicense> licenses = new ArrayList<>(allLicenses);
 			for(Iterator<QLicense> it=licenses.iterator(); it.hasNext(); ) {
 				String key = it.next().getLicenseKey();
 				if(key != null && key.startsWith("perso-")) {

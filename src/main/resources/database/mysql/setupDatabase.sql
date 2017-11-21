@@ -1537,6 +1537,7 @@ create table o_qp_item (
    q_identifier varchar(36) not null,
    q_master_identifier varchar(36),
    q_title varchar(1024) not null,
+   q_topic varchar(1024),
    q_description varchar(2048),
    q_keywords varchar(1024),
    q_coverage varchar(1024),

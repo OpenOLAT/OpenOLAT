@@ -43,7 +43,7 @@ import org.olat.modules.qpool.ui.events.QPoolEvent;
 public class GeneralMetadataController extends FormBasicController {
 	
 	private FormLink editLink;
-	private StaticTextElement titleEl, keywordsEl, coverageEl, addInfosEl, languageEl, studyFieldEl;
+	private StaticTextElement topicEl, keywordsEl, coverageEl, addInfosEl, languageEl, studyFieldEl;
 	
 	private final boolean edit;
 	
@@ -64,7 +64,7 @@ public class GeneralMetadataController extends FormBasicController {
 		}
 
 		//general
-		titleEl = uifactory.addStaticTextElement("general.title", "", formLayout);
+		topicEl = uifactory.addStaticTextElement("general.topic", "", formLayout);
 		keywordsEl = uifactory.addStaticTextElement("general.keywords", "", formLayout);
 		coverageEl = uifactory.addStaticTextElement("general.coverage", "", formLayout);
 		addInfosEl = uifactory.addStaticTextElement("general.additional.informations", "", formLayout);
@@ -75,8 +75,8 @@ public class GeneralMetadataController extends FormBasicController {
 	}
 	
 	public void setItem(QuestionItem item) {
-		String title = item.getTitle() == null ? "" : item.getTitle();
-		titleEl.setValue(title);
+		String topic = item.getTopic() == null ? "" : item.getTopic();
+		topicEl.setValue(topic);
 		String keywords = item.getKeywords() == null ? "" : item.getKeywords();
 		keywordsEl.setValue(keywords);
 		String coverage = item.getCoverage() == null ? "" : item.getCoverage();

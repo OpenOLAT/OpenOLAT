@@ -75,7 +75,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private static final String[] EMPTY_VALUES = new String[]{ "" };
 	
 	//general
-	private TextElement titleEl, keywordsEl, coverageEl, addInfosEl, languageEl;
+	private TextElement topicEl, keywordsEl, coverageEl, addInfosEl, languageEl;
 	private Link selectContext;
 	private FormLayoutContainer selectContextCont;
 	private CloseableModalController cmc;
@@ -145,8 +145,8 @@ public class MetadataBulkChangeController extends FormBasicController {
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
 		
-		titleEl = uifactory.addTextElement("general.title", "general.title", 1000, null, generalCont);
-		decorate(titleEl, generalCont);
+		topicEl = uifactory.addTextElement("general.topic", "general.topic", 1000, null, generalCont);
+		decorate(topicEl, generalCont);
 		keywordsEl = uifactory.addTextElement("general.keywords", "general.keywords", 1000, null, generalCont);
 		decorate(keywordsEl, generalCont);
 		coverageEl = uifactory.addTextElement("general.coverage", "general.coverage", 1000, null, generalCont);
@@ -369,7 +369,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		boolean allOk = true;
 		
 		//general
-		allOk &= validateElementLogic(titleEl, titleEl.getMaxLength(), true, isEnabled(titleEl));
+		allOk &= validateElementLogic(topicEl, topicEl.getMaxLength(), true, isEnabled(topicEl));
 		allOk &= validateElementLogic(keywordsEl, keywordsEl.getMaxLength(), false, isEnabled(keywordsEl));
 		allOk &= validateElementLogic(coverageEl, coverageEl.getMaxLength(), false, isEnabled(coverageEl));
 		allOk &= validateElementLogic(addInfosEl, addInfosEl.getMaxLength(), false, isEnabled(addInfosEl));
@@ -422,8 +422,8 @@ public class MetadataBulkChangeController extends FormBasicController {
 	}
 	
 	private void formOKGeneral(QuestionItemImpl itemImpl) {
-		if(isEnabled(titleEl))
-			itemImpl.setTitle(titleEl.getValue());
+		if(isEnabled(topicEl))
+			itemImpl.setTopic(topicEl.getValue());
 		if(isEnabled(keywordsEl))
 			itemImpl.setKeywords(keywordsEl.getValue());
 		if(isEnabled(coverageEl))

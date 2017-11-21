@@ -47,6 +47,7 @@ public interface QuestionItemView extends QuestionItemShort {
 		key,
 		identifier,
 		title,
+		topic,
 		creationDate,
 		lastModified,
 		keywords,

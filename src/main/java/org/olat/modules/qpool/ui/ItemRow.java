@@ -88,6 +88,11 @@ public class ItemRow implements QuestionItemView {
 	}
 	
 	@Override
+	public String getTopic() {
+		return delegate.getTopic();
+	}
+	
+	@Override
 	public String getKeywords() {
 		return delegate.getKeywords();
 	}
@@ -107,6 +112,7 @@ public class ItemRow implements QuestionItemView {
 		return delegate.getLanguage();
 	}
 
+	@Override
 	public String getTaxonomyLevelName() {
 		return delegate.getTaxonomyLevelName();
 	}
@@ -219,4 +225,5 @@ public class ItemRow implements QuestionItemView {
 		  .append("name=").append(delegate.getTitle()).append("]");
 		return sb.toString();
 	}
+
 }

@@ -54,4 +54,5 @@ public class QItemDocument extends OlatDocument {
 	public static final String EDITOR_FIELD = "editor";
 	public static final String EDITOR_VERSION_FIELD = "editorVersion";
 	public static final String FORMAT_FIELD = "format";
+	public static final String TOPIC_FIELD = "topic";
 }

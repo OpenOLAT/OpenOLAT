@@ -133,6 +133,7 @@ public class QuestionItemDAO {
 		
 		//classification
 		copy.setTaxonomyLevel(original.getTaxonomyLevel());
+		copy.setTopic(original.getTopic());
 		
 		//educational
 		copy.setEducationalContext(original.getEducationalContext());

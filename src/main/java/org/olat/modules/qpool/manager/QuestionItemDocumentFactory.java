@@ -121,6 +121,7 @@ public class QuestionItemDocumentFactory {
 		addTextField(document, QItemDocument.COVERAGE_FIELD, item.getCoverage(), 2.0f);
 		addTextField(document, QItemDocument.ADD_INFOS_FIELD, item.getAdditionalInformations(), 2.0f);
 		addStringField(document, QItemDocument.LANGUAGE_FIELD,  item.getLanguage(), 1.0f);
+		addTextField(document, QItemDocument.TOPIC_FIELD, item.getTopic(), 2.0f);
 		
 		//educational
 		if(item.getEducationalContext() != null) {

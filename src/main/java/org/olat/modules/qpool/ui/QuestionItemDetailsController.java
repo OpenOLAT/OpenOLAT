@@ -228,6 +228,8 @@ public class QuestionItemDetailsController extends BasicController implements Br
 		} else if(source == editCtrl) {
 			if(event == Event.CHANGED_EVENT) {
 				doContentChanged(ureq);
+			} else if(event instanceof QItemEdited) {
+				fireEvent(ureq, event);
 			}
 		} else if(source == metadatasCtrl) {
 			if(event instanceof QItemEdited) {

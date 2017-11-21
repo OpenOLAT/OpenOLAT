@@ -129,7 +129,8 @@ public class SearchServiceImpl implements SearchService, GenericEventListener {
 			QItemDocument.ITEM_TYPE_FIELD, QItemDocument.ASSESSMENT_TYPE_FIELD,
 			QItemDocument.ITEM_VERSION_FIELD, QItemDocument.ITEM_STATUS_FIELD,
 			QItemDocument.COPYRIGHT_FIELD, QItemDocument.EDITOR_FIELD,
-			QItemDocument.EDITOR_VERSION_FIELD, QItemDocument.FORMAT_FIELD
+			QItemDocument.EDITOR_VERSION_FIELD, QItemDocument.FORMAT_FIELD,
+			QItemDocument.TOPIC_FIELD
 	};
 
 	

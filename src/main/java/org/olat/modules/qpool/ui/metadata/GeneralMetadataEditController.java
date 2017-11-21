@@ -54,7 +54,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 
 	private Link selectContext;
 	private FormLayoutContainer selectContextCont;
-	private TextElement titleEl, keywordsEl, coverageEl, addInfosEl, languageEl;
+	private TextElement topicEl, keywordsEl, coverageEl, addInfosEl, languageEl;
 
 	private CloseableModalController cmc;
 	private TaxonomySelectionController selectionCtrl;
@@ -89,8 +89,8 @@ public class GeneralMetadataEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("general");
 		
-		String title = item.getTitle();
-		titleEl = uifactory.addTextElement("general.title", "general.title", 1000, title, formLayout);
+		String topic = item.getTopic();
+		topicEl = uifactory.addTextElement("general.topic", "general.topic", 1000, topic, formLayout);
 		String keywords = item.getKeywords();
 		keywordsEl = uifactory.addTextElement("general.keywords", "general.keywords", 1000, keywords, formLayout);
 		String coverage = item.getCoverage();
@@ -167,7 +167,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		allOk &= validateElementLogic(titleEl, titleEl.getMaxLength(), true, true);
+		allOk &= validateElementLogic(topicEl, topicEl.getMaxLength(), false, true);
 		allOk &= validateElementLogic(keywordsEl, keywordsEl.getMaxLength(), false, true);
 		allOk &= validateElementLogic(coverageEl, coverageEl.getMaxLength(), false, true);
 		allOk &= validateElementLogic(addInfosEl, addInfosEl.getMaxLength(), false, true);
@@ -196,7 +196,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
-			itemImpl.setTitle(titleEl.getValue());
+			itemImpl.setTopic(topicEl.getValue());
 			if(StringHelper.containsNonWhitespace(keywordsEl.getValue())) {
 				itemImpl.setKeywords(keywordsEl.getValue());
 			} else {

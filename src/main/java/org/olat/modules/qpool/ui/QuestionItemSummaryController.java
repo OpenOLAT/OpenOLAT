@@ -58,7 +58,7 @@ public class QuestionItemSummaryController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("metadatas");
 		
-		subjectEl = uifactory.addStaticTextElement("general.title", "", formLayout);
+		subjectEl = uifactory.addStaticTextElement("general.topic", "", formLayout);
 		keywordsEl = uifactory.addStaticTextElement("general.keywords", "", formLayout);
 		studyFieldEl = uifactory.addStaticTextElement("classification.taxonomy.level", "", formLayout);
 		usageEl = uifactory.addStaticTextElement("question.usage", "", formLayout);
@@ -99,7 +99,7 @@ public class QuestionItemSummaryController extends FormBasicController {
 			differentiationEl.setValue("");
 		} else {
 			canEdit = edit;
-			subjectEl.setValue(updatedItem.getTitle());
+			subjectEl.setValue(updatedItem.getTopic());
 			String keywords = updatedItem.getKeywords();
 			keywordsEl.setValue(keywords == null ? "" : keywords);
 			String taxonPath = updatedItem.getTaxonomicPath();

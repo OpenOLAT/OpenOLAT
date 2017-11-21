@@ -477,6 +477,8 @@ public class QuestionListController extends AbstractItemListController implement
 					doNext(ureq, qce.getItem());
 				}
 			} else if(event instanceof QItemEdited) {
+				String title = ((QItemEdited) event).getItem().getTitle();
+				stackPanel.changeDisplayname(title, null, currentMainDetailsCtrl);
 				itemCollectionDirty = true;
 			} else if (event instanceof QPoolEvent) {
 				QPoolEvent qce = (QPoolEvent)event;

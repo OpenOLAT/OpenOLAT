@@ -70,6 +70,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case identifier: return item.getIdentifier();
 			case masterIdentifier: return item.getMasterIdentifier();
 			case title: return item.getTitle();
+			case topic: return item.getTopic();
 			case keywords: return item.getKeywords();
 			case coverage: return item.getCoverage();
 			case additionalInfos: return item.getAdditionalInformations();
@@ -111,6 +112,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		identifier("general.identifier"),
 		masterIdentifier("general.master.identifier"),
 		title("general.title"),
+		topic("general.topic"),
 		keywords("general.keywords"),
 		coverage("general.coverage"),
 		additionalInfos("general.additional.informations"),

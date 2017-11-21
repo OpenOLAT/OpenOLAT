@@ -36,6 +36,8 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -98,7 +100,18 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 				AssessmentItemEvent aie = (AssessmentItemEvent)event;
 				AssessmentItem assessmentItem = aie.getAssessmentItem();
 				qtiService.persistAssessmentObject(resourceFile, assessmentItem);
+				updateQuestionItem(ureq, assessmentItem);
 			}
+		}
+	}
+
+	private void updateQuestionItem(UserRequest ureq, AssessmentItem assessmentItem) {
+		if(questionItem instanceof QuestionItemImpl) {
+			String title = assessmentItem.getTitle();
+			QuestionItemImpl itemImpl = (QuestionItemImpl)questionItem;
+			itemImpl.setTitle(title);
+			qpoolService.updateItem(itemImpl);
+			fireEvent(ureq, new QItemEdited(questionItem));
 		}
 	}
 

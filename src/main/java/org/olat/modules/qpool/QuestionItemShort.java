@@ -20,7 +20,6 @@
 package org.olat.modules.qpool;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
@@ -54,6 +53,8 @@ public interface QuestionItemShort extends OLATResourceable, CreateInfo, Modifie
 	 */
 	public String getTaxonomyLevelName();
 	
+	public String getTopic();
+	
 	//educational
 	public String getEducationalContextLevel();
 
@@ -78,17 +79,4 @@ public interface QuestionItemShort extends OLATResourceable, CreateInfo, Modifie
 	//technics
 	public String getFormat();
 	
-	public Date getCreationDate();
-	
-	public Date getLastModified();
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
 }

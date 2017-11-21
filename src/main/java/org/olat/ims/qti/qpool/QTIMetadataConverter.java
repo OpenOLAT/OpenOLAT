@@ -208,6 +208,11 @@ public class QTIMetadataConverter {
 		if(StringHelper.containsNonWhitespace(title)) {
 			fullItem.setTitle(title);
 		}
+
+		String topic = getMetadataEntry("topic");
+		if(StringHelper.containsNonWhitespace(topic)) {
+			fullItem.setTopic(topic);
+		}
 		String license = getMetadataEntry("license");
 		if(StringHelper.containsNonWhitespace(license)) {
 			fullItem.setLicense(toLicense(license));
@@ -247,6 +252,7 @@ public class QTIMetadataConverter {
 		addMetadataField("oo_taxonomy", fullItem.getTaxonomicPath(), qtimetadata);
 		//fullItem.getTaxonomicLevel();
 		addMetadataField("title", fullItem.getTitle(), qtimetadata);
+		addMetadataField("oo_topic", fullItem.getTopic(), qtimetadata);
 		addMetadataField("oo_usage", fullItem.getUsage(), qtimetadata);
 	}
 	

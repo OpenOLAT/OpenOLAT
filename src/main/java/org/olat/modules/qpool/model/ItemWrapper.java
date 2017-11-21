@@ -40,6 +40,7 @@ public class ItemWrapper implements QuestionItemView {
 	private String identifier;
 	private String masterIdentifier;
 	private String title;
+	private String topic;
 	private String keywords;
 	private String coverage;
 	private String additionalInformations;
@@ -73,6 +74,7 @@ public class ItemWrapper implements QuestionItemView {
 		identifier = item.getIdentifier();
 		masterIdentifier = item.getMasterIdentifier();
 		title = item.getTitle();
+		topic = item.getTopic();
 		keywords = item.getKeywords();
 		coverage = item.getCoverage();
 		additionalInformations = item.getAdditionalInformations();
@@ -142,6 +144,11 @@ public class ItemWrapper implements QuestionItemView {
 	@Override
 	public String getTitle() {
 		return title;
+	}
+	
+	@Override
+	public String getTopic() {
+		return topic;
 	}
 	
 	@Override
