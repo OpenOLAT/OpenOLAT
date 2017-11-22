@@ -11,7 +11,9 @@
 </div>
 <hr/>
 <div class="clearfix">
-	$r.render("metadatas")
+	#if($metadataSwitch)
+		$r.render("metadatas")
+	#end
 </div>
 <div class="o_button_group">
 	$r.render("export.item")

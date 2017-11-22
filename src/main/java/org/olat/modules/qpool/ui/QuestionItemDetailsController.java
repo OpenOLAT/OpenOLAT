@@ -75,6 +75,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link numberItemsLink;
 	private Link previousItemLink;
 	private Link showMetadataLink;
+	private Link hideMetadataLink;
 	private Link deleteItem, shareItem, exportItem, copyItem;
 
 	private Controller editCtrl;
@@ -155,9 +156,11 @@ public class QuestionItemDetailsController extends BasicController implements To
 		nextItemLink.setIconLeftCSS("o_icon io_icon-lg o_icon_next");
 		stackPanel.addTool(nextItemLink);
 		
-		showMetadataLink = LinkFactory.createToolLink("metadatas", translate("metadatas"), this);
+		showMetadataLink = LinkFactory.createToolLink("metadata.show", translate("metadata.show"), this);
 		showMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
-		stackPanel.addTool(showMetadataLink, Align.right);
+		hideMetadataLink = LinkFactory.createToolLink("metadata.hide", translate("metadata.hide"), this);
+		hideMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
+		doHideMetadata();
 	}
 	
 	protected QPoolSPI setPreviewController(UserRequest ureq, QuestionItem item) {
@@ -214,6 +217,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 			fireEvent(ureq, new QItemEvent("next", metadatasCtrl.getItem()));
 		} else if(source == previousItemLink) {
 			fireEvent(ureq, new QItemEvent("previous", metadatasCtrl.getItem()));
+		} else if(source == showMetadataLink) {
+			doShowMetadata();
+		} else if(source == hideMetadataLink) {
+			doHideMetadata();
 		} else if(source == stackPanel) {
 			if(event instanceof PopEvent) {
 				PopEvent pop = (PopEvent)event;
@@ -324,6 +331,18 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void doExport(UserRequest ureq, QuestionItemShort item) {
 		ExportQItemResource mr = new ExportQItemResource("UTF-8", getLocale(), item);
 		ureq.getDispatchResult().setResultingMediaResource(mr);
+	}
+	
+	private void doShowMetadata() {
+		stackPanel.addTool(hideMetadataLink, Align.right);
+		stackPanel.removeTool(showMetadataLink);
+		mainVC.contextPut("metadataSwitch", Boolean.TRUE);
+	}
+	
+	private void doHideMetadata() {
+		stackPanel.addTool(showMetadataLink, Align.right);
+		stackPanel.removeTool(hideMetadataLink);
+		mainVC.contextPut("metadataSwitch", Boolean.FALSE);
 	}
 
 }

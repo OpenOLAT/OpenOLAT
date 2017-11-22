@@ -1067,7 +1067,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(currentDetailsCtrl);
 		
 		WindowControl bwControl = addToHistory(ureq, item, null);
-		int itemIndex = getIndex(item);
+		Integer itemIndex = getIndex(item);
 		int numberOfItems = getModel().getRowCount();
 		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, item, itemIndex,
 				numberOfItems, editable, getSource().isDeleteEnabled());
