@@ -202,8 +202,16 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				CourseNodeEvent cne = (CourseNodeEvent)event;
 				CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getNode(cne.getIdent());
 				TreeNode treeNode = TreeHelper.findNodeByUserObject(courseNode, menuTree.getTreeModel().getRootNode());
-				stackPanel.changeDisplayname(treeNode.getTitle(), "o_icon " + treeNode.getIconCssClass(), this);
-				selectedNodeChanged = treeNode;
+				if(treeNode == null) {
+					treeNode = menuTree.getTreeModel().getRootNode();
+					courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getRootNode();
+					doSelectCourseNode(ureq, treeNode, courseNode);
+					menuTree.setSelectedNode(treeNode);
+					showWarning("warning.course.node.deleted");
+				} else {
+					stackPanel.changeDisplayname(treeNode.getTitle(), "o_icon " + treeNode.getIconCssClass(), this);
+					selectedNodeChanged = treeNode;
+				}
 			}
 		}
 		super.event(ureq, source, event);
