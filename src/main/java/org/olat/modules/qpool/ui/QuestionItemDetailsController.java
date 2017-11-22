@@ -71,6 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QuestionItemDetailsController extends BasicController implements TooledController, Activateable2 {
 	
 	private Link editItem;
+	private Link reviewLink;
 	private Link nextItemLink;
 	private Link numberItemsLink;
 	private Link previousItemLink;
@@ -141,6 +142,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 	
 	@Override
 	public void initTools() {
+		reviewLink = LinkFactory.createToolLink("review.item", translate("review.item"), this);
+		reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
+		stackPanel.addTool(reviewLink, Align.left);
 		
 		previousItemLink = LinkFactory.createToolLink("previous", translate("previous"), this);
 		previousItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_previous");
