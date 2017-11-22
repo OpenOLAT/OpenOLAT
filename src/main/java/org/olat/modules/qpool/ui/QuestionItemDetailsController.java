@@ -70,7 +70,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QuestionItemDetailsController extends BasicController implements TooledController, Activateable2 {
 	
-	private Link editItem, nextItem, previousItem, showMetadataLink;
+	private Link editItem;
+	private Link nextItemLink;
+	private Link numberItemsLink;
+	private Link previousItemLink;
+	private Link showMetadataLink;
 	private Link deleteItem, shareItem, exportItem, copyItem;
 
 	private Controller editCtrl;
@@ -84,15 +88,22 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private final UserCommentsAndRatingsController commentsAndRatingCtr;
 	private final TooledStackedPanel stackPanel;
 
+	private final Integer itemIndex;
+	private final int numberOfItems;
 	private final boolean canEditContent;
+	
 	@Autowired
 	private QuestionPoolModule poolModule;
 	@Autowired
 	private QPoolService qpoolService;
 	
-	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, QuestionItem item, boolean editable, boolean deletable) {
+	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			QuestionItem item, Integer itemIndex, int numberOfItems, boolean editable, boolean deletable) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
+		this.itemIndex = itemIndex;
+		this.numberOfItems = numberOfItems;
 		
 		QPoolSPI spi = setPreviewController(ureq, item);
 		boolean canEdit = editable || qpoolService.isAuthor(item, getIdentity());
@@ -112,11 +123,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			editItem = LinkFactory.createButton("edit", mainVC, this);
 			editItem.setIconLeftCSS("o_icon o_icon_edit");
 		}
-		nextItem = LinkFactory.createButton("next", mainVC, this);
-		nextItem.setIconRightCSS("o_icon o_icon_move_right");
-		previousItem = LinkFactory.createButton("previous", mainVC, this);
-		previousItem.setIconLeftCSS("o_icon o_icon_move_left");
-		
+
 		shareItem = LinkFactory.createButton("share.item", mainVC, this);
 		copyItem = LinkFactory.createButton("copy", mainVC, this);
 		if(deletable) {
@@ -133,9 +140,24 @@ public class QuestionItemDetailsController extends BasicController implements To
 	
 	@Override
 	public void initTools() {
-		showMetadataLink = LinkFactory.createToolLink("edit.binder.metadata", translate("edit.binder.metadata"), this);
-		showMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
-		stackPanel.addTool(showMetadataLink, Align.left);
+		
+		previousItemLink = LinkFactory.createToolLink("previous", translate("previous"), this);
+		previousItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_previous");
+		stackPanel.addTool(previousItemLink);
+		
+		String numbersOf = translate("item.numbers.of", new String[]{
+				itemIndex != null? Integer.toString(itemIndex + 1): "",
+				Integer.toString(numberOfItems) });
+		numberItemsLink = LinkFactory.createToolLink("item.numbers.of", numbersOf, this);
+		stackPanel.addTool(numberItemsLink);
+		
+		nextItemLink = LinkFactory.createToolLink("next", translate("next"), this);
+		nextItemLink.setIconLeftCSS("o_icon io_icon-lg o_icon_next");
+		stackPanel.addTool(nextItemLink);
+		
+		showMetadataLink = LinkFactory.createToolLink("metadatas", translate("metadatas"), this);
+		showMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
+		stackPanel.addTool(showMetadataLink, Align.right);
 	}
 	
 	protected QPoolSPI setPreviewController(UserRequest ureq, QuestionItem item) {
@@ -188,9 +210,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 			}
 		} else if(source == copyItem) {
 			doCopy(ureq, metadatasCtrl.getItem());
-		} else if(source == nextItem) {
+		} else if(source == nextItemLink) {
 			fireEvent(ureq, new QItemEvent("next", metadatasCtrl.getItem()));
-		} else if(source == previousItem) {
+		} else if(source == previousItemLink) {
 			fireEvent(ureq, new QItemEvent("previous", metadatasCtrl.getItem()));
 		} else if(source == stackPanel) {
 			if(event instanceof PopEvent) {

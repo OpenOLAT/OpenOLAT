@@ -373,6 +373,17 @@ public abstract class AbstractItemListController extends FormBasicController
 		return index;
 	}
 	
+	public Integer getIndex(QuestionItem item) {
+		Long itemKey = item.getKey();
+		for(int i=model.getObjects().size(); i-->0; ) {
+			ItemRow row = model.getObject(i);
+			if(row != null && itemKey.equals(row.getKey())) {
+				return i;
+			}
+		}
+		return null;
+	}
+	
 	protected void doClick(UserRequest ureq, ItemRow row) {
 		fireEvent(ureq, new QItemViewEvent("rSelect", row));
 	}

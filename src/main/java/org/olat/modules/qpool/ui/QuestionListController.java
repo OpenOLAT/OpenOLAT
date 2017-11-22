@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -133,7 +132,6 @@ public class QuestionListController extends AbstractItemListController implement
 	private ShareTargetController shareTargetCtrl;
 	private CreateEntryController addController;
 	private QuestionItemDetailsController currentDetailsCtrl;
-	private LayoutMain3ColsController currentMainDetailsCtrl;
 	private MetadataBulkChangeController bulkChangeCtrl;
 	private ImportSourcesController importSourcesCtrl;
 	private NewItemOptionsController newItemOptionsCtrl;
@@ -159,6 +157,7 @@ public class QuestionListController extends AbstractItemListController implement
 	public QuestionListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, QuestionItemsSource source, String key) {
 		super(ureq, wControl, source, key);
 		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
 	}
 
 	@Override
@@ -470,7 +469,7 @@ public class QuestionListController extends AbstractItemListController implement
 				}
 			} else if(event instanceof QItemEdited) {
 				String title = ((QItemEdited) event).getItem().getTitle();
-				stackPanel.changeDisplayname(title, null, currentMainDetailsCtrl);
+				stackPanel.changeDisplayname(title, null, currentDetailsCtrl);
 				itemCollectionDirty = true;
 			} else if (event instanceof QPoolEvent) {
 				QPoolEvent qce = (QPoolEvent)event;
@@ -1066,14 +1065,14 @@ public class QuestionListController extends AbstractItemListController implement
 		
 	protected QuestionItemDetailsController doSelect(UserRequest ureq, QuestionItem item, boolean editable) {
 		removeAsListenerAndDispose(currentDetailsCtrl);
-		removeAsListenerAndDispose(currentMainDetailsCtrl);
 		
 		WindowControl bwControl = addToHistory(ureq, item, null);
-		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, item, editable, getSource().isDeleteEnabled());
+		int itemIndex = getIndex(item);
+		int numberOfItems = getModel().getRowCount();
+		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, item, itemIndex,
+				numberOfItems, editable, getSource().isDeleteEnabled());
 		listenTo(currentDetailsCtrl);
-		currentMainDetailsCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), currentDetailsCtrl);
-		listenTo(currentMainDetailsCtrl);
-		stackPanel.pushController(item.getTitle(), currentMainDetailsCtrl);
+		stackPanel.pushController(item.getTitle(), currentDetailsCtrl);
 		return currentDetailsCtrl;
 	}
 }
