@@ -23,8 +23,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
@@ -45,12 +44,16 @@ public class QuestionPoolSiteMainController extends MainLayoutBasicController im
 	public QuestionPoolSiteMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
-		qpoolMainController = new QuestionPoolMainEditorController(ureq, wControl);
-		listenTo(qpoolMainController);
-		BreadcrumbPanel stackPanel = new BreadcrumbedStackedPanel("qpoolStackPanel", getTranslator(), this);
+		TooledStackedPanel stackPanel = new TooledStackedPanel("qpoolStackPanel", getTranslator(), this);
+		stackPanel.setToolbarAutoEnabled(true);
+		stackPanel.setShowCloseLink(true, false);
+		stackPanel.setInvisibleCrumb(0);
 		putInitialPanel(stackPanel);
+		
+		qpoolMainController = new QuestionPoolMainEditorController(ureq, wControl, stackPanel);
+		listenTo(qpoolMainController);
+		
 		stackPanel.pushController(translate("topnav.qpool"), qpoolMainController);
-		qpoolMainController.setBreadcrumbPanel(stackPanel);
 	}
 	
 	@Override

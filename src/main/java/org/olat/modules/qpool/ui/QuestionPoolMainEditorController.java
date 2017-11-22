@@ -30,8 +30,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeDropEvent;
@@ -80,14 +79,14 @@ import org.olat.modules.qpool.ui.events.QPoolEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionPoolMainEditorController extends BasicController implements Activateable2, BreadcrumbPanelAware {
+public class QuestionPoolMainEditorController extends BasicController implements Activateable2 {
 
 	public static final OLATResourceable QITEM_MARKED = OresHelper.createOLATResourceableType("QItemMark");
 	
 	private final MenuTree menuTree;
 	private GenericTreeNode sharesNode, myNode, myOwnNode;
 	private final Panel content;
-	private BreadcrumbPanel stackPanel;
+	private final TooledStackedPanel stackPanel;
 
 	private QuestionsController currentCtrl;
 	private QuestionsController myQuestionsCtrl;
@@ -110,8 +109,9 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private final QPoolService qpoolService;
 	private final BusinessGroupService businessGroupService;
 	
-	public QuestionPoolMainEditorController(UserRequest ureq, WindowControl wControl) {
+	public QuestionPoolMainEditorController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl);
+		this.stackPanel = stackPanel;
 
 		roles = ureq.getUserSession().getRoles();
 		markManager = CoreSpringFactory.getImpl(MarkManager.class);
@@ -129,7 +129,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		menuTree.addListener(this);
 		menuTree.setRootVisible(false);
 		//open the nodes shared and my at start
-		List<String> openNodeIds = new ArrayList<String>(2);
+		List<String> openNodeIds = new ArrayList<>(2);
 		openNodeIds.add(myNode.getIdent());
 		openNodeIds.add(sharesNode.getIdent());
 		menuTree.setOpenNodeIds(openNodeIds);
@@ -139,14 +139,6 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		
 		doSelectPresentation(ureq);
 		putInitialPanel(columnLayoutCtr.getInitialComponent());
-	}
-
-	@Override
-	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
-		this.stackPanel = stackPanel;
-		if(myQuestionsCtrl != null) myQuestionsCtrl.setBreadcrumbPanel(stackPanel);
-		if(markedQuestionsCtrl != null) markedQuestionsCtrl.setBreadcrumbPanel(stackPanel);
-		if(currentCtrl != null) currentCtrl.setBreadcrumbPanel(stackPanel);
 	}
 
 	@Override
@@ -424,8 +416,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		DefaultItemsSource source = new MyItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "My"); 
 		if(myQuestionsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("My"), null);
-			myQuestionsCtrl = new QuestionsController(ureq, swControl, source, "my");
-			myQuestionsCtrl.setBreadcrumbPanel(stackPanel);
+			myQuestionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, "my");
 			listenTo(myQuestionsCtrl);
 		} else {
 			myQuestionsCtrl.updateSource(source);
@@ -438,8 +429,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		DefaultItemsSource source = new MarkedItemsSource(getIdentity(), ureq.getUserSession().getRoles(), "Fav"); 
 		if(markedQuestionsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Marked"), null);
-			markedQuestionsCtrl = new QuestionsController(ureq, swControl, source, "favorit");
-			markedQuestionsCtrl.setBreadcrumbPanel(stackPanel);
+			markedQuestionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, "favorit");
 			listenTo(markedQuestionsCtrl);
 		} else {
 			markedQuestionsCtrl.updateSource(source);
@@ -456,8 +446,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		source.setRemoveEnabled(isShareAdmin(pool));
 		if(selectedPoolCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, pool, null);
-			selectedPoolCtrl = new QuestionsController(ureq, swControl, source, "poll-" + pool.getKey());
-			selectedPoolCtrl.setBreadcrumbPanel(stackPanel);
+			selectedPoolCtrl = new QuestionsController(ureq, swControl, stackPanel, source, "poll-" + pool.getKey());
 			listenTo(selectedPoolCtrl);
 			cNode.setController(selectedPoolCtrl);
 		} else {
@@ -486,8 +475,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 
 		if(sharedItemsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, group, null);
-			sharedItemsCtrl = new QuestionsController(ureq, swControl, source, "share-" + group.getKey());
-			sharedItemsCtrl.setBreadcrumbPanel(stackPanel);
+			sharedItemsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, "share-" + group.getKey());
 			listenTo(sharedItemsCtrl);
 			cNode.setController(sharedItemsCtrl);
 		} else {
@@ -509,9 +497,8 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		CollectionOfItemsSource source = new CollectionOfItemsSource(coll, getIdentity(), ureq.getUserSession().getRoles());
 		if(collItemsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, coll, null);
-			collItemsCtrl = new QuestionsController(ureq, swControl, source, "coll-" + coll.getKey());
+			collItemsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, "coll-" + coll.getKey());
 			collItemsCtrl.setQuestionItemCollection(coll);
-			collItemsCtrl.setBreadcrumbPanel(stackPanel);
 			listenTo(collItemsCtrl);
 			cNode.setController(collItemsCtrl);
 		} else {

@@ -36,9 +36,8 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -108,11 +107,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial date: 22.01.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class QuestionListController extends AbstractItemListController implements BreadcrumbPanelAware, Activateable2 {
+public class QuestionListController extends AbstractItemListController implements Activateable2 {
 
 	private FormLink list, exportItem, shareItem, removeItem, newItem, copyItem, convertItem, deleteItem, authorItem, importItem, bulkChange;
 
-	private BreadcrumbPanel stackPanel;
+	private final TooledStackedPanel stackPanel;
 	private RenameController renameCtrl;
 	private CloseableModalController cmc;
 	private CloseableModalController cmcShareItemToSource;
@@ -157,8 +156,9 @@ public class QuestionListController extends AbstractItemListController implement
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
-	public QuestionListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
+	public QuestionListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, QuestionItemsSource source, String key) {
 		super(ureq, wControl, source, key);
+		this.stackPanel = stackPanel;
 	}
 
 	@Override
@@ -187,14 +187,6 @@ public class QuestionListController extends AbstractItemListController implement
 
 	public void setItemCollection(QuestionItemCollection itemCollection) {
 		this.itemCollection = itemCollection;
-	}
-
-	@Override
-	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
-		this.stackPanel = stackPanel;
-		if(stackPanel != null) {
-			stackPanel.addListener(this);
-		}
 	}
 
 	@Override
@@ -1077,8 +1069,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(currentMainDetailsCtrl);
 		
 		WindowControl bwControl = addToHistory(ureq, item, null);
-		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, item, editable, getSource().isDeleteEnabled());
-		currentDetailsCtrl.setBreadcrumbPanel(stackPanel);
+		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, item, editable, getSource().isDeleteEnabled());
 		listenTo(currentDetailsCtrl);
 		currentMainDetailsCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), currentDetailsCtrl);
 		listenTo(currentMainDetailsCtrl);

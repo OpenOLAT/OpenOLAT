@@ -30,9 +30,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.stack.PopEvent;
+import org.olat.core.gui.components.stack.TooledController;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -67,9 +68,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemDetailsController extends BasicController implements BreadcrumbPanelAware, Activateable2 {
+public class QuestionItemDetailsController extends BasicController implements TooledController, Activateable2 {
 	
-	private Link editItem, nextItem, previousItem;
+	private Link editItem, nextItem, previousItem, showMetadataLink;
 	private Link deleteItem, shareItem, exportItem, copyItem;
 
 	private Controller editCtrl;
@@ -81,7 +82,7 @@ public class QuestionItemDetailsController extends BasicController implements Br
 	private SelectBusinessGroupController selectGroupCtrl;
 	private final MetadatasController metadatasCtrl;
 	private final UserCommentsAndRatingsController commentsAndRatingCtr;
-	private BreadcrumbPanel stackPanel;
+	private final TooledStackedPanel stackPanel;
 
 	private final boolean canEditContent;
 	@Autowired
@@ -89,8 +90,9 @@ public class QuestionItemDetailsController extends BasicController implements Br
 	@Autowired
 	private QPoolService qpoolService;
 	
-	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean editable, boolean deletable) {
+	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, QuestionItem item, boolean editable, boolean deletable) {
 		super(ureq, wControl);
+		this.stackPanel = stackPanel;
 		
 		QPoolSPI spi = setPreviewController(ureq, item);
 		boolean canEdit = editable || qpoolService.isAuthor(item, getIdentity());
@@ -129,6 +131,13 @@ public class QuestionItemDetailsController extends BasicController implements Br
 		putInitialPanel(mainVC);
 	}
 	
+	@Override
+	public void initTools() {
+		showMetadataLink = LinkFactory.createToolLink("edit.binder.metadata", translate("edit.binder.metadata"), this);
+		showMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_new_portfolio");
+		stackPanel.addTool(showMetadataLink, Align.left);
+	}
+	
 	protected QPoolSPI setPreviewController(UserRequest ureq, QuestionItem item) {
 		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
 		if(spi == null) {
@@ -152,16 +161,6 @@ public class QuestionItemDetailsController extends BasicController implements Br
 			stackPanel.removeListener(this);
 		}
 	}
-
-	@Override
-	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
-		if(stackPanel != null) {
-			stackPanel.addListener(this);
-		}
-		this.stackPanel = stackPanel;
-	}
-	
-	
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -304,4 +303,5 @@ public class QuestionItemDetailsController extends BasicController implements Br
 		ExportQItemResource mr = new ExportQItemResource("UTF-8", getLocale(), item);
 		ureq.getDispatchResult().setResultingMediaResource(mr);
 	}
+
 }
