@@ -157,9 +157,11 @@
     		if(hasItems == 0) {
     			jQuery("#" + containerId + " .o_match_dnd_sources .oo-selected").each(function(index, selectedEl) {
         			var choiceEl = jQuery(selectedEl);
-        	    	if(needToBeAvailable(selectedEl, containerId)) {
-        	    		choiceEl.removeClass('oo-selected');
-        	    		moveSourceToTarget(choiceEl.clone(), box, containerId);
+        			if(needToBeAvailable(selectedEl, containerId)) {
+            			choiceEl.removeClass('oo-selected');
+            			choiceEl = choiceEl.clone();
+            			moveSourceToTarget(choiceEl, box, containerId);
+            			initializeSourceEvents(choiceEl, containerId, settings);
         			} else {
         				moveSourceToTarget(choiceEl, box, containerId);
         			}
