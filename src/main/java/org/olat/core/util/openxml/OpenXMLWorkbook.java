@@ -35,6 +35,8 @@ import org.apache.commons.io.IOUtils;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.Filter;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.openxml.workbookstyle.Border;
 import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.core.util.openxml.workbookstyle.Fill;
@@ -67,6 +69,7 @@ public class OpenXMLWorkbook implements Closeable {
 	private List<OpenXMLWorksheet> worksheets = new ArrayList<>(10);
 	private final OpenXMLWorkbookStyles styles = new OpenXMLWorkbookStyles();
 	private OpenXMLWorkbookSharedStrings sharedStrings = new OpenXMLWorkbookSharedStrings();
+	private final Filter xmlCharactersFilter = FilterFactory.getXMLValidCharacterFilter();
 	
 	private int currentId = 4;
 	private boolean opened;
@@ -812,10 +815,11 @@ public class OpenXMLWorkbook implements Closeable {
 			for (String sharedString: sharedStrings) {
 				writer.writeStartElement("si");
 				writer.writeStartElement("t");
-				if(sharedString.contains("<") || sharedString.contains(">")) {
-					writer.writeCData(sharedString);
+				String cleanedSharedString = xmlCharactersFilter.filter(sharedString);
+				if(cleanedSharedString.contains("<") || cleanedSharedString.contains(">")) {
+					writer.writeCData(cleanedSharedString);
 				} else {
-					writer.writeCharacters(sharedString);
+					writer.writeCharacters(cleanedSharedString);
 				}
 				writer.writeEndElement();
 				writer.writeEndElement();

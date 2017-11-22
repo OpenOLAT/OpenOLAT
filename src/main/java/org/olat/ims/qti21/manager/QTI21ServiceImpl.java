@@ -20,9 +20,12 @@
 package org.olat.ims.qti21.manager;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.file.Files;
@@ -65,6 +68,7 @@ import org.olat.core.util.coordinate.Cacher;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.crypto.CryptoUtil;
 import org.olat.core.util.crypto.X509CertificatePrivateKeyPair;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.xml.XMLDigitalSignatureUtil;
@@ -107,6 +111,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -559,10 +564,21 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		        DocumentBuilder documentBuilder = XmlFactories.newDocumentBuilder();
 	            return documentBuilder.parse(sessionFile);
 	        } catch (final Exception e) {
-	        		throw new OLATRuntimeException("Could not parse serialized state XML. This is an internal error as we currently don't expose this data to clients", e);
+	        		return loadFilteredStateDocument(sessionFile);
 	        }
         }
         return null;
+    }
+    
+    private Document loadFilteredStateDocument(File sessionFile) {
+    		try(InputStream in = new FileInputStream(sessionFile)) {
+    			String xmlContent = IOUtils.toString(in, "UTF-8");
+    			String filteredContent = FilterFactory.getXMLValidEntityFilter().filter(xmlContent);
+	        DocumentBuilder documentBuilder = XmlFactories.newDocumentBuilder();
+            return documentBuilder.parse(new InputSource(new StringReader(filteredContent)));
+        } catch (final Exception e) {
+        		throw new OLATRuntimeException("Could not parse serialized state XML. This is an internal error as we currently don't expose this data to clients", e);
+        }
     }
 
 	@Override

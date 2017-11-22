@@ -37,20 +37,22 @@ import org.olat.core.util.filter.Filter;
  */
 
 @RunWith(Parameterized.class)
-public class XMLValidCharacterFilterTest {
+public class XMLValidEntityFilterTest {
 	
-	private static final Filter xmlValidCharacterFilter = new XMLValidCharacterFilter();
+	private static final Filter xmlValidEntityFilter = new XMLValidEntityFilter();
 	
     @Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 { "Bla blu blo", "Bla blu blo" },
-                { "Bl\u00CB bl\u00EA bl\u00FC", "Bl\u00CB bl\u00EA bl\u00FC" },
-                { "\u3042\u306A\u305F\u306E\u4FEE\u6B63\u304C\u4FDD\u5B58\u3055\u308C\u307E\u3057\u305F\u3002",
-                		"\u3042\u306A\u305F\u306E\u4FEE\u6B63\u304C\u4FDD\u5B58\u3055\u308C\u307E\u3057\u305F\u3002" },//japan
-                { "\u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F",
-                		"\u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F" }, //russian
-                { "Hello\u0018world", "Helloworld"},// u0018 is invalid
+                { "Hello&#23;world", "Helloworld"},// u0018 is invalid
+                { "Hello&&cc;world", "Hello&&cc;world"},// this is not an entity
+                { "Hello&#23;wor&#23;ld", "Helloworld"},// 2x u0018 invalid
+                { "Hello&amp;world", "Hello&amp;world"},// valid entity
+                { "Hello&#234;world", "Hello&#234;world"},// valid entity
+                { "Hello&#xA;world", "Hello&#xA;world"},// valid entity
+                { "Hello&#x3;world", "Helloworld"},// invalid entity
+                { "&#12470;&#x30B6;", "&#12470;&#x30B6;"},// japanese entities
                 { null, null },// edge cases
                 { "", "" }
         });
@@ -59,14 +61,14 @@ public class XMLValidCharacterFilterTest {
     private String text;
     private String filteredText;
     
-    public XMLValidCharacterFilterTest(String text, String filteredText) {
+    public XMLValidEntityFilterTest(String text, String filteredText) {
         this.text = text;
         this.filteredText = filteredText;
     }
 	
 	@Test
 	public void testAscii() {
-		String filtered = xmlValidCharacterFilter.filter(text);
+		String filtered = xmlValidEntityFilter.filter(text);
 		Assert.assertEquals(filteredText, filtered);
 	}
 
