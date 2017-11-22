@@ -317,11 +317,25 @@ class UserPrefsResetForm extends FormBasicController {
 		
 		resetElements = uifactory.addCheckboxesVertical("prefs", "reset.elements", formLayout, keys, values, 1);
 		resetElements.setElementCssClass("o_sel_home_settings_reset_sysprefs");
+		resetElements.setMandatory(true);
 		
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		buttonLayout.setElementCssClass("o_sel_home_settings_reset_sysprefs_buttons");
 		uifactory.addFormSubmitButton("reset.submit", buttonLayout);
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		resetElements.clearError();
+		if(!resetElements.isAtLeastSelected(1)) {
+			resetElements.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
 	}
 
 	@Override
