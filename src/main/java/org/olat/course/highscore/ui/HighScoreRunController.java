@@ -147,17 +147,17 @@ public class HighScoreRunController extends FormBasicController{
 			viewHighscore = false;
 			return;
 		}		
-		boolean adminORcoach = userCourseEnv.isAdmin() || userCourseEnv.isCoach();		
+		boolean adminORcoach = userCourseEnv.isAdmin() || userCourseEnv.isCoach();
+		// coaches or admin may see highscore, user only if already scored
+		if (!adminORcoach && (ownEntry == null || (ownEntry != null && ownEntry.getScore() == null))) {
+			viewHighscore = false;
+			return;
+		}
 		// ban zero scorer from viewing the highscore on STCourseNode
 		if(!adminORcoach && isSTCourseNode && ownEntry != null && ownEntry.getScore().equals(new BigDecimal(0))) {
 			viewHighscore = false;
 			return;
 		}
-		// coaches or admin may see highscore, user only if already scored
-		if (!adminORcoach && (ownEntry == null || (ownEntry != null && ownEntry.getScore() == null))) {
-			viewHighscore = false;
-			return;		
-		}	
 		
 		List<AssessmentEntry> assessEntries = assessmentManager.getAssessmentEntriesWithStatus(courseNode, null, isSTCourseNode);
 
