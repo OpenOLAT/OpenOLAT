@@ -27,6 +27,7 @@ import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.core.util.filter.impl.SimpleHTMLTagsFilter;
 import org.olat.core.util.filter.impl.SmileysCssToDataUriFilter;
 import org.olat.core.util.filter.impl.XMLValidCharacterFilter;
+import org.olat.core.util.filter.impl.XMLValidEntityFilter;
 
 /**
  * Description:<br>
@@ -46,6 +47,7 @@ public class FilterFactory {
 	private static final Filter conditionalCommentsFilter = new ConditionalHTMLCommentsFilter();
 	private static final Filter xmlValidCharacterFilter = new XMLValidCharacterFilter();
 	private static final Filter smileysCssToDataUriFilter = new SmileysCssToDataUriFilter();
+	private static final Filter xmlValidEntityFilter = new XMLValidEntityFilter();
 
 	/**
 	 * Get an instance of the HTML tag filter
@@ -69,8 +71,24 @@ public class FilterFactory {
 		return conditionalCommentsFilter;
 	}
 	
+	/**
+	 * The filter remove characters which are not valid in a
+	 * XML 1.0 document.
+	 * 
+	 * @return A filter implementation
+	 */
 	public static Filter getXMLValidCharacterFilter() {
 		return xmlValidCharacterFilter;
+	}
+	
+	/**
+	 * The filter remove entities which are not valid in a
+	 * XML 1.0 document like &amp;#25;.
+	 * 
+	 * @return A filter implementation
+	 */
+	public static Filter getXMLValidEntityFilter() {
+		return xmlValidEntityFilter;
 	}
 	
 	/**
