@@ -590,6 +590,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity) {
 		ModuleConfiguration config = getModuleConfiguration();
+		Boolean scoreField = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		Boolean sum = (Boolean)config.get(CheckListCourseNode.CONFIG_KEY_PASSED_SUM_CHECKBOX);
 		Float cutValue = (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		Float maxScore = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
@@ -599,7 +600,9 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		} else if(sum != null && sum.booleanValue()) {
 			doUpdateAssessmentBySum(identity, assessedUserCourseEnv, assessedIdentity);
 		} else if(manualCorrection != null && manualCorrection.booleanValue()) {
-			doUpdateManualAssessment(maxScore, identity, assessedUserCourseEnv, assessedIdentity);
+			doUpdateScoreOnly(maxScore, identity, assessedUserCourseEnv, assessedIdentity);
+		} else if(scoreField != null && scoreField.booleanValue()) {
+			doUpdateScoreOnly(maxScore, identity, assessedUserCourseEnv, assessedIdentity);
 		}
 	}
 	
@@ -654,7 +657,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false);
 	}
 	
-	private void doUpdateManualAssessment(Float maxScore, Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity) {
+	private void doUpdateScoreOnly(Float maxScore, Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity) {
 		OLATResourceable courseOres = OresHelper
 				.createOLATResourceableInstance("CourseModule", assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		
