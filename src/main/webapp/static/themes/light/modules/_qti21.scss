@@ -455,9 +455,9 @@ img.o_hotspot_responsive[usemap] {
 			vertical-align: middle;
 			font-size: ($font-size-base * 0.98);
 			line-height: 1.5; /* smaller than #itemBody */
-			border: 0.5px solid $o-qti-textEntryInteraction-border-color;
+			border: 1px solid $o-qti-textEntryInteraction-border-color;
 			background: $o-qti-textEntryInteraction-bg;
-			padding: 0.5px 1px;
+			padding: 1px 1px;
 			color: $o-qti-textEntryInteraction-color;
 			/* format fields with values in it in separate style */
 			&:valid,
@@ -465,7 +465,7 @@ img.o_hotspot_responsive[usemap] {
 				color: $o-qti-textEntryInteraction-filled-color;
 				-webkit-text-fill-color: $o-qti-textEntryInteraction-filled-color;
 				background: $o-qti-textEntryInteraction-filled-bg;				
-				border: 0.5px solid $o-qti-textEntryInteraction-filled-border-color;
+				border: 1px solid $o-qti-textEntryInteraction-filled-border-color;
 			}
 		}
 	}
