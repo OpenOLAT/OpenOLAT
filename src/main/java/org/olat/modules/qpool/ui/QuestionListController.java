@@ -463,7 +463,7 @@ public class QuestionListController extends AbstractItemListController implement
 				QItemEvent qce = (QItemEvent)event;
 				if("copy-item".equals(qce.getCommand())) {
 					stackPanel.popUpToRootController(ureq);
-					doSelect(ureq, qce.getItem(), true);
+					doSelect(ureq, qce.getItem(), true, false);
 				} else if("previous".equals(qce.getCommand())) {
 					doPrevious(ureq, qce.getItem());
 				} else if("next".equals(qce.getCommand())) {
@@ -529,7 +529,7 @@ public class QuestionListController extends AbstractItemListController implement
 			QuestionItem nextItem = qpoolService.loadItemById(nextRow.getKey());
 			if(nextItem != null) {
 				stackPanel.popUpToRootController(ureq);
-				doSelect(ureq, nextItem, nextRow.isEditable());
+				doSelect(ureq, nextItem, nextRow.isEditable(), nextRow.isReviewable());
 			} else {
 				getItemsTable().reset(true, true, true);
 			}
@@ -543,7 +543,7 @@ public class QuestionListController extends AbstractItemListController implement
 			QuestionItem previousItem = qpoolService.loadItemById(previousRow.getKey());
 			if(previousItem != null) {
 				stackPanel.popUpToRootController(ureq);
-				doSelect(ureq, previousItem, previousRow.isEditable());
+				doSelect(ureq, previousItem, previousRow.isEditable(), previousRow.isReviewable());
 			} else {
 				getItemsTable().reset(true, true, true);
 			}
@@ -586,7 +586,7 @@ public class QuestionListController extends AbstractItemListController implement
 		fireEvent(ureq, qce);
 
 		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Edit");
-		doSelect(ureq, item, true).activate(ureq, entries, null);
+		doSelect(ureq, item, true, false).activate(ureq, entries, null);
 	}
 	
 	private void doOpenImport(UserRequest ureq) {
@@ -1062,15 +1062,15 @@ public class QuestionListController extends AbstractItemListController implement
 	@Override
 	protected void doSelect(UserRequest ureq, ItemRow row) {
 		QuestionItem item = qpoolService.loadItemById(row.getKey());
-		doSelect(ureq, item, row.isEditable());
+		doSelect(ureq, item, row.isEditable(), row.isReviewable());
 	}
 		
-	protected QuestionItemDetailsController doSelect(UserRequest ureq, QuestionItem item, boolean editable) {
+	protected QuestionItemDetailsController doSelect(UserRequest ureq, QuestionItem item, boolean editable, boolean reviewable) {
 		removeAsListenerAndDispose(currentDetailsCtrl);
 		
 		WindowControl bwControl = addToHistory(ureq, item, null);
 		QuestionItemSecurityCallback securityCallback =
-				new QuestionItemSecurityCallbackImpl(editable, false, getSource().isDeleteEnabled());
+				new QuestionItemSecurityCallbackImpl(editable, reviewable, getSource().isDeleteEnabled());
 		Integer itemIndex = getIndex(item);
 		int numberOfItems = getModel().getRowCount();
 		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, securityCallback, item,

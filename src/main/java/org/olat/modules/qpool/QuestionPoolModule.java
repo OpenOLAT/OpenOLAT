@@ -112,7 +112,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	}
 
 	public List<QPoolSPI> getQuestionPoolProviders() {
-		List<QPoolSPI> providers = new ArrayList<QPoolSPI>(questionPoolProviders);
+		List<QPoolSPI> providers = new ArrayList<>(questionPoolProviders);
 		Collections.sort(providers, new QuestionPoolSPIComparator());
 		return providers;
 	}
@@ -160,5 +160,15 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 			editableQuestionStates = Arrays.asList(QuestionStatus.values());	
 		}
 		return editableQuestionStates; 
+	}
+
+	public Collection<QuestionStatus> getReviewableQuestionStates() {
+		Collection<QuestionStatus> revieweableStates;
+		if (reviewProcessEnabled) {
+			revieweableStates = Arrays.asList(QuestionStatus.review);
+		} else {
+			revieweableStates = Collections.emptyList();
+		}
+		return revieweableStates;
 	}
 }

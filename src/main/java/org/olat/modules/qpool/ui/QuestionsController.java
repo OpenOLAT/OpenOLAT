@@ -31,7 +31,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
@@ -110,10 +109,6 @@ public class QuestionsController extends BasicController implements Activateable
 			}
 		}
 		super.event(ureq, source, event);
-	}
-	
-	protected void doSelect(UserRequest ureq, QuestionItem item, boolean editable) {
-		listCtrl.doSelect(ureq, item, editable);
 	}
 	
 	private void postDelete(UserRequest ureq) {

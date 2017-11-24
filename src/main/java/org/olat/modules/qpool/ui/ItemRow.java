@@ -51,6 +51,11 @@ public class ItemRow implements QuestionItemView {
 	public boolean isEditable() {
 		return delegate.isEditable();
 	}
+	
+	@Override
+	public boolean isReviewable() {
+		return delegate.isReviewable();
+	}
 
 	@Override
 	public boolean isMarked() {

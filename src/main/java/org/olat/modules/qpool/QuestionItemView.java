@@ -30,6 +30,8 @@ public interface QuestionItemView extends QuestionItemShort {
 	
 	public boolean isEditable();
 	
+	public boolean isReviewable();
+	
 	public boolean isMarked();
 	
 	public Double getRating();

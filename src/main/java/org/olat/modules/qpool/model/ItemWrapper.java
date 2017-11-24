@@ -63,10 +63,11 @@ public class ItemWrapper implements QuestionItemView {
 	private String format;
 	
 	private boolean editable;
+	private boolean reviewable;
 	private boolean marked;
 	private Double rating;
 	
-	public ItemWrapper(QuestionItemImpl item, boolean editable, boolean marked, Double rating) {
+	public ItemWrapper(QuestionItemImpl item, boolean editable, boolean reviewable, boolean marked, Double rating) {
 		key = item.getKey();
 		creationDate = item.getCreationDate();
 		lastModified = item.getLastModified();
@@ -97,6 +98,7 @@ public class ItemWrapper implements QuestionItemView {
 		format = item.getFormat();
 		
 		this.editable = editable;
+		this.reviewable = reviewable;
 		this.marked = marked;
 		this.rating = rating;
 	}
@@ -109,6 +111,11 @@ public class ItemWrapper implements QuestionItemView {
 	@Override
 	public boolean isEditable() {
 		return editable;
+	}
+	
+	@Override
+	public boolean isReviewable() {
+		return reviewable;
 	}
 
 	@Override
