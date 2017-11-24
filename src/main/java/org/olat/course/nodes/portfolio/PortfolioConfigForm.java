@@ -135,15 +135,15 @@ public class PortfolioConfigForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("pane.tab.portfolio_config.title");
 
-		String name = getName();
+		String name = getName(mapEntry);
 		mapNameElement = uifactory.addStaticTextElement("map-name", "selected.map", name, formLayout);
-		mapNameElement.setVisible(map == null);
+		mapNameElement.setVisible(map == null && binder == null);
 		
 		previewMapLink = uifactory.addFormLink("preview", "selected.map", "selected.map", formLayout, Link.LINK);
 		previewMapLink.setCustomEnabledLinkCSS("o_preview");
 		previewMapLink.setIconLeftCSS("o_icon o_icon-fw o_icon_preview");
 		previewMapLink.getComponent().setCustomDisplayText(name);
-		previewMapLink.setVisible(map != null);
+		previewMapLink.setVisible(map != null || binder != null);
 		previewMapLink.setElementCssClass("o_sel_preview_map");
 		
 		if(formLayout instanceof FormLayoutContainer) {
@@ -288,7 +288,7 @@ public class PortfolioConfigForm extends FormBasicController {
 				binder = null;
 			}
 		}
-		String name = getName();
+		String name = getName(mapEntry);
 		mapNameElement.setValue(name);
 		mapNameElement.setVisible(map == null && binder == null);
 		
@@ -304,12 +304,10 @@ public class PortfolioConfigForm extends FormBasicController {
 		flc.setDirty(true);
 	}
 	
-	private String getName() {
+	private String getName(RepositoryEntry mapEntry) {
 		String name = translate("error.noreference.short", courseNode.getShortTitle());
-		if(map != null) {
-			name = StringHelper.escapeHtml(map.getTitle());
-		} else if(binder != null) {
-			name = StringHelper.escapeHtml(binder.getTitle());
+		if(mapEntry != null) {
+			name = StringHelper.escapeHtml(mapEntry.getDisplayname());
 		}
 		return name;
 	}
