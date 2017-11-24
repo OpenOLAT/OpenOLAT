@@ -437,8 +437,10 @@ public class ICalServlet extends HttpServlet {
 			if (comp instanceof VEvent) {
 				VEvent event = (VEvent)comp;
 				Uid uid = event.getUid();
-				String newUid = prefix.concat(uid.getValue());
-				uid.setValue(newUid);
+				if(uid != null) {
+					String newUid = prefix.concat(uid.getValue());
+					uid.setValue(newUid);
+				}
 			}
 		}
 	}
