@@ -21,6 +21,8 @@ package org.olat.modules.qpool;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -147,5 +149,9 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	public void setTaxonomyQPoolKey(String taxonomyQPoolKey) {
 		this.taxonomyQPoolKey = taxonomyQPoolKey;
 		setStringProperty(TAXONOMY_QPOOL_KEY, taxonomyQPoolKey, true);
+	}
+
+	public Collection<QuestionStatus> getEditableQuestionStates() {
+		return Arrays.asList(QuestionStatus.values());
 	}
 }

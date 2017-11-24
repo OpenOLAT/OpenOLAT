@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
-import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
@@ -35,6 +34,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionItemView.OrderBy;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.model.ItemWrapper;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
@@ -56,14 +56,16 @@ public class QItemQueriesDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private QuestionPoolModule qPoolModule;
 	
 	public int countFavoritItems(SearchQuestionItemParams params) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(item.key)")
-		  .append(" from questionitem item, ").append(IdentityImpl.class.getName()).append(" as ident ")
-		  .append(" where ident.key=:identityKey and exists (")
-		  .append("   select mark.key from ").append(MarkImpl.class.getName()).append(" as mark ")
-		  .append("   where mark.creator=ident and mark.resId=item.key and mark.resName='QuestionItem'")
+		  .append(" from questionitem item")
+		  .append(" where exists (")
+		  .append("   select mark.key from ").append(MarkImpl.class.getName()).append(" as mark")
+		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" )");
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.append(" and item.format=:format");
@@ -83,19 +85,27 @@ public class QItemQueriesDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item, ")
 		  .append(" (select count(sgmi.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
-		  .append("   where sgmi.identity=ident and sgmi.securityGroup=ownerGroup")
+		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 		  .append(" ) as owners,")
+		  .append(" (select count(pool2item.key) from qpool2item pool2item")
+		  .append("    where pool2item.item.key=item.key")
+		  .append("      and pool2item.editable is true")
+		  .append(" ) as pools,")
+		  .append(" (select count(shareditem.key) from qshareitem shareditem")
+		  .append("    where shareditem.item.key=item.key")
+		  .append("      and shareditem.editable is true")
+		  .append(" ) as groups,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as rating")
-		  .append(" from questionitem item, ").append(IdentityImpl.class.getName()).append(" as ident ")
+		  .append(" from questionitem item")
 		  .append(" inner join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.type itemType")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.educationalContext educationalContext")
-		  .append(" where ident.key=:identityKey and exists (")
+		  .append(" where exists (")
 		  .append("   select mark.key from ").append(MarkImpl.class.getName()).append(" as mark ")
-		  .append("   where mark.creator=ident and mark.resId=item.key and mark.resName='QuestionItem'")
+		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" )");
 		if(inKeys != null && inKeys.size() > 0) {
 			sb.append(" and item.key in (:inKeys)");
@@ -128,9 +138,17 @@ public class QItemQueriesDAO {
 		List<QuestionItemView> views = new ArrayList<>();
 		for(Object[] result:results) {
 			QuestionItemImpl item = (QuestionItemImpl)result[0];
-			Number ownerCount = (Number)result[1];
-			boolean editable = ownerCount == null ? false : ownerCount.longValue() > 0;
-			Double rating = (Double)result[2];
+			boolean editable = false;
+			if (qPoolModule.getEditableQuestionStates().contains(item.getQuestionStatus())) {
+				Number ownerCount = (Number)result[1];
+				Number poolsCount = (Number)result[2];
+				Number groupsCount = (Number)result[3];
+				boolean isAuthor = ownerCount == null ? false : ownerCount.longValue() > 0;
+				boolean editableInPool = poolsCount == null? false: poolsCount.longValue() > 0;
+				boolean editableInGroup = groupsCount == null? false: groupsCount.longValue() > 0;
+				editable = isAuthor || editableInPool || editableInGroup;
+			};
+			Double rating = (Double)result[4];
 			views.add(new ItemWrapper(item, editable, true, rating));
 		}
 		return views;
@@ -141,21 +159,21 @@ public class QItemQueriesDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item, ")
 		  .append(" (select count(sgmi.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
-		  .append("   where sgmi.identity=ident and sgmi.securityGroup=ownerGroup")
+		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 		  .append(" ) as owners,")
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-		  .append("   where mark.creator=ident and mark.resId=item.key and mark.resName='QuestionItem'")
+		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as rating")
-		  .append(" from qcollection2item coll2item, ").append(IdentityImpl.class.getName()).append(" as ident ")
+		  .append(" from qcollection2item coll2item")
 		  .append(" inner join coll2item.item item")
 		  .append(" inner join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.type itemType")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.educationalContext educationalContext")
-		  .append(" where ident.key=:identityKey and coll2item.collection.key=:collectionKey");
+		  .append(" where coll2item.collection.key=:collectionKey");
 		if(inKeys != null && inKeys.size() > 0) {
 			sb.append(" and item.key in (:inKeys)");
 		}
@@ -186,7 +204,10 @@ public class QItemQueriesDAO {
 		for(Object[] result:results) {
 			QuestionItemImpl item = (QuestionItemImpl)result[0];
 			Number ownerCount = (Number)result[1];
-			boolean editable = ownerCount == null ? false : ownerCount.longValue() > 0;
+			boolean editable = false;
+			if (qPoolModule.getEditableQuestionStates().contains(item.getQuestionStatus())) {
+				editable = ownerCount == null ? false : ownerCount.longValue() > 0;
+			}
 			Number markCount = (Number)result[2];
 			boolean marked = markCount == null ? false : markCount.longValue() > 0;
 			Double rating = (Double)result[3];
@@ -219,17 +240,17 @@ public class QItemQueriesDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item, ")
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-		  .append("   where mark.creator=ident and mark.resId=item.key and mark.resName='QuestionItem'")
+		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as rating")
-		  .append(" from questionitem item, ").append(IdentityImpl.class.getName()).append(" as ident ")
+		  .append(" from questionitem item")
 		  .append(" inner join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.type itemType")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.educationalContext educationalContext")
-		  .append(" where ident.key=:identityKey and exists (")
+		  .append(" where exists (")
 		  .append("   select sgmi.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
 		  .append("   where sgmi.identity.key=:authorKey and sgmi.securityGroup=ownerGroup")
 		  .append(" )");
@@ -266,7 +287,11 @@ public class QItemQueriesDAO {
 			Number markCount = (Number)result[1];
 			boolean marked = markCount == null ? false : markCount.longValue() > 0;
 			Double rating = (Double)result[2];
-			views.add(new ItemWrapper(item, true, marked, rating));
+			boolean editable = false;
+			if (qPoolModule.getEditableQuestionStates().contains(item.getQuestionStatus())) {
+				editable = true;
+			}
+			views.add(new ItemWrapper(item, editable, marked, rating));
 		}
 		return views;
 	}
@@ -275,19 +300,22 @@ public class QItemQueriesDAO {
 			String format, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item, shareditem.editable, ")
+		  .append(" (select count(sgmi.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
+		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
+		  .append(" ) as authors,")
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-		  .append("   where mark.creator=ident and mark.resId=item.key and mark.resName='QuestionItem'")
+		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as rating")
-		  .append(" from qshareitem shareditem, ").append(IdentityImpl.class.getName()).append(" as ident ")
+		  .append(" from qshareitem shareditem")
 		  .append(" inner join shareditem.item item")
 		  .append(" inner join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.type itemType")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.educationalContext educationalContext")
-		  .append(" where ident.key=:identityKey and shareditem.resource.key=:resourceKey");
+		  .append(" where shareditem.resource.key=:resourceKey");
 		if(inKeys != null && inKeys.size() > 0) {
 			sb.append(" and item.key in (:inKeys)");
 		}
@@ -313,19 +341,22 @@ public class QItemQueriesDAO {
 			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item, pool2item.editable, ")
+		  .append(" (select count(sgmi.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
+		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
+		  .append(" ) as authors,")
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-		  .append("   where mark.creator=ident and mark.resId=item.key and mark.resName='QuestionItem'")
+		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as rating")
-		  .append(" from qpool2item pool2item, ").append(IdentityImpl.class.getName()).append(" as ident ")
+		  .append(" from qpool2item pool2item")
 		  .append(" inner join pool2item.item item")
 		  .append(" inner join fetch item.ownerGroup ownerGroup")
 		  .append(" left join fetch item.type itemType")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.educationalContext educationalContext")
-		  .append(" where ident.key=:identityKey and pool2item.pool.key=:poolKey");
+		  .append(" where pool2item.pool.key=:poolKey");
 		if(inKeys != null && inKeys.size() > 0) {
 			sb.append(" and item.key in (:inKeys)");
 		}
@@ -360,10 +391,17 @@ public class QItemQueriesDAO {
 		for(Object[] result:results) {
 			QuestionItemImpl item = (QuestionItemImpl)result[0];
 			Boolean editableObj = (Boolean)result[1];
-			boolean editable = editableObj == null ? false : editableObj.booleanValue();
-			Number markCount = (Number)result[2];
+			Number authorsCount = (Number)result[2];
+			boolean editable = false;
+			if (qPoolModule.getEditableQuestionStates().contains(item.getQuestionStatus())) {
+				boolean editableForShare = editableObj == null ? false : editableObj.booleanValue();
+				boolean isAuthor = authorsCount == null ? false: authorsCount.longValue() > 0;
+				editable = isAuthor || editableForShare;
+
+			}
+			Number markCount = (Number)result[3];
 			boolean marked = markCount == null ? false : markCount.longValue() > 0;
-			Double rating = (Double)result[3];
+			Double rating = (Double)result[4];
 			views.add(new ItemWrapper(item, editable, marked, rating));
 		}
 		return views;

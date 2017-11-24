@@ -88,7 +88,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
 		List<QuestionItemView> favorits = qItemQueriesDao.getFavoritItems(params, null, 0, -1);
-		List<Long> favoritKeys = new ArrayList<Long>();
+		List<Long> favoritKeys = new ArrayList<>();
 		for(QuestionItemView favorit:favorits) {
 			favoritKeys.add(favorit.getKey());
 		}
@@ -147,7 +147,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		//load the items of the collection
 		List<QuestionItemView> items = qItemQueriesDao.getItemsOfCollection(id, coll, null, null, 0, -1);
-		List<Long> itemKeys = new ArrayList<Long>();
+		List<Long> itemKeys = new ArrayList<>();
 		for(QuestionItemView item:items) {
 			itemKeys.add(item.getKey());
 		}
@@ -205,7 +205,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Assert.assertEquals(2, numOfItems);
 		//retrieve the items of the author
 		List<QuestionItemView> items = qItemQueriesDao.getItemsByAuthor(params, null, 0, -1);
-		List<Long> itemKeys = new ArrayList<Long>();
+		List<Long> itemKeys = new ArrayList<>();
 		for(QuestionItemView item:items) {
 			itemKeys.add(item.getKey());
 		}
@@ -312,7 +312,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		dbInstance.commit();
 		
 		//share them
-		List<OLATResource> resources = new ArrayList<OLATResource>();
+		List<OLATResource> resources = new ArrayList<>();
 		resources.add(group1.getResource());
 		resources.add(group2.getResource());
 		questionDao.share(item, resources, false);
@@ -338,7 +338,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		dbInstance.commit();
 		
 		//share them
-		List<OLATResource> resources = new ArrayList<OLATResource>();
+		List<OLATResource> resources = new ArrayList<>();
 		resources.add(group.getResource());
 		questionDao.share(item, resources, false);
 		dbInstance.commitAndCloseSession();
@@ -374,7 +374,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		//retrieve them
 		List<QuestionItemView> sharedItems = qItemQueriesDao.getSharedItemByResource(id, group.getResource(), null, null, 0, -1);
-		List<Long> sharedItemKeys = new ArrayList<Long>();
+		List<Long> sharedItemKeys = new ArrayList<>();
 		for(QuestionItemView sharedItem:sharedItems) {
 			sharedItemKeys.add(sharedItem.getKey());
 		}
