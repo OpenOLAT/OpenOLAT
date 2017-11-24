@@ -82,7 +82,7 @@ public class QTI12ExportResultsReportController extends BasicController {
 		}
 		if (identities != null && identities.size() > 0) {
 			// 2) create export resource
-			MediaResource resource = new QTI12ResultsExportMediaResource(courseEnv, ureq, identities, courseNode);
+			MediaResource resource = new QTI12ResultsExportMediaResource(courseEnv, ureq.getLocale(), identities, courseNode);
 			// 3) download
 			ureq.getDispatchResult().setResultingMediaResource(resource);
 		} else {
