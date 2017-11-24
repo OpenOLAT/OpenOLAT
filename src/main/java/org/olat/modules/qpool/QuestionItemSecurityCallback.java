@@ -27,13 +27,9 @@ package org.olat.modules.qpool;
  */
 public interface QuestionItemSecurityCallback {
 	
-	public boolean canEditQuestion();
-	
-	public boolean canEditMetadata();
+	public boolean canEdit();
 	
 	public boolean canReview();
-	
-	public boolean canSetEndOfLife();
 
 	public boolean canDelete();
 	

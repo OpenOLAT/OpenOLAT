@@ -144,17 +144,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public boolean isAuthor(QuestionItemShort item, Identity identity) {
-		QuestionItemImpl itemImpl;
-		if(item instanceof QuestionItemImpl) {
-			itemImpl = (QuestionItemImpl)item;
-		} else {
-			itemImpl = questionItemDao.loadById(item.getKey());
-		}
-		return securityManager.isIdentityInSecurityGroup(identity, itemImpl.getOwnerGroup());
-	}
-
-	@Override
 	public void addAuthors(List<Identity> authors, List<QuestionItemShort> items) {
 		if(authors == null || authors.isEmpty() || items == null || items.isEmpty()) {
 			return;//nothing to do

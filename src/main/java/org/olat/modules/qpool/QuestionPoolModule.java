@@ -54,6 +54,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	public static final String DEFAULT_TAXONOMY_QPOOL_IDENTIFIER = "QPOOL";
 	
 	private String taxonomyQPoolKey;
+	private boolean reviewProcessEnabled = false;
 	
 	@Autowired
 	private DB dbInstance;
@@ -152,6 +153,12 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	}
 
 	public Collection<QuestionStatus> getEditableQuestionStates() {
-		return Arrays.asList(QuestionStatus.values());
+		Collection<QuestionStatus> editableQuestionStates;
+		if (reviewProcessEnabled) {
+			editableQuestionStates = Arrays.asList(QuestionStatus.draft, QuestionStatus.revised);
+		} else {
+			editableQuestionStates = Arrays.asList(QuestionStatus.values());	
+		}
+		return editableQuestionStates; 
 	}
 }

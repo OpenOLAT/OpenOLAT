@@ -109,9 +109,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		this.itemIndex = itemIndex;
 		this.numberOfItems = numberOfItems;
 		
-//		boolean canEdit = editable || qpoolService.isAuthor(item, getIdentity());
-//		canEditContent = canEdit && (spi != null && spi.isTypeEditable());
-		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback.canEditMetadata());
+		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback.canEdit());
 		listenTo(metadatasCtrl);
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -122,7 +120,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 		listenTo(commentsAndRatingCtr);
 
 		mainVC = createVelocityContainer("item_details");
-		if(securityCallback.canEditQuestion()) {
+
+		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
+		boolean canEditContent = securityCallback.canEdit() && (spi != null && spi.isTypeEditable());
+		if(canEditContent) {
 			editItem = LinkFactory.createButton("edit", mainVC, this);
 			editItem.setIconLeftCSS("o_icon o_icon_edit");
 		}
@@ -131,7 +132,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		copyItem = LinkFactory.createButton("copy", mainVC, this);
 		if(securityCallback.canDelete()) {
 			deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
-			deleteItem.setVisible(securityCallback.canEditMetadata());
+			deleteItem.setVisible(securityCallback.canEdit());
 		}
 		exportItem = LinkFactory.createButton("export.item", mainVC, this);
 		
@@ -199,7 +200,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		
 		String resourceTypeName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("edit".equalsIgnoreCase(resourceTypeName)) {
-			if(securityCallback.canEditQuestion() || metadatasCtrl.getItem() != null) {
+			if(securityCallback.canEdit() || metadatasCtrl.getItem() != null) {
 				doEdit(ureq, metadatasCtrl.getItem());
 			}
 		}

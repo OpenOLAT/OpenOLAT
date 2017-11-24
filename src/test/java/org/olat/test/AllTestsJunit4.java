@@ -335,8 +335,6 @@ import org.junit.runners.Suite;
 	org.olat.modules.card2brain.manager.Card2BrainManagerImplTest.class,
 	org.olat.modules.edubase.manager.EdubaseManagerImplTest.class,
 	org.olat.modules.fo.WordCountTest.class,
-	org.olat.modules.qpool.security.ProcesslessSecurityCallbackTest.class,
-	org.olat.modules.qpool.security.ReviewProcessSecurityCallbackTest.class,
 	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.modules.webFeed.manager.RomeFeedFetcherTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.AutoAccessManagerImplTest.class,

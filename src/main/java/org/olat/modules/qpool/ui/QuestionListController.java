@@ -81,7 +81,7 @@ import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.model.QItemList;
-import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
+import org.olat.modules.qpool.model.QuestionItemSecurityCallbackImpl;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
@@ -151,8 +151,6 @@ public class QuestionListController extends AbstractItemListController implement
 	private QTIModule qtiModule;
 	@Autowired
 	private QuestionPoolModule qpoolModule;
-	@Autowired
-	private QPoolSecurityCallbackFactory securityCallbackFactory;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -1071,8 +1069,8 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(currentDetailsCtrl);
 		
 		WindowControl bwControl = addToHistory(ureq, item, null);
-		QuestionItemSecurityCallback securityCallback = securityCallbackFactory
-				.createQuestionItemSecurityCallback(getIdentity(), item, editable, getSource());
+		QuestionItemSecurityCallback securityCallback =
+				new QuestionItemSecurityCallbackImpl(editable, false, getSource().isDeleteEnabled());
 		Integer itemIndex = getIndex(item);
 		int numberOfItems = getModel().getRowCount();
 		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, securityCallback, item,

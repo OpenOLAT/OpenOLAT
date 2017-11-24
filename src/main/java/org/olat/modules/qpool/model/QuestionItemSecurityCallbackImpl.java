@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.security;
+package org.olat.modules.qpool.model;
 
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 
@@ -27,36 +27,32 @@ import org.olat.modules.qpool.QuestionItemSecurityCallback;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallback {
+public class QuestionItemSecurityCallbackImpl implements QuestionItemSecurityCallback {
 
-	@Override
-	public boolean canEditQuestion() {
-		// TODO Auto-generated method stub
-		return false;
+	private final boolean canEdit;
+	private final boolean canReview;
+	private final boolean canDelete;
+	
+	public QuestionItemSecurityCallbackImpl(boolean canEdit, boolean canReview, boolean canDelete) {
+		super();
+		this.canEdit = canEdit;
+		this.canReview = canReview;
+		this.canDelete = canDelete;
 	}
 
 	@Override
-	public boolean canEditMetadata() {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean canEdit() {
+		return canEdit;
 	}
 
 	@Override
 	public boolean canReview() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canSetEndOfLife() {
-		// TODO Auto-generated method stub
-		return false;
+		return canReview;
 	}
 
 	@Override
 	public boolean canDelete() {
-		// TODO Auto-generated method stub
-		return false;
+		return canDelete;
 	}
 
 }
