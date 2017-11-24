@@ -77,9 +77,11 @@ import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
+import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.model.QItemList;
+import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
@@ -149,6 +151,8 @@ public class QuestionListController extends AbstractItemListController implement
 	private QTIModule qtiModule;
 	@Autowired
 	private QuestionPoolModule qpoolModule;
+	@Autowired
+	private QPoolSecurityCallbackFactory securityCallbackFactory;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -1067,10 +1071,12 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(currentDetailsCtrl);
 		
 		WindowControl bwControl = addToHistory(ureq, item, null);
+		QuestionItemSecurityCallback securityCallback = securityCallbackFactory
+				.createQuestionItemSecurityCallback(getIdentity(), item, editable, getSource());
 		Integer itemIndex = getIndex(item);
 		int numberOfItems = getModel().getRowCount();
-		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, item, itemIndex,
-				numberOfItems, editable, getSource().isDeleteEnabled());
+		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, securityCallback, item,
+				itemIndex, numberOfItems);
 		listenTo(currentDetailsCtrl);
 		stackPanel.pushController(item.getTitle(), currentDetailsCtrl);
 		return currentDetailsCtrl;

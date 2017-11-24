@@ -53,6 +53,7 @@ import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.manager.ExportQItemResource;
@@ -90,9 +91,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private final UserCommentsAndRatingsController commentsAndRatingCtr;
 	private final TooledStackedPanel stackPanel;
 
+	private final QuestionItemSecurityCallback securityCallback;
 	private final Integer itemIndex;
 	private final int numberOfItems;
-	private final boolean canEditContent;
 	
 	@Autowired
 	private QuestionPoolModule poolModule;
@@ -100,41 +101,41 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private QPoolService qpoolService;
 	
 	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QuestionItem item, Integer itemIndex, int numberOfItems, boolean editable, boolean deletable) {
+			QuestionItemSecurityCallback securityCallback, QuestionItem item, Integer itemIndex, int numberOfItems) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
+		this.securityCallback = securityCallback;
 		this.itemIndex = itemIndex;
 		this.numberOfItems = numberOfItems;
 		
-		QPoolSPI spi = setPreviewController(ureq, item);
-		boolean canEdit = editable || qpoolService.isAuthor(item, getIdentity());
-		canEditContent = canEdit && (spi != null && spi.isTypeEditable());
-		metadatasCtrl = new MetadatasController(ureq, wControl, item, canEdit);
+//		boolean canEdit = editable || qpoolService.isAuthor(item, getIdentity());
+//		canEditContent = canEdit && (spi != null && spi.isTypeEditable());
+		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback.canEditMetadata());
 		listenTo(metadatasCtrl);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean moderator = roles.isOLATAdmin();
 		boolean anonymous = roles.isGuestOnly() || roles.isInvitee();
-		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), moderator, anonymous);
-		commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), item, null, secCallback, true, true, true);
+		CommentAndRatingSecurityCallback commentAndRatingSecurityCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), moderator, anonymous);
+		commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), item, null, commentAndRatingSecurityCallback, true, true, true);
 		listenTo(commentsAndRatingCtr);
 
 		mainVC = createVelocityContainer("item_details");
-		if(canEditContent) {
+		if(securityCallback.canEditQuestion()) {
 			editItem = LinkFactory.createButton("edit", mainVC, this);
 			editItem.setIconLeftCSS("o_icon o_icon_edit");
 		}
 
 		shareItem = LinkFactory.createButton("share.item", mainVC, this);
 		copyItem = LinkFactory.createButton("copy", mainVC, this);
-		if(deletable) {
+		if(securityCallback.canDelete()) {
 			deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
-			deleteItem.setVisible(canEdit);
+			deleteItem.setVisible(securityCallback.canEditMetadata());
 		}
 		exportItem = LinkFactory.createButton("export.item", mainVC, this);
 		
-		mainVC.put("type_specifics", previewCtrl.getInitialComponent());
+		setPreviewController(ureq, item);
 		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
 		mainVC.put("comments", commentsAndRatingCtr.getInitialComponent());
 		putInitialPanel(mainVC);
@@ -142,9 +143,11 @@ public class QuestionItemDetailsController extends BasicController implements To
 	
 	@Override
 	public void initTools() {
-		reviewLink = LinkFactory.createToolLink("review.item", translate("review.item"), this);
-		reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
-		stackPanel.addTool(reviewLink, Align.left);
+		if (securityCallback.canReview()) {
+			reviewLink = LinkFactory.createToolLink("review.item", translate("review.item"), this);
+			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
+			stackPanel.addTool(reviewLink, Align.left);
+		}
 		
 		previousItemLink = LinkFactory.createToolLink("previous", translate("previous"), this);
 		previousItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_previous");
@@ -167,7 +170,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		doHideMetadata();
 	}
 	
-	protected QPoolSPI setPreviewController(UserRequest ureq, QuestionItem item) {
+	protected void setPreviewController(UserRequest ureq, QuestionItem item) {
 		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
 		if(spi == null) {
 			previewCtrl = new QuestionItemRawController(ureq, getWindowControl());
@@ -181,7 +184,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 		if(mainVC != null) {
 			mainVC.put("type_specifics", previewCtrl.getInitialComponent());
 		}
-		return spi;
 	}
 	
 	@Override
@@ -197,7 +199,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		
 		String resourceTypeName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("edit".equalsIgnoreCase(resourceTypeName)) {
-			if(canEditContent || metadatasCtrl.getItem() != null) {
+			if(securityCallback.canEditQuestion() || metadatasCtrl.getItem() != null) {
 				doEdit(ureq, metadatasCtrl.getItem());
 			}
 		}
@@ -212,9 +214,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		} else if(source == exportItem) {
 			doExport(ureq, metadatasCtrl.getItem());
 		} else if(source == editItem) {
-			if(canEditContent) {
-				doEdit(ureq, metadatasCtrl.getItem());
-			}
+			doEdit(ureq, metadatasCtrl.getItem());
 		} else if(source == copyItem) {
 			doCopy(ureq, metadatasCtrl.getItem());
 		} else if(source == nextItemLink) {

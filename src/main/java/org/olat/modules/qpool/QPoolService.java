@@ -87,7 +87,7 @@ public interface QPoolService {
 	public List<QuestionItemShort> getItems(TaxonomyLevelRef level);
 	
 	//manage authors
-	public boolean isAuthor(QuestionItem item, Identity identity);
+	public boolean isAuthor(QuestionItemShort item, Identity identity);
 	
 	public List<Identity> getAuthors(QuestionItem item);
 	

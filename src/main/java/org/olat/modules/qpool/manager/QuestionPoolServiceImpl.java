@@ -144,7 +144,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public boolean isAuthor(QuestionItem item, Identity identity) {
+	public boolean isAuthor(QuestionItemShort item, Identity identity) {
 		QuestionItemImpl itemImpl;
 		if(item instanceof QuestionItemImpl) {
 			itemImpl = (QuestionItemImpl)item;
