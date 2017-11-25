@@ -90,9 +90,9 @@ public class QuestionItemDAO {
 		return item;
 	}
 
-	public QuestionItemImpl createAndPersist(Identity owner, String subject, String format, String language,
+	public QuestionItemImpl createAndPersist(Identity owner, String title, String format, String language,
 			TaxonomyLevel taxonLevel, String dir, String rootFilename, QItemType type) {
-		QuestionItemImpl item = create(subject, format, dir, rootFilename);
+		QuestionItemImpl item = create(title, format, dir, rootFilename);
 		if(type != null) {
 			item.setType(type);
 		}

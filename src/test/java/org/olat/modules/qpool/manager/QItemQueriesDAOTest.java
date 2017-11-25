@@ -134,6 +134,54 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	}
 	
 	@Test
+	public void getFavoriteItems_editable_author() {
+		//create an author with an item and mark it as favorite
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
+		QuestionItem item = questionDao.createAndPersist(id, "FAV 4390", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		markManager.setMark(item, id, null, "[QuestionItem:" + item + "]");
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		List<QuestionItemView> favorites = qItemQueriesDao.getFavoritItems(params, null, 0, -1);
+		QuestionItemView favoriteItem = favorites.get(0);
+		
+		Assert.assertTrue(favoriteItem.isEditable());
+	}
+	
+	@Test
+	public void getFavoriteItems_editable_pool() {
+		//create a user who is not the author of the question
+		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
+		//create an author with an item
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		Identity author = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
+		QuestionItem item = questionDao.createAndPersist(author, "FAV 4391", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		// Add the item as not editable to a public pool
+		Pool poolNotEditable = poolDao.createPool(null, "Pool not editable", true);
+		poolDao.addItemToPool(item, Collections.singletonList(poolNotEditable), false);
+		dbInstance.commitAndCloseSession();
+		
+		//the user marks the question as a favorite and load his favorites
+		markManager.setMark(item, user, null, "[QuestionItem:" + item + "]");
+		dbInstance.commitAndCloseSession();
+		SearchQuestionItemParams params = new SearchQuestionItemParams(user, null);
+		List<QuestionItemView> favorites = qItemQueriesDao.getFavoritItems(params, null, 0, -1);
+		QuestionItemView favoriteItem = favorites.get(0);
+		Assert.assertFalse(favoriteItem.isEditable());
+		
+		//the author adds the item to an other pool as editable
+		Pool poolEditable = poolDao.createPool(null, "Pool editable", true);
+		poolDao.addItemToPool(item, Collections.singletonList(poolEditable), true);
+		dbInstance.commitAndCloseSession();
+		
+		//the user reloads his favorites
+		favorites = qItemQueriesDao.getFavoritItems(params, null, 0, -1);
+		favoriteItem = favorites.get(0);
+		Assert.assertTrue(favoriteItem.isEditable());
+	}
+
+	@Test
 	public void getItemsOfCollection() {
 		//create a collection with 2 items
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
