@@ -335,7 +335,8 @@ public class ICalServlet extends HttpServlet {
 		String userAgent = request.getHeader("User-Agent");
 		if(userAgent == null) {
 			return Agent.unkown;
-		} else if(userAgent != null && userAgent.indexOf("Microsoft Outlook") >= 0) {
+		} else if(userAgent != null &&
+				(userAgent.indexOf("Microsoft Outlook") >= 0 || userAgent.indexOf("Microsoft Office") >= 0)) {
 			return Agent.outlook;
 		} else if(userAgent != null && userAgent.indexOf("Google") >= 0 && userAgent.indexOf("Calendar") >= 0) {
 			return Agent.googleCalendar;
