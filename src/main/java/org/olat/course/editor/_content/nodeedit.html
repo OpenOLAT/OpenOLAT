@@ -8,21 +8,14 @@
 	$r.render("nodeConfigForm")
 	
 	#o_togglebox_start("o_course_node_links" $r.translate("nodeEdit.links"))
-		<p>
-			$r.translate("nodeEdit.linksIntro")
-		</p>
+		<p>$r.translate("nodeEdit.linksIntro")</p>
 		<div class="o_block">
-			$r.translate("nodeEdit.extLink"):
-			<div class="o_copy_code o_nowrap">
-				<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
-				<input type="text" value="$extLink" onclick="this.select()"/>
-			</div>
+			$r.translate("nodeEdit.extLink"):## compact form needed for Firefox
+			<div class="o_copy_code o_nowrap"><a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode"> </i></a><input type="text" value="$extLink" onclick="this.select()"></div>
 		</div>
 		<div class="o_block">
 			$r.translate("nodeEdit.intLink"):
-			<div class="o_copy_code o_nowrap">
-				<input type="text" value="$intLink" onclick="this.select()"/>
-			</div>
+			<div class="o_copy_code o_nowrap"><input type="text" value="$intLink" onclick="this.select()"/></div>
 		</div>
 	#o_togglebox_end()
 	
