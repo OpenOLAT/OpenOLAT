@@ -40,9 +40,16 @@ import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.QItemType;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
+import org.olat.modules.taxonomy.manager.TaxonomyDAO;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -74,6 +81,12 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	private QuestionItemDAO questionItemDao;
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
+	@Autowired
+	private TaxonomyDAO taxonomyDao;
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
+	private TaxonomyCompetenceDAO taxonomyCompetenceDao;
 	
 	@Test
 	public void getFavoritItems() {
@@ -297,6 +310,62 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 			List<QuestionItemView> descOrderedItems = qItemQueriesDao.getItemsByAuthor(params, null, 0, -1, sortDesc);
 			Assert.assertNotNull(descOrderedItems);
 		}
+	}
+	
+	@Test
+	public void getItemsOfTaxonomy() {
+		//create a taxonomy level with 2 items
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool-10", "QPool Author", "", null);
+		TaxonomyLevel biology = taxonomyLevelDao.createTaxonomyLevel("QPool-Biology", "QPool Biology", "Biology", null, null, null, null, taxonomy);
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Tax-" + UUID.randomUUID().toString());
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		QuestionItem item1 = questionDao.createAndPersist(id, "Bio 101", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItemImpl itemImpl1 = questionDao.loadById(item1.getKey());
+		itemImpl1.setTaxonomyLevel(biology);
+		itemImpl1.setStatus(QuestionStatus.draft.toString());
+		QuestionItem item2 = questionDao.createAndPersist(id, "Bio 102", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItemImpl itemImpl2 = questionDao.loadById(item2.getKey());
+		itemImpl2.setTaxonomyLevel(biology);
+		itemImpl2.setStatus(QuestionStatus.draft.toString());
+		dbInstance.commitAndCloseSession();
+		
+		//create another item with the same taxonomy level but an other status
+		QuestionItem itemOtherStatus = questionDao.createAndPersist(id, "Bio 104", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItemImpl itemImplOtherStatus = questionDao.loadById(itemOtherStatus.getKey());
+		itemImplOtherStatus.setTaxonomyLevel(biology);
+		itemImplOtherStatus.setStatus(QuestionStatus.revised.toString());
+		dbInstance.commitAndCloseSession();
+		
+		//create another taxonomy level with an item which should not be loaded later
+		TaxonomyLevel geography = taxonomyLevelDao.createTaxonomyLevel("QPool-Geopraphy", "QPool Geopraphy", "Geopraphy", null, null, null, null, taxonomy);
+		QuestionItem itemOtherTaxonomyLevel = questionDao.createAndPersist(id, "Bio 103", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItemImpl itemImpl3 = questionDao.loadById(itemOtherTaxonomyLevel.getKey());
+		itemImpl3.setTaxonomyLevel(geography);
+		dbInstance.commitAndCloseSession();
+
+		//load the items of the taxonomy level
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
+		params.setTaxonomyLevelKey(biology.getKey());
+		params.setQuestionStatus(QuestionStatus.draft);
+		params.setAuthor(id);
+		List<QuestionItemView> items = qItemQueriesDao.getItemsOfTaxonomyLevel(params, null, 0, -1);
+		List<Long> itemKeys = new ArrayList<>();
+		for(QuestionItemView item:items) {
+			itemKeys.add(item.getKey());
+		}
+		Assert.assertNotNull(items);
+		Assert.assertEquals(2, items.size());
+		Assert.assertTrue(itemKeys.contains(item1.getKey()));
+		Assert.assertTrue(itemKeys.contains(item2.getKey()));
+		//count them
+		int numOfItems = qItemQueriesDao.countItemsOfTaxonomy(params);
+		Assert.assertEquals(2, numOfItems);
+		
+		//load limit sub set
+		List<QuestionItemView> limitedItems = qItemQueriesDao.getItemsOfTaxonomyLevel(params, Collections.singletonList(item1.getKey()), 0, -1);
+		Assert.assertNotNull(limitedItems);
+		Assert.assertEquals(1, limitedItems.size());
+		Assert.assertEquals(item1.getKey(), limitedItems.get(0).getKey());
 	}
 	
 	@Test

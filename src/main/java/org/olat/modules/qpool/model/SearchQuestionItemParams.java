@@ -26,6 +26,7 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.QuestionStatus;
 
 /**
  * 
@@ -43,6 +44,9 @@ public class SearchQuestionItemParams {
 	
 	private boolean favoritOnly;
 	private Identity author;
+	
+	private Long taxonomyLevelKey;
+	private QuestionStatus questionStatus;
 	
 	private final Identity identity;
 	private final Roles roles;
@@ -92,6 +96,23 @@ public class SearchQuestionItemParams {
 		this.author = author;
 	}
 	
+	
+	public Long getTaxonomyLevelKey() {
+		return taxonomyLevelKey;
+	}
+
+	public void setTaxonomyLevelKey(Long taxonomyLevelKey) {
+		this.taxonomyLevelKey = taxonomyLevelKey;
+	}
+
+	public QuestionStatus getQuestionStatus() {
+		return questionStatus;
+	}
+
+	public void setQuestionStatus(QuestionStatus questionStatus) {
+		this.questionStatus = questionStatus;
+	}
+
 	public boolean isFulltextSearch() {
 		return StringHelper.containsNonWhitespace(searchString) ||
 				condQueries != null && condQueries.size() > 0;
@@ -107,9 +128,9 @@ public class SearchQuestionItemParams {
 
 	public List<String> getCondQueries() {
 		if(condQueries == null) {
-			return new ArrayList<String>(1);
+			return new ArrayList<>(1);
 		}
-		return new ArrayList<String>(condQueries);
+		return new ArrayList<>(condQueries);
 	}
 
 	public void setCondQueries(List<String> condQueries) {
@@ -133,6 +154,8 @@ public class SearchQuestionItemParams {
 		clone.condQueries = getCondQueries();
 		clone.favoritOnly = favoritOnly;
 		clone.author = author;
+		clone.taxonomyLevelKey = taxonomyLevelKey;
+		clone.questionStatus = questionStatus;
 		return clone;
 	}
 }

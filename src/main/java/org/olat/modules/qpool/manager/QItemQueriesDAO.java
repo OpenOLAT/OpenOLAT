@@ -252,6 +252,130 @@ public class QItemQueriesDAO {
 		return views;
 	}
 	
+	public List<QuestionItemView> getItemsOfTaxonomyLevel(SearchQuestionItemParams params, Collection<Long> inKeys,
+			int firstResult, int maxResults, SortKey... orderBy) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select item, ").append(" (select count(sgmi.key) from ")
+				.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
+				.append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
+				.append(" ) as owners,").append(" (select count(pool2item.key) from qpool2item pool2item")
+				.append("    where pool2item.item.key=item.key").append("      and pool2item.editable is true")
+				.append(" ) as pools,").append(" (select count(shareditem.key) from qshareitem shareditem")
+				.append("    where shareditem.item.key=item.key").append("      and shareditem.editable is true")
+				.append(" ) as groups,").append(" (select count(competence.key) from ctaxonomycompetence competence")
+				.append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+				.append("     and competence.identity.key=:identityKey").append("     and competence.type='")
+				.append(TaxonomyCompetenceTypes.teach).append("'").append(" ) as reviewer,")
+				.append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
+				.append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
+				.append(" ) as marks,").append(" (select avg(rating.rating) from userrating as rating")
+				.append("   where rating.resId=item.key and rating.resName='QuestionItem'").append(" ) as rating")
+				.append(" from questionitem item").append(" inner join fetch item.ownerGroup ownerGroup")
+				.append(" inner join fetch item.taxonomyLevel taxonomyLevel")
+				.append(" left join fetch item.type itemType")
+				.append(" left join fetch item.educationalContext educationalContext")
+				.append(" where taxonomyLevel.key=:taxonomyLevelKey");
+		if (params.getQuestionStatus() != null) {
+			sb.append(" and item.status=:questionStatus");
+		}
+		if (params.getAuthor() != null) {
+			sb.append(" and exists (").append("   select sgmi.key from ")
+					.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
+					.append("   where sgmi.identity.key=:authorKey and sgmi.securityGroup=item.ownerGroup")
+					.append(" )");
+		}
+		if (inKeys != null && inKeys.size() > 0) {
+			sb.append(" and item.key in (:inKeys)");
+		}
+		if (StringHelper.containsNonWhitespace(params.getFormat())) {
+			sb.append(" and item.format=:format");
+		}
+		appendOrderBy(sb, "item", orderBy);
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+				.setParameter("taxonomyLevelKey", params.getTaxonomyLevelKey())
+				.setParameter("identityKey", params.getIdentity().getKey());
+		if (params.getQuestionStatus() != null) {
+			query.setParameter("questionStatus", params.getQuestionStatus().toString());
+		}
+		if (params.getAuthor() != null) {
+			query.setParameter("authorKey", params.getAuthor().getKey());
+		}
+		if (inKeys != null && inKeys.size() > 0) {
+			query.setParameter("inKeys", inKeys);
+		}
+		if (StringHelper.containsNonWhitespace(params.getFormat())) {
+			query.setParameter("format", params.getFormat());
+		}
+		if (firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if (maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+
+		List<Object[]> results = query.getResultList();
+		List<QuestionItemView> views = new ArrayList<>();
+		for (Object[] result : results) {
+			QuestionItemImpl item = (QuestionItemImpl) result[0];
+			Number ownerCount = (Number) result[1];
+			boolean isAuthor = ownerCount == null ? false : ownerCount.longValue() > 0;
+			boolean editable = false;
+			if (qPoolModule.getEditableQuestionStates().contains(item.getQuestionStatus())) {
+				Number poolsCount = (Number) result[2];
+				Number groupsCount = (Number) result[3];
+				boolean editableInPool = poolsCount == null ? false : poolsCount.longValue() > 0;
+				boolean editableInGroup = groupsCount == null ? false : groupsCount.longValue() > 0;
+				editable = isAuthor || editableInPool || editableInGroup;
+			}
+			;
+			boolean reviewable = false;
+			if (qPoolModule.getReviewableQuestionStates().contains(item.getQuestionStatus())) {
+				Number reviewerCount = (Number) result[4];
+				boolean isReviewer = reviewerCount == null ? false : reviewerCount.longValue() > 0;
+				reviewable = isReviewer && !isAuthor;
+			}
+			Number markCount = (Number) result[5];
+			boolean marked = markCount == null ? false : markCount.longValue() > 0;
+			Double rating = (Double) result[6];
+			views.add(new ItemWrapper(item, editable, reviewable, marked, rating));
+		}
+		return views;
+	}
+	
+	public int countItemsOfTaxonomy(SearchQuestionItemParams params) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(item) from questionitem item ")
+		  .append(" inner join item.taxonomyLevel taxonomyLevel")
+		  .append(" where taxonomyLevel.key=:taxonomyLevelKey");
+		if(params.getQuestionStatus() != null) {
+			sb.append(" and item.status=:questionStatus");
+		}
+		if(params.getAuthor() != null) {
+		  sb.append(" and exists (")
+		  	.append("   select sgmi.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
+		  	.append("   where sgmi.identity.key=:authorKey and sgmi.securityGroup=item.ownerGroup")
+		  	.append(" )");
+		}
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			sb.append(" and item.format=:format");
+		}
+		
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("taxonomyLevelKey", params.getTaxonomyLevelKey());
+		if(params.getQuestionStatus() != null) {
+			query.setParameter("questionStatus", params.getQuestionStatus().toString());
+		}
+		if(params.getAuthor() != null) {
+			query.setParameter("authorKey", params.getAuthor().getKey());
+		}
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			query.setParameter("format", params.getFormat());
+		}
+		return query.getSingleResult().intValue();
+	}
+
 	public int countItemsByAuthor(SearchQuestionItemParams params) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(item) from questionitem item ")
@@ -503,4 +627,5 @@ public class QItemQueriesDAO {
 		}
 		return sb;
 	}
+
 }
