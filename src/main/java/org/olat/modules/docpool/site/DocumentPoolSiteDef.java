@@ -63,4 +63,10 @@ public class DocumentPoolSiteDef extends AbstractSiteDefinition implements SiteD
 		DocumentPoolModule module = CoreSpringFactory.getImpl(DocumentPoolModule.class);
 		return module.isEnabled() && super.isEnabled();
 	}
+	
+	@Override
+	public boolean isFeatureEnabled() {
+		DocumentPoolModule module = CoreSpringFactory.getImpl(DocumentPoolModule.class);
+		return module.isEnabled();
+	}
 }
