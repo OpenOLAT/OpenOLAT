@@ -36,7 +36,6 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
-import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,9 +49,6 @@ public class QTI21ExportResultsReportController extends BasicController {
 
 	@Autowired
 	private	BusinessGroupService groupService;
-	@Autowired
-	protected QTI21Service qtiService;
-
 	
 	public QTI21ExportResultsReportController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, AssessmentToolOptions asOptions, QTICourseNode courseNode) {
@@ -83,7 +79,7 @@ public class QTI21ExportResultsReportController extends BasicController {
 		}
 		if (identities != null && identities.size() > 0) {
 			// 2) create export resource
-			MediaResource resource = new QTI21ResultsExportMediaResource(courseEnv, identities, courseNode, qtiService, ureq);
+			MediaResource resource = new QTI21ResultsExportMediaResource(courseEnv, identities, courseNode, getLocale());
 			// 3) download
 			ureq.getDispatchResult().setResultingMediaResource(resource);
 
@@ -95,8 +91,6 @@ public class QTI21ExportResultsReportController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-
-		
+		//
 	}
-
 }

@@ -40,6 +40,8 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.velocity.VelocityContext;
+import org.olat.admin.user.imp.TransientIdentity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -55,14 +57,17 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
@@ -71,7 +76,6 @@ import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.resultexport.AssessedMember;
-import org.olat.ims.qti.resultexport.ResultDetail;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Service;
@@ -100,35 +104,26 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	private QTI21Service qtiService;
 	private String title, exportFolderName;
 	private Translator translator;
-	
 	private RepositoryEntry entry;
 	private UserRequest ureq;
 	
 	private final Set<RepositoryEntry> testEntries = new HashSet<>();
-
-	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, 
-			QTICourseNode courseNode, QTI21Service qtiService, UserRequest ureq) {
-		this.title = "qti21export";	
-		this.courseNode = courseNode;
-		this.identities = identities;
-		this.velocityHelper = VelocityHelper.getInstance();
-		this.qtiService = qtiService;
-		this.ureq = ureq;		
-		this.entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, ureq.getLocale());
-	}
 	
-	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, QTICourseNode courseNode, 
-			QTI21Service qtiService, UserRequest ureq, Locale locale) {
+	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities,
+			QTICourseNode courseNode, Locale locale) {
 		this.title = "qti21export";	
 		this.courseNode = courseNode;
 		this.identities = identities;
-		this.velocityHelper = VelocityHelper.getInstance();
-		this.qtiService = qtiService;
-		this.ureq = ureq;		
-		this.entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		this.translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, locale);
-		this.exportFolderName = translator.translate("export.folder.name");
+		
+		ureq = new SyntheticUserRequest(new TransientIdentity(), locale, new UserSession());
+		Roles roles = new Roles(false, false, false, false, false, false, false);
+		ureq.getUserSession().setRoles(roles);
+
+		velocityHelper = VelocityHelper.getInstance();
+		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+		entry = courseEnv.getCourseGroupManager().getCourseEntry();
+		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, locale);
+		exportFolderName = translator.translate("export.folder.name");
 	}
 
 	@Override
@@ -158,9 +153,6 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		//init package translator
-		exportFolderName = translator.translate("export.folder.name");
-		
 		String label = StringHelper.transformDisplayNameToFileSystemName(title);
 		if (label != null && !label.toLowerCase().endsWith(".zip")) {
 			label += ".zip";
@@ -222,7 +214,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	}
 	
 	private List<ResultDetail> createResultDetail (Identity identity, ZipOutputStream zout, String idDir) throws IOException {
-		List<ResultDetail> assessments = new ArrayList<ResultDetail>();				
+		List<ResultDetail> assessments = new ArrayList<>();
 		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, courseNode.getIdent(), identity);
 		for (AssessmentTestSession session : sessions) {
 			Long assessmentID = session.getKey();
@@ -231,7 +223,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			// content of result table
 			ResultDetail resultDetail = new ResultDetail(assessmentID.toString(), 
 					assessmentDateFormat.format(session.getCreationDate()),
-					displayDateFormat.format(new Date(session.getDuration())), session.getScore().floatValue(), 
+					displayDateFormat.format(new Date(session.getDuration())),
+					session.getScore(), session.getManualScore(), 
 					createPassedIcons(session.getPassed() == null ? true : session.getPassed()),
 					idPath.replace(idDir, "") + assessmentID + ".html");
 			
@@ -268,7 +261,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		return assessments;
 	}
 	
-	private List<AssessedMember> createAssessedMembersDetail (ZipOutputStream zout) throws IOException {
+	private List<AssessedMember> createAssessedMembersDetail(ZipOutputStream zout) throws IOException {
 		List<AssessedMember> assessedMembers = new ArrayList<>();		
 		for (Identity identity : identities) {
 			
@@ -306,7 +299,6 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		String baseDir = exportFolderName + "/test" + testEntry.getKey();
 		ZipUtil.addDirectoryToZip(fUnzippedDirRoot.toPath(), baseDir, zout);
-		
 	}
 	
 	private String createLink(String name, String href, boolean userview) {
@@ -337,7 +329,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		return sb.toString();
 	}
 	
-	private String createResultListingHTML (List<ResultDetail> assessments,AssessedMember assessedMember){
+	private String createResultListingHTML (List<ResultDetail> assessments, AssessedMember assessedMember) {
 		// now put values to velocityContext
 		VelocityContext ctx = new VelocityContext();
 		ctx.put("t", translator);
