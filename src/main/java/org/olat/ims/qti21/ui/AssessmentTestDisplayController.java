@@ -55,6 +55,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
@@ -1044,6 +1045,12 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			//someone try to send the form in review with tab / return
 			return;
 		}
+		if(!qtiWorksCtrl.validatePresentedItem(currentItemKey)) {
+			logError("Response send by browser doesn't match current item key", null);
+			ServletUtil.printOutRequestParameters(ureq.getHttpReq());
+			showWarning("error.reload.question");
+			return;//this is not the right node in the plan
+		}
 		
 		final Map<Identifier,File> fileSubmissionMap = new HashMap<>();
 		final Map<Identifier, ResponseData> responseDataMap = new HashMap<>();
@@ -1160,6 +1167,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
         /* Save any change to session state */
         candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
+        
+        addToHistory(ureq, this);
 	}
 	
 	private void collectOutcomeVariablesForItemSession(ItemResult resultNode, AssessmentItemSession itemSession) {
@@ -1893,6 +1902,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		protected boolean validateResponseIdentifierCommand(String cmd, TestPlanNodeKey nodeKey) {
 			return qtiEl.validateCommand(cmd, nodeKey);
+		}
+		
+		protected boolean validatePresentedItem(TestPlanNodeKey nodeKey) {
+			return qtiEl.validateRequest(nodeKey);
 		}
 
 		@Override

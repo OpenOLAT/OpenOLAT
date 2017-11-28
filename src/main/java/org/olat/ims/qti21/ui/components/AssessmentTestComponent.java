@@ -133,6 +133,16 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 		String id = "oo" + (tpnk.toString().replace(":", "_")) + "_";
 		return cmd.contains(id);
 	}
+	
+	public boolean validateRequest(TestPlanNodeKey tpnk) {
+		String id = "oo" + (tpnk.toString().replace(":", "_")) + "_";
+		for(String parameter:qtiItem.getRootForm().getRequestParameterSet()) {
+			if(parameter.contains(id)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	@Override
 	public Interaction getInteractionOfResponseUniqueIdentifier(String responseUniqueId) {
