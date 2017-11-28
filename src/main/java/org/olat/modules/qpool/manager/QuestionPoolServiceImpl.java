@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -66,9 +67,11 @@ import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
@@ -117,11 +120,12 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
 	
-
 	@Autowired
 	private TaxonomyDAO taxonomyDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
+	private TaxonomyCompetenceDAO taxonomyCompetenceDao;
 	
 
 	@Override
@@ -854,6 +858,13 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Override
 	public boolean deleteTaxonomyLevel(TaxonomyLevel level) {
 		return taxonomyLevelDao.delete(level);
+	}
+	
+	@Override
+	public List<TaxonomyLevel> getTaxonomyLevel(Identity identity, TaxonomyCompetenceTypes... competenceType) {
+		return taxonomyCompetenceDao.getCompetenceByTaxonomy(getQPoolTaxonomy(), identity, competenceType).stream()
+				.map(competence -> competence.getTaxonomyLevel())
+				.collect(Collectors.toList());
 	}
 	
 	private ResultInfos<QuestionItemView> getItemsByTaxonomyLevel(SearchQuestionItemParams searchParams,

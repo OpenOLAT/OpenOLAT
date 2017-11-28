@@ -50,7 +50,7 @@ public class MyQuestionsTreeNode extends GenericTreeNode implements ControllerTr
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 	
-	public MyQuestionsTreeNode(String title, TooledStackedPanel stackPanel) {
+	public MyQuestionsTreeNode(TooledStackedPanel stackPanel, String title) {
 		super();
 		this.stackPanel = stackPanel;
 		

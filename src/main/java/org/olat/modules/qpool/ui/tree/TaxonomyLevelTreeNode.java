@@ -19,79 +19,71 @@
  */
 package org.olat.modules.qpool.ui.tree;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.id.Roles;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.modules.qpool.Pool;
-import org.olat.modules.qpool.QPoolService;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ui.QuestionsController;
-import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
-import org.olat.modules.qpool.ui.datasource.PoolItemsSource;
+import org.olat.modules.qpool.ui.datasource.TaxonomyLeveltemsSource;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
- * Initial date: 13.10.2017<br>
+ * Initial date: 28.11.2017<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode {
+public class TaxonomyLevelTreeNode extends GenericTreeNode implements ControllerTreeNode {
 
-	private static final long serialVersionUID = -1259214122412317978L;
+	private static final long serialVersionUID = 6968774478547770505L;
 	
-	private static final String ICON_CSS_CLASS = "o_icon_pool_pool o_sel_qpool_pool";
-	private static final String TABLE_PREFERENCE_PREFIX = "poll-";
+	private static final String ORES_TYPE = "Subject";
+	private static final String ICON_CSS_CLASS = "o_icon_pool_taxonomy o_sel_qpool_taxonomy";
+	private static final String TABLE_PREFERENCE_PREFIX = "taxlevel-";
 	
-	private final QPoolService qpoolService;
-	private final Pool pool;
+	private final TaxonomyLevel taxonomyLevel;
+	private final QuestionStatus questionStatus;
+	private final Identity author;
 	
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 
-	public PoolTreeNode(TooledStackedPanel stackPanel, Pool pool) {
-		this.pool = pool;
+	public TaxonomyLevelTreeNode(TooledStackedPanel stackPanel, TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus,
+			Identity author) {
+		super();
 		this.stackPanel = stackPanel;
-		this.qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		this.taxonomyLevel = taxonomyLevel;
+		this.questionStatus = questionStatus;
+		this.author = author;
 		
-		this.setTitle(pool.getName());
+		this.setTitle(taxonomyLevel.getDisplayName());
 		this.setIconCssClass(ICON_CSS_CLASS);
-
-		// The user object is used to findNodeByPersistableUserObject
-		this.setUserObject(pool);
+		
+		this.setUserObject(taxonomyLevel);
 	}
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		DefaultItemsSource source = new PoolItemsSource(
+		TaxonomyLeveltemsSource source = new TaxonomyLeveltemsSource(
 				ureq.getIdentity(),
 				ureq.getUserSession().getRoles(),
-				pool);
-		source.setRemoveEnabled(isPoolAdmin(ureq, pool));
-		if(questionsCtrl == null) {
-			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, pool, null,
-					wControl, true);
-			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, TABLE_PREFERENCE_PREFIX + pool.getKey());
+				taxonomyLevel,
+				questionStatus,
+				author);
+		if (questionsCtrl == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE + "_" + questionStatus, taxonomyLevel.getKey());
+			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
+			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, TABLE_PREFERENCE_PREFIX + questionStatus + taxonomyLevel.getKey());
 		} else {
 			questionsCtrl.updateSource(source);
 		}
 		return questionsCtrl;
-	}
-	
-	private boolean isPoolAdmin(UserRequest ureq, Pool pool) {
-		Identity identity = ureq.getIdentity();
-		Roles roles = ureq.getUserSession().getRoles();
-		return roles != null &&
-				(  roles.isOLATAdmin()
-				|| roles.isPoolAdmin()
-				|| pool.isPublicPool()
-				//TODO uh Muss dieses statemant innerhalb der Klammern sein? dh role haben
-				|| qpoolService.isOwner(identity, pool)
-				);
 	}
 
 }

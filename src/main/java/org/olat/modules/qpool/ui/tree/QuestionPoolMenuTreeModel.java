@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.ui.tree;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -36,7 +38,10 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemCollection;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ui.QuestionPoolMainEditorController;
+import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -56,6 +61,8 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	
 	private TreeNode myNode;
 	private TreeNode myQuestionsNode;
+	private GenericTreeNode reviewNode;
+	private GenericTreeNode finalNode;
 	private TreeNode sharesNode;
 	
 	public QuestionPoolMenuTreeModel(TooledStackedPanel stackPanel, Identity identity, Roles roles, Locale locale) {
@@ -89,6 +96,23 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	public TreeNode getSharesNode() {
 		return sharesNode;
 	}
+	
+	public Collection<String> getDefaultOpenNodeIds() {
+		Collection<String> openNodeIds = new ArrayList<>(4);
+		if (myNode != null) {
+			openNodeIds.add(myNode.getIdent());
+		}
+		if (reviewNode != null) {
+			openNodeIds.add(reviewNode.getIdent());
+		}
+		if (finalNode != null) {
+			openNodeIds.add(finalNode.getIdent());
+		}
+		if (sharesNode != null) {
+			openNodeIds.add(sharesNode.getIdent());
+		}
+		return openNodeIds;
+	}
 
 	@Override
 	public boolean isNodeDroppable(TreeNode node) {
@@ -116,6 +140,10 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		rootNode.addChild(myNode);
 		buildMySubTreeModel();
 		
+		//review process
+		buildReviewSubTreeModel(rootNode);
+		buildFinalSubTreeModel(rootNode);
+		
 		//pools + shares
 		sharesNode = new SharePresentationTreeNode(translator.translate("menu.share"));
 		rootNode.addChild(sharesNode);	
@@ -133,24 +161,60 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		myNode.removeAllChildren();
 		buildMyTreeNode(myNode);
 		buildMarkedTreeNode(myNode);
+		buildMyTaxonomyNodes(myNode);
 		buildCollectionTreeNodes(myNode);
 	}
 
 	private void buildMyTreeNode(TreeNode parentNode) {
-		myQuestionsNode = new MyQuestionsTreeNode(translator.translate("menu.database.my"), stackPanel);
+		myQuestionsNode = new MyQuestionsTreeNode(stackPanel, translator.translate("menu.database.my"));
 		parentNode.addChild(myQuestionsNode);
 	}
 
 	private void buildMarkedTreeNode(TreeNode parentNode) {
-		TreeNode node = new MarkedQuestionsTreeNode(translator.translate("menu.database.favorit"), stackPanel);
+		TreeNode node = new MarkedQuestionsTreeNode(stackPanel, translator.translate("menu.database.favorit"));
 		parentNode.addChild(node);
 	}
 	
+	private void buildMyTaxonomyNodes(TreeNode parentNode) {
+		List<TaxonomyLevel> taxonomyLevels = qpoolService.getTaxonomyLevel(identity, TaxonomyCompetenceTypes.have);
+		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
+			TreeNode node = new TaxonomyLevelTreeNode(stackPanel, taxonomyLevel, QuestionStatus.draft, identity);
+			parentNode.addChild(node);
+		}
+	}
+
 	private void buildCollectionTreeNodes(TreeNode parentNode) {
 		List<QuestionItemCollection> collections = qpoolService.getCollections(identity);
 		for(QuestionItemCollection coll: collections) {
-			TreeNode node = new CollectionTreeNode(coll, stackPanel);
+			TreeNode node = new CollectionTreeNode(stackPanel, coll);
 			parentNode.addChild(node);
+		}
+	}
+	
+	public void buildReviewSubTreeModel(TreeNode rootNode) {
+		List<TaxonomyLevel> taxonomyLevels = qpoolService.getTaxonomyLevel(identity, TaxonomyCompetenceTypes.teach);
+		if(!taxonomyLevels.isEmpty()) {
+			reviewNode = new GenericTreeNode(translator.translate("menu.review"));
+			reviewNode.setTitle(translator.translate("menu.review"));
+			rootNode.addChild(reviewNode);
+			
+			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
+				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, taxonomyLevel, QuestionStatus.review, null);
+				reviewNode.addChild(node);
+			}
+		}
+	}
+	
+	public void buildFinalSubTreeModel(TreeNode rootNode) {
+		List<TaxonomyLevel> taxonomyLevels = qpoolService.getTaxonomyLevel(identity, TaxonomyCompetenceTypes.manage);
+		if (!taxonomyLevels.isEmpty()) {
+			finalNode = new GenericTreeNode(translator.translate("menu.final"));
+			finalNode.setTitle(translator.translate("menu.final"));
+			rootNode.addChild(finalNode);
+			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
+				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, taxonomyLevel, QuestionStatus.finalVersion, null);
+				finalNode.addChild(node);
+			}
 		}
 	}
 	
@@ -163,7 +227,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private void buildPoolTreeNodes(TreeNode parentNode) {
 		List<Pool> pools = qpoolService.getPools(identity, roles);
 		for(Pool pool:pools) {
-			TreeNode node = new PoolTreeNode(pool, stackPanel);
+			TreeNode node = new PoolTreeNode(stackPanel, pool);
 			parentNode.addChild(node);
 		}
 	}
@@ -171,7 +235,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private void buildBusinessGroupTreeNodes(TreeNode parentNode) {
 		List<BusinessGroup> groups = qpoolService.getResourcesWithSharedItems(identity);
 		for(BusinessGroup group:groups) {
-			TreeNode node = new BusinessGroupTreeNode(group, stackPanel);
+			TreeNode node = new BusinessGroupTreeNode(stackPanel, group);
 			parentNode.addChild(node);
 		}
 	}

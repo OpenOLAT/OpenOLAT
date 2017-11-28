@@ -48,7 +48,7 @@ public class CollectionTreeNode extends GenericTreeNode implements ControllerTre
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 
-	public CollectionTreeNode(QuestionItemCollection questionItemCollection, TooledStackedPanel stackPanel) {
+	public CollectionTreeNode(TooledStackedPanel stackPanel, QuestionItemCollection questionItemCollection) {
 		this.questionItemCollection = questionItemCollection;
 		this.stackPanel = stackPanel;
 

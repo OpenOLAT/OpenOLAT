@@ -50,7 +50,7 @@ public class MarkedQuestionsTreeNode extends GenericTreeNode implements Controll
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 
-	public MarkedQuestionsTreeNode(String title, TooledStackedPanel stackPanel) {
+	public MarkedQuestionsTreeNode(TooledStackedPanel stackPanel, String title) {
 		super();
 		this.stackPanel = stackPanel;
 		

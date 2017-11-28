@@ -21,7 +21,6 @@ package org.olat.modules.qpool.ui;
 
 import static java.util.Collections.singletonList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -106,11 +105,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 		menuTree.setExpandSelectedNode(false);
 		menuTree.addListener(this);
 		menuTree.setRootVisible(false);
-		//open the nodes shared and my at start
-		List<String> openNodeIds = new ArrayList<>(2);
-		openNodeIds.add(treeModel.getMyNode().getIdent());
-		openNodeIds.add(treeModel.getSharesNode().getIdent());
-		menuTree.setOpenNodeIds(openNodeIds);
+		menuTree.setOpenNodeIds(treeModel.getDefaultOpenNodeIds());
 		
 		content = new Panel("list");
 		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), menuTree, content, "qpool");

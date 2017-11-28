@@ -38,6 +38,7 @@ import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
+import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.resource.OLATResource;
@@ -184,6 +185,8 @@ public interface QPoolService {
 	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level, String identifier, String displayName);
 	
 	public boolean deleteTaxonomyLevel(TaxonomyLevel level);
+	
+	public List<TaxonomyLevel> getTaxonomyLevel(Identity identity, TaxonomyCompetenceTypes... competenceType);
 
 	
 	//pool administration

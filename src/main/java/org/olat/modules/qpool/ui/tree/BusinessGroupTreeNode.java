@@ -52,7 +52,7 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 	
-	public BusinessGroupTreeNode(BusinessGroup group, TooledStackedPanel stackPanel) {
+	public BusinessGroupTreeNode(TooledStackedPanel stackPanel, BusinessGroup group) {
 		this.group = group;
 		this.stackPanel = stackPanel;
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
