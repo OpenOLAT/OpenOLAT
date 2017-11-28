@@ -35,7 +35,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
-import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -45,7 +44,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -53,7 +51,6 @@ import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
@@ -672,11 +669,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 
 		// 1) prepare result export
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
-		//create SyntheticUserRequest with UserSession to avoid Nullpointer in AssessmentResultController
-		UserRequest ureq = new SyntheticUserRequest(new TransientIdentity(), locale, new UserSession());
-		Roles roles = new Roles(false, false, false, false, false, false, false);
-		ureq.getUserSession().setRoles(roles);
-		
 		try {
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
 			boolean onyx = OnyxModule.isOnyxTest(re.getOlatResource());
@@ -689,9 +681,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				return true;
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				// 2a) create export resource
-				QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
 				List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
-				new QTI21ResultsExportMediaResource(courseEnv, identities, this, qtiService, ureq, locale).exportTestResults(exportStream);
+				new QTI21ResultsExportMediaResource(courseEnv, identities, this, locale).exportTestResults(exportStream);
 				// excel results
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, re, courseEntry, getIdent());
