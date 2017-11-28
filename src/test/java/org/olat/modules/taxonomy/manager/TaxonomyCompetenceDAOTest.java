@@ -161,6 +161,38 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getCompetenceByTaxonomyAndCompetenceTypes() {
+		//make 2 taxonomy trees
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-5");
+		Taxonomy taxonomy1 = taxonomyDao.createTaxonomy("ID-31", "Competence", "", null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "Competence level taxonomy 1", "A competence", null, null, null, null, taxonomy1);
+		TaxonomyCompetence competence1 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level1, id);
+		
+		Taxonomy taxonomy2 = taxonomyDao.createTaxonomy("ID-32", "Competence", "", null);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-2", "Competence level taxonomy 2", "A competence", null, null, null, null, taxonomy2);
+		TaxonomyCompetence competence2 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, id);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level2, id);
+		Identity otherId = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-5");
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, otherId);
+		dbInstance.commitAndCloseSession();
+		
+		//check the competences of the 2 taxonomy trees
+		List<TaxonomyCompetence> loadedCompetences1 = taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy1, id, TaxonomyCompetenceTypes.target);
+		Assert.assertNotNull(loadedCompetences1);
+		Assert.assertEquals(1, loadedCompetences1.size());
+		Assert.assertEquals(competence1, loadedCompetences1.get(0));
+		loadedCompetences1 = taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy1, id, TaxonomyCompetenceTypes.have);
+		Assert.assertEquals(0, loadedCompetences1.size());
+
+		List<TaxonomyCompetence> loadedCompetences2 = taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy2, id, TaxonomyCompetenceTypes.target);
+		Assert.assertNotNull(loadedCompetences2);
+		Assert.assertEquals(1, loadedCompetences2.size());
+		Assert.assertEquals(competence2, loadedCompetences2.get(0));
+		loadedCompetences2 = taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy2, id, TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach);
+		Assert.assertEquals(0, loadedCompetences2.size());
+	}
+	
+	@Test
 	public void getCompetences_identityAndTypes() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-6");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-6");
