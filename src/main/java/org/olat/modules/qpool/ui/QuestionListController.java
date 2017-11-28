@@ -171,15 +171,25 @@ public class QuestionListController extends AbstractItemListController implement
 			removeItem = uifactory.addFormLink("unshare.item", formLayout, Link.BUTTON);
 		}
 
-		newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
-		copyItem = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
-		convertItem = uifactory.addFormLink("convert.item", formLayout, Link.BUTTON);
+		if(getSource().isCreateEnabled()) {
+			newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
+		}
+		if(getSource().isCopyEnabled()) {
+			copyItem = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
+		}
+		if(getSource().isImportEnabled()) {
+			convertItem = uifactory.addFormLink("convert.item", formLayout, Link.BUTTON);
+		}
 		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
-		authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
+		if(getSource().isAuthorRightsEnable()) {
+			authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
+		}
 		if(getSource().isDeleteEnabled()) {
 			deleteItem = uifactory.addFormLink("delete.item", formLayout, Link.BUTTON);
 		}
-		bulkChange = uifactory.addFormLink("bulk.change", formLayout, Link.BUTTON);
+		if(getSource().isBulkChangeEnabled()) {
+			bulkChange = uifactory.addFormLink("bulk.change", formLayout, Link.BUTTON);
+		}
 	}
 
 	public QuestionItemCollection getItemCollection() {

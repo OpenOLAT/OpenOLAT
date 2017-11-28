@@ -50,7 +50,33 @@ public class MyItemsSource extends DefaultItemsSource {
 	}
 
 	@Override
+	public boolean isCreateEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean isCopyEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean isImportEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean isAuthorRightsEnable() {
+		return true;
+	}
+
+	@Override
 	public boolean isDeleteEnabled() {
 		return true;
 	}
+
+	@Override
+	public boolean isBulkChangeEnabled() {
+		return true;
+	}
+
 }

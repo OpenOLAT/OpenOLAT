@@ -25,8 +25,10 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -38,6 +40,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 
 	private final Identity me;
+	private final TaxonomyLevel taxonomyLevel;
 	private final QuestionStatus questionStatus;
 	private final Identity author;
 	
@@ -46,6 +49,7 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 	public TaxonomyLeveltemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus, Identity author) {
 		super(me, roles, taxonomyLevel.getDisplayName());
 		this.me = me;
+		this.taxonomyLevel = taxonomyLevel;
 		this.questionStatus = questionStatus;
 		this.author = author;
 		getDefaultParams().setTaxonomyLevelKey(taxonomyLevel.getKey());
@@ -55,8 +59,33 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 	}
 
 	@Override
+	public boolean isCreateEnabled() {
+		return qPoolModule.getEditableQuestionStates().contains(questionStatus)? true: false;
+	}
+
+	@Override
+	public boolean isCopyEnabled() {
+		return qPoolModule.getEditableQuestionStates().contains(questionStatus)? true: false;
+	}
+
+	@Override
+	public boolean isImportEnabled() {
+		return qPoolModule.getEditableQuestionStates().contains(questionStatus)? true: false;
+	}
+
+	@Override
+	public boolean isAuthorRightsEnable() {
+		return qPoolModule.getEditableQuestionStates().contains(questionStatus)? true: false;
+	}
+
+	@Override
 	public boolean askEditable() {
 		return false;
+	}
+
+	@Override
+	public boolean isBulkChangeEnabled() {
+		return qPoolModule.getEditableQuestionStates().contains(questionStatus)? true: false;
 	}
 
 	@Override
@@ -68,7 +97,15 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 
 	@Override
 	public int postImport(List<QuestionItem> items, boolean editable) {
-		return items == null ? 0 : items.size();
+		if(items == null || items.isEmpty()) return 0;
+		for(QuestionItemShort item : items) {
+			QuestionItem fullItem = qpoolService.loadItemById(item.getKey());
+			if(fullItem instanceof QuestionItemImpl) {
+				QuestionItemImpl itemImpl = (QuestionItemImpl)fullItem;
+				itemImpl.setTaxonomyLevel(taxonomyLevel);
+			}
+		}
+		return items.size();
 	}
 
 }

@@ -43,10 +43,20 @@ public interface QuestionItemsSource {
 	
 	public Controller getSourceController(UserRequest ureq, WindowControl wControl);
 	
+	public boolean isCreateEnabled();
+
+	public boolean isCopyEnabled();
+
+	public boolean isImportEnabled();
+	
 	public boolean isRemoveEnabled();
 	
+	public boolean isAuthorRightsEnable();
+
 	public boolean isDeleteEnabled();
 	
+	public boolean isBulkChangeEnabled();
+
 	public boolean askEditable();
 	
 	public int postImport(List<QuestionItem> items, boolean editable);

@@ -83,13 +83,38 @@ public class SharedItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
+	public boolean isCreateEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean isCopyEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean isImportEnabled() {
+		return true;
+	}
+
+	@Override
 	public boolean isRemoveEnabled() {
 		return roles.isOLATAdmin() || roles.isPoolAdmin() || admin;
 	}
 
 	@Override
+	public boolean isAuthorRightsEnable() {
+		return true;
+	}
+
+	@Override
 	public boolean isDeleteEnabled() {
 		return false;
+	}
+
+	@Override
+	public boolean isBulkChangeEnabled() {
+		return true;
 	}
 
 	@Override

@@ -83,15 +83,40 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	public Controller getSourceController(UserRequest ureq, WindowControl wControl) {
 		return null;
 	}
+	
+	@Override
+	public boolean isCreateEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean isCopyEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean isImportEnabled() {
+		return true;
+	}
 
 	@Override
 	public boolean isRemoveEnabled() {
+		return true;
+	}
+	
+	@Override
+	public boolean isAuthorRightsEnable() {
 		return true;
 	}
 
 	@Override
 	public boolean isDeleteEnabled() {
 		return false;
+	}
+
+	@Override
+	public boolean isBulkChangeEnabled() {
+		return true;
 	}
 
 	@Override
@@ -141,4 +166,5 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 		}
 		return qpoolService.getItemsOfCollection(collection, params, firstResult, maxResults, orderBy);
 	}
+
 }

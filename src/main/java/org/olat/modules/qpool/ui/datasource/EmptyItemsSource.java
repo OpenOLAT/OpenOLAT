@@ -19,6 +19,10 @@
  */
 package org.olat.modules.qpool.ui.datasource;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
@@ -29,10 +33,6 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * An empty data source.
@@ -54,10 +54,35 @@ public class EmptyItemsSource implements QuestionItemsSource {
         return null;
     }
 
+	@Override
+	public boolean isCreateEnabled() {
+		return false;
+	}
+
+	@Override
+	public boolean isCopyEnabled() {
+		return false;
+	}
+
+	@Override
+	public boolean isImportEnabled() {
+		return false;
+	}
+
+	@Override
+	public boolean isAuthorRightsEnable() {
+		return false;
+	}
+
     @Override
     public boolean isRemoveEnabled() {
         return false;
     }
+
+	@Override
+	public boolean isBulkChangeEnabled() {
+		return false;
+	}
 
     @Override
     public boolean isDeleteEnabled() {
