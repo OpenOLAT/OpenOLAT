@@ -31,6 +31,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QItemEdited;
@@ -61,28 +62,28 @@ public class MetadatasController extends BasicController {
 	private RightsMetadataEditController rightsEditCtrl;
 	
 	private QuestionItem item;
-	private final boolean canEdit;
+	private final QuestionItemSecurityCallback securityCallback; 
 	private final QPoolService qpoolService;
 	
-	public MetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean canEdit) {
+	public MetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item, QuestionItemSecurityCallback securityCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
-		this.canEdit = canEdit;
+		this.securityCallback = securityCallback;
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 
-		generalCtrl = new GeneralMetadataController(ureq, wControl, item, canEdit);
+		generalCtrl = new GeneralMetadataController(ureq, wControl, item, securityCallback.canEditMetadata());
 		listenTo(generalCtrl);
-		educationalCtrl = new EducationalMetadataController(ureq, wControl, item, canEdit);
+		educationalCtrl = new EducationalMetadataController(ureq, wControl, item, securityCallback.canEditMetadata());
 		listenTo(educationalCtrl);
-		questionCtrl = new QuestionMetadataController(ureq, wControl, item, canEdit);
+		questionCtrl = new QuestionMetadataController(ureq, wControl, item, securityCallback.canEditMetadata());
 		listenTo(questionCtrl);
-		lifecycleCtrl = new LifecycleMetadataController(ureq, wControl, item, canEdit);
+		lifecycleCtrl = new LifecycleMetadataController(ureq, wControl, item, securityCallback.canEditLifecycle());
 		listenTo(lifecycleCtrl);
-		technicalCtrl = new TechnicalMetadataController(ureq, wControl, item, canEdit);
+		technicalCtrl = new TechnicalMetadataController(ureq, wControl, item, securityCallback.canEditMetadata());
 		listenTo(technicalCtrl);
-		rightsCtrl = new RightsMetadataController(ureq, wControl, item, canEdit);
+		rightsCtrl = new RightsMetadataController(ureq, wControl, item, securityCallback.canEditMetadata());
 		listenTo(rightsCtrl);
 		sharingCtrl = new SharingController(ureq, wControl, item);
 		listenTo(sharingCtrl);
@@ -115,19 +116,22 @@ public class MetadatasController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(QPoolEvent.EDIT.endsWith(event.getCommand())) {
-			if(!canEdit) return;
-			if(source == generalCtrl) {
-				doEditGeneralMetadata(ureq);
-			} else if(source == educationalCtrl) {
-				doEditEducationalMetadata(ureq);
-			} else if(source == questionCtrl) {
-				doEditQuestionMetadata(ureq);
-			} else if(source == lifecycleCtrl) {
-				doEditLifecycleMetadata(ureq);
-			} else if(source == technicalCtrl) {
-				doEditTechnicalMetadata(ureq);
-			} else if(source == rightsCtrl) {
-				doEditRightsMetadata(ureq);
+			if(securityCallback.canEditMetadata()) {
+				if(source == generalCtrl) {
+					doEditGeneralMetadata(ureq);
+				} else if(source == educationalCtrl) {
+					doEditEducationalMetadata(ureq);
+				} else if(source == questionCtrl) {
+					doEditQuestionMetadata(ureq);
+				} else if(source == technicalCtrl) {
+					doEditTechnicalMetadata(ureq);
+				} else if(source == rightsCtrl) {
+					doEditRightsMetadata(ureq);
+				}
+			} else if (securityCallback.canEditLifecycle()) {
+				if(source == lifecycleCtrl) {
+					doEditLifecycleMetadata(ureq);
+				}
 			}
 		} else if(event instanceof QItemEdited) {
 			QItemEdited editEvent = (QItemEdited)event;

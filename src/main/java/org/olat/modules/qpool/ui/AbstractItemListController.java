@@ -373,8 +373,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		return index;
 	}
 	
-	public Integer getIndex(QuestionItem item) {
-		Long itemKey = item.getKey();
+	public Integer getIndex(Long itemKey) {
 		for(int i=model.getObjects().size(); i-->0; ) {
 			ItemRow row = model.getObject(i);
 			if(row != null && itemKey.equals(row.getKey())) {

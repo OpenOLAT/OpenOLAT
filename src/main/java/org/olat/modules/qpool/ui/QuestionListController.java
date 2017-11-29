@@ -487,6 +487,10 @@ public class QuestionListController extends AbstractItemListController implement
 				QPoolEvent qce = (QPoolEvent)event;
 				if(QPoolEvent.ITEM_DELETED.equals(qce.getCommand())) {
 					fireEvent(ureq, qce);
+				} else if (QPoolEvent.ITEM_REVIEW_STARTED.equals(qce.getCommand())) {
+					doReloadAndNext(ureq, qce.getObjectKey());
+				} else if (QPoolEvent.ITEM_END_OF_LIFE.equals(qce.getCommand())) {
+					doReloadAndNext(ureq, qce.getObjectKey());
 				}
 			}
 		} else if(source == addController) {
@@ -532,6 +536,21 @@ public class QuestionListController extends AbstractItemListController implement
 		getItemsTable().getComponent().setDirty(true);
 	}
 	
+	private void doReloadAndNext(UserRequest ureq, Long itemKey) {
+		ItemRow row = getRowByItemKey(itemKey);
+		ItemRow nextRow = getModel().getNextObject(row);
+		getItemsTable().reloadData();
+		if(nextRow != null) {
+			QuestionItem nextItem = qpoolService.loadItemById(nextRow.getKey());
+			if(nextItem != null) {
+				stackPanel.popUpToRootController(ureq);
+				doSelect(ureq, nextItem, nextRow.isEditable(), nextRow.isReviewable());
+			} else {
+				getItemsTable().reset(true, true, true);
+			}
+		}
+	}
+
 	private void doNext(UserRequest ureq, QuestionItem item) {
 		ItemRow row = getRowByItemKey(item.getKey());
 		ItemRow nextRow = getModel().getNextObject(row);
@@ -1081,7 +1100,7 @@ public class QuestionListController extends AbstractItemListController implement
 		WindowControl bwControl = addToHistory(ureq, item, null);
 		QuestionItemSecurityCallback securityCallback =
 				new QuestionItemSecurityCallbackImpl(editable, reviewable, getSource().isDeleteEnabled());
-		Integer itemIndex = getIndex(item);
+		Integer itemIndex = getIndex(item.getKey());
 		int numberOfItems = getModel().getRowCount();
 		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, securityCallback, item,
 				itemIndex, numberOfItems);

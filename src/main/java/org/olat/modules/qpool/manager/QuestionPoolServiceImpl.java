@@ -58,6 +58,7 @@ import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.QEducationalContext;
@@ -895,5 +896,29 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			return new DefaultResultInfos<>(firstResult + items.size(), -1, items);
 		}
 	}
-	
+
+	@Override
+	public List<QuestionItem> startReview(List<QuestionItemShort> items) {
+		return updateQuestionStatus(items, QuestionStatus.review);
+	}
+
+	@Override
+	public List<QuestionItem> setEndOfLife(List<QuestionItemShort> items) {
+		return updateQuestionStatus(items, QuestionStatus.endOfLife);
+	}
+
+	private List<QuestionItem> updateQuestionStatus(List<QuestionItemShort> items, QuestionStatus newStatus) {
+		List<QuestionItem> changedItems = new ArrayList<>();
+		for(QuestionItemShort item:items) {
+			QuestionItemImpl itemImpl = questionItemDao.loadForUpdate(item);
+			itemImpl.setStatus(newStatus.toString());
+			updateItem(itemImpl);
+			changedItems.add(itemImpl);
+		}
+		if(changedItems.size()> 0) {
+			dbInstance.getCurrentEntityManager().flush();
+		}
+		return changedItems;
+	}
+
 }

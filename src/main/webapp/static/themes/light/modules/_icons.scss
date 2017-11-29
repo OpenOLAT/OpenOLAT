@@ -105,7 +105,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_edit_metadata:before { content: $fa-var-gear;}
 .o_icon_element_after:before { content: $fa-var-arrow-down; }
 .o_icon_element_before:before { content: $fa-var-arrow-up; }
-.o_icon_enabled:before { content: $fa-var-circle; } 
+.o_icon_enabled:before { content: $fa-var-circle; }
+.o_icon_end_of_life:before { content: $fa-var-trash-o;}
 .o_icon_enlarge:before { content: $fa-var-search-plus;}
 .o_icon_eportfolio_add:before { content: $fa-var-puzzle-piece;}
 .o_icon_eportfolio_link:before { content: $fa-var-puzzle-piece; }
@@ -266,6 +267,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_sort_amount_desc:before { content: $fa-var-sort-amount-desc;}
 .o_icon_sort_menu:before { content: $fa-var-sort-amount-asc;}
 .o_icon_start:before { content: $fa-var-chevron-right; }
+.o_icon_start_review:before { content: $fa-var-star-o;}
 .o_icon_status_available:before { content: $fa-var-circle; color: $o-im-status-available-color; }
 .o_icon_status_chat:before { content: $fa-var-comment; }
 .o_icon_status_dnd:before { content: $fa-var-dot-circle-o; color: $o-im-status-dnd-color; }

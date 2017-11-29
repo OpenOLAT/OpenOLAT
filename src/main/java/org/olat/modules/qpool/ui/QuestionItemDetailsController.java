@@ -72,7 +72,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QuestionItemDetailsController extends BasicController implements TooledController, Activateable2 {
 	
 	private Link editItem;
+	private Link startReviewLink;
 	private Link reviewLink;
+	private Link endOfLifeLink;
 	private Link nextItemLink;
 	private Link numberItemsLink;
 	private Link previousItemLink;
@@ -84,6 +86,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Controller previewCtrl;
 	private CloseableModalController cmc;
 	private final VelocityContainer mainVC;
+	private DialogBoxController confirmStartReviewCtrl;
+	private DialogBoxController confirmEndOfLifeCtrl;
 	private DialogBoxController confirmDeleteBox;
 	private LayoutMain3ColsController editMainCtrl;
 	private SelectBusinessGroupController selectGroupCtrl;
@@ -109,7 +113,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		this.itemIndex = itemIndex;
 		this.numberOfItems = numberOfItems;
 		
-		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback.canEdit());
+		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback);
 		listenTo(metadatasCtrl);
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -122,7 +126,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		mainVC = createVelocityContainer("item_details");
 
 		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
-		boolean canEditContent = securityCallback.canEdit() && (spi != null && spi.isTypeEditable());
+		boolean canEditContent = securityCallback.canEditQuestion() && (spi != null && spi.isTypeEditable());
 		if(canEditContent) {
 			editItem = LinkFactory.createButton("edit", mainVC, this);
 			editItem.setIconLeftCSS("o_icon o_icon_edit");
@@ -132,7 +136,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		copyItem = LinkFactory.createButton("copy", mainVC, this);
 		if(securityCallback.canDelete()) {
 			deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
-			deleteItem.setVisible(securityCallback.canEdit());
+			deleteItem.setVisible(securityCallback.canEditQuestion());
 		}
 		exportItem = LinkFactory.createButton("export.item", mainVC, this);
 		
@@ -144,10 +148,20 @@ public class QuestionItemDetailsController extends BasicController implements To
 	
 	@Override
 	public void initTools() {
+		if (securityCallback.canStartReview()) {
+			startReviewLink = LinkFactory.createToolLink("process.start.review", translate("process.start.review"), this);
+			startReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_start_review");
+			stackPanel.addTool(startReviewLink, Align.left);
+		}
 		if (securityCallback.canReview()) {
-			reviewLink = LinkFactory.createToolLink("review.item", translate("review.item"), this);
+			reviewLink = LinkFactory.createToolLink("process.review", translate("process.review"), this);
 			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
 			stackPanel.addTool(reviewLink, Align.left);
+		}
+		if (securityCallback.canSetEndOfLife()) {
+			endOfLifeLink = LinkFactory.createToolLink("process.endOfLife", translate("process.endOfLife"), this);
+			endOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_end_of_life");
+			stackPanel.addTool(endOfLifeLink, Align.left);
 		}
 		
 		previousItemLink = LinkFactory.createToolLink("previous", translate("previous"), this);
@@ -200,7 +214,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		
 		String resourceTypeName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("edit".equalsIgnoreCase(resourceTypeName)) {
-			if(securityCallback.canEdit() || metadatasCtrl.getItem() != null) {
+			if(securityCallback.canEditQuestion() || metadatasCtrl.getItem() != null) {
 				doEdit(ureq, metadatasCtrl.getItem());
 			}
 		}
@@ -208,7 +222,11 @@ public class QuestionItemDetailsController extends BasicController implements To
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == deleteItem) {
+		if(source == startReviewLink) {
+			doConfirmStartReview(ureq, metadatasCtrl.getItem());
+		} else if (source == endOfLifeLink) {
+			doConfirmEndOfLife(ureq, metadatasCtrl.getItem());
+		} else if(source == deleteItem) {
 			doConfirmDelete(ureq, metadatasCtrl.getItem());
 		} else if(source == shareItem) {
 			doSelectGroup(ureq, metadatasCtrl.getItem());
@@ -250,6 +268,18 @@ public class QuestionItemDetailsController extends BasicController implements To
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(source == confirmStartReviewCtrl) {
+			boolean startReview = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
+			if(startReview) {
+				QuestionItem item = (QuestionItem)confirmStartReviewCtrl.getUserObject();
+				doStartReview(ureq, item);
+			}
+		} else if(source == confirmEndOfLifeCtrl) {
+			boolean endOfLife = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
+			if(endOfLife) {
+				QuestionItem item = (QuestionItem)confirmEndOfLifeCtrl.getUserObject();
+				doEndOfLife(ureq, item);
+			}
 		} else if(source == confirmDeleteBox) {
 			boolean delete = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
 			if(delete) {
@@ -277,6 +307,30 @@ public class QuestionItemDetailsController extends BasicController implements To
 		removeAsListenerAndDispose(selectGroupCtrl);
 		cmc = null;
 		selectGroupCtrl = null;
+	}
+	
+	private void doConfirmStartReview(UserRequest ureq, QuestionItem item) {
+		String msg = translate("process.confirm.start.review", StringHelper.escapeHtml(item.getTitle()));
+		confirmStartReviewCtrl = activateYesNoDialog(ureq, null, msg, confirmStartReviewCtrl);
+		confirmStartReviewCtrl.setUserObject(item);
+	}
+
+	private void doStartReview(UserRequest ureq, QuestionItemShort item) {
+		qpoolService.startReview(Collections.singletonList(item));
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_REVIEW_STARTED, item.getKey()));
+		showInfo("process.review.started");
+	}
+	
+	private void doConfirmEndOfLife(UserRequest ureq, QuestionItem item) {
+		String msg = translate("process.confirm.endOfLife", StringHelper.escapeHtml(item.getTitle()));
+		confirmEndOfLifeCtrl = activateYesNoDialog(ureq, null, msg, confirmEndOfLifeCtrl);
+		confirmEndOfLifeCtrl.setUserObject(item);
+	}
+
+	private void doEndOfLife(UserRequest ureq, QuestionItemShort item) {
+		qpoolService.setEndOfLife(Collections.singletonList(item));
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_END_OF_LIFE, item.getKey()));
+		showInfo("process.endOfLife.set");
 	}
 	
 	private void doCopy(UserRequest ureq, QuestionItemShort item) {

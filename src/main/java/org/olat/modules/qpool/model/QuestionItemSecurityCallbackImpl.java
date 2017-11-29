@@ -41,13 +41,33 @@ public class QuestionItemSecurityCallbackImpl implements QuestionItemSecurityCal
 	}
 
 	@Override
-	public boolean canEdit() {
+	public boolean canEditQuestion() {
 		return canEdit;
+	}
+
+	@Override
+	public boolean canEditMetadata() {
+		return true;
+	}
+
+	@Override
+	public boolean canEditLifecycle() {
+		return false;
+	}
+
+	@Override
+	public boolean canStartReview() {
+		return true;
 	}
 
 	@Override
 	public boolean canReview() {
 		return canReview;
+	}
+
+	@Override
+	public boolean canSetEndOfLife() {
+		return true;
 	}
 
 	@Override

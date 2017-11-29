@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -43,6 +45,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
@@ -152,5 +155,40 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		qpoolService.importItems(owner, Locale.ENGLISH, "mchc_asmimr_101.xml", itemFile);
 	}
 	
+	@Test
+	public void startReview() {
+		//create 3 items
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		QuestionItem item1 = questionDao.createAndPersist(null, "start review 1", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "start review 2", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item3 = questionDao.createAndPersist(null, "start review 3", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		dbInstance.commit();
+		
+		List<QuestionItemShort> itemsToStartReview = Arrays.asList(item1, item2);
+		List<QuestionItem> itemsInReview = qpoolService.startReview(itemsToStartReview);
+		
+		assertThat(itemsInReview).contains(item1, item2);
+		assertThat(item1.getQuestionStatus()).isEqualTo(QuestionStatus.review);
+		assertThat(item2.getQuestionStatus()).isEqualTo(QuestionStatus.review);
+		assertThat(item3.getQuestionStatus()).isEqualTo(QuestionStatus.draft);
+	}
+	
+	@Test
+	public void setEndOfLife() {
+		//create 3 items
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		QuestionItem item1 = questionDao.createAndPersist(null, "start review 1", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "start review 2", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item3 = questionDao.createAndPersist(null, "start review 3", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		dbInstance.commit();
+		
+		List<QuestionItemShort> itemsToChange = Arrays.asList(item1, item2);
+		List<QuestionItem> itemsendOfLife = qpoolService.setEndOfLife(itemsToChange);
+		
+		assertThat(itemsendOfLife).contains(item1, item2);
+		assertThat(item1.getQuestionStatus()).isEqualTo(QuestionStatus.endOfLife	);
+		assertThat(item2.getQuestionStatus()).isEqualTo(QuestionStatus.endOfLife);
+		assertThat(item3.getQuestionStatus()).isEqualTo(QuestionStatus.draft);
+	}
 	
 }

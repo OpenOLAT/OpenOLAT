@@ -30,6 +30,7 @@ public enum QuestionStatus {
 	review,
 	finalVersion,
 	revised,
+	endOfLife,
 	unavailable;
 	
 	public static final String[] valueString() {

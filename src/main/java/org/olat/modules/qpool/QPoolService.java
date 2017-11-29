@@ -114,7 +114,7 @@ public interface QPoolService {
 	
 	public VFSContainer getRootContainer(QuestionItemShort item);
 	
-	public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> itemsToCopy);
+public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> itemsToCopy);
 
 	//pools
 	public List<Pool> getPools(Identity identity, Roles roles);
@@ -168,7 +168,14 @@ public interface QPoolService {
 	 * @param items
 	 */
 	public void index(List<? extends QuestionItemShort> items);
+
+	// review process
+	public List<TaxonomyLevel> getTaxonomyLevel(Identity identity, TaxonomyCompetenceTypes... competenceType);
+
+	public List<QuestionItem> startReview(List<QuestionItemShort> items);
 	
+	public List<QuestionItem> setEndOfLife(List<QuestionItemShort> items);
+
 	//study field admin
 	public List<TaxonomyLevel> getTaxonomyLevels();
 	
@@ -186,8 +193,6 @@ public interface QPoolService {
 	
 	public boolean deleteTaxonomyLevel(TaxonomyLevel level);
 	
-	public List<TaxonomyLevel> getTaxonomyLevel(Identity identity, TaxonomyCompetenceTypes... competenceType);
-
 	
 	//pool administration
 	public void createPool(Identity identity, String name, boolean publicPool);
