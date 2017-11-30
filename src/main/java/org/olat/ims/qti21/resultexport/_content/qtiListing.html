@@ -27,6 +27,9 @@
 					<th>$t.translate("table.all.lastname")</th>
 					<th>$t.translate("table.all.firstname")</th>
 					<th>$t.translate("table.user.email")</th>
+					<th>$t.translate("table.all.node.score")</th>
+					<th>$t.translate("table.all.node.passed")</th>
+					<th>$t.translate("table.all.tries")</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -35,6 +38,9 @@
 					<td>$assessedMember.lastname</td>
 					<td>$assessedMember.firstname</td>
 					<td>$assessedMember.email</td>
+					<td>$assessedMember.scoreString</td>
+					<td>$assessedMember.passedIcon</td>
+					<td>$assessedMember.attempts</td>
 				</tr>
 			</tbody>
 		</table>
@@ -43,6 +49,9 @@
 	<div>
 		<table id='results' class='table table-striped table-hover'>
 			<thead>
+				<tr>
+					<th colspan="8">$t.translate("table.test.sessions")</th>
+				</tr>
 				<tr>
 					<th>$t.translate("table.user.id")</th>
 					<th>$t.translate("table.user.date")</th>

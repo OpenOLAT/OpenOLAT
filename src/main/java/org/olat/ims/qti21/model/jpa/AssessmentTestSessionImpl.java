@@ -298,10 +298,12 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 		this.score = score;
 	}
 
+	@Override
 	public BigDecimal getManualScore() {
 		return manualScore;
 	}
 
+	@Override
 	public void setManualScore(BigDecimal manualScore) {
 		this.manualScore = manualScore;
 	}

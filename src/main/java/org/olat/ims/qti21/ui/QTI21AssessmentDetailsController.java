@@ -370,7 +370,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private void doUpdateCourseNode(AssessmentTestSession session) {
 		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(assessedUserCourseEnv);
-		BigDecimal finalScore = calculateFinalScore(session);
+		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
 				scoreEval.getAssessmentStatus(), null, scoreEval.getFullyAssessed(), session.getKey());
@@ -379,21 +379,11 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private void doUpdateEntry(AssessmentTestSession session) {
 		AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, entry, null, entry);
-		BigDecimal finalScore = calculateFinalScore(session);
-		assessmentEntry.setScore(finalScore);
+		assessmentEntry.setScore(session.getFinalScore());
 		assessmentEntry.setAssessmentId(session.getKey());
 		assessmentService.updateAssessmentEntry(assessmentEntry);
 	}
 	
-	private BigDecimal calculateFinalScore(AssessmentTestSession session) {
-		BigDecimal finalScore = session.getScore();
-		if(finalScore == null) {
-			finalScore = session.getManualScore();
-		} else if(session.getManualScore() != null) {
-			finalScore = finalScore.add(session.getManualScore());
-		}
-		return finalScore;
-	}
 
 	private void doConfirmPullSession(UserRequest ureq, AssessmentTestSession session) {
 		String title = translate("pull");

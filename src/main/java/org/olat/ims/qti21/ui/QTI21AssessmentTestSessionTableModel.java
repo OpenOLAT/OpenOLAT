@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.ui;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -97,14 +98,8 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 			}
 			case finalScore: {
 				if(session.getTestSession().getFinishTime() != null) {
-					double score = 0.0d;
-					if(session.getTestSession().getScore() != null) {
-						score += session.getTestSession().getScore().doubleValue();
-					}
-					if(session.getTestSession().getManualScore() != null) {
-						score += session.getTestSession().getManualScore().doubleValue();
-					}
-					return AssessmentHelper.getRoundedScore(score);
+					BigDecimal finalScore = session.getTestSession().getFinalScore();
+					return AssessmentHelper.getRoundedScore(finalScore);
 				}
 				return "";
 			}
