@@ -123,6 +123,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 					view = View.users;
 				}
 				doSelectCourseNode(ureq, rootNode, (CourseNode)rootNode.getUserObject());
+				menuTree.setSelectedNode(rootNode);
 			}
 		} else {
 			ContextEntry entry = entries.get(0);
@@ -136,6 +137,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 					if(ctrl instanceof Activateable2) {
 						((Activateable2)ctrl).activate(ureq, entries, null);
 					}
+					menuTree.setSelectedNode(treeNode);
 				}
 			} else if("Node".equalsIgnoreCase(resourceTypeName) || "CourseNode".equalsIgnoreCase(resourceTypeName)) {
 				Long nodeIdent = entries.get(0).getOLATResourceable().getResourceableId();
@@ -150,6 +152,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 						List<ContextEntry> subEntries = entries.subList(1, entries.size());
 						((Activateable2)ctrl).activate(ureq, subEntries, entry.getTransientState());
 					}
+					menuTree.setSelectedNode(treeNode);
 				}
 			}
 		}

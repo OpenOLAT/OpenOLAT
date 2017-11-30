@@ -19,7 +19,6 @@
  */
 package org.olat.ims.qti21.ui.assessment;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -83,16 +82,7 @@ public class IdentitiesAssessmentTestOverviewDataModel extends DefaultFlexiTable
 				}
 				case score: return correction.getScore();
 				case manualScore: return correction.getManualScore();
-				case finalScore: {
-					BigDecimal finalScore = correction.getScore();
-					BigDecimal manualScore = correction.getManualScore();
-					if(finalScore == null) {
-						finalScore = manualScore;
-					} else if(manualScore != null) {
-						finalScore = finalScore.add(manualScore);
-					}
-					return finalScore;
-				}
+				case finalScore: return correction.getFinalScore();
 			}
 		}
 		
