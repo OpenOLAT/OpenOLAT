@@ -323,6 +323,14 @@ public class QuestionItemDAO {
 				.getSingleResult().intValue();
 	}
 	
+	public void resetAllStatesToDraft() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("update questionitem item set item.status='").append(QuestionStatus.draft.toString()).append("'");
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.executeUpdate();
+	}
+
 	public List<Long> getFavoritKeys(Identity identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(mark.resId) from ").append(MarkImpl.class.getName()).append(" mark ")

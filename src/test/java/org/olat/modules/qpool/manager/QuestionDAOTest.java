@@ -238,6 +238,30 @@ public class QuestionDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void resetAllStatesToDraft() {
+		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		QuestionItemImpl item1 = questionDao.createAndPersist(null, "RES DRAFT 1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		item1.setQuestionStatus(QuestionStatus.endOfLife);
+		questionDao.loadForUpdate(item1);
+		QuestionItemImpl item2 = questionDao.createAndPersist(null, "RES DRAFT 2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		item2.setQuestionStatus(QuestionStatus.review);
+		questionDao.loadForUpdate(item2);
+		QuestionItemImpl item3 = questionDao.createAndPersist(null, "RES DRAFT 3", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		item3.setQuestionStatus(QuestionStatus.revised);
+		questionDao.loadForUpdate(item3);
+		questionDao.createAndPersist(null, "RES DRAFT 4", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		dbInstance.commitAndCloseSession();
+		
+		questionDao.resetAllStatesToDraft();
+		dbInstance.commitAndCloseSession();
+		
+		List<QuestionItemFull> allItems = questionDao.getAllItems(0,  -1);
+		for (QuestionItem item: allItems) {
+			Assert.assertEquals(QuestionStatus.draft, item.getQuestionStatus());
+		}
+	}
+
+	@Test
 	public void getFavoritItemKeys() {
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-item-" + UUID.randomUUID().toString());

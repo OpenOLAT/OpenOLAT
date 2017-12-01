@@ -911,7 +911,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		List<QuestionItem> changedItems = new ArrayList<>();
 		for(QuestionItemShort item:items) {
 			QuestionItemImpl itemImpl = questionItemDao.loadForUpdate(item);
-			itemImpl.setStatus(newStatus.toString());
+			itemImpl.setQuestionStatus(newStatus);
 			updateItem(itemImpl);
 			changedItems.add(itemImpl);
 		}
@@ -920,5 +920,12 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		}
 		return changedItems;
 	}
+
+	@Override
+	public void resetAllStatesToDraft(Identity reseter) {
+		questionItemDao.resetAllStatesToDraft();
+		log.info("The states of all questions in the question bank were reseted to the status 'draft' by " + reseter);
+	}
+	
 
 }

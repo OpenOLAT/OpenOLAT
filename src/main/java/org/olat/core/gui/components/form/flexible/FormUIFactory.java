@@ -545,6 +545,10 @@ public class FormUIFactory {
 		return fiWrapper;
 	}
 	
+	public TextElement addTextElement(final String i18nLabel, final int maxLen, String initialValue,
+			FormItemContainer formLayout) {
+		return addTextElement(i18nLabel, i18nLabel, maxLen, initialValue, formLayout);
+	}
 	
 	/**
 	 * 

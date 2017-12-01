@@ -322,18 +322,18 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		QuestionItem item1 = questionDao.createAndPersist(id, "Bio 101", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		QuestionItemImpl itemImpl1 = questionDao.loadById(item1.getKey());
 		itemImpl1.setTaxonomyLevel(biology);
-		itemImpl1.setStatus(QuestionStatus.draft.toString());
+		itemImpl1.setQuestionStatus(QuestionStatus.draft);
 		QuestionItem item2 = questionDao.createAndPersist(id, "Bio 102", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		QuestionItemImpl itemImpl2 = questionDao.loadById(item2.getKey());
 		itemImpl2.setTaxonomyLevel(biology);
-		itemImpl2.setStatus(QuestionStatus.draft.toString());
+		itemImpl2.setQuestionStatus(QuestionStatus.draft);
 		dbInstance.commitAndCloseSession();
 		
 		//create another item with the same taxonomy level but an other status
 		QuestionItem itemOtherStatus = questionDao.createAndPersist(id, "Bio 104", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		QuestionItemImpl itemImplOtherStatus = questionDao.loadById(itemOtherStatus.getKey());
 		itemImplOtherStatus.setTaxonomyLevel(biology);
-		itemImplOtherStatus.setStatus(QuestionStatus.revised.toString());
+		itemImplOtherStatus.setQuestionStatus(QuestionStatus.revised);
 		dbInstance.commitAndCloseSession();
 		
 		//create another taxonomy level with an item which should not be loaded later

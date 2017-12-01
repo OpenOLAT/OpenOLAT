@@ -176,6 +176,12 @@ public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> ite
 	
 	public List<QuestionItem> setEndOfLife(List<QuestionItemShort> items);
 
+	/**
+	 * Reset the status of all questions in the question bank to the status "draft".
+	 * @param reseter identity who reseted the states (for logging)
+	 */
+	public void resetAllStatesToDraft(Identity reseter);
+	
 	//study field admin
 	public List<TaxonomyLevel> getTaxonomyLevels();
 	
@@ -233,6 +239,5 @@ public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> ite
 	public QLicense updateLicense(QLicense license);
 	
 	public boolean deleteLicense(QLicense license);
-	
-	
+
 }

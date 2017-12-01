@@ -427,6 +427,10 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		}
 		return null;
 	}
+	
+	public void setQuestionStatus(QuestionStatus status) {
+		setStatus(status.name());
+	}
 
 	@Override
 	public QLicense getLicense() {

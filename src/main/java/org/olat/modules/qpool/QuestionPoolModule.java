@@ -50,11 +50,22 @@ import org.springframework.stereotype.Service;
 @Service("qpoolModule")
 public class QuestionPoolModule extends AbstractSpringModule implements ConfigOnOff {
 
+	private static final String COLLECTIONS_ENABLED = "collections.enabled";
+	private static final String POOLS_ENABLED = "pools.enabled";
+	private static final String SHARES_ENABLED = "shares.enabled";
+	private static final String REVIEW_PROCESS_ENABLED = "review.process.enabled";
+	private static final String NUMBER_OF_RATINGS_FOR_FINAL = "number.of.ratings.for.final";
+	private static final String AVERAGE_RATING_FOR_FINAL = "average.rating.for.final";
 	private static final String TAXONOMY_QPOOL_KEY = "taxonomy.qpool.key";
 	public static final String DEFAULT_TAXONOMY_QPOOL_IDENTIFIER = "QPOOL";
 	
-	private String taxonomyQPoolKey;
+	private boolean collectionsEnabled = true;
+	private boolean poolsEnabled = true;
+	private boolean sharesEnabled = true;
 	private boolean reviewProcessEnabled = false;
+	private int numberOfRatingsForFinal;
+	private int averageRatingForFinal;
+	private String taxonomyQPoolKey;
 	
 	@Autowired
 	private DB dbInstance;
@@ -93,6 +104,36 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	}
 	
 	private void updateProperties() {
+		String collectionsEnabledObj = getStringPropertyValue(COLLECTIONS_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(collectionsEnabledObj)) {
+			collectionsEnabled = "true".equals(collectionsEnabledObj);
+		}
+		
+		String poolsEnabledObj = getStringPropertyValue(POOLS_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(poolsEnabledObj)) {
+			poolsEnabled = "true".equals(poolsEnabledObj);
+		}
+		
+		String sharesEnabledObj = getStringPropertyValue(SHARES_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(sharesEnabledObj)) {
+			sharesEnabled = "true".equals(sharesEnabledObj);
+		}
+		
+		String reviewProcessEnabledObj = getStringPropertyValue(REVIEW_PROCESS_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(reviewProcessEnabledObj)) {
+			reviewProcessEnabled = "true".equals(reviewProcessEnabledObj);
+		}
+		
+		String numberOfRatingsForFinalObj = getStringPropertyValue(NUMBER_OF_RATINGS_FOR_FINAL, true);
+		if(StringHelper.containsNonWhitespace(numberOfRatingsForFinalObj)) {
+			numberOfRatingsForFinal = Integer.parseInt(numberOfRatingsForFinalObj);
+		}
+		
+		String averageRatingForFinalObj = getStringPropertyValue(AVERAGE_RATING_FOR_FINAL, true);
+		if(StringHelper.containsNonWhitespace(averageRatingForFinalObj)) {
+			averageRatingForFinal = Integer.parseInt(averageRatingForFinalObj);
+		}
+		
 		String taxonomyQPoolKeyObj = getStringPropertyValue(TAXONOMY_QPOOL_KEY, true);
 		if(StringHelper.containsNonWhitespace(taxonomyQPoolKeyObj)) {
 			taxonomyQPoolKey = taxonomyQPoolKeyObj;
@@ -143,6 +184,60 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		}
 	}
 	
+	public boolean isCollectionsEnabled() {
+		return collectionsEnabled;
+	}
+
+	public void setCollectionsEnabled(boolean collectionsEnabled) {
+		this.collectionsEnabled = collectionsEnabled;
+		setStringProperty(COLLECTIONS_ENABLED, Boolean.toString(collectionsEnabled), true);
+	}
+
+	public boolean isPoolsEnabled() {
+		return poolsEnabled;
+	}
+
+	public void setPoolsEnabled(boolean poolsEnabled) {
+		this.poolsEnabled = poolsEnabled;
+		setStringProperty(POOLS_ENABLED, Boolean.toString(poolsEnabled), true);
+	}
+
+	public boolean isSharesEnabled() {
+		return sharesEnabled;
+	}
+
+	public void setSharesEnabled(boolean sharesEnabled) {
+		this.sharesEnabled = sharesEnabled;
+		setStringProperty(SHARES_ENABLED, Boolean.toString(sharesEnabled), true);
+	}
+
+	public boolean isReviewProcessEnabled() {
+		return reviewProcessEnabled;
+	}
+
+	public void setReviewProcessEnabled(boolean reviewProcessEnabled) {
+		this.reviewProcessEnabled = reviewProcessEnabled;
+		setStringProperty(REVIEW_PROCESS_ENABLED, Boolean.toString(reviewProcessEnabled), true);
+	}
+
+	public int getNumberOfRatingsForFinal() {
+		return numberOfRatingsForFinal;
+	}
+
+	public void setNumberOfRatingsForFinal(int numberOfRatingsForFinal) {
+		this.numberOfRatingsForFinal = numberOfRatingsForFinal;
+		setIntProperty(NUMBER_OF_RATINGS_FOR_FINAL, numberOfRatingsForFinal, true);
+	}
+
+	public int getAverageRatingForFinal() {
+		return averageRatingForFinal;
+	}
+
+	public void setAverageRatingForFinal(int averageRatingForFinal) {
+		this.averageRatingForFinal = averageRatingForFinal;
+		setIntProperty(AVERAGE_RATING_FOR_FINAL, averageRatingForFinal, true);
+	}
+
 	public String getTaxonomyQPoolKey() {
 		return taxonomyQPoolKey;
 	}
