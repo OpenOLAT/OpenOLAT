@@ -216,13 +216,14 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			}
 		} else if (source == userAdminCtr) {
 			if (event == Event.BACK_EVENT) {
+				Identity editedIdentity = userAdminCtr.getEditedIdentity();
 				removeAsListenerAndDispose(userAdminCtr);
 				userAdminCtr = null;
 				// update data model of content controller when of type user search
 				// to display correct values of identity
 				if (contentCtr instanceof UsermanagerUserSearchController) {
 					UsermanagerUserSearchController userSearchCtr = (UsermanagerUserSearchController) contentCtr;
-					userSearchCtr.reloadFoundIdentity();
+					userSearchCtr.reloadFoundIdentity(editedIdentity);
 					addToHistory(ureq, userSearchCtr);
 				}
 				content.setContent(contentCtr.getInitialComponent());
