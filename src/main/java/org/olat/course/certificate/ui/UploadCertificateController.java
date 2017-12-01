@@ -154,9 +154,9 @@ public class UploadCertificateController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateTemplate();
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	protected boolean validateTemplate() {
@@ -188,17 +188,16 @@ public class UploadCertificateController extends FormBasicController {
 				Path path = FileResource.getResource(template, filename);
 				IndexVisitor visitor = new IndexVisitor(path);
 				Files.walkFileTree(path, visitor);
-				if(!visitor.hasFound()) {
+				if(!visitor.hasFound() || path.getNameCount() > 0) {
 					fileEl.setErrorKey("upload.error.noindex", null);
+					allOk &= false;
 				}
-				allOk = visitor.hasFound();
 				PathUtils.closeSubsequentFS(path);
-
 				formatEl.setVisible(allOk);
 				orientationEl.setVisible(allOk);
 			} else {
 				fileEl.setErrorKey("upload.error.no.phantomjs", null);
-				allOk = false;
+				allOk &= false;
 			}
 		} catch (IOException e) {
 			logError("", e);
