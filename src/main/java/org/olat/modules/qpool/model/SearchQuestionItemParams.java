@@ -47,6 +47,8 @@ public class SearchQuestionItemParams {
 	
 	private Long taxonomyLevelKey;
 	private QuestionStatus questionStatus;
+	private Identity onlyAuthor;
+	private Identity excludeAuthor;
 	
 	private final Identity identity;
 	private final Roles roles;
@@ -113,6 +115,22 @@ public class SearchQuestionItemParams {
 		this.questionStatus = questionStatus;
 	}
 
+	public Identity getOnlyAuthor() {
+		return onlyAuthor;
+	}
+
+	public void setOnlyAuthor(Identity onlyAuthor) {
+		this.onlyAuthor = onlyAuthor;
+	}
+
+	public Identity getExcludeAuthor() {
+		return excludeAuthor;
+	}
+
+	public void setExcludeAuthor(Identity excludeAuthor) {
+		this.excludeAuthor = excludeAuthor;
+	}
+
 	public boolean isFulltextSearch() {
 		return StringHelper.containsNonWhitespace(searchString) ||
 				condQueries != null && condQueries.size() > 0;
@@ -156,6 +174,8 @@ public class SearchQuestionItemParams {
 		clone.author = author;
 		clone.taxonomyLevelKey = taxonomyLevelKey;
 		clone.questionStatus = questionStatus;
+		clone.onlyAuthor = onlyAuthor;
+		clone.excludeAuthor = excludeAuthor;
 		return clone;
 	}
 }

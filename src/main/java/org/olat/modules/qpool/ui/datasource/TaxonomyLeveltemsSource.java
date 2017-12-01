@@ -42,19 +42,21 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 	private final Identity me;
 	private final TaxonomyLevel taxonomyLevel;
 	private final QuestionStatus questionStatus;
-	private final Identity author;
+	private final Identity onlyAuthor;
 	
 	private QuestionPoolModule qPoolModule;
 	
-	public TaxonomyLeveltemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus, Identity author) {
+	public TaxonomyLeveltemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus,
+			Identity onlyAuthor, Identity excludeAuthor) {
 		super(me, roles, taxonomyLevel.getDisplayName());
 		this.me = me;
 		this.taxonomyLevel = taxonomyLevel;
 		this.questionStatus = questionStatus;
-		this.author = author;
+		this.onlyAuthor = onlyAuthor;
 		getDefaultParams().setTaxonomyLevelKey(taxonomyLevel.getKey());
 		getDefaultParams().setQuestionStatus(questionStatus);
-		getDefaultParams().setAuthor(author);
+		getDefaultParams().setOnlyAuthor(onlyAuthor);
+		getDefaultParams().setExcludeAuthor(excludeAuthor);
 		qPoolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
 	}
 
@@ -90,7 +92,7 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 
 	@Override
 	public boolean isDeleteEnabled() {
-		boolean isAuthor = me.equals(author);
+		boolean isAuthor = me.equals(onlyAuthor);
 		boolean deletableState = qPoolModule.getEditableQuestionStates().contains(questionStatus);
 		return isAuthor && deletableState;
 	}

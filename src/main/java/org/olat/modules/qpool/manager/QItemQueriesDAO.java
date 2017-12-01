@@ -287,10 +287,16 @@ public class QItemQueriesDAO {
 		if (params.getQuestionStatus() != null) {
 			sb.append(" and item.status=:questionStatus");
 		}
-		if (params.getAuthor() != null) {
-			sb.append(" and exists (").append("   select sgmi.key from ")
+		if (params.getOnlyAuthor() != null) {
+			sb.append(" and exists (").append("select sgmi.key from ")
 					.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
-					.append("   where sgmi.identity.key=:authorKey and sgmi.securityGroup=item.ownerGroup")
+					.append("   where sgmi.identity.key=:onlyAuthorKey and sgmi.securityGroup=item.ownerGroup")
+					.append(" )");
+		}
+		if (params.getExcludeAuthor() != null) {
+			sb.append(" and not exists (").append("select sgmi.key from ")
+					.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
+					.append("   where sgmi.identity.key=:excludeAuthorKey and sgmi.securityGroup=item.ownerGroup")
 					.append(" )");
 		}
 		if (inKeys != null && inKeys.size() > 0) {
@@ -307,8 +313,11 @@ public class QItemQueriesDAO {
 		if (params.getQuestionStatus() != null) {
 			query.setParameter("questionStatus", params.getQuestionStatus().toString());
 		}
-		if (params.getAuthor() != null) {
-			query.setParameter("authorKey", params.getAuthor().getKey());
+		if (params.getOnlyAuthor() != null) {
+			query.setParameter("onlyAuthorKey", params.getOnlyAuthor().getKey());
+		}
+		if (params.getExcludeAuthor() != null) {
+			query.setParameter("excludeAuthorKey", params.getExcludeAuthor().getKey());
 		}
 		if (inKeys != null && inKeys.size() > 0) {
 			query.setParameter("inKeys", inKeys);
@@ -360,11 +369,17 @@ public class QItemQueriesDAO {
 		if(params.getQuestionStatus() != null) {
 			sb.append(" and item.status=:questionStatus");
 		}
-		if(params.getAuthor() != null) {
-		  sb.append(" and exists (")
-		  	.append("   select sgmi.key from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
-		  	.append("   where sgmi.identity.key=:authorKey and sgmi.securityGroup=item.ownerGroup")
-		  	.append(" )");
+		if (params.getOnlyAuthor() != null) {
+			sb.append(" and exists (").append("select sgmi.key from ")
+					.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
+					.append("   where sgmi.identity.key=:onlyAuthorKey and sgmi.securityGroup=item.ownerGroup")
+					.append(" )");
+		}
+		if (params.getExcludeAuthor() != null) {
+			sb.append(" and not exists (").append("select sgmi.key from ")
+					.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
+					.append("   where sgmi.identity.key=:excludeAuthorKey and sgmi.securityGroup=item.ownerGroup")
+					.append(" )");
 		}
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.append(" and item.format=:format");
@@ -376,8 +391,11 @@ public class QItemQueriesDAO {
 		if(params.getQuestionStatus() != null) {
 			query.setParameter("questionStatus", params.getQuestionStatus().toString());
 		}
-		if(params.getAuthor() != null) {
-			query.setParameter("authorKey", params.getAuthor().getKey());
+		if (params.getOnlyAuthor() != null) {
+			query.setParameter("onlyAuthorKey", params.getOnlyAuthor().getKey());
+		}
+		if (params.getExcludeAuthor() != null) {
+			query.setParameter("excludeAuthorKey", params.getExcludeAuthor().getKey());
 		}
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			query.setParameter("format", params.getFormat());
