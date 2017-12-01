@@ -172,6 +172,10 @@ public class UserAdminController extends BasicController implements Activateable
 			putInitialPanel(new Panel("empty"));
 		}
 	}
+	
+	public Identity getEditedIdentity() {
+		return myIdentity;
+	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
