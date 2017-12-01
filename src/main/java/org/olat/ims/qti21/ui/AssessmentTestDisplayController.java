@@ -648,7 +648,9 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				break;
 			case response:
 				handleResponse(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
-				nextItemIfAllowed(ureq);
+				if(!nextItemIfAllowed(ureq)) {
+					logWarn("Cannot automatically go to the next question", null);
+				}
 				break;
 			case endTestPart:
 				confirmEndTestPart(ureq);
@@ -775,23 +777,30 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * 
 	 * @param ureq
 	 */
-	private void nextItemIfAllowed(UserRequest ureq) {
-        if(testSessionController.hasFollowingNonLinearItem()
-        		&& testSessionController.getTestSessionState() != null
-        		&& !testSessionController.getTestSessionState().isEnded()
-        		&& !testSessionController.getTestSessionState().isExited()) {
-            
-        	TestSessionState testSessionState = testSessionController.getTestSessionState();
-            TestPlanNodeKey itemNodeKey = testSessionState.getCurrentItemKey();
-            if(itemNodeKey != null) {
-				TestPlanNode currentItemNode = testSessionState.getTestPlan().getNode(itemNodeKey);
-	        	boolean hasFeedbacks = qtiWorksCtrl.willShowSomeAssessmentItemFeedbacks(currentItemNode);
-	        	//allow skipping
-	        	if(!hasFeedbacks) {
-	        		processNextItem(ureq);
-	        	}
-            }
-        }
+	private boolean nextItemIfAllowed(UserRequest ureq) {
+		if (testSessionController.hasFollowingNonLinearItem()
+				&& testSessionController.getTestSessionState() != null
+				&& !testSessionController.getTestSessionState().isEnded()
+				&& !testSessionController.getTestSessionState().isExited()) {
+
+			try {
+				TestSessionState testSessionState = testSessionController.getTestSessionState();
+				TestPlanNodeKey itemNodeKey = testSessionState.getCurrentItemKey();
+				if (itemNodeKey != null) {
+					TestPlanNode currentItemNode = testSessionState.getTestPlan().getNode(itemNodeKey);
+					boolean hasFeedbacks = qtiWorksCtrl.willShowSomeAssessmentItemFeedbacks(currentItemNode);
+					// allow skipping
+					if (!hasFeedbacks) {
+						processNextItem(ureq);
+						return true;
+					}
+				}
+			} catch (QtiCandidateStateException e) {
+				logError("", e);//log informations
+				ServletUtil.printOutRequestParameters(ureq.getHttpReq());
+			}
+		}
+		return false;
 	}
 	
 	private void processNextItem(UserRequest ureq) {
