@@ -348,7 +348,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 
 		String iconCssClass = curRoot.getIconCssClass();
 		if (iconCssClass != null) {
-			target.append("<i class='o_icon ").append(iconCssClass).append("'></i> ");			
+			target.append("<i class='o_icon o_icon-fw ").append(iconCssClass).append("'></i> ");			
 		}
 		renderDisplayTitle(target, curRoot, tree);
 		// display title and close menu item
