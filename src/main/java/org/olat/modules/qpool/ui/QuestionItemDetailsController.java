@@ -74,7 +74,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link editItem;
 	private Link startReviewLink;
 	private Link reviewLink;
+	private Link revisionLink;
+	private Link finalLink;
 	private Link endOfLifeLink;
+	private Link deleteLink;
 	private Link nextItemLink;
 	private Link numberItemsLink;
 	private Link previousItemLink;
@@ -158,10 +161,25 @@ public class QuestionItemDetailsController extends BasicController implements To
 			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
 			stackPanel.addTool(reviewLink, Align.left);
 		}
+		if (securityCallback.canSetRevision()) {
+			revisionLink = LinkFactory.createToolLink("process.revision", translate("process.revision"), this);
+			revisionLink.setIconLeftCSS("o_icon o_icon-lg o_icon_revision");
+			stackPanel.addTool(revisionLink, Align.left);
+		}
+		if (securityCallback.canSetFinal()) {
+			finalLink = LinkFactory.createToolLink("process.final", translate("process.final"), this);
+			finalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_final");
+			stackPanel.addTool(finalLink, Align.left);
+		}
 		if (securityCallback.canSetEndOfLife()) {
 			endOfLifeLink = LinkFactory.createToolLink("process.endOfLife", translate("process.endOfLife"), this);
 			endOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_end_of_life");
 			stackPanel.addTool(endOfLifeLink, Align.left);
+		}
+		if (securityCallback.canDelete()) {
+			deleteLink = LinkFactory.createToolLink("process.delete", translate("process.delete"), this);
+			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+			stackPanel.addTool(deleteLink, Align.left);
 		}
 		
 		previousItemLink = LinkFactory.createToolLink("previous", translate("previous"), this);

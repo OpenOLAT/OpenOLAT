@@ -37,6 +37,10 @@ public interface QuestionItemSecurityCallback {
 
 	public boolean canReview();
 
+	public boolean canSetRevision();
+
+	public boolean canSetFinal();
+
 	public boolean canSetEndOfLife();
 
 	public boolean canDelete();

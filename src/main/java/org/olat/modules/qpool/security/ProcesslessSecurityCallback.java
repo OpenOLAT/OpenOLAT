@@ -72,6 +72,16 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 	}
 
 	@Override
+	public boolean canSetRevision() {
+		return false;
+	}
+
+	@Override
+	public boolean canSetFinal() {
+		return false;
+	}
+
+	@Override
 	public boolean canSetEndOfLife() {
 		return false;
 	}

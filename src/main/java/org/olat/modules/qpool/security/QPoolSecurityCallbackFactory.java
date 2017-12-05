@@ -20,7 +20,6 @@
 package org.olat.modules.qpool.security;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.id.Identity;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
@@ -41,10 +40,12 @@ public class QPoolSecurityCallbackFactory {
 	@Autowired
 	private QuestionPoolModule qpoolModule;
 
-	public QuestionItemSecurityCallback createQuestionItemSecurityCallback(Identity identity, QuestionItemView itemView,
-			QuestionItemsSource questionItemSource) {
+	public QuestionItemSecurityCallback createQuestionItemSecurityCallback(QuestionItemView itemView, QuestionItemsSource questionItemSource,
+			boolean isOLATAdmin) {
 		QuestionItemSecurityCallback securityCallback;
-		if (qpoolModule.isReviewProcessEnabled()) {
+		if (isOLATAdmin) {
+			securityCallback = createAdministratorSecurityCallback(itemView, questionItemSource);
+		} else if (qpoolModule.isReviewProcessEnabled()) {
 			securityCallback = createReviewProcessSecurityCallback(itemView, questionItemSource);
 		} else {
 			securityCallback = createProcesslessSecurityCallback(itemView, questionItemSource);
@@ -52,6 +53,14 @@ public class QPoolSecurityCallbackFactory {
 		return securityCallback;
 	}
 
+	private QuestionItemSecurityCallback createAdministratorSecurityCallback(QuestionItemView itemView,
+			QuestionItemsSource questionItemSource) {
+		AdministratorSecurityCallback administratorSecurityCallback = CoreSpringFactory.getImpl(AdministratorSecurityCallback.class);
+		administratorSecurityCallback.setItemView(itemView);
+		administratorSecurityCallback.setQuestionItemSource(questionItemSource);
+		return administratorSecurityCallback;
+	}
+	
 	private QuestionItemSecurityCallback createReviewProcessSecurityCallback(QuestionItemView itemView,
 			QuestionItemsSource questionItemSource) {
 		ReviewProcessSecurityCallback reviewProcessSecurityCallback = CoreSpringFactory.getImpl(ReviewProcessSecurityCallback.class);

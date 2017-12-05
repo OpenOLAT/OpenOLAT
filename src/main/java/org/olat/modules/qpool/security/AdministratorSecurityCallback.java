@@ -19,29 +19,21 @@
  */
 package org.olat.modules.qpool.security;
 
-import java.util.Arrays;
-import java.util.Collection;
-
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
-import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
  * 
- * Initial date: 04.12.2017<br>
- * 
+ * Initial date: 05.12.2017<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 @Component
 @Scope("prototype")
-public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallback {
-
-	public static Collection<QuestionStatus> editableQuestionStates =
-			Arrays.asList(QuestionStatus.draft, QuestionStatus.revised);
+public class AdministratorSecurityCallback implements QuestionItemSecurityCallback {
 
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;
@@ -56,53 +48,52 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	@Override
 	public boolean canEditQuestion() {
-		return editableQuestionStates.contains(itemView.getQuestionStatus())
-				&& (itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare()) ;
+		return ReviewProcessSecurityCallback.editableQuestionStates.contains(itemView.getQuestionStatus());
 	}
 
 	@Override
 	public boolean canEditMetadata() {
-		return itemView.isAuthor() || itemView.isManager();
+		return false;
 	}
 
 	@Override
 	public boolean canEditLifecycle() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean canStartReview() {
-		return itemView.isAuthor() && editableQuestionStates.contains(itemView.getQuestionStatus());
+		return true;
 	}
 
 	@Override
 	public boolean canReview() {
-		return itemView.isReviewer() && QuestionStatus.review.equals(itemView.getQuestionStatus());
+		return true;
 	}
 
 	@Override
 	public boolean canSetRevision() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean canSetFinal() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean canSetEndOfLife() {
-		return itemView.isManager() && QuestionStatus.finalVersion.equals(itemView.getQuestionStatus());
+		return true;
 	}
 
 	@Override
 	public boolean canDelete() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean canRemove() {
-		return itemView.isAuthor() && questionItemSource.isRemoveEnabled();
+		return questionItemSource.isRemoveEnabled();
 	}
 
 }

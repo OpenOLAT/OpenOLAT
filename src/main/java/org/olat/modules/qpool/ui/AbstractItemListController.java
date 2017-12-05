@@ -98,6 +98,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	
 	private EventBus eventBus;
 	private QuestionItemsSource itemsSource;
+	private final boolean isOLATAdmin;
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
 		this(ureq, wControl, source, null, key);
@@ -108,6 +109,7 @@ public abstract class AbstractItemListController extends FormBasicController
 
 		this.prefsKey = key;
 		this.itemsSource = source;
+		this.isOLATAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
 		this.restrictToFormat = restrictToFormat;
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
@@ -439,7 +441,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected ItemRow forgeRow(QuestionItemView item) {
 		boolean marked = item.isMarked();
 		QuestionItemSecurityCallback securityCallback = qpoolSecurityCallbackFactory
-				.createQuestionItemSecurityCallback(getIdentity(), item, getSource());
+				.createQuestionItemSecurityCallback(item, getSource(), isOLATAdmin);
 		ItemRow row = new ItemRow(item, securityCallback);
 		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "&nbsp;", null, null, Link.NONTRANSLATED);
 		markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
@@ -452,7 +454,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected ItemRow wrapItem(QuestionItem item) {
 		ItemWrapper itemWrapper = ItemWrapper.builder(item).setEditableInPool(true).create();
 		QuestionItemSecurityCallback securityCallback = qpoolSecurityCallbackFactory
-				.createQuestionItemSecurityCallback(getIdentity(), itemWrapper, getSource());
+				.createQuestionItemSecurityCallback(itemWrapper, getSource(), isOLATAdmin);
 		return new ItemRow(itemWrapper, securityCallback);
 	}
 }

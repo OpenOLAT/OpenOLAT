@@ -119,6 +119,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_failed:before { content: $fa-var-times-circle;}
 .o_icon_files:before { content: $fa-var-files-o;}
 .o_icon_filter:before { content: $fa-var-filter;}
+.o_icon_final:before { content: $fa-var-check;}
 .o_icon_graduate:before { content: $fa-var-graduation-cap; }
 .o_icon_group:before, .o_BusinessGroup_icon:before { content: $fa-var-users; }
 .o_icon_header:before { content: $fa-var-header;}
@@ -243,6 +244,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_results_hidden:before { content: $fa-var-eye-slash;}
 .o_icon_review:before { content: $fa-var-star;}
 .o_icon_reviewer:before { content: $fa-var-user-md;}
+.o_icon_revision:before { content: $fa-var-rotate-left;}
 .o_icon_rss:before { content: $fa-var-rss;}
 .o_icon_rss_unsubscribe:before { content: $fa-var-rss; color: #996633;}
 .o_icon_rubric:before { content: $fa-var-sliders; }
