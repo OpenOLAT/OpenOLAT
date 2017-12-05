@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,17 +42,20 @@ public class UserDAO {
 	private DB dbInstance;
 
 	public Identity findUniqueIdentityByEmail(String email) {
-		String query = new StringBuilder()
+		StringBuilder query = new StringBuilder(255)
 				.append("select identity from ").append(IdentityImpl.class.getName()).append(" identity ")
 				.append(" inner join fetch identity.user user ")
-				.append(" where user.email=:email")
-				.append("    or user.institutionalEmail=:email")
-				.toString();
-		
+				.append(" where");
+		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
+		if(mysql) {
+			query.append(" user.").append(UserConstants.EMAIL).append("=:email or user.").append(UserConstants.INSTITUTIONALEMAIL).append("=:email");
+		} else {
+			query.append(" lower(user.").append(UserConstants.EMAIL).append(")=:email or lower(user.").append(UserConstants.INSTITUTIONALEMAIL).append(")=:email");
+		}
 		try {
 			return dbInstance.getCurrentEntityManager()
-				.createQuery(query, Identity.class)
-				.setParameter("email", email)
+				.createQuery(query.toString(), Identity.class)
+				.setParameter("email", email.toLowerCase())
 				.getSingleResult();
 		} catch (Exception e) {
 			return null;
@@ -61,15 +65,20 @@ public class UserDAO {
 	public boolean isEmailInUse(String email) {
 		if (!StringHelper.containsNonWhitespace(email)) return false;
 		
-		String query = new StringBuilder()
+		StringBuilder query = new StringBuilder(255)
 				.append("select count(*) ")
 				.append("  from org.olat.core.id.User user")
-				.append(" where user.email=:email")
-				.append("    or user.institutionalEmail=:email")
-				.toString();
+				.append(" where");
+		
+		boolean mysql = "mysql".equals(dbInstance.getDbVendor());
+		if(mysql) {
+			query.append(" user.").append(UserConstants.EMAIL).append("=:email or user.").append(UserConstants.INSTITUTIONALEMAIL).append("=:email");
+		} else {
+			query.append(" lower(user.").append(UserConstants.EMAIL).append(")=:email or lower(user.").append(UserConstants.INSTITUTIONALEMAIL).append(")=:email");
+		}
 		
 		Long numberOfUsers = dbInstance.getCurrentEntityManager()
-				.createQuery(query, Long.class)
+				.createQuery(query.toString(), Long.class)
 				.setParameter("email", email.toLowerCase())
 				.getSingleResult();
 		
