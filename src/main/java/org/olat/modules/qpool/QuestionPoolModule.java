@@ -247,6 +247,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		setStringProperty(TAXONOMY_QPOOL_KEY, taxonomyQPoolKey, true);
 	}
 
+	//TODO uh delete
 	public Collection<QuestionStatus> getEditableQuestionStates() {
 		Collection<QuestionStatus> editableQuestionStates;
 		if (reviewProcessEnabled) {

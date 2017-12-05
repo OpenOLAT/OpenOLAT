@@ -27,10 +27,18 @@ package org.olat.modules.qpool;
  *
  */
 public interface QuestionItemView extends QuestionItemShort {
+
+	public boolean isAuthor();
+
+	public boolean isReviewer();
+
+	public boolean isManager();
+
+	public boolean isEditableInPool();
+
+	public boolean isEditableInShare();
 	
 	public boolean isEditable();
-	
-	public boolean isReviewable();
 	
 	public boolean isMarked();
 	
@@ -67,4 +75,5 @@ public interface QuestionItemView extends QuestionItemShort {
 		itemVersion,
 		status
 	}
+
 }

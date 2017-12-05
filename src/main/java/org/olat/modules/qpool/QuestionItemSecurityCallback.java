@@ -40,5 +40,7 @@ public interface QuestionItemSecurityCallback {
 	public boolean canSetEndOfLife();
 
 	public boolean canDelete();
+	
+	public boolean canRemove();
 
 }

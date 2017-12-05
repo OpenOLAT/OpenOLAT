@@ -17,62 +17,73 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.model;
+package org.olat.modules.qpool.security;
 
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
+import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.ui.QuestionItemsSource;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
  * 
- * Initial date: 24.11.2017<br>
+ * Initial date: 04.12.2017<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemSecurityCallbackImpl implements QuestionItemSecurityCallback {
+@Component
+@Scope("prototype")
+public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback {
 
-	private final boolean canEdit;
-	private final boolean canReview;
-	private final boolean canDelete;
-	
-	public QuestionItemSecurityCallbackImpl(boolean canEdit, boolean canReview, boolean canDelete) {
-		super();
-		this.canEdit = canEdit;
-		this.canReview = canReview;
-		this.canDelete = canDelete;
+	private QuestionItemView itemView;
+	private QuestionItemsSource questionItemSource;
+
+	public void setItemView(QuestionItemView itemView) {
+		this.itemView = itemView;
 	}
 
+	public void setQuestionItemSource(QuestionItemsSource questionItemSource) {
+		this.questionItemSource = questionItemSource;
+	}
+	
 	@Override
 	public boolean canEditQuestion() {
-		return canEdit;
+		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canEditMetadata() {
-		return true;
+		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canEditLifecycle() {
-		return false;
+		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canStartReview() {
-		return true;
+		return false;
 	}
 
 	@Override
 	public boolean canReview() {
-		return canReview;
+		return false;
 	}
 
 	@Override
 	public boolean canSetEndOfLife() {
-		return true;
+		return false;
 	}
 
 	@Override
 	public boolean canDelete() {
-		return canDelete;
+		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+	}
+
+	@Override
+	public boolean canRemove() {
+		return itemView.isAuthor() && questionItemSource.isRemoveEnabled();
 	}
 
 }

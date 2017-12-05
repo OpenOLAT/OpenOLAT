@@ -77,11 +77,9 @@ import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
-import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.model.QItemList;
-import org.olat.modules.qpool.model.QuestionItemSecurityCallbackImpl;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
@@ -212,7 +210,7 @@ public class QuestionListController extends AbstractItemListController implement
 			if(row == null) {
 				//TODO xhr
 			} else {
-				doSelect(ureq, row);
+				doSelectActivateable2(ureq, row);
 			}
 		}
 	}
@@ -473,7 +471,7 @@ public class QuestionListController extends AbstractItemListController implement
 				QItemEvent qce = (QItemEvent)event;
 				if("copy-item".equals(qce.getCommand())) {
 					stackPanel.popUpToRootController(ureq);
-					doSelect(ureq, qce.getItem(), true, false);
+					doSelectNewItem(ureq, qce.getItem());
 				} else if("previous".equals(qce.getCommand())) {
 					doPrevious(ureq, qce.getItem());
 				} else if("next".equals(qce.getCommand())) {
@@ -540,45 +538,30 @@ public class QuestionListController extends AbstractItemListController implement
 		ItemRow row = getRowByItemKey(itemKey);
 		ItemRow nextRow = getModel().getNextObject(row);
 		getItemsTable().reloadData();
-		if(nextRow != null) {
-			QuestionItem nextItem = qpoolService.loadItemById(nextRow.getKey());
-			if(nextItem != null) {
-				stackPanel.popUpToRootController(ureq);
-				doSelect(ureq, nextItem, nextRow.isEditable(), nextRow.isReviewable());
-			} else {
-				getItemsTable().reset(true, true, true);
-			}
-		}
+		doSelectOrReset(ureq, nextRow);
 	}
 
 	private void doNext(UserRequest ureq, QuestionItem item) {
 		ItemRow row = getRowByItemKey(item.getKey());
 		ItemRow nextRow = getModel().getNextObject(row);
-		if(nextRow != null) {
-			QuestionItem nextItem = qpoolService.loadItemById(nextRow.getKey());
-			if(nextItem != null) {
-				stackPanel.popUpToRootController(ureq);
-				doSelect(ureq, nextItem, nextRow.isEditable(), nextRow.isReviewable());
-			} else {
-				getItemsTable().reset(true, true, true);
-			}
-		}
+		doSelectOrReset(ureq, nextRow);
 	}
 	
 	private void doPrevious(UserRequest ureq, QuestionItem item) {
 		ItemRow row = getRowByItemKey(item.getKey());
 		ItemRow previousRow = getModel().getPreviousObject(row);
-		if(previousRow != null) {
-			QuestionItem previousItem = qpoolService.loadItemById(previousRow.getKey());
-			if(previousItem != null) {
-				stackPanel.popUpToRootController(ureq);
-				doSelect(ureq, previousItem, previousRow.isEditable(), previousRow.isReviewable());
-			} else {
-				getItemsTable().reset(true, true, true);
-			}
-		}
+		doSelectOrReset(ureq, previousRow);
 	}
 	
+	private void doSelectOrReset(UserRequest ureq, ItemRow row) {
+		if(row != null) {
+			stackPanel.popUpToRootController(ureq);
+			doSelectActivateable2(ureq, row);
+		} else {
+			getItemsTable().reset(true, true, true);
+		}
+	}
+
 	private void doBulkChange(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(bulkChangeCtrl);
 		bulkChangeCtrl = new MetadataBulkChangeController(ureq, getWindowControl(), items);
@@ -615,7 +598,7 @@ public class QuestionListController extends AbstractItemListController implement
 		fireEvent(ureq, qce);
 
 		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Edit");
-		doSelect(ureq, item, true, false).activate(ureq, entries, null);
+		doSelectNewItem(ureq, item).activate(ureq, entries, null);
 	}
 	
 	private void doOpenImport(UserRequest ureq) {
@@ -1090,22 +1073,25 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	@Override
 	protected void doSelect(UserRequest ureq, ItemRow row) {
-		QuestionItem item = qpoolService.loadItemById(row.getKey());
-		doSelect(ureq, item, row.isEditable(), row.isReviewable());
+		doSelectActivateable2(ureq, row);
 	}
-		
-	protected QuestionItemDetailsController doSelect(UserRequest ureq, QuestionItem item, boolean editable, boolean reviewable) {
+
+	protected Activateable2 doSelectActivateable2(UserRequest ureq, ItemRow row) {
 		removeAsListenerAndDispose(currentDetailsCtrl);
 		
+		QuestionItem item = qpoolService.loadItemById(row.getKey());
 		WindowControl bwControl = addToHistory(ureq, item, null);
-		QuestionItemSecurityCallback securityCallback =
-				new QuestionItemSecurityCallbackImpl(editable, reviewable, getSource().isDeleteEnabled());
 		Integer itemIndex = getIndex(item.getKey());
 		int numberOfItems = getModel().getRowCount();
-		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, securityCallback, item,
+		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, row.getSecurityCallback(), item,
 				itemIndex, numberOfItems);
 		listenTo(currentDetailsCtrl);
 		stackPanel.pushController(item.getTitle(), currentDetailsCtrl);
 		return currentDetailsCtrl;
+	}
+	
+	private Activateable2 doSelectNewItem(UserRequest ureq, QuestionItem item) {
+		ItemRow row = wrapItem(item);
+		return doSelectActivateable2(ureq, row);	
 	}
 }

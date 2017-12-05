@@ -22,12 +22,15 @@ package org.olat.modules.qpool.manager;
 import static java.util.Collections.singletonList;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
@@ -46,7 +49,9 @@ import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.resource.OLATResource;
@@ -84,14 +89,22 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	private TaxonomyDAO taxonomyDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
+	private TaxonomyCompetenceDAO taxonomyCompetenceDao;
+	
+	private QItemType qItemType;
+	
+	@Before
+	public void setUp() {
+		qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+	}
 
 	@Test
 	public void getFavoritItems() {
-		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-item-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 253", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
-		QuestionItem item3 = questionDao.createAndPersist(id, "NGC 292", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 253", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item3 = questionDao.createAndPersist(id, "NGC 292", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		markManager.setMark(item1, id, null, "[QuestionItem:" + item1 + "]");
 		markManager.setMark(item2, id, null, "[QuestionItem:" + item2 + "]");
 		dbInstance.commitAndCloseSession();
@@ -121,10 +134,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	
 	@Test
 	public void getFavoritItems_orderBy() {
-		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-item-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 253", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 55", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 253", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		markManager.setMark(item1, id, null, "[QuestionItem:" + item1 + "]");
 		markManager.setMark(item2, id, null, "[QuestionItem:" + item2 + "]");
 		dbInstance.commitAndCloseSession();
@@ -144,61 +156,143 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	}
 	
 	@Test
-	public void getFavoriteItems_editable_author() {
-		//create an author with an item and mark it as favorite
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
-		QuestionItem item = questionDao.createAndPersist(id, "FAV 4390", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
-		markManager.setMark(item, id, null, "[QuestionItem:" + item + "]");
+	public void getFavoriteItems_isAuthor() {
+		//create an author with an item
+		Identity me = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
+		QuestionItem myItem = questionDao.createAndPersist(me, "FAV 4390", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		//create another author with an item 
+		Identity other = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
+		QuestionItem othersItem = questionDao.createAndPersist(other, "FAV 4391", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		//the first author marks the items as favorites
+		markManager.setMark(myItem, me, null, "[QuestionItem:" + myItem + "]");
+		markManager.setMark(othersItem, me, null, "[QuestionItem:" + othersItem + "]");
 		dbInstance.commitAndCloseSession();
 		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
-		List<QuestionItemView> favorites = qItemQueriesDao.getFavoritItems(params, null, 0, -1);
-		QuestionItemView favoriteItem = favorites.get(0);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(me, null);
+		List<QuestionItemView> myFavorites = qItemQueriesDao.getFavoritItems(params, Collections.singletonList(myItem.getKey()), 0, -1);;
+		QuestionItemView myFavorite = myFavorites.get(0);
+		Assert.assertTrue(myFavorite.isAuthor());
 		
-		Assert.assertTrue(favoriteItem.isEditable());
+		List<QuestionItemView> otherFavorites = qItemQueriesDao.getFavoritItems(params, Collections.singletonList(othersItem.getKey()), 0, -1);;
+		QuestionItemView otherFavorite = otherFavorites.get(0);
+		Assert.assertFalse(otherFavorite.isAuthor());
 	}
 	
 	@Test
-	public void getFavoriteItems_editable_pool() {
-		//create a user who is not the author of the question
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
-		//create an author with an item
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
-		Identity author = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
-		QuestionItem item = questionDao.createAndPersist(author, "FAV 4391", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
-		// Add the item as not editable to a public pool
-		Pool poolNotEditable = poolDao.createPool(null, "Pool not editable", true);
-		poolDao.addItemToPool(item, Collections.singletonList(poolNotEditable), false);
+	public void getFavoriteItems_isReviwer() {
+		//create two taxonomy levels
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool-isT", "QPool Teacher", "", null);
+		TaxonomyLevel taxWithTeach = taxonomyLevelDao.createTaxonomyLevel("QPool-Teach", "QPool Teach", "Teach", null, null, null, null, taxonomy);
+		TaxonomyLevel taxWithoutTeach = taxonomyLevelDao.createTaxonomyLevel("QPool-NoTeach", "QPool NoTeach", "NoTeach", null, null, null, null, taxonomy);
+		//create an author with teach rights in one taxonomy level and one item in the two taxonomy levels
+		Identity me = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.teach, taxWithTeach, me);
+		QuestionItem myItemTax = questionDao.createAndPersist(me, "FAV 200", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItemImpl myItemTaxImpl = questionDao.loadById(myItemTax.getKey());
+		myItemTaxImpl.setTaxonomyLevel(taxWithTeach);
+		QuestionItem myItemNoTax = questionDao.createAndPersist(me, "FAV 201", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItemImpl myItemNoTaxImpl = questionDao.loadById(myItemNoTax.getKey());
+		myItemNoTaxImpl.setTaxonomyLevel(taxWithoutTeach);
+		
+		//create another author with teach rights in one taxonomy level and one item in the two taxonomy levels
+		Identity other = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
+		QuestionItem otherItemTax = questionDao.createAndPersist(other, "FAV 210", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItemImpl otherItemTaxImpl = questionDao.loadById(otherItemTax.getKey());
+		otherItemTaxImpl.setTaxonomyLevel(taxWithTeach);
+		QuestionItem otherItemNoTax = questionDao.createAndPersist(other, "FAV 211", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		myItemNoTaxImpl.setTaxonomyLevel(taxWithoutTeach);
+		markManager.setMark(myItemTax, me, null, "[QuestionItem:" + myItemTax + "]");
+		markManager.setMark(myItemNoTax, me, null, "[QuestionItem:" + myItemNoTax + "]");
+		markManager.setMark(otherItemTax, me, null, "[QuestionItem:" + otherItemTax + "]");
+		markManager.setMark(otherItemNoTax, me, null, "[QuestionItem:" + otherItemNoTax + "]");
 		dbInstance.commitAndCloseSession();
 		
-		//the user marks the question as a favorite and load his favorites
-		markManager.setMark(item, user, null, "[QuestionItem:" + item + "]");
-		dbInstance.commitAndCloseSession();
-		SearchQuestionItemParams params = new SearchQuestionItemParams(user, null);
-		List<QuestionItemView> favorites = qItemQueriesDao.getFavoritItems(params, null, 0, -1);
-		QuestionItemView favoriteItem = favorites.get(0);
-		Assert.assertFalse(favoriteItem.isEditable());
+		SearchQuestionItemParams params = new SearchQuestionItemParams(me, null);
+		List<QuestionItemView> myFavorites = qItemQueriesDao.getFavoritItems(params, Arrays.asList(otherItemTax.getKey()), 0, -1);;
+		Assert.assertTrue(myFavorites.get(0).isReviewer());
 		
-		//the author adds the item to an other pool as editable
-		Pool poolEditable = poolDao.createPool(null, "Pool editable", true);
-		poolDao.addItemToPool(item, Collections.singletonList(poolEditable), true);
+		Collection<Long> notReviewer = Arrays.asList(myItemTax.getKey(), myItemNoTax.getKey(), otherItemNoTax.getKey());
+		List<QuestionItemView> otherFavorites = qItemQueriesDao.getFavoritItems(params, notReviewer,  0, -1);;
+		Assert.assertFalse(otherFavorites.get(0).isReviewer());
+		Assert.assertFalse(otherFavorites.get(1).isReviewer());
+		Assert.assertFalse(otherFavorites.get(2).isReviewer());
+	}
+	
+	@Test
+	public void getFavoriteItems_isManager() {
+		//create two taxonomy levels
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool-ism", "QPool Manager", "", null);
+		TaxonomyLevel taxWithManage = taxonomyLevelDao.createTaxonomyLevel("QPool-Manage", "QPool Manage", "Manage", null, null, null, null, taxonomy);
+		TaxonomyLevel taxWithoutManage = taxonomyLevelDao.createTaxonomyLevel("QPool-NoManage", "QPool NoManage", "NoManage", null, null, null, null, taxonomy);
+		//create an author with teach rights in one taxonomy level and one item in the two taxonomy levels
+		Identity me = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, taxWithManage, me);
+		QuestionItem myItemTax = questionDao.createAndPersist(me, "FAV 300", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItemImpl myItemTaxImpl = questionDao.loadById(myItemTax.getKey());
+		myItemTaxImpl.setTaxonomyLevel(taxWithManage);
+		QuestionItem myItemNoTax = questionDao.createAndPersist(me, "FAV 301", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItemImpl myItemNoTaxImpl = questionDao.loadById(myItemNoTax.getKey());
+		myItemNoTaxImpl.setTaxonomyLevel(taxWithoutManage);
+		
+		//create another author with teach rights in one taxonomy level and one item in the two taxonomy levels
+		Identity other = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
+		QuestionItem otherItemTax = questionDao.createAndPersist(other, "FAV 310", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItemImpl otherItemTaxImpl = questionDao.loadById(otherItemTax.getKey());
+		otherItemTaxImpl.setTaxonomyLevel(taxWithManage);
+		QuestionItem otherItemNoTax = questionDao.createAndPersist(other, "FAV 311", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		myItemNoTaxImpl.setTaxonomyLevel(taxWithoutManage);
+		markManager.setMark(myItemTax, me, null, "[QuestionItem:" + myItemTax + "]");
+		markManager.setMark(myItemNoTax, me, null, "[QuestionItem:" + myItemNoTax + "]");
+		markManager.setMark(otherItemTax, me, null, "[QuestionItem:" + otherItemTax + "]");
+		markManager.setMark(otherItemNoTax, me, null, "[QuestionItem:" + otherItemNoTax + "]");
 		dbInstance.commitAndCloseSession();
 		
-		//the user reloads his favorites
-		favorites = qItemQueriesDao.getFavoritItems(params, null, 0, -1);
-		favoriteItem = favorites.get(0);
-		Assert.assertTrue(favoriteItem.isEditable());
+		SearchQuestionItemParams params = new SearchQuestionItemParams(me, null);
+		Collection<Long> manager = Arrays.asList(myItemTax.getKey(), otherItemTax.getKey());
+		List<QuestionItemView> myFavorites = qItemQueriesDao.getFavoritItems(params, manager, 0, -1);;
+		Assert.assertTrue(myFavorites.get(0).isManager());
+		Assert.assertTrue(myFavorites.get(1).isManager());
+		
+		Collection<Long> notManager = Arrays.asList(myItemNoTax.getKey(), otherItemNoTax.getKey());
+		List<QuestionItemView> otherFavorites = qItemQueriesDao.getFavoritItems(params, notManager,  0, -1);;
+		Assert.assertFalse(otherFavorites.get(0).isManager());
+		Assert.assertFalse(otherFavorites.get(1).isManager());
+	}
+	
+	@Test
+	public void getFavoriteItems_isEditableByPool() {
+		String poolTitle = "isEByPool-" + UUID.randomUUID().toString();
+		Pool pool = poolDao.createPool(null, poolTitle, true);
+		Identity me = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
+		Identity other = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
+		QuestionItem itemInPoolEditable = questionItemDao.createAndPersist(other, "FAV 400", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		poolDao.addItemToPool(itemInPoolEditable, Collections.singletonList(pool), true);
+		QuestionItem itemInPoolNotEditable = questionItemDao.createAndPersist(other, "FAV 401", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		poolDao.addItemToPool(itemInPoolNotEditable, Collections.singletonList(pool), false);
+		QuestionItem itemNotInPool = questionItemDao.createAndPersist(other, "FAV 402", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		markManager.setMark(itemInPoolEditable, me, null, "[QuestionItem:" + itemInPoolEditable + "]");
+		markManager.setMark(itemInPoolNotEditable, me, null, "[QuestionItem:" + itemInPoolNotEditable + "]");
+		markManager.setMark(itemNotInPool, me, null, "[QuestionItem:" + itemNotInPool + "]");
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(me, null);
+		Collection<Long> editable = Arrays.asList(itemInPoolEditable.getKey());
+		List<QuestionItemView> editableFavorites = qItemQueriesDao.getFavoritItems(params, editable, 0, -1);;
+		Assert.assertTrue(editableFavorites.get(0).isEditableInPool());
+		
+		Collection<Long> notEditable = Arrays.asList(itemInPoolNotEditable.getKey(), itemNotInPool.getKey());
+		List<QuestionItemView> notEditableFavorites = qItemQueriesDao.getFavoritItems(params, notEditable,  0, -1);;
+		Assert.assertFalse(notEditableFavorites.get(0).isEditableInPool());
+		Assert.assertFalse(notEditableFavorites.get(1).isEditableInPool());
 	}
 
 	@Test
 	public void getItemsOfCollection() {
 		//create a collection with 2 items
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
-		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item1 = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(null, "NGC 97", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		collectionDao.addItemToCollection(item1, singletonList(coll));
 		collectionDao.addItemToCollection(item2, singletonList(coll));
 		dbInstance.commit();//check if it's alright
@@ -227,10 +321,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsOfCollection_orderBy() {
 		//create a collection with 2 items
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Onwer-3-" + UUID.randomUUID().toString());
 		QuestionItemCollection coll = collectionDao.createCollection("NGC collection 3", id);
-		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item = questionDao.createAndPersist(null, "NGC 92", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		collectionDao.addItemToCollection(item, singletonList(coll));
 		dbInstance.commit();//check if it's alright
 		
@@ -249,10 +342,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsByAuthor() {
 		//create an author with 2 items
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QOwn-2-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null);
@@ -286,10 +378,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getItemsByAuthor_orderBy() {
 		//create an author with 2 items
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QOwn-2-" + UUID.randomUUID().toString());
-		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 2171", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 2172", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(item1);
 		Assert.assertNotNull(item2);
@@ -315,19 +406,18 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool-10", "QPool Author", "", null);
 		TaxonomyLevel biology = taxonomyLevelDao.createTaxonomyLevel("QPool-Biology", "QPool Biology", "Biology", null, null, null, null, taxonomy);
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("Tax-" + UUID.randomUUID().toString());
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
-		QuestionItem item1 = questionDao.createAndPersist(id1, "Bio 101", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item1 = questionDao.createAndPersist(id1, "Bio 101", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl1 = questionDao.loadById(item1.getKey());
 		itemImpl1.setTaxonomyLevel(biology);
 		itemImpl1.setQuestionStatus(QuestionStatus.draft);
-		QuestionItem item2 = questionDao.createAndPersist(id1, "Bio 102", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(id1, "Bio 102", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl2 = questionDao.loadById(item2.getKey());
 		itemImpl2.setTaxonomyLevel(biology);
 		itemImpl2.setQuestionStatus(QuestionStatus.draft);
 		dbInstance.commitAndCloseSession();
 		
 		//create another item with the same taxonomy level but an other status
-		QuestionItem itemOtherStatus = questionDao.createAndPersist(id1, "Bio 104", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem itemOtherStatus = questionDao.createAndPersist(id1, "Bio 104", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImplOtherStatus = questionDao.loadById(itemOtherStatus.getKey());
 		itemImplOtherStatus.setTaxonomyLevel(biology);
 		itemImplOtherStatus.setQuestionStatus(QuestionStatus.revised);
@@ -335,14 +425,14 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		//create another taxonomy level with an item which should not be loaded later
 		TaxonomyLevel geography = taxonomyLevelDao.createTaxonomyLevel("QPool-Geopraphy", "QPool Geopraphy", "Geopraphy", null, null, null, null, taxonomy);
-		QuestionItem itemOtherTaxonomyLevel = questionDao.createAndPersist(id1, "Bio 103", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem itemOtherTaxonomyLevel = questionDao.createAndPersist(id1, "Bio 103", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl3 = questionDao.loadById(itemOtherTaxonomyLevel.getKey());
 		itemImpl3.setTaxonomyLevel(geography);
 		dbInstance.commitAndCloseSession();
 
 		//create another item with another author
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("Tax-" + UUID.randomUUID().toString());
-		QuestionItem item5 = questionDao.createAndPersist(id2, "Bio 105", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item5 = questionDao.createAndPersist(id2, "Bio 105", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl5 = questionDao.loadById(item5.getKey());
 		itemImpl5.setTaxonomyLevel(biology);
 		itemImpl5.setQuestionStatus(QuestionStatus.draft);
@@ -379,19 +469,18 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool-20", "QPool Author", "", null);
 		TaxonomyLevel biology = taxonomyLevelDao.createTaxonomyLevel("QPool-Biology", "QPool Biology", "Biology", null, null, null, null, taxonomy);
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("Tax-" + UUID.randomUUID().toString());
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
-		QuestionItem item1 = questionDao.createAndPersist(id1, "Bio 201", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item1 = questionDao.createAndPersist(id1, "Bio 201", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl1 = questionDao.loadById(item1.getKey());
 		itemImpl1.setTaxonomyLevel(biology);
 		itemImpl1.setQuestionStatus(QuestionStatus.draft);
-		QuestionItem item2 = questionDao.createAndPersist(id1, "Bio 202", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(id1, "Bio 202", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl2 = questionDao.loadById(item2.getKey());
 		itemImpl2.setTaxonomyLevel(biology);
 		itemImpl2.setQuestionStatus(QuestionStatus.draft);
 		dbInstance.commitAndCloseSession();
 		
 		//create another item with the same taxonomy level but an other status
-		QuestionItem itemOtherStatus = questionDao.createAndPersist(id1, "Bio 204", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem itemOtherStatus = questionDao.createAndPersist(id1, "Bio 204", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImplOtherStatus = questionDao.loadById(itemOtherStatus.getKey());
 		itemImplOtherStatus.setTaxonomyLevel(biology);
 		itemImplOtherStatus.setQuestionStatus(QuestionStatus.revised);
@@ -399,14 +488,14 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		//create another taxonomy level with an item which should not be loaded later
 		TaxonomyLevel geography = taxonomyLevelDao.createTaxonomyLevel("QPool-Geopraphy", "QPool Geopraphy", "Geopraphy", null, null, null, null, taxonomy);
-		QuestionItem itemOtherTaxonomyLevel = questionDao.createAndPersist(id1, "Bio 203", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem itemOtherTaxonomyLevel = questionDao.createAndPersist(id1, "Bio 203", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl3 = questionDao.loadById(itemOtherTaxonomyLevel.getKey());
 		itemImpl3.setTaxonomyLevel(geography);
 		dbInstance.commitAndCloseSession();
 
 		//create another item with another author
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("Tax-" + UUID.randomUUID().toString());
-		QuestionItem item5 = questionDao.createAndPersist(id2, "Bio 205", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item5 = questionDao.createAndPersist(id2, "Bio 205", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl5 = questionDao.loadById(item5.getKey());
 		itemImpl5.setTaxonomyLevel(biology);
 		itemImpl5.setQuestionStatus(QuestionStatus.draft);
@@ -443,19 +532,18 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool-30", "QPool Author", "", null);
 		TaxonomyLevel biology = taxonomyLevelDao.createTaxonomyLevel("QPool-Biology", "QPool Biology", "Biology", null, null, null, null, taxonomy);
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("Tax-" + UUID.randomUUID().toString());
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
-		QuestionItem item1 = questionDao.createAndPersist(id1, "Bio 301", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item1 = questionDao.createAndPersist(id1, "Bio 301", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl1 = questionDao.loadById(item1.getKey());
 		itemImpl1.setTaxonomyLevel(biology);
 		itemImpl1.setQuestionStatus(QuestionStatus.draft);
-		QuestionItem item2 = questionDao.createAndPersist(id1, "Bio 302", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(id1, "Bio 302", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl2 = questionDao.loadById(item2.getKey());
 		itemImpl2.setTaxonomyLevel(biology);
 		itemImpl2.setQuestionStatus(QuestionStatus.draft);
 		dbInstance.commitAndCloseSession();
 		
 		//create another item with the same taxonomy level but an other status
-		QuestionItem itemOtherStatus = questionDao.createAndPersist(id1, "Bio 304", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem itemOtherStatus = questionDao.createAndPersist(id1, "Bio 304", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImplOtherStatus = questionDao.loadById(itemOtherStatus.getKey());
 		itemImplOtherStatus.setTaxonomyLevel(biology);
 		itemImplOtherStatus.setQuestionStatus(QuestionStatus.revised);
@@ -463,14 +551,14 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		
 		//create another taxonomy level with an item which should not be loaded later
 		TaxonomyLevel geography = taxonomyLevelDao.createTaxonomyLevel("QPool-Geopraphy", "QPool Geopraphy", "Geopraphy", null, null, null, null, taxonomy);
-		QuestionItem itemOtherTaxonomyLevel = questionDao.createAndPersist(id1, "Bio 303", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem itemOtherTaxonomyLevel = questionDao.createAndPersist(id1, "Bio 303", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl3 = questionDao.loadById(itemOtherTaxonomyLevel.getKey());
 		itemImpl3.setTaxonomyLevel(geography);
 		dbInstance.commitAndCloseSession();
 
 		//create another item with another author
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("Tax-" + UUID.randomUUID().toString());
-		QuestionItem item5 = questionDao.createAndPersist(id2, "Bio 305", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
+		QuestionItem item5 = questionDao.createAndPersist(id2, "Bio 305", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
 		QuestionItemImpl itemImpl5 = questionDao.loadById(item5.getKey());
 		itemImpl5.setTaxonomyLevel(biology);
 		itemImpl5.setQuestionStatus(QuestionStatus.draft);
@@ -506,8 +594,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		//create a pool
 		String poolTitle = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, poolTitle, true);
-		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		QuestionItem item = questionItemDao.createAndPersist(id, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionItemDao.createAndPersist(id, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
 		dbInstance.commitAndCloseSession();
 
@@ -530,8 +617,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		//create a pool
 		String poolTitle = "NGC-" + UUID.randomUUID().toString();
 		Pool pool = poolDao.createPool(null, poolTitle, true);
-		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		QuestionItem item = questionItemDao.createAndPersist(id, "Mega cluster of galaxies", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionItemDao.createAndPersist(id, "Mega cluster of galaxies", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
 		dbInstance.commitAndCloseSession();
 
@@ -553,11 +639,10 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getSharedItemByResource() {
 		//create a group to share 2 items
-		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QShare-2-" + UUID.randomUUID());
 		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "gdao-1", "gdao-desc", -1, -1, false, false, false, false, false);
 		BusinessGroup group2 = businessGroupDao.createAndPersist(id, "gdao-2", "gdao-desc", -1, -1, false, false, false, false, false);
-		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-3", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-3", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commit();
 		
 		//share them
@@ -580,10 +665,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getSharedItemByResource_orderBy() {
 		//create a group to share 1 item
-		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QShare-2-" + UUID.randomUUID());
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao-3", "gdao-desc", -1, -1, false, false, false, false, false);
-		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-3", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item = questionDao.createAndPersist(id, "Share-Item-3", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commit();
 		
 		//share them
@@ -610,11 +694,10 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	@Test
 	public void getSharedItemByResource_subset() {
 		//create a group to share 2 items
-		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QShare-1-" + UUID.randomUUID());
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
-		QuestionItem item1 = questionDao.createAndPersist(id, "Share-Item-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
-		QuestionItem item2 = questionDao.createAndPersist(id, "Share-Item-2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		QuestionItem item1 = questionDao.createAndPersist(id, "Share-Item-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "Share-Item-2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		dbInstance.commit();
 		
 		//share them

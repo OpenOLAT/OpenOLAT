@@ -60,9 +60,12 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionItemView.OrderBy;
+import org.olat.modules.qpool.model.ItemWrapper;
+import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
 import org.olat.modules.qpool.ui.events.QItemMarkedEvent;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
@@ -90,6 +93,8 @@ public abstract class AbstractItemListController extends FormBasicController
 	private MarkManager markManager;
 	@Autowired
 	protected QPoolService qpoolService;
+	@Autowired
+	private QPoolSecurityCallbackFactory qpoolSecurityCallbackFactory;
 	
 	private EventBus eventBus;
 	private QuestionItemsSource itemsSource;
@@ -314,12 +319,11 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	public List<QuestionItemShort> getSelectedShortItems(boolean onlyEditable) {
 		Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
-		List<QuestionItemShort> items = getShortItems(selections, onlyEditable);
-		return items;
+		return getShortItems(selections, onlyEditable);
 	}
 
 	public List<QuestionItemShort> getShortItems(Set<Integer> index, boolean onlyEditable) {
-		List<QuestionItemShort> items = new ArrayList<QuestionItemShort>();
+		List<QuestionItemShort> items = new ArrayList<>();
 		for(Integer i:index) {
 			ItemRow row = model.getObject(i.intValue());
 			if(row != null && (!onlyEditable || row.isEditable())) {
@@ -330,7 +334,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	}
 	
 	public List<QuestionItemView> getItemViews(Set<Integer> index) {
-		List<QuestionItemView> items = new ArrayList<QuestionItemView>();
+		List<QuestionItemView> items = new ArrayList<>();
 		for(Integer i:index) {
 			ItemRow row = model.getObject(i.intValue());
 			if(row != null) {
@@ -358,16 +362,16 @@ public abstract class AbstractItemListController extends FormBasicController
 	}
 	
 	public List<Integer> getIndex(Collection<QuestionItem> items) {
-		Set<Long> itemKeys = new HashSet<Long>();
+		Set<Long> itemKeys = new HashSet<>();
 		for(QuestionItem item:items) {
 			itemKeys.add(item.getKey());
 		}
 
-		List<Integer> index = new ArrayList<Integer>(items.size());
+		List<Integer> index = new ArrayList<>(items.size());
 		for(int i=model.getObjects().size(); i-->0; ) {
 			ItemRow row = model.getObject(i);
 			if(row != null && itemKeys.contains(row.getKey())) {
-				index.add(new Integer(i));
+				index.add(i);
 			}
 		}
 		return index;
@@ -407,13 +411,13 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	@Override
 	public List<ItemRow> reload(List<ItemRow> rows) {
-		List<Long> itemToReload = new ArrayList<Long>();
+		List<Long> itemToReload = new ArrayList<>();
 		for(ItemRow row:rows) {
 			itemToReload.add(row.getKey());
 		}
 
 		List<QuestionItemView> reloadedItems = itemsSource.getItems(itemToReload);
-		List<ItemRow> reloadedRows = new ArrayList<ItemRow>(reloadedItems.size());
+		List<ItemRow> reloadedRows = new ArrayList<>(reloadedItems.size());
 		for(QuestionItemView item:reloadedItems) {
 			ItemRow reloadedRow = forgeRow(item);
 			reloadedRows.add(reloadedRow);
@@ -424,21 +428,31 @@ public abstract class AbstractItemListController extends FormBasicController
 	@Override
 	public ResultInfos<ItemRow> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		ResultInfos<QuestionItemView> items = itemsSource.getItems(query, condQueries, firstResult, maxResults, orderBy);
-		List<ItemRow> rows = new ArrayList<ItemRow>(items.getObjects().size());
+		List<ItemRow> rows = new ArrayList<>(items.getObjects().size());
 		for(QuestionItemView item:items.getObjects()) {
 			ItemRow row = forgeRow(item);
 			rows.add(row);
 		}
-		return new DefaultResultInfos<ItemRow>(items.getNextFirstResult(), items.getCorrectedRowCount(), rows);
+		return new DefaultResultInfos<>(items.getNextFirstResult(), items.getCorrectedRowCount(), rows);
 	}
 	
 	protected ItemRow forgeRow(QuestionItemView item) {
 		boolean marked = item.isMarked();
-		ItemRow row = new ItemRow(item);
+		QuestionItemSecurityCallback securityCallback = qpoolSecurityCallbackFactory
+				.createQuestionItemSecurityCallback(getIdentity(), item, getSource());
+		ItemRow row = new ItemRow(item, securityCallback);
 		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "&nbsp;", null, null, Link.NONTRANSLATED);
 		markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
 		return row;
+	}
+
+
+	protected ItemRow wrapItem(QuestionItem item) {
+		ItemWrapper itemWrapper = ItemWrapper.builder(item).setEditableInPool(true).create();
+		QuestionItemSecurityCallback securityCallback = qpoolSecurityCallbackFactory
+				.createQuestionItemSecurityCallback(getIdentity(), itemWrapper, getSource());
+		return new ItemRow(itemWrapper, securityCallback);
 	}
 }

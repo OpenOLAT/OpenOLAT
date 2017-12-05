@@ -22,7 +22,10 @@ package org.olat.modules.qpool.model;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
 
@@ -32,6 +35,8 @@ import org.olat.modules.qpool.QuestionStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ItemWrapper implements QuestionItemView {
+	
+	private static final OLog log = Tracing.createLoggerFor(ItemWrapper.class);
 
 	private Long key;
 	private Date creationDate;
@@ -62,46 +67,58 @@ public class ItemWrapper implements QuestionItemView {
 
 	private String format;
 	
-	private boolean editable;
-	private boolean reviewable;
-	private boolean marked;
-	private Double rating;
+	private final boolean isAuthor;
+	private final boolean isReviewer;
+	private final boolean isManager;
+	private final boolean isEditableInPool;
+	private final boolean isEditableInShare;
+	private final boolean isMarked;
+	private final Double rating;
 	
-	public ItemWrapper(QuestionItemImpl item, boolean editable, boolean reviewable, boolean marked, Double rating) {
-		key = item.getKey();
-		creationDate = item.getCreationDate();
-		lastModified = item.getLastModified();
+	private ItemWrapper(ItemWrapperBuilder builder) {
+		key = builder.item.getKey();
+		creationDate = builder.item.getCreationDate();
+		lastModified = builder.item.getLastModified();
 		
-		identifier = item.getIdentifier();
-		masterIdentifier = item.getMasterIdentifier();
-		title = item.getTitle();
-		topic = item.getTopic();
-		keywords = item.getKeywords();
-		coverage = item.getCoverage();
-		additionalInformations = item.getAdditionalInformations();
-		language = item.getLanguage();
+		identifier = builder.item.getIdentifier();
+		masterIdentifier = builder.item.getMasterIdentifier();
+		title = builder.item.getTitle();
+		topic = builder.item.getTopic();
+		keywords = builder.item.getKeywords();
+		coverage = builder.item.getCoverage();
+		additionalInformations = builder.item.getAdditionalInformations();
+		language = builder.item.getLanguage();
 		
-		taxonomyLevel = item.getTaxonomyLevelName();
-		educationalContextLevel = item.getEducationalContextLevel();
-		educationalLearningTime = item.getEducationalLearningTime();
+		taxonomyLevel = builder.item.getTaxonomyLevelName();
+		educationalContextLevel = builder.item.getEducationalContextLevel();
+		educationalLearningTime = builder.item.getEducationalLearningTime();
 		
-		itemType = item.getItemType();
-		difficulty = item.getDifficulty();
-		stdevDifficulty = item.getStdevDifficulty();
-		differentiation = item.getDifferentiation();
-		numOfAnswerAlternatives = item.getNumOfAnswerAlternatives();
-		usage = item.getUsage();
+		itemType = builder.item.getItemType();
+		difficulty = builder.item.getDifficulty();
+		stdevDifficulty = builder.item.getStdevDifficulty();
+		differentiation = builder.item.getDifferentiation();
+		numOfAnswerAlternatives = builder.item.getNumOfAnswerAlternatives();
+		usage = builder.item.getUsage();
 		
-		itemVersion = item.getItemVersion();
-		status = item.getStatus();
+		itemVersion = builder.item.getItemVersion();
+		status = builder.item.getQuestionStatus().name();
 
-		format = item.getFormat();
+		format = builder.item.getFormat();
 		
-		this.editable = editable;
-		this.reviewable = reviewable;
-		this.marked = marked;
-		this.rating = rating;
+		this.isAuthor = builder.isAuthor;
+		this.isReviewer = builder.isTeacher && !builder.isAuthor;
+		this.isManager = builder.isManager;
+		this.isEditableInPool = builder.isEditableInPool;
+		this.isEditableInShare = builder.isEditableInShare;
+		this.isMarked = builder.isMarked;
+		this.rating = builder.rating;
+
+		log.debug("Question item wrapped:" + this.toString());
 	}
+
+    public static ItemWrapperBuilder builder(QuestionItem item) {
+        return new ItemWrapperBuilder(item);
+    }
 
 	@Override
 	public Long getKey() {
@@ -109,18 +126,38 @@ public class ItemWrapper implements QuestionItemView {
 	}
 
 	@Override
-	public boolean isEditable() {
-		return editable;
-	}
-	
-	@Override
-	public boolean isReviewable() {
-		return reviewable;
+	public boolean isAuthor() {
+		return isAuthor;
 	}
 
 	@Override
+	public boolean isReviewer() {
+		return isReviewer;
+	}
+
+	@Override
+	public boolean isManager() {
+		return isManager;
+	}
+
+	@Override
+	public boolean isEditableInPool() {
+		return isEditableInPool;
+	}
+
+	@Override
+	public boolean isEditableInShare() {
+		return isEditableInShare;
+	}
+
+	@Override
+	public boolean isEditable() {
+		return false;
+	}
+	
+	@Override
 	public boolean isMarked() {
-		return marked;
+		return isMarked;
 	}
 
 	@Override
@@ -178,6 +215,7 @@ public class ItemWrapper implements QuestionItemView {
 		return language;
 	}
 
+	@Override
 	public String getTaxonomyLevelName() {
 		return taxonomyLevel;
 	}
@@ -276,7 +314,100 @@ public class ItemWrapper implements QuestionItemView {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("itemRow[key=").append(getKey()).append(":")
-		  .append("name=").append(getTitle()).append("]");
+		  .append("name=").append(getTitle()).append(":")
+		  .append("isAuthor=").append(isAuthor()).append(":")
+		  .append("isReviewer=").append(isReviewer()).append(":")
+		  .append("isManager=").append(isManager()).append(":")
+		  .append("isEditableInPool=").append(isEditableInPool()).append(":")
+		  .append("isEditableInShare=").append(isEditableInShare()).append(":")
+		  .append("isMarked=").append(isMarked()).append(":")
+		  .append("rating=").append(getRating()).append("]");
 		return sb.toString();
 	}
+	
+	public static class ItemWrapperBuilder {
+		
+		private final QuestionItem item;
+		private boolean isAuthor = false;
+		private boolean isTeacher = false;
+		private boolean isManager = false;
+		private boolean isEditableInPool = false;
+		private boolean isEditableInShare = false;
+		private boolean isMarked = false;
+		private Double rating;
+		
+		public ItemWrapperBuilder(QuestionItem item) {
+			this.item = item;
+		}
+
+		public ItemWrapperBuilder setAuthor(boolean isAuthor) {
+			this.isAuthor = isAuthor;
+			return this;
+		}
+
+		public ItemWrapperBuilder setAuthor(Number authorCount) {
+			this.isAuthor = authorCount == null ? false : authorCount.longValue() > 0;
+			return this;
+		}
+
+		public ItemWrapperBuilder setTeacher(boolean isTeacher) {
+			this.isTeacher = isTeacher;
+			return this;
+		}
+
+		public ItemWrapperBuilder setTeacher(Number teacherCount) {
+			this.isTeacher = teacherCount == null ? false : teacherCount.longValue() > 0;
+			return this;
+		}
+
+		public ItemWrapperBuilder setManager(boolean isManager) {
+			this.isManager = isManager;
+			return this;
+		}
+
+		public ItemWrapperBuilder setManager(Number managerCount) {
+			this.isManager = managerCount == null ? false : managerCount.longValue() > 0;
+			return this;
+		}
+
+		public ItemWrapperBuilder setEditableInPool(boolean isEditableInPool) {
+			this.isEditableInPool = isEditableInPool;
+			return this;
+		}
+
+		public ItemWrapperBuilder setEditableInPool(Number editableInPoolCount) {
+			this.isEditableInPool = editableInPoolCount == null ? false : editableInPoolCount.longValue() > 0;
+			return this;
+		}
+
+		public ItemWrapperBuilder setEditableInShare(boolean isEditableInShare) {
+			this.isEditableInShare = isEditableInShare;
+			return this;
+		}
+
+		public ItemWrapperBuilder setEditableInShare(Number editableInShareCount) {
+			this.isEditableInShare = editableInShareCount == null ? false : editableInShareCount.longValue() > 0;
+			return this;
+		}
+
+		public ItemWrapperBuilder setMarked(boolean isMarked) {
+			this.isMarked = isMarked;
+			return this;
+		}
+
+		public ItemWrapperBuilder setMarked(Number markedCount) {
+			this.isMarked = markedCount == null ? false : markedCount.longValue() > 0;
+			return this;
+		}
+
+		public ItemWrapperBuilder setRating(Double rating) {
+			this.rating = rating;
+			return this;
+		}
+		
+		public ItemWrapper create() {
+			return new ItemWrapper(this);
+		}
+	}
+
 }

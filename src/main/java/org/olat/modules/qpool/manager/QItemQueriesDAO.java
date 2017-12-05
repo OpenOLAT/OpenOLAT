@@ -34,7 +34,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionItemView.OrderBy;
-import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.model.ItemWrapper;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
@@ -57,8 +56,6 @@ public class QItemQueriesDAO {
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private QuestionPoolModule qPoolModule;
 	
 	public int countFavoritItems(SearchQuestionItemParams params) {
 		StringBuilder sb = new StringBuilder();
@@ -88,6 +85,16 @@ public class QItemQueriesDAO {
 		  .append(" (select count(sgmi.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
 		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 		  .append(" ) as owners,")
+		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("     and competence.identity.key=:identityKey")
+		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
+		  .append(" ) as teacher,")
+		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("     and competence.identity.key=:identityKey")
+		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
+		  .append(" ) as manager,")
 		  .append(" (select count(pool2item.key) from qpool2item pool2item")
 		  .append("    where pool2item.item.key=item.key")
 		  .append("      and pool2item.editable is true")
@@ -96,11 +103,6 @@ public class QItemQueriesDAO {
 		  .append("    where shareditem.item.key=item.key")
 		  .append("      and shareditem.editable is true")
 		  .append(" ) as groups,")
-		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
-		  .append("     and competence.identity.key=:identityKey")
-		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
-		  .append(" ) as reviewer,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as rating")
@@ -143,25 +145,16 @@ public class QItemQueriesDAO {
 		List<Object[]> results = query.getResultList();
 		List<QuestionItemView> views = new ArrayList<>();
 		for(Object[] result:results) {
-			QuestionItemImpl item = (QuestionItemImpl)result[0];
-			Number ownerCount = (Number)result[1];
-			boolean isAuthor = ownerCount == null ? false : ownerCount.longValue() > 0;
-			boolean editable = false;
-			if (qPoolModule.getEditableQuestionStates().contains(item.getQuestionStatus())) {
-				Number poolsCount = (Number)result[2];
-				Number groupsCount = (Number)result[3];
-				boolean editableInPool = poolsCount == null? false: poolsCount.longValue() > 0;
-				boolean editableInGroup = groupsCount == null? false: groupsCount.longValue() > 0;
-				editable = isAuthor || editableInPool || editableInGroup;
-			};
-			boolean reviewable = false;
-			if (qPoolModule.getReviewableQuestionStates().contains(item.getQuestionStatus())) {
-				Number reviewerCount = (Number)result[4];
-				boolean isReviewer = reviewerCount == null? false: reviewerCount.longValue() > 0;
-				reviewable = isReviewer && !isAuthor;
-			}
-			Double rating = (Double)result[5];
-			views.add(new ItemWrapper(item, editable, reviewable, true, rating));
+			ItemWrapper itemWrapper = ItemWrapper.builder((QuestionItemImpl)result[0])
+					.setAuthor((Number)result[1])
+					.setTeacher((Number)result[2])
+					.setManager((Number)result[3])
+					.setEditableInPool((Number)result[4])
+					.setEditableInShare((Number)result[5])
+					.setRating((Double)result[6])
+					.setMarked(true)
+					.create();
+			views.add(itemWrapper);
 		}
 		return views;
 	}
@@ -173,6 +166,16 @@ public class QItemQueriesDAO {
 		  .append(" (select count(sgmi.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
 		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 		  .append(" ) as owners,")
+		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("     and competence.identity.key=:identityKey")
+		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
+		  .append(" ) as teacher,")
+		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("     and competence.identity.key=:identityKey")
+		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
+		  .append(" ) as manager,")
 		  .append(" (select count(pool2item.key) from qpool2item pool2item")
 		  .append("    where pool2item.item.key=item.key")
 		  .append("      and pool2item.editable is true")
@@ -181,11 +184,6 @@ public class QItemQueriesDAO {
 		  .append("    where shareditem.item.key=item.key")
 		  .append("      and shareditem.editable is true")
 		  .append(" ) as groups,")
-		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
-		  .append("     and competence.identity.key=:identityKey")
-		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
-		  .append(" ) as reviewer,")
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
@@ -227,27 +225,16 @@ public class QItemQueriesDAO {
 		List<Object[]> results = query.getResultList();
 		List<QuestionItemView> views = new ArrayList<>();
 		for(Object[] result:results) {
-			QuestionItemImpl item = (QuestionItemImpl)result[0];
-			Number ownerCount = (Number)result[1];
-			boolean isAuthor = ownerCount == null ? false : ownerCount.longValue() > 0;
-			boolean editable = false;
-			if (qPoolModule.getEditableQuestionStates().contains(item.getQuestionStatus())) {
-				Number poolsCount = (Number)result[2];
-				Number groupsCount = (Number)result[3];
-				boolean editableInPool = poolsCount == null? false: poolsCount.longValue() > 0;
-				boolean editableInGroup = groupsCount == null? false: groupsCount.longValue() > 0;
-				editable = isAuthor || editableInPool || editableInGroup;
-			};
-			boolean reviewable = false;
-			if (qPoolModule.getReviewableQuestionStates().contains(item.getQuestionStatus())) {
-				Number reviewerCount = (Number)result[4];
-				boolean isReviewer = reviewerCount == null? false: reviewerCount.longValue() > 0;
-				reviewable = isReviewer && !isAuthor;
-			}
-			Number markCount = (Number)result[5];
-			boolean marked = markCount == null ? false : markCount.longValue() > 0;
-			Double rating = (Double)result[6];
-			views.add(new ItemWrapper(item, editable, reviewable, marked, rating));
+			ItemWrapper itemWrapper = ItemWrapper.builder((QuestionItemImpl)result[0])
+					.setAuthor((Number)result[1])
+					.setTeacher((Number)result[2])
+					.setManager((Number)result[3])
+					.setEditableInPool((Number)result[4])
+					.setEditableInShare((Number)result[5])
+					.setMarked((Number)result[6])
+					.setRating((Double)result[7])
+					.create();
+			views.add(itemWrapper);
 		}
 		return views;
 	}
@@ -259,6 +246,16 @@ public class QItemQueriesDAO {
 			.append(" (select count(sgmi.key) from ") .append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
 			.append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 			.append(" ) as owners,")
+		    .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		    .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		    .append("     and competence.identity.key=:identityKey")
+		    .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
+		    .append(" ) as teacher,")
+		    .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		    .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		    .append("     and competence.identity.key=:identityKey")
+		    .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
+		    .append(" ) as manager,")
 			.append(" (select count(pool2item.key) from qpool2item pool2item")
 			.append("    where pool2item.item.key=item.key")
 			.append("      and pool2item.editable is true")
@@ -267,11 +264,6 @@ public class QItemQueriesDAO {
 			.append("    where shareditem.item.key=item.key")
 			.append("      and shareditem.editable is true")
 			.append(" ) as groups,")
-			.append(" (select count(competence.key) from ctaxonomycompetence competence")
-			.append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
-			.append("     and competence.identity.key=:identityKey")
-			.append("     and competence.type='") .append(TaxonomyCompetenceTypes.teach).append("'")
-			.append(" ) as reviewer,")
 			.append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 			.append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 			.append(" ) as marks,")
@@ -335,28 +327,16 @@ public class QItemQueriesDAO {
 		List<Object[]> results = query.getResultList();
 		List<QuestionItemView> views = new ArrayList<>();
 		for (Object[] result : results) {
-			QuestionItemImpl item = (QuestionItemImpl) result[0];
-			Number ownerCount = (Number) result[1];
-			boolean isAuthor = ownerCount == null ? false : ownerCount.longValue() > 0;
-			boolean editable = false;
-			if (qPoolModule.getEditableQuestionStates().contains(item.getQuestionStatus())) {
-				Number poolsCount = (Number) result[2];
-				Number groupsCount = (Number) result[3];
-				boolean editableInPool = poolsCount == null ? false : poolsCount.longValue() > 0;
-				boolean editableInGroup = groupsCount == null ? false : groupsCount.longValue() > 0;
-				editable = isAuthor || editableInPool || editableInGroup;
-			}
-			;
-			boolean reviewable = false;
-			if (qPoolModule.getReviewableQuestionStates().contains(item.getQuestionStatus())) {
-				Number reviewerCount = (Number) result[4];
-				boolean isReviewer = reviewerCount == null ? false : reviewerCount.longValue() > 0;
-				reviewable = isReviewer && !isAuthor;
-			}
-			Number markCount = (Number) result[5];
-			boolean marked = markCount == null ? false : markCount.longValue() > 0;
-			Double rating = (Double) result[6];
-			views.add(new ItemWrapper(item, editable, reviewable, marked, rating));
+			ItemWrapper itemWrapper = ItemWrapper.builder((QuestionItemImpl)result[0])
+					.setAuthor((Number)result[1])
+					.setTeacher((Number)result[2])
+					.setManager((Number)result[3])
+					.setEditableInPool((Number)result[4])
+					.setEditableInShare((Number)result[5])
+					.setMarked((Number)result[6])
+					.setRating((Double)result[7])
+					.create();
+			views.add(itemWrapper);
 		}
 		return views;
 	}
@@ -426,6 +406,16 @@ public class QItemQueriesDAO {
 			Collection<Long> inKeys, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item, ")
+		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("     and competence.identity.key=:identityKey")
+		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
+		  .append(" ) as teacher,")
+		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("     and competence.identity.key=:identityKey")
+		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
+		  .append(" ) as manager,")
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
@@ -470,15 +460,14 @@ public class QItemQueriesDAO {
 		List<Object[]> results = query.getResultList();
 		List<QuestionItemView> views = new ArrayList<>();
 		for(Object[] result:results) {
-			QuestionItemImpl item = (QuestionItemImpl)result[0];
-			Number markCount = (Number)result[1];
-			boolean marked = markCount == null ? false : markCount.longValue() > 0;
-			Double rating = (Double)result[2];
-			boolean editable = false;
-			if (qPoolModule.getEditableQuestionStates().contains(item.getQuestionStatus())) {
-				editable = true;
-			}
-			views.add(new ItemWrapper(item, editable, false, marked, rating));
+			ItemWrapper itemWrapper = ItemWrapper.builder((QuestionItemImpl)result[0])
+					.setAuthor(true)
+					.setTeacher((Number)result[1])
+					.setManager((Number)result[2])
+					.setMarked((Number)result[3])
+					.setRating((Double)result[4])
+					.create();
+			views.add(itemWrapper);
 		}
 		return views;
 	}
@@ -486,7 +475,7 @@ public class QItemQueriesDAO {
 	public List<QuestionItemView> getSharedItemByResource(Identity identity, OLATResource resource, List<Long> inKeys,
 			String format, int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select item, shareditem.editable, ")
+		sb.append("select item,  ")
 		  .append(" (select count(sgmi.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
 		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 		  .append(" ) as owners,")
@@ -494,7 +483,13 @@ public class QItemQueriesDAO {
 		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
-		  .append(" ) as reviewer,")
+		  .append(" ) as teacher,")
+		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("     and competence.identity.key=:identityKey")
+		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
+		  .append(" ) as manager,")
+		  .append(" shareditem.editable,")
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
@@ -526,13 +521,32 @@ public class QItemQueriesDAO {
 		if(StringHelper.containsNonWhitespace(format)) {
 			query.setParameter("format", format);
 		}
-		return processQuery(query, firstResult, maxResults);
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		List<Object[]> results = query.getResultList();
+		List<QuestionItemView> views = new ArrayList<>();
+		for(Object[] result:results) {
+			ItemWrapper itemWrapper = ItemWrapper.builder((QuestionItemImpl)result[0])
+					.setAuthor((Number)result[1])
+					.setTeacher((Number)result[2])
+					.setManager((Number)result[3])
+					.setEditableInShare((Number)result[5])
+					.setMarked((Number)result[5])
+					.setRating((Double)result[6])
+					.create();
+			views.add(itemWrapper);
+		}
+		return views;
 	}
 	
 	public List<QuestionItemView> getItemsOfPool(SearchQuestionItemParams params, Collection<Long> inKeys,
 			int firstResult, int maxResults, SortKey... orderBy) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select item, pool2item.editable, ")
+		sb.append("select item,")
 		  .append(" (select count(sgmi.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
 		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 		  .append(" ) as owners,")
@@ -540,7 +554,13 @@ public class QItemQueriesDAO {
 		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
-		  .append(" ) as reviewer,")
+		  .append(" ) as teacher,")
+		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("     and competence.identity.key=:identityKey")
+		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
+		  .append(" ) as manager,")
+		  .append("pool2item.editable,")
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
@@ -572,10 +592,6 @@ public class QItemQueriesDAO {
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			query.setParameter("format", params.getFormat());
 		}
-		return processQuery(query, firstResult, maxResults);
-	}
-	
-	private List<QuestionItemView> processQuery(TypedQuery<Object[]> query, int firstResult, int maxResults) {
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -586,25 +602,15 @@ public class QItemQueriesDAO {
 		List<Object[]> results = query.getResultList();
 		List<QuestionItemView> views = new ArrayList<>();
 		for(Object[] result:results) {
-			QuestionItemImpl item = (QuestionItemImpl)result[0];
-			Boolean editableObj = (Boolean)result[1];
-			Number ownersCount = (Number)result[2];
-			boolean isAuthor = ownersCount == null ? false: ownersCount.longValue() > 0;
-			boolean editable = false;
-			if (qPoolModule.getEditableQuestionStates().contains(item.getQuestionStatus())) {
-				boolean editableForShare = editableObj == null ? false : editableObj.booleanValue();
-				editable = isAuthor || editableForShare;
-			}
-			boolean reviewable = false;
-			if (qPoolModule.getReviewableQuestionStates().contains(item.getQuestionStatus())) {
-				Number reviewerCount = (Number)result[3];
-				boolean isReviewer = reviewerCount == null? false: reviewerCount.longValue() > 0;
-				reviewable = isReviewer && !isAuthor;
-			}
-			Number markCount = (Number)result[4];
-			boolean marked = markCount == null ? false : markCount.longValue() > 0;
-			Double rating = (Double)result[5];
-			views.add(new ItemWrapper(item, editable, reviewable, marked, rating));
+			ItemWrapper itemWrapper = ItemWrapper.builder((QuestionItemImpl)result[0])
+					.setAuthor((Number)result[1])
+					.setTeacher((Number)result[2])
+					.setManager((Number)result[3])
+					.setEditableInPool((Number)result[5])
+					.setMarked((Number)result[5])
+					.setRating((Double)result[6])
+					.create();
+			views.add(itemWrapper);
 		}
 		return views;
 	}
