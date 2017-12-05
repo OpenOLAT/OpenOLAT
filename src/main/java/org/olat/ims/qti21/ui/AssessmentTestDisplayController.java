@@ -648,9 +648,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				break;
 			case response:
 				handleResponse(ureq, qe.getStringResponseMap(), qe.getFileResponseMap(), qe.getComment());
-				if(!nextItemIfAllowed(ureq)) {
-					logWarn("Cannot automatically go to the next question", null);
-				}
+				nextItemIfAllowed(ureq);
 				break;
 			case endTestPart:
 				confirmEndTestPart(ureq);
@@ -777,7 +775,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	 * 
 	 * @param ureq
 	 */
-	private boolean nextItemIfAllowed(UserRequest ureq) {
+	private void nextItemIfAllowed(UserRequest ureq) {
 		if (testSessionController.hasFollowingNonLinearItem()
 				&& testSessionController.getTestSessionState() != null
 				&& !testSessionController.getTestSessionState().isEnded()
@@ -792,7 +790,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					// allow skipping
 					if (!hasFeedbacks) {
 						processNextItem(ureq);
-						return true;
 					}
 				}
 			} catch (QtiCandidateStateException e) {
@@ -800,7 +797,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 				ServletUtil.printOutRequestParameters(ureq.getHttpReq());
 			}
 		}
-		return false;
 	}
 	
 	private void processNextItem(UserRequest ureq) {
