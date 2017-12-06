@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.manager;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -45,7 +43,6 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
-import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
@@ -86,7 +83,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//delete the items
-		List<QuestionItemShort> toDelete = new ArrayList<QuestionItemShort>();
+		List<QuestionItemShort> toDelete = new ArrayList<>();
 		toDelete.add(item1);
 		toDelete.add(item2);
 		qpoolService.deleteItems(toDelete);
@@ -109,7 +106,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//load the items of the collection
-		List<QuestionItemShort> items = new ArrayList<QuestionItemShort>();
+		List<QuestionItemShort> items = new ArrayList<>();
 		items.add(item1);
 		items.add(item2);
 		QuestionItemCollection newColl = qpoolService.createCollection(id, "My private collection", items);
@@ -125,7 +122,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		ResultInfos<QuestionItemView> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, params, 0, -1);
 		Assert.assertNotNull(itemsOfCollection);
 		Assert.assertEquals(2, itemsOfCollection.getObjects().size());
-		List<Long> itemKeys = new ArrayList<Long>();
+		List<Long> itemKeys = new ArrayList<>();
 		for(QuestionItemView item:itemsOfCollection.getObjects()) {
 			itemKeys.add(item.getKey());
 		}
@@ -153,42 +150,6 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		File itemFile = new File(itemUrl.toURI());
 
 		qpoolService.importItems(owner, Locale.ENGLISH, "mchc_asmimr_101.xml", itemFile);
-	}
-	
-	@Test
-	public void startReview() {
-		//create 3 items
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
-		QuestionItem item1 = questionDao.createAndPersist(null, "start review 1", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		QuestionItem item2 = questionDao.createAndPersist(null, "start review 2", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		QuestionItem item3 = questionDao.createAndPersist(null, "start review 3", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		dbInstance.commit();
-		
-		List<QuestionItemShort> itemsToStartReview = Arrays.asList(item1, item2);
-		List<QuestionItem> itemsInReview = qpoolService.startReview(itemsToStartReview);
-		
-		assertThat(itemsInReview).contains(item1, item2);
-		assertThat(item1.getQuestionStatus()).isEqualTo(QuestionStatus.review);
-		assertThat(item2.getQuestionStatus()).isEqualTo(QuestionStatus.review);
-		assertThat(item3.getQuestionStatus()).isEqualTo(QuestionStatus.draft);
-	}
-	
-	@Test
-	public void setEndOfLife() {
-		//create 3 items
-		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
-		QuestionItem item1 = questionDao.createAndPersist(null, "start review 1", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		QuestionItem item2 = questionDao.createAndPersist(null, "start review 2", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		QuestionItem item3 = questionDao.createAndPersist(null, "start review 3", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
-		dbInstance.commit();
-		
-		List<QuestionItemShort> itemsToChange = Arrays.asList(item1, item2);
-		List<QuestionItem> itemsendOfLife = qpoolService.setEndOfLife(itemsToChange);
-		
-		assertThat(itemsendOfLife).contains(item1, item2);
-		assertThat(item1.getQuestionStatus()).isEqualTo(QuestionStatus.endOfLife	);
-		assertThat(item2.getQuestionStatus()).isEqualTo(QuestionStatus.endOfLife);
-		assertThat(item3.getQuestionStatus()).isEqualTo(QuestionStatus.draft);
 	}
 	
 }

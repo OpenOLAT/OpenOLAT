@@ -493,6 +493,10 @@ public class QuestionListController extends AbstractItemListController implement
 					fireEvent(ureq, qce);
 				} else if (QPoolEvent.ITEM_REVIEW_STARTED.equals(qce.getCommand())) {
 					doReloadAndNext(ureq, qce.getObjectKey());
+				} else if (QPoolEvent.ITEM_REVISION.equals(qce.getCommand())) {
+					doReloadAndNext(ureq, qce.getObjectKey());
+				} else if (QPoolEvent.ITEM_FINAL.equals(qce.getCommand())) {
+					doReloadAndNext(ureq, qce.getObjectKey());
 				} else if (QPoolEvent.ITEM_END_OF_LIFE.equals(qce.getCommand())) {
 					doReloadAndNext(ureq, qce.getObjectKey());
 				}

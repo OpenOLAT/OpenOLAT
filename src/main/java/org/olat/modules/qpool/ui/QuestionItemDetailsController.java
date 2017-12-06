@@ -56,7 +56,9 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.manager.ExportQItemResource;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
@@ -83,7 +85,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link previousItemLink;
 	private Link showMetadataLink;
 	private Link hideMetadataLink;
-	private Link deleteItem, shareItem, exportItem, copyItem;
+	private Link shareItem, exportItem, copyItem;
 
 	private Controller editCtrl;
 	private Controller previewCtrl;
@@ -137,10 +139,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 
 		shareItem = LinkFactory.createButton("share.item", mainVC, this);
 		copyItem = LinkFactory.createButton("copy", mainVC, this);
-		if(securityCallback.canDelete()) {
-			deleteItem = LinkFactory.createButton("delete.item", mainVC, this);
-			deleteItem.setVisible(securityCallback.canEditQuestion());
-		}
 		exportItem = LinkFactory.createButton("export.item", mainVC, this);
 		
 		setPreviewController(ureq, item);
@@ -242,9 +240,13 @@ public class QuestionItemDetailsController extends BasicController implements To
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == startReviewLink) {
 			doConfirmStartReview(ureq, metadatasCtrl.getItem());
+		} else if (source == revisionLink) {
+			doRevision(ureq, metadatasCtrl.getItem());
+		} else if (source == finalLink) {
+			doFinal(ureq, metadatasCtrl.getItem());
 		} else if (source == endOfLifeLink) {
 			doConfirmEndOfLife(ureq, metadatasCtrl.getItem());
-		} else if(source == deleteItem) {
+		} else if(source == deleteLink) {
 			doConfirmDelete(ureq, metadatasCtrl.getItem());
 		} else if(source == shareItem) {
 			doSelectGroup(ureq, metadatasCtrl.getItem());
@@ -333,10 +335,16 @@ public class QuestionItemDetailsController extends BasicController implements To
 		confirmStartReviewCtrl.setUserObject(item);
 	}
 
-	private void doStartReview(UserRequest ureq, QuestionItemShort item) {
-		qpoolService.startReview(Collections.singletonList(item));
-		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_REVIEW_STARTED, item.getKey()));
-		showInfo("process.review.started");
+	private void doStartReview(UserRequest ureq, QuestionItem item) {
+		doChangeQuestionStatus(ureq, item, QuestionStatus.review, QPoolEvent.ITEM_REVIEW_STARTED, "process.review.started");
+	}
+	
+	private void doRevision(UserRequest ureq, QuestionItem item) {
+		doChangeQuestionStatus(ureq, item, QuestionStatus.revised, QPoolEvent.ITEM_REVISION, "process.revision.set");
+	}
+	
+	private void doFinal(UserRequest ureq, QuestionItem item) {
+		doChangeQuestionStatus(ureq, item, QuestionStatus.finalVersion, QPoolEvent.ITEM_FINAL, "process.final.set");
 	}
 	
 	private void doConfirmEndOfLife(UserRequest ureq, QuestionItem item) {
@@ -345,10 +353,19 @@ public class QuestionItemDetailsController extends BasicController implements To
 		confirmEndOfLifeCtrl.setUserObject(item);
 	}
 
-	private void doEndOfLife(UserRequest ureq, QuestionItemShort item) {
-		qpoolService.setEndOfLife(Collections.singletonList(item));
-		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_END_OF_LIFE, item.getKey()));
-		showInfo("process.endOfLife.set");
+	private void doEndOfLife(UserRequest ureq, QuestionItem item) {
+		doChangeQuestionStatus(ureq, item, QuestionStatus.endOfLife, QPoolEvent.ITEM_END_OF_LIFE, "process.endOfLife.set");
+	}
+	
+	private void doChangeQuestionStatus(UserRequest ureq, QuestionItem item, QuestionStatus newStatus, String qPoolEvent,
+			String i18nInfo) {
+		if(item instanceof QuestionItemImpl) {
+			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+			itemImpl.setQuestionStatus(newStatus);
+			qpoolService.updateItem(itemImpl);
+			fireEvent(ureq, new QPoolEvent(qPoolEvent, item.getKey()));
+			showInfo(i18nInfo);
+		}
 	}
 	
 	private void doCopy(UserRequest ureq, QuestionItemShort item) {
@@ -370,6 +387,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		stackPanel.pushController("Edition", editMainCtrl);
 	}
 	
+	// TODO uh delete???
 	private void doContentChanged(UserRequest ureq) {
 		QuestionItem item = metadatasCtrl.updateVersionNumber();
 		//update preview

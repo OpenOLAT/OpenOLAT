@@ -63,7 +63,7 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	@Override
 	public boolean canStartReview() {
-		return false;
+		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
@@ -73,17 +73,17 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	@Override
 	public boolean canSetRevision() {
-		return false;
+		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canSetFinal() {
-		return false;
+		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canSetEndOfLife() {
-		return false;
+		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override

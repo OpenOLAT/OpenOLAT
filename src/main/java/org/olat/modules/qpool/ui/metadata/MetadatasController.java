@@ -245,6 +245,7 @@ public class MetadatasController extends BasicController {
 		sharingCtrl.setItem(getItem());
 	}
 	
+	// TODO uh delete?
 	public QuestionItem updateVersionNumber() {
 		if(item instanceof QuestionItemImpl && StringHelper.containsNonWhitespace(item.getItemVersion())) {
 			String version = item.getItemVersion();

@@ -171,10 +171,7 @@ public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> ite
 
 	// review process
 	public List<TaxonomyLevel> getTaxonomyLevel(Identity identity, TaxonomyCompetenceTypes... competenceType);
-
-	public List<QuestionItem> startReview(List<QuestionItemShort> items);
 	
-	public List<QuestionItem> setEndOfLife(List<QuestionItemShort> items);
 
 	/**
 	 * Reset the status of all questions in the question bank to the status "draft".

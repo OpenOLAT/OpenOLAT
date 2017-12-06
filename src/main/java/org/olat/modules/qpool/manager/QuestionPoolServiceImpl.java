@@ -138,6 +138,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		poolDao.removeFromPools(items);
 		questionItemDao.removeFromShares(items);
 		collectionDao.deleteItemFromCollections(items);
+		//TODO uh delete ratings
 		//TODO unmark
 		questionItemDao.delete(items);
 		
@@ -188,8 +189,9 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public QuestionItem updateItem(QuestionItem item) {
+		
 		QuestionItem mergedItem = questionItemDao.merge(item);
-		dbInstance.commit();//
+		dbInstance.commit();
 		lifeIndexer.indexDocument(QItemDocument.TYPE, mergedItem.getKey());
 		return mergedItem;
 	}
@@ -895,16 +897,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			List<QuestionItemView> items = itemQueriesDao.getItemsOfTaxonomyLevel(searchParams, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
 			return new DefaultResultInfos<>(firstResult + items.size(), -1, items);
 		}
-	}
-
-	@Override
-	public List<QuestionItem> startReview(List<QuestionItemShort> items) {
-		return updateQuestionStatus(items, QuestionStatus.review);
-	}
-
-	@Override
-	public List<QuestionItem> setEndOfLife(List<QuestionItemShort> items) {
-		return updateQuestionStatus(items, QuestionStatus.endOfLife);
 	}
 
 	private List<QuestionItem> updateQuestionStatus(List<QuestionItemShort> items, QuestionStatus newStatus) {

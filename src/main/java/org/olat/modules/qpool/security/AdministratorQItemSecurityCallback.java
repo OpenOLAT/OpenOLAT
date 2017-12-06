@@ -21,7 +21,10 @@ package org.olat.modules.qpool.security;
 
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +40,9 @@ public class AdministratorQItemSecurityCallback implements QuestionItemSecurityC
 
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;
+	
+	@Autowired
+	private QuestionPoolModule qpoolModule;
 
 	public void setItemView(QuestionItemView itemView) {
 		this.itemView = itemView;
@@ -48,12 +54,12 @@ public class AdministratorQItemSecurityCallback implements QuestionItemSecurityC
 
 	@Override
 	public boolean canEditQuestion() {
-		return ReviewProcessSecurityCallback.editableQuestionStates.contains(itemView.getQuestionStatus());
+		return true;
 	}
 
 	@Override
 	public boolean canEditMetadata() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -68,7 +74,9 @@ public class AdministratorQItemSecurityCallback implements QuestionItemSecurityC
 
 	@Override
 	public boolean canReview() {
-		return true;
+		return qpoolModule.isReviewProcessEnabled()
+				&& itemView.isReviewer()
+				&& QuestionStatus.review.equals(itemView.getQuestionStatus());
 	}
 
 	@Override
