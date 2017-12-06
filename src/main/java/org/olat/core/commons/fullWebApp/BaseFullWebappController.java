@@ -361,10 +361,10 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				&& (usess.getRoles().isOLATAdmin() || usess.getRoles().isUserManager())
 				&& (i18nModule.isTransToolEnabled() || i18nModule.isOverlayEnabled())) {
 			inlineTranslationC = wbo.createInlineTranslationDispatcherController(ureq, getWindowControl());
-			Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+			Preferences guiPrefs = usess.getGuiPreferences();
 			Boolean isInlineTranslationEnabled = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_INLINE_TRANSLATION_ENABLED,
 					Boolean.FALSE);
-			i18nManager.setMarkLocalizedStringsEnabled(ureq.getUserSession(), isInlineTranslationEnabled);
+			i18nManager.setMarkLocalizedStringsEnabled(usess, isInlineTranslationEnabled);
 			mainVc.put("inlineTranslation", inlineTranslationC.getInitialComponent());
 		}
 

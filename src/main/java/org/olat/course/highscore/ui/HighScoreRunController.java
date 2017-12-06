@@ -23,7 +23,6 @@ package org.olat.course.highscore.ui;
  * @author fkiefer
  */
 import java.math.BigDecimal;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -294,6 +293,7 @@ public class HighScoreRunController extends FormBasicController{
 						boolean choosePortrait = !anonymous || ownIdentity.equals(currentID);
 						DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(),
 								currentID, false, choosePortrait, !choosePortrait);
+						listenTo(portrait);
 						Component portraitComponent = portrait.getInitialComponent();
 						mainVC.put("portrait" + (i + 1) + "-" + (j + 1), portraitComponent);
 					}
@@ -304,6 +304,7 @@ public class HighScoreRunController extends FormBasicController{
 						if (ownIdentity.equals(currentID)) {
 							DisplayPortraitController portrait = new DisplayPortraitController(ureq, getWindowControl(),
 									currentID, true, true, false);
+							listenTo(portrait);
 							mainVC.put("portrait" + (i + 1), portrait.getInitialComponent());
 						}
 					}

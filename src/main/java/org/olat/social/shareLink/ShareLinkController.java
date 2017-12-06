@@ -37,6 +37,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.social.SocialModule;
 
@@ -77,7 +78,8 @@ public class ShareLinkController extends BasicController {
 		SocialModule socialModule = (SocialModule) CoreSpringFactory.getBean("socialModule");
 		shareLinkVC.contextPut("shareLinks", socialModule.getEnabledShareLinkButtons());
 		// Tell if user is logged in
-		shareLinkVC.contextPut("isUser", ureq.getUserSession().isAuthenticated() && !ureq.getUserSession().getRoles().isGuestOnly());
+		UserSession usess = ureq.getUserSession();
+		shareLinkVC.contextPut("isUser", usess.isAuthenticated() && !usess.getRoles().isGuestOnly());
 		putInitialPanel(shareLinkVC);
 	}
 
