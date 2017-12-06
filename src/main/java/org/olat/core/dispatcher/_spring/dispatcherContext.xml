@@ -14,6 +14,9 @@
 				<entry key="/dmz/">
 					<ref bean="dmzbean" />
 				</entry>
+				<entry key="/robots.txt">
+					<ref bean="robotsdispatcher" />
+				</entry>
 				<entry key="/maintenance/">
 					<ref bean="maintenancebean" />
 				</entry>
@@ -69,6 +72,8 @@
 	<bean id="restdispatcher" class="org.olat.dispatcher.RESTDispatcher" />
 	
 	<bean id="oauthcallback" class="org.olat.login.oauth.OAuthDispatcher" />
+	
+	<bean id="robotsdispatcher" class="org.olat.dispatcher.RobotsDispatcher" />
 	
 	<!-- send bug report dispatcher -->
 	<bean id="errorMailBean" class="org.olat.core.dispatcher.ErrorFeedbackMailer">
