@@ -30,6 +30,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.SharedItemsSource;
 
@@ -47,13 +48,15 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 	private static final String TABLE_PREFERENCE_PREFIX = "share-";  
 	
 	private final BusinessGroupService businessGroupService;
+	private final QPoolSecurityCallback securityCallback;
 	private final BusinessGroup group;
 
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 	
-	public BusinessGroupTreeNode(TooledStackedPanel stackPanel, BusinessGroup group) {
+	public BusinessGroupTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback, BusinessGroup group) {
 		this.group = group;
+		this.securityCallback = securityCallback;
 		this.stackPanel = stackPanel;
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
@@ -75,7 +78,8 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 		if(questionsCtrl == null) {
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, group, null,
 					wControl, true);
-			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, TABLE_PREFERENCE_PREFIX + group.getKey());
+			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
+					TABLE_PREFERENCE_PREFIX + group.getKey());
 		} else {
 			questionsCtrl.updateSource(source);
 		}

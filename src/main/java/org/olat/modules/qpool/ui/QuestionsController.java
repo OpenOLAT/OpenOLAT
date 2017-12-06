@@ -31,6 +31,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
@@ -51,13 +52,14 @@ public class QuestionsController extends BasicController implements Activateable
 
 	private QuestionItemsSource dataSource;
 	
-	public QuestionsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, QuestionItemsSource source, String key) {
+	public QuestionsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			QuestionItemsSource source, QPoolSecurityCallback securityCallback, String key) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
 		this.dataSource = source;
 
-		listCtrl = new QuestionListController(ureq, wControl, stackPanel, source, key);
+		listCtrl = new QuestionListController(ureq, wControl, stackPanel, source, securityCallback, key);
 		listenTo(listCtrl);
 
 		putInitialPanel(listCtrl.getInitialComponent());

@@ -27,6 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
 import org.olat.modules.qpool.ui.datasource.MyItemsSource;
@@ -50,9 +51,12 @@ public class MyQuestionsTreeNode extends GenericTreeNode implements ControllerTr
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 	
-	public MyQuestionsTreeNode(TooledStackedPanel stackPanel, String title) {
+	private final QPoolSecurityCallback securityCallback;
+	
+	public MyQuestionsTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback, String title) {
 		super();
 		this.stackPanel = stackPanel;
+		this.securityCallback = securityCallback;
 		
 		this.setTitle(title);
 		this.setIconCssClass(ICON_CSS_CLASS);
@@ -70,7 +74,8 @@ public class MyQuestionsTreeNode extends GenericTreeNode implements ControllerTr
 		if(questionsCtrl == null) {
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);
-			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, TABLE_PREFERENCE_PREFIX);
+			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
+					TABLE_PREFERENCE_PREFIX);
 		} else {
 			questionsCtrl.updateSource(source);
 		}

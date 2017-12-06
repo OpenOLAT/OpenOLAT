@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.modules.qpool.Pool;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
@@ -52,10 +53,13 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 	
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
+	
+	private final QPoolSecurityCallback securityCallback;
 
-	public PoolTreeNode(TooledStackedPanel stackPanel, Pool pool) {
+	public PoolTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback, Pool pool) {
 		this.pool = pool;
 		this.stackPanel = stackPanel;
+		this.securityCallback = securityCallback;
 		this.qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		this.setTitle(pool.getName());
@@ -75,7 +79,8 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 		if(questionsCtrl == null) {
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, pool, null,
 					wControl, true);
-			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, TABLE_PREFERENCE_PREFIX + pool.getKey());
+			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
+					TABLE_PREFERENCE_PREFIX + pool.getKey());
 		} else {
 			questionsCtrl.updateSource(source);
 		}

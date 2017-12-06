@@ -28,6 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.TaxonomyLeveltemsSource;
@@ -46,19 +47,21 @@ public class TaxonomyLevelTreeNode extends GenericTreeNode implements Controller
 	private static final String ORES_TYPE = "Subject";
 	private static final String ICON_CSS_CLASS = "o_icon_pool_taxonomy o_sel_qpool_taxonomy";
 	private static final String TABLE_PREFERENCE_PREFIX = "taxlevel-";
+
+	private final TooledStackedPanel stackPanel;
+	private QuestionsController questionsCtrl;
 	
+	private final QPoolSecurityCallback securityCallback;
 	private final TaxonomyLevel taxonomyLevel;
 	private final QuestionStatus questionStatus;
 	private final Identity onlyAuthor;
 	private final Identity excludeAuthor;
-	
-	private final TooledStackedPanel stackPanel;
-	private QuestionsController questionsCtrl;
 
-	public TaxonomyLevelTreeNode(TooledStackedPanel stackPanel, TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus,
-			Identity onlyAuthor, Identity excludeAuthor) {
+	public TaxonomyLevelTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback,
+			TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus, Identity onlyAuthor, Identity excludeAuthor) {
 		super();
 		this.stackPanel = stackPanel;
+		this.securityCallback = securityCallback;
 		this.taxonomyLevel = taxonomyLevel;
 		this.questionStatus = questionStatus;
 		this.onlyAuthor = onlyAuthor;
@@ -82,7 +85,8 @@ public class TaxonomyLevelTreeNode extends GenericTreeNode implements Controller
 		if (questionsCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE + "_" + questionStatus, taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
-			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, TABLE_PREFERENCE_PREFIX + questionStatus + taxonomyLevel.getKey());
+			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
+					TABLE_PREFERENCE_PREFIX + questionStatus + taxonomyLevel.getKey());
 		} else {
 			questionsCtrl.updateSource(source);
 		}

@@ -36,9 +36,11 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.QuestionPoolMainEditorController;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -58,6 +60,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private final Roles roles;
 	private final QPoolService qpoolService;
 	private final Translator translator;
+	private final QPoolSecurityCallback securityCallback;
 	
 	private TreeNode myNode;
 	private TreeNode myQuestionsNode;
@@ -70,16 +73,18 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 				identity,
 				roles,
 				Util.createPackageTranslator(QuestionPoolMainEditorController.class, locale),
-				CoreSpringFactory.getImpl(QPoolService.class)
+				CoreSpringFactory.getImpl(QPoolService.class),
+				CoreSpringFactory.getImpl(QPoolSecurityCallbackFactory.class)
 				);
 	}
 	
 	public QuestionPoolMenuTreeModel(TooledStackedPanel stackPanel, Identity identity, Roles roles, Translator translator,
-			QPoolService qpoolService) {
+			QPoolService qpoolService, QPoolSecurityCallbackFactory qPoolSecurityCallbackFactory) {
 		super();
 		this.stackPanel = stackPanel;
 		this.identity = identity;
 		this.roles = roles;
+		this.securityCallback = qPoolSecurityCallbackFactory.createQPoolSecurityCallback(roles);
 		this.translator = translator;
 		this.qpoolService = qpoolService;
 		buildTreeModel();
@@ -145,12 +150,14 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		buildFinalSubTreeModel(rootNode);
 		
 		//pools + shares
-		sharesNode = new SharePresentationTreeNode(translator.translate("menu.share"));
-		rootNode.addChild(sharesNode);	
-		buildShareSubTreeModel();
+		if (securityCallback.canUsePools() || securityCallback.canUseGroups()) {
+			sharesNode = new SharePresentationTreeNode(translator.translate("menu.share"));
+			rootNode.addChild(sharesNode);	
+			buildShareSubTreeModel();
+		}
 		
 		//administration
-		if(roles.isOLATAdmin() || roles.isPoolAdmin()) {
+		if(securityCallback.canAdmin()) {
 			TreeNode adminNode = new QuestionPoolAdminStatisticsTreeNode(translator.translate("menu.admin"));
 			rootNode.addChild(adminNode);
 			buildAdminSubTreeModel(adminNode);
@@ -166,32 +173,38 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	}
 
 	private void buildMyTreeNode(TreeNode parentNode) {
-		myQuestionsNode = new MyQuestionsTreeNode(stackPanel, translator.translate("menu.database.my"));
+		myQuestionsNode = new MyQuestionsTreeNode(stackPanel, securityCallback, translator.translate("menu.database.my"));
 		parentNode.addChild(myQuestionsNode);
 	}
 
 	private void buildMarkedTreeNode(TreeNode parentNode) {
-		TreeNode node = new MarkedQuestionsTreeNode(stackPanel, translator.translate("menu.database.favorit"));
+		TreeNode node = new MarkedQuestionsTreeNode(stackPanel, securityCallback, translator.translate("menu.database.favorit"));
 		parentNode.addChild(node);
 	}
 	
 	private void buildMyTaxonomyNodes(TreeNode parentNode) {
+		if (!securityCallback.canUseReviewProcess()) return;
+		
 		List<TaxonomyLevel> taxonomyLevels = qpoolService.getTaxonomyLevel(identity, TaxonomyCompetenceTypes.teach);
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-			TreeNode node = new TaxonomyLevelTreeNode(stackPanel, taxonomyLevel, QuestionStatus.draft, identity, null);
+			TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel, QuestionStatus.draft, identity, null);
 			parentNode.addChild(node);
 		}
 	}
 
 	private void buildCollectionTreeNodes(TreeNode parentNode) {
+		if (!securityCallback.canUseCollections()) return;
+		
 		List<QuestionItemCollection> collections = qpoolService.getCollections(identity);
 		for(QuestionItemCollection coll: collections) {
-			TreeNode node = new CollectionTreeNode(stackPanel, coll);
+			TreeNode node = new CollectionTreeNode(stackPanel, securityCallback, coll);
 			parentNode.addChild(node);
 		}
 	}
 	
 	public void buildReviewSubTreeModel(TreeNode rootNode) {
+		if (!securityCallback.canUseReviewProcess()) return;
+		
 		List<TaxonomyLevel> taxonomyLevels = qpoolService.getTaxonomyLevel(identity, TaxonomyCompetenceTypes.teach);
 		if(!taxonomyLevels.isEmpty()) {
 			reviewNode = new GenericTreeNode(translator.translate("menu.review"));
@@ -199,20 +212,22 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			rootNode.addChild(reviewNode);
 			
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, taxonomyLevel, QuestionStatus.review, null, identity);
+				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel, QuestionStatus.review, null, identity);
 				reviewNode.addChild(node);
 			}
 		}
 	}
 	
 	public void buildFinalSubTreeModel(TreeNode rootNode) {
+		if (!securityCallback.canUseReviewProcess()) return;
+
 		List<TaxonomyLevel> taxonomyLevels = qpoolService.getTaxonomyLevel(identity, TaxonomyCompetenceTypes.manage);
 		if (!taxonomyLevels.isEmpty()) {
 			finalNode = new GenericTreeNode(translator.translate("menu.final"));
 			finalNode.setTitle(translator.translate("menu.final"));
 			rootNode.addChild(finalNode);
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, taxonomyLevel, QuestionStatus.finalVersion, null, null);
+				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel, QuestionStatus.finalVersion, null, null);
 				finalNode.addChild(node);
 			}
 		}
@@ -225,23 +240,26 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	}
 
 	private void buildPoolTreeNodes(TreeNode parentNode) {
+		if (!securityCallback.canUsePools()) return;
+
 		List<Pool> pools = qpoolService.getPools(identity, roles);
 		for(Pool pool:pools) {
-			TreeNode node = new PoolTreeNode(stackPanel, pool);
+			TreeNode node = new PoolTreeNode(stackPanel, securityCallback, pool);
 			parentNode.addChild(node);
 		}
 	}
 
 	private void buildBusinessGroupTreeNodes(TreeNode parentNode) {
+		if (!securityCallback.canUseGroups()) return;
+
 		List<BusinessGroup> groups = qpoolService.getResourcesWithSharedItems(identity);
 		for(BusinessGroup group:groups) {
-			TreeNode node = new BusinessGroupTreeNode(stackPanel, group);
+			TreeNode node = new BusinessGroupTreeNode(stackPanel, securityCallback, group);
 			parentNode.addChild(node);
 		}
 	}
 	
 	private void buildAdminSubTreeModel(TreeNode adminNode) {
-		if(!roles.isOLATAdmin() && !roles.isPoolAdmin()) return;
 		adminNode.removeAllChildren();
 		
 		TreeNode node = new TaxonomyAdminTreeNode(translator.translate("menu.admin.studyfields"));

@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope("prototype")
-public class AdministratorSecurityCallback implements QuestionItemSecurityCallback {
+public class AdministratorQItemSecurityCallback implements QuestionItemSecurityCallback {
 
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;

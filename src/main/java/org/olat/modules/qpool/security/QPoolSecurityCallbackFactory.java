@@ -20,6 +20,8 @@
 package org.olat.modules.qpool.security;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Roles;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
@@ -55,7 +57,7 @@ public class QPoolSecurityCallbackFactory {
 
 	private QuestionItemSecurityCallback createAdministratorSecurityCallback(QuestionItemView itemView,
 			QuestionItemsSource questionItemSource) {
-		AdministratorSecurityCallback administratorSecurityCallback = CoreSpringFactory.getImpl(AdministratorSecurityCallback.class);
+		AdministratorQItemSecurityCallback administratorSecurityCallback = CoreSpringFactory.getImpl(AdministratorQItemSecurityCallback.class);
 		administratorSecurityCallback.setItemView(itemView);
 		administratorSecurityCallback.setQuestionItemSource(questionItemSource);
 		return administratorSecurityCallback;
@@ -75,6 +77,16 @@ public class QPoolSecurityCallbackFactory {
 		processlessSecurityCallback.setItemView(itemView);
 		processlessSecurityCallback.setQuestionItemSource(questionItemSource);
 		return processlessSecurityCallback;
+	}
+
+	public QPoolSecurityCallback createQPoolSecurityCallback(Roles roles) {
+		QPoolSecurityCallback securityCallback;
+		if (roles.isOLATAdmin()) {
+			securityCallback = CoreSpringFactory.getImpl(AdministratorQPoolSecurityCallback.class);
+		} else {
+			securityCallback = CoreSpringFactory.getImpl(RegularQPoolSecurityCallback.class);
+		}
+		return securityCallback;
 	}
 
 }

@@ -25,6 +25,7 @@ import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.CollectionOfItemsSource;
@@ -43,13 +44,15 @@ public class CollectionTreeNode extends GenericTreeNode implements ControllerTre
 	private static final String ICON_CSS_CLASS = "o_icon_pool_collection o_sel_qpool_collection";
 	private static final String TABLE_PREFERENCE_PREFIX = "coll-";
 
+	private final QPoolSecurityCallback securityCallback;
 	private final QuestionItemCollection questionItemCollection;
 
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 
-	public CollectionTreeNode(TooledStackedPanel stackPanel, QuestionItemCollection questionItemCollection) {
+	public CollectionTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback, QuestionItemCollection questionItemCollection) {
 		this.questionItemCollection = questionItemCollection;
+		this.securityCallback = securityCallback;
 		this.stackPanel = stackPanel;
 
 		this.setTitle(questionItemCollection.getName());
@@ -67,7 +70,8 @@ public class CollectionTreeNode extends GenericTreeNode implements ControllerTre
 				ureq.getUserSession().getRoles());
 		if (questionsCtrl == null) {
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, questionItemCollection, null, wControl, true);
-			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, TABLE_PREFERENCE_PREFIX + questionItemCollection.getKey());
+			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
+					TABLE_PREFERENCE_PREFIX + questionItemCollection.getKey());
 			questionsCtrl.setQuestionItemCollection(questionItemCollection);
 		} else {
 			questionsCtrl.updateSource(source);

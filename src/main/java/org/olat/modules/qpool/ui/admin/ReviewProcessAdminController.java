@@ -20,19 +20,13 @@
 package org.olat.modules.qpool.ui.admin;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -44,20 +38,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ReviewProcessAdminController extends FormBasicController {
 
-	private static final String[] onKeys = new String[] { "on" };
-	
-	private boolean resetStates = false;
-
-	private MultipleSelectionElement reviewProcessEnableEl;
 	private TextElement numberOfRatingForFinalEl;
 	private TextElement averageRatingForFinalEl;
-	private CloseableModalController closeableModalCtrl;
-	private ReviewProcessActivationController reviewProcessActivationCtrl;
 	
 	@Autowired
 	private QuestionPoolModule qpoolModule;
-	@Autowired
-	private QPoolService qpoolService;
 	
 	public ReviewProcessAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -68,13 +53,6 @@ public class ReviewProcessAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.review.process.title");
-		
-		String[] onValues = new String[] { translate("on") };
-		reviewProcessEnableEl = uifactory.addCheckboxesHorizontal("review.process.enabled", formLayout, onKeys, onValues);
-		reviewProcessEnableEl.addActionListener(FormEvent.ONCHANGE);
-		if (qpoolModule.isReviewProcessEnabled()) {
-			reviewProcessEnableEl.select(onKeys[0], true);
-		}
 		
 		String numberOfRatingsForFinal = Integer.toString(qpoolModule.getNumberOfRatingsForFinal());
 		numberOfRatingForFinalEl = uifactory.addTextElement("number.of.ratings.for.final", 5, numberOfRatingsForFinal, formLayout);
@@ -90,24 +68,6 @@ public class ReviewProcessAdminController extends FormBasicController {
 		buttonLayout.setRootForm(mainForm);
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
-		
-		updateUI();
-	}
-	
-	private void updateUI() {
-		boolean enabled = reviewProcessEnableEl.isAtLeastSelected(1);
-		numberOfRatingForFinalEl.setVisible(enabled);
-		averageRatingForFinalEl.setVisible(enabled);
-	}
-	
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (reviewProcessEnableEl == source) {
-			updateUI();
-			boolean enable = reviewProcessEnableEl.isAtLeastSelected(1);
-			doConfirmEnabled(ureq, enable);
-		}
-		super.formInnerEvent(ureq, source, event);
 	}
 	
 	@Override
@@ -144,61 +104,16 @@ public class ReviewProcessAdminController extends FormBasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (reviewProcessActivationCtrl == source) {
-			if (event == Event.DONE_EVENT) {
-				resetStates = reviewProcessActivationCtrl.isResetStatesSelected();
-			} else {
-				reviewProcessEnableEl.select(onKeys[0], false);
-				updateUI();
-			}
-			closeableModalCtrl.deactivate();
-			cleanUp();
-		}
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(reviewProcessActivationCtrl);
-		removeAsListenerAndDispose(closeableModalCtrl);
-		reviewProcessActivationCtrl = null;
-		closeableModalCtrl = null;
-	}
-
-	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean reviewProcessEnabled = reviewProcessEnableEl.isAtLeastSelected(1);
-		qpoolModule.setReviewProcessEnabled(reviewProcessEnabled);
-		
-		if (reviewProcessEnabled) {
-			int numberOfRatingsForFinal = Integer.parseInt(numberOfRatingForFinalEl.getValue());
-			qpoolModule.setNumberOfRatingsForFinal(numberOfRatingsForFinal);
-			int averageRatingForFinal = Integer.parseInt(averageRatingForFinalEl.getValue());
-			qpoolModule.setAverageRatingForFinal(averageRatingForFinal);
-			doResetState();
-		}
+		int numberOfRatingsForFinal = Integer.parseInt(numberOfRatingForFinalEl.getValue());
+		qpoolModule.setNumberOfRatingsForFinal(numberOfRatingsForFinal);
+		int averageRatingForFinal = Integer.parseInt(averageRatingForFinalEl.getValue());
+		qpoolModule.setAverageRatingForFinal(averageRatingForFinal);
 	}
 
 	@Override
 	protected void doDispose() {
 		//
-	}
-	
-	private void doConfirmEnabled(UserRequest ureq, boolean enable) {
-		if (!enable) return;
-		
-		reviewProcessActivationCtrl = new ReviewProcessActivationController(ureq, getWindowControl());
-		listenTo(reviewProcessActivationCtrl);
-		closeableModalCtrl = new CloseableModalController(getWindowControl(), null,
-				reviewProcessActivationCtrl.getInitialComponent(), true,
-				translate("review.process.confirm.enable.title"), false);
-		listenTo(closeableModalCtrl);
-		closeableModalCtrl.activate();
-	}
-
-	private void doResetState() {
-		if (resetStates) {
-			qpoolService.resetAllStatesToDraft(getIdentity());
-		}
 	}
 
 }

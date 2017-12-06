@@ -75,6 +75,7 @@ import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
@@ -154,17 +155,22 @@ public class QuestionListController extends AbstractItemListController implement
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
-	public QuestionListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, QuestionItemsSource source, String key) {
-		super(ureq, wControl, source, key);
+	public QuestionListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			QuestionItemsSource source, QPoolSecurityCallback securityCallback, String key) {
+		super(ureq, wControl, securityCallback, source, key);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 	}
 
 	@Override
 	protected void initButtons(UserRequest ureq, FormItemContainer formLayout) {
-		list = uifactory.addFormLink("list", formLayout, Link.BUTTON);
+		if (getSecurityCallback().canUseCollections()) {
+			list = uifactory.addFormLink("list", formLayout, Link.BUTTON);
+		}
 		exportItem = uifactory.addFormLink("export.item", formLayout, Link.BUTTON);
-		shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
+		if (getSecurityCallback().canUsePools() || getSecurityCallback().canUseGroups()) {
+			shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
+		}
 		if(getSource().isRemoveEnabled()) {
 			removeItem = uifactory.addFormLink("unshare.item", formLayout, Link.BUTTON);
 		}
@@ -920,7 +926,7 @@ public class QuestionListController extends AbstractItemListController implement
 	protected void doShare(UserRequest ureq) {
 		String title = translate("filter.view");
 		removeAsListenerAndDispose(shareTargetCtrl);
-		shareTargetCtrl = new ShareTargetController(ureq, getWindowControl());
+		shareTargetCtrl = new ShareTargetController(ureq, getWindowControl(), getSecurityCallback());
 		listenTo(shareTargetCtrl);
 		
 		removeAsListenerAndDispose(calloutCtrl);

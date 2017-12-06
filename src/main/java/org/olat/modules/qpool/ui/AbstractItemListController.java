@@ -58,6 +58,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
@@ -82,6 +83,7 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
+	private final QPoolSecurityCallback securityCallback;
 	
 	private final String prefsKey;
 	protected final String restrictToFormat;
@@ -100,13 +102,26 @@ public abstract class AbstractItemListController extends FormBasicController
 	private QuestionItemsSource itemsSource;
 	private final boolean isOLATAdmin;
 	
-	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String key) {
-		this(ureq, wControl, source, null, key);
+	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,
+			QuestionItemsSource source, String key) {
+		this(ureq, wControl, securityCallback, source, null, key);
 	}
 	
-	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source, String restrictToFormat, String key) {
+	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source,
+			String key) {
+		this(ureq, wControl, null, source, null, key);
+	}
+	
+	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source,
+			String restrictToFormat, String key) {
+		this(ureq, wControl, null, source, restrictToFormat, key);
+	}
+	
+	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,
+			QuestionItemsSource source, String restrictToFormat, String key) {
 		super(ureq, wControl, "item_list");
 
+		this.securityCallback = securityCallback;
 		this.prefsKey = key;
 		this.itemsSource = source;
 		this.isOLATAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
@@ -208,6 +223,10 @@ public abstract class AbstractItemListController extends FormBasicController
 	
 	protected QuestionItemDataModel getModel() {
 		return model;
+	}
+	
+	protected QPoolSecurityCallback getSecurityCallback() {
+		return securityCallback;
 	}
 	
 	protected String getTableFormDispatchId() {

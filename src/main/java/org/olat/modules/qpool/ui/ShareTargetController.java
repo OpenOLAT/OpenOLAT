@@ -27,6 +27,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 
 /**
  * 
@@ -38,16 +39,21 @@ public class ShareTargetController extends BasicController {
 	public static final String SHARE_POOL_CMD = "qpool.share.pool";
 	public static final String SHARE_GROUP_CMD = "qpool.share.group";
 
-	private final Link shareGroup, sharePool;
+	private Link shareGroup;
+	private Link sharePool;
 	
-	public ShareTargetController(UserRequest ureq, WindowControl wControl) {
+	public ShareTargetController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("share_target");
-		shareGroup = LinkFactory.createLink("share.group", mainVC, this);
-		shareGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_pool_share");
-		sharePool = LinkFactory.createLink("share.pool", mainVC, this);
-		sharePool.setIconLeftCSS("o_icon o_icon-fw o_icon_pool_pool");
+		if (securityCallback.canUseGroups()) {
+			shareGroup = LinkFactory.createLink("share.group", mainVC, this);
+			shareGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_pool_share");
+		}
+		if (securityCallback.canUsePools()) {
+			sharePool = LinkFactory.createLink("share.pool", mainVC, this);
+			sharePool.setIconLeftCSS("o_icon o_icon-fw o_icon_pool_pool");
+		}
 		putInitialPanel(mainVC);
 	}
 

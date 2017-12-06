@@ -177,4 +177,5 @@ public class ItemListMySharesController extends AbstractItemListController {
 			fireEvent(ureq, new QItemViewEvent("select-item", row));
 		}
 	}
+	
 }
