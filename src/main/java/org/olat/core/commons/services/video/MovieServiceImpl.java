@@ -177,6 +177,33 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 
 		return -1;
 	}
+	
+	@Override
+	public long getFrameCount(VFSLeaf media, String suffix) {
+		File file = null;
+		if(media instanceof VFSCPNamedItem) {
+			media = ((VFSCPNamedItem)media).getDelegate();
+		}
+		if(media instanceof LocalFileImpl) {
+			file = ((LocalFileImpl)media).getBasefile();
+		}
+		if(file == null) {
+			return -1;
+		}
+
+		if(extensions.contains(suffix)) {
+			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r")) {
+				FileChannel ch = accessFile.getChannel();
+				FileChannelWrapper in = new FileChannelWrapper(ch);
+				MP4Demuxer demuxer1 = new MP4Demuxer(in);
+				return demuxer1.getVideoTrack().getFrameCount();
+			} catch (Exception | AssertionError e) {
+				log.error("Cannot extract num. of frames of: " + media, e);
+			}
+		}
+
+		return -1;
+	}
 
 	@Override
 	public boolean isMP4(VFSLeaf media, String fileName) {

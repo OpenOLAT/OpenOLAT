@@ -350,7 +350,6 @@ public class VideoManagerImpl implements VideoManager {
 		return videoFile.getBasefile();
 	}
 
-
 	/**
 	 * Resolve the given path to a file in the master directory and return it
 	 * 
@@ -889,17 +888,22 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	@Override
-	public long getVideoDuration (OLATResource videoResource){
+	public long getVideoDuration(OLATResource videoResource){
 		VFSContainer masterContainer = getMasterContainer(videoResource);
-		VFSLeaf video = (VFSLeaf) masterContainer.resolve(FILENAME_VIDEO_MP4);	
-		long duration = movieService.getDuration(video, FILETYPE_MP4);
-		return duration;
+		VFSLeaf video = (VFSLeaf)masterContainer.resolve(FILENAME_VIDEO_MP4);	
+		return movieService.getDuration(video, FILETYPE_MP4);
 	}
 	
 	@Override
+	public long getVideoFrameCount(OLATResource videoResource) {
+		VFSContainer masterContainer = getMasterContainer(videoResource);
+		VFSLeaf video = (VFSLeaf)masterContainer.resolve(FILENAME_VIDEO_MP4);	
+		return movieService.getFrameCount(video, FILETYPE_MP4);
+	}
+
+	@Override
 	public List<VideoMetaImpl> getAllVideoResourcesMetadata() {
-		List<VideoMetaImpl> metadata = videoMetadataDao.getAllVideoResourcesMetadata();
-		return metadata;
+		return videoMetadataDao.getAllVideoResourcesMetadata();
 	}
 	
 	@Override
