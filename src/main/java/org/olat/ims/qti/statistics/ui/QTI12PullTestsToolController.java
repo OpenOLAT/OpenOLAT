@@ -77,7 +77,6 @@ public class QTI12PullTestsToolController extends BasicController implements Act
 
 	private final IQTESTCourseNode courseNode;
 	private final CourseEnvironment courseEnv;
-	//private final List<Identity> assessedIdentities;
 	private final AssessmentToolOptions asOptions;
 	
 	@Autowired
@@ -104,6 +103,7 @@ public class QTI12PullTestsToolController extends BasicController implements Act
 		}
 		
 		pullButton = LinkFactory.createButton("menu.pull.tests.title", null, this);
+		pullButton.setIconLeftCSS("o_icon o_icon_pull");
 		pullButton.setTranslator(getTranslator());
 		pullButton.setEnabled(enabled);
 		putInitialPanel(pullButton);

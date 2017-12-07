@@ -21,6 +21,7 @@ package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentMap;
 
 import org.olat.core.commons.persistence.SortKey;
@@ -30,7 +31,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -46,13 +48,17 @@ import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
  */
 public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel<AssessedIdentityElementRow>
 	implements SortableFlexiTableDataModel<AssessedIdentityElementRow>, FilterableFlexiTableModel {
+	
+	private static final OLog log = Tracing.createLoggerFor(IdentityListCourseNodeTableModel.class);
 
+	private final Locale locale;
 	private final AssessableCourseNode courseNode;
 	private List<AssessedIdentityElementRow> backups;
 	private ConcurrentMap<Long, CertificateLight> certificateMap;
 	
-	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, AssessableCourseNode courseNode) {
+	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, AssessableCourseNode courseNode, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
 		this.courseNode = courseNode;
 	}
 	
@@ -100,10 +106,13 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 
 	@Override
 	public void sort(SortKey orderBy) {
-		SortableFlexiTableModelDelegate<AssessedIdentityElementRow> sorter
-				= new SortableFlexiTableModelDelegate<>(orderBy, this, null);
-		List<AssessedIdentityElementRow> views = sorter.sort();
-		super.setObjects(views);
+		try {
+			List<AssessedIdentityElementRow> views = new IdentityListCourseNodeTableSortDelegate(orderBy, this, locale)
+					.sort();
+			super.setObjects(views);
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
 	
 	@Override
@@ -141,6 +150,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 					return row.getNumOfAssessmentDocs();
 				}
 				case assessmentStatus: return row.getAssessmentStatus();
+				case currentCompletion: return row.getCurrentCompletion();
 				case certificate: return certificateMap.get(row.getIdentityKey());
 				case recertification: {
 					CertificateLight certificate = certificateMap.get(row.getIdentityKey());
@@ -149,7 +159,8 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case initialLaunchDate: return row.getInitialCourseLaunchDate();
 				case lastModified: return row.getLastModified();
 				case lastUserModified: return row.getLastUserModified();
-				case lastCoachModified: return row.getLastCoachModified();		
+				case lastCoachModified: return row.getLastCoachModified();
+				case tools: return row.getToolsLink();
 			}
 		}
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
@@ -158,7 +169,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 
 	@Override
 	public DefaultFlexiTableDataModel<AssessedIdentityElementRow> createCopyWithEmptyList() {
-		return new IdentityListCourseNodeTableModel(getTableColumnModel(), courseNode);
+		return new IdentityListCourseNodeTableModel(getTableColumnModel(), courseNode, locale);
 	}
 	
 	public enum IdentityCourseElementCols implements FlexiSortableColumnDef {
@@ -177,7 +188,9 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		lastModified("table.header.lastScoreDate"),
 		lastUserModified("table.header.lastUserModificationDate"),
 		lastCoachModified("table.header.lastCoachModificationDate"),
-		numOfAssessmentDocs("table.header.num.assessmentDocs");
+		numOfAssessmentDocs("table.header.num.assessmentDocs"),
+		currentCompletion("table.header.completion"),
+		tools("table.header.tools");
 		
 		private final String i18nKey;
 		

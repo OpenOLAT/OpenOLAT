@@ -103,8 +103,9 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 	}
 
 	@Override
-	public void updateOutcomes(Float updatedScore, Boolean updatedPassed) {
+	public void updateOutcomes(Float updatedScore, Boolean updatedPassed, Double completion) {
 		AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
+		assessmentEntry.setCompletion(completion);
 		assessmentEntry.setAssessmentStatus(assessmentStatus);
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		
@@ -115,7 +116,7 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 	}
 
 	@Override
-	public void submit(Float submittedScore, Boolean submittedPass, Long assessmentId) {
+	public void submit(Float submittedScore, Boolean submittedPass, Double completion, Long assessmentId) {
 		AssessmentEntryStatus assessmentStatus;
 		if(needManualCorrection) {
 			assessmentStatus = AssessmentEntryStatus.inReview;
@@ -129,6 +130,7 @@ public class AssessmentEntryOutcomesListener implements OutcomesListener {
 			assessmentEntry.setScore(new BigDecimal(Float.toString(submittedScore)));
 		}
 		assessmentEntry.setPassed(submittedPass);
+		assessmentEntry.setCompletion(completion);
 		assessmentEntry.setAssessmentId(assessmentId);
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		

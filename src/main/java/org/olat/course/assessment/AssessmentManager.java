@@ -40,6 +40,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
  * Description:<BR>
@@ -76,6 +77,18 @@ public interface AssessmentManager {
 	 * @param by The role of the identity which does the action.
 	 */
 	public void updateLastModifications(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment, Role by);
+
+	/**
+	 * Change the current completion.
+	 * 
+	 * @param courseNode The course node
+	 * @param identity The identity which does the action
+	 * @param assessedIdentity The assessed identity
+	 * @param currentCompletion The completion of the current running taks
+	 * @param by The role of the identity which does the action.
+	 */
+	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
+			Double currentCompletion, AssessmentRunStatus status, Role by);
 
 	/**
 	 * Save an assessment comment for this node for a user. If there is already a comment property available, 
@@ -179,6 +192,16 @@ public interface AssessmentManager {
 	 * @return The number of attempts. If no Property is set, the method will return 0
 	 */
 	public Integer getNodeAttempts(CourseNode courseNode, Identity identity);
+	
+
+	public Double getNodeCompletion(CourseNode courseNode, Identity identity);
+
+	/**
+	 * @param courseNode The course element
+	 * @param identity The identity
+	 * @return The completion of the current running task which is not committed.
+	 */
+	public Double getNodeCurrentRunCompletion(CourseNode courseNode, Identity identity);
 
 	/**
 	 * Register the given event listener for all assessment changed events of this course

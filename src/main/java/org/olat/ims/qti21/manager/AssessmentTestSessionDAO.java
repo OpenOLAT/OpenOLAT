@@ -269,6 +269,15 @@ public class AssessmentTestSessionDAO {
 		return dbInstance.getCurrentEntityManager().merge(testSession);
 	}
 	
+	public int extraTime(AssessmentTestSession testSession, int extraTime) {
+		String q = "update qtiassessmenttestsessionextratime set extraTime=:extraTime where key=:sessionKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("extraTime", extraTime)
+				.setParameter("sessionKey", testSession.getKey())
+				.executeUpdate();
+	}
+	
 	/**
 	 * Search test session without the author mode flag set to true.
 	 * @param testEntry

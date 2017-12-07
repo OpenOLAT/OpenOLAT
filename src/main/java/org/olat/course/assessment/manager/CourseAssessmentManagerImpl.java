@@ -70,6 +70,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -86,6 +87,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public static final String ASSESSMENT_DOCS_DIR = "assessmentdocs";
 	
 	private static final Float FLOAT_ZERO = new Float(0);
+	private static final Double DOUBLE_ZERO = new Double(0);
 	private static final Integer INTEGER_ZERO = new Integer(0);
 	
 	private final CourseGroupManager cgm;
@@ -364,6 +366,21 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	@Override
+	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
+			Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
+		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		nodeAssessment.setCurrentRunCompletion(currentCompletion);
+		nodeAssessment.setCurrentRunStatus(runStatus);
+		if(by == Role.coach) {
+			nodeAssessment.setLastCoachModified(new Date());
+		} else if(by == Role.user) {
+			nodeAssessment.setLastUserModified(new Date());
+		}
+		assessmentService.updateAssessmentEntry(nodeAssessment);
+		DBFactory.getInstance().commit();
+	}
+
+	@Override
 	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity,
 			ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnv,
 			boolean incrementUserAttempts, Role by) {
@@ -401,6 +418,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		if(scoreEvaluation.getUserVisible() != null) {
 			assessmentEntry.setUserVisibility(scoreEvaluation.getUserVisible());
 		}
+		if(scoreEvaluation.getCurrentRunCompletion() != null) {
+			assessmentEntry.setCurrentRunCompletion(scoreEvaluation.getCurrentRunCompletion());
+		}
+		if(scoreEvaluation.getCurrentRunStatus() != null) {
+			assessmentEntry.setCurrentRunStatus(scoreEvaluation.getCurrentRunStatus());
+		}
+		
 		Integer attempts = null;
 		if(incrementUserAttempts) {
 			attempts = assessmentEntry.getAttempts() == null ? 1 :assessmentEntry.getAttempts().intValue() + 1;
@@ -539,6 +563,24 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		AssessmentEntry nodeAssessment = assessmentService
 				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
 		return nodeAssessment == null || nodeAssessment.getAttempts() == null  ? INTEGER_ZERO : nodeAssessment.getAttempts();
+	}
+
+	@Override
+	public Double getNodeCompletion(CourseNode courseNode, Identity identity) {
+		if(courseNode == null) return DOUBLE_ZERO;
+		
+		AssessmentEntry nodeAssessment = assessmentService
+				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
+		return nodeAssessment == null || nodeAssessment.getCompletion() == null  ? DOUBLE_ZERO : nodeAssessment.getCompletion();
+	}
+	
+	@Override
+	public Double getNodeCurrentRunCompletion(CourseNode courseNode, Identity identity) {
+		if(courseNode == null) return DOUBLE_ZERO;
+		
+		AssessmentEntry nodeAssessment = assessmentService
+				.loadAssessmentEntry(identity, cgm.getCourseEntry(), courseNode.getIdent());	
+		return nodeAssessment == null || nodeAssessment.getCurrentRunCompletion() == null  ? DOUBLE_ZERO : nodeAssessment.getCurrentRunCompletion();
 	}
 
 	@Override

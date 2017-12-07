@@ -69,6 +69,9 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
+import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
+import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -98,6 +101,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -673,7 +677,8 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 			Identity coachingIdentity, boolean incrementAttempts, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		ScoreEvaluation newScoreEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), null, null);
+		ScoreEvaluation newScoreEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
+				null, null, null, null);
 		am.saveScoreEvaluation(this, coachingIdentity, mySelf, newScoreEval, userCourseEnvironment, incrementAttempts, by);		
 	}
 
@@ -744,7 +749,23 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);
 	}
+
+	@Override
+	public boolean hasCompletion() {
+		return false;
+	}
+
+	@Override
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
+		throw new OLATRuntimeException(TACourseNode.class, "No completion available in task nodes", null);
+	}
 	
+	@Override
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
+		throw new OLATRuntimeException(TACourseNode.class, "Completion variable can't be updated in task nodes", null);
+	}
+
 	@Override
 	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -763,20 +784,34 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		// prepare file component
 		return new DropboxScoringViewController(ureq, wControl, this, assessedUserCourseEnv);
 	}
-
-	/**
-	 * Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step
-	 */
+	
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
-		List<Controller> tools = new ArrayList<Controller>(1);
-		CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
-		if(!coachCourseEnv.isCourseReadOnly()) {
-			tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
-		}
-		tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, this));
-		return tools;
+	public ToolsControllerCreator getAssessmentToolsCreator() {
+		return new DefaultToolsControllerCreator() {
+			@Override
+			public boolean hasCalloutTools() {
+				return true;
+			}
+
+			@Override
+			public Controller createCalloutController(UserRequest ureq, WindowControl wControl,
+					UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
+				return new IdentityListCourseNodeToolsController(ureq, wControl, TACourseNode.this, assessedIdentity, coachCourseEnv);
+			}
+
+			@Override
+			public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
+					TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv,
+					AssessmentToolOptions options) {
+				List<Controller> tools = new ArrayList<Controller>(1);
+				CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
+				if(!coachCourseEnv.isCourseReadOnly()) {
+					tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, TACourseNode.this));
+				}
+				tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, TACourseNode.this));
+				return tools;
+			}
+		};
 	}
 
 	/**

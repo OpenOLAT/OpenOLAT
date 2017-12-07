@@ -48,6 +48,9 @@ import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
+import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
+import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -67,6 +70,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -488,6 +492,22 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	}
 	
 	@Override
+	public boolean hasCompletion() {
+		return false;
+	}
+
+	@Override
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
+		throw new OLATRuntimeException(MSCourseNode.class, "No completion available in MS nodes", null);
+	}
+	
+	@Override
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
+		throw new OLATRuntimeException(MSCourseNode.class, "Completion variable can't be updated in MS nodes", null);
+	}
+
+	@Override
 	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -504,16 +524,33 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 			UserCourseEnvironment coachCourseenv, UserCourseEnvironment assessedUserCourseEnv) {
 		throw new OLATRuntimeException(MSCourseNode.class, "Details controler not available in MS nodes", null);
 	}
-
+	
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
-		List<Controller> tools = new ArrayList<>(1);
-		if(!coachCourseEnv.isCourseReadOnly()) {
-			CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
-			tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
-		}
-		return tools;
+	public ToolsControllerCreator getAssessmentToolsCreator() {
+		return new DefaultToolsControllerCreator() {
+			@Override
+			public boolean hasCalloutTools() {
+				return true;
+			}
+
+			@Override
+			public Controller createCalloutController(UserRequest ureq, WindowControl wControl,
+					UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
+				return new IdentityListCourseNodeToolsController(ureq, wControl, MSCourseNode.this, assessedIdentity, coachCourseEnv);
+			}
+
+			@Override
+			public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
+					TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv,
+					AssessmentToolOptions options) {
+				List<Controller> tools = new ArrayList<>(1);
+				if(!coachCourseEnv.isCourseReadOnly()) {
+					CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
+					tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, MSCourseNode.this));
+				}
+				return tools;
+			}
+		};
 	}
 
 	@Override

@@ -41,19 +41,25 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
     private String storage;
     private Date finishTime;
     private Date terminationTime;
+    private Integer extraTime;
+   
     private Long duration;
     private Boolean passed;
     private BigDecimal score;
     private BigDecimal manualScore;
+	
+	private Integer numOfQuestions;
+	private Integer numOfAnsweredQuestions;
+    
     private boolean exploded;
     
     private Identity identity;
     private String anonymousIdentifier;
     
     public InMemoryAssessmentTestSession() {
-    	key = -1l;
-    	creationDate = new Date();
-    	lastModified = creationDate;
+		key = -1l;
+		creationDate = new Date();
+		lastModified = creationDate;
     }
 
     @Override
@@ -113,6 +119,15 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 	public void setTerminationTime(Date terminationTime) {
 		this.terminationTime = terminationTime;
 	}
+	
+	@Override
+	public Integer getExtraTime() {
+		return extraTime;
+	}
+
+	public void setExtraTime(Integer extraTime) {
+		this.extraTime = extraTime;
+	}
 
 	@Override
 	public Boolean getPassed() {
@@ -142,6 +157,26 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 	@Override
 	public void setManualScore(BigDecimal manualScore) {
 		this.manualScore = manualScore;
+	}
+
+	@Override
+	public Integer getNumOfQuestions() {
+		return numOfQuestions;
+	}
+
+	@Override
+	public void setNumOfQuestions(Integer numOfQuestions) {
+		this.numOfQuestions = numOfQuestions;
+	}
+
+	@Override
+	public Integer getNumOfAnsweredQuestions() {
+		return numOfAnsweredQuestions;
+	}
+
+	@Override
+	public void setNumOfAnsweredQuestions(Integer numOfAnsweredQuestions) {
+		this.numOfAnsweredQuestions = numOfAnsweredQuestions;
 	}
 
 	@Override

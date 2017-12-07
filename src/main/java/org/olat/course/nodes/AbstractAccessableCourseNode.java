@@ -26,13 +26,8 @@
 package org.olat.course.nodes;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
@@ -43,8 +38,6 @@ import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.AssessmentToolOptions;
 
 import de.bps.course.nodes.CourseNodePasswordManagerImpl;
 
@@ -123,6 +116,7 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	 * @see org.olat.course.nodes.GenericCourseNode#calcAccessAndVisibility(org.olat.course.condition.interpreter.ConditionInterpreter,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		// </OLATCE-91>
 		// for this node: only one role: accessing the node
@@ -158,6 +152,7 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#getConditionExpression()
 	 */
+	@Override
 	public List<ConditionExpression> getConditionExpressions() {
 		ArrayList<ConditionExpression> retVal;
 		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
@@ -177,17 +172,10 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 		//
 		return retVal;
 	}
-	
-	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
-		return Collections.emptyList();
-	}
-	
 
 	public List<AdditionalCondition> getAdditionalConditions(){
 		if(additionalConditions==null)
-			additionalConditions= new ArrayList<AdditionalCondition>();
+			additionalConditions = new ArrayList<>();
 		return additionalConditions;
 	}
 }

@@ -24,9 +24,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.component.CompletionItem;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -47,10 +49,16 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private final int numOfAssessmentDocs;
 	private final AssessmentEntryStatus status;
 	
+	private FormLink toolsLink;
+	private CompletionItem currentCompletion;
+	
 	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry, Date initialCourseLaunchDate,
-			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+			CompletionItem currentCompletion, FormLink toolsLink, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
 		this.initialCourseLaunchDate = initialCourseLaunchDate;
+		this.currentCompletion = currentCompletion;
+		this.toolsLink = toolsLink;
+		
 		if(entry != null) {
 			attempts = entry.getAttempts();
 			score = entry.getScore();
@@ -109,6 +117,14 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 		return status;
 	}
 	
+	public CompletionItem getCurrentCompletion() {
+		return currentCompletion;
+	}
+	
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
 	public Boolean getUserVisibility() {
 		return userVisibility;
 	}

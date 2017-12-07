@@ -55,6 +55,9 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
+import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -78,6 +81,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -440,7 +444,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	@Override
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
-		throw new OLATRuntimeException(CheckListCourseNode.class, "No attempts available in ST nodes", null);
+		throw new OLATRuntimeException(CheckListCourseNode.class, "No attempts available in check list nodes", null);
 	}
 
 	/**
@@ -470,6 +474,22 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	}
 	
 	@Override
+	public boolean hasCompletion() {
+		return false;
+	}
+
+	@Override
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
+		throw new OLATRuntimeException(CheckListCourseNode.class, "No completion available in check list nodes", null);
+	}
+	
+	@Override
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
+		throw new OLATRuntimeException(CheckListCourseNode.class, "Completion variable can't be updated in check list nodes", null);
+	}
+	
+	@Override
 	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -489,10 +509,27 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resId);
 		return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, coachCourseEnv, assessedUserCourseEnv, this, false, false);
 	}
+	
+	@Override
+	public ToolsControllerCreator getAssessmentToolsCreator() {
+		return new DefaultToolsControllerCreator() {
+			@Override
+			public boolean hasCalloutTools() {
+				return true;
+			}
 
+			@Override
+			public Controller createCalloutController(UserRequest ureq, WindowControl wControl,
+					UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
+				return new IdentityListCourseNodeToolsController(ureq, wControl, CheckListCourseNode.this, assessedIdentity, coachCourseEnv);
+			}
+		};
+	}
+	
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListView(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
+	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		return "checklist";
 	}
@@ -500,6 +537,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListViewHeaderKey()
 	 */
+	@Override
 	public String getDetailsListViewHeaderKey() {
 		return null;
 	}

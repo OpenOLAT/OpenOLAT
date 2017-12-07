@@ -246,6 +246,22 @@ public interface QTI21Service {
 
 	public boolean isRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry, List<? extends IdentityRef> identities);
 	
+	/**
+	 * Add some extra time to an assessment test session.
+	 * 
+	 * @param session The session to extend
+	 * @param extraTime The extra time in seconds
+	 */
+	public void extraTimeAssessmentTestSession(AssessmentTestSession session, int extraTime, Identity actor);
+	
+	/**
+	 * Reopen a closed test. The method remove end and exit date, set a current
+	 * question... to make the test playable again.
+	 * 
+	 * @param session The session to reopen
+	 */
+	public AssessmentTestSession reopenAssessmentTestSession(AssessmentTestSession session, Identity actor);
+	
 	public List<AssessmentTestSession> getRunningAssessmentTestSession(RepositoryEntry entry, String subIdent, RepositoryEntry testEntry);
 	
 	public TestSessionState loadTestSessionState(AssessmentTestSession session);
@@ -341,6 +357,15 @@ public interface QTI21Service {
 			Date timestamp, DigitalSignatureOptions signatureOptions, Identity assessedIdentity);
 	
 	public void cancelTestSession(AssessmentTestSession candidateSession, TestSessionState testSessionState);
+	
+	/**
+	 * Pull a running test
+	 * 
+	 * @param candidateSession The test session to pull
+	 * @param actor The user which pull the test session
+	 * @return The updated test session
+	 */
+	public AssessmentTestSession pullSession(AssessmentTestSession candidateSession, DigitalSignatureOptions signatureOptions, Identity actor);
 	
 	/**
 	 * Sign the assessment result. Be careful, the file must not be changed

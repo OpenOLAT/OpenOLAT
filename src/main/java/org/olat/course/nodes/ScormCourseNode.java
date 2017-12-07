@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
@@ -49,6 +50,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
+import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -66,6 +70,7 @@ import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.archiver.ScormExportManager;
@@ -140,6 +145,23 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		updateModuleConfigDefaults(false);
 		ScormRunController cprunC = new ScormRunController(getModuleConfiguration(), ureq, userCourseEnv, wControl, this, true);
 		return new NodeRunConstructionResult(cprunC).getRunController();
+	}
+	
+	@Override
+	public ToolsControllerCreator getAssessmentToolsCreator() {
+		return new DefaultToolsControllerCreator() {
+
+			@Override
+			public boolean hasCalloutTools() {
+				return true;
+			}
+
+			@Override
+			public Controller createCalloutController(UserRequest ureq, WindowControl wControl,
+					UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
+				return new IdentityListCourseNodeToolsController(ureq, wControl, ScormCourseNode.this, assessedIdentity, coachCourseEnv);
+			}
+		};
 	}
 
 	/**
@@ -610,6 +632,22 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);
 	}
 	
+	@Override
+	public boolean hasCompletion() {
+		return false;
+	}
+
+	@Override
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
+		throw new OLATRuntimeException(ScormCourseNode.class, "No completion available in SCORM nodes", null);
+	}
+	
+	@Override
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
+		throw new OLATRuntimeException(ScormCourseNode.class, "Completion variable can't be updated in SCORM nodes", null);
+	}
+
 	@Override
 	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();

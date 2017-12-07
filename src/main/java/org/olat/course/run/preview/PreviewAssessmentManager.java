@@ -46,6 +46,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
  * Initial Date:  08.02.2005
@@ -169,6 +170,12 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	}
 
 	@Override
+	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
+			Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
+		//
+	}
+
+	@Override
 	public void updateLastModifications(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment, Role by) {
 		//
 	}
@@ -222,6 +229,16 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	public Integer getNodeAttempts(CourseNode courseNode, Identity identity) {
 		Integer attempts = nodeAttempts.get(courseNode.getIdent());
 		return (attempts == null ? new Integer(0) : attempts);
+	}
+
+	@Override
+	public Double getNodeCompletion(CourseNode courseNode, Identity identity) {
+		return null;
+	}
+
+	@Override
+	public Double getNodeCurrentRunCompletion(CourseNode courseNode, Identity identity) {
+		return null;
 	}
 
 	/**

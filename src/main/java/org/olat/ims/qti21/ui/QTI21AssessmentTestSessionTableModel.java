@@ -32,7 +32,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController.AssessmentTestSessionComparator;
+import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController.AssessmentTestSessionDetailsComparator;
 
 /**
  * 
@@ -119,7 +119,7 @@ public class QTI21AssessmentTestSessionTableModel extends DefaultFlexiTableDataM
 		super.setObjects(objects);
 		
 		List<QTI21AssessmentTestSessionDetails> sessions = new ArrayList<>(objects);
-		Collections.sort(sessions, new AssessmentTestSessionComparator());
+		Collections.sort(sessions, new AssessmentTestSessionDetailsComparator());
 		if(sessions.size() > 0) {
 			lastSession = sessions.get(0).getTestSession();
 		}

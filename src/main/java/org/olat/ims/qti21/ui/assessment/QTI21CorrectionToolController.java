@@ -132,7 +132,8 @@ public class QTI21CorrectionToolController extends BasicController {
 				BigDecimal finalScore = testSession.getFinalScore();
 				Float score = finalScore == null ? null : finalScore.floatValue();
 				ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
-						scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getFullyAssessed(), testSession.getKey());
+						scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
+						scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
 				courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 			}
 		}

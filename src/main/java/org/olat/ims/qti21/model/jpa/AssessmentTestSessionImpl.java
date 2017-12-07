@@ -138,10 +138,18 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
     private Boolean passed;
 
     @Column(name="q_score", nullable=true, insertable=true, updatable=true)
-    private BigDecimal score;
-    
+    private BigDecimal score; 
     @Column(name="q_manual_score", nullable=true, insertable=true, updatable=true)
     private BigDecimal manualScore;
+
+    @Column(name="q_num_questions", nullable=true, insertable=true, updatable=true)
+    private Integer numOfQuestions;
+    @Column(name="q_num_answered_questions", nullable=true, insertable=true, updatable=true)
+    private Integer numOfAnsweredQuestions;
+    
+    @Column(name="q_extra_time", nullable=true, insertable=false, updatable=false)
+    private Integer extraTime;
+
 
     /**
      * Flag to indicate if this session blew up while running, either because
@@ -279,6 +287,15 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 	}
 
 	@Override
+	public Integer getExtraTime() {
+		return extraTime;
+	}
+
+	public void setExtraTime(Integer extraTime) {
+		this.extraTime = extraTime;
+	}
+
+	@Override
 	public Boolean getPassed() {
 		return passed;
 	}
@@ -306,6 +323,26 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 	@Override
 	public void setManualScore(BigDecimal manualScore) {
 		this.manualScore = manualScore;
+	}
+
+	@Override
+	public Integer getNumOfQuestions() {
+		return numOfQuestions;
+	}
+
+	@Override
+	public void setNumOfQuestions(Integer numOfQuestions) {
+		this.numOfQuestions = numOfQuestions;
+	}
+
+	@Override
+	public Integer getNumOfAnsweredQuestions() {
+		return numOfAnsweredQuestions;
+	}
+
+	@Override
+	public void setNumOfAnsweredQuestions(Integer numOfAnsweredQuestions) {
+		this.numOfAnsweredQuestions = numOfAnsweredQuestions;
 	}
 
 	@Override

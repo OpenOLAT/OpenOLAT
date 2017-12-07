@@ -1,6 +1,6 @@
 <h2><i class="o_icon $courseNodeCssClass"> </i> $r.escapeHtml($courseNodeTitle)#if($r.isNotEmpty($businessGroupName)) <small><i class="o_icon o_icon_group"> </i> $r.escapeHtml($businessGroupName)</small>#end</h2>
 
-#if ($toolCmpNames)
+#if ($r.isNotEmpty($toolCmpNames))
 	<div class="o_button_group o_button_group_right">
 	#foreach($toolCmpName in $toolCmpNames)
 		$r.render($toolCmpName)
@@ -15,5 +15,10 @@ $r.render("table")
 	#end
 	#if($r.available("bulk.visible"))
 		$r.render("bulk.visible")
+	#end
+	#if ($r.isNotEmpty($multiSelectionCmpNames))
+		#foreach($multiSelectionCmpName in $multiSelectionCmpNames)
+			$r.render($multiSelectionCmpName)
+		#end
 	#end
 </div>

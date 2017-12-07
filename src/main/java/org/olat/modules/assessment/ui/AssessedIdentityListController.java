@@ -262,7 +262,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
 			Date initialLaunchDate = initialLaunchDates.get(assessedIdentity.getKey());
-			rows.add(new AssessedIdentityElementRow(assessedIdentity, entry, initialLaunchDate, userPropertyHandlers, getLocale()));
+			rows.add(new AssessedIdentityElementRow(assessedIdentity, entry, initialLaunchDate, null, null, userPropertyHandlers, getLocale()));
 		}
 
 		usersTableModel.setObjects(rows);

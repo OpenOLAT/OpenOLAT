@@ -57,15 +57,21 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeProvider;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
+import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.iq.CourseIQSecurityCallback;
+import org.olat.course.nodes.iq.QTI21ExtraTimeController;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQPreviewController;
 import org.olat.course.nodes.iq.IQRunController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
+import org.olat.course.nodes.iq.QTI21IdentityListCourseNodeToolsController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -75,6 +81,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.QTIResultManager;
@@ -118,6 +125,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -130,6 +138,8 @@ import de.bps.ims.qti.QTIResultDetailsController;
 import de.bps.onyx.plugin.OnyxExportManager;
 import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.run.OnyxRunController;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * Initial Date: Feb 9, 2004
@@ -219,6 +229,29 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 		return false;
 	}
+	
+	/**
+	 * @param testEntry The test repository entry
+	 * @return true if the course node or the test has a time limit set.
+	 */
+	public boolean hasQTI21TimeLimit(RepositoryEntry testEntry) {
+		boolean timeLimit = false;
+		
+		ModuleConfiguration config = getModuleConfiguration();
+		boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
+		if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
+			timeLimit = true;
+		} else {
+			File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+			ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
+					.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+			AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+			if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+				timeLimit = true;
+			}
+		}	
+		return timeLimit;
+	}
 
 	/**
 	 * @see org.olat.course.nodes.CourseNode#createPreviewController(org.olat.core.gui.UserRequest,
@@ -238,9 +271,51 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 		return controller;
 	}
-
+	
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+	public ToolsControllerCreator getAssessmentToolsCreator() {
+		return new DefaultToolsControllerCreator() {
+			@Override
+			public boolean hasCalloutTools() {
+				return true;
+			}
+
+			@Override
+			public Controller createCalloutController(UserRequest ureq, WindowControl wControl,
+					UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
+				boolean qti21 = IQEditController.CONFIG_VALUE_QTI21.equals(getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI));
+				if (qti21) {
+					return new QTI21IdentityListCourseNodeToolsController(ureq, wControl, IQTESTCourseNode.this, assessedIdentity, coachCourseEnv);
+				}
+				return  new IdentityListCourseNodeToolsController(ureq, wControl, IQTESTCourseNode.this, assessedIdentity, coachCourseEnv);
+			}
+
+			@Override
+			public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
+					TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv,
+					AssessmentToolOptions options) {
+				return createAssessmentToolList(ureq, wControl, stackPanel, coachCourseEnv, options);
+			}
+
+			@Override
+			public List<Controller> createMultiSelectionTools(UserRequest ureq, WindowControl wControl,
+					UserCourseEnvironment coachCourseEnv, IdentityListCourseNodeProvider provider) {
+				return createMultiSelectionToolList(ureq, wControl, coachCourseEnv, provider);
+			}
+		};
+	}
+	
+	private List<Controller> createMultiSelectionToolList(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment coachCourseEnv, IdentityListCourseNodeProvider provider) {
+		List<Controller> tools = new ArrayList<>(2);
+		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
+		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName()) && hasQTI21TimeLimit(qtiTestEntry)) {
+			tools.add(new QTI21ExtraTimeController(ureq, wControl, coachCourseEnv.getCourseEnvironment(), this, provider));
+		}
+		return tools;
+	}
+
+	private List<Controller> createAssessmentToolList(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
 		List<Controller> tools = new ArrayList<>();
 		
@@ -274,7 +349,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 		return tools;
 	}
-	
+
 	public boolean isQTI12TestRunning(Identity assessedIdentity, CourseEnvironment courseEnv) {
 		String resourcePath = courseEnv.getCourseResourceableId() + File.separator + getIdent();
 		FilePersister qtiPersister = new FilePersister(assessedIdentity, resourcePath);
@@ -381,37 +456,15 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf);
-		
-		Boolean passed = null;
-		Float score = null;		
-		Long assessmentID = null;	
-		Boolean fullyAssessed = null;
-		if(entry != null) {
-			passed = entry.getPassed();
-			if(entry.getScore() != null) {
-				score = entry.getScore().floatValue();
-			}
-			assessmentID = entry.getAssessmentId();
-			fullyAssessed = entry.getFullyAssessed();
-		}	
-		return new AssessmentEvaluation(score, passed, fullyAssessed, assessmentID);
+		return getUserScoreEvaluation(entry);
 	}
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		Boolean passed = null;
-		Float score = null;		
-		Long assessmentID = null;	
-		Boolean fullyAssessed = null;
 		if(entry != null) {
-			passed = entry.getPassed();
-			if(entry.getScore() != null) {
-				score = entry.getScore().floatValue();
-			}
-			assessmentID = entry.getAssessmentId();
-			fullyAssessed = entry.getFullyAssessed();
+			return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
 		}	
-		return new AssessmentEvaluation(score, passed, fullyAssessed, assessmentID);
+		return AssessmentEvaluation.EMPTY_EVAL;
 	}
 
 	@Override
@@ -801,6 +854,27 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);
+	}
+	
+	@Override
+	public boolean hasCompletion() {
+		return IQEditController.CONFIG_VALUE_QTI21.equals(getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI));
+	}
+
+	@Override
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		Double currentCompletion = am.getNodeCurrentRunCompletion(this, mySelf);
+		return currentCompletion;
+	}
+	
+	@Override
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus runStatus, Role doneBy) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.updateCurrentCompletion(this, assessedIdentity, userCourseEnvironment, currentCompletion, runStatus, doneBy);
 	}
 	
 	@Override

@@ -79,6 +79,8 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
+import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -114,6 +116,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -707,6 +710,22 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	}
 	
 	@Override
+	public boolean hasCompletion() {
+		return false;
+	}
+
+	@Override
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
+		throw new OLATRuntimeException(ProjectBrokerCourseNode.class, "No completion available in project broker nodes", null);
+	}
+	
+	@Override
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
+		throw new OLATRuntimeException(ProjectBrokerCourseNode.class, "Completion variable can't be updated in project broker nodes", null);
+	}
+
+	@Override
 	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -724,17 +743,22 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 		// prepare file component
 		throw new AssertException("ProjectBroker does not support AssessmentTool");
 	}
-
-	/** Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step */
+	
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
-		List<Controller> tools = new ArrayList<>(1);
-		if(!coachCourseEnv.isCourseReadOnly()) {
-			CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
-			tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
-		}
-		return tools;
+	public ToolsControllerCreator getAssessmentToolsCreator() {
+		return new DefaultToolsControllerCreator() {
+			@Override
+			public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
+					TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv,
+					AssessmentToolOptions options) {
+				List<Controller> tools = new ArrayList<>(1);
+				if(!coachCourseEnv.isCourseReadOnly()) {
+					CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
+					tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, ProjectBrokerCourseNode.this));
+				}
+				return tools;
+			}
+		};
 	}
 
 	/**
@@ -995,19 +1019,18 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 		List<ConditionExpression> retVal;
 		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
 		if (parentsConditions.size() > 0) {
-			retVal = new ArrayList<ConditionExpression>(parentsConditions);
+			retVal = new ArrayList<>(parentsConditions);
 		} else {
-			retVal = new ArrayList<ConditionExpression>();
+			retVal = new ArrayList<>();
 		}
-		//
-		String conditionProjectBroker = getConditionProjectBroker().getConditionExpression();
-		if (conditionProjectBroker != null && !conditionProjectBroker.equals("")) {
+
+		String condition = getConditionProjectBroker().getConditionExpression();
+		if (condition != null && !condition.equals("")) {
 			// an active condition is defined
 			ConditionExpression ce = new ConditionExpression(getConditionProjectBroker().getConditionId());
 			ce.setExpressionString(getConditionProjectBroker().getConditionExpression());
 			retVal.add(ce);
 		}
-		//
 		return retVal;
 	}
 

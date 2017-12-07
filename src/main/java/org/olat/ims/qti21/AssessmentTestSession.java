@@ -60,6 +60,20 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	
 	public void setManualScore(BigDecimal manualScore);
 	
+	public Integer getNumOfQuestions();
+
+	public void setNumOfQuestions(Integer numOfQuestions);
+
+	public Integer getNumOfAnsweredQuestions();
+
+	public void setNumOfAnsweredQuestions(Integer numOfAnsweredQuestions);
+	
+	/**
+	 * Additional time in a time limited test
+	 * @return The additional time in seconds
+	 */
+	public Integer getExtraTime();
+	
 	/**
 	 * @return The score + manual score
 	 */

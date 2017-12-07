@@ -44,6 +44,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
+import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -62,6 +65,7 @@ import org.olat.ims.lti.ui.LTIResultDetailsController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
@@ -352,6 +356,11 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	public boolean hasStatusConfigured() {
 		return false;
 	}
+	
+	@Override
+	public boolean hasCompletion() {
+		return false;
+	}
 
 	@Override
 	public boolean isEditableConfigured() {
@@ -417,6 +426,11 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	}
 
 	@Override
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
+		return null;
+	}
+
+	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		return null;
 	}
@@ -432,6 +446,22 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		OLATResource resource = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		return new LTIResultDetailsController(ureq, wControl, assessedIdentity, resource, getIdent());
+	}
+	
+	@Override
+	public ToolsControllerCreator getAssessmentToolsCreator() {
+		return new DefaultToolsControllerCreator() {
+			@Override
+			public boolean hasCalloutTools() {
+				return true;
+			}
+
+			@Override
+			public Controller createCalloutController(UserRequest ureq, WindowControl wControl,
+					UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
+				return new IdentityListCourseNodeToolsController(ureq, wControl, BasicLTICourseNode.this, assessedIdentity, coachCourseEnv);
+			}
+		};
 	}
 
 	@Override
@@ -484,6 +514,12 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 			am.saveNodeAttempts(this, coachingIdentity, mySelf, userAttempts, by);
 		}
+	}
+	
+	@Override
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
+		throw new OLATRuntimeException(BasicLTICourseNode.class, "Completion variable can't be updated in LTI nodes", null);
 	}
 	
 	@Override

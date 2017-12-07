@@ -138,6 +138,7 @@ public class QTI21RetrieveTestsToolController extends BasicController implements
 		}
 		
 		pullButton = LinkFactory.createButton("menu.retrieve.tests.title", null, this);
+		pullButton.setIconLeftCSS("o_icon o_icon_pull");
 		pullButton.setTranslator(getTranslator());
 		pullButton.setEnabled(enabled);
 		putInitialPanel(pullButton);

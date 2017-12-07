@@ -48,6 +48,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.MailBundle;
@@ -91,6 +92,8 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.event.CompletionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -133,6 +136,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private QTI21Service qtiService;
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	
@@ -715,13 +720,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 
 	@Override
-	public void updateOutcomes(Float score, Boolean pass) {
-		//ScoreEvaluation sceval = new ScoreEvaluation(score, pass, Boolean.FALSE);
-		//courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), false);
+	public void updateOutcomes(Float score, Boolean pass, Double completion) {
+		if(courseNode instanceof IQTESTCourseNode) {
+			((IQTESTCourseNode)courseNode).updateCurrentCompletion(userCourseEnv, getIdentity(), completion, AssessmentRunStatus.running, Role.user);
+			coordinatorManager.getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(), completion, AssessmentRunStatus.running, getIdentity().getKey()),
+						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
+		}
 	}
 
 	@Override
-	public void submit(Float score, Boolean pass, Long assessmentId) {
+	public void submit(Float score, Boolean pass, Double completion, Long assessmentId) {
 		if(anonym) {
 			assessmentNotificationsHandler.markPublisherNews(getIdentity(), userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 			return;
@@ -737,13 +746,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				assessmentStatus = AssessmentEntryStatus.done;
 				visibility = Boolean.TRUE;
 			}
-			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, visibility, Boolean.TRUE, assessmentId);
+			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, visibility, Boolean.TRUE,
+					completion, AssessmentRunStatus.done, assessmentId);
 			
 			boolean increment = incrementAttempts.getAndSet(false);
 			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), increment, Role.user);
 			if(increment) {
 				ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_CLOSE_IN_COURSE, getClass());
 			}
+			coordinatorManager.getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(), completion, AssessmentRunStatus.done, getIdentity().getKey()),
+					userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
 
 			assessmentNotificationsHandler.markPublisherNews(getIdentity(), userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		} else if(courseNode instanceof SelfAssessableCourseNode) {

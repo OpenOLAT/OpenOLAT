@@ -62,6 +62,9 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
+import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
+import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -92,6 +95,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 
@@ -793,6 +797,22 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 				|| config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION)
 				|| config.getBooleanSafe(GTASK_REVISION_PERIOD);
 	}
+	
+	@Override
+	public boolean hasCompletion() {
+		return false;
+	}
+
+	@Override
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
+		throw new OLATRuntimeException(GTACourseNode.class, "No completion available in task nodes", null);
+	}
+	
+	@Override
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
+		throw new OLATRuntimeException(GTACourseNode.class, "Completion variable can't be updated in task nodes", null);
+	}
 
 	@Override
 	public boolean isEditableConfigured() {
@@ -868,10 +888,33 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		return new GTACoachedGroupListController(ureq, wControl, stackPanel, coachCourseEnv, this, groups);
 	}
 
+
+	
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
-		
+	public ToolsControllerCreator getAssessmentToolsCreator() {
+		return new DefaultToolsControllerCreator() {
+			@Override
+			public boolean hasCalloutTools() {
+				return true;
+			}
+
+			@Override
+			public Controller createCalloutController(UserRequest ureq, WindowControl wControl,
+					UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
+				return new IdentityListCourseNodeToolsController(ureq, wControl, GTACourseNode.this, assessedIdentity, coachCourseEnv);
+			}
+
+			@Override
+			public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
+					TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv,
+					AssessmentToolOptions options) {
+				return createAssessmentToolList(ureq, wControl, coachCourseEnv, options);
+			}
+		};
+	}
+
+	private List<Controller> createAssessmentToolList(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
 		ModuleConfiguration config =  getModuleConfiguration();
 		CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
 		List<Controller> tools = new ArrayList<>(2);

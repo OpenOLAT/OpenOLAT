@@ -56,6 +56,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -82,6 +84,7 @@ import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -580,6 +583,22 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 
 	}
 
+	@Override
+	public boolean hasCompletion() {
+		return false;
+	}
+
+	@Override
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
+		throw new OLATRuntimeException(STCourseNode.class, "No completion available in ST nodes", null);
+	}
+	
+	@Override
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
+		throw new OLATRuntimeException(STCourseNode.class, "Completion variable can't be updated in ST nodes", null);
+	}
+
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
 	 */
@@ -633,6 +652,11 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	@Override
 	public String getDetailsListViewHeaderKey() {
 		throw new OLATRuntimeException(STCourseNode.class, "Details not available in ST nodes", null);
+	}
+
+	@Override
+	public ToolsControllerCreator getAssessmentToolsCreator() {
+		return new DefaultToolsControllerCreator();
 	}
 
 	/**

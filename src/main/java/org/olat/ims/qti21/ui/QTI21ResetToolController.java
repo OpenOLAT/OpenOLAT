@@ -64,6 +64,8 @@ import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -198,7 +200,7 @@ public class QTI21ResetToolController extends BasicController {
 			
 			qtiService.deleteAssessmentTestSession(identities, testEntry, courseEntry, courseNode.getIdent());
 			for(Identity identity:identities) {
-				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null);
+				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.notStarted, null, Boolean.FALSE, 0.0d, AssessmentRunStatus.notStarted, null);
 				IdentityEnvironment ienv = new IdentityEnvironment(identity, studentRoles);
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
 				testCourseNode.updateUserScoreEvaluation(scoreEval, uce, getIdentity(), false, Role.coach);

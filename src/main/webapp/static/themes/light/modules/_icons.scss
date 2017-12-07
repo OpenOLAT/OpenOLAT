@@ -114,7 +114,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_expand:before { content: $fa-var-expand;}
 .o_icon_expenditure:before { content: $fa-var-clock-o;}
 .o_icon_export:before { content: $fa-var-share-square-o;}
-.o_icon_external_link:before { content: $fa-var-external-link } 
+.o_icon_external_link:before { content: $fa-var-external-link }
+.o_icon_extra_time:before { content: $fa-var-clock-o;}
 .o_icon_failed:before { content: $fa-var-times-circle;}
 .o_icon_files:before { content: $fa-var-files-o;}
 .o_icon_filter:before { content: $fa-var-filter;}
@@ -214,6 +215,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_provider_tequila:before { content: $fa-var-university;}
 .o_icon_provider_twitter:before { content: $fa-var-twitter;}
 .o_icon_publish:before { content: $fa-var-share;}
+.o_icon_pull:before {content: $fa-var-hand-grab-o;}
 .o_icon_quota:before { content: $fa-var-database;}
 .o_icon_qrcode:before { content: $fa-var-qrcode;}
 .o_icon_quickview:before { content: $fa-var-eye;}
@@ -233,9 +235,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_reminder:before { content: $fa-var-hand-o-up; }
 .o_icon_remove:before { content: $fa-var-times; }
 .o_icon_remove_filters:before { content: $fa-var-times-circle; }
+.o_icon_reopen:before { content: $fa-var-reply; }
 .o_icon_replace:before { content: $fa-var-files-o; }
 .o_icon_reply:before { content: $fa-var-reply; }
 .o_icon_reply_with_quote:before { content: $fa-var-reply-all; }
+.o_icon_reset:before { content: $fa-var-step-backward; }
 .o_icon_response_feedback:before { content: $fa-var-refresh; }
 .o_icon_restore:before { content: $fa-var-thumbs-up; }
 .o_icon_results_visible:before { content: $fa-var-eye;}

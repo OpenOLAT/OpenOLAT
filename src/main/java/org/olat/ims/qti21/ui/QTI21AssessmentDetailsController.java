@@ -25,12 +25,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
@@ -54,10 +52,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
@@ -66,17 +61,14 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionTableModel.TSCols;
 import org.olat.ims.qti21.ui.assessment.IdentityAssessmentTestCorrectionController;
-import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -129,11 +121,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private IdentityAssessmentTestCorrectionController correctionCtrl;
 	
 	@Autowired
-	private DB dbInstance;
-	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private QTI21Module qtiModule;
 	@Autowired
 	protected QTI21Service qtiService;
 	@Autowired
@@ -277,7 +265,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 		
 		
-		Collections.sort(infos, new AssessmentTestSessionComparator());
+		Collections.sort(infos, new AssessmentTestSessionDetailsComparator());
 		tableModel.setObjects(infos);
 		tableEl.reloadData();
 		tableEl.reset();
@@ -373,7 +361,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), null, scoreEval.getFullyAssessed(), session.getKey());
+				scoreEval.getAssessmentStatus(), null, scoreEval.getFullyAssessed(), 
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), session.getKey());
 		courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 	}
 	
@@ -394,24 +383,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	}
 	
 	private void doPullSession(AssessmentTestSession session) {
+		//reload it to prevent lazy loading issues
 		session = qtiService.getAssessmentTestSession(session.getKey());
-		
-		if(session.getFinishTime() == null) {
-			if(qtiModule.isDigitalSignatureEnabled()) {
-				qtiService.signAssessmentResult(session, getSignatureOptions(session), session.getIdentity());
-			}
-			session.setFinishTime(new Date());
-		}
-		session.setTerminationTime(new Date());
-		session = qtiService.updateAssessmentTestSession(session);
-		dbInstance.commit();//make sure that the changes committed before sending the event
-		
-		AssessmentSessionAuditLogger candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(session, false);
-		candidateAuditLogger.logTestRetrieved(session, getIdentity());
-		
-		OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
-		CoordinatorManager.getInstance().getCoordinator().getEventBus()
-			.fireEventToListenersOf(new RetrieveAssessmentTestSessionEvent(session.getKey()), sessionOres);
+		qtiService.pullSession(session, getSignatureOptions(session), getIdentity());
 	}
 	
 	private DigitalSignatureOptions getSignatureOptions(AssessmentTestSession session) {
@@ -442,6 +416,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 
 	private void doOpenResult(UserRequest ureq, AssessmentTestSession session) {
 		if(resultCtrl != null) return;
+		
+		//reload it to prevent lazy loading issues
+		session = qtiService.getAssessmentTestSession(session.getKey());
 
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
@@ -506,47 +483,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 	}
 	
-	public static class AssessmentTestSessionComparator implements Comparator<QTI21AssessmentTestSessionDetails> {
+	public static class AssessmentTestSessionDetailsComparator implements Comparator<QTI21AssessmentTestSessionDetails> {
+		
+		private final AssessmentTestSessionComparator comparator = new AssessmentTestSessionComparator();
 
 		@Override
 		public int compare(QTI21AssessmentTestSessionDetails q1, QTI21AssessmentTestSessionDetails q2) {
-			AssessmentTestSession a1 = q1.getTestSession();
-			AssessmentTestSession a2 = q2.getTestSession();
-			
-			Date t1 = a1.getTerminationTime();
-			if(t1 == null) {
-				t1 = a1.getFinishTime();
-			}
-			Date t2 = a2.getTerminationTime();
-			if(t2 == null) {
-				t2 = a2.getFinishTime();
-			}
-			
-			int c;
-			if(t1 == null && t2 == null) {
-				c = 0;
-			} else if(t2 == null) {
-				return 1;
-			} else if(t1 == null) {
-				return -1;
-			} else {
-				c = t1.compareTo(t2);
-			}
-			
-			if(c == 0) {
-				Date c1 = a1.getCreationDate();
-				Date c2 = a2.getCreationDate();
-				if(c1 == null && c2 == null) {
-					c = 0;
-				} else if(c2 == null) {
-					return -1;
-				} else if(c1 == null) {
-					return 1;
-				} else {
-					c = c1.compareTo(c2);
-				}
-			}
-			return -c;
+			return comparator.compare(q1.getTestSession(), q2.getTestSession());
 		}
 	}
 }

@@ -48,6 +48,7 @@ import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -209,6 +210,8 @@ public class ScoreAccounting {
 				Long assessmendId = entry == null ? null : entry.getAssessmentId();
 				int numOfAssessmentDocs = entry == null ? -1 : entry.getNumberOfAssessmentDocuments();
 				Date lastModified = entry == null ? null : entry.getLastModified();
+				Double currentRunCompletion = entry == null ? null : entry.getCurrentRunCompletion();
+				AssessmentRunStatus runStatus = entry == null ? null : entry.getCurrentRunStatus();
 				
 				AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
 				ConditionInterpreter ci = userCourseEnvironment.getConditionInterpreter();
@@ -238,7 +241,8 @@ public class ScoreAccounting {
 				
 				LastModifications lastModifications = new LastModifications();
 				updateLastModified(cNode, lastModifications);
-				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, userVisibility, null, assessmendId, null, null, numOfAssessmentDocs,
+				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, userVisibility, null,
+						currentRunCompletion, runStatus, assessmendId, null, null, numOfAssessmentDocs,
 						lastModified, lastModifications.getLastUserModified(), lastModifications.getLastCoachModified());
 				
 				if(entry == null) {

@@ -314,8 +314,8 @@ public class AssessmentForm extends FormBasicController {
 		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
 		if (scoreEval != null) {
 			ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
-					AssessmentEntryStatus.inReview, scoreEval.getUserVisible(),
-					scoreEval.getFullyAssessed(), scoreEval.getAssessmentID());
+					AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
+					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 			assessableCourseNode.updateUserScoreEvaluation(reopenedEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 			updateStatus(reopenedEval);
 		}
@@ -365,9 +365,9 @@ public class AssessmentForm extends FormBasicController {
 		// Update score,passed properties in db
 		ScoreEvaluation scoreEval;
 		if(setAsDone) {
-			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, AssessmentEntryStatus.done, visibility, true, null);
+			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, AssessmentEntryStatus.done, visibility, true, null, null, null);
 		} else {
-			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, null, visibility, null, null);
+			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, null, visibility, null, null, null, null);
 		}
 		assessableCourseNode.updateUserScoreEvaluation(scoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 

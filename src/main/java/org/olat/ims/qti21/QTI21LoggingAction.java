@@ -28,6 +28,8 @@ package org.olat.ims.qti21;
 
 import java.lang.reflect.Field;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ActionVerb;
@@ -44,6 +46,8 @@ import org.olat.core.logging.activity.ResourceableTypeList;
  *
  */
 public class QTI21LoggingAction extends BaseLoggingAction {
+	
+	private static final OLog log = Tracing.createLoggerFor(QTI21LoggingAction.class);
 
 	// the following is a user clicking within a test
 	public static final ILoggingAction QTI_START_IN_COURSE = 
@@ -57,6 +61,18 @@ public class QTI21LoggingAction extends BaseLoggingAction {
 				new ResourceableTypeList().
 					addMandatory(OlatResourceableType.course, OlatResourceableType.node)
 		);
+	
+	public static final ILoggingAction QTI_RESET_IN_COURSE = 
+			new QTI21LoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.reset, ActionObject.test).setTypeList(
+					new ResourceableTypeList().
+						addMandatory(OlatResourceableType.course, OlatResourceableType.node)
+			);
+	
+	public static final ILoggingAction QTI_REOPEN_IN_COURSE = 
+			new QTI21LoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.reopen , ActionObject.test).setTypeList(
+					new ResourceableTypeList().
+						addMandatory(OlatResourceableType.course, OlatResourceableType.node)
+			);
 	
 	public static final ILoggingAction QTI_START_AS_RESOURCE = 
 			new QTI21LoggingAction(ActionType.statistic, CrudAction.update, ActionVerb.launch, ActionObject.test).setTypeList(
@@ -93,10 +109,8 @@ public class QTI21LoggingAction extends BaseLoggingAction {
 					try {
 						QTI21LoggingAction aLoggingAction = (QTI21LoggingAction)field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}
