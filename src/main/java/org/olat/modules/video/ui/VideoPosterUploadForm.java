@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.Quota;
@@ -43,7 +44,6 @@ import org.olat.resource.OLATResource;
  * @author dfurrer, dirk.furrer@frentix.com, http://www.frentix.com
  *
  */
-
 public class VideoPosterUploadForm extends FormBasicController {
 	private OLATResource videoResource;
 	private long remainingSpace;
@@ -82,26 +82,32 @@ public class VideoPosterUploadForm extends FormBasicController {
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
 		buttonGroupLayout.setElementCssClass("o_sel_upload_buttons");
+		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("track.upload", buttonGroupLayout);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if ( posterField.isUploadSuccess()) {
+		if (posterField.isUploadSuccess()) {
 			if (remainingSpace != -1) {
 				if (posterField.getUploadFile().length() / 1024 > remainingSpace) {
 					posterField.setErrorKey("QuotaExceeded", null);
 					posterField.getUploadFile().delete();
 					return;
 				}
-			}else{
+			} else {
 				fireEvent(ureq, new FolderEvent(FolderEvent.UPLOAD_EVENT, posterField.moveUploadFileTo(metaDataFolder)));
 			}
 		}
 	}
 
 	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
+		//
 	}
 }

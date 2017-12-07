@@ -54,21 +54,21 @@ public interface VideoManager {
 	 * @param videoResource the video resource
 	 * @return true, if successful
 	 */
-	public abstract boolean hasVideoFile(OLATResource videoResource);
+	public boolean hasVideoFile(OLATResource videoResource);
 	
 	/**
 	 * get Videofile as File representation
 	 * @param videoResource
 	 * @return File 
 	 */
-	public abstract File getVideoFile(OLATResource videoResource);
+	public File getVideoFile(OLATResource videoResource);
 
 	/**
 	 * get actually configured posterframe as VFSLeaf representation
 	 * @param videoResource
 	 * @return VFSLeaf
 	 */
-	public abstract VFSLeaf getPosterframe(OLATResource videoResource);
+	public VFSLeaf getPosterframe(OLATResource videoResource);
 	
 	/**
 	 * set posterframe for given videoResource
@@ -354,7 +354,9 @@ public interface VideoManager {
 	 * @param OLATResource videoResource 
 	 * @return the video duration
 	 */
-	public abstract long getVideoDuration(OLATResource videoResource);
+	public long getVideoDuration(OLATResource videoResource);
+	
+	public long getVideoFrameCount(OLATResource videoResource);
 	
 	/**
 	 * Gets the video resolution from olat resource.
