@@ -20,7 +20,6 @@
 package org.olat.modules.docpool.ui;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -62,7 +61,6 @@ public class EditTaxonomyLevelDocumentTypeController extends FormBasicController
 		super(ureq, wControl, LAYOUT_CUSTOM, "type_permissions", rootForm);
 		this.levelType = levelType;
 		initForm(ureq);
-		updateVisibility();
 	}
 
 	@Override
@@ -140,18 +138,6 @@ public class EditTaxonomyLevelDocumentTypeController extends FormBasicController
 			targetCanReadEl.select(onKeys[0], true);
 		}
 	}
-	
-	private void updateVisibility() {
-		boolean visible = visibleEl.isAtLeastSelected(1);
-		teachCanReadParentLevelsEl.setVisible(visible);
-		parentLevelsCont.setVisible(visible);
-		manageCanEl.setVisible(visible);
-		teachCanReadEl.setVisible(visible);
-		teachCanWriteEl.setVisible(visible);
-		haveCanReadEl.setVisible(visible);
-		targetCanReadEl.setVisible(visible);
-		docsEnabledEl.setVisible(visible);
-	}
 
 	@Override
 	protected void doDispose() {
@@ -174,14 +160,6 @@ public class EditTaxonomyLevelDocumentTypeController extends FormBasicController
 		}
 
 		return allOk & super.validateFormLogic(ureq);
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(visibleEl == source) {
-			updateVisibility();
-		}
-		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
