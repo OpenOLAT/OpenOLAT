@@ -186,6 +186,12 @@ $r.render("jsCssRawHtmlHeader", "pre-theme")
 	jQuery(document).ready(function() { jQuery('body').addClass('o_browser_ie9'); });
 </script>
 <![endif]-->
+## Detect IE 10
+<script type="text/javascript">
+	if (Function('/*@cc_on return document.documentMode===10@*/')()){
+		jQuery(document).ready(function() { jQuery('body').addClass('o_browser_ie10'); });
+	}
+</script>
 ## 4) IE 8 fix for icon fonts (see: http://stackoverflow.com/questions/9809351/ie8-css-font-face-fonts-only-working-for-before-content-on-over-and-sometimes/10557782#10557782)
 <!--[if IE 8]>
 <script type="text/javascript">
