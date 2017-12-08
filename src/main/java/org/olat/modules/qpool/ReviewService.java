@@ -75,5 +75,13 @@ public interface ReviewService {
 	 * @return
 	 */
 	public boolean hasRatingController();
+
+	/**
+	 * Is a question item editable in a particular status?
+	 * 
+	 * @param status
+	 * @return
+	 */
+	public boolean isEditableQuestionStatus(QuestionStatus status);
 	
 }

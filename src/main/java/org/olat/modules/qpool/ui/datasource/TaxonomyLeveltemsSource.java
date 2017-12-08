@@ -26,8 +26,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.ReviewService;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
@@ -44,7 +44,7 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 	private final QuestionStatus questionStatus;
 	private final Identity onlyAuthor;
 	
-	private QuestionPoolModule qPoolModule;
+	private ReviewService reviewService;
 	
 	public TaxonomyLeveltemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus,
 			Identity onlyAuthor, Identity excludeAuthor, boolean excludeRated) {
@@ -58,27 +58,27 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 		getDefaultParams().setOnlyAuthor(onlyAuthor);
 		getDefaultParams().setExcludeAuthor(excludeAuthor);
 		getDefaultParams().setExcludeRated(excludeRated);
-		qPoolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
+		reviewService = CoreSpringFactory.getImpl(ReviewService.class);
 	}
 
 	@Override
 	public boolean isCreateEnabled() {
-		return qPoolModule.getEditableQuestionStates().contains(questionStatus)? true: false;
+		return reviewService.isEditableQuestionStatus(questionStatus)? true: false;
 	}
 
 	@Override
 	public boolean isCopyEnabled() {
-		return qPoolModule.getEditableQuestionStates().contains(questionStatus)? true: false;
+		return reviewService.isEditableQuestionStatus(questionStatus)? true: false;
 	}
 
 	@Override
 	public boolean isImportEnabled() {
-		return qPoolModule.getEditableQuestionStates().contains(questionStatus)? true: false;
+		return reviewService.isEditableQuestionStatus(questionStatus)? true: false;
 	}
 
 	@Override
 	public boolean isAuthorRightsEnable() {
-		return qPoolModule.getEditableQuestionStates().contains(questionStatus)? true: false;
+		return reviewService.isEditableQuestionStatus(questionStatus)? true: false;
 	}
 
 	@Override
@@ -88,14 +88,14 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 
 	@Override
 	public boolean isBulkChangeEnabled() {
-		return qPoolModule.getEditableQuestionStates().contains(questionStatus)? true: false;
+		return reviewService.isEditableQuestionStatus(questionStatus)? true: false;
 	}
 
 	@Override
 	public boolean isDeleteEnabled() {
 		boolean isAuthor = me.equals(onlyAuthor);
-		boolean deletableState = qPoolModule.getEditableQuestionStates().contains(questionStatus);
-		return isAuthor && deletableState;
+		boolean deletableStatus = reviewService.isEditableQuestionStatus(questionStatus);
+		return isAuthor && deletableStatus;
 	}
 
 	@Override

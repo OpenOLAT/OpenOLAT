@@ -48,6 +48,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReviewServiceImpl implements ReviewService {
 	
+	private static final List<QuestionStatus> EDITABLE_STATES_REVIEW_PROCESS_OFF = Arrays.asList(QuestionStatus.values());
+	private static final List<QuestionStatus> EDITABLE_STATES_REVIEW_PROCESS_ON = Arrays.asList(QuestionStatus.draft, QuestionStatus.revised);
 	private static final Collection<QuestionStatus> CHANGED_STATUS_FOR_REVIEW = Arrays.asList(
 			QuestionStatus.draft,
 			QuestionStatus.revised,
@@ -133,5 +135,13 @@ public class ReviewServiceImpl implements ReviewService {
 		return provider;
 	}
 
-	
+	@Override
+	public boolean isEditableQuestionStatus(QuestionStatus status) {
+		Collection<QuestionStatus> editableQuestionStates
+				= qpoolModule.isReviewProcessEnabled()
+				? EDITABLE_STATES_REVIEW_PROCESS_ON
+				: EDITABLE_STATES_REVIEW_PROCESS_OFF;
+		return editableQuestionStates.contains(status);
+	}
+
 }
