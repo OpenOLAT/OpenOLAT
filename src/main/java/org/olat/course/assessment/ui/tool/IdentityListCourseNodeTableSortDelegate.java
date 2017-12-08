@@ -66,21 +66,31 @@ public class IdentityListCourseNodeTableSortDelegate extends SortableFlexiTableM
 				return compareNullObjects(i1, i2);
 			}
 			
-			boolean end1 = i1.isEnded();
-			boolean end2 = i2.isEnded();
-			if(end1 == end2) {
-				compareCompletion(i1, i2);
+			int c = compareCompletion(i1, i2);
+			if(c == 0) {
+				String n1 = r1.getIdentityName();
+				String n2 = r2.getIdentityName();
+				c = compareString(n1, n2);
 			}
-			return compareBooleans(end1, end2);
+			return c;
 		}
 		
 		private int compareCompletion(CompletionItem i1, CompletionItem i2) {
-			Double d1 = i1.getCompletion();
-			Double d2 = i2.getCompletion();
-			if(d1 == null || d2 == null) {
-				return compareNullObjects(d1, d2);
+			double d1 = completion(i1);
+			double d2 = completion(i2);
+			return Double.compare(d1, d2);
+		}
+		
+		private double completion(CompletionItem item) {
+			double completion;
+			if(item.isEnded()) {
+				completion = 1.0d;
+			} else if(item.getCompletion() != null) {
+				completion = Math.min(item.getCompletion().doubleValue(), 1.0d);
+			} else {
+				completion = 0.0d;
 			}
-			return d1.compareTo(d2);
+			return completion;
 		}
 	}
 }

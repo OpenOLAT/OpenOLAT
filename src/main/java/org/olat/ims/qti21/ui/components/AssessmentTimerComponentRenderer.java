@@ -48,16 +48,19 @@ public class AssessmentTimerComponentRenderer extends DefaultComponentRenderer {
 			AssessmentObjectFormItem qtiRun = atf.getQtiRun();
 			Form form = atf.getRootForm();
 
-			sb.append("<div id='o_c").append(cmp.getDispatchID()).append("'><div id='o_qti_assessment_test_timer' class='clearfix'><i class='o_icon o_icon_timelimit'> </i>");
-			translator.translate("timelimit.running", new String[] {"<span class='o_qti_timer'></span>", "<span class='o_qti_timer_duration'></span>", qtiWorksStatus.getAssessmentTestEndTime() });
-
-			sb.append("<span class='o_qti_times_up' style='display:none;'>").append(translator.translate("timelimit.finished")).append("</span>")
+			sb.append("<div id='o_c").append(cmp.getDispatchID()).append("'><div id='o_qti_assessment_test_timer' class='clearfix'><i class='o_icon o_icon_timelimit'> </i> ");
+			String[] attrs = new String[] {
+					"<span class='o_qti_timer'></span>",
+					"<span class='o_qti_timer_duration'></span>",
+					qtiWorksStatus.getAssessmentTestEndTime()
+				};
+			sb.append(translator.translate("timelimit.running", attrs))
+			  .append("<span class='o_qti_times_up' style='display:none;'>").append(translator.translate("timelimit.finished")).append("</span>")
 			  .append("<span class='o_qti_times_message o_10_minutes' style='display:none;'><i class='o_icon o_icon_timelimit_start'> </i> ").append(translator.translate("timelimit.10.minutes")).append("</span>")
 			  .append("<span class='o_qti_times_message o_5_minutes' style='display:none;'><i class='o_icon o_icon_timelimit_half'> </i> ").append(translator.translate("timelimit.5.minutes")).append("</span>")
 			  .append("<span class='o_qti_times_message o_panic' style='display:none;'><i class='o_icon o_icon_timelimit_end'> </i> ").append(translator.translate("timelimit.1.minute")).append("</span>")
-			  .append("</div>");
-			
-			sb.append("<script type='text/javascript'>")
+			  .append("</div>")
+			  .append("<script>")
 			  .append("/*<![CDATA[ */\n")
 			  .append("jQuery(function() {\n")
 			  .append("  jQuery('#o_qti_assessment_test_timer').qtiTimer({\n")
