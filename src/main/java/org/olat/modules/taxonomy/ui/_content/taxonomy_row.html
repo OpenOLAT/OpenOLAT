@@ -10,8 +10,8 @@
 		#end
 		<ul class="list-unstyled">
 			<li><span>$r.translate("taxonomy.infos.number.of.levels"): $row.numberOfLevels</span></li>
-			<li><span>$r.translate("taxonomy.infos.question.pool.enabled"):#if($r.isTrue($row.questionPoolEnabled)) $r.translate("taxonomy.infos.enabled")#else $r.translate("taxonomy.infos.not.enabled")#end</span></li>
-			<li><span>$r.translate("taxonomy.infos.doc.pool.enabled"):#if($r.isTrue($row.documentPoolEnabled)) $r.translate("taxonomy.infos.enabled")#else $r.translate("taxonomy.infos.not.enabled")#end</span></li>
+			<li><span>$r.translate("taxonomy.infos.question.pool.enabled"): $r.render(${row.getQPoolLink()})</span></li>
+			<li><span>$r.translate("taxonomy.infos.doc.pool.enabled"): $r.render(${row.getDocPoolLink()})</span></li>
 		</ul>
 		<div class="pull-right">$r.render($row.openLink)</div>	
 	</div>
