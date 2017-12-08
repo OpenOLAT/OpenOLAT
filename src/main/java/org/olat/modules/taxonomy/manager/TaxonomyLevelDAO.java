@@ -119,12 +119,10 @@ public class TaxonomyLevelDAO implements InitializingBean {
 	
 	private String getMaterializedPathKeys(TaxonomyLevel parent, TaxonomyLevel level) {
 		if(parent != null) {
-
 			String parentPathOfKeys = parent.getMaterializedPathKeys();
 			if(parentPathOfKeys == null || "/".equals(parentPathOfKeys)) {
 				parentPathOfKeys = "";
 			}
-
 			return parentPathOfKeys + level.getKey() + "/";
 		}
 		return "/" + level.getKey() + "/";
@@ -292,7 +290,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		levelImpl = dbInstance.getCurrentEntityManager().merge(levelImpl);
 
 		for(TaxonomyLevel descendant:descendants) {
-			String descendantKeysPath = descendant.getMaterializedPathIdentifiers();
+			String descendantKeysPath = descendant.getMaterializedPathKeys();
 			String descendantIdentifiersPath = descendant.getMaterializedPathIdentifiers();
 			if(descendantIdentifiersPath.indexOf(identifiersPath) == 0) {
 				String end = descendantIdentifiersPath.substring(identifiersPath.length(), descendantIdentifiersPath.length());
@@ -302,7 +300,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 			if(descendantKeysPath.indexOf(keysPath) == 0) {
 				String end = descendantKeysPath.substring(keysPath.length(), descendantKeysPath.length());
 				String updatedPath = newKeysPath + end;
-				((TaxonomyLevelImpl)descendant).setMaterializedPathIdentifiers(updatedPath);
+				((TaxonomyLevelImpl)descendant).setMaterializedPathKeys(updatedPath);
 			}
 			dbInstance.getCurrentEntityManager().merge(descendant);
 		}
