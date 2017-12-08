@@ -57,6 +57,7 @@ import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.ReviewService;
 import org.olat.modules.qpool.manager.ExportQItemResource;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.events.QItemEdited;
@@ -91,6 +92,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Controller previewCtrl;
 	private CloseableModalController cmc;
 	private final VelocityContainer mainVC;
+	private RatingController ratingCtrl;
 	private DialogBoxController confirmStartReviewCtrl;
 	private DialogBoxController confirmEndOfLifeCtrl;
 	private DialogBoxController confirmDeleteBox;
@@ -108,6 +110,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private QuestionPoolModule poolModule;
 	@Autowired
 	private QPoolService qpoolService;
+	@Autowired
+	private ReviewService reviewService;
 	
 	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QuestionItemSecurityCallback securityCallback, QuestionItem item, Integer itemIndex, int numberOfItems) {
@@ -121,6 +125,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback);
 		listenTo(metadatasCtrl);
 		
+		// TODO uh wenn not draft review process --> nur Comments
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean moderator = roles.isOLATAdmin();
 		boolean anonymous = roles.isGuestOnly() || roles.isInvitee();
@@ -154,7 +159,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			startReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_start_review");
 			stackPanel.addTool(startReviewLink, Align.left);
 		}
-		if (securityCallback.canReview()) {
+		if (securityCallback.canReview() && reviewService.hasRatingController()) {
 			reviewLink = LinkFactory.createToolLink("process.review", translate("process.review"), this);
 			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
 			stackPanel.addTool(reviewLink, Align.left);
@@ -175,7 +180,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			stackPanel.addTool(endOfLifeLink, Align.left);
 		}
 		if (securityCallback.canDelete()) {
-			deleteLink = LinkFactory.createToolLink("process.delete", translate("process.delete"), this);
+			deleteLink = LinkFactory.createToolLink("delete.item", translate("delete.item"), this);
 			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
 			stackPanel.addTool(deleteLink, Align.left);
 		}
@@ -242,6 +247,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 			doConfirmStartReview(ureq, metadatasCtrl.getItem());
 		} else if (source == revisionLink) {
 			doRevision(ureq, metadatasCtrl.getItem());
+		} else if (source == reviewLink) {
+			openRating(ureq);
+		} else if (source == finalLink) {
 		} else if (source == finalLink) {
 			doFinal(ureq, metadatasCtrl.getItem());
 		} else if (source == endOfLifeLink) {
@@ -294,6 +302,14 @@ public class QuestionItemDetailsController extends BasicController implements To
 				QuestionItem item = (QuestionItem)confirmStartReviewCtrl.getUserObject();
 				doStartReview(ureq, item);
 			}
+		} else if (ratingCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				float rating = ratingCtrl.getCurrentRatting();
+				String comment = ratingCtrl.getComment();
+				doRate(ureq, rating, comment);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(source == confirmEndOfLifeCtrl) {
 			boolean endOfLife = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
 			if(endOfLife) {
@@ -321,12 +337,14 @@ public class QuestionItemDetailsController extends BasicController implements To
 		}
 		super.event(ureq, source, event);
 	}
-	
+
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(selectGroupCtrl);
+		removeAsListenerAndDispose(ratingCtrl);
 		cmc = null;
 		selectGroupCtrl = null;
+		ratingCtrl = null;
 	}
 	
 	private void doConfirmStartReview(UserRequest ureq, QuestionItem item) {
@@ -339,6 +357,24 @@ public class QuestionItemDetailsController extends BasicController implements To
 		doChangeQuestionStatus(ureq, item, QuestionStatus.review, QPoolEvent.ITEM_REVIEW_STARTED, "process.review.started");
 	}
 	
+	private void openRating(UserRequest ureq) {
+		ratingCtrl = new RatingController(ureq, getWindowControl());
+		listenTo(ratingCtrl);
+		cmc = new CloseableModalController(getWindowControl(), null,
+				ratingCtrl.getInitialComponent(), true,
+				translate("process.rating.title"), false);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doRate(UserRequest ureq, float rating, String comment) {
+		QuestionItem item = metadatasCtrl.getItem();
+		qpoolService.rateItem(item, getIdentity(), rating, comment);
+		//TODO uh darf der user sein rating anpassen?
+		//TODO uh ja --> manager anpassen
+		//TOFO uh nein. Hier sofort den rate buttoon disablen
+	}
+
 	private void doRevision(UserRequest ureq, QuestionItem item) {
 		doChangeQuestionStatus(ureq, item, QuestionStatus.revised, QPoolEvent.ITEM_REVISION, "process.revision.set");
 	}

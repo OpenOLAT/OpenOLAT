@@ -36,11 +36,13 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -59,6 +61,7 @@ import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.ReviewService;
 import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.QEducationalContext;
@@ -66,6 +69,7 @@ import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.qpool.model.ReviewDecision;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
@@ -120,14 +124,16 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	private SearchClient searchClient;
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
-	
 	@Autowired
 	private TaxonomyDAO taxonomyDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private TaxonomyCompetenceDAO taxonomyCompetenceDao;
-	
+	@Autowired
+	private CommentAndRatingService commentAndRatingService;
+	@Autowired
+	private ReviewService reviewService;
 
 	@Override
 	public void deleteItems(List<? extends QuestionItemShort> items) {
@@ -138,7 +144,9 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		poolDao.removeFromPools(items);
 		questionItemDao.removeFromShares(items);
 		collectionDao.deleteItemFromCollections(items);
-		//TODO uh delete ratings
+		for (QuestionItemShort item: items) {
+			commentAndRatingService.deleteAllIgnoringSubPath(item);
+		}
 		//TODO unmark
 		questionItemDao.delete(items);
 		
@@ -189,11 +197,23 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public QuestionItem updateItem(QuestionItem item) {
-		
+		QuestionItem previousItem = loadItemById(item.getKey());
+		QuestionStatus previousStatus = previousItem != null? previousItem.getQuestionStatus(): null;
+		QuestionStatus newStatus = item.getQuestionStatus();
+		if (statusChanged(previousStatus, newStatus)) {
+			if (reviewService.isReviewStarting(previousStatus, newStatus)) {
+				reviewService.startReview(item);
+				reviewService.incrementVersion(item);
+			}
+		}
 		QuestionItem mergedItem = questionItemDao.merge(item);
 		dbInstance.commit();
 		lifeIndexer.indexDocument(QItemDocument.TYPE, mergedItem.getKey());
 		return mergedItem;
+	}
+	
+	private boolean statusChanged(QuestionStatus previousStatus, QuestionStatus newStatus) {
+		return previousStatus != null && !previousStatus.equals(newStatus);
 	}
 
 	@Override
@@ -899,25 +919,29 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		}
 	}
 
-	private List<QuestionItem> updateQuestionStatus(List<QuestionItemShort> items, QuestionStatus newStatus) {
-		List<QuestionItem> changedItems = new ArrayList<>();
-		for(QuestionItemShort item:items) {
-			QuestionItemImpl itemImpl = questionItemDao.loadForUpdate(item);
-			itemImpl.setQuestionStatus(newStatus);
-			updateItem(itemImpl);
-			changedItems.add(itemImpl);
-		}
-		if(changedItems.size()> 0) {
-			dbInstance.getCurrentEntityManager().flush();
-		}
-		return changedItems;
-	}
-
 	@Override
 	public void resetAllStatesToDraft(Identity reseter) {
 		questionItemDao.resetAllStatesToDraft();
 		log.info("The states of all questions in the question bank were reseted to the status 'draft' by " + reseter);
 	}
-	
+
+	@Override
+	public void rateItem(QuestionItem item, Identity identity, Float rating, String comment) {
+		if (item == null || identity == null) return;
+		
+		if (rating != null && rating > 0f) {
+			Integer newRating = Float.valueOf(rating).intValue();
+			commentAndRatingService.createRating(identity, item, null, newRating);
+			ReviewDecision decision = reviewService.decideStatus(item, rating);
+			if (item instanceof QuestionItemImpl && decision.isStatusChanged()) {
+				QuestionItemImpl itemImpl = (QuestionItemImpl) item;
+				itemImpl.setQuestionStatus(decision.getStatus());
+				updateItem(itemImpl);
+			}
+		}
+		if (StringHelper.containsNonWhitespace(comment)) {
+			commentAndRatingService.createComment(identity, item, null, comment);
+		}
+	}
 
 }

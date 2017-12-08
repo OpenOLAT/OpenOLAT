@@ -211,14 +211,6 @@ public interface CommentAndRatingService {
 	 */
 	public int deleteComment(UserComment comment, boolean deleteReplies);
 
-	
-	
-	
-	
-	
-	
-
-	
 	/**
 	 * Delete all comments and ratings for this resource and subpath
 	 * configuration. See also the deleteAllIgnoringSubPath() method.

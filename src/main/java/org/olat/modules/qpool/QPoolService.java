@@ -172,6 +172,7 @@ public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> ite
 	// review process
 	public List<TaxonomyLevel> getTaxonomyLevel(Identity identity, TaxonomyCompetenceTypes... competenceType);
 	
+	public void rateItem(QuestionItem item, Identity identity, Float rating, String comment);
 
 	/**
 	 * Reset the status of all questions in the question bank to the status "draft".

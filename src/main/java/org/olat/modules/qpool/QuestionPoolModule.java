@@ -35,6 +35,7 @@ import org.olat.core.id.context.SiteContextEntryControllerCreator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.qpool.manager.review.ProcesslessDecisionProvider;
 import org.olat.modules.qpool.site.QuestionPoolSite;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
@@ -54,8 +55,9 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private static final String POOLS_ENABLED = "pools.enabled";
 	private static final String SHARES_ENABLED = "shares.enabled";
 	private static final String REVIEW_PROCESS_ENABLED = "review.process.enabled";
-	private static final String NUMBER_OF_RATINGS_FOR_FINAL = "number.of.ratings.for.final";
-	private static final String AVERAGE_RATING_FOR_FINAL = "average.rating.for.final";
+	private static final String REVIEW_DECISION_TYPE = "review.decision.type";
+	private static final String REVIEW_DECISION_NUMBER_OF_RATINGS = "review.decision.number.of.ratings";
+	private static final String REVIEW_LOWER_LIMIT = "review.decision.lower.limit";
 	private static final String TAXONOMY_QPOOL_KEY = "taxonomy.qpool.key";
 	public static final String DEFAULT_TAXONOMY_QPOOL_IDENTIFIER = "QPOOL";
 	
@@ -63,8 +65,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private boolean poolsEnabled = true;
 	private boolean sharesEnabled = true;
 	private boolean reviewProcessEnabled = false;
-	private int numberOfRatingsForFinal;
-	private int averageRatingForFinal;
+	private String reviewDecisionType = ProcesslessDecisionProvider.TYPE;
 	private String taxonomyQPoolKey;
 	
 	@Autowired
@@ -73,6 +74,9 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private TaxonomyDAO taxonomyDao;
 	@Autowired
 	private List<QPoolSPI> questionPoolProviders;
+
+    private int reviewDecisionNumberOfRatings;
+    private int reviewDecisionLowerLimit;
 
 	private VFSContainer rootContainer;
 	
@@ -94,7 +98,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	protected void initFromChangedProperties() {
 		updateProperties();
 	}
-	
+    
 	private void initTaxonomy() {
 		if(!StringHelper.isLong(taxonomyQPoolKey)) {
 			Taxonomy taxonomy = taxonomyDao.createTaxonomy(DEFAULT_TAXONOMY_QPOOL_IDENTIFIER, "Question pool", "taxonomy for the question pool", DEFAULT_TAXONOMY_QPOOL_IDENTIFIER);
@@ -124,14 +128,19 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 			reviewProcessEnabled = "true".equals(reviewProcessEnabledObj);
 		}
 		
-		String numberOfRatingsForFinalObj = getStringPropertyValue(NUMBER_OF_RATINGS_FOR_FINAL, true);
-		if(StringHelper.containsNonWhitespace(numberOfRatingsForFinalObj)) {
-			numberOfRatingsForFinal = Integer.parseInt(numberOfRatingsForFinalObj);
+		String reviewDecisionTypeObj = getStringPropertyValue(REVIEW_DECISION_TYPE, true);
+		if(StringHelper.containsNonWhitespace(reviewDecisionTypeObj)) {
+			reviewDecisionType = reviewDecisionTypeObj;
 		}
 		
-		String averageRatingForFinalObj = getStringPropertyValue(AVERAGE_RATING_FOR_FINAL, true);
-		if(StringHelper.containsNonWhitespace(averageRatingForFinalObj)) {
-			averageRatingForFinal = Integer.parseInt(averageRatingForFinalObj);
+		String reviewDecisionNumberOfRatingsObj = getStringPropertyValue(REVIEW_DECISION_NUMBER_OF_RATINGS, true);
+		if(StringHelper.containsNonWhitespace(reviewDecisionNumberOfRatingsObj)) {
+			reviewDecisionNumberOfRatings = Integer.parseInt(reviewDecisionNumberOfRatingsObj);
+		}
+		
+		String reviewDecisionLowerLimitObj = getStringPropertyValue(REVIEW_LOWER_LIMIT, true);
+		if(StringHelper.containsNonWhitespace(reviewDecisionLowerLimitObj)) {
+			reviewDecisionLowerLimit = Integer.parseInt(reviewDecisionLowerLimitObj);
 		}
 		
 		String taxonomyQPoolKeyObj = getStringPropertyValue(TAXONOMY_QPOOL_KEY, true);
@@ -166,24 +175,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		}
 		return null;
 	}
-	
-	public void addQuestionPoolProvider(QPoolSPI provider) {
-		int currentIndex = -1;
-		for(int i=questionPoolProviders.size(); i-->0; ) {
-			QPoolSPI currentProvider = questionPoolProviders.get(i);
-			if(provider.getFormat() != null &&
-					provider.getFormat().equals(currentProvider.getFormat())) {
-				currentIndex = i;
-			}
-		}
-		
-		if(currentIndex >= 0) {
-			questionPoolProviders.set(currentIndex, provider);
-		} else {
-			questionPoolProviders.add(provider);
-		}
-	}
-	
+
 	public boolean isCollectionsEnabled() {
 		return collectionsEnabled;
 	}
@@ -219,23 +211,33 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		this.reviewProcessEnabled = reviewProcessEnabled;
 		setStringProperty(REVIEW_PROCESS_ENABLED, Boolean.toString(reviewProcessEnabled), true);
 	}
-
-	public int getNumberOfRatingsForFinal() {
-		return numberOfRatingsForFinal;
+	
+	public String getReviewDecisionProviderType() {
+		return reviewDecisionType;
 	}
 
-	public void setNumberOfRatingsForFinal(int numberOfRatingsForFinal) {
-		this.numberOfRatingsForFinal = numberOfRatingsForFinal;
-		setIntProperty(NUMBER_OF_RATINGS_FOR_FINAL, numberOfRatingsForFinal, true);
+	public void setReviewDecisionType(String reviewDecisionType) {
+		this.reviewDecisionType = reviewDecisionType;
+		setStringProperty(REVIEW_DECISION_TYPE, reviewDecisionType, true);
+	}
+	
+
+	public int getReviewDecisionNumberOfRatings() {
+		return reviewDecisionNumberOfRatings;
 	}
 
-	public int getAverageRatingForFinal() {
-		return averageRatingForFinal;
+	public void setReviewDecisionNumberOfRatings(int reviewDecisionNumberOfRatings) {
+		this.reviewDecisionNumberOfRatings = reviewDecisionNumberOfRatings;
+		setIntProperty(REVIEW_DECISION_NUMBER_OF_RATINGS, reviewDecisionNumberOfRatings, true);
 	}
 
-	public void setAverageRatingForFinal(int averageRatingForFinal) {
-		this.averageRatingForFinal = averageRatingForFinal;
-		setIntProperty(AVERAGE_RATING_FOR_FINAL, averageRatingForFinal, true);
+	public int getReviewDecisionLowerLimit() {
+		return reviewDecisionLowerLimit;
+	}
+
+	public void setReviewDecisionLowerLimit(int reviewDecisionLowerLimit) {
+		this.reviewDecisionLowerLimit = reviewDecisionLowerLimit;
+		setIntProperty(REVIEW_LOWER_LIMIT, reviewDecisionLowerLimit, true);
 	}
 
 	public String getTaxonomyQPoolKey() {
