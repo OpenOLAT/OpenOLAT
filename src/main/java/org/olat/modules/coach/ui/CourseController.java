@@ -195,7 +195,7 @@ public class CourseController extends FormBasicController implements Activateabl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
 		CourseConfig courseConfig = CourseFactory.loadCourse(course).getCourseConfig();
 		if(courseConfig.isCertificateEnabled()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer(getLocale())));
 			if(courseConfig.isRecertificationEnabled()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.recertification, new DateFlexiCellRenderer(getLocale())));
 			}

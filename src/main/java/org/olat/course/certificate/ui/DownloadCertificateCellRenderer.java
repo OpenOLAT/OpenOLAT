@@ -27,7 +27,6 @@ import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -48,38 +47,31 @@ import org.olat.user.UserManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DownloadCertificateCellRenderer implements CustomCellRenderer, FlexiCellRenderer {
+public class DownloadCertificateCellRenderer implements FlexiCellRenderer {
 	
+	private final Locale locale;
 	private Identity assessedIdentity;
 	
-	public DownloadCertificateCellRenderer() {
-		//
+	public DownloadCertificateCellRenderer(Locale locale) {
+		this.locale = locale;
 	}
 	
-	public DownloadCertificateCellRenderer(Identity assessedIdentity) {
+	public DownloadCertificateCellRenderer(Identity assessedIdentity, Locale locale) {
+		this(locale);
 		this.assessedIdentity = assessedIdentity;
-	}
-
-	@Override
-	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof CertificateLight) {
-			CertificateLight certificate = (CertificateLight)val;
-			if(assessedIdentity == null) {
-				IdentityRef idRef = new IdentityRefImpl(certificate.getIdentityKey());
-				render(sb, certificate, idRef, locale);
-			} else {
-				render(sb, certificate, assessedIdentity, locale);
-			}
-		} else if(val instanceof CertificateLightPack) {
-			CertificateLightPack pack = (CertificateLightPack)val;
-			render(sb, pack.getCertificate(), pack.getIdentity(), locale);		
-		}
 	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof CertificateLight) {
+		if(renderer == null) {
+			if(cellValue instanceof CertificateLight) {
+				renderExcel(target, (CertificateLight)cellValue);
+			} else if(cellValue instanceof CertificateLightPack) {
+				CertificateLightPack pack = (CertificateLightPack)cellValue;
+				renderExcel(target, pack.getCertificate());
+			}
+		} else if(cellValue instanceof CertificateLight) {
 			CertificateLight certificate = (CertificateLight)cellValue;
 			if(assessedIdentity == null) {
 				IdentityRef idRef = new IdentityRefImpl(certificate.getIdentityKey());
@@ -91,6 +83,11 @@ public class DownloadCertificateCellRenderer implements CustomCellRenderer, Flex
 			CertificateLightPack pack = (CertificateLightPack)cellValue;
 			render(target, pack.getCertificate(), pack.getIdentity(), translator.getLocale());	
 		}
+	}
+	
+	private void renderExcel(StringOutput sb, CertificateLight certificate) {
+		String date = Formatter.getInstance(locale).formatDate(certificate.getCreationDate());
+		sb.append(date);
 	}
 	
 	private void render(StringOutput sb, CertificateLight certificate, IdentityRef identity, Locale locale) {
