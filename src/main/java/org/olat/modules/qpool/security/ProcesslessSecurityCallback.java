@@ -37,7 +37,7 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;
-
+	
 	public void setItemView(QuestionItemView itemView) {
 		this.itemView = itemView;
 	}
@@ -94,6 +94,11 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 	@Override
 	public boolean canRemove() {
 		return itemView.isAuthor() && questionItemSource.isRemoveEnabled();
+	}
+
+	@Override
+	public boolean canRate() {
+		return true;
 	}
 
 }

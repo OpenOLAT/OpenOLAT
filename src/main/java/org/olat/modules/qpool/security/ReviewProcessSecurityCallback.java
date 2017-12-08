@@ -45,7 +45,7 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;
-
+	
 	public void setItemView(QuestionItemView itemView) {
 		this.itemView = itemView;
 	}
@@ -103,6 +103,11 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	@Override
 	public boolean canRemove() {
 		return itemView.isAuthor() && questionItemSource.isRemoveEnabled();
+	}
+
+	@Override
+	public boolean canRate() {
+		return QuestionStatus.draft.equals(itemView.getQuestionStatus());
 	}
 
 }

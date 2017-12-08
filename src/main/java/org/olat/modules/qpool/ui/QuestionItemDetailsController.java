@@ -125,12 +125,12 @@ public class QuestionItemDetailsController extends BasicController implements To
 		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback);
 		listenTo(metadatasCtrl);
 		
-		// TODO uh wenn not draft review process --> nur Comments
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean moderator = roles.isOLATAdmin();
 		boolean anonymous = roles.isGuestOnly() || roles.isInvitee();
 		CommentAndRatingSecurityCallback commentAndRatingSecurityCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), moderator, anonymous);
-		commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), item, null, commentAndRatingSecurityCallback, true, true, true);
+		commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), item, null,
+				commentAndRatingSecurityCallback, true, securityCallback.canRate(), true);
 		listenTo(commentsAndRatingCtr);
 
 		mainVC = createVelocityContainer("item_details");

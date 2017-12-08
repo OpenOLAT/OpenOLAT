@@ -104,4 +104,9 @@ public class AdministratorQItemSecurityCallback implements QuestionItemSecurityC
 		return questionItemSource.isRemoveEnabled();
 	}
 
+	@Override
+	public boolean canRate() {
+		return !qpoolModule.isReviewProcessEnabled() || QuestionStatus.draft.equals(itemView.getQuestionStatus());
+	}
+
 }

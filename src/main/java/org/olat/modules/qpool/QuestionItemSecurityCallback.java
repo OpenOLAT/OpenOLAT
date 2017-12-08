@@ -47,4 +47,9 @@ public interface QuestionItemSecurityCallback {
 	
 	public boolean canRemove();
 
+	/**
+	 * Can a user rate the question item outside the review process?
+	 */
+	public boolean canRate();
+
 }
