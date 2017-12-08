@@ -47,7 +47,7 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 	private QuestionPoolModule qPoolModule;
 	
 	public TaxonomyLeveltemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus,
-			Identity onlyAuthor, Identity excludeAuthor) {
+			Identity onlyAuthor, Identity excludeAuthor, boolean excludeRated) {
 		super(me, roles, taxonomyLevel.getDisplayName());
 		this.me = me;
 		this.taxonomyLevel = taxonomyLevel;
@@ -57,6 +57,7 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 		getDefaultParams().setQuestionStatus(questionStatus);
 		getDefaultParams().setOnlyAuthor(onlyAuthor);
 		getDefaultParams().setExcludeAuthor(excludeAuthor);
+		getDefaultParams().setExcludeRated(excludeRated);
 		qPoolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
 	}
 

@@ -49,6 +49,7 @@ public class SearchQuestionItemParams {
 	private QuestionStatus questionStatus;
 	private Identity onlyAuthor;
 	private Identity excludeAuthor;
+	private boolean excludeRated;
 	
 	private final Identity identity;
 	private final Roles roles;
@@ -98,7 +99,6 @@ public class SearchQuestionItemParams {
 		this.author = author;
 	}
 	
-	
 	public Long getTaxonomyLevelKey() {
 		return taxonomyLevelKey;
 	}
@@ -129,6 +129,14 @@ public class SearchQuestionItemParams {
 
 	public void setExcludeAuthor(Identity excludeAuthor) {
 		this.excludeAuthor = excludeAuthor;
+	}
+
+	public boolean isExcludeRated() {
+		return excludeRated;
+	}
+
+	public void setExcludeRated(boolean excludeRated) {
+		this.excludeRated = excludeRated;
 	}
 
 	public boolean isFulltextSearch() {
@@ -176,6 +184,7 @@ public class SearchQuestionItemParams {
 		clone.questionStatus = questionStatus;
 		clone.onlyAuthor = onlyAuthor;
 		clone.excludeAuthor = excludeAuthor;
+		clone.excludeRated = excludeRated;
 		return clone;
 	}
 }

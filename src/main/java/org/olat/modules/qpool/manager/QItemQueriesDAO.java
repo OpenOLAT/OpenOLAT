@@ -103,6 +103,10 @@ public class QItemQueriesDAO {
 		  .append("    where shareditem.item.key=item.key")
 		  .append("      and shareditem.editable is true")
 		  .append(" ) as groups,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append("     and rating.creator.key=:identityKey")
+		  .append(" ) as ratings,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as rating")
@@ -151,7 +155,8 @@ public class QItemQueriesDAO {
 					.setManager((Number)result[3])
 					.setEditableInPool((Number)result[4])
 					.setEditableInShare((Number)result[5])
-					.setRating((Double)result[6])
+					.setRatedByIdentity((Number)result[6])
+					.setRating((Double)result[7])
 					.setMarked(true)
 					.create();
 			views.add(itemWrapper);
@@ -187,6 +192,10 @@ public class QItemQueriesDAO {
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append("     and rating.creator.key=:identityKey")
+		  .append(" ) as ratings,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as rating")
@@ -232,7 +241,8 @@ public class QItemQueriesDAO {
 					.setEditableInPool((Number)result[4])
 					.setEditableInShare((Number)result[5])
 					.setMarked((Number)result[6])
-					.setRating((Double)result[7])
+					.setRatedByIdentity((Number)result[7])
+					.setRating((Double)result[8])
 					.create();
 			views.add(itemWrapper);
 		}
@@ -267,6 +277,10 @@ public class QItemQueriesDAO {
 			.append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 			.append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 			.append(" ) as marks,")
+			.append(" (select count(rating.key) from userrating as rating")
+			.append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+			.append("     and rating.creator.key=:identityKey")
+			.append(" ) as ratings,")
 			.append(" (select avg(rating.rating) from userrating as rating")
 			.append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 			.append(" ) as rating")
@@ -290,6 +304,12 @@ public class QItemQueriesDAO {
 					.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
 					.append("   where sgmi.identity.key=:excludeAuthorKey and sgmi.securityGroup=item.ownerGroup")
 					.append(" )");
+		}
+		if (params.isExcludeRated()) {
+			sb.append(" and not exists (");
+			sb.append(" select rating.key from userrating as rating");
+			sb.append("  where rating.resId=item.key and rating.resName='QuestionItem'");
+			sb.append("    and rating.creator.key=:identityKey)");
 		}
 		if (inKeys != null && inKeys.size() > 0) {
 			sb.append(" and item.key in (:inKeys)");
@@ -334,7 +354,8 @@ public class QItemQueriesDAO {
 					.setEditableInPool((Number)result[4])
 					.setEditableInShare((Number)result[5])
 					.setMarked((Number)result[6])
-					.setRating((Double)result[7])
+					.setRatedByIdentity((Number)result[7])
+					.setRating((Double)result[8])
 					.create();
 			views.add(itemWrapper);
 		}
@@ -361,6 +382,12 @@ public class QItemQueriesDAO {
 					.append("   where sgmi.identity.key=:excludeAuthorKey and sgmi.securityGroup=item.ownerGroup")
 					.append(" )");
 		}
+		if (params.isExcludeRated()) {
+			sb.append(" and not exists (");
+			sb.append(" select rating.key from userrating as rating");
+			sb.append("  where rating.resId=item.key and rating.resName='QuestionItem'");
+			sb.append("    and rating.creator.key=:identityKey)");
+		}
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.append(" and item.format=:format");
 		}
@@ -376,6 +403,9 @@ public class QItemQueriesDAO {
 		}
 		if (params.getExcludeAuthor() != null) {
 			query.setParameter("excludeAuthorKey", params.getExcludeAuthor().getKey());
+		}
+		if (params.isExcludeRated()) {
+			query.setParameter("identityKey", params.getIdentity().getKey());
 		}
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			query.setParameter("format", params.getFormat());
@@ -419,6 +449,10 @@ public class QItemQueriesDAO {
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append("     and rating.creator.key=:identityKey")
+		  .append(" ) as ratings,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as rating")
@@ -465,7 +499,8 @@ public class QItemQueriesDAO {
 					.setTeacher((Number)result[1])
 					.setManager((Number)result[2])
 					.setMarked((Number)result[3])
-					.setRating((Double)result[4])
+					.setRatedByIdentity((Number)result[4])
+					.setRating((Double)result[5])
 					.create();
 			views.add(itemWrapper);
 		}
@@ -493,6 +528,10 @@ public class QItemQueriesDAO {
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append("     and rating.creator.key=:identityKey")
+		  .append(" ) as ratings,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as rating")
@@ -536,7 +575,8 @@ public class QItemQueriesDAO {
 					.setManager((Number)result[3])
 					.setEditableInShare((Number)result[5])
 					.setMarked((Number)result[5])
-					.setRating((Double)result[6])
+					.setRatedByIdentity((Number)result[6])
+					.setRating((Double)result[7])
 					.create();
 			views.add(itemWrapper);
 		}
@@ -564,6 +604,10 @@ public class QItemQueriesDAO {
 		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
 		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
 		  .append(" ) as marks,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append("     and rating.creator.key=:identityKey")
+		  .append(" ) as ratings,")
 		  .append(" (select avg(rating.rating) from userrating as rating")
 		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
 		  .append(" ) as rating")
@@ -608,7 +652,8 @@ public class QItemQueriesDAO {
 					.setManager((Number)result[3])
 					.setEditableInPool((Number)result[5])
 					.setMarked((Number)result[5])
-					.setRating((Double)result[6])
+					.setRatedByIdentity((Number)result[6])
+					.setRating((Double)result[7])
 					.create();
 			views.add(itemWrapper);
 		}

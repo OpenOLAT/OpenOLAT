@@ -31,7 +31,7 @@ public interface QuestionItemView extends QuestionItemShort {
 	public boolean isAuthor();
 
 	public boolean isReviewer();
-
+	
 	public boolean isManager();
 
 	public boolean isEditableInPool();

@@ -34,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
@@ -91,6 +92,8 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private TaxonomyCompetenceDAO taxonomyCompetenceDao;
+	@Autowired
+	private CommentAndRatingService commentAndRatingService;
 	
 	private QItemType qItemType;
 	
@@ -201,21 +204,31 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		otherItemTaxImpl.setTaxonomyLevel(taxWithTeach);
 		QuestionItem otherItemNoTax = questionDao.createAndPersist(other, "FAV 211", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
 		myItemNoTaxImpl.setTaxonomyLevel(taxWithoutTeach);
+		
+		//create a rated item
+		QuestionItem myItemTaxRated = questionDao.createAndPersist(me, "FAV 220", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItemImpl myItemTaxRatedImpl = questionDao.loadById(myItemTax.getKey());
+		myItemTaxRatedImpl.setTaxonomyLevel(taxWithTeach);
+		commentAndRatingService.createRating(me, myItemTaxRated, null, 2);
+		
+		//Mark the Items to find then
 		markManager.setMark(myItemTax, me, null, "[QuestionItem:" + myItemTax + "]");
 		markManager.setMark(myItemNoTax, me, null, "[QuestionItem:" + myItemNoTax + "]");
 		markManager.setMark(otherItemTax, me, null, "[QuestionItem:" + otherItemTax + "]");
 		markManager.setMark(otherItemNoTax, me, null, "[QuestionItem:" + otherItemNoTax + "]");
+		markManager.setMark(myItemTaxRated, me, null, "[QuestionItem:" + myItemTaxRated + "]");
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(me, null);
 		List<QuestionItemView> myFavorites = qItemQueriesDao.getFavoritItems(params, Arrays.asList(otherItemTax.getKey()), 0, -1);;
 		Assert.assertTrue(myFavorites.get(0).isReviewer());
 		
-		Collection<Long> notReviewer = Arrays.asList(myItemTax.getKey(), myItemNoTax.getKey(), otherItemNoTax.getKey());
+		Collection<Long> notReviewer = Arrays.asList(myItemTax.getKey(), myItemNoTax.getKey(), otherItemNoTax.getKey(), myItemTaxRated.getKey());
 		List<QuestionItemView> otherFavorites = qItemQueriesDao.getFavoritItems(params, notReviewer,  0, -1);;
 		Assert.assertFalse(otherFavorites.get(0).isReviewer());
 		Assert.assertFalse(otherFavorites.get(1).isReviewer());
 		Assert.assertFalse(otherFavorites.get(2).isReviewer());
+		Assert.assertFalse(otherFavorites.get(3).isReviewer());
 	}
 	
 	@Test
@@ -285,7 +298,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Assert.assertFalse(notEditableFavorites.get(0).isEditableInPool());
 		Assert.assertFalse(notEditableFavorites.get(1).isEditableInPool());
 	}
-
+	
 	@Test
 	public void getItemsOfCollection() {
 		//create a collection with 2 items
@@ -586,6 +599,43 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Assert.assertNotNull(limitedItems);
 		Assert.assertEquals(1, limitedItems.size());
 		Assert.assertEquals(item5.getKey(), limitedItems.get(0).getKey());
+	}
+	
+	@Test
+	public void getItemsOfTaxonomy_excludeRated() {
+		//create a taxonomy level with 2 items, one is rated one is not
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool-30", "QPool Author", "", null);
+		TaxonomyLevel biology = taxonomyLevelDao.createTaxonomyLevel("QPool-Biology", "QPool Biology", "Biology", null, null, null, null, taxonomy);
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsUser("Tax-" + UUID.randomUUID().toString());
+		QuestionItem item1 = questionDao.createAndPersist(id1, "Bio 401", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
+		QuestionItemImpl itemImpl1 = questionDao.loadById(item1.getKey());
+		itemImpl1.setTaxonomyLevel(biology);
+		itemImpl1.setQuestionStatus(QuestionStatus.draft);
+		QuestionItem item2 = questionDao.createAndPersist(id1, "Bio 402", QTIConstants.QTI_12_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, qItemType);
+		QuestionItemImpl itemImpl2 = questionDao.loadById(item2.getKey());
+		itemImpl2.setTaxonomyLevel(biology);
+		itemImpl2.setQuestionStatus(QuestionStatus.draft);
+		commentAndRatingService.createRating(id1, item1, null, 2);
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("Tax-" + UUID.randomUUID().toString());
+		commentAndRatingService.createRating(id2, item2, null, 2);
+		dbInstance.commitAndCloseSession();
+		
+		//load the items of the taxonomy level
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id1, null);
+		params.setTaxonomyLevelKey(biology.getKey());
+		params.setQuestionStatus(QuestionStatus.draft);
+		params.setExcludeRated(true);
+		List<QuestionItemView> items = qItemQueriesDao.getItemsOfTaxonomyLevel(params, null, 0, -1);
+		List<Long> itemKeys = new ArrayList<>();
+		for(QuestionItemView item:items) {
+			itemKeys.add(item.getKey());
+		}
+		Assert.assertNotNull(items);
+		Assert.assertEquals(1, items.size());
+		Assert.assertTrue(itemKeys.contains(item2.getKey()));
+		//count them
+		int numOfItems = qItemQueriesDao.countItemsOfTaxonomy(params);
+		Assert.assertEquals(1, numOfItems);
 	}
 	
 	@Test

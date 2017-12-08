@@ -106,7 +106,7 @@ public class ItemWrapper implements QuestionItemView {
 		format = builder.item.getFormat();
 		
 		this.isAuthor = builder.isAuthor;
-		this.isReviewer = builder.isTeacher && !builder.isAuthor;
+		this.isReviewer = builder.isTeacher && !builder.isAuthor && !builder.isRatedByIdentity;
 		this.isManager = builder.isManager;
 		this.isEditableInPool = builder.isEditableInPool;
 		this.isEditableInShare = builder.isEditableInShare;
@@ -334,6 +334,7 @@ public class ItemWrapper implements QuestionItemView {
 		private boolean isEditableInPool = false;
 		private boolean isEditableInShare = false;
 		private boolean isMarked = false;
+		private boolean isRatedByIdentity = false;
 		private Double rating;
 		
 		public ItemWrapperBuilder(QuestionItem item) {
@@ -397,6 +398,11 @@ public class ItemWrapper implements QuestionItemView {
 
 		public ItemWrapperBuilder setMarked(Number markedCount) {
 			this.isMarked = markedCount == null ? false : markedCount.longValue() > 0;
+			return this;
+		}
+		
+		public ItemWrapperBuilder setRatedByIdentity(Number ratingsCount) {
+			this.isRatedByIdentity = ratingsCount == null ? false : ratingsCount.longValue() > 0;
 			return this;
 		}
 
