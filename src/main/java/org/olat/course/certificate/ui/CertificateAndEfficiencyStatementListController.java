@@ -191,7 +191,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.show",
 				translate("table.header.show"), CMD_SHOW));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastModified));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate, new DownloadCertificateCellRenderer(assessedIdentity)));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.certificate, new DownloadCertificateCellRenderer(assessedIdentity, getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recertification, new DateFlexiCellRenderer(getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.launchcourse",
 				translate("table.header.launchcourse"), CMD_LAUNCH_COURSE));
