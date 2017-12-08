@@ -46,6 +46,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.events.DeleteTaxonomyLevelEvent;
+import org.olat.modules.taxonomy.ui.events.MoveTaxonomyLevelEvent;
 import org.olat.modules.taxonomy.ui.events.NewTaxonomyLevelEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,6 +66,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	private ActionsController actionsCtrl;
 	private DialogBoxController confirmDeleteDialog;
 	private EditTaxonomyLevelController metadataCtrl;
+	private MoveTaxonomyLevelController moveLevelCtrl;
 	private TaxonomyLevelRelationsController relationsCtrl;
 	private TaxonomyLevelCompetenceController competencesCtrl;
 	private CloseableCalloutWindowController actionsCalloutCtrl;
@@ -170,6 +172,13 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(moveLevelCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				taxonomyLevel = moveLevelCtrl.getMovedTaxonomyLevel();
+				fireEvent(ureq, new MoveTaxonomyLevelEvent(moveLevelCtrl.getMovedTaxonomyLevel()));
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -179,10 +188,12 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	private void cleanUp() {
 		removeAsListenerAndDispose(createTaxonomyLevelCtrl);
 		removeAsListenerAndDispose(actionsCalloutCtrl);
+		removeAsListenerAndDispose(moveLevelCtrl);
 		removeAsListenerAndDispose(actionsCtrl);
 		removeAsListenerAndDispose(cmc);
 		createTaxonomyLevelCtrl = null;
 		actionsCalloutCtrl = null;
+		moveLevelCtrl = null;
 		actionsCtrl = null;
 		cmc = null;
 	}
@@ -214,9 +225,18 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		}
 	}
 	
-	private void doMove() {
-		//TODO taxonomy
-		showWarning("not.implemented");
+	private void doMove(UserRequest ureq) {
+		if(moveLevelCtrl != null) return;
+		
+		taxonomyLevel = taxonomyService.getTaxonomyLevel(taxonomyLevel);
+		Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
+		moveLevelCtrl = new MoveTaxonomyLevelController(ureq, getWindowControl(), taxonomy, taxonomyLevel);
+		listenTo(moveLevelCtrl);
+		
+		String title = translate("move.taxonomy.level.title", new String[] {StringHelper.escapeHtml(taxonomyLevel.getDisplayName()) });
+		cmc = new CloseableModalController(getWindowControl(), "close", moveLevelCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doCreateTaxonomyLevel(UserRequest ureq) {
@@ -267,7 +287,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if(moveLink == source) {
 				close();
-				doMove();
+				doMove(ureq);
 			} else if(newLink == source) {
 				close();
 				doCreateTaxonomyLevel(ureq);

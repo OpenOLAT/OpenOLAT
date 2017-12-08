@@ -28,6 +28,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -107,6 +108,21 @@ public class TaxonomyAllTreesBuilder {
 		}
 		loadTreeModel(rootNodesMap, null);
 	}
+	
+	public static void sort(INode parent) {
+		parent.sort(new TaxonomyTreeNodeComparator());
+		for(int i=parent.getChildCount(); i-->0; ) {
+			sort(parent.getChildAt(i));
+		}
+	}
+	
+	public static final String nodeKey(TaxonomyLevel taxonomyLevel) {
+		return LEVEL_PREFIX + taxonomyLevel.getKey();
+	}
+	
+	public static final String nodeKey(TaxonomyLevelRow taxonomyLevel) {
+		return LEVEL_PREFIX + taxonomyLevel.getKey();
+	}
 
 	private void loadTreeModel(Map<Taxonomy, GenericTreeNode> rootNodesMap, Taxonomy taxonomy) {
 		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
@@ -115,7 +131,7 @@ public class TaxonomyAllTreesBuilder {
 			Long key = taxonomyLevel.getKey();
 			GenericTreeNode node = fieldKeyToNode.get(key);
 			if(node == null) {
-				node = new GenericTreeNode(LEVEL_PREFIX + taxonomyLevel.getKey());
+				node = new GenericTreeNode(nodeKey(taxonomyLevel));
 				node.setTitle(taxonomyLevel.getDisplayName());
 				node.setIconCssClass("o_icon_taxonomy_level");
 				node.setUserObject(taxonomyLevel);
@@ -151,7 +167,7 @@ public class TaxonomyAllTreesBuilder {
 			Long key = taxonomyLevel.getKey();
 			GenericTreeNode node = fieldKeyToNode.get(key);
 			if(node == null) {
-				node = new GenericTreeNode(LEVEL_PREFIX + taxonomyLevel.getKey());
+				node = new GenericTreeNode(nodeKey(taxonomyLevel));
 				node.setUserObject(taxonomyLevel);
 				fieldKeyToNode.put(key, node);
 			}

@@ -21,7 +21,9 @@ package org.olat.modules.taxonomy.manager;
 
 import java.util.Comparator;
 
+import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.util.nodes.INode;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNodeType;
 
@@ -53,6 +55,15 @@ public class TaxonomyTreeNodeComparator implements Comparator<INode> {
 			if(t1.getTaxonomyLevel() != null) {
 				s1 = t1.getTaxonomyLevel().getSortOrder();
 			}
+		} else if(i1 instanceof GenericTreeNode) {
+			GenericTreeNode node = (GenericTreeNode)i1;
+			title1 = node.getTitle();
+			Object uobject = node.getUserObject();
+			if(uobject instanceof TaxonomyLevel) {
+				TaxonomyLevel level = (TaxonomyLevel)uobject;
+				type1 = TaxonomyTreeNodeType.taxonomyLevel;
+				s1 = level.getSortOrder();
+			}
 		}
 		
 		if(i2 instanceof TaxonomyTreeNode) {
@@ -61,6 +72,15 @@ public class TaxonomyTreeNodeComparator implements Comparator<INode> {
 			type2 = t2.getType();
 			if(t2.getTaxonomyLevel() != null) {
 				s2 = t2.getTaxonomyLevel().getSortOrder();
+			}
+		} else if(i1 instanceof GenericTreeNode) {
+			GenericTreeNode node = (GenericTreeNode)i2;
+			title2 = node.getTitle();
+			Object uobject = node.getUserObject();
+			if(uobject instanceof TaxonomyLevel) {
+				TaxonomyLevel level = (TaxonomyLevel)uobject;
+				type2 = TaxonomyTreeNodeType.taxonomyLevel;
+				s2 = level.getSortOrder();
 			}
 		}
 		

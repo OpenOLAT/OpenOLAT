@@ -69,6 +69,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyTreeTableModel.TaxonomyLevelCols;
 import org.olat.modules.taxonomy.ui.events.DeleteTaxonomyLevelEvent;
+import org.olat.modules.taxonomy.ui.events.MoveTaxonomyLevelEvent;
 import org.olat.modules.taxonomy.ui.events.NewTaxonomyLevelEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -88,6 +89,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private DialogBoxController confirmDeleteDialog;
+	private MoveTaxonomyLevelController moveLevelCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditTaxonomyLevelController createTaxonomyLevelCtrl;
 	
@@ -267,6 +269,11 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				loadModel();
 				tableEl.reset(false, false, true);
 				doSelectTaxonomyLevel(ureq, ((NewTaxonomyLevelEvent)event).getTaxonomyLevel());
+			}  else if(event instanceof MoveTaxonomyLevelEvent) {
+				stackPanel.popController(source);
+				loadModel();
+				tableEl.reset(true, true, true);
+				doSelectTaxonomyLevel(ureq, ((MoveTaxonomyLevelEvent)event).getTaxonomyLevel());
 			} else if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				dirty = true;
 			}
@@ -275,6 +282,13 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				loadModel();
 				tableEl.reset(false, false, true);
 				doSelectTaxonomyLevel(ureq, createTaxonomyLevelCtrl.getTaxonomyLevel());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(moveLevelCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel();
+				tableEl.reset(true, true, true);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -291,8 +305,10 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(createTaxonomyLevelCtrl);
+		removeAsListenerAndDispose(moveLevelCtrl);
 		removeAsListenerAndDispose(cmc);
 		createTaxonomyLevelCtrl = null;
+		moveLevelCtrl = null;
 		cmc = null;
 	}
 
@@ -363,9 +379,16 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		}
 	}
 	
-	private void doMove() {
-		//TODO taxonomy
-		showWarning("not.implemented");
+	private void doMove(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
+		if(moveLevelCtrl != null) return;
+		
+		moveLevelCtrl = new MoveTaxonomyLevelController(ureq, getWindowControl(), taxonomy, taxonomyLevel);
+		listenTo(moveLevelCtrl);
+		
+		String title = translate("move.taxonomy.level.title", new String[] {StringHelper.escapeHtml(taxonomyLevel.getDisplayName()) });
+		cmc = new CloseableModalController(getWindowControl(), "close", moveLevelCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private class ToolsController extends BasicController {
@@ -418,7 +441,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 				doSelectTaxonomyLevel(ureq, taxonomyLevel);
 			} else if(moveLink == source) {
 				close();
-				doMove();
+				doMove(ureq, taxonomyLevel);
 			} else if(newLink == source) {
 				close();
 				doCreateTaxonomyLevel(ureq, taxonomyLevel);
