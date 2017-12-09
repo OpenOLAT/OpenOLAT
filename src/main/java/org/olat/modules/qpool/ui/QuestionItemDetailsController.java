@@ -92,7 +92,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Controller previewCtrl;
 	private CloseableModalController cmc;
 	private final VelocityContainer mainVC;
-	private RatingController ratingCtrl;
+	private ReviewController reviewCtrl;
 	private DialogBoxController confirmStartReviewCtrl;
 	private DialogBoxController confirmEndOfLifeCtrl;
 	private DialogBoxController confirmDeleteBox;
@@ -248,7 +248,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		} else if (source == revisionLink) {
 			doRevision(ureq, metadatasCtrl.getItem());
 		} else if (source == reviewLink) {
-			openRating(ureq);
+			openReview(ureq);
 		} else if (source == finalLink) {
 			doFinal(ureq, metadatasCtrl.getItem());
 		} else if (source == endOfLifeLink) {
@@ -301,10 +301,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 				QuestionItem item = (QuestionItem)confirmStartReviewCtrl.getUserObject();
 				doStartReview(ureq, item);
 			}
-		} else if (ratingCtrl == source) {
+		} else if (reviewCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				float rating = ratingCtrl.getCurrentRatting();
-				String comment = ratingCtrl.getComment();
+				float rating = reviewCtrl.getCurrentRatting();
+				String comment = reviewCtrl.getComment();
 				doRate(ureq, rating, comment);
 			}
 			cmc.deactivate();
@@ -340,10 +340,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(selectGroupCtrl);
-		removeAsListenerAndDispose(ratingCtrl);
+		removeAsListenerAndDispose(reviewCtrl);
 		cmc = null;
 		selectGroupCtrl = null;
-		ratingCtrl = null;
+		reviewCtrl = null;
 	}
 	
 	private void doConfirmStartReview(UserRequest ureq, QuestionItem item) {
@@ -356,11 +356,11 @@ public class QuestionItemDetailsController extends BasicController implements To
 		doChangeQuestionStatus(ureq, item, QuestionStatus.review, QPoolEvent.ITEM_REVIEW_STARTED, "process.review.started");
 	}
 	
-	private void openRating(UserRequest ureq) {
-		ratingCtrl = new RatingController(ureq, getWindowControl());
-		listenTo(ratingCtrl);
+	private void openReview(UserRequest ureq) {
+		reviewCtrl = new ReviewController(ureq, getWindowControl());
+		listenTo(reviewCtrl);
 		cmc = new CloseableModalController(getWindowControl(), null,
-				ratingCtrl.getInitialComponent(), true,
+				reviewCtrl.getInitialComponent(), true,
 				translate("process.rating.title"), false);
 		listenTo(cmc);
 		cmc.activate();

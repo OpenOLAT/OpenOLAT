@@ -25,6 +25,7 @@ import java.util.Date;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
@@ -72,6 +73,7 @@ public class ItemWrapper implements QuestionItemView {
 	private final boolean isManager;
 	private final boolean isEditableInPool;
 	private final boolean isEditableInShare;
+	private final boolean isReviewableFormat;
 	private final boolean isMarked;
 	private final Double rating;
 	
@@ -110,6 +112,7 @@ public class ItemWrapper implements QuestionItemView {
 		this.isManager = builder.isManager;
 		this.isEditableInPool = builder.isEditableInPool;
 		this.isEditableInShare = builder.isEditableInShare;
+		this.isReviewableFormat = !QTIConstants.QTI_12_FORMAT.equals(builder.item.getFormat());
 		this.isMarked = builder.isMarked;
 		this.rating = builder.rating;
 
@@ -143,6 +146,11 @@ public class ItemWrapper implements QuestionItemView {
 	@Override
 	public boolean isEditableInPool() {
 		return isEditableInPool;
+	}
+
+	@Override
+	public boolean isReviewableFormat() {
+		return isReviewableFormat;
 	}
 
 	@Override

@@ -466,7 +466,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Assert.assertTrue(itemKeys.contains(item2.getKey()));
 		Assert.assertTrue(itemKeys.contains(item5.getKey()));
 		//count them
-		int numOfItems = qItemQueriesDao.countItemsOfTaxonomy(params);
+		int numOfItems = qItemQueriesDao.countItemsOfTaxonomyLevel(params);
 		Assert.assertEquals(3, numOfItems);
 		
 		//load limit sub set
@@ -529,7 +529,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Assert.assertTrue(itemKeys.contains(item1.getKey()));
 		Assert.assertTrue(itemKeys.contains(item2.getKey()));
 		//count them
-		int numOfItems = qItemQueriesDao.countItemsOfTaxonomy(params);
+		int numOfItems = qItemQueriesDao.countItemsOfTaxonomyLevel(params);
 		Assert.assertEquals(2, numOfItems);
 		
 		//load limit sub set
@@ -591,7 +591,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Assert.assertEquals(1, items.size());
 		Assert.assertTrue(itemKeys.contains(item5.getKey()));
 		//count them
-		int numOfItems = qItemQueriesDao.countItemsOfTaxonomy(params);
+		int numOfItems = qItemQueriesDao.countItemsOfTaxonomyLevel(params);
 		Assert.assertEquals(1, numOfItems);
 		
 		//load limit sub set
@@ -634,7 +634,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Assert.assertEquals(1, items.size());
 		Assert.assertTrue(itemKeys.contains(item2.getKey()));
 		//count them
-		int numOfItems = qItemQueriesDao.countItemsOfTaxonomy(params);
+		int numOfItems = qItemQueriesDao.countItemsOfTaxonomyLevel(params);
 		Assert.assertEquals(1, numOfItems);
 	}
 	

@@ -35,12 +35,12 @@ import org.olat.core.gui.control.WindowControl;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class RatingController extends FormBasicController {
+public class ReviewController extends FormBasicController {
 
 	private RatingFormItem ratingEl;
 	private RichTextElement commentEl;
 	
-	public RatingController(UserRequest ureq, WindowControl wControl) {
+	public ReviewController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		initForm(ureq);
 	}

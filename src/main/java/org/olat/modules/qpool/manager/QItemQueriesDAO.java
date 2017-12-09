@@ -290,6 +290,9 @@ public class QItemQueriesDAO {
 			.append(" left join fetch item.type itemType")
 			.append(" left join fetch item.educationalContext educationalContext")
 			.append(" where taxonomyLevel.key=:taxonomyLevelKey");
+		// Exclude QTI1.2 in review process.
+		// This query is only used in review process, so exclude them always.
+		sb.append(" and item.format<>'IMS QTI 1.2'");
 		if (params.getQuestionStatus() != null) {
 			sb.append(" and item.status=:questionStatus");
 		}
@@ -362,7 +365,7 @@ public class QItemQueriesDAO {
 		return views;
 	}
 	
-	public int countItemsOfTaxonomy(SearchQuestionItemParams params) {
+	public int countItemsOfTaxonomyLevel(SearchQuestionItemParams params) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(item) from questionitem item ")
 		  .append(" inner join item.taxonomyLevel taxonomyLevel")

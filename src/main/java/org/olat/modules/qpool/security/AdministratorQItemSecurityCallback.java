@@ -69,24 +69,25 @@ public class AdministratorQItemSecurityCallback implements QuestionItemSecurityC
 
 	@Override
 	public boolean canStartReview() {
-		return true;
+		return !qpoolModule.isReviewProcessEnabled() || itemView.isReviewableFormat();
 	}
-
+	
 	@Override
 	public boolean canReview() {
 		return qpoolModule.isReviewProcessEnabled()
+				&& itemView.isReviewableFormat()
 				&& itemView.isReviewer()
 				&& QuestionStatus.review.equals(itemView.getQuestionStatus());
 	}
 
 	@Override
 	public boolean canSetRevision() {
-		return true;
+		return !qpoolModule.isReviewProcessEnabled() || itemView.isReviewableFormat();
 	}
 
 	@Override
 	public boolean canSetFinal() {
-		return true;
+		return !qpoolModule.isReviewProcessEnabled() || itemView.isReviewableFormat();
 	}
 
 	@Override

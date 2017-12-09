@@ -81,6 +81,11 @@ public class ItemRow implements QuestionItemView {
 	}
 
 	@Override
+	public boolean isReviewableFormat() {
+		return delegate.isReviewableFormat();
+	}
+
+	@Override
 	public boolean isMarked() {
 		return delegate.isMarked();
 	}

@@ -459,7 +459,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		if(searchParams.isFavoritOnly()) {
 			return itemQueriesDao.countFavoritItems(searchParams);
 		} else if(searchParams.getTaxonomyLevelKey() != null) {
-			return itemQueriesDao.countItemsOfTaxonomy(searchParams);
+			return itemQueriesDao.countItemsOfTaxonomyLevel(searchParams);
 		} else if(searchParams.getPoolKey() != null) {
 			return poolDao.countItemsInPool(searchParams);
 		} else if(searchParams.getAuthor() != null) {
