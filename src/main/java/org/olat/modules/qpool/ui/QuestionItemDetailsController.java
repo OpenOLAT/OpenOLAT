@@ -250,7 +250,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 		} else if (source == reviewLink) {
 			openRating(ureq);
 		} else if (source == finalLink) {
-		} else if (source == finalLink) {
 			doFinal(ureq, metadatasCtrl.getItem());
 		} else if (source == endOfLifeLink) {
 			doConfirmEndOfLife(ureq, metadatasCtrl.getItem());
