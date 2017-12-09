@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -48,7 +49,7 @@ public class ReviewProcessAdminController extends FormBasicController {
 
 	private SingleSelection providerEl;
 	private TextElement numberOfRatingsEl;
-	private TextElement lowerLimitEl;
+	private RatingFormItem lowerLimitEl;
 	
 	@Autowired
 	private QuestionPoolModule qpoolModule;
@@ -91,10 +92,10 @@ public class ReviewProcessAdminController extends FormBasicController {
 		numberOfRatingsEl.setMandatory(true);
 		numberOfRatingsEl.setDisplaySize(5);
 
-		String lowerLimit = Integer.toString(qpoolModule.getReviewDecisionLowerLimit());
-		lowerLimitEl = uifactory.addTextElement("lower.limit", 1, lowerLimit, formLayout);
-		lowerLimitEl.setMandatory(true);
-		lowerLimitEl.setDisplaySize(1);
+		lowerLimitEl = new RatingFormItem("lower.limit", qpoolModule.getReviewDecisionLowerLimit(), 5, true);
+		lowerLimitEl.setLabel("lower.limit", null);
+		lowerLimitEl.showLabel(true);
+		formLayout.add(lowerLimitEl);
 
 		//buttons
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -151,6 +152,19 @@ public class ReviewProcessAdminController extends FormBasicController {
 		
 		return allOk;
 	}
+	
+	private boolean validateInt(RatingFormItem el) {
+		boolean allOk = true;
+		
+		el.clearError();
+		Integer lowerLimit = Float.valueOf(el.getCurrentRating()).intValue();
+		if(lowerLimit <= 0) {
+			el.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -161,7 +175,7 @@ public class ReviewProcessAdminController extends FormBasicController {
 		if (lowerLimitProvider) {
 			int numberOfRatings = Integer.parseInt(numberOfRatingsEl.getValue());
 			qpoolModule.setReviewDecisionNumberOfRatings(numberOfRatings);
-			int lowerLimit = Integer.parseInt(lowerLimitEl.getValue());
+			int lowerLimit = Float.valueOf(lowerLimitEl.getCurrentRating()).intValue();
 			qpoolModule.setReviewDecisionLowerLimit(lowerLimit);
 		}
 	}
