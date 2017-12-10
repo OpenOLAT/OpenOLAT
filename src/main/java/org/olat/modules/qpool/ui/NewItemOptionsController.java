@@ -35,9 +35,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
+import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,25 +53,40 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NewItemOptionsController extends FormBasicController {
 
+	private static final String NO_TAXONOMY_LEVEL_KEY = "no-tax";
+
 	private TextElement titleEl;
 	private SingleSelection typeEl;
+	private SingleSelection taxonomyLevelEl;
+
 	private Map<String,QItemFactory> keyToFactoryMap = new HashMap<>();
+	private TaxonomyLevel selectedTaxonomyLevel;
+	private final List<TaxonomyLevel> taxonomyLevels;
 	
 	@Autowired
 	private QuestionPoolModule qpoolModule;
+	@Autowired
+	private QPoolService qpoolService;
 
 	public NewItemOptionsController(UserRequest ureq, WindowControl wControl) {	
+		this(ureq, wControl, null);
+	}
+	
+	public NewItemOptionsController(UserRequest ureq, WindowControl wControl, TaxonomyLevel selectedTaxonomyLevel) {	
 		super(ureq, wControl);
+		this.selectedTaxonomyLevel = selectedTaxonomyLevel;
+		this.taxonomyLevels = qpoolService.getTaxonomyLevel(ureq.getIdentity(), TaxonomyCompetenceTypes.teach);
 		
 		initForm(ureq);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//subject
+		//title
 		titleEl = uifactory.addTextElement("general.title", "general.title", 128, "", formLayout);
+
 		//type
-		List<QItemFactory> factories = new ArrayList<QItemFactory>();
+		List<QItemFactory> factories = new ArrayList<>();
 		for(QPoolSPI spi:qpoolModule.getQuestionPoolProviders()) {
 			for(QItemFactory factory:spi.getItemfactories()) {
 				factories.add(factory);
@@ -87,7 +105,27 @@ public class NewItemOptionsController extends FormBasicController {
 		}
 
 		typeEl = uifactory.addDropdownSingleselect("question.type", "menu.admin.types", formLayout, typeKeys, valueKeys, null);
-
+		
+		//subject
+		String[] taxonomyKeys = new String[taxonomyLevels.size() + 1];
+		String[] taxonomyValues = new String[taxonomyLevels.size() + 1];
+		taxonomyKeys[0] = NO_TAXONOMY_LEVEL_KEY;
+		taxonomyValues[0] = "-";
+		for(int i=taxonomyLevels.size(); i-->0; ) {
+			TaxonomyLevel taxonomyLevel = taxonomyLevels.get(i);
+			taxonomyKeys[i + 1] = taxonomyLevel.getKey().toString();
+			taxonomyValues[i + 1] = taxonomyLevel.getDisplayName();
+		}
+		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout, taxonomyKeys, taxonomyValues, null);
+		if(selectedTaxonomyLevel != null) {
+			String selectedTaxonomyLevelKey = String.valueOf(selectedTaxonomyLevel.getKey());
+			for(String taxonomyKey:taxonomyKeys) {
+				if(taxonomyKey.equals(selectedTaxonomyLevelKey)) {
+					taxonomyLevelEl.select(taxonomyKey, true);
+				}
+			}
+		}
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonLayout.setRootForm(mainForm);
 		formLayout.add(buttonLayout);
@@ -119,11 +157,24 @@ public class NewItemOptionsController extends FormBasicController {
 		String typeKey = typeEl.getSelectedKey();
 		QItemFactory factory = keyToFactoryMap.get(typeKey);
 		String title = titleEl.getValue();
-		fireEvent(ureq, new QItemCreationCmdEvent(title, factory));
+		TaxonomyLevel taxonomyLevel = getSelectedTaxonomyLevel();
+		fireEvent(ureq, new QItemCreationCmdEvent(title, taxonomyLevel, factory));
 	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private TaxonomyLevel getSelectedTaxonomyLevel() {
+		if (!NO_TAXONOMY_LEVEL_KEY.equals(taxonomyLevelEl.getSelectedKey())) {
+			Long selectedTaxonomyLevelKey = Long.parseLong(taxonomyLevelEl.getSelectedKey());
+			for (TaxonomyLevel taxonomyLevel: taxonomyLevels) {
+				if (taxonomyLevel.getKey().equals(selectedTaxonomyLevelKey)) {
+					return taxonomyLevel;
+				}
+			}
+		}
+		return null;
 	}
 }

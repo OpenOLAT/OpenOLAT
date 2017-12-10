@@ -61,6 +61,10 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 		reviewService = CoreSpringFactory.getImpl(ReviewService.class);
 	}
 
+	public TaxonomyLevel getTaxonomyLevel() {
+		return taxonomyLevel;
+	}
+
 	@Override
 	public boolean isCreateEnabled() {
 		return reviewService.isEditableQuestionStatus(questionStatus)? true: false;
@@ -102,9 +106,8 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 	public int postImport(List<QuestionItem> items, boolean editable) {
 		if(items == null || items.isEmpty()) return 0;
 		for(QuestionItemShort item : items) {
-			QuestionItem fullItem = qpoolService.loadItemById(item.getKey());
-			if(fullItem instanceof QuestionItemImpl) {
-				QuestionItemImpl itemImpl = (QuestionItemImpl)fullItem;
+			if(item instanceof QuestionItemImpl) {
+				QuestionItemImpl itemImpl = (QuestionItemImpl) item;
 				itemImpl.setTaxonomyLevel(taxonomyLevel);
 			}
 		}

@@ -21,6 +21,7 @@ package org.olat.modules.qpool.ui.events;
 
 import org.olat.core.gui.control.Event;
 import org.olat.modules.qpool.QItemFactory;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * Event to create a new item
@@ -35,16 +36,22 @@ public class QItemCreationCmdEvent extends Event {
 	public static final String CREATE_NEW_ITEM_CMD = "createNewItemAsap";
 	
 	private final String title;
+	private final TaxonomyLevel taxonomyLevel;
 	private final QItemFactory factory;
 
-	public QItemCreationCmdEvent(String title, QItemFactory factory) {
+	public QItemCreationCmdEvent(String title, TaxonomyLevel taxonomyLevel, QItemFactory factory) {
 		super(CREATE_NEW_ITEM_CMD);
 		this.title = title;
+		this.taxonomyLevel = taxonomyLevel;
 		this.factory = factory;
 	}
 
 	public String getTitle() {
 		return title;
+	}
+
+	public TaxonomyLevel getTaxonomyLevel() {
+		return taxonomyLevel;
 	}
 
 	public QItemFactory getFactory() {

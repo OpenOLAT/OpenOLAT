@@ -88,8 +88,6 @@ public class ReviewStartController extends FormBasicController {
 		
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout, taxonomyKeys, taxonomyValues, null);
 		taxonomyLevelEl.setMandatory(true);
-		taxonomyLevelEl.setAllowNoSelection(false);
-		taxonomyLevelEl.select(taxonomyKeys[0], false);
 		if (item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl) item;
 			TaxonomyLevel selectedTaxonomyLevel = itemImpl.getTaxonomyLevel();

@@ -81,6 +81,8 @@ import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.model.QItemList;
+import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.qpool.ui.datasource.TaxonomyLeveltemsSource;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
@@ -89,6 +91,7 @@ import org.olat.modules.qpool.ui.events.QPoolSelectionEvent;
 import org.olat.modules.qpool.ui.metadata.MetadataBulkChangeController;
 import org.olat.modules.qpool.ui.wizard.Export_1_TypeStep;
 import org.olat.modules.qpool.ui.wizard.ImportAuthor_1_ChooseMemberStep;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
@@ -341,7 +344,7 @@ public class QuestionListController extends AbstractItemListController implement
 			cmc.deactivate();
 			if(event instanceof QItemCreationCmdEvent) {
 				QItemCreationCmdEvent qicce = (QItemCreationCmdEvent)event;
-				doCreateNewItem(ureq, qicce.getTitle(), qicce.getFactory());
+				doCreateNewItem(ureq, qicce.getTitle(), qicce.getTaxonomyLevel(), qicce.getFactory());
 			}
 		} else if(source == selectGroupCtrl) {
 			cmc.deactivate();
@@ -585,7 +588,12 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private void doChooseNewItemType(UserRequest ureq) {
 		removeAsListenerAndDispose(newItemOptionsCtrl);
-		newItemOptionsCtrl = new NewItemOptionsController(ureq, getWindowControl());
+		if (getSource() instanceof TaxonomyLeveltemsSource) {
+			TaxonomyLeveltemsSource tliSource = (TaxonomyLeveltemsSource) getSource();
+			newItemOptionsCtrl = new NewItemOptionsController(ureq, getWindowControl(), tliSource.getTaxonomyLevel());
+		} else {
+			newItemOptionsCtrl = new NewItemOptionsController(ureq, getWindowControl());
+		}
 		listenTo(newItemOptionsCtrl);
 		
 		removeAsListenerAndDispose(cmc);
@@ -595,10 +603,15 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);
 	}
 	
-	private void doCreateNewItem(UserRequest ureq, String title, QItemFactory factory) {
+	private void doCreateNewItem(UserRequest ureq, String title, TaxonomyLevel taxonomyLevel, QItemFactory factory) {
 		QuestionItem item = factory.createItem(getIdentity(), title, getLocale());
 		List<QuestionItem> newItems = Collections.singletonList(item);
 		getSource().postImport(newItems, false);
+		if (taxonomyLevel != null && item instanceof QuestionItemImpl) {
+			QuestionItemImpl itemImpl = (QuestionItemImpl) item;
+			itemImpl.setTaxonomyLevel(taxonomyLevel);
+			qpoolService.updateItem(itemImpl);
+		}
 		getItemsTable().reset();
 		
 		dbInstance.commit();
