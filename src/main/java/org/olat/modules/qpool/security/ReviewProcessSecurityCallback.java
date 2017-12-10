@@ -83,7 +83,17 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	}
 
 	@Override
-	public boolean canSetRevision() {
+	public boolean canSetDraft() {
+		return false;
+	}
+
+	@Override
+	public boolean canSetRevised() {
+		return false;
+	}
+
+	@Override
+	public boolean canSetReview() {
 		return false;
 	}
 

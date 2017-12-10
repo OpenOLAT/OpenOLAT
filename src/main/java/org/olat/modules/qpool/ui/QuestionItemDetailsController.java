@@ -28,6 +28,8 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityC
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
@@ -76,11 +78,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QuestionItemDetailsController extends BasicController implements TooledController, Activateable2 {
 	
 	private Link editItem;
+	private Link statusDraftLink;
+	private Link statusReviewLink;
+	private Link statusFinalLink;
+	private Link statusEndOfLifeLink;
+	private Link statusRevisedLink;
 	private Link startReviewLink;
 	private Link reviewLink;
-	private Link revisionLink;
-	private Link finalLink;
-	private Link endOfLifeLink;
 	private Link deleteLink;
 	private Link nextItemLink;
 	private Link numberItemsLink;
@@ -88,6 +92,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link showMetadataLink;
 	private Link hideMetadataLink;
 	private Link shareItem, exportItem, copyItem;
+	private Dropdown statusDropdown;
 
 	private Controller editCtrl;
 	private Controller previewCtrl;
@@ -155,31 +160,56 @@ public class QuestionItemDetailsController extends BasicController implements To
 	
 	@Override
 	public void initTools() {
+		statusDropdown = new Dropdown("process.states", "process.states", false, getTranslator());
+		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_" + metadatasCtrl.getItem().getQuestionStatus());
+		statusDropdown.setOrientation(DropdownOrientation.normal);
+		
+		boolean hasDropdownComponents = false;
+		if (securityCallback.canSetDraft()) {
+			statusDraftLink = LinkFactory.createToolLink("lifecycle.status.draft", translate("lifecycle.status.draft"), this);
+			statusDraftLink.setIconLeftCSS("o_icon o_icon-lg o_icon_draft");
+			statusDropdown.addComponent(statusDraftLink);
+			hasDropdownComponents = true;
+		}
+		if (securityCallback.canSetRevised()) {
+			statusRevisedLink = LinkFactory.createToolLink("lifecycle.status.revised", translate("lifecycle.status.revised"), this);
+			statusRevisedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_revised");
+			statusDropdown.addComponent(statusRevisedLink);
+			hasDropdownComponents = true;
+		}
+		if (securityCallback.canSetReview()) {
+			statusReviewLink = LinkFactory.createToolLink("lifecycle.status.review", translate("lifecycle.status.review"), this);
+			statusReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
+			statusDropdown.addComponent(statusReviewLink);
+			hasDropdownComponents = true;
+		}
+		if (securityCallback.canSetFinal()) {
+			statusFinalLink = LinkFactory.createToolLink("lifecycle.status.finalVersion", translate("lifecycle.status.finalVersion"), this);
+			statusFinalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_finalVersion");
+			statusDropdown.addComponent(statusFinalLink);
+			hasDropdownComponents = true;
+		}
+		if (securityCallback.canSetEndOfLife()) {
+			statusEndOfLifeLink = LinkFactory.createToolLink("lifecycle.status.endOfLife", translate("lifecycle.status.endOfLife"), this);
+			statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_endOfLife");
+			statusDropdown.addComponent(statusEndOfLifeLink);
+			hasDropdownComponents = true;
+		}
+		if (hasDropdownComponents) {
+			stackPanel.addTool(statusDropdown, Align.left);
+		}
+		
 		if (securityCallback.canStartReview()) {
 			startReviewLink = LinkFactory.createToolLink("process.start.review", translate("process.start.review"), this);
-			startReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_start_review");
+			startReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
 			stackPanel.addTool(startReviewLink, Align.left);
 		}
 		if (securityCallback.canReview() && reviewService.hasRatingController()) {
 			reviewLink = LinkFactory.createToolLink("process.review", translate("process.review"), this);
-			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
+			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_do_review");
 			stackPanel.addTool(reviewLink, Align.left);
 		}
-		if (securityCallback.canSetRevision()) {
-			revisionLink = LinkFactory.createToolLink("process.revision", translate("process.revision"), this);
-			revisionLink.setIconLeftCSS("o_icon o_icon-lg o_icon_revision");
-			stackPanel.addTool(revisionLink, Align.left);
-		}
-		if (securityCallback.canSetFinal()) {
-			finalLink = LinkFactory.createToolLink("process.final", translate("process.final"), this);
-			finalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_final");
-			stackPanel.addTool(finalLink, Align.left);
-		}
-		if (securityCallback.canSetEndOfLife()) {
-			endOfLifeLink = LinkFactory.createToolLink("process.endOfLife", translate("process.endOfLife"), this);
-			endOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_end_of_life");
-			stackPanel.addTool(endOfLifeLink, Align.left);
-		}
+		
 		if (securityCallback.canDelete()) {
 			deleteLink = LinkFactory.createToolLink("delete.item", translate("delete.item"), this);
 			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
@@ -244,16 +274,20 @@ public class QuestionItemDetailsController extends BasicController implements To
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == startReviewLink) {
+		if (source == statusDraftLink) {
+			doStatusDraft(ureq, metadatasCtrl.getItem());
+		} else if (source == statusRevisedLink) {
+			doStatusRevised(ureq, metadatasCtrl.getItem());
+		} else if (source == statusReviewLink) {
+			doStatusReview(ureq, metadatasCtrl.getItem());
+		} else if (source == statusFinalLink) {
+			doStatusFinal(ureq, metadatasCtrl.getItem());
+		} else if (source == statusEndOfLifeLink) {
+			doConfirmEndOfLife(ureq, metadatasCtrl.getItem());
+		} else if(source == startReviewLink) {
 			doConfirmStartReview(ureq, metadatasCtrl.getItem());
-		} else if (source == revisionLink) {
-			doRevision(ureq, metadatasCtrl.getItem());
 		} else if (source == reviewLink) {
 			openReview(ureq);
-		} else if (source == finalLink) {
-			doFinal(ureq, metadatasCtrl.getItem());
-		} else if (source == endOfLifeLink) {
-			doConfirmEndOfLife(ureq, metadatasCtrl.getItem());
 		} else if(source == deleteLink) {
 			doConfirmDelete(ureq, metadatasCtrl.getItem());
 		} else if(source == shareItem) {
@@ -389,11 +423,19 @@ public class QuestionItemDetailsController extends BasicController implements To
 		//TOFO uh nein. Hier sofort den rate buttoon disablen
 	}
 
-	private void doRevision(UserRequest ureq, QuestionItem item) {
+	private void doStatusDraft(UserRequest ureq, QuestionItem item) {
+		doChangeQuestionStatus(ureq, item, QuestionStatus.draft, QPoolEvent.ITEM_DRAFT, "process.draft.set");
+	}
+	
+	private void doStatusRevised(UserRequest ureq, QuestionItem item) {
 		doChangeQuestionStatus(ureq, item, QuestionStatus.revised, QPoolEvent.ITEM_REVISION, "process.revision.set");
 	}
 	
-	private void doFinal(UserRequest ureq, QuestionItem item) {
+	private void doStatusReview(UserRequest ureq, QuestionItem item) {
+		doChangeQuestionStatus(ureq, item, QuestionStatus.review, QPoolEvent.ITEM_REVIEW, "process.review.set");
+	}
+	
+	private void doStatusFinal(UserRequest ureq, QuestionItem item) {
 		doChangeQuestionStatus(ureq, item, QuestionStatus.finalVersion, QPoolEvent.ITEM_FINAL, "process.final.set");
 	}
 	
@@ -409,7 +451,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	
 	private void doChangeQuestionStatus(UserRequest ureq, QuestionItem item, QuestionStatus newStatus, String qPoolEvent,
 			String i18nInfo) {
-		if(item instanceof QuestionItemImpl) {
+		if(!newStatus.equals(item.getQuestionStatus()) && item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
 			itemImpl.setQuestionStatus(newStatus);
 			qpoolService.updateItem(itemImpl);

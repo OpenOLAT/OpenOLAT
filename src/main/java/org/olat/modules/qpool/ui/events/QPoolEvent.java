@@ -35,10 +35,12 @@ public class QPoolEvent extends MultiUserEvent {
 	public static final String ITEM_MARKED = "qpool-item-marked";
 	public static final String ITEM_CREATED = "qpool-item-created";
 	public static final String ITEM_DELETED = "qpool-item-deleted";
-	public static final String ITEM_REVIEW_STARTED = "qpool-item-review-started";
+	public static final String ITEM_DRAFT = "qpool-item-draft";
 	public static final String ITEM_REVISION = "qpool-item-revision";
+	public static final String ITEM_REVIEW = "qpool-item-review";
 	public static final String ITEM_FINAL = "qpool-item-final";
 	public static final String ITEM_END_OF_LIFE = "qpool-item-end-of-life";
+	public static final String ITEM_REVIEW_STARTED = "qpool-item-review-started";
 	public static final String COLL_CREATED = "qpool-coll-created";
 	public static final String COLL_DELETED = "qpoll-coll-deleted";
 	public static final String COLL_CHANGED = "qpoll-coll-changed";

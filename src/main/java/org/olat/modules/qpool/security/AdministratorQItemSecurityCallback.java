@@ -69,7 +69,7 @@ public class AdministratorQItemSecurityCallback implements QuestionItemSecurityC
 
 	@Override
 	public boolean canStartReview() {
-		return !qpoolModule.isReviewProcessEnabled() || itemView.isReviewableFormat();
+		return !qpoolModule.isReviewProcessEnabled() || (itemView.isReviewableFormat() && !canReview());
 	}
 	
 	@Override
@@ -81,8 +81,18 @@ public class AdministratorQItemSecurityCallback implements QuestionItemSecurityC
 	}
 
 	@Override
-	public boolean canSetRevision() {
+	public boolean canSetDraft() {
 		return !qpoolModule.isReviewProcessEnabled() || itemView.isReviewableFormat();
+	}
+
+	@Override
+	public boolean canSetRevised() {
+		return !qpoolModule.isReviewProcessEnabled() || itemView.isReviewableFormat();
+	}
+
+	@Override
+	public boolean canSetReview() {
+		return !qpoolModule.isReviewProcessEnabled();
 	}
 
 	@Override
