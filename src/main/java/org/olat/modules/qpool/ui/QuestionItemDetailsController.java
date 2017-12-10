@@ -64,6 +64,7 @@ import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 import org.olat.modules.qpool.ui.metadata.MetadatasController;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -92,8 +93,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Controller previewCtrl;
 	private CloseableModalController cmc;
 	private final VelocityContainer mainVC;
+	private ReviewStartController reviewStartCtrl;	
 	private ReviewController reviewCtrl;
-	private DialogBoxController confirmStartReviewCtrl;
 	private DialogBoxController confirmEndOfLifeCtrl;
 	private DialogBoxController confirmDeleteBox;
 	private LayoutMain3ColsController editMainCtrl;
@@ -295,13 +296,14 @@ public class QuestionItemDetailsController extends BasicController implements To
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(source == confirmStartReviewCtrl) {
-			boolean startReview = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
-			if(startReview) {
-				QuestionItem item = (QuestionItem)confirmStartReviewCtrl.getUserObject();
-				doStartReview(ureq, item);
+		} else if (source == reviewStartCtrl) {
+			if (event == Event.DONE_EVENT) {
+				TaxonomyLevel taxonomyLevel = reviewStartCtrl.getSelectedTaxonomyLevel();
+				doStartReview(ureq, taxonomyLevel);
 			}
-		} else if (reviewCtrl == source) {
+			cmc.deactivate();
+			cleanUp();	
+		} else if (source == reviewCtrl) {
 			if (event == Event.DONE_EVENT) {
 				float rating = reviewCtrl.getCurrentRatting();
 				String comment = reviewCtrl.getComment();
@@ -341,18 +343,31 @@ public class QuestionItemDetailsController extends BasicController implements To
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(selectGroupCtrl);
 		removeAsListenerAndDispose(reviewCtrl);
+		removeAsListenerAndDispose(reviewStartCtrl);
 		cmc = null;
 		selectGroupCtrl = null;
 		reviewCtrl = null;
+		reviewStartCtrl = null;
 	}
 	
 	private void doConfirmStartReview(UserRequest ureq, QuestionItem item) {
-		String msg = translate("process.confirm.start.review", StringHelper.escapeHtml(item.getTitle()));
-		confirmStartReviewCtrl = activateYesNoDialog(ureq, null, msg, confirmStartReviewCtrl);
-		confirmStartReviewCtrl.setUserObject(item);
+		reviewStartCtrl = new ReviewStartController(ureq, getWindowControl(), item);
+		listenTo(reviewStartCtrl);
+		cmc = new CloseableModalController(getWindowControl(), null,
+				reviewStartCtrl.getInitialComponent(), true,
+				translate("process.start.review.title"), false);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
-	private void doStartReview(UserRequest ureq, QuestionItem item) {
+	private void doStartReview(UserRequest ureq, TaxonomyLevel taxonomyLevel) {
+		QuestionItem item = metadatasCtrl.getItem();
+		if (item instanceof QuestionItemImpl) {
+			QuestionItemImpl itemImpl = (QuestionItemImpl) item;
+			if (itemImpl.getTaxonomyLevel() == null || !itemImpl.getTaxonomyLevel().equals(taxonomyLevel)) {
+				itemImpl.setTaxonomyLevel(taxonomyLevel);
+			}
+		}
 		doChangeQuestionStatus(ureq, item, QuestionStatus.review, QPoolEvent.ITEM_REVIEW_STARTED, "process.review.started");
 	}
 	
