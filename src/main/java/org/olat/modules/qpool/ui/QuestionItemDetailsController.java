@@ -92,8 +92,11 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link previousItemLink;
 	private Link showMetadataLink;
 	private Link hideMetadataLink;
-	private Link shareItem, exportItem, copyItem;
+	private Link shareItemLink;
+	private Link exportItemLink;
+	private Link copyItemLink;
 	private Dropdown statusDropdown;
+	private Dropdown commandDropdown;
 
 	private Controller editCtrl;
 	private Controller previewCtrl;
@@ -151,10 +154,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 			editItem = LinkFactory.createButton("edit", mainVC, this);
 			editItem.setIconLeftCSS("o_icon o_icon_edit");
 		}
-
-		shareItem = LinkFactory.createButton("share.item", mainVC, this);
-		copyItem = LinkFactory.createButton("copy", mainVC, this);
-		exportItem = LinkFactory.createButton("export.item", mainVC, this);
 		
 		setPreviewController(ureq, item);
 		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
@@ -165,9 +164,33 @@ public class QuestionItemDetailsController extends BasicController implements To
 	@Override
 	public void initTools() {
 		stackPanel.removeAllTools();
+		
+		commandDropdown = new Dropdown("commands", "commands", false, getTranslator());
+		commandDropdown.setIconCSS("o_icon o_icon-fw o_icon_qitem_commands");
+		commandDropdown.setOrientation(DropdownOrientation.normal);
+		
+		copyItemLink = LinkFactory.createToolLink("copy", translate("copy"), this);
+		copyItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_copy");
+		commandDropdown.addComponent(copyItemLink);
+		
+		if (securityCallback.canDelete()) {
+			deleteLink = LinkFactory.createToolLink("delete.item", translate("delete.item"), this);
+			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_delete");
+			commandDropdown.addComponent(deleteLink);
+		}
+		
+		exportItemLink = LinkFactory.createToolLink("export.item", translate("export.item"), this);
+		exportItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_export");
+		commandDropdown.addComponent(exportItemLink);
+
+		shareItemLink = LinkFactory.createToolLink("share.item", translate("share.item"), this);
+		shareItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_share");
+		commandDropdown.addComponent(shareItemLink);
+
 		statusDropdown = new Dropdown("process.states", "process.states", false, getTranslator());
 		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_" + metadatasCtrl.getItem().getQuestionStatus());
 		statusDropdown.setOrientation(DropdownOrientation.normal);
+		stackPanel.addTool(commandDropdown, Align.left);
 		
 		boolean hasDropdownComponents = false;
 		if (securityCallback.canSetDraft()) {
@@ -213,12 +236,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 			reviewLink = LinkFactory.createToolLink("process.review", translate("process.review"), this);
 			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_do_review");
 			stackPanel.addTool(reviewLink, Align.left);
-		}
-		
-		if (securityCallback.canDelete()) {
-			deleteLink = LinkFactory.createToolLink("delete.item", translate("delete.item"), this);
-			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
-			stackPanel.addTool(deleteLink, Align.left);
 		}
 		
 		previousItemLink = LinkFactory.createToolLink("previous", translate("previous"), this);
@@ -301,13 +318,13 @@ public class QuestionItemDetailsController extends BasicController implements To
 			openReview(ureq);
 		} else if(source == deleteLink) {
 			doConfirmDelete(ureq, metadatasCtrl.getItem());
-		} else if(source == shareItem) {
+		} else if(source == shareItemLink) {
 			doSelectGroup(ureq, metadatasCtrl.getItem());
-		} else if(source == exportItem) {
+		} else if(source == exportItemLink) {
 			doExport(ureq, metadatasCtrl.getItem());
 		} else if(source == editItem) {
 			doEdit(ureq, metadatasCtrl.getItem());
-		} else if(source == copyItem) {
+		} else if(source == copyItemLink) {
 			doCopy(ureq, metadatasCtrl.getItem());
 		} else if(source == nextItemLink) {
 			fireEvent(ureq, new QItemEvent("next", metadatasCtrl.getItem()));
