@@ -67,6 +67,16 @@ public interface QuestionItemsSource {
 	
 	public List<QuestionItemView> getItems(Collection<Long> keys);
 	
+	/**
+	 * Load the item view without any predefined restrictions. This can be
+	 * necessary when a reload is done after the item is possibly already removed
+	 * from the source.
+	 * 
+	 * @param itemKey
+	 * @return
+	 */
+	public QuestionItemView getItemWithoutRestrictions(Long key);
+	
 	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
 
 }

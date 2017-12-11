@@ -494,14 +494,8 @@ public class QuestionListController extends AbstractItemListController implement
 				QPoolEvent qce = (QPoolEvent)event;
 				if(QPoolEvent.ITEM_DELETED.equals(qce.getCommand())) {
 					fireEvent(ureq, qce);
-				} else if (QPoolEvent.ITEM_REVIEW_STARTED.equals(qce.getCommand())) {
-					doReloadAndNext(ureq, qce.getObjectKey());
-				} else if (QPoolEvent.ITEM_REVISION.equals(qce.getCommand())) {
-					doReloadAndNext(ureq, qce.getObjectKey());
-				} else if (QPoolEvent.ITEM_FINAL.equals(qce.getCommand())) {
-					doReloadAndNext(ureq, qce.getObjectKey());
-				} else if (QPoolEvent.ITEM_END_OF_LIFE.equals(qce.getCommand())) {
-					doReloadAndNext(ureq, qce.getObjectKey());
+				} else if (QPoolEvent.ITEM_STATUS_CHANGED.equals(qce.getCommand())) {
+					itemCollectionDirty = true;
 				}
 			}
 		} else if(source == addController) {
@@ -1106,8 +1100,8 @@ public class QuestionListController extends AbstractItemListController implement
 		WindowControl bwControl = addToHistory(ureq, item, null);
 		Integer itemIndex = getIndex(item.getKey());
 		int numberOfItems = getModel().getRowCount();
-		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, row.getSecurityCallback(), item,
-				itemIndex, numberOfItems);
+		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, item, row.getSecurityCallback(),
+				getSource(), itemIndex, numberOfItems);
 		listenTo(currentDetailsCtrl);
 		stackPanel.pushController(item.getTitle(), currentDetailsCtrl);
 		return currentDetailsCtrl;

@@ -157,6 +157,11 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
+	public QuestionItemView getItemWithoutRestrictions(Long key) {
+		return qpoolService.getItem(key, identity, null, null);
+	}
+
+	@Override
 	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setSearchString(query);

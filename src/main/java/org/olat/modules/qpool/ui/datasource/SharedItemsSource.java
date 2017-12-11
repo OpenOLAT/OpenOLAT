@@ -155,6 +155,12 @@ public class SharedItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
+	public QuestionItemView getItemWithoutRestrictions(Long key) {
+		Long resourceKey = group.getResource() != null? group.getResource().getKey(): null;
+		return qpoolService.getItem(key, identity, null, resourceKey);
+	}
+
+	@Override
 	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles);
 		params.setSearchString(query);

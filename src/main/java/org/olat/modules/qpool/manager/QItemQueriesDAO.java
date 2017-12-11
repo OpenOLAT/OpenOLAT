@@ -576,7 +576,7 @@ public class QItemQueriesDAO {
 					.setAuthor((Number)result[1])
 					.setTeacher((Number)result[2])
 					.setManager((Number)result[3])
-					.setEditableInShare((Number)result[5])
+					.setEditableInShare((Boolean)result[4])
 					.setMarked((Number)result[5])
 					.setRatedByIdentity((Number)result[6])
 					.setRating((Double)result[7])
@@ -653,7 +653,7 @@ public class QItemQueriesDAO {
 					.setAuthor((Number)result[1])
 					.setTeacher((Number)result[2])
 					.setManager((Number)result[3])
-					.setEditableInPool((Number)result[5])
+					.setEditableInPool((Boolean)result[4])
 					.setMarked((Number)result[5])
 					.setRatedByIdentity((Number)result[6])
 					.setRating((Double)result[7])
@@ -707,6 +707,83 @@ public class QItemQueriesDAO {
 			sb.append(" desc");
 		}
 		return sb;
+	}
+	
+	public QuestionItemView getItem(Long itemKey, Identity identity, Long restrictToPoolKey, Long restrictToGroupKey) {
+		if (itemKey == null || identity == null) return null;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select item, ")
+			.append(" (select count(sgmi.key) from ") .append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
+			.append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
+			.append(" ) as owners,")
+		    .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		    .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		    .append("     and competence.identity.key=:identityKey")
+		    .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
+		    .append(" ) as teacher,")
+		    .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		    .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		    .append("     and competence.identity.key=:identityKey")
+		    .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
+		    .append(" ) as manager,")
+			.append(" (select count(pool2item.key) from qpool2item pool2item")
+			.append("    where pool2item.item.key=item.key")
+			.append("      and pool2item.editable is true");
+		if (restrictToPoolKey != null) {
+			sb.append(" and pool2item.pool.key=:restrictToPoolKey");
+		}
+		sb.append(" ) as pools,")
+			.append(" (select count(shareditem.key) from qshareitem shareditem")
+			.append("    where shareditem.item.key=item.key")
+			.append("      and shareditem.editable is true");
+		if (restrictToGroupKey != null) {
+			sb.append(" and shareditem.resource=:restrictToGroupKey");
+		}
+		sb.append(" ) as groups,")
+			.append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
+			.append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
+			.append(" ) as marks,")
+			.append(" (select count(rating.key) from userrating as rating")
+			.append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+			.append("     and rating.creator.key=:identityKey")
+			.append(" ) as ratings,")
+			.append(" (select avg(rating.rating) from userrating as rating")
+			.append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+			.append(" ) as rating")
+			.append(" from questionitem item")
+			.append(" left join fetch item.ownerGroup ownerGroup")
+			.append(" left join fetch item.taxonomyLevel taxonomyLevel")
+			.append(" left join fetch item.type itemType")
+			.append(" left join fetch item.educationalContext educationalContext")
+			.append(" where item.key=:itemKey");
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+				.setParameter("itemKey", itemKey)
+				.setParameter("identityKey", identity.getKey());
+		if (restrictToPoolKey != null) {
+			query.setParameter("restrictToPoolKey", restrictToPoolKey);
+		}
+		if (restrictToGroupKey != null) {
+			query.setParameter("restrictToGroupKey", restrictToPoolKey);
+		}
+
+		ItemWrapper itemWrapper = null;
+		List<Object[]> results = query.getResultList();
+		if (!results.isEmpty()) {
+			Object[] result = results.get(0);
+			itemWrapper = ItemWrapper.builder((QuestionItemImpl)result[0])
+					.setAuthor((Number)result[1])
+					.setTeacher((Number)result[2])
+					.setManager((Number)result[3])
+					.setEditableInPool((Number)result[4])
+					.setEditableInShare((Number)result[5])
+					.setMarked((Number)result[6])
+					.setRatedByIdentity((Number)result[7])
+					.setRating((Double)result[8])
+					.create();
+		}
+		return itemWrapper;
 	}
 
 }

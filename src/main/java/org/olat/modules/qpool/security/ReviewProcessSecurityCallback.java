@@ -19,13 +19,12 @@
  */
 package org.olat.modules.qpool.security;
 
-import java.util.Arrays;
-import java.util.Collection;
-
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.ReviewService;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -40,13 +39,14 @@ import org.springframework.stereotype.Component;
 @Scope("prototype")
 public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallback {
 
-	public static Collection<QuestionStatus> editableQuestionStates =
-			Arrays.asList(QuestionStatus.draft, QuestionStatus.revised);
-
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;
 	
-	public void setItemView(QuestionItemView itemView) {
+	@Autowired
+	private ReviewService reviewService;
+
+	@Override
+	public void setQuestionItemView(QuestionItemView itemView) {
 		this.itemView = itemView;
 	}
 
@@ -56,7 +56,7 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	@Override
 	public boolean canEditQuestion() {
-		return editableQuestionStates.contains(itemView.getQuestionStatus())
+		return reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())
 				&& (itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare()) ;
 	}
 
@@ -74,7 +74,7 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	public boolean canStartReview() {
 		return itemView.isReviewableFormat()
 				&& itemView.isAuthor()
-				&& editableQuestionStates.contains(itemView.getQuestionStatus());
+				&& reviewService.isEditableQuestionStatus(itemView.getQuestionStatus());
 	}
 
 	@Override

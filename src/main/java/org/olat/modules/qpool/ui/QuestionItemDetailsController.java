@@ -57,6 +57,7 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ReviewService;
@@ -108,6 +109,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private final UserCommentsAndRatingsController commentsAndRatingCtr;
 	private final TooledStackedPanel stackPanel;
 
+	private final QuestionItemsSource itemSource;
 	private final QuestionItemSecurityCallback securityCallback;
 	private final Integer itemIndex;
 	private final int numberOfItems;
@@ -120,13 +122,15 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private ReviewService reviewService;
 	
 	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QuestionItemSecurityCallback securityCallback, QuestionItem item, Integer itemIndex, int numberOfItems) {
+			QuestionItem item, QuestionItemSecurityCallback securityCallback, QuestionItemsSource itemSource,
+			Integer itemIndex, int numberOfItems) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.securityCallback = securityCallback;
 		this.itemIndex = itemIndex;
 		this.numberOfItems = numberOfItems;
+		this.itemSource = itemSource;
 		
 		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback);
 		listenTo(metadatasCtrl);
@@ -160,6 +164,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	
 	@Override
 	public void initTools() {
+		stackPanel.removeAllTools();
 		statusDropdown = new Dropdown("process.states", "process.states", false, getTranslator());
 		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_" + metadatasCtrl.getItem().getQuestionStatus());
 		statusDropdown.setOrientation(DropdownOrientation.normal);
@@ -402,7 +407,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 				itemImpl.setTaxonomyLevel(taxonomyLevel);
 			}
 		}
-		doChangeQuestionStatus(ureq, item, QuestionStatus.review, QPoolEvent.ITEM_REVIEW_STARTED, "process.review.started");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.review, "process.review.started");
 	}
 	
 	private void openReview(UserRequest ureq) {
@@ -418,25 +423,24 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void doRate(UserRequest ureq, float rating, String comment) {
 		QuestionItem item = metadatasCtrl.getItem();
 		qpoolService.rateItem(item, getIdentity(), rating, comment);
-		//TODO uh darf der user sein rating anpassen?
-		//TODO uh ja --> manager anpassen
-		//TOFO uh nein. Hier sofort den rate buttoon disablen
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_STATUS_CHANGED, item.getKey()));
+		reloadData();
 	}
 
 	private void doStatusDraft(UserRequest ureq, QuestionItem item) {
-		doChangeQuestionStatus(ureq, item, QuestionStatus.draft, QPoolEvent.ITEM_DRAFT, "process.draft.set");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.draft, "process.draft.set");
 	}
 	
 	private void doStatusRevised(UserRequest ureq, QuestionItem item) {
-		doChangeQuestionStatus(ureq, item, QuestionStatus.revised, QPoolEvent.ITEM_REVISION, "process.revision.set");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.revised, "process.revision.set");
 	}
 	
 	private void doStatusReview(UserRequest ureq, QuestionItem item) {
-		doChangeQuestionStatus(ureq, item, QuestionStatus.review, QPoolEvent.ITEM_REVIEW, "process.review.set");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.review, "process.review.set");
 	}
 	
 	private void doStatusFinal(UserRequest ureq, QuestionItem item) {
-		doChangeQuestionStatus(ureq, item, QuestionStatus.finalVersion, QPoolEvent.ITEM_FINAL, "process.final.set");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.finalVersion, "process.final.set");
 	}
 	
 	private void doConfirmEndOfLife(UserRequest ureq, QuestionItem item) {
@@ -446,20 +450,31 @@ public class QuestionItemDetailsController extends BasicController implements To
 	}
 
 	private void doEndOfLife(UserRequest ureq, QuestionItem item) {
-		doChangeQuestionStatus(ureq, item, QuestionStatus.endOfLife, QPoolEvent.ITEM_END_OF_LIFE, "process.endOfLife.set");
+		doChangeQuestionStatus(ureq, item, QuestionStatus.endOfLife, "process.endOfLife.set");
 	}
 	
-	private void doChangeQuestionStatus(UserRequest ureq, QuestionItem item, QuestionStatus newStatus, String qPoolEvent,
-			String i18nInfo) {
+	private void doChangeQuestionStatus(UserRequest ureq, QuestionItem item, QuestionStatus newStatus, String i18nInfo) {
 		if(!newStatus.equals(item.getQuestionStatus()) && item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
 			itemImpl.setQuestionStatus(newStatus);
 			qpoolService.updateItem(itemImpl);
-			fireEvent(ureq, new QPoolEvent(qPoolEvent, item.getKey()));
+			fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_STATUS_CHANGED, item.getKey()));
 			showInfo(i18nInfo);
 		}
+		reloadData();
 	}
-	
+
+	private void reloadData() {
+		Long itemKey = metadatasCtrl.getItem().getKey();
+		QuestionItemView itemView = itemSource.getItemWithoutRestrictions(itemKey);
+		if (itemView != null) {
+			securityCallback.setQuestionItemView(itemView);
+			initTools();
+			// TODO uh A muss Metadata ctrl erneuert werden?
+//			metadatasCtrl.reloadData(item);
+		}
+	}
+
 	private void doCopy(UserRequest ureq, QuestionItemShort item) {
 		List<QuestionItem> copies = qpoolService.copyItems(getIdentity(), Collections.singletonList(item));
 		if(copies.size() == 1) {

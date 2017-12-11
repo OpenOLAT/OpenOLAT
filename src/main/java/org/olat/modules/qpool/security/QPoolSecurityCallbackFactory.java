@@ -58,7 +58,7 @@ public class QPoolSecurityCallbackFactory {
 	private QuestionItemSecurityCallback createAdministratorSecurityCallback(QuestionItemView itemView,
 			QuestionItemsSource questionItemSource) {
 		AdministratorQItemSecurityCallback administratorSecurityCallback = CoreSpringFactory.getImpl(AdministratorQItemSecurityCallback.class);
-		administratorSecurityCallback.setItemView(itemView);
+		administratorSecurityCallback.setQuestionItemView(itemView);
 		administratorSecurityCallback.setQuestionItemSource(questionItemSource);
 		return administratorSecurityCallback;
 	}
@@ -66,7 +66,7 @@ public class QPoolSecurityCallbackFactory {
 	private QuestionItemSecurityCallback createReviewProcessSecurityCallback(QuestionItemView itemView,
 			QuestionItemsSource questionItemSource) {
 		ReviewProcessSecurityCallback reviewProcessSecurityCallback = CoreSpringFactory.getImpl(ReviewProcessSecurityCallback.class);
-		reviewProcessSecurityCallback.setItemView(itemView);
+		reviewProcessSecurityCallback.setQuestionItemView(itemView);
 		reviewProcessSecurityCallback.setQuestionItemSource(questionItemSource);
 		return reviewProcessSecurityCallback;
 	}
@@ -74,7 +74,7 @@ public class QPoolSecurityCallbackFactory {
 	private QuestionItemSecurityCallback createProcesslessSecurityCallback(QuestionItemView itemView,
 			QuestionItemsSource questionItemSource) {
 		ProcesslessSecurityCallback processlessSecurityCallback = CoreSpringFactory.getImpl(ProcesslessSecurityCallback.class);
-		processlessSecurityCallback.setItemView(itemView);
+		processlessSecurityCallback.setQuestionItemView(itemView);
 		processlessSecurityCallback.setQuestionItemSource(questionItemSource);
 		return processlessSecurityCallback;
 	}

@@ -37,8 +37,9 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;
-	
-	public void setItemView(QuestionItemView itemView) {
+
+	@Override
+	public void setQuestionItemView(QuestionItemView itemView) {
 		this.itemView = itemView;
 	}
 

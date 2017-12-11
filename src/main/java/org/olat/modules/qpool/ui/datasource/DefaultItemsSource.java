@@ -46,12 +46,14 @@ import org.olat.modules.qpool.ui.QuestionItemsSource;
 public abstract class DefaultItemsSource implements QuestionItemsSource {
 
 	private boolean removeEnabled = false;
+	private final Identity identity;
 	private final String name;
 	protected final QPoolService qpoolService;
 	private final SearchQuestionItemParams defaultParams;
 	
 	public DefaultItemsSource(Identity me, Roles roles, String name) {
 		this.name = name;
+		this.identity = me;
 		defaultParams = new SearchQuestionItemParams(me, roles);
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 	}
@@ -109,6 +111,11 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 		params.setItemKeys(keys);
 		ResultInfos<QuestionItemView> items = qpoolService.getItems(params, 0, -1);
 		return items.getObjects();
+	}
+
+	@Override
+	public QuestionItemView getItemWithoutRestrictions(Long key) {
+		return qpoolService.getItem(key, identity, getDefaultParams().getPoolKey(), null);
 	}
 
 	@Override

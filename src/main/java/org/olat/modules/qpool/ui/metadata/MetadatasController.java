@@ -266,7 +266,7 @@ public class MetadatasController extends BasicController {
 		return item;
 	}
 	
-	private void reloadData(QuestionItem reloadedItem) {
+	public void reloadData(QuestionItem reloadedItem) {
 		this.item = reloadedItem;
 		generalCtrl.setItem(reloadedItem);
 		educationalCtrl.setItem(reloadedItem);

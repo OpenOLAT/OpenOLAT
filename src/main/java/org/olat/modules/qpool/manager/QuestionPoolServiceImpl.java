@@ -587,6 +587,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		}
 		return sb.append(')').toString();
 	}
+	
+	@Override
+	public QuestionItemView getItem(Long key, Identity identity, Long restrictToPoolKey, Long restrictToGroupKey) {
+		return itemQueriesDao.getItem(key, identity, restrictToPoolKey, restrictToGroupKey);
+	}
 
 	@Override
 	public void shareItemsWithGroups(List<? extends QuestionItemShort> items, List<BusinessGroup> groups, boolean editable) {

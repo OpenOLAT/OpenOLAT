@@ -79,6 +79,8 @@ public interface QPoolService {
 	
 	public ResultInfos<QuestionItemView> getItems(SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
 	
+	public QuestionItemView getItem(Long key, Identity identity, Long restrictToPoolKey, Long restrictToGroupKey);
+	
 	/**
 	 * Search the question items using the specified taxonomy level
 	 * 

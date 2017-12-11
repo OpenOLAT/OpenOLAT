@@ -115,6 +115,11 @@ public class EmptyItemsSource implements QuestionItemsSource {
     }
 
     @Override
+    public QuestionItemView getItemWithoutRestrictions(Long itemKey) {
+        return null;
+    }
+
+    @Override
     public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
         return new DefaultResultInfos<QuestionItemView>();
     }

@@ -44,7 +44,8 @@ public class AdministratorQItemSecurityCallback implements QuestionItemSecurityC
 	@Autowired
 	private QuestionPoolModule qpoolModule;
 
-	public void setItemView(QuestionItemView itemView) {
+	@Override
+	public void setQuestionItemView(QuestionItemView itemView) {
 		this.itemView = itemView;
 	}
 
