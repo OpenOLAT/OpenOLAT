@@ -28,6 +28,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
+import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -196,6 +197,57 @@ public class TaxonomyLevelDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, levels.size());
 		Assert.assertEquals(level, levels.get(0));
 	}
+	
+	@Test
+	public void searchLevelsByDisplayName() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-105A", "Named taxonomy", null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("L-1A", "A basic level", "", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("L-1G", "A complex level", "", null, null, null, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+		
+		TaxonomyLevelSearchParameters searchParams = new TaxonomyLevelSearchParameters();
+		searchParams.setQuickSearch("basic");
+		List<TaxonomyLevel> levels = taxonomyLevelDao.searchLevels(taxonomy, searchParams);
+		Assert.assertNotNull(levels);
+		Assert.assertEquals(1, levels.size());
+		Assert.assertEquals(level1, levels.get(0));
+		Assert.assertNotEquals(level2, levels.get(0));
+	}
+	
+	@Test
+	public void searchLevelsByKey() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-105B", "Named taxonomy", null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("L-1E", "A numerated level", "", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("L-1F", "A numerated level", "", null, null, null, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+		
+		//key
+		TaxonomyLevelSearchParameters searchParams = new TaxonomyLevelSearchParameters();
+		searchParams.setQuickSearch(level1.getKey().toString());
+		List<TaxonomyLevel> levels = taxonomyLevelDao.searchLevels(taxonomy, searchParams);
+		Assert.assertNotNull(levels);
+		Assert.assertEquals(1, levels.size());
+		Assert.assertEquals(level1, levels.get(0));
+		Assert.assertNotEquals(level2, levels.get(0));
+	}
+	
+	@Test
+	public void searchLevelsByExternalId() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-105B", "Named taxonomy", null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("L-1C", "A numerated level", "", "34765", null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("L-1D", "A numerated level", "", "34766", null, null, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+		
+		//key
+		TaxonomyLevelSearchParameters searchParams = new TaxonomyLevelSearchParameters();
+		searchParams.setQuickSearch("34765");
+		List<TaxonomyLevel> levels = taxonomyLevelDao.searchLevels(taxonomy, searchParams);
+		Assert.assertNotNull(levels);
+		Assert.assertEquals(1, levels.size());
+		Assert.assertEquals(level1, levels.get(0));
+		Assert.assertNotEquals(level2, levels.get(0));
+	}
+	
 	
 	@Test
 	public void updateTaxonomyLevel_simple() {

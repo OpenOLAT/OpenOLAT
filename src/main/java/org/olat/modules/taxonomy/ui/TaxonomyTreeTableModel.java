@@ -19,7 +19,10 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -27,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -37,13 +41,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 public class TaxonomyTreeTableModel extends DefaultFlexiTreeTableDataModel<TaxonomyLevelRow>
 implements FilterableFlexiTableModel  {
 	
+	
 	public TaxonomyTreeTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
 	
 	@Override
 	public void filter(List<FlexiTableFilter> filters) {
-		/*
 		if(filters != null && filters.size() > 0 && filters.get(0) != null) {
 			Set<Long> typeKeys = new HashSet<>();
 			boolean noType = false;
@@ -61,19 +65,18 @@ implements FilterableFlexiTableModel  {
 					filteredRows.add(row);
 				}
 			}
-			super.setObjects(filteredRows);
+			setFilteredObjects(filteredRows);
 		} else {
 			super.setObjects(backupRows);
-		}*/
+		}
 	}
-	/*
+	
 	private boolean accept(TaxonomyLevelRow row, Set<Long> typeKeys, boolean noType) {
 		if(row.getTypeKey() == null) {
 			return noType;
 		}
 		return typeKeys.contains(row.getTypeKey());
 	}
-	*/
 
 	@Override
 	public DefaultFlexiTableDataModel<TaxonomyLevelRow> createCopyWithEmptyList() {

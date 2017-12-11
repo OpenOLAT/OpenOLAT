@@ -25,6 +25,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
+import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 
 /**
  * 
@@ -79,6 +80,13 @@ public interface TaxonomyService {
 	 * @return A list of levels
 	 */
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref);
+	
+	/**
+	 * @param ref The root taxonomy (optional)
+	 * @param searchParams Search parameters
+	 * @return A list of levels
+	 */
+	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref, TaxonomyLevelSearchParameters searchParams);
 	
 	/**
 	 * Load a taxonomy level by is reference.

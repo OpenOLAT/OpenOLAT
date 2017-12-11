@@ -35,7 +35,7 @@ import java.util.List;
 public abstract class DefaultFlexiTreeTableDataModel<U extends FlexiTreeTableNode> extends DefaultFlexiTableDataModel<U>
 implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	
-	private List<U> backupRows;
+	protected List<U> backupRows;
 
 	public DefaultFlexiTreeTableDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -53,6 +53,10 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 			indentation++;
 		}
 		return indentation;
+	}
+	
+	protected final void setFilteredObjects(List<U> objects) {
+		super.setObjects(objects);
 	}
 
 	@Override

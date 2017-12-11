@@ -17,37 +17,23 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.form.flexible.impl.elements.table;
+package org.olat.modules.taxonomy.model;
 
 /**
  * 
- * Initial date: 15 nov. 2017<br>
+ * Initial date: 11 déc. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
- * @param <T>
  */
-public interface FlexiTreeTableDataModel<T extends FlexiTreeTableNode> extends FlexiTableDataModel<T> {
+public class TaxonomyLevelSearchParameters {
 	
-	/**
-	 * @param row The specified row
-	 * @return The indentation of the specified row
-	 */
-	public int getIndentation(int row);
-	
-	/**
-	 * @param row The specified row
-	 * @return true if the row has some children
-	 */
-	public boolean hasChildren(int row);
-	
-	public boolean isOpen(int row);
-	
-	public void focus(int row);
-	
-	public void open(int row);
-	
-	public void close(int row);
-	
-	public void popBreadcrumb(FlexiTreeTableNode node);
+	private String quickSearch;
 
+	public String getQuickSearch() {
+		return quickSearch;
+	}
+
+	public void setQuickSearch(String search) {
+		quickSearch = search;
+	}
 }

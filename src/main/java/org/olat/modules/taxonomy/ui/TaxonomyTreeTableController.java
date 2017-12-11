@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeNodeComparator;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -67,6 +68,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.olat.modules.taxonomy.ui.TaxonomyTreeTableModel.TaxonomyLevelCols;
 import org.olat.modules.taxonomy.ui.events.DeleteTaxonomyLevelEvent;
 import org.olat.modules.taxonomy.ui.events.MoveTaxonomyLevelEvent;
@@ -122,7 +124,9 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, TaxonomyLevelCols.key));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.displayName, new TreeNodeFlexiCellRenderer()));
+		TreeNodeFlexiCellRenderer treeNodeRenderer = new TreeNodeFlexiCellRenderer();
+		treeNodeRenderer.setFlatBySearchAndFilter(true);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.displayName, treeNodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.typeIdentifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TaxonomyLevelCols.numOfChildren));
@@ -153,11 +157,14 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 			resources.add(new FlexiTableFilter(type.getDisplayName(), type.getKey().toString()));
 		}
 		resources.add(new FlexiTableFilter(translate("filter.no.level.type"), "-"));
+		resources.add(new FlexiTableFilter(translate("show.all"), "-", true));
 		return resources;
 	}
 	
 	private void loadModel() {
-		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
+		TaxonomyLevelSearchParameters searchParams = new TaxonomyLevelSearchParameters();
+		searchParams.setQuickSearch(tableEl.getQuickSearchString());
+		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy, searchParams);
 		List<TaxonomyLevelRow> rows = new ArrayList<>(taxonomyLevels.size());
 		Map<Long,TaxonomyLevelRow> levelToRows = new HashMap<>();
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
@@ -233,6 +240,8 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 					TaxonomyLevelRow row = model.getObject(se.getIndex());
 					doSelectTaxonomyLevel(ureq, row);
 				}
+			} else if(event instanceof FlexiTableSearchEvent) {
+				loadModel();
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;

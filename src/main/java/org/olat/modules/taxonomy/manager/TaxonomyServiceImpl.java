@@ -40,6 +40,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
+import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -110,6 +111,14 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref) {
 		return taxonomyLevelDao.getLevels(ref);
+	}
+
+	@Override
+	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref, TaxonomyLevelSearchParameters searchParams) {
+		if(searchParams == null) {
+			return taxonomyLevelDao.getLevels(ref);
+		}
+		return taxonomyLevelDao.searchLevels(ref, searchParams);
 	}
 
 	@Override
