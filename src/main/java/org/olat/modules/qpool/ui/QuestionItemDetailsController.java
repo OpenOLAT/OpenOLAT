@@ -223,6 +223,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 		
 		previousItemLink = LinkFactory.createToolLink("previous", translate("previous"), this);
 		previousItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_previous");
+		if (numberOfItems <= 1) {
+			previousItemLink.setEnabled(false);
+		}
 		stackPanel.addTool(previousItemLink);
 		
 		String numbersOf = translate("item.numbers.of", new String[]{
@@ -233,6 +236,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 		
 		nextItemLink = LinkFactory.createToolLink("next", translate("next"), this);
 		nextItemLink.setIconLeftCSS("o_icon io_icon-lg o_icon_next");
+		if (numberOfItems <= 1) {
+			nextItemLink.setEnabled(false);
+		}
 		stackPanel.addTool(nextItemLink);
 		
 		showMetadataLink = LinkFactory.createToolLink("metadata.show", translate("metadata.show"), this);

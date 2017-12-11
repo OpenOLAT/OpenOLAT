@@ -1094,21 +1094,26 @@ public class QuestionListController extends AbstractItemListController implement
 	}
 
 	protected Activateable2 doSelectActivateable2(UserRequest ureq, ItemRow row) {
+		Integer index = getIndex(row.getKey());
+		int count = getModel().getRowCount();
+		return doSelectActivateable2(ureq, row, index, count);
+	}
+
+	private Activateable2 doSelectNewItem(UserRequest ureq, QuestionItem newItem) {
+		ItemRow row = wrapItem(newItem);
+		return doSelectActivateable2(ureq, row, 0, 1);
+	}
+
+	private Activateable2 doSelectActivateable2(UserRequest ureq, ItemRow row, int index, int count) {
 		removeAsListenerAndDispose(currentDetailsCtrl);
 		
 		QuestionItem item = qpoolService.loadItemById(row.getKey());
 		WindowControl bwControl = addToHistory(ureq, item, null);
-		Integer itemIndex = getIndex(item.getKey());
-		int numberOfItems = getModel().getRowCount();
 		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, item, row.getSecurityCallback(),
-				getSource(), itemIndex, numberOfItems);
+				getSource(), index, count);
 		listenTo(currentDetailsCtrl);
 		stackPanel.pushController(item.getTitle(), currentDetailsCtrl);
 		return currentDetailsCtrl;
 	}
 	
-	private Activateable2 doSelectNewItem(UserRequest ureq, QuestionItem item) {
-		ItemRow row = wrapItem(item);
-		return doSelectActivateable2(ureq, row);	
-	}
 }
