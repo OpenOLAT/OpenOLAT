@@ -876,7 +876,7 @@ public class WebDAVDispatcherImpl
                 resp.sendError(HttpServletResponse.SC_CONFLICT);
             }
         } catch(QuotaExceededException e) {
-            resp.sendError(HttpServletResponse.SC_CONFLICT);
+            resp.sendError(WebdavStatus.SC_INSUFFICIENT_STORAGE);
         } finally {
             if (resourceInputStream != null) {
                 try {
@@ -1739,7 +1739,7 @@ public class WebDAVDispatcherImpl
                 copyResource(req, errorList, childSrc, childDest, moved);
             }
         } else if (sourceResource.isFile()) {
-        	WebResource destResource = resources.getResource(dest);
+            	WebResource destResource = resources.getResource(dest);
             if (!destResource.exists() && !destResource.getPath().endsWith("/")) {
                 int lastSlash = destResource.getPath().lastIndexOf('/');
                 if (lastSlash > 0) {
@@ -1752,14 +1752,14 @@ public class WebDAVDispatcherImpl
                 }
             }
 
-        	WebResource movedFrom = moved ? sourceResource : null; 
+            WebResource movedFrom = moved ? sourceResource : null; 
             try {
 				if (!resources.write(dest, sourceResource.getInputStream(), false, movedFrom)) {
 				    errorList.put(source, new Integer(WebdavStatus.SC_INTERNAL_SERVER_ERROR));
 				    return false;
 				}
 			} catch (QuotaExceededException e) {
-				errorList.put(source, new Integer(WebdavStatus.SC_INSUFFICIENT_SPACE_ON_RESOURCE));
+				errorList.put(source, new Integer(WebdavStatus.SC_INSUFFICIENT_STORAGE));
 			    return false;
 			}
         } else {
@@ -2822,6 +2822,17 @@ class WebdavStatus {
      * a lock held by another principal.
      */
     public static final int SC_LOCKED = 423;
+    
+    /**
+     * The 507 (Insufficient Storage) status code means the method
+     * could not be performed on the resource because the server is
+     * unable to store the representation needed to successfully complete
+     * the request. This condition is considered to be temporary. If
+     * the request that received this status code was the result of a
+     * user action, the request MUST NOT be repeated until it is
+     * requested by a separate user .
+     */
+    public static final int SC_INSUFFICIENT_STORAGE = 507;
 
 
     // ------------------------------------------------------------ Initializer
@@ -2857,6 +2868,7 @@ class WebdavStatus {
                          "Insufficient Space On Resource");
         addStatusCodeMap(SC_METHOD_FAILURE, "Method Failure");
         addStatusCodeMap(SC_LOCKED, "Locked");
+        addStatusCodeMap(SC_INSUFFICIENT_STORAGE, "Insufficient Storage");
     }
 
 
