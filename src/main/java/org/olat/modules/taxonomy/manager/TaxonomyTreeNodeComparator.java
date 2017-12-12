@@ -95,7 +95,7 @@ public class TaxonomyTreeNodeComparator implements Comparator<INode> {
 		
 		if(c == 0) {
 			if(s1 == null || s2 == null) {
-				c = compareNullObjects(title1, title2);
+				c = compareNullObjects(s1, s2);
 			} else {
 				c = s1.compareTo(s2);
 			}
