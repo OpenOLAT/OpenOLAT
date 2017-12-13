@@ -125,6 +125,16 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof AssessmentTestComposerController) {
+			if(event == Event.CHANGED_EVENT) {
+				reloadRuntime = true;
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(testStatisticLink == source) {
 			doAssessmentTestStatistics(ureq);

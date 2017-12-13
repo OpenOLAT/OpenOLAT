@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,6 +38,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateImpl;
@@ -102,12 +104,11 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertNotNull(certificate.getKey());
 		Assert.assertNotNull(certificate.getUuid());
 		Assert.assertEquals(entry.getOlatResource().getKey(), certificate.getArchivedResourceKey());
-		
-		//need to sleep
-		sleep(2000);
-		
 		//check if the pdf exists / flush cache, reload the entry with the updated path
 		dbInstance.commitAndCloseSession();
+
+		waitCertificate(certificate.getKey());
+
 		Certificate reloadCertificate = certificatesManager.getCertificateById(certificate.getKey());
 		VFSLeaf certificateFile = certificatesManager.getCertificateLeaf(reloadCertificate);
 		Assert.assertNotNull(certificateFile);
@@ -243,7 +244,9 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertNotNull(certificate2);
 		dbInstance.commitAndCloseSession();
 		
-		
+		waitCertificate(certificate1.getKey());
+		waitCertificate(certificate2.getKey());
+
 		Calendar lastestNews = Calendar.getInstance();
 		lastestNews.add(Calendar.HOUR_OF_DAY, -1);
 		
@@ -436,5 +439,17 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertNotNull(reloadedCertificate.getArchivedResourceKey());
 		Assert.assertEquals(resourceKey, reloadedCertificate.getArchivedResourceKey());
 		Assert.assertEquals(entry.getOlatResource(), ((CertificateImpl)reloadedCertificate).getOlatResource());
+	}
+	
+	
+	private void waitCertificate(Long certificateKey) {
+		//wait until the certificate is created
+		waitForCondition(new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificateKey);
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus());
+			}
+		}, 30000);
 	}
 }

@@ -135,6 +135,8 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 	}
 	
 	public boolean validateRequest(TestPlanNodeKey tpnk) {
+		if(tpnk == null) return false;
+		
 		String id = "oo" + (tpnk.toString().replace(":", "_")) + "_";
 		for(String parameter:qtiItem.getRootForm().getRequestParameterSet()) {
 			if(parameter.contains(id)) {

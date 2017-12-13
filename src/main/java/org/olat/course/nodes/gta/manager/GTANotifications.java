@@ -368,13 +368,21 @@ class GTANotifications {
 								displayName,
 								formatter.formatDateAndTime(task.getRevisionsDueDate())	
 						};
-						appendSubscriptionItem("notifications.correction.duedate", params, assessedIdentity, correctionDate, coach);
+						if(group != null) {
+							appendSubscriptionItem("notifications.correction.duedate", params, group, correctionDate, coach);
+						} else {
+							appendSubscriptionItem("notifications.correction.duedate", params, assessedIdentity, correctionDate, coach);
+						}
 					} else {
 						String[] params = new String[] {
 								getTaskName(task),
 								displayName
 						};
-						appendSubscriptionItem("notifications.correction", params, assessedIdentity, correctionDate, coach);
+						if(group != null) {
+							appendSubscriptionItem("notifications.correction", params, group, correctionDate, coach);
+						} else {
+							appendSubscriptionItem("notifications.correction", params, assessedIdentity, correctionDate, coach);
+						}
 					}
 					sendNotificationDueDate = false;
 				}
@@ -388,8 +396,13 @@ class GTANotifications {
 							correction.getName(),
 							author
 					};
-					appendSubscriptionItemForFile("notifications.correction.doc", params, assessedIdentity,
-							"[correction:0]", correction, correctionDate, coach);
+					if(group != null) {
+						appendSubscriptionItemForFile("notifications.correction.doc", params, group,
+								"[correction:0]", correction, correctionDate, coach);
+					} else {
+						appendSubscriptionItemForFile("notifications.correction.doc", params, assessedIdentity,
+								"[correction:0]", correction, correctionDate, coach);
+					}
 				}
 			}
 		}
@@ -466,13 +479,21 @@ class GTANotifications {
 										displayName,
 										formatter.formatDateAndTime(task.getRevisionsDueDate())
 								};
-								appendSubscriptionItem("notifications.correction.duedate", params, assessedIdentity, correctionDate, coach);
+								if(group != null) {
+									appendSubscriptionItem("notifications.correction.duedate", params, group, correctionDate, coach);
+								} else {
+									appendSubscriptionItem("notifications.correction.duedate", params, assessedIdentity, correctionDate, coach);
+								}
 							} else {
 								String[] params = new String[] {
 										getTaskName(task),
 										displayName
 								};
-								appendSubscriptionItem("notifications.correction", params, assessedIdentity, correctionDate, coach);
+								if(group != null) {
+									appendSubscriptionItem("notifications.correction", params, group, correctionDate, coach);
+								} else {
+									appendSubscriptionItem("notifications.correction", params, assessedIdentity, correctionDate, coach);
+								}
 							}
 							sendNotificationDueDate = false;
 						}
@@ -486,8 +507,15 @@ class GTANotifications {
 									correction.getName(),
 									author
 							};
-							appendSubscriptionItemForFile("notifications.correction.doc", params, assessedIdentity,
-									"[correction:" + i + "]", correction, correctionDate, coach);
+							
+							if(group != null) {
+								appendSubscriptionItemForFile("notifications.correction.doc", params, group,
+										"[correction:" + i + "]", correction, correctionDate, coach);
+							} else {
+								appendSubscriptionItemForFile("notifications.correction.doc", params, assessedIdentity,
+										"[correction:" + i + "]", correction, correctionDate, coach);
+							}
+							
 						}
 					}
 				}

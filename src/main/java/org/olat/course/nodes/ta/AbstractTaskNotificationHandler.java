@@ -119,7 +119,7 @@ public abstract class AbstractTaskNotificationHandler extends LogDelegator {
 				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
 			}
 		} catch (Exception e) {
-			getLogger().error("Error creating task notifications for subscriber: " + subscriber.getKey(), e);
+			getLogger().error("Cannot create task notifications for subscriber: " + subscriber.getKey(), e);
 			checkPublisher(p);
 			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
 		}
