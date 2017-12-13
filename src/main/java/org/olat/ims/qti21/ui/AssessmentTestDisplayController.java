@@ -1053,7 +1053,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		if(!qtiWorksCtrl.validatePresentedItem(currentItemKey)) {
 			logError("Response send by browser doesn't match current item key", null);
 			ServletUtil.printOutRequestParameters(ureq.getHttpReq());
-			showWarning("error.reload.question");
+			if(candidateSession != null && candidateSession.getFinishTime() != null) {
+				showWarning("error.test.closed");
+			} else {
+				showWarning("error.reload.question");
+			}
 			return;//this is not the right node in the plan
 		}
 		
