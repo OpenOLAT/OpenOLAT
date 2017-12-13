@@ -20,6 +20,7 @@
 
 package org.olat.core.util.i18n.ui;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -394,6 +395,21 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	// no form ok events to catch
 	}
 
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		targetArea.clearError();
+		try {
+			String val = targetArea.getValue();
+			MessageFormat.format(val, "1", "2", "3");
+		} catch (IllegalArgumentException e) {
+			targetArea.setErrorKey("edit.error.invalid.item", new String[] { e.getLocalizedMessage() });
+			allOk &= false;
+		}
+		return allOk;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -402,6 +418,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	 * org.olat.core.gui.components.form.flexible.FormItem,
 	 * org.olat.core.gui.components.form.flexible.impl.FormEvent)
 	 */
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == bundlesSelection) {
 			for (int i = 0; i < i18nItems.size(); i++) {
@@ -448,13 +465,17 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 			// don't save
 			doPrevious(ureq);
 		} else if (source == saveLink) {
-			// only save
-			doSaveCurrentItem(ureq);
+			if(validateFormLogic(ureq)) {
+				// only save
+				doSaveCurrentItem(ureq);
+			}
 		} else if (source == saveNextLink) {
-			// first save
-			doSaveCurrentItem(ureq);
-			// second update
-			doNext(ureq);
+			if(validateFormLogic(ureq)) {
+				// first save
+				doSaveCurrentItem(ureq);
+				// second update
+				doNext(ureq);
+			}
 		} else if (source == nextLink) {
 			// don't save
 			doNext(ureq);
