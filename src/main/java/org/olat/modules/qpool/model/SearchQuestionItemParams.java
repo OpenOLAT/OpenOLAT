@@ -27,6 +27,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -45,7 +46,7 @@ public class SearchQuestionItemParams {
 	private boolean favoritOnly;
 	private Identity author;
 	
-	private Long taxonomyLevelKey;
+	private TaxonomyLevel taxonomyLevel;
 	private QuestionStatus questionStatus;
 	private Identity onlyAuthor;
 	private Identity excludeAuthor;
@@ -99,12 +100,12 @@ public class SearchQuestionItemParams {
 		this.author = author;
 	}
 	
-	public Long getTaxonomyLevelKey() {
-		return taxonomyLevelKey;
+	public TaxonomyLevel getTaxonomyLevel() {
+		return taxonomyLevel;
 	}
 
-	public void setTaxonomyLevelKey(Long taxonomyLevelKey) {
-		this.taxonomyLevelKey = taxonomyLevelKey;
+	public void setTaxonomyLevel(TaxonomyLevel taxonomyLevel) {
+		this.taxonomyLevel = taxonomyLevel;
 	}
 
 	public QuestionStatus getQuestionStatus() {
@@ -180,7 +181,7 @@ public class SearchQuestionItemParams {
 		clone.condQueries = getCondQueries();
 		clone.favoritOnly = favoritOnly;
 		clone.author = author;
-		clone.taxonomyLevelKey = taxonomyLevelKey;
+		clone.taxonomyLevel = taxonomyLevel;
 		clone.questionStatus = questionStatus;
 		clone.onlyAuthor = onlyAuthor;
 		clone.excludeAuthor = excludeAuthor;

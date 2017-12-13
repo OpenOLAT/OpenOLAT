@@ -42,6 +42,7 @@ import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.QuestionPoolMainEditorController;
+import org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
@@ -59,6 +60,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private final Identity identity;
 	private final Roles roles;
 	private final QPoolService qpoolService;
+	private final QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 	private final Translator translator;
 	private final QPoolSecurityCallback securityCallback;
 	
@@ -74,12 +76,13 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 				roles,
 				Util.createPackageTranslator(QuestionPoolMainEditorController.class, locale),
 				CoreSpringFactory.getImpl(QPoolService.class),
+				CoreSpringFactory.getImpl(QPoolTaxonomyTreeBuilder.class),
 				CoreSpringFactory.getImpl(QPoolSecurityCallbackFactory.class)
 				);
 	}
 	
 	public QuestionPoolMenuTreeModel(TooledStackedPanel stackPanel, Identity identity, Roles roles, Translator translator,
-			QPoolService qpoolService, QPoolSecurityCallbackFactory qPoolSecurityCallbackFactory) {
+			QPoolService qpoolService, QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder, QPoolSecurityCallbackFactory qPoolSecurityCallbackFactory) {
 		super();
 		this.stackPanel = stackPanel;
 		this.identity = identity;
@@ -87,6 +90,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		this.securityCallback = qPoolSecurityCallbackFactory.createQPoolSecurityCallback(roles);
 		this.translator = translator;
 		this.qpoolService = qpoolService;
+		this.qpoolTaxonomyTreeBuilder = qpoolTaxonomyTreeBuilder;
 		buildTreeModel();
 	}
 
@@ -185,7 +189,8 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private void buildMyTaxonomyNodes(TreeNode parentNode) {
 		if (!securityCallback.canUseReviewProcess()) return;
 		
-		List<TaxonomyLevel> taxonomyLevels = qpoolService.getTaxonomyLevel(identity, TaxonomyCompetenceTypes.teach);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.teach);
+		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
 			TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel, QuestionStatus.draft, identity, null, false);
 			parentNode.addChild(node);
@@ -205,7 +210,8 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	public void buildReviewSubTreeModel(TreeNode rootNode) {
 		if (!securityCallback.canUseReviewProcess()) return;
 		
-		List<TaxonomyLevel> taxonomyLevels = qpoolService.getTaxonomyLevel(identity, TaxonomyCompetenceTypes.teach);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.teach);
+		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		if(!taxonomyLevels.isEmpty()) {
 			reviewNode = new GenericTreeNode(translator.translate("menu.review"));
 			reviewNode.setTitle(translator.translate("menu.review"));
@@ -221,7 +227,8 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	public void buildFinalSubTreeModel(TreeNode rootNode) {
 		if (!securityCallback.canUseReviewProcess()) return;
 
-		List<TaxonomyLevel> taxonomyLevels = qpoolService.getTaxonomyLevel(identity, TaxonomyCompetenceTypes.manage);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage);
+		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		if (!taxonomyLevels.isEmpty()) {
 			finalNode = new GenericTreeNode(translator.translate("menu.final"));
 			finalNode.setTitle(translator.translate("menu.final"));

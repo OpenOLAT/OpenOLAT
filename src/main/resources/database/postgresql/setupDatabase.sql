@@ -3149,6 +3149,7 @@ alter table o_tax_taxonomy_level add constraint tax_level_to_tax_level_idx forei
 create index idx_tax_level_to_tax_level_idx on o_tax_taxonomy_level (fk_parent);
 alter table o_tax_taxonomy_level add constraint tax_level_to_type_idx foreign key (fk_type) references o_tax_taxonomy_level_type (id);
 create index idx_tax_level_to_type_idx on o_tax_taxonomy_level (fk_type);
+create index idx_tax_level_path_key_idx on o_tax_taxonomy_level (t_m_path_keys);
 
 alter table o_tax_taxonomy_competence add constraint tax_comp_to_tax_level_idx foreign key (fk_level) references o_tax_taxonomy_level (id);
 create index idx_tax_comp_to_tax_level_idx on o_tax_taxonomy_competence (fk_level);

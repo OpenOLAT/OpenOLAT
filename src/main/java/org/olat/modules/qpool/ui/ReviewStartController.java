@@ -19,8 +19,6 @@
  */
 package org.olat.modules.qpool.ui;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -29,9 +27,9 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,51 +47,36 @@ public class ReviewStartController extends FormBasicController {
 	private SingleSelection taxonomyLevelEl;
 
 	private final QuestionItem item;
-	private final List<TaxonomyLevel> taxonomyLevels;
 	
 	@Autowired
-	private QPoolService qpoolService;
+	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 	
 	public ReviewStartController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl);
 		this.item = item;
-		this.taxonomyLevels = qpoolService.getTaxonomyLevel(ureq.getIdentity(), TaxonomyCompetenceTypes.teach);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(getIdentity(), TaxonomyCompetenceTypes.teach);
 		
 		initForm(ureq);
 	}
 	
 	public TaxonomyLevel getSelectedTaxonomyLevel() {
-		Long selectedTaxonomyLevelKey = Long.parseLong(taxonomyLevelEl.getSelectedKey());
-		for (TaxonomyLevel taxonomyLevel: taxonomyLevels) {
-			if (taxonomyLevel.getKey().equals(selectedTaxonomyLevelKey)) {
-				return taxonomyLevel;
-			}
-		}
-		return null;
+		String selectedKey = taxonomyLevelEl.getSelectedKey();
+		return qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("process.start.review.description");
 		
-		String[] taxonomyKeys = new String[taxonomyLevels.size() + 1];
-		String[] taxonomyValues = new String[taxonomyLevels.size() + 1];
-		taxonomyKeys[0] = NO_TAXONOMY_LEVEL_KEY;
-		taxonomyValues[0] = "-";
-		for(int i=taxonomyLevels.size(); i-->0; ) {
-			TaxonomyLevel taxonomyLevel = taxonomyLevels.get(i);
-			taxonomyKeys[i + 1] = taxonomyLevel.getKey().toString();
-			taxonomyValues[i + 1] = taxonomyLevel.getDisplayName();
-		}
-		
-		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout, taxonomyKeys, taxonomyValues, null);
+		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
+				qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
 		taxonomyLevelEl.setMandatory(true);
 		if (item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl) item;
 			TaxonomyLevel selectedTaxonomyLevel = itemImpl.getTaxonomyLevel();
 			if(selectedTaxonomyLevel != null) {
 				String selectedTaxonomyLevelKey = String.valueOf(selectedTaxonomyLevel.getKey());
-				for(String taxonomyKey:taxonomyKeys) {
+				for(String taxonomyKey: qpoolTaxonomyTreeBuilder.getSelectableKeys()) {
 					if(taxonomyKey.equals(selectedTaxonomyLevelKey)) {
 						taxonomyLevelEl.select(taxonomyKey, true);
 					}

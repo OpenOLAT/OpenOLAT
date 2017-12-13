@@ -53,7 +53,7 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 		this.taxonomyLevel = taxonomyLevel;
 		this.questionStatus = questionStatus;
 		this.onlyAuthor = onlyAuthor;
-		getDefaultParams().setTaxonomyLevelKey(taxonomyLevel.getKey());
+		getDefaultParams().setTaxonomyLevel(taxonomyLevel);
 		getDefaultParams().setQuestionStatus(questionStatus);
 		getDefaultParams().setOnlyAuthor(onlyAuthor);
 		getDefaultParams().setExcludeAuthor(excludeAuthor);

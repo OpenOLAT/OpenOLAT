@@ -289,7 +289,7 @@ public class QItemQueriesDAO {
 			.append(" inner join fetch item.taxonomyLevel taxonomyLevel")
 			.append(" left join fetch item.type itemType")
 			.append(" left join fetch item.educationalContext educationalContext")
-			.append(" where taxonomyLevel.key=:taxonomyLevelKey");
+			.append(" where taxonomyLevel.materializedPathKeys like :pathKeys");
 		// Exclude QTI1.2 in review process.
 		// This query is only used in review process, so exclude them always.
 		sb.append(" and item.format<>'IMS QTI 1.2'");
@@ -323,7 +323,7 @@ public class QItemQueriesDAO {
 		appendOrderBy(sb, "item", orderBy);
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
-				.setParameter("taxonomyLevelKey", params.getTaxonomyLevelKey())
+				.setParameter("pathKeys", params.getTaxonomyLevel().getMaterializedPathKeys() + "%")
 				.setParameter("identityKey", params.getIdentity().getKey());
 		if (params.getQuestionStatus() != null) {
 			query.setParameter("questionStatus", params.getQuestionStatus().toString());
@@ -369,7 +369,7 @@ public class QItemQueriesDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(item) from questionitem item ")
 		  .append(" inner join item.taxonomyLevel taxonomyLevel")
-		  .append(" where taxonomyLevel.key=:taxonomyLevelKey");
+		  .append(" where taxonomyLevel.materializedPathKeys like :pathKeys");
 		if(params.getQuestionStatus() != null) {
 			sb.append(" and item.status=:questionStatus");
 		}
@@ -397,7 +397,7 @@ public class QItemQueriesDAO {
 		
 		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Number.class)
-				.setParameter("taxonomyLevelKey", params.getTaxonomyLevelKey());
+				.setParameter("pathKeys", params.getTaxonomyLevel().getMaterializedPathKeys() + "%");
 		if(params.getQuestionStatus() != null) {
 			query.setParameter("questionStatus", params.getQuestionStatus().toString());
 		}

@@ -338,6 +338,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.qpool.manager.QuestionPoolServiceImplTest.class,
 	org.olat.modules.qpool.manager.review.LowerLimitProviderTest.class,
 	org.olat.modules.qpool.manager.review.ReviewServiceImplTest.class,
+	org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilderTest.class,
 	org.olat.modules.webFeed.manager.FeedManagerImplTest.class,
 	org.olat.modules.webFeed.manager.RomeFeedFetcherTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.AutoAccessManagerImplTest.class,

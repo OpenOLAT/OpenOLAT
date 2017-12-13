@@ -458,7 +458,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public int countItems(SearchQuestionItemParams searchParams) {
 		if(searchParams.isFavoritOnly()) {
 			return itemQueriesDao.countFavoritItems(searchParams);
-		} else if(searchParams.getTaxonomyLevelKey() != null) {
+		} else if(searchParams.getTaxonomyLevel() != null) {
 			return itemQueriesDao.countItemsOfTaxonomyLevel(searchParams);
 		} else if(searchParams.getPoolKey() != null) {
 			return poolDao.countItemsInPool(searchParams);
@@ -473,7 +473,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			int firstResult, int maxResults, SortKey... orderBy) {
 		if(searchParams.isFavoritOnly()) {
 			return searchFavorits(searchParams, firstResult, maxResults, orderBy);
-		} else if(searchParams.getTaxonomyLevelKey() != null) {
+		} else if(searchParams.getTaxonomyLevel() != null) {
 			return getItemsByTaxonomyLevel(searchParams, firstResult, maxResults, orderBy);
 		} else if(searchParams.getAuthor() != null) {
 			return searchByAuthor(searchParams, firstResult, maxResults, orderBy);
