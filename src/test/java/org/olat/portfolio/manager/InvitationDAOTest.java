@@ -213,12 +213,11 @@ public class InvitationDAOTest extends OlatTestCase {
 		
 		//clean the invitations
 		invitationDao.cleanUpInvitations();
+		dbInstance.commitAndCloseSession();
 		
 		//check that the invitation not was not deleted
 		boolean afterVisible = epFrontendManager.isMapVisible(invitee, map.getOlatResource());
 		Assert.assertTrue(afterVisible);
 	}
-	
-	
 
 }

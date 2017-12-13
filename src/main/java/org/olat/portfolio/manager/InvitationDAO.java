@@ -303,7 +303,7 @@ public class InvitationDAO {
 		cal.add(Calendar.HOUR, -6);
 		Date dateLimit = cal.getTime();
 
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(512);
 		sb.append("select invitation from ").append(InvitationImpl.class.getName()).append(" as invitation ")
 		  .append(" inner join invitation.baseGroup baseGroup ")
 		  .append(" where invitation.creationDate<:dateLimit")//someone can create an invitation but not add it to a policy within millisecond
@@ -331,15 +331,17 @@ public class InvitationDAO {
 			//normally only one identity
 			for(Identity identity:identities) {
 				if(identity.getStatus().compareTo(Identity.STATUS_VISIBLE_LIMIT) >= 0) {
-	  			//already deleted
+					//already deleted
 				} else if(securityManager.isIdentityInSecurityGroup(identity, olatUserSecGroup)) {
-	  			//out of scope
+					//out of scope
 				} else {
-	  			//delete user
+					//delete user
 					UserDeletionManager.getInstance().deleteIdentity(identity);
 				}
 			}
-			dbInstance.getCurrentEntityManager().remove(invitation);
+			Invitation invitationRef = dbInstance.getCurrentEntityManager()
+				.getReference(InvitationImpl.class, invitation.getKey());
+			dbInstance.getCurrentEntityManager().remove(invitationRef);
 			dbInstance.commit();
 		}
 	}
