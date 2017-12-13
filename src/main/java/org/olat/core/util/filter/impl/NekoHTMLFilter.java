@@ -50,8 +50,10 @@ public class NekoHTMLFilter implements Filter {
 	private static final OLog log = Tracing.createLoggerFor(NekoHTMLFilter.class);
 	
 	public static final Set<String> blockTags = new HashSet<String>();
+	public static final Set<String> toBeSkippedTags = new HashSet<String>();
 	static {
 		blockTags.addAll(Arrays.asList("address","blockquote","br","dir","div","dl","fieldset","form","h1","h2","h3","h4","h5","h6","hr","noframes","noscript","ol","p","pre","table","ul","li"));
+		toBeSkippedTags.addAll(Arrays.asList("script","style"));
 	}
 
 	@Override
@@ -136,7 +138,7 @@ public class NekoHTMLFilter implements Filter {
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) {
 			String elem = localName.toLowerCase();
-			if("script".equals(elem)) {
+			if(toBeSkippedTags.contains(elem)) {
 				collect = false;
 			// add a single whitespace before each block element but only if not there is not already a whitespace there
 			} else {
@@ -175,7 +177,7 @@ public class NekoHTMLFilter implements Filter {
 		@Override
 		public void endElement(String uri, String localName, String qName) {
 			String elem = localName.toLowerCase();
-			if("script".equals(elem)) {
+			if(toBeSkippedTags.contains(elem)) {
 				collect = true;
 			} else {
 				if(pretty && ("li".equals(elem) || "p".equals(elem))) {

@@ -96,6 +96,13 @@ public class NekoHTMLFilterTest{
 		t("hello<br /> world", "hello world");
 	}
 
+	@Test public void testStyleTags() {
+		t("Nice<style>.o_m_sub h4 {margin: 0 0 10px 0;}</style>Style", "NiceStyle");
+	}
+	@Test public void testScriptTags() {
+		t("Gu<script>function foo() { alert(\"Hello World\";}</script>gus", "Gugus");
+	}
+	
 	@Test public void testTagsWithAttributes() {
 		t("<font color='red'>hello</font> world", "hello world");
 		t("<font color=\"red\">hello</font> world", "hello world");
