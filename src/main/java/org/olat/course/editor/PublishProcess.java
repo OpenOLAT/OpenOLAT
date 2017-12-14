@@ -714,9 +714,15 @@ public class PublishProcess {
 		manager.setLeaveSetting(accessAndProps.getRepositoryEntry(), accessAndProps.getSetting());
 		
 		List<OfferAccess> offerAccess = accessAndProps.getOfferAccess();
+		// 1: add new and update existing offerings
 		ACService acService = CoreSpringFactory.getImpl(ACService.class);
 		for (OfferAccess newLink : offerAccess) {
 			acService.saveOfferAccess(newLink);
+		}
+		// 2: remove offerings not available anymore
+		List<OfferAccess> deletedOfferAccess = accessAndProps.getDeletedOfferAccess();
+		for (OfferAccess deletedLink : deletedOfferAccess) {
+			acService.deletedLinkToMethod(deletedLink);
 		}
 		
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, author, Change.modifiedAtPublish, "publish");
