@@ -26,15 +26,18 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
+import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionImpl;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -627,5 +630,97 @@ public class AssessmentTestSessionDAO {
 				.setParameter("entryKey", entry.getKey())
 				.executeUpdate();
 		return marks + itemSessions + sessions + responses;
+	}
+	
+	/**
+	 * @param searchParams
+	 * @return The returned list is order by user name and test session key
+	 */
+	public List<AssessmentTestSession> getTestSessionsOfResponse(QTI21StatisticSearchParams searchParams) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select testSession from qtiassessmenttestsession testSession ")
+		  .append(" inner join fetch testSession.assessmentEntry assessmentEntry")
+		  .append(" left join assessmentEntry.identity as ident")
+		  .append(" left join ident.user as usr");
+		
+		decorateTestSessionPermission(sb, searchParams);
+		//need to be anonymized
+		sb.append(" order by usr.lastName, testSession.key");
+		
+		TypedQuery<AssessmentTestSession> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentTestSession.class);
+		decorateTestSessionPermission(query, searchParams) ;
+		return query.getResultList();
+	}
+	
+	/**
+	 * Decorate a testSession query with the permissions of the specified search parameters.
+	 * 
+	 * @param sb
+	 * @param searchParams
+	 */
+	protected static final void decorateTestSessionPermission(StringBuilder sb, QTI21StatisticSearchParams searchParams) {
+	  	sb.append(" where testSession.testEntry.key=:testEntryKey")
+	  	  .append("  and testSession.finishTime is not null and testSession.authorMode=false");
+		if(searchParams.getCourseEntry() != null || searchParams.getTestEntry() != null) {
+			sb.append(" and testSession.repositoryEntry.key=:repoEntryKey");
+		}
+		if(StringHelper.containsNonWhitespace(searchParams.getNodeIdent())) {
+			sb.append(" and testSession.subIdent=:subIdent");
+		}
+		sb.append(" and (");
+		
+		if(searchParams.getLimitToGroups() != null) {
+			sb.append(" testSession.identity.key in (select membership.identity.key from  bgroupmember as membership, repoentrytogroup as rel")
+			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and rel.group.key in (:limitGroupKeys)");
+			if(!searchParams.isViewAllUsers()) {
+				sb.append(" and membership.role='").append(GroupRoles.participant.name()).append("'");
+			}
+			sb.append(" )");
+		} else if(searchParams.getLimitToIdentities() != null) {
+			sb.append(" testSession.identity.key in (select membership.identity.key from  bgroupmember as membership, repoentrytogroup as rel")
+			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.identity.key in (:limitIdentityKeys)")
+			  .append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
+			  .append(" )");
+		} else if(searchParams.isViewAllUsers()) {
+			sb.append(" testSession.identity.key is not null");
+		} else {
+			sb.append(" testSession.identity.key in (select membership.identity.key from  bgroupmember as membership, repoentrytogroup as rel")
+			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key ")
+			  .append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
+			  .append(" )");
+		}
+		if(searchParams.isViewAnonymUsers()) {
+			sb.append(" or testSession.anonymousIdentifier is not null");
+		}
+		sb.append(")");
+	}
+	
+	/**
+	 * Decorate a testSession query with the permissions of the specified search parameters.
+	 * 
+	 * @param sb
+	 * @param searchParams
+	 */
+	protected static final void decorateTestSessionPermission(TypedQuery<?> query, QTI21StatisticSearchParams searchParams) {
+		query.setParameter("testEntryKey", searchParams.getTestEntry().getKey());
+		if(searchParams.getCourseEntry() != null) {
+			query.setParameter("repoEntryKey", searchParams.getCourseEntry().getKey());
+		} else {
+			query.setParameter("repoEntryKey", searchParams.getTestEntry().getKey());
+		}
+		if(StringHelper.containsNonWhitespace(searchParams.getNodeIdent())) {
+			query.setParameter("subIdent", searchParams.getNodeIdent());
+		}
+		if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
+			List<Long> keys = searchParams.getLimitToGroups().stream()
+					.map(group -> group.getKey()).collect(Collectors.toList());
+			query.setParameter("limitGroupKeys", keys);
+		}
+		if(searchParams.getLimitToIdentities() != null && searchParams.getLimitToIdentities().size() > 0) {
+			List<Long> keys = searchParams.getLimitToIdentities().stream()
+					.map(group -> group.getKey()).collect(Collectors.toList());
+			query.setParameter("limitIdentityKeys", keys);
+		}
 	}
 }
