@@ -151,16 +151,14 @@ public class TaxonomyTreeBuilder {
 		boolean someInvisible;
 		do {
 			someInvisible = false;
-			List<TaxonomyTreeNode> children = new ArrayList<>(parent.getChildCount());
-			for(int i=0; i<parent.getChildCount(); i++) {
-				children.add((TaxonomyTreeNode)parent.getChildAt(i));
-			}
+			List<TaxonomyTreeNode> children = listChildren(parent);
 			
 			for(TaxonomyTreeNode child:children) {
-				if(!child.isVisible()) {
+				if(!child.isVisible())  {
+					List<TaxonomyTreeNode> childrenOfChild = listChildren(child);
 					parent.remove(child);
-					for(int i=0; i<child.getChildCount(); i++) {
-						parent.addChild(child.getChildAt(i));
+					for(TaxonomyTreeNode childOfChild : childrenOfChild) {
+						parent.addChild(childOfChild);
 					}
 					someInvisible = true;
 				}
@@ -170,6 +168,14 @@ public class TaxonomyTreeBuilder {
 		for(int i=0; i<parent.getChildCount(); i++) {
 			trimVisiblity((TaxonomyTreeNode)parent.getChildAt(i));
 		}
+	}
+	
+	private List<TaxonomyTreeNode> listChildren(TaxonomyTreeNode parent) {
+		List<TaxonomyTreeNode> children = new ArrayList<>(parent.getChildCount());
+		for(int i=0; i<parent.getChildCount(); i++) {
+			children.add((TaxonomyTreeNode)parent.getChildAt(i));
+		}
+		return children;
 	}
 	
 	private void computePermissions(TaxonomyTreeNode root) {
