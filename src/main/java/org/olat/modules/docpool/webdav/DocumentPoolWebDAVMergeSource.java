@@ -44,6 +44,7 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
+import org.olat.modules.taxonomy.model.TaxonomyTreeNodeType;
 import org.olat.modules.taxonomy.ui.component.TaxonomyVFSSecurityCallback;
 
 /**
@@ -78,6 +79,7 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 			if(taxonomy != null) {
 				String  templatesDir = Util.createPackageTranslator(DocumentPoolMainController.class, identityEnv.getLocale())
 					.translate("document.pool.templates");
+				
 				TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, identityEnv.getIdentity(), null,
 						identityEnv.getRoles().isOLATAdmin(), docPoolModule.isTemplatesDirectoryEnabled(), templatesDir);
 				TreeModel model = builder.buildTreeModel();
@@ -102,14 +104,12 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 			levelContainer.setLocalSecurityCallback(new DefaultVFSSecurityCallback());
 			
 			boolean hasDocuments = false;
-			if(taxonomyNode.getTaxonomyLevel() != null && taxonomyNode.isDocumentsLibraryEnabled() && taxonomyNode.isCanRead()) {
+			if(taxonomyNode.getType() == TaxonomyTreeNodeType.templates) {
+				// the templates
+				return addTemplates(taxonomyNode, taxonomy);
+			} else if(taxonomyNode.getTaxonomyLevel() != null && taxonomyNode.isDocumentsLibraryEnabled() && taxonomyNode.isCanRead()) {
 				// the real thing
-				VFSContainer documents = taxonomyService.getDocumentsLibrary(taxonomyNode.getTaxonomyLevel());
-				SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext();
-				TaxonomyVFSSecurityCallback secCallback = new TaxonomyVFSSecurityCallback(taxonomyNode, subscriptionCtx);
-				documents.setLocalSecurityCallback(secCallback);
-				VFSContainer namedContainer = new NamedContainerImpl("_documents", documents);
-				levelContainer.addItem(namedContainer);
+				levelContainer.addItem(addDocument(taxonomyNode));
 				hasDocuments = true;
 			}
 			
@@ -123,5 +123,22 @@ class DocumentPoolWebDAVMergeSource extends WebDAVMergeSource {
 			container = hasDocuments ? levelContainer : null;
 		}
 		return container;
+	}
+	
+	private VFSContainer addTemplates(TaxonomyTreeNode taxonomyNode, Taxonomy taxonomy) {
+		VFSContainer documents = taxonomyService.getDocumentsLibrary(taxonomy);
+		SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext();
+		TaxonomyVFSSecurityCallback secCallback = new TaxonomyVFSSecurityCallback(taxonomyNode, subscriptionCtx);
+		System.out.println(taxonomyNode.isCanWrite());
+		documents.setLocalSecurityCallback(secCallback);
+		return new NamedContainerImpl(taxonomyNode.getTitle(), documents);
+	}
+	
+	private VFSContainer addDocument(TaxonomyTreeNode taxonomyNode) {
+		VFSContainer documents = taxonomyService.getDocumentsLibrary(taxonomyNode.getTaxonomyLevel());
+		SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext();
+		TaxonomyVFSSecurityCallback secCallback = new TaxonomyVFSSecurityCallback(taxonomyNode, subscriptionCtx);
+		documents.setLocalSecurityCallback(secCallback);
+		return new NamedContainerImpl("_documents", documents);
 	}
 }

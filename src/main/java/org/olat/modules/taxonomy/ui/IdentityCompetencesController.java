@@ -107,6 +107,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.taxonomyLevelIdentifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.taxonomyLevelDisplayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.taxonomyLevelExternalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.taxonomyLevelType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.type, new TaxonomyCompetenceTypeRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", translate("remove"), "remove"));
 		
