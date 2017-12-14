@@ -65,12 +65,20 @@ public class TaxonomyTreeNodeComparator implements Comparator<INode> {
 		}
 		
 		int c = 0;
-		if(type1 == TaxonomyTreeNodeType.directory && type2 == TaxonomyTreeNodeType.directory) {
+		if(type1 == TaxonomyTreeNodeType.templates && type2 == TaxonomyTreeNodeType.templates) {
 			c = 0;
-		} else if(type1 == TaxonomyTreeNodeType.directory) {
+		} else if(type1 == TaxonomyTreeNodeType.templates) {
 			return -1;
-		} else if(type2 == TaxonomyTreeNodeType.directory) {
+		} else if(type2 == TaxonomyTreeNodeType.templates) {
 			return 1;
+		}
+		
+		if(type1 == TaxonomyTreeNodeType.lostAndFound && type2 == TaxonomyTreeNodeType.lostAndFound) {
+			c = 0;
+		} else if(type1 == TaxonomyTreeNodeType.lostAndFound) {
+			return 1;
+		} else if(type2 == TaxonomyTreeNodeType.lostAndFound) {
+			return -1;
 		}
 		
 		if(c == 0) {

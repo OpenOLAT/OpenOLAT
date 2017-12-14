@@ -142,7 +142,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 				TreeNode rootNode = taxonomyTree.getTreeModel().getRootNode();
 				if(rootNode.getChildCount() > 0) {
 					TaxonomyTreeNode node = (TaxonomyTreeNode)rootNode.getChildAt(0);
-					if(node.getType() == TaxonomyTreeNodeType.directory) {
+					if(node.getType() == TaxonomyTreeNodeType.templates || node.getType() == TaxonomyTreeNodeType.lostAndFound) {
 						DocumentDirectoryController directoryCtrl = doSelectTaxonomyDirectory(ureq, node);
 						if(directoryCtrl != null) {
 							taxonomyTree.setSelectedNode(node);
@@ -205,7 +205,8 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 			case taxonomy:
 				doSelectTaxonomy(ureq);
 				break;
-			case directory:
+			case templates:
+			case lostAndFound:
 				doSelectTaxonomyDirectory(ureq, node);
 				break;
 			case taxonomyLevel:

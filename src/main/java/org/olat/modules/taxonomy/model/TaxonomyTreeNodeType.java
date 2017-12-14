@@ -28,7 +28,8 @@ package org.olat.modules.taxonomy.model;
 public enum TaxonomyTreeNodeType {
 	
 	taxonomy,
-	directory,
+	templates,
+	lostAndFound,
 	taxonomyLevel
 
 }

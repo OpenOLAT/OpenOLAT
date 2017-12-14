@@ -40,6 +40,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
+import org.olat.modules.taxonomy.model.TaxonomyTreeNodeType;
 
 /**
  * Build the tree of taxonomy
@@ -86,7 +87,7 @@ public class TaxonomyTreeBuilder {
 			//taxonomy directory
 			if(enableTemplates) {
 				VFSContainer taxonomyDirectory = taxonomyService.getDocumentsLibrary(taxonomy);
-				TaxonomyTreeNode taxonomyDirectorNode = new TaxonomyTreeNode(taxonomy, taxonomyDirectory);
+				TaxonomyTreeNode taxonomyDirectorNode = new TaxonomyTreeNode(taxonomy, taxonomyDirectory, TaxonomyTreeNodeType.templates);
 				if(locale == null) {
 					locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
 				}
@@ -223,6 +224,16 @@ public class TaxonomyTreeBuilder {
 					hasWrite |= hasWriteAccess(type, null);
 				}
 			}
+			node.setCanRead(hasRead);
+			node.setCanWrite(hasWrite);
+		} else if(node.getType() == TaxonomyTreeNodeType.templates) {
+			hasRead = true;
+			hasWrite = isTaxonomyAdmin;
+			node.setCanRead(hasRead);
+			node.setCanWrite(hasWrite);
+		} else if(node.getType() == TaxonomyTreeNodeType.lostAndFound) {
+			hasRead = isTaxonomyAdmin;
+			hasWrite = false;
 			node.setCanRead(hasRead);
 			node.setCanWrite(hasWrite);
 		}

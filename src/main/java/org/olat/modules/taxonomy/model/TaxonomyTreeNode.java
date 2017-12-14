@@ -50,11 +50,11 @@ public class TaxonomyTreeNode extends GenericTreeNode {
 		nodeType = TaxonomyTreeNodeType.taxonomy;
 	}
 	
-	public TaxonomyTreeNode(Taxonomy taxonomy, VFSContainer directory) {
+	public TaxonomyTreeNode(Taxonomy taxonomy, VFSContainer directory, TaxonomyTreeNodeType type) {
 		super();
 		this.directory = directory;
 		this.taxonomy = taxonomy;
-		nodeType = TaxonomyTreeNodeType.directory;
+		nodeType = type;
 	}
 	
 	public TaxonomyTreeNode(Taxonomy taxonomy, TaxonomyLevel taxonomyLevel) {
@@ -72,7 +72,7 @@ public class TaxonomyTreeNode extends GenericTreeNode {
 	
 	public boolean isVisible() {
 		return nodeType == TaxonomyTreeNodeType.taxonomy 
-				|| nodeType == TaxonomyTreeNodeType.directory 
+				|| nodeType == TaxonomyTreeNodeType.templates 
 				|| (taxonomyLevel != null && (taxonomyLevel.getType() == null ? true : taxonomyLevel.getType().isVisible()));
 	}
 	
@@ -87,7 +87,7 @@ public class TaxonomyTreeNode extends GenericTreeNode {
 	}
 	
 	public boolean isCanRead() {
-		return canRead || nodeType == TaxonomyTreeNodeType.directory;
+		return canRead || nodeType == TaxonomyTreeNodeType.templates;
 	}
 
 	public void setCanRead(boolean canRead) {
@@ -124,7 +124,8 @@ public class TaxonomyTreeNode extends GenericTreeNode {
 	public String getIconCssClass() {
 		switch(nodeType) {
 			case taxonomy: return "o_icon_taxonomy";
-			case directory: return "o_icon_taxonomy_templates";
+			case templates: return "o_icon_taxonomy_templates";
+			case lostAndFound: return "o_icon_taxonomy_templates";
 			case taxonomyLevel: {
 				TaxonomyLevelType type = taxonomyLevel.getType();
 				if(type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
