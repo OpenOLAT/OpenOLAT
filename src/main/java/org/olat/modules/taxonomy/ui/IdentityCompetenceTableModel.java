@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.modules.taxonomy.TaxonomyLevelType;
 
 /**
  * 
@@ -62,6 +63,10 @@ implements SortableFlexiTableDataModel<IdentityCompetenceRow> {
 			case taxonomyExternalId: return row.getTaxonomy().getExternalId();
 			case taxonomyLevelIdentifier: return row.getTaxonomyLevel().getIdentifier();
 			case taxonomyLevelDisplayName: return row.getTaxonomyLevel().getDisplayName();
+			case taxonomyLevelType: {
+				TaxonomyLevelType type = row.getTaxonomyLevel().getType();
+				return type == null ? null : type.getDisplayName();
+			}
 			case taxonomyLevelExternalId: return row.getTaxonomyLevel().getExternalId();
 			case type: return row.getCompetenceType(); 
 			default: return null;
@@ -79,6 +84,7 @@ implements SortableFlexiTableDataModel<IdentityCompetenceRow> {
 		taxonomyExternalId("table.header.taxonomy.externalId"),
 		taxonomyLevelIdentifier("table.header.taxonomy.level.identifier"),
 		taxonomyLevelDisplayName("table.header.taxonomy.level.displayName"),
+		taxonomyLevelType("table.header.taxonomy.level.type"),
 		taxonomyLevelExternalId("table.header.taxonomy.level.externalId"),
 		type("table.header.competence.type");
 		

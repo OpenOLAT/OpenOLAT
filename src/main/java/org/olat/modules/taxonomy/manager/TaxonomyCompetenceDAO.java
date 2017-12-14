@@ -103,6 +103,7 @@ public class TaxonomyCompetenceDAO {
 		  .append(" inner join competence.identity ident")
 		  .append(" inner join fetch competence.taxonomyLevel taxonomyLevel")
 		  .append(" inner join fetch taxonomyLevel.taxonomy taxonomy")
+		  .append(" left join fetch taxonomyLevel.type taxonomyLevelType")
 		  .append(" where ident.key=:identityKey");
 		if(typeList.size() > 0) {
 			sb.append(" and competence.type in (:types)");
