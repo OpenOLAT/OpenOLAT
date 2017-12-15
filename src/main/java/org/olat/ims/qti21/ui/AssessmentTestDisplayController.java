@@ -575,6 +575,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		TestSessionState testSessionState = testSessionController.getTestSessionState();
 		qtiService.cancelTestSession(candidateSession, testSessionState);
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+		candidateSession = null;
 	}
 	
 	private boolean timeLimitBarrier(UserRequest ureq) {

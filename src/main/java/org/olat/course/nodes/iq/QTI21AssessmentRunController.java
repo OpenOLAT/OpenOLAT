@@ -465,7 +465,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == displayCtrl) {
 			if(event == Event.CANCELLED_EVENT) {
-				doExitAssessment(ureq, event, false);
+				doCancelAssessment(ureq);
 				initAssessment(ureq);
 				showInfo("assessment.test.cancelled");
 			} else if("suspend".equals(event.getCommand())) {
@@ -654,6 +654,22 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			finalOptions = new QTI21OverrideOptions(maxTimeLimit);
 		}
 		return finalOptions;
+	}
+	
+	private void doCancelAssessment(UserRequest ureq) {
+		if(displayContainerController != null) {
+			displayContainerController.deactivate(ureq);
+		} else {
+			getWindowControl().pop();
+		}	
+		
+		removeHistory(ureq);
+		if(courseNode instanceof IQTESTCourseNode) {
+			((IQTESTCourseNode)courseNode).updateCurrentCompletion(userCourseEnv, getIdentity(), null, null, Role.user);
+		}
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
+		addToHistory(ureq, ores, null);
 	}
 
 	/**
