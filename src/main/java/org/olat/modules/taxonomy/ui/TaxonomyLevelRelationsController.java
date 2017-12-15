@@ -73,6 +73,7 @@ public class TaxonomyLevelRelationsController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("table.relations.empty");
+		tableEl.setAndLoadPersistedPreferences(ureq, "tax-level-relations");
 	}
 	
 	private void loadModel() {

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.search.indexer;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -102,7 +103,7 @@ public abstract class TaxonomyLibraryIndexer extends AbstractHierarchicalIndexer
 		List<ContextEntry> entries = businessControl.getEntriesDownTheControls();
 		if(entries.size() == 1) {
 			TaxonomyRef taxonomy = new TaxonomyRefImpl(contextEntry.getOLATResourceable().getResourceableId());
-			return taxonomyService.hasCompetence(taxonomy, identity, TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach);
+			return taxonomyService.hasTaxonomyCompetences(taxonomy, identity, new Date(), TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach);
 		}
 		return super.checkAccess(businessControl, identity, roles);
 	}

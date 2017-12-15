@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.manager;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -230,18 +231,18 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
-	public boolean hasTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity) {
-		return taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, identity);
+	public boolean hasTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity, Date date) {
+		return taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, identity, date);
 	}
 
 	@Override
-	public List<TaxonomyCompetence> getTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity) {
-		return taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy, identity);
+	public List<TaxonomyCompetence> getTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity, Date date) {
+		return taxonomyCompetenceDao.getCompetencesByTaxonomy(taxonomy, identity, date);
 	}
 
 	@Override
-	public boolean hasCompetence(TaxonomyRef taxonomy, IdentityRef identity, TaxonomyCompetenceTypes... competences) {
-		return taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, identity, competences);
+	public boolean hasTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity, Date date, TaxonomyCompetenceTypes... competences) {
+		return taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, identity, date, competences);
 	}
 
 	@Override
@@ -265,8 +266,14 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
-	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity, TaxonomyCompetenceTypes competence) {
-		return taxonomyCompetenceDao.createTaxonomyCompetence(competence, taxonomyLevel, identity);
+	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity,
+			TaxonomyCompetenceTypes competence, Date expiration) {
+		return taxonomyCompetenceDao.createTaxonomyCompetence(competence, taxonomyLevel, identity, expiration);
+	}
+
+	@Override
+	public TaxonomyCompetence updateTaxonomyLevelCompetence(TaxonomyCompetence competence) {
+		return taxonomyCompetenceDao.updateCompetence(competence);
 	}
 
 	@Override

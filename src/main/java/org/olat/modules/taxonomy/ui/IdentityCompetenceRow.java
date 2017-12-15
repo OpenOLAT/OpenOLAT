@@ -19,10 +19,14 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+
+import java.util.Date;
+
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
 
 /**
  * 
@@ -52,5 +56,33 @@ public class IdentityCompetenceRow {
 
 	public TaxonomyCompetenceTypes getCompetenceType() {
 		return competence.getCompetenceType();
+	}
+	
+	public Date getCompetenceExpiration() {
+		return competence.getExpiration();
+	}
+	
+	public boolean isManaged() {
+		TaxonomyLevel level = competence.getTaxonomyLevel();
+		TaxonomyCompetenceTypes competenceType = competence.getCompetenceType();
+		TaxonomyLevelManagedFlag marker = TaxonomyLevelManagedFlag.getCorrespondingFlag(competenceType);
+		return TaxonomyLevelManagedFlag.isManaged(level, marker);
+	}
+	
+	@Override
+	public int hashCode() {
+		return competence == null ? 2364 : competence.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof IdentityCompetenceRow) {
+			IdentityCompetenceRow row = (IdentityCompetenceRow)obj;
+			return competence != null && competence.equals(row.competence);
+		}
+		return false;
 	}
 }

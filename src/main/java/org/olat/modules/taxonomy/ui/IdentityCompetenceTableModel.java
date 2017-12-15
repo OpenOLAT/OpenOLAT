@@ -58,6 +58,7 @@ implements SortableFlexiTableDataModel<IdentityCompetenceRow> {
 	@Override
 	public Object getValueAt(IdentityCompetenceRow row, int col) {
 		switch(IdCompetenceCols.values()[col]) {
+			case key: return row.getCompetence().getKey();
 			case taxonomyIdentifier: return row.getTaxonomy().getIdentifier();
 			case taxonomyDisplayName: return row.getTaxonomy().getDisplayName();
 			case taxonomyExternalId: return row.getTaxonomy().getExternalId();
@@ -69,6 +70,8 @@ implements SortableFlexiTableDataModel<IdentityCompetenceRow> {
 			}
 			case taxonomyLevelExternalId: return row.getTaxonomyLevel().getExternalId();
 			case type: return row.getCompetenceType(); 
+			case expiration: return row.getCompetence().getExpiration();
+			case remove: return Boolean.valueOf(!row.isManaged());
 			default: return null;
 		}
 	}
@@ -79,6 +82,7 @@ implements SortableFlexiTableDataModel<IdentityCompetenceRow> {
 	}
 	
 	public enum IdCompetenceCols implements FlexiSortableColumnDef {
+		key("table.header.key"),
 		taxonomyIdentifier("table.header.taxonomy.identifier"),
 		taxonomyDisplayName("table.header.taxonomy.displayName"),
 		taxonomyExternalId("table.header.taxonomy.externalId"),
@@ -86,7 +90,9 @@ implements SortableFlexiTableDataModel<IdentityCompetenceRow> {
 		taxonomyLevelDisplayName("table.header.taxonomy.level.displayName"),
 		taxonomyLevelType("table.header.taxonomy.level.type"),
 		taxonomyLevelExternalId("table.header.taxonomy.level.externalId"),
-		type("table.header.competence.type");
+		type("table.header.competence.type"),
+		expiration("table.header.competence.expiration"),
+		remove("remove");
 		
 		private final String i18nHeaderKey;
 		

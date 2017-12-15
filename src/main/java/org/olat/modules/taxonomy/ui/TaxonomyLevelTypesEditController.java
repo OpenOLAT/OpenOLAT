@@ -110,6 +110,7 @@ public class TaxonomyLevelTypesEditController extends FormBasicController implem
 		model = new TaxonomyLevelTypesTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "types", model, 25, false, getTranslator(), formLayout);
 		tableEl.setEmtpyTableMessageKey("table.taxonomy.level.type.empty");
+		tableEl.setAndLoadPersistedPreferences(ureq, "tax-level-types-competences");
 	}
 	
 	private void loadModel() {

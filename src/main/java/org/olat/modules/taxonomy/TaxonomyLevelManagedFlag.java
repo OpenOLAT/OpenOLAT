@@ -134,6 +134,16 @@ public enum TaxonomyLevelManagedFlag {
 		return false;
 	}
 	
+	public static TaxonomyLevelManagedFlag getCorrespondingFlag(TaxonomyCompetenceTypes type) {
+		switch(type) {
+			case target: return TaxonomyLevelManagedFlag.targetCompetence;
+			case have: return TaxonomyLevelManagedFlag.haveCompetence;
+			case teach: return TaxonomyLevelManagedFlag.teachCompetence;
+			case manage: return TaxonomyLevelManagedFlag.manageCompetence;
+			default: return null;
+		}
+	}
+	
 	private static boolean contains(TaxonomyLevel level, TaxonomyLevelManagedFlag... markers) {
 		if(level == null) return false;
 		TaxonomyLevelManagedFlag[] flags = level.getManagedFlags();

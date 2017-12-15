@@ -20,6 +20,7 @@
 package org.olat.modules.taxonomy.manager;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -180,7 +181,7 @@ public class TaxonomyTreeBuilder {
 	}
 	
 	private void computePermissions(TaxonomyTreeNode root) {
-		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyCompetences(taxonomy, identity);
+		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyCompetences(taxonomy, identity, new Date());
 		Map<TaxonomyLevel, List<TaxonomyCompetenceTypes>> levelToCompetences = new HashMap<>();
 		for(TaxonomyCompetence competence:competences) {
 			TaxonomyLevel level = competence.getTaxonomyLevel();
