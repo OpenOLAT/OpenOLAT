@@ -204,6 +204,10 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	public void setSubject(String subject) {
 		this.subject = subject;
 	}
+	
+	public boolean isManaged() {
+		return managedFlags != null && managedFlags.length > 0;
+	}
 
 	public CalendarManagedFlag[] getManagedFlags() {
 		return managedFlags;

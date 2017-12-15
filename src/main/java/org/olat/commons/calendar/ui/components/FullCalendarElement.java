@@ -85,6 +85,14 @@ public class FullCalendarElement extends FormItemImpl {
 		component.setAggregatedFeedEnabled(aggregatedFeedEnabled);
 	}
 	
+	public boolean isDifferentiateManagedEvents() {
+		return component.isDifferentiateManagedEvents();
+	}
+
+	public void setDifferentiateManagedEvents(boolean differentiateManagedEvents) {
+		component.setDifferentiateManagedEvents(differentiateManagedEvents);
+	}
+
 	public KalendarRenderWrapper getCalendar(String calendarID) {
 		return component.getCalendar(calendarID);
 	}

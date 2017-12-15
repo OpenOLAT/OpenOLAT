@@ -94,11 +94,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class WeeklyCalendarController extends FormBasicController implements Activateable2, CalendarController, GenericEventListener {
-
-	public static final String CALLER_HOME = "home";
-	public static final String CALLER_PROFILE = "profile";
-	public static final String CALLER_COLLAB = "collab";
-	public static final String CALLER_COURSE = "course";
 	
 	private FullCalendarElement calendarEl;
 
@@ -240,6 +235,10 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 				}
 			}
 		}
+	}
+	
+	public void setDifferentiateManagedEvent(boolean differentiate) {
+		calendarEl.setDifferentiateManagedEvents(differentiate);
 	}
 
 	@Override

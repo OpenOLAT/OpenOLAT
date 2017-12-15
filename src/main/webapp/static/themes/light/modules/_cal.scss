@@ -129,6 +129,30 @@ $o-cal-color-width : 20px;
 	}
 }
 
+.o_cal_event_managed .fc-event-inner:after {
+	margin-right: 2px;
+	float: right;
+	font-family: FontAwesome;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 100%;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	content: $fa-var-lock;
+}
+
+.o_cal_event_not_managed .fc-event-inner:after {
+	margin-right: 2px;
+	float: right;
+	font-family: FontAwesome;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 100%;
+	webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	content: $fa-var-user;
+}
+
 /* 
  * fullcalendar bootstrapify
  */

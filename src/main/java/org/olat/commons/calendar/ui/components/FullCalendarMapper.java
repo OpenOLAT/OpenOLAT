@@ -141,11 +141,16 @@ public class FullCalendarMapper implements Mapper {
 		} else {
 			jsonEvent.put("title", event.getSubject());
 		}
-		jsonEvent.put("allDay", new Boolean(event.isAllDayEvent()));
-		if(StringHelper.containsNonWhitespace(cal.getCssClass())) {
-			jsonEvent.put("className", cal.getCssClass());
+		jsonEvent.put("allDay", Boolean.valueOf(event.isAllDayEvent()));
+		
+		if(fcC.isDifferentiateManagedEvents()) {
+			applyManagedClassNames(jsonEvent, event, cal);
+		} else if(StringHelper.containsNonWhitespace(cal.getCssClass())) {
+			applyClassNames(jsonEvent, cal);
 		}
-		jsonEvent.put("editable", new Boolean(cal.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE));
+		
+		jsonEvent.put("editable", Boolean.valueOf(cal.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE));
+		
 		if(event.getBegin() != null) {
 			jsonEvent.put("start", formatDate(event.getBegin()));
 		}
@@ -153,6 +158,53 @@ public class FullCalendarMapper implements Mapper {
 			jsonEvent.put("end", formatDate(event.getEnd()));
 		}
 		return jsonEvent;
+	}
+	
+	private String getColor(String cssClass) {
+		if(StringHelper.containsNonWhitespace(cssClass) && cssClass.startsWith("o_cal_")) {
+			return cssClass.substring(6, cssClass.length());
+		}
+		return null;
+	}
+	
+	private void applyClassNames(JSONObject jsonEvent, KalendarRenderWrapper cal)
+	throws JSONException {
+		jsonEvent.put("className", cal.getCssClass());
+		String color = getColor(cal.getCssClass());
+		if(StringHelper.containsNonWhitespace(color)) {
+			jsonEvent.put("color", color);
+		}
+	}
+	
+	private void applyManagedClassNames(JSONObject jsonEvent, KalendarEvent event, KalendarRenderWrapper cal)
+	throws JSONException {
+		StringBuilder classNames = new StringBuilder(32);
+		if(StringHelper.containsNonWhitespace(cal.getCssClass())) {
+			if(cal.getKalendar().hasManagedEvents()) {
+				if(!event.isManaged()) {
+					jsonEvent.put("color", "steelblue");
+				} else {
+					classNames.append(cal.getCssClass());
+					String color = getColor(cal.getCssClass());
+					if(StringHelper.containsNonWhitespace(color)) {
+						jsonEvent.put("color", color);
+					}
+				}
+			} else {
+				classNames.append(cal.getCssClass());
+				String color = getColor(cal.getCssClass());
+				if(StringHelper.containsNonWhitespace(color)) {
+					jsonEvent.put("color", color);
+				}
+			}
+		} 
+
+		if(event.isManaged()) {
+			classNames.append(" o_cal_event_managed");
+		} else {
+			classNames.append(" o_cal_event_not_managed");
+		}
+		jsonEvent.put("className", classNames.toString());
 	}
 	
 	private String formatDate(Date date) {
