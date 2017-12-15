@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -41,6 +42,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.EfficiencyStatementAssessmentController;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
@@ -50,6 +52,7 @@ import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.UserSelectionEvent;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -76,6 +79,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	
 	private UserCourseEnvironment coachUserEnv;
 	
+	@Autowired
+	private AssessmentModeManager assessmentModeManager;
+	
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachUserEnv, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl);
@@ -95,10 +101,17 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		putInitialPanel(overviewCtrl.getInitialComponent());
 	}
 	
+	public void assessmentModeMessage() {
+		if(assessmentModeManager.isInAssessmentMode(courseEntry, new Date())) {
+			stackPanel.setMessage(translate("assessment.mode.now"));
+			stackPanel.setMessageCssClass("o_warning");
+		}
+	}
+	
 	public void initToolbar() {
 		overviewLink = LinkFactory.createToolLink("overview", translate("overview"), this/*, "o_icon_user"*/);
 		overviewLink.setElementCssClass("o_sel_assessment_tool_overview");
-		segmentButtonsCmp.addButton(overviewLink, false);
+		segmentButtonsCmp.addButton(overviewLink, true);
 		
 		usersLink = LinkFactory.createToolLink("users", translate("users"), this/*, "o_icon_user"*/);
 		usersLink.setElementCssClass("o_sel_assessment_tool_users");

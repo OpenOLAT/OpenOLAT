@@ -143,6 +143,19 @@ public class AssessmentModeDAO {
 				.getResultList();
 	}
 	
+	public List<AssessmentMode> getAssessmentModeFor(RepositoryEntryRef entry, Date from) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select mode from courseassessmentmode mode")
+		  .append(" where mode.repositoryEntry.key=:entryKey and mode.begin>=:from")
+		  .append(" order by mode.begin asc");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentMode.class)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("from", from)
+				.getResultList();
+	}
+	
 	public List<AssessmentMode> getAssessmentModes(Date now) {
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.MILLISECOND, 0);

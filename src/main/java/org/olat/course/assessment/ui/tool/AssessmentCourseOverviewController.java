@@ -61,6 +61,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private final AssessmentToReviewSmallController toReviewCtrl;
+	private final AssessmentModeOverviewListController assessmentModeListCtrl;
 	private final AssessmentCourseStatisticsSmallController statisticsCtrl;
 
 	private Link assessedIdentitiesLink, assessableCoureNodesLink, assessedGroupsLink, passedLink, failedLink;
@@ -155,6 +156,12 @@ public class AssessmentCourseOverviewController extends BasicController {
 			assessedGroupsLink = LinkFactory.createLink("assessed.groups", "assessed.groups", getTranslator(), mainVC, this, Link.NONTRANSLATED);
 			assessedGroupsLink.setCustomDisplayText(translate("assessment.tool.numOfAssessedGroups", new String[]{ Integer.toString(numOfGroups) }));
 			assessedGroupsLink.setIconLeftCSS("o_icon o_icon_group o_icon-fw");
+		}
+		
+		assessmentModeListCtrl = new AssessmentModeOverviewListController(ureq, getWindowControl(), courseEntry);
+		listenTo(assessmentModeListCtrl);
+		if(assessmentModeListCtrl.getNumOfAssessmentModes() > 0) {
+			mainVC.put("assessmentModes", assessmentModeListCtrl.getInitialComponent());
 		}
 
 		putInitialPanel(mainVC);

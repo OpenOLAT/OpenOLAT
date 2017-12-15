@@ -183,6 +183,11 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	public List<AssessmentMode> getAssessmentModeFor(RepositoryEntryRef entry) {
 		return assessmentModeDao.getAssessmentModeFor(entry);
 	}
+	
+	@Override
+	public List<AssessmentMode> getAssessmentModeFor(RepositoryEntryRef entry, Date from) {
+		return assessmentModeDao.getAssessmentModeFor(entry, from);
+	}
 
 	@Override
 	public List<AssessmentMode> getAssessmentModeFor(IdentityRef identity) {

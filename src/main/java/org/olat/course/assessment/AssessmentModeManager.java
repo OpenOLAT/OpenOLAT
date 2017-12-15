@@ -91,6 +91,14 @@ public interface AssessmentModeManager {
 	public List<AssessmentMode> getAssessmentModeFor(RepositoryEntryRef entry);
 	
 	/**
+	 * 
+	 * @param entry
+	 * @param from
+	 * @return
+	 */
+	public List<AssessmentMode> getAssessmentModeFor(RepositoryEntryRef entry, Date from);
+	
+	/**
 	 * Load the assessment mode for a specific user now.
 	 * 
 	 * @param identity
