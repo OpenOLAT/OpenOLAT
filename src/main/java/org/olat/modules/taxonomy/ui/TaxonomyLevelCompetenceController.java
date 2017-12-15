@@ -132,6 +132,8 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 		
 		// table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CompetenceCols.key));
+		
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CompetenceCols.username));
 		}
@@ -159,6 +161,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("table.competence.empty");
 		tableEl.setMultiSelect(multiSelect);
+		tableEl.setAndLoadPersistedPreferences(ureq, "tax-level-competences");
 	}
 	
 	private void loadModel() {
@@ -295,7 +298,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 	private void doAddCompetence(List<Identity> identities, TaxonomyCompetenceTypes comptenceType) {
 		Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
 		for(Identity identity:identities) {
-			TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, identity, comptenceType);
+			TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, identity, comptenceType, null);
 			String after = taxonomyService.toAuditXml(competence);
 			taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.addCompetence, null, after, null, taxonomy, competence, identity, getIdentity());
 		}

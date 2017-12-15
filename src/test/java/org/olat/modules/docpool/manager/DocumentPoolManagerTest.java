@@ -198,7 +198,7 @@ public class DocumentPoolManagerTest extends OlatTestCase {
 		Taxonomy taxonomy = getDocumentPoolTaxonomy();
 		TaxonomyLevelType type = taxonomyLevelTypeDao.createTaxonomyLevelType("Type-docpool", "A type for document pool", "Typed", "TYP-0", taxonomy);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel(levelId, "Competence level", "A competence", null, null, null, type, taxonomy);
-		TaxonomyCompetence competenceTarget = taxonomyCompetenceDao.createTaxonomyCompetence(competenceType, level, id);
+		TaxonomyCompetence competenceTarget = taxonomyCompetenceDao.createTaxonomyCompetence(competenceType, level, id, null);
 		dbInstance.commit();
 		type.setDocumentsLibraryManageCompetenceEnabled(false);
 		type.setDocumentsLibraryTeachCompetenceWriteEnabled(false);

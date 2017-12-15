@@ -19,6 +19,8 @@
  */
 package org.olat.modules.taxonomy.restapi;
 
+import java.util.Date;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -39,6 +41,7 @@ public class TaxonomyCompetenceVO {
 	private Long identityKey;
 	private Long taxonomyLevelKey;
 	private String taxonomyCompetenceType;
+	private Date expiration;
 	
 	public TaxonomyCompetenceVO() {
 		//
@@ -81,5 +84,13 @@ public class TaxonomyCompetenceVO {
 
 	public void setTaxonomyCompetenceType(String taxonomyCompetenceType) {
 		this.taxonomyCompetenceType = taxonomyCompetenceType;
+	}
+
+	public Date getExpiration() {
+		return expiration;
+	}
+
+	public void setExpiration(Date expiration) {
+		this.expiration = expiration;
 	}
 }

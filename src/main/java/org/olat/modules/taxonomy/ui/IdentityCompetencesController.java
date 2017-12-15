@@ -29,10 +29,13 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
@@ -101,6 +104,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 
 		// table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.key));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.taxonomyIdentifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.taxonomyDisplayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.taxonomyExternalId));
@@ -109,11 +113,14 @@ public class IdentityCompetencesController extends FormBasicController implement
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdCompetenceCols.taxonomyLevelExternalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.taxonomyLevelType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.type, new TaxonomyCompetenceTypeRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", translate("remove"), "remove"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdCompetenceCols.expiration, new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("remove", IdCompetenceCols.remove.ordinal(), "remove",
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("remove"), "remove"), null)));
 		
 		tableModel = new IdentityCompetenceTableModel(columnsModel); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
+		tableEl.setAndLoadPersistedPreferences(ureq, "tax-identity-competences");
 	}
 	
 	private void loadModel() {
@@ -207,7 +214,7 @@ public class IdentityCompetencesController extends FormBasicController implement
 		if(!found) {
 			TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(selectedLevel);
 			Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
-			TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, assessedIdentity, competenceType);
+			TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, assessedIdentity, competenceType, null);
 			String after = taxonomyService.toAuditXml(competence);
 			taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.addCompetence, null, after, null, taxonomy, competence, assessedIdentity, getIdentity());
 		}
@@ -239,6 +246,4 @@ public class IdentityCompetencesController extends FormBasicController implement
 		String levelDisplayName = StringHelper.escapeHtml(row.getTaxonomyLevel().getDisplayName());
 		showInfo("confirm.removed.competence", new String[] { competenceTypeName, levelDisplayName });
 	}
-	
-	
 }

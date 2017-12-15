@@ -27,6 +27,7 @@ import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
@@ -50,14 +51,22 @@ public class TaxonomyCompetenceDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public TaxonomyCompetence createTaxonomyCompetence(TaxonomyCompetenceTypes type, TaxonomyLevel taxonomyLevel, Identity identity) {
+	public TaxonomyCompetence createTaxonomyCompetence(TaxonomyCompetenceTypes type, TaxonomyLevel taxonomyLevel, Identity identity,
+			Date expiration) {
 		TaxonomyCompetenceImpl competence = new TaxonomyCompetenceImpl();
 		competence.setCreationDate(new Date());
 		competence.setLastModified(competence.getCreationDate());
 		competence.setType(type.name());
 		competence.setTaxonomyLevel(taxonomyLevel);
 		competence.setIdentity(identity);
+		competence.setExpiration(expiration);
 		dbInstance.getCurrentEntityManager().persist(competence);
+		return competence;
+	}
+	
+	public TaxonomyCompetence updateCompetence(TaxonomyCompetence competence) {
+		((TaxonomyCompetenceImpl)competence).setLastModified(new Date());
+		competence = dbInstance.getCurrentEntityManager().merge(competence);
 		return competence;
 	}
 	
@@ -132,19 +141,21 @@ public class TaxonomyCompetenceDAO {
 			.getResultList();	
 	}
 	
-	public boolean hasCompetenceByTaxonomy(TaxonomyRef taxonomy, IdentityRef identity) {
+	public boolean hasCompetenceByTaxonomy(TaxonomyRef taxonomy, IdentityRef identity, Date date) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select competence.key from ctaxonomycompetence competence")
 		  .append(" inner join competence.identity ident")
 		  .append(" inner join competence.taxonomyLevel taxonomyLevel")
 		  .append(" inner join taxonomyLevel.taxonomy taxonomy")
-		  .append(" where taxonomy.key=:taxonomyKey and ident.key=:identityKey");
+		  .append(" where taxonomy.key=:taxonomyKey and ident.key=:identityKey")
+		  .append(" and (competence.expiration is null or competence.expiration>=:date)");
 		
 		List<Long> competenceKeys = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), Long.class)
 			.setFlushMode(FlushModeType.COMMIT)//don't flush for this query
 			.setParameter("taxonomyKey", taxonomy.getKey())
 			.setParameter("identityKey", identity.getKey())
+			.setParameter("date", CalendarUtils.removeTime(date))
 			.setFirstResult(0)
 			.setMaxResults(1)
 			.getResultList();
@@ -152,22 +163,24 @@ public class TaxonomyCompetenceDAO {
 				&& competenceKeys.get(0) != null && competenceKeys.get(0).longValue() > 0;
 	}
 
-	public List<TaxonomyCompetence> getCompetenceByTaxonomy(TaxonomyRef taxonomy, IdentityRef identity) {
+	public List<TaxonomyCompetence> getCompetencesByTaxonomy(TaxonomyRef taxonomy, IdentityRef identity, Date date) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select competence from ctaxonomycompetence competence")
 		  .append(" inner join competence.identity ident")
 		  .append(" inner join fetch competence.taxonomyLevel taxonomyLevel")
-		  .append(" where taxonomyLevel.taxonomy.key=:taxonomyKey and ident.key=:identityKey");
+		  .append(" where taxonomyLevel.taxonomy.key=:taxonomyKey and ident.key=:identityKey")
+		  .append(" and (competence.expiration is null or competence.expiration>=:date)");
 		
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), TaxonomyCompetence.class)
 			.setFlushMode(FlushModeType.COMMIT)//don't flush for this query
 			.setParameter("taxonomyKey", taxonomy.getKey())
 			.setParameter("identityKey", identity.getKey())
+			.setParameter("date", CalendarUtils.removeTime(date))
 			.getResultList();
 	}
 	
-	public boolean hasCompetenceByTaxonomy(TaxonomyRef taxonomy, IdentityRef identity, TaxonomyCompetenceTypes... competences) {
+	public boolean hasCompetenceByTaxonomy(TaxonomyRef taxonomy, IdentityRef identity, Date date, TaxonomyCompetenceTypes... competences) {
 		List<String> competenceList = new ArrayList<>(5);
 		if(competences != null && competences.length > 0 && competences[0] != null) {
 			for(TaxonomyCompetenceTypes competence:competences) {
@@ -178,7 +191,8 @@ public class TaxonomyCompetenceDAO {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select competence.key from ctaxonomycompetence competence")
 		  .append(" inner join competence.taxonomyLevel taxonomyLevel")
-		  .append(" where taxonomyLevel.taxonomy.key=:taxonomyKey and competence.identity.key=:identityKey");
+		  .append(" where taxonomyLevel.taxonomy.key=:taxonomyKey and competence.identity.key=:identityKey")
+		  .append(" and (competence.expiration is null or competence.expiration>=:date)");
 		if(competenceList.size() > 0) {
 			sb.append(" and competence.type in (:types)");
 		}
@@ -187,6 +201,7 @@ public class TaxonomyCompetenceDAO {
 			.createQuery(sb.toString(), Long.class)
 			.setParameter("taxonomyKey", taxonomy.getKey())
 			.setParameter("identityKey", identity.getKey())
+			.setParameter("date", CalendarUtils.removeTime(date))
 			.setFirstResult(0)
 			.setMaxResults(1);
 		if(competenceList.size() > 0) {

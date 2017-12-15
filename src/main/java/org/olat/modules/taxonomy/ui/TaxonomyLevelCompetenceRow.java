@@ -45,6 +45,10 @@ public class TaxonomyLevelCompetenceRow extends UserPropertiesRow {
 		this.competence = competence;
 		type = competence.getCompetenceType();
 	}
+	
+	public Long getKey() {
+		return competence.getKey();
+	}
 
 	public TaxonomyCompetenceTypes getCompetenceType() {
 		return type;

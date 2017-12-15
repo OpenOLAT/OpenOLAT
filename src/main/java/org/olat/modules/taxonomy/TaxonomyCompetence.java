@@ -41,6 +41,8 @@ public interface TaxonomyCompetence extends TaxonomyCompetenceRef, CreateInfo {
 	
 	public Date getExpiration();
 	
+	public void setExpiration(Date expirationDate);
+	
 	public String getExternalId();
 	
 	public String getSourceText();

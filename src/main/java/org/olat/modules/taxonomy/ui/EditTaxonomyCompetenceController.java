@@ -21,12 +21,17 @@ package org.olat.modules.taxonomy.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
+import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,15 +42,21 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class EditTaxonomyCompetenceController extends FormBasicController {
+
+	private DateChooser expirationEl;
 	
+	private TaxonomyLevel taxonomyLevel;
 	private TaxonomyCompetence competence;
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private TaxonomyService taxonomyService;
 	
 	public EditTaxonomyCompetenceController(UserRequest ureq, WindowControl wControl, TaxonomyCompetence competence) {
 		super(ureq, wControl);
 		this.competence = competence;
+		taxonomyLevel = competence.getTaxonomyLevel();
 		initForm(ureq);
 	}
 
@@ -53,14 +64,21 @@ public class EditTaxonomyCompetenceController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String fullName = userManager.getUserDisplayName(competence.getIdentity());
 		uifactory.addStaticTextElement("taxonomy.competence.fullName", fullName, formLayout);
-		
-		String type = translate(competence.getCompetenceType().name());
+
+		TaxonomyCompetenceTypes competenceType = competence.getCompetenceType();
+		String type = translate(competenceType.name());
 		uifactory.addStaticTextElement("taxonomy.competence.type", type, formLayout);
+		
+		TaxonomyLevelManagedFlag marker = TaxonomyLevelManagedFlag.getCorrespondingFlag(competenceType);
+		expirationEl = uifactory.addDateChooser("taxonomy.competence.expiration", competence.getExpiration(), formLayout);
+		expirationEl.setEnabled(!TaxonomyLevelManagedFlag.isManaged(taxonomyLevel, marker));
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		if(expirationEl.isEnabled()) {//save only if there is something to update
+			uifactory.addFormSubmitButton("save", buttonsCont);
+		}
 	}
 
 	@Override
@@ -70,6 +88,8 @@ public class EditTaxonomyCompetenceController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		competence.setExpiration(expirationEl.getDate());
+		competence = taxonomyService.updateTaxonomyLevelCompetence(competence);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

@@ -64,7 +64,7 @@ public class DocumentPoolSiteSecurityCallback implements SiteSecurityCallback {
 		String taxonomyKey = docPoolModule.getTaxonomyTreeKey();
 		if(StringHelper.isLong(taxonomyKey)) {
 			TaxonomyRef taxonomy = new TaxonomyRefImpl(new Long(taxonomyKey));
-			return taxonomyService.hasTaxonomyCompetences(taxonomy, ureq.getIdentity());
+			return taxonomyService.hasTaxonomyCompetences(taxonomy, ureq.getIdentity(), ureq.getRequestTimestamp());
 		}
 		return false;
 	}
