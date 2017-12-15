@@ -231,10 +231,10 @@ public class CompareEvaluationsFormController extends FormBasicController {
 		Map<EvaluationFormSession,RadarSeries> series = new HashMap<>();
 		for(Slider slider:sliders) {
 			String axis;
-			if(StringHelper.containsNonWhitespace(slider.getStartLabel())) {
-				axis = slider.getStartLabel();
-			} else if(StringHelper.containsNonWhitespace(slider.getEndLabel())) {
+			 if(StringHelper.containsNonWhitespace(slider.getEndLabel())) {
 				axis = slider.getEndLabel();
+			} else if(StringHelper.containsNonWhitespace(slider.getStartLabel())) {
+				axis = slider.getStartLabel();
 			} else {
 				axis = "";
 			}
