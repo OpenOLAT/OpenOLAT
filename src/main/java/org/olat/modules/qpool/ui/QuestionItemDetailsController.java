@@ -195,31 +195,31 @@ public class QuestionItemDetailsController extends BasicController implements To
 		boolean hasDropdownComponents = false;
 		if (securityCallback.canSetDraft()) {
 			statusDraftLink = LinkFactory.createToolLink("lifecycle.status.draft", translate("lifecycle.status.draft"), this);
-			statusDraftLink.setIconLeftCSS("o_icon o_icon-lg o_icon_draft");
+			statusDraftLink.setIconLeftCSS("o_icon o_icon-lg o_icon_draft o_qpool_draft");
 			statusDropdown.addComponent(statusDraftLink);
 			hasDropdownComponents = true;
 		}
 		if (securityCallback.canSetRevised()) {
 			statusRevisedLink = LinkFactory.createToolLink("lifecycle.status.revised", translate("lifecycle.status.revised"), this);
-			statusRevisedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_revised");
+			statusRevisedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_revised o_qpool_revised");
 			statusDropdown.addComponent(statusRevisedLink);
 			hasDropdownComponents = true;
 		}
 		if (securityCallback.canSetReview()) {
 			statusReviewLink = LinkFactory.createToolLink("lifecycle.status.review", translate("lifecycle.status.review"), this);
-			statusReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
+			statusReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review o_qpool_review");
 			statusDropdown.addComponent(statusReviewLink);
 			hasDropdownComponents = true;
 		}
 		if (securityCallback.canSetFinal()) {
 			statusFinalLink = LinkFactory.createToolLink("lifecycle.status.finalVersion", translate("lifecycle.status.finalVersion"), this);
-			statusFinalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_finalVersion");
+			statusFinalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_finalVersion o_qpool_final");
 			statusDropdown.addComponent(statusFinalLink);
 			hasDropdownComponents = true;
 		}
 		if (securityCallback.canSetEndOfLife()) {
 			statusEndOfLifeLink = LinkFactory.createToolLink("lifecycle.status.endOfLife", translate("lifecycle.status.endOfLife"), this);
-			statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_endOfLife");
+			statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_endOfLife o_qpool_end_of_life");
 			statusDropdown.addComponent(statusEndOfLifeLink);
 			hasDropdownComponents = true;
 		}

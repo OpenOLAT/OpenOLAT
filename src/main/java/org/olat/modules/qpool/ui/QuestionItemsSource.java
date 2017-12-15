@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionStatus;
 
 /**
  * 
@@ -58,6 +59,12 @@ public interface QuestionItemsSource {
 	public boolean isBulkChangeEnabled();
 
 	public boolean askEditable();
+	
+	public boolean isStatusFilterEnabled();
+	
+	public QuestionStatus getStatusFilter();
+		
+	public void setStatusFilter(QuestionStatus questionStatus);
 	
 	public int postImport(List<QuestionItem> items, boolean editable);
 	

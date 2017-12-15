@@ -192,7 +192,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.teach);
 		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-			TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel, QuestionStatus.draft, identity, null, false);
+			TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel, QuestionStatus.draft, identity, null, false, true);
 			parentNode.addChild(node);
 		}
 	}
@@ -218,7 +218,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			rootNode.addChild(reviewNode);
 			
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel, QuestionStatus.review, null, identity, true);
+				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel, QuestionStatus.review, null, identity, true, false);
 				reviewNode.addChild(node);
 			}
 		}
@@ -234,7 +234,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			finalNode.setTitle(translator.translate("menu.final"));
 			rootNode.addChild(finalNode);
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel, QuestionStatus.finalVersion, null, null, false);
+				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel, QuestionStatus.finalVersion, null, null, false, false);
 				finalNode.addChild(node);
 			}
 		}

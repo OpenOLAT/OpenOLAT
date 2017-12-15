@@ -80,6 +80,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.QItemList;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.datasource.TaxonomyLeveltemsSource;
@@ -112,6 +113,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QuestionListController extends AbstractItemListController implements Activateable2 {
 
+	private FormLink statusDraftLink;
+	private FormLink statusReviewLink;
+	private FormLink statusRevisedLink;
+	private FormLink statusFinalLink;
+	private FormLink statusEndOfLifeLink;
 	private FormLink list, exportItem, shareItem, removeItem, newItem, copyItem, convertItem, deleteItem, authorItem, importItem, bulkChange;
 
 	private final TooledStackedPanel stackPanel;
@@ -167,6 +173,30 @@ public class QuestionListController extends AbstractItemListController implement
 
 	@Override
 	protected void initButtons(UserRequest ureq, FormItemContainer formLayout) {
+		if (getSource().isStatusFilterEnabled()) {
+			QuestionStatus statusFilter = getSource().getStatusFilter();
+			statusDraftLink = uifactory.addFormLink("source.status.draft", "source.status.draft", null, formLayout, Link.BUTTON);
+			statusDraftLink.setUserObject(QuestionStatus.draft);
+			statusDraftLink.setElementCssClass("btn-arrow-right o_qpool_draft");
+			if (QuestionStatus.draft.equals(statusFilter)) setSelectionCssClass(statusDraftLink);
+			statusReviewLink = uifactory.addFormLink("source.status.review", "source.status.review", null, formLayout, Link.BUTTON);
+			statusReviewLink.setUserObject(QuestionStatus.review);
+			statusReviewLink.setElementCssClass("btn-arrow-right o_qpool_review");
+			if (QuestionStatus.review.equals(statusFilter)) setSelectionCssClass(statusReviewLink);
+			statusRevisedLink = uifactory.addFormLink("source.status.revised", "source.status.revised", null, formLayout, Link.BUTTON);
+			statusRevisedLink.setUserObject(QuestionStatus.revised);
+			statusRevisedLink.setElementCssClass("btn-arrow-right o_qpool_revised");
+			if (QuestionStatus.revised.equals(statusFilter)) setSelectionCssClass(statusRevisedLink);
+			statusFinalLink = uifactory.addFormLink("source.status.finalVersion", "source.status.finalVersion", null, formLayout, Link.BUTTON);
+			statusFinalLink.setUserObject(QuestionStatus.finalVersion);
+			statusFinalLink.setElementCssClass("btn-arrow-right o_qpool_final");
+			if (QuestionStatus.finalVersion.equals(statusFilter)) setSelectionCssClass(statusFinalLink);
+			statusEndOfLifeLink = uifactory.addFormLink("source.status.endOfLife", "source.status.endOfLife", null, formLayout, Link.BUTTON);
+			statusEndOfLifeLink.setUserObject(QuestionStatus.endOfLife);
+			statusEndOfLifeLink.setElementCssClass("btn-arrow-right o_qpool_end_of_life");
+			if (QuestionStatus.endOfLife.equals(statusFilter)) setSelectionCssClass(statusEndOfLifeLink);
+		}
+			
 		if (getSecurityCallback().canUseCollections()) {
 			list = uifactory.addFormLink("list", formLayout, Link.BUTTON);
 		}
@@ -285,6 +315,8 @@ public class QuestionListController extends AbstractItemListController implement
 				} else {
 					showWarning("error.select.one");
 				}
+			} else if (link == statusDraftLink || link == statusReviewLink || link == statusRevisedLink || link == statusFinalLink || link == statusEndOfLifeLink) {
+				doSetSourceStatus(link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -540,13 +572,6 @@ public class QuestionListController extends AbstractItemListController implement
 		getModel().reload(rowIndex);
 		getItemsTable().getComponent().setDirty(true);
 	}
-	
-	private void doReloadAndNext(UserRequest ureq, Long itemKey) {
-		ItemRow row = getRowByItemKey(itemKey);
-		ItemRow nextRow = getModel().getNextObject(row);
-		getItemsTable().reloadData();
-		doSelectOrReset(ureq, nextRow);
-	}
 
 	private void doNext(UserRequest ureq, QuestionItem item) {
 		ItemRow row = getRowByItemKey(item.getKey());
@@ -567,6 +592,35 @@ public class QuestionListController extends AbstractItemListController implement
 		} else {
 			getItemsTable().reset(true, true, true);
 		}
+	}
+
+	private void doSetSourceStatus(FormLink link) {
+		if (getSource().isStatusFilterEnabled()) {
+			QuestionStatus status = (QuestionStatus) link.getUserObject();
+			getSource().setStatusFilter(status);
+			getItemsTable().reset(true, true, true);
+			removeSelectionCssClass(statusDraftLink);
+			removeSelectionCssClass(statusReviewLink);
+			removeSelectionCssClass(statusRevisedLink);
+			removeSelectionCssClass(statusFinalLink);
+			removeSelectionCssClass(statusEndOfLifeLink);
+			setSelectionCssClass(link);
+		}
+	}
+
+	private void removeSelectionCssClass(FormLink link) {
+		String cssClass = link.getElementCssClass();
+		if (cssClass.contains(" o_qpool_status_slected")) {
+			cssClass = cssClass.replace(" o_qpool_status_slected", "");
+			link.setElementCssClass(cssClass);
+			link.getComponent().setDirty(true);
+		}
+	}
+
+	private void setSelectionCssClass(FormLink link) {
+		String cssClass = link.getElementCssClass();
+		link.setElementCssClass(cssClass + " o_qpool_status_slected");
+		link.getComponent().setDirty(true);
 	}
 
 	private void doBulkChange(UserRequest ureq, List<QuestionItemShort> items) {

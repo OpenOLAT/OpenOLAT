@@ -1,3 +1,21 @@
+<div class="o_block_bottom o_qpool_source_status">
+#if($r.available("source.status.draft"))
+	$r.render("source.status.draft")
+#end
+#if($r.available("source.status.review"))
+	$r.render("source.status.review")
+#end
+#if($r.available("source.status.revised"))
+	$r.render("source.status.revised")
+#end
+#if($r.available("source.status.finalVersion"))
+	$r.render("source.status.finalVersion")
+#end
+#if($r.available("source.status.endOfLife"))
+	$r.render("source.status.endOfLife")
+#end
+</div>
+
 #if($r.available("source.selector"))
     <div class="o_block_bottom o_qpool_filter_box clearfix">
         $r.render("source.selector_LABEL") $r.render("source.selector")

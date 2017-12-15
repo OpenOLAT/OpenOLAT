@@ -26,6 +26,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionStatus;
 
 /**
  * 
@@ -90,6 +91,21 @@ public class MarkedItemsSource extends DefaultItemsSource {
 	@Override
 	public boolean isBulkChangeEnabled() {
 		return true;
+	}
+
+	@Override
+	public boolean isStatusFilterEnabled() {
+		return false;
+	}
+
+	@Override
+	public QuestionStatus getStatusFilter() {
+		return null;
+	}
+	
+	@Override
+	public void setStatusFilter(QuestionStatus questionStatus) {
+		// not enabled
 	}
 
 }

@@ -663,3 +663,11 @@ $o-bookmark-color				: #bc2d0c !default;
 $o-imagebg-text-background		: rgba(255, 255, 255, 0.8) !default;
 $o-progress-marker-color		: rgb(255, 0, 0) !default; /* danger color */
 $o-cal-desc-background-color	: $o-toolbar-bg-color !default;
+$o-qpool-draft-bg-color			: $o-toolbar-bg-color !default;
+$o-qpool-review-bg-color			: $o-toolbar-bg-color !default;
+$o-qpool-revised-bg-color		: $o-toolbar-bg-color !default;
+$o-qpool-final-bg-color			: $o-toolbar-bg-color !default;
+$o-qpool-end-of-life-bg-color	: $o-toolbar-bg-color !default;
+$o-qpool-status-selected-color	: $link-color !default;
+$o-qpool-status-selected-font-weight	: bold !default;
+

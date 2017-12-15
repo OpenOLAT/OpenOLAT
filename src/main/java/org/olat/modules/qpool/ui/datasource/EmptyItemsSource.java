@@ -32,6 +32,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 
 /**
@@ -92,6 +93,21 @@ public class EmptyItemsSource implements QuestionItemsSource {
     @Override
 	public boolean askEditable() {
 		return false;
+	}
+
+	@Override
+	public boolean isStatusFilterEnabled() {
+		return false;
+	}
+
+	@Override
+	public QuestionStatus getStatusFilter() {
+		return null;
+	}
+	
+	@Override
+	public void setStatusFilter(QuestionStatus questionStatus) {
+		// not enabled
 	}
 
 	@Override

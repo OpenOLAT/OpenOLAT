@@ -37,6 +37,7 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 
@@ -120,6 +121,21 @@ public class SharedItemsSource implements QuestionItemsSource {
 	@Override
 	public boolean askEditable() {
 		return true;
+	}
+
+	@Override
+	public boolean isStatusFilterEnabled() {
+		return false;
+	}
+
+	@Override
+	public QuestionStatus getStatusFilter() {
+		return null;
+	}
+	
+	@Override
+	public void setStatusFilter(QuestionStatus questionStatus) {
+		// not enabled
 	}
 
 	@Override

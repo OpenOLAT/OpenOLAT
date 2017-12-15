@@ -57,10 +57,11 @@ public class TaxonomyLevelTreeNode extends GenericTreeNode implements Controller
 	private final Identity onlyAuthor;
 	private final Identity excludeAuthor;
 	private final boolean excludeRated;
+	private final boolean statusFilterEnabled;
 
 	public TaxonomyLevelTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback,
 			TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus, Identity onlyAuthor, Identity excludeAuthor,
-			boolean excludeRated) {
+			boolean excludeRated, boolean statusFilterEnabled) {
 		super();
 		this.stackPanel = stackPanel;
 		this.securityCallback = securityCallback;
@@ -69,6 +70,7 @@ public class TaxonomyLevelTreeNode extends GenericTreeNode implements Controller
 		this.onlyAuthor = onlyAuthor;
 		this.excludeAuthor = excludeAuthor;
 		this.excludeRated = excludeRated;
+		this.statusFilterEnabled = statusFilterEnabled;
 		
 		this.setTitle(taxonomyLevel.getDisplayName());
 		this.setIconCssClass(ICON_CSS_CLASS);
@@ -82,10 +84,11 @@ public class TaxonomyLevelTreeNode extends GenericTreeNode implements Controller
 				ureq.getIdentity(),
 				ureq.getUserSession().getRoles(),
 				taxonomyLevel,
-				questionStatus,
 				onlyAuthor,
 				excludeAuthor,
-				excludeRated);
+				excludeRated,
+				questionStatus,
+				statusFilterEnabled);
 		if (questionsCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE + "_" + questionStatus, taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);

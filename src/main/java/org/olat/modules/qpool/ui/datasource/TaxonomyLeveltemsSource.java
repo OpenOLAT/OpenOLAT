@@ -41,20 +41,22 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 
 	private final Identity me;
 	private final TaxonomyLevel taxonomyLevel;
-	private final QuestionStatus questionStatus;
 	private final Identity onlyAuthor;
+	private final boolean statusFilterEnabled;
+	private QuestionStatus statusFilter;
 	
 	private ReviewService reviewService;
 	
-	public TaxonomyLeveltemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus,
-			Identity onlyAuthor, Identity excludeAuthor, boolean excludeRated) {
+	public TaxonomyLeveltemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel, Identity onlyAuthor,
+			Identity excludeAuthor, boolean excludeRated, QuestionStatus statusFilter, boolean statusFilterEnabled) {
 		super(me, roles, taxonomyLevel.getDisplayName());
 		this.me = me;
 		this.taxonomyLevel = taxonomyLevel;
-		this.questionStatus = questionStatus;
+		this.statusFilter = statusFilter;
 		this.onlyAuthor = onlyAuthor;
+		this.statusFilterEnabled = statusFilterEnabled;
 		getDefaultParams().setTaxonomyLevel(taxonomyLevel);
-		getDefaultParams().setQuestionStatus(questionStatus);
+		getDefaultParams().setQuestionStatus(statusFilter);
 		getDefaultParams().setOnlyAuthor(onlyAuthor);
 		getDefaultParams().setExcludeAuthor(excludeAuthor);
 		getDefaultParams().setExcludeRated(excludeRated);
@@ -67,22 +69,22 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 
 	@Override
 	public boolean isCreateEnabled() {
-		return reviewService.isEditableQuestionStatus(questionStatus)? true: false;
+		return reviewService.isEditableQuestionStatus(statusFilter)? true: false;
 	}
 
 	@Override
 	public boolean isCopyEnabled() {
-		return reviewService.isEditableQuestionStatus(questionStatus)? true: false;
+		return reviewService.isEditableQuestionStatus(statusFilter)? true: false;
 	}
 
 	@Override
 	public boolean isImportEnabled() {
-		return reviewService.isEditableQuestionStatus(questionStatus)? true: false;
+		return reviewService.isEditableQuestionStatus(statusFilter)? true: false;
 	}
 
 	@Override
 	public boolean isAuthorRightsEnable() {
-		return reviewService.isEditableQuestionStatus(questionStatus)? true: false;
+		return reviewService.isEditableQuestionStatus(statusFilter)? true: false;
 	}
 
 	@Override
@@ -92,14 +94,30 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 
 	@Override
 	public boolean isBulkChangeEnabled() {
-		return reviewService.isEditableQuestionStatus(questionStatus)? true: false;
+		return reviewService.isEditableQuestionStatus(statusFilter)? true: false;
 	}
 
 	@Override
 	public boolean isDeleteEnabled() {
 		boolean isAuthor = me.equals(onlyAuthor);
-		boolean deletableStatus = reviewService.isEditableQuestionStatus(questionStatus);
+		boolean deletableStatus = reviewService.isEditableQuestionStatus(statusFilter);
 		return isAuthor && deletableStatus;
+	}
+
+	@Override
+	public boolean isStatusFilterEnabled() {
+		return statusFilterEnabled;
+	}
+
+	@Override
+	public QuestionStatus getStatusFilter() {
+		return getDefaultParams().getQuestionStatus();
+	}
+	
+	@Override
+	public void setStatusFilter(QuestionStatus statusFilter) {
+		this.statusFilter = statusFilter;
+		getDefaultParams().setQuestionStatus(statusFilter);
 	}
 
 	@Override
