@@ -109,7 +109,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private LayoutMain3ColsController editMainCtrl;
 	private SelectBusinessGroupController selectGroupCtrl;
 	private final MetadatasController metadatasCtrl;
-	private final UserCommentsAndRatingsController commentsAndRatingCtr;
+	private UserCommentsAndRatingsController commentsAndRatingCtr;
+	private final CommentAndRatingSecurityCallback commentAndRatingSecurityCallback;
 	private final TooledStackedPanel stackPanel;
 
 	private final QuestionItemsSource itemSource;
@@ -134,19 +135,17 @@ public class QuestionItemDetailsController extends BasicController implements To
 		this.itemIndex = itemIndex;
 		this.numberOfItems = numberOfItems;
 		this.itemSource = itemSource;
+		mainVC = createVelocityContainer("item_details");
 		
 		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback);
+		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
 		listenTo(metadatasCtrl);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean moderator = roles.isOLATAdmin();
 		boolean anonymous = roles.isGuestOnly() || roles.isInvitee();
-		CommentAndRatingSecurityCallback commentAndRatingSecurityCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), moderator, anonymous);
-		commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), item, null,
-				commentAndRatingSecurityCallback, true, securityCallback.canRate(), true);
-		listenTo(commentsAndRatingCtr);
-
-		mainVC = createVelocityContainer("item_details");
+		commentAndRatingSecurityCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), moderator, anonymous);
+		setCommentsController(ureq);
 
 		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
 		boolean canEditContent = securityCallback.canEditQuestion() && (spi != null && spi.isTypeEditable());
@@ -156,9 +155,14 @@ public class QuestionItemDetailsController extends BasicController implements To
 		}
 		
 		setPreviewController(ureq, item);
-		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
-		mainVC.put("comments", commentsAndRatingCtr.getInitialComponent());
 		putInitialPanel(mainVC);
+	}
+
+	private void setCommentsController(UserRequest ureq) {
+		commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), metadatasCtrl.getItem(),
+				null, commentAndRatingSecurityCallback, true, this.securityCallback.canRate(), true);
+		listenTo(commentsAndRatingCtr);
+		mainVC.put("comments", commentsAndRatingCtr.getInitialComponent());
 	}
 	
 	@Override
@@ -447,8 +451,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void doRate(UserRequest ureq, float rating, String comment) {
 		QuestionItem item = metadatasCtrl.getItem();
 		qpoolService.rateItemInReview(item, getIdentity(), rating, comment);
-		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_STATUS_CHANGED, item.getKey()));
 		reloadData();
+		setCommentsController(ureq);
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_STATUS_CHANGED, item.getKey()));
 	}
 
 	private void doStatusDraft(UserRequest ureq, QuestionItem item) {

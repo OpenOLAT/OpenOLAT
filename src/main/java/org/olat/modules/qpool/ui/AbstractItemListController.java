@@ -470,8 +470,8 @@ public abstract class AbstractItemListController extends FormBasicController
 	}
 
 
-	protected ItemRow wrapItem(QuestionItem item) {
-		ItemWrapper itemWrapper = ItemWrapper.builder(item).setEditableInPool(true).create();
+	protected ItemRow wrapNewItem(QuestionItem item) {
+		ItemWrapper itemWrapper = ItemWrapper.builder(item).setAuthor(true).create();
 		QuestionItemSecurityCallback securityCallback = qpoolSecurityCallbackFactory
 				.createQuestionItemSecurityCallback(itemWrapper, getSource(), isOLATAdmin);
 		return new ItemRow(itemWrapper, securityCallback);

@@ -19,6 +19,9 @@
  */
 package org.olat.modules.qpool.security;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
@@ -38,6 +41,11 @@ import org.springframework.stereotype.Component;
 @Component
 @Scope("prototype")
 public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallback {
+	
+	private static final Collection<QuestionStatus> DELETABLE_STATES = Arrays.asList(
+			QuestionStatus.draft,
+			QuestionStatus.review,
+			QuestionStatus.endOfLife);
 
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;
@@ -109,7 +117,7 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	@Override
 	public boolean canDelete() {
-		return false;
+		return itemView.isAuthor() && DELETABLE_STATES.contains(itemView.getQuestionStatus());
 	}
 
 	@Override
