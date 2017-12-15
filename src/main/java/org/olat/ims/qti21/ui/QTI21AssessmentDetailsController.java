@@ -297,7 +297,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			cleanUp();
 		} else if(retrieveConfirmationCtr == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				doPullSession((AssessmentTestSession)retrieveConfirmationCtr.getUserObject());
+				doPullSession(ureq, (AssessmentTestSession)retrieveConfirmationCtr.getUserObject());
 				updateModel();
 			}
 		} else if(resetToolCtrl == source) {
@@ -382,10 +382,15 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		retrieveConfirmationCtr.setUserObject(session);
 	}
 	
-	private void doPullSession(AssessmentTestSession session) {
+	private void doPullSession(UserRequest ureq, AssessmentTestSession session) {
 		//reload it to prevent lazy loading issues
 		session = qtiService.getAssessmentTestSession(session.getKey());
 		qtiService.pullSession(session, getSignatureOptions(session), getIdentity());
+		if(courseNode != null) {
+			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
+		}
+		updateModel();
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private DigitalSignatureOptions getSignatureOptions(AssessmentTestSession session) {

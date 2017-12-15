@@ -48,6 +48,7 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.AssessmentTestSessionComparator;
 import org.olat.ims.qti21.ui.assessment.IdentityAssessmentTestCorrectionController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -233,6 +234,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	
 	private void doPullSession(AssessmentTestSession session) {
 		qtiService.pullSession(session, getSignatureOptions(session), getIdentity());
+		testCourseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
 	}
 	
 	private DigitalSignatureOptions getSignatureOptions(AssessmentTestSession session) {

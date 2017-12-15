@@ -572,8 +572,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private void doCancel(UserRequest ureq) {
 		VelocityContainer cancelledVC = createVelocityContainer("cancelled");
 		mainPanel.setContent(cancelledVC);
-		TestSessionState testSessionState = testSessionController.getTestSessionState();
-		qtiService.cancelTestSession(candidateSession, testSessionState);
+		//only cancel unfinished test (prevent concurrent pull session / cancel to delete the data)
+		if(candidateSession.getFinishTime() == null) {
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			qtiService.cancelTestSession(candidateSession, testSessionState);
+		}
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 		candidateSession = null;
 	}
