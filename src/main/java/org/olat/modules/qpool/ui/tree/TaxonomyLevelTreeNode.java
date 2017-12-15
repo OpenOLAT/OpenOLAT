@@ -44,13 +44,13 @@ public class TaxonomyLevelTreeNode extends GenericTreeNode implements Controller
 
 	private static final long serialVersionUID = 6968774478547770505L;
 	
-	private static final String ORES_TYPE = "Subject";
 	private static final String ICON_CSS_CLASS = "o_icon_pool_taxonomy o_sel_qpool_taxonomy";
 	private static final String TABLE_PREFERENCE_PREFIX = "taxlevel-";
 
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 	
+	private final String oresPrefix;
 	private final QPoolSecurityCallback securityCallback;
 	private final TaxonomyLevel taxonomyLevel;
 	private final QuestionStatus questionStatus;
@@ -60,10 +60,11 @@ public class TaxonomyLevelTreeNode extends GenericTreeNode implements Controller
 	private final boolean statusFilterEnabled;
 
 	public TaxonomyLevelTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback,
-			TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus, Identity onlyAuthor, Identity excludeAuthor,
-			boolean excludeRated, boolean statusFilterEnabled) {
+			String oresPrefix, TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus, Identity onlyAuthor,
+			Identity excludeAuthor, boolean excludeRated, boolean statusFilterEnabled) {
 		super();
 		this.stackPanel = stackPanel;
+		this.oresPrefix = oresPrefix;
 		this.securityCallback = securityCallback;
 		this.taxonomyLevel = taxonomyLevel;
 		this.questionStatus = questionStatus;
@@ -90,7 +91,7 @@ public class TaxonomyLevelTreeNode extends GenericTreeNode implements Controller
 				questionStatus,
 				statusFilterEnabled);
 		if (questionsCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE + "_" + questionStatus, taxonomyLevel.getKey());
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(oresPrefix + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
 					TABLE_PREFERENCE_PREFIX + questionStatus + taxonomyLevel.getKey());
