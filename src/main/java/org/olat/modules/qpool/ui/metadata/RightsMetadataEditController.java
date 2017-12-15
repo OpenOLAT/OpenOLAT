@@ -182,6 +182,7 @@ public class RightsMetadataEditController extends FormBasicController {
 			//cmc.deactivate();
 			//cleanUp();
 		} else if(source == cmc) {
+			fireEvent(ureq, new QItemEdited(item));
 			cleanUp();
 		}
 		super.event(ureq, source, event);
