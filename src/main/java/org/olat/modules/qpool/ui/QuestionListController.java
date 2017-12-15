@@ -178,22 +178,27 @@ public class QuestionListController extends AbstractItemListController implement
 			statusDraftLink = uifactory.addFormLink("source.status.draft", "source.status.draft", null, formLayout, Link.BUTTON);
 			statusDraftLink.setUserObject(QuestionStatus.draft);
 			statusDraftLink.setElementCssClass("btn-arrow-right o_qpool_draft");
+			statusDraftLink.setIconLeftCSS("o_icon o_icon-lg o_icon_draft");
 			if (QuestionStatus.draft.equals(statusFilter)) setSelectionCssClass(statusDraftLink);
 			statusReviewLink = uifactory.addFormLink("source.status.review", "source.status.review", null, formLayout, Link.BUTTON);
 			statusReviewLink.setUserObject(QuestionStatus.review);
 			statusReviewLink.setElementCssClass("btn-arrow-right o_qpool_review");
+			statusReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
 			if (QuestionStatus.review.equals(statusFilter)) setSelectionCssClass(statusReviewLink);
 			statusRevisedLink = uifactory.addFormLink("source.status.revised", "source.status.revised", null, formLayout, Link.BUTTON);
 			statusRevisedLink.setUserObject(QuestionStatus.revised);
 			statusRevisedLink.setElementCssClass("btn-arrow-right o_qpool_revised");
+			statusRevisedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_revised");
 			if (QuestionStatus.revised.equals(statusFilter)) setSelectionCssClass(statusRevisedLink);
 			statusFinalLink = uifactory.addFormLink("source.status.finalVersion", "source.status.finalVersion", null, formLayout, Link.BUTTON);
 			statusFinalLink.setUserObject(QuestionStatus.finalVersion);
 			statusFinalLink.setElementCssClass("btn-arrow-right o_qpool_final");
+			statusFinalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_finalVersion");
 			if (QuestionStatus.finalVersion.equals(statusFilter)) setSelectionCssClass(statusFinalLink);
 			statusEndOfLifeLink = uifactory.addFormLink("source.status.endOfLife", "source.status.endOfLife", null, formLayout, Link.BUTTON);
 			statusEndOfLifeLink.setUserObject(QuestionStatus.endOfLife);
 			statusEndOfLifeLink.setElementCssClass("btn-arrow-right o_qpool_end_of_life");
+			statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_endOfLife");
 			if (QuestionStatus.endOfLife.equals(statusFilter)) setSelectionCssClass(statusEndOfLifeLink);
 		}
 			

@@ -225,7 +225,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		}
 		if (hasDropdownComponents) {
 			stackPanel.addTool(statusDropdown, Align.left);
-		}
+		} 
 		
 		if (securityCallback.canStartReview()) {
 			startReviewLink = LinkFactory.createToolLink("process.start.review", translate("process.start.review"), this);
@@ -249,6 +249,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 				itemIndex != null? Integer.toString(itemIndex + 1): "",
 				Integer.toString(numberOfItems) });
 		numberItemsLink = LinkFactory.createToolLink("item.numbers.of", numbersOf, this);
+		numberItemsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_" + metadatasCtrl.getItem().getQuestionStatus());
 		stackPanel.addTool(numberItemsLink);
 		
 		nextItemLink = LinkFactory.createToolLink("next", translate("next"), this);
