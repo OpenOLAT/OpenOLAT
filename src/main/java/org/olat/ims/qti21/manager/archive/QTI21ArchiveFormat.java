@@ -64,6 +64,7 @@ import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentResponseDAO;
+import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.QTI21ServiceImpl;
 import org.olat.ims.qti21.manager.archive.interactions.AssociateInteractionArchive;
 import org.olat.ims.qti21.manager.archive.interactions.ChoiceInteractionArchive;
@@ -146,6 +147,7 @@ public class QTI21ArchiveFormat {
 	private final QTI21Service qtiService;
 	private final UserManager userManager;
 	private final AssessmentResponseDAO responseDao;
+	private final AssessmentTestSessionDAO testSessionDao;
 	
 	public QTI21ArchiveFormat(Locale locale, QTI21StatisticSearchParams searchParams) {
 		this.searchParams = searchParams;
@@ -158,6 +160,7 @@ public class QTI21ArchiveFormat {
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		qtiService = CoreSpringFactory.getImpl(QTI21ServiceImpl.class);
 		responseDao = CoreSpringFactory.getImpl(AssessmentResponseDAO.class);
+		testSessionDao = CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class);
 		
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(QTIArchiver.TEST_USER_PROPERTIES, true);
 		
@@ -243,14 +246,15 @@ public class QTI21ArchiveFormat {
 		resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
 		
 		//content
-		List<AssessmentResponse> responses = responseDao.getResponse(searchParams);
+		final List<AssessmentTestSession> sessions = testSessionDao.getTestSessionsOfResponse(searchParams);
+		final List<AssessmentResponse> responses = responseDao.getResponse(searchParams);
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(exportStream, 1)) {
 			//headers
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 			exportSheet.setHeaderRows(2);
 			writeHeaders_1(exportSheet, workbook);
 			writeHeaders_2(exportSheet, workbook);
-			writeData(responses, exportSheet, workbook);
+			writeData(sessions, responses, exportSheet, workbook);
 		} catch(Exception e) {
 			log.error("", e);
 		}
@@ -273,6 +277,7 @@ public class QTI21ArchiveFormat {
 		}
 		
 		//content
+		final List<AssessmentTestSession> sessions = testSessionDao.getTestSessionsOfResponse(searchParams);
 		final List<AssessmentResponse> responses = responseDao.getResponse(searchParams);
 		return new OpenXMLWorkbookResource(label) {
 			@Override
@@ -283,7 +288,7 @@ public class QTI21ArchiveFormat {
 					exportSheet.setHeaderRows(2);
 					writeHeaders_1(exportSheet, workbook);
 					writeHeaders_2(exportSheet, workbook);
-					writeData(responses, exportSheet, workbook);
+					writeData(sessions, responses, exportSheet, workbook);
 				} catch (Exception e) {
 					log.error("", e);
 				}
@@ -423,25 +428,37 @@ public class QTI21ArchiveFormat {
 		}
 	}
 	
-	private void writeData(List<AssessmentResponse> responses, OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
-		int num = 0;
-		SessionResponses sessionResponses = null;
-		int numOfResponses = responses.size();
-		for(int i=0; i<numOfResponses; i++) {
-			AssessmentResponse response = responses.get(i);
-			AssessmentItemSession itemSession = response.getAssessmentItemSession();
-			AssessmentTestSession testSession = itemSession.getAssessmentTestSession();
-			
-			if(sessionResponses == null) {
-				sessionResponses = new SessionResponses(testSession);
-			} else if(!sessionResponses.getSessionKey().equals(testSession.getKey())) {
-				writeDataRow(++num, sessionResponses, exportSheet, workbook);
-				sessionResponses = new SessionResponses(testSession);
-			}
-			sessionResponses.addResponse(itemSession, response);
+	/**
+	 * The 2 lists, sessions and responses are order by the user name and the test session key.
+	 * @param sessions A list of test sessions ordered by test session key
+	 * @param responses A list of responses ordered by test session key
+	 * @param exportSheet
+	 * @param workbook
+	 */
+	private void writeData(List<AssessmentTestSession> sessions, List<AssessmentResponse> responses, OpenXMLWorksheet exportSheet, OpenXMLWorkbook workbook) {
+		int numOfSessions = sessions.size();
+		Map<AssessmentTestSession, SessionResponses> sessionToResponses = new HashMap<>();
+		for(int i=0; i<numOfSessions; i++) {
+			AssessmentTestSession testSession = sessions.get(i);
+			sessionToResponses.put(testSession, new SessionResponses(testSession));
 		}
-		if(sessionResponses != null) {
-			writeDataRow(++num, sessionResponses, exportSheet, workbook);
+
+		int numOfResponses = responses.size();
+		for(int j=0; j<numOfResponses; j++) {
+			AssessmentResponse response = responses.get(j);
+			
+			AssessmentItemSession itemSession = response.getAssessmentItemSession();
+			AssessmentTestSession responseTestSession = itemSession.getAssessmentTestSession();
+			SessionResponses sessionResponses = sessionToResponses.get(responseTestSession);
+			if(sessionResponses != null) {
+				sessionResponses.addResponse(itemSession, response);
+			}
+		}
+		
+		for(int i=0; i<numOfSessions; i++) {
+			AssessmentTestSession testSession = sessions.get(i);
+			SessionResponses sessionResponses = sessionToResponses.get(testSession);
+			writeDataRow(i + 2, sessionResponses, exportSheet, workbook);
 		}
 	}
 	
@@ -617,10 +634,6 @@ public class QTI21ArchiveFormat {
 		
 		public AssessmentTestSession getTestSession() {
 			return testSession;
-		}
-		
-		public Long getSessionKey() {
-			return testSession.getKey();
 		}
 		
 		public AssessmentResponse getResponse(String itemRefIdentifier, Identifier responseIdentifier) {

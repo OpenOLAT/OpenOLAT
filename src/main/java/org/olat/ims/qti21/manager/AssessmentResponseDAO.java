@@ -22,13 +22,11 @@ package org.olat.ims.qti21.manager;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentResponse;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -141,6 +139,10 @@ public class AssessmentResponseDAO {
 		return responses.size() > 0 && responses.get(0) != null;
 	}
 	
+	/**
+	 * @param searchParams
+	 * @return The returned list is order by user name, test session key and item session key
+	 */
 	public List<AssessmentResponse> getResponse(QTI21StatisticSearchParams searchParams) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select response from qtiassessmentresponse response ")
@@ -148,66 +150,16 @@ public class AssessmentResponseDAO {
 		  .append(" inner join fetch itemSession.assessmentTestSession testSession")
 		  .append(" inner join fetch testSession.assessmentEntry assessmentEntry")
 		  .append(" left join assessmentEntry.identity as ident")
-		  .append(" left join ident.user as usr")
-		  .append(" where testSession.testEntry.key=:testEntryKey")
-		  .append("  and testSession.finishTime is not null and testSession.authorMode=false");
-		if(searchParams.getCourseEntry() != null || searchParams.getTestEntry() != null) {
-			sb.append(" and testSession.repositoryEntry.key=:repoEntryKey");
-		}
-		if(StringHelper.containsNonWhitespace(searchParams.getNodeIdent())) {
-			sb.append(" and testSession.subIdent=:subIdent");
-		}
-		sb.append(" and (");
+		  .append(" left join ident.user as usr");
 		
-		if(searchParams.getLimitToGroups() != null) {
-			sb.append(" testSession.identity.key in (select membership.identity.key from  bgroupmember as membership, repoentrytogroup as rel")
-			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and rel.group.key in (:limitGroupKeys)");
-			if(!searchParams.isViewAllUsers()) {
-				sb.append(" and membership.role='").append(GroupRoles.participant.name()).append("'");
-			}
-			sb.append(" )");
-		} else if(searchParams.getLimitToIdentities() != null) {
-			sb.append(" testSession.identity.key in (select membership.identity.key from  bgroupmember as membership, repoentrytogroup as rel")
-			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.identity.key in (:limitIdentityKeys)")
-			  .append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
-			  .append(" )");
-		} else if(searchParams.isViewAllUsers()) {
-			sb.append(" testSession.identity.key is not null");
-		} else {
-			sb.append(" testSession.identity.key in (select membership.identity.key from  bgroupmember as membership, repoentrytogroup as rel")
-			  .append("   where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key ")
-			  .append("   and membership.role='").append(GroupRoles.participant.name()).append("'")
-			  .append(" )");
-		}
-		if(searchParams.isViewAnonymUsers()) {
-			sb.append(" or testSession.anonymousIdentifier is not null");
-		}
-		sb.append(")");
+		AssessmentTestSessionDAO.decorateTestSessionPermission(sb, searchParams);
 
 		//need to be anonymized
 		sb.append(" order by usr.lastName, testSession.key, itemSession.key");
 		
 		TypedQuery<AssessmentResponse> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), AssessmentResponse.class)
-				.setParameter("testEntryKey", searchParams.getTestEntry().getKey());
-		if(searchParams.getCourseEntry() != null) {
-			query.setParameter("repoEntryKey", searchParams.getCourseEntry().getKey());
-		} else {
-			query.setParameter("repoEntryKey", searchParams.getTestEntry().getKey());
-		}
-		if(StringHelper.containsNonWhitespace(searchParams.getNodeIdent())) {
-			query.setParameter("subIdent", searchParams.getNodeIdent());
-		}
-		if(searchParams.getLimitToGroups() != null && searchParams.getLimitToGroups().size() > 0) {
-			List<Long> keys = searchParams.getLimitToGroups().stream()
-					.map(group -> group.getKey()).collect(Collectors.toList());
-			query.setParameter("limitGroupKeys", keys);
-		}
-		if(searchParams.getLimitToIdentities() != null && searchParams.getLimitToIdentities().size() > 0) {
-			List<Long> keys = searchParams.getLimitToIdentities().stream()
-					.map(group -> group.getKey()).collect(Collectors.toList());
-			query.setParameter("limitIdentityKeys", keys);
-		}
+				.createQuery(sb.toString(), AssessmentResponse.class);
+		AssessmentTestSessionDAO.decorateTestSessionPermission(query, searchParams);
 		return query.getResultList();
 	}
 }
