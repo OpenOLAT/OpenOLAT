@@ -136,9 +136,7 @@ public class QItemQueriesDAO {
 		if(inKeys != null && inKeys.size() > 0) {
 			query.setParameter("inKeys", inKeys);
 		}
-		if(StringHelper.containsNonWhitespace(params.getFormat())) {
-			query.setParameter("format", params.getFormat());
-		}
+		appendParameters(params, query);
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -155,7 +153,7 @@ public class QItemQueriesDAO {
 					.setManager((Number)result[3])
 					.setEditableInPool((Number)result[4])
 					.setEditableInShare((Number)result[5])
-					.setRatedByIdentity((Number)result[6])
+					.setRater((Number)result[6])
 					.setRating((Double)result[7])
 					.setMarked(true)
 					.create();
@@ -241,7 +239,7 @@ public class QItemQueriesDAO {
 					.setEditableInPool((Number)result[4])
 					.setEditableInShare((Number)result[5])
 					.setMarked((Number)result[6])
-					.setRatedByIdentity((Number)result[7])
+					.setRater((Number)result[7])
 					.setRating((Double)result[8])
 					.create();
 			views.add(itemWrapper);
@@ -337,9 +335,7 @@ public class QItemQueriesDAO {
 		if (inKeys != null && inKeys.size() > 0) {
 			query.setParameter("inKeys", inKeys);
 		}
-		if (StringHelper.containsNonWhitespace(params.getFormat())) {
-			query.setParameter("format", params.getFormat());
-		}
+		appendParameters(params, query);
 		if (firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -357,7 +353,7 @@ public class QItemQueriesDAO {
 					.setEditableInPool((Number)result[4])
 					.setEditableInShare((Number)result[5])
 					.setMarked((Number)result[6])
-					.setRatedByIdentity((Number)result[7])
+					.setRater((Number)result[7])
 					.setRating((Double)result[8])
 					.create();
 			views.add(itemWrapper);
@@ -484,9 +480,7 @@ public class QItemQueriesDAO {
 		if(inKeys != null && inKeys.size() > 0) {
 			query.setParameter("inKeys", inKeys);
 		}
-		if(StringHelper.containsNonWhitespace(params.getFormat())) {
-			query.setParameter("format", params.getFormat());
-		}
+		appendParameters(params, query);
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -502,7 +496,7 @@ public class QItemQueriesDAO {
 					.setTeacher((Number)result[1])
 					.setManager((Number)result[2])
 					.setMarked((Number)result[3])
-					.setRatedByIdentity((Number)result[4])
+					.setRater((Number)result[4])
 					.setRating((Double)result[5])
 					.create();
 			views.add(itemWrapper);
@@ -578,7 +572,7 @@ public class QItemQueriesDAO {
 					.setManager((Number)result[3])
 					.setEditableInShare((Boolean)result[4])
 					.setMarked((Number)result[5])
-					.setRatedByIdentity((Number)result[6])
+					.setRater((Number)result[6])
 					.setRating((Double)result[7])
 					.create();
 			views.add(itemWrapper);
@@ -636,9 +630,7 @@ public class QItemQueriesDAO {
 		if(inKeys != null && inKeys.size() > 0) {
 			query.setParameter("inKeys", inKeys);
 		}
-		if(StringHelper.containsNonWhitespace(params.getFormat())) {
-			query.setParameter("format", params.getFormat());
-		}
+		appendParameters(params, query);
 		if(firstResult >= 0) {
 			query.setFirstResult(firstResult);
 		}
@@ -655,7 +647,7 @@ public class QItemQueriesDAO {
 					.setManager((Number)result[3])
 					.setEditableInPool((Boolean)result[4])
 					.setMarked((Number)result[5])
-					.setRatedByIdentity((Number)result[6])
+					.setRater((Number)result[6])
 					.setRating((Double)result[7])
 					.create();
 			views.add(itemWrapper);
@@ -663,52 +655,16 @@ public class QItemQueriesDAO {
 		return views;
 	}
 	
-	private void appendOrderBy(StringBuilder sb, String dbRef, SortKey... orderBy) {
-		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
-			String sortKey = orderBy[0].getKey();
-			boolean asc = orderBy[0].isAsc();
-			sb.append(" order by ");
-			switch(sortKey) {
-				case "itemType":
-					sb.append(dbRef).append(".type.type ");
-					appendAsc(sb, asc);
-					break;
-				case "marks":
-					sb.append("marks");
-					appendAsc(sb, asc);
-					break;
-				case "rating":
-					sb.append("rating");
-					appendAsc(sb, asc);
-					sb.append(" nulls last");
-					break;
-				case "keywords":
-				case "coverage":
-				case "additionalInformations":
-					sb.append("lower(").append(dbRef).append(".").append(sortKey).append(")");
-					appendAsc(sb, asc);
-					sb.append(" nulls last");
-					break;	
-				default:
-					sb.append(dbRef).append(".").append(sortKey);
-					appendAsc(sb, asc);
-					sb.append(" nulls last");
-					break;
-			}
-		} else {
-			sb.append(" order by item.key asc ");
-		}
+	public int countItems(SearchQuestionItemParams params) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select count(item.key) from questionitem item");
+		appendWhere(sb, params);
+		
+		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class);
+		appendParameters(params, query);
+		return query.getSingleResult().intValue();
 	}
-	
-	private final StringBuilder appendAsc(StringBuilder sb, boolean asc) {
-		if(asc) {
-			sb.append(" asc");
-		} else {
-			sb.append(" desc");
-		}
-		return sb;
-	}
-	
 	public QuestionItemView getItem(Long itemKey, Identity identity, Long restrictToPoolKey, Long restrictToGroupKey) {
 		if (itemKey == null || identity == null) return null;
 		
@@ -779,11 +735,151 @@ public class QItemQueriesDAO {
 					.setEditableInPool((Number)result[4])
 					.setEditableInShare((Number)result[5])
 					.setMarked((Number)result[6])
-					.setRatedByIdentity((Number)result[7])
+					.setRater((Number)result[7])
 					.setRating((Double)result[8])
 					.create();
 		}
 		return itemWrapper;
+	}
+	
+	public List<QuestionItemView> getItems(SearchQuestionItemParams params, Collection<Long> inKeys,
+			int firstResult, int maxResults, SortKey... orderBy) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select item, ")
+		  .append(" (select count(sgmi.key) from ").append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
+		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
+		  .append(" ) as owners,")
+		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("     and competence.identity.key=:identityKey")
+		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
+		  .append(" ) as teacher,")
+		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
+		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("     and competence.identity.key=:identityKey")
+		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
+		  .append(" ) as manager,")
+		  .append(" (select count(pool2item.key) from qpool2item pool2item")
+		  .append("    where pool2item.item.key=item.key")
+		  .append("      and pool2item.editable is true")
+		  .append(" ) as pools,")
+		  .append(" (select count(shareditem.key) from qshareitem shareditem")
+		  .append("    where shareditem.item.key=item.key")
+		  .append("      and shareditem.editable is true")
+		  .append(" ) as groups,")
+		  .append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
+		  .append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
+		  .append(" ) as marks,")
+		  .append(" (select count(rating.key) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append("     and rating.creator.key=:identityKey")
+		  .append(" ) as ratings,")
+		  .append(" (select avg(rating.rating) from userrating as rating")
+		  .append("   where rating.resId=item.key and rating.resName='QuestionItem'")
+		  .append(" ) as rating")
+		  .append(" from questionitem item")
+		  .append(" inner join fetch item.ownerGroup ownerGroup")
+		  .append(" left join fetch item.type itemType")
+		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
+		  .append(" left join fetch item.educationalContext educationalContext");
+		appendWhere(sb, params);
+		if(inKeys != null && inKeys.size() > 0) {
+			sb.append(" and item.key in (:inKeys)");
+		}
+		
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null && !OrderBy.marks.name().equals(orderBy[0].getKey())) {
+			appendOrderBy(sb, "item", orderBy);
+		}
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("identityKey", params.getIdentity().getKey());
+		appendParameters(params, query);
+		if(inKeys != null && inKeys.size() > 0) {
+			query.setParameter("inKeys", inKeys);
+		}
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+		
+		List<Object[]> results = query.getResultList();
+		List<QuestionItemView> views = new ArrayList<>();
+		for(Object[] result:results) {
+			ItemWrapper itemWrapper = ItemWrapper.builder((QuestionItemImpl)result[0])
+					.setAuthor((Number)result[1])
+					.setTeacher((Number)result[2])
+					.setManager((Number)result[3])
+					.setEditableInPool((Number)result[4])
+					.setEditableInShare((Number)result[5])
+					.setMarked((Number)result[6])
+					.setRater((Number)result[7])
+					.setRating((Double)result[8])
+					.create();
+			views.add(itemWrapper);
+		}
+		return views;
+	}
+
+	private void appendWhere(StringBuilder sb, SearchQuestionItemParams params) {
+		sb.append(" where 1=1");
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			sb.append(" and item.format=:format");
+		}
+	}
+
+	private void appendParameters(SearchQuestionItemParams params, TypedQuery<?> query) {
+		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+			query.setParameter("format", params.getFormat());
+		}
+	}
+	
+	private void appendOrderBy(StringBuilder sb, String dbRef, SortKey... orderBy) {
+		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
+			String sortKey = orderBy[0].getKey();
+			boolean asc = orderBy[0].isAsc();
+			sb.append(" order by ");
+			switch(sortKey) {
+				case "itemType":
+					sb.append(dbRef).append(".type.type ");
+					appendAsc(sb, asc);
+					break;
+				case "marks":
+					sb.append("marks");
+					appendAsc(sb, asc);
+					break;
+				case "rating":
+					sb.append("rating");
+					appendAsc(sb, asc);
+					sb.append(" nulls last");
+					break;
+				case "keywords":
+				case "coverage":
+				case "additionalInformations":
+					sb.append("lower(").append(dbRef).append(".").append(sortKey).append(")");
+					appendAsc(sb, asc);
+					sb.append(" nulls last");
+					break;	
+				default:
+					sb.append(dbRef).append(".").append(sortKey);
+					appendAsc(sb, asc);
+					sb.append(" nulls last");
+					break;
+			}
+		} else {
+			sb.append(" order by item.key asc ");
+		}
+	}
+	
+	private final StringBuilder appendAsc(StringBuilder sb, boolean asc) {
+		if(asc) {
+			sb.append(" asc");
+		} else {
+			sb.append(" desc");
+		}
+		return sb;
 	}
 
 }

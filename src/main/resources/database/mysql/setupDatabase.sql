@@ -1560,6 +1560,7 @@ create table o_qp_item (
    q_format varchar(32) not null,
    creationdate datetime not null,
    lastmodified datetime not null,
+   q_status_last_modified datetime not null,
    q_dir varchar(32),
    q_root_filename varchar(255),
    fk_taxonomy_level bigint,

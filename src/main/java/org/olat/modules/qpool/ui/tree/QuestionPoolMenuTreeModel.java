@@ -269,7 +269,10 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private void buildAdminSubTreeModel(TreeNode adminNode) {
 		adminNode.removeAllChildren();
 		
-		TreeNode node = new TaxonomyAdminTreeNode(translator.translate("menu.admin.studyfields"));
+		TreeNode node = new AllQuestionsTreeNode(stackPanel, securityCallback, translator.translate("menu.all.questions"));
+		adminNode.addChild(node);
+		
+		node = new TaxonomyAdminTreeNode(translator.translate("menu.admin.studyfields"));
 		adminNode.addChild(node);
 		
 		node = new PoolsAdminTreeNode(translator.translate("menu.admin.pools"));

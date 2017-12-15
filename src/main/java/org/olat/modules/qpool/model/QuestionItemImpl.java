@@ -130,6 +130,9 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	private String itemVersion;
 	@Column(name="q_status", nullable=false, insertable=true, updatable=true)
 	private String status;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="q_status_last_modified", nullable=true, insertable=true, updatable=true)
+	private Date statusLastModified;
 
 	//rights
 	@ManyToOne(targetEntity=QLicense.class,fetch=FetchType.LAZY,optional=true)
@@ -433,6 +436,15 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	}
 
 	@Override
+	public Date getQuestionStatusLastModified() {
+		return statusLastModified;
+	}
+
+	public void setQuestionStatusLastModified(Date statusLastModified) {
+		this.statusLastModified = statusLastModified;
+	}
+
+	@Override
 	public QLicense getLicense() {
 		return license;
 	}
@@ -525,4 +537,5 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		sb.append("] ").append(super.toString());
 		return sb.toString();
 	}
+
 }

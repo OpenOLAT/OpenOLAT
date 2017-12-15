@@ -1754,6 +1754,7 @@ create table o_qp_item (
    q_format varchar(32) not null,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   q_status_last_modified timestamp,
    q_dir varchar(32),
    q_root_filename varchar(255),
    fk_taxonomy_level int8,

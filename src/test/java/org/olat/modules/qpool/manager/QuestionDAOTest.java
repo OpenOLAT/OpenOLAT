@@ -96,6 +96,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertNotNull(item.getLastModified());
 		Assert.assertNotNull(item.getType());
 		Assert.assertNotNull(item.getQuestionStatus());
+		Assert.assertNotNull(item.getQuestionStatusLastModified());
 		Assert.assertEquals("Stars", item.getTitle());
 		dbInstance.commitAndCloseSession();
 	}
@@ -174,7 +175,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertFalse(clone.getIdentifier().equals(original.getIdentifier()));
 		Assert.assertEquals(original.getIdentifier(), clone.getMasterIdentifier());
 		Assert.assertNotNull(clone.getTitle());
-		Assert.assertFalse(clone.getTitle().equals(original.getTitle()));
+		Assert.assertEquals(original.getTitle(), clone.getTitle());
 		Assert.assertEquals(original.getTopic(), clone.getTopic());
 		Assert.assertEquals(original.getDescription(), clone.getDescription());
 		Assert.assertEquals(original.getKeywords(), clone.getKeywords());
@@ -199,6 +200,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertEquals(original.getAssessmentType(), clone.getAssessmentType());
 		//lifecycle
 		Assert.assertEquals(QuestionStatus.draft.name(), clone.getStatus());
+		Assert.assertNotNull(clone.getQuestionStatusLastModified());
 		Assert.assertEquals(original.getItemVersion(), clone.getItemVersion());
 		//rights
 		Assert.assertEquals(original.getLicense(), clone.getLicense());

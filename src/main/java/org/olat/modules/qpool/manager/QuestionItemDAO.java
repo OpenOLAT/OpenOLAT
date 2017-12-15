@@ -72,12 +72,14 @@ public class QuestionItemDAO {
 	public QuestionItemImpl create(String title, String format, String dir, String rootFilename) {
 		QuestionItemImpl item = new QuestionItemImpl();
 		
+		Date now = new Date();
 		String uuid = UUID.randomUUID().toString();
 		item.setIdentifier(uuid);
-		item.setCreationDate(new Date());
-		item.setLastModified(new Date());
+		item.setCreationDate(now);
+		item.setLastModified(now);
 		item.setTitle(title);
 		item.setStatus(QuestionStatus.draft.name());
+		item.setQuestionStatusLastModified(now);
 		item.setUsage(0);
 		item.setNumOfAnswerAlternatives(0);
 		item.setFormat(format);

@@ -129,6 +129,7 @@ public class TaxonomyLeveltemsSource extends DefaultItemsSource {
 				itemImpl.setTaxonomyLevel(taxonomyLevel);
 			}
 		}
+		qpoolService.index(items);
 		return items.size();
 	}
 

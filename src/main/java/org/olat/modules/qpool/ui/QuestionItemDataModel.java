@@ -101,6 +101,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 				}
 				return translator.translate("lifecycle.status." + s.name());
 			}
+			case statusLastModified: return item.getQuestionStatusLastModified();
 			case editable: return item.isEditable() ? Boolean.TRUE : Boolean.FALSE;
 			case mark: return item.getMarkLink();
 			default: return "-";
@@ -129,6 +130,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		rating("rating"),
 		itemVersion("lifecycle.version"),
 		status("lifecycle.status"),
+		statusLastModified("lifecycle.status.last.modified"),
 		editable("editable"),
 		mark("mark");
 		

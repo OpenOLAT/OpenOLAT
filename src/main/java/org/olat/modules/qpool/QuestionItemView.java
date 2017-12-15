@@ -32,7 +32,11 @@ public interface QuestionItemView extends QuestionItemShort {
 
 	public boolean isReviewer();
 	
+	public boolean isTeacher();
+	
 	public boolean isManager();
+	
+	public boolean isRater();
 
 	public boolean isEditableInPool();
 
@@ -75,7 +79,8 @@ public interface QuestionItemView extends QuestionItemShort {
 		format,
 		rating,
 		itemVersion,
-		status
+		status,
+		statusLastModified
 	}
 
 }

@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.manager;
 
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,8 +44,11 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.Pool;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemCollection;
+import org.olat.modules.qpool.QuestionItemFull;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.QuestionType;
@@ -95,11 +100,16 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	private TaxonomyCompetenceDAO taxonomyCompetenceDao;
 	@Autowired
 	private CommentAndRatingService commentAndRatingService;
+	@Autowired
+	private QPoolService qpoolService;
 	
 	private QItemType qItemType;
 	
 	@Before
 	public void setUp() {
+		List<QuestionItemFull> items = qpoolService.getAllItems(0, Integer.MAX_VALUE);
+		qpoolService.deleteItems(items);
+
 		qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
 	}
 
@@ -157,147 +167,6 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 			List<QuestionItemView> descOrderedItems = qItemQueriesDao.getFavoritItems(params, null, 0, -1, sortDesc);
 			Assert.assertNotNull(descOrderedItems);
 		}
-	}
-	
-	@Test
-	public void getFavoriteItems_isAuthor() {
-		//create an author with an item
-		Identity me = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
-		QuestionItem myItem = questionDao.createAndPersist(me, "FAV 4390", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		//create another author with an item 
-		Identity other = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
-		QuestionItem othersItem = questionDao.createAndPersist(other, "FAV 4391", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		//the first author marks the items as favorites
-		markManager.setMark(myItem, me, null, "[QuestionItem:" + myItem + "]");
-		markManager.setMark(othersItem, me, null, "[QuestionItem:" + othersItem + "]");
-		dbInstance.commitAndCloseSession();
-		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(me, null);
-		List<QuestionItemView> myFavorites = qItemQueriesDao.getFavoritItems(params, Collections.singletonList(myItem.getKey()), 0, -1);;
-		QuestionItemView myFavorite = myFavorites.get(0);
-		Assert.assertTrue(myFavorite.isAuthor());
-		
-		List<QuestionItemView> otherFavorites = qItemQueriesDao.getFavoritItems(params, Collections.singletonList(othersItem.getKey()), 0, -1);;
-		QuestionItemView otherFavorite = otherFavorites.get(0);
-		Assert.assertFalse(otherFavorite.isAuthor());
-	}
-	
-	@Test
-	public void getFavoriteItems_isReviwer() {
-		//create two taxonomy levels
-		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool-isT", "QPool Teacher", "", null);
-		TaxonomyLevel taxWithTeach = taxonomyLevelDao.createTaxonomyLevel("QPool-Teach", "QPool Teach", "Teach", null, null, null, null, taxonomy);
-		TaxonomyLevel taxWithoutTeach = taxonomyLevelDao.createTaxonomyLevel("QPool-NoTeach", "QPool NoTeach", "NoTeach", null, null, null, null, taxonomy);
-		//create an author with teach rights in one taxonomy level and one item in the two taxonomy levels
-		Identity me = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
-		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.teach, taxWithTeach, me);
-		QuestionItem myItemTax = questionDao.createAndPersist(me, "FAV 200", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItemImpl myItemTaxImpl = questionDao.loadById(myItemTax.getKey());
-		myItemTaxImpl.setTaxonomyLevel(taxWithTeach);
-		QuestionItem myItemNoTax = questionDao.createAndPersist(me, "FAV 201", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItemImpl myItemNoTaxImpl = questionDao.loadById(myItemNoTax.getKey());
-		myItemNoTaxImpl.setTaxonomyLevel(taxWithoutTeach);
-		
-		//create another author with teach rights in one taxonomy level and one item in the two taxonomy levels
-		Identity other = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
-		QuestionItem otherItemTax = questionDao.createAndPersist(other, "FAV 210", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItemImpl otherItemTaxImpl = questionDao.loadById(otherItemTax.getKey());
-		otherItemTaxImpl.setTaxonomyLevel(taxWithTeach);
-		QuestionItem otherItemNoTax = questionDao.createAndPersist(other, "FAV 211", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		myItemNoTaxImpl.setTaxonomyLevel(taxWithoutTeach);
-		
-		//create a rated item
-		QuestionItem myItemTaxRated = questionDao.createAndPersist(me, "FAV 220", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItemImpl myItemTaxRatedImpl = questionDao.loadById(myItemTax.getKey());
-		myItemTaxRatedImpl.setTaxonomyLevel(taxWithTeach);
-		commentAndRatingService.createRating(me, myItemTaxRated, null, 2);
-		
-		//Mark the Items to find then
-		markManager.setMark(myItemTax, me, null, "[QuestionItem:" + myItemTax + "]");
-		markManager.setMark(myItemNoTax, me, null, "[QuestionItem:" + myItemNoTax + "]");
-		markManager.setMark(otherItemTax, me, null, "[QuestionItem:" + otherItemTax + "]");
-		markManager.setMark(otherItemNoTax, me, null, "[QuestionItem:" + otherItemNoTax + "]");
-		markManager.setMark(myItemTaxRated, me, null, "[QuestionItem:" + myItemTaxRated + "]");
-		dbInstance.commitAndCloseSession();
-		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(me, null);
-		List<QuestionItemView> myFavorites = qItemQueriesDao.getFavoritItems(params, Arrays.asList(otherItemTax.getKey()), 0, -1);;
-		Assert.assertTrue(myFavorites.get(0).isReviewer());
-		
-		Collection<Long> notReviewer = Arrays.asList(myItemTax.getKey(), myItemNoTax.getKey(), otherItemNoTax.getKey(), myItemTaxRated.getKey());
-		List<QuestionItemView> otherFavorites = qItemQueriesDao.getFavoritItems(params, notReviewer,  0, -1);;
-		Assert.assertFalse(otherFavorites.get(0).isReviewer());
-		Assert.assertFalse(otherFavorites.get(1).isReviewer());
-		Assert.assertFalse(otherFavorites.get(2).isReviewer());
-		Assert.assertFalse(otherFavorites.get(3).isReviewer());
-	}
-	
-	@Test
-	public void getFavoriteItems_isManager() {
-		//create two taxonomy levels
-		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool-ism", "QPool Manager", "", null);
-		TaxonomyLevel taxWithManage = taxonomyLevelDao.createTaxonomyLevel("QPool-Manage", "QPool Manage", "Manage", null, null, null, null, taxonomy);
-		TaxonomyLevel taxWithoutManage = taxonomyLevelDao.createTaxonomyLevel("QPool-NoManage", "QPool NoManage", "NoManage", null, null, null, null, taxonomy);
-		//create an author with teach rights in one taxonomy level and one item in the two taxonomy levels
-		Identity me = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
-		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, taxWithManage, me);
-		QuestionItem myItemTax = questionDao.createAndPersist(me, "FAV 300", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItemImpl myItemTaxImpl = questionDao.loadById(myItemTax.getKey());
-		myItemTaxImpl.setTaxonomyLevel(taxWithManage);
-		QuestionItem myItemNoTax = questionDao.createAndPersist(me, "FAV 301", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItemImpl myItemNoTaxImpl = questionDao.loadById(myItemNoTax.getKey());
-		myItemNoTaxImpl.setTaxonomyLevel(taxWithoutManage);
-		
-		//create another author with teach rights in one taxonomy level and one item in the two taxonomy levels
-		Identity other = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
-		QuestionItem otherItemTax = questionDao.createAndPersist(other, "FAV 310", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItemImpl otherItemTaxImpl = questionDao.loadById(otherItemTax.getKey());
-		otherItemTaxImpl.setTaxonomyLevel(taxWithManage);
-		QuestionItem otherItemNoTax = questionDao.createAndPersist(other, "FAV 311", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		myItemNoTaxImpl.setTaxonomyLevel(taxWithoutManage);
-		markManager.setMark(myItemTax, me, null, "[QuestionItem:" + myItemTax + "]");
-		markManager.setMark(myItemNoTax, me, null, "[QuestionItem:" + myItemNoTax + "]");
-		markManager.setMark(otherItemTax, me, null, "[QuestionItem:" + otherItemTax + "]");
-		markManager.setMark(otherItemNoTax, me, null, "[QuestionItem:" + otherItemNoTax + "]");
-		dbInstance.commitAndCloseSession();
-		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(me, null);
-		Collection<Long> manager = Arrays.asList(myItemTax.getKey(), otherItemTax.getKey());
-		List<QuestionItemView> myFavorites = qItemQueriesDao.getFavoritItems(params, manager, 0, -1);;
-		Assert.assertTrue(myFavorites.get(0).isManager());
-		Assert.assertTrue(myFavorites.get(1).isManager());
-		
-		Collection<Long> notManager = Arrays.asList(myItemNoTax.getKey(), otherItemNoTax.getKey());
-		List<QuestionItemView> otherFavorites = qItemQueriesDao.getFavoritItems(params, notManager,  0, -1);;
-		Assert.assertFalse(otherFavorites.get(0).isManager());
-		Assert.assertFalse(otherFavorites.get(1).isManager());
-	}
-	
-	@Test
-	public void getFavoriteItems_isEditableByPool() {
-		String poolTitle = "isEByPool-" + UUID.randomUUID().toString();
-		Pool pool = poolDao.createPool(null, poolTitle, true);
-		Identity me = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
-		Identity other = JunitTestHelper.createAndPersistIdentityAsUser("fav-auth-" + UUID.randomUUID().toString());
-		QuestionItem itemInPoolEditable = questionItemDao.createAndPersist(other, "FAV 400", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		poolDao.addItemToPool(itemInPoolEditable, Collections.singletonList(pool), true);
-		QuestionItem itemInPoolNotEditable = questionItemDao.createAndPersist(other, "FAV 401", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		poolDao.addItemToPool(itemInPoolNotEditable, Collections.singletonList(pool), false);
-		QuestionItem itemNotInPool = questionItemDao.createAndPersist(other, "FAV 402", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		markManager.setMark(itemInPoolEditable, me, null, "[QuestionItem:" + itemInPoolEditable + "]");
-		markManager.setMark(itemInPoolNotEditable, me, null, "[QuestionItem:" + itemInPoolNotEditable + "]");
-		markManager.setMark(itemNotInPool, me, null, "[QuestionItem:" + itemNotInPool + "]");
-		dbInstance.commitAndCloseSession();
-		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(me, null);
-		Collection<Long> editable = Arrays.asList(itemInPoolEditable.getKey());
-		List<QuestionItemView> editableFavorites = qItemQueriesDao.getFavoritItems(params, editable, 0, -1);;
-		Assert.assertTrue(editableFavorites.get(0).isEditableInPool());
-		
-		Collection<Long> notEditable = Arrays.asList(itemInPoolNotEditable.getKey(), itemNotInPool.getKey());
-		List<QuestionItemView> notEditableFavorites = qItemQueriesDao.getFavoritItems(params, notEditable,  0, -1);;
-		Assert.assertFalse(notEditableFavorites.get(0).isEditableInPool());
-		Assert.assertFalse(notEditableFavorites.get(1).isEditableInPool());
 	}
 	
 	@Test
@@ -779,5 +648,263 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		Assert.assertNotNull(limitedSharedItems);
 		Assert.assertEquals(1, limitedSharedItems.size());
 		Assert.assertEquals(item1.getKey(), limitedSharedItems.get(0).getKey());
+	}
+	
+	@Test
+	public void shouldCountAllItemsWithFilter() {
+		Identity owner1 = createRandomIdentity();
+		questionDao.createAndPersist(owner1, "QPool 1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		questionDao.createAndPersist(owner1, "QPool 2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		createRandomItem(owner1);
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		params.setFormat(QTIConstants.QTI_12_FORMAT);
+		int countItems = qItemQueriesDao.countItems(params);
+		
+		assertThat(countItems).isEqualTo(2);
+	}
+	
+	@Test
+	public void shouldGetAllItems() {
+		Identity owner1 = createRandomIdentity();
+		QuestionItem item11 = createRandomItem(owner1);
+		QuestionItem item12 = createRandomItem(owner1);
+		QuestionItem item13 = createRandomItem(owner1);
+		Identity owner2 = createRandomIdentity();
+		QuestionItem item21 = createRandomItem(owner2);
+		QuestionItem item22 = createRandomItem(owner2);
+		QuestionItem item23 = createRandomItem(owner2);
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		
+		assertThat(loadedItems).hasSize(6);
+		assertThat(keysOf(loadedItems)).containsOnlyElementsOf(keysOf(item11, item12, item13, item21, item22, item23));
+	}
+	
+	@Test
+	public void shouldGetLimitedItems() {
+		Identity owner1 = createRandomIdentity();
+		QuestionItem item11 = createRandomItem(owner1);
+		QuestionItem item12 = createRandomItem(owner1);
+		QuestionItem item13 = createRandomItem(owner1);
+		Identity owner2 = createRandomIdentity();
+		QuestionItem item21 = createRandomItem(owner2);
+		QuestionItem item22 = createRandomItem(owner2);
+		QuestionItem item23 = createRandomItem(owner2);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> inKeys = Arrays.asList(item12.getKey(), item21.getKey());
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, inKeys, 0, -1);
+		
+		assertThat(loadedItems).hasSize(inKeys.size());
+		assertThat(keysOf(loadedItems))
+				.containsOnlyElementsOf(inKeys)
+				.doesNotContainAnyElementsOf(keysOf(item11, item13, item22, item23));
+	}
+	
+	@Test
+	public void shouldGetAllItemsByFormat() {
+		Identity owner1 = createRandomIdentity();
+		QuestionItem item11 = questionDao.createAndPersist(owner1, "QPool 1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item12 = questionDao.createAndPersist(owner1, "QPool 2", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItem item13 = createRandomItem(owner1);
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		params.setFormat(QTIConstants.QTI_12_FORMAT);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		
+		assertThat(loadedItems).hasSize(2);
+		assertThat(keysOf(loadedItems))
+				.containsOnlyElementsOf(keysOf(item11, item12))
+				.doesNotContainAnyElementsOf(keysOf(item13));
+	}
+	
+	@Test
+	public void shouldGetItemsIsAuthor() {
+		Identity owner1 = createRandomIdentity();
+		QuestionItem item11 = createRandomItem(owner1);
+		Identity owner2 = createRandomIdentity();
+		QuestionItem item21 = createRandomItem(owner2);
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(owner1, null);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		
+		assertThat(filterByKey(loadedItems, item11).isAuthor()).isTrue();
+		assertThat(filterByKey(loadedItems, item21).isAuthor()).isFalse();
+	}
+	
+	@Test
+	public void shouldGetItemsIsTeacher() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
+		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
+		Identity ownerAndTeacher = createRandomIdentity();
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.teach, taxonomyLevel, ownerAndTeacher);
+		Identity teacher = createRandomIdentity();
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.teach, taxonomyLevel, teacher);
+		Identity noTeacher = createRandomIdentity();
+		QuestionItemImpl item11 = createRandomItem(ownerAndTeacher);
+		item11.setTaxonomyLevel(taxonomyLevel);
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(ownerAndTeacher, null);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		assertThat(filterByKey(loadedItems, item11).isTeacher()).isTrue();
+		
+		params = new SearchQuestionItemParams(ownerAndTeacher, null);
+		loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		assertThat(filterByKey(loadedItems, item11).isTeacher()).isTrue();
+		
+		params = new SearchQuestionItemParams(noTeacher, null);
+		loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		assertThat(filterByKey(loadedItems, item11).isTeacher()).isFalse();
+	}
+	
+	@Test
+	public void shouldGetItemsIsManager() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
+		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
+		Identity ownerAndManager = createRandomIdentity();
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, taxonomyLevel, ownerAndManager);
+		Identity manager = createRandomIdentity();
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, taxonomyLevel, manager);
+		Identity noManager = createRandomIdentity();
+		QuestionItemImpl item11 = createRandomItem(ownerAndManager);
+		item11.setTaxonomyLevel(taxonomyLevel);
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(ownerAndManager, null);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		assertThat(filterByKey(loadedItems, item11).isManager()).isTrue();
+		
+		params = new SearchQuestionItemParams(ownerAndManager, null);
+		loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		assertThat(filterByKey(loadedItems, item11).isManager()).isTrue();
+		
+		params = new SearchQuestionItemParams(noManager, null);
+		loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		assertThat(filterByKey(loadedItems, item11).isManager()).isFalse();
+	}
+	
+	@Test
+	public void shouldGetItemsIsRater() {
+		Identity owner1 = createRandomIdentity();
+		QuestionItem item11 = createRandomItem(owner1);
+		QuestionItem item12 = createRandomItem(owner1);
+		commentAndRatingService.createRating(owner1, item11, null, 2);
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(owner1, null);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		
+		assertThat(filterByKey(loadedItems, item11).isRater()).isTrue();
+		assertThat(filterByKey(loadedItems, item12).isRater()).isFalse();
+	}
+	
+	@Test
+	public void shouldGetItemsIsEditableInAPool() {
+		Identity owner1 = createRandomIdentity();
+		QuestionItem item11 = createRandomItem(owner1);
+		QuestionItem item12 = createRandomItem(owner1);
+		QuestionItem item13 = createRandomItem(owner1);
+		Pool pool = poolDao.createPool(null, "Pool", true);
+		poolDao.addItemToPool(item11, Collections.singletonList(pool), true);
+		poolDao.addItemToPool(item12, Collections.singletonList(pool), false);
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		
+		assertThat(filterByKey(loadedItems, item11).isEditableInPool()).isTrue();
+		assertThat(filterByKey(loadedItems, item12).isEditableInPool()).isFalse();
+		assertThat(filterByKey(loadedItems, item13).isEditableInPool()).isFalse();
+	}
+	
+	@Test
+	public void shouldGetItemsIsEditableInAShare() {
+		Identity owner1 = createRandomIdentity();
+		QuestionItem item11 = createRandomItem(owner1);
+		QuestionItem item12 = createRandomItem(owner1);
+		QuestionItem item13 = createRandomItem(owner1);
+		BusinessGroup group = businessGroupDao.createAndPersist(owner1, "QPool", "QPool", -1, -1, false, false, false, false, false);
+		List<OLATResource> groupResources = Arrays.asList(group.getResource());
+		questionDao.share(item11, groupResources, true);
+		questionDao.share(item12, groupResources, false);
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		
+		assertThat(filterByKey(loadedItems, item11).isEditableInShare()).isTrue();
+		assertThat(filterByKey(loadedItems, item12).isEditableInShare()).isFalse();
+		assertThat(filterByKey(loadedItems, item13).isEditableInShare()).isFalse();
+	}
+	
+	@Test
+	public void shouldGetItemsIsMarked() {
+		Identity owner1 = createRandomIdentity();
+		QuestionItem item11 = createRandomItem(owner1);
+		QuestionItem item12 = createRandomItem(owner1);
+		markManager.setMark(item11, owner1, null, "[QuestionItem:" + item11 + "]");
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(owner1, null);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		
+		assertThat(filterByKey(loadedItems, item11).isMarked()).isTrue();
+		assertThat(filterByKey(loadedItems, item12).isMarked()).isFalse();
+	}
+	
+	@Test
+	public void shouldGetItemsRating() {
+		Identity owner1 = createRandomIdentity();
+		QuestionItem item11 = createRandomItem(owner1);
+		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 2);
+		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 3);
+		commentAndRatingService.createRating(createRandomIdentity(), item11, null, 4);
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		
+		assertThat(filterByKey(loadedItems, item11).getRating()).isEqualTo(3);
+	}
+
+	private Identity createRandomIdentity() {
+		return JunitTestHelper.createAndPersistIdentityAsUser("qitems-" + UUID.randomUUID().toString());
+	}
+
+	private QuestionItemImpl createRandomItem(Identity owner) {
+		String title = UUID.randomUUID().toString();
+		String format = QTI21Constants.QTI_21_FORMAT;
+		String language = Locale.ENGLISH.getLanguage();
+		TaxonomyLevel taxonLevel = null;
+		String dir = null;
+		String rootFilename = null;
+		return questionItemDao.createAndPersist(owner, title, format, language, taxonLevel, dir, rootFilename, qItemType);
+	}
+	
+	private QuestionItemView filterByKey(List<QuestionItemView> items, QuestionItem filter) {
+		return items.stream()
+				.filter(item -> item.getKey().equals(filter.getKey()))
+				.findFirst()
+				.get();
+	}
+	
+	private Collection<Long> keysOf(List<QuestionItemView> items) {
+		return items.stream()
+				.map(item -> item.getKey())
+				.collect(Collectors.toList());
+	}
+	
+	private Collection<Long> keysOf(QuestionItemShort... items) {
+		return Arrays.stream(items)
+				.map(item -> item.getKey())
+				.collect(Collectors.toList());
 	}
 }

@@ -65,63 +65,21 @@ public class ItemWrapper implements QuestionItemView {
 	
 	private String itemVersion;
 	private String status;
+	private Date statusLastModified;
 
 	private String format;
 	
-	private final boolean isAuthor;
-	private final boolean isReviewer;
-	private final boolean isManager;
-	private final boolean isEditableInPool;
-	private final boolean isEditableInShare;
-	private final boolean isReviewableFormat;
-	private final boolean isMarked;
-	private final Double rating;
+	private boolean isAuthor;
+	private boolean isTeacher;
+	private boolean isManager;
+	private boolean isRater;
+	private boolean isEditableInPool;
+	private boolean isEditableInShare;
+	private boolean isMarked;
+	private Double rating;
 	
-	private ItemWrapper(ItemWrapperBuilder builder) {
-		key = builder.item.getKey();
-		creationDate = builder.item.getCreationDate();
-		lastModified = builder.item.getLastModified();
-		
-		identifier = builder.item.getIdentifier();
-		masterIdentifier = builder.item.getMasterIdentifier();
-		title = builder.item.getTitle();
-		topic = builder.item.getTopic();
-		keywords = builder.item.getKeywords();
-		coverage = builder.item.getCoverage();
-		additionalInformations = builder.item.getAdditionalInformations();
-		language = builder.item.getLanguage();
-		
-		taxonomyLevel = builder.item.getTaxonomyLevelName();
-		educationalContextLevel = builder.item.getEducationalContextLevel();
-		educationalLearningTime = builder.item.getEducationalLearningTime();
-		
-		itemType = builder.item.getItemType();
-		difficulty = builder.item.getDifficulty();
-		stdevDifficulty = builder.item.getStdevDifficulty();
-		differentiation = builder.item.getDifferentiation();
-		numOfAnswerAlternatives = builder.item.getNumOfAnswerAlternatives();
-		usage = builder.item.getUsage();
-		
-		itemVersion = builder.item.getItemVersion();
-		status = builder.item.getQuestionStatus().name();
-
-		format = builder.item.getFormat();
-		
-		this.isAuthor = builder.isAuthor;
-		this.isReviewer = builder.isTeacher && !builder.isAuthor && !builder.isRatedByIdentity;
-		this.isManager = builder.isManager;
-		this.isEditableInPool = builder.isEditableInPool;
-		this.isEditableInShare = builder.isEditableInShare;
-		this.isReviewableFormat = !QTIConstants.QTI_12_FORMAT.equals(builder.item.getFormat());
-		this.isMarked = builder.isMarked;
-		this.rating = builder.rating;
-
-		log.debug("Question item wrapped:" + this.toString());
+	private ItemWrapper() {
 	}
-
-    public static ItemWrapperBuilder builder(QuestionItem item) {
-        return new ItemWrapperBuilder(item);
-    }
 
 	@Override
 	public Long getKey() {
@@ -134,13 +92,23 @@ public class ItemWrapper implements QuestionItemView {
 	}
 
 	@Override
+	public boolean isTeacher() {
+		return isTeacher;
+	}
+
+	@Override
 	public boolean isReviewer() {
-		return isReviewer;
+		return isTeacher && !isAuthor && !isRater;
 	}
 
 	@Override
 	public boolean isManager() {
 		return isManager;
+	}
+	
+	@Override
+	public boolean isRater() {
+		return isRater;
 	}
 
 	@Override
@@ -150,7 +118,7 @@ public class ItemWrapper implements QuestionItemView {
 
 	@Override
 	public boolean isReviewableFormat() {
-		return isReviewableFormat;
+		return !QTIConstants.QTI_12_FORMAT.equals(getFormat());
 	}
 
 	@Override
@@ -295,6 +263,11 @@ public class ItemWrapper implements QuestionItemView {
 		}
 		return null;
 	}
+	
+	@Override
+	public Date getQuestionStatusLastModified() {
+		return statusLastModified;
+	}
 
 	@Override
 	public String getItemVersion() {
@@ -324,103 +297,131 @@ public class ItemWrapper implements QuestionItemView {
 		sb.append("itemRow[key=").append(getKey()).append(":")
 		  .append("name=").append(getTitle()).append(":")
 		  .append("isAuthor=").append(isAuthor()).append(":")
+		  .append("isTeacher=").append(isTeacher()).append(":")
 		  .append("isReviewer=").append(isReviewer()).append(":")
 		  .append("isManager=").append(isManager()).append(":")
+		  .append("isRater=").append(isRater()).append(":")
 		  .append("isEditableInPool=").append(isEditableInPool()).append(":")
 		  .append("isEditableInShare=").append(isEditableInShare()).append(":")
 		  .append("isMarked=").append(isMarked()).append(":")
 		  .append("rating=").append(getRating()).append("]");
 		return sb.toString();
 	}
+
+    public static ItemWrapperBuilder builder(QuestionItem item) {
+        return new ItemWrapperBuilder(item);
+    }
 	
 	public static class ItemWrapperBuilder {
 		
-		private final QuestionItem item;
-		private boolean isAuthor = false;
-		private boolean isTeacher = false;
-		private boolean isManager = false;
-		private boolean isEditableInPool = false;
-		private boolean isEditableInShare = false;
-		private boolean isMarked = false;
-		private boolean isRatedByIdentity = false;
-		private Double rating;
+		private final ItemWrapper itemWrapper;
 		
 		public ItemWrapperBuilder(QuestionItem item) {
-			this.item = item;
+			itemWrapper = new ItemWrapper();
+			itemWrapper.key = item.getKey();
+			itemWrapper.creationDate = item.getCreationDate();
+			itemWrapper.lastModified = item.getLastModified();
+			
+			itemWrapper.identifier = item.getIdentifier();
+			itemWrapper.masterIdentifier = item.getMasterIdentifier();
+			itemWrapper.title = item.getTitle();
+			itemWrapper.topic = item.getTopic();
+			itemWrapper.keywords = item.getKeywords();
+			itemWrapper.coverage = item.getCoverage();
+			itemWrapper.additionalInformations = item.getAdditionalInformations();
+			itemWrapper.language = item.getLanguage();
+			
+			itemWrapper.taxonomyLevel = item.getTaxonomyLevelName();
+			itemWrapper.educationalContextLevel = item.getEducationalContextLevel();
+			itemWrapper.educationalLearningTime = item.getEducationalLearningTime();
+			
+			itemWrapper.itemType = item.getItemType();
+			itemWrapper.difficulty = item.getDifficulty();
+			itemWrapper.stdevDifficulty = item.getStdevDifficulty();
+			itemWrapper.differentiation = item.getDifferentiation();
+			itemWrapper.numOfAnswerAlternatives = item.getNumOfAnswerAlternatives();
+			itemWrapper.usage = item.getUsage();
+			
+			itemWrapper.itemVersion = item.getItemVersion();
+			itemWrapper.status = item.getQuestionStatus().name();
+			itemWrapper.statusLastModified = item.getQuestionStatusLastModified();
+
+			itemWrapper.format = item.getFormat();
 		}
 
 		public ItemWrapperBuilder setAuthor(boolean isAuthor) {
-			this.isAuthor = isAuthor;
+			itemWrapper.isAuthor = isAuthor;
 			return this;
 		}
 
 		public ItemWrapperBuilder setAuthor(Number authorCount) {
-			this.isAuthor = authorCount == null ? false : authorCount.longValue() > 0;
+			itemWrapper.isAuthor = authorCount == null ? false : authorCount.longValue() > 0;
 			return this;
 		}
 
 		public ItemWrapperBuilder setTeacher(boolean isTeacher) {
-			this.isTeacher = isTeacher;
+			itemWrapper.isTeacher = isTeacher;
 			return this;
 		}
 
 		public ItemWrapperBuilder setTeacher(Number teacherCount) {
-			this.isTeacher = teacherCount == null ? false : teacherCount.longValue() > 0;
+			itemWrapper.isTeacher = teacherCount == null ? false : teacherCount.longValue() > 0;
 			return this;
 		}
 
 		public ItemWrapperBuilder setManager(boolean isManager) {
-			this.isManager = isManager;
+			itemWrapper.isManager = isManager;
 			return this;
 		}
 
 		public ItemWrapperBuilder setManager(Number managerCount) {
-			this.isManager = managerCount == null ? false : managerCount.longValue() > 0;
+			itemWrapper.isManager = managerCount == null ? false : managerCount.longValue() > 0;
+			return this;
+		}
+		
+		public ItemWrapperBuilder setRater(Number ratingsCount) {
+			itemWrapper.isRater = ratingsCount == null ? false : ratingsCount.longValue() > 0;
 			return this;
 		}
 
 		public ItemWrapperBuilder setEditableInPool(boolean isEditableInPool) {
-			this.isEditableInPool = isEditableInPool;
+			itemWrapper.isEditableInPool = isEditableInPool;
 			return this;
 		}
 
 		public ItemWrapperBuilder setEditableInPool(Number editableInPoolCount) {
-			this.isEditableInPool = editableInPoolCount == null ? false : editableInPoolCount.longValue() > 0;
+			itemWrapper.isEditableInPool = editableInPoolCount == null ? false : editableInPoolCount.longValue() > 0;
 			return this;
 		}
 
 		public ItemWrapperBuilder setEditableInShare(boolean isEditableInShare) {
-			this.isEditableInShare = isEditableInShare;
+			itemWrapper.isEditableInShare = isEditableInShare;
 			return this;
 		}
 
 		public ItemWrapperBuilder setEditableInShare(Number editableInShareCount) {
-			this.isEditableInShare = editableInShareCount == null ? false : editableInShareCount.longValue() > 0;
+			itemWrapper.isEditableInShare = editableInShareCount == null ? false : editableInShareCount.longValue() > 0;
 			return this;
 		}
 
 		public ItemWrapperBuilder setMarked(boolean isMarked) {
-			this.isMarked = isMarked;
+			itemWrapper.isMarked = isMarked;
 			return this;
 		}
 
 		public ItemWrapperBuilder setMarked(Number markedCount) {
-			this.isMarked = markedCount == null ? false : markedCount.longValue() > 0;
-			return this;
-		}
-		
-		public ItemWrapperBuilder setRatedByIdentity(Number ratingsCount) {
-			this.isRatedByIdentity = ratingsCount == null ? false : ratingsCount.longValue() > 0;
+			itemWrapper.isMarked = markedCount == null ? false : markedCount.longValue() > 0;
 			return this;
 		}
 
 		public ItemWrapperBuilder setRating(Double rating) {
-			this.rating = rating;
+			itemWrapper.rating = rating;
 			return this;
 		}
 		
 		public ItemWrapper create() {
-			return new ItemWrapper(this);
+			log.debug("Question item wrapped:" + itemWrapper.toString());
+			return itemWrapper;
 		}
 	}
 

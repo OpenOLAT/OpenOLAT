@@ -54,6 +54,11 @@ public class ItemRow implements QuestionItemView {
 	public boolean isAuthor() {
 		return delegate.isAuthor();
 	}
+	
+	@Override
+	public boolean isTeacher() {
+		return delegate.isTeacher();
+	}
 
 	@Override
 	public boolean isReviewer() {
@@ -63,6 +68,11 @@ public class ItemRow implements QuestionItemView {
 	@Override
 	public boolean isManager() {
 		return delegate.isManager();
+	}
+
+	@Override
+	public boolean isRater() {
+		return delegate.isRater();
 	}
 
 	@Override
@@ -94,7 +104,7 @@ public class ItemRow implements QuestionItemView {
 	public Double getRating() {
 		return delegate.getRating();
 	}
-
+	
 	@Override
 	public String getResourceableTypeName() {
 		return delegate.getResourceableTypeName();
@@ -213,6 +223,11 @@ public class ItemRow implements QuestionItemView {
 	@Override
 	public QuestionStatus getQuestionStatus() {
 		return delegate.getQuestionStatus();
+	}
+
+	@Override
+	public Date getQuestionStatusLastModified() {
+		return delegate.getQuestionStatusLastModified();
 	}
 
 	@Override

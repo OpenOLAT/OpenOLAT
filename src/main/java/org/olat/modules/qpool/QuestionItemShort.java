@@ -20,6 +20,7 @@
 package org.olat.modules.qpool;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
@@ -75,6 +76,8 @@ public interface QuestionItemShort extends OLATResourceable, CreateInfo, Modifie
 
 	//lifecycle
 	public QuestionStatus getQuestionStatus();
+	
+	public Date getQuestionStatusLastModified();
 	
 	//technics
 	public String getFormat();
