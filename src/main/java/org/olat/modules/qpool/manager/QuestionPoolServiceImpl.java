@@ -931,17 +931,21 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public void rateItem(QuestionItem item, Identity identity, Float rating, String comment) {
+	public void rateItemInReview(QuestionItem item, Identity identity, Float rating, String comment) {
 		if (item == null || identity == null) return;
 		
 		if (rating != null && rating > 0f) {
-			Integer newRating = Float.valueOf(rating).intValue();
-			commentAndRatingService.createRating(identity, item, null, newRating);
-			ReviewDecision decision = reviewService.decideStatus(item, rating);
-			if (item instanceof QuestionItemImpl && decision.isStatusChanged()) {
-				QuestionItemImpl itemImpl = (QuestionItemImpl) item;
-				itemImpl.setQuestionStatus(decision.getStatus());
-				updateItem(itemImpl);
+			// Review is only in status review possible
+			QuestionItem previousItem = loadItemById(item.getKey());
+			if (QuestionStatus.review.equals(previousItem.getQuestionStatus())) {
+				Integer newRating = Float.valueOf(rating).intValue();
+				commentAndRatingService.createRating(identity, item, null, newRating);
+				ReviewDecision decision = reviewService.decideStatus(item, rating);
+				if (item instanceof QuestionItemImpl && decision.isStatusChanged()) {
+					QuestionItemImpl itemImpl = (QuestionItemImpl) item;
+					itemImpl.setQuestionStatus(decision.getStatus());
+					updateItem(itemImpl);
+				}
 			}
 		}
 		if (StringHelper.containsNonWhitespace(comment)) {

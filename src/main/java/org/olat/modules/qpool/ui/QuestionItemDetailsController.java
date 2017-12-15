@@ -445,7 +445,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 
 	private void doRate(UserRequest ureq, float rating, String comment) {
 		QuestionItem item = metadatasCtrl.getItem();
-		qpoolService.rateItem(item, getIdentity(), rating, comment);
+		qpoolService.rateItemInReview(item, getIdentity(), rating, comment);
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_STATUS_CHANGED, item.getKey()));
 		reloadData();
 	}

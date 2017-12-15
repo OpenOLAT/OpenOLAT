@@ -78,34 +78,45 @@ public class QuestionPoolServiceImplTest {
 		MockitoAnnotations.initMocks(this);
 		
 		when(questionItemDaoMock.merge(item)).thenReturn(item);
+		when(questionItemDaoMock.loadById(any())).thenReturn(item);
+		item.setQuestionStatus(QuestionStatus.review);
 	}
 	
 	@Test
 	public void shouldSaveRating() {
 		when(reviewServiceMock.decideStatus(any(), any())).thenReturn(new ReviewDecision(false, null));
 
-		sut.rateItem(item, identityDummy, new Float(RATING_FIVE), null);
+		sut.rateItemInReview(item, identityDummy, new Float(RATING_FIVE), null);
 		
 		verify(commentAndRatingServiceMock).createRating(identityDummy, item, null, RATING_FIVE);
 	}
 	
 	@Test
 	public void shouldSaveRatingOnlyIfPresent() {
-		sut.rateItem(item, identityDummy, new Float(NO_RATING), null);
+		sut.rateItemInReview(item, identityDummy, new Float(NO_RATING), null);
+		
+		verify(commentAndRatingServiceMock, never()).createRating(identityDummy, item, null, NO_RATING);	
+	}
+	
+	@Test
+	public void shouldSaveRatingOnlyIfStatusReview() {
+		item.setQuestionStatus(QuestionStatus.draft);
+		
+		sut.rateItemInReview(item, identityDummy, new Float(NO_RATING), null);
 		
 		verify(commentAndRatingServiceMock, never()).createRating(identityDummy, item, null, NO_RATING);	
 	}
 	
 	@Test
 	public void shouldSaveComment() {
-		sut.rateItem(item, identityDummy, null, COMMENT);
+		sut.rateItemInReview(item, identityDummy, null, COMMENT);
 		
 		verify(commentAndRatingServiceMock).createComment(identityDummy, item, null, COMMENT);
 	}
 	
 	@Test
 	public void shouldSaveCommentOnlyIfPresent() {
-		sut.rateItem(item, identityDummy, null, NO_COMMENT);
+		sut.rateItemInReview(item, identityDummy, null, NO_COMMENT);
 		
 		verify(commentAndRatingServiceMock, never()).createComment(identityDummy, item, null, NO_COMMENT);	
 	}
@@ -117,7 +128,7 @@ public class QuestionPoolServiceImplTest {
 		ReviewDecision decision = new ReviewDecision(true, status);
 		when(reviewServiceMock.decideStatus(item, rating)).thenReturn(decision);
 
-		sut.rateItem(item, identityDummy, rating, null);
+		sut.rateItemInReview(item, identityDummy, rating, null);
 		
 		assertThat(item.getQuestionStatus()).isEqualTo(status);
 	}
@@ -130,7 +141,7 @@ public class QuestionPoolServiceImplTest {
 		ReviewDecision decision = new ReviewDecision(false, QuestionStatus.finalVersion);
 		when(reviewServiceMock.decideStatus(item, rating)).thenReturn(decision);
 
-		sut.rateItem(item, identityDummy, rating, null);
+		sut.rateItemInReview(item, identityDummy, rating, null);
 		
 		assertThat(item.getQuestionStatus()).isEqualTo(status);
 	}
