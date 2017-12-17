@@ -40,17 +40,18 @@ public class SearchQuestionItemParams {
 	private Long poolKey;
 	private Collection<Long> itemKeys;
 	private String format;
+	private String excludeFormat;
 	private String searchString;
 	private List<String> condQueries;
 	
 	private boolean favoritOnly;
 	private Identity author;
 	
-	private TaxonomyLevel taxonomyLevel;
+	private TaxonomyLevel likeTaxonomyLevel;
 	private QuestionStatus questionStatus;
 	private Identity onlyAuthor;
 	private Identity excludeAuthor;
-	private boolean excludeRated;
+	private Identity excludeRater;
 	
 	private final Identity identity;
 	private final Roles roles;
@@ -84,6 +85,14 @@ public class SearchQuestionItemParams {
 		this.format = format;
 	}
 
+	public String getExcludeFormat() {
+		return excludeFormat;
+	}
+
+	public void setExcludeFormat(String excludeFormat) {
+		this.excludeFormat = excludeFormat;
+	}
+
 	public boolean isFavoritOnly() {
 		return favoritOnly;
 	}
@@ -100,12 +109,12 @@ public class SearchQuestionItemParams {
 		this.author = author;
 	}
 	
-	public TaxonomyLevel getTaxonomyLevel() {
-		return taxonomyLevel;
+	public TaxonomyLevel getLikeTaxonomyLevel() {
+		return likeTaxonomyLevel;
 	}
 
-	public void setTaxonomyLevel(TaxonomyLevel taxonomyLevel) {
-		this.taxonomyLevel = taxonomyLevel;
+	public void setLikeTaxonomyLevel(TaxonomyLevel likeTaxonomyLevel) {
+		this.likeTaxonomyLevel = likeTaxonomyLevel;
 	}
 
 	public QuestionStatus getQuestionStatus() {
@@ -132,12 +141,12 @@ public class SearchQuestionItemParams {
 		this.excludeAuthor = excludeAuthor;
 	}
 
-	public boolean isExcludeRated() {
-		return excludeRated;
+	public Identity getExcludeRater() {
+		return excludeRater;
 	}
 
-	public void setExcludeRated(boolean excludeRated) {
-		this.excludeRated = excludeRated;
+	public void setExcludeRated(Identity excludeRater) {
+		this.excludeRater = excludeRater;
 	}
 
 	public boolean isFulltextSearch() {
@@ -177,15 +186,16 @@ public class SearchQuestionItemParams {
 		SearchQuestionItemParams clone = new SearchQuestionItemParams(identity, roles);
 		clone.poolKey = poolKey;
 		clone.format = format;
+		clone.excludeFormat = excludeFormat;
 		clone.searchString = searchString;
 		clone.condQueries = getCondQueries();
 		clone.favoritOnly = favoritOnly;
 		clone.author = author;
-		clone.taxonomyLevel = taxonomyLevel;
+		clone.likeTaxonomyLevel = likeTaxonomyLevel;
 		clone.questionStatus = questionStatus;
 		clone.onlyAuthor = onlyAuthor;
 		clone.excludeAuthor = excludeAuthor;
-		clone.excludeRated = excludeRated;
+		clone.excludeRater = excludeRater;
 		return clone;
 	}
 }

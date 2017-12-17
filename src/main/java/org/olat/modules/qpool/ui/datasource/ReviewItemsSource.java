@@ -19,14 +19,9 @@
  */
 package org.olat.modules.qpool.ui.datasource;
 
-import java.util.List;
-
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -35,21 +30,13 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ReviewItemsSource extends DefaultItemsSource {
+public class ReviewItemsSource extends TaxonomyLevelItemsSource {
 
-	private final TaxonomyLevel taxonomyLevel;
-	
 	public ReviewItemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel) {
-		super(me, roles, taxonomyLevel.getDisplayName());
-		this.taxonomyLevel = taxonomyLevel;
-		getDefaultParams().setTaxonomyLevel(taxonomyLevel);
-		getDefaultParams().setQuestionStatus(QuestionStatus.review);
+		super(me, roles, taxonomyLevel);
+		setStatusFilter(QuestionStatus.review);
 		getDefaultParams().setExcludeAuthor(me);
-		getDefaultParams().setExcludeRated(true);
-	}
-
-	public TaxonomyLevel getTaxonomyLevel() {
-		return taxonomyLevel;
+		getDefaultParams().setExcludeRated(me);
 	}
 
 	@Override
@@ -90,29 +77,6 @@ public class ReviewItemsSource extends DefaultItemsSource {
 	@Override
 	public boolean isStatusFilterEnabled() {
 		return false;
-	}
-
-	@Override
-	public QuestionStatus getStatusFilter() {
-		return null;
-	}
-	
-	@Override
-	public void setStatusFilter(QuestionStatus statusFilter) {
-		// not enabled
-	}
-
-	@Override
-	public int postImport(List<QuestionItem> items, boolean editable) {
-		if(items == null || items.isEmpty()) return 0;
-		for(QuestionItemShort item : items) {
-			if(item instanceof QuestionItemImpl) {
-				QuestionItemImpl itemImpl = (QuestionItemImpl) item;
-				itemImpl.setTaxonomyLevel(taxonomyLevel);
-			}
-		}
-		qpoolService.index(items);
-		return items.size();
 	}
 	
 }

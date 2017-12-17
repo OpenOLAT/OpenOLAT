@@ -30,7 +30,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
-import org.olat.modules.qpool.ui.datasource.ReviewItemsSource;
+import org.olat.modules.qpool.ui.datasource.FinalItemsSource;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -65,7 +65,7 @@ public class FinalTreeNode extends GenericTreeNode implements ControllerTreeNode
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		QuestionItemsSource source = new ReviewItemsSource(
+		QuestionItemsSource source = new FinalItemsSource(
 				ureq.getIdentity(),
 				ureq.getUserSession().getRoles(),
 				taxonomyLevel);

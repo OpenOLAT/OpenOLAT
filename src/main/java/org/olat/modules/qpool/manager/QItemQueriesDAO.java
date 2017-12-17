@@ -86,12 +86,12 @@ public class QItemQueriesDAO {
 		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 		  .append(" ) as owners,")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
 		  .append(" ) as teacher,")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
 		  .append(" ) as manager,")
@@ -170,12 +170,12 @@ public class QItemQueriesDAO {
 		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 		  .append(" ) as owners,")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
 		  .append(" ) as teacher,")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
 		  .append(" ) as manager,")
@@ -246,171 +246,6 @@ public class QItemQueriesDAO {
 		}
 		return views;
 	}
-	
-	public List<QuestionItemView> getItemsOfTaxonomyLevel(SearchQuestionItemParams params, Collection<Long> inKeys,
-			int firstResult, int maxResults, SortKey... orderBy) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select item, ")
-			.append(" (select count(sgmi.key) from ") .append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
-			.append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
-			.append(" ) as owners,")
-		    .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		    .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
-		    .append("     and competence.identity.key=:identityKey")
-		    .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
-		    .append(" ) as teacher,")
-		    .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		    .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
-		    .append("     and competence.identity.key=:identityKey")
-		    .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
-		    .append(" ) as manager,")
-			.append(" (select count(pool2item.key) from qpool2item pool2item")
-			.append("    where pool2item.item.key=item.key")
-			.append("      and pool2item.editable is true")
-			.append(" ) as pools,")
-			.append(" (select count(shareditem.key) from qshareitem shareditem")
-			.append("    where shareditem.item.key=item.key")
-			.append("      and shareditem.editable is true")
-			.append(" ) as groups,")
-			.append(" (select count(mark.key) from ").append(MarkImpl.class.getName()).append(" as mark ")
-			.append("   where mark.creator.key=:identityKey and mark.resId=item.key and mark.resName='QuestionItem'")
-			.append(" ) as marks,")
-			.append(" (select count(rating.key) from userrating as rating")
-			.append("   where rating.resId=item.key and rating.resName='QuestionItem'")
-			.append("     and rating.creator.key=:identityKey")
-			.append(" ) as ratings,")
-			.append(" (select avg(rating.rating) from userrating as rating")
-			.append("   where rating.resId=item.key and rating.resName='QuestionItem'")
-			.append(" ) as rating")
-			.append(" from questionitem item")
-			.append(" inner join fetch item.ownerGroup ownerGroup")
-			.append(" inner join fetch item.taxonomyLevel taxonomyLevel")
-			.append(" left join fetch item.type itemType")
-			.append(" left join fetch item.educationalContext educationalContext")
-			.append(" where taxonomyLevel.materializedPathKeys like :pathKeys");
-		// Exclude QTI1.2 in review process.
-		// This query is only used in review process, so exclude them always.
-		sb.append(" and item.format<>'IMS QTI 1.2'");
-		if (params.getQuestionStatus() != null) {
-			sb.append(" and item.status=:questionStatus");
-		}
-		if (params.getOnlyAuthor() != null) {
-			sb.append(" and exists (").append("select sgmi.key from ")
-					.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
-					.append("   where sgmi.identity.key=:onlyAuthorKey and sgmi.securityGroup=item.ownerGroup")
-					.append(" )");
-		}
-		if (params.getExcludeAuthor() != null) {
-			sb.append(" and not exists (").append("select sgmi.key from ")
-					.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
-					.append("   where sgmi.identity.key=:excludeAuthorKey and sgmi.securityGroup=item.ownerGroup")
-					.append(" )");
-		}
-		if (params.isExcludeRated()) {
-			sb.append(" and not exists (");
-			sb.append(" select rating.key from userrating as rating");
-			sb.append("  where rating.resId=item.key and rating.resName='QuestionItem'");
-			sb.append("    and rating.creator.key=:identityKey)");
-		}
-		if (inKeys != null && inKeys.size() > 0) {
-			sb.append(" and item.key in (:inKeys)");
-		}
-		if (StringHelper.containsNonWhitespace(params.getFormat())) {
-			sb.append(" and item.format=:format");
-		}
-		appendOrderBy(sb, "item", orderBy);
-
-		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
-				.setParameter("pathKeys", params.getTaxonomyLevel().getMaterializedPathKeys() + "%")
-				.setParameter("identityKey", params.getIdentity().getKey());
-		if (params.getQuestionStatus() != null) {
-			query.setParameter("questionStatus", params.getQuestionStatus().toString());
-		}
-		if (params.getOnlyAuthor() != null) {
-			query.setParameter("onlyAuthorKey", params.getOnlyAuthor().getKey());
-		}
-		if (params.getExcludeAuthor() != null) {
-			query.setParameter("excludeAuthorKey", params.getExcludeAuthor().getKey());
-		}
-		if (inKeys != null && inKeys.size() > 0) {
-			query.setParameter("inKeys", inKeys);
-		}
-		appendParameters(params, query);
-		if (firstResult >= 0) {
-			query.setFirstResult(firstResult);
-		}
-		if (maxResults > 0) {
-			query.setMaxResults(maxResults);
-		}
-
-		List<Object[]> results = query.getResultList();
-		List<QuestionItemView> views = new ArrayList<>();
-		for (Object[] result : results) {
-			ItemWrapper itemWrapper = ItemWrapper.builder((QuestionItemImpl)result[0])
-					.setAuthor((Number)result[1])
-					.setTeacher((Number)result[2])
-					.setManager((Number)result[3])
-					.setEditableInPool((Number)result[4])
-					.setEditableInShare((Number)result[5])
-					.setMarked((Number)result[6])
-					.setRater((Number)result[7])
-					.setRating((Double)result[8])
-					.create();
-			views.add(itemWrapper);
-		}
-		return views;
-	}
-	
-	public int countItemsOfTaxonomyLevel(SearchQuestionItemParams params) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(item) from questionitem item ")
-		  .append(" inner join item.taxonomyLevel taxonomyLevel")
-		  .append(" where taxonomyLevel.materializedPathKeys like :pathKeys");
-		if(params.getQuestionStatus() != null) {
-			sb.append(" and item.status=:questionStatus");
-		}
-		if (params.getOnlyAuthor() != null) {
-			sb.append(" and exists (").append("select sgmi.key from ")
-					.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
-					.append("   where sgmi.identity.key=:onlyAuthorKey and sgmi.securityGroup=item.ownerGroup")
-					.append(" )");
-		}
-		if (params.getExcludeAuthor() != null) {
-			sb.append(" and not exists (").append("select sgmi.key from ")
-					.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi")
-					.append("   where sgmi.identity.key=:excludeAuthorKey and sgmi.securityGroup=item.ownerGroup")
-					.append(" )");
-		}
-		if (params.isExcludeRated()) {
-			sb.append(" and not exists (");
-			sb.append(" select rating.key from userrating as rating");
-			sb.append("  where rating.resId=item.key and rating.resName='QuestionItem'");
-			sb.append("    and rating.creator.key=:identityKey)");
-		}
-		if(StringHelper.containsNonWhitespace(params.getFormat())) {
-			sb.append(" and item.format=:format");
-		}
-		
-		TypedQuery<Number> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
-				.setParameter("pathKeys", params.getTaxonomyLevel().getMaterializedPathKeys() + "%");
-		if(params.getQuestionStatus() != null) {
-			query.setParameter("questionStatus", params.getQuestionStatus().toString());
-		}
-		if (params.getOnlyAuthor() != null) {
-			query.setParameter("onlyAuthorKey", params.getOnlyAuthor().getKey());
-		}
-		if (params.getExcludeAuthor() != null) {
-			query.setParameter("excludeAuthorKey", params.getExcludeAuthor().getKey());
-		}
-		if (params.isExcludeRated()) {
-			query.setParameter("identityKey", params.getIdentity().getKey());
-		}
-		if(StringHelper.containsNonWhitespace(params.getFormat())) {
-			query.setParameter("format", params.getFormat());
-		}
-		return query.getSingleResult().intValue();
-	}
 
 	public int countItemsByAuthor(SearchQuestionItemParams params) {
 		StringBuilder sb = new StringBuilder();
@@ -436,12 +271,12 @@ public class QItemQueriesDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item, ")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
 		  .append(" ) as teacher,")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
 		  .append(" ) as manager,")
@@ -512,12 +347,12 @@ public class QItemQueriesDAO {
 		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 		  .append(" ) as owners,")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
 		  .append(" ) as teacher,")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
 		  .append(" ) as manager,")
@@ -588,12 +423,12 @@ public class QItemQueriesDAO {
 		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 		  .append(" ) as owners,")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
 		  .append(" ) as teacher,")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
 		  .append(" ) as manager,")
@@ -674,12 +509,12 @@ public class QItemQueriesDAO {
 			.append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 			.append(" ) as owners,")
 		    .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		    .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+			.append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		    .append("     and competence.identity.key=:identityKey")
 		    .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
 		    .append(" ) as teacher,")
 		    .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		    .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+			.append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		    .append("     and competence.identity.key=:identityKey")
 		    .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
 		    .append(" ) as manager,")
@@ -750,12 +585,12 @@ public class QItemQueriesDAO {
 		  .append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=ownerGroup")
 		  .append(" ) as owners,")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.teach).append("'")
 		  .append(" ) as teacher,")
 		  .append(" (select count(competence.key) from ctaxonomycompetence competence")
-		  .append("   where competence.taxonomyLevel.key = taxonomyLevel.key")
+		  .append("   where taxonomyLevel.materializedPathKeys like concat(competence.taxonomyLevel.materializedPathKeys, '%')")
 		  .append("     and competence.identity.key=:identityKey")
 		  .append("     and competence.type='").append(TaxonomyCompetenceTypes.manage).append("'")
 		  .append(" ) as manager,")
@@ -825,14 +660,59 @@ public class QItemQueriesDAO {
 
 	private void appendWhere(StringBuilder sb, SearchQuestionItemParams params) {
 		sb.append(" where 1=1");
-		if(StringHelper.containsNonWhitespace(params.getFormat())) {
+		if (StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.append(" and item.format=:format");
+		}
+		if (StringHelper.containsNonWhitespace(params.getExcludeFormat())) {
+			sb.append(" and item.format<>:excludeFormat");
+		}
+		if (params.getLikeTaxonomyLevel() != null) {
+			sb.append(" and taxonomyLevel.materializedPathKeys like :pathKeys");
+		}
+		if (params.getQuestionStatus() != null) {
+			sb.append(" and item.status=:questionStatus");
+		}
+		if (params.getOnlyAuthor() != null) {
+			sb.append(" and exists (").append("select sgmi.key from ");
+			sb.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi");
+			sb.append("   where sgmi.identity.key=:onlyAuthorKey and sgmi.securityGroup=item.ownerGroup");
+			sb.append(" )");
+		}
+		if (params.getExcludeAuthor() != null) {
+			sb.append(" and not exists (").append("select sgmi.key from ");
+			sb.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi");
+			sb.append("   where sgmi.identity.key=:excludeAuthorKey and sgmi.securityGroup=item.ownerGroup");
+			sb.append(" )");
+		}
+		if (params.getExcludeRater() != null) {
+			sb.append(" and not exists (");
+			sb.append(" select rating.key from userrating as rating");
+			sb.append("  where rating.resId=item.key and rating.resName='QuestionItem'");
+			sb.append("    and rating.creator.key=:excludeRatorKey)");
 		}
 	}
 
 	private void appendParameters(SearchQuestionItemParams params, TypedQuery<?> query) {
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			query.setParameter("format", params.getFormat());
+		}
+		if(StringHelper.containsNonWhitespace(params.getExcludeFormat())) {
+			query.setParameter("excludeFormat", params.getExcludeFormat());
+		}
+		if (params.getLikeTaxonomyLevel() != null) {
+			query.setParameter("pathKeys", params.getLikeTaxonomyLevel().getMaterializedPathKeys() + "%");
+		}
+		if (params.getQuestionStatus() != null) {
+			query.setParameter("questionStatus", params.getQuestionStatus().toString());
+		}
+		if (params.getOnlyAuthor() != null) {
+			query.setParameter("onlyAuthorKey", params.getOnlyAuthor().getKey());
+		}
+		if (params.getExcludeAuthor() != null) {
+			query.setParameter("excludeAuthorKey", params.getExcludeAuthor().getKey());
+		}
+		if (params.getExcludeRater() != null) {
+			query.setParameter("excludeRatorKey", params.getExcludeRater().getKey());
 		}
 	}
 	

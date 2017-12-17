@@ -83,7 +83,7 @@ import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.QItemList;
 import org.olat.modules.qpool.model.QuestionItemImpl;
-import org.olat.modules.qpool.ui.datasource.TaxonomyLeveltemsSource;
+import org.olat.modules.qpool.ui.datasource.TaxonomyLevelItemsSource;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
@@ -641,8 +641,8 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	private void doChooseNewItemType(UserRequest ureq) {
 		removeAsListenerAndDispose(newItemOptionsCtrl);
-		if (getSource() instanceof TaxonomyLeveltemsSource) {
-			TaxonomyLeveltemsSource tliSource = (TaxonomyLeveltemsSource) getSource();
+		if (getSource() instanceof TaxonomyLevelItemsSource) {
+			TaxonomyLevelItemsSource tliSource = (TaxonomyLevelItemsSource) getSource();
 			newItemOptionsCtrl = new NewItemOptionsController(ureq, getWindowControl(), tliSource.getTaxonomyLevel());
 		} else {
 			newItemOptionsCtrl = new NewItemOptionsController(ureq, getWindowControl());

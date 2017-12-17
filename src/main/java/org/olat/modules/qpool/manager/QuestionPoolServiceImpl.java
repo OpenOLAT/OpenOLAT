@@ -463,8 +463,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public int countItems(SearchQuestionItemParams searchParams) {
 		if(searchParams.isFavoritOnly()) {
 			return itemQueriesDao.countFavoritItems(searchParams);
-		} else if(searchParams.getTaxonomyLevel() != null) {
-			return itemQueriesDao.countItemsOfTaxonomyLevel(searchParams);
 		} else if(searchParams.getPoolKey() != null) {
 			return poolDao.countItemsInPool(searchParams);
 		} else if(searchParams.getAuthor() != null) {
@@ -479,8 +477,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			int firstResult, int maxResults, SortKey... orderBy) {
 		if(searchParams.isFavoritOnly()) {
 			return searchFavorits(searchParams, firstResult, maxResults, orderBy);
-		} else if(searchParams.getTaxonomyLevel() != null) {
-			return getItemsByTaxonomyLevel(searchParams, firstResult, maxResults, orderBy);
 		} else if(searchParams.getAuthor() != null) {
 			return searchByAuthor(searchParams, firstResult, maxResults, orderBy);
 		} else if(searchParams.getPoolKey() != null) {
@@ -489,7 +485,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			return getItemsByParams(searchParams, firstResult, maxResults, orderBy);
 		}
 	}
-	
 
 	private ResultInfos<QuestionItemView> getItemsByParams(SearchQuestionItemParams searchParams, int firstResult,
 			int maxResults, SortKey... orderBy) {
@@ -501,6 +496,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				if (searchParams.getCondQueries() != null) {
 					condQueries.addAll(searchParams.getCondQueries());
 				}
+				addConditionsOfParams(condQueries, searchParams);
 				List<Long> results = searchClient.doSearch(queryString, condQueries, searchParams.getIdentity(),
 						searchParams.getRoles(), 0, MAX_NUMBER_DOCS);
 				if (!results.isEmpty()) {
@@ -517,6 +513,12 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			resultInfo = new DefaultResultInfos<>(firstResult + items.size(), -1, items);
 		}
 		return resultInfo;
+	}
+
+	private void addConditionsOfParams(List<String> condQueries, SearchQuestionItemParams searchParams) {
+		if (searchParams.getQuestionStatus() != null) {
+			condQueries.add(QItemDocument.ITEM_STATUS_FIELD + ":" + searchParams.getQuestionStatus());
+		}
 	}
 
 	private ResultInfos<QuestionItemView> getItemsByPool(SearchQuestionItemParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
@@ -931,35 +933,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 				.collect(Collectors.toList());
 	}
 	
-	private ResultInfos<QuestionItemView> getItemsByTaxonomyLevel(SearchQuestionItemParams searchParams,
-			int firstResult, int maxResults, SortKey... orderBy) {
-		if(searchParams.isFulltextSearch()) {
-			try {
-				Identity author = searchParams.getAuthor();
-				String queryString = searchParams.getSearchString();
-				List<String> condQueries = new ArrayList<>();
-				if(searchParams.getCondQueries() != null) {
-					condQueries.addAll(searchParams.getCondQueries());
-				}
-				condQueries.add(QItemDocument.OWNER_FIELD + ":" + author.getKey());
-				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), 0, MAX_NUMBER_DOCS);
-
-				if(results.isEmpty()) {
-					return new DefaultResultInfos<>();
-				}
-				List<QuestionItemView> items = itemQueriesDao.getItemsOfTaxonomyLevel(searchParams, results, firstResult, maxResults, orderBy);
-				return new DefaultResultInfos<>(firstResult + items.size(), results.size(), items);
-			} catch (Exception e) {
-				log.error("", e);
-			}
-			return new DefaultResultInfos<>();
-		} else {
-			List<QuestionItemView> items = itemQueriesDao.getItemsOfTaxonomyLevel(searchParams, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
-			return new DefaultResultInfos<>(firstResult + items.size(), -1, items);
-		}
-	}
-
 	@Override
 	public void resetAllStatesToDraft(Identity reseter) {
 		questionItemDao.resetAllStatesToDraft();

@@ -19,9 +19,14 @@
  */
 package org.olat.modules.qpool.ui.datasource;
 
+import java.util.List;
+
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.modules.qpool.QuestionStatus;
+import org.olat.ims.qti.QTIConstants;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -30,51 +35,32 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MyTaxonomyLevelItemsSource extends TaxonomyLevelItemsSource {
+public abstract class TaxonomyLevelItemsSource extends DefaultItemsSource {
+
+	private final TaxonomyLevel taxonomyLevel;
 	
-	public MyTaxonomyLevelItemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel) {
-		super(me, roles, taxonomyLevel);
-		setStatusFilter(QuestionStatus.draft);
-		getDefaultParams().setOnlyAuthor(me);
+	public TaxonomyLevelItemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel) {
+		super(me, roles, taxonomyLevel.getDisplayName());
+		this.taxonomyLevel = taxonomyLevel;
+		getDefaultParams().setLikeTaxonomyLevel(taxonomyLevel);
+		getDefaultParams().setExcludeFormat(QTIConstants.QTI_12_FORMAT);
+	}
+
+	public TaxonomyLevel getTaxonomyLevel() {
+		return taxonomyLevel;
 	}
 
 	@Override
-	public boolean isCreateEnabled() {
-		return true;
+	public int postImport(List<QuestionItem> items, boolean editable) {
+		if(items == null || items.isEmpty()) return 0;
+		for(QuestionItemShort item : items) {
+			if(item instanceof QuestionItemImpl) {
+				QuestionItemImpl itemImpl = (QuestionItemImpl) item;
+				itemImpl.setTaxonomyLevel(taxonomyLevel);
+			}
+		}
+		qpoolService.index(items);
+		return items.size();
 	}
-
-	@Override
-	public boolean isCopyEnabled() {
-		return true;
-	}
-
-	@Override
-	public boolean isImportEnabled() {
-		return true;
-	}
-
-	@Override
-	public boolean isAuthorRightsEnable() {
-		return true;
-	}
-
-	@Override
-	public boolean askEditable() {
-		return false;
-	}
-
-	@Override
-	public boolean isBulkChangeEnabled() {
-		return true;
-	}
-
-	@Override
-	public boolean isDeleteEnabled() {
-		return true;
-	}
-
-	@Override
-	public boolean isStatusFilterEnabled() {
-		return true;
-	}
+	
 }

@@ -34,6 +34,7 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 
@@ -87,6 +88,16 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 	
 	public void setRemoveEnabled(boolean removeEnabled) {
 		this.removeEnabled = removeEnabled;
+	}
+
+	@Override
+	public QuestionStatus getStatusFilter() {
+		return getDefaultParams().getQuestionStatus();
+	}
+	
+	@Override
+	public void setStatusFilter(QuestionStatus statusFilter) {
+		getDefaultParams().setQuestionStatus(statusFilter);
 	}
 
 	@Override
