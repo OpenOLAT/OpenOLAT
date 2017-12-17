@@ -24,14 +24,13 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
-import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
-import org.olat.modules.qpool.ui.datasource.TaxonomyLeveltemsSource;
+import org.olat.modules.qpool.ui.datasource.MyTaxonomyLevelItemsSource;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -40,61 +39,41 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyLevelTreeNode extends GenericTreeNode implements ControllerTreeNode {
+public class MyTaxonomyLevelTreeNode extends GenericTreeNode implements ControllerTreeNode {
 
 	private static final long serialVersionUID = 6968774478547770505L;
 	
-	private static final String ICON_CSS_CLASS = "o_icon_pool_taxonomy o_sel_qpool_taxonomy";
-	private static final String TABLE_PREFERENCE_PREFIX = "taxlevel-";
+	private static final String MY_TAX_LEVEL = "my-tax-level-";
 
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 	
-	private final String oresPrefix;
 	private final QPoolSecurityCallback securityCallback;
 	private final TaxonomyLevel taxonomyLevel;
-	private final QuestionStatus questionStatus;
-	private final Identity onlyAuthor;
-	private final Identity excludeAuthor;
-	private final boolean excludeRated;
-	private final boolean statusFilterEnabled;
 
-	public TaxonomyLevelTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback,
-			String oresPrefix, TaxonomyLevel taxonomyLevel, QuestionStatus questionStatus, Identity onlyAuthor,
-			Identity excludeAuthor, boolean excludeRated, boolean statusFilterEnabled) {
+	public MyTaxonomyLevelTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback,
+			TaxonomyLevel taxonomyLevel) {
 		super();
 		this.stackPanel = stackPanel;
-		this.oresPrefix = oresPrefix;
 		this.securityCallback = securityCallback;
 		this.taxonomyLevel = taxonomyLevel;
-		this.questionStatus = questionStatus;
-		this.onlyAuthor = onlyAuthor;
-		this.excludeAuthor = excludeAuthor;
-		this.excludeRated = excludeRated;
-		this.statusFilterEnabled = statusFilterEnabled;
 		
 		this.setTitle(taxonomyLevel.getDisplayName());
-		this.setIconCssClass(ICON_CSS_CLASS);
 		
 		this.setUserObject(taxonomyLevel);
 	}
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		TaxonomyLeveltemsSource source = new TaxonomyLeveltemsSource(
+		QuestionItemsSource source = new MyTaxonomyLevelItemsSource(
 				ureq.getIdentity(),
 				ureq.getUserSession().getRoles(),
-				taxonomyLevel,
-				onlyAuthor,
-				excludeAuthor,
-				excludeRated,
-				questionStatus,
-				statusFilterEnabled);
+				taxonomyLevel);
 		if (questionsCtrl == null) {
-			OLATResourceable ores = OresHelper.createOLATResourceableInstance(oresPrefix + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(MY_TAX_LEVEL + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					TABLE_PREFERENCE_PREFIX + questionStatus + taxonomyLevel.getKey());
+					MY_TAX_LEVEL + taxonomyLevel.getKey());
 		} else {
 			questionsCtrl.updateSource(source);
 		}

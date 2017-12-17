@@ -31,6 +31,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.qpool.QPoolSecurityCallback;
+import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.SharedItemsSource;
 
@@ -70,7 +71,7 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
 		boolean shareAdmin = isShareAdmin(ureq, group);
-		SharedItemsSource source = new SharedItemsSource(
+		QuestionItemsSource source = new SharedItemsSource(
 				group,
 				ureq.getIdentity(),
 				ureq.getUserSession().getRoles(),

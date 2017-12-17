@@ -28,8 +28,8 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
+import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
-import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
 import org.olat.modules.qpool.ui.datasource.MarkedItemsSource;
 
 /**
@@ -67,7 +67,7 @@ public class MarkedQuestionsTreeNode extends GenericTreeNode implements Controll
 	
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		DefaultItemsSource source = new MarkedItemsSource(
+		QuestionItemsSource source = new MarkedItemsSource(
 				ureq.getIdentity(),
 				ureq.getUserSession().getRoles(),
 				ITEM_SOURCE_NAME); 

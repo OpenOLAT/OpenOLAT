@@ -32,7 +32,6 @@ import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.ui.QuestionsController;
-import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
 import org.olat.modules.qpool.ui.datasource.PoolItemsSource;
 
 /**
@@ -71,7 +70,7 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		DefaultItemsSource source = new PoolItemsSource(
+		PoolItemsSource source = new PoolItemsSource(
 				ureq.getIdentity(),
 				ureq.getUserSession().getRoles(),
 				pool);

@@ -28,9 +28,9 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
+import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.AllItemsSource;
-import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
 
 /**
  * 
@@ -64,7 +64,7 @@ public class AllQuestionsTreeNode extends GenericTreeNode implements ControllerT
 	
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		DefaultItemsSource source = new AllItemsSource(
+		QuestionItemsSource source = new AllItemsSource(
 				ureq.getIdentity(),
 				ureq.getUserSession().getRoles(),
 				ALL); 

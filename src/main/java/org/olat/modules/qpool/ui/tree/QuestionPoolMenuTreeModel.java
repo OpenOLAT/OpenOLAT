@@ -39,7 +39,6 @@ import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemCollection;
-import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.QuestionPoolMainEditorController;
 import org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilder;
@@ -192,7 +191,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.teach);
 		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-			TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, "My", taxonomyLevel, QuestionStatus.draft, identity, null, false, true);
+			TreeNode node = new MyTaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel);
 			parentNode.addChild(node);
 		}
 	}
@@ -218,7 +217,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			rootNode.addChild(reviewNode);
 			
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, "Review", taxonomyLevel, QuestionStatus.review, null, identity, true, false);
+				TreeNode node = new ReviewTreeNode(stackPanel, securityCallback, taxonomyLevel);
 				reviewNode.addChild(node);
 			}
 		}
@@ -234,7 +233,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			finalNode.setTitle(translator.translate("menu.final"));
 			rootNode.addChild(finalNode);
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-				TreeNode node = new TaxonomyLevelTreeNode(stackPanel, securityCallback, "Final", taxonomyLevel, QuestionStatus.finalVersion, null, null, false, false);
+				TreeNode node = new FinalTreeNode(stackPanel, securityCallback, taxonomyLevel);
 				finalNode.addChild(node);
 			}
 		}

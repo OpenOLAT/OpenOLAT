@@ -27,6 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemCollection;
+import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.CollectionOfItemsSource;
 
@@ -64,7 +65,7 @@ public class CollectionTreeNode extends GenericTreeNode implements ControllerTre
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		CollectionOfItemsSource source = new CollectionOfItemsSource(
+		QuestionItemsSource source = new CollectionOfItemsSource(
 				questionItemCollection,
 				ureq.getIdentity(),
 				ureq.getUserSession().getRoles());

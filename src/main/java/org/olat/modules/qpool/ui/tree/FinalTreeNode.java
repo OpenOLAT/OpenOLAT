@@ -30,52 +30,50 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
-import org.olat.modules.qpool.ui.datasource.MyItemsSource;
+import org.olat.modules.qpool.ui.datasource.ReviewItemsSource;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
- * Initial date: 19.10.2017<br>
+ * Initial date: 17.12.2017<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MyQuestionsTreeNode extends GenericTreeNode implements ControllerTreeNode {
+public class FinalTreeNode extends GenericTreeNode implements ControllerTreeNode {
 
-	private static final long serialVersionUID = 4697595246970837001L;
-	
-	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("My");
-	private static final String ICON_CSS_CLASS = "o_icon_pool_my_items o_sel_qpool_my_items";
-	private static final String ITEM_SOURCE_NAME = "My";
-	private static final String TABLE_PREFERENCE_PREFIX = "my";
-	private static final String USER_OBJECT = "My";
-	
+	private static final long serialVersionUID = -8529191256659693210L;
+
+	private static final String FINAL = "final";
+
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 	
 	private final QPoolSecurityCallback securityCallback;
-	
-	public MyQuestionsTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback, String title) {
+	private final TaxonomyLevel taxonomyLevel;
+
+	public FinalTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback,
+			TaxonomyLevel taxonomyLevel) {
 		super();
 		this.stackPanel = stackPanel;
 		this.securityCallback = securityCallback;
+		this.taxonomyLevel = taxonomyLevel;
 		
-		this.setTitle(title);
-		this.setIconCssClass(ICON_CSS_CLASS);
+		this.setTitle(taxonomyLevel.getDisplayName());
 		
-		// The user object is used to findNodeByPersistableUserObject
-		this.setUserObject(USER_OBJECT);
+		this.setUserObject(taxonomyLevel);
 	}
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		QuestionItemsSource source = new MyItemsSource(
+		QuestionItemsSource source = new ReviewItemsSource(
 				ureq.getIdentity(),
 				ureq.getUserSession().getRoles(),
-				ITEM_SOURCE_NAME);
-		if(questionsCtrl == null) {
-			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
-					wControl, true);
+				taxonomyLevel);
+		if (questionsCtrl == null) {
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance(FINAL + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
+			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					TABLE_PREFERENCE_PREFIX);
+					FINAL + taxonomyLevel.getKey());
 		} else {
 			questionsCtrl.updateSource(source);
 		}
