@@ -1160,6 +1160,7 @@ public class QuestionListController extends AbstractItemListController implement
 
 	private Activateable2 doSelectNewItem(UserRequest ureq, QuestionItem newItem) {
 		ItemRow row = wrapNewItem(newItem);
+		itemCollectionDirty = true;
 		return doSelectActivateable2(ureq, row, 0, 1);
 	}
 
