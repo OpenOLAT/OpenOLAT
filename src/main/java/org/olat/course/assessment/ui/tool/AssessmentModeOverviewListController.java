@@ -92,7 +92,7 @@ public class AssessmentModeOverviewListController extends FormBasicController {
 	
 	private void loadModel() {
 		Date today = CalendarUtils.removeTime(new Date());
-		List<AssessmentMode> modes = asssessmentModeManager.getAssessmentModeFor(courseEntry, today);
+		List<AssessmentMode> modes = asssessmentModeManager.getPlannedAssessmentMode(courseEntry, today);
 		if(modes.size() > 10) {
 			Calendar cal = Calendar.getInstance();
 			cal.add(Calendar.DATE, 1);

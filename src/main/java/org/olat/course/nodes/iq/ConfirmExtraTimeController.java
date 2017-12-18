@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.iq;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -30,9 +32,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -45,16 +51,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ConfirmExtraTimeController  extends FormBasicController {
 	
 	private TextElement extraTimeInMinEl;
+	private List<AssessmentMode> assessmentModes;
 	private List<AssessmentTestSession> testSessions;
 	
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private AssessmentModeManager assessmentModeManager;
 	
-	public ConfirmExtraTimeController(UserRequest ureq, WindowControl wControl, List<AssessmentTestSession> testSessions) {
+	public ConfirmExtraTimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, List<AssessmentTestSession> testSessions) {
 		super(ureq, wControl, "confirm_extra_time");
 		this.testSessions = testSessions;
+		assessmentModes = assessmentModeManager.getCurrentAssessmentMode(entry, new Date());
 		initForm(ureq);
 	}
 
@@ -63,6 +73,9 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("fullnames", sessionToFullnames());
+			if(assessmentModes.size() > 0) {
+				currentAssessmentModeMessage(layoutCont);
+			}
 		}
 		
 		int extraTime = 0;
@@ -79,6 +92,18 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("extra.time", formLayout);
+	}
+	
+	private void currentAssessmentModeMessage(FormLayoutContainer layoutCont) {
+		Formatter formatter = Formatter.getInstance(getLocale());
+		List<String> modes = new ArrayList<>();
+		for(AssessmentMode assessmentMode:assessmentModes) {
+			String title = assessmentMode.getName();
+			String begin = formatter.formatDateAndTime(assessmentMode.getBegin());
+			String end = formatter.formatDateAndTime(assessmentMode.getEnd());
+			modes.add(translate("warning.assessment.mode.date", new String[] { title, begin, end}));
+		}
+		layoutCont.contextPut("assessmemtModeMessages", modes);
 	}
 	
 	private String sessionToFullnames() {

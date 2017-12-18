@@ -135,7 +135,7 @@ public class QTI21ExtraTimeController extends BasicController {
 			return;
 		}
 		
-		extraTimeCtrl = new ConfirmExtraTimeController(ureq, getWindowControl(), testSessions);
+		extraTimeCtrl = new ConfirmExtraTimeController(ureq, getWindowControl(), courseEntry, testSessions);
 		listenTo(extraTimeCtrl);
 
 		String title = translate("extra.time");
