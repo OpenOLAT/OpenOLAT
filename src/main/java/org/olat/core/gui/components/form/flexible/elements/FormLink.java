@@ -75,6 +75,13 @@ public interface FormLink extends FormItem {
 	 * @param i18n
 	 */
 	public void setI18nKey(String i18n);
+	
+
+	/**
+	 * Set the i18n key for the link text
+	 * @param i18n
+	 */
+	public void setI18nKey(String i18n, String[] args);
 
 	/**
 	 * Set the i18n key for the link title or the translated title, depending on display mode

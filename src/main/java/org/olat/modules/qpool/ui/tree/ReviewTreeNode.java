@@ -24,7 +24,9 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
@@ -50,25 +52,23 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 	
 	private final QPoolSecurityCallback securityCallback;
 	private final TaxonomyLevel taxonomyLevel;
+	private final QuestionItemsSource source;
 
 	public ReviewTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback,
-			TaxonomyLevel taxonomyLevel) {
+			TaxonomyLevel taxonomyLevel, Identity identity, Roles roles) {
 		super();
 		this.stackPanel = stackPanel;
 		this.securityCallback = securityCallback;
 		this.taxonomyLevel = taxonomyLevel;
+		source = new ReviewItemsSource(identity, roles, taxonomyLevel);
 		
-		this.setTitle(taxonomyLevel.getDisplayName());
+		reloadTitle();
 		
 		this.setUserObject(taxonomyLevel);
 	}
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		QuestionItemsSource source = new ReviewItemsSource(
-				ureq.getIdentity(),
-				ureq.getUserSession().getRoles(),
-				taxonomyLevel);
 		if (questionsCtrl == null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(REVIEW + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
@@ -78,6 +78,15 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 			questionsCtrl.updateSource(source);
 		}
 		return questionsCtrl;
+	}
+	
+	public void reloadTitle() {
+		StringBuilder title = new StringBuilder();
+		title.append(taxonomyLevel.getDisplayName());
+		title.append(" (");
+		title.append(source.getNumOfItems());
+		title.append(")");
+		setTitle(title.toString());
 	}
 
 }

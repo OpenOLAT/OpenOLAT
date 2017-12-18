@@ -34,6 +34,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSecurityCallback;
@@ -139,6 +140,21 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		return false;
 	}
 	
+	public void reloadReviewTitles() {
+		reloadTitles(reviewNode);
+	}
+
+	private void reloadTitles(INode node) {
+		for(int i=node.getChildCount(); i-->0; ) {
+			INode child = node.getChildAt(i);
+			if (child instanceof ReviewTreeNode) {
+				ReviewTreeNode reviewTreeNode = (ReviewTreeNode) child;
+				reviewTreeNode.reloadTitle();
+			}
+			reloadTitles(child);
+		}
+	}
+	
 	private void buildTreeModel() {
 		TreeNode rootNode = new GenericTreeNode(translator.translate("topnav.qpool"));
 		setRootNode(rootNode);
@@ -217,7 +233,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			rootNode.addChild(reviewNode);
 			
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
-				TreeNode node = new ReviewTreeNode(stackPanel, securityCallback, taxonomyLevel);
+				TreeNode node = new ReviewTreeNode(stackPanel, securityCallback, taxonomyLevel, identity, roles);
 				reviewNode.addChild(node);
 			}
 		}

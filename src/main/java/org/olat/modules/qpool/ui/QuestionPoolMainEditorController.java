@@ -182,6 +182,8 @@ public class QuestionPoolMainEditorController extends BasicController implements
 					|| QPoolEvent.POOL_DELETED.equals(event.getCommand())) {
 				treeModel.buildShareSubTreeModel();
 				menuTree.setDirty(true);
+			} else if (QPoolEvent.ITEMS_RELOADED.equals(event.getCommand())) {
+				treeModel.reloadReviewTitles();
 			}
 		} else if(copyToMyCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {

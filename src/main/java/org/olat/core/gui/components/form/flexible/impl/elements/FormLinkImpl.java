@@ -310,6 +310,20 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 			}
 		}
 	}
+	
+	@Override
+	public void setI18nKey(String i18n, String[] args) {
+		this.i18n = i18n;
+		if (component != null) {
+			if ((presentation - Link.NONTRANSLATED) >= 0) {
+				// don't translate non-tranlated links
+				component.setCustomDisplayText(i18n);					
+			} else if (StringHelper.containsNonWhitespace(i18n)) {
+				// translate other links
+				component.setCustomDisplayText(getTranslator().translate(i18n, args));
+			}
+		}
+	}
 
 	@Override
 	protected boolean translateLabel() {
