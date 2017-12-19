@@ -93,6 +93,13 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	}
 
 	@Override
+	public boolean canReviewNotStartable() {
+		return !itemView.isReviewableFormat()
+				&& reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())
+				&& (isAdmin || itemView.isAuthor());
+	}
+	
+	@Override
 	public boolean canReview() {
 		return itemView.isReviewableFormat()
 				&& QuestionStatus.review.equals(itemView.getQuestionStatus())

@@ -40,7 +40,6 @@ public class SearchQuestionItemParams {
 	private Long poolKey;
 	private Collection<Long> itemKeys;
 	private String format;
-	private String excludeFormat;
 	private String searchString;
 	private List<String> condQueries;
 	
@@ -83,14 +82,6 @@ public class SearchQuestionItemParams {
 
 	public void setFormat(String format) {
 		this.format = format;
-	}
-
-	public String getExcludeFormat() {
-		return excludeFormat;
-	}
-
-	public void setExcludeFormat(String excludeFormat) {
-		this.excludeFormat = excludeFormat;
 	}
 
 	public boolean isFavoritOnly() {
@@ -151,7 +142,7 @@ public class SearchQuestionItemParams {
 
 	public boolean isFulltextSearch() {
 		return StringHelper.containsNonWhitespace(searchString) ||
-				condQueries != null && condQueries.size() > 0;
+				condQueries != null && !condQueries.isEmpty();
 	}
 
 	public String getSearchString() {
@@ -186,7 +177,6 @@ public class SearchQuestionItemParams {
 		SearchQuestionItemParams clone = new SearchQuestionItemParams(identity, roles);
 		clone.poolKey = poolKey;
 		clone.format = format;
-		clone.excludeFormat = excludeFormat;
 		clone.searchString = searchString;
 		clone.condQueries = getCondQueries();
 		clone.favoritOnly = favoritOnly;

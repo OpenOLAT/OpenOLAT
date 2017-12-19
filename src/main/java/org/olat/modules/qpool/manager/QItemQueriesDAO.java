@@ -663,9 +663,6 @@ public class QItemQueriesDAO {
 		if (StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.append(" and item.format=:format");
 		}
-		if (StringHelper.containsNonWhitespace(params.getExcludeFormat())) {
-			sb.append(" and item.format<>:excludeFormat");
-		}
 		if (params.getLikeTaxonomyLevel() != null) {
 			sb.append(" and taxonomyLevel.materializedPathKeys like :pathKeys");
 		}
@@ -695,9 +692,6 @@ public class QItemQueriesDAO {
 	private void appendParameters(SearchQuestionItemParams params, TypedQuery<?> query) {
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			query.setParameter("format", params.getFormat());
-		}
-		if(StringHelper.containsNonWhitespace(params.getExcludeFormat())) {
-			query.setParameter("excludeFormat", params.getExcludeFormat());
 		}
 		if (params.getLikeTaxonomyLevel() != null) {
 			query.setParameter("pathKeys", params.getLikeTaxonomyLevel().getMaterializedPathKeys() + "%");

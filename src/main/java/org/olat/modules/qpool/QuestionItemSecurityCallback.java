@@ -42,6 +42,8 @@ public interface QuestionItemSecurityCallback {
 	public boolean canEditLifecycle();
 	
 	public boolean canStartReview();
+	
+	public boolean canReviewNotStartable();
 
 	public boolean canReview();
 

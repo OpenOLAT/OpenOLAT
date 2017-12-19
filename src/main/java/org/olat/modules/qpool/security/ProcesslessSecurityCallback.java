@@ -75,6 +75,11 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 	}
 
 	@Override
+	public boolean canReviewNotStartable() {
+		return false;
+	}
+
+	@Override
 	public boolean canReview() {
 		return false;
 	}

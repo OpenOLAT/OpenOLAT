@@ -655,29 +655,6 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	}
 	
 	@Test
-	public void shouldGetItemsFilteredByExcludeFormat() {
-		String format = QTIConstants.QTI_12_FORMAT;
-		QuestionItemImpl item11 = createRandomItem(createRandomIdentity());
-		QuestionItemImpl item12 = createRandomItem(createRandomIdentity());
-		QuestionItem item21 = questionDao.createAndPersist(createRandomIdentity(), "QPool", format, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItem item22 = questionDao.createAndPersist(createRandomIdentity(), "QPool", format, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		QuestionItem item23 = questionDao.createAndPersist(createRandomIdentity(), "QPool", format, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
-		dbInstance.commitAndCloseSession();
-		
-		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
-		params.setExcludeFormat(format);
-		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
-		
-		assertThat(loadedItems).hasSize(2);
-		assertThat(keysOf(loadedItems))
-				.containsOnlyElementsOf(keysOf(item11, item12))
-				.doesNotContainAnyElementsOf(keysOf(item21, item22, item23));
-		
-		int countItems = qItemQueriesDao.countItems(params);
-		assertThat(countItems).isEqualTo(2);
-	}
-	
-	@Test
 	public void shouldGetItemsFilteredByLikeTaxonomyLevel() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
 		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);

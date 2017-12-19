@@ -86,6 +86,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link statusRevisedLink;
 	private Link startReviewLink;
 	private Link reviewLink;
+	private Link notReviewableLink;
 	private Link deleteLink;
 	private Link nextItemLink;
 	private Link numberItemsLink;
@@ -236,6 +237,11 @@ public class QuestionItemDetailsController extends BasicController implements To
 			startReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
 			stackPanel.addTool(startReviewLink, Align.left);
 		}
+		if (securityCallback.canReviewNotStartable()) {
+			notReviewableLink = LinkFactory.createToolLink("process.not.reviewable", translate("process.not.reviewable"), this);
+			notReviewableLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
+			stackPanel.addTool(notReviewableLink, Align.left);
+		}
 		if (securityCallback.canReview() && reviewService.hasRatingController()) {
 			reviewLink = LinkFactory.createToolLink("process.review", translate("process.review"), this);
 			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_do_review");
@@ -319,6 +325,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 			doConfirmEndOfLife(ureq, metadatasCtrl.getItem());
 		} else if(source == startReviewLink) {
 			doConfirmStartReview(ureq, metadatasCtrl.getItem());
+		} else if(source == notReviewableLink) {
+			showNotReviewableMessage();
 		} else if (source == reviewLink) {
 			openReview(ureq);
 		} else if(source == deleteLink) {
@@ -438,6 +446,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 		doChangeQuestionStatus(ureq, item, QuestionStatus.review, "process.review.started");
 	}
 	
+	private void showNotReviewableMessage() {
+		showWarning("process.not.reviewable.message");
+	}
+
 	private void openReview(UserRequest ureq) {
 		reviewCtrl = new ReviewController(ureq, getWindowControl());
 		listenTo(reviewCtrl);

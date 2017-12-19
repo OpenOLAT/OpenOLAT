@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -43,7 +42,6 @@ public abstract class TaxonomyLevelItemsSource extends DefaultItemsSource {
 		super(me, roles, taxonomyLevel.getDisplayName());
 		this.taxonomyLevel = taxonomyLevel;
 		getDefaultParams().setLikeTaxonomyLevel(taxonomyLevel);
-		getDefaultParams().setExcludeFormat(QTIConstants.QTI_12_FORMAT);
 	}
 
 	public TaxonomyLevel getTaxonomyLevel() {
