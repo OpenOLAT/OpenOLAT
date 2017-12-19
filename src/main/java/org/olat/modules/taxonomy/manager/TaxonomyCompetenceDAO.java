@@ -89,14 +89,7 @@ public class TaxonomyCompetenceDAO {
 	}
 	
 	public List<TaxonomyCompetence> getCompetences(IdentityRef identity, TaxonomyCompetenceTypes... competenceTypes) {
-		List<String> typeList = new ArrayList<>(4);
-		if(competenceTypes != null && competenceTypes.length > 0 && competenceTypes[0] != null) {
-			for(TaxonomyCompetenceTypes competenceType: competenceTypes) {
-				if(competenceType != null) {
-					typeList.add(competenceType.name());
-				}
-			}
-		}
+		List<String> typeList = getTypesAsList(competenceTypes);
 		
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select competence from ctaxonomycompetence competence")
@@ -129,6 +122,30 @@ public class TaxonomyCompetenceDAO {
 			.setParameter("taxonomyLevelKey", taxonomyLevel.getKey())
 			.setParameter("identityKey", identity.getKey())
 			.getResultList();	
+	}
+	
+	public boolean hasCompetenceByLevel(TaxonomyLevelRef taxonomyLevel, IdentityRef identity, TaxonomyCompetenceTypes... competenceTypes) {
+		List<String> typeList = getTypesAsList(competenceTypes);
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select count(competence.key) from ctaxonomycompetence competence")
+		  .append(" inner join competence.identity ident")
+		  .append(" inner join competence.taxonomyLevel taxonomyLevel")
+		  .append(" where taxonomyLevel.key=:taxonomyLevelKey and ident.key=:identityKey");
+		if(typeList.size() > 0) {
+			sb.append(" and competence.type in (:types)");
+		}
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setFlushMode(FlushModeType.COMMIT)//don't flush for this query
+			.setParameter("taxonomyLevelKey", taxonomyLevel.getKey())
+			.setParameter("identityKey", identity.getKey());
+		if(typeList.size() > 0) {
+			query.setParameter("types", typeList);
+		}
+		Long count = query.getSingleResult();
+		return count > 0;
 	}
 	
 	public boolean hasCompetenceByTaxonomy(TaxonomyRef taxonomy, IdentityRef identity) {
@@ -167,14 +184,7 @@ public class TaxonomyCompetenceDAO {
 	}
 	
 	public List<TaxonomyCompetence> getCompetenceByTaxonomy(TaxonomyRef taxonomy, IdentityRef identity, TaxonomyCompetenceTypes... competenceTypes) {
-		List<String> typeList = new ArrayList<>(4);
-		if(competenceTypes != null && competenceTypes.length > 0 && competenceTypes[0] != null) {
-			for(TaxonomyCompetenceTypes competenceType: competenceTypes) {
-				if(competenceType != null) {
-					typeList.add(competenceType.name());
-				}
-			}
-		}
+		List<String> typeList = getTypesAsList(competenceTypes);
 
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select competence from ctaxonomycompetence competence")
@@ -194,6 +204,18 @@ public class TaxonomyCompetenceDAO {
 			query.setParameter("types", typeList);
 		}
 		return query.getResultList();
+	}
+
+	private List<String> getTypesAsList(TaxonomyCompetenceTypes... competenceTypes) {
+		List<String> typeList = new ArrayList<>(4);
+		if(competenceTypes != null && competenceTypes.length > 0 && competenceTypes[0] != null) {
+			for(TaxonomyCompetenceTypes competenceType: competenceTypes) {
+				if(competenceType != null) {
+					typeList.add(competenceType.name());
+				}
+			}
+		}
+		return typeList;
 	}
 	
 	public boolean hasCompetenceByTaxonomy(TaxonomyRef taxonomy, IdentityRef identity, TaxonomyCompetenceTypes... competences) {

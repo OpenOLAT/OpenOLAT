@@ -65,6 +65,7 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	@Autowired
 	private TaxonomyCompetenceAuditLogDAO taxonomyCompetenceAuditLogDao;
 	
+	@Override
 	public Taxonomy createTaxonomy(String identifier, String displayName, String description, String externalId) {
 		return taxonomyDao.createTaxonomy(identifier, displayName, description, externalId);
 	}
@@ -213,6 +214,13 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	@Override
 	public void taxonomyLevelTypeDisallowSubType(TaxonomyLevelType levelType, TaxonomyLevelType disallowSubType) {
 		taxonomyLevelTypeToTypeDao.disallowedSubType(levelType, disallowSubType);
+	}
+	
+
+	@Override
+	public boolean hasCompetenceByLevel(TaxonomyLevelRef taxonomyLevel, IdentityRef identity,
+			TaxonomyCompetenceTypes... competenceTypes) {
+		return taxonomyCompetenceDao.hasCompetenceByLevel(taxonomyLevel, identity, competenceTypes);
 	}
 
 	@Override

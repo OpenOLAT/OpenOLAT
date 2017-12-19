@@ -386,6 +386,9 @@ public class FormUIFactory {
 		return ss;
 	}
 
+	public SingleSelection addDropdownSingleselect(final String name, FormItemContainer formLayout, final String[] theKeys, final String[] theValues) {
+		return addDropdownSingleselect(name, name, name, formLayout, theKeys, theValues, null);
+	}
 
 	/**
 	 * Add a drop down menu (also called pulldown menu), with a label's i18n key being the same as the <code>name<code>.

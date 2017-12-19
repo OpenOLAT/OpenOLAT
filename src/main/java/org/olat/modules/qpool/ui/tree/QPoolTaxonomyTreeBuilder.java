@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui.metadata;
+package org.olat.modules.qpool.ui.tree;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -87,7 +87,13 @@ public class QPoolTaxonomyTreeBuilder {
 	
 	public void loadTaxonomyLevelsFinal(Identity identity) {
 		reset();
-		loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage);
+		TaxonomyCompetenceTypes[] types;
+		if (qpoolModule.isFinalVisibleTeach()) {
+			types = new TaxonomyCompetenceTypes[] {TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach};
+		} else {
+			types = new TaxonomyCompetenceTypes[] {TaxonomyCompetenceTypes.manage};
+		}
+		loadTaxonomyLevels(identity, types);
 	}
 
 	private void loadTaxonomyLevels(Identity identity, TaxonomyCompetenceTypes... type) {

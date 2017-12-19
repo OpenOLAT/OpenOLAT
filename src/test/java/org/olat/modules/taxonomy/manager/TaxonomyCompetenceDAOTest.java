@@ -228,6 +228,43 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasCompetenceByLevel() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-30", "Competence", "", null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-A", "Competence level", "A competence", null, null, null, null, taxonomy);
+
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByLevel(level, id, TaxonomyCompetenceTypes.target);
+		Assert.assertTrue(hasCompetence);
+	}
+	
+	@Test
+	public void hasCompetenceByLevel_hasOnlyOtherCompetence() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-30", "Competence", "", null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-A", "Competence level", "A competence", null, null, null, null, taxonomy);
+
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByLevel(level, id, TaxonomyCompetenceTypes.teach);
+		Assert.assertFalse(hasCompetence);
+	}
+		
+	@Test
+	public void hasCompetenceByLevel_hasNoCompetence() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-30", "Competence", "", null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-A", "Competence level", "A competence", null, null, null, null, taxonomy);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByLevel(level, id, TaxonomyCompetenceTypes.teach);
+		Assert.assertFalse(hasCompetence);
+	}
+	
+	@Test
 	public void hasCompetenceByTaxonomy() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-8");
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-30", "Competence", "", null);

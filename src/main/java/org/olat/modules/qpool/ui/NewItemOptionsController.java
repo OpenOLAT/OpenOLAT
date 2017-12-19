@@ -38,7 +38,7 @@ import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
-import org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilder;
+import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 

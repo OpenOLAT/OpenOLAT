@@ -29,7 +29,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QuestionItemImpl;
-import org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilder;
+import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 

@@ -42,7 +42,6 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.QuestionPoolMainEditorController;
-import org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**

@@ -183,6 +183,16 @@ public interface TaxonomyService {
 	public void taxonomyLevelTypeDisallowSubType(TaxonomyLevelType levelType, TaxonomyLevelType disallowSubType);
 	
 	/**
+	 * Has a specific competence for a taxonomy level.
+	 * 
+	 * @param taxonomyLevel
+	 * @param identity
+	 * @param competenceTypes
+	 * @return
+	 */
+	public boolean hasCompetenceByLevel(TaxonomyLevelRef taxonomyLevel, IdentityRef identity, TaxonomyCompetenceTypes... competenceTypes);
+	
+	/**
 	 * The available types for a specific taxonomy.
 	 * 
 	 * @param taxonomy The taxonomy (mandatory)

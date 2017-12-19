@@ -47,9 +47,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ReviewProcessAdminController extends FormBasicController {
 
+	private static final String FINAL_VISIBILITY_MANAGER = "final.visibility.manager";
+	private static final String FINAL_VISIBILITY_MANAGER_TEACHER = "final.visibility.manager.teacher";
+
 	private SingleSelection providerEl;
 	private TextElement numberOfRatingsEl;
 	private RatingFormItem lowerLimitEl;
+	private SingleSelection finalVisibilityEl;
 	
 	@Autowired
 	private QuestionPoolModule qpoolModule;
@@ -76,7 +80,7 @@ public class ReviewProcessAdminController extends FormBasicController {
 		}
 		
 		String providerType = qpoolModule.getReviewDecisionProviderType();
-		providerEl = uifactory.addDropdownSingleselect("admin.review.process.decision.type", formLayout, providerKeys, providerValues, null);
+		providerEl = uifactory.addDropdownSingleselect("admin.review.process.decision.type", formLayout, providerKeys, providerValues);
 		providerEl.addActionListener(FormEvent.ONCHANGE);
 		if(StringHelper.containsNonWhitespace(providerType)) {
 			for(String providerKey:providerKeys) {
@@ -96,6 +100,15 @@ public class ReviewProcessAdminController extends FormBasicController {
 		lowerLimitEl.setLabel("lower.limit", null);
 		lowerLimitEl.showLabel(true);
 		formLayout.add(lowerLimitEl);
+		
+		uifactory.addSpacerElement("spacer", formLayout, false);
+		
+		// final visibility
+		String[] finalVisibilityKeys = new String[] {FINAL_VISIBILITY_MANAGER, FINAL_VISIBILITY_MANAGER_TEACHER};
+		String[] finalVisibilityValues= new String[] {
+				translate(FINAL_VISIBILITY_MANAGER),
+				translate(FINAL_VISIBILITY_MANAGER_TEACHER)};
+		finalVisibilityEl = uifactory.addDropdownSingleselect("final.visibility", formLayout, finalVisibilityKeys, finalVisibilityValues);
 
 		//buttons
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -177,6 +190,13 @@ public class ReviewProcessAdminController extends FormBasicController {
 			qpoolModule.setReviewDecisionNumberOfRatings(numberOfRatings);
 			int lowerLimit = Float.valueOf(lowerLimitEl.getCurrentRating()).intValue();
 			qpoolModule.setReviewDecisionLowerLimit(lowerLimit);
+		}
+		
+		String selectedFinalVisibility = finalVisibilityEl.getSelectedKey();
+		if (FINAL_VISIBILITY_MANAGER_TEACHER.equals(selectedFinalVisibility)) {
+			qpoolModule.setFinalVisibleTeach(true);
+		} else {
+			qpoolModule.setFinalVisibleTeach(false);
 		}
 	}
 

@@ -56,6 +56,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private static final String REVIEW_DECISION_TYPE = "review.decision.type";
 	private static final String REVIEW_DECISION_NUMBER_OF_RATINGS = "review.decision.number.of.ratings";
 	private static final String REVIEW_LOWER_LIMIT = "review.decision.lower.limit";
+	private static final String FINAL_VISIBLE_TEACH = "final.visible.teach";
 	private static final String TAXONOMY_QPOOL_KEY = "taxonomy.qpool.key";
 	public static final String DEFAULT_TAXONOMY_QPOOL_IDENTIFIER = "QPOOL";
 	
@@ -64,6 +65,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private boolean sharesEnabled = true;
 	private boolean reviewProcessEnabled = false;
 	private String reviewDecisionType = ProcesslessDecisionProvider.TYPE;
+	private boolean finalVisibleTeach = false;
 	private String taxonomyQPoolKey;
 	
 	@Autowired
@@ -139,6 +141,11 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		String reviewDecisionLowerLimitObj = getStringPropertyValue(REVIEW_LOWER_LIMIT, true);
 		if(StringHelper.containsNonWhitespace(reviewDecisionLowerLimitObj)) {
 			reviewDecisionLowerLimit = Integer.parseInt(reviewDecisionLowerLimitObj);
+		}
+		
+		String finalVisibleTeachObj = getStringPropertyValue(FINAL_VISIBLE_TEACH, true);
+		if(StringHelper.containsNonWhitespace(finalVisibleTeachObj)) {
+			finalVisibleTeach = "true".equals(finalVisibleTeachObj);
 		}
 		
 		String taxonomyQPoolKeyObj = getStringPropertyValue(TAXONOMY_QPOOL_KEY, true);
@@ -237,6 +244,15 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		this.reviewDecisionLowerLimit = reviewDecisionLowerLimit;
 		setIntProperty(REVIEW_LOWER_LIMIT, reviewDecisionLowerLimit, true);
 	}
+	
+	public boolean isFinalVisibleTeach() {
+		return finalVisibleTeach;
+	}
+
+	public void setFinalVisibleTeach(boolean finalVisibleTeach) {
+		this.finalVisibleTeach = finalVisibleTeach;
+		setStringProperty(FINAL_VISIBLE_TEACH, Boolean.toString(finalVisibleTeach), true);
+	}
 
 	public String getTaxonomyQPoolKey() {
 		return taxonomyQPoolKey;
@@ -246,4 +262,5 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		this.taxonomyQPoolKey = taxonomyQPoolKey;
 		setStringProperty(TAXONOMY_QPOOL_KEY, taxonomyQPoolKey, true);
 	}
+
 }

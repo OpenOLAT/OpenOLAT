@@ -19,10 +19,13 @@
  */
 package org.olat.modules.qpool.ui.datasource;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyService;
 
 /**
  * 
@@ -31,10 +34,14 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  *
  */
 public class FinalItemsSource extends TaxonomyLevelItemsSource {
+
+	final boolean isManager;
 	
 	public FinalItemsSource(Identity me, Roles roles, TaxonomyLevel taxonomyLevel) {
 		super(me, roles, taxonomyLevel);
 		setStatusFilter(QuestionStatus.finalVersion);
+		TaxonomyService taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
+		isManager = taxonomyService.hasCompetenceByLevel(taxonomyLevel, me, TaxonomyCompetenceTypes.manage);
 	}
 
 	@Override
@@ -64,7 +71,7 @@ public class FinalItemsSource extends TaxonomyLevelItemsSource {
 
 	@Override
 	public boolean isBulkChangeEnabled() {
-		return true;
+		return isManager;
 	}
 
 	@Override
