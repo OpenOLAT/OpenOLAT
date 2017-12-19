@@ -55,6 +55,8 @@ public class ReviewController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormDescription("process.rating.description");
+		
 		ratingEl = new RatingFormItem("process.rating", 0f, 5, true);
 		ratingEl.setLabel("process.rating", null);
 		ratingEl.showLabel(true);
@@ -66,7 +68,7 @@ public class ReviewController extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("save", buttonLayout);
+		uifactory.addFormSubmitButton("process.rating.button", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 	

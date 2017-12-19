@@ -443,7 +443,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		listenTo(reviewCtrl);
 		cmc = new CloseableModalController(getWindowControl(), null,
 				reviewCtrl.getInitialComponent(), true,
-				translate("process.rating.title"), false);
+				translate("process.rating.title"), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
