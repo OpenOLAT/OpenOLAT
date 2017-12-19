@@ -48,14 +48,6 @@ public interface ReviewService {
 	public void startReview(QuestionItem item);
 
 	/**
-	 * Increments the version of the question item by 1. If the actual version is not numeric, the new version is set to 1.
-	 * 
-	 * @param item
-	 * @return
-	 */
-	public void incrementVersion(QuestionItem item);
-
-	/**
 	 * Decide if the question item has a new status after a rating and what the new status is.
 	 * 
 	 * @param item

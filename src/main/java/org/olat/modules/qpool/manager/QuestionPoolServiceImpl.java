@@ -208,7 +208,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			}
 			if (reviewService.isReviewStarting(previousStatus, newStatus)) {
 				reviewService.startReview(item);
-				reviewService.incrementVersion(item);
 			}
 		}
 		QuestionItem mergedItem = questionItemDao.merge(item);

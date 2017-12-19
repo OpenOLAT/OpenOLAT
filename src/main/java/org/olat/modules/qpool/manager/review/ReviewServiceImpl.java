@@ -87,10 +87,15 @@ public class ReviewServiceImpl implements ReviewService {
 	public void startReview(QuestionItem item) {
 		if (qpoolModule.isReviewProcessEnabled()) {
 			commentAndRatingService.deleteAllIgnoringSubPath(item);
+			incrementVersion(item);
 		}
 	}
 
-	@Override
+	/**
+	 * Increments the version of the question item by 1. If the actual version is not numeric, the new version is set to 1.
+	 * 
+	 * @param item
+	 */
 	public void incrementVersion(QuestionItem item) {
 		if (item instanceof QuestionItemImpl) {
 			int incrementedVersion = 1;
