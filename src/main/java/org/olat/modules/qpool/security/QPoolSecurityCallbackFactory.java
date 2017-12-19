@@ -45,38 +45,15 @@ public class QPoolSecurityCallbackFactory {
 	public QuestionItemSecurityCallback createQuestionItemSecurityCallback(QuestionItemView itemView, QuestionItemsSource questionItemSource,
 			boolean isOLATAdmin) {
 		QuestionItemSecurityCallback securityCallback;
-		if (isOLATAdmin) {
-			securityCallback = createAdministratorSecurityCallback(itemView, questionItemSource);
-		} else if (qpoolModule.isReviewProcessEnabled()) {
-			securityCallback = createReviewProcessSecurityCallback(itemView, questionItemSource);
+		if (qpoolModule.isReviewProcessEnabled()) {
+			securityCallback = CoreSpringFactory.getImpl(ReviewProcessSecurityCallback.class);
 		} else {
-			securityCallback = createProcesslessSecurityCallback(itemView, questionItemSource);
+			securityCallback = CoreSpringFactory.getImpl(ProcesslessSecurityCallback.class);
 		}
+		securityCallback.setQuestionItemView(itemView);
+		securityCallback.setQuestionItemSource(questionItemSource);
+		securityCallback.setAdmin(isOLATAdmin);
 		return securityCallback;
-	}
-
-	private QuestionItemSecurityCallback createAdministratorSecurityCallback(QuestionItemView itemView,
-			QuestionItemsSource questionItemSource) {
-		AdministratorQItemSecurityCallback administratorSecurityCallback = CoreSpringFactory.getImpl(AdministratorQItemSecurityCallback.class);
-		administratorSecurityCallback.setQuestionItemView(itemView);
-		administratorSecurityCallback.setQuestionItemSource(questionItemSource);
-		return administratorSecurityCallback;
-	}
-	
-	private QuestionItemSecurityCallback createReviewProcessSecurityCallback(QuestionItemView itemView,
-			QuestionItemsSource questionItemSource) {
-		ReviewProcessSecurityCallback reviewProcessSecurityCallback = CoreSpringFactory.getImpl(ReviewProcessSecurityCallback.class);
-		reviewProcessSecurityCallback.setQuestionItemView(itemView);
-		reviewProcessSecurityCallback.setQuestionItemSource(questionItemSource);
-		return reviewProcessSecurityCallback;
-	}
-
-	private QuestionItemSecurityCallback createProcesslessSecurityCallback(QuestionItemView itemView,
-			QuestionItemsSource questionItemSource) {
-		ProcesslessSecurityCallback processlessSecurityCallback = CoreSpringFactory.getImpl(ProcesslessSecurityCallback.class);
-		processlessSecurityCallback.setQuestionItemView(itemView);
-		processlessSecurityCallback.setQuestionItemSource(questionItemSource);
-		return processlessSecurityCallback;
 	}
 
 	public QPoolSecurityCallback createQPoolSecurityCallback(Roles roles) {

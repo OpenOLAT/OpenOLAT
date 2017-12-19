@@ -37,29 +37,36 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;
+	private boolean isAdmin = false;
 
 	@Override
 	public void setQuestionItemView(QuestionItemView itemView) {
 		this.itemView = itemView;
 	}
 
+	@Override
 	public void setQuestionItemSource(QuestionItemsSource questionItemSource) {
 		this.questionItemSource = questionItemSource;
+	}
+
+	@Override
+	public void setAdmin(boolean admin) {
+		this.isAdmin = admin;
 	}
 	
 	@Override
 	public boolean canEditQuestion() {
-		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canEditMetadata() {
-		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canEditLifecycle() {
-		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
@@ -74,37 +81,38 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	@Override
 	public boolean canSetDraft() {
-		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canSetRevised() {
-		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canSetReview() {
-		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canSetFinal() {
-		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canSetEndOfLife() {
-		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canDelete() {
-		return itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canRemove() {
-		return itemView.isAuthor() && questionItemSource.isRemoveEnabled();
+		return  questionItemSource.isRemoveEnabled()
+				&& (isAdmin || itemView.isAuthor());
 	}
 
 	@Override

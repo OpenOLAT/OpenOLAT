@@ -49,6 +49,7 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;
+	private boolean isAdmin = false;
 	
 	@Autowired
 	private ReviewService reviewService;
@@ -58,46 +59,55 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 		this.itemView = itemView;
 	}
 
+	@Override
 	public void setQuestionItemSource(QuestionItemsSource questionItemSource) {
 		this.questionItemSource = questionItemSource;
 	}
 
 	@Override
+	public void setAdmin(boolean admin) {
+		this.isAdmin = admin;
+	}
+
+	@Override
 	public boolean canEditQuestion() {
 		return reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())
-				&& (itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare()) ;
+				&& (isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare()) ;
 	}
 
 	@Override
 	public boolean canEditMetadata() {
-		return itemView.isAuthor() || itemView.isManager();
+		return isAdmin || itemView.isAuthor() || itemView.isManager();
 	}
 
 	@Override
 	public boolean canEditLifecycle() {
-		return false;
+		return isAdmin;
 	}
 
 	@Override
 	public boolean canStartReview() {
 		return itemView.isReviewableFormat()
-				&& itemView.isAuthor()
-				&& reviewService.isEditableQuestionStatus(itemView.getQuestionStatus());
+				&& reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())
+				&& (isAdmin || itemView.isAuthor());
 	}
 
 	@Override
 	public boolean canReview() {
-		return itemView.isReviewer() && QuestionStatus.review.equals(itemView.getQuestionStatus());
+		return itemView.isReviewableFormat()
+				&& QuestionStatus.review.equals(itemView.getQuestionStatus())
+				&& itemView.isReviewer();
 	}
 
 	@Override
 	public boolean canSetDraft() {
-		return false;
+		return isAdmin;
 	}
 
 	@Override
 	public boolean canSetRevised() {
-		return false;
+		return itemView.isReviewableFormat()
+				&& (isAdmin || itemView.isManager());
 	}
 
 	@Override
@@ -107,22 +117,25 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	@Override
 	public boolean canSetFinal() {
-		return false;
+		return itemView.isReviewableFormat()
+				&& (isAdmin || itemView.isManager());
 	}
 
 	@Override
 	public boolean canSetEndOfLife() {
-		return itemView.isManager() && QuestionStatus.finalVersion.equals(itemView.getQuestionStatus());
+		return isAdmin || itemView.isManager();
 	}
 
 	@Override
 	public boolean canDelete() {
-		return itemView.isAuthor() && DELETABLE_STATES.contains(itemView.getQuestionStatus());
+		return DELETABLE_STATES.contains(itemView.getQuestionStatus())
+				&& (isAdmin || itemView.isManager());
 	}
 
 	@Override
 	public boolean canRemove() {
-		return itemView.isAuthor() && questionItemSource.isRemoveEnabled();
+		return questionItemSource.isRemoveEnabled()
+				&& (isAdmin || itemView.isAuthor());
 	}
 
 	@Override

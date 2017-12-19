@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool;
 
+import org.olat.modules.qpool.ui.QuestionItemsSource;
+
 /**
  * 
  * Initial date: 22.11.2017<br>
@@ -28,6 +30,10 @@ package org.olat.modules.qpool;
 public interface QuestionItemSecurityCallback {
 	
 	public void setQuestionItemView(QuestionItemView itemView);
+	
+	public void setQuestionItemSource(QuestionItemsSource questionItemSource);
+	
+	public void setAdmin(boolean admin);
 	
 	public boolean canEditQuestion();
 	
