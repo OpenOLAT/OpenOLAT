@@ -30,7 +30,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilder;
-import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,7 +53,7 @@ public class ReviewStartController extends FormBasicController {
 	public ReviewStartController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl);
 		this.item = item;
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(getIdentity(), TaxonomyCompetenceTypes.teach);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity());
 		
 		initForm(ureq);
 	}

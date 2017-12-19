@@ -68,6 +68,34 @@ public class QPoolTaxonomyTreeBuilder {
 	public QPoolTaxonomyTreeBuilder() {
 		reset();
 	}
+
+	public void loadTaxonomyLevelsSelection(Identity identity) {
+		reset();
+		addEmptyEntry = true;
+		loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach);
+	}
+	
+	public void loadTaxonomyLevelsMy(Identity identity) {
+		reset();
+		loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage,  TaxonomyCompetenceTypes.teach);
+	}
+	
+	public void loadTaxonomyLevelsReview(Identity identity) {
+		reset();
+		loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage,  TaxonomyCompetenceTypes.teach);
+	}
+	
+	public void loadTaxonomyLevelsFinal(Identity identity) {
+		reset();
+		loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage);
+	}
+
+	private void loadTaxonomyLevels(Identity identity, TaxonomyCompetenceTypes... type) {
+		prefillMaterializedPathKeysWithCompetence(identity, type);
+		TreeModel tree = buildTreeModel();
+		prefillTaxonomyLevels(tree.getRootNode());
+		prefillSelectableTaxonomyLevelsArrays();
+	}
 	
 	private void reset() {
 		addEmptyEntry = false;
@@ -77,22 +105,8 @@ public class QPoolTaxonomyTreeBuilder {
 		selectableValues = new String[0];
 		treeTaxonomyLevels = new ArrayList<>();
 	}
-
-	public void loadTaxonomyLevels(Identity identity, TaxonomyCompetenceTypes type, boolean addEmptyEntry) {
-		this.addEmptyEntry = addEmptyEntry;
-		loadTaxonomyLevels(identity, type);
-	}
 	
-	public void loadTaxonomyLevels(Identity identity, TaxonomyCompetenceTypes type) {
-		reset();
-		prefillMaterializedPathKeysWithCompetence(identity, type);
-		TreeModel tree = buildTreeModel();
-		prefillTaxonomyLevels(tree.getRootNode());
-		prefillSelectableTaxonomyLevelsArrays();
-	}
-
-
-	private void prefillMaterializedPathKeysWithCompetence(Identity identity, TaxonomyCompetenceTypes type) {
+	private void prefillMaterializedPathKeysWithCompetence(Identity identity, TaxonomyCompetenceTypes... type) {
 		materializedPathKeysWithCompetence = qpoolService.getTaxonomyLevel(identity, type).stream()
 				.map(level -> level.getMaterializedPathKeys())
 				.collect(Collectors.toList());

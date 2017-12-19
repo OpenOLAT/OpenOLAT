@@ -86,7 +86,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldGetSelectableKeysIfProzessless() {
-		sut.loadTaxonomyLevels(null, null);
+		sut.loadTaxonomyLevelsMy(null);
 		String[] keys = sut.getSelectableKeys();
 		
 		String[] expectedKeys = {
@@ -103,7 +103,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldGetSelectableKeysWithEmptyEntryIfProzessless() {
-		sut.loadTaxonomyLevels(null, null, true);
+		sut.loadTaxonomyLevelsSelection(null);
 		String[] keys = sut.getSelectableKeys();
 		
 		String[] expectedKeys = {
@@ -121,7 +121,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldGetSelectableValuesIfProzessless() {
-		sut.loadTaxonomyLevels(null, null);
+		sut.loadTaxonomyLevelsMy(null);
 		String[] values = sut.getSelectableValues();
 	
 		String[] expectedValues = {
@@ -138,7 +138,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldGetSelectableValuesWithEmptyEntryIfProzesless() {
-		sut.loadTaxonomyLevels(null, null, true);
+		sut.loadTaxonomyLevelsSelection(null);
 		String[] values = sut.getSelectableValues();
 	
 		String[] expectedValues = {
@@ -158,7 +158,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	public void shouldGetSelectableKeysIfReviewProzess() {
 		when(qpoolModule.isReviewProcessEnabled()).thenReturn(true);
 		
-		sut.loadTaxonomyLevels(null, null);
+		sut.loadTaxonomyLevelsMy(null);
 		String[] keys = sut.getSelectableKeys();
 		
 		String[] expectedKeys = {
@@ -173,7 +173,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	public void shouldGetSelectableValuesIfReviewProzess() {
 		when(qpoolModule.isReviewProcessEnabled()).thenReturn(true);
 		
-		sut.loadTaxonomyLevels(null, null);
+		sut.loadTaxonomyLevelsMy(null);
 		String[] values = sut.getSelectableValues();
 	
 		String[] expectedValues = {
@@ -188,7 +188,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	public void shouldGetTreeKeysIfReviewProzess() {
 		when(qpoolModule.isReviewProcessEnabled()).thenReturn(true);
 		
-		sut.loadTaxonomyLevels(null, null);
+		sut.loadTaxonomyLevelsMy(null);
 		List<TaxonomyLevel> keys = sut.getTreeTaxonomyLevels();
 		
 		assertThat(keys.get(0).getKey()).isEqualTo(HINDI_KEY);
@@ -197,7 +197,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldFindTaxonomyLevel() {
-		sut.loadTaxonomyLevels(null, null);
+		sut.loadTaxonomyLevelsMy(null);
 		TaxonomyLevel taxonomyLevel = sut.getTaxonomyLevel(Long.toString(RUSSIAN_KEY));
 		
 		assertThat(taxonomyLevel.getKey()).isEqualTo(RUSSIAN_KEY);
@@ -205,7 +205,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldFindTaxonomyLevelExcludesEmptyEntry() {
-		sut.loadTaxonomyLevels(null, null);
+		sut.loadTaxonomyLevelsMy(null);
 		TaxonomyLevel taxonomyLevel = sut.getTaxonomyLevel("-1");
 		
 		assertThat(taxonomyLevel).isNull();

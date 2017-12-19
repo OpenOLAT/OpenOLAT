@@ -43,7 +43,6 @@ import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.QuestionPoolMainEditorController;
 import org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilder;
-import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -204,7 +203,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private void buildMyTaxonomyNodes(TreeNode parentNode) {
 		if (!securityCallback.canUseReviewProcess()) return;
 		
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.teach);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsMy(identity);
 		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
 			TreeNode node = new MyTaxonomyLevelTreeNode(stackPanel, securityCallback, taxonomyLevel);
@@ -225,7 +224,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	public void buildReviewSubTreeModel(TreeNode rootNode) {
 		if (!securityCallback.canUseReviewProcess()) return;
 		
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.teach);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsReview(identity);
 		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		if(!taxonomyLevels.isEmpty()) {
 			reviewNode = new GenericTreeNode(translator.translate("menu.review"));
@@ -242,7 +241,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	public void buildFinalSubTreeModel(TreeNode rootNode) {
 		if (!securityCallback.canUseReviewProcess()) return;
 
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsFinal(identity);
 		List<TaxonomyLevel> taxonomyLevels = qpoolTaxonomyTreeBuilder.getTreeTaxonomyLevels();
 		if (!taxonomyLevels.isEmpty()) {
 			finalNode = new GenericTreeNode(translator.translate("menu.final"));

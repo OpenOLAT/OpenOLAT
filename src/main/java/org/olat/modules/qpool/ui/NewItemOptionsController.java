@@ -39,7 +39,6 @@ import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
 import org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilder;
-import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,7 +71,7 @@ public class NewItemOptionsController extends FormBasicController {
 	public NewItemOptionsController(UserRequest ureq, WindowControl wControl, TaxonomyLevel selectedTaxonomyLevel) {	
 		super(ureq, wControl);
 		this.selectedTaxonomyLevel = selectedTaxonomyLevel;
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevels(getIdentity(), TaxonomyCompetenceTypes.teach, true);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity());
 		
 		initForm(ureq);
 	}
