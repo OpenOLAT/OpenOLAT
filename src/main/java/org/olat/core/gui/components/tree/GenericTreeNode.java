@@ -28,6 +28,7 @@ package org.olat.core.gui.components.tree;
 
 import java.io.Serializable;
 
+import org.olat.core.gui.components.badge.Badge;
 import org.olat.core.util.nodes.GenericNode;
 
 /**
@@ -46,132 +47,86 @@ public class GenericTreeNode extends GenericNode implements TreeNode, Serializab
 	private String cssClass;
 	private String iconCssClass;
 	private String iconDecoratorCssClass;
-	
-	/**
-	 * 
-	 */
+	private Badge badge;
+
 	public GenericTreeNode() {
 		//
 	}
 	
-	/**
-	 * Fix identifier for state-less behavior
-	 * @param ident
-	 */
 	public GenericTreeNode(String ident) {
 		super(ident);
 	}
 
-	/**
-	 * @param title
-	 * @param userObject
-	 */
 	public GenericTreeNode(String title, Object userObject) {
 		this.title = title;
 		this.userObject = userObject;
 	}
 	
-	/**
-	 * @param id A fix identification for state-less behavior, must be unique
-	 * @param title
-	 * @param userObject
-	 */
 	public GenericTreeNode(String ident, String title, Object userObject) {
 		super(ident);
 		this.title = title;
 		this.userObject = userObject;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getTitle()
-	 */
+	@Override
 	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * @param title
-	 */
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getAltText()
-	 */
+	@Override
 	public String getAltText() {
 		return altText;
 	}
 
-	/**
-	 * @param altText
-	 */
 	public void setAltText(String altText) {
 		this.altText = altText;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#isAccessible()
-	 */
+	@Override
 	public boolean isAccessible() {
 		return accessible;
 	}
 
-	/**
-	 * @param accessible
-	 */
 	public void setAccessible(boolean accessible) {
 		this.accessible = accessible;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getUserObject()
-	 */
+	@Override
 	public Object getUserObject() {
 		return userObject;
 	}
 
-	/**
-	 * @param userObject
-	 */
 	public void setUserObject(Object userObject) {
 		this.userObject = userObject;
 	}
 
-	/**
-	 * @return TreeNode
-	 */
+	@Override
 	public TreeNode getDelegate() {
 		return delegate;
 	}
 
 	/**
-	 * Sets the delegate.
+	 * Sets the delegate node which will be activated when this node is clicked.
 	 * 
-	 * @param delegate The delegate to set
+	 * @param delegate
 	 */
 	public void setDelegate(TreeNode delegate) {
 		this.delegate = delegate;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getCssClass()
-	 */
 	@Override
 	public String getCssClass() {
 		return cssClass;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setCssClass(String string) {
 		cssClass = string;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getIconCssClass()
-	 */
 	@Override
 	public String getIconCssClass() {
 		return iconCssClass;
@@ -181,9 +136,6 @@ public class GenericTreeNode extends GenericNode implements TreeNode, Serializab
 		this.iconCssClass = iconCssClass;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.tree.TreeNode#getIconDecorator1CssClass()
-	 */
 	@Override
 	public String getIconDecorator1CssClass() {
 		return iconDecoratorCssClass;
@@ -213,7 +165,25 @@ public class GenericTreeNode extends GenericNode implements TreeNode, Serializab
 		return selected;
 	}
 
+	@Override
 	public void setSelected(boolean selected) {
 		this.selected = selected;
+	}
+	
+	@Override
+	public Badge getBadge() {
+		return badge;
+	}
+	
+	public void setBadge(String message, Badge.Level level) {
+		if(badge == null) {
+			badge = new Badge(getIdent() + "_BADGE");
+		}
+		badge.setMessage(message);
+		badge.setLevel(level);
+	}
+	
+	public void removeBadge() {
+		badge = null;
 	}
 }

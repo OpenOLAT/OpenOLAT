@@ -183,7 +183,7 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				treeModel.buildShareSubTreeModel();
 				menuTree.setDirty(true);
 			} else if (QPoolEvent.ITEMS_RELOADED.equals(event.getCommand())) {
-				treeModel.reloadReviewTitles();
+				treeModel.reloadReviewCounts();
 			}
 		} else if(copyToMyCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {

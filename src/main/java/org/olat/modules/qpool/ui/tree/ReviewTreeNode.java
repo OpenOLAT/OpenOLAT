@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.ui.tree;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.badge.Badge;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
@@ -62,7 +63,8 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 		this.taxonomyLevel = taxonomyLevel;
 		source = new ReviewItemsSource(identity, roles, taxonomyLevel);
 		
-		reloadTitle();
+		setTitle(taxonomyLevel.getDisplayName());
+		reloadCount();
 		
 		this.setUserObject(taxonomyLevel);
 	}
@@ -80,13 +82,13 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 		return questionsCtrl;
 	}
 	
-	public void reloadTitle() {
-		StringBuilder title = new StringBuilder();
-		title.append(taxonomyLevel.getDisplayName());
-		title.append(" (");
-		title.append(source.getNumOfItems());
-		title.append(")");
-		setTitle(title.toString());
+	public void reloadCount() {
+		int count = source.getNumOfItems();
+		if (count > 0) {
+			setBadge(Integer.toString(count), Badge.Level.info);
+		} else {
+			removeBadge();
+		}
 	}
 
 }

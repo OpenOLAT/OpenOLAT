@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.components.tree;
 
+import org.olat.core.gui.components.badge.Badge;
 import org.olat.core.util.nodes.INode;
 
 /**
@@ -91,4 +92,7 @@ public interface TreeNode extends INode {
 	 * @return
 	 */
 	public boolean isSelected();
+	
+	public Badge getBadge();
+	
 }

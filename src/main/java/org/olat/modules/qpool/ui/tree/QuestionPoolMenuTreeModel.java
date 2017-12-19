@@ -140,18 +140,18 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		return false;
 	}
 	
-	public void reloadReviewTitles() {
-		reloadTitles(reviewNode);
+	public void reloadReviewCounts() {
+		reloadReviewCount(reviewNode);
 	}
 
-	private void reloadTitles(INode node) {
+	private void reloadReviewCount(INode node) {
 		for(int i=node.getChildCount(); i-->0; ) {
 			INode child = node.getChildAt(i);
 			if (child instanceof ReviewTreeNode) {
 				ReviewTreeNode reviewTreeNode = (ReviewTreeNode) child;
-				reviewTreeNode.reloadTitle();
+				reviewTreeNode.reloadCount();
 			}
-			reloadTitles(child);
+			reloadReviewCount(child);
 		}
 	}
 	
