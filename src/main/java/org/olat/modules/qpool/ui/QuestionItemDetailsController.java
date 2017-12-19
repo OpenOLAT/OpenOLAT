@@ -49,6 +49,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.prefs.Preferences;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -78,6 +79,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QuestionItemDetailsController extends BasicController implements TooledController, Activateable2 {
 	
+	private static final String GUIPREF_KEY_SHOW_METADATAS = "show.metadatas";
 	private Link editItem;
 	private Link statusDraftLink;
 	private Link statusReviewLink;
@@ -125,6 +127,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private QPoolService qpoolService;
 	@Autowired
 	private ReviewService reviewService;
+	private Boolean showMetadatas;
 	
 	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QuestionItem item, QuestionItemSecurityCallback securityCallback, QuestionItemsSource itemSource,
@@ -141,6 +144,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback);
 		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
 		listenTo(metadatasCtrl);
+		
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		showMetadatas = (Boolean) guiPrefs.get(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_METADATAS);
+		System.out.println(showMetadatas);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean moderator = roles.isOLATAdmin();
@@ -273,7 +280,11 @@ public class QuestionItemDetailsController extends BasicController implements To
 		showMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
 		hideMetadataLink = LinkFactory.createToolLink("metadata.hide", translate("metadata.hide"), this);
 		hideMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
-		doHideMetadata();
+		if (showMetadatas != null && showMetadatas) {
+			doShowMetadata();
+		} else {
+			doHideMetadata();
+		}
 	}
 	
 	protected void setPreviewController(UserRequest ureq, QuestionItem item) {
@@ -344,9 +355,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 		} else if(source == previousItemLink) {
 			fireEvent(ureq, new QItemEvent("previous", metadatasCtrl.getItem()));
 		} else if(source == showMetadataLink) {
-			doShowMetadata();
+			doShowMetadata(ureq);
 		} else if(source == hideMetadataLink) {
-			doHideMetadata();
+			doHideMetadata(ureq);
 		} else if(source == stackPanel) {
 			if(event instanceof PopEvent) {
 				PopEvent pop = (PopEvent)event;
@@ -576,16 +587,33 @@ public class QuestionItemDetailsController extends BasicController implements To
 		ureq.getDispatchResult().setResultingMediaResource(mr);
 	}
 	
+	private void doShowMetadata(UserRequest ureq) {
+		doShowMetadata();
+		doPutMetadatasSwitch(ureq, Boolean.TRUE);
+	}
+
 	private void doShowMetadata() {
 		stackPanel.addTool(hideMetadataLink, Align.right);
 		stackPanel.removeTool(showMetadataLink);
 		mainVC.contextPut("metadataSwitch", Boolean.TRUE);
 	}
 	
+	private void doHideMetadata(UserRequest ureq) {
+		doHideMetadata();
+		doPutMetadatasSwitch(ureq, Boolean.FALSE);
+	}
+
 	private void doHideMetadata() {
 		stackPanel.addTool(showMetadataLink, Align.right);
 		stackPanel.removeTool(hideMetadataLink);
 		mainVC.contextPut("metadataSwitch", Boolean.FALSE);
+	}
+	
+	private void doPutMetadatasSwitch(UserRequest ureq, Boolean show) {
+		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
+		if (guiPrefs != null) {
+			guiPrefs.putAndSave(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_METADATAS, show);
+		}
 	}
 
 }
