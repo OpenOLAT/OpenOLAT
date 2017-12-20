@@ -54,17 +54,18 @@ public class EssayEditorController extends FormBasicController {
 	private final File rootDirectory;
 	private final VFSContainer rootContainer;
 	
-	private final boolean restrictedEdit;
+	private final boolean restrictedEdit, readOnly;
 	private final EssayAssessmentItemBuilder itemBuilder;
 	
 	public EssayEditorController(UserRequest ureq, WindowControl wControl, EssayAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_DEFAULT_2_10);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
+		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
@@ -76,6 +77,7 @@ public class EssayEditorController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setElementCssClass("o_sel_assessment_item_title");
 		titleEl.setMandatory(true);
+		titleEl.setEnabled(!readOnly);
 		
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
@@ -84,31 +86,34 @@ public class EssayEditorController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 12, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.setElementCssClass("o_sel_assessment_item_question");
+		textEl.setEnabled(!readOnly);
 		
 		String placeholder = itemBuilder.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("placeholder", "fib.placeholder", 256, placeholder, formLayout);
+		placeholderEl.setEnabled(!readOnly);
 		
 		//width (expectedLength), height (expectedLines)
 		String expectedLength = getValue(itemBuilder.getExpectedLength());
 		lengthEl = uifactory.addTextElement("cols", "essay.expectedLength", -1, expectedLength, formLayout);
-		lengthEl.setEnabled(!restrictedEdit);
+		lengthEl.setEnabled(!restrictedEdit && !readOnly);
 		lengthEl.setVisible(StringHelper.containsNonWhitespace(expectedLength));
 		String expectedLines = getValue(itemBuilder.getExpectedLines());
 		heightEl = uifactory.addTextElement("rows", "essay.rows", -1, expectedLines, formLayout);
-		heightEl.setEnabled(!restrictedEdit);
+		heightEl.setEnabled(!restrictedEdit && !readOnly);
 
 		//words count min. max. (maxStrings)
 		String minStrings = getValue(itemBuilder.getMinStrings());
 		minWordsEl = uifactory.addTextElement("min.strings", "essay.min.strings", -1, minStrings, formLayout);
-		minWordsEl.setEnabled(!restrictedEdit);
+		minWordsEl.setEnabled(!restrictedEdit && !readOnly);
 		String maxStrings = getValue(itemBuilder.getMaxStrings());
 		maxWordsEl = uifactory.addTextElement("max.strings", "essay.max.strings", -1, maxStrings, formLayout);
-		maxWordsEl.setEnabled(!restrictedEdit);
+		maxWordsEl.setEnabled(!restrictedEdit && !readOnly);
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		buttonsContainer.setElementCssClass("o_sel_lob_save");
+		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
@@ -164,6 +169,7 @@ public class EssayEditorController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(readOnly) return;
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question

@@ -102,8 +102,7 @@ public class HotspotEditorController extends FormBasicController {
 	private SingleSelection layoutEl;
 	private MultipleSelectionElement shadowEl;
 	
-	
-	private final boolean restrictedEdit;
+	private final boolean restrictedEdit, readOnly;
 	private final HotspotAssessmentItemBuilder itemBuilder;
 	
 	private File itemFile;
@@ -121,13 +120,14 @@ public class HotspotEditorController extends FormBasicController {
 	private ImageService imageService;
 	
 	public HotspotEditorController(UserRequest ureq, WindowControl wControl, HotspotAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_DEFAULT_2_10);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
+		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 		backgroundMapperUri = registerMapper(ureq, new BackgroundMapper(itemFile));
 		initForm(ureq);
@@ -140,6 +140,7 @@ public class HotspotEditorController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setElementCssClass("o_sel_assessment_item_title");
 		titleEl.setMandatory(true);
+		titleEl.setEnabled(!readOnly);
 		
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
@@ -148,11 +149,13 @@ public class HotspotEditorController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", question, 8, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
+		textEl.setEnabled(!readOnly);
 		
 		String[] cardinalityKeys = new String[] { Cardinality.SINGLE.name(), Cardinality.MULTIPLE.name() };
 		String[] cardinalityValues = new String[] { translate(Cardinality.SINGLE.name()), translate(Cardinality.MULTIPLE.name()) };
 		cardinalityEl = uifactory.addRadiosHorizontal("form.imd.cardinality", formLayout, cardinalityKeys, cardinalityValues);
 		cardinalityEl.setElementCssClass("o_sel_assessment_item_cardinality");
+		cardinalityEl.setEnabled(!restrictedEdit && !readOnly);
 		if(itemBuilder.isSingleChoice()) {
 			cardinalityEl.select(cardinalityKeys[0], true);
 		} else {
@@ -161,13 +164,14 @@ public class HotspotEditorController extends FormBasicController {
 		
 		responsiveEl = uifactory.addCheckboxesHorizontal("form.imd.responsive", formLayout, onKeys, new String[] {""});
 		responsiveEl.setHelpText(translate("form.imd.responsive.hint"));
+		responsiveEl.setEnabled(!restrictedEdit && !readOnly);
 		if(itemBuilder.isResponsive()) {
 			responsiveEl.select(onKeys[0], true);
 		}
 		
 		initialBackgroundImage = getCurrentBackground();
 		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
-		backgroundEl.setEnabled(!restrictedEdit);
+		backgroundEl.setEnabled(!restrictedEdit && !readOnly);
 		if(initialBackgroundImage != null) {
 			backgroundEl.setInitialFile(initialBackgroundImage);
 		}
@@ -179,6 +183,7 @@ public class HotspotEditorController extends FormBasicController {
 		String[] resizeValues = new String[] { translate("form.imd.background.resize.no") };
 		resizeEl = uifactory.addRadiosHorizontal("form.imd.background.resize", formLayout, resizeKeys, resizeValues);
 		resizeEl.setVisible(false);
+		resizeEl.setEnabled(!readOnly);
 		if(initialBackgroundImage != null) {
 			Size size = imageService.getSize(new LocalFileImpl(initialBackgroundImage), null);
 			optimizeResizeEl(size, false);
@@ -191,24 +196,24 @@ public class HotspotEditorController extends FormBasicController {
 		hotspotsCont.setLabel("new.spots", null);
 		hotspotsCont.setRootForm(mainForm);
 		hotspotsCont.contextPut("mapperUri", backgroundMapperUri);
-		hotspotsCont.contextPut("restrictedEdit", restrictedEdit);
+		hotspotsCont.contextPut("restrictedEdit", restrictedEdit || readOnly);
 		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/openolat/jquery.drawing.js" });
 		formLayout.add(js);
 		formLayout.add(hotspotsCont);
 		
 		newCircleButton = uifactory.addFormLink("new.circle", "new.circle", null, hotspotsCont, Link.BUTTON);
 		newCircleButton.setIconLeftCSS("o_icon o_icon-lg o_icon_circle");
-		newCircleButton.setVisible(!restrictedEdit);
+		newCircleButton.setVisible(!restrictedEdit && !readOnly);
 		newRectButton = uifactory.addFormLink("new.rectangle", "new.rectangle", null, hotspotsCont, Link.BUTTON);
 		newRectButton.setIconLeftCSS("o_icon o_icon-lg o_icon_rectangle");
-		newRectButton.setVisible(!restrictedEdit);
+		newRectButton.setVisible(!restrictedEdit && !readOnly);
 		
 		updateBackground();
 
 		String[] emptyKeys = new String[0];
 		correctHotspotsEl = uifactory.addCheckboxesHorizontal("form.imd.correct.spots", formLayout, emptyKeys, emptyKeys);
 		correctHotspotsEl.setElementCssClass("o_sel_assessment_item_correct_spots");
-		correctHotspotsEl.setEnabled(!restrictedEdit);
+		correctHotspotsEl.setEnabled(!restrictedEdit && !readOnly);
 		correctHotspotsEl.addActionListener(FormEvent.ONCHANGE);
 		rebuildWrappersAndCorrectSelection();
 		
@@ -221,6 +226,7 @@ public class HotspotEditorController extends FormBasicController {
 		}
 		layoutEl = uifactory.addDropdownSingleselect("hotspot.layout", "hotspot.layout", formLayout, layoutKeys, layoutValues, null);
 		layoutEl.addActionListener(FormEvent.ONCHANGE);
+		layoutEl.setEnabled(!readOnly);
 		boolean found = false;
 		for(int i=layoutKeys.length; i-->0; ) {
 			if(itemBuilder.hasHotspotInteractionClass(layoutKeys[i])) {
@@ -234,6 +240,7 @@ public class HotspotEditorController extends FormBasicController {
 
 		shadowEl = uifactory.addCheckboxesHorizontal("hotspot.layout.shadow", "hotspot.layout.shadow", formLayout,
 				onKeys, new String[] { "" });
+		shadowEl.setEnabled(!readOnly);
 		if(!itemBuilder.hasHotspotInteractionClass(QTI21Constants.CSS_HOTSPOT_DISABLE_SHADOW)) {
 			shadowEl.select(onKeys[0], true);
 		}
@@ -243,6 +250,7 @@ public class HotspotEditorController extends FormBasicController {
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setElementCssClass("o_sel_hotspots_save");
 		buttonsContainer.setRootForm(mainForm);
+		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
@@ -278,7 +286,7 @@ public class HotspotEditorController extends FormBasicController {
 		}
 
 		correctHotspotsEl.clearError();
-		if(!restrictedEdit) {
+		if(!restrictedEdit && !readOnly) {
 			if(correctHotspotsEl.getSelectedKeys().size() == 0) {
 				correctHotspotsEl.setErrorKey("error.need.correct.answer", null);
 				allOk &= false;
@@ -358,7 +366,7 @@ public class HotspotEditorController extends FormBasicController {
 	}
 	
 	private void doMoveHotspot(UserRequest ureq) {
-		if(restrictedEdit) return;
+		if(restrictedEdit || readOnly) return;
 		
 		String coords = ureq.getParameter("coords");
 		String hotspotId = ureq.getParameter("hotspot");
@@ -372,7 +380,7 @@ public class HotspotEditorController extends FormBasicController {
 	}
 	
 	private void doDeleteHotspot(UserRequest ureq) {
-		if(restrictedEdit) return;
+		if(restrictedEdit || readOnly) return;
 		
 		String hotspotId = ureq.getParameter("hotspot");
 		HotspotChoice choiceToDelete = itemBuilder.getHotspotChoice(hotspotId);
@@ -471,6 +479,8 @@ public class HotspotEditorController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(readOnly) return;
+		
 		itemBuilder.setTitle(titleEl.getValue());
 		//set the question with the text entries
 		String questionText = textEl.getRawValue();

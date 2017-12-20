@@ -1171,7 +1171,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				File itemFile = new File(itemUri);
 				ManifestMetadataBuilder metadata = getMetadataBuilder(itemRef);
 				currentEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(), testEntry,
-						item, itemRef, metadata, unzippedDirRoot, unzippedContRoot, itemFile, restrictedEdit);
+						item, itemRef, metadata, unzippedDirRoot, unzippedContRoot, itemFile, restrictedEdit, false);
 			}
 		}
 		

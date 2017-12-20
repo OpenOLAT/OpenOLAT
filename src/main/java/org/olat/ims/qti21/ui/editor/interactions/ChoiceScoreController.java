@@ -85,8 +85,8 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	
 	public ChoiceScoreController(UserRequest ureq, WindowControl wControl,
 			ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, File itemFileRef,
-			boolean restrictedEdit, String contextHelpUrl) {
-		super(ureq, wControl, itemRef, restrictedEdit);
+			boolean restrictedEdit, boolean readOnly, String contextHelpUrl) {
+		super(ureq, wControl, itemRef, restrictedEdit, readOnly);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		this.itemFileRef = itemFileRef;
@@ -108,13 +108,13 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		String minValue = minScore == null ? "" : (minScore.getScore() == null ? "" : minScore.getScore().toString());
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, minValue, formLayout);
 		minScoreEl.setElementCssClass("o_sel_assessment_item_min_score");
-		minScoreEl.setEnabled(!restrictedEdit);
+		minScoreEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		ScoreBuilder maxScore = itemBuilder.getMaxScoreBuilder();
 		String maxValue = maxScore == null ? "" : (maxScore.getScore() == null ? "" : maxScore.getScore().toString());
 		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, maxValue, formLayout);
 		maxScoreEl.setElementCssClass("o_sel_assessment_item_max_score");
-		maxScoreEl.setEnabled(!restrictedEdit);
+		maxScoreEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		String[] choiceKeys = new String[0];
 		String[] choiceValues = new String[0];
@@ -127,7 +127,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 				translate("form.score.assessment.per.answer")
 		};
 		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout, modeKeys, modeValues);
-		assessmentModeEl.setEnabled(!restrictedEdit);
+		assessmentModeEl.setEnabled(!restrictedEdit && !readOnly);
 		assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
 		if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
 			assessmentModeEl.select(ScoreEvaluation.perAnswer.name(), true);
@@ -145,12 +145,13 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			wrappers.add(wrapper);
 		}
 		scoreCont.contextPut("choices", wrappers);
-		scoreCont.contextPut("restrictedEdit", restrictedEdit);
+		scoreCont.contextPut("restrictedEdit", restrictedEdit || readOnly);
 		scoreCont.setVisible(assessmentModeEl.isSelected(1));
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
+		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
@@ -233,7 +234,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		String pointElId = "points_" + counter++;
 		TextElement pointEl = uifactory.addTextElement(pointElId, null, 5, points, scoreCont);
 		pointEl.setDisplaySize(5);
-		pointEl.setEnabled(!restrictedEdit);
+		pointEl.setEnabled(!restrictedEdit && !readOnly);
 		scoreCont.add(pointElId, pointEl);
 		return new ChoiceWrapper(choice, pointEl);
 	}
@@ -271,7 +272,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(restrictedEdit) return;
+		if(restrictedEdit || readOnly) return;
 		
 		super.formOK(ureq);
 		String maxScoreValue = maxScoreEl.getValue();

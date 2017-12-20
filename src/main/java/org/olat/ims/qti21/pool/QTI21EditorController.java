@@ -74,7 +74,7 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 				.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
 		
 		editorCtrl = new AssessmentItemEditorController(ureq, wControl,
-				resolvedAssessmentItem, resourceDirectory, resourceContainer, resourceFile, false);
+				resolvedAssessmentItem, resourceDirectory, resourceContainer, resourceFile, false, false);
 		listenTo(editorCtrl);
 		mainVC.put("editor", editorCtrl.getInitialComponent());
 		

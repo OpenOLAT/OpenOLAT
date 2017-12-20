@@ -70,16 +70,18 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 	private List<RuledFeedbackForm> additionalForms = new ArrayList<>();
 	
 	private final VFSContainer itemContainer;
-	private final boolean restrictedEdit;
+	private final boolean restrictedEdit, readOnly;
 	private final FeedbacksEnabler enable;
 	private final AssessmentItemBuilder itemBuilder;
 	private final AtomicInteger counter = new AtomicInteger();
 
 	public FeedbacksEditorController(UserRequest ureq, WindowControl wControl, AssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile, FeedbacksEnabler enable,  boolean restrictedEdit) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, FeedbacksEnabler enable,
+			boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, "feedbacks");
 		this.enable = enable;
 		this.itemBuilder = itemBuilder;
+		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
@@ -94,7 +96,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		DropdownItem dropdownEl = uifactory.addDropdownMenu("add.feedback.menu", null, formLayout, getTranslator());
 		dropdownEl.setOrientation(DropdownOrientation.right);
 		dropdownEl.setElementCssClass("o_sel_add_feedbacks");
-		dropdownEl.setVisible(!restrictedEdit);
+		dropdownEl.setVisible(!restrictedEdit && !readOnly);
 		dropdownEl.setEmbbeded(true);
 		
 		addHintButton = uifactory.addFormLink("add.hint.feedback", formLayout, Link.LINK);
@@ -173,10 +175,9 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		}
 
 		// Submit Button
-		if(!restrictedEdit) {
+		if(!restrictedEdit && !readOnly) {
 			uifactory.addFormSubmitButton("submit", formLayout);
 		}
-		
 		updateAddButtons();
 	}
 
@@ -239,7 +240,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(restrictedEdit) return;
+		if(restrictedEdit || readOnly) return;
 		
 		hintForm.commit();
 		hintForm.setVisible(!hintForm.isEmpty());
@@ -313,13 +314,13 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			String title = feedbackBuilder == null ? "" : feedbackBuilder.getTitle();
 			titleEl = uifactory.addTextElement("title_".concat(id), "form.imd.feedback.title", -1, title, formLayout);
 			titleEl.setUserObject(feedbackBuilder);
-			titleEl.setEnabled(!restrictedEdit);
+			titleEl.setEnabled(!restrictedEdit && !readOnly);
 			titleEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_title");
 			String text = feedbackBuilder == null ? "" : feedbackBuilder.getText();
 			textEl = uifactory.addRichTextElementForQTI21("text_".concat(id), "form.imd.feedback.text", text, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
-			textEl.setEnabled(!restrictedEdit);
+			textEl.setEnabled(!restrictedEdit && !readOnly);
 			textEl.setHelpTextKey("feedback." + feedbackType.name() + ".help", null);
 			textEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			textEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback");
@@ -385,7 +386,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			String title = feedbackBuilder == null ? "" : feedbackBuilder.getTitle();
 			titleEl = uifactory.addTextElement("title_".concat(id), "form.imd.feedback.title", -1, title, formLayout);
 			titleEl.setUserObject(feedbackBuilder);
-			titleEl.setEnabled(!restrictedEdit);
+			titleEl.setEnabled(!restrictedEdit && !readOnly);
 			titleEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback_title");
 			
 			String conditionListPage = velocity_root + "/feedback_condition_list.html";
@@ -413,7 +414,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			textEl = uifactory.addRichTextElementForQTI21("text_".concat(id), "form.imd.feedback.text", text, 8, -1,
 					itemContainer, formLayout, ureq.getUserSession(), getWindowControl());
 			textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
-			textEl.setEnabled(!restrictedEdit);
+			textEl.setEnabled(!restrictedEdit && !readOnly);
 			textEl.setHelpTextKey("feedback." + feedbackType.name() + ".help", null);
 			textEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_feedback");
 			textEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback");
@@ -570,7 +571,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 				}
 				variableEl = uifactory.addDropdownSingleselect("var_".concat(id), null, ruleContainer, varKeys, variableValues, null);
 				variableEl.setDomReplacementWrapperRequired(false);
-				variableEl.setEnabled(!restrictedEdit);
+				variableEl.setEnabled(!restrictedEdit && !readOnly);
 				variableEl.addActionListener(FormEvent.ONCHANGE);
 				boolean found = false;
 				if(condition.getVariable() != null) {
@@ -588,7 +589,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 				operatorEl = uifactory.addDropdownSingleselect("ope_".concat(id), null, ruleContainer, new String[0], new String[0], null);
 				String[] operatorKeys = updateOperators();
 				operatorEl.setDomReplacementWrapperRequired(false);
-				operatorEl.setEnabled(!restrictedEdit);
+				operatorEl.setEnabled(!restrictedEdit && !readOnly);
 				boolean foundOp = false;
 				if(condition.getVariable() != null) {
 					for(String operatorKey:operatorKeys) {
@@ -605,16 +606,16 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 				String val = condition.getValue();
 				textValueEl = uifactory.addTextElement("txt_val_".concat(id), null, 8, val, ruleContainer);
 				textValueEl.setDomReplacementWrapperRequired(false);
-				textValueEl.setEnabled(!restrictedEdit);
+				textValueEl.setEnabled(!restrictedEdit && !readOnly);
 				
 				String[] answerKeys = new String[0];		
 				dropDownValueEl = uifactory.addDropdownSingleselect("ans_".concat(id), null, ruleContainer, answerKeys, answerKeys, null);
 				dropDownValueEl.setDomReplacementWrapperRequired(false);
-				dropDownValueEl.setEnabled(!restrictedEdit);
+				dropDownValueEl.setEnabled(!restrictedEdit && !readOnly);
 				
 				updateValues(val);
 				
-				if(!restrictedEdit) {
+				if(!restrictedEdit && !readOnly) {
 					addButton = uifactory.addFormLink("add_".concat(id), "add", null, ruleContainer, Link.BUTTON);
 					addButton.setIconLeftCSS("o_icon o_icon_add");
 					deleteButton = uifactory.addFormLink("del_".concat(id), "delete", null, ruleContainer, Link.BUTTON);	

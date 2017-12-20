@@ -73,12 +73,13 @@ public class FIBEditorController extends FormBasicController {
 	private final File rootDirectory;
 	private final VFSContainer rootContainer;
 	private final QTI21QuestionType preferredType;
-	private final boolean restrictedEdit;
+	private final boolean restrictedEdit, readOnly;
 	private final FIBAssessmentItemBuilder itemBuilder;
 	
 	public FIBEditorController(UserRequest ureq, WindowControl wControl,
 			QTI21QuestionType preferredType, FIBAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile,
+			boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_DEFAULT_2_10);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
@@ -86,6 +87,7 @@ public class FIBEditorController extends FormBasicController {
 		this.preferredType = preferredType;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
+		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
@@ -95,6 +97,7 @@ public class FIBEditorController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setElementCssClass("o_sel_assessment_item_title");
 		titleEl.setMandatory(true);
+		titleEl.setEnabled(!readOnly);
 		
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
@@ -105,7 +108,7 @@ public class FIBEditorController extends FormBasicController {
 		textEl.addActionListener(FormEvent.ONCLICK);
 		textEl.setElementCssClass("o_sel_assessment_item_fib_text");
 		RichTextConfiguration richTextConfig = textEl.getEditorConfiguration();
-		richTextConfig.setReadOnly(restrictedEdit);
+		richTextConfig.setReadOnly(restrictedEdit || readOnly);
 		
 		boolean hasNumericals = itemBuilder.hasNumericalInputs();
 		boolean hasTexts = itemBuilder.hasTextEntry();
@@ -132,6 +135,7 @@ public class FIBEditorController extends FormBasicController {
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setElementCssClass("o_sel_fib_save");
 		buttonsContainer.setRootForm(mainForm);
+		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
@@ -226,6 +230,7 @@ public class FIBEditorController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(readOnly) return;
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//set the question with the text entries
@@ -264,14 +269,16 @@ public class FIBEditorController extends FormBasicController {
 		}
 		
 		if(interaction instanceof TextEntry) {
-			textEntrySettingsCtrl = new FIBTextEntrySettingsController(ureq, getWindowControl(), (TextEntry)interaction, restrictedEdit);
+			textEntrySettingsCtrl = new FIBTextEntrySettingsController(ureq, getWindowControl(), (TextEntry)interaction,
+					restrictedEdit, readOnly);
 			listenTo(textEntrySettingsCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), textEntrySettingsCtrl.getInitialComponent(), true, translate("title.add") );
 			cmc.activate();
 			listenTo(cmc);
 		} else if(interaction instanceof NumericalEntry) {
-			numericalEntrySettingsCtrl = new FIBNumericalEntrySettingsController(ureq, getWindowControl(), (NumericalEntry)interaction, restrictedEdit);
+			numericalEntrySettingsCtrl = new FIBNumericalEntrySettingsController(ureq, getWindowControl(), (NumericalEntry)interaction,
+					restrictedEdit, readOnly);
 			listenTo(numericalEntrySettingsCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), numericalEntrySettingsCtrl.getInitialComponent(), true, translate("title.add") );
