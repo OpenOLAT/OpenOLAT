@@ -20,28 +20,29 @@
 package org.olat.modules.qpool.ui.metadata;
 
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
+import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateSelection;
 
-import org.olat.core.CoreSpringFactory;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemSecurityCallback;
+import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QItemEdited;
+import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
@@ -52,116 +53,123 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GeneralMetadataEditController extends FormBasicController {
 
-	private Link selectContext;
-	private FormLayoutContainer selectContextCont;
-	private TextElement topicEl, keywordsEl, coverageEl, addInfosEl, languageEl;
+	private TextElement topicEl;
+	private SingleSelection taxonomyLevelEl;
+	private SingleSelection contextEl;
+	private TextElement keywordsEl;
+	private TextElement coverageEl;
+	private TextElement addInfosEl;
+	private TextElement languageEl;
+	private SingleSelection assessmentTypeEl;
+	private FormLayoutContainer buttonsCont;
 
-	private CloseableModalController cmc;
-	private TaxonomySelectionController selectionCtrl;
-	
-	private String taxonomicPath;
-	private TaxonomyLevel selectedTaxonomicPath;
 	private QuestionItem item;
+
 	@Autowired
 	private QPoolService qpoolService;
+	@Autowired
+	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 	
-	public GeneralMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		super(ureq, wControl);
+	public GeneralMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
+			QuestionItemSecurityCallback securityCallback) {
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
-		taxonomicPath = item.getTaxonomicPath();
 		
 		initForm(ureq);
-	}
-	
-	public GeneralMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item, Form rootForm) {
-		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
-		
-		this.item = item;
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-		taxonomicPath = item.getTaxonomicPath();
-		
-		initForm(ureq);
+		setReadOnly(securityCallback.canEditMetadata());
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("general");
-		
 		String topic = item.getTopic();
 		topicEl = uifactory.addTextElement("general.topic", "general.topic", 1000, topic, formLayout);
+		
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity());
+		String[] selectableKeys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
+		String[] selectableValues = qpoolTaxonomyTreeBuilder.getSelectableValues();
+		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
+				selectableKeys, selectableValues, null);
+		if (item instanceof QuestionItemImpl) {
+			QuestionItemImpl itemImpl = (QuestionItemImpl) item;
+			TaxonomyLevel selectedTaxonomyLevel = itemImpl.getTaxonomyLevel();
+			if(selectedTaxonomyLevel != null) {
+				String selectedTaxonomyLevelKey = String.valueOf(selectedTaxonomyLevel.getKey());
+				for(String taxonomyKey: qpoolTaxonomyTreeBuilder.getSelectableKeys()) {
+					if(taxonomyKey.equals(selectedTaxonomyLevelKey)) {
+						taxonomyLevelEl.select(taxonomyKey, true);
+					} else {
+						selectableValues[0] = ((QuestionItemImpl) item).getTaxonomyLevel().getDisplayName();
+						taxonomyLevelEl.setEnabled(false);
+					}
+				}
+			}
+		}
+		
+		List<QEducationalContext> levels = qpoolService.getAllEducationlContexts();
+		String[] contextKeys = new String[ levels.size() ];
+		String[] contextValues = new String[ levels.size() ];
+		int count = 0;
+		for(QEducationalContext level:levels) {
+			contextKeys[count] = level.getLevel();
+			String translation = translate("item.level." + level.getLevel().toLowerCase());
+			if(translation.length() > 128) {
+				translation = level.getLevel();
+			}
+			contextValues[count++] = translation;
+		}
+		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout, contextKeys, contextValues, null);
+		contextEl.setEnabled(count > 0);
+		
 		String keywords = item.getKeywords();
 		keywordsEl = uifactory.addTextElement("general.keywords", "general.keywords", 1000, keywords, formLayout);
-		String coverage = item.getCoverage();
-		coverageEl = uifactory.addTextElement("general.coverage", "general.coverage", 1000, coverage, formLayout);
+
 		String addInfos = item.getAdditionalInformations();
 		addInfosEl = uifactory.addTextElement("general.additional.informations", "general.additional.informations",
 				256, addInfos, formLayout);
+
+		String coverage = item.getCoverage();
+		coverageEl = uifactory.addTextElement("general.coverage", "general.coverage", 1000, coverage, formLayout);
+
 		String language = item.getLanguage();
 		languageEl = uifactory.addTextElement("general.language", "general.language", 10, language, formLayout);
 		
-		//classification
-		String txPath = taxonomicPath == null ? "" : taxonomicPath;
-		String selectContextPage = velocity_root + "/edit_edu_context.html";
-		selectContextCont = FormLayoutContainer.createCustomFormLayout("owners", getTranslator(), selectContextPage);
-		selectContextCont.setLabel("classification.taxonomic.path", null);
-		selectContextCont.contextPut("path", txPath);
-		formLayout.add(selectContextCont);
-		selectContextCont.setRootForm(mainForm);
-		selectContext = LinkFactory.createButton("select", selectContextCont.getFormItemComponent(), this);
+		String[] assessmentTypeKeys = new String[]{ "summative", "formative", "both"};
+		String[] assessmentTypeValues = new String[]{
+			translate("question.assessmentType.summative"), translate("question.assessmentType.formative"),
+			translate("question.assessmentType.both"),	
+		};
+		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType", formLayout,
+				assessmentTypeKeys, assessmentTypeValues, null);
+		if(StringHelper.containsNonWhitespace(item.getAssessmentType())) {
+			assessmentTypeEl.select(item.getAssessmentType(), true);
+		}
 		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	@Override
-	protected void doDispose() {
-		//
+
+	
+	private void setReadOnly(boolean canEditMetadata) {
+		topicEl.setEnabled(canEditMetadata);
+		taxonomyLevelEl.setEnabled(canEditMetadata);
+		contextEl.setEnabled(canEditMetadata);
+		keywordsEl.setEnabled(canEditMetadata);
+		coverageEl.setEnabled(canEditMetadata);
+		addInfosEl.setEnabled(canEditMetadata);
+		languageEl.setEnabled(canEditMetadata);
+		assessmentTypeEl.setEnabled(canEditMetadata);
+		buttonsCont.setVisible(canEditMetadata);
 	}
 	
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == cmc) {
-			cleanUp();
-		} else if(selectionCtrl == source) {
-			if(Event.DONE_EVENT == event) {
-				selectedTaxonomicPath = selectionCtrl.getSelectedLevel();
-				if(selectedTaxonomicPath == null) {
-					selectContextCont.contextPut("path", "");
-				} else {
-					String path = selectedTaxonomicPath.getMaterializedPathIdentifiers();
-					if(StringHelper.containsNonWhitespace(path)) {
-						if(!path.endsWith("/")) {
-							path += "/";
-						}
-						path +=  selectedTaxonomicPath.getDisplayName();
-					}
-					selectContextCont.contextPut("path", path);
-				}	
-			}
-			cmc.deactivate();
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if(selectContext == source) {
-			doOpenSelection(ureq);
-		}
-		super.event(ureq, source, event);
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(selectionCtrl);
-		removeAsListenerAndDispose(cmc);
-		selectionCtrl = null;
-		cmc = null;
+	protected void doDispose() {
+		//
 	}
 
 	@Override
@@ -172,19 +180,8 @@ public class GeneralMetadataEditController extends FormBasicController {
 		allOk &= validateElementLogic(coverageEl, coverageEl.getMaxLength(), false, true);
 		allOk &= validateElementLogic(addInfosEl, addInfosEl.getMaxLength(), false, true);
 		allOk &= validateElementLogic(languageEl, languageEl.getMaxLength(), true, true);
+		allOk &= validateSelection(assessmentTypeEl, true);
 		return allOk && super.validateFormLogic(ureq);
-	}
-	
-	private void doOpenSelection(UserRequest ureq) {
-		if(item instanceof QuestionItemImpl) {
-			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
-			selectionCtrl = new TaxonomySelectionController(ureq, getWindowControl(), itemImpl, selectedTaxonomicPath);
-			listenTo(selectionCtrl);
-			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					selectionCtrl.getInitialComponent(), true, translate("classification.taxonomic.path"));
-			cmc.activate();
-			listenTo(cmc);
-		}
 	}
 	
 	@Override
@@ -197,25 +194,42 @@ public class GeneralMetadataEditController extends FormBasicController {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
 			itemImpl.setTopic(topicEl.getValue());
+			
+			String selectedKey = taxonomyLevelEl.getSelectedKey();
+			TaxonomyLevel taxonomyLevel = qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
+			if(taxonomyLevel != null) {
+				itemImpl.setTaxonomyLevel(taxonomyLevel);
+			}
+			
+			if(contextEl.isOneSelected()) {
+				QEducationalContext context = qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey());
+				itemImpl.setEducationalContext(context);
+			} else {
+				itemImpl.setEducationalContext(null);
+			}
+			
 			if(StringHelper.containsNonWhitespace(keywordsEl.getValue())) {
 				itemImpl.setKeywords(keywordsEl.getValue());
 			} else {
 				itemImpl.setKeywords("");
 			}
+			
 			if(StringHelper.containsNonWhitespace(coverageEl.getValue())) {
 				itemImpl.setCoverage(coverageEl.getValue());
 			} else {
 				itemImpl.setCoverage("");
 			}
+			
 			if(StringHelper.containsNonWhitespace(addInfosEl.getValue())) {
 				itemImpl.setAdditionalInformations(addInfosEl.getValue());
 			} else {
 				itemImpl.setAdditionalInformations(null);
 			}
+			
 			itemImpl.setLanguage(languageEl.getValue());
-			if(selectedTaxonomicPath != null) {
-				itemImpl.setTaxonomyLevel(selectedTaxonomicPath);
-			}
+			
+			String assessmentType = assessmentTypeEl.isOneSelected() ? assessmentTypeEl.getSelectedKey() : null;
+			itemImpl.setAssessmentType(assessmentType);
 		}
 		item = qpoolService.updateItem(item);
 		fireEvent(ureq, new QItemEdited(item));

@@ -39,8 +39,6 @@ public interface QuestionItemSecurityCallback {
 	
 	public boolean canEditMetadata();
 	
-	public boolean canEditLifecycle();
-	
 	public boolean canStartReview();
 	
 	public boolean canReviewNotStartable();
@@ -65,5 +63,7 @@ public interface QuestionItemSecurityCallback {
 	 * Can a user rate the question item outside the review process?
 	 */
 	public boolean canRate();
+	
+	public boolean canChangeVersion();
 
 }

@@ -23,10 +23,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
@@ -36,7 +33,6 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.manager.MetadataConverterHelper;
-import org.olat.modules.qpool.model.LOMDuration;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
@@ -50,9 +46,7 @@ import org.olat.modules.qpool.ui.events.QItemEdited;
  */
 public class EducationalMetadataEditController extends FormBasicController {
 	
-	private SingleSelection contextEl;
-	private IntegerElement learningTimeDayElement, learningTimeHourElement, learningTimeMinuteElement, learningTimeSecondElement;
-	private FormLayoutContainer learningTimeContainer;
+
 	
 	private QuestionItem item;
 	private final QPoolService qpoolService;
@@ -85,33 +79,7 @@ public class EducationalMetadataEditController extends FormBasicController {
 		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout, contextKeys, contextValues, null);
 		contextEl.setEnabled(count > 0);
 		
-		String page = velocity_root + "/learning_time.html";
-		learningTimeContainer = FormLayoutContainer.createCustomFormLayout("learningTime", getTranslator(), page);
-		((AbstractComponent)learningTimeContainer.getComponent()).setDomReplacementWrapperRequired(false);
-		learningTimeContainer.setRootForm(mainForm);
-		learningTimeContainer.setLabel("educational.learningTime", null);
-		formLayout.add(learningTimeContainer);
-		
-		LOMDuration duration = MetadataConverterHelper.convertDuration(item.getEducationalLearningTime());
-		learningTimeDayElement = uifactory.addIntegerElement("learningTime.day", "", duration.getDay(), learningTimeContainer);
-		((AbstractComponent)learningTimeDayElement.getComponent()).setDomReplacementWrapperRequired(false);
-		learningTimeDayElement.setDisplaySize(3);
-		learningTimeDayElement.setMandatory(true);
-		
-		learningTimeHourElement = uifactory.addIntegerElement("learningTime.hour", "", duration.getHour(), learningTimeContainer);
-		((AbstractComponent)learningTimeHourElement.getComponent()).setDomReplacementWrapperRequired(false);
-		learningTimeHourElement.setDisplaySize(3);
-		learningTimeHourElement.setMandatory(true);
-		
-		learningTimeMinuteElement = uifactory.addIntegerElement("learningTime.minute", "", duration.getMinute(), learningTimeContainer);
-		((AbstractComponent)learningTimeMinuteElement.getComponent()).setDomReplacementWrapperRequired(false);
-		learningTimeMinuteElement.setDisplaySize(3);
-		learningTimeMinuteElement.setMandatory(true);
-		
-		learningTimeSecondElement = uifactory.addIntegerElement("learningTime.second", "", duration.getSeconds(), learningTimeContainer);
-		((AbstractComponent)learningTimeSecondElement.getComponent()).setDomReplacementWrapperRequired(false);
-		learningTimeSecondElement.setDisplaySize(3);
-		learningTimeSecondElement.setMandatory(true);
+		;
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);

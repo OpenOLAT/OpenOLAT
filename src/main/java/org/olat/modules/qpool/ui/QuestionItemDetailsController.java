@@ -362,7 +362,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			if(event instanceof PopEvent) {
 				PopEvent pop = (PopEvent)event;
 				if(pop.getController() == editMainCtrl) {
-					doContentChanged(ureq);
+					reloadData();
 				}
 			}
 		}
@@ -412,9 +412,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		} else if(source == cmc) {
 			cleanUp();
 		} else if(source == editCtrl) {
-			if(event == Event.CHANGED_EVENT) {
-				doContentChanged(ureq);
-			} else if(event instanceof QItemEdited) {
+			if(event instanceof QItemEdited) {
 				fireEvent(ureq, event);
 			}
 		} else if(source == metadatasCtrl) {
@@ -523,7 +521,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 			securityCallback.setQuestionItemView(itemView);
 			initTools();
 			// TODO uh A muss Metadata ctrl erneuert werden?
-//			metadatasCtrl.reloadData(item);
 		}
 	}
 
@@ -544,13 +541,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 		
 		editMainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), editCtrl);
 		stackPanel.pushController("Edition", editMainCtrl);
-	}
-	
-	// TODO uh delete???
-	private void doContentChanged(UserRequest ureq) {
-		QuestionItem item = metadatasCtrl.updateVersionNumber();
-		//update preview
-		setPreviewController(ureq, item);
 	}
 	
 	private void doSelectGroup(UserRequest ureq, QuestionItem item) {

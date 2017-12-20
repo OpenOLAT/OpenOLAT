@@ -81,11 +81,6 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	}
 
 	@Override
-	public boolean canEditLifecycle() {
-		return isAdmin;
-	}
-
-	@Override
 	public boolean canStartReview() {
 		return itemView.isReviewableFormat()
 				&& reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())
@@ -148,6 +143,11 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	@Override
 	public boolean canRate() {
 		return QuestionStatus.draft.equals(itemView.getQuestionStatus());
+	}
+
+	@Override
+	public boolean canChangeVersion() {
+		return false;
 	}
 
 }

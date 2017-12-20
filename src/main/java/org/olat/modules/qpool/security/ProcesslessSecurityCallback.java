@@ -65,11 +65,6 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 	}
 
 	@Override
-	public boolean canEditLifecycle() {
-		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
-	}
-
-	@Override
 	public boolean canStartReview() {
 		return false;
 	}
@@ -123,6 +118,11 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 	@Override
 	public boolean canRate() {
 		return true;
+	}
+
+	@Override
+	public boolean canChangeVersion() {
+		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 }

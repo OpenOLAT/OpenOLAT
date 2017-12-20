@@ -27,7 +27,6 @@ import java.util.UUID;
 import org.olat.admin.securitygroup.gui.GroupController;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -50,6 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -57,6 +57,7 @@ import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -66,35 +67,37 @@ import org.olat.user.UserManager;
  */
 public class RightsMetadataEditController extends FormBasicController {
 	
-	private FormSubmit okButton;
+	private KeyValues licenseKeys;
 	private Link managerOwners;
 	private SingleSelection copyrightEl;
 	private TextElement descriptionEl;
 	private FormLayoutContainer authorCont;
+	private FormLayoutContainer buttonsCont;
+	private FormSubmit okButton;
 
 	private CloseableModalController cmc;
 	private GroupController groupController;
 
 	private QuestionItem item;
-	private final UserManager userManager;
-	private final QPoolService qpoolService;
+	
+	@Autowired
+	private QPoolService qpoolService;
+	@Autowired
+	private UserManager userManager;
 
-	public RightsMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		super(ureq, wControl);
+	public RightsMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
+			QuestionItemSecurityCallback securityCallback) {
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
-		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		
 		initForm(ureq);
+		setReadOnly(securityCallback.canEditMetadata());
 	}
-	
-	private KeyValues licenseKeys;
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("rights");
-		
 		String authorListPage = velocity_root + "/author_list.html";
 		authorCont = FormLayoutContainer.createCustomFormLayout("owners", getTranslator(), authorListPage);
 		authorCont.setLabel("rights.owners", null);
@@ -131,16 +134,23 @@ public class RightsMetadataEditController extends FormBasicController {
 		descriptionEl = uifactory.addTextAreaElement("rights.description", "rights.description", 1000, 6, 40, true, description, formLayout);
 		descriptionEl.setVisible(copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey()));
 
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		okButton = uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
+	private void setReadOnly(boolean canEditMetadata) {
+		managerOwners.setVisible(canEditMetadata);
+		copyrightEl.setEnabled(canEditMetadata);
+		descriptionEl.setEnabled(canEditMetadata);
+		buttonsCont.setVisible(canEditMetadata);
+	}
+	
 	private void reloadAuthors() {
 		List<Identity> authors = qpoolService.getAuthors(item);
-		List<String> authorLinks = new ArrayList<String>(authors.size());
+		List<String> authorLinks = new ArrayList<>(authors.size());
 		int pos = 0;
 		for(Identity author:authors) {
 			String name = userManager.getUserDisplayName(author);

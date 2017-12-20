@@ -1,24 +1,32 @@
 #if($showPoolInfos) 
 	<div class="panel panel-default">
-		<div class="panel-heading o_header_with_buttons">
-			<h4><i class="o_icon o_icon-fw o_icon_qpool"> </i> $r.translate("menu.pools")</h4>
+		<div class="panel-heading">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" data-parent="#accordion" href="#collapse10">
+					$r.translate("menu.pools")
+				</a>
+			</h4>
 		</div>
-		$r.render("pools")
-	</div>
-#end
-#if($showAuthors)
-	<div class="panel panel-default">
-		<div class="panel-heading o_header_with_buttons">
-			<h4><i class="o_icon o_icon-fw o_icon_group"> </i> $r.translate("sharing.authors")</h4>
+		<div id="collapse10" class="panel-collapse collapse">
+			<div class="panel-body">
+				$r.render("pools")
+			</div>
 		</div>
-		$r.render("authors")
 	</div>
 #end
 #if($showShares)
 	<div class="panel panel-default">
-		<div class="panel-heading o_header_with_buttons">
-			<h4><i class="o_icon o_icon-fw o_icon_pool_pool"> </i> $r.translate("sharing.shares")</h4>
+		<div class="panel-heading">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" data-parent="#accordion" href="#collapse11">
+					$r.translate("sharing.shares")
+				</a>
+			</h4>
 		</div>
-		$r.render("shares")
+		<div id="collapse11" class="panel-collapse collapse">
+			<div class="panel-body">
+				$r.render("shares")
+			</div>
+		</div>
 	</div>
 #end

@@ -39,26 +39,23 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItem2Pool;
-import org.olat.modules.qpool.QuestionItem2Resource;
 import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
  * 
- * Initial date: 16.04.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 20.12.2017<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SharingController extends FormBasicController {
+public class PoolsMetadataController extends FormBasicController {
 	
 	private PoolInfosDataModel poolInfosModel;
 	private FlexiTableElement poolInfosTable;
-	private SharesDataModel sharesModel;
-	private FlexiTableElement sharesTable;
 	
 	private QPoolService qpoolService;
 
-	public SharingController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		super(ureq, wControl, "sharing");
+	public PoolsMetadataController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 
 		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
@@ -68,9 +65,6 @@ public class SharingController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("sharing");
-		
-		//list of pools
 		FlexiTableColumnModel poolInfosColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		poolInfosColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "share.editable", 0,
 			false, null, FlexiColumnModel.ALIGNMENT_LEFT, new BooleanCellRenderer(
@@ -81,18 +75,7 @@ public class SharingController extends FormBasicController {
 		poolInfosModel = new PoolInfosDataModel(poolInfosColumnsModel);
 		poolInfosTable = uifactory.addTableElement(getWindowControl(), "details_pools", poolInfosModel, getTranslator(), formLayout);
 		poolInfosTable.setCustomizeColumns(false);
-
-		//list of groups
-		FlexiTableColumnModel sharesColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		sharesColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "share.editable", 0,
-			false, null, FlexiColumnModel.ALIGNMENT_LEFT, new BooleanCellRenderer(
-				new CSSIconFlexiCellRenderer("o_readwrite"),
-				new CSSIconFlexiCellRenderer("o_readonly"))
-		));
-		sharesColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("pool.name", 1));
-		sharesModel = new SharesDataModel(poolInfosColumnsModel);
-		sharesTable = uifactory.addTableElement(getWindowControl(), "details_shares", sharesModel, getTranslator(), formLayout);
-		sharesTable.setCustomizeColumns(false);
+		poolInfosTable.setEmtpyTableMessageKey("sharing.pools.empty.table");
 	}
 	
 	@Override
@@ -101,17 +84,9 @@ public class SharingController extends FormBasicController {
 	}
 	
 	public void setItem(QuestionItem item) {
-		//pools informations
 		List<QuestionItem2Pool> poolInfos = qpoolService.getPoolInfosByItem(item);
 		poolInfosModel.setObjects(poolInfos);
 		poolInfosTable.reset();
-		flc.contextPut("showPoolInfos", new Boolean(!poolInfos.isEmpty()));
-		
-		//groups
-		List<QuestionItem2Resource> sharedResources = qpoolService.getSharedResourceInfosByItem(item);
-		sharesModel.setObjects(sharedResources);
-		sharesTable.reset();
-		flc.contextPut("showShares", new Boolean(!sharedResources.isEmpty()));
 	}
 
 	@Override
@@ -119,27 +94,6 @@ public class SharingController extends FormBasicController {
 		//
 	}
 	
-	private static class SharesDataModel extends DefaultFlexiTableDataModel<QuestionItem2Resource> {
-
-		public SharesDataModel(FlexiTableColumnModel columnModel) {
-			super(columnModel);
-		}
-
-		@Override
-		public DefaultFlexiTableDataModel<QuestionItem2Resource> createCopyWithEmptyList() {
-			return new SharesDataModel(getTableColumnModel());
-		}
-
-		@Override
-		public Object getValueAt(int row, int col) {
-			QuestionItem2Resource share = getObject(row);
-			if(col == 0) {
-				return new Boolean(share.isEditable());
-			}
-			return share.getName();
-		}
-	}
-
 	private static class PoolInfosDataModel extends  DefaultFlexiTableDataModel<QuestionItem2Pool> {
 	
 		public PoolInfosDataModel(FlexiTableColumnModel columnModel) {
@@ -161,3 +115,4 @@ public class SharingController extends FormBasicController {
 		}
 	}
 }
+

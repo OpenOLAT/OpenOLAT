@@ -1,7 +1,90 @@
-$r.render("details_general")
-$r.render("details_lifecycle")
-$r.render("details_rights")
-$r.render("details_sharing")
-$r.render("details_educational")
-$r.render("details_question")
-$r.render("details_technical")
+ <div class="panel-group" id="accordion">
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" data-parent="#accordion" href="#collapse1">
+					$r.translate("general")
+				</a>
+			</h4>
+		</div>
+		<div id="collapse1" class="panel-collapse collapse in">
+			<div class="panel-body">
+				$r.render("details_general")
+			</div>
+		</div>
+	</div>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" data-parent="#accordion" href="#collapse2">
+					$r.translate("question")
+				</a>
+			</h4>
+		</div>
+		<div id="collapse2" class="panel-collapse collapse">
+			<div class="panel-body">
+				$r.render("details_question")
+			</div>
+		</div>
+	</div>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" data-parent="#accordion" href="#collapse3">
+					$r.translate("rights")
+				</a>
+			</h4>
+		</div>
+		<div id="collapse3" class="panel-collapse collapse">
+			<div class="panel-body">
+				$r.render("details_rights")
+			</div>
+		</div>
+	</div>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h4 class="panel-title">
+				<a data-toggle="collapse" data-parent="#accordion" href="#collapse4">
+					$r.translate("technical")
+				</a>
+			</h4>
+		</div>
+		<div id="collapse4" class="panel-collapse collapse">
+			<div class="panel-body">
+				$r.render("details_technical")
+			</div>
+		</div>
+	</div>
+	#if($showPools) 
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion" href="#collapse5">
+						$r.translate("menu.pools")
+					</a>
+				</h4>
+			</div>
+			<div id="collapse5" class="panel-collapse collapse">
+				<div class="panel-body">
+					$r.render("details_pools")
+				</div>
+			</div>
+		</div>
+	#end
+	#if($showShares)
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">
+					<a data-toggle="collapse" data-parent="#accordion" href="#collapse6">
+						$r.translate("sharing.shares")
+					</a>
+				</h4>
+			</div>
+			<div id="collapse6" class="panel-collapse collapse">
+				<div class="panel-body">
+					$r.render("details_shares")
+				</div>
+			</div>
+		</div>
+	#end
+</div> 

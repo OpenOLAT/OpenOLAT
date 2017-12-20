@@ -20,15 +20,9 @@
 package org.olat.modules.qpool.ui.metadata;
 
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
-import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateSelection;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -36,15 +30,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.ims.qti.QTIConstants;
-import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QItemEdited;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,64 +45,63 @@ import org.olat.modules.qpool.ui.events.QItemEdited;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TechnicalMetadataEditController extends FormBasicController {
+public class TechnicalMetadataEditController extends FormBasicController  {
 	
-	private TextElement editorEl, editorVersionEl;
-	private SingleSelection formatEl;
+	private TextElement versionEl;
 	
 	private QuestionItem item;
-	private final QPoolService qpoolService;
+	private final QuestionItemSecurityCallback securityCallback;
+	
+	@Autowired
+	private QPoolService qpoolService;
 
-	public TechnicalMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		super(ureq, wControl);
+	public TechnicalMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
+			QuestionItemSecurityCallback securityCallback) {
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
+		this.securityCallback = securityCallback;
+		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("technical");
-		
 		uifactory.addStaticTextElement("general.identifier", item.getIdentifier(), formLayout);
-		uifactory.addStaticTextElement("general.master.identifier", item.getMasterIdentifier(), formLayout);
-
-		editorEl = uifactory.addTextElement("technical.editor", "technical.editor", 50, item.getEditor(), formLayout);
-		editorVersionEl = uifactory.addTextElement("technical.editorVersion", "technical.editorVersion", 50, item.getEditorVersion(), formLayout);
 		
-		List<String> formatList = new ArrayList<>();
-		formatList.add(QTIConstants.QTI_12_FORMAT);
-		formatList.add(QTI21Constants.QTI_21_FORMAT);
-		if(StringHelper.containsNonWhitespace(item.getFormat()) && !formatList.contains(item.getFormat())) {
-			formatList.add(item.getFormat());
-		}
-
-		String[] formatKeys = formatList.toArray(new String[formatList.size()]);
-		formatEl = uifactory.addDropdownSingleselect("technical.format", "technical.format", formLayout,
-				formatKeys, formatKeys, null);
-		if(StringHelper.containsNonWhitespace(item.getFormat())) {
-			for(String formatKey:formatKeys) {
-				if(formatKey.equals(item.getFormat())) {
-					formatEl.select(formatKey, true);
-				}
-			}
-		}
-		// don't let users modify our internal formats
-		formatEl.setEnabled(!formatList.contains(item.getFormat()));
+		String masterId = item.getMasterIdentifier() == null ? "" : item.getMasterIdentifier();
+		uifactory.addStaticTextElement("general.master.identifier", masterId, formLayout);
+		
+		String editor = item.getEditor() == null ? "" : item.getEditor();
+		uifactory.addStaticTextElement("technical.editor", editor, formLayout);
+		
+		String editorVersion = item.getEditorVersion() == null ? "" : item.getEditorVersion();
+		uifactory.addStaticTextElement("technical.editorVersion", editorVersion, formLayout);
+		
+		String format = item.getFormat() == null ? "" : item.getFormat();
+		uifactory.addStaticTextElement("technical.format", format, formLayout);
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		String creationDate = formatter.formatDateAndTime(item.getCreationDate());
 		uifactory.addStaticTextElement("technical.creation", creationDate, formLayout);
+		
 		String lastModified = formatter.formatDateAndTime(item.getLastModified());
 		uifactory.addStaticTextElement("technical.lastModified", lastModified, formLayout);
-
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		
+		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, item.getItemVersion(), formLayout);
+		versionEl.setEnabled(securityCallback.canChangeVersion());
+		
+		String statusLastModified = formatter.formatDateAndTime(item.getQuestionStatusLastModified());
+		uifactory.addStaticTextElement("technical.statusLastModified", statusLastModified, formLayout);
+		
+		if (securityCallback.canChangeVersion()) {
+			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+			buttonsCont.setRootForm(mainForm);
+			formLayout.add(buttonsCont);
+			uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		}
 	}
 
 	@Override
@@ -125,23 +117,18 @@ public class TechnicalMetadataEditController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		allOk &= validateElementLogic(editorEl, editorEl.getMaxLength(), true, true);
-		allOk &= validateElementLogic(editorVersionEl, editorVersionEl.getMaxLength(), true, true);
-		allOk &= validateSelection(formatEl, true);
+		allOk &= validateElementLogic(versionEl, versionEl.getMaxLength(), true, true);
 		return allOk &= super.validateFormLogic(ureq);
 	}
-
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
-			itemImpl.setEditor(editorEl.getValue());
-			itemImpl.setEditorVersion(editorVersionEl.getValue());
-			if(formatEl.isOneSelected()) {
-				itemImpl.setFormat(formatEl.getSelectedKey());
-			}
+			itemImpl.setItemVersion(versionEl.getValue());
 		}
 		item = qpoolService.updateItem(item);
 		fireEvent(ureq, new QItemEdited(item));
 	}
+
 }

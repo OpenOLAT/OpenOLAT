@@ -1,13 +1,4 @@
-<div class="panel panel-default">
-	<div class="panel-heading o_header_with_buttons">
-		<h4>$off_title</h4>
-		<div class="o_button_group o_button_group_right">
-			#if($r.available("edit"))
-				$r.render("edit")
-			#end
-		</div>
-	</div>
-	<table class="table table-condensed"><tbody>
+<table class="table table-condensed"><tbody>
 	#foreach ($item in $formitemnames)
 		#if($item != "edit")
 		<tr>	
@@ -20,5 +11,4 @@
 		</tr>
 		#end
 	#end
-	</tbody></table>
-</div>
+</tbody></table>
