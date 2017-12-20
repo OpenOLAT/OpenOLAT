@@ -27,8 +27,6 @@ import org.olat.basesecurity.Group;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
@@ -44,7 +42,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.statistic.StatisticResourceNode;
@@ -62,14 +59,11 @@ import org.olat.resource.OLATResource;
 public class QTI12StatisticsToolController extends BasicController implements Activateable2 {
 
 	private MenuTree courseTree;
-	private final Link statsButton;
 	private Controller currentCtrl;
 	private final TooledStackedPanel stackPanel;
 	private LayoutMain3ColsController layoutCtr;
 
-	private final ArchiveOptions options;
 	private final OLATResource courseRes;
-	private final QTICourseNode courseNode;
 	private QTIStatisticResourceResult result;
 
 	private final QTIStatisticSearchParams searchParams;
@@ -79,10 +73,6 @@ public class QTI12StatisticsToolController extends BasicController implements Ac
 			AssessmentToolOptions asOptions, QTICourseNode courseNode) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
-		this.options = new ArchiveOptions();
-		this.options.setGroup(asOptions.getGroup());
-		this.options.setIdentities(asOptions.getIdentities());
-		this.courseNode = courseNode;
 		courseRes = courseEnv.getCourseGroupManager().getCourseResource();
 		
 		searchParams = new QTIStatisticSearchParams(courseRes.getResourceableId(), courseNode.getIdent());
@@ -94,10 +84,29 @@ public class QTI12StatisticsToolController extends BasicController implements Ac
 			searchParams.setLimitToGroups(asOptions.getGroups());
 		}
 		
-		statsButton = LinkFactory.createButton("menu.title", null, this);
-		statsButton.setTranslator(getTranslator());
-		putInitialPanel(statsButton);
-		getInitialComponent().setSpanAsDomReplaceable(true); // override to wrap panel as span to not break link layout 
+		RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
+		result = new QTIStatisticResourceResult(courseRes, courseNode, testEntry, searchParams);
+		
+		GenericTreeModel treeModel = new GenericTreeModel();
+		StatisticResourceNode rootTreeNode = new StatisticResourceNode(courseNode, result);
+		treeModel.setRootNode(rootTreeNode);
+		
+		TreeNode subRootNode = result.getSubTreeModel().getRootNode();
+		List<INode> subNodes = new ArrayList<>();
+		for(int i=0; i<subRootNode.getChildCount(); i++) {
+			subNodes.add(subRootNode.getChildAt(i));
+		}
+		for(INode subNode:subNodes) {
+			rootTreeNode.addChild(subNode);
+		}
+
+		courseTree = new MenuTree("qtiStatisticsTree");
+		courseTree.setTreeModel(treeModel);
+		courseTree.addListener(this);
+		
+		layoutCtr = new LayoutMain3ColsController(ureq, wControl, courseTree, new Panel("empty"), null);
+		putInitialPanel(layoutCtr.getInitialComponent());
+		doSelectNode(ureq, courseTree.getTreeModel().getRootNode());
 	}
 
 	@Override
@@ -123,10 +132,7 @@ public class QTI12StatisticsToolController extends BasicController implements Ac
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(statsButton == source) {
-			doLaunchStatistics(ureq, getWindowControl());
-			doSelectNode(ureq, courseTree.getTreeModel().getRootNode());
-		} else if(courseTree == source) {
+		if(courseTree == source) {
 			if(event instanceof TreeEvent) {
 				TreeEvent te = (TreeEvent)event;
 				if(MenuTree.COMMAND_TREENODE_CLICKED.equals(te.getCommand())) {
@@ -148,32 +154,5 @@ public class QTI12StatisticsToolController extends BasicController implements Ac
 		} else {
 			layoutCtr.setCol3(new Panel("empty"));
 		}
-	}
-
-	private void doLaunchStatistics(UserRequest ureq, WindowControl wControl) {
-		if(result == null) {
-			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
-			result = new QTIStatisticResourceResult(courseRes, courseNode, testEntry, searchParams);
-		}
-		
-		GenericTreeModel treeModel = new GenericTreeModel();
-		StatisticResourceNode rootTreeNode = new StatisticResourceNode(courseNode, result);
-		treeModel.setRootNode(rootTreeNode);
-		
-		TreeNode subRootNode = result.getSubTreeModel().getRootNode();
-		List<INode> subNodes = new ArrayList<>();
-		for(int i=0; i<subRootNode.getChildCount(); i++) {
-			subNodes.add(subRootNode.getChildAt(i));
-		}
-		for(INode subNode:subNodes) {
-			rootTreeNode.addChild(subNode);
-		}
-
-		courseTree = new MenuTree("qtiStatisticsTree");
-		courseTree.setTreeModel(treeModel);
-		courseTree.addListener(this);
-		
-		layoutCtr = new LayoutMain3ColsController(ureq, wControl, courseTree, new Panel("empty"), null);
-		stackPanel.pushController("Stats", layoutCtr);
 	}
 }

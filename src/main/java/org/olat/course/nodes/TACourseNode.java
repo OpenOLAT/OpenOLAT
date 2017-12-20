@@ -68,10 +68,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.bulk.BulkAssessmentToolController;
-import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
-import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
-import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -81,13 +78,13 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.ms.MSEditFormController;
-import org.olat.course.nodes.ta.BulkDownloadToolController;
 import org.olat.course.nodes.ta.ConvertToGTACourseNode;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.DropboxScoringViewController;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.nodes.ta.TACourseNodeEditController;
 import org.olat.course.nodes.ta.TACourseNodeRunController;
+import org.olat.course.nodes.ta.TAIdentityListCourseNodeController;
 import org.olat.course.nodes.ta.TaskController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
@@ -97,11 +94,13 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -786,32 +785,11 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	}
 	
 	@Override
-	public ToolsControllerCreator getAssessmentToolsCreator() {
-		return new DefaultToolsControllerCreator() {
-			@Override
-			public boolean hasCalloutTools() {
-				return true;
-			}
-
-			@Override
-			public Controller createCalloutController(UserRequest ureq, WindowControl wControl,
-					UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
-				return new IdentityListCourseNodeToolsController(ureq, wControl, TACourseNode.this, assessedIdentity, coachCourseEnv);
-			}
-
-			@Override
-			public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
-					TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv,
-					AssessmentToolOptions options) {
-				List<Controller> tools = new ArrayList<Controller>(1);
-				CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
-				if(!coachCourseEnv.isCourseReadOnly()) {
-					tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, TACourseNode.this));
-				}
-				tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, TACourseNode.this));
-				return tools;
-			}
-		};
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+		return new TAIdentityListCourseNodeController(ureq, wControl, stackPanel,
+				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 	/**

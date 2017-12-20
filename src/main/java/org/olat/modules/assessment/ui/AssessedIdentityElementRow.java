@@ -44,18 +44,19 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private final Boolean userVisibility;
 	private final BigDecimal score;
 	private final Boolean passed;
-	private final Date initialCourseLaunchDate;
 	private final Date lastModified, lastUserModified, lastCoachModified;
 	private final int numOfAssessmentDocs;
 	private final AssessmentEntryStatus status;
 	
+	private Object details;
+	private Date initialCourseLaunchDate;
+	
 	private FormLink toolsLink;
 	private CompletionItem currentCompletion;
 	
-	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry, Date initialCourseLaunchDate,
+	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry,
 			CompletionItem currentCompletion, FormLink toolsLink, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
-		this.initialCourseLaunchDate = initialCourseLaunchDate;
 		this.currentCompletion = currentCompletion;
 		this.toolsLink = toolsLink;
 		
@@ -96,7 +97,10 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 		return initialCourseLaunchDate;
 	}
 	
-
+	public void setInitialCourseLaunchDate(Date initialCourseLaunchDate) {
+		this.initialCourseLaunchDate = initialCourseLaunchDate;
+	}
+	
 	public Date getLastModified() {
 		return lastModified;
 	}
@@ -127,5 +131,13 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 
 	public Boolean getUserVisibility() {
 		return userVisibility;
+	}
+
+	public Object getDetails() {
+		return details;
+	}
+
+	public void setDetails(Object details) {
+		this.details = details;
 	}
 }

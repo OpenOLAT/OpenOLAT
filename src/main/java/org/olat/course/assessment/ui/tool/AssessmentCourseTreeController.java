@@ -69,7 +69,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 
 	private Controller currentCtrl;
 	private Controller businessGroupListCtrl;
-	private IdentityListCourseNodeController identityListCtrl; 
+	private AssessmentCourseNodeController identityListCtrl; 
 	
 	private View view = View.users;
 	private TreeNode selectedNodeChanged;
@@ -288,8 +288,14 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresUsers, null, getWindowControl());
 		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
 		WindowControl bbwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, bwControl);
-		identityListCtrl = new IdentityListCourseNodeController(ureq, bbwControl, stackPanel,
+		if(courseNode instanceof AssessableCourseNode) {
+			identityListCtrl = ((AssessableCourseNode)courseNode).getIdentityListController(ureq, getWindowControl(), stackPanel,
+					courseEntry, null, coachCourseEnv, toolContainer, assessmentCallback);
+		} else {
+			identityListCtrl = new IdentityListCourseNodeController(ureq, bbwControl, stackPanel,
 				courseEntry, null, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
+		}
+		
 		return identityListCtrl;
 	}
 	

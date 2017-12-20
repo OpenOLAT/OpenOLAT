@@ -314,7 +314,8 @@ public interface QTI21Service {
 	public AssessmentTestSession getLastAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry, IdentityRef identity);
 	
 	/**
-	 * Retrieve the sessions for a test.
+	 * Retrieve the sessions for a test. It returns only the sessions of authenticated users (fetched).
+	 * The anonymous ones are not included.
 	 * 
 	 * @param courseEntry
 	 * @param subIdent

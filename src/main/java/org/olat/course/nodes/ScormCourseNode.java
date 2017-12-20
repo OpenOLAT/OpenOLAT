@@ -36,6 +36,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
@@ -50,9 +51,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
-import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
-import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -67,10 +67,13 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ScormCPFileResource;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.archiver.ScormExportManager;
@@ -148,20 +151,11 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 	}
 	
 	@Override
-	public ToolsControllerCreator getAssessmentToolsCreator() {
-		return new DefaultToolsControllerCreator() {
-
-			@Override
-			public boolean hasCalloutTools() {
-				return true;
-			}
-
-			@Override
-			public Controller createCalloutController(UserRequest ureq, WindowControl wControl,
-					UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
-				return new IdentityListCourseNodeToolsController(ureq, wControl, ScormCourseNode.this, assessedIdentity, coachCourseEnv);
-			}
-		};
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+		return new IdentityListCourseNodeController(ureq, wControl, stackPanel,
+				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 	/**

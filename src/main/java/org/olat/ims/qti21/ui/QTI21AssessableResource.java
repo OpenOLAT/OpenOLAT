@@ -19,15 +19,12 @@
  */
 package org.olat.ims.qti21.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.AssessableResource;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -44,15 +41,8 @@ public class QTI21AssessableResource extends AssessableResource {
 	}
 
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, RepositoryEntry entry, AssessmentToolOptions options) {
-
-		Controller resetToolCtrl = new QTI21ResetToolController(ureq, wControl, entry, options);
-		List<Controller> toolsCtrl = new ArrayList<>(1);
-		toolsCtrl.add(resetToolCtrl);
-		
-		Controller retrieveToolCtrl = new QTI21RetrieveTestsToolController(ureq, wControl, entry, options);
-		toolsCtrl.add(retrieveToolCtrl);
-		return toolsCtrl;
+	public Controller createIdentityList(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry entry, AssessmentToolSecurityCallback assessmentCallback) {
+		return new QTI21AssessedIdentityListController(ureq, wControl, stackPanel, entry, this, assessmentCallback);
 	}
 }

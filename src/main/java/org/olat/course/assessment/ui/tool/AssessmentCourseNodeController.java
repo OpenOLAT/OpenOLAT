@@ -22,16 +22,18 @@ package org.olat.course.assessment.ui.tool;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.gui.control.Controller;
+import org.olat.modules.assessment.ui.AssessedIdentityListState;
 
 /**
  * 
- * 
- * 
- * Initial date: 4 déc. 2017<br>
+ * Initial date: 18 déc. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface IdentityListCourseNodeProvider {
+public interface AssessmentCourseNodeController extends Controller {
+	
+	public AssessedIdentityListState getListState();
 	
 	public List<IdentityRef> getSelectedIdentities();
 

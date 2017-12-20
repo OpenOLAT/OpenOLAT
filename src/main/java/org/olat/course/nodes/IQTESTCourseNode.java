@@ -28,7 +28,6 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -57,21 +56,17 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
-import org.olat.course.assessment.ui.tool.IdentityListCourseNodeProvider;
-import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
-import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.iq.CourseIQSecurityCallback;
-import org.olat.course.nodes.iq.QTI21ExtraTimeController;
 import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.nodes.iq.IQIdentityListCourseNodeController;
 import org.olat.course.nodes.iq.IQPreviewController;
 import org.olat.course.nodes.iq.IQRunController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
-import org.olat.course.nodes.iq.QTI21IdentityListCourseNodeToolsController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -83,6 +78,7 @@ import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.group.BusinessGroup;
 import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.QTIResultSet;
@@ -99,35 +95,27 @@ import org.olat.ims.qti.export.QTIExportSCQItemFormatConfig;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
-import org.olat.ims.qti.resultexport.QTI12ExportResultsReportController;
 import org.olat.ims.qti.resultexport.QTI12ResultsExportMediaResource;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
-import org.olat.ims.qti.statistics.ui.QTI12PullTestsToolController;
-import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
-import org.olat.ims.qti21.resultexport.QTI21ExportResultsReportController;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
-import org.olat.ims.qti21.ui.QTI21ResetToolController;
-import org.olat.ims.qti21.ui.QTI21RetrieveTestsToolController;
-import org.olat.ims.qti21.ui.assessment.QTI21CorrectionToolController;
-import org.olat.ims.qti21.ui.assessment.QTI21ValidationToolController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
-import org.olat.ims.qti21.ui.statistics.QTI21StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -238,20 +226,49 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	 */
 	public boolean hasQTI21TimeLimit(RepositoryEntry testEntry) {
 		boolean timeLimit = false;
-		
-		ModuleConfiguration config = getModuleConfiguration();
-		boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
-		if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
-			timeLimit = true;
-		} else {
-			File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
-			ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
-					.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-			AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-			if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
+			ModuleConfiguration config = getModuleConfiguration();
+			boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
+			if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
 				timeLimit = true;
+			} else {
+				File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+				ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
+						.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+				if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+					timeLimit = true;
+				}
 			}
-		}	
+		}
+		return timeLimit;
+	}
+	
+	/**
+	 * If the course element override the test configuration, the value is from
+	 * the course element's configuration. Else, the value is from the assessment
+	 * test.
+	 * 
+	 * @param testEntry The test repository entry
+	 * @return the maximum time limit in seconds or -1 if no time limit is configured
+	 */
+	public int getQTI21TimeLimitMaxInSeconds(RepositoryEntry testEntry) {
+		int timeLimit = -1;
+		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
+			ModuleConfiguration config = getModuleConfiguration();
+			boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
+			if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
+				timeLimit = config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1);
+			} else {
+				File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+				ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
+						.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+				if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+					timeLimit = assessmentTest.getTimeLimits().getMaximum().intValue();
+				}
+			}
+		}
 		return timeLimit;
 	}
 
@@ -275,81 +292,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	}
 	
 	@Override
-	public ToolsControllerCreator getAssessmentToolsCreator() {
-		return new DefaultToolsControllerCreator() {
-			@Override
-			public boolean hasCalloutTools() {
-				return true;
-			}
-
-			@Override
-			public Controller createCalloutController(UserRequest ureq, WindowControl wControl,
-					UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
-				boolean qti21 = IQEditController.CONFIG_VALUE_QTI21.equals(getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI));
-				if (qti21) {
-					return new QTI21IdentityListCourseNodeToolsController(ureq, wControl, IQTESTCourseNode.this, assessedIdentity, coachCourseEnv);
-				}
-				return  new IdentityListCourseNodeToolsController(ureq, wControl, IQTESTCourseNode.this, assessedIdentity, coachCourseEnv);
-			}
-
-			@Override
-			public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
-					TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv,
-					AssessmentToolOptions options) {
-				return createAssessmentToolList(ureq, wControl, stackPanel, coachCourseEnv, options);
-			}
-
-			@Override
-			public List<Controller> createMultiSelectionTools(UserRequest ureq, WindowControl wControl,
-					UserCourseEnvironment coachCourseEnv, IdentityListCourseNodeProvider provider) {
-				return createMultiSelectionToolList(ureq, wControl, coachCourseEnv, provider);
-			}
-		};
-	}
-	
-	private List<Controller> createMultiSelectionToolList(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment coachCourseEnv, IdentityListCourseNodeProvider provider) {
-		List<Controller> tools = new ArrayList<>(2);
-		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
-		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName()) && hasQTI21TimeLimit(qtiTestEntry)) {
-			tools.add(new QTI21ExtraTimeController(ureq, wControl, coachCourseEnv.getCourseEnvironment(), this, provider));
-		}
-		return tools;
-	}
-
-	private List<Controller> createAssessmentToolList(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
-		List<Controller> tools = new ArrayList<>();
-		
-		CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
-		
-		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
-		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
-			tools.add(new QTI21StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
-			if(!coachCourseEnv.isCourseReadOnly()) {
-				QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
-				tools.add(new QTI21RetrieveTestsToolController(ureq, wControl, courseEnv, options, this));
-				if(options.isAdmin()) {
-					tools.add(new QTI21ResetToolController(ureq, wControl, courseEnv, options, this));
-				}
-				if(qtiService.needManualCorrection(qtiTestEntry)
-						|| IQEditController.CORRECTION_MANUAL.equals(getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
-					tools.add(new QTI21CorrectionToolController(ureq, wControl, courseEnv, options, this));
-				}
-				if(getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, false)) {
-					tools.add(new QTI21ValidationToolController(ureq, wControl));
-				}
-			}
-			tools.add(new QTI21ExportResultsReportController(ureq, wControl, courseEnv, options, this));
-
-		} else {
-			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
-			if(!coachCourseEnv.isCourseReadOnly()) {
-				tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
-			}
-			tools.add(new QTI12ExportResultsReportController(ureq, wControl, courseEnv, options, this));
-		}
-		return tools;
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+		return new IQIdentityListCourseNodeController(ureq, wControl, stackPanel,
+				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 	public boolean isQTI12TestRunning(Identity assessedIdentity, CourseEnvironment courseEnv) {

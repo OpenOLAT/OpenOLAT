@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
@@ -31,18 +32,13 @@ import java.util.zip.ZipOutputStream;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -76,18 +72,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21ResetToolController extends BasicController {
+public class QTI21ResetDataController extends FormBasicController {
 	
 	private final Roles studentRoles = new Roles(false, false, false, false, false, false, false, false);
-	private Link resetButton;
+
+	private final String[] onKeys = new String[]{ "on" };
+
+	private MultipleSelectionElement acknowledgeEl;
 	
-	private CloseableModalController cmc;
-	private ConfirmResetController confirmResetCtrl;
+	private final ArchiveOptions options;
+	private final List<Identity> identities;
 	
 	private QTICourseNode courseNode;
 	private CourseEnvironment courseEnv;
 	private RepositoryEntry assessedEntry;
-	private final AssessmentToolOptions asOptions;
 	
 	@Autowired
 	private QTI21Service qtiService;
@@ -96,78 +94,16 @@ public class QTI21ResetToolController extends BasicController {
 	@Autowired
 	private RepositoryService repositoryService;
 
-	public QTI21ResetToolController(UserRequest ureq, WindowControl wControl, 
+	public QTI21ResetDataController(UserRequest ureq, WindowControl wControl, 
 			CourseEnvironment courseEnv, AssessmentToolOptions asOptions, QTICourseNode courseNode) {
-		super(ureq, wControl);
+		super(ureq, wControl, "confirm_reset_data");
 		this.courseNode = courseNode;
 		this.courseEnv = courseEnv;
-		this.asOptions = asOptions;
-		initButton();
-	}
-	
-	public QTI21ResetToolController(UserRequest ureq, WindowControl wControl, 
-			RepositoryEntry assessedEntry, AssessmentToolOptions asOptions) {
-		super(ureq, wControl);
-		this.assessedEntry = assessedEntry;
-		this.asOptions = asOptions;
-		initButton();
-	}
-	
-	private void initButton() {
-		resetButton = LinkFactory.createButton("reset.test.data.title", null, this);
-		resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
-		resetButton.setTranslator(getTranslator());
-		putInitialPanel(resetButton);
-		getInitialComponent().setSpanAsDomReplaceable(true); // override to wrap panel as span to not break link layout 
-	}
-	
-	@Override
-	protected void doDispose() {
-		//
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		if(resetButton == source) {
-			doConfirmReset(ureq);
-		}
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(confirmResetCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				doReset(ureq, confirmResetCtrl.getOptions(), confirmResetCtrl.getIdentities());
-				fireEvent(ureq, Event.DONE_EVENT);
-			}
-			cmc.deactivate();
-			cleanUp();
-		} else if (cmc == source) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(confirmResetCtrl);
-		removeAsListenerAndDispose(cmc);
-		confirmResetCtrl = null;
-		cmc = null;
-	}
-
-	private void doConfirmReset(UserRequest ureq) {
-		if(confirmResetCtrl != null) return;
 		
-		ArchiveOptions options = new ArchiveOptions();
-		List<Identity> identities = null;
+		options = new ArchiveOptions();
 		if(asOptions.getGroup() == null && asOptions.getIdentities() == null) {
-			if(courseEnv != null) {
-				identities = ScoreAccountingHelper.loadUsers(courseEnv);
-				options.setIdentities(identities);
-			} else {
-				identities = repositoryService.getMembers(assessedEntry, GroupRoles.participant.name());
-				options.setIdentities(identities);
-			}
+			identities = ScoreAccountingHelper.loadUsers(courseEnv);
+			options.setIdentities(identities);
 		} else if (asOptions.getIdentities() != null) {
 			identities = asOptions.getIdentities();
 			options.setIdentities(identities);
@@ -176,20 +112,89 @@ public class QTI21ResetToolController extends BasicController {
 			options.setGroup(asOptions.getGroup());
 		}
 		
-		if(identities == null || identities.isEmpty()) {
-			showWarning("warning.reset.test.data.nobody");
-		} else {
-			confirmResetCtrl = new ConfirmResetController(ureq, getWindowControl(), options, identities);
-			listenTo(confirmResetCtrl);
-	
-			String title = translate("reset.test.data.title");
-			cmc = new CloseableModalController(getWindowControl(), null, confirmResetCtrl.getInitialComponent(), true, title, true);
-			listenTo(cmc);
-			cmc.activate();
-		}
+		initForm(ureq);
 	}
 	
-	private void doReset(UserRequest ureq, ArchiveOptions options, List<Identity> identities) {
+	public QTI21ResetDataController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			IQTESTCourseNode courseNode, Identity assessedIdentity) {
+		super(ureq, wControl, "confirm_reset_data");
+		this.courseNode = courseNode;
+		courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
+		
+		options = new ArchiveOptions();
+		identities = Collections.singletonList(assessedIdentity);
+		options.setIdentities(identities);
+		initForm(ureq);
+	}
+	
+	public QTI21ResetDataController(UserRequest ureq, WindowControl wControl, 
+			RepositoryEntry assessedEntry, AssessmentToolOptions asOptions) {
+		super(ureq, wControl, "confirm_reset_data");
+		this.assessedEntry = assessedEntry;
+		
+		options = new ArchiveOptions();
+		if(asOptions.getGroup() == null && asOptions.getIdentities() == null) {
+			identities = repositoryService.getMembers(assessedEntry, GroupRoles.participant.name());
+			options.setIdentities(identities);
+		} else if (asOptions.getIdentities() != null) {
+			identities = asOptions.getIdentities();
+			options.setIdentities(identities);
+		} else {
+			identities = businessGroupService.getMembers(asOptions.getGroup());
+			options.setGroup(asOptions.getGroup());
+		}
+
+		initForm(ureq);
+	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			String[] args = new String[]{ Integer.toString(identities.size()) };
+			String msg = translate("reset.test.data.text", args);
+			layoutCont.contextPut("msg", msg);
+		}
+		
+		FormLayoutContainer confirmCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
+		formLayout.add("confirm", confirmCont);
+		confirmCont.setRootForm(mainForm);
+		
+		String[] onValues = new String[]{ translate("reset.test.data.acknowledge") };
+		acknowledgeEl = uifactory.addCheckboxesHorizontal("acknowledge", "confirmation", confirmCont, onKeys, onValues);
+		
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setRootForm(mainForm);
+		confirmCont.add(buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("reset.data", buttonsCont);
+	}
+
+	@Override
+	protected void doDispose() {
+		//
+	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		acknowledgeEl.clearError();
+		if(!acknowledgeEl.isAtLeastSelected(1)) {
+			acknowledgeEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
 		if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
 			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
@@ -204,6 +209,7 @@ public class QTI21ResetToolController extends BasicController {
 				IdentityEnvironment ienv = new IdentityEnvironment(identity, studentRoles);
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
 				testCourseNode.updateUserScoreEvaluation(scoreEval, uce, getIdentity(), false, Role.coach);
+				testCourseNode.updateCurrentCompletion(uce, getIdentity(), null, AssessmentRunStatus.notStarted, Role.coach);
 			}
 		} else if(assessedEntry != null) {
 			archiveData(assessedEntry);
@@ -213,7 +219,7 @@ public class QTI21ResetToolController extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void archiveData(ICourse course, ArchiveOptions options) {
+	private void archiveData(ICourse course, ArchiveOptions archiveOptions) {
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), course.getCourseTitle());
 		String archiveName = courseNode.getType() + "_"
 				+ StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
@@ -223,7 +229,7 @@ public class QTI21ResetToolController extends BasicController {
 		try(FileOutputStream fileStream = new FileOutputStream(exportFile);
 			ZipOutputStream exportStream = new ZipOutputStream(fileStream)) {
 			
-			courseNode.archiveNodeData(getLocale(), course, options, exportStream, "UTF-8");
+			courseNode.archiveNodeData(getLocale(), course, archiveOptions, exportStream, "UTF-8");
 		} catch (IOException e) {
 			logError("", e);
 		}
@@ -248,81 +254,5 @@ public class QTI21ResetToolController extends BasicController {
 			logError("", e);
 		}
 		
-	}
-	
-	private class ConfirmResetController extends FormBasicController {
-		
-		private final String[] onKeys = new String[]{ "on" };
-
-		private MultipleSelectionElement acknowledgeEl;
-		
-		private final ArchiveOptions options;
-		private final List<Identity> identities;
-		
-		public ConfirmResetController(UserRequest ureq, WindowControl wControl, ArchiveOptions options, List<Identity> identities) {
-			super(ureq, wControl, "confirm_reset_data");
-			this.options = options;
-			this.identities = identities;
-			initForm(ureq);
-		}
-		
-		public ArchiveOptions getOptions() {
-			return options;
-		}
-		
-		public List<Identity> getIdentities() {
-			return identities;
-		}
-
-		@Override
-		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			if(formLayout instanceof FormLayoutContainer) {
-				FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-				String[] args = new String[]{ Integer.toString(identities.size()) };
-				String msg = translate("reset.test.data.text", args);
-				layoutCont.contextPut("msg", msg);
-			}
-			
-			FormLayoutContainer confirmCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
-			formLayout.add("confirm", confirmCont);
-			confirmCont.setRootForm(mainForm);
-			
-			String[] onValues = new String[]{ translate("reset.test.data.acknowledge") };
-			acknowledgeEl = uifactory.addCheckboxesHorizontal("acknowledge", "confirmation", confirmCont, onKeys, onValues);
-			
-			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			buttonsCont.setRootForm(mainForm);
-			confirmCont.add(buttonsCont);
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-			uifactory.addFormSubmitButton("reset.data", buttonsCont);
-		}
-		
-		@Override
-		protected void doDispose() {
-			//
-		}
-
-		@Override
-		protected boolean validateFormLogic(UserRequest ureq) {
-			boolean allOk = true;
-			
-			acknowledgeEl.clearError();
-			if(!acknowledgeEl.isAtLeastSelected(1)) {
-				acknowledgeEl.setErrorKey("form.legende.mandatory", null);
-				allOk &= false;
-			}
-			
-			return allOk & super.validateFormLogic(ureq);
-		}
-
-		@Override
-		protected void formOK(UserRequest ureq) {
-			fireEvent(ureq, Event.DONE_EVENT);
-		}
-
-		@Override
-		protected void formCancelled(UserRequest ureq) {
-			fireEvent(ureq, Event.CANCELLED_EVENT);
-		}
 	}
 }

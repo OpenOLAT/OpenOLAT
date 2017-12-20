@@ -36,6 +36,7 @@ import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
@@ -56,8 +57,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
-import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -72,6 +72,7 @@ import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.nodes.sp.SPPeekviewController;
 import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.nodes.st.STCourseNodeRunController;
+import org.olat.course.nodes.st.STIdentityListCourseNodeController;
 import org.olat.course.nodes.st.STPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -81,10 +82,13 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -653,10 +657,13 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	public String getDetailsListViewHeaderKey() {
 		throw new OLATRuntimeException(STCourseNode.class, "Details not available in ST nodes", null);
 	}
-
+	
 	@Override
-	public ToolsControllerCreator getAssessmentToolsCreator() {
-		return new DefaultToolsControllerCreator();
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+		return new STIdentityListCourseNodeController(ureq, wControl, stackPanel,
+				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 	/**

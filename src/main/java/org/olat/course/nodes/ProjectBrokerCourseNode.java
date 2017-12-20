@@ -78,9 +78,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.bulk.BulkAssessmentToolController;
-import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
-import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -92,6 +90,7 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.projectbroker.ProjectBrokerControllerFactory;
 import org.olat.course.nodes.projectbroker.ProjectBrokerCourseEditorController;
+import org.olat.course.nodes.projectbroker.ProjectBrokerIdentityListCourseNodeController;
 import org.olat.course.nodes.projectbroker.ProjectListController;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.datamodel.ProjectBroker;
@@ -103,7 +102,6 @@ import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.nodes.ta.TaskController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -114,9 +112,10 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -745,25 +744,13 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	}
 	
 	@Override
-	public ToolsControllerCreator getAssessmentToolsCreator() {
-		return new DefaultToolsControllerCreator() {
-			@Override
-			public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
-					TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv,
-					AssessmentToolOptions options) {
-				List<Controller> tools = new ArrayList<>(1);
-				if(!coachCourseEnv.isCourseReadOnly()) {
-					CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
-					tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, ProjectBrokerCourseNode.this));
-				}
-				return tools;
-			}
-		};
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+		return new ProjectBrokerIdentityListCourseNodeController(ureq, wControl, stackPanel,
+				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListView(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -775,7 +762,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 
 	@Override
 	public String getDetailsListViewHeaderKey() {
-		return "table.header.details.ta";
+		return null;
 	}
 
 	@Override

@@ -161,6 +161,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case lastUserModified: return row.getLastUserModified();
 				case lastCoachModified: return row.getLastCoachModified();
 				case tools: return row.getToolsLink();
+				case details: return row.getDetails();
 			}
 		}
 		int propPos = col - AssessmentToolConstants.USER_PROPS_OFFSET;
@@ -190,7 +191,8 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		lastCoachModified("table.header.lastCoachModificationDate"),
 		numOfAssessmentDocs("table.header.num.assessmentDocs"),
 		currentCompletion("table.header.completion"),
-		tools("table.header.tools");
+		tools("table.header.tools"),
+		details("table.header.details");
 		
 		private final String i18nKey;
 		

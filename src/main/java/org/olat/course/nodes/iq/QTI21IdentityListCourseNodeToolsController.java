@@ -30,27 +30,20 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.olat.course.CourseFactory;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.IQTESTCourseNode;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.AssessmentTestSession;
-import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.AssessmentTestSessionComparator;
+import org.olat.ims.qti21.ui.QTI21ResetDataController;
+import org.olat.ims.qti21.ui.QTI21RetrieveTestsController;
 import org.olat.ims.qti21.ui.assessment.IdentityAssessmentTestCorrectionController;
-import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -66,9 +59,9 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	
 	private CloseableModalController cmc;
 	private ConfirmReopenController reopenCtrl;
-	private ConfirmResetController confirmResetCtrl;
+	private QTI21ResetDataController resetDataCtrl;
 	private ConfirmExtraTimeController extraTimeCtrl;
-	private DialogBoxController retrieveConfirmationCtr;
+	private QTI21RetrieveTestsController retrieveConfirmationCtr;
 	private IdentityAssessmentTestCorrectionController correctionCtrl;
 	
 	private RepositoryEntry testEntry;
@@ -80,8 +73,6 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	
 	@Autowired
 	private QTI21Service qtiService;
-	@Autowired
-	private UserManager userManager;
 	
 	public QTI21IdentityListCourseNodeToolsController(UserRequest ureq, WindowControl wControl,
 			IQTESTCourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
@@ -170,19 +161,20 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(retrieveConfirmationCtr == source) {
-			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				doPullSession(lastSession);
+			if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else {
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(correctionCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 				cleanUp();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
-		} else if(confirmResetCtrl == source || extraTimeCtrl == source || reopenCtrl == source) {
+		} else if(resetDataCtrl == source || extraTimeCtrl == source || reopenCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
 			fireAlteredEvent(ureq, event);
@@ -204,13 +196,13 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(confirmResetCtrl);
 		removeAsListenerAndDispose(correctionCtrl);
 		removeAsListenerAndDispose(extraTimeCtrl);
+		removeAsListenerAndDispose(resetDataCtrl);
 		removeAsListenerAndDispose(cmc);
-		confirmResetCtrl = null;
 		correctionCtrl = null;
 		extraTimeCtrl = null;
+		resetDataCtrl = null;
 		cmc = null;
 	}
 	
@@ -225,45 +217,21 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	}
 	
 	private void doConfirmPullSession(UserRequest ureq, AssessmentTestSession session) {
-		String title = translate("tool.pull");
-		String fullname = userManager.getUserDisplayName(session.getIdentity());
-		String text = translate("retrievetest.confirm.text", new String[]{ fullname });
-		retrieveConfirmationCtr = activateOkCancelDialog(ureq, title, text, retrieveConfirmationCtr);
-		retrieveConfirmationCtr.setUserObject(session);
-	}
-	
-	private void doPullSession(AssessmentTestSession session) {
-		qtiService.pullSession(session, getSignatureOptions(session), getIdentity());
-		testCourseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
-	}
-	
-	private DigitalSignatureOptions getSignatureOptions(AssessmentTestSession session) {
-		RepositoryEntry sessionTestEntry = session.getTestEntry();
-		QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(sessionTestEntry);
+		retrieveConfirmationCtr = new QTI21RetrieveTestsController(ureq, getWindowControl(), session, (IQTESTCourseNode)courseNode);
+		listenTo(retrieveConfirmationCtr);
 		
-		boolean digitalSignature = deliveryOptions.isDigitalSignature();
-		boolean sendMail = deliveryOptions.isDigitalSignatureMail();
-
-		ModuleConfiguration config = courseNode.getModuleConfiguration();
-		digitalSignature = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE,
-			deliveryOptions.isDigitalSignature());
-		sendMail = config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL,
-			deliveryOptions.isDigitalSignatureMail());
-
-		DigitalSignatureOptions options = new DigitalSignatureOptions(digitalSignature, sendMail, courseEntry, testEntry);
-		if(digitalSignature) {
-			CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
-			QTI21AssessmentRunController.decorateCourseConfirmation(session, options, courseEnv, courseNode, sessionTestEntry, null, getLocale());
-		}
-		return options;
+		String title = translate("tool.pull");
+		cmc = new CloseableModalController(getWindowControl(), null, retrieveConfirmationCtr.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doConfirmDeleteData(UserRequest ureq) {
-		confirmResetCtrl = new ConfirmResetController(ureq, getWindowControl(), courseEntry, courseNode, testEntry, assessedIdentity);
-		listenTo(confirmResetCtrl);
+		resetDataCtrl = new QTI21ResetDataController(ureq, getWindowControl(), courseEntry, (IQTESTCourseNode)courseNode, assessedIdentity);
+		listenTo(resetDataCtrl);
 
 		String title = translate("reset.test.data.title");
-		cmc = new CloseableModalController(getWindowControl(), null, confirmResetCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), null, resetDataCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

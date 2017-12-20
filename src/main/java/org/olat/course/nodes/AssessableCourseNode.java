@@ -31,15 +31,20 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
 
 
 /**
@@ -189,14 +194,22 @@ public interface AssessableCourseNode extends CourseNode {
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);
 	
 	/**
-	 * Method to get a factory to create the tools / actions controller
+	 * Returns the controller with the list of assessed identities for
+	 * a specific course node.
+	 * 
 	 * @param ureq
 	 * @param wControl
+	 * @param stackPanel
+	 * @param courseEntry
+	 * @param group
 	 * @param coachCourseEnv
-	 * @param assessedIdentity
+	 * @param toolContainer
+	 * @param assessmentCallback
 	 * @return
 	 */
-	public ToolsControllerCreator getAssessmentToolsCreator();
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback);
 	
 	/**
 	 * 

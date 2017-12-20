@@ -315,6 +315,14 @@ public class AssessmentTestSessionDAO {
 				.getResultList();
 	}
 	
+	/**
+	 * The assessment test sessions of authenticated users (fetched in the query).
+	 * 
+	 * @param courseEntry
+	 * @param courseSubIdent
+	 * @param testEntry
+	 * @return
+	 */
 	public List<AssessmentTestSession> getTestSessions(RepositoryEntryRef courseEntry, String courseSubIdent, RepositoryEntry testEntry) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select session from qtiassessmenttestsession session")

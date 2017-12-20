@@ -26,7 +26,6 @@
 package org.olat.course.nodes;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -47,10 +46,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.bulk.BulkAssessmentToolController;
-import org.olat.course.assessment.ui.tool.DefaultToolsControllerCreator;
-import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
-import org.olat.course.assessment.ui.tool.ToolsControllerCreator;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -58,19 +54,21 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.nodes.ms.MSEditFormController;
+import org.olat.course.nodes.ms.MSIdentityListCourseNodeController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -526,31 +524,11 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	}
 	
 	@Override
-	public ToolsControllerCreator getAssessmentToolsCreator() {
-		return new DefaultToolsControllerCreator() {
-			@Override
-			public boolean hasCalloutTools() {
-				return true;
-			}
-
-			@Override
-			public Controller createCalloutController(UserRequest ureq, WindowControl wControl,
-					UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
-				return new IdentityListCourseNodeToolsController(ureq, wControl, MSCourseNode.this, assessedIdentity, coachCourseEnv);
-			}
-
-			@Override
-			public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
-					TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv,
-					AssessmentToolOptions options) {
-				List<Controller> tools = new ArrayList<>(1);
-				if(!coachCourseEnv.isCourseReadOnly()) {
-					CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
-					tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, MSCourseNode.this));
-				}
-				return tools;
-			}
-		};
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+		return new MSIdentityListCourseNodeController(ureq, wControl, stackPanel,
+				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 	@Override

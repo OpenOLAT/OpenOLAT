@@ -19,15 +19,13 @@
  */
 package org.olat.modules.portfolio.ui.model;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.AssessableResource;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -44,8 +42,9 @@ public class AssessableBinderResource extends AssessableResource {
 	}
 
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, RepositoryEntry entry, AssessmentToolOptions options) {
-		return Collections.emptyList();
+	public Controller createIdentityList(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry entry, AssessmentToolSecurityCallback assessmentCallback) {
+		return new AssessedIdentityListController(ureq, wControl, stackPanel,
+				entry, this, assessmentCallback);
 	}
 }

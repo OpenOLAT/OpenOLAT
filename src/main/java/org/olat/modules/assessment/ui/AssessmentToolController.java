@@ -58,7 +58,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private Link usersLink;
 	private final TooledStackedPanel stackPanel;
 	
-	private AssessedIdentityListController currentCtl;
+	private Controller currentCtl;
 	private AssessmentOverviewController overviewCtrl;
 	
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
@@ -115,13 +115,16 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 				UserSelectionEvent use = (UserSelectionEvent)event;
 				OLATResourceable resource = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
 				List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(resource);
-				doSelectUsersView(ureq, "Users", null).activate(ureq, entries, null);
+				Controller userViewCtrl = doSelectUsersView(ureq, "Users", null);
+				if(userViewCtrl instanceof Activateable2) {
+					((Activateable2)userViewCtrl).activate(ureq, entries, null);
+				}
 			}
 		}
 		super.event(ureq, source, event);
 	}
 	
-	private Activateable2 doSelectUsersView(UserRequest ureq, String resName, AssessedIdentityListState state) {
+	private Controller doSelectUsersView(UserRequest ureq, String resName, AssessedIdentityListState state) {
 		if(currentCtl != null) {
 			stackPanel.popController(currentCtl);
 		}
@@ -129,12 +132,13 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(resName, 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
-		AssessedIdentityListController treeCtrl = new AssessedIdentityListController(ureq, bwControl, stackPanel,
-				testEntry, element, assessmentCallback);
+		Controller treeCtrl = element.createIdentityList(ureq, bwControl, stackPanel, testEntry, assessmentCallback);
 		listenTo(treeCtrl);
 		stackPanel.pushController(translate("users"), treeCtrl);
 		currentCtl = treeCtrl;
-		treeCtrl.activate(ureq, null, state);
+		if(treeCtrl instanceof Activateable2) {
+			((Activateable2)treeCtrl).activate(ureq, null, state);
+		}
 		return currentCtl;
 	}
 }

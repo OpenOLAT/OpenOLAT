@@ -45,7 +45,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
@@ -93,7 +92,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	private final boolean isAdministrativeUser;
 	private SearchAssessedIdentityParams searchParams;
 	private final List<UserPropertyHandler> userPropertyHandlers;
-	private final AssessmentToolSecurityCallback assessmentCallback;
+	protected final AssessmentToolSecurityCallback assessmentCallback;
 	
 	private Link nextLink, previousLink;
 	private FlexiTableElement tableEl;
@@ -114,7 +113,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	@Autowired
 	private UserCourseInformationsManager userInfosMgr;
 	@Autowired
-	private AssessmentToolManager assessmentToolManager;
+	protected AssessmentToolManager assessmentToolManager;
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
@@ -122,6 +121,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 			RepositoryEntry testEntry, AssessableResource element, AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, "identity_element");
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.element = element;
@@ -133,6 +133,14 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentToolConstants.usageIdentifyer, isAdministrativeUser);
 		
 		initForm(ureq);
+	}
+	
+	public RepositoryEntry getRepositoryEntry() {
+		return testEntry;
+	}
+	
+	public SearchAssessedIdentityParams getSearchParameters() {
+		return searchParams;
 	}
 
 	@Override
@@ -209,7 +217,6 @@ public class AssessedIdentityListController extends FormBasicController implemen
 				tableEl.setExtendedFilterButton(translate("filter.groups"), groupFilters);
 			}
 		}
-		
 	}
 	
 	public class AToolsOptions extends AssessmentToolOptions {
@@ -220,7 +227,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		}
 	}
 	
-	private void updateModel(UserRequest ureq, String searchString, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
+	protected void updateModel(String searchString, List<FlexiTableFilter> filters, List<FlexiTableFilter> extendedFilters) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
 		
 		List<AssessmentEntryStatus> assessmentStatus = null;
@@ -261,8 +268,9 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		List<AssessedIdentityElementRow> rows = new ArrayList<>(assessedIdentities.size());
 		for(Identity assessedIdentity:assessedIdentities) {
 			AssessmentEntry entry = entryMap.get(assessedIdentity.getKey());
-			Date initialLaunchDate = initialLaunchDates.get(assessedIdentity.getKey());
-			rows.add(new AssessedIdentityElementRow(assessedIdentity, entry, initialLaunchDate, null, null, userPropertyHandlers, getLocale()));
+			AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, null, null, userPropertyHandlers, getLocale());
+			row.setInitialCourseLaunchDate(initialLaunchDates.get(assessedIdentity.getKey()));
+			rows.add(row);
 		}
 
 		usersTableModel.setObjects(rows);
@@ -271,34 +279,13 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		}
 		tableEl.reloadData();
 		searchParams = params;
-		
-		List<String> toolCmpNames = new ArrayList<>();
-		AssessmentToolOptions asOptions = new AssessmentToolOptions();
-		asOptions.setAdmin(assessmentCallback.isAdmin());
-		asOptions.setIdentities(assessedIdentities);
-		List<Controller> tools = element.createAssessmentTools(ureq, getWindowControl(), stackPanel,
-				testEntry, asOptions);
-		int count = 0;
-		if(tools.size() > 0) {
-			for(Controller tool:tools) {
-				listenTo(tool);
-				String toolCmpName = "ctrl_" + (count++);
-				flc.put(toolCmpName, tool.getInitialComponent());
-				toolCmpNames.add(toolCmpName);
-				if(tool instanceof BreadcrumbPanelAware) {
-					((BreadcrumbPanelAware)tool).setBreadcrumbPanel(stackPanel);
-				}
-			}
-		}
-		
-		if(toolsCtrl != null) {
-			for(Controller toolCtrl:toolsCtrl) {
-				removeAsListenerAndDispose(toolCtrl);
-			}
-		}
-		toolsCtrl = tools;
-		flc.contextPut("toolCmpNames", toolCmpNames);
+		updateTools(assessedIdentities);
 	}
+	
+	protected void updateTools(@SuppressWarnings("unused") List<Identity> assessedIdentities) {
+		//to override
+	}
+	
 	@Override
 	protected void doDispose() {
 		//
@@ -315,7 +302,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 		}
 
 		tableEl.setSelectedFilterKey(filter);
-		updateModel(ureq, null, tableEl.getSelectedFilters(), null);
+		updateModel(null, tableEl.getSelectedFilters(), null);
 		
 		if(entries != null && entries.size() > 0) {
 			String resourceType = entries.get(0).getOLATResourceable().getResourceableTypeName();
@@ -350,16 +337,16 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(currentIdentityCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
-				updateModel(ureq, null, null, null);
+				updateModel(null, null, null);
 			} else if(event == Event.DONE_EVENT) {
-				updateModel(ureq, null, null, null);
+				updateModel(null, null, null);
 				stackPanel.popController(currentIdentityCtrl);
 			} else if(event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(currentIdentityCtrl);
 			}
 		} else if(toolsCtrl != null && toolsCtrl.contains(source)) {
 			if(event == Event.CHANGED_EVENT) {
-				updateModel(ureq, null, null, null);
+				updateModel(null, null, null);
 			}
 		}
 		super.event(ureq, source, event);
@@ -377,7 +364,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				FlexiTableSearchEvent ftse = (FlexiTableSearchEvent)event;
-				updateModel(ureq, ftse.getSearch(), ftse.getFilters(), ftse.getExtendedFilters());
+				updateModel(ftse.getSearch(), ftse.getFilters(), ftse.getExtendedFilters());
 			}
 		}
 		

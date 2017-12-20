@@ -30,11 +30,11 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -99,7 +100,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  */
 public class QTI21AssessmentDetailsController extends FormBasicController {
 
-	private Component resetToolCmp;
+	private FormLink resetButton;
 	private FlexiTableElement tableEl;
 	private QTI21AssessmentTestSessionTableModel tableModel;
 	
@@ -116,7 +117,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private AssessmentResultController resultCtrl;
-	private QTI21ResetToolController resetToolCtrl;
+	private QTI21ResetDataController resetToolCtrl;
 	private DialogBoxController retrieveConfirmationCtr;
 	private IdentityAssessmentTestCorrectionController correctionCtrl;
 	
@@ -216,17 +217,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		tableEl.setEmtpyTableMessageKey("results.empty");
 
 		if(reSecurity.isEntryAdmin() && !readOnly) {
-			AssessmentToolOptions asOptions = new AssessmentToolOptions();
-			asOptions.setAdmin(reSecurity.isEntryAdmin());
-			asOptions.setIdentities(Collections.singletonList(assessedIdentity));
-			if(courseNode != null) {
-				resetToolCtrl = new QTI21ResetToolController(ureq, getWindowControl(),
-						assessedUserCourseEnv.getCourseEnvironment(), asOptions, courseNode);
-			} else {
-				resetToolCtrl = new QTI21ResetToolController(ureq, getWindowControl(), entry, asOptions);
-			}
-			listenTo(resetToolCtrl);
-			resetToolCmp = resetToolCtrl.getInitialComponent();	
+			resetButton = uifactory.addFormLink("menu.reset.title", formLayout, Link.BUTTON);
+			resetButton.setIconLeftCSS("o_icon o_icon_delete_item"); 	
 		}
 	} 
 
@@ -269,13 +261,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		tableModel.setObjects(infos);
 		tableEl.reloadData();
 		tableEl.reset();
-			
-		if(resetToolCmp != null) {
-			if(sessionsStatistics.size() > 0) {
-				flc.getFormItemComponent().put("reset.tool", resetToolCmp);
-			} else {
-				flc.getFormItemComponent().remove(resetToolCmp);
-			}
+		
+		if(resetButton != null) {
+			resetButton.setVisible(!sessionsStatistics.isEmpty());
 		}
 	}
 
@@ -301,26 +289,32 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				updateModel();
 			}
 		} else if(resetToolCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				updateModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(correctionCtrl);
+		removeAsListenerAndDispose(resetToolCtrl);
 		removeAsListenerAndDispose(resultCtrl);
 		removeAsListenerAndDispose(cmc);
 		correctionCtrl = null;
+		resetToolCtrl = null;
 		resultCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(resetButton == source) {
+			doResetData(ureq);
+		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
@@ -373,6 +367,24 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		assessmentService.updateAssessmentEntry(assessmentEntry);
 	}
 	
+	private void doResetData(UserRequest ureq) {
+		AssessmentToolOptions asOptions = new AssessmentToolOptions();
+		asOptions.setAdmin(reSecurity.isEntryAdmin());
+		asOptions.setIdentities(Collections.singletonList(assessedIdentity));
+		
+		if(courseNode != null) {
+			resetToolCtrl = new QTI21ResetDataController(ureq, getWindowControl(),
+					assessedUserCourseEnv.getCourseEnvironment(), asOptions, courseNode);
+		} else {
+			resetToolCtrl = new QTI21ResetDataController(ureq, getWindowControl(), entry, asOptions);
+		}
+		listenTo(resetToolCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), "close", resetToolCtrl.getInitialComponent(),
+				true, translate("table.header.results"));
+		cmc.activate();
+		listenTo(cmc);
+	}
 
 	private void doConfirmPullSession(UserRequest ureq, AssessmentTestSession session) {
 		String title = translate("pull");
