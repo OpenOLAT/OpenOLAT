@@ -225,6 +225,11 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 		mainVC.put("durationHistogram", durationHistogramVC);
 	}
 	
+	/**
+	 * The 2 graphs with the score per questions and right answers per questions.
+	 * 
+	 * @param numOfParticipants The number of participants
+	 */
 	private void initScoreStatisticPerItem(double numOfParticipants) {
 		BarSeries d1 = new BarSeries();
 		BarSeries d2 = new BarSeries();
