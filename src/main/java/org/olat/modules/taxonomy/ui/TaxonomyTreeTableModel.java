@@ -66,6 +66,8 @@ implements FilterableFlexiTableModel  {
 				}
 			}
 			setFilteredObjects(filteredRows);
+		} else if(focusedNode != null) {
+			//super.setObjects(backupRows);
 		} else {
 			super.setObjects(backupRows);
 		}

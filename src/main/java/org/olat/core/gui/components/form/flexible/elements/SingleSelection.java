@@ -62,6 +62,10 @@ public interface SingleSelection extends SelectionElement {
 	public boolean isAllowNoSelection();
 	
 	public void setAllowNoSelection(boolean allowNoSelection);
+	
+	public boolean isEscapeHtml();
+	
+	public void setEscapeHtml(boolean escape);
 
 	
 	/**

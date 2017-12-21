@@ -289,6 +289,19 @@ public class StringHelper {
 		return !matcher.find();
 	}
 	
+	public static int count(String s, char character) {
+		int count = 0;
+		
+		char[] chars = s.toCharArray();
+		for(int i=chars.length; i-->0; ) {
+			if(chars[i] == character) {
+				count++;
+			}
+		}
+		
+		return count;
+	}
+	
 	public static boolean isSame(String s1, String s2) {
 		if(s1 == null && s2 == null) {
 			return true;

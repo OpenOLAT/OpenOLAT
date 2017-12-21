@@ -74,7 +74,23 @@ public interface TaxonomyService {
 	 * 
 	 * @return true if the level can be deleted
 	 */
-	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel);
+	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo);
+	
+	/**
+	 * The operation move the following elements from the source taxonomy
+	 * level to the target taxonomy level:
+	 * <ul>
+	 *  <li>The documents
+	 *  <li>The children
+	 *  <li>The competence
+	 *  <li>Replace the taxonomy level from question items
+	 * </ul>
+	 * 
+	 * @param taxonomyLevel The taxonomy level source
+	 * @param mergeTo The taxonomy level target
+	 * @return true if the source was deleted after merging in the target level
+	 */
+	public boolean mergeTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo);
 	
 	/**
 	 * @param ref The root taxonomy (optional)
@@ -234,6 +250,12 @@ public interface TaxonomyService {
 	public List<TaxonomyCompetence> getTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity, Date date);
 	
 	/**
+	 * @param taxonomyLevels A list of taxonomy levels
+	 * @return The number of competences related to the specified list of taxonomy levels.
+	 */
+	public int countTaxonomyCompetences(List<? extends TaxonomyLevelRef> taxonomyLevels);
+	
+	/**
 	 * @param taxonomy The taxonomy (mandatory)
 	 * @param identity The user to check (mandatory)
 	 * @param competences The list of competences to search
@@ -276,6 +298,12 @@ public interface TaxonomyService {
 	 * @param competence The competence to remove
 	 */
 	public void removeTaxonomyLevelCompetence(TaxonomyCompetence competence);
+	
+	/**
+	 * @param taxonomyLevels A list of taxonomy levels
+	 * @return The number of questions and other elements related to the specified taxonomy levels
+	 */
+	public int countRelations(List<? extends TaxonomyLevelRef> taxonomyLevels);
 	
 	/**
 	 * 

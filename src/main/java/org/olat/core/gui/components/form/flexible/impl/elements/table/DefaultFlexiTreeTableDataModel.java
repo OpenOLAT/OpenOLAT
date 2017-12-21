@@ -36,6 +36,7 @@ public abstract class DefaultFlexiTreeTableDataModel<U extends FlexiTreeTableNod
 implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	
 	protected List<U> backupRows;
+	protected FlexiTreeTableNode focusedNode;
 
 	public DefaultFlexiTreeTableDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -101,6 +102,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 			focusedRows.add(currentRow);
 		}
 		super.setObjects(focusedRows);
+		focusedNode = object;
 	}
 
 	@Override
@@ -108,6 +110,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 		int row = backupRows.indexOf(node);
 		if(row < 0) {
 			super.setObjects(backupRows);
+			focusedNode = null;
 		} else {
 			FlexiTreeTableNode parentObject = node.getParent();
 			List<U> focusedRows = new ArrayList<>();
@@ -121,6 +124,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 				focusedRows.add(currentRow);
 			}
 			super.setObjects(focusedRows);
+			focusedNode = node;
 		}
 	}
 

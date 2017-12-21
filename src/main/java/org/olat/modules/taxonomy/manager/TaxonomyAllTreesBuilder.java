@@ -28,11 +28,12 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyModel;
 import org.olat.modules.taxonomy.ui.TaxonomyLevelRow;
 
 /**
@@ -68,14 +69,14 @@ public class TaxonomyAllTreesBuilder {
 		return nodeList.subList(1, nodeList.size());
 	}
 	
-	public GenericTreeModel buildTreeModel() {
-		GenericTreeModel taxonomyTreesModel = new GenericTreeModel();
+	public TaxonomyModel buildTreeModel() {
+		TaxonomyModel taxonomyTreesModel = new TaxonomyModel();
 		loadTreeModel(taxonomyTreesModel);
 		return taxonomyTreesModel;
 	}
 	
-	public GenericTreeModel buildTreeModel(Taxonomy taxonomy) {
-		GenericTreeModel taxonomyTreesModel = new GenericTreeModel();
+	public TaxonomyModel buildTreeModel(Taxonomy taxonomy) {
+		TaxonomyModel taxonomyTreesModel = new TaxonomyModel();
 		loadTreeModel(taxonomyTreesModel, taxonomy);
 		return taxonomyTreesModel;
 	}
@@ -109,18 +110,7 @@ public class TaxonomyAllTreesBuilder {
 		loadTreeModel(rootNodesMap, null);
 	}
 	
-	public static void sort(INode parent) {
-		parent.sort(new TaxonomyTreeNodeComparator());
-		for(int i=parent.getChildCount(); i-->0; ) {
-			sort(parent.getChildAt(i));
-		}
-	}
-	
-	public static final String nodeKey(TaxonomyLevel taxonomyLevel) {
-		return LEVEL_PREFIX + taxonomyLevel.getKey();
-	}
-	
-	public static final String nodeKey(TaxonomyLevelRow taxonomyLevel) {
+	public static final String nodeKey(TaxonomyLevelRef taxonomyLevel) {
 		return LEVEL_PREFIX + taxonomyLevel.getKey();
 	}
 

@@ -134,8 +134,8 @@ public enum TaxonomyLevelManagedFlag {
 		return false;
 	}
 	
-	public static TaxonomyLevelManagedFlag getCorrespondingFlag(TaxonomyCompetenceTypes type) {
-		switch(type) {
+	public static TaxonomyLevelManagedFlag getCorrespondingFlag(TaxonomyCompetenceTypes competenceType) {
+		switch(competenceType) {
 			case target: return TaxonomyLevelManagedFlag.targetCompetence;
 			case have: return TaxonomyLevelManagedFlag.haveCompetence;
 			case teach: return TaxonomyLevelManagedFlag.teachCompetence;

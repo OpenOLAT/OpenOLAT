@@ -1,0 +1,20 @@
+<div class="o_form form-horizontal" role="form">
+	#if($r.isNotEmpty($errorMsg))
+		<div class="o_error">$errorMsg</div>
+	#else
+		<div class="o_block">
+			<div class="form-group clearfix">
+				$r.render("types_LABEL", "types", "col-sm-3")
+				<div class='col-sm-9'>
+					$r.render("types", "form")
+				</div>
+			</div>
+		</div>
+	#end
+	<div class="o_button_group">
+		$r.render("cancel")
+		#if($r.available("assign.type"))
+			$r.render("assign.type")
+		#end
+	</div>
+</div>

@@ -22,6 +22,7 @@ package org.olat.modules.taxonomy.manager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
@@ -141,6 +142,27 @@ public class TaxonomyCompetenceDAO {
 			.getResultList();	
 	}
 	
+	public int countTaxonomyCompetences(List<? extends TaxonomyLevelRef> taxonomyLevels) {
+		if(taxonomyLevels == null || taxonomyLevels.isEmpty()) return 0;
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select count(competence.key) from ctaxonomycompetence competence")
+		  .append(" inner join competence.identity ident")
+		  .append(" inner join competence.taxonomyLevel taxonomyLevel")
+		  .append(" where taxonomyLevel.key in (:taxonomyLevelKeys)");
+		
+		List<Long> taxonomyLevelKeys = taxonomyLevels
+				.stream()
+				.map(l -> l.getKey())
+				.collect(Collectors.toList());
+		
+		List<Number> counts = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Number.class)
+			.setParameter("taxonomyLevelKeys", taxonomyLevelKeys)
+			.getResultList();	
+		return counts != null && counts.size() == 1 && counts.get(0) != null ? counts.get(0).intValue() : 0;
+	}
+	
 	public boolean hasCompetenceByTaxonomy(TaxonomyRef taxonomy, IdentityRef identity, Date date) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select competence.key from ctaxonomycompetence competence")
@@ -210,6 +232,15 @@ public class TaxonomyCompetenceDAO {
 		
 		List<Long> keys = query.getResultList();
 		return keys != null && keys.size() > 0 && keys.get(0) != null && keys.get(0).intValue() > 0;
+	}
+	
+	public int replace(TaxonomyLevel source, TaxonomyLevel target) {
+		String q = "update ctaxonomycompetence competence set competence.taxonomyLevel.key=:targetLevelKey where competence.taxonomyLevel.key=:sourceLevelKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("sourceLevelKey", source.getKey())
+				.setParameter("targetLevelKey", target.getKey())
+				.executeUpdate();
 	}
 	
 	public void deleteCompetence(TaxonomyCompetence competence) {

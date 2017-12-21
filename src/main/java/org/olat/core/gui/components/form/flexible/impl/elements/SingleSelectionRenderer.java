@@ -108,7 +108,12 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		}
 		sb.append(" />");
 		if (StringHelper.containsNonWhitespace(value)) {
-			sb.append(" ").append(value);		
+			sb.append(" ");
+			if(source.isEscapeHtml()) {
+				sb.append(StringHelper.escapeHtml(value));
+			} else {
+				sb.append(value);
+			}
 		} else if(inline) {
 			// at least something in label required for properly aligned rendering, nbsp is important for bootstrap
 			sb.append("&nbsp;"); 

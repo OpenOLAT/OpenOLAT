@@ -19,10 +19,18 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.tree.GenericTreeModel;
+import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
@@ -31,8 +39,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.nodes.INode;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelType;
+import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyAllTreesBuilder;
+import org.olat.modules.taxonomy.model.TaxonomyModel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,20 +55,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MoveTaxonomyLevelController extends FormBasicController {
 	
 	private MenuTreeItem taxonomyEl;
-	private GenericTreeModel taxonomyModel;
+	private TaxonomyModel taxonomyModel;
 	
 	private final Taxonomy taxonomy;
-	private TaxonomyLevel levelToMove;
 	private TaxonomyLevel movedLevel;
+	private List<TaxonomyLevel> levelsToMove;
+	private Set<TaxonomyLevelType> allowedTypes;
+	private Set<TreeNode> targetableNodes = new HashSet<>();
 	
 	@Autowired
 	private TaxonomyService taxonomyService;
 	
 	public MoveTaxonomyLevelController(UserRequest ureq, WindowControl wControl,
-			Taxonomy taxonomy, TaxonomyLevel levelToMove) {
+			List<TaxonomyLevel> levelsToMove, Taxonomy taxonomy) {
 		super(ureq, wControl, "move_taxonomy_level");
 		this.taxonomy = taxonomy;
-		this.levelToMove = levelToMove;
+		this.levelsToMove = levelsToMove;
+		allowedTypes = getAllowedTypes();
+		
 		initForm(ureq);
 		loadModel();
 	}
@@ -68,7 +83,7 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		taxonomyModel = new GenericTreeModel();
+		taxonomyModel = new TaxonomyModel();
 		taxonomyEl = uifactory.addTreeMultiselect("taxonomy", null, formLayout, taxonomyModel, this);
 		taxonomyEl.setMultiSelect(false);
 		taxonomyEl.setRootVisible(true);
@@ -79,10 +94,85 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 	
 	private void loadModel() {
 		new TaxonomyAllTreesBuilder().loadTreeModel(taxonomyModel, taxonomy);
-		TreeNode nodeToMove = taxonomyModel
-				.getNodeById(TaxonomyAllTreesBuilder.nodeKey(levelToMove));
-		nodeToMove.removeAllChildren();
-		TaxonomyAllTreesBuilder.sort(taxonomyModel.getRootNode());
+		//remove children of the level to move
+		for(TaxonomyLevel levelToMove:levelsToMove) {
+			TreeNode nodeToMove = taxonomyModel
+					.getNodeById(TaxonomyAllTreesBuilder.nodeKey(levelToMove));
+			nodeToMove.removeAllChildren();
+		}
+		
+		// remove the level with
+		
+		List<TreeNode> openedNodes = new ArrayList<>();
+		filterByAllowedTypes(taxonomyModel.getRootNode(), openedNodes);
+		taxonomyModel.sort(taxonomyModel.getRootNode());
+
+		List<String> nodeIds = openedNodes
+				.stream().map(node -> node.getIdent())
+				.collect(Collectors.toList());
+		taxonomyEl.setOpenNodeIds(nodeIds);
+	}
+	
+	private boolean filterByAllowedTypes(TreeNode node, List<TreeNode> openedNodes) {
+		((GenericTreeNode)node).setIconCssClass(null);
+		
+		for(int i=node.getChildCount(); i-->0; ) {
+			boolean ok = filterByAllowedTypes((TreeNode)node.getChildAt(i), openedNodes);
+			if(!ok) {
+				node.remove(node.getChildAt(i));
+			}
+		}
+		
+		boolean ok = false;
+		Object uobject = node.getUserObject();
+		if(uobject instanceof TaxonomyLevel) {
+			TaxonomyLevel level = (TaxonomyLevel)uobject;
+			TaxonomyLevelType type = level.getType();
+			if(type == null || allowedTypes.contains(type)) {
+				openedNodes.add(node);
+				((GenericTreeNode)node).setIconCssClass("o_icon_node_under o_icon-rotate-180");
+				targetableNodes.add(node);
+				ok = true;
+			} else if(node.getChildCount() > 0) {
+				openedNodes.add(node);
+				ok = true;
+			}
+		} else {
+			targetableNodes.add(node);
+			openedNodes.add(node);
+			ok = true;
+		}
+
+		return ok;
+	}
+	
+	private Set<TaxonomyLevelType> getAllowedTypes() {
+		List<TaxonomyLevelType> allTypes = new ArrayList<>(taxonomyService.getTaxonomyLevelTypes(taxonomy));
+		Map<TaxonomyLevelType, Set<TaxonomyLevelType>> subToParentTypes = new HashMap<>();
+		for(TaxonomyLevelType type:allTypes) {
+			Set<TaxonomyLevelTypeToType> typesToTypes = type.getAllowedTaxonomyLevelSubTypes();
+			for(TaxonomyLevelTypeToType typeToType:typesToTypes) {
+				TaxonomyLevelType subTyp = typeToType.getAllowedSubTaxonomyLevelType();
+				subToParentTypes
+					.computeIfAbsent(subTyp, t -> new HashSet<>())
+					.add(type);
+			}
+		}
+		
+		Set<TaxonomyLevelType> analyzedTypes = new HashSet<>();
+		for(TaxonomyLevel level:levelsToMove) {
+			TaxonomyLevelType levelType = level.getType();
+			if(levelType != null && !analyzedTypes.contains(levelType)) {
+				analyzedTypes.add(levelType);
+				
+				Set<TaxonomyLevelType> allowed = subToParentTypes.get(levelType);
+				if(allowed != null) {
+					allTypes.retainAll(allowed);
+				}
+			}
+		}
+
+		return new HashSet<>(allTypes);
 	}
 	
 	@Override
@@ -94,11 +184,15 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		taxonomyEl.clearError();
 		if(taxonomyEl.getSelectedNode() == null) {
 			taxonomyEl.setErrorKey("error.select.target.level", null);
 			allOk &= false;
 		} else if(isParent()) {
 			taxonomyEl.setErrorKey("error.target.no.parent", null);
+			allOk &= false;
+		} else if(!targetableNodes.contains(taxonomyEl.getSelectedNode())) {
+			taxonomyEl.setErrorKey("error.target.not.allowed", null);
 			allOk &= false;
 		}
 
@@ -106,6 +200,14 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 	}
 	
 	private boolean isParent() {
+		boolean parent = false;
+		for(TaxonomyLevel levelToMove:levelsToMove) {
+			parent |= isParent(levelToMove);
+		}
+		return parent;
+	}
+	
+	private boolean isParent(TaxonomyLevel levelToMove) {
 		TreeNode nodeToMove = taxonomyModel
 				.getNodeById(TaxonomyAllTreesBuilder.nodeKey(levelToMove));
 		TreeNode selectedNode = taxonomyEl.getSelectedNode();
@@ -132,10 +234,14 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 		} else {
 			TreeNode selectedNode = taxonomyEl.getSelectedNode();
 			if(selectedNode == taxonomyModel.getRootNode()) {
-				movedLevel = taxonomyService.moveTaxonomyLevel(levelToMove, null);
+				for(TaxonomyLevel levelToMove:levelsToMove) {
+					movedLevel = taxonomyService.moveTaxonomyLevel(levelToMove, null);
+				}
 			} else {
 				TaxonomyLevel newParentLevel = (TaxonomyLevel)selectedNode.getUserObject();
-				movedLevel = taxonomyService.moveTaxonomyLevel(levelToMove, newParentLevel);
+				for(TaxonomyLevel levelToMove:levelsToMove) {
+					movedLevel = taxonomyService.moveTaxonomyLevel(levelToMove, newParentLevel);
+				}
 			}
 		}
 		fireEvent(ureq, Event.DONE_EVENT);

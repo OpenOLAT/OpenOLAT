@@ -22,6 +22,7 @@ package org.olat.modules.taxonomy.ui;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 
@@ -61,6 +62,10 @@ public class TaxonomyLevelRow implements TaxonomyLevelRef, FlexiTreeTableNode {
 	@Override
 	public String getCrump() {
 		return taxonomyLevel.getDisplayName();
+	}
+	
+	public TaxonomyLevelManagedFlag[] getManagedFlags() {
+		return taxonomyLevel.getManagedFlags();
 	}
 
 	public Long getParentLevelKey() {

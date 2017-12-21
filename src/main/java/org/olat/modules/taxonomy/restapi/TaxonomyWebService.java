@@ -214,7 +214,7 @@ public class TaxonomyWebService {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 		
-		boolean canDelete = taxonomyService.deleteTaxonomyLevel(level);
+		boolean canDelete = taxonomyService.deleteTaxonomyLevel(level, null);
 		if(canDelete) {
 			return Response.ok().build();
 		}

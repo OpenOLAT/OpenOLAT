@@ -278,6 +278,18 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		return levels;
 	}
 	
+	public List<TaxonomyLevel> getChildren(TaxonomyLevel taxonomyLevel) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select level from ctaxonomylevel as level")
+		  .append(" inner join fetch level.parent as parent")
+		  .append(" where parent.key=:parentKey");
+		  
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), TaxonomyLevel.class)
+			.setParameter("parentKey", taxonomyLevel.getKey())
+			.getResultList();
+	}
+	
 	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level) {
 		TaxonomyLevel parentLevel = getParent(level);
 		String path = level.getMaterializedPathIdentifiers();

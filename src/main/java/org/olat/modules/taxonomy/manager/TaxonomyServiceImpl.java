@@ -59,6 +59,8 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
+	private TaxonomyRelationsDAO taxonomyRelationsDao;
+	@Autowired
 	private TaxonomyLevelTypeDAO taxonomyLevelTypeDao;
 	@Autowired
 	private TaxonomyCompetenceDAO taxonomyCompetenceDao;
@@ -66,7 +68,8 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	private TaxonomyLevelTypeToTypeDAO taxonomyLevelTypeToTypeDao;
 	@Autowired
 	private TaxonomyCompetenceAuditLogDAO taxonomyCompetenceAuditLogDao;
-	
+
+	@Override
 	public Taxonomy createTaxonomy(String identifier, String displayName, String description, String externalId) {
 		return taxonomyDao.createTaxonomy(identifier, displayName, description, externalId);
 	}
@@ -149,17 +152,48 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
-	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel) {
+	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo) {
 		// save the documents
 		TaxonomyLevel reloadedTaxonomyLevel = taxonomyLevelDao.loadByKey(taxonomyLevel.getKey());
-		VFSContainer library = taxonomyLevelDao.getDocumentsLibrary(reloadedTaxonomyLevel);
-		Taxonomy taxonomy = reloadedTaxonomyLevel.getTaxonomy();
-		VFSContainer lostAndFound = taxonomyDao.getLostAndFoundDirectoryLibrary(taxonomy);
-		String dir = StringHelper.transformDisplayNameToFileSystemName(reloadedTaxonomyLevel.getIdentifier());
-		dir += "_" + taxonomyLevel.getKey();
-		VFSContainer lastStorage = lostAndFound.createChildContainer(dir);
-		VFSManager.copyContent(library, lastStorage);
+		if(mergeTo != null) {
+			TaxonomyLevel reloadedMergeTo = taxonomyLevelDao.loadByKey(mergeTo.getKey());
+			merge(reloadedTaxonomyLevel, reloadedMergeTo);
+		} else {
+			VFSContainer library = taxonomyLevelDao.getDocumentsLibrary(reloadedTaxonomyLevel);
+			Taxonomy taxonomy = reloadedTaxonomyLevel.getTaxonomy();
+			VFSContainer lostAndFound = taxonomyDao.getLostAndFoundDirectoryLibrary(taxonomy);
+			String dir = StringHelper.transformDisplayNameToFileSystemName(reloadedTaxonomyLevel.getIdentifier());
+			dir += "_" + taxonomyLevel.getKey();
+			VFSContainer lastStorage = lostAndFound.createChildContainer(dir);
+			VFSManager.copyContent(library, lastStorage);
+		}
+
 		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
+	}
+	
+	@Override
+	public boolean mergeTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo) {
+		TaxonomyLevel reloadedTaxonomyLevel = taxonomyLevelDao.loadByKey(taxonomyLevel.getKey());
+		TaxonomyLevel reloadedMergeTo = taxonomyLevelDao.loadByKey(mergeTo.getKey());
+		merge(reloadedTaxonomyLevel, reloadedMergeTo);
+		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
+	}
+
+	private void merge(TaxonomyLevel taxonomyLevel, TaxonomyLevel mergeTo) {
+		//documents
+		VFSContainer sourceLibrary = taxonomyLevelDao.getDocumentsLibrary(taxonomyLevel);
+		VFSContainer targetLibrary = taxonomyLevelDao.getDocumentsLibrary(mergeTo);
+		VFSManager.copyContent(sourceLibrary, targetLibrary);
+		
+		//children
+		List<TaxonomyLevel> children = taxonomyLevelDao.getChildren(taxonomyLevel);
+		for(TaxonomyLevel child:children) {
+			taxonomyLevelDao.moveTaxonomyLevel(child, mergeTo);
+		}
+		//move the competences
+		taxonomyCompetenceDao.replace(taxonomyLevel, mergeTo);
+		//questions
+		taxonomyRelationsDao.replaceQuestionItem(taxonomyLevel, mergeTo);
 	}
 
 	@Override
@@ -266,6 +300,11 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
+	public int countTaxonomyCompetences(List<? extends TaxonomyLevelRef> taxonomyLevels) {
+		return taxonomyCompetenceDao.countTaxonomyCompetences(taxonomyLevels);
+	}
+
+	@Override
 	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity,
 			TaxonomyCompetenceTypes competence, Date expiration) {
 		return taxonomyCompetenceDao.createTaxonomyCompetence(competence, taxonomyLevel, identity, expiration);
@@ -279,6 +318,11 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	@Override
 	public void removeTaxonomyLevelCompetence(TaxonomyCompetence competence) {
 		taxonomyCompetenceDao.deleteCompetence(competence);
+	}
+
+	@Override
+	public int countRelations(List<? extends TaxonomyLevelRef> taxonomyLevels) {
+		return taxonomyRelationsDao.countQuestionItems(taxonomyLevels);
 	}
 
 	@Override
