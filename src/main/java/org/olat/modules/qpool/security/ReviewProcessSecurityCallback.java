@@ -81,6 +81,12 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	}
 
 	@Override
+	public boolean canRemoveTaxonomy() {
+		return QuestionStatus.draft.equals(itemView.getQuestionStatus())
+				&& (isAdmin || itemView.isAuthor() || itemView.isManager());
+	}
+
+	@Override
 	public boolean canStartReview() {
 		return itemView.isReviewableFormat()
 				&& reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())

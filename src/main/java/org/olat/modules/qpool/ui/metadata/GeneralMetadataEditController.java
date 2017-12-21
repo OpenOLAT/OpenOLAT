@@ -53,6 +53,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GeneralMetadataEditController extends FormBasicController {
 
+	private static final String NO_KEY = "noKey";
+	
 	private TextElement topicEl;
 	private SingleSelection taxonomyLevelEl;
 	private SingleSelection contextEl;
@@ -78,7 +80,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 		this.item = item;
 		
 		initForm(ureq);
-		setReadOnly(securityCallback.canEditMetadata());
+		setItem(item, securityCallback);
 	}
 
 	@Override
@@ -86,31 +88,13 @@ public class GeneralMetadataEditController extends FormBasicController {
 		String topic = item.getTopic();
 		topicEl = uifactory.addTextElement("general.topic", "general.topic", 1000, topic, formLayout);
 		
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity());
-		String[] selectableKeys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
-		String[] selectableValues = qpoolTaxonomyTreeBuilder.getSelectableValues();
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
-				selectableKeys, selectableValues, null);
-		if (item instanceof QuestionItemImpl) {
-			QuestionItemImpl itemImpl = (QuestionItemImpl) item;
-			TaxonomyLevel selectedTaxonomyLevel = itemImpl.getTaxonomyLevel();
-			if(selectedTaxonomyLevel != null) {
-				String selectedTaxonomyLevelKey = String.valueOf(selectedTaxonomyLevel.getKey());
-				for(String taxonomyKey: qpoolTaxonomyTreeBuilder.getSelectableKeys()) {
-					if(taxonomyKey.equals(selectedTaxonomyLevelKey)) {
-						taxonomyLevelEl.select(taxonomyKey, true);
-					} else {
-						selectableValues[0] = ((QuestionItemImpl) item).getTaxonomyLevel().getDisplayName();
-						taxonomyLevelEl.setEnabled(false);
-					}
-				}
-			}
-		}
+				new String[0], new String[0]);
 		
 		List<QEducationalContext> levels = qpoolService.getAllEducationlContexts();
-		String[] contextKeys = new String[ levels.size() ];
-		String[] contextValues = new String[ levels.size() ];
-		int count = 0;
+		String[] contextKeys = new String[ levels.size() + 1 ];
+		String[] contextValues = new String[ levels.size() + 1];
+		int count = 1;
 		for(QEducationalContext level:levels) {
 			contextKeys[count] = level.getLevel();
 			String translation = translate("item.level." + level.getLevel().toLowerCase());
@@ -119,29 +103,37 @@ public class GeneralMetadataEditController extends FormBasicController {
 			}
 			contextValues[count++] = translation;
 		}
-		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout, contextKeys, contextValues, null);
-		contextEl.setEnabled(count > 0);
+		if (count > 1) {
+			contextKeys[0] = NO_KEY;
+			contextValues[0] = "-";
+		}
+		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout,
+				contextKeys, contextValues, null);
+		contextEl.setEnabled(count > 1);
+		if (StringHelper.containsNonWhitespace(item.getEducationalContextLevel())) {
+			contextEl.select(item.getEducationalContextLevel(), true);
+		}
 		
 		String keywords = item.getKeywords();
 		keywordsEl = uifactory.addTextElement("general.keywords", "general.keywords", 1000, keywords, formLayout);
-
+		
 		String addInfos = item.getAdditionalInformations();
-		addInfosEl = uifactory.addTextElement("general.additional.informations", "general.additional.informations",
-				256, addInfos, formLayout);
-
+		addInfosEl = uifactory.addTextElement("general.additional.informations", "general.additional.informations", 256,
+				addInfos, formLayout);
+		
 		String coverage = item.getCoverage();
 		coverageEl = uifactory.addTextElement("general.coverage", "general.coverage", 1000, coverage, formLayout);
 
 		String language = item.getLanguage();
 		languageEl = uifactory.addTextElement("general.language", "general.language", 10, language, formLayout);
 		
-		String[] assessmentTypeKeys = new String[]{ "summative", "formative", "both"};
-		String[] assessmentTypeValues = new String[]{
+		String[] assessmentTypeKeys = new String[]{ NO_KEY, "summative", "formative", "both"};
+		String[] assessmentTypeValues = new String[]{ "-",
 			translate("question.assessmentType.summative"), translate("question.assessmentType.formative"),
 			translate("question.assessmentType.both"),	
 		};
-		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType", formLayout,
-				assessmentTypeKeys, assessmentTypeValues, null);
+		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType",
+				formLayout, assessmentTypeKeys, assessmentTypeValues, null);
 		if(StringHelper.containsNonWhitespace(item.getAssessmentType())) {
 			assessmentTypeEl.select(item.getAssessmentType(), true);
 		}
@@ -152,10 +144,33 @@ public class GeneralMetadataEditController extends FormBasicController {
 		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-	
 
-	
-	private void setReadOnly(boolean canEditMetadata) {
+	private void buildTaxonomyLevelEl(QuestionItemSecurityCallback securityCallback) {
+		System.out.println(securityCallback.canRemoveTaxonomy());
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), securityCallback.canRemoveTaxonomy());
+		String[] selectableKeys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
+		String[] selectableValues = qpoolTaxonomyTreeBuilder.getSelectableValues();
+		taxonomyLevelEl.setKeysAndValues(selectableKeys, selectableValues, null);
+		if (item instanceof QuestionItemImpl) {
+			QuestionItemImpl itemImpl = (QuestionItemImpl) item;
+			TaxonomyLevel selectedTaxonomyLevel = itemImpl.getTaxonomyLevel();
+			if(selectedTaxonomyLevel != null) {
+				String selectedTaxonomyLevelKey = String.valueOf(selectedTaxonomyLevel.getKey());
+				for(String taxonomyKey: qpoolTaxonomyTreeBuilder.getSelectableKeys()) {
+					if(taxonomyKey.equals(selectedTaxonomyLevelKey)) {
+						taxonomyLevelEl.select(taxonomyKey, true);
+					}
+				}
+				if (!taxonomyLevelEl.isOneSelected()) {
+					selectableValues[0] = ((QuestionItemImpl) item).getTaxonomyLevel().getDisplayName();
+					taxonomyLevelEl.setEnabled(false);
+				}
+			}
+		}
+	}
+
+	private void setReadOnly(QuestionItemSecurityCallback securityCallback) {
+		boolean canEditMetadata = securityCallback.canEditMetadata();
 		topicEl.setEnabled(canEditMetadata);
 		taxonomyLevelEl.setEnabled(canEditMetadata);
 		contextEl.setEnabled(canEditMetadata);
@@ -166,7 +181,15 @@ public class GeneralMetadataEditController extends FormBasicController {
 		assessmentTypeEl.setEnabled(canEditMetadata);
 		buttonsCont.setVisible(canEditMetadata);
 	}
-	
+
+	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+		this.item = item;
+		if (securityCallback != null) {
+			buildTaxonomyLevelEl(securityCallback);
+			setReadOnly(securityCallback);
+		}
+	}
+		
 	@Override
 	protected void doDispose() {
 		//
@@ -200,13 +223,11 @@ public class GeneralMetadataEditController extends FormBasicController {
 			if(taxonomyLevel != null) {
 				itemImpl.setTaxonomyLevel(taxonomyLevel);
 			}
-			
-			if(contextEl.isOneSelected()) {
-				QEducationalContext context = qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey());
-				itemImpl.setEducationalContext(context);
-			} else {
-				itemImpl.setEducationalContext(null);
-			}
+	
+			QEducationalContext context = contextEl.isOneSelected() && !NO_KEY.equals(contextEl.getSelectedKey())
+					? qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey())
+					: null;
+			itemImpl.setEducationalContext(context);
 			
 			if(StringHelper.containsNonWhitespace(keywordsEl.getValue())) {
 				itemImpl.setKeywords(keywordsEl.getValue());
@@ -228,10 +249,13 @@ public class GeneralMetadataEditController extends FormBasicController {
 			
 			itemImpl.setLanguage(languageEl.getValue());
 			
-			String assessmentType = assessmentTypeEl.isOneSelected() ? assessmentTypeEl.getSelectedKey() : null;
+			String assessmentType = assessmentTypeEl.isOneSelected() && !NO_KEY.equals(assessmentTypeEl.getSelectedKey())
+					? assessmentTypeEl.getSelectedKey()
+					: null;
 			itemImpl.setAssessmentType(assessmentType);
 		}
 		item = qpoolService.updateItem(item);
 		fireEvent(ureq, new QItemEdited(item));
 	}
+
 }

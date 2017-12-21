@@ -147,7 +147,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 		
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		showMetadatas = (Boolean) guiPrefs.get(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_METADATAS);
-		System.out.println(showMetadatas);
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean moderator = roles.isOLATAdmin();
@@ -417,6 +416,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			}
 		} else if(source == metadatasCtrl) {
 			if(event instanceof QItemEdited) {
+				reloadData();
 				fireEvent(ureq, event);
 			}
 		}
@@ -520,7 +520,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 		if (itemView != null) {
 			securityCallback.setQuestionItemView(itemView);
 			initTools();
-			// TODO uh A muss Metadata ctrl erneuert werden?
+			QuestionItem reloadedItem = qpoolService.loadItemById(itemView.getKey());
+			metadatasCtrl.setItem(reloadedItem, securityCallback);
 		}
 	}
 

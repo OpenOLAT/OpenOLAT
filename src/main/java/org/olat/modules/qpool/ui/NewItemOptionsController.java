@@ -71,7 +71,7 @@ public class NewItemOptionsController extends FormBasicController {
 	public NewItemOptionsController(UserRequest ureq, WindowControl wControl, TaxonomyLevel selectedTaxonomyLevel) {	
 		super(ureq, wControl);
 		this.selectedTaxonomyLevel = selectedTaxonomyLevel;
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity());
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), true);
 		
 		initForm(ureq);
 	}

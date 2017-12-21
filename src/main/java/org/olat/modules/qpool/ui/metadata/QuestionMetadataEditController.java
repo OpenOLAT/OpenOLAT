@@ -83,7 +83,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 		this.item = item;
 		
 		initForm(ureq);
-		setReadOnly(securityCallback.canEditMetadata());
+		setItem(item, securityCallback);
 	}
 
 	@Override
@@ -137,10 +137,12 @@ public class QuestionMetadataEditController extends FormBasicController {
 		stdevDifficultyEl = uifactory.addTextElement("question.stdevDifficulty", "question.stdevDifficulty", 24, stdevDifficulty, formLayout);
 		stdevDifficultyEl.setExampleKey("question.stdevDifficulty.example", null);
 		stdevDifficultyEl.setDisplaySize(4);
+		
 		String differentiation = bigDToString(item.getDifferentiation());
 		differentiationEl = uifactory.addTextElement("question.differentiation", "question.differentiation", 24, differentiation, formLayout);
 		differentiationEl.setExampleKey("question.differentiation.example", null);
 		differentiationEl.setDisplaySize(4);
+		
 		String numAnswerAlt = item.getNumOfAnswerAlternatives() < 0 ? "" : Integer.toString(item.getNumOfAnswerAlternatives());
 		numAnswerAltEl = uifactory.addTextElement("question.numOfAnswerAlternatives", "question.numOfAnswerAlternatives", 24, numAnswerAlt, formLayout);
 		numAnswerAltEl.setDisplaySize(4);
@@ -154,7 +156,8 @@ public class QuestionMetadataEditController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void setReadOnly(boolean canEditMetadata) {
+	private void setReadOnly(QuestionItemSecurityCallback securityCallback) {
+		boolean canEditMetadata = securityCallback.canEditMetadata();
 		learningTimeDayElement.setEnabled(canEditMetadata);
 		learningTimeHourElement.setEnabled(canEditMetadata);
 		learningTimeMinuteElement.setEnabled(canEditMetadata);
@@ -165,6 +168,13 @@ public class QuestionMetadataEditController extends FormBasicController {
 		differentiationEl.setEnabled(canEditMetadata);
 		numAnswerAltEl.setEnabled(canEditMetadata);
 		buttonsCont.setVisible(canEditMetadata);
+	}
+
+	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+		this.item = item;
+		if (securityCallback != null) {
+			setReadOnly(securityCallback);
+		}
 	}
 
 	@Override
@@ -214,4 +224,5 @@ public class QuestionMetadataEditController extends FormBasicController {
 		item = qpoolService.updateItem(item);
 		fireEvent(ureq, new QItemEdited(item));
 	}
+
 }

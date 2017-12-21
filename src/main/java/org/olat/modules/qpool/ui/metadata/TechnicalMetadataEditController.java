@@ -23,6 +23,7 @@ import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLo
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -46,11 +47,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TechnicalMetadataEditController extends FormBasicController  {
-	
+
+
+	private StaticTextElement editorEl;
+	private StaticTextElement formatEl;
+	private StaticTextElement editorVersionEl;
+	private StaticTextElement lastModifiedEl;
+	private StaticTextElement statusLastMdifiedEl;	
 	private TextElement versionEl;
+	private FormLayoutContainer buttonsCont;
 	
 	private QuestionItem item;
-	private final QuestionItemSecurityCallback securityCallback;
 	
 	@Autowired
 	private QPoolService qpoolService;
@@ -61,46 +68,73 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
-		this.securityCallback = securityCallback;
 		
 		initForm(ureq);
+		setItem(item, securityCallback);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		uifactory.addStaticTextElement("general.identifier", item.getIdentifier(), formLayout);
 		
-		String masterId = item.getMasterIdentifier() == null ? "" : item.getMasterIdentifier();
-		uifactory.addStaticTextElement("general.master.identifier", masterId, formLayout);
-		
-		String editor = item.getEditor() == null ? "" : item.getEditor();
-		uifactory.addStaticTextElement("technical.editor", editor, formLayout);
-		
-		String editorVersion = item.getEditorVersion() == null ? "" : item.getEditorVersion();
-		uifactory.addStaticTextElement("technical.editorVersion", editorVersion, formLayout);
-		
-		String format = item.getFormat() == null ? "" : item.getFormat();
-		uifactory.addStaticTextElement("technical.format", format, formLayout);
+		uifactory.addStaticTextElement("general.master.identifier", "", formLayout);
+
+		editorEl = uifactory.addStaticTextElement("technical.editor", "", formLayout);
+
+		editorVersionEl = uifactory.addStaticTextElement("technical.editorVersion", "", formLayout);
+
+		formatEl = uifactory.addStaticTextElement("technical.format", "", formLayout);
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		String creationDate = formatter.formatDateAndTime(item.getCreationDate());
 		uifactory.addStaticTextElement("technical.creation", creationDate, formLayout);
 		
-		String lastModified = formatter.formatDateAndTime(item.getLastModified());
-		uifactory.addStaticTextElement("technical.lastModified", lastModified, formLayout);
+		lastModifiedEl = uifactory.addStaticTextElement("technical.lastModified", "", formLayout);
+
+		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, "", formLayout);
 		
-		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, item.getItemVersion(), formLayout);
-		versionEl.setEnabled(securityCallback.canChangeVersion());
+		statusLastMdifiedEl = uifactory.addStaticTextElement("technical.statusLastModified", "", formLayout);
+		
+		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setRootForm(mainForm);
+		formLayout.add(buttonsCont);
+		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+	
+	private void setReadOnly(QuestionItemSecurityCallback securityCallback) {
+		boolean canChangeVersion = securityCallback.canChangeVersion();
+		versionEl.setEnabled(canChangeVersion);
+		buttonsCont.setVisible(canChangeVersion);
+	}
+
+	private void updateUI() {
+		String editor = item.getEditor() == null ? "" : item.getEditor();
+		editorEl.setValue(editor);
+		
+		String editorVersion = item.getEditorVersion() == null ? "" : item.getEditorVersion();
+		editorVersionEl.setValue(editorVersion);
+		
+		String format = item.getFormat() == null ? "" : item.getFormat();
+		formatEl.setValue(format);
+		
+		Formatter formatter = Formatter.getInstance(getLocale());
+		
+		String lastModified = formatter.formatDateAndTime(item.getLastModified());
+		lastModifiedEl.setValue(lastModified);
+		
+		versionEl.setValue(item.getItemVersion());
 		
 		String statusLastModified = formatter.formatDateAndTime(item.getQuestionStatusLastModified());
-		uifactory.addStaticTextElement("technical.statusLastModified", statusLastModified, formLayout);
-		
-		if (securityCallback.canChangeVersion()) {
-			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			buttonsCont.setRootForm(mainForm);
-			formLayout.add(buttonsCont);
-			uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		statusLastModified = statusLastModified != null? statusLastModified: "";
+		statusLastMdifiedEl.setValue(statusLastModified);
+	}
+
+	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+		this.item = item;
+		updateUI();
+		if (securityCallback != null) {
+			setReadOnly(securityCallback);
 		}
 	}
 

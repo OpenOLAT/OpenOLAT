@@ -39,6 +39,8 @@ public interface QuestionItemSecurityCallback {
 	
 	public boolean canEditMetadata();
 	
+	public boolean canRemoveTaxonomy();
+	
 	public boolean canStartReview();
 	
 	public boolean canReviewNotStartable();

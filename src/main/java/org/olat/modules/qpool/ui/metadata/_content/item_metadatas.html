@@ -55,7 +55,7 @@
 			</div>
 		</div>
 	</div>
-	#if($showPools) 
+	#if($r.available("details_pools"))
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h4 class="panel-title">
@@ -71,7 +71,7 @@
 			</div>
 		</div>
 	#end
-	#if($showShares)
+	#if($r.available("details_shares"))
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h4 class="panel-title">

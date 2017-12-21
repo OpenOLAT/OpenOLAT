@@ -65,6 +65,11 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 	}
 
 	@Override
+	public boolean canRemoveTaxonomy() {
+		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+	}
+
+	@Override
 	public boolean canStartReview() {
 		return false;
 	}

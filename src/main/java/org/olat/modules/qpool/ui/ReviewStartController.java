@@ -53,7 +53,6 @@ public class ReviewStartController extends FormBasicController {
 	public ReviewStartController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		super(ureq, wControl);
 		this.item = item;
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity());
 		
 		initForm(ureq);
 	}
@@ -67,6 +66,7 @@ public class ReviewStartController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("process.start.review.description");
 		
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false);
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
 				qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
 		taxonomyLevelEl.setMandatory(true);

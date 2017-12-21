@@ -104,7 +104,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldGetSelectableKeysWithEmptyEntryIfProzessless() {
-		sut.loadTaxonomyLevelsSelection(null);
+		sut.loadTaxonomyLevelsSelection(null, true);
 		String[] keys = sut.getSelectableKeys();
 		
 		String[] expectedKeys = {
@@ -139,7 +139,7 @@ public class QPoolTaxonomyTreeBuilderTest {
 	
 	@Test
 	public void shouldGetSelectableValuesWithEmptyEntryIfProzesless() {
-		sut.loadTaxonomyLevelsSelection(null);
+		sut.loadTaxonomyLevelsSelection(null, true);
 		String[] values = sut.getSelectableValues();
 	
 		String[] expectedValues = {

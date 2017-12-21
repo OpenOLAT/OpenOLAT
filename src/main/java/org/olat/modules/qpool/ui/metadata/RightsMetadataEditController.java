@@ -93,7 +93,7 @@ public class RightsMetadataEditController extends FormBasicController {
 		this.item = item;
 		
 		initForm(ureq);
-		setReadOnly(securityCallback.canEditMetadata());
+		setItem(item, securityCallback);
 	}
 
 	@Override
@@ -109,11 +109,12 @@ public class RightsMetadataEditController extends FormBasicController {
 		managerOwners = LinkFactory.createButton("manage.owners", vc, this);
 		authorCont.put("manage.owners", managerOwners);
 
-		licenseKeys = MetaUIFactory.getQLicenseKeyValues(qpoolService);
 
+		licenseKeys = MetaUIFactory.getQLicenseKeyValues(qpoolService);
 		copyrightEl = uifactory.addDropdownSingleselect("rights.copyright", "rights.copyright", formLayout,
 				licenseKeys.getKeys(), licenseKeys.getValues(), null);
 		copyrightEl.addActionListener(FormEvent.ONCHANGE);
+
 		String description;
 		QLicense copyright = item.getLicense();
 		if(copyright == null) {
@@ -130,7 +131,6 @@ public class RightsMetadataEditController extends FormBasicController {
 		if(description == null) {
 			description = "";
 		}
-
 		descriptionEl = uifactory.addTextAreaElement("rights.description", "rights.description", 1000, 6, 40, true, description, formLayout);
 		descriptionEl.setVisible(copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey()));
 
@@ -141,13 +141,21 @@ public class RightsMetadataEditController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void setReadOnly(boolean canEditMetadata) {
+	private void setReadOnly(QuestionItemSecurityCallback securityCallback) {
+		boolean canEditMetadata = securityCallback.canEditMetadata();
 		managerOwners.setVisible(canEditMetadata);
 		copyrightEl.setEnabled(canEditMetadata);
 		descriptionEl.setEnabled(canEditMetadata);
 		buttonsCont.setVisible(canEditMetadata);
 	}
 	
+	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+		this.item = item;
+		if (securityCallback != null) {
+			setReadOnly(securityCallback);
+		}
+	}
+
 	private void reloadAuthors() {
 		List<Identity> authors = qpoolService.getAuthors(item);
 		List<String> authorLinks = new ArrayList<>(authors.size());
@@ -283,4 +291,5 @@ public class RightsMetadataEditController extends FormBasicController {
 			listenTo(cmc);
 		}
 	}
+
 }

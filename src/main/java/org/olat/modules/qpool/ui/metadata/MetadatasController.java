@@ -29,8 +29,10 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QItemEdited;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -50,7 +52,11 @@ public class MetadatasController extends BasicController {
 	
 	private QuestionItem item;
 	
-	public MetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+	@Autowired
+	private QuestionPoolModule qpoolModule;
+	
+	public MetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item,
+			QuestionItemSecurityCallback securityCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
@@ -73,11 +79,15 @@ public class MetadatasController extends BasicController {
 		listenTo(technicalEditCtrl);
 		mainVC.put("details_technical", technicalEditCtrl.getInitialComponent());
 
-		poolsCtrl = new PoolsMetadataController(ureq, wControl, item);
-		mainVC.put("details_pools", poolsCtrl.getInitialComponent());
+		if (qpoolModule.isPoolsEnabled()) {
+			poolsCtrl = new PoolsMetadataController(ureq, wControl, item);
+			mainVC.put("details_pools", poolsCtrl.getInitialComponent());
+		}
 		
-		sharesController = new SharesMetadataController(ureq, wControl, item);
-		mainVC.put("details_shares", sharesController.getInitialComponent());
+		if (qpoolModule.isSharesEnabled()) {
+			sharesController = new SharesMetadataController(ureq, wControl, item);
+			mainVC.put("details_shares", sharesController.getInitialComponent());
+		}
 
 		putInitialPanel(mainVC);
 	}
@@ -107,47 +117,27 @@ public class MetadatasController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		// QPoolEvent.EDIT löschen?
-		
-//		if(QPoolEvent.EDIT.endsWith(event.getCommand())) {
-//			if(securityCallback.canEditMetadata()) {
-//				if(source == generalCtrl) {
-//					doEditGeneralMetadata(ureq);
-//				} else if(source == educationalCtrl) {
-//					doEditEducationalMetadata(ureq);
-//				} else if(source == questionCtrl) {
-//					doEditQuestionMetadata(ureq);
-//				} else if(source == technicalCtrl) {
-//					doEditTechnicalMetadata(ureq);
-//				} else if(source == rightsCtrl) {
-//					doEditRightsMetadata(ureq);
-//				}
-//			} else if (securityCallback.canEditLifecycle()) {
-//				if(source == lifecycleCtrl) {
-//					doEditLifecycleMetadata(ureq);
-//				}
-//			}
-//		} else 
 		if(event instanceof QItemEdited) {
-			QItemEdited editEvent = (QItemEdited)event;
-			//TODO uh nedded
-			reloadData(editEvent.getItem());
-			fireEvent(ureq, editEvent);
+			fireEvent(ureq, event);
 		}
 	}
 	
-	
-	// TODO uh needed?
 	public void updateShares() {
-		poolsCtrl.setItem(getItem());
+		if (poolsCtrl != null) {
+			poolsCtrl.setItem(getItem());
+		}
+		if (sharesController != null) {
+			sharesController.setItem(getItem());
+		}
 	}
 	
-	public void reloadData(QuestionItem reloadedItem) {
-//		this.item = reloadedItem;
-//		generalEditCtrl.setItem(reloadedItem);
-//		questionEditCtrl.setItem(reloadedItem);
-//		rightsEditCtrl.setItem(reloadedItem);
-//		technicalEditCtrl.setItem(reloadedItem);
-		// TODO uh auch mit pool/shares
+	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+		this.item = item;
+		generalEditCtrl.setItem(item, securityCallback);
+		questionEditCtrl.setItem(item, securityCallback);
+		rightsEditCtrl.setItem(item, securityCallback);
+		technicalEditCtrl.setItem(item, securityCallback);
+		updateShares();
 	}
+	
 }

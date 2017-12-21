@@ -69,9 +69,9 @@ public class QPoolTaxonomyTreeBuilder {
 		reset();
 	}
 
-	public void loadTaxonomyLevelsSelection(Identity identity) {
+	public void loadTaxonomyLevelsSelection(Identity identity, boolean withEmptyEntry) {
 		reset();
-		addEmptyEntry = true;
+		addEmptyEntry = withEmptyEntry;
 		loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach);
 	}
 	

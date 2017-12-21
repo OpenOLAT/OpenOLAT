@@ -32,11 +32,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.QEducationalContext;
-import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
-import org.olat.modules.qpool.ui.events.QItemEdited;
 
 /**
  * 
@@ -76,8 +73,6 @@ public class EducationalMetadataEditController extends FormBasicController {
 			}
 			contextValues[count++] = translation;
 		}
-		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout, contextKeys, contextValues, null);
-		contextEl.setEnabled(count > 0);
 		
 		;
 
@@ -100,23 +95,5 @@ public class EducationalMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(item instanceof QuestionItemImpl) {
-			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
-			if(contextEl.isOneSelected()) {
-				QEducationalContext context = qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey());
-				itemImpl.setEducationalContext(context);
-			} else {
-				itemImpl.setEducationalContext(null);
-			}
-			
-			int day = learningTimeDayElement.getIntValue();
-			int hour = learningTimeHourElement.getIntValue();
-			int minute = learningTimeMinuteElement.getIntValue();
-			int seconds = learningTimeSecondElement.getIntValue();
-			String timeStr = MetadataConverterHelper.convertDuration(day, hour, minute, seconds);
-			itemImpl.setEducationalLearningTime(timeStr);
-		}
-		item = qpoolService.updateItem(item);
-		fireEvent(ureq, new QItemEdited(item));
 	}
 }
