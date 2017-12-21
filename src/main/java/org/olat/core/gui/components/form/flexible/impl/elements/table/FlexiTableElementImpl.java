@@ -1706,6 +1706,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			item.setRootForm(getRootForm());
 	}
 
+	@Override
 	protected FlexiTableComponent getFormItemComponent() {
 		return component;
 	}
