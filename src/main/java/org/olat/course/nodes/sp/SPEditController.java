@@ -84,7 +84,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	private VelocityContainer myContent;
 		
 	private SPCourseNode courseNode;
-	private VFSContainer courseFolderBaseContainer;
+	private final VFSContainer courseFolderBaseContainer;
 	private ConditionEditController accessibilityCondContr;
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	private TabbedPane myTabbedPane;
@@ -104,11 +104,11 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 			WindowControl wControl, SPCourseNode spCourseNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		moduleConfiguration = config;
-		courseNode = spCourseNode;				
+		courseNode = spCourseNode;
 		courseFolderBaseContainer = course.getCourseFolderContainer();
 
 		myContent = createVelocityContainer("edit");
-		myContent.contextPut("fieldSetLegend", getTranslator().translate("fieldSetLegend"));
+		myContent.contextPut("fieldSetLegend", translate("fieldSetLegend"));
 		
 		moduleConfiguration.remove("iniframe");//on the fly remove deprecated stuff
 		moduleConfiguration.remove("statefulMicroWeb");
@@ -121,11 +121,13 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 
 		if(relFilePath == null){
 			// Use calculated file and folder name as default when not yet configured
-			relFilePath = CourseEditorHelper.createUniqueRelFilePathFromShortTitle(courseNode, this.courseFolderBaseContainer);
+			relFilePath = CourseEditorHelper.createUniqueRelFilePathFromShortTitle(courseNode, courseFolderBaseContainer);
 			relFilPathIsProposal = true;
 		}
 		// File create/select controller
-		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer, relFilePath, relFilPathIsProposal, allowRelativeLinks, new CourseInternalLinkTreeModel(course.getEditorTreeModel()));
+		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer,
+				relFilePath, relFilPathIsProposal, allowRelativeLinks, false,
+				new CourseInternalLinkTreeModel(course.getEditorTreeModel()));
 		listenTo(combiLinkCtr);
 		myContent.put("combiCtr", combiLinkCtr.getInitialComponent());		
 		myContent.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());

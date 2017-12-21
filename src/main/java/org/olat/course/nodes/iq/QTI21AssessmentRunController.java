@@ -182,6 +182,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		// fetch disclaimer file
 		String sDisclaimer = config.getStringValue(IQEditController.CONFIG_KEY_DISCLAIMER);
+		System.out.println(sDisclaimer);
 		if (sDisclaimer != null) {
 			VFSContainer baseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 			int lastSlash = sDisclaimer.lastIndexOf('/');

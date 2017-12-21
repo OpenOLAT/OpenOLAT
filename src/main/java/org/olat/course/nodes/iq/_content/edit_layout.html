@@ -1,4 +1,10 @@
-$r.render("filechoosecreateedit")
+<fieldset>
+	<legend>$r.translate("fieldset.chosecreateeditfile")</legend>
+	$r.render("combiCtr")
+</fieldset>
+#if ($editorEnabled)
+	$r.render("allowRelativeLinksForm")
+#end
 #if($r.available("iqeditform"))
 <fieldset>
 	<legend>$r.translate("choosenlayout")</legend>
