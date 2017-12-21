@@ -40,13 +40,13 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class AssessedIdentityElementRow extends UserPropertiesRow {
 	
-	private final Integer attempts;
-	private final Boolean userVisibility;
-	private final BigDecimal score;
-	private final Boolean passed;
-	private final Date lastModified, lastUserModified, lastCoachModified;
-	private final int numOfAssessmentDocs;
-	private final AssessmentEntryStatus status;
+	private Integer attempts;
+	private Boolean userVisibility;
+	private BigDecimal score;
+	private Boolean passed;
+	private Date lastModified, lastUserModified, lastCoachModified;
+	private int numOfAssessmentDocs;
+	private AssessmentEntryStatus status;
 	
 	private Object details;
 	private Date initialCourseLaunchDate;
@@ -59,7 +59,10 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 		super(identity, userPropertyHandlers, locale);
 		this.currentCompletion = currentCompletion;
 		this.toolsLink = toolsLink;
-		
+		setAssessmentEntry(entry);
+	}
+	
+	public void setAssessmentEntry(AssessmentEntry entry) {
 		if(entry != null) {
 			attempts = entry.getAttempts();
 			score = entry.getScore();

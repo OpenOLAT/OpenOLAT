@@ -496,6 +496,20 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		}
 		super.event(ureq, source, event);
 	}
+	
+	/**
+	 * Check if the session has the finished date set by someone else.
+	 * 
+	 * @param ureq The user request
+	 * @return true if the test exited, false if not
+	 */
+	private boolean checkConcurrentExit(UserRequest ureq) {
+		if(candidateSession != null && candidateSession.getFinishTime() != null) {
+			doExitTest(ureq);
+			return true;
+		}
+		return false;
+	}
 
 	private void doExitTest(UserRequest ureq) {
 		fireEvent(ureq, new QTI21Event(QTI21Event.EXIT));
@@ -769,17 +783,21 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 
 	private void processSelectItem(UserRequest ureq, String key) {
+		if (checkConcurrentExit(ureq)) {
+			return;
+		}
+
 		TestPlanNodeKey nodeKey = TestPlanNodeKey.fromString(key);
 		Date requestTimestamp = ureq.getRequestTimestamp();
-        TestPlanNode selectedNode = testSessionController.selectItemNonlinear(requestTimestamp, nodeKey);
-        
-        /* Record and log event */
-        TestPlanNodeKey selectedNodeKey = (selectedNode == null ? null : selectedNode.getKey());
-        NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        TestSessionState testSessionState = testSessionController.getTestSessionState();
-        CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
-        		CandidateTestEventType.SELECT_MENU, null, selectedNodeKey, testSessionState, notificationRecorder);
-        candidateAuditLogger.logCandidateEvent(candidateEvent);
+		TestPlanNode selectedNode = testSessionController.selectItemNonlinear(requestTimestamp, nodeKey);
+
+		/* Record and log event */
+		TestPlanNodeKey selectedNodeKey = (selectedNode == null ? null : selectedNode.getKey());
+		NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+		TestSessionState testSessionState = testSessionController.getTestSessionState();
+		CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
+				CandidateTestEventType.SELECT_MENU, null, selectedNodeKey,testSessionState, notificationRecorder);
+		candidateAuditLogger.logCandidateEvent(candidateEvent);
 	}
 	
 	/**
@@ -815,17 +833,21 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	}
 	
 	private void processNextItem(UserRequest ureq) {
+		if (checkConcurrentExit(ureq)) {
+			return;
+		}
+
 		Date requestTimestamp = ureq.getRequestTimestamp();
-        if(testSessionController.hasFollowingNonLinearItem()) {
-        	TestPlanNode selectedNode = testSessionController.selectFollowingItemNonLinear(requestTimestamp);
-        	
-        	TestPlanNodeKey selectedNodeKey = (selectedNode == null ? null : selectedNode.getKey());
-        	NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
-        	TestSessionState testSessionState = testSessionController.getTestSessionState();
-        	CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
-            		CandidateTestEventType.NEXT_ITEM, null, selectedNodeKey, testSessionState, notificationRecorder);
-        	candidateAuditLogger.logCandidateEvent(candidateEvent);
-        }
+		if (testSessionController.hasFollowingNonLinearItem()) {
+			TestPlanNode selectedNode = testSessionController.selectFollowingItemNonLinear(requestTimestamp);
+
+			TestPlanNodeKey selectedNodeKey = (selectedNode == null ? null : selectedNode.getKey());
+			NotificationRecorder notificationRecorder = new NotificationRecorder(NotificationLevel.INFO);
+			TestSessionState testSessionState = testSessionController.getTestSessionState();
+			CandidateEvent candidateEvent = qtiService.recordCandidateTestEvent(candidateSession, testEntry, entry,
+					CandidateTestEventType.NEXT_ITEM, null, selectedNodeKey, testSessionState, notificationRecorder);
+			candidateAuditLogger.logCandidateEvent(candidateEvent);
+		}
 	}
 	
 	private void processReviewItem(UserRequest ureq, String key) {
@@ -1193,39 +1215,42 @@ public class AssessmentTestDisplayController extends BasicController implements 
         candidateSession = qtiService.updateAssessmentTestSession(candidateSession);
         
         addToHistory(ureq, this);
+        checkConcurrentExit(ureq);
 	}
 	
 	private void collectOutcomeVariablesForItemSession(ItemResult resultNode, AssessmentItemSession itemSession) {
 		BigDecimal score = null;
 		Boolean pass = null;
-		
-        for (final ItemVariable itemVariable : resultNode.getItemVariables()) {
-            if (itemVariable instanceof OutcomeVariable) {
-            	OutcomeVariable outcomeVariable = (OutcomeVariable)itemVariable;
-            	Identifier identifier = outcomeVariable.getIdentifier();
-            	if(QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
-            		Value value = itemVariable.getComputedValue();
-            		if(value instanceof FloatValue) {
-            			score = new BigDecimal(((FloatValue)value).doubleValue());
-            		} else if(value instanceof IntegerValue) {
-            			score = new BigDecimal(((IntegerValue)value).intValue());
-            		}
-            	} else if(QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
-            		Value value = itemVariable.getComputedValue();
-            		if(value instanceof BooleanValue) {
-            			pass = ((BooleanValue)value).booleanValue();
-            		}
-            	}
-            }
-        }
-        
-        if(score != null) {
-        	itemSession.setScore(score);
-        }
-        if(pass != null) {
-        	itemSession.setPassed(pass);
-        }
-    }
+
+		for (final ItemVariable itemVariable : resultNode.getItemVariables()) {
+			if (itemVariable instanceof OutcomeVariable) {
+				OutcomeVariable outcomeVariable = (OutcomeVariable) itemVariable;
+				Identifier identifier = outcomeVariable.getIdentifier();
+				if (QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
+					Value value = itemVariable.getComputedValue();
+					if (value instanceof FloatValue) {
+						score = new BigDecimal(
+								((FloatValue) value).doubleValue());
+					} else if (value instanceof IntegerValue) {
+						score = new BigDecimal(
+								((IntegerValue) value).intValue());
+					}
+				} else if (QTI21Constants.PASS_IDENTIFIER.equals(identifier)) {
+					Value value = itemVariable.getComputedValue();
+					if (value instanceof BooleanValue) {
+						pass = ((BooleanValue) value).booleanValue();
+					}
+				}
+			}
+		}
+
+		if (score != null) {
+			itemSession.setScore(score);
+		}
+		if (pass != null) {
+			itemSession.setPassed(pass);
+		}
+	}
 	
 	private void confirmEndTestPart(UserRequest ureq) {
 		TestPlanNode nextTestPart = testSessionController.findNextEnterableTestPart();
@@ -1656,7 +1681,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 
 		if (submit) {
 			outcomesListener.submit(score, pass, completion, candidateSession.getKey());
-		} else {
+		} else if(candidateSession != null && candidateSession.getFinishTime() == null) {
+			//don't change the outcome if the test is finished
 			outcomesListener.updateOutcomes(score, pass, completion);
 		}
 	}

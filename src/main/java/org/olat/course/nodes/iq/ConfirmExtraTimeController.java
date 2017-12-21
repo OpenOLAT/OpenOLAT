@@ -112,7 +112,7 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 		for(AssessmentTestSession testSession:testSessions) {
 			Identity identity = testSession.getIdentity();
 			if(identity != null) {
-				String fullname = userManager.getUserDisplayName(getIdentity());
+				String fullname = userManager.getUserDisplayName(identity);
 				if(sb.length() > 0) sb.append(", ");
 				sb.append(fullname);
 			}
@@ -166,7 +166,7 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 		for (AssessmentTestSession testSession:testSessions) {
 			qtiService.extraTimeAssessmentTestSession(testSession, extraTime, getIdentity());
 		}
-		fireEvent(ureq, Event.DONE_EVENT);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	@Override

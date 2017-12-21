@@ -601,6 +601,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 			} else if(event == Event.CLOSE_EVENT) {
 				//don't dispose it, there are some popup window at work
 				toolsCalloutCtrl.deactivate();
+			} else if(event == Event.CANCELLED_EVENT) {
+				toolsCalloutCtrl.deactivate();
+				cleanUp();
 			}
 		} else if(cmc == source) {
 			cleanUp();
@@ -647,7 +650,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	private void doOpenTools(UserRequest ureq, AssessedIdentityElementRow row, FormLink link) {
-		if(toolsCtrl != null) return;
+		if(toolsCalloutCtrl != null) return;
 		
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
@@ -829,9 +832,22 @@ public class IdentityListCourseNodeController extends FormBasicController
 		List<AssessedIdentityElementRow> rows = usersTableModel.getObjects();
 		for(AssessedIdentityElementRow row:rows) {
 			if(assessedIdentityKey.equals(row.getIdentityKey())) {
-				row.getCurrentCompletion().setCompletion(completion);
-				row.getCurrentCompletion().setEnded(status != null && AssessmentRunStatus.done.equals(status));
+				doUpdateCompletion(completion, status, row);
+				break;
 			}
+		}
+	}
+	
+	private void doUpdateCompletion(Double completion, AssessmentRunStatus status, AssessedIdentityElementRow row) {
+		row.getCurrentCompletion().setCompletion(completion);
+		boolean endedRow = row.getCurrentCompletion().isEnded();
+		boolean endedEvent = status != null && AssessmentRunStatus.done.equals(status);
+		row.getCurrentCompletion().setEnded(endedEvent);
+		if(endedEvent && !endedRow) {
+			IdentityRef assessedIdentity = new IdentityRefImpl(row.getIdentityKey());
+			AssessmentEntry assessmentEntry = assessmentToolManager.getAssessmentEntries(assessedIdentity, courseEntry, courseNode.getIdent());
+			row.setAssessmentEntry(assessmentEntry);
+			tableEl.getComponent().setDirty(true);
 		}
 	}
 }
