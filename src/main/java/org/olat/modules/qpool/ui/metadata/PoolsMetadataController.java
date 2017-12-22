@@ -39,6 +39,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItem2Pool;
+import org.olat.modules.qpool.ui.AbstractItemListController;
 import org.olat.modules.qpool.ui.QuestionsController;
 
 /**
@@ -48,6 +49,9 @@ import org.olat.modules.qpool.ui.QuestionsController;
  *
  */
 public class PoolsMetadataController extends FormBasicController {
+	
+	private static final String CSS_ICON_READONLY = AbstractItemListController.CSS_ICON_READONLY;
+	private static final String CSS_ICON_READWRITE = AbstractItemListController.CSS_ICON_READWRITE;
 	
 	private PoolInfosDataModel poolInfosModel;
 	private FlexiTableElement poolInfosTable;
@@ -68,8 +72,8 @@ public class PoolsMetadataController extends FormBasicController {
 		FlexiTableColumnModel poolInfosColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		poolInfosColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "share.editable", 0,
 			false, null, FlexiColumnModel.ALIGNMENT_LEFT, new BooleanCellRenderer(
-				new CSSIconFlexiCellRenderer("o_readwrite"),
-				new CSSIconFlexiCellRenderer("o_readonly"))
+					new CSSIconFlexiCellRenderer(CSS_ICON_READWRITE),
+					new CSSIconFlexiCellRenderer(CSS_ICON_READONLY))
 		));
 		poolInfosColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("pool.name", 1));
 		poolInfosModel = new PoolInfosDataModel(poolInfosColumnsModel);

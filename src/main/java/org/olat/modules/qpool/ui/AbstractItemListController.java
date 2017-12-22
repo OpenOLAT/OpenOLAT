@@ -81,6 +81,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class AbstractItemListController extends FormBasicController
 	implements GenericEventListener, FlexiTableDataSourceDelegate<ItemRow>, FlexiTableComponentDelegate {
 
+	public static final String CSS_ICON_READONLY = "o_icon_readonly";
+	public static final String CSS_ICON_READWRITE = "o_icon_readwrite";
+
 	private FlexiTableElement itemsTable;
 	private QuestionItemDataModel model;
 	private final QPoolSecurityCallback securityCallback;
@@ -155,8 +158,8 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.editable.i18nKey(), Cols.editable.ordinal(),
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 				new BooleanCellRenderer(
-						new CSSIconFlexiCellRenderer("o_icon_readwrite"),
-						new CSSIconFlexiCellRenderer("o_icon_readonly"))
+						new CSSIconFlexiCellRenderer(CSS_ICON_READWRITE),
+						new CSSIconFlexiCellRenderer(CSS_ICON_READONLY))
 		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.identifier.i18nKey(), Cols.identifier.ordinal(), true, OrderBy.identifier.name()));
