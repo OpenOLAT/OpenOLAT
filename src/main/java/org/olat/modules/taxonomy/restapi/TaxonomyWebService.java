@@ -34,7 +34,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -215,7 +214,7 @@ public class TaxonomyWebService {
 			return Response.serverError().status(Status.CONFLICT).build();
 		}
 		
-		boolean canDelete = taxonomyService.deleteTaxonomyLevel(level);
+		boolean canDelete = taxonomyService.deleteTaxonomyLevel(level, null);
 		if(canDelete) {
 			return Response.ok().build();
 		}
@@ -365,17 +364,23 @@ public class TaxonomyWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
+		TaxonomyCompetence competence = null;
 		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyLevelCompetences(level, identity);
-		for(TaxonomyCompetence competence:competences) {
-			if(competence.getCompetenceType().name().equals(comptenceVo.getTaxonomyCompetenceType())) {
-				EntityTag tag = new EntityTag(competence.getKey().toString());
-				return Response.notModified(tag).build();
+		for(TaxonomyCompetence c:competences) {
+			if(c.getCompetenceType().name().equals(comptenceVo.getTaxonomyCompetenceType())) {
+				competence = c;
 			}	
 		}
 		
-		TaxonomyCompetenceTypes competenceType
-			= TaxonomyCompetenceTypes.valueOf(comptenceVo.getTaxonomyCompetenceType());
-		TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(level, identity, competenceType);
+		if(competence == null) {
+			TaxonomyCompetenceTypes competenceType
+				= TaxonomyCompetenceTypes.valueOf(comptenceVo.getTaxonomyCompetenceType());
+			competence = taxonomyService.addTaxonomyLevelCompetences(level, identity, competenceType, comptenceVo.getExpiration());
+		} else {
+			competence.setExpiration(comptenceVo.getExpiration());
+			competence = taxonomyService.updateTaxonomyLevelCompetence(competence);
+		}
+
 		String after = taxonomyService.toAuditXml(competence);
 		taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.addCompetence, null, after, null, taxonomy, competence, identity, executor);
 		

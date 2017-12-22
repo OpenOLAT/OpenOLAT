@@ -144,6 +144,10 @@ public class HTMLToOpenXMLHandler extends DefaultHandler {
 				flushText();
 				addContent(currentParagraph);
 			}
+			if(currentListParagraph == null) {
+				//nested list
+				currentListParagraph = factory.createListParagraph();
+			}
 			currentParagraph = factory.createListParagraph(currentListParagraph);
 		}
 		return currentParagraph;

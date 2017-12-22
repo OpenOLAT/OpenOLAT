@@ -63,6 +63,14 @@ public interface CalendarController extends Controller {
 	public void setCalendars(List<KalendarRenderWrapper> calendars);
 	
 	/**
+	 * Add additional CSS class to the events which are
+	 * managed or not managed to differentiate them.
+	 * 
+	 * @param differentiate
+	 */
+	public void setDifferentiateManagedEvent(boolean differentiate);
+	
+	/**
 	 * Sets the calendar dirty. The calendar controller should
 	 * issue an KalendarModfied event upon next user click.
 	 */

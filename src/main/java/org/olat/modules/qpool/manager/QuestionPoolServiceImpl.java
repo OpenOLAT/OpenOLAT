@@ -927,7 +927,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevel(Identity identity, TaxonomyCompetenceTypes... competenceType) {
-		return taxonomyCompetenceDao.getCompetenceByTaxonomy(getQPoolTaxonomy(), identity, competenceType).stream()
+		return taxonomyCompetenceDao.getCompetencesByTaxonomy(getQPoolTaxonomy(), identity, new Date(), competenceType).stream()
 				.map(competence -> competence.getTaxonomyLevel())
 				.collect(Collectors.toList());
 	}

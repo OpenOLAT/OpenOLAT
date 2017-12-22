@@ -183,6 +183,11 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	public List<AssessmentMode> getAssessmentModeFor(RepositoryEntryRef entry) {
 		return assessmentModeDao.getAssessmentModeFor(entry);
 	}
+	
+	@Override
+	public List<AssessmentMode> getPlannedAssessmentMode(RepositoryEntryRef entry, Date from) {
+		return assessmentModeDao.getPlannedAssessmentMode(entry, from);
+	}
 
 	@Override
 	public List<AssessmentMode> getAssessmentModeFor(IdentityRef identity) {
@@ -245,6 +250,11 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	@Override
 	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date date) {
 		return assessmentModeDao.isInAssessmentMode(entry, date);
+	}
+	
+	@Override
+	public List<AssessmentMode> getCurrentAssessmentMode(RepositoryEntryRef entry, Date now) {
+		return assessmentModeDao.getCurrentAssessmentMode(entry, now);
 	}
 
 	@Override

@@ -1,0 +1,32 @@
+<div class="o_form form-horizontal" role="form">
+	#if($r.isNotEmpty($errorMsg))
+		<div class="o_error">$errorMsg</div>
+	#else
+		<div class="o_error">
+			<p>$msg</p>
+			#if($r.isNotEmpty($messages))
+			<p>$msgForList</p>
+			<ul>
+				#foreach($message in $messages)
+				<li>$message</li>
+				#end
+			</ul>
+			<p>$mergeToMessage</p>
+			#end
+		</div>
+		<div class="o_block">
+			<div class="form-group clearfix">
+				$r.render("mergeto_LABEL", "mergeto", "col-sm-3")
+				<div class='col-sm-9'>
+					$r.render("mergeto", "form")
+				</div>
+			</div>
+		</div>
+	#end
+	<div class="o_button_group">
+		$r.render("cancel")
+		#if($r.available("delete"))
+			$r.render("delete")
+		#end
+	</div>
+</div>

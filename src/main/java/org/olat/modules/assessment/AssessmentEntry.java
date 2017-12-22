@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -79,6 +80,17 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	public Double getCompletion();
 
 	public void setCompletion(Double completion);
+	
+	/**
+	 * @return Completion of the current running task (which can be temporary)
+	 */
+	public Double getCurrentRunCompletion();
+	
+	public void setCurrentRunCompletion(Double completion);
+	
+	public AssessmentRunStatus getCurrentRunStatus();
+	
+	public void setCurrentRunStatus(AssessmentRunStatus runStatus);
 
 	public String getComment();
 

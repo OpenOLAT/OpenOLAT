@@ -85,8 +85,8 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 	private Map<DirectedPairValue, MatchScoreWrapper> scoreWrappers = new HashMap<>();
 	
 	public MatchScoreController(UserRequest ureq, WindowControl wControl, MatchAssessmentItemBuilder itemBuilder,
-			AssessmentItemRef itemRef, File itemFileRef, boolean restrictedEdit) {
-		super(ureq, wControl, itemRef, restrictedEdit);
+			AssessmentItemRef itemRef, File itemFileRef, boolean restrictedEdit, boolean readOnly) {
+		super(ureq, wControl, itemRef, restrictedEdit, readOnly);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		this.itemFileRef = itemFileRef;
@@ -107,13 +107,13 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 		String minValue = minScore == null ? "" : (minScore.getScore() == null ? "" : minScore.getScore().toString());
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, minValue, formLayout);
 		minScoreEl.setElementCssClass("o_sel_assessment_item_min_score");
-		minScoreEl.setEnabled(!restrictedEdit);
+		minScoreEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		ScoreBuilder maxScore = itemBuilder.getMaxScoreBuilder();
 		String maxValue = maxScore == null ? "" : (maxScore.getScore() == null ? "" : maxScore.getScore().toString());
 		maxScoreEl = uifactory.addTextElement("max.score", "max.score", 8, maxValue, formLayout);
 		maxScoreEl.setElementCssClass("o_sel_assessment_item_max_score");
-		maxScoreEl.setEnabled(!restrictedEdit);
+		maxScoreEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		String[] modeValues = new String[]{
 				translate("form.score.assessment.all.correct"),
@@ -121,7 +121,7 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 		};
 		assessmentModeEl = uifactory.addRadiosHorizontal("assessment.mode", "form.score.assessment.mode", formLayout, modeKeys, modeValues);
 		assessmentModeEl.addActionListener(FormEvent.ONCHANGE);
-		assessmentModeEl.setEnabled(!restrictedEdit);
+		assessmentModeEl.setEnabled(!restrictedEdit && !readOnly);
 		if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
 			assessmentModeEl.select(ScoreEvaluation.perAnswer.name(), true);
 		} else {
@@ -147,6 +147,7 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
+		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
@@ -198,7 +199,7 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 			textEl.setDomReplacementWrapperRequired(false);
 			textEl.setDisplaySize(5);
 			textEl.setUserObject(scoreWrapper);
-			textEl.setEnabled(!restrictedEdit);
+			textEl.setEnabled(!restrictedEdit && !readOnly);
 			
 			Double score = itemBuilder.getScore(sourceIdentifier, targetIdentifier);
 			if(score == null) {
@@ -250,6 +251,8 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(restrictedEdit || readOnly) return;
+		
 		super.formOK(ureq);
 		String maxScoreValue = maxScoreEl.getValue();
 		Double maxScore = Double.parseDouble(maxScoreValue);

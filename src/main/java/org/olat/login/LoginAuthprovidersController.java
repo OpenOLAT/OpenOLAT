@@ -56,6 +56,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.ArrayHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -93,13 +94,14 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 		// Use fallback translator from full webapp package to translate accessibility stuff
 		super(ureq, wControl, Util.createPackageTranslator(BaseFullWebappController.class, ureq.getLocale()));
 		
-		if(ureq.getUserSession().getEntry("error.change.email") != null) {
-			wControl.setError(ureq.getUserSession().getEntry("error.change.email").toString());
-			ureq.getUserSession().removeEntryFromNonClearedStore("error.change.email");
+		UserSession usess = ureq.getUserSession();
+		if(usess.getEntry("error.change.email") != null) {
+			wControl.setError(usess.getEntry("error.change.email").toString());
+			usess.removeEntryFromNonClearedStore("error.change.email");
 		}
-		if(ureq.getUserSession().getEntry("error.change.email.time") != null) {
-			wControl.setError(ureq.getUserSession().getEntry("error.change.email.time").toString());
-			ureq.getUserSession().removeEntryFromNonClearedStore("error.change.email.time");
+		if(usess.getEntry("error.change.email.time") != null) {
+			wControl.setError(usess.getEntry("error.change.email.time").toString());
+			usess.removeEntryFromNonClearedStore("error.change.email.time");
 		}
 		
 		MainPanel panel = new MainPanel("content");

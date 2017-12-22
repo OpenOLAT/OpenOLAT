@@ -207,8 +207,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			  .append(" <a href=\"javascript:")
 			  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 					  new NameValuePair("rm-filter", "true")))
-			  .append("\" title=\"").append(translator.translate("remove.filters")).append("\" ")
-			  .append("\">").append("<i class='o_icon o_icon_remove o_icon-fw'> </i> </a></li></div>"); 
+			  .append("\" title=\"").append(translator.translate("remove.filters")).append("\">")
+			  .append("<i class='o_icon o_icon_remove o_icon-fw'> </i></a></div>"); 
 		}
 		sb.append("</div>");
 		
@@ -254,8 +254,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				  .append("<a href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(theForm, dispatchId, 1, true, true, true,
 						  new NameValuePair("rm-extended-filter", "true")))
-				  .append("\" title=\"").append(translator.translate("remove.filters")).append("\" ")
-				  .append("\">").append("<i class='o_icon o_icon_remove o_icon-fw'> </i> </a></li></div>");
+				  .append("\" title=\"").append(translator.translate("remove.filters")).append("\">")
+				  .append("<i class='o_icon o_icon_remove o_icon-fw'> </i></a></div>");
 			}
 		} else if(ftE.getExtendedSearchButton() != null) {
 			renderFormItem(renderer, sb, ftE.getExtendedSearchButton(), ubu, translator, renderResult, args);

@@ -20,7 +20,9 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The row must implement hashCode() and equals() methods to use the
@@ -35,7 +37,9 @@ import java.util.List;
 public abstract class DefaultFlexiTreeTableDataModel<U extends FlexiTreeTableNode> extends DefaultFlexiTableDataModel<U>
 implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	
-	private List<U> backupRows;
+	protected final Set<U> openedRows = new HashSet<>();
+	protected List<U> backupRows;
+	protected U focusedNode;
 
 	public DefaultFlexiTreeTableDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -53,6 +57,28 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 			indentation++;
 		}
 		return indentation;
+	}
+	
+	protected final void setFilteredObjects(List<U> objects) {
+		super.setObjects(objects);
+	}
+	
+	protected final void setUnfilteredObjects() {
+		List<U> rows;
+		if(focusedNode != null) {
+			int row = backupRows.indexOf(focusedNode);
+			rows = focusedNodes(backupRows, focusedNode, row);
+		} else {
+			rows = new ArrayList<>(backupRows);
+		}
+		
+		List<U> opened = new ArrayList<>();
+		for(U row:rows) {
+			if(row.getParent() == null || openedRows.contains(row.getParent())) {
+				opened.add(row);
+			}
+		}
+		super.setObjects(opened);
 	}
 
 	@Override
@@ -79,10 +105,16 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	@Override
 	public void focus(int row) {
 		U object = getObject(row);
-		FlexiTreeTableNode parentObject = object.getParent();
+		List<U> currentRows = getObjects();
+		List<U> focusedRows = focusedNodes(currentRows, object, row);
+		super.setObjects(focusedRows);
+		focusedNode = object;
+	}
+	
+	private List<U> focusedNodes(List<U> currentRows, U object, int row) {
 		int depth = getIndentation(object);
-
-		List<U> currentRows = getObjects();//this is already a copy
+		FlexiTreeTableNode parentObject = object.getParent();
+		
 		List<U> focusedRows = new ArrayList<>();
 		focusedRows.add(object);
 		for(int i=row + 1; i<currentRows.size(); i++) {
@@ -96,7 +128,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 			}
 			focusedRows.add(currentRow);
 		}
-		super.setObjects(focusedRows);
+		return focusedRows;
 	}
 
 	@Override
@@ -104,6 +136,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 		int row = backupRows.indexOf(node);
 		if(row < 0) {
 			super.setObjects(backupRows);
+			focusedNode = null;
 		} else {
 			FlexiTreeTableNode parentObject = node.getParent();
 			List<U> focusedRows = new ArrayList<>();
@@ -117,12 +150,15 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 				focusedRows.add(currentRow);
 			}
 			super.setObjects(focusedRows);
+			focusedNode = (U)node;
 		}
 	}
 
 	@Override
 	public void open(int row) {
 		U objectToOpen = getObject(row);
+		openedRows.add(objectToOpen);
+		
 		List<U> currentRows = getObjects();//this is already a copy
 		
 		List<U> children = new ArrayList<>();
@@ -157,9 +193,11 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 					|| (parentOf != null && parentOf.equals(currentRow.getParent()))) {
 					start = false;
 				} else {
+					openedRows.remove(currentRow);
 					continue;
 				}
 			} else if(currentRow.equals(objectToClose)) {
+				openedRows.remove(objectToClose);
 				start = true;
 			}
 			closedRows.add(currentRow);

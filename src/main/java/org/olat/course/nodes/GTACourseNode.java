@@ -61,7 +61,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.bulk.BulkAssessmentToolController;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -75,13 +75,11 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.model.TaskDefinition;
-import org.olat.course.nodes.gta.ui.BulkDownloadToolController;
 import org.olat.course.nodes.gta.ui.GTAAssessmentDetailsController;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupListController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
-import org.olat.course.nodes.gta.ui.GTAGroupAssessmentToolController;
+import org.olat.course.nodes.gta.ui.GTAIdentityListCourseNodeController;
 import org.olat.course.nodes.gta.ui.GTARunController;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -90,8 +88,10 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 
@@ -793,6 +793,22 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 				|| config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION)
 				|| config.getBooleanSafe(GTASK_REVISION_PERIOD);
 	}
+	
+	@Override
+	public boolean hasCompletion() {
+		return false;
+	}
+
+	@Override
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
+		throw new OLATRuntimeException(GTACourseNode.class, "No completion available in task nodes", null);
+	}
+	
+	@Override
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
+		throw new OLATRuntimeException(GTACourseNode.class, "Completion variable can't be updated in task nodes", null);
+	}
 
 	@Override
 	public boolean isEditableConfigured() {
@@ -869,35 +885,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	}
 
 	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl,
-			TooledStackedPanel stackPanel, UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
-		
-		ModuleConfiguration config =  getModuleConfiguration();
-		CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
-		List<Controller> tools = new ArrayList<>(2);
-		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
-			&& (config.getBooleanSafe(GTASK_ASSIGNMENT)
-				|| config.getBooleanSafe(GTASK_SUBMIT)
-				|| config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION)
-				|| config.getBooleanSafe(GTASK_REVISION_PERIOD))) {
-			
-			if(options.getGroup() != null && !coachCourseEnv.isCourseReadOnly()) {
-				tools.add(new GTAGroupAssessmentToolController(ureq, wControl, courseEnv, options.getGroup(), this));
-			}
-			tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, this));
-		} else if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-			if(!coachCourseEnv.isCourseReadOnly() && (config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION) || config.getBooleanSafe(GTASK_GRADING))){
-				tools.add(new BulkAssessmentToolController(ureq, wControl, courseEnv, this));
-			}
-			
-			if(config.getBooleanSafe(GTASK_ASSIGNMENT)
-					|| config.getBooleanSafe(GTASK_SUBMIT)
-					|| config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION)
-					|| config.getBooleanSafe(GTASK_REVISION_PERIOD)) {
-				tools.add(new BulkDownloadToolController(ureq, wControl, courseEnv, options, this));
-			}
-		}
-		return tools;
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+		return new GTAIdentityListCourseNodeController(ureq, wControl, stackPanel,
+				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 	@Override

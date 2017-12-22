@@ -1,4 +1,3 @@
-
 <div class="o_form form-group #if($deleted) has-feedback has-error #end clearfix">
 	<label class="control-label col-sm-3">
 		$r.translate("command.preview.label")
@@ -11,19 +10,18 @@
 	</div>
 	<div class="col-sm-offset-3 col-sm-9">
 	#if($deleted)
-		<div class='o_error'>
-			$r.translate("error.deleted")
-		</div>
+		<div class='o_error'>$r.translate("error.deleted")</div>
 	#end
 	</div>
-
 </div>
-
 <div class="form-group">
 	<div class="col-sm-offset-3 col-sm-9">
 	#if ($r.available("command.edit")) 
 		$r.render("command.edit")
 	#end
-		$r.render("calloutTriggerLink")
+	$r.render("calloutTriggerLink")
+	#if ($r.available("command.remove")) 
+		$r.render("command.remove")
+	#end
 	</div>
 </div>

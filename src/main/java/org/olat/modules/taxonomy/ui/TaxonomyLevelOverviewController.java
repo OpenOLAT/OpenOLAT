@@ -19,9 +19,9 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.util.Collections;
 import java.util.List;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -36,8 +36,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.gui.control.generic.modal.DialogBoxController;
-import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -46,6 +44,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelManagedFlag;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.events.DeleteTaxonomyLevelEvent;
+import org.olat.modules.taxonomy.ui.events.MoveTaxonomyLevelEvent;
 import org.olat.modules.taxonomy.ui.events.NewTaxonomyLevelEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,17 +62,16 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	
 	private CloseableModalController cmc;
 	private ActionsController actionsCtrl;
-	private DialogBoxController confirmDeleteDialog;
 	private EditTaxonomyLevelController metadataCtrl;
+	private MoveTaxonomyLevelController moveLevelCtrl;
 	private TaxonomyLevelRelationsController relationsCtrl;
+	private DeleteTaxonomyLevelController confirmDeleteCtrl;
 	private TaxonomyLevelCompetenceController competencesCtrl;
 	private CloseableCalloutWindowController actionsCalloutCtrl;
 	private EditTaxonomyLevelController createTaxonomyLevelCtrl;
 	
 	private TaxonomyLevel taxonomyLevel;
-	
-	@Autowired
-	private DB dbInstance;
+
 	@Autowired
 	private TaxonomyService taxonomyService;
 	
@@ -160,13 +158,22 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 			} else if(event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
-		} else if(confirmDeleteDialog == source) {
-			if (DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
-				doDelete(ureq);
+		} else if(confirmDeleteCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				fireEvent(ureq, new DeleteTaxonomyLevelEvent());
 			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(createTaxonomyLevelCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, new NewTaxonomyLevelEvent(createTaxonomyLevelCtrl.getTaxonomyLevel()));
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(moveLevelCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				taxonomyLevel = moveLevelCtrl.getMovedTaxonomyLevel();
+				fireEvent(ureq, new MoveTaxonomyLevelEvent(moveLevelCtrl.getMovedTaxonomyLevel()));
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -179,10 +186,14 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	private void cleanUp() {
 		removeAsListenerAndDispose(createTaxonomyLevelCtrl);
 		removeAsListenerAndDispose(actionsCalloutCtrl);
+		removeAsListenerAndDispose(confirmDeleteCtrl);
+		removeAsListenerAndDispose(moveLevelCtrl);
 		removeAsListenerAndDispose(actionsCtrl);
 		removeAsListenerAndDispose(cmc);
 		createTaxonomyLevelCtrl = null;
 		actionsCalloutCtrl = null;
+		confirmDeleteCtrl = null;
+		moveLevelCtrl = null;
 		actionsCtrl = null;
 		cmc = null;
 	}
@@ -197,26 +208,35 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	}
 	
 	private void doConfirmDelete(UserRequest ureq) {
+		taxonomyLevel = taxonomyService.getTaxonomyLevel(taxonomyLevel);
+		Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
+		
 		if(taxonomyService.canDeleteTaxonomyLevel(taxonomyLevel)) {
+			confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), null, taxonomy);
+			listenTo(confirmDeleteCtrl);
+
 			String title = translate("confirmation.delete.level.title");
-			String text = translate("confirmation.delete.level", new String[] { StringHelper.escapeHtml(taxonomyLevel.getDisplayName()) });
-			confirmDeleteDialog = activateOkCancelDialog(ureq, title, text, confirmDeleteDialog);
+			cmc = new CloseableModalController(getWindowControl(), "close", moveLevelCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
 		} else {
 			showWarning("warning.delete.level");
 		}
 	}
 	
-	private void doDelete(UserRequest ureq) {
-		if(taxonomyService.deleteTaxonomyLevel(taxonomyLevel)) {
-			dbInstance.commit();//commit before sending event
-			fireEvent(ureq, new DeleteTaxonomyLevelEvent());
-			showInfo("confirm.deleted.level", new String[] { StringHelper.escapeHtml(taxonomyLevel.getDisplayName()) });
-		}
-	}
-	
-	private void doMove() {
-		//TODO taxonomy
-		showWarning("not.implemented");
+	private void doMove(UserRequest ureq) {
+		if(moveLevelCtrl != null) return;
+		
+		taxonomyLevel = taxonomyService.getTaxonomyLevel(taxonomyLevel);
+		Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
+		List<TaxonomyLevel> levelsToMove = Collections.singletonList(taxonomyLevel);
+		moveLevelCtrl = new MoveTaxonomyLevelController(ureq, getWindowControl(), levelsToMove, taxonomy);
+		listenTo(moveLevelCtrl);
+		
+		String title = translate("move.taxonomy.level.title", new String[] {StringHelper.escapeHtml(taxonomyLevel.getDisplayName()) });
+		cmc = new CloseableModalController(getWindowControl(), "close", moveLevelCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doCreateTaxonomyLevel(UserRequest ureq) {
@@ -267,7 +287,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		protected void event(UserRequest ureq, Component source, Event event) {
 			if(moveLink == source) {
 				close();
-				doMove();
+				doMove(ureq);
 			} else if(newLink == source) {
 				close();
 				doCreateTaxonomyLevel(ureq);

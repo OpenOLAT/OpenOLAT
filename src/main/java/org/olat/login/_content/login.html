@@ -33,6 +33,8 @@
 	#end
 
 	<div class="o_login_box_wrapper">
+		#set($helplink=$r.contextHelpLink("Login Page#login_browsercheck"))
+		<div class="o_old_browser o_warning">$r.translate("warning.old.browser","$helplink")</div>
 		<div class="o_login_box">
 			#if ($r.available("menu.guest") || ($providerSet && $providerSet.size() > 1))
 			<div class="o_login_providers">

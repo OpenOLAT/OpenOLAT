@@ -58,6 +58,16 @@ public class UserDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldReturnUniqueUserIfFoundLowerUpperCase() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("userlow");
+		String email = identity.getUser().getEmail().toUpperCase();
+		
+		Identity foundIdentity = sut.findUniqueIdentityByEmail(email);
+		
+		assertThat(foundIdentity).isNotNull().isEqualTo(identity);
+	}
+	
+	@Test
 	public void shouldReturnUniqueUserIfFoundInInstitutionalEmail() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("userdao");
 		String institutionalEmail = UUID.randomUUID() + "@trashmail.com";

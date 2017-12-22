@@ -72,6 +72,16 @@ public class DefaultAssessmentSessionAuditLogger implements AssessmentSessionAud
 	}
 
 	@Override
+	public void logTestReopen(AssessmentTestSession candidateSession, Identity coach) {
+		//
+	}
+
+	@Override
+	public void logTestExtend(AssessmentTestSession candidateSession, int extraTime, Identity coach) {
+		//
+	}
+
+	@Override
 	public void close() {
 		//
 	}

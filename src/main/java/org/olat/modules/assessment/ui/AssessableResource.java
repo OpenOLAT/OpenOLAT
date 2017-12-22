@@ -19,13 +19,10 @@
  */
 package org.olat.modules.assessment.ui;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -84,7 +81,7 @@ public abstract class AssessableResource {
 		return hasComments;
 	}
 	
-	public abstract List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry entry, AssessmentToolOptions options);
+	public abstract Controller createIdentityList(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry entry, AssessmentToolSecurityCallback assessmentCallback);
 
 }

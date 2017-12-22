@@ -512,9 +512,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
 		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
 		Identity ownerAndTeacher = createRandomIdentity();
-		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.teach, taxonomyLevel, ownerAndTeacher);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.teach, taxonomyLevel, ownerAndTeacher, null);
 		Identity teacher = createRandomIdentity();
-		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.teach, taxonomyLevel, teacher);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.teach, taxonomyLevel, teacher, null);
 		Identity noTeacher = createRandomIdentity();
 		QuestionItemImpl item11 = createRandomItem(ownerAndTeacher);
 		item11.setTaxonomyLevel(taxonomyLevel);
@@ -544,9 +544,9 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
 		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
 		Identity ownerAndManager = createRandomIdentity();
-		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, taxonomyLevel, ownerAndManager);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, taxonomyLevel, ownerAndManager, null);
 		Identity manager = createRandomIdentity();
-		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, taxonomyLevel, manager);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.manage, taxonomyLevel, manager, null);
 		Identity noManager = createRandomIdentity();
 		QuestionItemImpl item11 = createRandomItem(ownerAndManager);
 		item11.setTaxonomyLevel(taxonomyLevel);

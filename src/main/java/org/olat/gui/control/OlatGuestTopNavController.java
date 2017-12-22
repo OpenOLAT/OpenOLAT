@@ -72,7 +72,7 @@ public class OlatGuestTopNavController extends BasicController implements Lockab
 		
 		// impressum
 		vc.contextPut("impressumInfos", new ImpressumInformations(impressumModule));
-		impressumLink = LinkFactory.createLink("topnav.impressum", vc, this);
+		impressumLink = LinkFactory.createLink("_top_nav_guest_impressum", "topnav.impressum", vc, this);
 		impressumLink.setTooltip("topnav.impressum.alt");
 		impressumLink.setIconLeftCSS("o_icon o_icon_impress o_icon-lg");
 		impressumLink.setAjaxEnabled(false);

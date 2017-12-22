@@ -90,7 +90,7 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
 			}
 		} catch (Exception e) {
-			log.error("Error creating task notifications for subscriber: " + subscriber.getKey(), e);
+			log.error("Cannot create gtask notifications for subscriber: " + subscriber.getKey(), e);
 			//checkPublisher(p);
 			si = NotificationsManager.getInstance().getNoSubscriptionInfo();
 		}

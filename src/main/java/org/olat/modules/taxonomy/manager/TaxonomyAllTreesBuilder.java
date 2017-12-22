@@ -31,7 +31,9 @@ import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyModel;
 import org.olat.modules.taxonomy.ui.TaxonomyLevelRow;
 
 /**
@@ -67,14 +69,14 @@ public class TaxonomyAllTreesBuilder {
 		return nodeList.subList(1, nodeList.size());
 	}
 	
-	public GenericTreeModel buildTreeModel() {
-		GenericTreeModel taxonomyTreesModel = new GenericTreeModel();
+	public TaxonomyModel buildTreeModel() {
+		TaxonomyModel taxonomyTreesModel = new TaxonomyModel();
 		loadTreeModel(taxonomyTreesModel);
 		return taxonomyTreesModel;
 	}
 	
-	public GenericTreeModel buildTreeModel(Taxonomy taxonomy) {
-		GenericTreeModel taxonomyTreesModel = new GenericTreeModel();
+	public TaxonomyModel buildTreeModel(Taxonomy taxonomy) {
+		TaxonomyModel taxonomyTreesModel = new TaxonomyModel();
 		loadTreeModel(taxonomyTreesModel, taxonomy);
 		return taxonomyTreesModel;
 	}
@@ -107,6 +109,10 @@ public class TaxonomyAllTreesBuilder {
 		}
 		loadTreeModel(rootNodesMap, null);
 	}
+	
+	public static final String nodeKey(TaxonomyLevelRef taxonomyLevel) {
+		return LEVEL_PREFIX + taxonomyLevel.getKey();
+	}
 
 	private void loadTreeModel(Map<Taxonomy, GenericTreeNode> rootNodesMap, Taxonomy taxonomy) {
 		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
@@ -115,7 +121,7 @@ public class TaxonomyAllTreesBuilder {
 			Long key = taxonomyLevel.getKey();
 			GenericTreeNode node = fieldKeyToNode.get(key);
 			if(node == null) {
-				node = new GenericTreeNode(LEVEL_PREFIX + taxonomyLevel.getKey());
+				node = new GenericTreeNode(nodeKey(taxonomyLevel));
 				node.setTitle(taxonomyLevel.getDisplayName());
 				node.setIconCssClass("o_icon_taxonomy_level");
 				node.setUserObject(taxonomyLevel);
@@ -151,7 +157,7 @@ public class TaxonomyAllTreesBuilder {
 			Long key = taxonomyLevel.getKey();
 			GenericTreeNode node = fieldKeyToNode.get(key);
 			if(node == null) {
-				node = new GenericTreeNode(LEVEL_PREFIX + taxonomyLevel.getKey());
+				node = new GenericTreeNode(nodeKey(taxonomyLevel));
 				node.setUserObject(taxonomyLevel);
 				fieldKeyToNode.put(key, node);
 			}

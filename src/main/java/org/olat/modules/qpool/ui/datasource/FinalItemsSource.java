@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.ui.datasource;
 
+import java.util.Date;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -41,7 +43,7 @@ public class FinalItemsSource extends TaxonomyLevelItemsSource {
 		super(me, roles, taxonomyLevel);
 		setStatusFilter(QuestionStatus.finalVersion);
 		TaxonomyService taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
-		isManager = taxonomyService.hasCompetenceByLevel(taxonomyLevel, me, TaxonomyCompetenceTypes.manage);
+		isManager = taxonomyService.hasCompetenceByLevel(taxonomyLevel, me, new Date(), TaxonomyCompetenceTypes.manage);
 	}
 
 	@Override

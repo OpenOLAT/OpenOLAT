@@ -139,6 +139,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#getKey(int)
 	 */
+	@Override
 	public String getKey(int which) {
 		return keys[which];
 	}
@@ -146,6 +147,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#getSize()
 	 */
+	@Override
 	public int getSize() {
 		return keys.length;
 	}
@@ -153,10 +155,21 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#getValue(int)
 	 */
+	@Override
 	public String getValue(int which) {
 		return values[which];
 	}
-	
+
+	@Override
+	public boolean isEscapeHtml() {
+		return component.isEscapeHtml();
+	}
+
+	@Override
+	public void setEscapeHtml(boolean escapeHtml) {
+		component.setEscapeHtml(escapeHtml);
+	}
+
 	@Override
 	public boolean isAllowNoSelection() {
 		return allowNoSelection;
@@ -170,6 +183,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#isSelected(int)
 	 */
+	@Override
 	public boolean isSelected(int which) {
 		return which == selectedIndex;
 	}
@@ -178,6 +192,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	 * 
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionElement#select(java.lang.String, boolean)
 	 */
+	@Override
 	public void select(String key, boolean select) {
 		boolean found = false;
 		for (int i = 0; i < keys.length; i++) {
@@ -211,6 +226,7 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	 * we are single selection, hence return always false here
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionElement#isMultiselect()
 	 */	
+	@Override
 	public boolean isMultiselect() {
 		return false;
 	}

@@ -66,7 +66,7 @@ public class TaxonomyCompetenceImpl implements Persistable, ModifiedInfo, Taxono
 	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
 	private Date lastModified;
 	
-	@Column(name="t_type", nullable=false, insertable=true, updatable=true)
+	@Column(name="t_type", nullable=false, insertable=true, updatable=false)
 	private String type;
 
 	@Column(name="t_achievement", nullable=true, insertable=true, updatable=true)
@@ -85,11 +85,11 @@ public class TaxonomyCompetenceImpl implements Persistable, ModifiedInfo, Taxono
 	private String sourceUrl;
 	
 	@ManyToOne(targetEntity=TaxonomyLevelImpl.class)
-	@JoinColumn(name="fk_level", nullable=true, insertable=true, updatable=true)
+	@JoinColumn(name="fk_level", nullable=false, insertable=true, updatable=false)
 	private TaxonomyLevel taxonomyLevel;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class)
-	@JoinColumn(name="fk_identity", nullable=true, insertable=true, updatable=true)
+	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
 	private Identity identity;
 	
 

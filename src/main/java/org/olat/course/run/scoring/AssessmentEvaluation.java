@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
  * 
@@ -54,17 +55,18 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	}
 	
 	public AssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, null, null, fullyAssessed, assessmentID, null, null, -1, null, null, null);
+		this(score, passed, null, null, null, fullyAssessed, null, null, assessmentID, null, null, -1, null, null, null);
 	}
 	
 	public AssessmentEvaluation(Date lastModified, Date lastUserModified, Date lastCoachModified) {
-		this(null, null, null, null, null, null, null, null, null, -1, lastModified, lastUserModified, lastCoachModified);
+		this(null, null, null, null, null, null, null, null, null, null, null, -1, lastModified, lastUserModified, lastCoachModified);
 	}
 	
 	public AssessmentEvaluation(Float score, Boolean passed, Integer attempts, AssessmentEntryStatus assessmentStatus, Boolean userVisibility,
-			Boolean fullyAssessed, Long assessmentID, String comment, String coachComment, int numOfAssessmentDocs,
+			Boolean fullyAssessed, Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID,
+			String comment, String coachComment, int numOfAssessmentDocs,
 			Date lastModified, Date lastUserModified, Date lastCoachModified) {
-		super(score, passed, assessmentStatus, userVisibility, fullyAssessed, assessmentID);
+		super(score, passed, assessmentStatus, userVisibility, fullyAssessed, currentRunCompletion, runStatus, assessmentID);
 		this.attempts = attempts;
 		this.comment = comment;
 		this.coachComment = coachComment;
@@ -82,7 +84,8 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	 */
 	public AssessmentEvaluation(AssessmentEvaluation eval, AssessmentEntryStatus assessmentStatus) {
 		this(eval.getScore(), eval.getPassed(), eval.getAttempts(), assessmentStatus, eval.getUserVisible(),
-				eval.getFullyAssessed(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1,
+				eval.getFullyAssessed(), eval.getCurrentRunCompletion(), eval.getCurrentRunStatus(),  eval.getAssessmentID(),
+				eval.getComment(), eval.getCoachComment(), -1,
 				eval.getLastModified(), eval.getLastUserModified(), eval.getLastCoachModified());
 	}
 
@@ -138,8 +141,17 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		if(node.hasCommentConfigured()) {
 			comment = entry.getComment();
 		}
+		
+		Double currentRunCompletion = null;
+		AssessmentRunStatus runStatus = null;
+		if(node.hasCompletion()) {
+			currentRunCompletion = entry.getCurrentRunCompletion();
+			runStatus = entry.getCurrentRunStatus();
+		}
+		
 		return new AssessmentEvaluation(score, passed, attempts, entry.getAssessmentStatus(), entry.getUserVisibility(),
-				entry.getFullyAssessed(), entry.getAssessmentId(), comment, entry.getCoachComment(), entry.getNumberOfAssessmentDocuments(),
+				entry.getFullyAssessed(), currentRunCompletion, runStatus, entry.getAssessmentId(),
+				comment, entry.getCoachComment(), entry.getNumberOfAssessmentDocuments(),
 				entry.getLastModified(), entry.getLastUserModified(), entry.getLastCoachModified());
 	}
 }

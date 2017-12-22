@@ -69,7 +69,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 
 	private Controller currentCtrl;
 	private Controller businessGroupListCtrl;
-	private IdentityListCourseNodeController identityListCtrl; 
+	private AssessmentCourseNodeController identityListCtrl; 
 	
 	private View view = View.users;
 	private TreeNode selectedNodeChanged;
@@ -123,6 +123,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 					view = View.users;
 				}
 				doSelectCourseNode(ureq, rootNode, (CourseNode)rootNode.getUserObject());
+				menuTree.setSelectedNode(rootNode);
 			}
 		} else {
 			ContextEntry entry = entries.get(0);
@@ -136,6 +137,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 					if(ctrl instanceof Activateable2) {
 						((Activateable2)ctrl).activate(ureq, entries, null);
 					}
+					menuTree.setSelectedNode(treeNode);
 				}
 			} else if("Node".equalsIgnoreCase(resourceTypeName) || "CourseNode".equalsIgnoreCase(resourceTypeName)) {
 				Long nodeIdent = entries.get(0).getOLATResourceable().getResourceableId();
@@ -150,6 +152,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 						List<ContextEntry> subEntries = entries.subList(1, entries.size());
 						((Activateable2)ctrl).activate(ureq, subEntries, entry.getTransientState());
 					}
+					menuTree.setSelectedNode(treeNode);
 				}
 			}
 		}
@@ -202,8 +205,16 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				CourseNodeEvent cne = (CourseNodeEvent)event;
 				CourseNode courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getNode(cne.getIdent());
 				TreeNode treeNode = TreeHelper.findNodeByUserObject(courseNode, menuTree.getTreeModel().getRootNode());
-				stackPanel.changeDisplayname(treeNode.getTitle(), "o_icon " + treeNode.getIconCssClass(), this);
-				selectedNodeChanged = treeNode;
+				if(treeNode == null) {
+					treeNode = menuTree.getTreeModel().getRootNode();
+					courseNode = CourseFactory.loadCourse(courseEntry).getRunStructure().getRootNode();
+					doSelectCourseNode(ureq, treeNode, courseNode);
+					menuTree.setSelectedNode(treeNode);
+					showWarning("warning.course.node.deleted");
+				} else {
+					stackPanel.changeDisplayname(treeNode.getTitle(), "o_icon " + treeNode.getIconCssClass(), this);
+					selectedNodeChanged = treeNode;
+				}
 			}
 		}
 		super.event(ureq, source, event);
@@ -277,8 +288,14 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresUsers, null, getWindowControl());
 		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
 		WindowControl bbwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, bwControl);
-		identityListCtrl = new IdentityListCourseNodeController(ureq, bbwControl, stackPanel,
+		if(courseNode instanceof AssessableCourseNode) {
+			identityListCtrl = ((AssessableCourseNode)courseNode).getIdentityListController(ureq, getWindowControl(), stackPanel,
+					courseEntry, null, coachCourseEnv, toolContainer, assessmentCallback);
+		} else {
+			identityListCtrl = new IdentityListCourseNodeController(ureq, bbwControl, stackPanel,
 				courseEntry, null, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
+		}
+		
 		return identityListCtrl;
 	}
 	

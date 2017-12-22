@@ -28,14 +28,12 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
-import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -45,7 +43,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -53,19 +50,20 @@ import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.iq.CourseIQSecurityCallback;
 import org.olat.course.nodes.iq.IQEditController;
+import org.olat.course.nodes.iq.IQIdentityListCourseNodeController;
 import org.olat.course.nodes.iq.IQPreviewController;
 import org.olat.course.nodes.iq.IQRunController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
@@ -78,7 +76,9 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
+import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.group.BusinessGroup;
 import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.QTIResultSet;
@@ -95,32 +95,27 @@ import org.olat.ims.qti.export.QTIExportSCQItemFormatConfig;
 import org.olat.ims.qti.fileresource.TestFileResource;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
-import org.olat.ims.qti.resultexport.QTI12ExportResultsReportController;
 import org.olat.ims.qti.resultexport.QTI12ResultsExportMediaResource;
 import org.olat.ims.qti.statistics.QTIStatisticResourceResult;
 import org.olat.ims.qti.statistics.QTIStatisticSearchParams;
 import org.olat.ims.qti.statistics.QTIType;
-import org.olat.ims.qti.statistics.ui.QTI12PullTestsToolController;
-import org.olat.ims.qti.statistics.ui.QTI12StatisticsToolController;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
-import org.olat.ims.qti21.resultexport.QTI21ExportResultsReportController;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
-import org.olat.ims.qti21.ui.QTI21ResetToolController;
-import org.olat.ims.qti21.ui.QTI21RetrieveTestsToolController;
-import org.olat.ims.qti21.ui.assessment.QTI21CorrectionToolController;
-import org.olat.ims.qti21.ui.assessment.QTI21ValidationToolController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
-import org.olat.ims.qti21.ui.statistics.QTI21StatisticsToolController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.iq.IQSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -133,6 +128,8 @@ import de.bps.ims.qti.QTIResultDetailsController;
 import de.bps.onyx.plugin.OnyxExportManager;
 import de.bps.onyx.plugin.OnyxModule;
 import de.bps.onyx.plugin.run.OnyxRunController;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * Initial Date: Feb 9, 2004
@@ -222,6 +219,58 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 		return false;
 	}
+	
+	/**
+	 * @param testEntry The test repository entry
+	 * @return true if the course node or the test has a time limit set.
+	 */
+	public boolean hasQTI21TimeLimit(RepositoryEntry testEntry) {
+		boolean timeLimit = false;
+		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
+			ModuleConfiguration config = getModuleConfiguration();
+			boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
+			if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
+				timeLimit = true;
+			} else {
+				File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+				ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
+						.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+				if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+					timeLimit = true;
+				}
+			}
+		}
+		return timeLimit;
+	}
+	
+	/**
+	 * If the course element override the test configuration, the value is from
+	 * the course element's configuration. Else, the value is from the assessment
+	 * test.
+	 * 
+	 * @param testEntry The test repository entry
+	 * @return the maximum time limit in seconds or -1 if no time limit is configured
+	 */
+	public int getQTI21TimeLimitMaxInSeconds(RepositoryEntry testEntry) {
+		int timeLimit = -1;
+		if(ImsQTI21Resource.TYPE_NAME.equals(testEntry.getOlatResource().getResourceableTypeName())) {
+			ModuleConfiguration config = getModuleConfiguration();
+			boolean configRef = config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIG_REF, false);
+			if(!configRef && config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1) > 0) {
+				timeLimit = config.getIntegerSafe(IQEditController.CONFIG_KEY_TIME_LIMIT, -1);
+			} else {
+				File unzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
+				ResolvedAssessmentTest resolvedAssessmentTest = CoreSpringFactory.getImpl(QTI21Service.class)
+						.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
+				AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
+				if(assessmentTest.getTimeLimits() != null && assessmentTest.getTimeLimits().getMaximum() != null) {
+					timeLimit = assessmentTest.getTimeLimits().getMaximum().intValue();
+				}
+			}
+		}
+		return timeLimit;
+	}
 
 	/**
 	 * @see org.olat.course.nodes.CourseNode#createPreviewController(org.olat.core.gui.UserRequest,
@@ -241,43 +290,15 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 		return controller;
 	}
-
-	@Override
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options) {
-		List<Controller> tools = new ArrayList<>();
-		
-		CourseEnvironment courseEnv = coachCourseEnv.getCourseEnvironment();
-		
-		RepositoryEntry qtiTestEntry = getReferencedRepositoryEntry();
-		if(ImsQTI21Resource.TYPE_NAME.equals(qtiTestEntry.getOlatResource().getResourceableTypeName())) {
-			tools.add(new QTI21StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
-			if(!coachCourseEnv.isCourseReadOnly()) {
-				QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
-				tools.add(new QTI21RetrieveTestsToolController(ureq, wControl, courseEnv, options, this));
-				if(options.isAdmin()) {
-					tools.add(new QTI21ResetToolController(ureq, wControl, courseEnv, options, this));
-				}
-				if(qtiService.needManualCorrection(qtiTestEntry)
-						|| IQEditController.CORRECTION_MANUAL.equals(getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
-					tools.add(new QTI21CorrectionToolController(ureq, wControl, courseEnv, options, this));
-				}
-				if(getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE, false)) {
-					tools.add(new QTI21ValidationToolController(ureq, wControl));
-				}
-			}
-			tools.add(new QTI21ExportResultsReportController(ureq, wControl, courseEnv, options, this));
-
-		} else {
-			tools.add(new QTI12StatisticsToolController(ureq, wControl, stackPanel, courseEnv, options, this));
-			if(!coachCourseEnv.isCourseReadOnly()) {
-				tools.add(new QTI12PullTestsToolController(ureq, wControl, courseEnv, options, this));
-			}
-			tools.add(new QTI12ExportResultsReportController(ureq, wControl, courseEnv, options, this));
-		}
-		return tools;
-	}
 	
+	@Override
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+		return new IQIdentityListCourseNodeController(ureq, wControl, stackPanel,
+				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
+	}
+
 	public boolean isQTI12TestRunning(Identity assessedIdentity, CourseEnvironment courseEnv) {
 		String resourcePath = courseEnv.getCourseResourceableId() + File.separator + getIdent();
 		FilePersister qtiPersister = new FilePersister(assessedIdentity, resourcePath);
@@ -384,37 +405,15 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf);
-		
-		Boolean passed = null;
-		Float score = null;		
-		Long assessmentID = null;	
-		Boolean fullyAssessed = null;
-		if(entry != null) {
-			passed = entry.getPassed();
-			if(entry.getScore() != null) {
-				score = entry.getScore().floatValue();
-			}
-			assessmentID = entry.getAssessmentId();
-			fullyAssessed = entry.getFullyAssessed();
-		}	
-		return new AssessmentEvaluation(score, passed, fullyAssessed, assessmentID);
+		return getUserScoreEvaluation(entry);
 	}
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		Boolean passed = null;
-		Float score = null;		
-		Long assessmentID = null;	
-		Boolean fullyAssessed = null;
 		if(entry != null) {
-			passed = entry.getPassed();
-			if(entry.getScore() != null) {
-				score = entry.getScore().floatValue();
-			}
-			assessmentID = entry.getAssessmentId();
-			fullyAssessed = entry.getFullyAssessed();
+			return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
 		}	
-		return new AssessmentEvaluation(score, passed, fullyAssessed, assessmentID);
+		return AssessmentEvaluation.EMPTY_EVAL;
 	}
 
 	@Override
@@ -672,11 +671,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 
 		// 1) prepare result export
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
-		//create SyntheticUserRequest with UserSession to avoid Nullpointer in AssessmentResultController
-		UserRequest ureq = new SyntheticUserRequest(new TransientIdentity(), locale, new UserSession());
-		Roles roles = new Roles(false, false, false, false, false, false, false);
-		ureq.getUserSession().setRoles(roles);
-		
 		try {
 			RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repositorySoftKey, true);
 			boolean onyx = OnyxModule.isOnyxTest(re.getOlatResource());
@@ -689,9 +683,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				return true;
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 				// 2a) create export resource
-				QTI21Service qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
 				List<Identity> identities = ScoreAccountingHelper.loadUsers(courseEnv, options);
-				new QTI21ResultsExportMediaResource(courseEnv, identities, this, qtiService, ureq, locale).exportTestResults(exportStream);
+				new QTI21ResultsExportMediaResource(courseEnv, identities, this, locale).exportTestResults(exportStream);
 				// excel results
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 				QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, re, courseEntry, getIdent());
@@ -801,6 +794,21 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			am.saveNodeAttempts(this, coachingIdentity, mySelf, userAttempts, by);
 		}
 	}
+	
+	public void pullAssessmentTestSession(AssessmentTestSession session, UserCourseEnvironment assessedUserCourseenv, Identity coachingIdentity, Role by) {
+		Boolean visibility;
+		AssessmentEntryStatus assessmentStatus;
+		if(IQEditController.CORRECTION_MANUAL.equals(getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE))) {
+			assessmentStatus = AssessmentEntryStatus.inReview;
+			visibility = Boolean.FALSE;
+		} else {
+			assessmentStatus = AssessmentEntryStatus.done;
+			visibility = Boolean.TRUE;
+		}
+		ScoreEvaluation sceval = new ScoreEvaluation(session.getScore().floatValue(), session.getPassed(), assessmentStatus, visibility, Boolean.TRUE,
+				1.0d, AssessmentRunStatus.done, session.getKey());
+		updateUserScoreEvaluation(sceval, assessedUserCourseenv, coachingIdentity, true, by);
+	}
 
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
@@ -810,6 +818,27 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);
+	}
+	
+	@Override
+	public boolean hasCompletion() {
+		return IQEditController.CONFIG_VALUE_QTI21.equals(getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI));
+	}
+
+	@Override
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		Double currentCompletion = am.getNodeCurrentRunCompletion(this, mySelf);
+		return currentCompletion;
+	}
+	
+	@Override
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus runStatus, Role doneBy) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.updateCurrentCompletion(this, assessedIdentity, userCourseEnvironment, currentCompletion, runStatus, doneBy);
 	}
 	
 	@Override

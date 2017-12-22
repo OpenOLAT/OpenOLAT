@@ -119,6 +119,10 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 	public boolean validateCommand(String cmd, TestPlanNodeKey nodeKey) {
 		return component.validateCommand(cmd, nodeKey);
 	}
+	
+	public boolean validateRequest(TestPlanNodeKey nodeKey) {
+		return component.validateRequest(nodeKey);
+	}
 
 	@Override
 	protected Component getFormItemComponent() {

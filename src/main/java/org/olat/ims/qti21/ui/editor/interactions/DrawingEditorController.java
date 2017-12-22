@@ -80,20 +80,21 @@ public class DrawingEditorController extends FormBasicController {
 	private File backgroundImage;
 	private File initialBackgroundImage;
 	
-	private final boolean restrictedEdit;
+	private final boolean restrictedEdit, readOnly;
 	private final DrawingAssessmentItemBuilder itemBuilder;
 
 	@Autowired
 	private ImageService imageService;
 	
 	public DrawingEditorController(UserRequest ureq, WindowControl wControl, DrawingAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemFile = itemFile;
 		this.itemBuilder = itemBuilder;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
+		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
@@ -105,6 +106,7 @@ public class DrawingEditorController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setElementCssClass("o_sel_assessment_item_title");
 		titleEl.setMandatory(true);
+		titleEl.setEnabled(!readOnly);
 		
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
@@ -113,11 +115,12 @@ public class DrawingEditorController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 12, -1, itemContainer,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.setElementCssClass("o_sel_assessment_item_question");
+		textEl.setEnabled(!readOnly);
 		
 		initialBackgroundImage = getCurrentBackground();
 		backgroundEl = uifactory.addFileElement(getWindowControl(), "form.imd.background", "form.imd.background", formLayout);
 		backgroundEl.setPreview(ureq.getUserSession(), true);
-		backgroundEl.setEnabled(!restrictedEdit);
+		backgroundEl.setEnabled(!restrictedEdit && !readOnly);
 		if(initialBackgroundImage != null) {
 			backgroundEl.setInitialFile(initialBackgroundImage);
 		}
@@ -130,6 +133,7 @@ public class DrawingEditorController extends FormBasicController {
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		buttonsContainer.setElementCssClass("o_sel_lob_save");
+		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
 	}
@@ -207,6 +211,7 @@ public class DrawingEditorController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(readOnly) return;
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		

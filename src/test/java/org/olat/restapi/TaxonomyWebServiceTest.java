@@ -559,8 +559,8 @@ public class TaxonomyWebServiceTest extends OlatJerseyTestCase {
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("competence-2");
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-6", "Taxonomy on rest", "Rest is cool", "Ext-tax-6");
 		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-l-1", "Level 1 on rest", "Level", "Ext-3", null, null, taxonomy);
-		taxonomyService.addTaxonomyLevelCompetences(level, id1, TaxonomyCompetenceTypes.have);
-		taxonomyService.addTaxonomyLevelCompetences(level, id2, TaxonomyCompetenceTypes.manage);
+		taxonomyService.addTaxonomyLevelCompetences(level, id1, TaxonomyCompetenceTypes.have, null);
+		taxonomyService.addTaxonomyLevelCompetences(level, id2, TaxonomyCompetenceTypes.manage, null);
 		dbInstance.commitAndCloseSession();
 		
 		// get the competences
@@ -601,8 +601,8 @@ public class TaxonomyWebServiceTest extends OlatJerseyTestCase {
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-20", "Taxonomy on rest", "Rest is cool", "Ext-tax-7");
 		TaxonomyLevel level1 = taxonomyService.createTaxonomyLevel("REST-Tax-l-21", "Level 1 on rest", "Level", "Ext-7", null, null, taxonomy);
 		TaxonomyLevel level2 = taxonomyService.createTaxonomyLevel("REST-Tax-l-22", "Level 1 on rest", "Level", "Ext-7", null, null, taxonomy);
-		taxonomyService.addTaxonomyLevelCompetences(level1, id, TaxonomyCompetenceTypes.teach);
-		taxonomyService.addTaxonomyLevelCompetences(level2, id, TaxonomyCompetenceTypes.have);
+		taxonomyService.addTaxonomyLevelCompetences(level1, id, TaxonomyCompetenceTypes.teach, null);
+		taxonomyService.addTaxonomyLevelCompetences(level2, id, TaxonomyCompetenceTypes.have, null);
 		dbInstance.commitAndCloseSession();
 		
 		// get the competences
@@ -640,7 +640,7 @@ public class TaxonomyWebServiceTest extends OlatJerseyTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competence-4");
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-7", "Taxonomy on rest", "Rest is cool", "Ext-tax-7");
 		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-l-7", "Level 1 on rest", "Level", "Ext-7", null, null, taxonomy);
-		taxonomyService.addTaxonomyLevelCompetences(level, id, TaxonomyCompetenceTypes.teach);
+		taxonomyService.addTaxonomyLevelCompetences(level, id, TaxonomyCompetenceTypes.teach, null);
 		dbInstance.commitAndCloseSession();
 		
 		// get the competences
@@ -709,7 +709,7 @@ public class TaxonomyWebServiceTest extends OlatJerseyTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competence-4");
 		Taxonomy taxonomy = taxonomyService.createTaxonomy("REST-Tax-8", "Taxonomy on rest", "PUT is cool, yes!", "PUT-tax-2");
 		TaxonomyLevel level = taxonomyService.createTaxonomyLevel("REST-Tax-r-8", "Root level on rest", "Level", "Ext-23", null, null, taxonomy);
-		TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(level, id, TaxonomyCompetenceTypes.target);
+		TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(level, id, TaxonomyCompetenceTypes.target, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(competence);
 		//make sure we have something to delete

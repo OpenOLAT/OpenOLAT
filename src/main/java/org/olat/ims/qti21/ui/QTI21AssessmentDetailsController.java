@@ -25,18 +25,16 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -46,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -54,10 +53,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
@@ -66,17 +62,14 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21Module;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
 import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.ui.QTI21AssessmentTestSessionTableModel.TSCols;
 import org.olat.ims.qti21.ui.assessment.IdentityAssessmentTestCorrectionController;
-import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -107,7 +100,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  */
 public class QTI21AssessmentDetailsController extends FormBasicController {
 
-	private Component resetToolCmp;
+	private FormLink resetButton;
 	private FlexiTableElement tableEl;
 	private QTI21AssessmentTestSessionTableModel tableModel;
 	
@@ -124,16 +117,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private CloseableModalController cmc;
 	private AssessmentResultController resultCtrl;
-	private QTI21ResetToolController resetToolCtrl;
+	private QTI21ResetDataController resetToolCtrl;
 	private DialogBoxController retrieveConfirmationCtr;
 	private IdentityAssessmentTestCorrectionController correctionCtrl;
 	
 	@Autowired
-	private DB dbInstance;
-	@Autowired
 	private UserManager userManager;
-	@Autowired
-	private QTI21Module qtiModule;
 	@Autowired
 	protected QTI21Service qtiService;
 	@Autowired
@@ -228,17 +217,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		tableEl.setEmtpyTableMessageKey("results.empty");
 
 		if(reSecurity.isEntryAdmin() && !readOnly) {
-			AssessmentToolOptions asOptions = new AssessmentToolOptions();
-			asOptions.setAdmin(reSecurity.isEntryAdmin());
-			asOptions.setIdentities(Collections.singletonList(assessedIdentity));
-			if(courseNode != null) {
-				resetToolCtrl = new QTI21ResetToolController(ureq, getWindowControl(),
-						assessedUserCourseEnv.getCourseEnvironment(), asOptions, courseNode);
-			} else {
-				resetToolCtrl = new QTI21ResetToolController(ureq, getWindowControl(), entry, asOptions);
-			}
-			listenTo(resetToolCtrl);
-			resetToolCmp = resetToolCtrl.getInitialComponent();	
+			resetButton = uifactory.addFormLink("menu.reset.title", formLayout, Link.BUTTON);
+			resetButton.setIconLeftCSS("o_icon o_icon_delete_item"); 	
 		}
 	} 
 
@@ -277,17 +257,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 		
 		
-		Collections.sort(infos, new AssessmentTestSessionComparator());
+		Collections.sort(infos, new AssessmentTestSessionDetailsComparator());
 		tableModel.setObjects(infos);
 		tableEl.reloadData();
 		tableEl.reset();
-			
-		if(resetToolCmp != null) {
-			if(sessionsStatistics.size() > 0) {
-				flc.getFormItemComponent().put("reset.tool", resetToolCmp);
-			} else {
-				flc.getFormItemComponent().remove(resetToolCmp);
-			}
+		
+		if(resetButton != null) {
+			resetButton.setVisible(!sessionsStatistics.isEmpty());
 		}
 	}
 
@@ -309,30 +285,36 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 			cleanUp();
 		} else if(retrieveConfirmationCtr == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				doPullSession((AssessmentTestSession)retrieveConfirmationCtr.getUserObject());
+				doPullSession(ureq, (AssessmentTestSession)retrieveConfirmationCtr.getUserObject());
 				updateModel();
 			}
 		} else if(resetToolCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				updateModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
+			cmc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(correctionCtrl);
+		removeAsListenerAndDispose(resetToolCtrl);
 		removeAsListenerAndDispose(resultCtrl);
 		removeAsListenerAndDispose(cmc);
 		correctionCtrl = null;
+		resetToolCtrl = null;
 		resultCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(tableEl == source) {
+		if(resetButton == source) {
+			doResetData(ureq);
+		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
@@ -370,29 +352,38 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	
 	private void doUpdateCourseNode(AssessmentTestSession session) {
 		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(assessedUserCourseEnv);
-		BigDecimal finalScore = calculateFinalScore(session);
+		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, scoreEval.getPassed(),
-				scoreEval.getAssessmentStatus(), null, scoreEval.getFullyAssessed(), session.getKey());
+				scoreEval.getAssessmentStatus(), null, scoreEval.getFullyAssessed(), 
+				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), session.getKey());
 		courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
 	}
 	
 	private void doUpdateEntry(AssessmentTestSession session) {
 		AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, entry, null, entry);
-		BigDecimal finalScore = calculateFinalScore(session);
-		assessmentEntry.setScore(finalScore);
+		assessmentEntry.setScore(session.getFinalScore());
 		assessmentEntry.setAssessmentId(session.getKey());
 		assessmentService.updateAssessmentEntry(assessmentEntry);
 	}
 	
-	private BigDecimal calculateFinalScore(AssessmentTestSession session) {
-		BigDecimal finalScore = session.getScore();
-		if(finalScore == null) {
-			finalScore = session.getManualScore();
-		} else if(session.getManualScore() != null) {
-			finalScore = finalScore.add(session.getManualScore());
+	private void doResetData(UserRequest ureq) {
+		AssessmentToolOptions asOptions = new AssessmentToolOptions();
+		asOptions.setAdmin(reSecurity.isEntryAdmin());
+		asOptions.setIdentities(Collections.singletonList(assessedIdentity));
+		
+		if(courseNode != null) {
+			resetToolCtrl = new QTI21ResetDataController(ureq, getWindowControl(),
+					assessedUserCourseEnv.getCourseEnvironment(), asOptions, courseNode);
+		} else {
+			resetToolCtrl = new QTI21ResetDataController(ureq, getWindowControl(), entry, asOptions);
 		}
-		return finalScore;
+		listenTo(resetToolCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), "close", resetToolCtrl.getInitialComponent(),
+				true, translate("table.header.results"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	private void doConfirmPullSession(UserRequest ureq, AssessmentTestSession session) {
@@ -403,25 +394,15 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		retrieveConfirmationCtr.setUserObject(session);
 	}
 	
-	private void doPullSession(AssessmentTestSession session) {
+	private void doPullSession(UserRequest ureq, AssessmentTestSession session) {
+		//reload it to prevent lazy loading issues
 		session = qtiService.getAssessmentTestSession(session.getKey());
-		
-		if(session.getFinishTime() == null) {
-			if(qtiModule.isDigitalSignatureEnabled()) {
-				qtiService.signAssessmentResult(session, getSignatureOptions(session), session.getIdentity());
-			}
-			session.setFinishTime(new Date());
+		qtiService.pullSession(session, getSignatureOptions(session), getIdentity());
+		if(courseNode != null) {
+			courseNode.pullAssessmentTestSession(session, assessedUserCourseEnv, getIdentity(), Role.coach);
 		}
-		session.setTerminationTime(new Date());
-		session = qtiService.updateAssessmentTestSession(session);
-		dbInstance.commit();//make sure that the changes committed before sending the event
-		
-		AssessmentSessionAuditLogger candidateAuditLogger = qtiService.getAssessmentSessionAuditLogger(session, false);
-		candidateAuditLogger.logTestRetrieved(session, getIdentity());
-		
-		OLATResourceable sessionOres = OresHelper.createOLATResourceableInstance(AssessmentTestSession.class, session.getKey());
-		CoordinatorManager.getInstance().getCoordinator().getEventBus()
-			.fireEventToListenersOf(new RetrieveAssessmentTestSessionEvent(session.getKey()), sessionOres);
+		updateModel();
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private DigitalSignatureOptions getSignatureOptions(AssessmentTestSession session) {
@@ -452,6 +433,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 
 	private void doOpenResult(UserRequest ureq, AssessmentTestSession session) {
 		if(resultCtrl != null) return;
+		
+		//reload it to prevent lazy loading issues
+		session = qtiService.getAssessmentTestSession(session.getKey());
 
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File fUnzippedDirRoot = frm.unzipFileResource(session.getTestEntry().getOlatResource());
@@ -516,47 +500,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 	}
 	
-	public static class AssessmentTestSessionComparator implements Comparator<QTI21AssessmentTestSessionDetails> {
+	public static class AssessmentTestSessionDetailsComparator implements Comparator<QTI21AssessmentTestSessionDetails> {
+		
+		private final AssessmentTestSessionComparator comparator = new AssessmentTestSessionComparator();
 
 		@Override
 		public int compare(QTI21AssessmentTestSessionDetails q1, QTI21AssessmentTestSessionDetails q2) {
-			AssessmentTestSession a1 = q1.getTestSession();
-			AssessmentTestSession a2 = q2.getTestSession();
-			
-			Date t1 = a1.getTerminationTime();
-			if(t1 == null) {
-				t1 = a1.getFinishTime();
-			}
-			Date t2 = a2.getTerminationTime();
-			if(t2 == null) {
-				t2 = a2.getFinishTime();
-			}
-			
-			int c;
-			if(t1 == null && t2 == null) {
-				c = 0;
-			} else if(t2 == null) {
-				return 1;
-			} else if(t1 == null) {
-				return -1;
-			} else {
-				c = t1.compareTo(t2);
-			}
-			
-			if(c == 0) {
-				Date c1 = a1.getCreationDate();
-				Date c2 = a2.getCreationDate();
-				if(c1 == null && c2 == null) {
-					c = 0;
-				} else if(c2 == null) {
-					return -1;
-				} else if(c1 == null) {
-					return 1;
-				} else {
-					c = c1.compareTo(c2);
-				}
-			}
-			return -c;
+			return comparator.compare(q1.getTestSession(), q2.getTestSession());
 		}
 	}
 }

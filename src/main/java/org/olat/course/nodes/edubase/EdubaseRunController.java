@@ -87,7 +87,6 @@ public class EdubaseRunController extends BasicController {
 			Link nodeLink = LinkFactory.createLink("startReader_" + bookSection.getPosition(), container, this);
 			nodeLink.setCustomDisplayText(StringHelper.escapeHtml("Dokument öffen"));
 			nodeLink.setIconRightCSS("o_icon o_icon_start");
-//			nodeLink.setCustomEnabledLinkCSS("pull-right");
 			nodeLink.setUserObject(bookSection);
 		}
 

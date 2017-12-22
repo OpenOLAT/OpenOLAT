@@ -91,7 +91,7 @@ public class EdubaseCourseNode extends AbstractAccessableCourseNode {
 		} else {
 			runCtrl = new EdubaseRunController(ureq, wControl, this.getModuleConfiguration());
 		}
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_ebubase_icon");
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_edubase_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}
 	

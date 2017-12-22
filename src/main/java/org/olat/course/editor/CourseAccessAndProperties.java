@@ -39,6 +39,7 @@ public class CourseAccessAndProperties {
 	private boolean canDownload;	
 	
 	private List<OfferAccess> offerAccess;
+	private List<OfferAccess> deletedOfferAccess;
 	
 	public CourseAccessAndProperties(RepositoryEntry re) {
 		this.repoEntry = re;
@@ -61,6 +62,14 @@ public class CourseAccessAndProperties {
 
 	public void setOfferAccess(List<OfferAccess> offerAccess) {
 		this.offerAccess = offerAccess;
+	}
+
+	public List<OfferAccess> getDeletedOfferAccess() {
+		return deletedOfferAccess;
+	}
+
+	public void setDeletedOfferAccess(List<OfferAccess> deletedOfferAccess) {
+		this.deletedOfferAccess = deletedOfferAccess;
 	}
 
 	public RepositoryEntry getRepositoryEntry() {

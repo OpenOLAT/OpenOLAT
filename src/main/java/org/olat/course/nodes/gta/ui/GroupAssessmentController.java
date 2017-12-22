@@ -50,7 +50,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.CodeHelper;
@@ -61,7 +60,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -69,6 +67,8 @@ import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +101,7 @@ public class GroupAssessmentController extends FormBasicController {
 	private Float cutValue;
 	private final boolean withScore, withPassed, withComment;
 	private final GTACourseNode gtaNode;
-	private final CourseEnvironment courseEnv;
+	private final RepositoryEntry courseEntry;
 	private final BusinessGroup assessedGroup;
 	
 	@Autowired
@@ -116,10 +116,10 @@ public class GroupAssessmentController extends FormBasicController {
 	private final List<Long> duplicateMemberKeys;
 	
 	public GroupAssessmentController(UserRequest ureq, WindowControl wControl,
-			CourseEnvironment courseEnv, GTACourseNode courseNode, BusinessGroup assessedGroup) {
+			RepositoryEntry courseEntry, GTACourseNode courseNode, BusinessGroup assessedGroup) {
 		super(ureq, wControl, "assessment_per_group");
 		this.gtaNode = courseNode;
-		this.courseEnv = courseEnv;
+		this.courseEntry = courseEntry;
 		this.assessedGroup = assessedGroup;
 
 		withScore = courseNode.hasScoreConfigured();
@@ -293,7 +293,7 @@ public class GroupAssessmentController extends FormBasicController {
 	 */
 	private ModelInfos loadModel() {
 		//load participants, load datas
-		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
 		
 		Map<Identity, AssessmentEntry> identityToEntryMap = new HashMap<>();
@@ -525,7 +525,7 @@ public class GroupAssessmentController extends FormBasicController {
 	}
 	
 	private void applyChangesForEveryMemberGroup(List<AssessmentRow> rows, boolean setAsDone, boolean userVisible) {
-		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		for(AssessmentRow row:rows) {
 			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
@@ -549,9 +549,9 @@ public class GroupAssessmentController extends FormBasicController {
 			
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, true, null);
+				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, true,null, null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null);
+				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null, null);
 			}
 			gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 			
@@ -565,7 +565,7 @@ public class GroupAssessmentController extends FormBasicController {
 	}
 	
 	private void applyChangesForTheWholeGroup(List<AssessmentRow> rows, boolean setAsDone, boolean userVisible) {
-		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
+		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		Float score = null;
 		if(withScore) {
@@ -588,9 +588,9 @@ public class GroupAssessmentController extends FormBasicController {
 			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, true, null);
+				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, true, null, null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null);
+				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null, null);
 			}
 			gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 		}
@@ -614,7 +614,7 @@ public class GroupAssessmentController extends FormBasicController {
 	private void doEditComment(UserRequest ureq, AssessmentRow row) {
 		removeAsListenerAndDispose(commentCalloutCtrl);
 		
-		OLATResourceable courseOres = courseEnv.getCourseGroupManager().getCourseResource();
+		OLATResource courseOres = courseEntry.getOlatResource();
 		editCommentCtrl = new EditCommentController(ureq, getWindowControl(), courseOres, gtaNode, row);
 		listenTo(editCommentCtrl);
 		commentCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),

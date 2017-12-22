@@ -267,10 +267,6 @@ public class UserWebService {
 		}
 		
 		List<ErrorVO> errors = validateUser(null, user, request);
-		for (ErrorVO err: errors) {
-			System.out.println(err);
-			System.out.println(err.getTranslation());
-		}
 		if(errors.isEmpty()) {
 			User newUser = UserManager.getInstance().createUser(user.getFirstName(), user.getLastName(), user.getEmail());
 			Identity id = BaseSecurityManager.getInstance().createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(user.getLogin(), user.getExternalId(), user.getPassword(), newUser);

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.manager;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -40,6 +41,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelTypeToType;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
+import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +58,8 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	private TaxonomyDAO taxonomyDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
+	private TaxonomyRelationsDAO taxonomyRelationsDao;
 	@Autowired
 	private TaxonomyLevelTypeDAO taxonomyLevelTypeDao;
 	@Autowired
@@ -114,6 +118,14 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
+	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref, TaxonomyLevelSearchParameters searchParams) {
+		if(searchParams == null) {
+			return taxonomyLevelDao.getLevels(ref);
+		}
+		return taxonomyLevelDao.searchLevels(ref, searchParams);
+	}
+
+	@Override
 	public TaxonomyLevel getTaxonomyLevel(TaxonomyLevelRef ref) {
 		if(ref == null || ref.getKey() == null) return null;
 		return taxonomyLevelDao.loadByKey(ref.getKey());
@@ -140,17 +152,48 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
-	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel) {
+	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo) {
 		// save the documents
 		TaxonomyLevel reloadedTaxonomyLevel = taxonomyLevelDao.loadByKey(taxonomyLevel.getKey());
-		VFSContainer library = taxonomyLevelDao.getDocumentsLibrary(reloadedTaxonomyLevel);
-		Taxonomy taxonomy = reloadedTaxonomyLevel.getTaxonomy();
-		VFSContainer lostAndFound = taxonomyDao.getLostAndFoundDirectoryLibrary(taxonomy);
-		String dir = StringHelper.transformDisplayNameToFileSystemName(reloadedTaxonomyLevel.getIdentifier());
-		dir += "_" + taxonomyLevel.getKey();
-		VFSContainer lastStorage = lostAndFound.createChildContainer(dir);
-		VFSManager.copyContent(library, lastStorage);
+		if(mergeTo != null) {
+			TaxonomyLevel reloadedMergeTo = taxonomyLevelDao.loadByKey(mergeTo.getKey());
+			merge(reloadedTaxonomyLevel, reloadedMergeTo);
+		} else {
+			VFSContainer library = taxonomyLevelDao.getDocumentsLibrary(reloadedTaxonomyLevel);
+			Taxonomy taxonomy = reloadedTaxonomyLevel.getTaxonomy();
+			VFSContainer lostAndFound = taxonomyDao.getLostAndFoundDirectoryLibrary(taxonomy);
+			String dir = StringHelper.transformDisplayNameToFileSystemName(reloadedTaxonomyLevel.getIdentifier());
+			dir += "_" + taxonomyLevel.getKey();
+			VFSContainer lastStorage = lostAndFound.createChildContainer(dir);
+			VFSManager.copyContent(library, lastStorage);
+		}
+
 		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
+	}
+	
+	@Override
+	public boolean mergeTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo) {
+		TaxonomyLevel reloadedTaxonomyLevel = taxonomyLevelDao.loadByKey(taxonomyLevel.getKey());
+		TaxonomyLevel reloadedMergeTo = taxonomyLevelDao.loadByKey(mergeTo.getKey());
+		merge(reloadedTaxonomyLevel, reloadedMergeTo);
+		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
+	}
+
+	private void merge(TaxonomyLevel taxonomyLevel, TaxonomyLevel mergeTo) {
+		//documents
+		VFSContainer sourceLibrary = taxonomyLevelDao.getDocumentsLibrary(taxonomyLevel);
+		VFSContainer targetLibrary = taxonomyLevelDao.getDocumentsLibrary(mergeTo);
+		VFSManager.copyContent(sourceLibrary, targetLibrary);
+		
+		//children
+		List<TaxonomyLevel> children = taxonomyLevelDao.getChildren(taxonomyLevel);
+		for(TaxonomyLevel child:children) {
+			taxonomyLevelDao.moveTaxonomyLevel(child, mergeTo);
+		}
+		//move the competences
+		taxonomyCompetenceDao.replace(taxonomyLevel, mergeTo);
+		//questions
+		taxonomyRelationsDao.replaceQuestionItem(taxonomyLevel, mergeTo);
 	}
 
 	@Override
@@ -218,9 +261,9 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	
 
 	@Override
-	public boolean hasCompetenceByLevel(TaxonomyLevelRef taxonomyLevel, IdentityRef identity,
+	public boolean hasCompetenceByLevel(TaxonomyLevelRef taxonomyLevel, IdentityRef identity, Date date,
 			TaxonomyCompetenceTypes... competenceTypes) {
-		return taxonomyCompetenceDao.hasCompetenceByLevel(taxonomyLevel, identity, competenceTypes);
+		return taxonomyCompetenceDao.hasCompetenceByLevel(taxonomyLevel, identity, date, competenceTypes);
 	}
 
 	@Override
@@ -229,18 +272,18 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
-	public boolean hasTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity) {
-		return taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, identity);
+	public boolean hasTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity, Date date) {
+		return taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, identity, date);
 	}
 
 	@Override
-	public List<TaxonomyCompetence> getTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity) {
-		return taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy, identity);
+	public List<TaxonomyCompetence> getTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity, Date date) {
+		return taxonomyCompetenceDao.getCompetencesByTaxonomy(taxonomy, identity, date);
 	}
 
 	@Override
-	public boolean hasCompetence(TaxonomyRef taxonomy, IdentityRef identity, TaxonomyCompetenceTypes... competences) {
-		return taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, identity, competences);
+	public boolean hasTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity, Date date, TaxonomyCompetenceTypes... competences) {
+		return taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, identity, date, competences);
 	}
 
 	@Override
@@ -264,13 +307,29 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 	}
 
 	@Override
-	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity, TaxonomyCompetenceTypes competence) {
-		return taxonomyCompetenceDao.createTaxonomyCompetence(competence, taxonomyLevel, identity);
+	public int countTaxonomyCompetences(List<? extends TaxonomyLevelRef> taxonomyLevels) {
+		return taxonomyCompetenceDao.countTaxonomyCompetences(taxonomyLevels);
+	}
+
+	@Override
+	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity,
+			TaxonomyCompetenceTypes competence, Date expiration) {
+		return taxonomyCompetenceDao.createTaxonomyCompetence(competence, taxonomyLevel, identity, expiration);
+	}
+
+	@Override
+	public TaxonomyCompetence updateTaxonomyLevelCompetence(TaxonomyCompetence competence) {
+		return taxonomyCompetenceDao.updateCompetence(competence);
 	}
 
 	@Override
 	public void removeTaxonomyLevelCompetence(TaxonomyCompetence competence) {
 		taxonomyCompetenceDao.deleteCompetence(competence);
+	}
+
+	@Override
+	public int countRelations(List<? extends TaxonomyLevelRef> taxonomyLevels) {
+		return taxonomyRelationsDao.countQuestionItems(taxonomyLevels);
 	}
 
 	@Override

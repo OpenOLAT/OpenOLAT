@@ -73,6 +73,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -330,7 +331,8 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private void doOpenAssessmentForm(UserRequest ureq) {
 		removeAsListenerAndDispose(assessmentCtrl);
 		
-		assessmentCtrl = new GroupAssessmentController(ureq, getWindowControl(), courseEnv, gtaNode, assessedGroup);
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		assessmentCtrl = new GroupAssessmentController(ureq, getWindowControl(), courseEntry, gtaNode, assessedGroup);
 		listenTo(assessmentCtrl);
 		
 		String title = translate("grading");

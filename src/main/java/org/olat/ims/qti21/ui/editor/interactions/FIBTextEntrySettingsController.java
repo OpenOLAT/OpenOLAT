@@ -62,13 +62,15 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 	private final List<AlternativeRow> alternativeRows = new ArrayList<>();
 	
 	private int count = 0;
-	private final boolean restrictedEdit;
+	private final boolean restrictedEdit, readOnly;
 	private final TextEntry interaction;
 	
-	public FIBTextEntrySettingsController(UserRequest ureq, WindowControl wControl, TextEntry interaction, boolean restrictedEdit) {
+	public FIBTextEntrySettingsController(UserRequest ureq, WindowControl wControl, TextEntry interaction,
+			boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.interaction = interaction;
+		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
@@ -80,7 +82,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		String solution = interaction.getSolution();
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solution, formLayout);
 		solutionEl.setElementCssClass("o_sel_gap_entry_solution");
-		solutionEl.setEnabled(!restrictedEdit);
+		solutionEl.setEnabled(!restrictedEdit && !readOnly);
 		if(!StringHelper.containsNonWhitespace(solution)) {
 			solutionEl.setFocus(true);
 		}
@@ -88,7 +90,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		String placeholder = interaction.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
 		placeholderEl.setElementCssClass("o_sel_gap_entry_placeholder");
-		placeholderEl.setEnabled(!restrictedEdit);
+		placeholderEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		String alternativesPage = velocity_root + "/fib_alternatives.html";
 		alternativesCont = FormLayoutContainer.createCustomFormLayout("alternatives.list", getTranslator(), alternativesPage);
@@ -101,7 +103,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		
 		addFirstAlternative = uifactory.addFormLink("add.first.alternative", "add", "", null, alternativesCont, Link.LINK | Link.NONTRANSLATED);
 		addFirstAlternative.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
-		addFirstAlternative.setVisible(!restrictedEdit);
+		addFirstAlternative.setVisible(!restrictedEdit && !readOnly);
 
 		List<TextEntryAlternative> alternatives = interaction.getAlternatives();
 		if(alternatives != null && alternatives.size() > 0) {
@@ -113,10 +115,10 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		Integer expectedLength = interaction.getExpectedLength();
 		String expectedLengthStr = expectedLength == null ? null : expectedLength.toString();
 		expectedLengthEl = uifactory.addTextElement("fib.expectedLength", "fib.expectedLength", 256, expectedLengthStr, formLayout);
-		expectedLengthEl.setEnabled(!restrictedEdit);
+		expectedLengthEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		caseSensitiveEl = uifactory.addCheckboxesHorizontal("fib.caseSensitive", "fib.caseSensitive", formLayout, onKeys, new String[]{ "" });
-		caseSensitiveEl.setEnabled(!restrictedEdit);
+		caseSensitiveEl.setEnabled(!restrictedEdit && !readOnly);
 		if(interaction.isCaseSensitive()) {
 			caseSensitiveEl.select(onKeys[0], true);
 		}
@@ -125,10 +127,10 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
-		if(!restrictedEdit) {
+		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
+		if(!restrictedEdit && !readOnly) {
 			uifactory.addFormSubmitButton("submit", buttonsContainer);
 		}
-		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
 	}
 
 	public String getSolution() {
@@ -143,7 +145,7 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		String text = alternative.getAlternative();
 		TextElement alternativeEl = uifactory.addTextElement("fib.alternative." + count++, "fib.alternative", 256, text, alternativesCont);
 		alternativeEl.setDomReplacementWrapperRequired(false);
-		alternativeEl.setEnabled(!restrictedEdit);
+		alternativeEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		if(focus) {
 			solutionEl.setFocus(false);
@@ -154,18 +156,18 @@ public class FIBTextEntrySettingsController extends FormBasicController {
 		}
 
 		FormLink addButton = null;
-		if(!restrictedEdit) {
+		if(!restrictedEdit && !readOnly) {
 			addButton = uifactory.addFormLink("add.alternative." + count++, "add", "", null, alternativesCont, Link.NONTRANSLATED);
 			addButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
-			addButton.setVisible(!restrictedEdit);
+			addButton.setVisible(!restrictedEdit && !readOnly);
 			alternativesCont.add(addButton);
 		}
 		
 		FormLink removeButton = null;
-		if(!restrictedEdit) {
+		if(!restrictedEdit && !readOnly) {
 			removeButton = uifactory.addFormLink("remove.alternative." + count++, "rm", "", null, alternativesCont, Link.NONTRANSLATED);
 			removeButton.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
-			removeButton.setVisible(!restrictedEdit);
+			removeButton.setVisible(!restrictedEdit && !readOnly);
 			alternativesCont.add(removeButton);
 		}
 		

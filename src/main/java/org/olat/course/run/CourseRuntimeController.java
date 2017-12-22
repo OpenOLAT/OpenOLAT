@@ -403,6 +403,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			cc.removeCurrentCustomCSSFromView();
 		}
 		setCustomCSS(null);
+		setCourseClosedMessage(getUserCourseEnvironment());
 	}
 
 	@Override
@@ -436,6 +437,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			getRunMainController().initToolbar();
 		}
 		
+		setCourseClosedMessage(uce);
+	}
+	
+	private void setCourseClosedMessage(UserCourseEnvironment uce) {
 		if(uce != null && uce.isCourseReadOnly()) {
 			toolbarPanel.setMessage(translate("course.closed"));
 			toolbarPanel.setMessageCssClass("o_warning");
@@ -950,6 +955,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(lecturesAdminCtrl != null && lecturesAdminCtrl.hasConfigurationChanges() && pop.getController() == lecturesAdminCtrl) {
 			lecturesAdminCtrl.configurationChangesConsumed();
 			initToolbar();// add/remove lectures link from the toolbar
+		}
+		if(pop.getController() == assessmentToolCtr) {
+			setCourseClosedMessage(getUserCourseEnvironment());
 		}
 		if(pop.getController() != getRunMainController()) {
 			toolControllerDone(ureq);
@@ -1603,6 +1611,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			ctrl.activate(ureq, null, null);
 			listenTo(ctrl);
 			assessmentToolCtr = pushController(ureq, translate("command.openassessment"), ctrl);
+			assessmentToolCtr.assessmentModeMessage();
 			currentToolCtr = assessmentToolCtr;
 			setActiveTool(assessmentLink);
 			ctrl.initToolbar();

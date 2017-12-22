@@ -107,6 +107,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 	
 	private List<FormLink> addMethods = new ArrayList<>();
 	private List<OfferAccess> offerAccess = new ArrayList<>();
+	private List<OfferAccess> deletedOfferAccess = new ArrayList<>();
 	private final String displayName;
 	
 	private CloseableModalController cmc;
@@ -169,6 +170,7 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 				canCopy.isSelected(0), canReference.isSelected(0), canDownload.isSelected(0));
 		
 		accessProperties.setOfferAccess(offerAccess);
+		accessProperties.setDeletedOfferAccess(deletedOfferAccess);
 					
 		addToRunContext("accessAndProperties", accessProperties);	
 		
@@ -507,7 +509,11 @@ public class PublishStep01AccessForm extends StepFormBasicController {
 			String cmd = button.getCmd();
 			if("delete".equals(cmd)) {
 				AccessInfo infos = (AccessInfo)source.getUserObject();
-				offerAccess.remove(infos.getLink());
+				OfferAccess deleteOffer = infos.getLink();
+				offerAccess.remove(deleteOffer);
+				if (deleteOffer.getKey() != null) {
+					deletedOfferAccess.add(deleteOffer);			
+				}
 				confControllers.remove(infos);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if("edit".equals(cmd)) {

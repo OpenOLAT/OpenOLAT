@@ -70,6 +70,7 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 		updateModuleConfigDefaults(true);
 	}
 
+	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {

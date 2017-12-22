@@ -60,6 +60,7 @@ public class FullCalendarComponent extends AbstractComponent {
 	private String viewName = "month";
 	private boolean configurationEnabled;
 	private boolean aggregatedFeedEnabled;
+	private boolean differentiateManagedEvents;
 	
 	private final MapperKey mapperKey;
 	private final FullCalendarElement calendarEl;
@@ -121,6 +122,14 @@ public class FullCalendarComponent extends AbstractComponent {
 
 	public void setAggregatedFeedEnabled(boolean aggregatedFeedEnabled) {
 		this.aggregatedFeedEnabled = aggregatedFeedEnabled;
+	}
+
+	public boolean isDifferentiateManagedEvents() {
+		return differentiateManagedEvents;
+	}
+
+	public void setDifferentiateManagedEvents(boolean differentiateManagedEvents) {
+		this.differentiateManagedEvents = differentiateManagedEvents;
 	}
 
 	/**

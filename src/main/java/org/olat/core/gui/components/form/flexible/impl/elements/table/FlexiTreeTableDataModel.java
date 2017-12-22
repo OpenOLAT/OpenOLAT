@@ -28,8 +28,16 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
  */
 public interface FlexiTreeTableDataModel<T extends FlexiTreeTableNode> extends FlexiTableDataModel<T> {
 	
+	/**
+	 * @param row The specified row
+	 * @return The indentation of the specified row
+	 */
 	public int getIndentation(int row);
 	
+	/**
+	 * @param row The specified row
+	 * @return true if the row has some children
+	 */
 	public boolean hasChildren(int row);
 	
 	public boolean isOpen(int row);

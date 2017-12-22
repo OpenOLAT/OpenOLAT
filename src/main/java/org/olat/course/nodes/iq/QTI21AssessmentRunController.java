@@ -48,6 +48,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.mail.MailBundle;
@@ -91,6 +92,8 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.event.CompletionEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -133,6 +136,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private QTI21Service qtiService;
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	
@@ -177,6 +182,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		// fetch disclaimer file
 		String sDisclaimer = config.getStringValue(IQEditController.CONFIG_KEY_DISCLAIMER);
+		System.out.println(sDisclaimer);
 		if (sDisclaimer != null) {
 			VFSContainer baseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 			int lastSlash = sDisclaimer.lastIndexOf('/');
@@ -460,7 +466,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == displayCtrl) {
 			if(event == Event.CANCELLED_EVENT) {
-				doExitAssessment(ureq, event, false);
+				doCancelAssessment(ureq);
 				initAssessment(ureq);
 				showInfo("assessment.test.cancelled");
 			} else if("suspend".equals(event.getCommand())) {
@@ -626,6 +632,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			finalOptions.setDigitalSignatureMail(config.getBooleanSafe(IQEditController.CONFIG_DIGITAL_SIGNATURE_SEND_MAIL, testOptions.isDigitalSignatureMail()));
 		}
 		
+		Boolean assessmentResultOnFinish = config.getBooleanEntry(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
+		if(assessmentResultOnFinish != null) {
+			finalOptions.setShowAssessmentResultsOnFinish(assessmentResultOnFinish.booleanValue());
+		}
 		if(!AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT.equals(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY))) {
 			//if this setting is set, override the summary
 			finalOptions.setAssessmentResultsOptions(QTI21AssessmentResultsOptions.parseString(config.getStringValue(IQEditController.CONFIG_KEY_SUMMARY, AssessmentInstance.QMD_ENTRY_SUMMARY_COMPACT)));
@@ -645,6 +655,22 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			finalOptions = new QTI21OverrideOptions(maxTimeLimit);
 		}
 		return finalOptions;
+	}
+	
+	private void doCancelAssessment(UserRequest ureq) {
+		if(displayContainerController != null) {
+			displayContainerController.deactivate(ureq);
+		} else {
+			getWindowControl().pop();
+		}	
+		
+		removeHistory(ureq);
+		if(courseNode instanceof IQTESTCourseNode) {
+			((IQTESTCourseNode)courseNode).updateCurrentCompletion(userCourseEnv, getIdentity(), null, null, Role.user);
+		}
+		
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
+		addToHistory(ureq, ores, null);
 	}
 
 	/**
@@ -711,13 +737,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	}
 
 	@Override
-	public void updateOutcomes(Float score, Boolean pass) {
-		//ScoreEvaluation sceval = new ScoreEvaluation(score, pass, Boolean.FALSE);
-		//courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), false);
+	public void updateOutcomes(Float score, Boolean pass, Double completion) {
+		if(courseNode instanceof IQTESTCourseNode) {
+			((IQTESTCourseNode)courseNode).updateCurrentCompletion(userCourseEnv, getIdentity(), completion, AssessmentRunStatus.running, Role.user);
+			coordinatorManager.getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(), completion, AssessmentRunStatus.running, getIdentity().getKey()),
+						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
+		}
 	}
 
 	@Override
-	public void submit(Float score, Boolean pass, Long assessmentId) {
+	public void submit(Float score, Boolean pass, Double completion, Long assessmentId) {
 		if(anonym) {
 			assessmentNotificationsHandler.markPublisherNews(getIdentity(), userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 			return;
@@ -733,13 +763,17 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				assessmentStatus = AssessmentEntryStatus.done;
 				visibility = Boolean.TRUE;
 			}
-			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, visibility, Boolean.TRUE, assessmentId);
+			ScoreEvaluation sceval = new ScoreEvaluation(score, pass, assessmentStatus, visibility, Boolean.TRUE,
+					completion, AssessmentRunStatus.done, assessmentId);
 			
 			boolean increment = incrementAttempts.getAndSet(false);
 			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), increment, Role.user);
 			if(increment) {
 				ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_CLOSE_IN_COURSE, getClass());
 			}
+			coordinatorManager.getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(), completion, AssessmentRunStatus.done, getIdentity().getKey()),
+					userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
 
 			assessmentNotificationsHandler.markPublisherNews(getIdentity(), userCourseEnv.getCourseEnvironment().getCourseResourceableId());
 		} else if(courseNode instanceof SelfAssessableCourseNode) {

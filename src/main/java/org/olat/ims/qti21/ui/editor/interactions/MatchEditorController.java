@@ -77,7 +77,7 @@ public class MatchEditorController extends FormBasicController {
 	private int count = 0;
 	private VFSContainer itemContainer;
 	
-	private final boolean restrictedEdit;
+	private final boolean restrictedEdit, readOnly;
 	private MatchAssessmentItemBuilder itemBuilder;
 	private final List<MatchWrapper> sourceWrappers = new ArrayList<>();
 	private final List<MatchWrapper> targetWrappers = new ArrayList<>();
@@ -95,10 +95,11 @@ public class MatchEditorController extends FormBasicController {
 	 * @param restrictedEdit
 	 */
 	public MatchEditorController(UserRequest ureq, WindowControl wControl, MatchAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, "simple_choices_editor");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
+		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 		
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
@@ -122,15 +123,17 @@ public class MatchEditorController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), metadata);
 		titleEl.setElementCssClass("o_sel_assessment_item_title");
 		titleEl.setMandatory(true);
+		titleEl.setEnabled(!readOnly);
 
 		String description = itemBuilder.getQuestion();
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
 				metadata, ureq.getUserSession(), getWindowControl());
+		textEl.setEnabled(!readOnly);
 		
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
 		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", metadata, yesnoKeys, yesnoValues);
-		shuffleEl.setEnabled(!restrictedEdit);
+		shuffleEl.setEnabled(!restrictedEdit && !readOnly);
 		if (itemBuilder.isShuffle()) {
 			shuffleEl.select("y", true);
 		} else {
@@ -141,7 +144,7 @@ public class MatchEditorController extends FormBasicController {
 		String[] singleMultiValues = new String[]{ translate("form.imd.match.single.choice"), translate("form.imd.match.multiple.choice") };
 		singleMultiEl = uifactory.addRadiosHorizontal("singleMulti", "form.imd.match.single.multiple", metadata, singleMultiKeys, singleMultiValues);
 		singleMultiEl.setElementCssClass("o_sel_match_single");
-		singleMultiEl.setEnabled(!restrictedEdit);
+		singleMultiEl.setEnabled(!restrictedEdit && !readOnly);
 		singleMultiEl.addActionListener(FormEvent.ONCHANGE);
 		if (itemBuilder.isMultipleChoice()) {
 			singleMultiEl.select(singleMultiKeys[1], true);
@@ -156,7 +159,7 @@ public class MatchEditorController extends FormBasicController {
 				};
 			layoutEl = uifactory.addRadiosHorizontal("layout", "form.imd.layout", metadata, layoutKeys, layoutValues);
 			layoutEl.setElementCssClass("o_sel_match_layout");
-			layoutEl.setEnabled(!restrictedEdit);
+			layoutEl.setEnabled(!restrictedEdit && !readOnly);
 			boolean found = false;
 			for(String layoutKey:layoutKeys) {
 				if(itemBuilder.hasMatchInteractionClass(layoutKey)) {
@@ -191,7 +194,7 @@ public class MatchEditorController extends FormBasicController {
 		}
 		answersCont.contextPut("sourceChoices", sourceWrappers);
 		answersCont.contextPut("targetChoices", targetWrappers);
-		answersCont.contextPut("restrictedEdit", restrictedEdit);
+		answersCont.contextPut("restrictedEdit", restrictedEdit || readOnly);
 		answersCont.contextPut("responseIdentifier", itemBuilder.getResponseIdentifier());
 		int maxAssociations = itemBuilder.getMatchInteraction().getMaxAssociations();
 		answersCont.contextPut("interactionMaxAssociations", maxAssociations);
@@ -199,8 +202,10 @@ public class MatchEditorController extends FormBasicController {
 		JSAndCSSFormItem js = new JSAndCSSFormItem("js", new String[] { "js/jquery/qti/jquery.match.js" });
 		formLayout.add(js);
 		
-		uifactory.addFormSubmitButton("submit", answersCont);
-		if(!restrictedEdit) {
+		if(!readOnly) {
+			uifactory.addFormSubmitButton("submit", answersCont);
+		}
+		if(!restrictedEdit && !readOnly) {
 			addColumnButton = uifactory.addFormLink("add.match.column", answersCont, Link.BUTTON);
 			addColumnButton.setElementCssClass("o_sel_match_add_column");
 			addColumnButton.setIconLeftCSS("o_icon o_icon_add");
@@ -216,11 +221,12 @@ public class MatchEditorController extends FormBasicController {
 		RichTextElement choiceEl = uifactory.addRichTextElementForQTI21Match(choiceId, "form.imd.answer", choiceContent, 4, -1, itemContainer,
 				answersCont, ureq.getUserSession(), getWindowControl());
 		choiceEl.setUserObject(choice);
+		choiceEl.setEnabled(!readOnly);
 		answersCont.add("choiceId", choiceEl);
 		
 		FormLink deleteButton = uifactory.addFormLink("del_" + (count++), "delete", "delete", null, answersCont, Link.NONTRANSLATED);
 		deleteButton.setIconLeftCSS("o_icon o_icon_delete_item");
-		deleteButton.setVisible(!restrictedEdit);
+		deleteButton.setVisible(!restrictedEdit && !readOnly);
 		deleteButton.setI18nKey("");
 		
 		MatchWrapper wrapper = new MatchWrapper(choice, choiceEl, deleteButton);
@@ -243,43 +249,6 @@ public class MatchEditorController extends FormBasicController {
 		}
 		
 		commitTemporaryAssociations(ureq);
-		/*
-		if(singleMultiEl.isOneSelected() && singleMultiEl.isSelected(0)) {
-			Map<String,String> sourseTargetMap = new HashMap<>();
-			String[] directedPairsIds = ureq.getHttpReq().getParameterValues("qtiworks_response_" + itemBuilder.getResponseIdentifier());
-			if(directedPairsIds == null || directedPairsIds.length == 0) {
-				for(MatchWrapper sourceWrapper:sourceWrappers) {
-					sourceWrapper.setErrorSingleChoice(true);
-					allOk &= false;
-				}
-			} else {
-				for(String directedPairIds: directedPairsIds) {
-					String[] pairs = directedPairIds.split(" ");
-					String sourceId = pairs[0];
-					String targetId = pairs[1];
-					if(sourseTargetMap.containsKey(sourceId)) {
-						for(MatchWrapper sourceWrapper:sourceWrappers) {
-							if(sourceId.equals(sourceWrapper.getIdentifierString())) {
-								sourceWrapper.setErrorSingleChoice(true);
-							}
-						}
-						allOk &= false;
-					} else {
-						sourseTargetMap.put(sourceId, targetId);
-					}
-				}
-	
-				for(MatchWrapper sourceWrapper:sourceWrappers) {
-					String sourceId = sourceWrapper.getIdentifierString();
-					if(!sourseTargetMap.containsKey(sourceId)) {
-						sourceWrapper.setErrorSingleChoice(true);
-						allOk &= false;
-					}
-				}
-			}
-		}
-		*/
-		
 		if(layoutEl != null) {
 			layoutEl.clearError();
 			if(!layoutEl.isOneSelected()) {
@@ -315,6 +284,7 @@ public class MatchEditorController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(readOnly) return;
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question

@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.modules.taxonomy.TaxonomyLevelType;
 
 /**
  * 
@@ -57,13 +58,20 @@ implements SortableFlexiTableDataModel<IdentityCompetenceRow> {
 	@Override
 	public Object getValueAt(IdentityCompetenceRow row, int col) {
 		switch(IdCompetenceCols.values()[col]) {
+			case key: return row.getCompetence().getKey();
 			case taxonomyIdentifier: return row.getTaxonomy().getIdentifier();
 			case taxonomyDisplayName: return row.getTaxonomy().getDisplayName();
 			case taxonomyExternalId: return row.getTaxonomy().getExternalId();
 			case taxonomyLevelIdentifier: return row.getTaxonomyLevel().getIdentifier();
 			case taxonomyLevelDisplayName: return row.getTaxonomyLevel().getDisplayName();
+			case taxonomyLevelType: {
+				TaxonomyLevelType type = row.getTaxonomyLevel().getType();
+				return type == null ? null : type.getDisplayName();
+			}
 			case taxonomyLevelExternalId: return row.getTaxonomyLevel().getExternalId();
 			case type: return row.getCompetenceType(); 
+			case expiration: return row.getCompetence().getExpiration();
+			case remove: return Boolean.valueOf(!row.isManaged());
 			default: return null;
 		}
 	}
@@ -74,13 +82,17 @@ implements SortableFlexiTableDataModel<IdentityCompetenceRow> {
 	}
 	
 	public enum IdCompetenceCols implements FlexiSortableColumnDef {
+		key("table.header.key"),
 		taxonomyIdentifier("table.header.taxonomy.identifier"),
 		taxonomyDisplayName("table.header.taxonomy.displayName"),
 		taxonomyExternalId("table.header.taxonomy.externalId"),
 		taxonomyLevelIdentifier("table.header.taxonomy.level.identifier"),
 		taxonomyLevelDisplayName("table.header.taxonomy.level.displayName"),
+		taxonomyLevelType("table.header.taxonomy.level.type"),
 		taxonomyLevelExternalId("table.header.taxonomy.level.externalId"),
-		type("table.header.competence.type");
+		type("table.header.competence.type"),
+		expiration("table.header.competence.expiration"),
+		remove("remove");
 		
 		private final String i18nHeaderKey;
 		

@@ -35,11 +35,16 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
 
 
 /**
@@ -105,6 +110,13 @@ public interface AssessableCourseNode extends CourseNode {
 	 */
 	public boolean hasIndividualAsssessmentDocuments();
 	
+	
+	/**
+	 * @return True if this course node can produces a completion variable for the learner
+	 */
+	public boolean hasCompletion();
+
+	
 	/**
 	 * @return True if this course node has additional details to be edited / viewed
 	 */
@@ -153,6 +165,14 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @return the users attempts of this node
 	 */
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment);
+	
+	/**
+	 * 
+	 * @param userCourseEnvironment
+	 * @return The completion of its current task before being committed and official.
+	 */
+	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment);
+	
 	/**
 	 * @param userCourseEnvironment
 	 * @return the details view for this node and this user. will be displayed in 
@@ -174,10 +194,22 @@ public interface AssessableCourseNode extends CourseNode {
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);
 	
 	/**
-	 *  Factory method to launch course element assessment tools. limitToGroup is optional to skip he the group choose step
+	 * Returns the controller with the list of assessed identities for
+	 * a specific course node.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param stackPanel
+	 * @param courseEntry
+	 * @param group
+	 * @param coachCourseEnv
+	 * @param toolContainer
+	 * @param assessmentCallback
+	 * @return
 	 */
-	public List<Controller> createAssessmentTools(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, AssessmentToolOptions options);
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback);
 	
 	/**
 	 * 
@@ -232,6 +264,17 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @param doneBy The role of the identity which do the action
 	 */
 	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role doneBy);
+	
+	/**
+	 * 
+	 * @param userCourseEnvironment The user course environment of the assessed identity
+	 * @param identity The identity which do the action
+	 * @param currentCompletion The completion of the current running task
+	 * @param status The status of the current running task
+	 * @param doneBy The role of the identity which do the action
+	 */
+	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
+			Double currentCompletion, AssessmentRunStatus status, Role doneBy);
 	
 	/**
 	 * Updates the coach comment for this node and this user. This comment is not visible to the user.

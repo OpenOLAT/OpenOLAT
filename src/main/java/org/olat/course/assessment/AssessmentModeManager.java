@@ -91,6 +91,16 @@ public interface AssessmentModeManager {
 	public List<AssessmentMode> getAssessmentModeFor(RepositoryEntryRef entry);
 	
 	/**
+	 * returns the list of assessment modes planned after the specified date and
+	 * for the specific repository entry.
+	 * 
+	 * @param entry The course or the repository entry
+	 * @param from The date
+	 * @return A list of assessment modes
+	 */
+	public List<AssessmentMode> getPlannedAssessmentMode(RepositoryEntryRef entry, Date from);
+	
+	/**
 	 * Load the assessment mode for a specific user now.
 	 * 
 	 * @param identity
@@ -111,7 +121,18 @@ public interface AssessmentModeManager {
 	 * @param now
 	 * @return
 	 */
-	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date date);
+	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date now);
+	
+	/**
+	 * Returns the list of current assessment modes for the specified
+	 * repository entry. Current is defined with the "now" parameter.
+	 * The query is the same as the method @see isInAssessmentMode.
+	 * 
+	 * @param entry The course or the repository entry
+	 * @param now The current date
+	 * @return A list of assessment modes
+	 */
+	public List<AssessmentMode> getCurrentAssessmentMode(RepositoryEntryRef entry, Date now);
 	
 	/**
 	 * Return the list of assessed users specified in the configuration.

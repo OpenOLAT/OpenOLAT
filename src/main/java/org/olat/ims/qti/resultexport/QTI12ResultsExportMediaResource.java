@@ -44,10 +44,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.velocity.VelocityContext;
 import org.dom4j.Document;
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.velocity.VelocityHelper;
-import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -55,6 +53,7 @@ import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -83,39 +82,21 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 	private final QTIResultManager qtiResultManager;
 	private QTICourseNode courseNode;
 	private CourseEnvironment courseEnv;
-	private UserRequest ureq;
 	private Locale locale;
 	private String title, exportFolderName;
 	private Translator translator;
-	
-
-	public QTI12ResultsExportMediaResource(CourseEnvironment courseEnv, UserRequest ureq,
-			List<Identity> identities, QTICourseNode courseNode) {
-		this.courseNode = courseNode;
-		this.courseEnv = courseEnv;
-		this.ureq = ureq;
-		this.locale = null;
-		this.title = "qti12export";	
-		this.identities = identities;
-		this.velocityHelper = VelocityHelper.getInstance();
-		
-		translator = new PackageTranslator(QTI12ResultsExportMediaResource.class.getPackage().getName(), ureq.getLocale());
-		this.exportFolderName = translator.translate("export.folder.name");
-		
-		qtiResultManager = QTIResultManager.getInstance();
-	}
 
 	public QTI12ResultsExportMediaResource(CourseEnvironment courseEnv, Locale locale, List<Identity> identities,
 			QTICourseNode courseNode) {
 		this.courseNode = courseNode;
 		this.courseEnv = courseEnv;
 		this.locale = locale;
-		this.title = "qti12export";	
+		title = "qti12export";	
 		this.identities = identities;
-		this.velocityHelper = VelocityHelper.getInstance();
+		velocityHelper = VelocityHelper.getInstance();
 		
-		translator = new PackageTranslator(QTI12ResultsExportMediaResource.class.getPackage().getName(), locale);
-		this.exportFolderName = translator.translate("export.folder.name");
+		translator = Util.createPackageTranslator(QTI12ResultsExportMediaResource.class, locale);
+		exportFolderName = translator.translate("export.folder.name");
 		
 		qtiResultManager = QTIResultManager.getInstance();
 	}
@@ -220,7 +201,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 			String userName = identity.getName();
 			String firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
 			String lastName = identity.getUser().getProperty(UserConstants.LASTNAME, null);
-			String memberEmail = UserManager.getInstance().getUserDisplayEmail(identity, ureq.getLocale());
+			String memberEmail = UserManager.getInstance().getUserDisplayEmail(identity, locale);
 			AssessedMember assessedMember = new AssessedMember (userName, lastName, firstName, memberEmail, null);
 			
 			List<ResultDetail> assessments = createResultDetail(identity, zout, idDir);
@@ -339,7 +320,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		}
 		
 		File resourceXML = retrieveXML(assessedIdentity, resultSet.getAssessmentID());			
-		String resultsHTML = LocalizedXSLTransformer.getInstance(locale != null ? locale : ureq.getLocale()).renderResults(doc);		
+		String resultsHTML = LocalizedXSLTransformer.getInstance(locale).renderResults(doc);		
 		resultsHTML = createResultHTML(resultsHTML);
 		
 		String html = idPath + resultSet.getAssessmentID() + ".html";

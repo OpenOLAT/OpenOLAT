@@ -19,12 +19,14 @@
  */
 package org.olat.modules.taxonomy;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.taxonomy.model.TaxonomyInfos;
+import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 
 /**
  * 
@@ -72,13 +74,36 @@ public interface TaxonomyService {
 	 * 
 	 * @return true if the level can be deleted
 	 */
-	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel);
+	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo);
+	
+	/**
+	 * The operation move the following elements from the source taxonomy
+	 * level to the target taxonomy level:
+	 * <ul>
+	 *  <li>The documents
+	 *  <li>The children
+	 *  <li>The competence
+	 *  <li>Replace the taxonomy level from question items
+	 * </ul>
+	 * 
+	 * @param taxonomyLevel The taxonomy level source
+	 * @param mergeTo The taxonomy level target
+	 * @return true if the source was deleted after merging in the target level
+	 */
+	public boolean mergeTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo);
 	
 	/**
 	 * @param ref The root taxonomy (optional)
 	 * @return A list of levels
 	 */
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref);
+	
+	/**
+	 * @param ref The root taxonomy (optional)
+	 * @param searchParams Search parameters
+	 * @return A list of levels
+	 */
+	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref, TaxonomyLevelSearchParameters searchParams);
 	
 	/**
 	 * Load a taxonomy level by is reference.
@@ -187,10 +212,11 @@ public interface TaxonomyService {
 	 * 
 	 * @param taxonomyLevel
 	 * @param identity
+	 * @param date
 	 * @param competenceTypes
 	 * @return
 	 */
-	public boolean hasCompetenceByLevel(TaxonomyLevelRef taxonomyLevel, IdentityRef identity, TaxonomyCompetenceTypes... competenceTypes);
+	public boolean hasCompetenceByLevel(TaxonomyLevelRef taxonomyLevel, IdentityRef identity, Date date, TaxonomyCompetenceTypes... competenceTypes);
 	
 	/**
 	 * The available types for a specific taxonomy.
@@ -201,25 +227,44 @@ public interface TaxonomyService {
 	public List<TaxonomyLevelType> getTaxonomyLevelTypes(TaxonomyRef taxonomy);
 	
 	/**
-	 * Has some competence in a taxonomy.
+	 * Has some currently valid competence in a taxonomy. The expiration
+	 * is checked without time informations, only date.
 	 * 
 	 * @param taxonomy The taxonomy (mandatory)
+	 * @param identity The user to check (mandatory)
+	 * @param date The date to compare the expiration date (mandatory)
 	 * @return true if some competence was found.
 	 */
-	public boolean hasTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity);
+	public boolean hasTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity, Date date);
 	
 
 	public TaxonomyCompetence getTaxonomyCompetence(TaxonomyCompetenceRef competence);
 	
+	/**
+	 * Return all the competence without checking the expiration date.
+	 * 
+	 * @param identity
+	 * @param types
+	 * @return
+	 */
 	public List<TaxonomyCompetence> getTaxonomyCompetences(IdentityRef identity, TaxonomyCompetenceTypes... types);
 	
 	/**
-	 * Get the competences in a taxonomy tree of the specified user.
+	 * Get the competences in a taxonomy tree of the specified user. The expiration
+	 * is checked without time informations, only date.
 	 * 
 	 * @param taxonomy The taxonomy (mandatory)
-	 * @return true if some competence was found.
+	 * @param identity The user to check (mandatory)
+	 * @param date The date to compare the expiration date (mandatory)
+	 * @return A list of currently valid competence
 	 */
-	public List<TaxonomyCompetence> getTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity);
+	public List<TaxonomyCompetence> getTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity, Date date);
+	
+	/**
+	 * @param taxonomyLevels A list of taxonomy levels
+	 * @return The number of competences related to the specified list of taxonomy levels.
+	 */
+	public int countTaxonomyCompetences(List<? extends TaxonomyLevelRef> taxonomyLevels);
 	
 	/**
 	 * @param taxonomy The taxonomy (mandatory)
@@ -227,7 +272,7 @@ public interface TaxonomyService {
 	 * @param competences The list of competences to search
 	 * @return true if the user has some of the specified competence in the taxonomy tree
 	 */
-	public boolean hasCompetence(TaxonomyRef taxonomy, IdentityRef identity, TaxonomyCompetenceTypes... competences);
+	public boolean hasTaxonomyCompetences(TaxonomyRef taxonomy, IdentityRef identity, Date date, TaxonomyCompetenceTypes... competences);
 	
 	/**
 	 * The competence at a specified level of the taxonomy tree.
@@ -237,7 +282,8 @@ public interface TaxonomyService {
 	public List<TaxonomyCompetence> getTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel);
 	
 	/**
-	 * The competences at a specific level for the specified user.
+	 * The competences at a specific level for the specified user. The expiration date is
+	 * not checked.
 	 * 
 	 * @param taxonomyLevel The taxonomy level (mandatory)
 	 * @param identity The user (mandatory)
@@ -252,7 +298,10 @@ public interface TaxonomyService {
 	 * @param identities
 	 * @param comptence
 	 */
-	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity, TaxonomyCompetenceTypes competence);
+	public TaxonomyCompetence addTaxonomyLevelCompetences(TaxonomyLevel taxonomyLevel, Identity identity,
+			TaxonomyCompetenceTypes competence, Date expiration);
+	
+	public TaxonomyCompetence updateTaxonomyLevelCompetence(TaxonomyCompetence competence);
 
 	/**
 	 * Delete the competence
@@ -260,6 +309,12 @@ public interface TaxonomyService {
 	 * @param competence The competence to remove
 	 */
 	public void removeTaxonomyLevelCompetence(TaxonomyCompetence competence);
+	
+	/**
+	 * @param taxonomyLevels A list of taxonomy levels
+	 * @return The number of questions and other elements related to the specified taxonomy levels
+	 */
+	public int countRelations(List<? extends TaxonomyLevelRef> taxonomyLevels);
 	
 	/**
 	 * 

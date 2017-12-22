@@ -22,6 +22,7 @@ package org.olat.modules.taxonomy.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -128,6 +129,12 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		if(elRow.getOpenLink() != null) {
 			components.add(elRow.getOpenLink().getComponent());
 		}
+		if(elRow.getQPoolLink() != null) {
+			components.add(elRow.getQPoolLink().getComponent());
+		}
+		if(elRow.getDocPoolLink() != null) {
+			components.add(elRow.getDocPoolLink().getComponent());
+		}
 		return components;
 	}
 	
@@ -145,10 +152,22 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		String openLinkId = "open_" + (++counter);
 		FormLink openLink = uifactory.addFormLink(openLinkId, "open.taxonomy", "open.taxonomy", null, flc, Link.LINK);
 		openLink.setIconRightCSS("o_icon o_icon_start");
+
 		boolean docPoolEnabled = taxonomy.getKey().toString().equals(docPoolModule.getTaxonomyTreeKey());
 		boolean qPoolEnabled = taxonomy.getKey().toString().equals(questionPoolModule.getTaxonomyQPoolKey());
-		TaxonomyRow row = new TaxonomyRow(taxonomy, docPoolEnabled, qPoolEnabled, openLink);
+		
+		String docPoolLinkId = "dpool_" + (++counter);
+		String docPoolString =  docPoolEnabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
+		FormLink docPoolLink = uifactory.addFormLink(docPoolLinkId, "open.docpool", docPoolString, null, flc, Link.LINK | Link.NONTRANSLATED);
+
+		String qPoolLinkId = "qpool_" + (++counter);
+		String qPoolString =  qPoolEnabled ? translate("taxonomy.infos.enabled") : translate("taxonomy.infos.not.enabled");
+		FormLink qPoolLink = uifactory.addFormLink(qPoolLinkId, "open.qpool", qPoolString, null, flc, Link.LINK | Link.NONTRANSLATED);
+		
+		TaxonomyRow row = new TaxonomyRow(taxonomy, docPoolEnabled, qPoolEnabled, openLink, docPoolLink, qPoolLink);
 		openLink.setUserObject(row);
+		docPoolLink.setUserObject(row);
+		qPoolLink.setUserObject(row);
 		return row;
 	}
 
@@ -187,6 +206,10 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 			FormLink link = (FormLink)source;
 			if("open.taxonomy".equals(link.getCmd())) {
 				doOpenTaxonomy(ureq, (TaxonomyRow)link.getUserObject());
+			} else if("open.docpool".equals(link.getCmd())) {
+				doOpenDocumentPoolAdmin(ureq);
+			} else if("open.qpool".equals(link.getCmd())) {
+				doOpenQuestionPoolAdmin(ureq);
 			}
 		}
 		
@@ -222,6 +245,16 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		removeAsListenerAndDispose(cmc);
 		editTaxonomyCtrl = null;
 		cmc = null;
+	}
+	
+	private void doOpenDocumentPoolAdmin(UserRequest ureq) {
+		String businessPath = "[AdminSite:0][docpool:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+	
+	private void doOpenQuestionPoolAdmin(UserRequest ureq) {
+		String businessPath = "[AdminSite:0][qpool:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 
 	private TaxonomyOverviewController doOpenTaxonomy(UserRequest ureq, TaxonomyRow row) {

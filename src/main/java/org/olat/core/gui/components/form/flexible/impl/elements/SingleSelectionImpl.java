@@ -181,9 +181,20 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		this.allowNoSelection = allowNoSelection;
 	}
 
+	@Override
+	public boolean isEscapeHtml() {
+		return component.isEscapeHtml();
+	}
+
+	@Override
+	public void setEscapeHtml(boolean escape) {
+		component.setEscapeHtml(escape);
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionContainer#isSelected(int)
 	 */
+	@Override
 	public boolean isSelected(int which) {
 		return which == selectedIndex;
 	}
@@ -192,6 +203,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	 * 
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionElement#select(java.lang.String, boolean)
 	 */
+	@Override
 	public void select(String key, boolean select) {
 		boolean found = false;
 		for (int i = 0; i < keys.length; i++) {
@@ -215,7 +227,8 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	/**
 	 * we are single selection, hence return always false here
 	 * @see org.olat.core.gui.components.form.flexible.elements.SelectionElement#isMultiselect()
-	 */	
+	 */
+	@Override
 	public boolean isMultiselect() {
 		return false;
 	}

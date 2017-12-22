@@ -36,6 +36,7 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 	private final SingleSelectionImpl element;
 	
 	private int widthInPercent;
+	private boolean escapeHtml;
 	private boolean trailingSpace;
 	private RadioElementComponent[] radioComponents;
 	
@@ -66,6 +67,14 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 	
 	public boolean isTrailingSpace() {
 		return trailingSpace;
+	}
+	
+	public boolean isEscapeHtml() {
+		return escapeHtml;
+	}
+	
+	public void setEscapeHtml(boolean escapeHtml) {
+		this.escapeHtml = escapeHtml;
 	}
 
 	/**

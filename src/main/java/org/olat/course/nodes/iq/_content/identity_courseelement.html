@@ -1,0 +1,31 @@
+<h2><i class="o_icon $courseNodeCssClass"> </i> $r.escapeHtml($courseNodeTitle)#if($r.isNotEmpty($businessGroupName)) <small><i class="o_icon o_icon_group"> </i> $r.escapeHtml($businessGroupName)</small>#end</h2>
+<div class="o_button_group o_button_group_right">
+	$r.render("button.stats")
+	#if($r.available("button.export"))
+		$r.render("button.export")
+	#end
+	#if($r.available("retrieve.tests.title"))
+		$r.render("retrieve.tests.title")
+	#end
+	#if($r.available("correction.test.title"))
+		$r.render("correction.test.title")
+	#end
+	#if($r.available("validate.xml.signature"))
+		$r.render("validate.xml.signature")
+	#end
+	#if($r.available("tool.delete.data"))
+		$r.render("tool.delete.data")
+	#end
+</div>
+$r.render("table")
+<div class="o_button_group">
+	#if($r.available("bulk.done"))
+		$r.render("bulk.done")
+	#end
+	#if($r.available("bulk.visible"))
+		$r.render("bulk.visible")
+	#end
+	#if($r.available("extra.time"))
+		$r.render("extra.time")
+	#end
+</div>

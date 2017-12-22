@@ -58,12 +58,14 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 	private SingleSelection toleranceModeEl;
 	private TextElement lowerToleranceEl, upperToleranceEl;
 	
-	private final boolean restrictedEdit;
+	private final boolean restrictedEdit, readOnly;
 	private final NumericalEntry interaction;
 	
-	public FIBNumericalEntrySettingsController(UserRequest ureq, WindowControl wControl, NumericalEntry interaction, boolean restrictedEdit) {
+	public FIBNumericalEntrySettingsController(UserRequest ureq, WindowControl wControl, NumericalEntry interaction,
+			boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentTestEditorController.class, ureq.getLocale()));
 		this.interaction = interaction;
+		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 		initForm(ureq);
 	}
@@ -84,26 +86,26 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		String solString = solution == null ? "" : solution.toString();
 		solutionEl = uifactory.addTextElement("fib.solution", "fib.solution", 256, solString, formLayout);
 		solutionEl.setElementCssClass("o_sel_gap_numeric_solution");
-		solutionEl.setEnabled(!restrictedEdit);
-		if(!restrictedEdit && !StringHelper.containsNonWhitespace(solString)) {
+		solutionEl.setEnabled(!restrictedEdit && !readOnly);
+		if(!restrictedEdit && !readOnly && !StringHelper.containsNonWhitespace(solString)) {
 			solutionEl.setFocus(true);
 		}
 		
 		String placeholder = interaction.getPlaceholder();
 		placeholderEl = uifactory.addTextElement("fib.placeholder", "fib.placeholder", 256, placeholder, formLayout);
 		placeholderEl.setElementCssClass("o_sel_gap_numeric_placeholder");
-		placeholderEl.setEnabled(!restrictedEdit);
+		placeholderEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		Integer expectedLength = interaction.getExpectedLength();
 		String expectedLengthStr = expectedLength == null ? null : expectedLength.toString();
 		expectedLengthEl = uifactory.addTextElement("fib.expectedLength", "fib.expectedLength", 256, expectedLengthStr, formLayout);
-		expectedLengthEl.setEnabled(!restrictedEdit);
+		expectedLengthEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		String[] toleranceModeValues = new String[] {
 			translate("fib.tolerance.mode.exact"), translate("fib.tolerance.mode.absolute"), translate("fib.tolerance.mode.relative")
 		};
 		toleranceModeEl = uifactory.addDropdownSingleselect("fib.tolerance.mode", "fib.tolerance.mode", formLayout, toleranceModeKeys, toleranceModeValues, null);
-		toleranceModeEl.setEnabled(!restrictedEdit);
+		toleranceModeEl.setEnabled(!restrictedEdit && !readOnly);
 		toleranceModeEl.setHelpText(getToleranceHelp());
 		toleranceModeEl.setHelpUrlForManualPage("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_ni");
 		if(interaction.getToleranceMode() != null) {
@@ -136,7 +138,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		lowerToleranceEl = uifactory.addTextElement("fib.tolerance.low", "fib.tolerance.low", 8, lowerToleranceString, formLayout);
 		lowerToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
 		lowerToleranceEl.setElementCssClass("o_sel_gap_numeric_lower_bound");
-		lowerToleranceEl.setEnabled(!restrictedEdit);
+		lowerToleranceEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		Double upperTolerance = interaction.getUpperTolerance();
 		String upperToleranceString;
@@ -156,7 +158,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		upperToleranceEl = uifactory.addTextElement("fib.tolerance.up", "fib.tolerance.up", 8, upperToleranceString, formLayout);
 		upperToleranceEl.setExampleKey("fib.tolerance.mode.absolute.example", null);
 		upperToleranceEl.setElementCssClass("o_sel_gap_numeric_upper_bound");
-		upperToleranceEl.setEnabled(!restrictedEdit);
+		upperToleranceEl.setEnabled(!restrictedEdit && !readOnly);
 		updateToleranceUpAndLow();
 
 		// Submit Button
@@ -164,7 +166,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
 		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
-		if(!restrictedEdit) {
+		if(!restrictedEdit && !readOnly) {
 			uifactory.addFormSubmitButton("submit", buttonsContainer);
 		}
 	}
@@ -307,6 +309,8 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(readOnly) return;
+		
 		interaction.setSolution(new Double(solutionEl.getValue()));
 		interaction.setPlaceholder(placeholderEl.getValue());
 		if(StringHelper.containsNonWhitespace(expectedLengthEl.getValue())) {

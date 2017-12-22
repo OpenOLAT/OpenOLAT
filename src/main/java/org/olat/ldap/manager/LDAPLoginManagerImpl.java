@@ -535,7 +535,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			log.error("Cannot try to lookup user " + uid + " by email with an invalid email::" + email, null);
 			return null;
 		}
-		if (userManager.isEmailAllowed(email) ) {
+		if (!userManager.isEmailAllowed(email)) {
 			log.error("Can't create user with email='" + email + "', a user with that email does already exist in OLAT database", null);
 			return null;
 		}
@@ -912,7 +912,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			ctx = bindSystem();
 			if (ctx == null) {
 				errors.insert("LDAP connection ERROR");
-				log.error("Error in LDAP batch sync: LDAP connection empty", null);
+				log.error("LDAP batch sync: LDAP connection empty", null);
 				freeSyncLock();
 				success = false;
 				return success;
@@ -945,7 +945,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		} catch (Exception e) {
 
 			errors.insert("Unknown error");
-			log.error("Error in LDAP batch sync, unknown reason", e);
+			log.error("LDAP batch sync, unknown reason", e);
 			success = false;
 			return success;
 		} finally {
@@ -1172,7 +1172,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 					if (reqAttrs == null) {
 						newLdapUserList.add(ldapUser);
 					} else {
-						log.warn("Error in LDAP batch sync: can't create user with username::" + user + " : missing required attributes::"
+						log.warn("LDAP batch sync: can't create user with username::" + user + " : missing required attributes::"
 							+ ArrayUtils.toString(reqAttrs), null);
 					}
 				} else {
@@ -1578,7 +1578,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()){
 			SecurityGroup ldapGroup = securityManager.findSecurityGroupByName(LDAPConstants.SECURITY_GROUP_LDAP);
 			if (ldapGroup == null) {
-				log.error("Error getting user from OLAT security group '" + LDAPConstants.SECURITY_GROUP_LDAP + "' : group does not exist", null);
+				log.error("Cannot get user from OLAT security group '" + LDAPConstants.SECURITY_GROUP_LDAP + "' : group does not exist", null);
 			}
 			List<Identity> ldapIdents = securityManager.getIdentitiesOfSecurityGroup(ldapGroup);
 			log.info("found " + ldapIdents.size() + " identies in ldap security group");

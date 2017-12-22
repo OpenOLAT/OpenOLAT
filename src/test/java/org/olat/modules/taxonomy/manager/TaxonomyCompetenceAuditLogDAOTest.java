@@ -56,7 +56,7 @@ public class TaxonomyCompetenceAuditLogDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-1");
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-24", "Competence", "", null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "Competence level", "A very difficult competence", null, null, null, null, taxonomy);
-		TaxonomyCompetence competence = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level, id);
+		TaxonomyCompetence competence = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level, id, null);
 		dbInstance.commit();
 		
 		String after = taxonomyCompetenceAuditLogDao.toXml(competence);

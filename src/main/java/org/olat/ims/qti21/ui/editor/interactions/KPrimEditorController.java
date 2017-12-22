@@ -71,14 +71,15 @@ public class KPrimEditorController extends FormBasicController {
 	private int count = 0;
 	private final VFSContainer itemContainer;
 	
-	private final boolean restrictedEdit;
+	private final boolean restrictedEdit, readOnly;
 	private final KPrimAssessmentItemBuilder itemBuilder;
 	
 	public KPrimEditorController(UserRequest ureq, WindowControl wControl, KPrimAssessmentItemBuilder itemBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, "simple_choices_editor");
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
+		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 		
 		String relativePath = rootDirectory.toPath().relativize(itemFile.toPath().getParent()).toString();
@@ -98,15 +99,17 @@ public class KPrimEditorController extends FormBasicController {
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), metadata);
 		titleEl.setElementCssClass("o_sel_assessment_item_title");
 		titleEl.setMandatory(true);
+		titleEl.setEnabled(!readOnly);
 
 		String description = itemBuilder.getQuestion();
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", description, 8, -1, itemContainer,
 				metadata, ureq.getUserSession(), getWindowControl());
+		textEl.setEnabled(!readOnly);
 		
 		//shuffle
 		String[] yesnoValues = new String[]{ translate("yes"), translate("no") };
 		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", metadata, yesnoKeys, yesnoValues);
-		shuffleEl.setEnabled(!restrictedEdit);
+		shuffleEl.setEnabled(!restrictedEdit && !readOnly);
 		if (itemBuilder.isShuffle()) {
 			shuffleEl.select("y", true);
 		} else {
@@ -116,7 +119,7 @@ public class KPrimEditorController extends FormBasicController {
 		//layout
 		String[] alignmentValues = new String[]{ translate("form.imd.alignment.left"), translate("form.imd.alignment.right") };
 		alignmentEl = uifactory.addRadiosHorizontal("alignment", "form.imd.alignment", metadata, alignmentKeys, alignmentValues);
-		alignmentEl.setEnabled(!restrictedEdit);
+		alignmentEl.setEnabled(!restrictedEdit && !readOnly);
 		if (itemBuilder.hasClassAttr(QTI21Constants.CHOICE_ALIGN_RIGHT)) {
 			alignmentEl.select(alignmentKeys[1], true);
 		} else {
@@ -138,13 +141,14 @@ public class KPrimEditorController extends FormBasicController {
 			}
 		}
 		answersCont.contextPut("choices", choiceWrappers);
-		answersCont.contextPut("restrictedEdit", restrictedEdit);
+		answersCont.contextPut("restrictedEdit", restrictedEdit || readOnly);
 		recalculateUpDownLinks();
 
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
 		buttonsContainer.setElementCssClass("o_sel_choices_save");
 		buttonsContainer.setRootForm(mainForm);
+		buttonsContainer.setVisible(!readOnly);
 		formLayout.add(buttonsContainer);
 		formLayout.add("buttons", buttonsContainer);
 		uifactory.addFormSubmitButton("submit", buttonsContainer);
@@ -157,17 +161,18 @@ public class KPrimEditorController extends FormBasicController {
 				answersCont, ureq.getUserSession(), getWindowControl());
 		choiceEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 		choiceEl.setUserObject(choice);
+		choiceEl.setEnabled(!readOnly);
 		answersCont.add("choiceId", choiceEl);
 		
 		FormLink upLink = uifactory.addFormLink("up-".concat(choiceId), "up", "", null, answersCont, Link.NONTRANSLATED);
 		upLink.setIconLeftCSS("o_icon o_icon-lg o_icon_move_up");
-		upLink.setEnabled(!restrictedEdit);
+		upLink.setEnabled(!restrictedEdit && !readOnly);
 		answersCont.add(upLink);
 		answersCont.add("up-".concat(choiceId), upLink);
 		
 		FormLink downLink = uifactory.addFormLink("down-".concat(choiceId), "down", "", null, answersCont, Link.NONTRANSLATED);
 		downLink.setIconLeftCSS("o_icon o_icon-lg o_icon_move_down");
-		downLink.setEnabled(!restrictedEdit);
+		downLink.setEnabled(!restrictedEdit && !readOnly);
 		answersCont.add(downLink);
 		answersCont.add("down-".concat(choiceId), downLink);
 		
@@ -181,6 +186,7 @@ public class KPrimEditorController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if(readOnly) return;
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
 		//question
@@ -277,8 +283,8 @@ public class KPrimEditorController extends FormBasicController {
 		int numOfChoices = choiceWrappers.size();
 		for(int i=0; i<numOfChoices; i++) {
 			KprimWrapper choiceWrapper = choiceWrappers.get(i);
-			choiceWrapper.getUp().setEnabled(i != 0 && !restrictedEdit);
-			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1) && !restrictedEdit);
+			choiceWrapper.getUp().setEnabled(i != 0 && !restrictedEdit && !readOnly);
+			choiceWrapper.getDown().setEnabled(i < (numOfChoices - 1) && !restrictedEdit && !readOnly);
 		}
 	}
 

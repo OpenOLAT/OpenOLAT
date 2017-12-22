@@ -117,7 +117,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_expand:before { content: $fa-var-expand;}
 .o_icon_expenditure:before { content: $fa-var-clock-o;}
 .o_icon_export:before { content: $fa-var-share-square-o;}
-.o_icon_external_link:before { content: $fa-var-external-link } 
+.o_icon_external_link:before { content: $fa-var-external-link }
+.o_icon_extra_time:before { content: $fa-var-clock-o;}
 .o_icon_failed:before { content: $fa-var-times-circle;}
 .o_icon_files:before { content: $fa-var-files-o;}
 .o_icon_filter:before { content: $fa-var-filter;}
@@ -218,11 +219,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_provider_tequila:before { content: $fa-var-university;}
 .o_icon_provider_twitter:before { content: $fa-var-twitter;}
 .o_icon_publish:before { content: $fa-var-share;}
-.o_icon_qitem_commands:before { content: $fa-var-gears;}
-.o_icon_qitem_copy:before { content: $fa-var-copy;}
-.o_icon_qitem_delete:before { content: $fa-var-trash;}
-.o_icon_qitem_export:before { content: $fa-var-download;}
-.o_icon_qitem_share:before { content: $fa-var-share;}
+.o_icon_pull:before {content: $fa-var-hand-grab-o;}
 .o_icon_quota:before { content: $fa-var-database;}
 .o_icon_qrcode:before { content: $fa-var-qrcode;}
 .o_icon_quickview:before { content: $fa-var-eye;}
@@ -242,9 +239,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_reminder:before { content: $fa-var-hand-o-up; }
 .o_icon_remove:before { content: $fa-var-times; }
 .o_icon_remove_filters:before { content: $fa-var-times-circle; }
+.o_icon_reopen:before { content: $fa-var-reply; }
 .o_icon_replace:before { content: $fa-var-files-o; }
 .o_icon_reply:before { content: $fa-var-reply; }
 .o_icon_reply_with_quote:before { content: $fa-var-reply-all; }
+.o_icon_reset:before { content: $fa-var-step-backward; }
 .o_icon_response_feedback:before { content: $fa-var-refresh; }
 .o_icon_restore:before { content: $fa-var-thumbs-up; }
 .o_icon_results_visible:before { content: $fa-var-eye;}
@@ -383,9 +382,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_vitero_icon:before { content: $fa-var-desktop;}
 .o_openmeetings_icon:before { content: $fa-var-desktop;}
 .o_gotomeeting_icon:before { content: $fa-var-desktop;}
-.o_card2brain_icon:before { content: $fa-var-th;}
-.o_edubase_icon:before { content: $fa-var-external-link;}
-
+.o_card2brain_icon:before, %o_icon_card2brain { content:"\E800"; font-family: openolat; font-size: 120%; }
+.o_edubase_icon:before, %o_icon_edubase { content:"\E885"; font-family: openolat; }
 
 /* portal icons */
 .o_portlet_infomsg_icon:before {content: $fa-var-info-circle; }
@@ -415,6 +413,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_pool_collection:before { content: $fa-var-list; }
 .o_icon_pool_pool:before { content: $fa-var-share-alt-square;}
 .o_icon_pool_share:before { content: $fa-var-group; }
+.o_icon_qitem_commands:before { content: $fa-var-gears;}
+.o_icon_qitem_copy:before { content: $fa-var-copy;}
+.o_icon_qitem_delete:before { content: $fa-var-trash;}
+.o_icon_qitem_export:before { content: $fa-var-download;}
+.o_icon_qitem_share:before { content: $fa-var-share;}
 
 /* notification icons */
 .o_forum_message_icon:before { content: $fa-var-comment-o; }

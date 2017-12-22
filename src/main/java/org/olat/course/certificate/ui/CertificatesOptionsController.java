@@ -304,8 +304,7 @@ public class CertificatesOptionsController extends FormBasicController {
 			}
 		} else if(source == certificateChooserCtrl) {
 			if(event == Event.DONE_EVENT) {
-				CertificateTemplate template = certificateChooserCtrl.getSelectedTemplate();
-				doSetTemplate(template);
+				doSetTemplate(certificateChooserCtrl.getSelectedTemplate());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -336,6 +335,7 @@ public class CertificatesOptionsController extends FormBasicController {
 	}
 	
 	private void doPreviewTemplate(UserRequest ureq) {
+		selectedTemplate = certificatesManager.getTemplateById(selectedTemplate.getKey());
 		File preview = certificatesManager.previewCertificate(selectedTemplate, entry, getLocale());
 		MediaResource resource = new PreviewMediaResource(preview);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
@@ -345,8 +345,10 @@ public class CertificatesOptionsController extends FormBasicController {
 		this.selectedTemplate = template;
 		if(selectedTemplate == null) {
 			templateCont.contextPut("templateName", translate("default.template"));
+			previewTemplateLink.setEnabled(false);
 		} else {
 			templateCont.contextPut("templateName", template.getName());
+			previewTemplateLink.setEnabled(true);
 		}
 	}
 	

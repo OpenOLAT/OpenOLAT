@@ -88,6 +88,8 @@ public class IdentityCertificatesController extends BasicController implements G
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
+	private CoordinatorManager coordinatorManager;
+	@Autowired
 	private CertificatesManager certificatesManager;
 	
 	public IdentityCertificatesController(UserRequest ureq, WindowControl wControl,
@@ -110,13 +112,13 @@ public class IdentityCertificatesController extends BasicController implements G
 		loadList();
 		putInitialPanel(mainVC);
 		
-		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+		coordinatorManager.getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
 	
 	@Override
 	protected void doDispose() {
-		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+		coordinatorManager.getCoordinator().getEventBus()
 			.deregisterFor(this, CertificatesManager.ORES_CERTIFICATE_EVENT);
 	}
 

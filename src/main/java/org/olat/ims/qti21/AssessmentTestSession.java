@@ -22,6 +22,8 @@ package org.olat.ims.qti21;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import javax.persistence.Transient;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
@@ -57,6 +59,35 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	public BigDecimal getManualScore();
 	
 	public void setManualScore(BigDecimal manualScore);
+	
+	public Integer getNumOfQuestions();
+
+	public void setNumOfQuestions(Integer numOfQuestions);
+
+	public Integer getNumOfAnsweredQuestions();
+
+	public void setNumOfAnsweredQuestions(Integer numOfAnsweredQuestions);
+	
+	/**
+	 * Additional time in a time limited test
+	 * @return The additional time in seconds
+	 */
+	public Integer getExtraTime();
+	
+	/**
+	 * @return The score + manual score
+	 */
+	@Transient
+	public default BigDecimal getFinalScore() {
+		BigDecimal finalScore = getScore();
+		BigDecimal manualScore = getManualScore();
+		if(finalScore == null) {
+			finalScore = manualScore;
+		} else if(manualScore != null) {
+			finalScore = finalScore.add(manualScore);
+		}
+		return finalScore;
+	}
 	
 	/**
 	 * Return the duration in milliseconds

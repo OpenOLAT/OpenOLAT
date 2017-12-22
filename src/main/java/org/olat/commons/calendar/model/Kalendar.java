@@ -39,6 +39,9 @@ public class Kalendar implements Serializable {
 	private final String type;
 	private final Map<KalendarEventKey, KalendarEvent> events = new HashMap<>();
 	
+	private int managedEvent;
+	private int notManagedEvent;
+	
 	public Kalendar(String calendarID, String type) {
 		this.calendarID = calendarID;
 		this.type = type;
@@ -52,11 +55,28 @@ public class Kalendar implements Serializable {
 		return calendarID;
 	}
 	
+	public int size() {
+		return events.size();
+	}
+	
+	public boolean hasManagedEvents() {
+		return managedEvent > 0;
+	}
+	
+	public boolean hasNotManagedEvents() {
+		return notManagedEvent > 0;
+	}
+	
 	/**
 	 * Add a new event.
 	 * @param event
 	 */
 	public void addEvent(KalendarEvent event) {
+		if(event.isManaged()) {
+			managedEvent++;
+		} else {
+			notManagedEvent++;
+		}
 		event.setKalendar(this);
 		events.put(new KalendarEventKey(event.getID(), event.getRecurrenceID()), event);
 	}
@@ -66,6 +86,11 @@ public class Kalendar implements Serializable {
 	 * @param event
 	 */
 	public void removeEvent(KalendarEvent event) {
+		if(event.isManaged()) {
+			managedEvent--;
+		} else {
+			notManagedEvent--;
+		}
 		events.remove(new KalendarEventKey(event.getID(), event.getRecurrenceID()));
 	}
 	

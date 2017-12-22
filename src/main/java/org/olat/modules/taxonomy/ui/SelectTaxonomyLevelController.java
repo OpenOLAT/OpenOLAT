@@ -29,12 +29,9 @@ import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.manager.TaxonomyAllTreesBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,16 +45,11 @@ public class SelectTaxonomyLevelController extends FormBasicController {
 	
 	private MenuTreeItem taxonomyTreesEl;
 	
-	private final Identity assessedIdentity;
 	private final TaxonomyCompetenceTypes competenceType;
 	
-	@Autowired
-	private TaxonomyService taxonomyService;
-	
-	public SelectTaxonomyLevelController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, TaxonomyCompetenceTypes competenceType) {
+	public SelectTaxonomyLevelController(UserRequest ureq, WindowControl wControl, TaxonomyCompetenceTypes competenceType) {
 		super(ureq, wControl, "select_level");
 		this.competenceType = competenceType;
-		this.assessedIdentity = assessedIdentity;
 		
 		initForm(ureq);
 		loadModel();

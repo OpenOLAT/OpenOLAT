@@ -35,6 +35,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -90,7 +91,7 @@ class SelectboxRenderer extends DefaultComponentRenderer {
 		boolean escapeHtml = ssec.isEscapeHtml();
 		for (int i = 0; i < cnt; i++) {
 			boolean selected = ssec.isSelected(i);
-			sb.append("<option value=\"").append(StringEscapeUtils.escapeHtml(options[i])).append("\" ");
+			sb.append("<option value=\"").append(StringHelper.escapeHtml(options[i])).append("\" ");
 			if (selected) sb.append("selected=\"selected\" ");
 			if(ssec.getAction() != FormEvent.ONCHANGE){
 				//all other events go to the option

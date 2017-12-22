@@ -61,7 +61,11 @@ $r.contextHelpWithWrapper("Using Course Tools#_bewertungswerkzeug")
 			#end
 		</table>
 	</div>
-	<div class="col-sm-6"></div>
+	<div class="col-sm-6">
+	#if($r.available("assessmentModes"))
+		$r.render("assessmentModes")
+	#end
+	</div>
 	#end
 </div>
 </div>

@@ -128,7 +128,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 		}
 
 		if (authentication == null) {
-			log.audit("Error authenticating user "+login+" via provider OLAT", OLATAuthenticationController.class.getName());
+			log.audit("Cannot authenticate user " + login + " via provider OLAT", OLATAuthenticationController.class.getName());
 			return null;
 		}
 		
@@ -145,7 +145,7 @@ public class OLATAuthManager extends BasicManager implements AuthenticationSPI {
 			}
 			return identity;
 		}
-		log.audit("Error authenticating user "+login+" via provider OLAT", OLATAuthenticationController.class.getName());
+		log.audit("Cannot authenticate user " + login + " via provider OLAT", OLATAuthenticationController.class.getName());
 		return null;
 	}
 

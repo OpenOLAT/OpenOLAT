@@ -1,0 +1,8 @@
+<h2><i class="o_icon $cssClass"> </i> $r.escapeHtml($title)</h2>
+<div class="o_button_group o_button_group_right">
+#if($r.available("menu.retrieve.tests.title"))
+	$r.render("menu.retrieve.tests.title")
+#end
+$r.render("reset.test.data.title")
+</div>
+$r.render("table")

@@ -659,7 +659,8 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 		
 		Map<String,AssessmentItemRef> itemMap = new HashMap<>();
-		for(AssessmentItemRef itemRef:resolvedAssessmentTest.getAssessmentItemRefs()) {
+		List<AssessmentItemRef> itemRefs = new ArrayList<>(resolvedAssessmentTest.getAssessmentItemRefs());
+		for(AssessmentItemRef itemRef:itemRefs) {
 			itemMap.put(itemRef.getIdentifier().toString(), itemRef);
 		}
 
@@ -704,12 +705,20 @@ public class QTI21StatisticsManagerImpl implements QTI21StatisticsManager {
 		}
 		
 		List<AssessmentItemStatistic> statistics = new ArrayList<>(identifierToHelpers.size());
-		for(AssessmentItemHelper helper:identifierToHelpers.values()) {
-			long numOfAnswersItem = helper.count;
-			long numOfCorrectAnswers = helper.countCorrectAnswers;
-			double average = (helper.totalScore / helper.count);
-			double averageParticipants = (helper.totalScore / numOfParticipants);
-			statistics.add(new AssessmentItemStatistic(helper.getAssessmentItem(), average, averageParticipants, numOfAnswersItem, numOfCorrectAnswers));
+		for(AssessmentItemRef itemRef:itemRefs) {
+			AssessmentItemHelper helper = identifierToHelpers.get(itemRef.getIdentifier().toString());
+			if(helper != null) {
+				long numOfAnswersItem = helper.count;
+				long numOfCorrectAnswers = helper.countCorrectAnswers;
+				double average = (helper.totalScore / helper.count);
+				double averageParticipants = (helper.totalScore / numOfParticipants);
+				statistics.add(new AssessmentItemStatistic(helper.getAssessmentItem(), average, averageParticipants, numOfAnswersItem, numOfCorrectAnswers));
+			} else {
+				ResolvedAssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+				if(item != null) {
+					statistics.add(new AssessmentItemStatistic(item.getRootNodeLookup().extractIfSuccessful(), 0.0d, 0.0d, 0l, 0l));
+				}
+			}
 		}
 		return statistics;
 	}

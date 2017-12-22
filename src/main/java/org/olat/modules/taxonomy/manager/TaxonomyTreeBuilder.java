@@ -20,6 +20,7 @@
 package org.olat.modules.taxonomy.manager;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +41,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
+import org.olat.modules.taxonomy.model.TaxonomyTreeNodeType;
 
 /**
  * Build the tree of taxonomy
@@ -86,7 +88,7 @@ public class TaxonomyTreeBuilder {
 			//taxonomy directory
 			if(enableTemplates) {
 				VFSContainer taxonomyDirectory = taxonomyService.getDocumentsLibrary(taxonomy);
-				TaxonomyTreeNode taxonomyDirectorNode = new TaxonomyTreeNode(taxonomy, taxonomyDirectory);
+				TaxonomyTreeNode taxonomyDirectorNode = new TaxonomyTreeNode(taxonomy, taxonomyDirectory, TaxonomyTreeNodeType.templates);
 				if(locale == null) {
 					locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
 				}
@@ -151,16 +153,14 @@ public class TaxonomyTreeBuilder {
 		boolean someInvisible;
 		do {
 			someInvisible = false;
-			List<TaxonomyTreeNode> children = new ArrayList<>(parent.getChildCount());
-			for(int i=0; i<parent.getChildCount(); i++) {
-				children.add((TaxonomyTreeNode)parent.getChildAt(i));
-			}
+			List<TaxonomyTreeNode> children = listChildren(parent);
 			
 			for(TaxonomyTreeNode child:children) {
-				if(!child.isVisible()) {
+				if(!child.isVisible())  {
+					List<TaxonomyTreeNode> childrenOfChild = listChildren(child);
 					parent.remove(child);
-					for(int i=0; i<child.getChildCount(); i++) {
-						parent.addChild(child.getChildAt(i));
+					for(TaxonomyTreeNode childOfChild : childrenOfChild) {
+						parent.addChild(childOfChild);
 					}
 					someInvisible = true;
 				}
@@ -172,8 +172,16 @@ public class TaxonomyTreeBuilder {
 		}
 	}
 	
+	private List<TaxonomyTreeNode> listChildren(TaxonomyTreeNode parent) {
+		List<TaxonomyTreeNode> children = new ArrayList<>(parent.getChildCount());
+		for(int i=0; i<parent.getChildCount(); i++) {
+			children.add((TaxonomyTreeNode)parent.getChildAt(i));
+		}
+		return children;
+	}
+	
 	private void computePermissions(TaxonomyTreeNode root) {
-		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyCompetences(taxonomy, identity);
+		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyCompetences(taxonomy, identity, new Date());
 		Map<TaxonomyLevel, List<TaxonomyCompetenceTypes>> levelToCompetences = new HashMap<>();
 		for(TaxonomyCompetence competence:competences) {
 			TaxonomyLevel level = competence.getTaxonomyLevel();
@@ -217,6 +225,16 @@ public class TaxonomyTreeBuilder {
 					hasWrite |= hasWriteAccess(type, null);
 				}
 			}
+			node.setCanRead(hasRead);
+			node.setCanWrite(hasWrite);
+		} else if(node.getType() == TaxonomyTreeNodeType.templates) {
+			hasRead = true;
+			hasWrite = isTaxonomyAdmin;
+			node.setCanRead(hasRead);
+			node.setCanWrite(hasWrite);
+		} else if(node.getType() == TaxonomyTreeNodeType.lostAndFound) {
+			hasRead = isTaxonomyAdmin;
+			hasWrite = false;
 			node.setCanRead(hasRead);
 			node.setCanWrite(hasWrite);
 		}

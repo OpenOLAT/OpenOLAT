@@ -397,7 +397,9 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 			relFilPathIsProposal = true;
 		}
 		// File create/select controller
-		combiLinkCtr = new LinkFileCombiCalloutController(ureq, getWindowControl(), courseFolderContainer, relFilePath, relFilPathIsProposal, allowRelativeLinks, new CourseInternalLinkTreeModel(editorModel) );
+		combiLinkCtr = new LinkFileCombiCalloutController(ureq, getWindowControl(), courseFolderContainer,
+				relFilePath, relFilPathIsProposal, allowRelativeLinks, false,
+				new CourseInternalLinkTreeModel(editorModel) );
 		listenTo(combiLinkCtr);
 		configvc.put("combiCtr", combiLinkCtr.getInitialComponent());		
 		configvc.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());

@@ -24,14 +24,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.zip.ZipEntry;
@@ -40,6 +43,8 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.velocity.VelocityContext;
+import org.olat.admin.user.imp.TransientIdentity;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.GlobalSettings;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -55,14 +60,16 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
@@ -70,14 +77,13 @@ import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
-import org.olat.ims.qti.resultexport.AssessedMember;
-import org.olat.ims.qti.resultexport.ResultDetail;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.ui.AssessmentResultController;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 
@@ -97,38 +103,33 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	
 	private List<Identity> identities;
 	private QTICourseNode courseNode;
-	private QTI21Service qtiService;
-	private String title, exportFolderName;
+	private String exportFolderName;
 	private Translator translator;
-	
 	private RepositoryEntry entry;
+	private final CourseEnvironment courseEnv;
 	private UserRequest ureq;
 	
 	private final Set<RepositoryEntry> testEntries = new HashSet<>();
-
-	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, 
-			QTICourseNode courseNode, QTI21Service qtiService, UserRequest ureq) {
-		this.title = "qti21export";	
-		this.courseNode = courseNode;
-		this.identities = identities;
-		this.velocityHelper = VelocityHelper.getInstance();
-		this.qtiService = qtiService;
-		this.ureq = ureq;		
-		this.entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, ureq.getLocale());
-	}
 	
-	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities, QTICourseNode courseNode, 
-			QTI21Service qtiService, UserRequest ureq, Locale locale) {
-		this.title = "qti21export";	
+	private final UserManager userManager;
+	private final QTI21Service qtiService;
+	
+	public QTI21ResultsExportMediaResource(CourseEnvironment courseEnv, List<Identity> identities,
+			QTICourseNode courseNode, Locale locale) {	
 		this.courseNode = courseNode;
 		this.identities = identities;
-		this.velocityHelper = VelocityHelper.getInstance();
-		this.qtiService = qtiService;
-		this.ureq = ureq;		
-		this.entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		this.translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, locale);
-		this.exportFolderName = translator.translate("export.folder.name");
+		this.courseEnv = courseEnv;
+		
+		ureq = new SyntheticUserRequest(new TransientIdentity(), locale, new UserSession());
+		Roles roles = new Roles(false, false, false, false, false, false, false);
+		ureq.getUserSession().setRoles(roles);
+
+		velocityHelper = VelocityHelper.getInstance();
+		qtiService = CoreSpringFactory.getImpl(QTI21Service.class);
+		userManager = CoreSpringFactory.getImpl(UserManager.class);
+		entry = courseEnv.getCourseGroupManager().getCourseEntry();
+		translator = Util.createPackageTranslator(QTI21ResultsExportMediaResource.class, locale);
+		exportFolderName = translator.translate("export.folder.name");
 	}
 
 	@Override
@@ -158,14 +159,9 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		//init package translator
-		exportFolderName = translator.translate("export.folder.name");
-		
-		String label = StringHelper.transformDisplayNameToFileSystemName(title);
-		if (label != null && !label.toLowerCase().endsWith(".zip")) {
-			label += ".zip";
-		}
-
+		String label = StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName() + "_" + entry.getDisplayname())
+				+ "_" + Formatter.formatDatetimeWithMinutes(new Date())
+				+ ".zip";
 		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
 		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + urlEncodedLabel);
 		hres.setHeader("Content-Description", urlEncodedLabel);
@@ -222,7 +218,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	}
 	
 	private List<ResultDetail> createResultDetail (Identity identity, ZipOutputStream zout, String idDir) throws IOException {
-		List<ResultDetail> assessments = new ArrayList<ResultDetail>();				
+		List<ResultDetail> assessments = new ArrayList<>();
 		List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(entry, courseNode.getIdent(), identity);
 		for (AssessmentTestSession session : sessions) {
 			Long assessmentID = session.getKey();
@@ -231,7 +227,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			// content of result table
 			ResultDetail resultDetail = new ResultDetail(assessmentID.toString(), 
 					assessmentDateFormat.format(session.getCreationDate()),
-					displayDateFormat.format(new Date(session.getDuration())), session.getScore().floatValue(), 
+					displayDateFormat.format(new Date(session.getDuration())),
+					session.getScore(), session.getManualScore(), 
 					createPassedIcons(session.getPassed() == null ? true : session.getPassed()),
 					idPath.replace(idDir, "") + assessmentID + ".html");
 			
@@ -268,35 +265,38 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		return assessments;
 	}
 	
-	private List<AssessedMember> createAssessedMembersDetail (ZipOutputStream zout) throws IOException {
+	private List<AssessedMember> createAssessedMembersDetail(ZipOutputStream zout) throws IOException {
+		List<AssessmentEntry> assessmentEntries = courseEnv.getAssessmentManager().getAssessmentEntries(courseNode);
+		Map<Identity,AssessmentEntry> assessmentEntryMap = new HashMap<>();
+		for(AssessmentEntry assessmentEntry:assessmentEntries) {
+			assessmentEntryMap.put(assessmentEntry.getIdentity(), assessmentEntry);
+		}
+
 		List<AssessedMember> assessedMembers = new ArrayList<>();		
-		for (Identity identity : identities) {
-			
+		for(Identity identity : identities) {
 			String idDir = exportFolderName + "/" + DATA + identity.getName();
 			idDir = idDir.endsWith(SEP) ? idDir : idDir + SEP;
 			createZipDirectory(zout, idDir);				
 			
-			//content of single assessed member
-			String userName = identity.getName();
-			String firstName = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
-			String lastName = identity.getUser().getProperty(UserConstants.LASTNAME, null);
-			String memberEmail = UserManager.getInstance().getUserDisplayEmail(identity, ureq.getLocale());
-			AssessedMember assessedMember = new AssessedMember (userName, lastName, firstName, memberEmail, null);
-						
-			List<ResultDetail> assessments = createResultDetail(identity, zout, idDir);				
+			//content of single assessed member		
+			List<ResultDetail> assessments = createResultDetail(identity, zout, idDir);
+			Boolean passed = null;
+			BigDecimal score = null;
+			if(assessmentEntryMap.containsKey(identity)) {
+				AssessmentEntry assessmentEntry = assessmentEntryMap.get(identity);
+				passed = assessmentEntry.getPassed();
+				score = assessmentEntry.getScore();
+			}
 			
-			String singleUserInfoHTML = createResultListingHTML(assessments, assessedMember);
+			String linkToUser = idDir.replace(exportFolderName + "/", "") + "index.html";
+			String memberEmail = userManager.getUserDisplayEmail(identity, ureq.getLocale());
+			AssessedMember member = new AssessedMember(identity.getName(),
+					identity.getUser().getLastName(), identity.getUser().getFirstName(), memberEmail,
+					assessments.size(), passed, score, linkToUser);
+			
+			String singleUserInfoHTML = createResultListingHTML(assessments, member);
 			convertToZipEntry(zout, exportFolderName + "/" + DATA + identity.getName() + "/index.html", singleUserInfoHTML);
-			
-			String linkToUser = idDir.replace(exportFolderName + "/", "") + "index.html";				
-			//content of assessed members table
-			AssessedMember member = new AssessedMember();
-			member.setUsername(createLink(identity.getName(), linkToUser, false));
-			member.setLastname(createLink(identity.getUser().getProperty(UserConstants.LASTNAME, null),linkToUser,false));
-			member.setFirstname(createLink(identity.getUser().getProperty(UserConstants.FIRSTNAME, null),linkToUser,false));
-			member.setTries(String.valueOf(assessments.size()));
 			assessedMembers.add(member);	
-			
 		}
 		return assessedMembers;
 	}
@@ -306,21 +306,16 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		File fUnzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
 		String baseDir = exportFolderName + "/test" + testEntry.getKey();
 		ZipUtil.addDirectoryToZip(fUnzippedDirRoot.toPath(), baseDir, zout);
+	}
+	
+	protected static String createPassedIcons(Boolean passed) {
+		if(passed == null) return "";
 		
-	}
-	
-	private String createLink(String name, String href, boolean userview) {
-		String targetLink = userview ? "_blank" : "_self";
-		return "<a href='" + href + "' target='" + targetLink + "' class='userLink'>" + name + "</a>";		
-	}
-	
-	private String createPassedIcons(boolean passed) {
-		String icon = passed ? "<i class='o_icon o_passed o_icon_passed text-success'></i>"
+		return passed.booleanValue() ? "<i class='o_icon o_passed o_icon_passed text-success'></i>"
 				: "<i class='o_icon o_failed o_icon_failed text-danger'></i>";
-		return icon;
 	}
 	
-	private String createResultHTML (Component results){
+	private String createResultHTML(Component results) {
 		StringOutput sb = new StringOutput(32000);
 		String pagePath = Util.getPackageVelocityRoot(this.getClass()) + "/qti21results.html";
 		URLBuilder ubu = new URLBuilder("auth", "1", "0");
@@ -337,7 +332,7 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		return sb.toString();
 	}
 	
-	private String createResultListingHTML (List<ResultDetail> assessments,AssessedMember assessedMember){
+	private String createResultListingHTML(List<ResultDetail> assessments, AssessedMember assessedMember) {
 		// now put values to velocityContext
 		VelocityContext ctx = new VelocityContext();
 		ctx.put("t", translator);

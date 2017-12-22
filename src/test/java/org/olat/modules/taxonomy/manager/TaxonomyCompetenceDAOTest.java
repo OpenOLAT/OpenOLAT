@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.manager;
 
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Assert;
@@ -55,7 +56,7 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-1");
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-24", "Competence", "", null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "Competence level", "A very difficult competence", null, null, null, null, taxonomy);
-		TaxonomyCompetence competence = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level, id);
+		TaxonomyCompetence competence = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level, id, null);
 		dbInstance.commit();
 		
 		Assert.assertNotNull(competence);
@@ -67,7 +68,7 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-1");
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-24b", "Competence", "", null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1b", "Competence level", "An important competence to have", null, null, null, null, taxonomy);
-		TaxonomyCompetence competence = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level, id);
+		TaxonomyCompetence competence = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level, id, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(competence);
 		
@@ -85,7 +86,7 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-2");
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-25", "Competence", "", null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "Competence level", "A competence", null, null, null, null, taxonomy);
-		TaxonomyCompetence competence = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id);
+		TaxonomyCompetence competence = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id, null);
 		dbInstance.commitAndCloseSession();
 		
 		List<TaxonomyCompetence> loadedCompetences = taxonomyCompetenceDao.getCompetenceByLevel(level);
@@ -107,10 +108,10 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "Competence level", "A competence", null, null, null, null, taxonomy);
 		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "Competence level", "A competence", null, null, null, null, taxonomy);
 		
-		TaxonomyCompetence competence1_1 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level1, id1);
-		TaxonomyCompetence competence1_2 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level1, id2);
-		TaxonomyCompetence competence2_1 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, id1);
-		TaxonomyCompetence competence2_2 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, id2);
+		TaxonomyCompetence competence1_1 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level1, id1, null);
+		TaxonomyCompetence competence1_2 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level1, id2, null);
+		TaxonomyCompetence competence2_1 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, id1, null);
+		TaxonomyCompetence competence2_2 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, id2, null);
 		dbInstance.commitAndCloseSession();
 		
 		// check the different possiblities
@@ -141,20 +142,20 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-5");
 		Taxonomy taxonomy1 = taxonomyDao.createTaxonomy("ID-27", "Competence", "", null);
 		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "Competence level taxonomy 1", "A competence", null, null, null, null, taxonomy1);
-		TaxonomyCompetence competence1 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level1, id);
+		TaxonomyCompetence competence1 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level1, id, null);
 		
 		Taxonomy taxonomy2 = taxonomyDao.createTaxonomy("ID-28", "Competence", "", null);
 		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-2", "Competence level taxonomy 2", "A competence", null, null, null, null, taxonomy2);
-		TaxonomyCompetence competence2 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, id);
+		TaxonomyCompetence competence2 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, id, null);
 		dbInstance.commitAndCloseSession();
 		
 		//check the competences of the 2 taxonomy trees
-		List<TaxonomyCompetence> loadedCompetences1 = taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy1, id);
+		List<TaxonomyCompetence> loadedCompetences1 = taxonomyCompetenceDao.getCompetencesByTaxonomy(taxonomy1, id, new Date());
 		Assert.assertNotNull(loadedCompetences1);
 		Assert.assertEquals(1, loadedCompetences1.size());
 		Assert.assertEquals(competence1, loadedCompetences1.get(0));
 
-		List<TaxonomyCompetence> loadedCompetences2 = taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy2, id);
+		List<TaxonomyCompetence> loadedCompetences2 = taxonomyCompetenceDao.getCompetencesByTaxonomy(taxonomy2, id, new Date());
 		Assert.assertNotNull(loadedCompetences2);
 		Assert.assertEquals(1, loadedCompetences2.size());
 		Assert.assertEquals(competence2, loadedCompetences2.get(0));
@@ -166,29 +167,29 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-5");
 		Taxonomy taxonomy1 = taxonomyDao.createTaxonomy("ID-31", "Competence", "", null);
 		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-1", "Competence level taxonomy 1", "A competence", null, null, null, null, taxonomy1);
-		TaxonomyCompetence competence1 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level1, id);
+		TaxonomyCompetence competence1 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level1, id, null);
 		
 		Taxonomy taxonomy2 = taxonomyDao.createTaxonomy("ID-32", "Competence", "", null);
 		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-2", "Competence level taxonomy 2", "A competence", null, null, null, null, taxonomy2);
-		TaxonomyCompetence competence2 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, id);
-		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level2, id);
+		TaxonomyCompetence competence2 = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, id, null);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, level2, id, null);
 		Identity otherId = JunitTestHelper.createAndPersistIdentityAsRndUser("competent-5");
-		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, otherId);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level2, otherId, null);
 		dbInstance.commitAndCloseSession();
 		
 		//check the competences of the 2 taxonomy trees
-		List<TaxonomyCompetence> loadedCompetences1 = taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy1, id, TaxonomyCompetenceTypes.target);
+		List<TaxonomyCompetence> loadedCompetences1 = taxonomyCompetenceDao.getCompetencesByTaxonomy(taxonomy1, id, new Date(), TaxonomyCompetenceTypes.target);
 		Assert.assertNotNull(loadedCompetences1);
 		Assert.assertEquals(1, loadedCompetences1.size());
 		Assert.assertEquals(competence1, loadedCompetences1.get(0));
-		loadedCompetences1 = taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy1, id, TaxonomyCompetenceTypes.have);
+		loadedCompetences1 = taxonomyCompetenceDao.getCompetencesByTaxonomy(taxonomy1, id, new Date(), TaxonomyCompetenceTypes.have);
 		Assert.assertEquals(0, loadedCompetences1.size());
 
-		List<TaxonomyCompetence> loadedCompetences2 = taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy2, id, TaxonomyCompetenceTypes.target);
+		List<TaxonomyCompetence> loadedCompetences2 = taxonomyCompetenceDao.getCompetencesByTaxonomy(taxonomy2, id, new Date(), TaxonomyCompetenceTypes.target);
 		Assert.assertNotNull(loadedCompetences2);
 		Assert.assertEquals(1, loadedCompetences2.size());
 		Assert.assertEquals(competence2, loadedCompetences2.get(0));
-		loadedCompetences2 = taxonomyCompetenceDao.getCompetenceByTaxonomy(taxonomy2, id, TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach);
+		loadedCompetences2 = taxonomyCompetenceDao.getCompetencesByTaxonomy(taxonomy2, id, new Date(), TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach);
 		Assert.assertEquals(0, loadedCompetences2.size());
 	}
 	
@@ -200,9 +201,9 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		TaxonomyLevel levelA = taxonomyLevelDao.createTaxonomyLevel("ID-Level-A", "Competence level", "A competence", null, null, null, null, taxonomy);
 		TaxonomyLevel levelB = taxonomyLevelDao.createTaxonomyLevel("ID-Level-B", "Competence level", "B competence", null, null, null, null, taxonomy);
 		
-		TaxonomyCompetence competenceTarget = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, levelA, id1);
-		TaxonomyCompetence competenceHave = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, levelB, id1);
-		TaxonomyCompetence competenceTeach = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, levelB, id2);
+		TaxonomyCompetence competenceTarget = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, levelA, id1, null);
+		TaxonomyCompetence competenceHave = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, levelB, id1, null);
+		TaxonomyCompetence competenceTeach = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, levelB, id2, null);
 		
 		dbInstance.commitAndCloseSession();
 		
@@ -233,10 +234,10 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-30", "Competence", "", null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-A", "Competence level", "A competence", null, null, null, null, taxonomy);
 
-		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id, null);
 		dbInstance.commitAndCloseSession();
 		
-		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByLevel(level, id, TaxonomyCompetenceTypes.target);
+		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByLevel(level, id, new Date(), TaxonomyCompetenceTypes.target);
 		Assert.assertTrue(hasCompetence);
 	}
 	
@@ -246,10 +247,10 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-30", "Competence", "", null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-A", "Competence level", "A competence", null, null, null, null, taxonomy);
 
-		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id);
+		taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id, null);
 		dbInstance.commitAndCloseSession();
 		
-		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByLevel(level, id, TaxonomyCompetenceTypes.teach);
+		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByLevel(level, id, new Date(), TaxonomyCompetenceTypes.teach);
 		Assert.assertFalse(hasCompetence);
 	}
 		
@@ -260,7 +261,7 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-A", "Competence level", "A competence", null, null, null, null, taxonomy);
 		dbInstance.commitAndCloseSession();
 		
-		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByLevel(level, id, TaxonomyCompetenceTypes.teach);
+		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByLevel(level, id, new Date(), TaxonomyCompetenceTypes.teach);
 		Assert.assertFalse(hasCompetence);
 	}
 	
@@ -270,11 +271,11 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-30", "Competence", "", null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-A", "Competence level", "A competence", null, null, null, null, taxonomy);
 
-		TaxonomyCompetence competenceTarget = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id);
+		TaxonomyCompetence competenceTarget = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(competenceTarget);
 		
-		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, id);
+		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, id, new Date());
 		Assert.assertTrue(hasCompetence);
 	}
 	
@@ -286,7 +287,7 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(level);
 		
-		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, id);
+		boolean hasCompetence = taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, id, new Date());
 		Assert.assertFalse(hasCompetence);
 	}
 	
@@ -296,13 +297,13 @@ public class TaxonomyCompetenceDAOTest extends OlatTestCase {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-30", "Competence", "", null);
 		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-A", "Competence level", "A competence", null, null, null, null, taxonomy);
 
-		TaxonomyCompetence competenceTarget = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id);
+		TaxonomyCompetence competenceTarget = taxonomyCompetenceDao.createTaxonomyCompetence(TaxonomyCompetenceTypes.target, level, id, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(competenceTarget);
 		
-		boolean hasTarget = taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, id, TaxonomyCompetenceTypes.target);
+		boolean hasTarget = taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, id, new Date(), TaxonomyCompetenceTypes.target);
 		Assert.assertTrue(hasTarget);
-		boolean hasTeach = taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, id, TaxonomyCompetenceTypes.teach);
+		boolean hasTeach = taxonomyCompetenceDao.hasCompetenceByTaxonomy(taxonomy, id, new Date(), TaxonomyCompetenceTypes.teach);
 		Assert.assertFalse(hasTeach);
 	}
 }

@@ -26,6 +26,7 @@
 		#end
 		<li role="presentation" class="divider"></li>
 	#end
+	#if($r.isTrue($authenticated))
 	<li>
 		## make logout link very basic without onClick handler in case javaScript is broken it is still possible to log out
 		## except for the onolatunload() method which must be executed to correctly finish SCORM modules (OLAT-6255)
@@ -34,4 +35,5 @@
 			<i class="o_icon o_icon_logout o_icon-fw"></i> $r.translate("topnav.logout")
 		</a>
 	</li>
+	#end
 </ul>

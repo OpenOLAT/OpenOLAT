@@ -39,15 +39,23 @@ public interface MovieService {
 	 */
 	public Size getSize(VFSLeaf image, String suffix);
 
-	
 	/**
-	 * Calculate the duration of the given movie
+	 * Calculate the duration of the given movie.
 	 * 
 	 * @param media
 	 * @param suffix
 	 * @return long duration in milliseconds
 	 */
 	public long getDuration(VFSLeaf media, String suffix);
+	
+	/**
+	 * Calculate the number of frames for the given movie.
+	 * 
+	 * @param media
+	 * @param suffix
+	 * @return long duration in milliseconds
+	 */
+	public long getFrameCount(VFSLeaf media, String suffix);
 
 	/**
 	 * Checks if a file is really an mp4 file we can handle

@@ -123,7 +123,11 @@ public class OAuthDispatcher implements Dispatcher {
 			OAuthSPI provider = (OAuthSPI)sess.getAttribute(OAuthConstants.OAUTH_SPI);
 
 			Token accessToken;
-			if(provider.isImplicitWorkflow()) {
+			if(provider == null) {
+				log.audit("OAuth Login failed, no provider in request");
+				DispatcherModule.redirectToDefaultDispatcher(response);
+				return;
+			} else if(provider.isImplicitWorkflow()) {
 				String idToken = ureq.getParameter("id_token");
 				if(idToken == null) {
 					redirectImplicitWorkflow(ureq);

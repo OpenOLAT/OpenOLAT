@@ -1509,7 +1509,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(condQueries == null || condQueries.isEmpty()) {
 			conditionalQueries = null;
 		} else {
-			conditionalQueries = new ArrayList<String>(condQueries);
+			conditionalQueries = new ArrayList<>(condQueries);
 		}
 		
 		if(dataSource != null) {
@@ -1706,6 +1706,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			item.setRootForm(getRootForm());
 	}
 
+	@Override
 	protected FlexiTableComponent getFormItemComponent() {
 		return component;
 	}

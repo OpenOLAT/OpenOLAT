@@ -32,6 +32,7 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -42,6 +43,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
+import org.olat.modules.taxonomy.model.TaxonomyLevelSearchParameters;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -119,12 +121,10 @@ public class TaxonomyLevelDAO implements InitializingBean {
 	
 	private String getMaterializedPathKeys(TaxonomyLevel parent, TaxonomyLevel level) {
 		if(parent != null) {
-
 			String parentPathOfKeys = parent.getMaterializedPathKeys();
 			if(parentPathOfKeys == null || "/".equals(parentPathOfKeys)) {
 				parentPathOfKeys = "";
 			}
-
 			return parentPathOfKeys + level.getKey() + "/";
 		}
 		return "/" + level.getKey() + "/";
@@ -153,6 +153,52 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		if(taxonomy != null) {
 			query.setParameter("taxonomyKey", taxonomy.getKey());
 		}
+		return query.getResultList();
+	}
+	
+	public List<TaxonomyLevel> searchLevels(TaxonomyRef taxonomy, TaxonomyLevelSearchParameters searchParams) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select level from ctaxonomylevel as level")
+		  .append(" left join fetch level.parent as parent")
+		  .append(" left join fetch level.type as type")
+		  .append(" inner join fetch level.taxonomy as taxonomy")
+		  .append(" where level.taxonomy.key=:taxonomyKey");
+
+		//quick search
+		Long quickId = null;
+		String quickRefs = null;
+		String quickText = null;
+		if(StringHelper.containsNonWhitespace(searchParams.getQuickSearch())) {
+			quickRefs = searchParams.getQuickSearch();
+			sb.append(" and (level.externalId=:quickRef or ");
+			PersistenceHelper.appendFuzzyLike(sb, "level.identifier", "quickText", dbInstance.getDbVendor());
+			sb.append(" or ");
+			quickText = PersistenceHelper.makeFuzzyQueryString(quickRefs);
+			PersistenceHelper.appendFuzzyLike(sb, "level.displayName", "quickText", dbInstance.getDbVendor());
+			if(StringHelper.isLong(quickRefs)) {
+				try {
+					quickId = Long.parseLong(quickRefs);
+					sb.append(" or level.key=:quickVKey");
+				} catch (NumberFormatException e) {
+					//
+				}
+			}
+			sb.append(")");	
+		}
+
+		TypedQuery<TaxonomyLevel> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), TaxonomyLevel.class)
+			.setParameter("taxonomyKey", taxonomy.getKey());
+		if(quickId != null) {
+			query.setParameter("quickVKey", quickId);
+		}
+		if(quickRefs != null) {
+			query.setParameter("quickRef", quickRefs);
+		}
+		if(quickText != null) {
+			query.setParameter("quickText", quickText);
+		}
+
 		return query.getResultList();
 	}
 	
@@ -232,6 +278,18 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		return levels;
 	}
 	
+	public List<TaxonomyLevel> getChildren(TaxonomyLevel taxonomyLevel) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select level from ctaxonomylevel as level")
+		  .append(" inner join fetch level.parent as parent")
+		  .append(" where parent.key=:parentKey");
+		  
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), TaxonomyLevel.class)
+			.setParameter("parentKey", taxonomyLevel.getKey())
+			.getResultList();
+	}
+	
 	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level) {
 		TaxonomyLevel parentLevel = getParent(level);
 		String path = level.getMaterializedPathIdentifiers();
@@ -292,7 +350,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		levelImpl = dbInstance.getCurrentEntityManager().merge(levelImpl);
 
 		for(TaxonomyLevel descendant:descendants) {
-			String descendantKeysPath = descendant.getMaterializedPathIdentifiers();
+			String descendantKeysPath = descendant.getMaterializedPathKeys();
 			String descendantIdentifiersPath = descendant.getMaterializedPathIdentifiers();
 			if(descendantIdentifiersPath.indexOf(identifiersPath) == 0) {
 				String end = descendantIdentifiersPath.substring(identifiersPath.length(), descendantIdentifiersPath.length());
@@ -302,7 +360,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 			if(descendantKeysPath.indexOf(keysPath) == 0) {
 				String end = descendantKeysPath.substring(keysPath.length(), descendantKeysPath.length());
 				String updatedPath = newKeysPath + end;
-				((TaxonomyLevelImpl)descendant).setMaterializedPathIdentifiers(updatedPath);
+				((TaxonomyLevelImpl)descendant).setMaterializedPathKeys(updatedPath);
 			}
 			dbInstance.getCurrentEntityManager().merge(descendant);
 		}

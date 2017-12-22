@@ -49,5 +49,9 @@ public interface AssessmentSessionAuditLogger extends Closeable {
 	public void logCorrection(AssessmentTestSession candidateSession, AssessmentItemSession itemSession, Identity coach);
 	
 	public void logTestRetrieved(AssessmentTestSession candidateSession, Identity coach);
+	
+	public void logTestReopen(AssessmentTestSession candidateSession, Identity coach);
+	
+	public void logTestExtend(AssessmentTestSession candidateSession, int extraTime, Identity coach);
 
 }

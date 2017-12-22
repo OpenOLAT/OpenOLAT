@@ -125,6 +125,34 @@ public class AssessmentSessionAuditFileLog implements AssessmentSessionAuditLogg
 			log.error("", e);
 		}
 	}
+	
+	
+
+	@Override
+	public void logTestReopen(AssessmentTestSession candidateSession, Identity coach) {
+		try {
+			AuditLogFormatter.logDate(writer);
+			writer.write("Test session reopened by " + coach.getKey() + "/" + coach.getName());
+			writer.write("\n");
+			writer.flush();
+			debugLog.logTestRetrieved(candidateSession, coach);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+
+	@Override
+	public void logTestExtend(AssessmentTestSession candidateSession, int extraTime, Identity coach) {
+		try {
+			AuditLogFormatter.logDate(writer);
+			writer.write("Test session extened " + extraTime + " by " + coach.getKey() + "/" + coach.getName());
+			writer.write("\n");
+			writer.flush();
+			debugLog.logTestRetrieved(candidateSession, coach);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
 
 	@Override
 	public void logAndThrowCandidateException(AssessmentTestSession session, CandidateExceptionReason reason, Exception ex) {

@@ -44,15 +44,16 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 	private TextElement maxAttemptsEl;
 	private SingleSelection limitAttemptsEl;
 	
-	protected final boolean restrictedEdit;
+	protected final boolean restrictedEdit, readOnly;
 	private final AssessmentItemRef assessmentItemRef;
 
 	private static final String[] attemtpsKeys = new String[] { "y", "n", "inherit" };
 	
 	public AssessmentItemRefEditorController(UserRequest ureq, WindowControl wControl,
-			AssessmentItemRef itemRef, boolean restrictedEdit) {
+			AssessmentItemRef itemRef, boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl);
 		this.assessmentItemRef = itemRef;
+		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 	}
 
@@ -75,12 +76,12 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 		} else {
 			limitAttemptsEl.select(attemtpsKeys[0], true);
 		}
-		limitAttemptsEl.setEnabled(!restrictedEdit);
+		limitAttemptsEl.setEnabled(!restrictedEdit && !readOnly);
 		
 		String maxAttemptsStr = maxAttempts == null ? "" : maxAttempts.toString();
 		maxAttemptsEl = uifactory.addTextElement("maxAttempts", null, 8, maxAttemptsStr, formLayout);
 		maxAttemptsEl.setVisible(limitAttemptsEl.isSelected(0));
-		maxAttemptsEl.setEnabled(!restrictedEdit);
+		maxAttemptsEl.setEnabled(!restrictedEdit && !readOnly);
 	}
 	
 	@Override

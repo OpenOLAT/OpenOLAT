@@ -49,7 +49,7 @@ public class VideoPosterEditController extends FormBasicController {
 
 	@Autowired
 	private VideoManager videoManager;
-	private VFSLeaf posterFile;
+
 	private OLATResource videoResource;
 	private FormLayoutContainer displayContainer;
 	private FormLink replaceImage;
@@ -73,7 +73,6 @@ public class VideoPosterEditController extends FormBasicController {
 
 		displayContainer.contextPut("hint", translate("video.config.poster.hint"));
 
-		posterFile = videoManager.getPosterframe(videoResource);
 		updatePosterImage(ureq, videoResource);
 		displayContainer.setLabel("video.config.poster", null);
 		formLayout.add(displayContainer);
@@ -111,59 +110,65 @@ public class VideoPosterEditController extends FormBasicController {
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(source == posterUploadForm || source == posterSelectionForm){
 			if(event instanceof FolderEvent){
-				posterFile = (VFSLeaf) ((FolderEvent) event).getItem();
-				flc.setDirty(true);
-				cmc.deactivate();
-				VFSLeaf newPosterFile = posterFile;
-				
+				VFSLeaf posterFile = (VFSLeaf) ((FolderEvent) event).getItem();
 				if(source == posterUploadForm){
-					videoManager.setPosterframeResizeUploadfile(videoResource, newPosterFile);						
+					videoManager.setPosterframeResizeUploadfile(videoResource, posterFile);						
 					posterFile.delete();
 				} else {					
-					videoManager.setPosterframe(videoResource, newPosterFile);
+					videoManager.setPosterframe(videoResource, posterFile);
 				}
 				updatePosterImage(ureq, videoResource);
-				// cleanup controllers
-				if (posterSelectionForm != null) {
-					removeAsListenerAndDispose(posterSelectionForm);
-					posterSelectionForm = null;
-				}
-				if (posterUploadForm != null) {
-					removeAsListenerAndDispose(posterUploadForm);
-					posterUploadForm = null;
-				}
-				if (cmc != null) {
-					removeAsListenerAndDispose(cmc);
-					cmc = null;
-				}
-				
 			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(posterSelectionForm);
+		removeAsListenerAndDispose(posterUploadForm);
+		removeAsListenerAndDispose(cmc);
+		posterSelectionForm = null;
+		posterUploadForm = null;
+		cmc = null;
 	}
 
 	private void doReplaceVideo(UserRequest ureq){
 		posterSelectionForm = new VideoPosterSelectionForm(ureq, getWindowControl(), videoResource);
 		listenTo(posterSelectionForm);
-		cmc = new CloseableModalController(getWindowControl(), "close", posterSelectionForm.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
+		
+		if(posterSelectionForm.hasProposals()) {
+			String title = translate("video.config.poster.replace");
+			cmc = new CloseableModalController(getWindowControl(), "close", posterSelectionForm.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			showWarning("warning.no.poster.proposals");
+			cleanUp();
+		}
 	}
 
 	private void doUploadVideo(UserRequest ureq){
 		posterUploadForm = new VideoPosterUploadForm(ureq, getWindowControl(), videoResource);
 		listenTo(posterUploadForm);
-		cmc = new CloseableModalController(getWindowControl(), "close", posterUploadForm.getInitialComponent());
+		
+		String title = translate("video.config.poster.upload");
+		cmc = new CloseableModalController(getWindowControl(), "close", posterUploadForm.getInitialComponent(),
+				true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
 
 	private void updatePosterImage(UserRequest ureq, OLATResource video){
-		posterFile = videoManager.getPosterframe(video);
+		VFSLeaf posterFile = videoManager.getPosterframe(video);
 		VFSContainer masterContainer = posterFile.getParentContainer();
 		VideoMediaMapper mediaMapper = new VideoMediaMapper(masterContainer);
 		String mediaUrl = registerMapper(ureq, mediaMapper);
 		String serverUrl = Settings.createServerURI();
 		displayContainer.contextPut("serverUrl", serverUrl);
 		displayContainer.contextPut("mediaUrl", mediaUrl);
+		displayContainer.setDirty(true);
 	}
 }

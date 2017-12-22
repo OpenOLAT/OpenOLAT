@@ -28,6 +28,7 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -572,5 +573,28 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 			list.setParameter("assessmentStatus", status.name());
 		}
 		return list.getResultList();
+	}
+
+	@Override
+	public AssessmentEntry getAssessmentEntries(IdentityRef assessedIdentity, RepositoryEntry entry, String subIdent) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select aentry from assessmententry aentry")
+		  .append(" inner join fetch aentry.identity as assessedIdentity")
+		  .append(" inner join fetch assessedIdentity.user as assessedUser")
+		  .append(" where aentry.repositoryEntry.key=:repoEntryKey")
+		  .append(" and assessedIdentity.key=:identityKey");
+		if(subIdent != null) {
+			sb.append(" and aentry.subIdent=:subIdent");
+		}
+		
+		TypedQuery<AssessmentEntry> list = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("repoEntryKey", entry.getKey())
+				.setParameter("identityKey", assessedIdentity.getKey());
+		if(subIdent != null) {
+			list.setParameter("subIdent", subIdent);
+		}
+		List<AssessmentEntry> entries = list.getResultList();
+		return entries == null || entries.isEmpty() ? null : entries.get(0);
 	}
 }

@@ -377,8 +377,8 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 					.getLastAssessmentTestSessions(courseEntry, getIdent(), referencedRepositoryEntry, assessedIdentity);
 			if(testSession != null) {
 				boolean fullyAssessed = (testSession.getFinishTime() != null || testSession.getTerminationTime() != null);
-				Float score = testSession.getScore() == null ? null : testSession.getScore().floatValue();
-				scoreEvaluation = new ScoreEvaluation(score, testSession.getPassed(), fullyAssessed, testSession.getKey());
+				Float score = testSession.getScore().floatValue();
+				return new ScoreEvaluation(score, testSession.getPassed(), fullyAssessed, testSession.getKey());
 			}
 		} else {
 			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
@@ -387,7 +387,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 			if (qTIResultSet != null) {
 				Boolean passed = qTIResultSet.getIsPassed();
 				Boolean fullyAssessed = qTIResultSet.getFullyAssessed();
-				scoreEvaluation = new ScoreEvaluation(new Float(qTIResultSet.getScore()), passed, fullyAssessed, new Long(qTIResultSet.getAssessmentID()));
+				scoreEvaluation = new ScoreEvaluation(Float.valueOf(qTIResultSet.getScore()), passed, fullyAssessed, new Long(qTIResultSet.getAssessmentID()));
 			}
 		}
 		return scoreEvaluation;

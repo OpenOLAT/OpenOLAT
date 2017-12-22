@@ -43,7 +43,7 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 	public static final String EDUBASE_LTI_LAUNCH_URL = "edubase.ltiLaunchUrl";
 	public static final String EDUBASE_INFOVER_URL = "edubase.infoverUrl";
 
-	@Value("${edubase.enabled:true}")
+	@Value("${edubase.enabled:false}")
 	private boolean enabled;
 	private String oauthKey;
 	private String oauthSecret;

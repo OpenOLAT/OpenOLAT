@@ -169,7 +169,7 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 			}
 			return si;
 		} catch (Exception e) {
-			log.error("Error creating task notifications for subscriber: " + subscriber.getKey(), e);
+			log.error("Cannot create document pool notifications for subscriber: " + subscriber.getKey(), e);
 			return notificationsManager.getNoSubscriptionInfo();
 		}
 	}
