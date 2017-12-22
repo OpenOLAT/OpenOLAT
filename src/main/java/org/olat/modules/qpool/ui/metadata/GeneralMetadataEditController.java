@@ -146,7 +146,6 @@ public class GeneralMetadataEditController extends FormBasicController {
 	}
 
 	private void buildTaxonomyLevelEl(QuestionItemSecurityCallback securityCallback) {
-		System.out.println(securityCallback.canRemoveTaxonomy());
 		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), securityCallback.canRemoveTaxonomy());
 		String[] selectableKeys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
 		String[] selectableValues = qpoolTaxonomyTreeBuilder.getSelectableValues();

@@ -2,89 +2,155 @@
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<a data-toggle="collapse" data-parent="#accordion" href="#collapse1">
+				<a data-toggle="collapse" data-parent="#accordion" href="#general">
 					$r.translate("general")
 				</a>
 			</h4>
 		</div>
-		<div id="collapse1" class="panel-collapse collapse in">
+		<div id="general" class="panel-collapse collapse $!in-general">
 			<div class="panel-body">
 				$r.render("details_general")
 			</div>
 		</div>
+		<script type="text/javascript">
+			/* <![CDATA[ */
+				jQuery('#general').on('hide.bs.collapse', function () {
+					jQuery('#collapseCommentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				})
+				jQuery('#general').on('show.bs.collapse', function () {
+					jQuery('#collapseCommentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+					$r.backgroundCommand("show","panel","general")
+				})
+			/* ]]> */
+		</script>
 	</div>
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<a data-toggle="collapse" data-parent="#accordion" href="#collapse2">
+				<a data-toggle="collapse" data-parent="#accordion" href="#question">
 					$r.translate("question")
 				</a>
 			</h4>
 		</div>
-		<div id="collapse2" class="panel-collapse collapse">
+		<div id="question" class="panel-collapse collapse $!in-question">
 			<div class="panel-body">
 				$r.render("details_question")
 			</div>
 		</div>
+		<script type="text/javascript">
+			/* <![CDATA[ */
+				jQuery('#question').on('hide.bs.collapse', function () {
+					jQuery('#collapseCommentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				})
+				jQuery('#question').on('show.bs.collapse', function () {
+					jQuery('#collapseCommentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+					$r.backgroundCommand("show","panel","question")
+				})
+			/* ]]> */
+		</script>
 	</div>
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<a data-toggle="collapse" data-parent="#accordion" href="#collapse3">
+				<a data-toggle="collapse" data-parent="#accordion" href="#rights">
 					$r.translate("rights")
 				</a>
 			</h4>
 		</div>
-		<div id="collapse3" class="panel-collapse collapse">
+		<div id="rights" class="panel-collapse collapse $!in-rights">
 			<div class="panel-body">
 				$r.render("details_rights")
 			</div>
 		</div>
+		<script type="text/javascript">
+			/* <![CDATA[ */
+				jQuery('#rights').on('hide.bs.collapse', function () {
+					jQuery('#collapseCommentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				})
+				jQuery('#rights').on('show.bs.collapse', function () {
+					jQuery('#collapseCommentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+					$r.backgroundCommand("show","panel","rights")
+				})
+			/* ]]> */
+		</script>
 	</div>
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h4 class="panel-title">
-				<a data-toggle="collapse" data-parent="#accordion" href="#collapse4">
+				<a data-toggle="collapse" data-parent="#accordion" href="#technical">
 					$r.translate("technical")
 				</a>
 			</h4>
 		</div>
-		<div id="collapse4" class="panel-collapse collapse">
+		<div id="technical" class="panel-collapse collapse $!in-technical">
 			<div class="panel-body">
 				$r.render("details_technical")
 			</div>
 		</div>
+		<script type="text/javascript">
+			/* <![CDATA[ */
+				jQuery('#technical').on('hide.bs.collapse', function () {
+					jQuery('#collapseCommentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+				})
+				jQuery('#technical').on('show.bs.collapse', function () {
+					jQuery('#collapseCommentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+					$r.backgroundCommand("show","panel","technical")
+				})
+			/* ]]> */
+		</script>
 	</div>
 	#if($r.available("details_pools"))
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h4 class="panel-title">
-					<a data-toggle="collapse" data-parent="#accordion" href="#collapse5">
+					<a data-toggle="collapse" data-parent="#accordion" href="#pools">
 						$r.translate("menu.pools")
 					</a>
 				</h4>
 			</div>
-			<div id="collapse5" class="panel-collapse collapse">
+			<div id="pools" class="panel-collapse collapse $!in-pools">
 				<div class="panel-body">
 					$r.render("details_pools")
 				</div>
 			</div>
+			<script type="text/javascript">
+				/* <![CDATA[ */
+					jQuery('#pools').on('hide.bs.collapse', function () {
+						jQuery('#collapseCommentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+					})
+					jQuery('#pools').on('show.bs.collapse', function () {
+						jQuery('#collapseCommentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+						$r.backgroundCommand("show","panel","pools")
+					})
+				/* ]]> */
+			</script>
 		</div>
 	#end
 	#if($r.available("details_shares"))
 		<div class="panel panel-default">
 			<div class="panel-heading">
 				<h4 class="panel-title">
-					<a data-toggle="collapse" data-parent="#accordion" href="#collapse6">
+					<a data-toggle="collapse" data-parent="#accordion" href="#shares">
 						$r.translate("sharing.shares")
 					</a>
 				</h4>
 			</div>
-			<div id="collapse6" class="panel-collapse collapse">
+			<div id="shares" class="panel-collapse collapse $!in-shares">
 				<div class="panel-body">
 					$r.render("details_shares")
 				</div>
 			</div>
+			<script type="text/javascript">
+				/* <![CDATA[ */
+					jQuery('#shares').on('hide.bs.collapse', function () {
+						jQuery('#collapseCommentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+					})
+					jQuery('#shares').on('show.bs.collapse', function () {
+						jQuery('#collapseCommentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+						$r.backgroundCommand("show","panel","shares")
+					})
+				/* ]]> */
+			</script>
 		</div>
 	#end
-</div> 
+</div>
