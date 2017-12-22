@@ -136,6 +136,12 @@ public class SPRunController extends BasicController implements Activateable2 {
 	private boolean hasEditRights(UserRequest ureq) {
 		if(userCourseEnv.isCourseReadOnly()) return false;
 		
+		if(fileName != null && fileName.startsWith("/_sharedfolder")) {
+			if(userCourseEnv.getCourseEnvironment().getCourseConfig().isSharedFolderReadOnlyMount()) {
+				return false;
+			}
+		}
+		
 		if(isFileTypeEditable(fileName)) {
 			Roles roles = ureq.getUserSession().getRoles();
 			if(roles.isOLATAdmin()) {
