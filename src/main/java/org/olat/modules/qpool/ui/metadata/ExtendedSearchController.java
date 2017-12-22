@@ -35,22 +35,18 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.nodes.INode;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QItemDocument;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.ui.QuestionsController;
-import org.olat.modules.qpool.ui.admin.TaxonomyTreeModel;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
-import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.search.model.AbstractOlatDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -71,8 +67,11 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	private final String prefsKey;
 	private ExtendedSearchPrefs prefs;
 	private boolean enabled = true;
+	
 	@Autowired
 	private QPoolService qpoolService;
+	@Autowired
+	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 
 	public ExtendedSearchController(UserRequest ureq, WindowControl wControl, String prefsKey, Form mainForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "extended_search", mainForm);
@@ -398,28 +397,9 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		
 		@Override
 		public FormItem createItem(String startValue) {
-			TaxonomyTreeModel treeModel = new TaxonomyTreeModel("");
-			List<String> keys = new ArrayList<>();
-			List<String> values = new ArrayList<>();
-			flatTree(treeModel.getRootNode(), "", keys, values);
-
-			String[] keysArr = keys.toArray(new String[keys.size()]);
-			String[] valuesArr = values.toArray(new String[values.size()]);
-			return createItem(keysArr, valuesArr, startValue);
-		}
-		
-		private void flatTree(TreeNode node, String path, List<String> keys, List<String> values) {
-			for(int i=0; i<node.getChildCount(); i++) {
-				INode child = node.getChildAt(i);
-				if(child instanceof GenericTreeNode) {
-					GenericTreeNode gChild = (GenericTreeNode)child;
-					TaxonomyLevel level = (TaxonomyLevel)gChild.getUserObject();
-					String field = level.getDisplayName();
-					keys.add(level.getKey().toString());
-					values.add(path + "" + field);
-					flatTree(gChild, path + "\u00A0\u00A0\u00A0\u00A0", keys, values);
-				}
-			}
+			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false);
+			return createItem(qpoolTaxonomyTreeBuilder.getSelectableKeys(),
+					qpoolTaxonomyTreeBuilder.getSelectableValues(), startValue);
 		}
 	}
 	

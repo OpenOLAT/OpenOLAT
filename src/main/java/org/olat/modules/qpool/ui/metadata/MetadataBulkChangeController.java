@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
@@ -45,13 +44,9 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -61,6 +56,7 @@ import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
+import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -76,9 +72,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	
 	//general
 	private TextElement topicEl, keywordsEl, coverageEl, addInfosEl, languageEl;
-	private Link selectContext;
-	private FormLayoutContainer selectContextCont;
-	private CloseableModalController cmc;
+	private SingleSelection taxonomyLevelEl;
 	//educational
 	private SingleSelection contextEl;
 	private FormLayoutContainer learningTimeContainer;
@@ -98,18 +92,17 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private TextElement descriptionEl;
 	private FormLayoutContainer rightsWrapperCont;
 
-	private TaxonomySelectionController selectionCtrl;
-
 	private Map<MultipleSelectionElement,FormLayoutContainer> checkboxContainer
 		= new HashMap<>();
 	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>();
 	
-	private TaxonomyLevel selectedTaxonomicPath;
 	private List<QuestionItem> updatedItems;
 	private final List<QuestionItemShort> items;
 	
 	@Autowired
 	private QPoolService qpoolService;
+	@Autowired
+	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 	
 	public MetadataBulkChangeController(UserRequest ureq, WindowControl wControl, List<QuestionItemShort> items) {
 		super(ureq, wControl, "bulk_change");
@@ -157,15 +150,10 @@ public class MetadataBulkChangeController extends FormBasicController {
 		languageEl = uifactory.addTextElement("general.language", "general.language", 10, "", generalCont);
 		decorate(languageEl, generalCont);
 		
-		//classification
-		String selectContextPage = velocity_root + "/edit_edu_context.html";
-		selectContextCont = FormLayoutContainer.createCustomFormLayout("classification.taxonomic.path", getTranslator(), selectContextPage);
-		selectContextCont.setLabel("classification.taxonomic.path", null);
-		selectContextCont.contextPut("path", "");
-		generalCont.add(selectContextCont);
-		selectContextCont.setRootForm(mainForm);
-		selectContext = LinkFactory.createButton("select", selectContextCont.getFormItemComponent(), this);
-		decorate(selectContextCont, generalCont);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false);
+		taxonomyLevelEl = uifactory.addDropdownSingleselect("classification.taxonomic.path", generalCont,
+				qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
+		decorate(taxonomyLevelEl, generalCont);
 	}
 	
 	private void initEducationalForm(FormItemContainer formLayout) {
@@ -314,57 +302,6 @@ public class MetadataBulkChangeController extends FormBasicController {
 	}
 	
 	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if(source == selectContext) {
-			doOpenSelection(ureq);
-		} else {
-			super.event(ureq, source, event);
-		}
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(source == cmc) {
-			cleanUp();
-		} else if(selectionCtrl == source) {
-			if(Event.DONE_EVENT == event) {
-				selectedTaxonomicPath = selectionCtrl.getSelectedLevel();
-				if(selectedTaxonomicPath == null) {
-					selectContextCont.contextPut("path", "");
-				} else {
-					String path = selectedTaxonomicPath.getMaterializedPathIdentifiers();
-					if(StringHelper.containsNonWhitespace(path)) {
-						if(!path.endsWith("/")) {
-							path += "/";
-						}
-						path += selectedTaxonomicPath.getDisplayName();
-					}
-					selectContextCont.contextPut("path", path);
-				}
-			}
-			cmc.deactivate();
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(selectionCtrl);
-		removeAsListenerAndDispose(cmc);
-		selectionCtrl = null;
-		cmc = null;
-	}
-
-	private void doOpenSelection(UserRequest ureq) {
-		selectionCtrl = new TaxonomySelectionController(ureq, getWindowControl());
-		listenTo(selectionCtrl);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				selectionCtrl.getInitialComponent(), true, translate("classification.taxonomic.path"));
-		cmc.activate();
-		listenTo(cmc);
-	}
-
-	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
@@ -401,7 +338,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		updatedItems = new ArrayList<QuestionItem>();
+		updatedItems = new ArrayList<>();
 		for(QuestionItemShort item : items) {
 			QuestionItem fullItem = qpoolService.loadItemById(item.getKey());
 			if(fullItem instanceof QuestionItemImpl) {
@@ -432,8 +369,10 @@ public class MetadataBulkChangeController extends FormBasicController {
 			itemImpl.setAdditionalInformations(addInfosEl.getValue());
 		if(isEnabled(languageEl))
 			itemImpl.setLanguage(languageEl.getValue());
-		if(isEnabled(selectContextCont) && selectedTaxonomicPath != null) {
-			itemImpl.setTaxonomyLevel(selectedTaxonomicPath);
+		if(isEnabled(taxonomyLevelEl)) {
+			String selectedKey = taxonomyLevelEl.getSelectedKey();
+			TaxonomyLevel taxonomyLevel = qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
+			itemImpl.setTaxonomyLevel(taxonomyLevel);
 		}
 	}
 	
