@@ -39,14 +39,12 @@ public class TaxonomyAdminTreeNode extends GenericTreeNode implements Controller
 	private static final long serialVersionUID = -1970806212074286837L;
 
 	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("Taxonomy");
-	private static final String ICON_CSS_CLASS = "o_sel_qpool_study_fields";
 	
 	private TaxonomyAdminController controller;
 	
 	public TaxonomyAdminTreeNode(String title) {
 		super();
 		this.setTitle(title);
-		this.setIconCssClass(ICON_CSS_CLASS);
 	}
 
 	@Override

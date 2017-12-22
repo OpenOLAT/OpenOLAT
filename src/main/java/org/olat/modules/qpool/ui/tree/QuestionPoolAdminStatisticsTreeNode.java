@@ -39,14 +39,12 @@ public class QuestionPoolAdminStatisticsTreeNode extends GenericTreeNode impleme
 	private static final long serialVersionUID = 6080671566469619774L;
 
 	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("Statistics");
-	private static final String ICON_CSS_CLASS = "o_sel_qpool_admin";
 	
 	private QuestionPoolAdminStatisticsController controller;
 	
 	public QuestionPoolAdminStatisticsTreeNode(String title) {
 		super();
 		this.setTitle(title);
-		this.setIconCssClass(ICON_CSS_CLASS);
 	}
 
 	@Override

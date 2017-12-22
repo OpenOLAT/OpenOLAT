@@ -39,14 +39,12 @@ public class PoolsAdminTreeNode extends GenericTreeNode implements ControllerTre
 	private static final long serialVersionUID = 5429634639598912618L;
 
 	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("Pools");
-	private static final String ICON_CSS_CLASS = "o_sel_qpool_admin_pools";
 	
 	private Controller poolsAdminCtrl;
 	
 	public PoolsAdminTreeNode(String title) {
 		super();
 		this.setTitle(title);
-		this.setIconCssClass(ICON_CSS_CLASS);
 	}
 
 	@Override

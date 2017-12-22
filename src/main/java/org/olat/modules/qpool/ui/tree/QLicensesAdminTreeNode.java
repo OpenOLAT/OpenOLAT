@@ -39,14 +39,12 @@ public class QLicensesAdminTreeNode extends GenericTreeNode implements Controlle
 	private static final long serialVersionUID = -8353608867072040870L;
 
 	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("Licenses");
-	private static final String ICON_CSS_CLASS = "o_sel_qpool_admin_licenses";
 	
 	private QLicensesAdminController controller;
 	
 	public QLicensesAdminTreeNode(String title) {
 		super();
 		this.setTitle(title);
-		this.setIconCssClass(ICON_CSS_CLASS);
 	}
 
 	@Override

@@ -39,14 +39,12 @@ public class QEducationalContextsAdminTreeNode extends GenericTreeNode implement
 	private static final long serialVersionUID = -6689421252009343650L;
 
 	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("EduContexts");
-	private static final String ICON_CSS_CLASS = "o_sel_qpool_admin_levels";
 	
 	private QEducationalContextsAdminController controller;
 	
 	public QEducationalContextsAdminTreeNode(String title) {
 		super();
 		this.setTitle(title);
-		this.setIconCssClass(ICON_CSS_CLASS);
 	}
 
 	@Override

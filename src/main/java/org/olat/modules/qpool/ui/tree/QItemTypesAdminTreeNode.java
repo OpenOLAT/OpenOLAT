@@ -39,14 +39,12 @@ public class QItemTypesAdminTreeNode extends GenericTreeNode implements Controll
 	private static final long serialVersionUID = 5743075799341541313L;
 
 	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("Types");
-	private static final String ICON_CSS_CLASS = "o_sel_qpool_admin_types";
 	
 	private QItemTypesAdminController controller;
 	
 	public QItemTypesAdminTreeNode(String title) {
 		super();
 		this.setTitle(title);
-		this.setIconCssClass(ICON_CSS_CLASS);
 	}
 
 	@Override

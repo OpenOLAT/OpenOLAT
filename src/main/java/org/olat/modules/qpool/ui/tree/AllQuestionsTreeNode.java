@@ -43,7 +43,6 @@ public class AllQuestionsTreeNode extends GenericTreeNode implements ControllerT
 	private static final long serialVersionUID = -4546025987046093829L;
 	
 	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("All");
-	private static final String ICON_CSS_CLASS = "o_sel_qpool_all";
 	private static final String ALL = "All";
 	
 	private final TooledStackedPanel stackPanel;
@@ -57,7 +56,6 @@ public class AllQuestionsTreeNode extends GenericTreeNode implements ControllerT
 		this.securityCallback = securityCallback;
 		
 		this.setTitle(title);
-		this.setIconCssClass(ICON_CSS_CLASS);
 		
 		this.setUserObject(ALL);
 	}

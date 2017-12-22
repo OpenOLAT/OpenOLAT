@@ -39,14 +39,12 @@ public class PresentationTreeNode extends GenericTreeNode implements ControllerT
 	private static final long serialVersionUID = 7100418472830441142L;
 
 	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("Presentation");
-	private static final String ICON_CSS_CLASS = "o_sel_qpool_database";
 	
 	private Controller presentationCtrl;
 	
 	public PresentationTreeNode(String title) {
 		super();
 		this.setTitle(title);
-		this.setIconCssClass(ICON_CSS_CLASS);
 	}
 
 	@Override

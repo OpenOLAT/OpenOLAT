@@ -39,14 +39,12 @@ public class SharePresentationTreeNode  extends GenericTreeNode implements Contr
 	private static final long serialVersionUID = -3800071301195017030L;
 
 	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("SharePresentation");
-	private static final String ICON_CSS_CLASS = "o_sel_qpool_shares";
 	
 	private Controller sharePresentationCtrl;
 	
 	public SharePresentationTreeNode(String title) {
 		super();
 		this.setTitle(title);
-		this.setIconCssClass(ICON_CSS_CLASS);
 	}
 
 	@Override
