@@ -592,10 +592,12 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		ModuleConfiguration config = getModuleConfiguration();
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		
+		String name = assessedIdentity.getUser().getLastName()
+				+ "_" + assessedIdentity.getUser().getFirstName()
+				+ "_" + assessedIdentity.getName();
+		
 		int flow = 0;//for beautiful ordering
-		String userDirName = dirName + "/"
-				+ StringHelper.transformDisplayNameToFileSystemName(assessedIdentity.getName())
-				+ "_" + assessedIdentity.getKey();
+		String userDirName = dirName + "/" + StringHelper.transformDisplayNameToFileSystemName(name);
 		
 		Task task = gtaManager.getTask(assessedIdentity, taskList);
 		if(task != null && task.getTaskName() != null && config.getBooleanSafe(GTASK_ASSIGNMENT)) {
