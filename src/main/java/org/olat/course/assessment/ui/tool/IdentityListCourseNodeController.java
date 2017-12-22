@@ -605,6 +605,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
 			}
+		} else if(toolsCalloutCtrl == source) {
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -650,8 +652,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	private void doOpenTools(UserRequest ureq, AssessedIdentityElementRow row, FormLink link) {
-		if(toolsCalloutCtrl != null) return;
-		
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 
