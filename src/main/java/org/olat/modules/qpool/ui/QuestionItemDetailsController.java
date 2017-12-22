@@ -166,6 +166,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	}
 
 	private void setCommentsController(UserRequest ureq) {
+		removeAsListenerAndDispose(commentsAndRatingCtr);
 		commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), metadatasCtrl.getItem(),
 				null, commentAndRatingSecurityCallback, true, this.securityCallback.canRate(), true);
 		listenTo(commentsAndRatingCtr);
@@ -361,7 +362,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			if(event instanceof PopEvent) {
 				PopEvent pop = (PopEvent)event;
 				if(pop.getController() == editMainCtrl) {
-					reloadData();
+					reloadData(ureq);
 				}
 			}
 		}
@@ -416,7 +417,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			}
 		} else if(source == metadatasCtrl) {
 			if(event instanceof QItemEdited) {
-				reloadData();
+				reloadData(ureq);
 				fireEvent(ureq, event);
 			}
 		}
@@ -472,7 +473,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void doRate(UserRequest ureq, float rating, String comment) {
 		QuestionItem item = metadatasCtrl.getItem();
 		qpoolService.rateItemInReview(item, getIdentity(), rating, comment);
-		reloadData();
+		reloadData(ureq);
 		setCommentsController(ureq);
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_STATUS_CHANGED, item.getKey()));
 	}
@@ -511,15 +512,16 @@ public class QuestionItemDetailsController extends BasicController implements To
 			fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_STATUS_CHANGED, item.getKey()));
 			showInfo(i18nInfo);
 		}
-		reloadData();
+		reloadData(ureq);
 	}
 
-	private void reloadData() {
+	private void reloadData(UserRequest ureq) {
 		Long itemKey = metadatasCtrl.getItem().getKey();
 		QuestionItemView itemView = itemSource.getItemWithoutRestrictions(itemKey);
 		if (itemView != null) {
 			securityCallback.setQuestionItemView(itemView);
 			initTools();
+			setCommentsController(ureq);
 			QuestionItem reloadedItem = qpoolService.loadItemById(itemView.getKey());
 			metadatasCtrl.setItem(reloadedItem, securityCallback);
 		}
