@@ -22,7 +22,6 @@ package org.olat.modules.qpool.ui;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
@@ -32,7 +31,6 @@ import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -42,12 +40,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Roles;
-import org.olat.core.id.context.ContextEntry;
-import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.group.BusinessGroup;
@@ -77,10 +72,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionItemDetailsController extends BasicController implements TooledController, Activateable2 {
+public class QuestionItemDetailsController extends BasicController implements TooledController {
 	
 	private static final String GUIPREF_KEY_SHOW_METADATAS = "show.metadatas";
-	private Link editItem;
+
 	private Link statusDraftLink;
 	private Link statusReviewLink;
 	private Link statusFinalLink;
@@ -101,25 +96,24 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Dropdown statusDropdown;
 	private Dropdown commandDropdown;
 
-	private Controller editCtrl;
-	private Controller previewCtrl;
-	private CloseableModalController cmc;
 	private final VelocityContainer mainVC;
+	private final TooledStackedPanel stackPanel;
+	private Controller questionCtrl;
+	private MetadatasController metadatasCtrl;
+	private UserCommentsAndRatingsController commentsAndRatingCtr;
+	private CommentAndRatingSecurityCallback commentAndRatingSecurityCallback;
+	private CloseableModalController cmc;
 	private ReviewStartController reviewStartCtrl;	
 	private ReviewController reviewCtrl;
 	private DialogBoxController confirmEndOfLifeCtrl;
 	private DialogBoxController confirmDeleteBox;
-	private LayoutMain3ColsController editMainCtrl;
 	private SelectBusinessGroupController selectGroupCtrl;
-	private final MetadatasController metadatasCtrl;
-	private UserCommentsAndRatingsController commentsAndRatingCtr;
-	private final CommentAndRatingSecurityCallback commentAndRatingSecurityCallback;
-	private final TooledStackedPanel stackPanel;
 
 	private final QuestionItemsSource itemSource;
 	private final QuestionItemSecurityCallback securityCallback;
 	private final Integer itemIndex;
 	private final int numberOfItems;
+	private Boolean showMetadatas;
 	
 	@Autowired
 	private QuestionPoolModule poolModule;
@@ -127,7 +121,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private QPoolService qpoolService;
 	@Autowired
 	private ReviewService reviewService;
-	private Boolean showMetadatas;
 	
 	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QuestionItem item, QuestionItemSecurityCallback securityCallback, QuestionItemsSource itemSource,
@@ -139,33 +132,57 @@ public class QuestionItemDetailsController extends BasicController implements To
 		this.itemIndex = itemIndex;
 		this.numberOfItems = numberOfItems;
 		this.itemSource = itemSource;
-		mainVC = createVelocityContainer("item_details");
-		
-		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback);
-		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
-		listenTo(metadatasCtrl);
 		
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		showMetadatas = (Boolean) guiPrefs.get(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_METADATAS);
 		
+		mainVC = createVelocityContainer("item_details");
+		setMetadatasController(ureq, wControl, item, securityCallback);
+		setQuestionController(ureq, item, securityCallback);
+		setCommentsController(ureq);
+		putInitialPanel(mainVC);
+	}
+
+	private void setMetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item,
+			QuestionItemSecurityCallback securityCallback) {
+		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback);
+		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
+		listenTo(metadatasCtrl);
+	}
+
+	private void setQuestionController(UserRequest ureq, QuestionItem item,
+			QuestionItemSecurityCallback securityCallback) {
+		removeAsListenerAndDispose(questionCtrl);
+		questionCtrl = null;
+		
+		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
+		boolean canEditContent = securityCallback.canEditQuestion() && (spi != null && spi.isTypeEditable());
+		
+		if (spi != null) {
+			if (canEditContent) {
+				questionCtrl = spi.getEditableController(ureq, getWindowControl(), item);
+			} else {
+				questionCtrl = spi.getReadOnlyController(ureq, getWindowControl(), item);
+			}
+		}
+		if (questionCtrl == null && spi != null) {
+			questionCtrl = spi.getPreviewController(ureq, getWindowControl(), item, false);
+		}
+		if (questionCtrl == null) {
+			questionCtrl = new QuestionItemRawController(ureq, getWindowControl());
+		}
+		listenTo(questionCtrl);
+
+		if(mainVC != null) {
+			mainVC.put("type_specifics", questionCtrl.getInitialComponent());
+		}
+	}
+
+	private void setCommentsController(UserRequest ureq) {		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean moderator = roles.isOLATAdmin();
 		boolean anonymous = roles.isGuestOnly() || roles.isInvitee();
 		commentAndRatingSecurityCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), moderator, anonymous);
-		setCommentsController(ureq);
-
-		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
-		boolean canEditContent = securityCallback.canEditQuestion() && (spi != null && spi.isTypeEditable());
-		if(canEditContent) {
-			editItem = LinkFactory.createButton("edit", mainVC, this);
-			editItem.setIconLeftCSS("o_icon o_icon_edit");
-		}
-		
-		setPreviewController(ureq, item);
-		putInitialPanel(mainVC);
-	}
-
-	private void setCommentsController(UserRequest ureq) {
 		removeAsListenerAndDispose(commentsAndRatingCtr);
 		commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), metadatasCtrl.getItem(),
 				null, commentAndRatingSecurityCallback, true, this.securityCallback.canRate(), true);
@@ -287,38 +304,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 		}
 	}
 	
-	protected void setPreviewController(UserRequest ureq, QuestionItem item) {
-		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
-		if(spi == null) {
-			previewCtrl = new QuestionItemRawController(ureq, getWindowControl());
-		} else {
-			previewCtrl = spi.getPreviewController(ureq, getWindowControl(), item, false);
-			if(previewCtrl == null) {
-				previewCtrl = new QuestionItemRawController(ureq, getWindowControl());
-			}
-		}
-		listenTo(previewCtrl);
-		if(mainVC != null) {
-			mainVC.put("type_specifics", previewCtrl.getInitialComponent());
-		}
-	}
-	
 	@Override
 	protected void doDispose() {
 		if(stackPanel != null) {
 			stackPanel.removeListener(this);
-		}
-	}
-
-	@Override
-	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		String resourceTypeName = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("edit".equalsIgnoreCase(resourceTypeName)) {
-			if(securityCallback.canEditQuestion() || metadatasCtrl.getItem() != null) {
-				doEdit(ureq, metadatasCtrl.getItem());
-			}
 		}
 	}
 
@@ -346,8 +335,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 			doSelectGroup(ureq, metadatasCtrl.getItem());
 		} else if(source == exportItemLink) {
 			doExport(ureq, metadatasCtrl.getItem());
-		} else if(source == editItem) {
-			doEdit(ureq, metadatasCtrl.getItem());
 		} else if(source == copyItemLink) {
 			doCopy(ureq, metadatasCtrl.getItem());
 		} else if(source == nextItemLink) {
@@ -358,13 +345,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 			doShowMetadata(ureq);
 		} else if(source == hideMetadataLink) {
 			doHideMetadata(ureq);
-		} else if(source == stackPanel) {
-			if(event instanceof PopEvent) {
-				PopEvent pop = (PopEvent)event;
-				if(pop.getController() == editMainCtrl) {
-					reloadData(ureq);
-				}
-			}
 		}
 	}
 	
@@ -403,15 +383,17 @@ public class QuestionItemDetailsController extends BasicController implements To
 				QuestionItem item = (QuestionItem)confirmEndOfLifeCtrl.getUserObject();
 				doEndOfLife(ureq, item);
 			}
+			cleanUp();
 		} else if(source == confirmDeleteBox) {
 			boolean delete = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
 			if(delete) {
 				QuestionItem item = (QuestionItem)confirmDeleteBox.getUserObject();
 				doDelete(ureq, item);
 			}
+			cleanUp();
 		} else if(source == cmc) {
 			cleanUp();
-		} else if(source == editCtrl) {
+		} else if(source == questionCtrl) {
 			if(event instanceof QItemEdited) {
 				fireEvent(ureq, event);
 			}
@@ -429,10 +411,14 @@ public class QuestionItemDetailsController extends BasicController implements To
 		removeAsListenerAndDispose(selectGroupCtrl);
 		removeAsListenerAndDispose(reviewCtrl);
 		removeAsListenerAndDispose(reviewStartCtrl);
+		removeAsListenerAndDispose(confirmDeleteBox);
+		removeAsListenerAndDispose(confirmEndOfLifeCtrl);
 		cmc = null;
 		selectGroupCtrl = null;
 		reviewCtrl = null;
 		reviewStartCtrl = null;
+		confirmDeleteBox = null;
+		confirmEndOfLifeCtrl = null;
 	}
 	
 	private void doConfirmStartReview(UserRequest ureq, QuestionItem item) {
@@ -524,6 +510,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			setCommentsController(ureq);
 			QuestionItem reloadedItem = qpoolService.loadItemById(itemView.getKey());
 			metadatasCtrl.setItem(reloadedItem, securityCallback);
+			setQuestionController(ureq, reloadedItem, securityCallback);
 		}
 	}
 
@@ -533,17 +520,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 			showInfo("item.copied", Integer.toString(copies.size()));
 			fireEvent(ureq, new QItemEvent("copy-item", copies.get(0)));
 		}
-	}
-	
-	private void doEdit(UserRequest ureq, QuestionItem item) {
-		removeAsListenerAndDispose(editCtrl);
-		
-		QPoolSPI spi = poolModule.getQuestionPoolProvider(item.getFormat());
-		editCtrl = spi.getEditableController(ureq, getWindowControl(), item);
-		listenTo(editCtrl);
-		
-		editMainCtrl = new LayoutMain3ColsController(ureq, getWindowControl(), editCtrl);
-		stackPanel.pushController("Edition", editMainCtrl);
 	}
 	
 	private void doSelectGroup(UserRequest ureq, QuestionItem item) {

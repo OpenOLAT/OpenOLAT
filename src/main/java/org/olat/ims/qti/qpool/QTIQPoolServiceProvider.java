@@ -104,7 +104,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	@Autowired
 	private QuestionItemDAO questionItemDao;
 	
-	private static final List<ExportFormatOptions> formats = new ArrayList<ExportFormatOptions>(2);
+	private static final List<ExportFormatOptions> formats = new ArrayList<>(2);
 	static {
 		formats.add(DefaultExportFormat.ZIP_EXPORT_FORMAT);
 		formats.add(DefaultExportFormat.DOCX_EXPORT_FORMAT);
@@ -296,7 +296,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 	
 	private List<Long> toKeys(List<? extends QuestionItemShort> items) {
-		List<Long> keys = new ArrayList<Long>(items.size());
+		List<Long> keys = new ArrayList<>(items.size());
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}
@@ -321,7 +321,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 	
 	public void assembleTest(List<QuestionItemShort> items, ZipOutputStream zout) {
-		List<Long> itemKeys = new ArrayList<Long>();
+		List<Long> itemKeys = new ArrayList<>();
 		for(QuestionItemShort item:items) {
 			itemKeys.add(item.getKey());
 		}
@@ -374,6 +374,11 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		QTI12EditorController previewCtrl = new QTI12EditorController(ureq, wControl, item);
 		return previewCtrl;
+	}
+
+	@Override
+	public Controller getReadOnlyController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+		return getPreviewController(ureq, wControl, item, false);
 	}
 	
 

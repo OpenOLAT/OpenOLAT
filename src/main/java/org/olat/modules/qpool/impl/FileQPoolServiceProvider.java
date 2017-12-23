@@ -100,4 +100,9 @@ public class FileQPoolServiceProvider extends AbstractQPoolServiceProvider {
 		FilePreviewController fileController = new FilePreviewController(ureq, wControl, item);
 		return fileController;
 	}
+
+	@Override
+	public Controller getReadOnlyController(UserRequest ureq,	WindowControl wControl, QuestionItem item) {
+		return getEditableController(ureq, wControl, item);
+	}
 }

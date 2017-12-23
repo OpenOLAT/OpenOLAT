@@ -62,7 +62,8 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 	@Autowired
 	private QTI21Service qtiService;
 	
-	public QTI21EditorController(UserRequest ureq, WindowControl wControl, QuestionItem questionItem) {
+	public QTI21EditorController(UserRequest ureq, WindowControl wControl, QuestionItem questionItem,
+			boolean readonly) {
 		super(ureq, wControl);
 		this.questionItem = questionItem;
 		mainVC = createVelocityContainer("pool_editor");
@@ -75,8 +76,8 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 		ResolvedAssessmentItem resolvedAssessmentItem = qtiService
 				.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
 		
-		editorCtrl = new AssessmentItemEditorController(ureq, wControl,
-				resolvedAssessmentItem, resourceDirectory, resourceContainer, resourceFile, false, false);
+		editorCtrl = new AssessmentItemEditorController(ureq, wControl, resolvedAssessmentItem, resourceDirectory,
+				resourceContainer, resourceFile, false, readonly);
 		listenTo(editorCtrl);
 		mainVC.put("editor", editorCtrl.getInitialComponent());
 		

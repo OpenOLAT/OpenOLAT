@@ -132,7 +132,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	@Autowired
 	private QuestionItemDAO questionItemDao;
 	
-	private static final List<ExportFormatOptions> formats = new ArrayList<ExportFormatOptions>(4);
+	private static final List<ExportFormatOptions> formats = new ArrayList<>(4);
 	static {
 		formats.add(DefaultExportFormat.ZIP_EXPORT_FORMAT);
 		formats.add(DefaultExportFormat.DOCX_EXPORT_FORMAT);
@@ -182,7 +182,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public List<QItemFactory> getItemfactories() {
-		List<QItemFactory> factories = new ArrayList<QItemFactory>();
+		List<QItemFactory> factories = new ArrayList<>();
 		for(QTI21QuestionType type:QTI21QuestionType.values()) {
 			if(type.hasEditor()) {
 				factories.add(new QTI21AssessmentItemFactory(type));
@@ -320,9 +320,14 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
-		Controller editorCtrl = new QTI21EditorController(ureq, wControl, qitem);
-		return editorCtrl;
+		return new QTI21EditorController(ureq, wControl, qitem, false);
 	}
+
+	@Override
+	public Controller getReadOnlyController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+		return new QTI21EditorController(ureq, wControl, item, true);
+	}
+	
 
 	public QuestionItem createItem(Identity identity, QTI21QuestionType type, String title, Locale locale) {
 		AssessmentItemBuilder itemBuilder = null;
@@ -523,12 +528,11 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	}
 	
 	private List<Long> toKeys(List<? extends QuestionItemShort> items) {
-		List<Long> keys = new ArrayList<Long>(items.size());
+		List<Long> keys = new ArrayList<>(items.size());
 		for(QuestionItemShort item:items) {
 			keys.add(item.getKey());
 		}
 		return keys;
 	}
-	
 
 }

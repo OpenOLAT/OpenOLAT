@@ -255,7 +255,7 @@ public class QuestionListController extends AbstractItemListController implement
 			if(row == null) {
 				//TODO xhr
 			} else {
-				doSelectActivateable2(ureq, row);
+				doOpenDetails(ureq, row);
 			}
 		}
 	}
@@ -520,7 +520,7 @@ public class QuestionListController extends AbstractItemListController implement
 				QItemEvent qce = (QItemEvent)event;
 				if("copy-item".equals(qce.getCommand())) {
 					stackPanel.popUpToRootController(ureq);
-					doSelectNewItem(ureq, qce.getItem());
+					doOpenDetails(ureq, qce.getItem());
 				} else if("previous".equals(qce.getCommand())) {
 					doPrevious(ureq, qce.getItem());
 				} else if("next".equals(qce.getCommand())) {
@@ -596,7 +596,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private void doSelectOrReset(UserRequest ureq, ItemRow row) {
 		if(row != null) {
 			stackPanel.popUpToRootController(ureq);
-			doSelectActivateable2(ureq, row);
+			doOpenDetails(ureq, row);
 		} else {
 			getItemsTable().reset(true, true, true);
 		}
@@ -695,9 +695,7 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		QPoolEvent qce = new QPoolEvent(QPoolEvent.ITEM_CREATED);
 		fireEvent(ureq, qce);
-
-		List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceType("Edit");
-		doSelectNewItem(ureq, item).activate(ureq, entries, null);
+		doOpenDetails(ureq, item);
 	}
 	
 	private void doOpenImport(UserRequest ureq) {
@@ -1172,22 +1170,22 @@ public class QuestionListController extends AbstractItemListController implement
 	
 	@Override
 	protected void doSelect(UserRequest ureq, ItemRow row) {
-		doSelectActivateable2(ureq, row);
+		doOpenDetails(ureq, row);
 	}
 
-	protected Activateable2 doSelectActivateable2(UserRequest ureq, ItemRow row) {
+	protected void doOpenDetails(UserRequest ureq, ItemRow row) {
 		Integer index = getIndex(row.getKey());
 		int count = getModel().getRowCount();
-		return doSelectActivateable2(ureq, row, index, count);
+		doOpenDetails(ureq, row, index, count);
 	}
 
-	private Activateable2 doSelectNewItem(UserRequest ureq, QuestionItem newItem) {
+	private void doOpenDetails(UserRequest ureq, QuestionItem newItem) {
 		ItemRow row = wrapNewItem(newItem);
 		itemCollectionDirty = true;
-		return doSelectActivateable2(ureq, row, 0, 1);
+		doOpenDetails(ureq, row, 0, 1);
 	}
 
-	private Activateable2 doSelectActivateable2(UserRequest ureq, ItemRow row, int index, int count) {
+	private void doOpenDetails(UserRequest ureq, ItemRow row, int index, int count) {
 		removeAsListenerAndDispose(currentDetailsCtrl);
 		
 		QuestionItem item = qpoolService.loadItemById(row.getKey());
@@ -1196,7 +1194,6 @@ public class QuestionListController extends AbstractItemListController implement
 				getSource(), index, count);
 		listenTo(currentDetailsCtrl);
 		stackPanel.pushController(item.getTitle(), currentDetailsCtrl);
-		return currentDetailsCtrl;
 	}
 	
 }

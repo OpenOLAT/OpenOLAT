@@ -98,4 +98,9 @@ public class TextQPoolServiceProvider extends AbstractQPoolServiceProvider {
 		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item, false);
 		return txtController;
 	}
+
+	@Override
+	public Controller getReadOnlyController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+		return getEditableController(ureq, wControl, item);
+	}
 }
