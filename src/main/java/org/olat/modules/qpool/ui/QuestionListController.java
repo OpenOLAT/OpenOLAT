@@ -306,7 +306,7 @@ public class QuestionListController extends AbstractItemListController implement
 			} else if(link == authorItem) {
 				List<QuestionItemShort> items = getSelectedShortItems(false);
 				if(items.size() > 0) {
-					doChooseAuthoren(ureq, items);
+					doChooseAuthors(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
@@ -628,16 +628,16 @@ public class QuestionListController extends AbstractItemListController implement
 	private void reloadStatusFilterTitles() {
 		if (getSource().isStatusFilterEnabled()) {
 			QuestionStatus actualStatus = getSource().getStatusFilter();
-			reloadStatusFilterTille(statusDraftLink, "source.status.draft");
-			reloadStatusFilterTille(statusReviewLink, "source.status.review");
-			reloadStatusFilterTille(statusRevisedLink, "source.status.revised");
-			reloadStatusFilterTille(statusFinalLink, "source.status.finalVersion");
-			reloadStatusFilterTille(statusEndOfLifeLink, "source.status.endOfLife");
+			reloadStatusFilterTitle(statusDraftLink, "source.status.draft");
+			reloadStatusFilterTitle(statusReviewLink, "source.status.review");
+			reloadStatusFilterTitle(statusRevisedLink, "source.status.revised");
+			reloadStatusFilterTitle(statusFinalLink, "source.status.finalVersion");
+			reloadStatusFilterTitle(statusEndOfLifeLink, "source.status.endOfLife");
 			getSource().setStatusFilter(actualStatus);
 		}
 	}
 
-	private void reloadStatusFilterTille(FormLink link, String i18n) {
+	private void reloadStatusFilterTitle(FormLink link, String i18n) {
 		QuestionStatus linkStatus = (QuestionStatus) link.getUserObject();
 		getSource().setStatusFilter(linkStatus);
 		int numItems = getSource().getNumOfItems();
@@ -964,7 +964,7 @@ public class QuestionListController extends AbstractItemListController implement
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.COLL_CREATED, coll.getKey()));
 	}
 	
-	private void doChooseAuthoren(UserRequest ureq, List<QuestionItemShort> items) {
+	private void doChooseAuthors(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(importAuthorsWizard);
 
 		Step start = new ImportAuthor_1_ChooseMemberStep(ureq, items);

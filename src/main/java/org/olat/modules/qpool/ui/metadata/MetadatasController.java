@@ -104,11 +104,13 @@ public class MetadatasController extends BasicController {
 		removeAsListenerAndDispose(rightsEditCtrl);
 		removeAsListenerAndDispose(technicalEditCtrl);
 		removeAsListenerAndDispose(poolsCtrl);
+		removeAsListenerAndDispose(sharesController);
 		generalEditCtrl = null;
 		questionEditCtrl = null;
 		rightsEditCtrl = null;
 		technicalEditCtrl = null;
 		poolsCtrl = null;
+		sharesController = null;
 	}
 	
 	public QuestionItem getItem() {
