@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
@@ -64,6 +65,10 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 		source = new ReviewItemsSource(identity, roles, taxonomyLevel);
 		
 		setTitle(taxonomyLevel.getDisplayName());
+		String iconCssClass = taxonomyLevel.getType().getCssClass();
+		if (StringHelper.containsNonWhitespace(iconCssClass)) {
+			setIconCssClass(iconCssClass);
+		}
 		reloadCount();
 		
 		this.setUserObject(taxonomyLevel);

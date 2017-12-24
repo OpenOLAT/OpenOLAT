@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
@@ -59,6 +60,10 @@ public class MyTaxonomyLevelTreeNode extends GenericTreeNode implements Controll
 		this.taxonomyLevel = taxonomyLevel;
 		
 		this.setTitle(taxonomyLevel.getDisplayName());
+		String iconCssClass = taxonomyLevel.getType().getCssClass();
+		if (StringHelper.containsNonWhitespace(iconCssClass)) {
+			setIconCssClass(iconCssClass);
+		}
 		
 		this.setUserObject(taxonomyLevel);
 	}
