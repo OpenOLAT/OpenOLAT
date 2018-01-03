@@ -44,7 +44,7 @@ import org.olat.test.JunitTestHelper;
  */
 public class WeeklyStatisticUpdateManagerTest extends AbstractStatisticUpdateManagerTest {
 
-	private final SimpleDateFormat weeklyFormat = new SimpleDateFormat("yyyy-ww");
+	private final SimpleDateFormat weeklyFormat = new SimpleDateFormat("yyyy-w");
 	private final WeeklyStatisticManager weeklyStatisticManager = new WeeklyStatisticManager();
 
 	@Test

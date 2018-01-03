@@ -248,7 +248,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 		waitCertificate(certificate2.getKey());
 
 		Calendar lastestNews = Calendar.getInstance();
-		lastestNews.add(Calendar.HOUR_OF_DAY, -1);
+		lastestNews.add(Calendar.DATE, -1);
 		
 		//check the notifications of the coach
 		List<Certificate> coachNotifications = certificatesManager.getCertificatesForNotifications(coach, entry, lastestNews.getTime());
