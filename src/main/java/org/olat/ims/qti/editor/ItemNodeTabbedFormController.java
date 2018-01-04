@@ -87,6 +87,9 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 				itemCtrl = new EssayItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
 				break;
 		}
+		if(itemCtrl != null) {
+			listenTo(itemCtrl);
+		}
 	}
 
 	/**
@@ -151,11 +154,12 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 			int questionType = item.getQuestion().getType();
 			
 			tabbedPane.addTab(translate("tab.question"), itemCtrl.getInitialComponent());			
-			listenTo(itemCtrl);
+			
 			if (!isSurvey && questionType != Question.TYPE_ESSAY) {
 				tabbedPane.addTab(translate("tab.feedback"), feedbackPanel);
 			}
 			Controller itemPreviewController = new ItemPreviewController(getWindowControl(), item, qtiPackage, getTranslator());
+			listenTo(itemPreviewController);
 			tabbedPane.addTab(translate("tab.preview"), itemPreviewController.getInitialComponent());
 			tabbedPane.addListener(itemPreviewController);
 		}

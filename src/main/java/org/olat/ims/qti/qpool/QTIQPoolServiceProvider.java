@@ -361,8 +361,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean summary) {
-		QTI12PreviewController previewCtrl = new QTI12PreviewController(ureq, wControl, item, summary);
-		return previewCtrl;
+		return new QTI12PreviewController(ureq, wControl, item, summary);
 	}
 
 	@Override
@@ -372,9 +371,6 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 
 	@Override
 	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		QTI12EditorController previewCtrl = new QTI12EditorController(ureq, wControl, item);
-		return previewCtrl;
+		return new QTI12EditorController(ureq, wControl, item);
 	}
-	
-
 }

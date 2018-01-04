@@ -139,7 +139,7 @@ public class AssessmentItemEditorController extends BasicController {
 			displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
 		
 			solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
-			listenTo(displayCtrl);
+			listenTo(solutionCtrl);
 			solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), solutionCtrl);
 		}
 		
@@ -181,7 +181,7 @@ public class AssessmentItemEditorController extends BasicController {
 			displayTabPosition = tabbedPane.addTab(translate("preview"), displayCtrl);
 
 			solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
-			listenTo(displayCtrl);
+			listenTo(solutionCtrl);
 			solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), solutionCtrl);
 		}
 
