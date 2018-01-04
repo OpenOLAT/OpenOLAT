@@ -67,33 +67,24 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class MetadataBulkChangeController extends FormBasicController {
-	
+
 	private static final String[] EMPTY_VALUES = new String[]{ "" };
 	
-	//general
 	private TextElement topicEl, keywordsEl, coverageEl, addInfosEl, languageEl;
 	private SingleSelection taxonomyLevelEl;
-	//educational
 	private SingleSelection contextEl;
 	private FormLayoutContainer learningTimeContainer;
 	private IntegerElement learningTimeDayElement, learningTimeHourElement, learningTimeMinuteElement, learningTimeSecondElement;
-	//question
 	private SingleSelection typeEl, assessmentTypeEl;
 	private TextElement difficultyEl, stdevDifficultyEl, differentiationEl, numAnswerAltEl;
-	//lifecycle
 	private TextElement versionEl;
 	private SingleSelection statusEl;
-	//technical
-	private TextElement editorEl, editorVersionEl;
-	private SingleSelection formatEl;
-	//rights
 	private KeyValues licenseKeys;
 	private SingleSelection copyrightEl;
 	private TextElement descriptionEl;
 	private FormLayoutContainer rightsWrapperCont;
 
-	private Map<MultipleSelectionElement,FormLayoutContainer> checkboxContainer
-		= new HashMap<>();
+	private Map<MultipleSelectionElement, FormLayoutContainer> checkboxContainer = new HashMap<>();
 	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>();
 	
 	private List<QuestionItem> updatedItems;
@@ -120,9 +111,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		setFormDescription("bulk.change.description");
 		
 		initGeneralForm(formLayout);
-		initEducationalForm(formLayout);
 		initQuestionForm(formLayout);
-		initLifecycleForm(formLayout);
 		initTechnicalForm(formLayout);
 		initRightsForm(formLayout);
 
@@ -140,46 +129,34 @@ public class MetadataBulkChangeController extends FormBasicController {
 		
 		topicEl = uifactory.addTextElement("general.topic", "general.topic", 1000, null, generalCont);
 		decorate(topicEl, generalCont);
-		keywordsEl = uifactory.addTextElement("general.keywords", "general.keywords", 1000, null, generalCont);
-		decorate(keywordsEl, generalCont);
-		coverageEl = uifactory.addTextElement("general.coverage", "general.coverage", 1000, null, generalCont);
-		decorate(coverageEl, generalCont);
-		addInfosEl = uifactory.addTextElement("general.additional.informations", "general.additional.informations.long",
-				256, "", generalCont);
-		decorate(addInfosEl, generalCont);
-		languageEl = uifactory.addTextElement("general.language", "general.language", 10, "", generalCont);
-		decorate(languageEl, generalCont);
 		
 		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false);
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("classification.taxonomic.path", generalCont,
 				qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
 		decorate(taxonomyLevelEl, generalCont);
-	}
-	
-	private void initEducationalForm(FormItemContainer formLayout) {
-		FormLayoutContainer eduCont = FormLayoutContainer.createDefaultFormLayout("educational", getTranslator());
-		eduCont.setRootForm(mainForm);
-		formLayout.add(eduCont);
 		
-		String page = velocity_root + "/learning_time.html";
-		learningTimeContainer = FormLayoutContainer.createCustomFormLayout("educational.learningTime", getTranslator(), page);
-		learningTimeContainer.setRootForm(mainForm);
-		eduCont.add(learningTimeContainer);
-		decorate(learningTimeContainer, eduCont);
-
-		learningTimeDayElement = uifactory.addIntegerElement("learningTime.day", "", 0, learningTimeContainer);
-		learningTimeDayElement.setDisplaySize(3);
-		learningTimeHourElement = uifactory.addIntegerElement("learningTime.hour", "", 0, learningTimeContainer);
-		learningTimeHourElement.setDisplaySize(3);
-		learningTimeMinuteElement = uifactory.addIntegerElement("learningTime.minute", "", 0, learningTimeContainer);
-		learningTimeMinuteElement.setDisplaySize(3);
-		learningTimeSecondElement = uifactory.addIntegerElement("learningTime.second", "", 0, learningTimeContainer);
-		learningTimeSecondElement.setDisplaySize(3);
-
 		KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
-		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", eduCont,
+		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", generalCont,
 				contexts.getKeys(), contexts.getValues(), null);
-		decorate(contextEl, eduCont);
+		decorate(contextEl, generalCont);
+		
+		keywordsEl = uifactory.addTextElement("general.keywords", "general.keywords", 1000, null, generalCont);
+		decorate(keywordsEl, generalCont);
+		
+		addInfosEl = uifactory.addTextElement("general.additional.informations", "general.additional.informations.long",
+				256, "", generalCont);
+		decorate(addInfosEl, generalCont);
+		
+		coverageEl = uifactory.addTextElement("general.coverage", "general.coverage", 1000, null, generalCont);
+		decorate(coverageEl, generalCont);
+		
+		languageEl = uifactory.addTextElement("general.language", "general.language", 10, "", generalCont);
+		decorate(languageEl, generalCont);
+		
+		KeyValues types = MetaUIFactory.getAssessmentTypes(getTranslator());
+		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType", generalCont,
+				types.getKeys(), types.getValues(), null);
+		decorate(assessmentTypeEl, generalCont);
 	}
 	
 	private void initQuestionForm(FormItemContainer formLayout) {
@@ -190,6 +167,21 @@ public class MetadataBulkChangeController extends FormBasicController {
 		KeyValues typeKeys = getQItemTypeKeyValues(getTranslator(), qpoolService);
 		typeEl = uifactory.addDropdownSingleselect("question.type", "question.type", questionCont, typeKeys.getKeys(), typeKeys.getValues(), null);
 		decorate(typeEl, questionCont);
+		
+		String page = velocity_root + "/learning_time.html";
+		learningTimeContainer = FormLayoutContainer.createCustomFormLayout("educational.learningTime", getTranslator(), page);
+		learningTimeContainer.setRootForm(mainForm);
+		questionCont.add(learningTimeContainer);
+		decorate(learningTimeContainer, questionCont);
+
+		learningTimeDayElement = uifactory.addIntegerElement("learningTime.day", "", 0, learningTimeContainer);
+		learningTimeDayElement.setDisplaySize(3);
+		learningTimeHourElement = uifactory.addIntegerElement("learningTime.hour", "", 0, learningTimeContainer);
+		learningTimeHourElement.setDisplaySize(3);
+		learningTimeMinuteElement = uifactory.addIntegerElement("learningTime.minute", "", 0, learningTimeContainer);
+		learningTimeMinuteElement.setDisplaySize(3);
+		learningTimeSecondElement = uifactory.addIntegerElement("learningTime.second", "", 0, learningTimeContainer);
+		learningTimeSecondElement.setDisplaySize(3);
 		
 		difficultyEl = uifactory.addTextElement("question.difficulty", "question.difficulty", 10, null, questionCont);
 		difficultyEl.setExampleKey("question.difficulty.example", null);
@@ -209,25 +201,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		numAnswerAltEl = uifactory.addTextElement("question.numOfAnswerAlternatives", "question.numOfAnswerAlternatives", 10, null, questionCont);
 		numAnswerAltEl.setDisplaySize(4);
 		decorate(numAnswerAltEl, questionCont);
-		
-		KeyValues types = MetaUIFactory.getAssessmentTypes(getTranslator());
-		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType", questionCont,
-				types.getKeys(), types.getValues(), null);
-		decorate(assessmentTypeEl, questionCont);
-	}
-	
-	private void initLifecycleForm(FormItemContainer formLayout) {
-		FormLayoutContainer lifecycleCont = FormLayoutContainer.createDefaultFormLayout("lifecycle", getTranslator());
-		lifecycleCont.setRootForm(mainForm);
-		formLayout.add(lifecycleCont);
-		
-		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, null, lifecycleCont);
-		decorate(versionEl, lifecycleCont);
-		
-		KeyValues status = MetaUIFactory.getStatus(getTranslator());
-		statusEl = uifactory.addDropdownSingleselect("lifecycle.status", "lifecycle.status", lifecycleCont,
-				status.getKeys(), status.getValues(), null);
-		decorate(statusEl, lifecycleCont);	
+
 	}
 
 	private void initTechnicalForm(FormItemContainer formLayout) {
@@ -235,14 +209,13 @@ public class MetadataBulkChangeController extends FormBasicController {
 		technicalCont.setRootForm(mainForm);
 		formLayout.add(technicalCont);
 		
-		editorEl = uifactory.addTextElement("technical.editor", "technical.editor", 50, null, technicalCont);
-		decorate(editorEl, technicalCont);
-		editorVersionEl = uifactory.addTextElement("technical.editorVersion", "technical.editorVersion", 50, null, technicalCont);
-		decorate(editorVersionEl, technicalCont);
-		KeyValues formats = MetaUIFactory.getFormats();
-		formatEl = uifactory.addDropdownSingleselect("technical.format", "technical.format", technicalCont,
-				formats.getKeys(), formats.getValues(), null);
-		decorate(formatEl, technicalCont);
+		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, null, technicalCont);
+		decorate(versionEl, technicalCont);
+		
+		KeyValues status = MetaUIFactory.getStatus(getTranslator());
+		statusEl = uifactory.addDropdownSingleselect("lifecycle.status", "lifecycle.status", technicalCont,
+				status.getKeys(), status.getValues(), null);
+		decorate(statusEl, technicalCont);	;
 	}
 	
 	private void initRightsForm(FormItemContainer formLayout) {
@@ -312,19 +285,14 @@ public class MetadataBulkChangeController extends FormBasicController {
 		allOk &= validateElementLogic(addInfosEl, addInfosEl.getMaxLength(), false, isEnabled(addInfosEl));
 		allOk &= validateElementLogic(languageEl, languageEl.getMaxLength(), true, isEnabled(languageEl));
 		
-		//educational
+		//question
 		allOk &= validateBigDecimal(difficultyEl, 0.0d, 1.0d, true);
 		allOk &= validateBigDecimal(stdevDifficultyEl, 0.0d, 1.0d, true);
 		allOk &= validateBigDecimal(differentiationEl, -1.0d, 1.0d, true);
 		
-		//lifecycle
+		//technical
 		allOk &= validateElementLogic(versionEl, versionEl.getMaxLength(), true, isEnabled(versionEl));
 		allOk &= validateSelection(statusEl, isEnabled(statusEl));
-		
-		//technical
-		allOk &= validateElementLogic(editorEl, editorEl.getMaxLength(), true, isEnabled(editorEl));
-		allOk &= validateElementLogic(editorVersionEl, editorVersionEl.getMaxLength(), true, isEnabled(editorVersionEl));
-		allOk &= validateSelection(formatEl, isEnabled(formatEl));
 		
 		//rights
 		allOk &= validateRights(copyrightEl, descriptionEl, licenseKeys, isEnabled(rightsWrapperCont));
@@ -344,9 +312,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 			if(fullItem instanceof QuestionItemImpl) {
 				QuestionItemImpl itemImpl = (QuestionItemImpl)fullItem;
 				formOKGeneral(itemImpl);
-				formOKEducational(itemImpl);
 				formOKQuestion(itemImpl);
-				formOKLifecycle(itemImpl);
 				formOKTechnical(itemImpl);
 				if(isEnabled(rightsWrapperCont)) {
 					RightsMetadataEditController.formOKRights(itemImpl, copyrightEl, descriptionEl, licenseKeys, qpoolService);
@@ -376,7 +342,12 @@ public class MetadataBulkChangeController extends FormBasicController {
 		}
 	}
 	
-	private void formOKEducational(QuestionItemImpl itemImpl) {
+	private void formOKQuestion(QuestionItemImpl itemImpl) {
+		if(isEnabled(typeEl) && typeEl.isOneSelected()) {
+			String typeKey = typeEl.getSelectedKey();
+			itemImpl.setType(qpoolService.getItemType(typeKey));
+		}
+		
 		if(isEnabled(contextEl)) {
 			if(contextEl.isOneSelected()) {
 				QEducationalContext context = qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey());
@@ -394,13 +365,6 @@ public class MetadataBulkChangeController extends FormBasicController {
 			String timeStr = MetadataConverterHelper.convertDuration(day, hour, minute, seconds);
 			itemImpl.setEducationalLearningTime(timeStr);
 		}
-	}
-	
-	private void formOKQuestion(QuestionItemImpl itemImpl) {
-		if(isEnabled(typeEl) && typeEl.isOneSelected()) {
-			String typeKey = typeEl.getSelectedKey();
-			itemImpl.setType(qpoolService.getItemType(typeKey));
-		}
 		
 		if(isEnabled(difficultyEl))
 			itemImpl.setDifficulty(toBigDecimal(difficultyEl.getValue()));
@@ -416,22 +380,13 @@ public class MetadataBulkChangeController extends FormBasicController {
 		}
 	}
 
-	private void formOKLifecycle(QuestionItemImpl itemImpl) {
+	private void formOKTechnical(QuestionItemImpl itemImpl) {
 		if(isEnabled(statusEl) && statusEl.isOneSelected())
 			itemImpl.setStatus(statusEl.getSelectedKey());
 		if(isEnabled(versionEl))
 			itemImpl.setItemVersion(versionEl.getValue());
 	}
 	
-	private void formOKTechnical(QuestionItemImpl itemImpl) {
-		if(isEnabled(editorEl))
-			itemImpl.setEditor(editorEl.getValue());
-		if(isEnabled(editorVersionEl))
-			itemImpl.setEditorVersion(editorVersionEl.getValue());
-		if(isEnabled(formatEl) && formatEl.isOneSelected())
-			itemImpl.setFormat(formatEl.getSelectedKey());
-	}
-
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);

@@ -59,8 +59,8 @@ public class QuestionItemSummaryController extends FormBasicController {
 		setFormTitle("metadatas");
 		
 		subjectEl = uifactory.addStaticTextElement("general.topic", "", formLayout);
-		keywordsEl = uifactory.addStaticTextElement("general.keywords", "", formLayout);
 		studyFieldEl = uifactory.addStaticTextElement("classification.taxonomy.level", "", formLayout);
+		keywordsEl = uifactory.addStaticTextElement("general.keywords", "", formLayout);
 		usageEl = uifactory.addStaticTextElement("question.usage", "", formLayout);
 		difficultyEl = uifactory.addStaticTextElement("question.difficulty", "", formLayout);
 		stdevDifficultyEl = uifactory.addStaticTextElement("question.stdevDifficulty", "", formLayout);
