@@ -33,6 +33,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -93,6 +94,7 @@ public class ForumImpl implements Forum, CreateInfo, Persistable{
 	}
 
 	@Override
+	@Transient
 	public String getResourceableTypeName() {
 		return OresHelper.calculateTypeName(Forum.class);
 	}

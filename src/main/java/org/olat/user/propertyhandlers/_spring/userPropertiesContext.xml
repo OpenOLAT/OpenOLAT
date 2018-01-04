@@ -1107,6 +1107,24 @@
 						</property>
 					</bean>
 				</entry>
+				
+				<entry key="org.olat.course.nodes.dialog.ui.DialogElementsTableModel">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="File dialog" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+					</bean>
+				</entry>
 
 				<entry key="org.olat.course.assessment.AssessedIdentitiesTableDataModel">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">

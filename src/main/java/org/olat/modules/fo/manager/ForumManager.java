@@ -261,7 +261,7 @@ public class ForumManager {
 	/**
 	 * Return the title of a message of the forum.
 	 */
-	public Integer countMessagesByForumID(Long forum_id) {
+	public int countMessagesByForumID(Long forum_id) {
 		return countMessagesByForumID(forum_id, false);
 	}
 	

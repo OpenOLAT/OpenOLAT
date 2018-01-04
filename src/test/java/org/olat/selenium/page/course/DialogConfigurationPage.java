@@ -48,16 +48,16 @@ public class DialogConfigurationPage {
 	public DialogConfigurationPage uploadFile(File file) {
 		By uploadBy = By.cssSelector("fieldset.o_sel_dialog_settings_upload a.o_sel_dialog_upload");
 		browser.findElement(uploadBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
-		By inputBy = By.xpath("//div[@class='o_fileinput']/input[@type='file']");
+		By inputBy = By.xpath("//div[contains(@class,'modal-body')]//div[@class='o_fileinput']/input[@type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
 		
-		By uploadButtonBy = By.cssSelector("fieldset.o_sel_dialog_settings_upload button.btn-primary");
+		By uploadButtonBy = By.cssSelector("div.modal-body div.o_sel_upload_buttons button.btn-primary");
 		OOGraphene.waitElement(uploadButtonBy, browser);
 		browser.findElement(uploadButtonBy).click();
 		
-		By rowBy = By.xpath("//table//tr/td[contains(text(),'" + file.getName() + "')]");
+		By rowBy = By.xpath("//table//tr/td/a[contains(text(),'" + file.getName() + "')]");
 		OOGraphene.waitElement(rowBy, browser);
 		
 		return this;

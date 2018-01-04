@@ -2241,6 +2241,20 @@ create table o_tax_competence_audit_log (
   primary key (id)
 );
 
+-- dialog elements
+create table o_dialog_element (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  d_filename varchar(2048),
+  d_filesize int8,
+  d_subident varchar(64) not null,
+  fk_author int8,
+  fk_entry int8 not null,
+  fk_forum int8 not null,
+  primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -3161,6 +3175,15 @@ alter table o_tax_taxonomy_competence add constraint tax_comp_to_tax_level_idx f
 create index idx_tax_comp_to_tax_level_idx on o_tax_taxonomy_competence (fk_level);
 alter table o_tax_taxonomy_competence add constraint tax_level_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_tax_level_to_ident_idx on o_tax_taxonomy_competence (fk_identity);
+
+-- dialog elements
+alter table o_dialog_element add constraint dial_el_author_idx foreign key (fk_author) references o_bs_identity (id);
+create index idx_dial_el_author_idx on o_dialog_element (fk_author);
+alter table o_dialog_element add constraint dial_el_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_dial_el_entry_idx on o_dialog_element (fk_entry);
+alter table o_dialog_element add constraint dial_el_forum_idx foreign key (fk_forum) references o_forum (forum_id);
+create index idx_dial_el_forum_idx on o_dialog_element (fk_forum);
+create index idx_dial_el_subident_idx on o_dialog_element (d_subident);
 
 -- o_logging_table
 create index log_target_resid_idx on o_loggingtable(targetresid);
