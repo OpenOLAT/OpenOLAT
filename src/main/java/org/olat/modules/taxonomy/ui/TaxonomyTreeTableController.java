@@ -430,7 +430,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		}
 		
 		if(levelsToDelete.isEmpty()) {
-			showWarning("warning.delete.level");
+			showWarning("warning.atleastone.level");
 		} else {
 			confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), levelsToDelete, taxonomy);
 			listenTo(confirmDeleteCtrl);
@@ -443,19 +443,20 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, TaxonomyLevelRow row) {
-		if(taxonomyService.canDeleteTaxonomyLevel(row)) {
-			TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(row);
-			List<TaxonomyLevel> levelToDelete = Collections.singletonList(taxonomyLevel);
-			confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), levelToDelete, taxonomy);
-			listenTo(confirmDeleteCtrl);
-			
-			String title = translate("confirmation.delete.level.title");
-			cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
-		} else {
-			showWarning("warning.delete.level");
+		if(TaxonomyLevelManagedFlag.isManaged(row.getManagedFlags(), TaxonomyLevelManagedFlag.delete)) {
+			showWarning("warning.atleastone.level");
+			return;
 		}
+		
+		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(row);
+		List<TaxonomyLevel> levelToDelete = Collections.singletonList(taxonomyLevel);
+		confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), levelToDelete, taxonomy);
+		listenTo(confirmDeleteCtrl);
+		
+		String title = translate("confirmation.delete.level.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doMove(UserRequest ureq) {

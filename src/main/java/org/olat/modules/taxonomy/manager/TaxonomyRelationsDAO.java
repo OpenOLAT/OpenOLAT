@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.qpool.model.QItemDocument;
-import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.search.service.indexer.LifeFullIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +62,7 @@ public class TaxonomyRelationsDAO {
 		return counts != null && counts.size() == 1 && counts.get(0) != null ? counts.get(0).intValue() : 0;
 	}
 	
-	public int replaceQuestionItem(TaxonomyLevel source, TaxonomyLevel target) {
+	public int replaceQuestionItem(TaxonomyLevelRef source, TaxonomyLevelRef target) {
 		List<Long> questionItemKeys = getQuestionItemKeys(source);
 		
 		int row;
@@ -85,12 +84,32 @@ public class TaxonomyRelationsDAO {
 		return row;
 	}
 	
-	private List<Long> getQuestionItemKeys(TaxonomyLevel level) {
+	public int removeFromQuestionItems(TaxonomyLevelRef level) {
+		List<Long> questionItemKeys = getQuestionItemKeys(level);
+		
+		int row;
+		if(questionItemKeys.isEmpty()) {
+			row = 0;
+		} else {
+			String q = "update questionitem item set item.taxonomyLevel.key=null where item.taxonomyLevel.key=:levelKey";
+			row = dbInstance.getCurrentEntityManager()
+					.createQuery(q)
+					.setParameter("levelKey", level.getKey())
+					.executeUpdate();
+			dbInstance.commit();
+			for(Long questionItemKey:questionItemKeys) {
+				lifeIndexer.indexDocument(QItemDocument.TYPE, questionItemKey);
+			}
+		}
+		
+		return row;
+	}
+	
+	private List<Long> getQuestionItemKeys(TaxonomyLevelRef level) {
 		String q = "select item.key from questionitem item where item.taxonomyLevel.key=:levelKey";
 		return  dbInstance.getCurrentEntityManager()
 				.createQuery(q, Long.class)
 				.setParameter("levelKey", level.getKey())
 				.getResultList();
 	}
-
 }

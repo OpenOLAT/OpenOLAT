@@ -209,19 +209,19 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 	
 	private void doConfirmDelete(UserRequest ureq) {
 		taxonomyLevel = taxonomyService.getTaxonomyLevel(taxonomyLevel);
-		Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
-		
-		if(taxonomyService.canDeleteTaxonomyLevel(taxonomyLevel)) {
-			confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), null, taxonomy);
-			listenTo(confirmDeleteCtrl);
-
-			String title = translate("confirmation.delete.level.title");
-			cmc = new CloseableModalController(getWindowControl(), "close", moveLevelCtrl.getInitialComponent(), true, title);
-			listenTo(cmc);
-			cmc.activate();
-		} else {
-			showWarning("warning.delete.level");
+		if(TaxonomyLevelManagedFlag.isManaged(taxonomyLevel.getManagedFlags(), TaxonomyLevelManagedFlag.delete)) {
+			showWarning("warning.atleastone.level");
+			return;
 		}
+		
+		Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
+		confirmDeleteCtrl = new DeleteTaxonomyLevelController(ureq, getWindowControl(), null, taxonomy);
+		listenTo(confirmDeleteCtrl);
+
+		String title = translate("confirmation.delete.level.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", moveLevelCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doMove(UserRequest ureq) {

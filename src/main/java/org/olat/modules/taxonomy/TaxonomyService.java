@@ -71,12 +71,6 @@ public interface TaxonomyService {
 	public boolean canDeleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel);
 	
 	/**
-	 * 
-	 * @return true if the level can be deleted
-	 */
-	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo);
-	
-	/**
 	 * The operation move the following elements from the source taxonomy
 	 * level to the target taxonomy level:
 	 * <ul>
@@ -87,10 +81,10 @@ public interface TaxonomyService {
 	 * </ul>
 	 * 
 	 * @param taxonomyLevel The taxonomy level source
-	 * @param mergeTo The taxonomy level target
-	 * @return true if the source was deleted after merging in the target level
+	 * @param mergeTo The taxonomy level target (optional)
+	 * @return true if the level can be deleted
 	 */
-	public boolean mergeTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo);
+	public boolean deleteTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo);
 	
 	/**
 	 * @param ref The root taxonomy (optional)

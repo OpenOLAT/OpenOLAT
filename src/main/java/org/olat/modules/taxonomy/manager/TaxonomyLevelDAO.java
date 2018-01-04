@@ -370,7 +370,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 	}
 	
 	public boolean canDelete(TaxonomyLevelRef taxonomyLevel) {
-		if(!hasChildren(taxonomyLevel) && !hasItemUsing(taxonomyLevel) &&!hasCompetenceUsing(taxonomyLevel)) {
+		if(!hasChildren(taxonomyLevel) && !hasItemUsing(taxonomyLevel) && !hasCompetenceUsing(taxonomyLevel)) {
 			return true;
 		}
 		return false;
