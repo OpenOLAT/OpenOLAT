@@ -348,7 +348,8 @@ class ImportStep00 extends BasicStep {
 					}
 				}
 				// check that no user with same email is already in list
-				if (thisKey.equals(UserConstants.EMAIL) && userModule.isEmailUnique()) {
+				if (thisKey.equals(UserConstants.EMAIL) && StringHelper.containsNonWhitespace(thisValue)
+						&& userModule.isEmailUnique()) {
 					// check that no user with same email is already in list
 					Integer mailPos = importedEmails.indexOf(thisValue);
 					boolean duplicate = mailPos != -1;

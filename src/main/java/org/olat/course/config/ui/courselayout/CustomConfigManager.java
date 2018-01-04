@@ -29,7 +29,8 @@ import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -52,7 +53,9 @@ import com.thoughtworks.xstream.XStream;
  * Initial Date:  04.02.2011 <br>
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
-public class CustomConfigManager extends BasicManager {
+public class CustomConfigManager {
+	
+	private static final OLog log = Tracing.createLoggerFor(CustomConfigManager.class);
 	
 	private static final String IFRAME_CSS = "iframe.css";
 	private static final String MAIN_CSS = "main.css";
@@ -156,7 +159,7 @@ public class CustomConfigManager extends BasicManager {
 				return null;
 			}
 		} catch (IOException e) {
-			logError("Problem reading uploaded image", e);
+			log.error("Problem reading uploaded image", e);
 			return null;
 		}
 		return new int[] { width, height };

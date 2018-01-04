@@ -1338,7 +1338,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 				boolean managedLayout = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.layout);
 				CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
-				CourseLayoutGeneratorController ctrl = new CourseLayoutGeneratorController(ureq, getWindowControl(), course, courseConfig,
+				CourseLayoutGeneratorController ctrl = new CourseLayoutGeneratorController(ureq, getWindowControl(), getRepositoryEntry(), courseConfig,
 				  		course.getCourseEnvironment(), !managedLayout);
 				listenTo(ctrl);
 				courseLayoutCtrl = pushController(ureq, translate("command.layout"), ctrl);
