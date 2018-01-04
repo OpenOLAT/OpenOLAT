@@ -168,16 +168,18 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		
 		//pools + shares
 		if (securityCallback.canUsePools() || securityCallback.canUseGroups()) {
-			sharesNode = new SharePresentationTreeNode(translator.translate("menu.share"));
+			sharesNode = new SharesTreeNode(translator.translate("menu.share"));
 			rootNode.addChild(sharesNode);	
 			buildShareSubTreeModel();
+			setFirstChildAsDelegate(sharesNode);
 		}
 		
 		//administration
 		if(securityCallback.canAdmin()) {
-			TreeNode adminNode = new QuestionPoolAdminStatisticsTreeNode(translator.translate("menu.admin"));
+			TreeNode adminNode = new AdministrationTreeNode(translator.translate("menu.admin"));
 			rootNode.addChild(adminNode);
 			buildAdminSubTreeModel(adminNode);
+			setFirstChildAsDelegate(adminNode);
 		}
 	}
 	
@@ -234,6 +236,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 				TreeNode node = new ReviewTreeNode(stackPanel, securityCallback, taxonomyLevel, identity, roles);
 				reviewNode.addChild(node);
 			}
+			setFirstChildAsDelegate(reviewNode);
 		}
 	}
 	
@@ -246,10 +249,12 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			finalNode = new GenericTreeNode(translator.translate("menu.final"));
 			finalNode.setTitle(translator.translate("menu.final"));
 			rootNode.addChild(finalNode);
+			
 			for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
 				TreeNode node = new FinalTreeNode(stackPanel, securityCallback, taxonomyLevel);
 				finalNode.addChild(node);
 			}
+			setFirstChildAsDelegate(finalNode);
 		}
 	}
 	
@@ -299,6 +304,17 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 
 		node = new QLicensesAdminTreeNode(translator.translate("menu.admin.licenses"));
 		adminNode.addChild(node);
+	}
+	
+	private void setFirstChildAsDelegate(INode node) {
+		if (node.getChildCount() > 0) {
+			INode childNode = node.getChildAt(0);
+			if (node instanceof GenericTreeNode && childNode instanceof TreeNode) {
+				GenericTreeNode parent = (GenericTreeNode) node;
+				TreeNode child = (TreeNode) childNode;
+				parent.setDelegate(child);
+			}
+		}
 	}
 		
 }

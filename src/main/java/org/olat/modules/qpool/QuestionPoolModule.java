@@ -49,6 +49,8 @@ import org.springframework.stereotype.Service;
 @Service("qpoolModule")
 public class QuestionPoolModule extends AbstractSpringModule implements ConfigOnOff {
 
+	private static final String DIRECTORY = "qpool";
+	private static final String INFOS_PAGE_DIRECTORY = "infospage";
 	private static final String COLLECTIONS_ENABLED = "collections.enabled";
 	private static final String POOLS_ENABLED = "pools.enabled";
 	private static final String SHARES_ENABLED = "shares.enabled";
@@ -161,9 +163,14 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	
 	public VFSContainer getRootContainer() {
 		if(rootContainer == null) {
-			rootContainer = new OlatRootFolderImpl(File.separator + "qpool", null);
+			rootContainer = new OlatRootFolderImpl(File.separator + DIRECTORY, null);
 		}
 		return rootContainer;
+	}
+	
+	public VFSContainer getInfoPageContainer() {
+		String path = "/" + DIRECTORY + "/" + INFOS_PAGE_DIRECTORY;
+		return new OlatRootFolderImpl(path, null);
 	}
 
 	public List<QPoolSPI> getQuestionPoolProviders() {

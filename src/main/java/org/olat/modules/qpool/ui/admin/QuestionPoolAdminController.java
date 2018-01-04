@@ -42,6 +42,7 @@ public class QuestionPoolAdminController extends BasicController {
 	private static final String SEGMENTS_CMP = "segmentCmp";
 	
 	private final Link configurationLink;
+	private final Link infoPageLink;
 	private final Link reviewProcessLink;
 	private final Link taxonomyLink;
 	private final Link poolsLink;
@@ -53,6 +54,7 @@ public class QuestionPoolAdminController extends BasicController {
 	private final SegmentViewComponent segmentView;
 	
 	private QuestionPoolAdminConfigurationController configurationCtrl;
+	private InfoPageController infoPageCtrl;
 	private ReviewProcessAdminController reviewProcessCtrl;
 	private TaxonomyAdminController taxonomyCtrl;
 	private PoolsAdminController poolsCtrl;
@@ -67,6 +69,8 @@ public class QuestionPoolAdminController extends BasicController {
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		configurationLink = LinkFactory.createLink("segment.configuration", mainVC, this);
 		segmentView.addSegment(configurationLink, true);
+		infoPageLink = LinkFactory.createLink("segment.info.page", mainVC, this);
+		segmentView.addSegment(infoPageLink, false);
 		reviewProcessLink = LinkFactory.createLink("segment.review.process", mainVC, this);
 		segmentView.addSegment(reviewProcessLink, false);
 		taxonomyLink = LinkFactory.createLink("segment.taxonomy", mainVC, this);
@@ -97,6 +101,8 @@ public class QuestionPoolAdminController extends BasicController {
 			Component clickedLink = mainVC.getComponent(segmentCName);
 			if (clickedLink == configurationLink) {
 				doOpenConfiguration(ureq);
+			} else if(clickedLink == infoPageLink) {
+				doOpenInfosPage(ureq);
 			} else if (clickedLink == reviewProcessLink) {
 				doOpenReviewProcess(ureq);
 			} else if (clickedLink == taxonomyLink) {
@@ -119,6 +125,14 @@ public class QuestionPoolAdminController extends BasicController {
 			listenTo(configurationCtrl);
 		}
 		mainVC.put(SEGMENTS_CMP, configurationCtrl.getInitialComponent());
+	}
+	
+	private void doOpenInfosPage(UserRequest ureq) {
+		if(infoPageCtrl == null) {
+			infoPageCtrl = new InfoPageController(ureq, getWindowControl());
+			listenTo(infoPageCtrl);
+		}
+		mainVC.put(SEGMENTS_CMP, infoPageCtrl.getInitialComponent());
 	}
 
 	private void doOpenReviewProcess(UserRequest ureq) {

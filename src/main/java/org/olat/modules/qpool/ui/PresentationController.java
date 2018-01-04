@@ -19,11 +19,16 @@
  */
 package org.olat.modules.qpool.ui;
 
+import org.olat.core.commons.modules.singlepage.SinglePageController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.qpool.QuestionPoolModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -31,16 +36,23 @@ import org.olat.core.gui.control.WindowControl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class PresentationController extends FormBasicController {
+public class PresentationController extends BasicController {
+	
+	@Autowired
+	QuestionPoolModule qpoolModule;
 	
 	public PresentationController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "presentation");
-		initForm(ureq);
-	}
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		//
+		super(ureq, wControl);
+		
+		VelocityContainer mainVC = createVelocityContainer("presentation");
+		
+		VFSContainer container = qpoolModule.getInfoPageContainer();
+		if(container.resolve("index.html") != null) {
+			SinglePageController indexCtrl = new SinglePageController(ureq, getWindowControl(), container, "index.html", false);
+			mainVC.put("index", indexCtrl.getInitialComponent());
+		}
+		
+		putInitialPanel(mainVC);
 	}
 	
 	@Override
@@ -49,7 +61,8 @@ public class PresentationController extends FormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
+	protected void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
+
 }

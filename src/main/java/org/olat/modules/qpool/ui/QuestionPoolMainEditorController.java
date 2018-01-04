@@ -32,6 +32,7 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeDropEvent;
+import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -128,18 +129,30 @@ public class QuestionPoolMainEditorController extends BasicController implements
 				String dropId = e.getDroppedNodeId();
 				//drop id w_o_fi1000002357-4
 				doDrop(ureq, targetId, dropId);
-			} else if(menuTree.getSelectedNode() != null){
-				TreeNode node = menuTree.getSelectedNode();
-				doSelectControllerTreeNode(ureq, node, null, null);
+			} else if (event instanceof TreeEvent){
+				TreeEvent te = (TreeEvent) event;
+				if	(MenuTree.COMMAND_TREENODE_CLICKED.equals(te.getCommand())) {
+					TreeNode node = menuTree.getTreeModel().getNodeById(te.getNodeId());
+					doSelectControllerTreeNode(ureq, node, null, null);
+				}
 			}
 		}
 	}
-	
+
 	private void doSelectControllerTreeNode(UserRequest ureq, TreeNode node, List<ContextEntry> entries, StateEntry state) {
-		if (node instanceof ControllerTreeNode) {
-			ControllerTreeNode cNode = (ControllerTreeNode) node;
+		TreeNode nodeToShow = getDelegate(node);
+		menuTree.setSelectedNode(nodeToShow);
+		if (nodeToShow instanceof ControllerTreeNode) {
+			ControllerTreeNode cNode = (ControllerTreeNode) nodeToShow;
 			doSelectQuestionsNode(ureq, cNode, entries, state);
 		}
+	}
+	
+	private TreeNode getDelegate(TreeNode node) {
+		if (node.getDelegate() != null) {
+			getDelegate(node.getDelegate());
+		}
+		return node;
 	}
 
 	@Override

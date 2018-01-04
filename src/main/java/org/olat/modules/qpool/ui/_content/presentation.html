@@ -1,23 +1,4 @@
-<div class="o_sel_qpool_presentation">
-	<h4><i class="o_icon o_icon_qpool"> </i> $r.translate("presentation.title")$r.contextHelpWithWrapper("Question Bank")</h4>
-	<p>$r.translate("presentation.1")</p>
-	<p>$r.translate("presentation.2")</p>
-	<h5>$r.translate("presentation.subtitle")</h5>
-	<div class="row">
-		<div class="col-sm-4">
-			<ol>
-			<li><p>$r.translate("presentation.3")</p></li></ol>
-			<ul>
-				<li>$r.translate("presentation.4")</li>
-				<li>$r.translate("presentation.5")</li>
-				<li>$r.translate("presentation.6")</li>
-			</ul>
-		</div>
-		<div class="col-sm-4">
-			<ol start="2"><li>$r.translate("presentation.7")</li></ol>
-		</div>
-		<div class="col-sm-4">
-			<ol start="3"><li>$r.translate("presentation.8")</li></ol>
-		</div>
-	</div>
-</div>
+<h4><i class="o_icon o_icon_qpool"> </i> $r.translate("presentation.title")$r.contextHelpWithWrapper("Question Bank")</h4>
+#if($r.available("index"))
+	$r.render("index")
+#end

@@ -1,0 +1,6 @@
+#if($r.available("create.infos.page"))
+	<div class="o_button_group">$r.render("create.infos.page")</div>
+#else
+	<div class="o_button_group o_button_group_right">$r.render("edit.info.page")</div>
+	$r.render("index")
+#end

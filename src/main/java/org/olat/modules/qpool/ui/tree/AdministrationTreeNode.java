@@ -23,10 +23,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BlankController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.qpool.ui.SharePresentationController;
 
 /**
  * 
@@ -34,27 +34,26 @@ import org.olat.modules.qpool.ui.SharePresentationController;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SharePresentationTreeNode  extends GenericTreeNode implements ControllerTreeNode {
+public class AdministrationTreeNode extends GenericTreeNode implements ControllerTreeNode {
 
-	private static final long serialVersionUID = -3800071301195017030L;
+	private static final long serialVersionUID = 6080671566469619774L;
 
-	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("SharePresentation");
+	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("Statistics");
 	
-	private Controller sharePresentationCtrl;
+	private Controller controller;
 	
-	public SharePresentationTreeNode(String title) {
+	public AdministrationTreeNode(String title) {
 		super();
 		this.setTitle(title);
 	}
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		if(sharePresentationCtrl == null) {
+		if(controller == null) {
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);
-			sharePresentationCtrl = new SharePresentationController(ureq, swControl);
+			controller = new BlankController(ureq, swControl);
 		} 
-		return sharePresentationCtrl;
+		return controller;
 	}
-
 }

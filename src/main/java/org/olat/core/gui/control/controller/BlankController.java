@@ -17,35 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool.ui;
+package org.olat.core.gui.control.controller;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 
 /**
+ * Convenience controller to show a blank area.
  * 
- * Initial date: 21.02.2013<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 04.01.2018<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionPoolAdminStatisticsController extends BasicController {
-	
-	private final VelocityContainer mainVC;
-	
-	public QuestionPoolAdminStatisticsController(UserRequest ureq, WindowControl wControl) {
+public class BlankController extends BasicController {
+
+	public BlankController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		mainVC = createVelocityContainer("admin_overview");
-		putInitialPanel(mainVC);
-	}
-	
-	@Override
-	protected void doDispose() {
-		//
 	}
 
 	@Override
@@ -53,9 +42,9 @@ public class QuestionPoolAdminStatisticsController extends BasicController {
 		//
 	}
 
-
-	
-	
-
+	@Override
+	protected void doDispose() {
+		//
+	}
 
 }

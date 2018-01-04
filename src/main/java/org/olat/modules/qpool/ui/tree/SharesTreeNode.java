@@ -23,10 +23,10 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BlankController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.qpool.ui.QuestionPoolAdminStatisticsController;
 
 /**
  * 
@@ -34,15 +34,15 @@ import org.olat.modules.qpool.ui.QuestionPoolAdminStatisticsController;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionPoolAdminStatisticsTreeNode extends GenericTreeNode implements ControllerTreeNode {
+public class SharesTreeNode  extends GenericTreeNode implements ControllerTreeNode {
 
-	private static final long serialVersionUID = 6080671566469619774L;
+	private static final long serialVersionUID = -3800071301195017030L;
 
-	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("Statistics");
+	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType("SharePresentation");
 	
-	private QuestionPoolAdminStatisticsController controller;
+	private Controller controller;
 	
-	public QuestionPoolAdminStatisticsTreeNode(String title) {
+	public SharesTreeNode(String title) {
 		super();
 		this.setTitle(title);
 	}
@@ -52,8 +52,9 @@ public class QuestionPoolAdminStatisticsTreeNode extends GenericTreeNode impleme
 		if(controller == null) {
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);
-			controller = new QuestionPoolAdminStatisticsController(ureq, swControl);
+			controller = new BlankController(ureq, swControl);
 		} 
 		return controller;
 	}
+
 }
