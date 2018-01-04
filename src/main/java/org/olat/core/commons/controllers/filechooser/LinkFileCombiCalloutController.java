@@ -79,8 +79,9 @@ public class LinkFileCombiCalloutController extends BasicController {
 
 	private final VFSContainer baseContainer;
 	private VFSLeaf file;
-	
-	private String relFilePath;	
+
+	private String relFilePath;
+	private boolean editable = true;
 	private boolean relFilPathIsProposal;
 	private boolean allowEditorRelativeLinks;
 
@@ -141,6 +142,11 @@ public class LinkFileCombiCalloutController extends BasicController {
 
 		// Load file from configuration and update links
 		setRelFilePath(relFilePath);
+	}
+	
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+		updateLinks();
 	}
 
 	@Override
@@ -466,7 +472,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 	
 	public boolean isEditorEnabled() {
 		// enable html editor for html files
-		if(StringHelper.containsNonWhitespace(relFilePath)) {
+		if(editable && StringHelper.containsNonWhitespace(relFilePath)) {
 			String lowercase = relFilePath.toLowerCase().trim();
 			if (lowercase.endsWith(".html") || lowercase.endsWith(".htm")) {
 				return true;

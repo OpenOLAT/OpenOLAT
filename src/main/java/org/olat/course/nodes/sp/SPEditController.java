@@ -47,6 +47,7 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.SPCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
@@ -84,6 +85,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	private VelocityContainer myContent;
 		
 	private SPCourseNode courseNode;
+	private final CourseEnvironment courseEnv;
 	private final VFSContainer courseFolderBaseContainer;
 	private ConditionEditController accessibilityCondContr;
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
@@ -105,6 +107,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		super(ureq, wControl);
 		moduleConfiguration = config;
 		courseNode = spCourseNode;
+		courseEnv = course.getCourseEnvironment();
 		courseFolderBaseContainer = course.getCourseFolderContainer();
 
 		myContent = createVelocityContainer("edit");
@@ -128,6 +131,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer,
 				relFilePath, relFilPathIsProposal, allowRelativeLinks, false,
 				new CourseInternalLinkTreeModel(course.getEditorTreeModel()));
+		combiLinkCtr.setEditable(hasEditRights(relFilePath));
 		listenTo(combiLinkCtr);
 		myContent.put("combiCtr", combiLinkCtr.getInitialComponent());		
 		myContent.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());
@@ -184,6 +188,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		} else if(source == combiLinkCtr){
 			if(event == Event.DONE_EVENT){
 				String relPath = VFSManager.getRelativeItemPath(combiLinkCtr.getFile(), courseFolderBaseContainer, null);
+				combiLinkCtr.setEditable(hasEditRights(relPath));
 				moduleConfiguration.set(CONFIG_KEY_FILE, relPath);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				if(!myTabbedPane.containsTab(deliveryOptionsCtrl.getInitialComponent())) {
@@ -201,10 +206,20 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 			}
 		}
 	}
+	
+	private boolean hasEditRights(String fileName) {
+		if(fileName != null && fileName.startsWith("/_sharedfolder")) {
+			if(courseEnv.getCourseConfig().isSharedFolderReadOnlyMount()) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableController#addTabs(org.olat.core.gui.components.TabbedPane)
 	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate(NLS_CONDITION_ACCESSIBILITY_TITLE)));
