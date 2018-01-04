@@ -93,7 +93,6 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 		return roles != null &&
 				(  roles.isOLATAdmin()
 				|| roles.isPoolAdmin()
-				//TODO uh Muss dieses statemant innerhalb der Klammern sein? dh role haben
 				|| businessGroupService.isIdentityInBusinessGroup(identity, group.getKey(), true, false, null)
 				);
 	}

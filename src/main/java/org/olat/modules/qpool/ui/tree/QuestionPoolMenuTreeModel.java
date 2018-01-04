@@ -139,7 +139,9 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	}
 	
 	public void reloadReviewCounts() {
-		reloadReviewCount(reviewNode);
+		if (reviewNode != null) {
+			reloadReviewCount(reviewNode);
+		}
 	}
 
 	private void reloadReviewCount(INode node) {

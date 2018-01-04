@@ -93,7 +93,6 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 				(  roles.isOLATAdmin()
 				|| roles.isPoolAdmin()
 				|| pool.isPublicPool()
-				//TODO uh Muss dieses statemant innerhalb der Klammern sein? dh role haben
 				|| qpoolService.isOwner(identity, pool)
 				);
 	}
