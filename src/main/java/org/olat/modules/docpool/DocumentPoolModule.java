@@ -30,7 +30,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.docpool.site.DocumentPoolContextEntryControllerCreator;
-import org.olat.modules.taxonomy.TaxonomyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -44,8 +43,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class DocumentPoolModule extends AbstractSpringModule implements ConfigOnOff {
 
-	private static final String DIRECTORY = "docpool";
-	private static final String INFOS_PAGE_DIRECTORY = "infospage";
+	public static final String DIRECTORY = "docpool";
+	public static final String INFOS_PAGE_DIRECTORY = "infospage";
+	
 	private static final String DOCUMENT_POOL_ENABLED = "docpool.enabled";
 	private static final String TAXONOMY_TREE_KEY = "taxonomy.tree.key";
 	private static final String WEBDAV_MOUNT_POINT = "docpool.webdav.mountpoint";
@@ -149,7 +149,7 @@ public class DocumentPoolModule extends AbstractSpringModule implements ConfigOn
 	}
 	
 	public VFSContainer getInfoPageContainer() {
-		String path = "/" + TaxonomyService.DIRECTORY + "/" + INFOS_PAGE_DIRECTORY;
+		String path = "/" + DIRECTORY + "/" + INFOS_PAGE_DIRECTORY;
 		return new OlatRootFolderImpl(path, null);
 	}
 }

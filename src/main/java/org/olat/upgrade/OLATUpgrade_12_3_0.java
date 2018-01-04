@@ -31,8 +31,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.nodes.dialog.DialogElementsManager;
 import org.olat.course.nodes.dialog.model.DialogElementImpl;
@@ -41,10 +44,12 @@ import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -68,8 +73,8 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 	
 	private static final String VERSION = "OLAT_12.3.0";
 	private static final String MIGRATE_QPOOL_TITLE = "MIGRATE QPOOL TITLE";
-	
 	private static final String MIGRATE_DIALOG = "MIGRATE DIALOG ELEMENTS";
+	private static final String MOVE_DOC_POOL_INFOS_PAGE = "MOVE DOC POOL INFOS PAGE";
 	
 	@Autowired
 	private DB dbInstance;
@@ -79,6 +84,8 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 	private QTI21Service qtiService;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private DocumentPoolModule documentPoolModule;
 	@Autowired
 	private ForumManager forumManager;
 	@Autowired
@@ -115,6 +122,7 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 		// Migrate the title of the question (XML) to the database.
 		allOk &= migrateQpoolTopicTitle(upgradeManager, uhd);
 		allOk &= migrateDialogElements(upgradeManager, uhd);
+		allOk &= moveDocumentPoolInfosPage(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -326,5 +334,23 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 				.setParameter("name", "fileDialog")
 				.setParameter("resName", "CourseModule")
 				.getResultList();
+	}
+	
+	private boolean moveDocumentPoolInfosPage(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MOVE_DOC_POOL_INFOS_PAGE)) {
+			String path = "/" + TaxonomyService.DIRECTORY + "/" + DocumentPoolModule.INFOS_PAGE_DIRECTORY;
+			VFSContainer taxonomyContainer =  new OlatRootFolderImpl(path, null);
+			VFSContainer documentPoolContainer = documentPoolModule.getInfoPageContainer();
+			if(taxonomyContainer.exists()
+					&& documentPoolContainer.getItems(new VFSLeafButSystemFilter()).isEmpty()
+					&& !taxonomyContainer.getItems(new VFSLeafButSystemFilter()).isEmpty()) {
+				VFSManager.copyContent(taxonomyContainer, documentPoolContainer);
+				taxonomyContainer.delete();
+			}
+			uhd.setBooleanDataValue(MOVE_DOC_POOL_INFOS_PAGE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
 	}
 }
