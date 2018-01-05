@@ -605,11 +605,11 @@ public class BinderDAO {
 			}
 		}
 		
-		List<Assignment> assignments = new ArrayList<>(((SectionImpl)section).getAssignments());
+		List<Assignment> assignments = assignmentDao.loadAssignments(section, null);
 		for(Assignment assignment:assignments) {
 			assignmentDao.deleteAssignmentReference(assignment);
 		}
-		
+		assignmentDao.deleteAssignmentBySection(section);
 		assessmentSectionDao.deleteAssessmentSections(section);
 
 		//remove reference via template
