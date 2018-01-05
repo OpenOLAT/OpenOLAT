@@ -29,6 +29,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.tree.MenuTree;
 import org.olat.core.gui.components.tree.TreeDropEvent;
@@ -303,6 +304,9 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	private void doSelectQuestionsNode(UserRequest ureq, ControllerTreeNode qNode, List<ContextEntry> entries,
 			StateEntry state) {
 		currentCtrl = qNode.getController(ureq, getWindowControl());
+		if(currentCtrl instanceof BreadcrumbPanelAware) {
+			((BreadcrumbPanelAware)currentCtrl).setBreadcrumbPanel(stackPanel);
+		}
 		listenTo(currentCtrl);
 		setContent(ureq, currentCtrl, entries, state);
 	}

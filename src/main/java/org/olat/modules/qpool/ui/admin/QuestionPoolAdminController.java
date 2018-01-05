@@ -26,6 +26,8 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.BreadcrumbPanelAware;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -37,7 +39,7 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionPoolAdminController extends BasicController {
+public class QuestionPoolAdminController extends BasicController implements BreadcrumbPanelAware {
 	
 	private static final String SEGMENTS_CMP = "segmentCmp";
 	
@@ -50,6 +52,7 @@ public class QuestionPoolAdminController extends BasicController {
 	private final Link educationalContextLink;
 	private final Link licensesLink;
 	
+	private BreadcrumbPanel stackPanel;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	
@@ -91,6 +94,15 @@ public class QuestionPoolAdminController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+	@Override
+	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
+		this.stackPanel = stackPanel;
+		if(taxonomyCtrl != null) {
+			taxonomyCtrl.setBreadcrumbPanel(stackPanel);
+		}
+		stackPanel.changeDisplayname(translate("admin.configuration.title"));
 	}
 	
 	@Override
@@ -146,6 +158,7 @@ public class QuestionPoolAdminController extends BasicController {
 	private void doOpenTaxonomy(UserRequest ureq) {
 		if(taxonomyCtrl == null) {
 			taxonomyCtrl = new TaxonomyAdminController(ureq, getWindowControl());
+			taxonomyCtrl.setBreadcrumbPanel(stackPanel);
 			listenTo(taxonomyCtrl);
 		}
 		mainVC.put(SEGMENTS_CMP, taxonomyCtrl.getInitialComponent());

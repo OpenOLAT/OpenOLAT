@@ -875,7 +875,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		return qpoolLicenseDao.delete(license);
 	}
 	
-	public TaxonomyRef getQPoolTaxonomy() {
+	private TaxonomyRef getQPoolTaxonomyRef() {
 		String key = qpoolModule.getTaxonomyQPoolKey();
 		try {
 			return new TaxonomyRefImpl(new Long(key));
@@ -884,10 +884,15 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			return null;
 		}
 	}
+	
+	public Taxonomy getQPoolTaxonomy() {
+		TaxonomyRef ref = getQPoolTaxonomyRef() ;
+		return ref == null ? null: taxonomyDao.loadByKey(ref.getKey());
+	}
 
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevels() {
-		TaxonomyRef qpoolTaxonomy = getQPoolTaxonomy();
+		TaxonomyRef qpoolTaxonomy = getQPoolTaxonomyRef();
 		if(qpoolTaxonomy == null) {
 			return new ArrayList<>();
 		}
@@ -896,7 +901,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevelBy(TaxonomyLevel parent, String displayName) {
-		TaxonomyRef qpoolTaxonomy = getQPoolTaxonomy();
+		Taxonomy qpoolTaxonomy = getQPoolTaxonomy();
 		if(qpoolTaxonomy == null) {
 			return new ArrayList<>();
 		}
@@ -905,29 +910,16 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public TaxonomyLevel createTaxonomyLevel(TaxonomyLevel parent, String identifier, String displayName) {
-		TaxonomyRef qpoolTaxonomy = getQPoolTaxonomy();
+		Taxonomy qpoolTaxonomy = getQPoolTaxonomy();
 		if(qpoolTaxonomy == null) {
 			return null;
 		}
-		Taxonomy taxonomy = taxonomyDao.loadByKey(qpoolTaxonomy.getKey());
-		return taxonomyLevelDao.createTaxonomyLevel(identifier, displayName, "", null, null, parent, null, taxonomy);
-	}
-
-	@Override
-	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level, String identifier, String displayName) {
-		level.setIdentifier(identifier);
-		level.setDisplayName(displayName);
-		return taxonomyLevelDao.updateTaxonomyLevel(level);
-	}
-
-	@Override
-	public boolean deleteTaxonomyLevel(TaxonomyLevel level) {
-		return taxonomyLevelDao.delete(level);
+		return taxonomyLevelDao.createTaxonomyLevel(identifier, displayName, "", null, null, parent, null, qpoolTaxonomy);
 	}
 	
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevel(Identity identity, TaxonomyCompetenceTypes... competenceType) {
-		return taxonomyCompetenceDao.getCompetencesByTaxonomy(getQPoolTaxonomy(), identity, new Date(), competenceType).stream()
+		return taxonomyCompetenceDao.getCompetencesByTaxonomy(getQPoolTaxonomyRef(), identity, new Date(), competenceType).stream()
 				.map(competence -> competence.getTaxonomyLevel())
 				.collect(Collectors.toList());
 	}

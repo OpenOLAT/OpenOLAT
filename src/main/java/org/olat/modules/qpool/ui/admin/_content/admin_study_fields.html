@@ -3,20 +3,5 @@
 	<div class="o_info">
 		$r.translate("admin.studyfields.intro")
 	</div>
-	<div class="btn-toolbar">
-		<div class="pull-right">
-			$r.render("add")
-		</div>
-	</div>	
-	<br />
-	<div class="row">
-		<div class="col-sm-6">
-			$r.render("tree")
-		</div>
-		<div class="col-sm-6">
-			#if($r.available("details"))
-				$r.render("details")
-			#end
-		</div>
-	</div>
+	$r.render("taxonomy")
 </fieldset>

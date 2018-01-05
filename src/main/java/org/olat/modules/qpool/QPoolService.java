@@ -38,6 +38,7 @@ import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
+import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -182,7 +183,15 @@ public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> ite
 	 */
 	public void resetAllStatesToDraft(Identity reseter);
 	
-	//study field admin
+	/**
+	 * @return The taxonomy configured for the question pool or null
+	 */
+	public Taxonomy getQPoolTaxonomy();
+	
+	/**
+	 * @return The list of taxonomy levels defined in the taxonomy
+	 *			of the question pool.
+	 */
 	public List<TaxonomyLevel> getTaxonomyLevels();
 	
 	/**
@@ -194,11 +203,6 @@ public List<QuestionItem> copyItems(Identity cloner, List<QuestionItemShort> ite
 	public List<TaxonomyLevel> getTaxonomyLevelBy(TaxonomyLevel parent, String displayName);
 	
 	public TaxonomyLevel createTaxonomyLevel(TaxonomyLevel parent, String identifier, String displayName);
-	
-	public TaxonomyLevel updateTaxonomyLevel(TaxonomyLevel level, String identifier, String displayName);
-	
-	public boolean deleteTaxonomyLevel(TaxonomyLevel level);
-	
 	
 	//pool administration
 	public void createPool(Identity identity, String name, boolean publicPool);

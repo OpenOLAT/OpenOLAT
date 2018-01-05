@@ -175,7 +175,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertFalse(clone.getIdentifier().equals(original.getIdentifier()));
 		Assert.assertEquals(original.getIdentifier(), clone.getMasterIdentifier());
 		Assert.assertNotNull(clone.getTitle());
-		Assert.assertEquals(original.getTitle(), clone.getTitle());
+		Assert.assertEquals("(Copy) " + original.getTitle(), clone.getTitle());
 		Assert.assertEquals(original.getTopic(), clone.getTopic());
 		Assert.assertEquals(original.getDescription(), clone.getDescription());
 		Assert.assertEquals(original.getKeywords(), clone.getKeywords());
