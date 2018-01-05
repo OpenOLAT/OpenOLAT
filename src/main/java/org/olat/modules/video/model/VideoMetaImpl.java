@@ -77,20 +77,6 @@ public class VideoMetaImpl implements VideoMeta, Persistable, ModifiedInfo {
 	@Column(name="vid_length", nullable=true, insertable=true, updatable=true)
 	private String length;	
 	
-
-
-	public VideoMetaImpl(OLATResource videoResource, int width, int height, long size, String format, String length) {
-		super();
-		this.creationDate = new Date();
-		this.lastModified = new Date();
-		this.videoResource = videoResource;
-		this.width = width;
-		this.height = height;
-		this.size = size;
-		this.format = format;
-		this.length = length;
-	}
-	
 	public VideoMetaImpl(int width, int height, long size) {
 		this.width = width;
 		this.height = height;
@@ -119,11 +105,6 @@ public class VideoMetaImpl implements VideoMeta, Persistable, ModifiedInfo {
 	@Override
 	public void setLastModified(Date date) {
 		this.lastModified = date;
-	}
-
-	@Override
-	public boolean equalsByPersistableKey(Persistable persistable) {
-		return false;
 	}
 
 	@Override
@@ -190,6 +171,26 @@ public class VideoMetaImpl implements VideoMeta, Persistable, ModifiedInfo {
 	public void setLength(String length) {
 		this.length = length;
 	}
+	
+	@Override
+	public int hashCode() {
+		return key == null ? 237865 : key.hashCode();
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof VideoMetaImpl) {
+			VideoMetaImpl meta = (VideoMetaImpl)obj;
+			return key != null && key.equals(meta.key);
+		}
+		return false;
+	}
 
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
 }
