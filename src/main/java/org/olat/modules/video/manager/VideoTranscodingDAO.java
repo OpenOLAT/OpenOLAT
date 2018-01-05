@@ -139,6 +139,15 @@ public class VideoTranscodingDAO {
 				.getResultList();
 	}
 	
+	public VideoTranscoding getVideoTranscoding(Long key) {
+		String query = "select trans from videotranscoding as trans where trans.key=:transcodingKey";
+		List<VideoTranscoding> transcoding = dbInstance.getCurrentEntityManager()
+				.createQuery(query, VideoTranscoding.class)
+				.setParameter("transcodingKey", key)
+				.getResultList();
+		return transcoding == null || transcoding.isEmpty() ? null : transcoding.get(0);
+	}
+	
 	/**
 	 * Gets all transcodings of one video resolution.
 	 *

@@ -454,43 +454,40 @@ public class VideoManagerImpl implements VideoManager {
 		}		
 	}
 
-	
 	@Override
 	public List<VideoTranscoding> getVideoTranscodings(OLATResource video){
-		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getVideoTranscodings(video);
-		return videoTranscodings;
+		return videoTranscodingDao.getVideoTranscodings(video);
 	}
 	
 	@Override
+	public VideoTranscoding getVideoTranscoding(Long key) {
+		return videoTranscodingDao.getVideoTranscoding(key);
+	}
+
+	@Override
 	public List<VideoTranscoding> getAllVideoTranscodings() {
-		List<VideoTranscoding> videoTranscodings = videoTranscodingDao.getAllVideoTranscodings();
-		return videoTranscodings;
+		return videoTranscodingDao.getAllVideoTranscodings();
 	}
 	
 	@Override 
 	public List<TranscodingCount> getAllVideoTranscodingsCount() {
-		List<TranscodingCount> allVideoTranscodings = videoTranscodingDao.getAllVideoTranscodingsCount();
-		return allVideoTranscodings;
+		return videoTranscodingDao.getAllVideoTranscodingsCount();
 	}
 	
 	@Override 
 	public List<TranscodingCount> getAllVideoTranscodingsCountSuccess(int errorcode) {
-		List<TranscodingCount> allVideoTranscodings = videoTranscodingDao.getAllVideoTranscodingsCountSuccess(errorcode);
-		return allVideoTranscodings;
+		return videoTranscodingDao.getAllVideoTranscodingsCountSuccess(errorcode);
 	}
 	
 	@Override 
 	public List<TranscodingCount> getAllVideoTranscodingsCountFails(int errorcode) {
-		List<TranscodingCount> allVideoTranscodings = videoTranscodingDao.getAllVideoTranscodingsCountFails(errorcode);
-		return allVideoTranscodings;
+		return videoTranscodingDao.getAllVideoTranscodingsCountFails(errorcode);
 	}
 	
 	@Override
 	public List<VideoTranscoding> getOneVideoResolution(int resolution) {
-		List<VideoTranscoding> oneResolution = videoTranscodingDao.getOneVideoResolution(resolution);
-		return oneResolution;
+		return videoTranscodingDao.getOneVideoResolution(resolution);
 	}
-	
 
 	@Override
 	public String getAspectRatio(int width, int height) {
