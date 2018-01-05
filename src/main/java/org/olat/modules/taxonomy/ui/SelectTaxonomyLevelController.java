@@ -73,6 +73,7 @@ public class SelectTaxonomyLevelController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		taxonomyTreesModel = new GenericTreeModel();
 		taxonomyTreesEl = uifactory.addTreeMultiselect("taxonomy", null, formLayout, taxonomyTreesModel, this);
+		taxonomyTreesEl.setRootVisible(false);
 
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("ok", formLayout);

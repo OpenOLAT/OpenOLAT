@@ -203,24 +203,28 @@ public class IdentityCompetencesController extends FormBasicController implement
 	}
 	
 	private void doAddTaxonomyLevelsAsCompetence(TaxonomyLevel selectedLevel, TaxonomyCompetenceTypes competenceType) {
-		boolean found = false;
-		List<TaxonomyCompetence> currentCompetences = taxonomyService.getTaxonomyCompetences(assessedIdentity, competenceType);
-		for(TaxonomyCompetence currentCompetence:currentCompetences) {
-			if(selectedLevel.equals(currentCompetence.getTaxonomyLevel())) {
-				found = true;
+		if(selectedLevel == null) {
+			showWarning("warning.atleastone.level.competence");
+		} else {
+			boolean found = false;
+			List<TaxonomyCompetence> currentCompetences = taxonomyService.getTaxonomyCompetences(assessedIdentity, competenceType);
+			for(TaxonomyCompetence currentCompetence:currentCompetences) {
+				if(selectedLevel.equals(currentCompetence.getTaxonomyLevel())) {
+					found = true;
+				}
 			}
+			
+			if(!found) {
+				TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(selectedLevel);
+				Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
+				TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, assessedIdentity, competenceType, null);
+				String after = taxonomyService.toAuditXml(competence);
+				taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.addCompetence, null, after, null, taxonomy, competence, assessedIdentity, getIdentity());
+			}
+			
+			loadModel();
+			tableEl.reset(true, true, true);
 		}
-		
-		if(!found) {
-			TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(selectedLevel);
-			Taxonomy taxonomy = taxonomyLevel.getTaxonomy();
-			TaxonomyCompetence competence = taxonomyService.addTaxonomyLevelCompetences(taxonomyLevel, assessedIdentity, competenceType, null);
-			String after = taxonomyService.toAuditXml(competence);
-			taxonomyService.auditLog(TaxonomyCompetenceAuditLog.Action.addCompetence, null, after, null, taxonomy, competence, assessedIdentity, getIdentity());
-		}
-		
-		loadModel();
-		tableEl.reset(true, true, true);
 	}
 	
 	private void doConfirmRemove(UserRequest ureq, IdentityCompetenceRow row) {
