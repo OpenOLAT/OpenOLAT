@@ -22,10 +22,12 @@ package org.olat.modules.qpool.site;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
-import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.util.UserSession;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionPoolModule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -33,45 +35,34 @@ import org.olat.modules.qpool.QuestionPoolModule;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Service("poolPrivateMembersSiteSecurityCallback")
 public class PoolPrivateMembersSecurityCallback implements SiteSecurityCallback {
 	
+	@Autowired
 	private QPoolService qPoolService;
+	@Autowired
 	private QuestionPoolModule questionPoolModule;
-	
-	
-	/**
-	 * [used by Spring]
-	 * @param qPoolService
-	 */
-	public void setQPoolService(QPoolService qPoolService) {
-		this.qPoolService = qPoolService;
-	}
-
-	/**
-	 * [used by Spring]
-	 * @param questionPoolModule
-	 */
-	public void setQuestionPoolModule(QuestionPoolModule questionPoolModule) {
-		this.questionPoolModule = questionPoolModule;
-	}
 
 	/**
 	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToLaunchSite(org.olat.core.gui.UserRequest)
 	 */
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if (!questionPoolModule.isEnabled() || ureq == null || ureq.getUserSession() == null || ureq.getUserSession().getRoles() == null
-				|| ureq.getIdentity() == null
-				|| ureq.getUserSession().getRoles().isInvitee() || ureq.getUserSession().getRoles().isGuestOnly()) {
+		if (!questionPoolModule.isEnabled() || ureq == null || ureq.getIdentity() == null) {
 			return false;
 		}
-
-		Roles roles = ureq.getUserSession().getRoles();
+		
+		UserSession usess = ureq.getUserSession();
+		if (usess == null) {
+			return false;
+		}
+		Roles roles = usess.getRoles();
+		if(roles == null || roles.isInvitee() || roles.isGuestOnly()) {
+			return false;
+		}
 		if (roles.isOLATAdmin() || roles.isPoolAdmin()) {
 			return true;
 		}
-		
-		Identity identity = ureq.getIdentity();
-		return qPoolService.isMemberOfPrivatePools(identity);
+		return qPoolService.isMemberOfPrivatePools(ureq.getIdentity());
 	}
 }

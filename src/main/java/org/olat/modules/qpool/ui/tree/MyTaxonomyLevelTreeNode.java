@@ -33,6 +33,7 @@ import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.MyTaxonomyLevelItemsSource;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelType;
 
 /**
  * 
@@ -60,9 +61,9 @@ public class MyTaxonomyLevelTreeNode extends GenericTreeNode implements Controll
 		this.taxonomyLevel = taxonomyLevel;
 		
 		this.setTitle(taxonomyLevel.getDisplayName());
-		String iconCssClass = taxonomyLevel.getType().getCssClass();
-		if (StringHelper.containsNonWhitespace(iconCssClass)) {
-			setIconCssClass(iconCssClass);
+		TaxonomyLevelType type = taxonomyLevel.getType();
+		if (type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
+			setIconCssClass(type.getCssClass());
 		}
 		
 		this.setUserObject(taxonomyLevel);

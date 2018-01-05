@@ -20,48 +20,66 @@
  */
 package org.olat.modules.qpool.site;
 
+import java.util.Date;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
-import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
+import org.olat.modules.taxonomy.TaxonomyRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
+ * Guest and invittee are discarded. Administrator and pool administrators
+ * are allowed and the user with a competence manage or teach (dependent
+ * on question pool settings).
  * 
- * Initial date: 14.10.2014<br>
+ * Initial date: 5 janv. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service("authorAndPoolPrivateMembersSiteSecurityCallback")
-public class AuthorAndPoolPrivateMembersSecurityCallback implements SiteSecurityCallback {
+@Service("poolTaxonomySiteSecurityCallback")
+public class PoolTaxonomySecurityCallback implements SiteSecurityCallback {
 	
 	@Autowired
-	private QPoolService qPoolService;
+	private TaxonomyService taxonomyService;
 	@Autowired
 	private QuestionPoolModule questionPoolModule;
-
-	/**
-	 * @see com.frentix.olat.coursesite.SiteSecurityCallback#isAllowedToLaunchSite(org.olat.core.gui.UserRequest)
-	 */
+	
 	@Override
 	public boolean isAllowedToLaunchSite(UserRequest ureq) {
-		if (!questionPoolModule.isEnabled() || ureq == null || ureq.getIdentity() == null) {
+		if (!questionPoolModule.isEnabled() || !StringHelper.isLong(questionPoolModule.getTaxonomyQPoolKey())
+				|| ureq == null || ureq.getIdentity() == null ) {
 			return false;
 		}
+		
 		UserSession usess = ureq.getUserSession();
 		if (usess == null) {
 			return false;
 		}
+
 		Roles roles = usess.getRoles();
 		if (roles == null || roles.isInvitee() || roles.isGuestOnly()) {
 			return false;
 		}
-		if (roles.isOLATAdmin() || roles.isPoolAdmin() || roles.isAuthor()) {
+		if (roles.isOLATAdmin() || roles.isPoolAdmin()) {
 			return true;
 		}
-		return qPoolService.isMemberOfPrivatePools(ureq.getIdentity());
+		
+		TaxonomyCompetenceTypes[] types;
+		if (questionPoolModule.isFinalVisibleTeach()) {
+			types = new TaxonomyCompetenceTypes[] { TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach };
+		} else {
+			types = new TaxonomyCompetenceTypes[] { TaxonomyCompetenceTypes.manage };
+		}
+		
+		TaxonomyRef taxonomy = new TaxonomyRefImpl(Long.valueOf(questionPoolModule.getTaxonomyQPoolKey()));
+		return taxonomyService.hasTaxonomyCompetences(taxonomy, ureq.getIdentity(), new Date(), types);
 	}
 }

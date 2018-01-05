@@ -36,6 +36,7 @@ import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.datasource.ReviewItemsSource;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelType;
 
 /**
  * 
@@ -65,9 +66,9 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 		source = new ReviewItemsSource(identity, roles, taxonomyLevel);
 		
 		setTitle(taxonomyLevel.getDisplayName());
-		String iconCssClass = taxonomyLevel.getType().getCssClass();
-		if (StringHelper.containsNonWhitespace(iconCssClass)) {
-			setIconCssClass(iconCssClass);
+		TaxonomyLevelType type = taxonomyLevel.getType();
+		if (type != null && StringHelper.containsNonWhitespace(type.getCssClass())) {
+			setIconCssClass(type.getCssClass());
 		}
 		reloadCount();
 		

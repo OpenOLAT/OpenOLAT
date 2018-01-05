@@ -81,7 +81,7 @@
 	<bean id="olatsites_qpool" class="org.olat.modules.qpool.site.QuestionPoolSiteDef">
 	   <property name="order" value="10" />
 	   <property name="enabled" value="${site.questionpool.enable}"/>
-	   	<property name="defaultSiteSecurityCallbackBeanId" value="restrictToAuthorSiteSecurityCallback"/>
+	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToAuthorSiteSecurityCallback"/>
 	</bean>
 	<bean id="olatsites_catalogadmin" class="org.olat.repository.site.CatalogAdminSiteDef">
 	   <property name="order" value="11" />
@@ -151,17 +151,6 @@
 	<bean id="catalogManagerSiteSecurityCallback" class="org.olat.repository.site.CatalogManagerSecurityCallback">
 		<property name="catalogManager" ref="catalogManager" />
 	</bean>
-	
-	<bean id="poolPrivateMembersSiteSecurityCallback" class="org.olat.modules.qpool.site.PoolPrivateMembersSecurityCallback">
-		<property name="qPoolService" ref="qpoolService" />
-		<property name="questionPoolModule" ref="qpoolModule" />
-	</bean>
-	
-	<bean id="authorAndPoolPrivateMembersSiteSecurityCallback" class="org.olat.modules.qpool.site.AuthorAndPoolPrivateMembersSecurityCallback">
-		<property name="qPoolService" ref="qpoolService" />
-		<property name="questionPoolModule" ref="qpoolModule" />
-	</bean>
-	
 	
 	<!-- Alternative controllers -->
 	<bean id="courseSiteForbiddenAlt" class="org.olat.core.gui.control.navigation.SiteAlternativeControllerCreator">
