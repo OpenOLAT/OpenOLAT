@@ -432,7 +432,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public SingleSelection addDropdownSingleselect(final String id, final String name, final String i18nLabel, FormItemContainer formLayout, final String[] theKeys, final String[] theValues, final String[] theCssClasses) {
-		SingleSelection ss = new SelectboxSelectionImpl(id, name);
+		SingleSelection ss = new SelectboxSelectionImpl(id, name, formLayout.getTranslator().getLocale());
 		ss.setKeysAndValues(theKeys, theValues, theCssClasses);
 		setLabelIfNotNull(i18nLabel, ss);
 		formLayout.add(ss);

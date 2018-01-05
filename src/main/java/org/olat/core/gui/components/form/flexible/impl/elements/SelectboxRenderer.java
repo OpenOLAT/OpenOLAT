@@ -90,7 +90,7 @@ class SelectboxRenderer extends DefaultComponentRenderer {
 		int cnt = options.length;
 		boolean escapeHtml = ssec.isEscapeHtml();
 		for (int i = 0; i < cnt; i++) {
-			boolean selected = ssec.isSelected(i);
+			boolean selected = ssec.isSelected(options[i]);
 			sb.append("<option value=\"").append(StringHelper.escapeHtml(options[i])).append("\" ");
 			if (selected) sb.append("selected=\"selected\" ");
 			if(ssec.getAction() != FormEvent.ONCHANGE){

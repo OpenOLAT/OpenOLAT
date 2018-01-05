@@ -92,8 +92,8 @@ class SelectboxComponent extends FormBaseComponentImpl {
 		this.escapeHtml = escapeHtml;
 	}
 
-	public boolean isSelected(int i) {
-		return selectionWrapper.isSelected(i);
+	public boolean isSelected(String key) {
+		return key != null && selectionWrapper.isOneSelected() && key.equals(selectionWrapper.getSelectedKey());
 	}
 
 	/**

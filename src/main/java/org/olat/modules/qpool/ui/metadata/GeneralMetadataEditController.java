@@ -22,8 +22,6 @@ package org.olat.modules.qpool.ui.metadata;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateSelection;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -42,6 +40,7 @@ import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QItemEdited;
+import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,8 +52,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GeneralMetadataEditController extends FormBasicController {
 
-	private static final String NO_KEY = "noKey";
-	
 	private TextElement topicEl;
 	private SingleSelection taxonomyLevelEl;
 	private SingleSelection contextEl;
@@ -91,25 +88,11 @@ public class GeneralMetadataEditController extends FormBasicController {
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
 				new String[0], new String[0]);
 		
-		List<QEducationalContext> levels = qpoolService.getAllEducationlContexts();
-		String[] contextKeys = new String[ levels.size() + 1 ];
-		String[] contextValues = new String[ levels.size() + 1];
-		int count = 1;
-		for(QEducationalContext level:levels) {
-			contextKeys[count] = level.getLevel();
-			String translation = translate("item.level." + level.getLevel().toLowerCase());
-			if(translation.length() > 128) {
-				translation = level.getLevel();
-			}
-			contextValues[count++] = translation;
-		}
-		if (count > 1) {
-			contextKeys[0] = NO_KEY;
-			contextValues[0] = "-";
-		}
+		KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
 		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout,
-				contextKeys, contextValues, null);
-		contextEl.setEnabled(count > 1);
+				contexts.getKeys(), contexts.getValues(), null);
+		contextEl.setAllowNoSelection(true);
+		contextEl.setEnabled(contexts.getKeys().length > 0);
 		if (StringHelper.containsNonWhitespace(item.getEducationalContextLevel())) {
 			contextEl.select(item.getEducationalContextLevel(), true);
 		}
@@ -127,13 +110,10 @@ public class GeneralMetadataEditController extends FormBasicController {
 		String language = item.getLanguage();
 		languageEl = uifactory.addTextElement("general.language", "general.language", 10, language, formLayout);
 		
-		String[] assessmentTypeKeys = new String[]{ NO_KEY, "summative", "formative", "both"};
-		String[] assessmentTypeValues = new String[]{ "-",
-			translate("question.assessmentType.summative"), translate("question.assessmentType.formative"),
-			translate("question.assessmentType.both"),	
-		};
+		KeyValues types = MetaUIFactory.getAssessmentTypes(getTranslator());
 		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType",
-				formLayout, assessmentTypeKeys, assessmentTypeValues, null);
+				formLayout, types.getKeys(), types.getValues(), null);
+		assessmentTypeEl.setAllowNoSelection(true);
 		if(StringHelper.containsNonWhitespace(item.getAssessmentType())) {
 			assessmentTypeEl.select(item.getAssessmentType(), true);
 		}
@@ -223,7 +203,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 				itemImpl.setTaxonomyLevel(taxonomyLevel);
 			}
 	
-			QEducationalContext context = contextEl.isOneSelected() && !NO_KEY.equals(contextEl.getSelectedKey())
+			QEducationalContext context = contextEl.isOneSelected()
 					? qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey())
 					: null;
 			itemImpl.setEducationalContext(context);
@@ -248,9 +228,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 			
 			itemImpl.setLanguage(languageEl.getValue());
 			
-			String assessmentType = assessmentTypeEl.isOneSelected() && !NO_KEY.equals(assessmentTypeEl.getSelectedKey())
-					? assessmentTypeEl.getSelectedKey()
-					: null;
+			String assessmentType = assessmentTypeEl.isOneSelected()? assessmentTypeEl.getSelectedKey(): null;
 			itemImpl.setAssessmentType(assessmentType);
 		}
 		item = qpoolService.updateItem(item);

@@ -113,26 +113,26 @@ public class RightsMetadataEditController extends FormBasicController {
 		licenseKeys = MetaUIFactory.getQLicenseKeyValues(qpoolService);
 		copyrightEl = uifactory.addDropdownSingleselect("rights.copyright", "rights.copyright", formLayout,
 				licenseKeys.getKeys(), licenseKeys.getValues(), null);
+		copyrightEl.setAllowNoSelection(true);
 		copyrightEl.addActionListener(FormEvent.ONCHANGE);
 
-		String description;
+		String description = "";
 		QLicense copyright = item.getLicense();
-		if(copyright == null) {
-			description = "";
-			copyrightEl.select(licenseKeys.getFirstKey(), true);
-		} else if(isKey(copyright)) {
-			description = copyright.getLicenseText();
-			copyrightEl.select(copyright.getLicenseKey(), true);
-		} else {
-			description = copyright.getLicenseText();
-			copyrightEl.select(licenseKeys.getLastKey(), true);
+		if(copyright != null) {
+			if(isKey(copyright)) {
+				description = copyright.getLicenseText();
+				copyrightEl.select(copyright.getLicenseKey(), true);
+			} else {
+				description = copyright.getLicenseText();
+				copyrightEl.select(licenseKeys.getLastKey(), true);
+			}
 		}
 		
 		if(description == null) {
 			description = "";
 		}
 		descriptionEl = uifactory.addTextAreaElement("rights.description", "rights.description", 1000, 6, 40, true, description, formLayout);
-		descriptionEl.setVisible(copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey()));
+		descriptionEl.setVisible(copyrightEl.isOneSelected() && copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey()));
 
 		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -258,22 +258,24 @@ public class RightsMetadataEditController extends FormBasicController {
 	
 	protected static void formOKRights(QuestionItemImpl itemImpl, SingleSelection copyrightEl, TextElement descriptionEl,
 			KeyValues licenseKeys, QPoolService qpoolService) {
-		String selectedKey = copyrightEl.getSelectedKey();
-		if(selectedKey.equals(licenseKeys.getFirstKey())) {
-			itemImpl.setLicense(null);
-		} else if(selectedKey.equals(licenseKeys.getLastKey())) {
-			if (itemImpl.getLicense() != null && itemImpl.getLicense().isDeletable()) {
-				String licenseText = descriptionEl.getValue();
-				itemImpl.getLicense().setLicenseText(licenseText);
-				qpoolService.updateLicense(itemImpl.getLicense());
+		if (copyrightEl.isOneSelected()) {
+			String selectedKey = copyrightEl.getSelectedKey();
+			if(selectedKey.equals(licenseKeys.getLastKey())) {
+				if (itemImpl.getLicense() != null && itemImpl.getLicense().isDeletable()) {
+					String licenseText = descriptionEl.getValue();
+					itemImpl.getLicense().setLicenseText(licenseText);
+					qpoolService.updateLicense(itemImpl.getLicense());
+				} else {
+					String licenseText = descriptionEl.getValue();
+					QLicense license = qpoolService.createLicense("perso-" + UUID.randomUUID().toString(), licenseText);
+					itemImpl.setLicense(license);
+				}
 			} else {
-				String licenseText = descriptionEl.getValue();
-				QLicense license = qpoolService.createLicense("perso-" + UUID.randomUUID().toString(), licenseText);
+				QLicense license = qpoolService.getLicense(selectedKey);
 				itemImpl.setLicense(license);
 			}
 		} else {
-			QLicense license = qpoolService.getLicense(selectedKey);
-			itemImpl.setLicense(license);
+			itemImpl.setLicense(null);
 		}
 	}
 	

@@ -19,7 +19,6 @@
  */
 package org.olat.modules.qpool.ui.metadata;
 
-import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.getQItemTypeKeyValues;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.getQLicenseKeyValues;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toBigDecimal;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.toInt;
@@ -75,7 +74,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private SingleSelection contextEl;
 	private FormLayoutContainer learningTimeContainer;
 	private IntegerElement learningTimeDayElement, learningTimeHourElement, learningTimeMinuteElement, learningTimeSecondElement;
-	private SingleSelection typeEl, assessmentTypeEl;
+	private SingleSelection assessmentTypeEl;
 	private TextElement difficultyEl, stdevDifficultyEl, differentiationEl, numAnswerAltEl;
 	private TextElement versionEl;
 	private SingleSelection statusEl;
@@ -138,6 +137,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
 		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", generalCont,
 				contexts.getKeys(), contexts.getValues(), null);
+		contextEl.setAllowNoSelection(true);
 		decorate(contextEl, generalCont);
 		
 		keywordsEl = uifactory.addTextElement("general.keywords", "general.keywords", 1000, null, generalCont);
@@ -156,6 +156,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		KeyValues types = MetaUIFactory.getAssessmentTypes(getTranslator());
 		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType", generalCont,
 				types.getKeys(), types.getValues(), null);
+		assessmentTypeEl.setAllowNoSelection(true);
 		decorate(assessmentTypeEl, generalCont);
 	}
 	
@@ -163,10 +164,6 @@ public class MetadataBulkChangeController extends FormBasicController {
 		FormLayoutContainer questionCont = FormLayoutContainer.createDefaultFormLayout("question", getTranslator());
 		questionCont.setRootForm(mainForm);
 		formLayout.add(questionCont);
-		
-		KeyValues typeKeys = getQItemTypeKeyValues(getTranslator(), qpoolService);
-		typeEl = uifactory.addDropdownSingleselect("question.type", "question.type", questionCont, typeKeys.getKeys(), typeKeys.getValues(), null);
-		decorate(typeEl, questionCont);
 		
 		String page = velocity_root + "/learning_time.html";
 		learningTimeContainer = FormLayoutContainer.createCustomFormLayout("educational.learningTime", getTranslator(), page);
@@ -231,10 +228,11 @@ public class MetadataBulkChangeController extends FormBasicController {
 		licenseKeys = getQLicenseKeyValues(qpoolService);
 		copyrightEl = uifactory.addDropdownSingleselect("rights.copyright.sel", "rights.copyright", rightsWrapperCont,
 				licenseKeys.getKeys(), licenseKeys.getValues(), null);
+		copyrightEl.setAllowNoSelection(true);
 		copyrightEl.addActionListener(FormEvent.ONCHANGE);
-		copyrightEl.select("none", true);
 
 		descriptionEl = uifactory.addTextAreaElement("rights.description", "rights.description", 1000, 6, 40, true, null, rightsWrapperCont);
+		descriptionEl.setVisible(false);
 	}
 	
 	private FormItem decorate(FormItem item, FormLayoutContainer formLayout) {
@@ -267,7 +265,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 			item.setVisible(checkbox.isAtLeastSelected(1));
 			checkboxContainer.get(checkbox).setDirty(true);
 		} else if(copyrightEl == source) {
-			descriptionEl.setVisible(copyrightEl.isVisible() && copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey()));
+			descriptionEl.setVisible(copyrightEl.isVisible() && copyrightEl.isOneSelected() && copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey()));
 			rightsWrapperCont.setDirty(true);
 		} else {
 			super.formInnerEvent(ureq, source, event);
@@ -343,11 +341,6 @@ public class MetadataBulkChangeController extends FormBasicController {
 	}
 	
 	private void formOKQuestion(QuestionItemImpl itemImpl) {
-		if(isEnabled(typeEl) && typeEl.isOneSelected()) {
-			String typeKey = typeEl.getSelectedKey();
-			itemImpl.setType(qpoolService.getItemType(typeKey));
-		}
-		
 		if(isEnabled(contextEl)) {
 			if(contextEl.isOneSelected()) {
 				QEducationalContext context = qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey());
@@ -374,7 +367,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 			itemImpl.setDifferentiation(toBigDecimal(differentiationEl.getValue()));
 		if(isEnabled(numAnswerAltEl))
 			itemImpl.setNumOfAnswerAlternatives(toInt(numAnswerAltEl.getValue()));
-		if(isEnabled(typeEl)) {
+		if(isEnabled(assessmentTypeEl)) {
 			String assessmentType = assessmentTypeEl.isOneSelected() ? assessmentTypeEl.getSelectedKey() : null;
 			itemImpl.setAssessmentType(assessmentType);
 		}

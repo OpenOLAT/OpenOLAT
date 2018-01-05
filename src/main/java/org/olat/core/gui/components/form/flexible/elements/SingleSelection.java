@@ -32,6 +32,8 @@ package org.olat.core.gui.components.form.flexible.elements;
  * @author patrickb
  */
 public interface SingleSelection extends SelectionElement {
+	
+	public String NO_SELECTION_KEY = "noSelectionKey";
 
 	/**
 	 * @return

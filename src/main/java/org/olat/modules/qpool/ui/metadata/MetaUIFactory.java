@@ -89,7 +89,7 @@ public class MetaUIFactory {
 	
 	public static KeyValues getQLicenseKeyValues(QPoolService qpoolService) {
 		List<QLicense> allLicenses = qpoolService.getAllLicenses();
-		List<QLicense> licenses = new ArrayList<QLicense>(allLicenses);
+		List<QLicense> licenses = new ArrayList<>(allLicenses);
 		for(Iterator<QLicense> it=licenses.iterator(); it.hasNext(); ) {
 			String key = it.next().getLicenseKey();
 			if(key != null && key.startsWith("perso-")) {
@@ -97,11 +97,9 @@ public class MetaUIFactory {
 			}
 		}
 
-		String[] keys = new String[licenses.size() + 2];
-		String[] values = new String[licenses.size() + 2];
-		keys[0] = "none";
-		values[0] = "None";
-		int count = 1;
+		String[] keys = new String[licenses.size() + 1];
+		String[] values = new String[licenses.size() + 1];
+		int count = 0;
 		for(QLicense license:licenses) {
 			keys[count] = license.getLicenseKey();
 			values[count++] = license.getLicenseKey();
@@ -214,10 +212,7 @@ public class MetaUIFactory {
 		copyrightEl.clearError();
 		descriptionEl.clearError();
 		if(enabled) {
-			if(!copyrightEl.isOneSelected()) {
-				copyrightEl.setErrorKey("form.mandatory.hover", null);
-				allOk &= false;
-			} else if(copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey())) {
+			if(copyrightEl.isOneSelected() && copyrightEl.getSelectedKey().equals(licenseKeys.getLastKey())) {
 				String licence = descriptionEl.getValue();
 				if(!StringHelper.containsNonWhitespace(licence)) {
 					descriptionEl.setErrorKey("form.mandatory.hover", null);

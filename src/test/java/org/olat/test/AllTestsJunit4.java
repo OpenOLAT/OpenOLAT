@@ -335,6 +335,7 @@ import org.junit.runners.Suite;
 	 */
 	org.olat.core.commons.services.commentAndRating.manager.CommentAndRatingServiceImplTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.richText.TextModeTest.class,
+	org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImplTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.TextElementRendererTest.class,
 	org.olat.modules.card2brain.manager.Card2BrainManagerImplTest.class,
 	org.olat.modules.edubase.manager.EdubaseManagerImplTest.class,
