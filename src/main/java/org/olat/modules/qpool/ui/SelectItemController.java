@@ -31,10 +31,13 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
 import org.olat.modules.qpool.ui.datasource.MarkedItemsSource;
 import org.olat.modules.qpool.ui.datasource.MyItemsSource;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -44,6 +47,7 @@ import org.olat.modules.qpool.ui.events.QItemViewEvent;
  */
 public class SelectItemController extends BasicController {
 	
+	private Link myCompetencesLink;
 	private final Link markedItemsLink, ownedItemsLink, myListsLink, mySharesLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
@@ -51,7 +55,11 @@ public class SelectItemController extends BasicController {
 	private ItemListController markedItemsCtrl;
     private ItemListMyListsController myListsCtrl;
 	private ItemListMySharesController mySharesCtrl;
+	private ItemListMyCompetencesController myCompetencesCtrl;
 	private String restrictToFormat;
+	
+	@Autowired
+	private QuestionPoolModule qpoolModule;
 	
 	public SelectItemController(UserRequest ureq, WindowControl wControl, String restrictToFormat) {
 		super(ureq, wControl);
@@ -70,8 +78,12 @@ public class SelectItemController extends BasicController {
 		segmentView.addSegment(ownedItemsLink, marked <= 0);
         myListsLink = LinkFactory.createLink("my.list", mainVC, this);
         segmentView.addSegment(myListsLink, false);
-		mySharesLink = LinkFactory.createLink("my.share", mainVC, this);
+        mySharesLink = LinkFactory.createLink("my.share", mainVC, this);
 		segmentView.addSegment(mySharesLink, false);
+		if(StringHelper.isLong(qpoolModule.getTaxonomyQPoolKey()) && qpoolModule.isReviewProcessEnabled()) {
+			myCompetencesLink = LinkFactory.createLink("my.competences", mainVC, this);
+			segmentView.addSegment(myCompetencesLink, false);
+		}
 		putInitialPanel(mainVC);
 	}
 	
@@ -95,6 +107,8 @@ public class SelectItemController extends BasicController {
                     updateMyLists(ureq);
                 } else if (clickedLink == mySharesLink) {
 					updateMyShares(ureq);
+				} else if (clickedLink == myCompetencesLink) {
+					updateMyCompetences(ureq);
 				}
 			}
 		}
@@ -149,5 +163,13 @@ public class SelectItemController extends BasicController {
 			listenTo(mySharesCtrl);
 		}
 		mainVC.put("itemList", mySharesCtrl.getInitialComponent());
+	}
+	
+	private void updateMyCompetences(UserRequest ureq) {
+		if(myCompetencesCtrl == null) {
+			myCompetencesCtrl = new ItemListMyCompetencesController(ureq, getWindowControl(), restrictToFormat);
+			listenTo(myCompetencesCtrl);
+		}
+		mainVC.put("itemList", myCompetencesCtrl.getInitialComponent());
 	}
 }
