@@ -88,6 +88,9 @@ public class ReviewProcessAdminController extends FormBasicController {
 					providerEl.select(providerKey, true);
 				}
 			}
+			if (!providerEl.isOneSelected()) {
+				providerEl.select(providerKeys[0], true);
+			}
 		}
 		
 		// lower limit provider
@@ -99,6 +102,7 @@ public class ReviewProcessAdminController extends FormBasicController {
 		lowerLimitEl = new RatingFormItem("lower.limit", qpoolModule.getReviewDecisionLowerLimit(), 5, true);
 		lowerLimitEl.setLabel("lower.limit", null);
 		lowerLimitEl.showLabel(true);
+		lowerLimitEl.setMandatory(true);
 		formLayout.add(lowerLimitEl);
 		
 		uifactory.addSpacerElement("spacer", formLayout, false);
@@ -181,7 +185,6 @@ public class ReviewProcessAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		
 		String selectedProviderType = providerEl.getSelectedKey();
 		qpoolModule.setReviewDecisionType(selectedProviderType);
 		boolean lowerLimitProvider = LowerLimitProvider.TYPE.equals(selectedProviderType)? true: false;
