@@ -21,19 +21,43 @@ package org.olat.upgrade;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
+import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.nodes.dialog.DialogElementsManager;
+import org.olat.course.nodes.dialog.model.DialogElementImpl;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.beecom.objects.Item;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
+import org.olat.modules.docpool.DocumentPoolModule;
+import org.olat.modules.fo.Forum;
+import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.properties.Property;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
+import org.olat.upgrade.legacy.DialogElement;
+import org.olat.upgrade.legacy.DialogPropertyElements;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.thoughtworks.xstream.XStream;
 
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
@@ -49,6 +73,8 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 	
 	private static final String VERSION = "OLAT_12.3.0";
 	private static final String MIGRATE_QPOOL_TITLE = "MIGRATE QPOOL TITLE";
+	private static final String MIGRATE_DIALOG = "MIGRATE DIALOG ELEMENTS";
+	private static final String MOVE_DOC_POOL_INFOS_PAGE = "MOVE DOC POOL INFOS PAGE";
 	
 	@Autowired
 	private DB dbInstance;
@@ -56,6 +82,16 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 	private QPoolService qpoolService;
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private DocumentPoolModule documentPoolModule;
+	@Autowired
+	private ForumManager forumManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private DialogElementsManager dialogElementsManager;
 	
 	public OLATUpgrade_12_3_0() {
 		super();
@@ -85,6 +121,8 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 		// Migrate the topics from the database field title to topic.
 		// Migrate the title of the question (XML) to the database.
 		allOk &= migrateQpoolTopicTitle(upgradeManager, uhd);
+		allOk &= migrateDialogElements(upgradeManager, uhd);
+		allOk &= moveDocumentPoolInfosPage(upgradeManager, uhd);
 		
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -194,5 +232,125 @@ public class OLATUpgrade_12_3_0 extends OLATUpgrade {
 		Item xmlItem = QTIEditHelper.readItemXml(leaf);
 		return xmlItem.getTitle();
 	}
+	
+	private boolean migrateDialogElements(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_DIALOG)) {
+			try {
+				XStream xstream = XStreamHelper.createXStreamInstance();
+				xstream.alias("org.olat.modules.dialog.DialogPropertyElements", DialogPropertyElements.class);
+				xstream.alias("org.olat.modules.dialog.DialogElement", DialogElement.class);
 
+				List<Property> properties = getProperties();
+				for(Property property:properties) {
+					migrateDialogElement(property, xstream);
+					dbInstance.commitAndCloseSession();
+				}
+			} catch (Exception e) {
+				log.error("", e);
+				allOk &= false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_DIALOG, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
+	private boolean migrateDialogElement(Property property, XStream xstream) {
+		Long resourceId = property.getResourceTypeId();
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("CourseModule", resourceId);
+		RepositoryEntry entry = repositoryManager.lookupRepositoryEntry(ores, false);
+		if(entry != null) {
+			String category = property.getCategory();
+			if(category.startsWith("NID:dial::")) {
+				category = category.substring("NID:dial::".length(), category.length());
+			}
+		
+			String value = property.getTextValue();
+			if(StringHelper.containsNonWhitespace(value)) {
+				DialogPropertyElements propertyElements = (DialogPropertyElements)xstream.fromXML(value);
+				List<DialogElement> elements = propertyElements.getDialogPropertyElements();
+				for(DialogElement element:elements) {
+					createDialogElement(element, entry, category);
+				}
+			}
+		}
+		return true;
+	}
+	
+	private void createDialogElement(DialogElement element, RepositoryEntry entry, String nodeIdent) {
+		try {
+			Identity author = null;
+			if(StringHelper.isLong(element.getAuthor())) {
+				author = securityManager.loadIdentityByKey(Long.valueOf(element.getAuthor()));
+			} else if(StringHelper.containsNonWhitespace(element.getAuthor())) {
+				author = securityManager.findIdentityByName(element.getAuthor());
+			}
+			
+			Forum forum = forumManager.loadForum(element.getForumKey());
+			if(forum == null) {
+				log.error("Missing forum", null);
+				return;
+			}
+			
+			Object currentElement = dialogElementsManager.getDialogElementByForum(forum.getKey());
+			if(currentElement != null) {
+				return;
+			}
+			
+			Date date = element.getDate() == null ? new Date() : element.getDate();
+			DialogElementImpl el = new DialogElementImpl();
+			el.setCreationDate(date);
+			el.setLastModified(date);
+			el.setFilename(element.getFilename());
+			el.setSize(getFileSize(forum.getKey()));
+			el.setEntry(entry);
+			el.setSubIdent(nodeIdent);
+			el.setAuthor(author);
+			el.setForum(forum);
+			dbInstance.getCurrentEntityManager().persist(el);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	public Long getFileSize(Long forumKey) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("/forum/").append(forumKey).append("/");
+		OlatRootFolderImpl forumContainer = new OlatRootFolderImpl(sb.toString(), null);
+		VFSItem vl = forumContainer.getItems().get(0);
+		if(vl instanceof VFSLeaf) {
+			return ((VFSLeaf)vl).getSize();
+		}
+		return -1l;
+	}
+	
+	private List<Property> getProperties() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select v from ").append(Property.class.getName()).append(" as v ")
+		  .append(" where v.name=:name and v.resourceTypeName=:resName");
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Property.class)
+				.setParameter("name", "fileDialog")
+				.setParameter("resName", "CourseModule")
+				.getResultList();
+	}
+	
+	private boolean moveDocumentPoolInfosPage(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MOVE_DOC_POOL_INFOS_PAGE)) {
+			String path = "/" + TaxonomyService.DIRECTORY + "/" + DocumentPoolModule.INFOS_PAGE_DIRECTORY;
+			VFSContainer taxonomyContainer =  new OlatRootFolderImpl(path, null);
+			VFSContainer documentPoolContainer = documentPoolModule.getInfoPageContainer();
+			if(taxonomyContainer.exists()
+					&& documentPoolContainer.getItems(new VFSLeafButSystemFilter()).isEmpty()
+					&& !taxonomyContainer.getItems(new VFSLeafButSystemFilter()).isEmpty()) {
+				VFSManager.copyContent(taxonomyContainer, documentPoolContainer);
+				taxonomyContainer.delete();
+			}
+			uhd.setBooleanDataValue(MOVE_DOC_POOL_INFOS_PAGE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
 }

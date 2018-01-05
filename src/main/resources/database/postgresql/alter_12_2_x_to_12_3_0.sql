@@ -13,3 +13,32 @@ alter table o_as_entry add column a_current_run_status varchar(16);
 alter table o_qti_assessmenttest_session add column q_num_questions int8;
 alter table o_qti_assessmenttest_session add column q_num_answered_questions int8;
 alter table o_qti_assessmenttest_session add column q_extra_time int8;
+
+-- dialog elements
+create table o_dialog_element (
+  id bigserial,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  d_filename varchar(2048),
+  d_filesize int8,
+  d_subident varchar(64) not null,
+  fk_author int8,
+  fk_entry int8 not null,
+  fk_forum int8 not null,
+  primary key (id)
+);
+
+alter table o_dialog_element add constraint dial_el_author_idx foreign key (fk_author) references o_bs_identity (id);
+create index idx_dial_el_author_idx on o_dialog_element (fk_author);
+alter table o_dialog_element add constraint dial_el_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_dial_el_entry_idx on o_dialog_element (fk_entry);
+alter table o_dialog_element add constraint dial_el_forum_idx foreign key (fk_forum) references o_forum (forum_id);
+create index idx_dial_el_forum_idx on o_dialog_element (fk_forum);
+create index idx_dial_el_subident_idx on o_dialog_element (d_subident);
+
+
+
+
+
+
+

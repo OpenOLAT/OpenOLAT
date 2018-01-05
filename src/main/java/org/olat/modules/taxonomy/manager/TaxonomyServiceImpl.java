@@ -166,16 +166,12 @@ public class TaxonomyServiceImpl implements TaxonomyService {
 			dir += "_" + taxonomyLevel.getKey();
 			VFSContainer lastStorage = lostAndFound.createChildContainer(dir);
 			VFSManager.copyContent(library, lastStorage);
+			//delete the competences
+			taxonomyCompetenceDao.deleteCompetences(taxonomyLevel);
+			//questions
+			taxonomyRelationsDao.removeFromQuestionItems(taxonomyLevel);
 		}
 
-		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
-	}
-	
-	@Override
-	public boolean mergeTaxonomyLevel(TaxonomyLevelRef taxonomyLevel, TaxonomyLevelRef mergeTo) {
-		TaxonomyLevel reloadedTaxonomyLevel = taxonomyLevelDao.loadByKey(taxonomyLevel.getKey());
-		TaxonomyLevel reloadedMergeTo = taxonomyLevelDao.loadByKey(mergeTo.getKey());
-		merge(reloadedTaxonomyLevel, reloadedMergeTo);
 		return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
 	}
 

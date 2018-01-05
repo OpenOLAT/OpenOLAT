@@ -341,6 +341,15 @@ public class AssignmentDAO {
 				.setParameter("assignmentKey", assignment.getKey())
 				.executeUpdate();
 	}
+	
+	public int deleteAssignmentBySection(Section section) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete pfassignment assignment where assignment.section.key=:sectionKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("sectionKey", section.getKey())
+				.executeUpdate();
+	}
 
 	public int deleteAssignment(Assignment assignment) {
 		StringBuilder sb = new StringBuilder();

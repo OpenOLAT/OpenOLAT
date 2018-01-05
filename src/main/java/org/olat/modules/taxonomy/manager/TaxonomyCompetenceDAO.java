@@ -290,6 +290,21 @@ public class TaxonomyCompetenceDAO {
 				.executeUpdate();
 	}
 	
+	/**
+	 * Delete all competences hold by the specified taxonomy
+	 * level.
+	 * 
+	 * @param level A taxonomy level
+	 * @return Number of deleted rows
+	 */
+	public int deleteCompetences(TaxonomyLevelRef level) {
+		String q = "delete from ctaxonomycompetence as competence where competence.taxonomyLevel.key=:levelKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("levelKey", level.getKey())
+				.executeUpdate();
+	}
+	
 	public void deleteCompetence(TaxonomyCompetence competence) {
 		TaxonomyCompetence reloadedCompetence = dbInstance.getCurrentEntityManager()
 			.getReference(TaxonomyCompetenceImpl.class, competence.getKey());

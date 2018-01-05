@@ -26,34 +26,30 @@
 package org.olat.search.service.indexer.repository.course;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.Constants;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.properties.CoursePropertyManager;
-import org.olat.modules.dialog.DialogElement;
-import org.olat.modules.dialog.DialogElementsController;
-import org.olat.modules.dialog.DialogElementsPropertyManager;
-import org.olat.modules.dialog.DialogPropertyElements;
+import org.olat.course.nodes.dialog.DialogElement;
+import org.olat.course.nodes.dialog.DialogElementsManager;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.Status;
 import org.olat.modules.fo.manager.ForumManager;
+import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.document.ForumMessageDocument;
@@ -86,21 +82,13 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 		Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
 		indexWriter.addDocument(document);
 		
-		CoursePropertyManager coursePropMgr = course.getCourseEnvironment().getCoursePropertyManager();
-		DialogElementsPropertyManager dialogElmsMgr = DialogElementsPropertyManager.getInstance();
-		DialogPropertyElements elements = dialogElmsMgr.findDialogElements(coursePropMgr, courseNode);
-		List<DialogElement> list = new ArrayList<DialogElement>();
-		if (elements != null) list = elements.getDialogPropertyElements();
-		// loop over all dialog elements
-		for (Iterator<DialogElement> iter = list.iterator(); iter.hasNext();) {
-			DialogElement element = iter.next();
-			element.getAuthor();
-			element.getDate();
-			Forum forum = ForumManager.getInstance().loadForum(element.getForumKey());
-			// do IndexForum
+		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		DialogElementsManager dialogElmsMgr = CoreSpringFactory.getImpl(DialogElementsManager.class);
+		List<DialogElement> elements = dialogElmsMgr.getDialogElements(entry, courseNode.getIdent());
+		for (DialogElement element:elements) {
+			Forum forum = element.getForum();
 			doIndexAllMessages(courseNodeResourceContext, forum, indexWriter );
-			// do Index File
-			doIndexFile(element.getFilename(), element.getForumKey(), courseNodeResourceContext, indexWriter);
+			doIndexFile(element, courseNodeResourceContext, indexWriter);
 		}
 	}
 
@@ -113,13 +101,15 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	private void doIndexFile(String filename, Long forumKey, SearchResourceContext leafResourceContext, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
-		OlatRootFolderImpl forumContainer = DialogElementsController.getForumContainer(forumKey);
-		VFSLeaf leaf = (VFSLeaf) forumContainer.getItems(new VFSLeafFilter()).get(0);
+	private void doIndexFile(DialogElement element, SearchResourceContext leafResourceContext, OlatFullIndexer indexWriter)
+	throws IOException,InterruptedException {
+		DialogElementsManager dialogElmsMgr = CoreSpringFactory.getImpl(DialogElementsManager.class);
+		VFSContainer dialogContainer = dialogElmsMgr.getDialogContainer(element);
+		VFSLeaf leaf = (VFSLeaf) dialogContainer.getItems(new VFSLeafFilter()).get(0);
 		if (isLogDebugEnabled()) logDebug("Analyse VFSLeaf=" + leaf.getName());
 		try {
 			if (CoreSpringFactory.getImpl(FileDocumentFactory.class).isFileSupported(leaf)) {
-				leafResourceContext.setFilePath(filename);
+				leafResourceContext.setFilePath(element.getFilename());
 				leafResourceContext.setDocumentType(TYPE_FILE);
 				
 				Document document = CoreSpringFactory.getImpl(FileDocumentFactory.class).createDocument(leafResourceContext, leaf);

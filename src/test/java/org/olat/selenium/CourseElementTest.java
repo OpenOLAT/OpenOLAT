@@ -793,6 +793,7 @@ public class CourseElementTest extends Deployments {
 		
 		//The author reload the messages
 		dialog
+			.back()
 			.openForum(imageRunFile.getName())
 			.openThread("JPEG vs PNG")
 			.assertMessageBody("Not a loosy format")
@@ -800,6 +801,7 @@ public class CourseElementTest extends Deployments {
 		
 		//The participant check the reply
 		participantDialog
+			.back()
 			.openForum(imageRunFile.getName())
 			.openThread("JPEG vs PNG")
 			.assertMessageBody("JPEG is smaller");

@@ -1,0 +1,16 @@
+<div class="panel panel-default o_block_large_top">
+	<div class="panel-heading">
+		<h3 class="panel-title">$r.translate("dialog.selected.element"): 
+		<i class="o_icon o_icon-fw $r.getFiletypeIconCss($filename)"> </i> $filename</h3>
+	</div>
+	<table class="table table-bordered table-condensed">
+		<tr><th>$r.translate("table.header.filename")</th><td>$r.render("download")</td></tr>
+		#if($r.isNotEmpty($size))
+		<tr><th>$r.translate("table.header.size")</th><td>$size</td></tr>
+		#end
+		#if($r.isNotEmpty($size))
+		<tr><th>$r.translate("table.header.author")</th><td>$author</td></tr>
+		#end
+	</table>
+</div>
+$r.render("forum")

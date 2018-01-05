@@ -73,7 +73,17 @@ public class VideoTranscodingDAOTest extends OlatTestCase {
 		Assert.assertNotNull(vTranscodingList2);
 		Assert.assertEquals(1, vTranscodingList2.size());
 		Assert.assertEquals(vTranscoding, vTranscodingList2.get(0));
+	}
+	
+	@Test
+	public void getVideoTranscodingByKey() {
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		VideoTranscoding vTranscoding = videoTranscodingDao.createVideoTranscoding(resource, 1080, "mp4");
+		dbInstance.commitAndCloseSession();
 		
+		VideoTranscoding reloadedTranscoding = videoTranscodingDao.getVideoTranscoding(vTranscoding.getKey());
+		Assert.assertNotNull(reloadedTranscoding);
+		Assert.assertEquals(vTranscoding, reloadedTranscoding);
 	}
 	
 	@Test

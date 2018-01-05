@@ -85,11 +85,13 @@ public class MetadatasController extends BasicController {
 
 		if (qpoolModule.isPoolsEnabled()) {
 			poolsCtrl = new PoolsMetadataController(ureq, wControl, item);
+			listenTo(poolsCtrl);
 			mainVC.put("details_pools", poolsCtrl.getInitialComponent());
 		}
 		
 		if (qpoolModule.isSharesEnabled()) {
 			sharesController = new SharesMetadataController(ureq, wControl, item);
+			listenTo(sharesController);
 			mainVC.put("details_shares", sharesController.getInitialComponent());
 		}
 

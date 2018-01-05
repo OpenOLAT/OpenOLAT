@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -51,12 +50,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -70,7 +69,12 @@ import org.olat.course.config.ui.courselayout.attribs.AbstractLayoutAttribute;
 import org.olat.course.config.ui.courselayout.attribs.PreviewLA;
 import org.olat.course.config.ui.courselayout.attribs.SpecialAttributeFormItemHandler;
 import org.olat.course.config.ui.courselayout.elements.AbstractLayoutElement;
+import org.olat.course.run.RunMainController;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
+import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -89,7 +93,6 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private FileElement logoUpl;
 	private FormLayoutContainer previewImgFlc;
 	private FormLayoutContainer styleFlc;
-	private CustomConfigManager customCMgr;
 	private LinkedHashMap<String, Map<String, FormItem>> guiWrapper;
 	private Map<String, Map<String, Object>> persistedCustomConfig;
 	private FormLayoutContainer logoImgFlc;
@@ -97,25 +100,55 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	private boolean elWithErrorExists = false;
 	private final boolean editable;
 	
-	private final OLATResourceable courseOres;
+	private LockResult lockEntry;
 	private CourseConfig courseConfig;
+	private final RepositoryEntry courseEntry;
 	private CourseEnvironment courseEnvironment;
+	
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private CustomConfigManager customCMgr;
 
-	public CourseLayoutGeneratorController(UserRequest ureq, WindowControl wControl, OLATResourceable courseOres, CourseConfig courseConfig,
+	public CourseLayoutGeneratorController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, CourseConfig courseConfig,
 			CourseEnvironment courseEnvironment, boolean editable) {
 		super(ureq, wControl);
-		
-		this.editable = editable;
-		this.courseOres = courseOres;
+
+		this.courseEntry = entry;
 		this.courseConfig = courseConfig;
 		this.courseEnvironment = courseEnvironment;
-		customCMgr = (CustomConfigManager) CoreSpringFactory.getBean("courseConfigManager");
+		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
+				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
+		this.editable = (lockEntry != null && lockEntry.isSuccess()) && editable;
+		
 		// stack the translator to get attribs/elements
-		Translator pt = Util.createPackageTranslator(AbstractLayoutAttribute.class, ureq.getLocale(), getTranslator());
-		pt = Util.createPackageTranslator(AbstractLayoutElement.class, ureq.getLocale(), pt);
+		Translator pt = Util.createPackageTranslator(AbstractLayoutAttribute.class, getLocale(), getTranslator());
+		pt = Util.createPackageTranslator(AbstractLayoutElement.class, getLocale(), pt);
+		pt = Util.createPackageTranslator(RunMainController.class, getLocale(), pt);
 		setTranslator(pt);
+		
 		persistedCustomConfig = customCMgr.getCustomConfig(courseEnvironment);
 		initForm(ureq);
+		
+		if(lockEntry != null && !lockEntry.isSuccess()) {
+			String lockerName = "???";
+			if(lockEntry.getOwner() != null) {
+				lockerName = userManager.getUserDisplayName(lockEntry.getOwner());
+			}
+			showWarning("error.editoralreadylocked", new String[] { lockerName });
+		}
+	}
+	
+	
+	/**
+	 * @see org.olat.core.gui.control.DefaultController#doDispose()
+	 */
+	@Override
+	protected void doDispose() {
+		if (lockEntry != null && lockEntry.isSuccess()) {
+			CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
+			lockEntry = null;
+		}
 	}
 
 	/**
@@ -125,9 +158,9 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("tab.layout.title");
 		
-		ArrayList<String> keys = new ArrayList<String>();
-		ArrayList<String> vals = new ArrayList<String>();
-		ArrayList<String> csss = new ArrayList<String>();
+		List<String> keys = new ArrayList<String>();
+		List<String> vals = new ArrayList<String>();
+		List<String> csss = new ArrayList<String>();
 
 		String actualCSSSettings = courseConfig.getCssLayoutRef();
 		
@@ -372,9 +405,15 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
+		OLATResource courseRes = courseEntry.getOlatResource();
+		if(CourseFactory.isCourseEditSessionOpen(courseRes.getResourceableId())) {
+			showWarning("error.editoralreadylocked", new String[] { "???" });
+			return;
+		}
+		
 		String selection = styleSel.getSelectedKey();
 		
-		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
+		ICourse course = CourseFactory.openCourseEditSession(courseRes.getResourceableId());
 		courseEnvironment = course.getCourseEnvironment();
 		courseConfig = courseEnvironment.getCourseConfig();
 		courseConfig.setCssLayoutRef(selection);
@@ -457,15 +496,4 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		}		
 		styleFlc.contextPut("guiWrapper", guiWrapper);
 	}
-	
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
-	@Override
-	protected void doDispose() {
-		// nothing to dispose
-	}
-
-
 }

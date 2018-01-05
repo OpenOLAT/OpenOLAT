@@ -62,8 +62,20 @@ public class DialogPage {
 		return this;
 	}
 	
+	/**
+	 * Return back to the list of dialog elements from a selected one.
+	 * 
+	 * @return Itself
+	 */
+	public DialogPage back() {
+		By backBy = By.cssSelector("div.o_sel_dialog a.o_link_back");
+		browser.findElement(backBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public ForumPage openForum(String filename) {
-		By openForumBy = By.xpath("//table//tr[td/a[contains(text(),'" + filename + "')]]/td/a[contains(@onclick,'startforum')]");
+		By openForumBy = By.xpath("//table//tr[td/a[contains(text(),'" + filename + "')]]/td/a[contains(@href,'forum')]");
 		browser.findElement(openForumBy).click();
 		OOGraphene.waitBusy(browser);
 		By forumBy = By.cssSelector("div.o_sel_dialog div.o_sel_forum");
