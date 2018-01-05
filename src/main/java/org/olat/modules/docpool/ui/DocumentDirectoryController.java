@@ -33,7 +33,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.modules.taxonomy.Taxonomy;
 
 /**
  * 
@@ -45,12 +44,11 @@ public class DocumentDirectoryController extends BasicController implements Acti
 	
 	private final VelocityContainer mainVC;
 	private FolderRunController folderCtrl;
-
 	
 	public DocumentDirectoryController(UserRequest ureq, WindowControl wControl,
-			Taxonomy taxonomy, VFSContainer documents, String name) {
+			VFSContainer documents, String name) {
 		super(ureq, wControl);
-
+		
 		mainVC = createVelocityContainer("document_directory");
 		mainVC.contextPut("iconCssClass", "o_icon_taxonomy_templates");
 		mainVC.contextPut("displayName", name);
@@ -58,10 +56,13 @@ public class DocumentDirectoryController extends BasicController implements Acti
 		String rootName = translate("document.pool.templates");
 		VFSContainer namedContainer = new NamedContainerImpl(rootName, documents);
 		folderCtrl = new FolderRunController(namedContainer, true, true, true, ureq, getWindowControl());
-		folderCtrl.setResourceURL("[DocumentPool:" + taxonomy.getKey() + "]");
 		mainVC.put("folder", folderCtrl.getInitialComponent());
 
 		putInitialPanel(mainVC);
+	}
+	
+	public void setAdditionalResourceURL(String additionalUrl) {
+		folderCtrl.setResourceURL("[DocumentPool:0]" + additionalUrl);
 	}
 
 	@Override

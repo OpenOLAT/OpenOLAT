@@ -135,6 +135,9 @@ public class SearchControllerFactory implements SearchServiceUIFactory {
 				if ("DocumentPool".equals(tokenType)) {
 					return translator.translate("DocumentPool");
 				}
+				if ("Templates".equals(tokenType)) {
+					return translator.translate("Templates");
+				}
 				if("userfolder".equals(tokenType)) {
 					return translator.translate("type.identity.publicfolder");
 				}

@@ -20,8 +20,13 @@
 package org.olat.modules.docpool.search.indexer;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
+import org.olat.core.id.context.BusinessControl;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.docpool.DocumentPoolModule;
@@ -45,11 +50,6 @@ public class DocumentPoolIndexer extends TaxonomyLibraryIndexer implements Initi
 	
 	@Autowired
 	private DocumentPoolModule documentPoolModule;
-	
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		addIndexer(taxonomyLevelLibraryIndexer);
-	}
 
 	@Override
 	public String getSupportedTypeName() {
@@ -73,5 +73,19 @@ public class DocumentPoolIndexer extends TaxonomyLibraryIndexer implements Initi
 			searchResourceContext.setCreatedDate(taxonomy.getCreationDate());
 			doIndexTaxonomyLibrary(searchResourceContext, taxonomy, indexerWriter);
 		}
+	}
+
+	@Override
+	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
+		if(!documentPoolModule.isTemplatesDirectoryEnabled()) {
+			//discard templates content
+			List<ContextEntry> entries = businessControl.getEntriesDownTheControls();
+			for(ContextEntry entry:entries) {
+				if("Templates".equals(entry.getOLATResourceable().getResourceableTypeName())) {
+					return false;
+				}
+			}
+		}
+		return super.checkAccess(contextEntry, businessControl, identity, roles);
 	}
 }
