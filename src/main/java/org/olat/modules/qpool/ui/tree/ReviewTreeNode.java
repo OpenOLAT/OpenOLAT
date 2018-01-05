@@ -83,8 +83,9 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
 					REVIEW + taxonomyLevel.getKey());
 		} else {
-			questionsCtrl.updateSource(source);
+			questionsCtrl.updateSource();
 		}
+		reloadCount();
 		return questionsCtrl;
 	}
 	

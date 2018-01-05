@@ -67,17 +67,17 @@ public class MyQuestionsTreeNode extends GenericTreeNode implements ControllerTr
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		QuestionItemsSource source = new MyItemsSource(
-				ureq.getIdentity(),
-				ureq.getUserSession().getRoles(),
-				ITEM_SOURCE_NAME);
 		if(questionsCtrl == null) {
+			QuestionItemsSource source = new MyItemsSource(
+					ureq.getIdentity(),
+					ureq.getUserSession().getRoles(),
+					ITEM_SOURCE_NAME);
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
 					TABLE_PREFERENCE_PREFIX);
 		} else {
-			questionsCtrl.updateSource(source);
+			questionsCtrl.updateSource();
 		}
 		return questionsCtrl;
 	}

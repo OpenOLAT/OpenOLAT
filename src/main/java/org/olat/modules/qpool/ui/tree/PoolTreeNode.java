@@ -70,18 +70,18 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		PoolItemsSource source = new PoolItemsSource(
-				ureq.getIdentity(),
-				ureq.getUserSession().getRoles(),
-				pool);
-		source.setRemoveEnabled(isPoolAdmin(ureq, pool));
 		if(questionsCtrl == null) {
+			PoolItemsSource source = new PoolItemsSource(
+					ureq.getIdentity(),
+					ureq.getUserSession().getRoles(),
+					pool);
+			source.setRemoveEnabled(isPoolAdmin(ureq, pool));
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, pool, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
 					TABLE_PREFERENCE_PREFIX + pool.getKey());
 		} else {
-			questionsCtrl.updateSource(source);
+			questionsCtrl.updateSource();
 		}
 		return questionsCtrl;
 	}

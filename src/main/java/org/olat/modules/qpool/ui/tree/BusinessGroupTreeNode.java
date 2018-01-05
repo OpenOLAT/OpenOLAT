@@ -70,19 +70,19 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 	
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
-		boolean shareAdmin = isShareAdmin(ureq, group);
-		QuestionItemsSource source = new SharedItemsSource(
-				group,
-				ureq.getIdentity(),
-				ureq.getUserSession().getRoles(),
-				shareAdmin);
 		if(questionsCtrl == null) {
+			boolean shareAdmin = isShareAdmin(ureq, group);
+			QuestionItemsSource source = new SharedItemsSource(
+					group,
+					ureq.getIdentity(),
+					ureq.getUserSession().getRoles(),
+					shareAdmin);
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, group, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
 					TABLE_PREFERENCE_PREFIX + group.getKey());
 		} else {
-			questionsCtrl.updateSource(source);
+			questionsCtrl.updateSource();
 		}
 		return questionsCtrl;
 	}
