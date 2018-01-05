@@ -19,82 +19,65 @@
  */
 package org.olat.modules.taxonomy.search.indexer;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
-import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyLevelType;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.search.service.SearchResourceContext;
-import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
+import org.olat.search.service.indexer.DefaultIndexer;
+import org.olat.search.service.indexer.FolderIndexerAccess;
+import org.olat.search.service.indexer.FolderIndexerWorker;
 import org.olat.search.service.indexer.OlatFullIndexer;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 20 oct. 2017<br>
+ * Initial date: 5 janv. 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public abstract class TaxonomyLibraryIndexer extends AbstractHierarchicalIndexer implements InitializingBean {
+@Service("taxonomyTemplatesLibraryIndexer")
+public class TaxonomyTemplatesLibraryIndexer extends DefaultIndexer {
 	
 	@Autowired
 	protected TaxonomyService taxonomyService;
-	@Autowired
-	protected TaxonomyLevelLibraryIndexer taxonomyLevelLibraryIndexer;
-	@Autowired
-	protected TaxonomyTemplatesLibraryIndexer taxonomyTemplatesLibraryIndexer;
+
+	@Override
+	public String getSupportedTypeName() {
+		return "Templates";
+	}
 	
 	@Override
-	public void afterPropertiesSet() throws Exception {
-		addIndexer(taxonomyLevelLibraryIndexer);
-		addIndexer(taxonomyTemplatesLibraryIndexer);
-	}
-	
-	protected void doIndexTaxonomyLibrary(SearchResourceContext searchResourceContext, Taxonomy taxonomy, OlatFullIndexer indexerWriter)
-	throws InterruptedException  {
+	public void doIndex(SearchResourceContext parentResourceContext, Object parentObject, OlatFullIndexer indexerWriter)
+	throws IOException, InterruptedException {
+		Taxonomy taxonomy = (Taxonomy)parentObject;
 		VFSContainer templatesContainer = taxonomyService.getDocumentsLibrary(taxonomy);
 		if(templatesContainer != null) {
-			try {
-				taxonomyTemplatesLibraryIndexer.doIndex(searchResourceContext, taxonomy, indexerWriter);
-			} catch(InterruptedException e) {
-				throw e;
-			} catch (Exception e) {
-				logError("", e);
-			}
+			SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
+			OLATResourceable templateOres = OresHelper.createOLATResourceableInstance(getSupportedTypeName(), 0l);
+			searchResourceContext.setBusinessControlFor(templateOres);
+
+			FolderIndexerWorker runnableFolderIndexer = new  FolderIndexerWorker();
+			runnableFolderIndexer.setAccessRule(FolderIndexerAccess.FULL_ACCESS);
+			runnableFolderIndexer.setParentResourceContext(searchResourceContext);
+			runnableFolderIndexer.setContainer(templatesContainer);
+			runnableFolderIndexer.setIndexWriter(indexerWriter);
+			runnableFolderIndexer.setFilePath("");
+			indexerWriter.submit(runnableFolderIndexer);
 		}
-		
-		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(taxonomy);
-		for(TaxonomyLevel level:levels) {
-			TaxonomyLevelType type = level.getType();
-			if(type != null && hasDocumentLibraryEnabled(type)) {
-				try {
-					taxonomyLevelLibraryIndexer.doIndex(searchResourceContext, level, indexerWriter);
-				} catch(InterruptedException e) {
-					throw e;
-				} catch (Exception e) {
-					logError("", e);
-				}
-			}
-		}
-	}
-	
-	private boolean hasDocumentLibraryEnabled(TaxonomyLevelType type) {
-		return type.isDocumentsLibraryManageCompetenceEnabled()
-				|| type.isDocumentsLibraryTeachCompetenceReadEnabled()
-				|| type.isDocumentsLibraryTeachCompetenceWriteEnabled()
-				|| type.isDocumentsLibraryHaveCompetenceReadEnabled()
-				|| type.isDocumentsLibraryTargetCompetenceReadEnabled();
 	}
 
 	@Override
@@ -106,6 +89,6 @@ public abstract class TaxonomyLibraryIndexer extends AbstractHierarchicalIndexer
 			TaxonomyRef taxonomy = new TaxonomyRefImpl(contextEntry.getOLATResourceable().getResourceableId());
 			return taxonomyService.hasTaxonomyCompetences(taxonomy, identity, new Date(), TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach);
 		}
-		return super.checkAccess(businessControl, identity, roles);
+		return false;
 	}
 }

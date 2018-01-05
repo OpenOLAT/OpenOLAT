@@ -35,9 +35,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.FullAccessCallback;
@@ -102,6 +104,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 		content.setNeverDisposeRootController(true);
 		content.setToolbarAutoEnabled(true);
 		
+		
 		TreeNode root = taxonomyTree.getTreeModel().getRootNode();
 		if(root.getChildCount() > 0) {
 			taxonomyTree.open((TreeNode)root.getChildAt(0));
@@ -138,15 +141,16 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 			}
 		} else {
 			String resourceName = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if(resourceName.startsWith("path=")) {
+			if("Templates".equals(resourceName) || resourceName.startsWith("path=")) {
 				TreeNode rootNode = taxonomyTree.getTreeModel().getRootNode();
 				if(rootNode.getChildCount() > 0) {
 					TaxonomyTreeNode node = (TaxonomyTreeNode)rootNode.getChildAt(0);
-					if(node.getType() == TaxonomyTreeNodeType.templates || node.getType() == TaxonomyTreeNodeType.lostAndFound) {
-						DocumentDirectoryController directoryCtrl = doSelectTaxonomyDirectory(ureq, node);
+					if(node.getType() == TaxonomyTreeNodeType.templates) {
+						DocumentDirectoryController directoryCtrl = doSelectTemplatesDirectory(ureq, node);
 						if(directoryCtrl != null) {
 							taxonomyTree.setSelectedNode(node);
-							directoryCtrl.activate(ureq, entries, null);
+							List<ContextEntry> subEntries = entries.subList(1, entries.size());
+							directoryCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 						}
 					}
 				}
@@ -161,7 +165,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 						levelCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 					}
 				}
-			}
+			} 
 		}
 	}
 
@@ -195,6 +199,9 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 					TaxonomyTreeNode node = (TaxonomyTreeNode)popEvent.getUserObject();
 					doSelect(ureq, node);
 					taxonomyTree.setSelectedNode(node);
+				} else if(popEvent.getController() instanceof DocumentDirectoryController) {
+					//pop the templates
+					taxonomyTree.setSelectedNode(taxonomyTree.getTreeModel().getRootNode());
 				}
 			}
 		}
@@ -206,11 +213,12 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 				doSelectTaxonomy(ureq);
 				break;
 			case templates:
-			case lostAndFound:
-				doSelectTaxonomyDirectory(ureq, node);
+				doSelectTemplatesDirectory(ureq, node);
 				break;
 			case taxonomyLevel:
 				doSelectTaxonomyLevel(ureq, node);
+				break;
+			case lostAndFound:
 				break;
 		}
 	}
@@ -219,7 +227,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 		content.popUpToRootController(ureq);
 	}
 	
-	private DocumentDirectoryController doSelectTaxonomyDirectory(UserRequest ureq, TaxonomyTreeNode node) {
+	private DocumentDirectoryController doSelectTemplatesDirectory(UserRequest ureq, TaxonomyTreeNode node) {
 		content.popUpToRootController(ureq);
 		
 		VFSContainer directory = node.getDirectory();
@@ -227,7 +235,10 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 		directory.setLocalSecurityCallback(secCallback);
 		
 		String name = translate("document.pool.templates");
-		DocumentDirectoryController directoryCtrl = new DocumentDirectoryController(ureq, getWindowControl(), node.getTaxonomy(), directory, name);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Templates", 0l);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		DocumentDirectoryController directoryCtrl = new DocumentDirectoryController(ureq, bwControl, directory, name);
+		directoryCtrl.setAdditionalResourceURL("[Templates:0]");
 		listenTo(directoryCtrl);
 
 		content.pushController(name, directoryCtrl);
@@ -240,7 +251,9 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 
 			SubscriptionContext subscriptionCtx = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext();
 			TaxonomyVFSSecurityCallback secCallback = new TaxonomyVFSSecurityCallback(node, subscriptionCtx);
-			DocumentPoolLevelController levelCtrl = new DocumentPoolLevelController(ureq, getWindowControl(), level, node, secCallback);
+			OLATResourceable ores = OresHelper.createOLATResourceableInstance("TaxonomyLevel", node.getTaxonomyLevel().getKey());
+			WindowControl bwControl = addToHistory(ureq, ores, null);
+			DocumentPoolLevelController levelCtrl = new DocumentPoolLevelController(ureq, bwControl, level, node, secCallback);
 			listenTo(levelCtrl);
 			String displayName = level.getDisplayName();
 			
