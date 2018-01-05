@@ -8,7 +8,9 @@ $r.contextHelpWithWrapper("Data Management#qb_change_md")<br/>
 <fieldset><legend>$r.translate("rights")</legend>
 	$r.render("rights")
 </fieldset>
-<fieldset><legend>$r.translate("technical")</legend>
-	$r.render("technical")
-</fieldset>
+#if($r.available("technical"))
+	<fieldset><legend>$r.translate("technical")</legend>
+		$r.render("technical")
+	</fieldset>
+#end
 $r.render("buttons")

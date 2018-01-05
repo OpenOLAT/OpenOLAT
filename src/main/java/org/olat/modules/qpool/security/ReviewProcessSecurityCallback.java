@@ -44,7 +44,7 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	
 	private static final Collection<QuestionStatus> DELETABLE_STATES = Arrays.asList(
 			QuestionStatus.draft,
-			QuestionStatus.review,
+			QuestionStatus.revised,
 			QuestionStatus.endOfLife);
 
 	private QuestionItemView itemView;

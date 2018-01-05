@@ -224,8 +224,12 @@ public class RightsMetadataEditController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == copyrightEl) {
-			String selectedKey = copyrightEl.getSelectedKey();
-			descriptionEl.setVisible(selectedKey.equals(licenseKeys.getLastKey()));
+			boolean visible = false;
+			if (copyrightEl.isOneSelected()) {
+				String selectedKey = copyrightEl.getSelectedKey();
+				visible = selectedKey.equals(licenseKeys.getLastKey());
+			}
+			descriptionEl.setVisible(visible);
 			flc.setDirty(true);
 		} else if(source == managerOwners) {
 			okButton.getComponent().setDirty(false);

@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
@@ -342,20 +343,10 @@ public abstract class AbstractItemListController extends FormBasicController
 		}
 	}
 
-	public List<QuestionItemShort> getSelectedShortItems(boolean onlyEditable) {
-		Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
-		return getShortItems(selections, onlyEditable);
-	}
-
-	public List<QuestionItemShort> getShortItems(Set<Integer> index, boolean onlyEditable) {
-		List<QuestionItemShort> items = new ArrayList<>();
-		for(Integer i:index) {
-			ItemRow row = model.getObject(i.intValue());
-			if(row != null && (!onlyEditable || row.isEditable())) {
-				items.add(row);
-			}
-		}
-		return items;
+	public List<QuestionItemShort> getSelectedShortItems() {
+		return getItemsTable().getMultiSelectedIndex().stream()
+				.map(index -> getModel().getObject(index.intValue()))
+				.collect(Collectors.toList());
 	}
 	
 	public List<QuestionItemView> getItemViews(Set<Integer> index) {

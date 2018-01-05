@@ -20,7 +20,6 @@
 package org.olat.modules.qpool.ui.metadata;
 
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
-import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateSelection;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -181,8 +180,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 		allOk &= validateElementLogic(keywordsEl, keywordsEl.getMaxLength(), false, true);
 		allOk &= validateElementLogic(coverageEl, coverageEl.getMaxLength(), false, true);
 		allOk &= validateElementLogic(addInfosEl, addInfosEl.getMaxLength(), false, true);
-		allOk &= validateElementLogic(languageEl, languageEl.getMaxLength(), true, true);
-		allOk &= validateSelection(assessmentTypeEl, true);
+		allOk &= validateElementLogic(languageEl, languageEl.getMaxLength(), false, true);
 		return allOk && super.validateFormLogic(ureq);
 	}
 	

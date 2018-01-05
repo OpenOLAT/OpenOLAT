@@ -151,7 +151,7 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
-		allOk &= validateElementLogic(versionEl, versionEl.getMaxLength(), true, true);
+		allOk &= validateElementLogic(versionEl, versionEl.getMaxLength(), false, true);
 		return allOk &= super.validateFormLogic(ureq);
 	}
 	

@@ -50,9 +50,11 @@ import org.olat.core.util.Util;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.qpool.ui.ItemRow;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.modules.qpool.ui.tree.QPoolTaxonomyTreeBuilder;
@@ -87,14 +89,16 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private final List<MultipleSelectionElement> checkboxSwitch = new ArrayList<>();
 	
 	private List<QuestionItem> updatedItems;
-	private final List<QuestionItemShort> items;
+	private final List<ItemRow> items;
 	
+	@Autowired
+	private QuestionPoolModule qpoolModule;
 	@Autowired
 	private QPoolService qpoolService;
 	@Autowired
 	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
-	
-	public MetadataBulkChangeController(UserRequest ureq, WindowControl wControl, List<QuestionItemShort> items) {
+
+	public MetadataBulkChangeController(UserRequest ureq, WindowControl wControl, List<ItemRow> items) {
 		super(ureq, wControl, "bulk_change");
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		this.items = items;
@@ -129,7 +133,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		topicEl = uifactory.addTextElement("general.topic", "general.topic", 1000, null, generalCont);
 		decorate(topicEl, generalCont);
 		
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), canRemoveTaxonomies());
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("classification.taxonomic.path", generalCont,
 				qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
 		decorate(taxonomyLevelEl, generalCont);
@@ -160,6 +164,15 @@ public class MetadataBulkChangeController extends FormBasicController {
 		decorate(assessmentTypeEl, generalCont);
 	}
 	
+	private boolean canRemoveTaxonomies() {
+		for (ItemRow item: items) {
+			if (!item.getSecurityCallback().canRemoveTaxonomy()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private void initQuestionForm(FormItemContainer formLayout) {
 		FormLayoutContainer questionCont = FormLayoutContainer.createDefaultFormLayout("question", getTranslator());
 		questionCont.setRootForm(mainForm);
@@ -204,7 +217,9 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private void initTechnicalForm(FormItemContainer formLayout) {
 		FormLayoutContainer technicalCont = FormLayoutContainer.createDefaultFormLayout("technical", getTranslator());
 		technicalCont.setRootForm(mainForm);
-		formLayout.add(technicalCont);
+		if (!qpoolModule.isReviewProcessEnabled()) {
+			formLayout.add(technicalCont);
+		}
 		
 		versionEl = uifactory.addTextElement("lifecycle.version", "lifecycle.version", 50, null, technicalCont);
 		decorate(versionEl, technicalCont);
@@ -212,9 +227,9 @@ public class MetadataBulkChangeController extends FormBasicController {
 		KeyValues status = MetaUIFactory.getStatus(getTranslator());
 		statusEl = uifactory.addDropdownSingleselect("lifecycle.status", "lifecycle.status", technicalCont,
 				status.getKeys(), status.getValues(), null);
-		decorate(statusEl, technicalCont);	;
+		decorate(statusEl, technicalCont);
 	}
-	
+
 	private void initRightsForm(FormItemContainer formLayout) {
 		FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
 		rightsCont.setRootForm(mainForm);
@@ -249,7 +264,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		
 		checkboxContainer.put(checkbox, formLayout);
 		formLayout.moveBefore(checkbox, item);
-		return item;
+		return checkbox;
 	}
 	
 	@Override
@@ -277,11 +292,11 @@ public class MetadataBulkChangeController extends FormBasicController {
 		boolean allOk = true;
 		
 		//general
-		allOk &= validateElementLogic(topicEl, topicEl.getMaxLength(), true, isEnabled(topicEl));
+		allOk &= validateElementLogic(topicEl, topicEl.getMaxLength(), false, isEnabled(topicEl));
 		allOk &= validateElementLogic(keywordsEl, keywordsEl.getMaxLength(), false, isEnabled(keywordsEl));
 		allOk &= validateElementLogic(coverageEl, coverageEl.getMaxLength(), false, isEnabled(coverageEl));
 		allOk &= validateElementLogic(addInfosEl, addInfosEl.getMaxLength(), false, isEnabled(addInfosEl));
-		allOk &= validateElementLogic(languageEl, languageEl.getMaxLength(), true, isEnabled(languageEl));
+		allOk &= validateElementLogic(languageEl, languageEl.getMaxLength(), false, isEnabled(languageEl));
 		
 		//question
 		allOk &= validateBigDecimal(difficultyEl, 0.0d, 1.0d, true);
@@ -289,7 +304,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		allOk &= validateBigDecimal(differentiationEl, -1.0d, 1.0d, true);
 		
 		//technical
-		allOk &= validateElementLogic(versionEl, versionEl.getMaxLength(), true, isEnabled(versionEl));
+		allOk &= validateElementLogic(versionEl, versionEl.getMaxLength(), false, isEnabled(versionEl));
 		allOk &= validateSelection(statusEl, isEnabled(statusEl));
 		
 		//rights

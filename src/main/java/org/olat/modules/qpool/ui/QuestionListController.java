@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
@@ -267,8 +268,8 @@ public class QuestionListController extends AbstractItemListController implement
 			if(link == list) {
 				doList(ureq);
 			} else if(link == exportItem) {
-				List<QuestionItemShort> items = getSelectedShortItems(false);
-				if(items.size() > 0) {
+				List<QuestionItemShort> items = getSelectedShortItems();
+				if(!items.isEmpty()) {
 					doExport(ureq, items);
 				} else {
 					showWarning("error.select.one");
@@ -276,36 +277,36 @@ public class QuestionListController extends AbstractItemListController implement
 			} else if(link == shareItem) {
 				doShare(ureq);
 			} else if(link == removeItem) {
-				List<QuestionItemShort> items = getSelectedShortItems(false);
-				if(items.size() > 0) {
+				List<QuestionItemShort> items = getRemovableItems();
+				if(!items.isEmpty()) {
 					doConfirmRemove(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
 			} else if(link == copyItem) {
-				List<QuestionItemShort> items = getSelectedShortItems(false);
-				if(items.size() > 0) {
+				List<QuestionItemShort> items = getSelectedShortItems();
+				if(!items.isEmpty()) {
 					doConfirmCopy(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
 			} else if(link == convertItem) {
-				List<QuestionItemShort> items = getSelectedShortItems(false);
-				if(items.size() > 0) {
+				List<QuestionItemShort> items = getSelectedShortItems();
+				if(!items.isEmpty()) {
 					doConfirmConversion(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
 			} else if(link == deleteItem) {
-				List<QuestionItemShort> items = getSelectedShortItems(true);
-				if(items.size() > 0) {
+				List<QuestionItemShort> items = getDeletableItems();
+				if(!items.isEmpty()) {
 					doConfirmDelete(ureq, items);
 				} else {
 					showWarning("error.select.one");
 				}
 			} else if(link == authorItem) {
-				List<QuestionItemShort> items = getSelectedShortItems(false);
-				if(items.size() > 0) {
+				List<QuestionItemShort> items = getSelectedShortItems();
+				if(!items.isEmpty()) {
 					doChooseAuthors(ureq, items);
 				} else {
 					showWarning("error.select.one");
@@ -315,8 +316,8 @@ public class QuestionListController extends AbstractItemListController implement
 			} else if(link == newItem) {
 				doChooseNewItemType(ureq);
 			} else if(link == bulkChange) {
-				List<QuestionItemShort> items = getSelectedShortItems(true);
-				if(items.size() > 0) {
+				List<ItemRow> items = getMetadataEditableItems();
+				if(!items.isEmpty()) {
 					doBulkChange(ureq, items);
 				} else {
 					showWarning("error.select.one");
@@ -326,6 +327,27 @@ public class QuestionListController extends AbstractItemListController implement
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private List<QuestionItemShort> getRemovableItems() {
+		return getItemsTable().getMultiSelectedIndex().stream()
+				.map(index -> getModel().getObject(index.intValue()))
+				.filter(itemRow -> itemRow.getSecurityCallback().canRemove())
+				.collect(Collectors.toList());
+	}
+
+	private List<QuestionItemShort> getDeletableItems() {
+		return getItemsTable().getMultiSelectedIndex().stream()
+				.map(index -> getModel().getObject(index.intValue()))
+				.filter(itemRow -> itemRow.getSecurityCallback().canDelete())
+				.collect(Collectors.toList());
+	}
+	
+	private List<ItemRow> getMetadataEditableItems() {
+		return getItemsTable().getMultiSelectedIndex().stream()
+				.map(index -> getModel().getObject(index.intValue()))
+				.filter(itemRow -> itemRow.getSecurityCallback().canEditMetadata())
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -349,7 +371,7 @@ public class QuestionListController extends AbstractItemListController implement
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == shareTargetCtrl) {
-			List<QuestionItemShort> items = getSelectedShortItems(false);
+			List<QuestionItemShort> items = getSelectedShortItems();
 			calloutCtrl.deactivate();
 			if(items.isEmpty()) {
 				showWarning("error.select.one");
@@ -404,7 +426,7 @@ public class QuestionListController extends AbstractItemListController implement
 			cmc.deactivate();
 			cleanUp();
 		} else if(source == listTargetCtrl) {
-			List<QuestionItemShort> items = getSelectedShortItems(false);
+			List<QuestionItemShort> items = getSelectedShortItems();
 			calloutCtrl.deactivate();
 			if(CollectionTargetController.ADD_TO_LIST_POOL_CMD.equals(event.getCommand())) {
 				if(items.isEmpty()) {
@@ -651,7 +673,7 @@ public class QuestionListController extends AbstractItemListController implement
 		link.getComponent().setDirty(true);
 	}
 
-	private void doBulkChange(UserRequest ureq, List<QuestionItemShort> items) {
+	private void doBulkChange(UserRequest ureq, List<ItemRow> items) {
 		removeAsListenerAndDispose(bulkChangeCtrl);
 		bulkChangeCtrl = new MetadataBulkChangeController(ureq, getWindowControl(), items);
 		listenTo(bulkChangeCtrl);
