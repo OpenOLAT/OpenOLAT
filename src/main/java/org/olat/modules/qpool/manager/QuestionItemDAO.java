@@ -122,7 +122,7 @@ public class QuestionItemDAO {
 	 * @return A copy of the question.
 	 */
 	public QuestionItemImpl copy(QuestionItemImpl original) {
-		String title = original.getTitle();
+		String title = "(Copy) " + original.getTitle();
 		QuestionItemImpl copy = create(title, original.getFormat(), null, original.getRootFilename());
 		
 		//general

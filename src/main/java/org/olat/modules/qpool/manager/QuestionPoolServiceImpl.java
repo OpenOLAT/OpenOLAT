@@ -233,7 +233,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public List<QuestionItem> copyItems(Identity owner, List<QuestionItemShort> itemsToCopy) {
-		List<QuestionItem> copies = new ArrayList<QuestionItem>();
+		List<QuestionItem> copies = new ArrayList<>();
 		for(QuestionItemShort itemToCopy:itemsToCopy) {
 			QuestionItemImpl original = questionItemDao.loadById(itemToCopy.getKey());
 			QuestionItemImpl copy = questionItemDao.copy(original);

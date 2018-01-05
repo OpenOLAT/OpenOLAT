@@ -277,6 +277,18 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		VFSContainer originalDir = qpoolFileStorage.getContainer(original.getDirectory());
 		VFSContainer copyDir = qpoolFileStorage.getContainer(copy.getDirectory());
 		VFSManager.copyContent(originalDir, copyDir);
+		
+		File file = qpoolService.getRootFile(copy);
+		File resourceDirectory = qpoolService.getRootDirectory(copy);
+		URI assessmentItemUri = file.toURI();
+		File itemFile = qpoolService.getRootFile(copy);
+		
+		ResolvedAssessmentItem resolvedAssessmentItem = qtiService
+				.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
+		AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+		assessmentItem.setTitle(copy.getTitle());
+		
+		qtiService.persistAssessmentObject(itemFile, assessmentItem);
 	}
 
 	@Override

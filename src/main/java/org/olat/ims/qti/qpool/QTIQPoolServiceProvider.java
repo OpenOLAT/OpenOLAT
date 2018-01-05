@@ -68,6 +68,7 @@ import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.ExportFormatOptions.Outcome;
 import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemShort;
@@ -97,6 +98,8 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private QPoolService qpoolService;
 	@Autowired
 	private QTIModule qtiModule;
 	@Autowired
@@ -352,6 +355,11 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 		VFSContainer originalDir = qpoolFileStorage.getContainer(original.getDirectory());
 		VFSContainer copyDir = qpoolFileStorage.getContainer(copy.getDirectory());
 		VFSManager.copyContent(originalDir, copyDir);
+		
+		VFSLeaf itemLeaf = qpoolService.getRootLeaf(copy);
+		Item item = QTIEditHelper.readItemXml(itemLeaf);
+		item.setTitle(copy.getTitle());
+		QTIEditHelper.serialiazeItem(item, itemLeaf);
 	}
 
 	@Override
