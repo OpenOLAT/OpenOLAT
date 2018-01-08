@@ -19,13 +19,19 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.List;
+import java.util.Set;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.datasource.EmptyItemsSource;
 import org.olat.modules.qpool.ui.datasource.FinalItemsSource;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
@@ -41,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ItemListMyCompetencesController extends AbstractItemListController {
 
+	private FormLink selectLink;
     private SingleSelection myCompetenceLevelsEl;
     
     @Autowired
@@ -54,6 +61,7 @@ public class ItemListMyCompetencesController extends AbstractItemListController 
 	@Override
 	protected void initButtons(UserRequest ureq, FormItemContainer formLayout) {
 		getItemsTable().setMultiSelect(true);
+		selectLink = uifactory.addFormLink("select-to-import", "select", null, formLayout, Link.BUTTON);
 
 		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsFinal(getIdentity());
 		String[] levelKeys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
@@ -72,7 +80,13 @@ public class ItemListMyCompetencesController extends AbstractItemListController 
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(myCompetenceLevelsEl == source) {
+		if(selectLink == source) {
+			Set<Integer> selections = getItemsTable().getMultiSelectedIndex();
+			if(!selections.isEmpty()) {
+				List<QuestionItemView> items = getItemViews(selections);
+				fireEvent(ureq, new QItemViewEvent("select-item", items));
+			}
+		} else if(myCompetenceLevelsEl == source) {
             String selectedKey = myCompetenceLevelsEl.getSelectedKey();
 			if(StringHelper.isLong(selectedKey)) {
 				doSelectLevel(ureq, selectedKey);
