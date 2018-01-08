@@ -25,7 +25,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
 
 /**
@@ -94,13 +93,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case rating: return item.getRating();
 			case format: return item.getFormat();
 			case itemVersion: return item.getItemVersion();
-			case status: {
-				QuestionStatus s = item.getQuestionStatus();
-				if(s == null) {
-					return "";
-				}
-				return translator.translate("lifecycle.status." + s.name());
-			}
+			case status: return item.getQuestionStatus();
 			case statusLastModified: return item.getQuestionStatusLastModified();
 			case editable: return item.isEditable() ? Boolean.TRUE : Boolean.FALSE;
 			case mark: return item.getMarkLink();

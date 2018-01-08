@@ -3,6 +3,14 @@
 	text-align: center;
 }
 
+.o_qpool_tools_status > li.disabled {
+    background-color: darken($o-toolbar-bg-color, 13%);
+}
+
+.o_toolbar .o_tools_container .o_qpool_tools_status a.o_disabled {
+    color: $o-toolbar-link-color !important;
+}
+
 .btn-arrow-right.o_qpool_draft {
 	background: $o-qpool-draft-bg-color;
 }

@@ -229,37 +229,54 @@ public class QuestionItemDetailsController extends BasicController implements To
 
 	private void initStatusTools() {
 		statusDropdown = new Dropdown("process.states", "process.states", false, getTranslator());
-		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_" + metadatasCtrl.getItem().getQuestionStatus());
+		statusDropdown.setElementCssClass("o_qpool_tools_status");
+		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_qitem_status");
 		statusDropdown.setOrientation(DropdownOrientation.normal);
 		
 		boolean hasDropdownComponents = false;
-		if (qItemSecurityCallback.canSetDraft()) {
+		QuestionStatus actualStatus = metadatasCtrl.getItem().getQuestionStatus();
+		if (qItemSecurityCallback.canSetDraft() || QuestionStatus.draft.equals(actualStatus)) {
 			statusDraftLink = LinkFactory.createToolLink("lifecycle.status.draft", translate("lifecycle.status.draft"), this);
-			statusDraftLink.setIconLeftCSS("o_icon o_icon-lg o_icon_draft o_qpool_draft");
+			statusDraftLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_draft o_qpool_draft");
+			if (QuestionStatus.draft.equals(actualStatus)) {
+				statusDraftLink.setEnabled(false);
+			}
 			statusDropdown.addComponent(statusDraftLink);
 			hasDropdownComponents = true;
 		}
-		if (qItemSecurityCallback.canSetRevised()) {
+		if (qItemSecurityCallback.canSetRevised() || QuestionStatus.revised.equals(actualStatus)) {
 			statusRevisedLink = LinkFactory.createToolLink("lifecycle.status.revised", translate("lifecycle.status.revised"), this);
-			statusRevisedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_revised o_qpool_revised");
+			statusRevisedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_revised o_qpool_revised");
+			if (QuestionStatus.revised.equals(actualStatus)) {
+				statusRevisedLink.setEnabled(false);
+			}
 			statusDropdown.addComponent(statusRevisedLink);
 			hasDropdownComponents = true;
 		}
-		if (qItemSecurityCallback.canSetReview()) {
+		if (qItemSecurityCallback.canSetReview() || QuestionStatus.review.equals(actualStatus)) {
 			statusReviewLink = LinkFactory.createToolLink("lifecycle.status.review", translate("lifecycle.status.review"), this);
-			statusReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review o_qpool_review");
+			statusReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_review o_qpool_review");
+			if (QuestionStatus.review.equals(actualStatus)) {
+				statusReviewLink.setEnabled(false);
+			}
 			statusDropdown.addComponent(statusReviewLink);
 			hasDropdownComponents = true;
 		}
-		if (qItemSecurityCallback.canSetFinal()) {
+		if (qItemSecurityCallback.canSetFinal() || QuestionStatus.finalVersion.equals(actualStatus)) {
 			statusFinalLink = LinkFactory.createToolLink("lifecycle.status.finalVersion", translate("lifecycle.status.finalVersion"), this);
-			statusFinalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_finalVersion o_qpool_final");
+			statusFinalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_finalVersion o_qpool_final");
+			if (QuestionStatus.finalVersion.equals(actualStatus)) {
+				statusFinalLink.setEnabled(false);
+			}
 			statusDropdown.addComponent(statusFinalLink);
 			hasDropdownComponents = true;
 		}
-		if (qItemSecurityCallback.canSetEndOfLife()) {
+		if (qItemSecurityCallback.canSetEndOfLife() || QuestionStatus.endOfLife.equals(actualStatus)) {
 			statusEndOfLifeLink = LinkFactory.createToolLink("lifecycle.status.endOfLife", translate("lifecycle.status.endOfLife"), this);
-			statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_endOfLife o_qpool_end_of_life");
+			statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_endOfLife o_qpool_end_of_life");
+			if (QuestionStatus.endOfLife.equals(actualStatus)) {
+				statusEndOfLifeLink.setEnabled(false);
+			}
 			statusDropdown.addComponent(statusEndOfLifeLink);
 			hasDropdownComponents = true;
 		}
@@ -294,34 +311,33 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void initReviewTools() {
 		if (qItemSecurityCallback.canStartReview()) {
 			startReviewLink = LinkFactory.createToolLink("process.start.review", translate("process.start.review"), this);
-			startReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
+			startReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_review");
 			stackPanel.addTool(startReviewLink, Align.left);
 		}
 		if (qItemSecurityCallback.canReviewNotStartable()) {
 			notReviewableLink = LinkFactory.createToolLink("process.not.reviewable", translate("process.not.reviewable"), this);
-			notReviewableLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
+			notReviewableLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_review");
 			stackPanel.addTool(notReviewableLink, Align.left);
 		}
 		if (qItemSecurityCallback.canReview() && reviewService.hasRatingController()) {
 			reviewLink = LinkFactory.createToolLink("process.review", translate("process.review"), this);
-			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_do_review");
+			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_do_review");
 			stackPanel.addTool(reviewLink, Align.left);
 		}
-		
+	}
+
+	private void initPrevNextTools() {
 		previousItemLink = LinkFactory.createToolLink("previous", translate("previous"), this);
 		previousItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_previous");
 		if (numberOfItems <= 1) {
 			previousItemLink.setEnabled(false);
 		}
 		stackPanel.addTool(previousItemLink);
-	}
-
-	private void initPrevNextTools() {
+		
 		String numbersOf = translate("item.numbers.of", new String[]{
 				itemIndex != null? Integer.toString(itemIndex + 1): "",
 				Integer.toString(numberOfItems) });
 		numberItemsLink = LinkFactory.createToolLink("item.numbers.of", numbersOf, this);
-		numberItemsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_" + metadatasCtrl.getItem().getQuestionStatus());
 		stackPanel.addTool(numberItemsLink);
 		
 		nextItemLink = LinkFactory.createToolLink("next", translate("next"), this);

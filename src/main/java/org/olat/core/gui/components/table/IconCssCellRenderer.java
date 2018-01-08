@@ -54,7 +54,7 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			}
 			target.append(value);
 		} else {
-			target.append("<i class='").append(getCssClass(cellValue)).append("'> </i> <span");
+			target.append("<div style='white-space: nowrap;'><i class='").append(getCssClass(cellValue)).append("'> </i> <span");
 			String hoverText = getHoverText(cellValue);
 			if (StringHelper.containsNonWhitespace(hoverText)) {
 				target.append(" title=\"");
@@ -62,7 +62,7 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			}
 			target.append("\">");
 			target.append(getCellValue(cellValue));
-			target.append("</span>");			
+			target.append("</span></div>");			
 		}
 		
 	}
@@ -77,7 +77,7 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			}
 			sb.append(value);
 		} else {
-			sb.append("<i class='").append(getCssClass(val)).append("'> </i> <span");
+			sb.append("<div style='white-space: nowrap;'><i class='").append(getCssClass(val)).append("'> </i> <span");
 			String hoverText = getHoverText(val);
 			if (StringHelper.containsNonWhitespace(hoverText)) {
 				sb.append(" title=\"");
@@ -85,7 +85,7 @@ public abstract class IconCssCellRenderer implements CustomCellRenderer, FlexiCe
 			}
 			sb.append("\">");
 			sb.append(getCellValue(val));
-			sb.append("</span>");			
+			sb.append("</span></div>");			
 		}
 	}
 	
