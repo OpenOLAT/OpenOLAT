@@ -72,13 +72,7 @@ public class PoolTaxonomySecurityCallback implements SiteSecurityCallback {
 			return true;
 		}
 		
-		TaxonomyCompetenceTypes[] types;
-		if (questionPoolModule.isFinalVisibleTeach()) {
-			types = new TaxonomyCompetenceTypes[] { TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach };
-		} else {
-			types = new TaxonomyCompetenceTypes[] { TaxonomyCompetenceTypes.manage };
-		}
-		
+		TaxonomyCompetenceTypes[] types = new TaxonomyCompetenceTypes[] { TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach };
 		TaxonomyRef taxonomy = new TaxonomyRefImpl(Long.valueOf(questionPoolModule.getTaxonomyQPoolKey()));
 		return taxonomyService.hasTaxonomyCompetences(taxonomy, ureq.getIdentity(), new Date(), types);
 	}
