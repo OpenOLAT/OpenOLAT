@@ -76,8 +76,8 @@ public class GoToMeetingManagerImpl implements GoToMeetingManager {
 	
 	private static final OLog log = Tracing.createLoggerFor(GoToMeetingManagerImpl.class);
 	
-	private String directLoginUrl = "https://api.citrixonline.com/oauth/access_token";
-	private String gotoTrainingUrl = "https://api.citrixonline.com/G2T/rest";
+	private String directLoginUrl = "https://api.getgo.com/oauth/access_token";
+	private String gotoTrainingUrl = "https://api.getgo.com/G2T/rest";
 
 	@Autowired
 	private DB dbInstance;
