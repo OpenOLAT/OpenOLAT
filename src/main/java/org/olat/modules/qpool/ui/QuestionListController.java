@@ -1212,8 +1212,8 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		QuestionItem item = qpoolService.loadItemById(row.getKey());
 		WindowControl bwControl = addToHistory(ureq, item, null);
-		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, item, row.getSecurityCallback(),
-				getSource(), index, count);
+		currentDetailsCtrl = new QuestionItemDetailsController(ureq, bwControl, stackPanel, getSecurityCallback(), item,
+				row.getSecurityCallback(), getSource(), index, count);
 		listenTo(currentDetailsCtrl);
 		stackPanel.pushController(item.getTitle(), currentDetailsCtrl);
 	}

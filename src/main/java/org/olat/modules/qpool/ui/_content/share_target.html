@@ -1,8 +1,8 @@
 <ul class="o_dropdown list-unstyled">
-	#if($r.available("share.group"))
-		<li>$r.render("share.group")</li>
-	#end
 	#if($r.available("share.pool"))
 		<li>$r.render("share.pool")</li>
+	#end
+	#if($r.available("share.group"))
+		<li>$r.render("share.group")</li>
 	#end
 </ul>

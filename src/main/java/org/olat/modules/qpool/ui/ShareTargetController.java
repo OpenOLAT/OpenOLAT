@@ -46,13 +46,13 @@ public class ShareTargetController extends BasicController {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("share_target");
-		if (securityCallback.canUseGroups()) {
-			shareGroup = LinkFactory.createLink("share.group", mainVC, this);
-			shareGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_pool_share");
-		}
 		if (securityCallback.canUsePools()) {
 			sharePool = LinkFactory.createLink("share.pool", mainVC, this);
 			sharePool.setIconLeftCSS("o_icon o_icon-fw o_icon_pool_pool");
+		}
+		if (securityCallback.canUseGroups()) {
+			shareGroup = LinkFactory.createLink("share.group", mainVC, this);
+			shareGroup.setIconLeftCSS("o_icon o_icon-fw o_icon_pool_share");
 		}
 		putInitialPanel(mainVC);
 	}

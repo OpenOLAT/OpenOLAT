@@ -48,7 +48,9 @@ import org.olat.core.util.prefs.Preferences;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
+import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
@@ -62,6 +64,7 @@ import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
+import org.olat.modules.qpool.ui.events.QPoolSelectionEvent;
 import org.olat.modules.qpool.ui.metadata.MetadatasController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,11 +93,13 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link previousItemLink;
 	private Link showMetadataLink;
 	private Link hideMetadataLink;
-	private Link shareItemLink;
+	private Link shareGroupItemLink;
+	private Link sharePoolItemLink;
 	private Link exportItemLink;
 	private Link copyItemLink;
 	private Dropdown statusDropdown;
 	private Dropdown commandDropdown;
+	private Dropdown sharesDropdown;
 
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -108,9 +113,11 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private DialogBoxController confirmEndOfLifeCtrl;
 	private DialogBoxController confirmDeleteBox;
 	private SelectBusinessGroupController selectGroupCtrl;
+	private PoolsController selectPoolCtrl;
 
+	private final QPoolSecurityCallback qPoolSecurityCallback;
 	private final QuestionItemsSource itemSource;
-	private final QuestionItemSecurityCallback securityCallback;
+	private final QuestionItemSecurityCallback qItemSecurityCallback;
 	private final Integer itemIndex;
 	private final int numberOfItems;
 	private Boolean showMetadatas;
@@ -123,12 +130,14 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private ReviewService reviewService;
 	
 	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QuestionItem item, QuestionItemSecurityCallback securityCallback, QuestionItemsSource itemSource,
-			Integer itemIndex, int numberOfItems) {
+			QPoolSecurityCallback qPoolSecurityCallback, QuestionItem item,
+			QuestionItemSecurityCallback qItemSecurityCallback, QuestionItemsSource itemSource, Integer itemIndex,
+			int numberOfItems) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
-		this.securityCallback = securityCallback;
+		this.qPoolSecurityCallback = qPoolSecurityCallback;
+		this.qItemSecurityCallback = qItemSecurityCallback;
 		this.itemIndex = itemIndex;
 		this.numberOfItems = numberOfItems;
 		this.itemSource = itemSource;
@@ -137,15 +146,15 @@ public class QuestionItemDetailsController extends BasicController implements To
 		showMetadatas = (Boolean) guiPrefs.get(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_METADATAS);
 		
 		mainVC = createVelocityContainer("item_details");
-		setMetadatasController(ureq, wControl, item, securityCallback);
-		setQuestionController(ureq, item, securityCallback);
+		setMetadatasController(ureq, wControl, item, qItemSecurityCallback);
+		setQuestionController(ureq, item, qItemSecurityCallback);
 		setCommentsController(ureq);
 		putInitialPanel(mainVC);
 	}
 
 	private void setMetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item,
 			QuestionItemSecurityCallback securityCallback) {
-		metadatasCtrl = new MetadatasController(ureq, wControl, item, securityCallback);
+		metadatasCtrl = new MetadatasController(ureq, wControl, qPoolSecurityCallback, item, securityCallback);
 		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
 		listenTo(metadatasCtrl);
 	}
@@ -185,7 +194,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		commentAndRatingSecurityCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), moderator, anonymous);
 		removeAsListenerAndDispose(commentsAndRatingCtr);
 		commentsAndRatingCtr = new UserCommentsAndRatingsController(ureq, getWindowControl(), metadatasCtrl.getItem(),
-				null, commentAndRatingSecurityCallback, true, this.securityCallback.canRate(), true);
+				null, commentAndRatingSecurityCallback, true, this.qItemSecurityCallback.canRate(), true);
 		listenTo(commentsAndRatingCtr);
 		mainVC.put("comments", commentsAndRatingCtr.getInitialComponent());
 	}
@@ -193,60 +202,62 @@ public class QuestionItemDetailsController extends BasicController implements To
 	@Override
 	public void initTools() {
 		stackPanel.removeAllTools();
-		
+		initCommandTools();
+		initStatusTools(); 
+		initShareTools();
+		initReviewTools();
+		initPrevNextTools();
+		initMetadataTools();
+	}
+
+	private void initCommandTools() {
 		commandDropdown = new Dropdown("commands", "commands", false, getTranslator());
 		commandDropdown.setIconCSS("o_icon o_icon-fw o_icon_qitem_commands");
 		commandDropdown.setOrientation(DropdownOrientation.normal);
+		stackPanel.addTool(commandDropdown, Align.left);
 		
 		copyItemLink = LinkFactory.createToolLink("copy", translate("copy"), this);
 		copyItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_copy");
 		commandDropdown.addComponent(copyItemLink);
 		
-		if (securityCallback.canDelete()) {
+		if (qItemSecurityCallback.canDelete()) {
 			deleteLink = LinkFactory.createToolLink("delete.item", translate("delete.item"), this);
 			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_delete");
 			commandDropdown.addComponent(deleteLink);
 		}
-		
-		exportItemLink = LinkFactory.createToolLink("export.item", translate("export.item"), this);
-		exportItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_export");
-		commandDropdown.addComponent(exportItemLink);
+	}
 
-		shareItemLink = LinkFactory.createToolLink("share.item", translate("share.item"), this);
-		shareItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_share");
-		commandDropdown.addComponent(shareItemLink);
-
+	private void initStatusTools() {
 		statusDropdown = new Dropdown("process.states", "process.states", false, getTranslator());
 		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_" + metadatasCtrl.getItem().getQuestionStatus());
 		statusDropdown.setOrientation(DropdownOrientation.normal);
-		stackPanel.addTool(commandDropdown, Align.left);
 		
 		boolean hasDropdownComponents = false;
-		if (securityCallback.canSetDraft()) {
+		if (qItemSecurityCallback.canSetDraft()) {
 			statusDraftLink = LinkFactory.createToolLink("lifecycle.status.draft", translate("lifecycle.status.draft"), this);
 			statusDraftLink.setIconLeftCSS("o_icon o_icon-lg o_icon_draft o_qpool_draft");
 			statusDropdown.addComponent(statusDraftLink);
 			hasDropdownComponents = true;
 		}
-		if (securityCallback.canSetRevised()) {
+		if (qItemSecurityCallback.canSetRevised()) {
 			statusRevisedLink = LinkFactory.createToolLink("lifecycle.status.revised", translate("lifecycle.status.revised"), this);
 			statusRevisedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_revised o_qpool_revised");
 			statusDropdown.addComponent(statusRevisedLink);
 			hasDropdownComponents = true;
 		}
-		if (securityCallback.canSetReview()) {
+		if (qItemSecurityCallback.canSetReview()) {
 			statusReviewLink = LinkFactory.createToolLink("lifecycle.status.review", translate("lifecycle.status.review"), this);
 			statusReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review o_qpool_review");
 			statusDropdown.addComponent(statusReviewLink);
 			hasDropdownComponents = true;
 		}
-		if (securityCallback.canSetFinal()) {
+		if (qItemSecurityCallback.canSetFinal()) {
 			statusFinalLink = LinkFactory.createToolLink("lifecycle.status.finalVersion", translate("lifecycle.status.finalVersion"), this);
 			statusFinalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_finalVersion o_qpool_final");
 			statusDropdown.addComponent(statusFinalLink);
 			hasDropdownComponents = true;
 		}
-		if (securityCallback.canSetEndOfLife()) {
+		if (qItemSecurityCallback.canSetEndOfLife()) {
 			statusEndOfLifeLink = LinkFactory.createToolLink("lifecycle.status.endOfLife", translate("lifecycle.status.endOfLife"), this);
 			statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_endOfLife o_qpool_end_of_life");
 			statusDropdown.addComponent(statusEndOfLifeLink);
@@ -254,19 +265,44 @@ public class QuestionItemDetailsController extends BasicController implements To
 		}
 		if (hasDropdownComponents) {
 			stackPanel.addTool(statusDropdown, Align.left);
-		} 
+		}
+	}
+
+	private void initShareTools() {
+		sharesDropdown = new Dropdown("share.item", "share.item", false, getTranslator());
+		sharesDropdown.setIconCSS("o_icon o_icon-lg o_icon_qitem_share");
+		sharesDropdown.setOrientation(DropdownOrientation.normal);
+		stackPanel.addTool(sharesDropdown, Align.left);
 		
-		if (securityCallback.canStartReview()) {
+		exportItemLink = LinkFactory.createToolLink("export.item", translate("export.item"), this);
+		exportItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_export");
+		sharesDropdown.addComponent(exportItemLink);
+
+		if (qPoolSecurityCallback.canUsePools()) {
+			sharePoolItemLink = LinkFactory.createToolLink("share.pool", translate("share.pool"), this);
+			sharePoolItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_pool_pool");
+			sharesDropdown.addComponent(sharePoolItemLink);
+		}
+		
+		if (qPoolSecurityCallback.canUseGroups()) {
+			shareGroupItemLink = LinkFactory.createToolLink("share.group", translate("share.group"), this);
+			shareGroupItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_pool_share");
+			sharesDropdown.addComponent(shareGroupItemLink);
+		}
+	}
+
+	private void initReviewTools() {
+		if (qItemSecurityCallback.canStartReview()) {
 			startReviewLink = LinkFactory.createToolLink("process.start.review", translate("process.start.review"), this);
 			startReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
 			stackPanel.addTool(startReviewLink, Align.left);
 		}
-		if (securityCallback.canReviewNotStartable()) {
+		if (qItemSecurityCallback.canReviewNotStartable()) {
 			notReviewableLink = LinkFactory.createToolLink("process.not.reviewable", translate("process.not.reviewable"), this);
 			notReviewableLink.setIconLeftCSS("o_icon o_icon-lg o_icon_review");
 			stackPanel.addTool(notReviewableLink, Align.left);
 		}
-		if (securityCallback.canReview() && reviewService.hasRatingController()) {
+		if (qItemSecurityCallback.canReview() && reviewService.hasRatingController()) {
 			reviewLink = LinkFactory.createToolLink("process.review", translate("process.review"), this);
 			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_do_review");
 			stackPanel.addTool(reviewLink, Align.left);
@@ -278,7 +314,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 			previousItemLink.setEnabled(false);
 		}
 		stackPanel.addTool(previousItemLink);
-		
+	}
+
+	private void initPrevNextTools() {
 		String numbersOf = translate("item.numbers.of", new String[]{
 				itemIndex != null? Integer.toString(itemIndex + 1): "",
 				Integer.toString(numberOfItems) });
@@ -292,7 +330,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 			nextItemLink.setEnabled(false);
 		}
 		stackPanel.addTool(nextItemLink);
-		
+	}
+
+	private void initMetadataTools() {
 		showMetadataLink = LinkFactory.createToolLink("metadata.show", translate("metadata.show"), this);
 		showMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
 		hideMetadataLink = LinkFactory.createToolLink("metadata.hide", translate("metadata.hide"), this);
@@ -331,8 +371,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 			openReview(ureq);
 		} else if(source == deleteLink) {
 			doConfirmDelete(ureq, metadatasCtrl.getItem());
-		} else if(source == shareItemLink) {
+		} else if(source == shareGroupItemLink) {
 			doSelectGroup(ureq, metadatasCtrl.getItem());
+		} else if(source == sharePoolItemLink) {
+			doSelectPool(ureq, metadatasCtrl.getItem());
 		} else if(source == exportItemLink) {
 			doExport(ureq, metadatasCtrl.getItem());
 		} else if(source == copyItemLink) {
@@ -356,11 +398,23 @@ public class QuestionItemDetailsController extends BasicController implements To
 				List<BusinessGroup> groups = bge.getGroups();
 				if(groups.size() > 0) {
 					QuestionItem item = (QuestionItem)((SelectBusinessGroupController)source).getUserObject();
-					doShareItems(ureq, item, groups);
+					doShareItemsWithGroup(ureq, item, groups);
 					metadatasCtrl.updateShares();
 				}
 			}
 			cmc.deactivate();
+			cleanUp();
+		} else if (source == selectPoolCtrl) {
+			cmc.deactivate();
+			if(event instanceof QPoolSelectionEvent) {
+				QPoolSelectionEvent qpe = (QPoolSelectionEvent)event;
+				List<Pool> pools = qpe.getPools();
+				if(pools.size() > 0) {
+					QuestionItemShort item = (QuestionItemShort)selectPoolCtrl.getUserObject();
+					doShareItemsWithPool(ureq, item, pools);
+					metadatasCtrl.updateShares();
+				}
+			}	
 			cleanUp();
 		} else if (source == reviewStartCtrl) {
 			if (event == Event.DONE_EVENT) {
@@ -409,12 +463,14 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(selectGroupCtrl);
+		removeAsListenerAndDispose(selectPoolCtrl);
 		removeAsListenerAndDispose(reviewCtrl);
 		removeAsListenerAndDispose(reviewStartCtrl);
 		removeAsListenerAndDispose(confirmDeleteBox);
 		removeAsListenerAndDispose(confirmEndOfLifeCtrl);
 		cmc = null;
 		selectGroupCtrl = null;
+		selectPoolCtrl = null;
 		reviewCtrl = null;
 		reviewStartCtrl = null;
 		confirmDeleteBox = null;
@@ -505,12 +561,12 @@ public class QuestionItemDetailsController extends BasicController implements To
 		Long itemKey = metadatasCtrl.getItem().getKey();
 		QuestionItemView itemView = itemSource.getItemWithoutRestrictions(itemKey);
 		if (itemView != null) {
-			securityCallback.setQuestionItemView(itemView);
+			qItemSecurityCallback.setQuestionItemView(itemView);
 			initTools();
 			setCommentsController(ureq);
 			QuestionItem reloadedItem = qpoolService.loadItemById(itemView.getKey());
-			metadatasCtrl.setItem(reloadedItem, securityCallback);
-			setQuestionController(ureq, reloadedItem, securityCallback);
+			metadatasCtrl.setItem(reloadedItem, qItemSecurityCallback);
+			setQuestionController(ureq, reloadedItem, qItemSecurityCallback);
 		}
 	}
 
@@ -534,8 +590,25 @@ public class QuestionItemDetailsController extends BasicController implements To
 		listenTo(cmc);
 	}
 	
-	private void doShareItems(UserRequest ureq, QuestionItemShort item, List<BusinessGroup> groups) {
+	private void doSelectPool(UserRequest ureq, QuestionItem item) {
+		removeAsListenerAndDispose(selectPoolCtrl);
+		selectPoolCtrl = new PoolsController(ureq, getWindowControl());
+		selectPoolCtrl.setUserObject(item);
+		listenTo(selectPoolCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				selectPoolCtrl.getInitialComponent(), true, translate("select.pool"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doShareItemsWithGroup(UserRequest ureq, QuestionItemShort item, List<BusinessGroup> groups) {
 		qpoolService.shareItemsWithGroups(Collections.singletonList(item), groups, false);
+		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_SHARED));
+	}
+
+	private void doShareItemsWithPool(UserRequest ureq, QuestionItemShort item, List<Pool> pools) {
+		qpoolService.addItemsInPools(Collections.singletonList(item), pools, false);
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEM_SHARED));
 	}
 

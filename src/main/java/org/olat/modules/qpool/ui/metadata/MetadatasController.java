@@ -28,12 +28,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
-import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QItemEdited;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -56,40 +55,37 @@ public class MetadatasController extends BasicController {
 	
 	private QuestionItem item;
 	
-	@Autowired
-	private QuestionPoolModule qpoolModule;
-	
-	public MetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item,
-			QuestionItemSecurityCallback securityCallback) {
+	public MetadatasController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback qPoolSecurityCallback,
+			QuestionItem item, QuestionItemSecurityCallback qItemScurityCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
 
 		mainVC = createVelocityContainer("item_metadatas");
-		generalEditCtrl = new GeneralMetadataEditController(ureq, wControl, item, securityCallback);
+		generalEditCtrl = new GeneralMetadataEditController(ureq, wControl, item, qItemScurityCallback);
 		listenTo(generalEditCtrl);
 		mainVC.put("details_general", generalEditCtrl.getInitialComponent());
 
-		questionEditCtrl = new QuestionMetadataEditController(ureq, wControl, item, securityCallback);
+		questionEditCtrl = new QuestionMetadataEditController(ureq, wControl, item, qItemScurityCallback);
 		listenTo(questionEditCtrl);
 		mainVC.put("details_question", questionEditCtrl.getInitialComponent());
 		
-		rightsEditCtrl = new RightsMetadataEditController(ureq, wControl, item, securityCallback);
+		rightsEditCtrl = new RightsMetadataEditController(ureq, wControl, item, qItemScurityCallback);
 		listenTo(rightsEditCtrl);
 		mainVC.put("details_rights", rightsEditCtrl.getInitialComponent());
 
-		technicalEditCtrl = new TechnicalMetadataEditController(ureq, wControl, item, securityCallback);
+		technicalEditCtrl = new TechnicalMetadataEditController(ureq, wControl, item, qItemScurityCallback);
 		listenTo(technicalEditCtrl);
 		mainVC.put("details_technical", technicalEditCtrl.getInitialComponent());
 
-		if (qpoolModule.isPoolsEnabled()) {
+		if (qPoolSecurityCallback.canUsePools()) {
 			poolsCtrl = new PoolsMetadataController(ureq, wControl, item);
 			listenTo(poolsCtrl);
 			mainVC.put("details_pools", poolsCtrl.getInitialComponent());
 		}
 		
-		if (qpoolModule.isSharesEnabled()) {
+		if (qPoolSecurityCallback.canUseGroups()) {
 			sharesController = new SharesMetadataController(ureq, wControl, item);
 			listenTo(sharesController);
 			mainVC.put("details_shares", sharesController.getInitialComponent());
