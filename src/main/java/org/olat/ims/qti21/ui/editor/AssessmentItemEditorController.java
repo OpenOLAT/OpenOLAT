@@ -20,6 +20,7 @@
 package org.olat.ims.qti21.ui.editor;
 
 import java.io.File;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -29,6 +30,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Service;
@@ -48,6 +50,7 @@ import org.olat.ims.qti21.model.xml.interactions.SingleChoiceAssessmentItemBuild
 import org.olat.ims.qti21.model.xml.interactions.UploadAssessmentItemBuilder;
 import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
+import org.olat.ims.qti21.ui.editor.events.DetachFromPoolEvent;
 import org.olat.ims.qti21.ui.editor.interactions.ChoiceScoreController;
 import org.olat.ims.qti21.ui.editor.interactions.DrawingEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.EssayEditorController;
@@ -64,6 +67,8 @@ import org.olat.ims.qti21.ui.editor.interactions.SingleChoiceEditorController;
 import org.olat.ims.qti21.ui.editor.interactions.UploadEditorController;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -87,7 +92,7 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	private int displayTabPosition;
 	private int solutionTabPosition;
-	private MetadataEditorController metadataEditor;
+	private PoolEditorController poolEditor;
 	private AssessmentItemPreviewController displayCtrl;
 	private Controller itemEditor, scoreEditor, feedbackEditor;
 	private AssessmentItemPreviewSolutionController solutionCtrl;
@@ -105,8 +110,9 @@ public class AssessmentItemEditorController extends BasicController {
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
+	private QPoolService qpoolService;
+	@Autowired
 	private AssessmentService assessmentService;
-	
 	
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl,
 			ResolvedAssessmentItem resolvedAssessmentItem,
@@ -148,7 +154,7 @@ public class AssessmentItemEditorController extends BasicController {
 	
 	public AssessmentItemEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry testEntry,
 			ResolvedAssessmentItem resolvedAssessmentItem, AssessmentItemRef itemRef, ManifestMetadataBuilder metadataBuilder,
-			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit, boolean readOnly) {
+			File rootDirectory, VFSContainer rootContainer, File itemFile, boolean restrictedEdit) {
 		super(ureq, wControl, Util.createPackageTranslator(AssessmentItemDisplayController.class, ureq.getLocale()));
 		this.itemRef = itemRef;
 		this.metadataBuilder = metadataBuilder;
@@ -156,7 +162,6 @@ public class AssessmentItemEditorController extends BasicController {
 		this.testEntry = testEntry;
 		this.rootDirectory = rootDirectory;
 		this.rootContainer = rootContainer;
-		this.readOnly = readOnly;
 		this.restrictedEdit = restrictedEdit;
 		this.resolvedAssessmentItem = resolvedAssessmentItem;
 		
@@ -164,6 +169,7 @@ public class AssessmentItemEditorController extends BasicController {
 				|| resolvedAssessmentItem.getItemLookup().getRootNodeHolder() == null) {
 			mainVC = createVelocityContainer("missing_resource");
 			mainVC.contextPut("uri", itemFile == null ? "" : itemFile);
+			readOnly = true;
 		} else {
 			mainVC = createVelocityContainer("assessment_item_editor");
 			mainVC.contextPut("restrictedEdit", restrictedEdit);
@@ -171,7 +177,15 @@ public class AssessmentItemEditorController extends BasicController {
 			tabbedPane.setElementCssClass("o_sel_assessment_item_config");
 			tabbedPane.addListener(this);
 			mainVC.put("tabbedpane", tabbedPane);
-	
+			
+			//check the status in the pool
+			QPoolInformations qStatus = getPoolStatus();
+			readOnly = qStatus.isReadOnly();
+			if(qStatus.isPooled()) {
+				poolEditor = new PoolEditorController(ureq, getWindowControl(), itemRef, metadataBuilder, qStatus);
+				listenTo(poolEditor);
+			}
+
 			initItemEditor(ureq);
 			
 			AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(getIdentity(), null, testEntry, null, testEntry);
@@ -183,9 +197,44 @@ public class AssessmentItemEditorController extends BasicController {
 			solutionCtrl = new AssessmentItemPreviewSolutionController(ureq, getWindowControl(), resolvedAssessmentItem, rootDirectory, itemFile);
 			listenTo(solutionCtrl);
 			solutionTabPosition = tabbedPane.addTab(translate("preview.solution"), solutionCtrl);
+			
+			if(poolEditor != null ) {
+				tabbedPane.addTab(translate("form.pool"), poolEditor);
+			}
 		}
 
 		putInitialPanel(mainVC);
+	}
+	
+	public QPoolInformations getPoolStatus() {
+		boolean isReadOnly = false;
+		boolean pooled = false;
+		QuestionItem originalItem = null;
+		QuestionItem masterItem = null;
+		if(metadataBuilder != null) {
+			if(StringHelper.containsNonWhitespace(metadataBuilder.getOpenOLATMetadataIdentifier())) {
+				List<QuestionItem> items = qpoolService.loadItemByIdentifier(metadataBuilder.getOpenOLATMetadataIdentifier());
+				if(items.size() > 0) {
+					pooled = true;
+					isReadOnly = true;
+					if(items.size() == 1) {
+						originalItem = items.get(0);
+					}
+				}
+			}
+
+			if(StringHelper.containsNonWhitespace(metadataBuilder.getOpenOLATMetadataIdentifier())) {
+				List<QuestionItem> items = qpoolService.loadItemByIdentifier(metadataBuilder.getOpenOLATMetadataMasterIdentifier());
+				if(items.size() > 0) {
+					pooled = true;
+					if(items.size() == 1) {
+						masterItem = items.get(0);
+					}
+				}
+			}
+			
+		}
+		return new QPoolInformations(isReadOnly, pooled, originalItem, masterItem);
 	}
 	
 	public String getTitle() {
@@ -215,12 +264,6 @@ public class AssessmentItemEditorController extends BasicController {
 			case drawing: itemBuilder = initDrawingEditors(ureq, item); break;
 			case hottext: itemBuilder = initHottextEditors(ureq, item); break;
 			default: initItemCreatedByUnkownEditor(ureq, item); break;
-		}
-		
-		if(metadataBuilder != null) {
-			//metadataEditor = new MetadataEditorController(ureq, getWindowControl(), metadataBuilder);
-			//listenTo(metadataEditor);
-			//tabbedPane.addTab(translate("form.metadata"), metadataEditor);
 		}
 		return type;
 	}
@@ -477,11 +520,9 @@ public class AssessmentItemEditorController extends BasicController {
 			} else if(AssessmentItemEvent.ASSESSMENT_ITEM_NEED_RELOAD.equals(aie.getCommand())) {
 				fireEvent(ureq, event);
 			}
-		} else if(metadataEditor == source) {
-			if(event == Event.CHANGED_EVENT) {
-				doBuildAndCommitMetadata();
-				AssessmentItem item = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
-				fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_METADATA_CHANGED, item, itemRef, null));
+		} else if(poolEditor == source) {
+			if(event instanceof DetachFromPoolEvent) {
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);
@@ -501,7 +542,7 @@ public class AssessmentItemEditorController extends BasicController {
 		//update manifest
 		metadataBuilder.setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);
 		if(itemBuilder != null) {
-			metadataBuilder.setQtiMetadata(itemBuilder.getInteractionNames());
+			metadataBuilder.setQtiMetadataInteractionTypes(itemBuilder.getInteractionNames());
 			metadataBuilder.setOpenOLATMetadataQuestionType(itemBuilder.getQuestionType().getPrefix());
 		} else {
 			metadataBuilder.setOpenOLATMetadataQuestionType(QTI21QuestionType.unkown.getPrefix());

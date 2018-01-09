@@ -473,6 +473,10 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 		return qitem;
 	}
 	
+	public QuestionItemFull getFullQuestionItem(QuestionItemShort qitem) {
+		return questionItemDao.loadById(qitem.getKey());
+	}
+	
 	/**
 	 * Export to QTI editor an item from the pool. The ident of the item
 	 * is always regenerated as an UUID.
@@ -480,10 +484,9 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	 * @param editorContainer
 	 * @return
 	 */
-	public AssessmentItem exportToQTIEditor(QuestionItemShort qitem, Locale locale, File editorContainer) throws IOException {
+	public AssessmentItem exportToQTIEditor(QuestionItemFull qitem, Locale locale, File editorContainer) throws IOException {
 		QTI21ExportProcessor processor = new QTI21ExportProcessor(qtiService, qpoolFileStorage, locale);
-		QuestionItemFull fullItem = questionItemDao.loadById(qitem.getKey());
-		ResolvedAssessmentItem resolvedAssessmentItem = processor.exportToQTIEditor(fullItem, editorContainer);
+		ResolvedAssessmentItem resolvedAssessmentItem = processor.exportToQTIEditor(qitem, editorContainer);
 		if(resolvedAssessmentItem != null) {
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().extractAssumingSuccessful();
 			assessmentItem.setIdentifier(QTI21QuestionType.generateNewIdentifier(assessmentItem.getIdentifier()));

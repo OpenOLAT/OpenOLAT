@@ -291,6 +291,28 @@ public class QuestionItemDAO {
 		return items.get(0);
 	}
 	
+	/**
+	 * The method loads the question items and fetch
+	 * the taxonomy level, license, item type and
+	 * educational context.
+	 * 
+	 * @param key The identifier of the item as defined in its metadata
+	 * @return The question items with the corresponding identifier
+	 */
+	public List<QuestionItem> loadByIdentifier(String identifier) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select item from questionitem item")
+		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
+		  .append(" left join fetch item.license license")
+		  .append(" left join fetch item.type itemType")
+		  .append(" left join fetch item.educationalContext educationalContext")
+		  .append(" where item.identifier=:identifier");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItem.class)
+				.setParameter("identifier", identifier)
+				.getResultList();
+	}
+	
 	public List<QuestionItemFull> loadByIds(Collection<Long> key) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select item from questionitem item")

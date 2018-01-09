@@ -232,16 +232,16 @@ public class AssessmentItemMetadata {
 
 		//openolat metadata
 		if(differentiation != null) {
-			metadata.setOpenOLATMetadataMasterDiscriminationIndex(differentiation.doubleValue());
+			metadata.setOpenOLATMetadataDiscriminationIndex(differentiation.doubleValue());
 		}
 		if(difficulty != null) {
-			metadata.setOpenOLATMetadataMasterDifficulty(difficulty.doubleValue());
+			metadata.setOpenOLATMetadataDifficulty(difficulty.doubleValue());
 		}
 		if(stdevDifficulty != null) {
-			metadata.setOpenOLATMetadataMasterStandardDeviation(stdevDifficulty.doubleValue());
+			metadata.setOpenOLATMetadataStandardDeviation(stdevDifficulty.doubleValue());
 		}
 		if(numOfAnswerAlternatives >= 0) {
-			metadata.setOpenOLATMetadataMasterDistractors(numOfAnswerAlternatives);
+			metadata.setOpenOLATMetadataDistractors(numOfAnswerAlternatives);
 		}
 	}
 	

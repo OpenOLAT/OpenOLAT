@@ -29,7 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.DoubleAdder;
@@ -39,7 +38,6 @@ import java.util.zip.ZipOutputStream;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.ims.qti21.QTI21Service;
@@ -56,7 +54,6 @@ import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.manager.QPoolFileStorage;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
-import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
@@ -176,7 +173,7 @@ public class QTI21ExportProcessor {
 			resource = manifestBuilder.appendAssessmentItem(qitem.getRootFilename());
 		}
 		ManifestMetadataBuilder metadataBuilder = manifestBuilder.getMetadataBuilder(resource, true);
-		enrichWithMetadata(qitem, resolvedAssessmentItem, metadataBuilder);		
+		metadataBuilder.appendMetadataFrom(qitem, resolvedAssessmentItem, locale);	
 	}
 	
 	public void assembleTest(List<QuestionItemFull> fullItems, File directory) {
@@ -213,7 +210,7 @@ public class QTI21ExportProcessor {
 				AssessmentTestFactory.appendAssessmentItem(section, newItemFilename);
 				manifest.appendAssessmentItem(newItemFilename);
 				ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(newItemFilename);
-				enrichWithMetadata(qitem, resolvedAssessmentItem, metadata);
+				metadata.appendMetadataFrom(qitem, resolvedAssessmentItem, locale);
 				
 				Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
 				if(maxScore != null) {
@@ -281,7 +278,7 @@ public class QTI21ExportProcessor {
 				AssessmentTestFactory.appendAssessmentItem(section, containedFilename);
 				manifest.appendAssessmentItem(containedFilename);
 				ManifestMetadataBuilder metadata = manifest.getResourceBuilderByHref(containedFilename);
-				enrichWithMetadata(qitem, resolvedAssessmentItem, metadata);
+				metadata.appendMetadataFrom(qitem, resolvedAssessmentItem, locale);
 				
 				//write materials
 				try {
@@ -310,96 +307,6 @@ public class QTI21ExportProcessor {
 			zout.closeEntry();
 		} catch (IOException | URISyntaxException e) {
 			log.error("", e);
-		}
-	}
-
-	private void enrichWithMetadata(QuestionItemFull qitem, ResolvedAssessmentItem resolvedAssessmentItem, ManifestMetadataBuilder metadata) {
-		String lang = qitem.getLanguage();
-		if(!StringHelper.containsNonWhitespace(lang)) {
-			lang = locale.getLanguage();
-		}
-		
-		//general
-		if(StringHelper.containsNonWhitespace(qitem.getTitle())) {
-			metadata.setTitle(qitem.getTitle(), lang);
-		}
-		if(StringHelper.containsNonWhitespace(qitem.getDescription())) {
-			metadata.setDescription(qitem.getDescription(), lang);
-		}
-		if(StringHelper.containsNonWhitespace(qitem.getKeywords())) {
-			//general and classification too
-			metadata.setGeneralKeywords(qitem.getKeywords(), lang);
-		}
-		if(StringHelper.containsNonWhitespace(qitem.getCoverage())) {
-			metadata.setCoverage(qitem.getCoverage(), lang);
-		}
-		
-		//educational
-		if(qitem.getEducationalContext() != null) {
-			String level = qitem.getEducationalContext().getLevel();
-			metadata.setEducationalContext(level, lang);
-		}
-		if(qitem.getEducationalLearningTime() != null) {
-			String time = qitem.getEducationalLearningTime();
-			metadata.setEducationalLearningTime(time);
-		}
-		if(qitem.getLanguage() != null) {
-			String language = qitem.getLanguage();
-			metadata.setLanguage(language, lang);
-		}
-		
-		//classification
-		if(qitem.getTaxonomicPath() != null) {
-			metadata.setClassificationTaxonomy(qitem.getTaxonomicPath(), lang);
-		}
-		
-		//life-cycle
-		if(StringHelper.containsNonWhitespace(qitem.getItemVersion())) {
-			metadata.setLifecycleVersion(qitem.getItemVersion());
-		}
-
-		// rights
-		if(qitem.getLicense() != null && StringHelper.containsNonWhitespace(qitem.getLicense().getLicenseText())) {
-			metadata.setLicense(qitem.getLicense().getLicenseText());
-		}
-		
-		//qti metadata
-		if(StringHelper.containsNonWhitespace(qitem.getEditor()) || StringHelper.containsNonWhitespace(qitem.getEditorVersion())) {
-			metadata.setQtiMetadataTool(qitem.getEditor(), null, qitem.getEditorVersion());
-		}
-		
-		if(resolvedAssessmentItem != null) {
-			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
-			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
-			List<String> interactionNames = new ArrayList<>(interactions.size());
-			for(Interaction interaction:interactions) {
-				interactionNames.add(interaction.getQtiClassName());
-			}
-			metadata.setQtiMetadata(interactionNames);
-		}
-		
-		//openolat metadata
-		metadata.setOpenOLATMetadataQuestionType(qitem.getItemType());
-		if(qitem.getAssessmentType() != null) {//summative, formative, both
-			metadata.setOpenOLATMetadataAssessmentType(qitem.getAssessmentType());
-		}
-		if(qitem.getDifficulty() != null) {
-			metadata.setOpenOLATMetadataMasterDifficulty(qitem.getDifficulty().doubleValue());
-		}
-		if(qitem.getDifferentiation() != null) {
-			metadata.setOpenOLATMetadataMasterDiscriminationIndex(qitem.getDifferentiation().doubleValue());
-		}
-		if(qitem.getNumOfAnswerAlternatives() >= 0) {
-			metadata.setOpenOLATMetadataMasterDistractors(qitem.getNumOfAnswerAlternatives());
-		}
-		if(qitem.getStdevDifficulty() != null) {
-			metadata.setOpenOLATMetadataMasterStandardDeviation(qitem.getStdevDifficulty().doubleValue());
-		}
-		if(qitem.getUsage() >= 0) {
-			metadata.setOpenOLATMetadataUsage(qitem.getUsage());
-		}
-		if(StringHelper.containsNonWhitespace(qitem.getMasterIdentifier())) {
-			metadata.setOpenOLATMetadataMasterIdentifier(qitem.getMasterIdentifier());
 		}
 	}
 }

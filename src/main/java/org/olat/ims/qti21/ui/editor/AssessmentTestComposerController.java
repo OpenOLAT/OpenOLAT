@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.DoubleAdder;
@@ -111,8 +112,10 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentSectionEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestEvent;
 import org.olat.ims.qti21.ui.editor.events.AssessmentTestPartEvent;
+import org.olat.ims.qti21.ui.editor.events.DetachFromPoolEvent;
 import org.olat.imscp.xml.manifest.FileType;
 import org.olat.imscp.xml.manifest.ResourceType;
+import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.SelectItemController;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
@@ -443,6 +446,9 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			} else if(AssessmentItemEvent.ASSESSMENT_ITEM_NEED_RELOAD.equals(aie.getCommand())) {
 				doReloadItem(ureq);
 			}
+		} else if(event instanceof DetachFromPoolEvent) {
+			DetachFromPoolEvent dfpe = (DetachFromPoolEvent)event;
+			doDetachItemFromPool(ureq, dfpe.getItemRef());
 		} else if(selectQItemCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
@@ -739,13 +745,19 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		try {
 			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
 			for(QuestionItemView item:items) {
-				AssessmentItem assessmentItem = qti21QPoolServiceProvider.exportToQTIEditor(item, getLocale(), unzippedDirRoot);
+				QuestionItemFull qItem = qti21QPoolServiceProvider.getFullQuestionItem(item);
+				AssessmentItem assessmentItem = qti21QPoolServiceProvider.exportToQTIEditor(qItem, getLocale(), unzippedDirRoot);
 				if(assessmentItem != null) {
 					AssessmentItemRef itemRef = doInsert(section, assessmentItem);
 					if(firstItemId == null) {
 						firstItemId = itemRef.getIdentifier().toString();
 					}
 					flyingObjects.put(itemRef, assessmentItem);
+					
+					ManifestMetadataBuilder metadata = manifestBuilder
+							.getResourceBuilderByHref(itemRef.getHref().toString());
+					metadata.appendMetadataFrom(qItem, assessmentItem, getLocale());
+					metadata.setOpenOLATMetadataCopiedAt(new Date());
 				} else {
 					allOk &= false;
 				}
@@ -792,7 +804,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				AssessmentItem assessmentItem = itemBuilder.getAssessmentItem();
 				AssessmentItemRef itemRef = doInsert(section, assessmentItem);
 				ManifestMetadataBuilder metadata = manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
-				metadata.setQtiMetadata(itemBuilder.getInteractionNames());
+				metadata.setQtiMetadataInteractionTypes(itemBuilder.getInteractionNames());
 				itemAndMetadata.toBuilder(metadata, getLocale());
 				if(firstItemId == null) {
 					firstItemId = itemRef.getIdentifier().toString();
@@ -858,6 +870,15 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			return doOpenFirstItem((TreeNode)node.getChildAt(0));
 		}
 		return null;
+	}
+	
+	private TreeNode doDetachItemFromPool(UserRequest ureq, AssessmentItemRef itemRef) {
+		ManifestMetadataBuilder metadata = manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
+		String identifier = metadata.getOpenOLATMetadataIdentifier();
+		metadata.setOpenOLATMetadataMasterIdentifier(identifier);
+		metadata.setOpenOLATMetadataIdentifier(UUID.randomUUID().toString());
+		doSaveManifest();
+		return doReloadItem(ureq);	
 	}
 	
 	private TreeNode doReloadItem(UserRequest ureq) {
@@ -1171,7 +1192,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 				File itemFile = new File(itemUri);
 				ManifestMetadataBuilder metadata = getMetadataBuilder(itemRef);
 				currentEditorCtrl = new AssessmentItemEditorController(ureq, getWindowControl(), testEntry,
-						item, itemRef, metadata, unzippedDirRoot, unzippedContRoot, itemFile, restrictedEdit, false);
+						item, itemRef, metadata, unzippedDirRoot, unzippedContRoot, itemFile, restrictedEdit);
 			}
 		}
 		

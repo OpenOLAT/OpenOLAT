@@ -22,6 +22,7 @@ package org.olat.modules.qpool;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -45,6 +46,8 @@ public interface QuestionItem extends QuestionItemShort {
 	 * @return
 	 */
 	public String getTaxonomicPath();
+	
+	public TaxonomyLevel getTaxonomyLevel();
 	
 	//educational
 	public QEducationalContext getEducationalContext();

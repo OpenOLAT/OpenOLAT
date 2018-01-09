@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<manifest xmlns="http://www.imsglobal.org/xsd/imscp_v1p1"
+	xmlns:imsmd="http://www.imsglobal.org/xsd/imsmd_v1p2" xmlns:imsqti="http://www.imsglobal.org/xsd/imsqti_metadata_v2p1"
+	xmlns:ns4="http://www.openolat.org/xsd/oomd_v1p1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p2.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 http://www.imsglobal.org/xsd/imsmd_v1p2p4.xsd http://www.imsglobal.org/xsd/imsqti_metadata_v2p1 http://www.imsglobal.org/xsd/qti/qtiv2p1/imsqti_metadata_v2p1.xsd">
+	<metadata>
+		<schema>QTIv2.1 Package</schema>
+		<schemaversion>1.0.0</schemaversion>
+		<imsmd:lom />
+	</metadata>
+	<resources>
+		<resource identifier="item2e6d877f4ba39838122dc88baba1" type="imsqti_item_xmlv2p1"
+			href="sca9b540c9684ba58f489f02e8b5c590.xml">
+			<metadata>
+				<imsmd:lom>
+					<imsmd:general>
+						<imsmd:identifier>id9f1ae47b-dc7f-482e-a688-111287f99fa6</imsmd:identifier>
+						<imsmd:title>
+							<imsmd:langstring xml:lang="de">Metadata</imsmd:langstring>
+						</imsmd:title>
+						<imsmd:keyword>
+							<imsmd:langstring xml:lang="de">Meta</imsmd:langstring>
+						</imsmd:keyword>
+						<imsmd:keyword>
+							<imsmd:langstring xml:lang="de">data</imsmd:langstring>
+						</imsmd:keyword>
+						<imsmd:keyword>
+							<imsmd:langstring xml:lang="de">keywords</imsmd:langstring>
+						</imsmd:keyword>
+						<imsmd:coverage>
+							<imsmd:langstring xml:lang="de">Coverage</imsmd:langstring>
+						</imsmd:coverage>
+						<imsmd:context xsi:type="imsmd:stringType" xml:lang="de">de</imsmd:context>
+					</imsmd:general>
+					<imsmd:lifecycle>
+                        <imsmd:version>
+                            <imsmd:langstring xml:lang="en">1.0</imsmd:langstring>
+                        </imsmd:version>
+                        <imsmd:status>
+							<imsmd:source>
+								<imsmd:langstring xml:lang="x-none">LOMv1.0</imsmd:langstring>
+							</imsmd:source>
+							<imsmd:value>
+								<imsmd:langstring xml:lang="x-none">Draft</imsmd:langstring>
+							</imsmd:value>
+						</imsmd:status>
+                    </imsmd:lifecycle>
+					<imsmd:educational>
+						<imsmd:context>
+							<imsmd:source>
+								<imsmd:langstring xml:lang="de">https://www.openolat.org</imsmd:langstring>
+							</imsmd:source>
+							<imsmd:value>
+								<imsmd:langstring xml:lang="de">Primarschule</imsmd:langstring>
+							</imsmd:value>
+						</imsmd:context>
+						<imsmd:typicallearningtime>
+							<imsmd:datetime>P1DT2H3M4S</imsmd:datetime>
+						</imsmd:typicallearningtime>
+					</imsmd:educational>
+					<imsmd:rights>
+						<imsmd:copyrightandotherrestrictions>
+							<imsmd:source>
+								<imsmd:langstring xml:lang="en">https://www.openolat.org</imsmd:langstring>
+							</imsmd:source>
+							<imsmd:value>
+								<imsmd:langstring xml:lang="en">Licence</imsmd:langstring>
+							</imsmd:value>
+						</imsmd:copyrightandotherrestrictions>
+					</imsmd:rights>
+					<imsmd:classification>
+						<imsmd:purpose>
+							<imsmd:source>
+								<imsmd:langstring xml:lang="de">LOMv1.0</imsmd:langstring>
+							</imsmd:source>
+							<imsmd:value>
+								<imsmd:langstring xml:lang="de">discipline</imsmd:langstring>
+							</imsmd:value>
+						</imsmd:purpose>
+						<imsmd:taxonpath>
+							<imsmd:source>
+								<imsmd:langstring xml:lang="en">Unkown</imsmd:langstring>
+							</imsmd:source>
+							<imsmd:taxon>
+								<imsmd:entry>
+									<imsmd:langstring xml:lang="de">Mathematik</imsmd:langstring>
+								</imsmd:entry>
+							</imsmd:taxon>
+							<imsmd:taxon>
+								<imsmd:entry>
+									<imsmd:langstring xml:lang="de">Topologie</imsmd:langstring>
+								</imsmd:entry>
+							</imsmd:taxon>
+						</imsmd:taxonpath>
+					</imsmd:classification>
+				</imsmd:lom>
+				<imsqti:qtiMetadata>
+					<imsqti:interactionType>choiceInteraction</imsqti:interactionType>
+					<imsqti:toolName>OpenOLAT</imsqti:toolName>
+					<imsqti:toolVersion>12.3a</imsqti:toolVersion>
+				</imsqti:qtiMetadata>
+				<ns4:ooMetadata>
+					<ns4:questionType>sc</ns4:questionType>
+					<ns4:difficulty>0.3</ns4:difficulty>
+					<ns4:standardDeviation>0.4</ns4:standardDeviation>
+					<ns4:discriminationIndex>0.5</ns4:discriminationIndex>
+					<ns4:distractors>1</ns4:distractors>
+					<ns4:assessmentType>formative</ns4:assessmentType>
+					<ns4:usage>12</ns4:usage>
+				</ns4:ooMetadata>
+			</metadata>
+			<file href="sca9b540c9684ba58f489f02e8b5c590.xml" />
+		</resource>
+	</resources>
+</manifest>

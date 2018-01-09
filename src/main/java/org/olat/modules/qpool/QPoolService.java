@@ -68,7 +68,17 @@ public interface QPoolService {
 	public QuestionItem createAndPersistItem(Identity owner, String subject, String format, String language, TaxonomyLevel taxonLevel,
 			String dir, String rootFilename, QItemType type);
 	
+	/**
+	 * @param key The primary key
+	 * @return The question item or null if not found
+	 */
 	public QuestionItem loadItemById(Long key);
+	
+	/**
+	 * @param identifier The identifier as defined in metadata
+	 * @return The question items with the corresponding identifier
+	 */
+	public List<QuestionItem> loadItemByIdentifier(String identifier);
 	
 	public List<QuestionItemFull> getAllItems(int firstResult, int maxResults);
 	

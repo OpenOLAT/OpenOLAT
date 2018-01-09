@@ -195,6 +195,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	public QuestionItem loadItemById(Long key) {
 		return questionItemDao.loadById(key);
 	}
+	
+	@Override
+	public List<QuestionItem> loadItemByIdentifier(String identifier) {
+		return questionItemDao.loadByIdentifier(identifier);
+	}
 
 	@Override
 	public QuestionItem updateItem(QuestionItem item) {

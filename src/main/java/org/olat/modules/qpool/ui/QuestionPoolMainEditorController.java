@@ -43,6 +43,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
 import org.olat.core.id.context.ContextEntry;
@@ -54,8 +55,11 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItem2Pool;
+import org.olat.modules.qpool.QuestionItem2Resource;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ui.events.QItemMarkedEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 import org.olat.modules.qpool.ui.tree.CollectionTreeNode;
@@ -220,20 +224,81 @@ public class QuestionPoolMainEditorController extends BasicController implements
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
+
+		OLATResourceable resource = entries.get(0).getOLATResourceable();
+		if("QuestionItem".equalsIgnoreCase(resource.getResourceableTypeName())) {
+			activateQuestionItem(ureq, resource.getResourceableId(), entries);
+		} else {
+			TreeNode rootNode = menuTree.getTreeModel().getRootNode();
+			TreeNode node = TreeHelper.findNodeByResourceableUserObject(resource, rootNode);
+			if(node == null) {
+				node = TreeHelper.findNodeByUserObject(resource.getResourceableTypeName(),  rootNode);
+			}
+			if(node != null) {
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				stackPanel.popUpToRootController(ureq);
+				doSelectControllerTreeNode(ureq, node, subEntries, entries.get(0).getTransientState());
+				menuTree.setSelectedNode(node);
+			}
+		}
+	}
+	
+	private void activateQuestionItem(UserRequest ureq, Long itemKey, List<ContextEntry> entries) {
+		QuestionItem item = qpoolService.loadItemById(itemKey);
+		if(item == null) return;
+
+		List<Identity> authors = qpoolService.getAuthors(item);
+		if(authors.contains(getIdentity())) {	
+			activateNode(ureq, treeModel.getMyQuestionsNode(), entries);
+			return;
+		}
 		
-		ContextEntry entry = entries.get(0);
-		OLATResourceable resource = entry.getOLATResourceable();
-		TreeNode rootNode = menuTree.getTreeModel().getRootNode();
-		TreeNode node = TreeHelper.findNodeByResourceableUserObject(resource, rootNode);
-		if(node == null) {
-			node = TreeHelper.findNodeByUserObject(resource.getResourceableTypeName(),  rootNode);
+		if(item.getTaxonomyLevel() != null && item.getQuestionStatus() != null
+				&& QuestionStatus.finalVersion.equals(item.getQuestionStatus()) && treeModel.getFinalNode() != null) {
+			TreeNode levelNode = treeModel.getFinalTanonomyLevelNode(item.getTaxonomyLevel());
+			if(levelNode != null) {
+				activateNode(ureq, levelNode, entries);
+				return;
+			}
 		}
-		if(node != null) {
-			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			stackPanel.popUpToRootController(ureq);
-			doSelectControllerTreeNode(ureq, node, subEntries, entry.getTransientState());
-			menuTree.setSelectedNode(node);
+		
+		if(treeModel.getSharesNode() != null) {
+			List<QuestionItem2Resource> shares = qpoolService.getSharedResourceInfosByItem(item);
+			for(QuestionItem2Resource share:shares) {
+				TreeNode levelNode = treeModel.getShareNode(share);
+				if(levelNode != null) {
+					activateNode(ureq, levelNode, entries);
+					return;
+				}
+			}
+			
+			List<QuestionItem2Pool> pools = qpoolService.getPoolInfosByItem(item);
+			for(QuestionItem2Pool pool:pools) {
+				TreeNode levelNode = treeModel.getShareNode(pool);
+				if(levelNode != null) {
+					activateNode(ureq, levelNode, entries);
+					return;
+				}
+			}
 		}
+	}
+	
+	/**
+	 * 
+	 * @param ureq The user request
+	 * @param nodeToActivate The tree node to activate
+	 * @param entries The entries which map to the question
+	 */
+	private void activateNode(UserRequest ureq, TreeNode nodeToActivate, List<ContextEntry> entries) {
+		if(nodeToActivate == null || entries == null || entries.size() < 1) return;
+		
+		stackPanel.popUpToRootController(ureq);
+		if(entries == null || entries.isEmpty()) {
+			doSelectControllerTreeNode(ureq, nodeToActivate, null, null);
+		} else {
+			doSelectControllerTreeNode(ureq, nodeToActivate, entries, entries.get(0).getTransientState());
+		}
+		menuTree.setSelectedNode(nodeToActivate);
 	}
 	
 	private void doDrop(UserRequest ureq, String targetId, String dropId) {

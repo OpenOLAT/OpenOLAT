@@ -67,6 +67,10 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 		// The user object is used to findNodeByPersistableUserObject
 		this.setUserObject(pool);
 	}
+	
+	public Pool getPool() {
+		return pool;
+	}
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {

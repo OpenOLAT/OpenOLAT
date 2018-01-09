@@ -19,13 +19,22 @@
  */
 package org.olat.ims.qti21.model.xml;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.imscp.xml.manifest.ManifestMetadataType;
 import org.olat.imscp.xml.manifest.MetadataType;
@@ -44,6 +53,7 @@ import org.olat.imsmd.xml.manifest.LomType;
 import org.olat.imsmd.xml.manifest.PurposeType;
 import org.olat.imsmd.xml.manifest.RightsType;
 import org.olat.imsmd.xml.manifest.SourceType;
+import org.olat.imsmd.xml.manifest.StatusType;
 import org.olat.imsmd.xml.manifest.StringType;
 import org.olat.imsmd.xml.manifest.TaxonType;
 import org.olat.imsmd.xml.manifest.TaxonpathType;
@@ -53,7 +63,13 @@ import org.olat.imsmd.xml.manifest.TypicallearningtimeType;
 import org.olat.imsmd.xml.manifest.ValueType;
 import org.olat.imsmd.xml.manifest.VersionType;
 import org.olat.imsqti.xml.manifest.QTIMetadataType;
+import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.model.QLicense;
 import org.olat.oo.xml.manifest.OpenOLATMetadataType;
+
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 
 /**
  * 
@@ -62,6 +78,8 @@ import org.olat.oo.xml.manifest.OpenOLATMetadataType;
  *
  */
 public class ManifestMetadataBuilder {
+	
+	private static final OLog log = Tracing.createLoggerFor(ManifestMetadataBuilder.class);
 	
 	protected static final org.olat.oo.xml.manifest.ObjectFactory ooObjectFactory = new org.olat.oo.xml.manifest.ObjectFactory();
 	protected static final org.olat.imscp.xml.manifest.ObjectFactory cpObjectFactory = new org.olat.imscp.xml.manifest.ObjectFactory();
@@ -90,6 +108,18 @@ public class ManifestMetadataBuilder {
 	
 	public void setMetadata(MetadataType metadata) {
 		this.metadata = metadata;
+	}
+	
+	public String getIdentifier() {
+		GeneralType general = getGeneral(false);
+		if(general != null) {
+			for(Object any:general.getContent()) {
+				if(any instanceof JAXBElement<?> && ((JAXBElement<?>)any).getName().getLocalPart().equals("identifier")) {
+					return (String)((JAXBElement<?>)any).getValue();
+				}
+			}
+		}
+		return null;
 	}
 	
 	public String getTitle() {
@@ -183,6 +213,17 @@ public class ManifestMetadataBuilder {
 		}
 	}
 	
+	public String getCoverage() {
+		GeneralType general = getGeneral(false);
+		if(general != null) {
+			CoverageType type = getFromAny(CoverageType.class, general.getContent());
+			if(type != null) {
+				return getFirstString(type.getLangstring());
+			}
+		}
+		return null;
+	}
+	
 	public void setCoverage(String coverage, String lang) {
 		GeneralType general = getGeneral(true);
 		if(general != null) {
@@ -237,6 +278,17 @@ public class ManifestMetadataBuilder {
 			type.setSource(sourceType);
 			type.setValue(valueType);
 		}
+	}
+	
+	public String getEducationalLearningTime() {
+		EducationalType educational = getEducational(true);
+		if(educational != null) {
+			TypicallearningtimeType type = getFromAny(TypicallearningtimeType.class, educational.getContent());
+			if(type != null) {
+				return type.getDatetime();
+			}
+		}
+		return null;
 	}
 	
 	public void setEducationalLearningTime(String datetime) {
@@ -431,16 +483,36 @@ public class ManifestMetadataBuilder {
 		return educational;
 	}
 	
-	public void setLifecycleVersion(String version) {
-		LifecycleType lifecycle = getLifecycle(true);
+	public String getLifecycleVersion() {
+		LifecycleType lifecycle = getLifecycle(false);
 		if(lifecycle != null) {
 			VersionType type = getFromAny(VersionType.class, lifecycle.getContent());
-			if(type == null) {
-				type = mdObjectFactory.createVersionType();
-				lifecycle.getContent().add(mdObjectFactory.createVersion(type));
+			if(type != null) {
+				return getFirstString(type.getLangstring());
 			}
-			createOrUpdateFirstLangstring(type.getLangstring(), version, "en");
 		}
+		return null;
+	}
+	
+	public void setLifecycleVersion(String version) {
+		LifecycleType lifecycle = getLifecycle(true);
+		VersionType type = getFromAny(VersionType.class, lifecycle.getContent());
+		if(type == null) {
+			type = mdObjectFactory.createVersionType();
+			lifecycle.getContent().add(mdObjectFactory.createVersion(type));
+		}
+		createOrUpdateFirstLangstring(type.getLangstring(), version, "en");
+	}
+	
+	public String getLifecycleStatus() {
+		LifecycleType lifecycle = getLifecycle(false);
+		if(lifecycle != null) {
+			StatusType status = getFromAny(StatusType.class, lifecycle.getContent());
+			if(status != null && status.getValue() != null && status.getValue().getLangstring() != null) {
+				return status.getValue().getLangstring().getValue();
+			}
+		}
+		return null;
 	}
 	
 	public LifecycleType getLifecycle(boolean create) {
@@ -489,44 +561,127 @@ public class ManifestMetadataBuilder {
 		return ooMetadata;
 	}
 	
+	public String getOpenOLATMetadataQuestionType() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getQuestionType();
+	}
+	
 	public void setOpenOLATMetadataQuestionType(String questionType) {
-		OpenOLATMetadataType qtiMetadata = getOpenOLATMetadata(true);
-		qtiMetadata.setQuestionType(questionType);
+		getOpenOLATMetadata(true).setQuestionType(questionType);
+	}
+	
+	public String getOpenOLATMetadataIdentifier() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getQpoolIdentifier();
+	}
+	
+	public void setOpenOLATMetadataIdentifier(String identifier) {
+		getOpenOLATMetadata(true).setQpoolIdentifier(identifier);
+	}
+	
+	public String getOpenOLATMetadataMasterIdentifier() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getMasterIdentifier();
 	}
 	
 	public void setOpenOLATMetadataMasterIdentifier(String masterIdentifier) {
-		OpenOLATMetadataType qtiMetadata = getOpenOLATMetadata(true);
-		qtiMetadata.setMasterIdentifier(masterIdentifier);
+		getOpenOLATMetadata(true).setMasterIdentifier(masterIdentifier);
 	}
 	
-	public void setOpenOLATMetadataMasterDifficulty(Double difficulty) {
-		OpenOLATMetadataType qtiMetadata = getOpenOLATMetadata(true);
-		qtiMetadata.setDifficulty(difficulty);
+	public Double getOpenOLATMetadataDifficulty() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getDifficulty();
 	}
 	
-	public void setOpenOLATMetadataMasterDiscriminationIndex(Double discriminationIndex) {
-		OpenOLATMetadataType qtiMetadata = getOpenOLATMetadata(true);
-		qtiMetadata.setDiscriminationIndex(discriminationIndex);
+	public void setOpenOLATMetadataDifficulty(Double difficulty) {
+		getOpenOLATMetadata(true).setDifficulty(difficulty);
 	}
 	
-	public void setOpenOLATMetadataMasterDistractors(Integer distractors) {
-		OpenOLATMetadataType qtiMetadata = getOpenOLATMetadata(true);
-		qtiMetadata.setDistractors(distractors);
+	public void setOpenOLATMetadataDifficulty(BigDecimal difficulty) {
+		if(difficulty == null) {
+			setOpenOLATMetadataDifficulty((Double)null);
+		} else {
+			setOpenOLATMetadataDifficulty(Double.valueOf(difficulty.doubleValue()));
+		}
 	}
 	
-	public void setOpenOLATMetadataMasterStandardDeviation(Double standardDeviation) {
-		OpenOLATMetadataType qtiMetadata = getOpenOLATMetadata(true);
-		qtiMetadata.setStandardDeviation(standardDeviation);
+	public Double getOpenOLATMetadataDiscriminationIndex() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getDiscriminationIndex();
+	}
+	
+	public void setOpenOLATMetadataDiscriminationIndex(Double discriminationIndex) {
+		getOpenOLATMetadata(true).setDiscriminationIndex(discriminationIndex);
+	}
+	
+	public void setOpenOLATMetadataDiscriminationIndex(BigDecimal discriminationIndex) {
+		if(discriminationIndex == null) {
+			setOpenOLATMetadataDiscriminationIndex((Double)null);
+		} else {
+			setOpenOLATMetadataDiscriminationIndex(Double.valueOf(discriminationIndex.doubleValue()));
+		}
+	}
+	
+	public Integer getOpenOLATMetadataDistractors() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getDistractors();
+	}
+	
+	public void setOpenOLATMetadataDistractors(Integer distractors) {
+		getOpenOLATMetadata(true).setDistractors(distractors);
+	}
+	
+	public Double getOpenOLATMetadataStandardDeviation() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getStandardDeviation();
+	}
+	
+	public void setOpenOLATMetadataStandardDeviation(Double standardDeviation) {
+		getOpenOLATMetadata(true).setStandardDeviation(standardDeviation);
+	}
+	
+	public void setOpenOLATMetadataStandardDeviation(BigDecimal standardDeviation) {
+		if(standardDeviation == null) {
+			setOpenOLATMetadataStandardDeviation((Double)null);
+		} else {
+			setOpenOLATMetadataStandardDeviation(Double.valueOf(standardDeviation.doubleValue()));
+		}
+	}
+	
+	public Integer getOpenOLATMetadataUsage() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getUsage();
 	}
 	
 	public void setOpenOLATMetadataUsage(Integer usage) {
-		OpenOLATMetadataType qtiMetadata = getOpenOLATMetadata(true);
-		qtiMetadata.setUsage(usage);
+		getOpenOLATMetadata(true).setUsage(usage);
+	}
+	
+	public String getOpenOLATMetadataAssessmentType() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getAssessmentType();
 	}
 	
 	public void setOpenOLATMetadataAssessmentType(String type) {
-		OpenOLATMetadataType qtiMetadata = getOpenOLATMetadata(true);
-		qtiMetadata.setAssessmentType(type);
+		getOpenOLATMetadata(true).setAssessmentType(type);
+	}
+	
+	public Date getOpenOLATMetadataCopiedAt() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		if(ooMetadata != null && ooMetadata.getCopiedAt() != null) {
+			return ooMetadata.getCopiedAt().toGregorianCalendar().getTime();
+		}
+		return null;
+	}
+	
+	public void setOpenOLATMetadataCopiedAt(Date date) {
+		try {
+			GregorianCalendar cal = new GregorianCalendar();
+			cal.setTime(date);
+			getOpenOLATMetadata(true).setCopiedAt(DatatypeFactory.newInstance().newXMLGregorianCalendar(cal));
+		} catch (DatatypeConfigurationException e) {
+			log.error("", e);
+		}
 	}
 	
 	/**
@@ -554,6 +709,21 @@ public class ManifestMetadataBuilder {
 		return qtiMetadata;
 	}
 	
+	public String getQtiMetadataToolName() {
+		QTIMetadataType qtiMetadata = getQtiMetadata(false);
+		return qtiMetadata == null ? null : qtiMetadata.getToolName();
+	}
+	
+	public String getQtiMetadaToolVendor() {
+		QTIMetadataType qtiMetadata = getQtiMetadata(false);
+		return qtiMetadata == null ? null : qtiMetadata.getToolVendor();
+	}
+	
+	public String getQtiMetadataToolVersion() {
+		QTIMetadataType qtiMetadata = getQtiMetadata(false);
+		return qtiMetadata == null ? null : qtiMetadata.getToolVersion();
+	}
+	
 	public void setQtiMetadataTool(String toolName, String toolVendor, String toolVersion) {
 		QTIMetadataType qtiMetadata = getQtiMetadata(true);
 		qtiMetadata.setToolName(toolName);
@@ -561,7 +731,7 @@ public class ManifestMetadataBuilder {
 		qtiMetadata.setToolVersion(toolVersion);
 	}
 	
-	public void setQtiMetadata(List<String> interactions) {
+	public void setQtiMetadataInteractionTypes(List<String> interactions) {
 		QTIMetadataType qtiMetadata = getQtiMetadata(true);
 		
 		qtiMetadata.getInteractionType().clear();
@@ -605,5 +775,94 @@ public class ManifestMetadataBuilder {
 	public List<Object> getMetadataList() {
 		return metadata == null ? manifestMetadata.getAny() : metadata.getAny();
 	}
+	
+	public void appendMetadataFrom(QuestionItem item, ResolvedAssessmentItem resolvedAssessmentItem, Locale locale) {
+		AssessmentItem assessmentItem = null;
+		if(resolvedAssessmentItem != null) {
+			assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
+		}
+		appendMetadataFrom(item, assessmentItem, locale);
+	}
+	
+	/**
+	 * This method will add new metadata to the current ones.
+	 * 
+	 * @param item
+	 * @param locale
+	 */
+	public void appendMetadataFrom(QuestionItem item, AssessmentItem assessmentItem, Locale locale) {
+		String lang = item.getLanguage();
+		if(!StringHelper.containsNonWhitespace(lang)) {
+			lang = locale.getLanguage();
+		}
 
+		//LOM : General
+		if(StringHelper.containsNonWhitespace(item.getTitle())) {
+			setTitle(item.getTitle(), lang);
+		}
+		if(StringHelper.containsNonWhitespace(item.getCoverage())) {
+			setCoverage(item.getCoverage(), lang);
+		}
+		if(StringHelper.containsNonWhitespace(item.getKeywords())) {
+			setGeneralKeywords(item.getKeywords(), lang);
+		}
+		if(StringHelper.containsNonWhitespace(item.getDescription())) {
+			setDescription(item.getDescription(), lang);
+		}
+		//LOM : Technical
+		setTechnicalFormat(ManifestBuilder.ASSESSMENTITEM_MIMETYPE);
+		//LOM : Educational
+		if(StringHelper.containsNonWhitespace(item.getEducationalContextLevel())) {
+			setEducationalContext(item.getEducationalContextLevel(), lang);
+		}
+		if(StringHelper.containsNonWhitespace(item.getEducationalLearningTime())) {
+			setEducationalLearningTime(item.getEducationalLearningTime());
+		}
+		if(item.getLanguage() != null) {
+			setLanguage(item.getLanguage(), lang);
+		}
+		//LOM : Lifecycle
+		if(StringHelper.containsNonWhitespace(item.getItemVersion())) {
+			setLifecycleVersion(item.getItemVersion());
+		}
+		//LOM : Rights
+		QLicense license = item.getLicense();
+		if(license != null) {
+			if(StringHelper.containsNonWhitespace(license.getLicenseText())) {
+				setLicense(license.getLicenseText());
+			} else if(StringHelper.containsNonWhitespace(license.getLicenseKey())) {
+				setLicense(license.getLicenseKey());
+			}
+		}
+		//LOM : classification
+		if(StringHelper.containsNonWhitespace(item.getTaxonomicPath())) {
+			setClassificationTaxonomy(item.getTaxonomicPath(), lang);
+		}
+		
+		// QTI 2.1
+		setQtiMetadataTool(item.getEditor(), null, item.getEditorVersion());
+		
+		if(assessmentItem != null) {
+			List<Interaction> interactions = assessmentItem.getItemBody().findInteractions();
+			List<String> interactionNames = new ArrayList<>(interactions.size());
+			for(Interaction interaction:interactions) {
+				interactionNames.add(interaction.getQtiClassName());
+			}
+			setQtiMetadataInteractionTypes(interactionNames);
+		}
+		
+		// OpenOLAT
+		if(item.getType() != null) {
+			setOpenOLATMetadataQuestionType(item.getType().getType());
+		} else {
+			setOpenOLATMetadataQuestionType(null);
+		}
+		setOpenOLATMetadataIdentifier(item.getIdentifier());
+		setOpenOLATMetadataDifficulty(item.getDifficulty());
+		setOpenOLATMetadataDiscriminationIndex(item.getDifferentiation());
+		setOpenOLATMetadataDistractors(item.getNumOfAnswerAlternatives());
+		setOpenOLATMetadataStandardDeviation(item.getStdevDifficulty());
+		setOpenOLATMetadataUsage(item.getUsage());
+		setOpenOLATMetadataAssessmentType(item.getAssessmentType());
+	}
 }

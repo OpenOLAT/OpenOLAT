@@ -254,7 +254,16 @@ public class QuestionListController extends AbstractItemListController implement
 			Long itemKey = entry.getOLATResourceable().getResourceableId();
 			ItemRow row = getModel().getObjectByKey(itemKey);
 			if(row == null) {
-				//TODO xhr
+				getModel().load(null, null, null, 0, -1);
+				row = getModel().getObjectByKey(itemKey);
+				if(row != null) {
+					doOpenDetails(ureq, row);
+					int index = getModel().getObjects().indexOf(row);
+					if(index >= 1 && getItemsTable().getPageSize() > 1) {
+						int page = index / getItemsTable().getPageSize();
+						getItemsTable().setPage(page);
+					}
+				}
 			} else {
 				doOpenDetails(ureq, row);
 			}

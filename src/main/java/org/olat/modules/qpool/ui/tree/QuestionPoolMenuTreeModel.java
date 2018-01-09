@@ -39,6 +39,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem2Pool;
+import org.olat.modules.qpool.QuestionItem2Resource;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.QuestionPoolMainEditorController;
@@ -102,6 +104,58 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 
 	public TreeNode getSharesNode() {
 		return sharesNode;
+	}
+	
+	/**
+	 * @return The node which holds the taxonomy levels for the questions in final state
+	 * 		or null if the the review process is disabled.
+	 */
+	public TreeNode getFinalNode() {
+		return finalNode;
+	}
+	
+	public TreeNode getFinalTanonomyLevelNode(TaxonomyLevel level) {
+		if(level == null || finalNode == null) return null;
+		
+		for(int i=finalNode.getChildCount(); i-->0; ) {
+			INode node = finalNode.getChildAt(i);
+			if(node instanceof FinalTreeNode && level.equals(((FinalTreeNode)node).getTanonomyLevel())) {
+				return (TreeNode)node;
+			}
+		}
+		return null;
+	}
+	
+	public TreeNode getShareNode(QuestionItem2Resource share) {
+		if(sharesNode == null || share == null) return null;
+
+		Long key = share.getResourceKey();
+		for(int i=sharesNode.getChildCount(); i-->0; ) {
+			INode node = sharesNode.getChildAt(i);
+			if(node instanceof BusinessGroupTreeNode) {
+				BusinessGroup group = ((BusinessGroupTreeNode)node).getBusinessGroup();
+				if(group.getResource().getKey().equals(key)) {
+					return (TreeNode)node;
+				}	
+			}
+		}
+		return null;
+	}
+	
+	public TreeNode getShareNode(QuestionItem2Pool share) {
+		if(sharesNode == null || share == null) return null;
+
+		Long key = share.getPoolKey();
+		for(int i=sharesNode.getChildCount(); i-->0; ) {
+			INode node = sharesNode.getChildAt(i);
+			if(node instanceof PoolTreeNode) {
+				Pool pool = ((PoolTreeNode)node).getPool();
+				if(pool.getKey().equals(key)) {
+					return (TreeNode)node;
+				}	
+			}
+		}
+		return null;
 	}
 	
 	public Collection<String> getDefaultOpenNodeIds() {

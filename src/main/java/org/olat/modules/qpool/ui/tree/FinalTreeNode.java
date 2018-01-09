@@ -68,6 +68,10 @@ public class FinalTreeNode extends GenericTreeNode implements ControllerTreeNode
 		
 		this.setUserObject(taxonomyLevel);
 	}
+	
+	public TaxonomyLevel getTanonomyLevel() {
+		return taxonomyLevel;
+	}
 
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {

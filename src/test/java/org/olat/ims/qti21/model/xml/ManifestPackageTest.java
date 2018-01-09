@@ -22,6 +22,8 @@ package org.olat.ims.qti21.model.xml;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +31,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
+import org.olat.imsqti.xml.manifest.QTIMetadataType;
+import org.olat.oo.xml.manifest.OpenOLATMetadataType;
 
 import uk.ac.ed.ph.jqtiplus.utils.contentpackaging.ContentPackageResource;
 import uk.ac.ed.ph.jqtiplus.utils.contentpackaging.ImsManifestException;
@@ -73,5 +77,66 @@ public class ManifestPackageTest {
         ManifestBuilder reloadManifest = ManifestBuilder.read(manifestFile);
         Assert.assertNotNull(reloadManifest);
         FileUtils.deleteDirsAndFiles(tmpDir.toPath());
+	}
+	
+	/**
+	 * 
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void readManifest() throws URISyntaxException {
+		URL xmlUrl = ManifestPackageTest.class.getResource("resources/manifest/oo_assessmentitem_imsmanifest_12_2.xml");
+		File xmlFile = new File(xmlUrl.toURI());
+		ManifestBuilder manifest = ManifestBuilder.read(xmlFile);
+		
+		
+		ManifestMetadataBuilder questionMetadata = manifest.getResourceBuilderByHref("sca9b540c9684ba58f489f02e8b5c590.xml");
+		Assert.assertNotNull(questionMetadata);
+		
+		//LOM
+		String title = questionMetadata.getTitle();
+		Assert.assertEquals("Metadata", title);
+		String identifier = questionMetadata.getIdentifier();
+		Assert.assertEquals("id9f1ae47b-dc7f-482e-a688-111287f99fa6", identifier);
+		
+
+		String keywords = questionMetadata.getGeneralKeywords();
+		Assert.assertTrue(keywords.contains("Meta"));
+		Assert.assertTrue(keywords.contains("data"));
+		Assert.assertTrue(keywords.contains("keywords"));
+		
+		String context = "de";
+		Assert.assertEquals("de", context);
+		
+		//educational
+		String educationContext = questionMetadata.getEducationContext();
+		Assert.assertEquals("Primarschule", educationContext);
+		String typicalLearningTime = "P1DT2H3M4S";
+		Assert.assertEquals("P1DT2H3M4S", typicalLearningTime);
+		
+		//lifecycle
+		String version = "1.0";
+		Assert.assertEquals("1.0", version);
+		
+		// classification
+		String taxonomyPath = questionMetadata.getClassificationTaxonomy();
+		Assert.assertEquals("/Mathematik/Topologie", taxonomyPath);
+
+		//QTI 2.1
+		QTIMetadataType qtiMetadata = questionMetadata.getQtiMetadata(false);
+		Assert.assertTrue(qtiMetadata.getInteractionType().contains("choiceInteraction"));
+		Assert.assertEquals("OpenOLAT", qtiMetadata.getToolName());
+		Assert.assertEquals("12.3a", qtiMetadata.getToolVersion());
+		
+		//OpenOLAT specific
+		OpenOLATMetadataType openolatMetadata = questionMetadata.getOpenOLATMetadata(false);
+		Assert.assertEquals(Double.valueOf(0.5d), openolatMetadata.getDiscriminationIndex());
+		Assert.assertEquals(Double.valueOf(0.3d), openolatMetadata.getDifficulty());
+		Assert.assertEquals(Double.valueOf(0.4d), openolatMetadata.getStandardDeviation());
+		Assert.assertEquals(Integer.valueOf(1), openolatMetadata.getDistractors());
+		Assert.assertEquals("sc", openolatMetadata.getQuestionType());
+		Assert.assertEquals(Integer.valueOf(12), openolatMetadata.getUsage());
+		Assert.assertEquals("formative", openolatMetadata.getAssessmentType());
+
 	}
 }

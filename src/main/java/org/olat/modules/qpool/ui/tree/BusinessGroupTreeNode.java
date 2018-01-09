@@ -68,6 +68,10 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 		this.setUserObject(group);
 	}
 	
+	public BusinessGroup getBusinessGroup() {
+		return group;
+	}
+	
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
 		if(questionsCtrl == null) {
