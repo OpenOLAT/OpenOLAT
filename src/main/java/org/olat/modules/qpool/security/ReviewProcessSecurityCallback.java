@@ -24,6 +24,7 @@ import java.util.Collection;
 
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ReviewService;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
@@ -49,8 +50,11 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;
-	private boolean isAdmin = false;
+	private boolean admin = false;
+	private boolean poolAdmin = false;
 	
+	@Autowired
+	private QuestionPoolModule qpoolModule;
 	@Autowired
 	private ReviewService reviewService;
 
@@ -66,38 +70,43 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	@Override
 	public void setAdmin(boolean admin) {
-		this.isAdmin = admin;
+		this.admin = admin;
+	}
+
+	@Override
+	public void setPoolAdmin(boolean poolAdmin) {
+		this.poolAdmin = poolAdmin;
 	}
 
 	@Override
 	public boolean canEditQuestion() {
 		return reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())
-				&& (isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare()) ;
+				&& (admin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare()) ;
 	}
 
 	@Override
 	public boolean canEditMetadata() {
-		return isAdmin || itemView.isAuthor() || itemView.isManager();
+		return admin || itemView.isAuthor() || itemView.isManager() || (poolAdmin && qpoolModule.isPoolAdminAllowedToEditMetadata());
 	}
 
 	@Override
 	public boolean canRemoveTaxonomy() {
 		return QuestionStatus.draft.equals(itemView.getQuestionStatus())
-				&& (isAdmin || itemView.isAuthor() || itemView.isManager());
+				&& (admin || itemView.isAuthor() || itemView.isManager());
 	}
 
 	@Override
 	public boolean canStartReview() {
 		return itemView.isReviewableFormat()
 				&& reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())
-				&& (isAdmin || itemView.isAuthor());
+				&& (admin || itemView.isAuthor());
 	}
 
 	@Override
 	public boolean canReviewNotStartable() {
 		return !itemView.isReviewableFormat()
 				&& reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())
-				&& (isAdmin || itemView.isAuthor());
+				&& (admin || itemView.isAuthor());
 	}
 	
 	@Override
@@ -109,13 +118,13 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	@Override
 	public boolean canSetDraft() {
-		return isAdmin;
+		return admin;
 	}
 
 	@Override
 	public boolean canSetRevised() {
 		return itemView.isReviewableFormat()
-				&& (isAdmin || itemView.isManager());
+				&& (admin || itemView.isManager() || (poolAdmin && qpoolModule.isPoolAdminAllowedToEditStatus()));
 	}
 
 	@Override
@@ -126,24 +135,24 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	@Override
 	public boolean canSetFinal() {
 		return itemView.isReviewableFormat()
-				&& (isAdmin || itemView.isManager());
+				&& (admin || itemView.isManager() || (poolAdmin && qpoolModule.isPoolAdminAllowedToEditStatus()));
 	}
 
 	@Override
 	public boolean canSetEndOfLife() {
-		return isAdmin || itemView.isManager();
+		return admin || itemView.isManager() || (poolAdmin && qpoolModule.isPoolAdminAllowedToEditStatus());
 	}
 
 	@Override
 	public boolean canDelete() {
 		return DELETABLE_STATES.contains(itemView.getQuestionStatus())
-				&& (isAdmin || itemView.isManager());
+				&& (admin || itemView.isManager());
 	}
 
 	@Override
 	public boolean canRemove() {
 		return questionItemSource.isRemoveEnabled()
-				&& (isAdmin || itemView.isAuthor());
+				&& (admin || itemView.isAuthor());
 	}
 
 	@Override

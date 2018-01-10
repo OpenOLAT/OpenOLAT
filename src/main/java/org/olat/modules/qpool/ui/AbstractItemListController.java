@@ -57,6 +57,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
@@ -105,7 +106,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	
 	private EventBus eventBus;
 	private QuestionItemsSource itemsSource;
-	private final boolean isOLATAdmin;
+	private final Roles roles;
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,
 			QuestionItemsSource source, String key) {
@@ -129,7 +130,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		this.securityCallback = securityCallback;
 		this.prefsKey = key;
 		this.itemsSource = source;
-		this.isOLATAdmin = ureq.getUserSession().getRoles().isOLATAdmin();
+		this.roles = ureq.getUserSession().getRoles();
 		this.restrictToFormat = restrictToFormat;
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
@@ -456,7 +457,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected ItemRow forgeRow(QuestionItemView item) {
 		boolean marked = item.isMarked();
 		QuestionItemSecurityCallback securityCallback = qpoolSecurityCallbackFactory
-				.createQuestionItemSecurityCallback(item, getSource(), isOLATAdmin);
+				.createQuestionItemSecurityCallback(item, getSource(), roles);
 		ItemRow row = new ItemRow(item, securityCallback);
 		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "&nbsp;", null, null, Link.NONTRANSLATED);
 		markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
@@ -469,7 +470,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	protected ItemRow wrapNewItem(QuestionItem item) {
 		ItemWrapper itemWrapper = ItemWrapper.builder(item).setAuthor(true).create();
 		QuestionItemSecurityCallback securityCallback = qpoolSecurityCallbackFactory
-				.createQuestionItemSecurityCallback(itemWrapper, getSource(), isOLATAdmin);
+				.createQuestionItemSecurityCallback(itemWrapper, getSource(), roles);
 		return new ItemRow(itemWrapper, securityCallback);
 	}
 }

@@ -68,6 +68,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	private ExtendedSearchPrefs prefs;
 	private boolean enabled = true;
 	
+	
 	@Autowired
 	private QPoolService qpoolService;
 	@Autowired

@@ -19,7 +19,9 @@
  */
 package org.olat.modules.qpool.ui.admin;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -48,12 +50,31 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QuestionPoolAdminConfigurationController extends FormBasicController {
 	
-	private static final String[] onKeys = new String[] { "on" };
+	private static final String[] onKeys = { "on" };
+	private static final String POOL_MANAGER_EDIT_METADATA = "pool.manager.edit.matadata";
+	private static final String POOL_MANAGER_EDIT_STATUS = "pool.manager.edit.status";
+	private static final String POOL_MANAGER_REVIEW_PROCESS = "pool.manager.review.process";
+	private static final String POOL_MANAGER_TAXONOMY = "pool.manager.taxonomy";
+	private static final String POOL_MANAGER_POOLS = "pool.manager.pools";
+	private static final String POOL_MANAGER_ITEM_TYPES = "pool.manager.item.types";
+	private static final String POOL_MANAGER_EDUCATIONAL_CONTEXT = "pool.manager.educational.context";
+	private static final String POOL_MANAGER_LICENSES = "pool.manager.licenses";
+	private static final String[] POOL_MANAGER_RIGHTS_KEYS = {
+			POOL_MANAGER_EDIT_METADATA,
+			POOL_MANAGER_EDIT_STATUS,
+			POOL_MANAGER_REVIEW_PROCESS,
+			POOL_MANAGER_TAXONOMY,
+			POOL_MANAGER_POOLS,
+			POOL_MANAGER_ITEM_TYPES,
+			POOL_MANAGER_EDUCATIONAL_CONTEXT,
+			POOL_MANAGER_LICENSES
+	};
 	
 	private MultipleSelectionElement reviewProcessEnabledEl;
 	private MultipleSelectionElement collectionsEnabledEl;
 	private MultipleSelectionElement poolsEnabledEl;
 	private MultipleSelectionElement sharesEnabledEl;
+	private MultipleSelectionElement poolManagerRightsEl;
 	private SingleSelection taxonomyTreeEl;
 	
 	private CloseableModalController closeableModalCtrl;
@@ -69,36 +90,36 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 	private QPoolService qpoolService;
 	
 	public QuestionPoolAdminConfigurationController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, "admin_config");
 		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.configuration.title");
+		FormLayoutContainer moduleCont = FormLayoutContainer.createDefaultFormLayout("module", getTranslator());
+		moduleCont.setFormTitle(translate("admin.configuration.title"));
+		moduleCont.setRootForm(mainForm);
+		formLayout.add("module", moduleCont);
 		
 		String[] onValues = new String[] { translate("on") };
-		reviewProcessEnabledEl = uifactory.addCheckboxesHorizontal("review.process.enabled", formLayout, onKeys, onValues);
+		reviewProcessEnabledEl = uifactory.addCheckboxesHorizontal("review.process.enabled", moduleCont, onKeys, onValues);
 		reviewProcessEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		if (qpoolModule.isReviewProcessEnabled()) {
 			reviewProcessEnabledEl.select(onKeys[0], true);
 		}
 		
-		collectionsEnabledEl = uifactory.addCheckboxesHorizontal("collections.enabled", formLayout, onKeys, onValues);
-		collectionsEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		collectionsEnabledEl = uifactory.addCheckboxesHorizontal("collections.enabled", moduleCont, onKeys, onValues);
 		if (qpoolModule.isCollectionsEnabled()) {
 			collectionsEnabledEl.select(onKeys[0], true);
 		}
 		
-		poolsEnabledEl = uifactory.addCheckboxesHorizontal("pools.enabled", formLayout, onKeys, onValues);
-		poolsEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		poolsEnabledEl = uifactory.addCheckboxesHorizontal("pools.enabled", moduleCont, onKeys, onValues);
 		if (qpoolModule.isPoolsEnabled()) {
 			poolsEnabledEl.select(onKeys[0], true);
 		}
 
-		sharesEnabledEl = uifactory.addCheckboxesHorizontal("shares.enabled", formLayout, onKeys, onValues);
-		sharesEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		sharesEnabledEl = uifactory.addCheckboxesHorizontal("shares.enabled", moduleCont, onKeys, onValues);
 		if (qpoolModule.isSharesEnabled()) {
 			sharesEnabledEl.select(onKeys[0], true);
 		}
@@ -115,7 +136,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		}
 		
 		String selectedTaxonomyQPoolKey = qpoolModule.getTaxonomyQPoolKey();
-		taxonomyTreeEl = uifactory.addDropdownSingleselect("selected.taxonomy.tree", formLayout, taxonomyKeys, taxonomyValues, null);
+		taxonomyTreeEl = uifactory.addDropdownSingleselect("selected.taxonomy.tree", moduleCont, taxonomyKeys, taxonomyValues, null);
 		taxonomyTreeEl.setEnabled(false);
 		if(StringHelper.containsNonWhitespace(selectedTaxonomyQPoolKey)) {
 			for(String taxonomyKey:taxonomyKeys) {
@@ -125,9 +146,34 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 			}
 		}
 		
+		FormLayoutContainer poolManagerRightsCont = FormLayoutContainer.createDefaultFormLayout("poolManagerRights", getTranslator());
+		poolManagerRightsCont.setFormTitle(translate("admin.pool.manager.title"));
+		poolManagerRightsCont.setRootForm(mainForm);
+		formLayout.add("poolManagerRights", poolManagerRightsCont);
+		
+		poolManagerRightsEl = uifactory.addCheckboxesVertical("pool.manager.allowed", poolManagerRightsCont,
+				POOL_MANAGER_RIGHTS_KEYS, translateKeys(POOL_MANAGER_RIGHTS_KEYS), 1);
+		poolManagerRightsEl.select(POOL_MANAGER_EDIT_METADATA, qpoolModule.isPoolAdminAllowedToEditMetadata());
+		poolManagerRightsEl.select(POOL_MANAGER_EDIT_STATUS, qpoolModule.isPoolAdminAllowedToEditStatus());
+		poolManagerRightsEl.select(POOL_MANAGER_REVIEW_PROCESS, qpoolModule.isPoolAdminAllowedToConfigReviewProcess());
+		poolManagerRightsEl.select(POOL_MANAGER_TAXONOMY, qpoolModule.isPoolAdminAllowedToConfigTaxonomy());
+		poolManagerRightsEl.select(POOL_MANAGER_POOLS, qpoolModule.isPoolAdminAllowedToConfigPools());
+		poolManagerRightsEl.select(POOL_MANAGER_ITEM_TYPES, qpoolModule.isPoolAdminAllowedToConfigItemTypes());
+		poolManagerRightsEl.select(POOL_MANAGER_EDUCATIONAL_CONTEXT, qpoolModule.isPoolAdminAllowedToConfigEducationalContext());
+		poolManagerRightsEl.select(POOL_MANAGER_LICENSES, qpoolModule.isPoolAdminAllowedToConfigLicenses());
+		
+		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("global", getTranslator());
+		buttonsWrapperCont.setRootForm(mainForm);
+		formLayout.add("buttonsWrapper", buttonsWrapperCont);
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
+		buttonsWrapperCont.add(buttonsCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
+	}
+
+	private String[] translateKeys(String[] keys) {
+		return Stream.of(keys)
+				.map(key -> getTranslator().translate(key))
+				.toArray(String[]::new);
 	}
 
 	@Override
@@ -192,6 +238,24 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		
 		String selectedTaxonomyQPoolKey = taxonomyTreeEl.getSelectedKey();
 		qpoolModule.setTaxonomyQPoolKey(selectedTaxonomyQPoolKey);
+		
+		Collection<String> selectedPoolManagerRights = poolManagerRightsEl.getSelectedKeys();
+		boolean poolAdminAllowedToEditMetadata = selectedPoolManagerRights.contains(POOL_MANAGER_EDIT_METADATA);
+		qpoolModule.setPoolAdminAllowedToEditMetadata(poolAdminAllowedToEditMetadata);
+		boolean poolAdminAllowedToEditStatus = selectedPoolManagerRights.contains(POOL_MANAGER_EDIT_STATUS);
+		qpoolModule.setPoolAdminAllowedToEditStatus(poolAdminAllowedToEditStatus);
+		boolean poolAdminAllowedToConfigReviewProcess = selectedPoolManagerRights.contains(POOL_MANAGER_REVIEW_PROCESS);
+		qpoolModule.setPoolAdminAllowedToConfigReviewProcess(poolAdminAllowedToConfigReviewProcess );
+		boolean poolAdminAllowedToConfigTaxonomy = selectedPoolManagerRights.contains(POOL_MANAGER_TAXONOMY);
+		qpoolModule.setPoolAdminAllowedToConfigTaxonomy(poolAdminAllowedToConfigTaxonomy);
+		boolean poolAdminAllowedToConfigPools = selectedPoolManagerRights.contains(POOL_MANAGER_POOLS);
+		qpoolModule.setPoolAdminAllowedToConfigPools(poolAdminAllowedToConfigPools);
+		boolean poolAdminAllowedToConfigItemTypes = selectedPoolManagerRights.contains(POOL_MANAGER_ITEM_TYPES);
+		qpoolModule.setPoolAdminAllowedToConfigItemTypes(poolAdminAllowedToConfigItemTypes);
+		boolean poolAdminAllowedToConfigEducationalContext = selectedPoolManagerRights.contains(POOL_MANAGER_EDUCATIONAL_CONTEXT);
+		qpoolModule.setPoolAdminAllowedToConfigEducationalContext(poolAdminAllowedToConfigEducationalContext);
+		boolean poolAdminAllowedToConfigLicenses = selectedPoolManagerRights.contains(POOL_MANAGER_LICENSES);
+		qpoolModule.setPoolAdminAllowedToConfigLicenses(poolAdminAllowedToConfigLicenses);
 	}
 	
 	@Override

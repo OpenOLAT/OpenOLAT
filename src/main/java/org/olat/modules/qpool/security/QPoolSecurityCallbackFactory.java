@@ -42,8 +42,8 @@ public class QPoolSecurityCallbackFactory {
 	@Autowired
 	private QuestionPoolModule qpoolModule;
 
-	public QuestionItemSecurityCallback createQuestionItemSecurityCallback(QuestionItemView itemView, QuestionItemsSource questionItemSource,
-			boolean isOLATAdmin) {
+	public QuestionItemSecurityCallback createQuestionItemSecurityCallback(QuestionItemView itemView,
+			QuestionItemsSource questionItemSource, Roles roles) {
 		QuestionItemSecurityCallback securityCallback;
 		if (qpoolModule.isReviewProcessEnabled()) {
 			securityCallback = CoreSpringFactory.getImpl(ReviewProcessSecurityCallback.class);
@@ -52,17 +52,15 @@ public class QPoolSecurityCallbackFactory {
 		}
 		securityCallback.setQuestionItemView(itemView);
 		securityCallback.setQuestionItemSource(questionItemSource);
-		securityCallback.setAdmin(isOLATAdmin);
+		securityCallback.setAdmin(roles.isOLATAdmin());
+		securityCallback.setPoolAdmin(roles.isPoolAdmin());
 		return securityCallback;
 	}
 
 	public QPoolSecurityCallback createQPoolSecurityCallback(Roles roles) {
-		QPoolSecurityCallback securityCallback;
-		if (roles.isOLATAdmin()) {
-			securityCallback = CoreSpringFactory.getImpl(AdministratorQPoolSecurityCallback.class);
-		} else {
-			securityCallback = CoreSpringFactory.getImpl(RegularQPoolSecurityCallback.class);
-		}
+		QPoolSecurityCallback securityCallback = CoreSpringFactory.getImpl(QPoolSecurityCallbackImpl.class);
+		securityCallback.setAdmin(roles.isOLATAdmin());
+		securityCallback.setPoolAdmin(roles.isPoolAdmin());
 		return securityCallback;
 	}
 

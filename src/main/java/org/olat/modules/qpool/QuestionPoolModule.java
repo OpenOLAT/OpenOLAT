@@ -61,6 +61,14 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private static final String FINAL_VISIBLE_TEACH = "final.visible.teach";
 	private static final String TAXONOMY_QPOOL_KEY = "taxonomy.qpool.key";
 	public static final String DEFAULT_TAXONOMY_QPOOL_IDENTIFIER = "QPOOL";
+	private static final String POOL_ADMIN_METADATA = "pool.admin.metadata";
+	private static final String POOL_ADMIN_STATUS = "pool.admin.status";
+	private static final String POOL_ADMIN_REVIEW_PROCESS = "pool.admin.review.process";
+	private static final String POOL_ADMIN_TAXONOMY = "pool.admin.taxonomy";
+	private static final String POOL_ADMIN_POOLS = "pool.admin.pools";
+	private static final String POOL_ADMIN_ITEM_TYPES = "pool.admin.item.types";
+	private static final String POOL_ADMIN_EDUCATIONAL_CONTEXT = "pool.admin.educational.context";
+	private static final String POOL_ADMIN_LICENSES = "pool.admin.licenses";
 	
 	private boolean collectionsEnabled = true;
 	private boolean poolsEnabled = true;
@@ -69,6 +77,15 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private String reviewDecisionType = ProcesslessDecisionProvider.TYPE;
 	private boolean finalVisibleTeach = false;
 	private String taxonomyQPoolKey;
+	
+	private boolean poolAdminAllowedToEditMetadata = false;
+	private boolean poolAdminAllowedToEditStatus = false;
+	private boolean poolAdminAllowedToConfigReviewProcess = true;
+	private boolean poolAdminAllowedToConfigTaxonomy = true;
+	private boolean poolAdminAllowedToConfigPools = true;
+	private boolean poolAdminAllowedToConfigItemTypes = true;
+	private boolean poolAdminAllowedToConfigEducationalContext = true;
+	private boolean poolAdminAllowedToConfigLicenses = true;
 	
 	@Autowired
 	private DB dbInstance;
@@ -154,6 +171,47 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		if(StringHelper.containsNonWhitespace(taxonomyQPoolKeyObj)) {
 			taxonomyQPoolKey = taxonomyQPoolKeyObj;
 		}
+		
+		String poolAdminAllowedToEditMetadataObj = getStringPropertyValue(POOL_ADMIN_METADATA, true);
+		if(StringHelper.containsNonWhitespace(poolAdminAllowedToEditMetadataObj)) {
+			poolAdminAllowedToEditMetadata = "true".equals(poolAdminAllowedToEditMetadataObj);
+		}
+		
+		String poolAdminAllowedToEditStatusObj = getStringPropertyValue(POOL_ADMIN_STATUS, true);
+		if(StringHelper.containsNonWhitespace(poolAdminAllowedToEditStatusObj)) {
+			poolAdminAllowedToEditStatus = "true".equals(poolAdminAllowedToEditStatusObj);
+		}
+		
+		String poolAdminAllowedToConfigReviewProcessObj = getStringPropertyValue(POOL_ADMIN_REVIEW_PROCESS, true);
+		if(StringHelper.containsNonWhitespace(poolAdminAllowedToConfigReviewProcessObj)) {
+			poolAdminAllowedToConfigReviewProcess = "true".equals(poolAdminAllowedToConfigReviewProcessObj);
+		}
+		
+		String poolAdminAllowedToConfigTaxonomyObj = getStringPropertyValue(POOL_ADMIN_TAXONOMY, true);
+		if(StringHelper.containsNonWhitespace(poolAdminAllowedToConfigTaxonomyObj)) {
+			poolAdminAllowedToConfigTaxonomy = "true".equals(poolAdminAllowedToConfigTaxonomyObj);
+		}
+		
+		String poolAdminAllowedToConfigPoolsObj = getStringPropertyValue(POOL_ADMIN_POOLS, true);
+		if(StringHelper.containsNonWhitespace(poolAdminAllowedToConfigPoolsObj)) {
+			poolAdminAllowedToConfigPools = "true".equals(poolAdminAllowedToConfigPoolsObj);
+		}
+		
+		String poolAdminAllowedToConfigItemTypesObj = getStringPropertyValue(POOL_ADMIN_ITEM_TYPES, true);
+		if(StringHelper.containsNonWhitespace(poolAdminAllowedToConfigItemTypesObj)) {
+			poolAdminAllowedToConfigItemTypes = "true".equals(poolAdminAllowedToConfigItemTypesObj);
+		}
+		
+		String poolAdminAllowedToConfigEducationalContextObj = getStringPropertyValue(POOL_ADMIN_EDUCATIONAL_CONTEXT, true);
+		if(StringHelper.containsNonWhitespace(poolAdminAllowedToConfigEducationalContextObj)) {
+			poolAdminAllowedToConfigEducationalContext = "true".equals(poolAdminAllowedToConfigEducationalContextObj);
+		}
+		
+		String poolAdminAllowedToConfigLicensesObj = getStringPropertyValue(POOL_ADMIN_LICENSES, true);
+		if(StringHelper.containsNonWhitespace(poolAdminAllowedToConfigLicensesObj)) {
+			poolAdminAllowedToConfigLicenses = "true".equals(poolAdminAllowedToConfigLicensesObj);
+		}
+		
 	}
 
 	@Override
@@ -270,4 +328,77 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		setStringProperty(TAXONOMY_QPOOL_KEY, taxonomyQPoolKey, true);
 	}
 
+	public boolean isPoolAdminAllowedToEditMetadata() {
+		return poolAdminAllowedToEditMetadata;
+	}
+
+	public void setPoolAdminAllowedToEditMetadata(boolean poolAdminAllowedToEditMetadata) {
+		this.poolAdminAllowedToEditMetadata = poolAdminAllowedToEditMetadata;
+		setStringProperty(POOL_ADMIN_METADATA, Boolean.toString(poolAdminAllowedToEditMetadata), true);
+	}
+
+	public boolean isPoolAdminAllowedToEditStatus() {
+		return poolAdminAllowedToEditStatus;
+	}
+
+	public void setPoolAdminAllowedToEditStatus(boolean poolAdminAllowedToEditStatus) {
+		this.poolAdminAllowedToEditStatus = poolAdminAllowedToEditStatus;
+		setStringProperty(POOL_ADMIN_STATUS, Boolean.toString(poolAdminAllowedToEditStatus), true);
+	}
+
+
+	public boolean isPoolAdminAllowedToConfigReviewProcess() {
+		return poolAdminAllowedToConfigReviewProcess;
+	}
+
+	public void setPoolAdminAllowedToConfigReviewProcess(boolean poolAdminAllowedToConfigReviewProcess) {
+		this.poolAdminAllowedToConfigReviewProcess = poolAdminAllowedToConfigReviewProcess;
+		setStringProperty(POOL_ADMIN_REVIEW_PROCESS, Boolean.toString(poolAdminAllowedToConfigReviewProcess), true);
+	}
+
+	public boolean isPoolAdminAllowedToConfigTaxonomy() {
+		return poolAdminAllowedToConfigTaxonomy;
+	}
+
+	public void setPoolAdminAllowedToConfigTaxonomy(boolean poolAdminAllowedToConfigTaxonomy) {
+		this.poolAdminAllowedToConfigTaxonomy = poolAdminAllowedToConfigTaxonomy;
+		setStringProperty(POOL_ADMIN_TAXONOMY, Boolean.toString(poolAdminAllowedToConfigTaxonomy), true);
+	}
+
+	public boolean isPoolAdminAllowedToConfigPools() {
+		return poolAdminAllowedToConfigPools;
+	}
+
+	public void setPoolAdminAllowedToConfigPools(boolean poolAdminAllowedToConfigPools) {
+		this.poolAdminAllowedToConfigPools = poolAdminAllowedToConfigPools;
+		setStringProperty(POOL_ADMIN_POOLS, Boolean.toString(poolAdminAllowedToConfigPools), true);
+	}
+
+	public boolean isPoolAdminAllowedToConfigItemTypes() {
+		return poolAdminAllowedToConfigItemTypes;
+	}
+
+	public void setPoolAdminAllowedToConfigItemTypes(boolean poolAdminAllowedToConfigItemTypes) {
+		this.poolAdminAllowedToConfigItemTypes = poolAdminAllowedToConfigItemTypes;
+		setStringProperty(POOL_ADMIN_ITEM_TYPES, Boolean.toString(poolAdminAllowedToConfigItemTypes), true);
+	}
+
+	public boolean isPoolAdminAllowedToConfigEducationalContext() {
+		return poolAdminAllowedToConfigEducationalContext;
+	}
+
+	public void setPoolAdminAllowedToConfigEducationalContext(boolean poolAdminAllowedToConfigEducationalContext) {
+		this.poolAdminAllowedToConfigEducationalContext = poolAdminAllowedToConfigEducationalContext;
+		setStringProperty(POOL_ADMIN_EDUCATIONAL_CONTEXT, Boolean.toString(poolAdminAllowedToConfigEducationalContext), true);
+	}
+
+	public boolean isPoolAdminAllowedToConfigLicenses() {
+		return poolAdminAllowedToConfigLicenses;
+	}
+
+	public void setPoolAdminAllowedToConfigLicenses(boolean poolAdminAllowedToConfigLicenses) {
+		this.poolAdminAllowedToConfigLicenses = poolAdminAllowedToConfigLicenses;
+		setStringProperty(POOL_ADMIN_LICENSES, Boolean.toString(poolAdminAllowedToConfigLicenses), true);
+	}
+	
 }

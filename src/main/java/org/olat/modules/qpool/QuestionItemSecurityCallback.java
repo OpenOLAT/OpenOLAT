@@ -35,6 +35,8 @@ public interface QuestionItemSecurityCallback {
 	
 	public void setAdmin(boolean admin);
 	
+	public void setPoolAdmin(boolean poolAdmin);
+	
 	public boolean canEditQuestion();
 	
 	public boolean canEditMetadata();

@@ -21,7 +21,9 @@ package org.olat.modules.qpool.security;
 
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -37,8 +39,12 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	private QuestionItemView itemView;
 	private QuestionItemsSource questionItemSource;
-	private boolean isAdmin = false;
+	private boolean admin = false;
+	private boolean poolAdmin = false;
 
+	@Autowired
+	private QuestionPoolModule qpoolModule;
+	
 	@Override
 	public void setQuestionItemView(QuestionItemView itemView) {
 		this.itemView = itemView;
@@ -51,22 +57,31 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	@Override
 	public void setAdmin(boolean admin) {
-		this.isAdmin = admin;
+		this.admin = admin;
+	}
+
+	@Override
+	public void setPoolAdmin(boolean poolAdmin) {
+		this.poolAdmin = poolAdmin;
 	}
 	
 	@Override
 	public boolean canEditQuestion() {
-		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return admin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canEditMetadata() {
-		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return admin 
+				|| itemView.isAuthor()
+				|| itemView.isEditableInPool()
+				|| itemView.isEditableInShare()
+				|| (poolAdmin && qpoolModule.isPoolAdminAllowedToEditMetadata());
 	}
 
 	@Override
 	public boolean canRemoveTaxonomy() {
-		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return admin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
@@ -86,38 +101,58 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	@Override
 	public boolean canSetDraft() {
-		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return admin
+				|| itemView.isAuthor()
+				|| itemView.isEditableInPool()
+				|| itemView.isEditableInShare()
+				|| (poolAdmin && qpoolModule.isPoolAdminAllowedToEditStatus());
 	}
 
 	@Override
 	public boolean canSetRevised() {
-		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return admin
+				|| itemView.isAuthor()
+				|| itemView.isEditableInPool()
+				|| itemView.isEditableInShare()
+				|| (poolAdmin && qpoolModule.isPoolAdminAllowedToEditStatus());
 	}
 
 	@Override
 	public boolean canSetReview() {
-		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return admin
+				|| itemView.isAuthor()
+				|| itemView.isEditableInPool()
+				|| itemView.isEditableInShare()
+				|| (poolAdmin && qpoolModule.isPoolAdminAllowedToEditStatus());
 	}
 
 	@Override
 	public boolean canSetFinal() {
-		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return admin
+				|| itemView.isAuthor()
+				|| itemView.isEditableInPool()
+				|| itemView.isEditableInShare()
+				|| (poolAdmin && qpoolModule.isPoolAdminAllowedToEditStatus());
 	}
 
 	@Override
 	public boolean canSetEndOfLife() {
-		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return admin
+				|| itemView.isAuthor()
+				|| itemView.isEditableInPool()
+				|| itemView.isEditableInShare()
+				|| (poolAdmin && qpoolModule.isPoolAdminAllowedToEditStatus());
 	}
 
 	@Override
 	public boolean canDelete() {
-		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return admin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 	@Override
 	public boolean canRemove() {
 		return  questionItemSource.isRemoveEnabled()
-				&& (isAdmin || itemView.isAuthor());
+				&& (admin || itemView.isAuthor());
 	}
 
 	@Override
@@ -127,7 +162,7 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	@Override
 	public boolean canChangeVersion() {
-		return isAdmin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return admin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
 }

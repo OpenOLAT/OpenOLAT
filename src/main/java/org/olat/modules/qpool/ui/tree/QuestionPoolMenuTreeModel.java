@@ -231,11 +231,14 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		}
 		
 		//administration
-		if(securityCallback.canAdmin()) {
-			TreeNode adminNode = new AdministrationTreeNode(translator.translate("menu.admin"));
-			rootNode.addChild(adminNode);
-			buildAdminSubTreeModel(adminNode);
+		TreeNode adminNode = new AdministrationTreeNode(translator.translate("menu.admin"));
+		rootNode.addChild(adminNode);
+		buildAdminSubTreeModel(adminNode);
+		if (adminNode.getChildCount() > 0) {
 			setFirstChildAsDelegate(adminNode);
+		} else {
+			// Admin tree node should not be visible if user has no particular admin rights.
+			rootNode.remove(adminNode);
 		}
 	}
 	
@@ -343,23 +346,40 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private void buildAdminSubTreeModel(TreeNode adminNode) {
 		adminNode.removeAllChildren();
 		
-		TreeNode node = new AllQuestionsTreeNode(stackPanel, securityCallback, translator.translate("menu.all.questions"));
-		adminNode.addChild(node);
+		if (securityCallback.canEditAllQuestions()) {
+			TreeNode node = new AllQuestionsTreeNode(stackPanel, securityCallback, translator.translate("menu.all.questions"));
+			adminNode.addChild(node);
+		}
 		
-		node = new TaxonomyAdminTreeNode(translator.translate("menu.admin.studyfields"));
-		adminNode.addChild(node);
+		if (securityCallback.canConfigReviewProcess()) {
+			TreeNode node = new ReviewProcessAdminTreeNode(translator.translate("menu.admin.review.process"));
+			adminNode.addChild(node);
+		}
 		
-		node = new PoolsAdminTreeNode(translator.translate("menu.admin.pools"));
-		adminNode.addChild(node);
+		if (securityCallback.canConfigTaxonomies()) {
+			TreeNode node = new TaxonomyAdminTreeNode(translator.translate("menu.admin.studyfields"));
+			adminNode.addChild(node);
+		}
 		
-		node = new QItemTypesAdminTreeNode(translator.translate("menu.admin.types"));
-		adminNode.addChild(node);
-		
-		node = new QEducationalContextsAdminTreeNode(translator.translate("menu.admin.levels"));
-		adminNode.addChild(node);
+		if (securityCallback.canConfigPools()) {
+			TreeNode node = new PoolsAdminTreeNode(translator.translate("menu.admin.pools"));
+			adminNode.addChild(node);
+		}
+			
+		if (securityCallback.canConfigItemTypes()) {
+			TreeNode node = new QItemTypesAdminTreeNode(translator.translate("menu.admin.types"));
+			adminNode.addChild(node);
+		}
+			
+		if (securityCallback.canConfigEducationalContext()) {
+			TreeNode node = new QEducationalContextsAdminTreeNode(translator.translate("menu.admin.levels"));
+			adminNode.addChild(node);
+		}
 
-		node = new QLicensesAdminTreeNode(translator.translate("menu.admin.licenses"));
-		adminNode.addChild(node);
+		if (securityCallback.canConfigLicences()) {
+			TreeNode node = new QLicensesAdminTreeNode(translator.translate("menu.admin.licenses"));
+			adminNode.addChild(node);
+		}
 	}
 	
 	private void setFirstChildAsDelegate(INode node) {

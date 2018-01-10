@@ -26,6 +26,10 @@ package org.olat.modules.qpool;
  *
  */
 public interface QPoolSecurityCallback {
+	
+	public void setAdmin(boolean admin);
+	
+	public void setPoolAdmin(boolean poolAdmin);
 
 	boolean canUseCollections();
 
@@ -35,6 +39,18 @@ public interface QPoolSecurityCallback {
 
 	boolean canUseReviewProcess();
 
-	boolean canAdmin();
+	boolean canEditAllQuestions();
+	
+	boolean canConfigReviewProcess();
+	
+	boolean canConfigTaxonomies();
+	
+	boolean canConfigPools();
+	
+	boolean canConfigItemTypes();
+	
+	boolean canConfigEducationalContext();
+	
+	boolean canConfigLicences();
 
 }

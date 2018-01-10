@@ -33,11 +33,24 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope("prototype")
-public class AdministratorQPoolSecurityCallback implements QPoolSecurityCallback {
+public class QPoolSecurityCallbackImpl implements QPoolSecurityCallback {
 
+	private boolean admin = false;
+	private boolean poolAdmin = false;
+	
 	@Autowired
 	private QuestionPoolModule qpoolModule;
-	
+
+	@Override
+	public void setAdmin(boolean admin) {
+		this.admin = admin;
+	}
+
+	@Override
+	public void setPoolAdmin(boolean poolAdmin) {
+		this.poolAdmin = poolAdmin;
+	}
+
 	@Override
 	public boolean canUseCollections() {
 		return qpoolModule.isCollectionsEnabled();
@@ -59,9 +72,38 @@ public class AdministratorQPoolSecurityCallback implements QPoolSecurityCallback
 	}
 
 	@Override
-	public boolean canAdmin() {
-		return true;
+	public boolean canEditAllQuestions() {
+		return admin || (poolAdmin && qpoolModule.isPoolAdminAllowedToEditMetadata());
 	}
 
+	@Override
+	public boolean canConfigReviewProcess() {
+		return admin || (poolAdmin && qpoolModule.isPoolAdminAllowedToConfigReviewProcess());
+	}
+
+	@Override
+	public boolean canConfigTaxonomies() {
+		return admin || (poolAdmin && qpoolModule.isPoolAdminAllowedToConfigTaxonomy());
+	}
+
+	@Override
+	public boolean canConfigPools() {
+		return admin || (poolAdmin && qpoolModule.isPoolAdminAllowedToConfigPools());
+	}
+
+	@Override
+	public boolean canConfigItemTypes() {
+		return admin || (poolAdmin && qpoolModule.isPoolAdminAllowedToConfigItemTypes());
+	}
+
+	@Override
+	public boolean canConfigEducationalContext() {
+		return admin || (poolAdmin && qpoolModule.isPoolAdminAllowedToConfigEducationalContext());
+	}
+
+	@Override
+	public boolean canConfigLicences() {
+		return admin || (poolAdmin && qpoolModule.isPoolAdminAllowedToConfigLicenses());
+	}
 
 }
