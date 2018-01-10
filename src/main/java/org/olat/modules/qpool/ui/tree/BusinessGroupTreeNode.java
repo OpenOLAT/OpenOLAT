@@ -84,7 +84,7 @@ public class BusinessGroupTreeNode extends GenericTreeNode implements Controller
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, group, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					TABLE_PREFERENCE_PREFIX + group.getKey());
+					TABLE_PREFERENCE_PREFIX + group.getKey(), false);
 		} else {
 			questionsCtrl.updateSource();
 		}

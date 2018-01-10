@@ -75,7 +75,7 @@ public class MyQuestionsTreeNode extends GenericTreeNode implements ControllerTr
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					TABLE_PREFERENCE_PREFIX);
+					TABLE_PREFERENCE_PREFIX, false);
 		} else {
 			questionsCtrl.updateSource();
 		}

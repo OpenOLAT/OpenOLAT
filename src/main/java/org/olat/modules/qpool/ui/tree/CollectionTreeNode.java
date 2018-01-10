@@ -72,7 +72,7 @@ public class CollectionTreeNode extends GenericTreeNode implements ControllerTre
 		if (questionsCtrl == null) {
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, questionItemCollection, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					TABLE_PREFERENCE_PREFIX + questionItemCollection.getKey());
+					TABLE_PREFERENCE_PREFIX + questionItemCollection.getKey(), false);
 			questionsCtrl.setQuestionItemCollection(questionItemCollection);
 		} else {
 			questionsCtrl.updateSource(source);

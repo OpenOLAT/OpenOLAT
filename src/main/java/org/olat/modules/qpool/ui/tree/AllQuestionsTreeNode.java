@@ -70,7 +70,7 @@ public class AllQuestionsTreeNode extends GenericTreeNode implements ControllerT
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					ALL);
+					ALL, true);
 		} else {
 			questionsCtrl.updateSource();
 		}

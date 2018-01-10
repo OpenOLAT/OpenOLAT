@@ -83,7 +83,7 @@ public class PoolTreeNode extends GenericTreeNode implements ControllerTreeNode 
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, pool, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					TABLE_PREFERENCE_PREFIX + pool.getKey());
+					TABLE_PREFERENCE_PREFIX + pool.getKey(), false);
 		} else {
 			questionsCtrl.updateSource();
 		}

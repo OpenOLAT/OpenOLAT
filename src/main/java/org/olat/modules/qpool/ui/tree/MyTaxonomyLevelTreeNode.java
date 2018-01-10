@@ -79,7 +79,7 @@ public class MyTaxonomyLevelTreeNode extends GenericTreeNode implements Controll
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(MY_TAX_LEVEL + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					MY_TAX_LEVEL + taxonomyLevel.getKey());
+					MY_TAX_LEVEL + taxonomyLevel.getKey(), false);
 		} else {
 			questionsCtrl.updateSource();
 		}

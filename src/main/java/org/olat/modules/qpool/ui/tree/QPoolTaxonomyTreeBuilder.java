@@ -68,6 +68,12 @@ public class QPoolTaxonomyTreeBuilder {
 	public QPoolTaxonomyTreeBuilder() {
 		reset();
 	}
+	
+	public void loadAllTaxonomyLevels() {
+		reset();
+		List<TaxonomyLevel> levels = qpoolService.getTaxonomyLevels();
+		prefill(levels);
+	}
 
 	public void loadTaxonomyLevelsSelection(Identity identity, boolean withEmptyEntry) {
 		reset();
@@ -97,7 +103,12 @@ public class QPoolTaxonomyTreeBuilder {
 	}
 
 	private void loadTaxonomyLevels(Identity identity, TaxonomyCompetenceTypes... type) {
-		prefillMaterializedPathKeysWithCompetence(identity, type);
+		List<TaxonomyLevel> levels = qpoolService.getTaxonomyLevel(identity, type);
+		prefill(levels);
+	}
+
+	private void prefill(List<TaxonomyLevel> levels) {
+		prefillMaterializedPathKeysWithCompetence(levels);
 		TreeModel tree = buildTreeModel();
 		prefillTaxonomyLevels(tree.getRootNode());
 		prefillSelectableTaxonomyLevelsArrays();
@@ -112,8 +123,8 @@ public class QPoolTaxonomyTreeBuilder {
 		treeTaxonomyLevels = new ArrayList<>();
 	}
 	
-	private void prefillMaterializedPathKeysWithCompetence(Identity identity, TaxonomyCompetenceTypes... type) {
-		materializedPathKeysWithCompetence = qpoolService.getTaxonomyLevel(identity, type).stream()
+	private void prefillMaterializedPathKeysWithCompetence(List<TaxonomyLevel> levels) {
+		materializedPathKeysWithCompetence = levels.stream()
 				.map(level -> level.getMaterializedPathKeys())
 				.collect(Collectors.toList());
 	}

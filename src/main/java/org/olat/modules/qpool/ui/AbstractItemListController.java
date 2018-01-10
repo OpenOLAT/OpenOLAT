@@ -109,22 +109,22 @@ public abstract class AbstractItemListController extends FormBasicController
 	private final Roles roles;
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,
-			QuestionItemsSource source, String key) {
-		this(ureq, wControl, securityCallback, source, null, key);
+			QuestionItemsSource source, String key, boolean searchAllTaxonomyLevels) {
+		this(ureq, wControl, securityCallback, source, null, key, searchAllTaxonomyLevels);
 	}
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source,
 			String key) {
-		this(ureq, wControl, null, source, null, key);
+		this(ureq, wControl, null, source, null, key, false);
 	}
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source,
 			String restrictToFormat, String key) {
-		this(ureq, wControl, null, source, restrictToFormat, key);
+		this(ureq, wControl, null, source, restrictToFormat, key, false);
 	}
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,
-			QuestionItemsSource source, String restrictToFormat, String key) {
+			QuestionItemsSource source, String restrictToFormat, String key, boolean searchAllTaxonomyLevels) {
 		super(ureq, wControl, "item_list");
 
 		this.securityCallback = securityCallback;
@@ -136,7 +136,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), QuestionPoolMainEditorController.QITEM_MARKED);
 		
-		extendedSearchCtrl = new ExtendedSearchController(ureq, getWindowControl(), key, mainForm);
+		extendedSearchCtrl = new ExtendedSearchController(ureq, getWindowControl(), key, mainForm, searchAllTaxonomyLevels);
 		extendedSearchCtrl.setEnabled(false);
 		
 		initForm(ureq);

@@ -66,6 +66,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	
 	private final String prefsKey;
 	private ExtendedSearchPrefs prefs;
+	private final boolean allTaxonomyLevels;
 	private boolean enabled = true;
 	
 	
@@ -74,9 +75,10 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	@Autowired
 	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 
-	public ExtendedSearchController(UserRequest ureq, WindowControl wControl, String prefsKey, Form mainForm) {
+	public ExtendedSearchController(UserRequest ureq, WindowControl wControl, String prefsKey, Form mainForm, boolean allTaxonomyLevels) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "extended_search", mainForm);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
+		this.allTaxonomyLevels = allTaxonomyLevels;
 		
 		this.prefsKey = prefsKey;
 		prefs = (ExtendedSearchPrefs) ureq.getUserSession().getGuiPreferences()
@@ -398,7 +400,11 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		
 		@Override
 		public FormItem createItem(String startValue) {
-			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false);
+			if (allTaxonomyLevels) {
+				qpoolTaxonomyTreeBuilder.loadAllTaxonomyLevels();
+			} else {
+				qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false);
+			}
 			return createItem(qpoolTaxonomyTreeBuilder.getSelectableKeys(),
 					qpoolTaxonomyTreeBuilder.getSelectableValues(), startValue);
 		}

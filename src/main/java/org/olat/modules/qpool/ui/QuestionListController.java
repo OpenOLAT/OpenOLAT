@@ -166,8 +166,9 @@ public class QuestionListController extends AbstractItemListController implement
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public QuestionListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			QuestionItemsSource source, QPoolSecurityCallback securityCallback, String key) {
-		super(ureq, wControl, securityCallback, source, key);
+			QuestionItemsSource source, QPoolSecurityCallback securityCallback, String key,
+			boolean searchAllTaxonomyLevels) {
+		super(ureq, wControl, securityCallback, source, key, searchAllTaxonomyLevels);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 	}

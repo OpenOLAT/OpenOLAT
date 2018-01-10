@@ -81,7 +81,7 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(REVIEW + "_" + taxonomyLevel.getIdentifier(), taxonomyLevel.getKey());
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					REVIEW + taxonomyLevel.getKey());
+					REVIEW + taxonomyLevel.getKey(), false);
 		} else {
 			questionsCtrl.updateSource();
 		}
