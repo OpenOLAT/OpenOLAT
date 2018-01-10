@@ -107,7 +107,7 @@ public class DMZDispatcher implements Dispatcher {
 						try{
 							long bypasscreationtime = Long.parseLong(cookie.getValue());
 							if (System.currentTimeMillis()-bypasscreationtime<5*60*1000) {
-								log.info("Allowing request with valid bypass cookie, sessionId="+request.getRequestedSessionId());
+								log.info("Allowing request with valid bypass cookie");
 								validBypass = true;
 							}
 						} catch(NumberFormatException e) {
@@ -120,7 +120,7 @@ public class DMZDispatcher implements Dispatcher {
 			}
 			if (!validBypass) {
 				final String rejectUrl = request.getRequestURI();
-				log.info("Rejecting request to DMZDispatcher (AuthHelper.isRejectDMZRequests() is true) to "+rejectUrl+", sessionId="+request.getRequestedSessionId());
+				log.info("Rejecting request to DMZDispatcher (AuthHelper.isRejectDMZRequests() is true) to " + rejectUrl);
 				if (sessionCookie!=null) {
 					String newSessionId = sessionCookie.getValue().substring(0, sessionCookie.getValue().length()-2);
 					response.setHeader("Set-Cookie", "JSESSIONID="+newSessionId+"; Path="+request.getContextPath()+(request.isSecure()?"":"; Secure"));

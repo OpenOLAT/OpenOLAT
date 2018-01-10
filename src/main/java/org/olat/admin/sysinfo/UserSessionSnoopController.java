@@ -131,7 +131,6 @@ public class UserSessionSnoopController extends BasicController {
 		appendFormattedKeyValue(sb, "Query String", hreq.getQueryString());
 
 		HttpSession hsession = hreq.getSession();
-		appendFormattedKeyValue(sb, "Requested Session Id", hreq.getRequestedSessionId());
 		appendFormattedKeyValue(sb, "Current Session Id", hsession.getId());
 		appendFormattedKeyValue(sb, "Session Created Time", new Long(hsession.getCreationTime()));
 		appendFormattedKeyValue(sb, "Session Last Accessed Time", new Long(hsession.getLastAccessedTime()));
