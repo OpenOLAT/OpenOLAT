@@ -32,9 +32,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.modules.qpool.MetadataSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QItemEdited;
@@ -63,7 +63,7 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 	private QPoolService qpoolService;
 
 	public TechnicalMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
-			QuestionItemSecurityCallback securityCallback) {
+			MetadataSecurityCallback securityCallback) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
@@ -102,7 +102,7 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void setReadOnly(QuestionItemSecurityCallback securityCallback) {
+	private void setReadOnly(MetadataSecurityCallback securityCallback) {
 		boolean canChangeVersion = securityCallback.canChangeVersion();
 		versionEl.setEnabled(canChangeVersion);
 		buttonsCont.setVisible(canChangeVersion);
@@ -130,7 +130,7 @@ public class TechnicalMetadataEditController extends FormBasicController  {
 		statusLastMdifiedEl.setValue(statusLastModified);
 	}
 
-	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+	public void setItem(QuestionItem item, MetadataSecurityCallback securityCallback) {
 		this.item = item;
 		updateUI();
 		if (securityCallback != null) {

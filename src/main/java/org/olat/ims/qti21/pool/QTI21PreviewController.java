@@ -31,7 +31,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.audit.DefaultAssessmentSessionAuditLogger;
-import org.olat.ims.qti21.ui.AssessmentItemDisplayController;
+import org.olat.ims.qti21.ui.editor.AssessmentItemPreviewSolutionController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,7 @@ public class QTI21PreviewController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	
-	private AssessmentItemDisplayController previewCtrl;
+	private AssessmentItemPreviewSolutionController previewCtrl;
 	private AssessmentSessionAuditLogger candidateAuditLogger = new DefaultAssessmentSessionAuditLogger();
 	
 	@Autowired
@@ -70,7 +70,7 @@ public class QTI21PreviewController extends BasicController {
 			
 			ResolvedAssessmentItem resolvedAssessmentItem = qtiService
 					.loadAndResolveAssessmentItem(assessmentItemUri, resourceDirectory);
-			previewCtrl = new AssessmentItemDisplayController(ureq, wControl, resolvedAssessmentItem, resourceDirectory, itemFile, candidateAuditLogger);
+			previewCtrl = new AssessmentItemPreviewSolutionController(ureq, wControl, resolvedAssessmentItem, resourceDirectory, itemFile);
 			listenTo(previewCtrl);
 			mainVC.put("preview", previewCtrl.getInitialComponent());
 		}

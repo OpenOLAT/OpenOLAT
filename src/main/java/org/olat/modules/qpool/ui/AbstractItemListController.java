@@ -94,8 +94,8 @@ public abstract class AbstractItemListController extends FormBasicController
 	private final String prefsKey;
 	protected final String restrictToFormat;
 	private ExtendedSearchController extendedSearchCtrl;
-	private QuestionItemSummaryController summaryCtrl;
 	private QuestionItemPreviewController previewCtrl;
+	private QuickViewMetadataController quickViewMetadataCtrl;
 	
 	@Autowired
 	private MarkManager markManager;
@@ -141,10 +141,8 @@ public abstract class AbstractItemListController extends FormBasicController
 		
 		initForm(ureq);
 		
-		summaryCtrl = new QuestionItemSummaryController(ureq, getWindowControl(), mainForm);
-		listenTo(summaryCtrl);
 		previewCtrl = new QuestionItemPreviewController(ureq, getWindowControl());
-		listenTo(previewCtrl);
+		quickViewMetadataCtrl = new QuickViewMetadataController(ureq, wControl, securityCallback);
 	}
 
 	@Override
@@ -215,9 +213,9 @@ public abstract class AbstractItemListController extends FormBasicController
 
     @Override
 	public Iterable<Component> getComponents(int rowIndex, Object rowObject) {
-    	List<Component> components = new ArrayList<>(2);
-    	components.add(summaryCtrl.getInitialComponent());
-    	components.add(previewCtrl.getInitialComponent());
+    		List<Component> components = new ArrayList<>(2);
+		components.add(previewCtrl.getInitialComponent());
+    		components.add(quickViewMetadataCtrl.getInitialComponent());
 		return components;
 	}
 
@@ -304,9 +302,9 @@ public abstract class AbstractItemListController extends FormBasicController
 							ItemRow row = getModel().getObject(rowIndex);
 							if(row != null) {
 								itemsTable.expandDetails(rowIndex);
-					    		QuestionItem item = qpoolService.loadItemById(row.getKey());
-								summaryCtrl.updateItem(item, false);
-					    		previewCtrl.updateItem(ureq, item);
+					    			QuestionItem item = qpoolService.loadItemById(row.getKey());
+					    			previewCtrl.updateItem(ureq, item);
+					    			quickViewMetadataCtrl.setItem(ureq, item);
 							}
 						}
 					}

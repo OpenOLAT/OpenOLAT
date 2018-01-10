@@ -34,9 +34,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.qpool.MetadataSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.QuestionsController;
@@ -64,7 +64,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 	private FormLayoutContainer buttonsCont;
 
 	private QuestionItem item;
-	private QuestionItemSecurityCallback securityCallback;
+	private MetadataSecurityCallback securityCallback;
 
 	@Autowired
 	private QPoolService qpoolService;
@@ -72,7 +72,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 	
 	public GeneralMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
-			QuestionItemSecurityCallback securityCallback) {
+			MetadataSecurityCallback securityCallback) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
@@ -167,7 +167,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 		buttonsCont.setVisible(canEditMetadata);
 	}
 
-	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+	public void setItem(QuestionItem item, MetadataSecurityCallback securityCallback) {
 		this.item = item;
 		this.securityCallback = securityCallback;
 		if (securityCallback != null) {

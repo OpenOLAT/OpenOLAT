@@ -47,9 +47,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.modules.qpool.MetadataSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QLicense;
 import org.olat.modules.qpool.model.QuestionItemImpl;
@@ -79,7 +79,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	private GroupController groupController;
 
 	private QuestionItem item;
-	private QuestionItemSecurityCallback securityCallback;
+	private MetadataSecurityCallback securityCallback;
 	
 	@Autowired
 	private QPoolService qpoolService;
@@ -87,7 +87,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	private UserManager userManager;
 
 	public RightsMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
-			QuestionItemSecurityCallback securityCallback) {
+			MetadataSecurityCallback securityCallback) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
@@ -151,7 +151,7 @@ public class RightsMetadataEditController extends FormBasicController {
 		buttonsCont.setVisible(canEditMetadata);
 	}
 	
-	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+	public void setItem(QuestionItem item, MetadataSecurityCallback securityCallback) {
 		this.item = item;
 		this.securityCallback = securityCallback;
 		if (securityCallback != null) {

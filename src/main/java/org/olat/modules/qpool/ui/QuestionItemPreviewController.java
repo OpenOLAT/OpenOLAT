@@ -76,7 +76,6 @@ public class QuestionItemPreviewController extends BasicController {
 		this.item = updatedItem;
 		removeAsListenerAndDispose(previewCtrl);
 		if(updatedItem == null) {
-			removeAsListenerAndDispose(previewCtrl);
 			previewCtrl = null;
 			previewPanel.setContent(null);
 		} else {

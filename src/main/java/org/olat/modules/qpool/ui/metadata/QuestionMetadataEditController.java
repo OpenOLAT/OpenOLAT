@@ -39,9 +39,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
+import org.olat.modules.qpool.MetadataSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.manager.MetadataConverterHelper;
 import org.olat.modules.qpool.model.LOMDuration;
 import org.olat.modules.qpool.model.QItemType;
@@ -76,7 +76,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 	private QPoolService qpoolService;
 
 	public QuestionMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
-			QuestionItemSecurityCallback securityCallback) {
+			MetadataSecurityCallback securityCallback) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
@@ -156,7 +156,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void setReadOnly(QuestionItemSecurityCallback securityCallback) {
+	private void setReadOnly(MetadataSecurityCallback securityCallback) {
 		boolean canEditMetadata = securityCallback.canEditMetadata();
 		learningTimeDayElement.setEnabled(canEditMetadata);
 		learningTimeHourElement.setEnabled(canEditMetadata);
@@ -170,7 +170,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 		buttonsCont.setVisible(canEditMetadata);
 	}
 
-	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+	public void setItem(QuestionItem item, MetadataSecurityCallback securityCallback) {
 		this.item = item;
 		if (securityCallback != null) {
 			setReadOnly(securityCallback);

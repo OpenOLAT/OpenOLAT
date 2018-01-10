@@ -17,51 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.qpool;
+package org.olat.modules.qpool.security;
 
-import org.olat.modules.qpool.ui.QuestionItemsSource;
+import org.olat.modules.qpool.MetadataSecurityCallback;
 
 /**
  * 
- * Initial date: 22.11.2017<br>
+ * Initial date: 10.01.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItemSecurityCallback extends MetadataSecurityCallback {
-	
-	public void setQuestionItemView(QuestionItemView itemView);
-	
-	public void setQuestionItemSource(QuestionItemsSource questionItemSource);
-	
-	public void setAdmin(boolean admin);
-	
-	public void setPoolAdmin(boolean poolAdmin);
-	
-	public boolean canEditQuestion();
-	
-	public boolean canStartReview();
-	
-	public boolean canReviewNotStartable();
+public class ReadOnlyMetadataSecurityCallback implements MetadataSecurityCallback {
 
-	public boolean canReview();
+	@Override
+	public boolean canEditMetadata() {
+		return false;
+	}
 
-	public boolean canSetDraft();
+	@Override
+	public boolean canRemoveTaxonomy() {
+		return false;
+	}
 
-	public boolean canSetReview();
-
-	public boolean canSetRevised();
-
-	public boolean canSetFinal();
-
-	public boolean canSetEndOfLife();
-
-	public boolean canDelete();
-	
-	public boolean canRemove();
-
-	/**
-	 * Can a user rate the question item outside the review process?
-	 */
-	public boolean canRate();
+	@Override
+	public boolean canChangeVersion() {
+		return false;
+	}
 
 }

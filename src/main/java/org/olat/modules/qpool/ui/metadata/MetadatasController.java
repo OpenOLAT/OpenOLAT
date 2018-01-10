@@ -28,9 +28,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.modules.qpool.MetadataSecurityCallback;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 
@@ -56,26 +56,26 @@ public class MetadatasController extends BasicController {
 	private QuestionItem item;
 	
 	public MetadatasController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback qPoolSecurityCallback,
-			QuestionItem item, QuestionItemSecurityCallback qItemScurityCallback) {
+			QuestionItem item, MetadataSecurityCallback metadataScurityCallback) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
 
 		mainVC = createVelocityContainer("item_metadatas");
-		generalEditCtrl = new GeneralMetadataEditController(ureq, wControl, item, qItemScurityCallback);
+		generalEditCtrl = new GeneralMetadataEditController(ureq, wControl, item, metadataScurityCallback);
 		listenTo(generalEditCtrl);
 		mainVC.put("details_general", generalEditCtrl.getInitialComponent());
 
-		questionEditCtrl = new QuestionMetadataEditController(ureq, wControl, item, qItemScurityCallback);
+		questionEditCtrl = new QuestionMetadataEditController(ureq, wControl, item, metadataScurityCallback);
 		listenTo(questionEditCtrl);
 		mainVC.put("details_question", questionEditCtrl.getInitialComponent());
 		
-		rightsEditCtrl = new RightsMetadataEditController(ureq, wControl, item, qItemScurityCallback);
+		rightsEditCtrl = new RightsMetadataEditController(ureq, wControl, item, metadataScurityCallback);
 		listenTo(rightsEditCtrl);
 		mainVC.put("details_rights", rightsEditCtrl.getInitialComponent());
 
-		technicalEditCtrl = new TechnicalMetadataEditController(ureq, wControl, item, qItemScurityCallback);
+		technicalEditCtrl = new TechnicalMetadataEditController(ureq, wControl, item, metadataScurityCallback);
 		listenTo(technicalEditCtrl);
 		mainVC.put("details_technical", technicalEditCtrl.getInitialComponent());
 
@@ -139,12 +139,12 @@ public class MetadatasController extends BasicController {
 		}
 	}
 	
-	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+	public void setItem(QuestionItem item, MetadataSecurityCallback metadataScurityCallback) {
 		this.item = item;
-		generalEditCtrl.setItem(item, securityCallback);
-		questionEditCtrl.setItem(item, securityCallback);
-		rightsEditCtrl.setItem(item, securityCallback);
-		technicalEditCtrl.setItem(item, securityCallback);
+		generalEditCtrl.setItem(item, metadataScurityCallback);
+		questionEditCtrl.setItem(item, metadataScurityCallback);
+		rightsEditCtrl.setItem(item, metadataScurityCallback);
+		technicalEditCtrl.setItem(item, metadataScurityCallback);
 		updateShares();
 	}
 	

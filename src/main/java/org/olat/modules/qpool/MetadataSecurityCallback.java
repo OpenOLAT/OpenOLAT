@@ -19,49 +19,18 @@
  */
 package org.olat.modules.qpool;
 
-import org.olat.modules.qpool.ui.QuestionItemsSource;
-
 /**
  * 
- * Initial date: 22.11.2017<br>
+ * Initial date: 10.01.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface QuestionItemSecurityCallback extends MetadataSecurityCallback {
-	
-	public void setQuestionItemView(QuestionItemView itemView);
-	
-	public void setQuestionItemSource(QuestionItemsSource questionItemSource);
-	
-	public void setAdmin(boolean admin);
-	
-	public void setPoolAdmin(boolean poolAdmin);
-	
-	public boolean canEditQuestion();
-	
-	public boolean canStartReview();
-	
-	public boolean canReviewNotStartable();
+public interface MetadataSecurityCallback {
 
-	public boolean canReview();
+	public boolean canEditMetadata();
 
-	public boolean canSetDraft();
-
-	public boolean canSetReview();
-
-	public boolean canSetRevised();
-
-	public boolean canSetFinal();
-
-	public boolean canSetEndOfLife();
-
-	public boolean canDelete();
+	public boolean canRemoveTaxonomy();
 	
-	public boolean canRemove();
-
-	/**
-	 * Can a user rate the question item outside the review process?
-	 */
-	public boolean canRate();
+	public boolean canChangeVersion();
 
 }
