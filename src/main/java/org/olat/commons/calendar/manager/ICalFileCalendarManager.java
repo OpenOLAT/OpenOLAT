@@ -430,6 +430,13 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	}
 
 	@Override
+	public CalendarUserConfiguration createCalendarConfig(Identity identity, Kalendar calendar) {
+		String token = RandomStringUtils.randomAlphanumeric(6);
+		return calendarUserConfigDao.createCalendarUserConfiguration(calendar, identity,
+				token, false, false);
+	}
+
+	@Override
 	public CalendarUserConfiguration saveCalendarConfig(CalendarUserConfiguration configuration) {
 		return calendarUserConfigDao.update(configuration);
 	}
@@ -444,6 +451,11 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		return calendarUserConfigDao.getCalendarUserConfigurations(identity, types);
 	}
 	
+	@Override
+	public CalendarUserConfiguration getCalendarUserConfiguration(IdentityRef identity, Kalendar calendar) {
+		return calendarUserConfigDao.getCalendarUserConfiguration(identity, calendar.getCalendarID(), calendar.getType());
+	}
+
 	@Override
 	public Map<CalendarKey,CalendarUserConfiguration> getCalendarUserConfigurationsMap(IdentityRef identity, String... types) {
 		List<CalendarUserConfiguration> list = calendarUserConfigDao.getCalendarUserConfigurations(identity, types);

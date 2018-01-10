@@ -344,7 +344,7 @@ public class UserInfoMainController extends MainLayoutBasicController implements
 		OLATResourceable ores = OresHelper.createOLATResourceableType(CMD_CALENDAR);
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		calendarController = new WeeklyCalendarController(ureq, bwControl, calendars,
-				WeeklyCalendarController.CALLER_PROFILE, false);
+				WeeklyCalendarController.CALLER_PROFILE, null, false);
 		listenTo(calendarController);
 		return calendarController;
 	}

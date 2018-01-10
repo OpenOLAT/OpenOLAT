@@ -64,8 +64,8 @@ public class CourseCalendarController extends DefaultController implements Clone
 		this.nodeEvaluation = ne;
 		calendars = myCal.getCalendars();
 		courseKalendarWrapper = myCal.getCourseKalendarWrapper();
-		calendarController = new WeeklyCalendarController(ureq, wControl, calendars,
-				WeeklyCalendarController.CALLER_COURSE, false);
+		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, WeeklyCalendarController.CALLER_COURSE,
+				courseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource(), false);
 		calendarController.setDifferentiateManagedEvent(needToDifferentiateManagedEvents(calendars));
 		setInitialComponent(calendarController.getInitialComponent());
 	}

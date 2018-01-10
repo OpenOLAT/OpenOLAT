@@ -233,11 +233,19 @@ public interface CalendarManager {
 	
 	public CalendarUserConfiguration saveCalendarConfig(CalendarUserConfiguration configuration);
 	
+	/**
+	 * 
+	 * @param identity The user which want a token
+	 * @return A configuration with a security token
+	 */
 	public CalendarUserConfiguration createAggregatedCalendarConfig(Identity identity);
+	
+	public CalendarUserConfiguration createCalendarConfig(Identity identity, Kalendar calendar);
 	
 	public List<CalendarUserConfiguration> getCalendarUserConfigurationsList(IdentityRef identity, String... types);
 	
-
+	public CalendarUserConfiguration getCalendarUserConfiguration(IdentityRef identity, Kalendar calendar);
+	
 	public CalendarUserConfiguration getCalendarUserConfiguration(Long key);
 
 	/**

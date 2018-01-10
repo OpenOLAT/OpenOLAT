@@ -26,6 +26,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -36,13 +37,18 @@ import org.olat.core.util.Util;
  */
 public class CalendarAggregatedURLController extends BasicController {
 
-	public CalendarAggregatedURLController(UserRequest ureq, WindowControl wControl, String icalFeedLink) {
+	public CalendarAggregatedURLController(UserRequest ureq, WindowControl wControl, String icalFeedLink, String icalAggregatedFeedLink) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		
-		VelocityContainer colorVC = createVelocityContainer("calAggregatedFeed");
-		colorVC.contextPut("icalFeedLink", icalFeedLink);
-		putInitialPanel(colorVC);
+		VelocityContainer mainVC = createVelocityContainer("calAggregatedFeed");
+		if(StringHelper.containsNonWhitespace(icalFeedLink)) {
+			mainVC.contextPut("icalFeedLink", icalFeedLink);
+		}
+		if(StringHelper.containsNonWhitespace(icalAggregatedFeedLink)) {
+			mainVC.contextPut("icalAggregatedFeedLink", icalAggregatedFeedLink);
+		}
+		putInitialPanel(mainVC);
 	}
 	
 	@Override

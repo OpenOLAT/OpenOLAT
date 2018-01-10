@@ -71,8 +71,8 @@ public class CourseCalendarController extends BasicController {
 		super(ureq, wControl);
 		this.userCourseEnv = userCourseEnv;
 		List<KalendarRenderWrapper> calendars = getListOfCalendarWrappers(ureq);
-		calendarController = new WeeklyCalendarController(ureq, wControl, calendars,
-				WeeklyCalendarController.CALLER_COURSE, false);
+		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, WeeklyCalendarController.CALLER_COURSE,
+				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource(), false);
 		calendarController.setDifferentiateManagedEvent(needToDifferentiateManagedEvents(calendars));
 		listenTo(calendarController);
 		putInitialPanel(calendarController.getInitialComponent());
@@ -88,7 +88,7 @@ public class CourseCalendarController extends BasicController {
 	}
 
 	private List<KalendarRenderWrapper> getListOfCalendarWrappers(UserRequest ureq) {
-		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
+		List<KalendarRenderWrapper> calendars = new ArrayList<>();
 		// add course calendar
 		ICourse course = CourseFactory.loadCourse(userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
 		courseKalendarWrapper = calendarManager.getCourseCalendar(course);

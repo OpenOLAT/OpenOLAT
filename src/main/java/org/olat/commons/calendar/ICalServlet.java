@@ -214,7 +214,7 @@ public class ICalServlet extends HttpServlet {
 		if(CalendarManager.TYPE_USER_AGGREGATED.equals(calendarType)) {
 			// check the authentication token
 			CalendarUserConfiguration config = calendarManager.getCalendarUserConfiguration(Long.parseLong(userName));
-			String savedToken = config.getToken();
+			String savedToken = config == null ? null : config.getToken();
 			if (authToken == null || savedToken == null || !savedToken.equals(authToken)) {
 				log.warn("Authenticity Check failed for the ical feed path: " + pathInfo);
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, requestUrl);
@@ -223,7 +223,13 @@ public class ICalServlet extends HttpServlet {
 			}
 		} else if (calendarManager.calendarExists(calendarType, calendarID)) {
 			// check the authentication token
-			String savedToken = calendarManager.getCalendarToken(calendarType, calendarID, userName);
+			String savedToken = null;
+			if(StringHelper.isLong(userName)) {
+				CalendarUserConfiguration config = calendarManager.getCalendarUserConfiguration(Long.parseLong(userName));
+				savedToken = config == null ? null : config.getToken();
+			} else {
+				savedToken = calendarManager.getCalendarToken(calendarType, calendarID, userName);
+			}
 			if (authToken == null || savedToken == null || !savedToken.equals(authToken)) {
 				log.warn("Authenticity Check failed for the ical feed path: " + pathInfo);
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, requestUrl);

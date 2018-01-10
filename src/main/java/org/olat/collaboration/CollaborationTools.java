@@ -261,7 +261,6 @@ public class CollaborationTools implements Serializable {
 	}
 
 	/**
-	 * TODO: rename to getForumController and save instance?
 	 * 
 	 * @param ureq
 	 * @param wControl
@@ -344,8 +343,8 @@ public class CollaborationTools implements Serializable {
 		if(forumProperty != null) {
 			forum = fom.loadForum(forumProperty.getLongValue());
 		} else {
-			//TODO gsync
 			forum = coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Forum>(){
+				@Override
 				public Forum execute() {
 					Forum aforum;
 					Long forumKey;
@@ -449,7 +448,7 @@ public class CollaborationTools implements Serializable {
 		// add linking
 		List<RepositoryEntry> repoEntries = CoreSpringFactory.getImpl(BusinessGroupService.class).findRepositoryEntries(Collections.singleton(businessGroup), 0, -1);
 		
-		List<ICourse> courses = new ArrayList<ICourse>(repoEntries.size());
+		List<ICourse> courses = new ArrayList<>(repoEntries.size());
 		for (RepositoryEntry repoEntry:repoEntries) {
 			if (repoEntry.getOlatResource().getResourceableTypeName().equals(CourseModule.getCourseTypeName())) {
 				ICourse course = CourseFactory.loadCourse(repoEntry);
@@ -461,11 +460,11 @@ public class CollaborationTools implements Serializable {
 			calRenderWrapper.setLinkProvider(clp);
 		}
 
-		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
+		List<KalendarRenderWrapper> calendars = new ArrayList<>();
 		calendars.add(calRenderWrapper);
 		
 		return new WeeklyCalendarController(ureq, wControl, calendars,
-				WeeklyCalendarController.CALLER_COLLAB, false);
+				WeeklyCalendarController.CALLER_COLLAB, businessGroup, false);
 	}
 
 	/**
@@ -535,7 +534,6 @@ public class CollaborationTools implements Serializable {
 		if(mapProperty != null) {
 			return createPortfolioController(ureq, wControl, stackPanel, mapProperty);
 		} else {
-			//TODO gsync
 			return coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerCallback<Controller>() {
 				@Override
 				public Controller execute() {
@@ -744,8 +742,8 @@ public class CollaborationTools implements Serializable {
 		// handle Boolean Values via String Field in Property DB Table
 		final String toolValueStr = toolValue ? TRUE : FALSE;
 		final PropertyManager pm = PropertyManager.getInstance();
-		//TODO gsync
 		coordinatorManager.getCoordinator().getSyncer().doInSync(ores, new SyncerExecutor() {
+			@Override
 			public void execute() {				
 				//was: synchronized (CollaborationTools.class) {
 				Property property = getPropertyOf(selectedTool);
@@ -942,10 +940,12 @@ public class CollaborationTools implements Serializable {
 			}
 		}
 
+		@Override
 		public boolean canRead() {
 			return true;
 		}
 
+		@Override
 		public boolean canWrite() {
 			return write;
 		}
@@ -955,30 +955,37 @@ public class CollaborationTools implements Serializable {
 			return write;
 		}
 
+		@Override
 		public boolean canDelete() {
 			return write;
 		}
 
+		@Override
 		public boolean canList() {
 			return true;
 		}
 
+		@Override
 		public boolean canCopy() {
 			return true;
 		}
-		
+
+		@Override
 		public boolean canDeleteRevisionsPermanently() {
 			return write;
 		}
 
+		@Override
 		public Quota getQuota() {
 			return folderQuota;
 		}
 
+		@Override
 		public void setQuota(Quota quota) {
 			this.folderQuota = quota;
 		}
 
+		@Override
 		public SubscriptionContext getSubscriptionContext() {
 			return subsContext;
 		}

@@ -218,7 +218,8 @@ public class GroupInfoMainController extends MainLayoutBasicController implement
 			KalendarRenderWrapper groupCalendar = calendarManager.getGroupCalendar(businessGroup);
 			groupCalendar.setPrivateEventsVisible(false);
 			calendarWrappers.add(groupCalendar);
-			calendarController = new WeeklyCalendarController(ureq, bwControl, calendarWrappers, WeeklyCalendarController.CALLER_COLLAB, false);
+			calendarController = new WeeklyCalendarController(ureq, bwControl, calendarWrappers,
+					WeeklyCalendarController.CALLER_COLLAB, businessGroup, false);
 			listenTo(calendarController);
 		}
 		
