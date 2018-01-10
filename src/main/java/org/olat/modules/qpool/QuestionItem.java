@@ -41,11 +41,6 @@ public interface QuestionItem extends QuestionItemShort {
 	public String getAdditionalInformations();
 		
 	//classification
-	/**
-	 * Field can be lazy loaded
-	 * @return
-	 */
-	public String getTaxonomicPath();
 	
 	public TaxonomyLevel getTaxonomyLevel();
 	

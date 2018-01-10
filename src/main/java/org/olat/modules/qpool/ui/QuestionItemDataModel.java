@@ -76,6 +76,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case creationDate: return item.getCreationDate();
 			case lastModified: return item.getLastModified();
 			case taxnonomyLevel: return item.getTaxonomyLevelName();
+			case taxnonomyPath: return item.getTaxonomicPath();
 			case difficulty: return MetaUIFactory.bigDToString(item.getDifficulty());
 			case stdevDifficulty: return MetaUIFactory.bigDToString(item.getStdevDifficulty());
 			case differentiation: return MetaUIFactory.bigDToString(item.getDifferentiation());
@@ -113,6 +114,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		creationDate("technical.creation"),
 		lastModified("technical.lastModified"),
 		taxnonomyLevel("classification.taxonomy.level"),
+		taxnonomyPath("classification.taxonomic.path"),
 		difficulty("question.difficulty"),
 		stdevDifficulty("question.stdevDifficulty"),
 		differentiation("question.differentiation"),

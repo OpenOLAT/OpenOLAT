@@ -53,6 +53,7 @@ public class ItemWrapper implements QuestionItemView {
 	private String language;
 	
 	private String taxonomyLevel;
+	private String taxonomyPath;
 	private String educationalContextLevel;
 	private String educationalLearningTime;
 	
@@ -197,6 +198,11 @@ public class ItemWrapper implements QuestionItemView {
 	}
 
 	@Override
+	public String getTaxonomicPath() {
+		return taxonomyPath;
+	}
+
+	@Override
 	public String getEducationalContextLevel() {
 		return educationalContextLevel;
 	}
@@ -332,6 +338,7 @@ public class ItemWrapper implements QuestionItemView {
 			itemWrapper.language = item.getLanguage();
 			
 			itemWrapper.taxonomyLevel = item.getTaxonomyLevelName();
+			itemWrapper.taxonomyPath = item.getTaxonomicPath();
 			itemWrapper.educationalContextLevel = item.getEducationalContextLevel();
 			itemWrapper.educationalLearningTime = item.getEducationalLearningTime();
 			

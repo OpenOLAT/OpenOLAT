@@ -246,6 +246,7 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 		this.additionalInformations = additionalInformations;
 	}
 
+	@Override
 	public TaxonomyLevel getTaxonomyLevel() {
 		return taxonomyLevel;
 	}

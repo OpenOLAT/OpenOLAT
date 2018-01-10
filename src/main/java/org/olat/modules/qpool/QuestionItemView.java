@@ -70,6 +70,7 @@ public interface QuestionItemView extends QuestionItemShort {
 		coverage,
 		additionalInformations,
 		taxonomyLevel,
+		taxonomyPath,
 		difficulty,
 		stdevDifficulty,
 		differentiation,

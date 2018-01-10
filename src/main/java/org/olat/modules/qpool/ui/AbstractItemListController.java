@@ -174,6 +174,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.coverage.i18nKey(), Cols.coverage.ordinal(), true, OrderBy.coverage.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.additionalInfos.i18nKey(), Cols.additionalInfos.ordinal(), true,  OrderBy.additionalInformations.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyLevel.i18nKey(), Cols.taxnonomyLevel.ordinal(), true, OrderBy.taxonomyLevel.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyPath.i18nKey(), Cols.taxnonomyPath.ordinal(), true, OrderBy.taxonomyPath.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.difficulty.i18nKey(), Cols.difficulty.ordinal(), true, OrderBy.difficulty.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.stdevDifficulty.i18nKey(), Cols.stdevDifficulty.ordinal(), true, OrderBy.stdevDifficulty.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.differentiation.i18nKey(), Cols.differentiation.ordinal(), true, OrderBy.differentiation.name()));
