@@ -687,6 +687,9 @@ public class QItemQueriesDAO {
 			sb.append("  where rating.resId=item.key and rating.resName='QuestionItem'");
 			sb.append("    and rating.creator.key=:excludeRatorKey)");
 		}
+		if (params.isMissingTaxonomyLevelOnly()) {
+			sb.append(" and taxonomyLevel is null");
+		}
 	}
 
 	private void appendParameters(SearchQuestionItemParams params, TypedQuery<?> query) {

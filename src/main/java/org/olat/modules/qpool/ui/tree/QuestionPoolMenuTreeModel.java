@@ -230,6 +230,8 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			setFirstChildAsDelegate(sharesNode);
 		}
 		
+		buildPredifinedQueriesNode(rootNode);
+		
 		//administration
 		TreeNode adminNode = new AdministrationTreeNode(translator.translate("menu.admin"));
 		rootNode.addChild(adminNode);
@@ -241,7 +243,7 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 			rootNode.remove(adminNode);
 		}
 	}
-	
+
 	public void buildMySubTreeModel() {
 		myNode.removeAllChildren();
 		buildMyTreeNode(myNode);
@@ -343,13 +345,24 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		}
 	}
 	
+	private void buildPredifinedQueriesNode(TreeNode rootNode) {
+		if (!securityCallback.canEditAllQuestions()) return;
+		
+		GenericTreeNode queriesNode = new GenericTreeNode(translator.translate("menu.queries"));
+		queriesNode.setTitle(translator.translate("menu.queries"));
+		rootNode.addChild(queriesNode);
+		
+		TreeNode node = new AllQuestionsTreeNode(stackPanel, securityCallback, translator.translate("menu.queries.all"));
+		queriesNode.addChild(node);
+		
+		node = new MissingTaxonomyLevelTreeNode(stackPanel, securityCallback, translator.translate("menu.queries.missing.taxonomy.level"));
+		queriesNode.addChild(node);
+		
+		setFirstChildAsDelegate(queriesNode);
+	}
+	
 	private void buildAdminSubTreeModel(TreeNode adminNode) {
 		adminNode.removeAllChildren();
-		
-		if (securityCallback.canEditAllQuestions()) {
-			TreeNode node = new AllQuestionsTreeNode(stackPanel, securityCallback, translator.translate("menu.all.questions"));
-			adminNode.addChild(node);
-		}
 		
 		if (securityCallback.canConfigReviewProcess()) {
 			TreeNode node = new ReviewProcessAdminTreeNode(translator.translate("menu.admin.review.process"));

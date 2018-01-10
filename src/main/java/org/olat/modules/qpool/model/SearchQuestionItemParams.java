@@ -52,6 +52,8 @@ public class SearchQuestionItemParams {
 	private Identity excludeAuthor;
 	private Identity excludeRater;
 	
+	private boolean missingTaxonomyLevelOnly;
+	
 	private final Identity identity;
 	private final Roles roles;
 	
@@ -140,6 +142,14 @@ public class SearchQuestionItemParams {
 		this.excludeRater = excludeRater;
 	}
 
+	public boolean isMissingTaxonomyLevelOnly() {
+		return missingTaxonomyLevelOnly;
+	}
+
+	public void setMissingTaxonomyLevelOnly(boolean missingTaxonomyLevelOnly) {
+		this.missingTaxonomyLevelOnly = missingTaxonomyLevelOnly;
+	}
+
 	public boolean isFulltextSearch() {
 		return StringHelper.containsNonWhitespace(searchString) ||
 				condQueries != null && !condQueries.isEmpty();
@@ -186,6 +196,8 @@ public class SearchQuestionItemParams {
 		clone.onlyAuthor = onlyAuthor;
 		clone.excludeAuthor = excludeAuthor;
 		clone.excludeRater = excludeRater;
+		clone.missingTaxonomyLevelOnly = missingTaxonomyLevelOnly;
 		return clone;
 	}
+
 }

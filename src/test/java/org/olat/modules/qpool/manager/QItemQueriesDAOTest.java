@@ -709,6 +709,35 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	}
 	
 	@Test
+	public void shouldGetItemsFilteredByMissingTaxonomyLevel() {
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
+		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
+		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
+		TaxonomyLevel otherTaxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
+		QuestionItemImpl item11 = createRandomItem(createRandomIdentity());
+		item11.setTaxonomyLevel(taxonomyLevel);
+		QuestionItemImpl item12 = createRandomItem(createRandomIdentity());
+		item12.setTaxonomyLevel(taxonomySubLevel);
+		QuestionItemImpl item21 = createRandomItem(createRandomIdentity());
+		item21.setTaxonomyLevel(otherTaxonomyLevel);
+		QuestionItem item22 = createRandomItem(createRandomIdentity());
+		QuestionItem item23 = createRandomItem(createRandomIdentity());
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		params.setMissingTaxonomyLevelOnly(true);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		
+		assertThat(loadedItems).hasSize(2);
+		assertThat(keysOf(loadedItems))
+				.containsOnlyElementsOf(keysOf(item22, item23))
+				.doesNotContainAnyElementsOf(keysOf(item11, item12, item21));
+		
+		int countItems = qItemQueriesDao.countItems(params);
+		assertThat(countItems).isEqualTo(2);
+	}
+	
+	@Test
 	public void shouldGetItemsFilteredByOnlyAuthor() {
 		Identity owner1 = createRandomIdentity();
 		QuestionItem item11 = createRandomItem(owner1);
