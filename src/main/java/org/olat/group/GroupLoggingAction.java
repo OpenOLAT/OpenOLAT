@@ -28,6 +28,8 @@ package org.olat.group;
 
 import java.lang.reflect.Field;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ActionVerb;
@@ -53,6 +55,8 @@ import org.olat.core.logging.activity.StringResourceableType;
  * @author Stefan
  */
 public class GroupLoggingAction extends BaseLoggingAction {
+	
+	private static final OLog log = Tracing.createLoggerFor(GroupLoggingAction.class);
 
 	private static final ResourceableTypeList GROUP_ACTION_RESOURCEABLE_TYPE_LIST =
 		// first one is used for enrollment where targetIdentity is the user him/herself
@@ -183,10 +187,8 @@ public class GroupLoggingAction extends BaseLoggingAction {
 					try {
 						GroupLoggingAction aLoggingAction = (GroupLoggingAction)field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}

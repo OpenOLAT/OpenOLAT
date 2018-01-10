@@ -80,7 +80,6 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 	final Pattern PATTERN_THREEPOINTS = Pattern.compile("&#8230;", Pattern.CASE_INSENSITIVE);
 	final String THREEPOINTS = "...";
 	
-	//TODO: (LD) translate this!
 	private String HIDDEN_STR = "VERBORGEN";
 	private final String path;
 		
@@ -185,7 +184,7 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("", e);
 		}
 	}
 
@@ -193,6 +192,7 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 	 * 
 	 * @see org.olat.modules.fo.archiver.formatters.ForumFormatter#openThread()
 	 */
+	@Override
 	public void openThread() {
 		super.openThread();
 		if(filePerThread){
@@ -207,6 +207,7 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 	 * 
 	 * @see org.olat.modules.fo.archiver.formatters.ForumFormatter#getThreadResult()
 	 */
+	@Override
 	public StringBuilder closeThread() {
 		String footerThread = "{\\pard \\brdrb \\brdrs \\brdrw20 \\brsp20 \\par}{\\pard\\par}";
 		sb.append(footerThread);
@@ -266,7 +267,7 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 			}
 			String encoded = out.toString();
 			exportStream.putNextEntry(new ZipEntry(path + "/" + fileName));
-			IOUtils.write(encoded, exportStream);
+			IOUtils.write(encoded, exportStream, "UTF-8");
 			exportStream.closeEntry();
 		} catch (UnsupportedEncodingException ueEx) {
 			throw new AssertException("could not encode stream from forum export file: " + ueEx);
@@ -397,7 +398,7 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 	 * @return
 	 */
 	private List<String> addImagesToVFSContainer(MessageNode messageNode) {
-		List<String> fileNameList = new ArrayList<String>();
+		List<String> fileNameList = new ArrayList<>();
 		String iconPath = null;
 		if(messageNode.isClosed() && messageNode.isSticky()) {
 			iconPath = getImagePath("fo_sticky_closed");
@@ -418,7 +419,6 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 	}
 	
 	/**
-	 * TODO: LD: to clarify whether there it a better way to get the image path?
 	 * Gets the image path.
 	 * @param val
 	 * @return the path of the static icon image.

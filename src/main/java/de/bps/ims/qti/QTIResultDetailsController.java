@@ -47,8 +47,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.nodes.CourseNode;
@@ -84,7 +82,6 @@ public class QTIResultDetailsController extends BasicController {
 
 	private CloseableModalController cmc;
 	//<ONYX-705>
-	private final static OLog log = Tracing.createLoggerFor(QTIResultDetailsController.class);
 	private CloseableModalController onyxCmc;
 	//</ONYX-705>
 	/**
@@ -199,12 +196,12 @@ public class QTIResultDetailsController extends BasicController {
 			try{
 				onyxReporter = new OnyxReporterConnector();
 			} catch (OnyxReporterException e) {
-				log.error(e.getMessage(), e);
+				logError(e.getMessage(), e);
 			}
 			//</ONYX-705>
 			if (onyxReporter != null) {
 				//make a list of this one student because onyxReporter needs a list
-				List<Identity> identityList = new ArrayList<Identity>();
+				List<Identity> identityList = new ArrayList<>();
 				identityList.add(identity);
 				
 				CourseNode cn = CourseFactory.loadCourse(courseResourceableId).getEditorTreeModel().getCourseNode(this.nodeIdent);
@@ -214,8 +211,7 @@ public class QTIResultDetailsController extends BasicController {
 					iframeSrc = onyxReporter.startReporterGUI(ureq.getIdentity(), identityList, cn, assassmentId, ReporterRole.ASSESSMENT);
 					//</ONYX-705>
 				} catch (OnyxReporterException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logError("", e);
 				}
 				onyxReporterVC.contextPut("showBack", Boolean.TRUE);
 				onyxReporterVC.contextPut("iframeOK", Boolean.TRUE);

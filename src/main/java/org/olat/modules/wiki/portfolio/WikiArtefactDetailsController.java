@@ -92,10 +92,8 @@ public class WikiArtefactDetailsController extends BasicController {
 			AbstractParser parser = new JFlexParser(input);
 			ParserDocument parsedDoc = parser.parseHTML(content);
 			String parsedContent = parsedDoc.getContent();
-			String filteredContent = FilterFactory.getHtmlTagAndDescapingFilter().filter(parsedContent);
-			return filteredContent;
+			return FilterFactory.getHtmlTagAndDescapingFilter().filter(parsedContent);
 		} catch(Exception e) {
-			e.printStackTrace();
 			log.error("", e);
 			return content;
 		}

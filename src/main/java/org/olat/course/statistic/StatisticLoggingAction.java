@@ -26,6 +26,8 @@ package org.olat.course.statistic;
 
 import java.lang.reflect.Field;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ActionVerb;
@@ -37,6 +39,8 @@ import org.olat.core.logging.activity.ResourceableTypeList;
 import org.olat.core.logging.activity.StringResourceableType;
 
 public class StatisticLoggingAction extends BaseLoggingAction {
+	
+	private static final OLog log = Tracing.createLoggerFor(StatisticLoggingAction.class);
 
 	public static final ILoggingAction VIEW_NODE_STATISTIC = 
 		new StatisticLoggingAction(ActionType.admin, CrudAction.retrieve, ActionVerb.view, ActionObject.statistic).
@@ -75,10 +79,8 @@ public class StatisticLoggingAction extends BaseLoggingAction {
 					try {
 						StatisticLoggingAction aLoggingAction = (StatisticLoggingAction)field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}

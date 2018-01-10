@@ -28,6 +28,9 @@ package org.olat.core.logging.activity;
 
 import java.lang.reflect.Field;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+
 /**
  * LoggingActions for generic stuff re Learning Resources/RepositoryEntries
  * <P>
@@ -43,6 +46,8 @@ import java.lang.reflect.Field;
  * @author Stefan
  */
 public class LearningResourceLoggingAction extends BaseLoggingAction {
+	
+	private static final OLog log = Tracing.createLoggerFor(LearningResourceLoggingAction.class);
 
 	private static final ResourceableTypeList LEARNING_RESOURCE_OPEN_CLOSE_LIST = 
 		new ResourceableTypeList().
@@ -151,10 +156,8 @@ public class LearningResourceLoggingAction extends BaseLoggingAction {
 					try {
 						LearningResourceLoggingAction aLoggingAction = (LearningResourceLoggingAction)field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}

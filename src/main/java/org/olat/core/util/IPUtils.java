@@ -19,7 +19,8 @@
  */
 package org.olat.core.util;
 
-
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 
 /**
  * 
@@ -34,6 +35,8 @@ package org.olat.core.util;
  */
 public class IPUtils {
 	
+	private static final OLog log = Tracing.createLoggerFor(IPUtils.class);
+	
 	public static long ipToLong(byte[] octets) {
 		long result = 0;
 		for (byte octet : octets) {
@@ -45,7 +48,7 @@ public class IPUtils {
 	
 	public static boolean isValidRange(String ipWithMask, String address) {
 		boolean allOk = false;
-		int maskIndex = ipWithMask.indexOf("/");
+		int maskIndex = ipWithMask.indexOf('/');
 		if(maskIndex > 0) {
 			long bits = Long.parseLong(ipWithMask.substring(maskIndex + 1));
 			long subnet = ipToLong(textToNumericFormatV4(ipWithMask.substring(0, maskIndex)));
@@ -73,7 +76,7 @@ public class IPUtils {
 			long ipToTest = ipToLong(textToNumericFormatV4(ipToCheck));
 			return (ipToTest >= ipLo && ipToTest <= ipHi);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return false;
 		}
 	}

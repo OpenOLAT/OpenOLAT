@@ -214,7 +214,6 @@ public class TranslationDevManager extends BasicManager {
 			copyDirectory(sourceDir, destDir);
 		} catch (IOException e) {
 			log.error("Files could not be copied from " + originBundleName + " to " + targetBundleName);
-			e.printStackTrace();
 		}
 		deletePackage(originBundleName);
 	}
@@ -230,7 +229,6 @@ public class TranslationDevManager extends BasicManager {
 	
 	
 	public void mergePackageTask(String originBundleName, String targetBundleName){
-		//TODO: RH: may be can be done by moveKeyTask for each key/lang
 		//loop over all langs
 		Set<String> allLangs = getAllLanguages();
 		for (String langKey : allLangs) {
@@ -246,15 +244,11 @@ public class TranslationDevManager extends BasicManager {
 					log.error("There is already a key named " + keyName + " with another value in target bundle " + targetBundleName);
 				}
 				else {
-//				String propValue = tempProp.getProperty(key);
 					addKey(locale, targetBundleName, keyName, keyValue);				
 				}
 			}
 			deletePackage(originBundleName);
 		}
-		//TODO: RH prio not needed?
-		//merge only key annotation
-		
 	}
 	
 	public void renameLanguageTask(Locale sourceLocale, Locale targetLocale){
@@ -570,7 +564,7 @@ public class TranslationDevManager extends BasicManager {
 					oldProps.load(is);
 					is.close();
 				} catch (Exception e) {
-					e.printStackTrace();
+					log.error("", e);
 				}
 				for (Object keyObj : allValidKeys) {
 					String key = (String) keyObj;

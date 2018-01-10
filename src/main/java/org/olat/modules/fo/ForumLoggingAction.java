@@ -28,6 +28,8 @@ package org.olat.modules.fo;
 
 import java.lang.reflect.Field;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ActionVerb;
@@ -52,6 +54,8 @@ import org.olat.core.logging.activity.ResourceableTypeList;
  * @author Stefan
  */
 public class ForumLoggingAction extends BaseLoggingAction {
+	
+	private static final OLog log = Tracing.createLoggerFor(ForumLoggingAction.class);
 
 	public static final ILoggingAction FORUM_MESSAGE_LIST = 
 		new ForumLoggingAction(ActionType.tracking, CrudAction.retrieve, ActionVerb.view, ActionObject.forumthread).setTypeList(
@@ -63,7 +67,7 @@ public class ForumLoggingAction extends BaseLoggingAction {
 					// this one is the wiki-forum in a group
 					or().addMandatory(OlatResourceableType.businessGroup, OlatResourceableType.wiki, OlatResourceableType.forum));
 
-	private static ResourceableTypeList FORUM_THREAD_READ_RESOURCES = 
+	private static final ResourceableTypeList FORUM_THREAD_READ_RESOURCES = 
 			new ResourceableTypeList().
 				// this one is a message in a forum-node in a course
 				addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.forum, OlatResourceableType.forumMessage).
@@ -129,10 +133,8 @@ public class ForumLoggingAction extends BaseLoggingAction {
 					try {
 						ForumLoggingAction aLoggingAction = (ForumLoggingAction)field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}

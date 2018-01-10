@@ -22,6 +22,9 @@ package org.olat.ims.qti.questionimport;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+
 /**
  * 
  * Initial date: 24.09.2014<br>
@@ -29,6 +32,8 @@ import java.util.List;
  *
  */
 public class ItemsPackage {
+	
+	private static final OLog log = Tracing.createLoggerFor(ItemsPackage.class);
 	
 	private List<ItemAndMetadata> items;
 
@@ -52,7 +57,7 @@ public class ItemsPackage {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 		}
 		return found;
 	}

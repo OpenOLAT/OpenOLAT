@@ -28,6 +28,9 @@ package org.olat.core.logging.activity;
 
 import java.lang.reflect.Field;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+
 
 /**
  * LoggingActions around Course - such as course browsing, but also course editor
@@ -44,6 +47,8 @@ import java.lang.reflect.Field;
  * @author Stefan
  */
 public class CourseLoggingAction extends BaseLoggingAction {
+	
+	private static final OLog log = Tracing.createLoggerFor(CourseLoggingAction.class);
 
 	public static final ILoggingAction COURSE_BROWSE_GOTO_NODE = 
 		new CourseLoggingAction(ActionType.statistic, CrudAction.retrieve, ActionVerb.open, ActionObject.gotonode);
@@ -197,10 +202,8 @@ public class CourseLoggingAction extends BaseLoggingAction {
 					try {
 						CourseLoggingAction aLoggingAction = (CourseLoggingAction)field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}

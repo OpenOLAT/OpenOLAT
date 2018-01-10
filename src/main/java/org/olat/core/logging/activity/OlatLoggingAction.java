@@ -28,7 +28,12 @@ package org.olat.core.logging.activity;
 
 import java.lang.reflect.Field;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
+
 public class OlatLoggingAction extends BaseLoggingAction {
+	
+	private static final OLog log = Tracing.createLoggerFor(OlatLoggingAction.class);
 	
 	public static final ILoggingAction OLAT_LOGIN = 
 		new OlatLoggingAction(ActionType.admin, CrudAction.retrieve, ActionVerb.launch, ActionObject.login).setTypeList(
@@ -58,10 +63,8 @@ public class OlatLoggingAction extends BaseLoggingAction {
 					try {
 						OlatLoggingAction aLoggingAction = (OlatLoggingAction)field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}

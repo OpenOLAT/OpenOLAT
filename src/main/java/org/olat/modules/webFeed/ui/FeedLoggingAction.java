@@ -22,6 +22,8 @@ package org.olat.modules.webFeed.ui;
 
 import java.lang.reflect.Field;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ActionVerb;
@@ -48,7 +50,9 @@ import org.olat.core.logging.activity.ResourceableTypeList;
  */
 /* package protected */class FeedLoggingAction extends BaseLoggingAction {
 	
-	private static ResourceableTypeList FEED_READ_RESOURCES = new ResourceableTypeList().
+	private static final OLog log = Tracing.createLoggerFor(FeedLoggingAction.class);
+	
+	private static final ResourceableTypeList FEED_READ_RESOURCES = new ResourceableTypeList().
 			// this one is a message in a feed-node in a course
 			addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.feed, OlatResourceableType.feedItem).
 			or().addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.feed).
@@ -100,10 +104,8 @@ import org.olat.core.logging.activity.ResourceableTypeList;
 					try {
 						FeedLoggingAction aLoggingAction = (FeedLoggingAction) field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}

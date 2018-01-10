@@ -27,6 +27,8 @@ package org.olat.core.commons.services.commentAndRating;
 
 import java.lang.reflect.Field;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ActionVerb;
@@ -38,7 +40,9 @@ import org.olat.core.logging.activity.ResourceableTypeList;
 
 public class CommentAndRatingLoggingAction extends BaseLoggingAction {
 	
-	private static ResourceableTypeList COMMENT_RATING_RESOURCES = new ResourceableTypeList().
+	private static final OLog log = Tracing.createLoggerFor(CommentAndRatingLoggingAction.class);
+	
+	private static final ResourceableTypeList COMMENT_RATING_RESOURCES = new ResourceableTypeList().
 	addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.feedItem)
 	.or().addMandatory(OlatResourceableType.feedItem);
 
@@ -67,10 +71,8 @@ public class CommentAndRatingLoggingAction extends BaseLoggingAction {
 					try {
 						CommentAndRatingLoggingAction aLoggingAction = (CommentAndRatingLoggingAction) field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}

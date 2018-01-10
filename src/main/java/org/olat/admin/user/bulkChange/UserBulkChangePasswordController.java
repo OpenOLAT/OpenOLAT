@@ -87,16 +87,15 @@ public class UserBulkChangePasswordController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		// TODO Auto-generated method stub
-	
+		//
 	}
-	
+
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {		
 		if(event == Event.DONE_EVENT) {
 			String[] usernames = changePasswordForm.getUsernames();
@@ -134,7 +133,6 @@ public class UserBulkChangePasswordController extends BasicController {
 						log.warn("could find user with username: " + username);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
 					log.error("Failed to change password/settings for username: " + username, e);
 				}
 			}				
@@ -189,8 +187,7 @@ public class UserBulkChangePasswordController extends BasicController {
 		}
 		
 		private String[] getUsernames(){
-			String[] retVal = userListTextArea.getValue().split("\r\n");
-			return retVal;
+			return userListTextArea.getValue().split("\r\n");
 		}
 		
 		private String getPassword() {

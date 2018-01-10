@@ -23,11 +23,15 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class OpenXMLStyles {
+	
+	private static final OLog log = Tracing.createLoggerFor(OpenXMLStyles.class);
 	
 	private final Document document;
 	private final Element stylesElement;
@@ -53,10 +57,9 @@ public class OpenXMLStyles {
 			factory.setValidating(true);
 			factory.setNamespaceAware(true);
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.newDocument();
-			return doc;
+			return builder.newDocument();
 		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}

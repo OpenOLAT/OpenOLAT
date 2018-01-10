@@ -22,6 +22,8 @@ package org.olat.modules.edubase;
 import java.lang.reflect.Field;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingLoggingAction;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ActionVerb;
@@ -38,8 +40,10 @@ import org.olat.core.logging.activity.ResourceableTypeList;
  *
  */
 public class EdubaseLoggingAction extends BaseLoggingAction {
+	
+	private static final OLog log = Tracing.createLoggerFor(EdubaseLoggingAction.class);
 
-	private static ResourceableTypeList EDUBASE_RESOURCES = new ResourceableTypeList().
+	private static final ResourceableTypeList EDUBASE_RESOURCES = new ResourceableTypeList().
 			addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.edubase);
 
 	public static final ILoggingAction BOOK_SECTION_LAUNCHED =
@@ -62,10 +66,8 @@ public class EdubaseLoggingAction extends BaseLoggingAction {
 					try {
 						CommentAndRatingLoggingAction aLoggingAction = (CommentAndRatingLoggingAction) field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}

@@ -34,6 +34,8 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.ui.CandidateSessionContext;
@@ -96,6 +98,8 @@ import uk.ac.ed.ph.jqtiplus.value.Value;
  *
  */
 public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecorator {
+	
+	private static final OLog log = Tracing.createLoggerFor(AssessmentObjectVelocityRenderDecorator.class);
 
 	private final URLBuilder ubu;
 	private final AssessmentRenderer renderer;
@@ -336,7 +340,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 					.filter((choice) -> isVisible(choice, itemSessionState))
 					.collect(Collectors.toList());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			return null;
 		}
 	}

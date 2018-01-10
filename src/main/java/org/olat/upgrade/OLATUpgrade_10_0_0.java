@@ -323,7 +323,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 			}
 			dbInstance.commit();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			throw e;
 		}
 	}

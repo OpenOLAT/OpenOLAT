@@ -67,7 +67,6 @@ import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 
-// FIXME:as:c google for deployment of servers with no X installed (fj)
 // see also
 // http://java.sun.com/j2se/1.5.0/docs/guide/awt/AWTChanges.html#headless
 /**
@@ -692,12 +691,12 @@ public class ImageHelperImpl extends AbstractImageHelper {
 	    return ret;
 	}
 	
-	private final static void closeQuietly(ImageInputStream ins) {
+	private static final void closeQuietly(ImageInputStream ins) {
 		if(ins != null) {
 			try {
 				ins.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error("", e);
 			}
 		}
 	}

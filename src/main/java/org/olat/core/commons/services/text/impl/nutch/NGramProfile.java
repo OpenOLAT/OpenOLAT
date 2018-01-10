@@ -109,7 +109,7 @@ public class NGramProfile {
    */
   public NGramProfile(String name, int minlen, int maxlen) {
     // TODO: Compute the initial capacity using minlen and maxlen.
-    this.ngrams = new HashMap<CharSequence, NGramEntry>(4000);
+    this.ngrams = new HashMap<>(4000);
     this.minLength = minlen;
     this.maxLength = maxlen;
     this.name = name;
@@ -360,7 +360,7 @@ public class NGramProfile {
         text.append(new String(buffer, 0, len, encoding));
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error("", e);
     }
 
     newProfile.analyze(text);
@@ -385,8 +385,8 @@ public class NGramProfile {
     // First dispatch ngrams in many lists depending on their size
     // (one list for each size, in order to store MAX_SIZE ngrams for each
     // size of ngram)
-    List<NGramEntry> list = new ArrayList<NGramEntry>();
-    List<NGramEntry> sublist = new ArrayList<NGramEntry>();
+    List<NGramEntry> list = new ArrayList<>();
+    List<NGramEntry> sublist = new ArrayList<>();
     NGramEntry[] entries = ngrams.values().toArray(new NGramEntry[ngrams.size()]);
     for (int i=minLength; i<=maxLength; i++) {
       for (int j=0; j<entries.length; j++) {
@@ -506,7 +506,7 @@ public class NGramProfile {
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error("", e);
     }
   }
 

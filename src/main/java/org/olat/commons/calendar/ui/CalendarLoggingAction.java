@@ -27,6 +27,8 @@ package org.olat.commons.calendar.ui;
 
 import java.lang.reflect.Field;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ActionVerb;
@@ -55,7 +57,9 @@ import org.olat.core.logging.activity.StringResourceableType;
  */
 public class CalendarLoggingAction extends BaseLoggingAction {
 	
-	private static ResourceableTypeList CALENDAR_READ_RESOURCES = new ResourceableTypeList().
+	private static final OLog log = Tracing.createLoggerFor(CalendarLoggingAction.class);
+	
+	private static final ResourceableTypeList CALENDAR_READ_RESOURCES = new ResourceableTypeList().
 	// this one is a calendar in a calendar-node in a course
 	addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.targetIdentity, OlatResourceableType.calendar).
 	// this one is a course calendar
@@ -87,10 +91,8 @@ public class CalendarLoggingAction extends BaseLoggingAction {
 					try {
 						CalendarLoggingAction aLoggingAction = (CalendarLoggingAction) field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}

@@ -299,7 +299,6 @@ public class ManifestBuilder {
 			marshaller.marshal(cpObjectFactory.createManifest(manifest), out);
 		} catch (JAXBException e) {
 			log.error("", e);
-			e.printStackTrace();
 		}
 	}
 	

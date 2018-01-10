@@ -548,7 +548,7 @@ public class DBImpl implements DB, Destroyable {
 		try {
 			em.persist(object);					
 		} catch (Exception e) { // we have some error
-			e.printStackTrace(); 
+			log.error("", e);
 			trx.setRollbackOnly();
 			getData().setError(e);
 			throw new DBRuntimeException("Save failed in transaction. object: " +  object, e);

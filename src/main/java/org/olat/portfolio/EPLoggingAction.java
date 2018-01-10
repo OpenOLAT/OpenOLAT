@@ -28,6 +28,8 @@ package org.olat.portfolio;
 
 import java.lang.reflect.Field;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ActionVerb;
@@ -53,6 +55,8 @@ import org.olat.core.logging.activity.StringResourceableType;
  * @author Christian
  */
 public class  EPLoggingAction extends BaseLoggingAction {
+	
+	private static final OLog log = Tracing.createLoggerFor(EPLoggingAction.class);
 
 	/**
 	 * Allow any resourceable type before portfolio [*][*]...[portfolio]
@@ -95,10 +99,8 @@ public class  EPLoggingAction extends BaseLoggingAction {
 					try {
 						EPLoggingAction aLoggingAction = (EPLoggingAction)field.get(null);
 						aLoggingAction.setJavaFieldIdForDebug(field.getName());
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (IllegalAccessException e) {
-						e.printStackTrace();
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						log.error("", e);
 					}
 				}
 			}

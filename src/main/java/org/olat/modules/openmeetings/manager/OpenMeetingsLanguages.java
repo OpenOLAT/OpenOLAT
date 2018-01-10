@@ -27,6 +27,8 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nModule;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -41,8 +43,10 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  */
 public class OpenMeetingsLanguages extends DefaultHandler {
+	
+	private static final OLog log = Tracing.createLoggerFor(OpenMeetingsLanguages.class);
 
-	private final Map<String, Integer> languageToId = new HashMap<String,Integer>();
+	private final Map<String, Integer> languageToId = new HashMap<>();
 	
 	public OpenMeetingsLanguages() {
 		//
@@ -55,7 +59,7 @@ public class OpenMeetingsLanguages extends DefaultHandler {
 			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
 			saxParser.parse(in, this);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 		}
 	}
 	
@@ -89,7 +93,7 @@ public class OpenMeetingsLanguages extends DefaultHandler {
 			String id = attributes.getValue("id");
 			String code = attributes.getValue("code");
 			int languageId = Integer.parseInt(id);
-			languageToId.put(code, new Integer(languageId));
+			languageToId.put(code, Integer.valueOf(languageId));
 		}
 	}
 }
