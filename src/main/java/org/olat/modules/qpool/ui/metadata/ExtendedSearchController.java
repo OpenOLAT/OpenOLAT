@@ -20,8 +20,11 @@
 package org.olat.modules.qpool.ui.metadata;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -175,9 +178,9 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		
 		List<ExtendedSearchPref> params = new ArrayList<>();
 		for(ConditionalQuery uiQuery:uiQueries) {
-			String query = uiQuery.getQuery();
-			if(StringHelper.containsNonWhitespace(query)) {
-				condQueries.add(query);
+			List<String> query = uiQuery.getQueries();
+			if(!query.isEmpty()) {
+				condQueries.addAll(query);
 				
 				params.add(new ExtendedSearchPref(uiQuery.getAttribute(), uiQuery.getValue()));
 			}
@@ -302,11 +305,11 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			}
 		}
 		
-		public String getQuery() {
+		public List<String> getQueries() {
 			if(parameterFactory != null && parameter != null) {
-				return parameterFactory.getQuery(parameter);
+				return parameterFactory.getQueries(parameter);
 			}
-			return null;
+			return Collections.emptyList();
 		}
 	}
 
@@ -315,7 +318,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		
 		public FormItem createItem(String startValue);
 		
-		public String getQuery(FormItem item);
+		public List<String> getQueries(FormItem item);
 	}
 	
 	private class SearchAttributes {
@@ -329,7 +332,8 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			attributes.add(new SearchAttribute("general.coverage", new StringQueryParameter(QItemDocument.COVERAGE_FIELD)));
 			attributes.add(new SearchAttribute("general.additional.informations", new StringQueryParameter(QItemDocument.ADD_INFOS_FIELD)));
 			attributes.add(new SearchAttribute("general.language", new StringQueryParameter(QItemDocument.LANGUAGE_FIELD)));
-			attributes.add(new SearchAttribute("classification.taxonomic.path", new TaxonomicPathQueryParameter()));
+			attributes.add(new SearchAttribute("classification.taxonomy.level", new TaxonomicFieldQueryParameter()));
+			attributes.add(new SearchAttribute("classification.taxonomic.path.incl", new TaxonomicPathQueryParameter()));
 			//educational
 			attributes.add(new SearchAttribute("educational.context", new ContextQueryParameter()));
 			//question
@@ -383,18 +387,18 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		}
 
 		@Override
-		public String getQuery(FormItem item) {
+		public List<String> getQueries(FormItem item) {
 			String val = getValue(item);
 			if(StringHelper.containsNonWhitespace(val)) {
-				return append(docAttribute, ":(", val, ") ");
+				return Collections.singletonList(append(docAttribute, ":(", val, ") "));
 			}
-			return null;
+			return Collections.emptyList();
 		}
 	}
 	
-	public class TaxonomicPathQueryParameter extends SingleChoiceQueryParameter {
+	public class TaxonomicFieldQueryParameter extends SingleChoiceQueryParameter {
 		
-		public TaxonomicPathQueryParameter() {
+		public TaxonomicFieldQueryParameter() {
 			super(QItemDocument.TAXONOMIC_FIELD);
 		}
 		
@@ -407,6 +411,36 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 			}
 			return createItem(qpoolTaxonomyTreeBuilder.getSelectableKeys(),
 					qpoolTaxonomyTreeBuilder.getSelectableValues(), startValue);
+		}
+	}
+	
+	public class TaxonomicPathQueryParameter extends SingleChoiceQueryParameter {
+		
+		public TaxonomicPathQueryParameter() {
+			super(QItemDocument.TAXONOMIC_PATH_FIELD);
+		}
+		
+		@Override
+		public FormItem createItem(String startValue) {
+			if (allTaxonomyLevels) {
+				qpoolTaxonomyTreeBuilder.loadAllTaxonomyLevels();
+			} else {
+				qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false);
+			}
+			return createItem(qpoolTaxonomyTreeBuilder.getTaxonomicPaths(),
+					qpoolTaxonomyTreeBuilder.getSelectableValues(), startValue);
+		}
+		
+		@Override
+		public List<String> getQueries(FormItem item) {
+			String val = getValue(item);
+			if(StringHelper.containsNonWhitespace(val)) {
+				String[] levels = val.substring(1).split("/");
+				return Stream.of(levels)
+						.map(level -> append(getDocAttribute(), ":(", level, ") "))
+						.collect(Collectors.toList());
+			}
+			return Collections.emptyList();
 		}
 	}
 	
@@ -462,12 +496,12 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		}
 
 		@Override
-		public String getQuery(FormItem item) {
+		public List<String> getQueries(FormItem item) {
 			String val = getValue(item);
 			if(StringHelper.containsNonWhitespace(val)) {
-				return append(getDocAttribute(), ":\"", val, "\" ");	
+				return Collections.singletonList(append(getDocAttribute(), ":\"", val, "\" "));	
 			}
-			return null;
+			return Collections.emptyList();
 		}
 	}
 	
@@ -540,12 +574,12 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		}
 		
 		@Override
-		public String getQuery(FormItem item) {
+		public List<String> getQueries(FormItem item) {
 			String val = getValue(item);
 			if(StringHelper.containsNonWhitespace(val)) {
-				return append(docAttribute, ":(", val, ") ");	
+				return Collections.singletonList(append(docAttribute, ":(", val, ") "));	
 			}
-			return null;
+			return Collections.emptyList();
 		}
 		
 		public String getDocAttribute() {
