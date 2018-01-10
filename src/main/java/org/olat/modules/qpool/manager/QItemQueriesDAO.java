@@ -127,7 +127,7 @@ public class QItemQueriesDAO {
 		}
 		
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null && !OrderBy.marks.name().equals(orderBy[0].getKey())) {
-			appendOrderBy(sb, "item", orderBy);
+			appendOrderBy(sb, "item", "taxonomyLevel", orderBy);
 		}
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -210,7 +210,7 @@ public class QItemQueriesDAO {
 		if(StringHelper.containsNonWhitespace(format)) {
 			sb.append(" and item.format=:format");
 		}
-		appendOrderBy(sb, "item", orderBy);
+		appendOrderBy(sb, "item", "taxonomyLevel", orderBy);
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -306,7 +306,7 @@ public class QItemQueriesDAO {
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.append(" and item.format=:format");
 		}
-		appendOrderBy(sb, "item", orderBy);
+		appendOrderBy(sb, "item", "taxonomyLevel", orderBy);
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -380,7 +380,7 @@ public class QItemQueriesDAO {
 		if(StringHelper.containsNonWhitespace(format)) {
 			sb.append(" and item.format=:format");
 		}
-		appendOrderBy(sb, "item", orderBy);
+		appendOrderBy(sb, "item", "taxonomyLevel", orderBy);
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -456,7 +456,7 @@ public class QItemQueriesDAO {
 		if(StringHelper.containsNonWhitespace(params.getFormat())) {
 			sb.append(" and item.format=:format");
 		}
-		appendOrderBy(sb, "item", orderBy);
+		appendOrderBy(sb, "item", "taxonomyLevel", orderBy);
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
@@ -623,7 +623,7 @@ public class QItemQueriesDAO {
 		}
 		
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null && !OrderBy.marks.name().equals(orderBy[0].getKey())) {
-			appendOrderBy(sb, "item", orderBy);
+			appendOrderBy(sb, "item", "taxonomyLevel", orderBy);
 		}
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -710,14 +710,14 @@ public class QItemQueriesDAO {
 		}
 	}
 	
-	private void appendOrderBy(StringBuilder sb, String dbRef, SortKey... orderBy) {
+	private void appendOrderBy(StringBuilder sb, String itemDbRef, String taxonomyDbRef, SortKey... orderBy) {
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {
 			String sortKey = orderBy[0].getKey();
 			boolean asc = orderBy[0].isAsc();
 			sb.append(" order by ");
 			switch(sortKey) {
 				case "itemType":
-					sb.append(dbRef).append(".type.type ");
+					sb.append(itemDbRef).append(".type.type ");
 					appendAsc(sb, asc);
 					break;
 				case "marks":
@@ -732,12 +732,22 @@ public class QItemQueriesDAO {
 				case "keywords":
 				case "coverage":
 				case "additionalInformations":
-					sb.append("lower(").append(dbRef).append(".").append(sortKey).append(")");
+					sb.append("lower(").append(itemDbRef).append(".").append(sortKey).append(")");
 					appendAsc(sb, asc);
 					sb.append(" nulls last");
-					break;	
+					break;
+				case "taxonomyLevel":
+					sb.append("lower(").append(taxonomyDbRef).append(".displayName)");
+					appendAsc(sb, asc);
+					sb.append(" nulls last");
+					break;
+				case "taxonomyPath":
+					sb.append("lower(").append(taxonomyDbRef).append(".materializedPathIdentifiers)");
+					appendAsc(sb, asc);
+					sb.append(" nulls last");
+					break;
 				default:
-					sb.append(dbRef).append(".").append(sortKey);
+					sb.append(itemDbRef).append(".").append(sortKey);
 					appendAsc(sb, asc);
 					sb.append(" nulls last");
 					break;
