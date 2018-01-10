@@ -2,7 +2,7 @@
  * Javascript code used by the text marker infrastructure. 
  * Some code is borrowed from http://www.nsftools.com/misc/SearchAndHighlight.htm
  *
- * Florian Gn�gi, JGS goodsolutions GmbH
+ * Florian Gnaegi, JGS goodsolutions GmbH
  * 2006/07/14
  * Guido Schnider, OLAT
  * 2008/02/25
