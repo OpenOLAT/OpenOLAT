@@ -79,6 +79,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	private GroupController groupController;
 
 	private QuestionItem item;
+	private QuestionItemSecurityCallback securityCallback;
 	
 	@Autowired
 	private QPoolService qpoolService;
@@ -91,9 +92,10 @@ public class RightsMetadataEditController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
+		this.securityCallback = securityCallback;
 		
 		initForm(ureq);
-		setItem(item, securityCallback);
+		setReadOnly();
 	}
 
 	@Override
@@ -141,7 +143,7 @@ public class RightsMetadataEditController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void setReadOnly(QuestionItemSecurityCallback securityCallback) {
+	private void setReadOnly() {
 		boolean canEditMetadata = securityCallback.canEditMetadata();
 		managerOwners.setVisible(canEditMetadata);
 		copyrightEl.setEnabled(canEditMetadata);
@@ -151,8 +153,9 @@ public class RightsMetadataEditController extends FormBasicController {
 	
 	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
 		this.item = item;
+		this.securityCallback = securityCallback;
 		if (securityCallback != null) {
-			setReadOnly(securityCallback);
+			setReadOnly();
 		}
 	}
 

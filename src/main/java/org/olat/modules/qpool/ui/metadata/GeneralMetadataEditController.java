@@ -22,10 +22,12 @@ package org.olat.modules.qpool.ui.metadata;
 import static org.olat.modules.qpool.ui.metadata.MetaUIFactory.validateElementLogic;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -62,6 +64,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 	private FormLayoutContainer buttonsCont;
 
 	private QuestionItem item;
+	private QuestionItemSecurityCallback securityCallback;
 
 	@Autowired
 	private QPoolService qpoolService;
@@ -74,9 +77,10 @@ public class GeneralMetadataEditController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
+		this.securityCallback = securityCallback;
 		
 		initForm(ureq);
-		setItem(item, securityCallback);
+		setReadOnly();
 	}
 
 	@Override
@@ -84,8 +88,9 @@ public class GeneralMetadataEditController extends FormBasicController {
 		String topic = item.getTopic();
 		topicEl = uifactory.addTextElement("general.topic", "general.topic", 1000, topic, formLayout);
 		
-		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
-				new String[0], new String[0]);
+		taxonomyLevelEl = uifactory.addDropdownSingleselect("general.taxonomy.level", formLayout, new String[0],
+				new String[0]);
+		buildTaxonomyLevelEl();
 		
 		KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
 		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout,
@@ -124,7 +129,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
-	private void buildTaxonomyLevelEl(QuestionItemSecurityCallback securityCallback) {
+	private void buildTaxonomyLevelEl() {
 		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), securityCallback.canRemoveTaxonomy());
 		String[] selectableKeys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
 		String[] selectableValues = qpoolTaxonomyTreeBuilder.getSelectableValues();
@@ -145,9 +150,11 @@ public class GeneralMetadataEditController extends FormBasicController {
 				}
 			}
 		}
+		taxonomyLevelEl.addActionListener(FormEvent.ONCHANGE);
+		setTaxonomicPath();
 	}
 
-	private void setReadOnly(QuestionItemSecurityCallback securityCallback) {
+	private void setReadOnly() {
 		boolean canEditMetadata = securityCallback.canEditMetadata();
 		topicEl.setEnabled(canEditMetadata);
 		taxonomyLevelEl.setEnabled(canEditMetadata);
@@ -162,15 +169,34 @@ public class GeneralMetadataEditController extends FormBasicController {
 
 	public void setItem(QuestionItem item, QuestionItemSecurityCallback securityCallback) {
 		this.item = item;
+		this.securityCallback = securityCallback;
 		if (securityCallback != null) {
-			buildTaxonomyLevelEl(securityCallback);
-			setReadOnly(securityCallback);
+			buildTaxonomyLevelEl();
+			setReadOnly();
 		}
 	}
 		
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (taxonomyLevelEl == source) {
+			setTaxonomicPath();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void setTaxonomicPath() {
+		String selectedKey = taxonomyLevelEl.isOneSelected()? taxonomyLevelEl.getSelectedKey(): null;
+		TaxonomyLevel taxonomyLevel = qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
+		String taxonomicPath = "";
+		if (taxonomyLevel != null) {
+			taxonomicPath = taxonomyLevel.getMaterializedPathIdentifiers();
+		}
+		taxonomyLevelEl.setExampleKey("general.taxonomy.path", new String[] {taxonomicPath});
 	}
 
 	@Override
@@ -197,9 +223,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 			
 			String selectedKey = taxonomyLevelEl.getSelectedKey();
 			TaxonomyLevel taxonomyLevel = qpoolTaxonomyTreeBuilder.getTaxonomyLevel(selectedKey);
-			if(taxonomyLevel != null) {
-				itemImpl.setTaxonomyLevel(taxonomyLevel);
-			}
+			itemImpl.setTaxonomyLevel(taxonomyLevel);
 	
 			QEducationalContext context = contextEl.isOneSelected()
 					? qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey())
@@ -231,6 +255,12 @@ public class GeneralMetadataEditController extends FormBasicController {
 		}
 		item = qpoolService.updateItem(item);
 		fireEvent(ureq, new QItemEdited(item));
+	}
+
+	@Override
+	protected void formResetted(UserRequest ureq) {
+		buildTaxonomyLevelEl();
+		super.formResetted(ureq);
 	}
 
 }

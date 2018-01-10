@@ -235,6 +235,8 @@ public class QPoolTaxonomyTreeBuilder {
 	}
 
 	public TaxonomyLevel getTaxonomyLevel(String key) {
+		if (key == null) return null;
+		
 		Long taxonomyLevelKey = Long.parseLong(key);
 		for (TaxonomyLevel taxonomyLevel: selectableTaxonomyLevels) {
 			if (taxonomyLevel.getKey().equals(taxonomyLevelKey)) {
