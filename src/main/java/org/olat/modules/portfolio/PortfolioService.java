@@ -334,6 +334,13 @@ public interface PortfolioService {
 	
 	public void changeAccessRights(List<Identity> identities, List<AccessRightChange> changes);
 	
+	/**
+	 * The method remove all access rights of the specified identity
+	 * to the specified binder.
+	 * 
+	 * @param binder The binder to access
+	 * @param identity The identity with access rights
+	 */
 	public void removeAccessRights(Binder binder, Identity identity);
 	
 	public List<Category> getCategories(PortfolioElement element);
