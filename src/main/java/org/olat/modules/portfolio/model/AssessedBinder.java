@@ -46,6 +46,10 @@ public class AssessedBinder implements AssessmentEntryLight {
 	private List<AssessedBinderSection> sections;
 	private int numOfOpenSections;
 	
+	private int numOfDraftPages = 0;
+	private int numOfInRevisionPages = 0;
+	private int numOfClosedPages = 0;
+	
 	private Date recentLaunch;
 	
 	public AssessedBinder(Long binderKey, String binderTitle, String entryDisplayname,
@@ -114,5 +118,29 @@ public class AssessedBinder implements AssessmentEntryLight {
 
 	public void setRecentLaunch(Date recentLaunch) {
 		this.recentLaunch = recentLaunch;
+	}
+
+	public int getNumOfDraftPages() {
+		return numOfDraftPages;
+	}
+
+	public void incrementNumOfDraftPages() {
+		numOfDraftPages++;
+	}
+
+	public int getNumOfInRevisionPages() {
+		return numOfInRevisionPages;
+	}
+
+	public void incrementNumOfInRevisionPages() {
+		numOfInRevisionPages++;
+	}
+
+	public int getNumOfClosedPages() {
+		return numOfClosedPages;
+	}
+
+	public void incrementNumOfClosedPages() {
+		numOfClosedPages++;
 	}
 }

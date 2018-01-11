@@ -37,6 +37,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.BinderStatus;
+import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.SectionStatus;
 import org.olat.modules.portfolio.model.AssessedBinder;
@@ -129,7 +130,10 @@ public class SharedWithMeQueries {
 	
 	private void searchSharedBindersTwo(Identity member, List<AssessedBinder> binders) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select binder.key, section.key, section.status, section.title, section.pos, page.key, page.lastModified, body.lastModified, max(parts.lastModified), infos.recentLaunch")
+		sb.append("select binder.key,")
+		  .append("  section.key, section.status, section.title, section.pos, section.endDate,")
+		  .append("  page.key, page.status, page.lastModified,")
+		  .append("  body.lastModified, max(parts.lastModified), infos.recentLaunch")
 		  .append(" from pfbinder as binder")
 		  .append(" inner join binder.sections as section")
 		  .append(" inner join section.pages as page")
@@ -146,6 +150,7 @@ public class SharedWithMeQueries {
 		  .append("   where coachedPage.key=page.key")
 		  .append(" ) group by binder.key, section.key, section.status, page.key, body.lastModified, page.lastModified, infos.recentLaunch");
 
+		Date now = new Date();
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("identityKey", member.getKey())
@@ -166,7 +171,9 @@ public class SharedWithMeQueries {
 				String sectionStatus = (String)object[pos++];
 				String sectionTitle = (String)object[pos++];
 				Number sectionPosNumber = (Number)object[pos++];
+				Date sectionEndDate = (Date)object[pos++];;
 				pos++;//Object pageKey = object[pos++];
+				String pageStatus = (String)object[pos++];
 				Date pageLastModified = (Date)object[pos++];
 				Date bodyLastModified = (Date)object[pos++];
 				Date partLastModified = (Date)object[pos++];
@@ -187,6 +194,17 @@ public class SharedWithMeQueries {
 				
 				if(binder.getRecentLaunch() == null) {
 					binder.setRecentLaunch(recentLaunch);
+				}
+				
+				if(StringHelper.containsNonWhitespace(pageStatus)) {
+					PageStatus status = PageStatus.valueOf(pageStatus);
+					if(PageStatus.isClosed(status, sectionEndDate, now)) {
+						binder.incrementNumOfClosedPages();
+					} else if(PageStatus.draft.name().equals(pageStatus)) {
+						binder.incrementNumOfDraftPages();
+					} else if(PageStatus.inRevision.name().equals(pageStatus)) {
+						binder.incrementNumOfInRevisionPages();
+					}
 				}
 				
 				if(!sectionKeys.contains(sectionKey)) {

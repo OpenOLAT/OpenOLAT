@@ -145,6 +145,9 @@ public class SharedItemsController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.recentLaunch));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.openSections, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.selectSections, new SelectSectionsCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ShareItemCols.draftPage));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ShareItemCols.inRevisionPage));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ShareItemCols.closedPage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.grading,
 				new AssessmentEntryCellRenderer(getTranslator())));
 		StaticFlexiCellRenderer selectRenderer = new StaticFlexiCellRenderer(translate("select"), "select");
@@ -189,6 +192,9 @@ public class SharedItemsController extends FormBasicController implements Activa
 			}
 			row.setSections(sections);
 			row.setNumOfOpenSections(assessedBinder.getNumOfOpenSections());
+			row.setNumOfDraftPages(assessedBinder.getNumOfDraftPages());
+			row.setNumOfInRevisionPages(assessedBinder.getNumOfInRevisionPages());
+			row.setNumOfClosedPages(assessedBinder.getNumOfClosedPages());
 			rows.add(row);
 		}
 		

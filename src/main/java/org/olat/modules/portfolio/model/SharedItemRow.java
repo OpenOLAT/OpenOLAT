@@ -44,6 +44,10 @@ public class SharedItemRow extends UserPropertiesRow {
 	private String entryDisplayName;
 	private AssessmentEntryLight assessmentEntry;
 	
+	private int numOfDraftPages = 0;
+	private int numOfInRevisionPages = 0;
+	private int numOfClosedPages = 0;
+	
 	private boolean expandSections;
 	private List<AssessedBinderSection> sections;
 	
@@ -121,5 +125,29 @@ public class SharedItemRow extends UserPropertiesRow {
 
 	public void setRecentLaunch(Date recentLaunch) {
 		this.recentLaunch = recentLaunch;
+	}
+
+	public int getNumOfDraftPages() {
+		return numOfDraftPages;
+	}
+
+	public void setNumOfDraftPages(int numOfDraftPages) {
+		this.numOfDraftPages = numOfDraftPages;
+	}
+
+	public int getNumOfInRevisionPages() {
+		return numOfInRevisionPages;
+	}
+
+	public void setNumOfInRevisionPages(int numOfInRevisionPages) {
+		this.numOfInRevisionPages = numOfInRevisionPages;
+	}
+
+	public int getNumOfClosedPages() {
+		return numOfClosedPages;
+	}
+
+	public void setNumOfClosedPages(int numOfClosedPages) {
+		this.numOfClosedPages = numOfClosedPages;
 	}
 }

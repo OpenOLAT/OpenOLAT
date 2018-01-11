@@ -75,4 +75,15 @@ public enum PageStatus {
 		}
 		return false;
 	}
+	
+	public static boolean isClosed(PageStatus status, Date sectionEndDate, Date now) {
+		if(status == PageStatus.closed) {
+			return true;
+		}
+
+		if(sectionEndDate != null && sectionEndDate.compareTo(now) < 0) {
+			return true;
+		}
+		return false;
+	}
 }
