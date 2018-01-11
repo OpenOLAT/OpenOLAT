@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.olat.admin.SystemAdminMainController;
+import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -74,6 +75,7 @@ public class LayoutAdminController extends FormBasicController {
 	private SingleSelection logoLinkTypeEl;
 	private TextElement footerLine, footerUrl;
 	private SingleSelection themeSelection;
+	private FormLink forceThemeReload;	
 	private FileElement logoUpload;
 	
 	private static final String[] logoUrlTypeKeys = new String[]{ LogoURLType.landingpage.name(), LogoURLType.custom.name() };
@@ -116,6 +118,8 @@ public class LayoutAdminController extends FormBasicController {
 			}
 		}
 		themeSelection.addActionListener(FormEvent.ONCHANGE);
+		forceThemeReload = uifactory.addFormLink("forceThemeReload", "form.theme.forceReload", null, themeCont, Link.BUTTON_SMALL);
+		forceThemeReload.setExampleKey("form.theme.forceReload.help", null);
 
 		//logo
 		FormLayoutContainer logoCont = FormLayoutContainer.createDefaultFormLayout("logo", getTranslator());
@@ -248,6 +252,11 @@ public class LayoutAdminController extends FormBasicController {
 			getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
 			logAudit("GUI theme changed", newThemeIdentifyer);
 			fireEvent(ureq, Event.CHANGED_EVENT);
+		} else if (forceThemeReload == source) {
+			StaticMediaDispatcher.forceReloadStaticMediaDelivery();
+			// make reloading happen for the admin window right away
+			getWindowControl().getWindowBackOffice().getWindow().getGuiTheme().init(themeSelection.getSelectedKey());
+			getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
 		}
 	}
 

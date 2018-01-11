@@ -124,7 +124,7 @@ public class Theme {
 	 */
 	public void init(String themeIdentifyer) {
 		this.identifyer = themeIdentifyer;
-		// Themes are deliverd as static resources by StaticMediaDispatcher
+		// Themes are delivered as static resources by StaticMediaDispatcher
 		this.relPathToThemesDir = "themes/" + themeIdentifyer + "/";
 		StringOutput themePath = new StringOutput();
 		StaticMediaDispatcher.renderStaticURI(themePath, relPathToThemesDir);
