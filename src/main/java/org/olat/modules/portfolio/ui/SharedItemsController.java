@@ -43,8 +43,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -88,6 +91,7 @@ public class SharedItemsController extends FormBasicController implements Activa
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private BinderController binderCtrl;
+	private DialogBoxController confirmLeaveCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -147,6 +151,10 @@ public class SharedItemsController extends FormBasicController implements Activa
 		selectRenderer.setIconRightCSS("o_icon-sw o_icon_start");
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, "select", -1, "select", false, null,
 				FlexiColumnModel.ALIGNMENT_LEFT, selectRenderer));
+		StaticFlexiCellRenderer leaveRenderer = new StaticFlexiCellRenderer(translate("leave"), "leave");
+		leaveRenderer.setIconRightCSS("o_icon-sw o_icon_delete");
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, "leave", -2, "leave", false, null,
+				FlexiColumnModel.ALIGNMENT_LEFT, leaveRenderer));
 		
 		model = new SharedItemsDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -221,6 +229,17 @@ public class SharedItemsController extends FormBasicController implements Activa
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(confirmLeaveCtrl == source) {
+			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
+				SharedItemRow row = (SharedItemRow)confirmLeaveCtrl.getUserObject();
+				doLeaveBinder(row);
+			}
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
@@ -232,6 +251,8 @@ public class SharedItemsController extends FormBasicController implements Activa
 					if(activeateable != null) {
 						activeateable.activate(ureq, null, null);
 					}
+				} else if("leave".equals(cmd)) {
+					doConfirmLeaveBinder(ureq, row);
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
@@ -312,6 +333,20 @@ public class SharedItemsController extends FormBasicController implements Activa
 			stackPanel.pushController(displayName, binderCtrl);
 			return binderCtrl;
 		}
+	}
+	
+	private void doConfirmLeaveBinder(UserRequest ureq, SharedItemRow row) {
+		String title = translate("leave");
+		String text = translate("leave.explain");
+		confirmLeaveCtrl = activateOkCancelDialog(ureq, title, text, confirmLeaveCtrl);
+		confirmLeaveCtrl.setUserObject(row);
+		listenTo(confirmLeaveCtrl);
+	}
+	
+	private void doLeaveBinder(SharedItemRow row) {
+		Binder binder = portfolioService.getBinderByKey(row.getBinderKey());
+		portfolioService.removeAccessRights(binder, getIdentity());
+		loadModel(tableEl.getQuickSearchString());
 	}
 	
 	private static class AssessedBinderSectionComparator implements Comparator<AssessedBinderSection> {
