@@ -1,10 +1,8 @@
 <div class="clearfix">
-	<div class="o_sel_qpool_edit_content">
-		$r.contextHelpWithWrapper("Item Detailed View")
-		#if($r.available("edit"))
-			$r.render("edit")
-		#end
-	</div>
+	$r.contextHelpWithWrapper("Item Detailed View")
+</div>
+<div class="clearfix">
+	$r.render("review")
 </div>
 <div class="row">
 	#if($metadataSwitch)

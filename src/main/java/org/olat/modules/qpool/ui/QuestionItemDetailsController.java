@@ -58,11 +58,11 @@ import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.qpool.ReviewService;
 import org.olat.modules.qpool.manager.ExportQItemResource;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
+import org.olat.modules.qpool.ui.events.QItemReviewEvent;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
 import org.olat.modules.qpool.ui.events.QPoolSelectionEvent;
 import org.olat.modules.qpool.ui.metadata.MetadatasController;
@@ -84,9 +84,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link statusFinalLink;
 	private Link statusEndOfLifeLink;
 	private Link statusRevisedLink;
-	private Link startReviewLink;
-	private Link reviewLink;
-	private Link notReviewableLink;
 	private Link deleteLink;
 	private Link nextItemLink;
 	private Link numberItemsLink;
@@ -105,6 +102,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private final TooledStackedPanel stackPanel;
 	private Controller questionCtrl;
 	private MetadatasController metadatasCtrl;
+	private ReviewActionController reviewActionCtrl;
 	private UserCommentsAndRatingsController commentsAndRatingCtr;
 	private CommentAndRatingSecurityCallback commentAndRatingSecurityCallback;
 	private CloseableModalController cmc;
@@ -126,8 +124,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private QuestionPoolModule poolModule;
 	@Autowired
 	private QPoolService qpoolService;
-	@Autowired
-	private ReviewService reviewService;
 	
 	public QuestionItemDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QPoolSecurityCallback qPoolSecurityCallback, QuestionItem item,
@@ -146,17 +142,22 @@ public class QuestionItemDetailsController extends BasicController implements To
 		showMetadatas = (Boolean) guiPrefs.get(QuestionItemDetailsController.class, GUIPREF_KEY_SHOW_METADATAS);
 		
 		mainVC = createVelocityContainer("item_details");
-		setMetadatasController(ureq, wControl, item, qItemSecurityCallback);
+		setMetadatasController(ureq, item, qItemSecurityCallback);
+		setReviewActionController(ureq);
 		setQuestionController(ureq, item, qItemSecurityCallback);
 		setCommentsController(ureq);
 		putInitialPanel(mainVC);
 	}
-
-	private void setMetadatasController(UserRequest ureq, WindowControl wControl, QuestionItem item,
-			QuestionItemSecurityCallback securityCallback) {
-		metadatasCtrl = new MetadatasController(ureq, wControl, qPoolSecurityCallback, item, securityCallback);
+	private void setMetadatasController(UserRequest ureq, QuestionItem item, QuestionItemSecurityCallback securityCallback) {
+		metadatasCtrl = new MetadatasController(ureq, getWindowControl(), qPoolSecurityCallback, item, securityCallback);
 		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
 		listenTo(metadatasCtrl);
+	}
+
+	private void setReviewActionController(UserRequest ureq) {
+		reviewActionCtrl = new ReviewActionController(ureq, getWindowControl(), qItemSecurityCallback);
+		mainVC.put("review", reviewActionCtrl.getInitialComponent());
+		listenTo(reviewActionCtrl);
 	}
 
 	private void setQuestionController(UserRequest ureq, QuestionItem item,
@@ -205,7 +206,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 		initCommandTools();
 		initStatusTools(); 
 		initShareTools();
-		initReviewTools();
 		initPrevNextTools();
 		initMetadataTools();
 	}
@@ -308,24 +308,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 		}
 	}
 
-	private void initReviewTools() {
-		if (qItemSecurityCallback.canStartReview()) {
-			startReviewLink = LinkFactory.createToolLink("process.start.review", translate("process.start.review"), this);
-			startReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_review");
-			stackPanel.addTool(startReviewLink, Align.left);
-		}
-		if (qItemSecurityCallback.canReviewNotStartable()) {
-			notReviewableLink = LinkFactory.createToolLink("process.not.reviewable", translate("process.not.reviewable"), this);
-			notReviewableLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_review");
-			stackPanel.addTool(notReviewableLink, Align.left);
-		}
-		if (qItemSecurityCallback.canReview() && reviewService.hasRatingController()) {
-			reviewLink = LinkFactory.createToolLink("process.review", translate("process.review"), this);
-			reviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_do_review");
-			stackPanel.addTool(reviewLink, Align.left);
-		}
-	}
-
 	private void initPrevNextTools() {
 		previousItemLink = LinkFactory.createToolLink("previous", translate("previous"), this);
 		previousItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_previous");
@@ -379,12 +361,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 			doStatusFinal(ureq, metadatasCtrl.getItem());
 		} else if (source == statusEndOfLifeLink) {
 			doConfirmEndOfLife(ureq, metadatasCtrl.getItem());
-		} else if(source == startReviewLink) {
-			doConfirmStartReview(ureq, metadatasCtrl.getItem());
-		} else if(source == notReviewableLink) {
-			showNotReviewableMessage();
-		} else if (source == reviewLink) {
-			openReview(ureq);
 		} else if(source == deleteLink) {
 			doConfirmDelete(ureq, metadatasCtrl.getItem());
 		} else if(source == shareGroupItemLink) {
@@ -432,6 +408,12 @@ public class QuestionItemDetailsController extends BasicController implements To
 				}
 			}	
 			cleanUp();
+		} else if (source == reviewActionCtrl) {
+			if (QItemReviewEvent.START.equals(event.getCommand())) {
+				doConfirmStartReview(ureq);
+			} else if (QItemReviewEvent.DO.equals(event.getCommand())) {
+				openReview(ureq);
+			}
 		} else if (source == reviewStartCtrl) {
 			if (event == Event.DONE_EVENT) {
 				TaxonomyLevel taxonomyLevel = reviewStartCtrl.getSelectedTaxonomyLevel();
@@ -493,8 +475,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 		confirmEndOfLifeCtrl = null;
 	}
 	
-	private void doConfirmStartReview(UserRequest ureq, QuestionItem item) {
-		reviewStartCtrl = new ReviewStartController(ureq, getWindowControl(), item);
+	private void doConfirmStartReview(UserRequest ureq) {
+		reviewStartCtrl = new ReviewStartController(ureq, getWindowControl(), metadatasCtrl.getItem());
 		listenTo(reviewStartCtrl);
 		cmc = new CloseableModalController(getWindowControl(), null,
 				reviewStartCtrl.getInitialComponent(), true,
@@ -514,10 +496,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 		doChangeQuestionStatus(ureq, item, QuestionStatus.review, "process.review.started");
 	}
 	
-	private void showNotReviewableMessage() {
-		showWarning("process.not.reviewable.message");
-	}
-
 	private void openReview(UserRequest ureq) {
 		reviewCtrl = new ReviewController(ureq, getWindowControl());
 		listenTo(reviewCtrl);
@@ -582,6 +560,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			setCommentsController(ureq);
 			QuestionItem reloadedItem = qpoolService.loadItemById(itemView.getKey());
 			metadatasCtrl.setItem(reloadedItem, qItemSecurityCallback);
+			reviewActionCtrl.setSecurityCallback(qItemSecurityCallback);
 			setQuestionController(ureq, reloadedItem, qItemSecurityCallback);
 		}
 	}
