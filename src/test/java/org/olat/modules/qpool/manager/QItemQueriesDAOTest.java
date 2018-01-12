@@ -709,7 +709,7 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 	}
 	
 	@Test
-	public void shouldGetItemsFilteredByMissingTaxonomyLevel() {
+	public void shouldGetItemsFilteredByWithoutTaxonomyLevel() {
 		Taxonomy taxonomy = taxonomyDao.createTaxonomy("QPool", "QPool", "", null);
 		TaxonomyLevel taxonomyLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, null, null, taxonomy);
 		TaxonomyLevel taxonomySubLevel = taxonomyLevelDao.createTaxonomyLevel("QPool", "QPool", "QPool", null, null, taxonomyLevel, null, taxonomy);
@@ -725,13 +725,36 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		dbInstance.commitAndCloseSession();
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
-		params.setMissingTaxonomyLevelOnly(true);
+		params.setWithoutTaxonomyLevelOnly(true);
 		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
 		
 		assertThat(loadedItems).hasSize(2);
 		assertThat(keysOf(loadedItems))
 				.containsOnlyElementsOf(keysOf(item22, item23))
 				.doesNotContainAnyElementsOf(keysOf(item11, item12, item21));
+		
+		int countItems = qItemQueriesDao.countItems(params);
+		assertThat(countItems).isEqualTo(2);
+	}
+	
+	@Test
+	public void shouldGetItemsFilteredByWithoutAuthor() {
+		QuestionItem item11 = createRandomItem(null);
+		QuestionItem item12 = createRandomItem(createRandomIdentity());
+		QuestionItem item21 = createRandomItem(null);
+		QuestionItem item22 = createRandomItem(createRandomIdentity());
+		QuestionItem item23 = createRandomItem(createRandomIdentity());
+		
+		dbInstance.commitAndCloseSession();
+		
+		SearchQuestionItemParams params = new SearchQuestionItemParams(createRandomIdentity(), null);
+		params.setWithoutAuthorOnly(true);
+		List<QuestionItemView> loadedItems = qItemQueriesDao.getItems(params, null, 0, -1);
+		
+		assertThat(loadedItems).hasSize(2);
+		assertThat(keysOf(loadedItems))
+				.containsOnlyElementsOf(keysOf(item11, item21))
+				.doesNotContainAnyElementsOf(keysOf(item12, item22, item23));
 		
 		int countItems = qItemQueriesDao.countItems(params);
 		assertThat(countItems).isEqualTo(2);

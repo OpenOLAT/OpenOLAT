@@ -236,6 +236,23 @@ public class QuestionItemDAO {
 				.getResultList();
 	}
 	
+	public List<QuestionItemShort> getItemsWithOneAuthor(Identity author) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select item from questionitem item");
+		sb.append(" where exists (").append("select sgmi.key from ");
+		sb.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi");
+		sb.append("   where sgmi.identity.key=:identityKey and sgmi.securityGroup=item.ownerGroup");
+		sb.append(" )");
+		sb.append(" and 1 = (").append("select count(sgmi.key) from ");
+		sb.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi");
+		sb.append("   where sgmi.securityGroup=item.ownerGroup");
+		sb.append(" )");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemShort.class)
+				.setParameter("identityKey", author.getKey())
+				.getResultList();
+	}
+	
 	public void delete(List<? extends QuestionItemShort> items) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		for(QuestionItemShort item:items) {

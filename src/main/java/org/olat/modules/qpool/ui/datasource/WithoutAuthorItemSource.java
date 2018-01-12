@@ -24,15 +24,15 @@ import org.olat.core.id.Roles;
 
 /**
  * 
- * Initial date: 10.01.2018<br>
+ * Initial date: 12.01.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MissingTaxonomyLevelItemSource extends AllItemsSource {
+public class WithoutAuthorItemSource extends AllItemsSource {
 
-	public MissingTaxonomyLevelItemSource(Identity me, Roles roles, String name) {
+	public WithoutAuthorItemSource(Identity me, Roles roles, String name) {
 		super(me, roles, name);
-		getDefaultParams().setMissingTaxonomyLevelOnly(true);
+		getDefaultParams().setWithoutAuthorOnly(true);
 	}
 
 }

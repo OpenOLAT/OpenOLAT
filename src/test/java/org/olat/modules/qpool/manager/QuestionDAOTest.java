@@ -226,6 +226,26 @@ public class QuestionDAOTest extends OlatTestCase {
 		Assert.assertTrue(items.size() >= 1);
 		Assert.assertTrue(items.contains(item));	
 	}
+	
+	@Test
+	public void getItemsWithOneAuthor() {
+		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("QOwn-all-" + UUID.randomUUID().toString());
+		QuestionItem item1 = questionDao.createAndPersist(id, "NGC all", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		QuestionItem item2 = questionDao.createAndPersist(id, "NGC all", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		QuestionItem item3 = questionDao.createAndPersist(id, "NGC all", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, fibType);
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsUser("QOwn-all-" + UUID.randomUUID().toString());
+		questionDao.addAuthors(Collections.singletonList(id2), item3);
+		dbInstance.commitAndCloseSession();
+		
+		List<QuestionItemShort> itemsWithOneAuthor = questionDao.getItemsWithOneAuthor(id);
+		
+		Assert.assertNotNull(itemsWithOneAuthor);
+		Assert.assertTrue(itemsWithOneAuthor.size() == 2);
+		Assert.assertTrue(itemsWithOneAuthor.contains(item1));	
+		Assert.assertTrue(itemsWithOneAuthor.contains(item2));	
+	}
+
 
 	@Test
 	public void getNumOfQuestions() {

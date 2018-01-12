@@ -687,8 +687,15 @@ public class QItemQueriesDAO {
 			sb.append("  where rating.resId=item.key and rating.resName='QuestionItem'");
 			sb.append("    and rating.creator.key=:excludeRatorKey)");
 		}
-		if (params.isMissingTaxonomyLevelOnly()) {
+		if (params.isWithoutTaxonomyLevelOnly()) {
 			sb.append(" and taxonomyLevel is null");
+		}
+		if (params.isWithoutAuthorOnly()) {
+			sb.append(" and not exists (").append("select sgmi.key from ");
+			sb.append(SecurityGroupMembershipImpl.class.getName()).append(" as sgmi");
+			sb.append(" inner join sgmi.identity ident");
+			sb.append(" where sgmi.securityGroup=item.ownerGroup");
+			sb.append(" )");
 		}
 	}
 

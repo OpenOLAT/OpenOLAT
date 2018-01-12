@@ -38,6 +38,7 @@ import org.olat.core.commons.persistence.DefaultResultInfos;
 import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
+import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -118,6 +119,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Autowired
 	private QuestionItemDAO questionItemDao;
 	@Autowired
+	private QPoolFileStorage qpoolFileStorage;
+	@Autowired
 	private QuestionPoolModule qpoolModule;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -134,6 +137,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Autowired
 	private CommentAndRatingService commentAndRatingService;
 	@Autowired
+	private MarkManager markManager;
+	@Autowired
 	private ReviewService reviewService;
 
 	@Override
@@ -142,14 +147,28 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			return; //nothing to do
 		}
 		
+		List<SecurityGroup> secGroups = new ArrayList<>();
+		for (QuestionItemShort item: items) {
+			markManager.deleteMarks(item);
+			commentAndRatingService.deleteAllIgnoringSubPath(item);
+			QuestionItem loadedItem = loadItemById(item.getKey());
+			if (loadedItem instanceof QuestionItemImpl) {
+				QuestionItemImpl itemImpl = (QuestionItemImpl) loadedItem;
+				qpoolFileStorage.deleteDir(itemImpl.getDirectory());
+				secGroups.add(itemImpl.getOwnerGroup());
+			}
+			dbInstance.intermediateCommit();
+		}
+		
 		poolDao.removeFromPools(items);
 		questionItemDao.removeFromShares(items);
 		collectionDao.deleteItemFromCollections(items);
-		for (QuestionItemShort item: items) {
-			commentAndRatingService.deleteAllIgnoringSubPath(item);
-		}
-		//TODO unmark
 		questionItemDao.delete(items);
+		
+		// Delete SecurityGroup after the item to avoid foreign key constraint violation.
+		for (SecurityGroup secGroup: secGroups) {
+			securityManager.deleteSecurityGroup(secGroup);
+		}
 		
 		for(QuestionItemShort item:items) {
 			lifeIndexer.deleteDocument(QItemDocument.TYPE, item.getKey());

@@ -30,47 +30,47 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.QuestionsController;
-import org.olat.modules.qpool.ui.datasource.MissingTaxonomyLevelItemSource;
+import org.olat.modules.qpool.ui.datasource.WithoutAuthorItemSource;
 
 /**
  * 
- * Initial date: 17.12.2017<br>
+ * Initial date: 12.01.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MissingTaxonomyLevelTreeNode extends GenericTreeNode implements ControllerTreeNode {
+public class WithoutAuthorTreeNode extends GenericTreeNode implements ControllerTreeNode {
 
-	private static final long serialVersionUID = -4546025987046093829L;
-	
-	private static final String MISSING_TAXONOMY_LEVEL = "MissingTaxonomyLevel";
-	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType(MISSING_TAXONOMY_LEVEL);
+	private static final long serialVersionUID = -1425835238632839745L;
+
+	private static final String WITHOUT_AUTHOR = "WithoutAuthor";
+	public static final OLATResourceable ORES = OresHelper.createOLATResourceableType(WITHOUT_AUTHOR);
 	
 	private final TooledStackedPanel stackPanel;
 	private QuestionsController questionsCtrl;
 	
 	private final QPoolSecurityCallback securityCallback;
 
-	public MissingTaxonomyLevelTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback, String title) {
+	public WithoutAuthorTreeNode(TooledStackedPanel stackPanel, QPoolSecurityCallback securityCallback, String title) {
 		super();
 		this.stackPanel = stackPanel;
 		this.securityCallback = securityCallback;
 		
 		this.setTitle(title);
 		
-		this.setUserObject(MISSING_TAXONOMY_LEVEL);
+		this.setUserObject(WITHOUT_AUTHOR);
 	}
 	
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl) {
 		if(questionsCtrl == null) {
-			QuestionItemsSource source = new MissingTaxonomyLevelItemSource(
+			QuestionItemsSource source = new WithoutAuthorItemSource(
 					ureq.getIdentity(),
 					ureq.getUserSession().getRoles(),
-					MISSING_TAXONOMY_LEVEL); 
+					WITHOUT_AUTHOR); 
 			WindowControl swControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ORES, null,
 					wControl, true);
 			questionsCtrl = new QuestionsController(ureq, swControl, stackPanel, source, securityCallback,
-					MISSING_TAXONOMY_LEVEL, true);
+					WITHOUT_AUTHOR, true);
 		} else {
 			questionsCtrl.updateSource();
 		}

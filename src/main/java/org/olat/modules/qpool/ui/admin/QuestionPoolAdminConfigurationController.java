@@ -74,6 +74,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 	private MultipleSelectionElement collectionsEnabledEl;
 	private MultipleSelectionElement poolsEnabledEl;
 	private MultipleSelectionElement sharesEnabledEl;
+	private MultipleSelectionElement deleteQuestionsWithoutAuthorEl;
 	private MultipleSelectionElement poolManagerRightsEl;
 	private SingleSelection taxonomyTreeEl;
 	
@@ -122,6 +123,12 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		sharesEnabledEl = uifactory.addCheckboxesHorizontal("shares.enabled", moduleCont, onKeys, onValues);
 		if (qpoolModule.isSharesEnabled()) {
 			sharesEnabledEl.select(onKeys[0], true);
+		}
+		
+		deleteQuestionsWithoutAuthorEl = uifactory.addCheckboxesHorizontal("delete.qustions.without.author", moduleCont, onKeys, onValues);
+		deleteQuestionsWithoutAuthorEl.setHelpTextKey("delete.qustions.without.author.info", null);
+		if (qpoolModule.isDeleteQuestionsWithoutAuthor()) {
+			deleteQuestionsWithoutAuthorEl.select(onKeys[0], true);
 		}
 
 		List<Taxonomy> taxonomyList = taxonomyService.getTaxonomyList();
@@ -235,6 +242,9 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 
 		boolean sharesEnabled = sharesEnabledEl.isAtLeastSelected(1);
 		qpoolModule.setSharesEnabled(sharesEnabled);
+		
+		boolean deleteQuestionsWithoutAuthor = deleteQuestionsWithoutAuthorEl.isAtLeastSelected(1);
+		qpoolModule.setDeleteQuestionsWithoutAuthor(deleteQuestionsWithoutAuthor);
 		
 		String selectedTaxonomyQPoolKey = taxonomyTreeEl.getSelectedKey();
 		qpoolModule.setTaxonomyQPoolKey(selectedTaxonomyQPoolKey);

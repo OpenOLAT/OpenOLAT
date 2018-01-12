@@ -342,6 +342,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.edubase.manager.EdubaseManagerImplTest.class,
 	org.olat.modules.fo.WordCountTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolServiceImplTest.class,
+	org.olat.modules.qpool.manager.QuestionPoolUserDataDeletableTest.class,
 	org.olat.modules.qpool.manager.review.LowerLimitProviderTest.class,
 	org.olat.modules.qpool.manager.review.ReviewServiceImplTest.class,
 	org.olat.modules.qpool.ui.metadata.QPoolTaxonomyTreeBuilderTest.class,

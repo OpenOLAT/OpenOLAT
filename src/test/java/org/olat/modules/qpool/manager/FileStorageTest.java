@@ -61,4 +61,18 @@ public class FileStorageTest extends OlatTestCase {
 		Assert.assertNotNull(dir2);
 		Assert.assertFalse(dir1.equals(dir2));
 	}
+	
+	@Test
+	public void testDeleteDir() {
+		String uuid = UUID.randomUUID().toString();
+		String dir = qpoolFileStorage.generateDir(uuid);
+		VFSContainer container = qpoolFileStorage.getContainer(dir);
+		container.createChildLeaf("abc.txt");
+		container.createChildLeaf("xyzc.txt");
+		Assert.assertTrue(container.getItems().size() > 0);
+
+		qpoolFileStorage.deleteDir(dir);
+		
+		Assert.assertTrue(container.getParentContainer().resolve(container.getName()) == null);
+	}
 }

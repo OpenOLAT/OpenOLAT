@@ -54,13 +54,16 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private static final String COLLECTIONS_ENABLED = "collections.enabled";
 	private static final String POOLS_ENABLED = "pools.enabled";
 	private static final String SHARES_ENABLED = "shares.enabled";
+	private static final String TAXONOMY_QPOOL_KEY = "taxonomy.qpool.key";
+	public static final String DEFAULT_TAXONOMY_QPOOL_IDENTIFIER = "QPOOL";
+	private static final String DELETE_QUESTIONS_WITHOUT_AUTHOR = "delete.questions.without.author";
+	
 	private static final String REVIEW_PROCESS_ENABLED = "review.process.enabled";
 	private static final String REVIEW_DECISION_TYPE = "review.decision.type";
 	private static final String REVIEW_DECISION_NUMBER_OF_RATINGS = "review.decision.number.of.ratings";
 	private static final String REVIEW_LOWER_LIMIT = "review.decision.lower.limit";
 	private static final String FINAL_VISIBLE_TEACH = "final.visible.teach";
-	private static final String TAXONOMY_QPOOL_KEY = "taxonomy.qpool.key";
-	public static final String DEFAULT_TAXONOMY_QPOOL_IDENTIFIER = "QPOOL";
+	
 	private static final String POOL_ADMIN_METADATA = "pool.admin.metadata";
 	private static final String POOL_ADMIN_STATUS = "pool.admin.status";
 	private static final String POOL_ADMIN_REVIEW_PROCESS = "pool.admin.review.process";
@@ -73,10 +76,12 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private boolean collectionsEnabled = true;
 	private boolean poolsEnabled = true;
 	private boolean sharesEnabled = true;
+	private String taxonomyQPoolKey;
+	private boolean deleteQuestionsWithoutAuthor = false;
+
 	private boolean reviewProcessEnabled = false;
 	private String reviewDecisionType = ProcesslessDecisionProvider.TYPE;
 	private boolean finalVisibleTeach = false;
-	private String taxonomyQPoolKey;
 	
 	private boolean poolAdminAllowedToEditMetadata = false;
 	private boolean poolAdminAllowedToEditStatus = false;
@@ -145,6 +150,11 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		String reviewProcessEnabledObj = getStringPropertyValue(REVIEW_PROCESS_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(reviewProcessEnabledObj)) {
 			reviewProcessEnabled = "true".equals(reviewProcessEnabledObj);
+		}
+		
+		String deleteQuestionsWithoutAuthorObj = getStringPropertyValue(DELETE_QUESTIONS_WITHOUT_AUTHOR, true);
+		if(StringHelper.containsNonWhitespace(deleteQuestionsWithoutAuthorObj)) {
+			deleteQuestionsWithoutAuthor = "true".equals(deleteQuestionsWithoutAuthorObj);
 		}
 		
 		String reviewDecisionTypeObj = getStringPropertyValue(REVIEW_DECISION_TYPE, true);
@@ -271,6 +281,15 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	public void setSharesEnabled(boolean sharesEnabled) {
 		this.sharesEnabled = sharesEnabled;
 		setStringProperty(SHARES_ENABLED, Boolean.toString(sharesEnabled), true);
+	}
+
+	public boolean isDeleteQuestionsWithoutAuthor() {
+		return deleteQuestionsWithoutAuthor;
+	}
+
+	public void setDeleteQuestionsWithoutAuthor(boolean deleteQuestionsWithoutAuthor) {
+		this.deleteQuestionsWithoutAuthor = deleteQuestionsWithoutAuthor;
+		setStringProperty(DELETE_QUESTIONS_WITHOUT_AUTHOR, Boolean.toString(deleteQuestionsWithoutAuthor), true);
 	}
 
 	public boolean isReviewProcessEnabled() {

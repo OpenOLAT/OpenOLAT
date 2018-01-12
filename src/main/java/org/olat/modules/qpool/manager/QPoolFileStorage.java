@@ -68,4 +68,11 @@ public class QPoolFileStorage {
 		VFSContainer container = fileStorage.getContainer(dir);
 		return ((LocalImpl)container).getBasefile();
 	}
+
+	public void deleteDir(String dir) {
+		VFSContainer container = fileStorage.getContainer(dir);
+		if (container != null) {
+			container.delete();
+		}
+	}
 }

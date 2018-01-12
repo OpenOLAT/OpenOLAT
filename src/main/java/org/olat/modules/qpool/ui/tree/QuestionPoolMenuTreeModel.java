@@ -355,7 +355,10 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 		TreeNode node = new AllQuestionsTreeNode(stackPanel, securityCallback, translator.translate("menu.queries.all"));
 		queriesNode.addChild(node);
 		
-		node = new MissingTaxonomyLevelTreeNode(stackPanel, securityCallback, translator.translate("menu.queries.missing.taxonomy.level"));
+		node = new WithoutTaxonomyLevelTreeNode(stackPanel, securityCallback, translator.translate("menu.queries.without.taxonomy.level"));
+		queriesNode.addChild(node);
+		
+		node = new WithoutAuthorTreeNode(stackPanel, securityCallback, translator.translate("menu.queries.without.author"));
 		queriesNode.addChild(node);
 		
 		setFirstChildAsDelegate(queriesNode);
