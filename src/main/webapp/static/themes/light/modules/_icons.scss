@@ -415,9 +415,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qitem_endOfLife:before { content: $fa-var-trash-o;}
 .o_icon_qitem_finalVersion:before { content: $fa-var-check;}
 .o_icon_qitem_export:before { content: $fa-var-download;}
+.o_icon_qitem_hide_metadata:before { content: $fa-var-toggle-on;}
 .o_icon_qitem_review:before { content: $fa-var-star-o;}
 .o_icon_qitem_revised:before { content: $fa-var-rotate-left;}
 .o_icon_qitem_share:before { content: $fa-var-share;}
+.o_icon_qitem_show_metadata:before { content: $fa-var-toggle-off;}
 .o_icon_qitem_status:before { content: $fa-var-arrow-right;}
 
 /* notification icons */

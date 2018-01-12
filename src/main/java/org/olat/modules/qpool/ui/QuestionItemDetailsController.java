@@ -350,9 +350,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 
 	private void initMetadataTools() {
 		showMetadataLink = LinkFactory.createToolLink("metadata.show", translate("metadata.show"), this);
-		showMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
+		showMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_show_metadata");
 		hideMetadataLink = LinkFactory.createToolLink("metadata.hide", translate("metadata.hide"), this);
-		hideMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
+		hideMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_hide_metadata");
 		if (showMetadatas != null && showMetadatas) {
 			doShowMetadata();
 		} else {
