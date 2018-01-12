@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui;
+package org.olat.modules.portfolio.ui.shared;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +43,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
@@ -50,7 +51,9 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.MySharedItemRow;
-import org.olat.modules.portfolio.ui.MySharedItemsDataModel.MySharedItemCols;
+import org.olat.modules.portfolio.ui.BinderController;
+import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.modules.portfolio.ui.shared.MySharedItemsDataModel.MySharedItemCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,8 +75,8 @@ public class MySharedItemsController extends FormBasicController implements Acti
 	
 	public MySharedItemsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, "shared");
+		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
 		this.stackPanel = stackPanel;
-		
 		initForm(ureq);
 		loadModel(null);
 	}

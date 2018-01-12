@@ -65,6 +65,8 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.portfolio.PageUserInformations;
+import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
@@ -82,6 +84,7 @@ import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.ReadOnlyCommentsSecurityCallback;
 import org.olat.modules.portfolio.ui.renderer.PortfolioRendererHelper;
+import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -185,10 +188,6 @@ public class TableOfContentController extends BasicController implements TooledC
 			printLink.setIconLeftCSS("o_icon o_icon_print");
 			printLink.setPopup(new LinkPopupSettings(950, 750, "binder"));
 			exportTools.addComponent(printLink);
-			
-			//exportBinderAsPdfLink = LinkFactory.createToolLink("export.binder.pdf", translate("export.binder.pdf"), this);
-			//exportBinderAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
-			//exportTools.addComponent(exportBinderAsPdfLink);
 		}
 		
 		if(secCallback.canDeleteBinder(binder)) {
@@ -232,7 +231,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		Map<Long,SectionRow> sectionMap = new HashMap<>();
 		
 		List<AssessmentSection> assessmentSections = portfolioService.getAssessmentSections(binder, getIdentity());
-		Map<Long,Long> numberOfCommentsMap = portfolioService.getNumberOfComments(binder);
+		
 		
 		Map<Section,AssessmentSection> sectionToAssessmentSectionMap = new HashMap<>();
 		for(AssessmentSection assessmentSection:assessmentSections) {
@@ -270,20 +269,8 @@ public class TableOfContentController extends BasicController implements TooledC
 				sectionMap.put(section.getKey(), sectionRow);
 			}
 		}
-
-		List<Page> pages = portfolioService.getPages(binder, null);
-		for(Page page:pages) {
-			Section section = page.getSection();
-			if(section != null && sectionMap.containsKey(section.getKey())) {
-				boolean viewElement = secCallback.canViewElement(page);
-				boolean viewTitleElement = secCallback.canViewTitleOfElement(page);
-				if(viewElement || viewTitleElement) {
-					SectionRow sectionRow = sectionMap.get(section.getKey());
-					PageRow pageRow = forgePageRow(page, numberOfCommentsMap, viewElement);
-					sectionRow.getPages().add(pageRow);
-				}
-			}
-		}
+		loadPagesModel(sectionMap);
+		
 		mainVC.contextPut("sections", sectionRows);
 		sectionList = sectionRows;
 		
@@ -304,6 +291,40 @@ public class TableOfContentController extends BasicController implements TooledC
 		if(newAssignmentLink != null && newAssignmentLink.isVisible() != hasSection) {
 			newAssignmentLink.setVisible(hasSection);
 			stackPanel.setDirty(true);
+		}
+	}
+	
+	private void loadPagesModel(Map<Long,SectionRow> sectionMap) {
+		boolean showUserInfos = secCallback.canPageUserInfosStatus();
+		mainVC.contextPut("userInfos", Boolean.valueOf(showUserInfos));
+		Map<Long,PageUserInformations> userInfosToPages = new HashMap<>();
+		if(showUserInfos) {
+			List<PageUserInformations> userInfos = portfolioService.getPageUserInfos(binder, getIdentity());
+			for(PageUserInformations userInfo:userInfos) {
+				userInfosToPages.put(userInfo.getPage().getKey(), userInfo);
+			}
+			mainVC.contextPut("userInfosRenderer", new SharedPageStatusCellRenderer(getTranslator()));
+		}
+		
+		Map<Long,Long> numberOfCommentsMap = portfolioService.getNumberOfComments(binder);
+		List<Page> pages = portfolioService.getPages(binder, null);
+		for(Page page:pages) {
+			Section section = page.getSection();
+			if(section != null && sectionMap.containsKey(section.getKey())) {
+				boolean viewElement = secCallback.canViewElement(page);
+				boolean viewTitleElement = secCallback.canViewTitleOfElement(page);
+				if(viewElement || viewTitleElement) {
+					SectionRow sectionRow = sectionMap.get(section.getKey());
+					PageRow pageRow = forgePageRow(page, numberOfCommentsMap, viewElement);
+					sectionRow.getPages().add(pageRow);
+					if(showUserInfos) {
+						PageUserInformations userInfos = userInfosToPages.get(pageRow.getPage().getKey());
+						if(userInfos != null) {
+							pageRow.setUserInfosStatus(userInfos.getStatus());
+						}
+					}
+				}
+			}
 		}
 	}
 	
@@ -838,6 +859,7 @@ public class TableOfContentController extends BasicController implements TooledC
 		private final Page page;
 		private Link openLink;
 		private Link commentLink;
+		private PageUserStatus userInfosStatus;
 
 		public PageRow(Page page) {
 			this.page = page;
@@ -854,6 +876,14 @@ public class TableOfContentController extends BasicController implements TooledC
 		public String getCssClassStatus() {
 			return page.getPageStatus() == null
 					? PageStatus.draft.cssClass() : page.getPageStatus().cssClass();
+		}
+
+		public PageUserStatus getUserInfosStatus() {
+			return userInfosStatus;
+		}
+
+		public void setUserInfosStatus(PageUserStatus userInfosStatus) {
+			this.userInfosStatus = userInfosStatus;
 		}
 
 		public Link getOpenLink() {
@@ -958,7 +988,5 @@ public class TableOfContentController extends BasicController implements TooledC
 		public void setDownSectionLink(Link downSectionLink) {
 			this.downSectionLink = downSectionLink;
 		}
-		
-		
 	}
 }

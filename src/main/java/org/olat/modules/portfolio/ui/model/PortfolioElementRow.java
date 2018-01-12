@@ -30,6 +30,7 @@ import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 
@@ -44,6 +45,7 @@ public class PortfolioElementRow {
 	private final Page page;
 	private final Section section;
 	private Assignment assignment;
+	private PageUserStatus userInfosStatus;
 	private final AssessmentSection assessmentSection;
 	
 	private String imageUrl;
@@ -149,6 +151,14 @@ public class PortfolioElementRow {
 		return page.getSummary();
 	}
 	
+	public PageUserStatus getUserInfosStatus() {
+		return userInfosStatus;
+	}
+
+	public void setUserInfosStatus(PageUserStatus userInfosStatus) {
+		this.userInfosStatus = userInfosStatus;
+	}
+
 	public Date getLastModified() {
 		return page.getLastModified();
 	}
@@ -178,7 +188,8 @@ public class PortfolioElementRow {
 	}
 
 	public PageStatus getPageStatus() {
-		return page == null ? null : page.getPageStatus();
+		if(page == null) return null;
+		return page.getPageStatus() == null ? PageStatus.draft : page.getPageStatus();
 	}
 	
 	public String getPageStatusI18nKey() {

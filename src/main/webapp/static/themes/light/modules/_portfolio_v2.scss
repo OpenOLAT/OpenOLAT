@@ -356,14 +356,6 @@
 		fill: $o-portfolio-entry-deleted-color;
 	}
 }
-/* helper to position context help button next to timeline */
-.o_portfolio_title_help_helper {
-	display: inline-block; 
-	float: right; 
-	position: relative; 
-	top: 1em;
-	right: 1em;
-}
 
 .o_pf_comments {
 	margin-top: 3em;
@@ -666,6 +658,38 @@
 
 .o_portfolio_toc ul>li>ul {
 	padding-left:1.5em;
+}
+
+.o_portfolio div {
+
+	span.badge {
+		padding: 3px 7px;
+	}
+
+	.o_portfolio_entry_draft {
+		background-color: $o-portfolio-entry-draft-color;
+	}
+	.o_portfolio_published {
+		background-color: $o-portfolio-entry-published-color;
+	}
+	.o_portfolio_entry_revision {
+		background-color: $o-portfolio-entry-inrevision-color;
+	}
+	.o_portfolio_entry_closed {
+		background-color: $o-portfolio-entry-closed-color;
+	}
+	.o_portfolio_entry_deleted {
+		background-color: $o-portfolio-entry-deleted-color;
+	}
+	.o_portfolio_entry_incoming {
+		background-color: $o-portfolio-entry-incoming-color;
+	}
+	.o_portfolio_entry_inprocess {
+		background-color: $o-portfolio-entry-inprocess-color;
+	}
+	.o_portfolio_entry_done {
+		background-color: $o-portfolio-entry-done-color;
+	}
 }
 
 .o_portfolio_content {

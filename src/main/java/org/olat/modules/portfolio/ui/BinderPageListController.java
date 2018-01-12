@@ -67,6 +67,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.CategoryToElement;
 import org.olat.modules.portfolio.Page;
+import org.olat.modules.portfolio.PageUserInformations;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
 import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.Section;
@@ -75,6 +76,7 @@ import org.olat.modules.portfolio.ui.component.TimelinePoint;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
+import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,10 +136,6 @@ public class BinderPageListController extends AbstractPageListController {
 			printLink.setIconLeftCSS("o_icon o_icon_print");
 			printLink.setPopup(new LinkPopupSettings(950, 750, "binder"));
 			exportTools.addComponent(printLink);
-			
-			//exportBinderAsPdfLink = LinkFactory.createToolLink("export.binder.pdf", translate("export.binder.pdf"), this);
-			//exportBinderAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
-			//exportTools.addComponent(exportBinderAsPdfLink);
 		}
 		
 		if(secCallback.canAddSection()) {
@@ -270,6 +268,17 @@ public class BinderPageListController extends AbstractPageListController {
 				}
 			}
 		}
+		
+		boolean userInfos = secCallback.canPageUserInfosStatus();
+		Map<Long,PageUserInformations> userInfosToPage = new HashMap<>();
+		rowVC.contextPut("userInfos", Boolean.valueOf(userInfos));
+		if(userInfos) {
+			rowVC.contextPut("userInfosRenderer", new SharedPageStatusCellRenderer(getTranslator()));
+			List<PageUserInformations> userInfoList = portfolioService.getPageUserInfos(binder, getIdentity());
+			for(PageUserInformations userInfo:userInfoList) {
+				userInfosToPage.put(userInfo.getPage().getKey(), userInfo);
+			}
+		}
 
 		List<Page> pages = portfolioService.getPages(binder, searchString);
 		for (Page page : pages) {
@@ -295,6 +304,13 @@ public class BinderPageListController extends AbstractPageListController {
 				newAssignmentButton.setCustomEnabledLinkCSS("btn btn-primary o_sel_pf_new_assignment");
 				newAssignmentButton.setUserObject(pageRow);
 				pageRow.setNewAssignmentLink(newAssignmentButton);
+			}
+			
+			if(userInfos) {
+				PageUserInformations infos = userInfosToPage.get(page.getKey());
+				if(infos != null) {
+					pageRow.setUserInfosStatus(infos.getStatus());
+				}
 			}
 			
 			if(section != null) {

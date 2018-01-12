@@ -47,6 +47,8 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.model.BinderRefImpl;
 import org.olat.modules.portfolio.ui.model.BinderRow;
+import org.olat.modules.portfolio.ui.shared.MySharedItemsController;
+import org.olat.modules.portfolio.ui.shared.SharedItemsOverviewController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,13 +63,13 @@ public class PortfolioHomeController extends BasicController implements Activate
 	private Link editLastEntryLink, createNewEntryLink, showHelpLink, goToTrashLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
-	
+
+	private TrashController deletedItemsCtrl;
 	private MyPageListController myPageListCtrl;
 	private MediaCenterController mediaCenterCtrl;
-	private SharedItemsController sharedWithMeCtrl;
 	private BinderListController myPortfolioListCtrl;
 	private MySharedItemsController mySharedItemsCtrl;
-	private TrashController deletedItemsCtrl;
+	private SharedItemsOverviewController sharedWithMeCtrl;
 	
 	@Autowired
 	private PortfolioV2Module portfolioModule;
@@ -131,7 +133,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		} else if(mySharedItemsLink == source) {
 			doOpenMySharedItems(ureq);
 		} else if(sharedItemsLink == source) {
-			doOpenSharedWithMe(ureq);
+			doOpenSharedWithMe(ureq).activate(ureq, null, null);
 		} else if(mediaCenterLink == source) {
 			doOpenMediaCenter(ureq);
 		} else if(editLastEntryLink == source) {
@@ -183,13 +185,13 @@ public class PortfolioHomeController extends BasicController implements Activate
 		return mediaCenterCtrl;
 	}
 	
-	private SharedItemsController doOpenSharedWithMe(UserRequest ureq) {
+	private SharedItemsOverviewController doOpenSharedWithMe(UserRequest ureq) {
 		removeAsListenerAndDispose(sharedWithMeCtrl);
 		stackPanel.popUpToRootController(ureq);
 		
 		OLATResourceable pagesOres = OresHelper.createOLATResourceableInstance("SharedWithMe", 0l);
 		WindowControl swControl = addToHistory(ureq, pagesOres, null);
-		sharedWithMeCtrl = new SharedItemsController(ureq, swControl, stackPanel);
+		sharedWithMeCtrl = new SharedItemsOverviewController(ureq, swControl, stackPanel);
 		listenTo(sharedWithMeCtrl);
 		stackPanel.pushController(translate("shared.with.me"), sharedWithMeCtrl);
 		return sharedWithMeCtrl;

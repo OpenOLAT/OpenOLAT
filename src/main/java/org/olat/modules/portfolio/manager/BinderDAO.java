@@ -83,6 +83,8 @@ public class BinderDAO {
 	@Autowired
 	private AssignmentDAO assignmentDao;
 	@Autowired
+	private PageUserInfosDAO pageUserInfosDao;
+	@Autowired
 	private AssessmentSectionDAO assessmentSectionDao;
 	@Autowired
 	private BinderUserInformationsDAO userInformationsDAO;
@@ -390,6 +392,7 @@ public class BinderDAO {
 			for(Page page:pages) {
 				if(page != null) {
 					rows += pageDao.deletePage(page);
+					rows += pageUserInfosDao.delete(page);
 				}
 			}
 			
@@ -601,6 +604,7 @@ public class BinderDAO {
 		for(Page page:pages) {
 			if(page != null) {
 				pageDao.deletePage(page);
+				pageUserInfosDao.delete(page);
 				section.getPages().remove(page);
 			}
 		}

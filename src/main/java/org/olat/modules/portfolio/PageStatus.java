@@ -21,6 +21,8 @@ package org.olat.modules.portfolio;
 
 import java.util.Date;
 
+import org.olat.core.util.StringHelper;
+
 /**
  * Define the status for a page / entry. And some utilitiy methods.
  * 
@@ -50,6 +52,13 @@ public enum PageStatus {
 
 	public String i18nKey() {
 		return i18nKey;
+	}
+	
+	public static final PageStatus valueOfOrNull(String val) {
+		if(StringHelper.containsNonWhitespace(val)) {
+			return PageStatus.valueOf(val);
+		}
+		return null;
 	}
 
 	public static final boolean isValueOf(String val) {

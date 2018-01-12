@@ -85,6 +85,7 @@ import org.olat.modules.portfolio.ui.editor.handler.HTMLRawPageElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.SpacerElementHandler;
 import org.olat.modules.portfolio.ui.editor.handler.TitlePageElementHandler;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
+import org.olat.modules.portfolio.ui.event.DonePageEvent;
 import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
@@ -113,6 +114,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private PageController pageCtrl;
 	private PageEditorController pageEditCtrl;
 	private RestorePageController restorePageCtrl;
+	private ConfirmClosePageController confirmDonePageCtrl;
 	private DialogBoxController confirmPublishCtrl, confirmRevisionCtrl, confirmCloseCtrl,
 		confirmReopenCtrl, confirmMoveToTrashCtrl, confirmDeleteCtrl;
 	private PageMetadataEditController editMetadataCtrl;
@@ -313,6 +315,8 @@ public class PageRunController extends BasicController implements TooledControll
 				doConfirmRevision(ureq);
 			} else if(event instanceof ClosePageEvent) {
 				doConfirmClose(ureq);
+			} else if(event instanceof DonePageEvent) {
+				doConfirmDone(ureq);
 			} else if(event instanceof ReopenPageEvent) {
 				doConfirmReopen(ureq);
 			} else if(event == Event.CHANGED_EVENT) {
@@ -341,6 +345,7 @@ public class PageRunController extends BasicController implements TooledControll
 		} else if(confirmCloseCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				doClose(ureq);
+				fireEvent(ureq, new ClosePageEvent());
 			}
 		} else if(confirmReopenCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event)) {
@@ -354,6 +359,12 @@ public class PageRunController extends BasicController implements TooledControll
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				doDelete(ureq);
 			}
+		} else if(confirmDonePageCtrl == source) {
+			if(event instanceof ClosePageEvent) {
+				doClose(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -361,9 +372,11 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDonePageCtrl);
 		removeAsListenerAndDispose(editMetadataCtrl);
 		removeAsListenerAndDispose(restorePageCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmDonePageCtrl = null;
 		editMetadataCtrl = null;
 		restorePageCtrl = null;
 		cmc = null;
@@ -465,6 +478,16 @@ public class PageRunController extends BasicController implements TooledControll
 		loadMeta(ureq);
 		loadModel(ureq, true);
 		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doConfirmDone(UserRequest ureq) {
+		confirmDonePageCtrl = new ConfirmClosePageController(ureq, getWindowControl(), page);
+		listenTo(confirmDonePageCtrl);
+		
+		String title = translate("close.page");
+		cmc = new CloseableModalController(getWindowControl(), null, confirmDonePageCtrl.getInitialComponent(), true, title, false);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doConfirmReopen(UserRequest ureq) {

@@ -1711,6 +1711,18 @@ create table o_pf_binder_user_infos (
    primary key (id)
 );
 
+create table o_pf_page_user_infos (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  p_mark number default 0,
+  p_status varchar2(16 char) default 'incoming' not null,
+  p_recentlaunchdate date not null,
+  fk_identity_id number(20) not null,
+  fk_page_id number(20) not null,
+  primary key (id)
+);
+
 create table o_eva_form_session (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
@@ -3170,6 +3182,11 @@ alter table o_pf_binder_user_infos add constraint binder_user_to_identity_idx fo
 create index idx_binder_user_to_ident_idx on o_pf_binder_user_infos (fk_identity);
 alter table o_pf_binder_user_infos add constraint binder_user_binder_idx foreign key (fk_binder) references o_pf_binder (id);
 create index idx_binder_user_binder_idx on o_pf_binder_user_infos (fk_binder);
+
+alter table o_pf_page_user_infos add constraint user_pfpage_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_user_pfpage_idx on o_pf_page_user_infos (fk_identity_id);
+alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_pf_page (id);
+create index idx_page_pfpage_idx on o_pf_page_user_infos (fk_page_id);
 
 -- evaluation form
 alter table o_eva_form_session add constraint eva_session_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);

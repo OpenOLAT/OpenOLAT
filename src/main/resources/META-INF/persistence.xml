@@ -178,6 +178,7 @@
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>
 		<class>org.olat.modules.portfolio.model.PageImpl</class>
+		<class>org.olat.modules.portfolio.model.PageUserInformationsImpl</class>
 		<class>org.olat.modules.portfolio.model.PageBodyImpl</class>
 		<class>org.olat.modules.portfolio.model.AbstractPart</class>
 		<class>org.olat.modules.portfolio.model.MediaImpl</class>

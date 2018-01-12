@@ -52,7 +52,8 @@
 				#if($r.isNotEmpty(${section.getPages()}))
 				<ul class="list-unstyled">
 					#foreach($page in $section.pages)
-						<li><i class="o_icon $page.cssClassStatus o_icon-fw"> </i> $r.render($page.openLink) #if($r.isNotNull($page.commentLink)) $r.render($page.commentLink) #end</li>
+						<li><i class="o_icon $page.cssClassStatus o_icon-fw"> </i> $r.render($page.openLink) #if($r.isNotNull($page.commentLink)) $r.render($page.commentLink) #end
+						#if($r.isTrue($userInfos)) $userInfosRenderer.renderPageRow($page)#end</li>
 					#end
 				</ul>
 				#end

@@ -122,6 +122,10 @@ public interface BinderSecurityCallback {
 	
 	public boolean canViewAssessment();
 	
+	public boolean canBookmark();
+	
+	public boolean canPageUserInfosStatus();
+	
 
 	public Role getRole();
  

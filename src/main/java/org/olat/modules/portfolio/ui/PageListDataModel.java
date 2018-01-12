@@ -179,6 +179,7 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 				return creationDate;
 			}
 			case publicationDate: return page.getLastPublicationDate();
+			case pageStatus:
 			case status: {
 				if(page.isPage()) {
 					return page.getPageStatus();
@@ -203,9 +204,11 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 				return Boolean.FALSE;
 			}
 			case comment: return page.getCommentFormLink();
+			case viewerStatus: return page;
 		}
 		return null;
 	}
+
 	
 	@Override
 	public DefaultFlexiTableDataModel<PortfolioElementRow> createCopyWithEmptyList() {
@@ -222,7 +225,9 @@ public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioEleme
 		section("table.header.section", true),
 		up("table.header.up", false),
 		down("table.header.down", false),
-		comment("comment.title", true);
+		comment("comment.title", true),
+		pageStatus("table.header.status.user", true),
+		viewerStatus("table.header.status.viewer", true);
 		
 		private final String i18nKey;
 		private final boolean sortable;

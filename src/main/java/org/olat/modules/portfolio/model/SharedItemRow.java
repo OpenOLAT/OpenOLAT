@@ -47,6 +47,7 @@ public class SharedItemRow extends UserPropertiesRow {
 	private int numOfDraftPages = 0;
 	private int numOfInRevisionPages = 0;
 	private int numOfClosedPages = 0;
+	private int numOfNewlyPublishedPages = 0;
 	
 	private boolean expandSections;
 	private List<AssessedBinderSection> sections;
@@ -149,5 +150,13 @@ public class SharedItemRow extends UserPropertiesRow {
 
 	public void setNumOfClosedPages(int numOfClosedPages) {
 		this.numOfClosedPages = numOfClosedPages;
+	}
+
+	public int getNumOfNewlyPublishedPages() {
+		return numOfNewlyPublishedPages;
+	}
+
+	public void setNumOfNewlyPublishedPages(int numOfNewlyPublishedPages) {
+		this.numOfNewlyPublishedPages = numOfNewlyPublishedPages;
 	}
 }

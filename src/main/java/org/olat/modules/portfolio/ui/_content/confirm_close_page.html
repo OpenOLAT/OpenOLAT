@@ -1,0 +1,13 @@
+<div>$r.translate("confirm.close.page")</div>
+#if($r.isNotEmpty($names))
+<div>$r.translate("confirm.close.page.other.coaches")</div>
+<ul>
+	#foreach($name in $names)
+	<li>$name</li>
+	#end
+</ul>
+#end
+<div class="o_button_group">
+	$r.render("cancel")
+	$r.render("close.page")
+</div>

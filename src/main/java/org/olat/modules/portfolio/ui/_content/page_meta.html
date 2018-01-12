@@ -1,4 +1,7 @@
 <div class="o_page_lead #if($imageAlign == "background") o_block_imagebg" style="background-image: url('$mapperThumbnailUrl/${imageName}');" #else " #end>
+	#if($r.available("bookmark"))
+		<div class="pull-right">$r.render("bookmark")</div>
+	#end
 	<h2>$r.escapeHtml($pageTitle) <small>$r.translate("binder.by",$owners)</small></h2>
 	<div class="o_portfolio_page_meta">		
 		#if($r.isNotNull($lastPublicationDate))
@@ -54,6 +57,10 @@
 		#end
 		#if($r.available("reopen.page"))
 			$r.render("reopen.page")
+		#end
+		
+		#if($r.available("userStatus"))
+			<div class="form-inline pull-right">$r.render("userStatus")</div>
 		#end
 	</div>
 	#end

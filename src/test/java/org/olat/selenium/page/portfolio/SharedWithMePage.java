@@ -39,6 +39,16 @@ public class SharedWithMePage {
 		this.browser = browser;
 	}
 	
+	public SharedWithMePage openSharedBindersWithMe() {
+		By sharedBindersBy = By.cssSelector("a.o_sel_shared_binders_seg");
+		browser.findElement(sharedBindersBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By sharedBindersWithMeBy = By.cssSelector("div.o_table_flexi.o_binder_shared_items_listing");
+		OOGraphene.waitElement(sharedBindersWithMeBy, 5, browser);
+		return this;
+	}
+	
 	public SharedWithMePage assertOnBinder(String title) {
 		By binderBy = By.xpath("//div[contains(@class,'o_binder_shared_items_listing')]//td/a[contains(text(),'" + title + "')]");
 		OOGraphene.waitElement(binderBy, 5, browser);
@@ -53,5 +63,4 @@ public class SharedWithMePage {
 		browser.findElement(binderBy).click();
 		return new BinderPage(browser);
 	}
-
 }

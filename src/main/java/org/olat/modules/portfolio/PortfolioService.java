@@ -34,10 +34,12 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.portfolio.model.AccessRightChange;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
+import org.olat.modules.portfolio.model.AssessedPage;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.modules.portfolio.model.CategoryLight;
+import org.olat.modules.portfolio.model.SearchSharePagesParameters;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -217,9 +219,20 @@ public interface PortfolioService {
 	 * Search all binders which are shared with the specified member.
 	 * 
 	 * @param member
+	 * @param searchString
 	 * @return
 	 */
 	public List<AssessedBinder> searchSharedBindersWith(Identity coach, String searchString);
+	
+	/**
+	 * Search the pages in all binders which are shared with the specified member.
+	 * 
+	 * @param member
+	 * @param searchString
+	 * @param bookmarkedOnly If true, search only bookmarked pages
+	 * @return
+	 */
+	public List<AssessedPage> searchSharedPagesWith(Identity coach, SearchSharePagesParameters params);
 
 	/**
 	 * 
@@ -486,6 +499,25 @@ public interface PortfolioService {
 	 * @return
 	 */
 	public Page updatePage(Page page, SectionRef newParentSection);
+	
+	/**
+	 * Get or create the personal informations about a page. The default
+	 * status is set based on the status of the page:
+	 * <ul>
+	 * 	<li>Draft set the status to "New"
+	 *  <li>Closed and deleted to "Done" 
+	 *  <li>The default is "In process"
+	 * </ul>
+	 * 
+	 * @param page The page
+	 * @param identity The identity
+	 * @return The informations
+	 */
+	public PageUserInformations getPageUserInfos(Page page, Identity identity);
+	
+	public List<PageUserInformations> getPageUserInfos(BinderRef binder, IdentityRef identity);
+	
+	public PageUserInformations updatePageUserInfos(PageUserInformations infos);
 	
 
 	public File getPosterImage(Page page);

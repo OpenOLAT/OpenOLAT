@@ -127,6 +127,7 @@ public class BinderUserInfosImpl implements BinderUserInformations, Persistable 
 		this.recentLaunch = recentLaunch;
 	}
 
+	@Override
 	public int getVisit() {
 		return visit;
 	}
@@ -135,6 +136,7 @@ public class BinderUserInfosImpl implements BinderUserInformations, Persistable 
 		this.visit = visit;
 	}
 
+	@Override
 	public Identity getIdentity() {
 		return identity;
 	}
@@ -143,6 +145,7 @@ public class BinderUserInfosImpl implements BinderUserInformations, Persistable 
 		this.identity = identity;
 	}
 
+	@Override
 	public Binder getBinder() {
 		return binder;
 	}

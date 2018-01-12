@@ -1804,6 +1804,18 @@ create table o_pf_binder_user_infos (
    primary key (id)
 );
 
+create table o_pf_page_user_infos (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  p_mark bit default 0,
+  p_status varchar(16) not null default 'incoming',
+  p_recentlaunchdate datetime not null,
+  fk_identity_id bigint not null,
+  fk_page_id bigint not null,
+  primary key (id)
+);
+
 -- evaluation form
 create table o_eva_form_session (
    id bigint not null auto_increment,
@@ -3020,6 +3032,9 @@ alter table o_pf_assignment add constraint pf_assign_form_idx foreign key (fk_fo
 
 alter table o_pf_binder_user_infos add constraint binder_user_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_pf_binder_user_infos add constraint binder_user_binder_idx foreign key (fk_binder) references o_pf_binder (id);
+
+alter table o_pf_page_user_infos add constraint user_pfpage_idx foreign key (fk_identity_id) references o_bs_identity (id);
+alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_pf_page (id);
 
 -- evaluation form
 alter table o_eva_form_session add constraint eva_session_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);

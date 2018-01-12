@@ -17,13 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui;
+package org.olat.modules.portfolio.ui.shared;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -36,14 +39,30 @@ import org.olat.modules.portfolio.model.SharedItemRow;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemRow>
-	implements SortableFlexiTableDataModel<SharedItemRow> {
+public class SharedBindersDataModel extends DefaultFlexiTableDataModel<SharedItemRow>
+	implements SortableFlexiTableDataModel<SharedItemRow>, FilterableFlexiTableModel {
+	
+	protected static final String EMPTY_SECTIONS = "sections-empty";
 	
 	private final Locale locale;
+	private List<SharedItemRow> backups;
 	
-	public SharedItemsDataModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public SharedBindersDataModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
+	}
+
+	@Override
+	public void filter(List<FlexiTableFilter> filters) {
+		String key = filters == null || filters.isEmpty() || filters.get(0) == null ? null : filters.get(0).getFilter();
+		if(SharedBindersDataModel.EMPTY_SECTIONS.equals(key)) {
+			List<SharedItemRow> filteredRows = backups.stream()
+						.filter(r -> r.getNumOfOpenSections() > 0)
+						.collect(Collectors.toList());
+			super.setObjects(filteredRows);
+		} else {
+			super.setObjects(backups);
+		}
 	}
 
 	@Override
@@ -76,16 +95,23 @@ public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemR
 				case draftPage: return itemRow.getNumOfDraftPages();
 				case inRevisionPage: return itemRow.getNumOfInRevisionPages();
 				case closedPage: return itemRow.getNumOfClosedPages();
+				case newlyPublishedPage: return itemRow.getNumOfNewlyPublishedPages();
 			}
 		}
 		
-		int propPos = col - SharedItemsController.USER_PROPS_OFFSET;
+		int propPos = col - SharedBindersController.USER_PROPS_OFFSET;
 		return itemRow.getIdentityProp(propPos);
 	}
 	
 	@Override
-	public SharedItemsDataModel createCopyWithEmptyList() {
-		return new SharedItemsDataModel(getTableColumnModel(), locale);
+	public void setObjects(List<SharedItemRow> objects) {
+		super.setObjects(objects);
+		backups = objects;
+	}
+	
+	@Override
+	public SharedBindersDataModel createCopyWithEmptyList() {
+		return new SharedBindersDataModel(getTableColumnModel(), locale);
 	}
 
 	public enum ShareItemCols implements FlexiSortableColumnDef {
@@ -100,7 +126,8 @@ public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemR
 		recentLaunch("table.header.recentLaunch"),
 		draftPage("table.header.draft"),
 		inRevisionPage("table.header.inRevision"),
-		closedPage("table.header.closed");
+		closedPage("table.header.closed"),
+		newlyPublishedPage("table.header.new");
 		
 		private final String i18nKey;
 		
@@ -127,7 +154,7 @@ public class SharedItemsDataModel extends DefaultFlexiTableDataModel<SharedItemR
 	
 	public static class SharedItemsSorterDelegate extends SortableFlexiTableModelDelegate<SharedItemRow> {
 		
-		public SharedItemsSorterDelegate(SortKey orderBy, SharedItemsDataModel model, Locale locale) {
+		public SharedItemsSorterDelegate(SortKey orderBy, SharedBindersDataModel model, Locale locale) {
 			super(orderBy, model, locale);
 		}
 	}

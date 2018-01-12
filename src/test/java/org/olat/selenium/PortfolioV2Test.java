@@ -743,6 +743,7 @@ public class PortfolioV2Test extends Deployments {
 			.openPortfolioV2();
 		portfolio
 			.openSharedWithMe()
+			.openSharedBindersWithMe()
 			.assertOnBinder(binderTitle)
 			.selectBinder(binderTitle)
 			.selectAssessment()

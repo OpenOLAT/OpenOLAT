@@ -35,5 +35,21 @@ alter table o_dialog_element add constraint dial_el_entry_idx foreign key (fk_en
 alter table o_dialog_element add constraint dial_el_forum_idx foreign key (fk_forum) references o_forum (forum_id);
 create index idx_dial_el_subident_idx on o_dialog_element (d_subident);
 
+-- portfolio
+create table o_pf_page_user_infos (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  lastmodified datetime not null,
+  p_mark bit default 0,
+  p_status varchar(16) not null default 'incoming',
+  p_recentlaunchdate datetime not null,
+  fk_identity_id bigint not null,
+  fk_page_id bigint not null,
+  primary key (id)
+);
+
+alter table o_pf_page_user_infos add constraint user_pfpage_idx foreign key (fk_identity_id) references o_bs_identity (id);
+alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_pf_page (id);
+
 
 

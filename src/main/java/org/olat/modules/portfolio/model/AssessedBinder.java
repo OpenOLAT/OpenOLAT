@@ -49,6 +49,7 @@ public class AssessedBinder implements AssessmentEntryLight {
 	private int numOfDraftPages = 0;
 	private int numOfInRevisionPages = 0;
 	private int numOfClosedPages = 0;
+	private int numOfNewlyPublishedPages = 0;
 	
 	private Date recentLaunch;
 	
@@ -142,5 +143,13 @@ public class AssessedBinder implements AssessmentEntryLight {
 
 	public void incrementNumOfClosedPages() {
 		numOfClosedPages++;
+	}
+	
+	public int getNumOfNewlyPublishedPages() {
+		return numOfNewlyPublishedPages;
+	}
+	
+	public void incrementNumOfNewlyPublishedPages() {
+		numOfNewlyPublishedPages++;
 	}
 }

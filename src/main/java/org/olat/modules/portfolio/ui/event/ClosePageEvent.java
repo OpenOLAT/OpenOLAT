@@ -32,6 +32,8 @@ public class ClosePageEvent extends Event {
 	private static final long serialVersionUID = 3725428927451391476L;
 	public static final String CLOSE_PAGE = "pf-CLOSE-page";
 	
+	
+	
 	public ClosePageEvent() {
 		super(CLOSE_PAGE);
 	}

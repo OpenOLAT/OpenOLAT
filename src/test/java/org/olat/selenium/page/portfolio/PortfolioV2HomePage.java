@@ -75,7 +75,7 @@ public class PortfolioV2HomePage {
 		OOGraphene.waitElement(sharedWithMeLinkBy, 5, browser);
 		browser.findElement(sharedWithMeLinkBy).click();
 		
-		By sharedWithMeBy = By.cssSelector("div.o_table_flexi.o_binder_shared_items_listing");
+		By sharedWithMeBy = By.cssSelector("div.o_binder_shared_overview");
 		OOGraphene.waitElement(sharedWithMeBy, 5, browser);
 		return new SharedWithMePage(browser);
 	}

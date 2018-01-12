@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.portfolio.ui;
+package org.olat.modules.portfolio.ui.shared;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -54,6 +55,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.ui.main.MemberListTableModel.Cols;
 import org.olat.modules.portfolio.Binder;
@@ -65,9 +67,11 @@ import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedBinder;
 import org.olat.modules.portfolio.model.AssessedBinderSection;
 import org.olat.modules.portfolio.model.SharedItemRow;
-import org.olat.modules.portfolio.ui.SharedItemsDataModel.ShareItemCols;
+import org.olat.modules.portfolio.ui.BinderController;
+import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.modules.portfolio.ui.renderer.AssessmentEntryCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.SelectSectionsCellRenderer;
+import org.olat.modules.portfolio.ui.shared.SharedBindersDataModel.ShareItemCols;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,14 +82,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SharedItemsController extends FormBasicController implements Activateable2 {
+public class SharedBindersController extends FormBasicController implements Activateable2 {
 	
 	protected static final String USER_PROPS_ID = PortfolioHomeController.class.getCanonicalName();
 	
 	public static final int USER_PROPS_OFFSET = 500;
 	
 	private FlexiTableElement tableEl;
-	private SharedItemsDataModel model;
+	private SharedBindersDataModel model;
 	private final TooledStackedPanel stackPanel;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -100,8 +104,10 @@ public class SharedItemsController extends FormBasicController implements Activa
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
-	public SharedItemsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
+	public SharedBindersController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
 		super(ureq, wControl, "shared_with_me");
+		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
+		
 		this.stackPanel = stackPanel;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
@@ -145,6 +151,7 @@ public class SharedItemsController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.recentLaunch));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.openSections, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.selectSections, new SelectSectionsCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ShareItemCols.newlyPublishedPage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ShareItemCols.draftPage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ShareItemCols.inRevisionPage));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ShareItemCols.closedPage));
@@ -159,7 +166,7 @@ public class SharedItemsController extends FormBasicController implements Activa
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, "leave", -2, "leave", false, null,
 				FlexiColumnModel.ALIGNMENT_LEFT, leaveRenderer));
 		
-		model = new SharedItemsDataModel(columnsModel, getLocale());
+		model = new SharedBindersDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
@@ -173,6 +180,13 @@ public class SharedItemsController extends FormBasicController implements Activa
 			options.setDefaultOrderBy(defaultSortKey);
 		}
 		tableEl.setSortSettings(options);
+
+		List<FlexiTableFilter> tableFilters = new ArrayList<>();
+		tableFilters.add(new FlexiTableFilter(translate("filter.sections.empty"), SharedBindersDataModel.EMPTY_SECTIONS, true));
+		tableFilters.add(FlexiTableFilter.SPACER);
+		tableFilters.add(new FlexiTableFilter(translate("filter.show.all"), "all", true));
+		tableEl.setFilters("Filters", tableFilters, false);
+		tableEl.setSelectedFilterKey(SharedBindersDataModel.EMPTY_SECTIONS);
 	}
 	
 	private void loadModel(String searchString) {
@@ -195,6 +209,7 @@ public class SharedItemsController extends FormBasicController implements Activa
 			row.setNumOfDraftPages(assessedBinder.getNumOfDraftPages());
 			row.setNumOfInRevisionPages(assessedBinder.getNumOfInRevisionPages());
 			row.setNumOfClosedPages(assessedBinder.getNumOfClosedPages());
+			row.setNumOfNewlyPublishedPages(assessedBinder.getNumOfNewlyPublishedPages());
 			rows.add(row);
 		}
 		
