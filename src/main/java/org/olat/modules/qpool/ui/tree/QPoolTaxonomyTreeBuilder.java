@@ -121,6 +121,7 @@ public class QPoolTaxonomyTreeBuilder {
 		selectableTaxonomyLevels = new ArrayList<>();
 		selectableKeys = new String[0];
 		selectableValues = new String[0];
+		taxonomicPaths = new String[0];
 		treeTaxonomyLevels = new ArrayList<>();
 	}
 	
@@ -213,10 +214,10 @@ public class QPoolTaxonomyTreeBuilder {
 		if (addEmptyEntry) {
 			String[] movedKeys = new String[selectableKeys.length + 1];
 			String[] movedValues = new String[selectableValues.length + 1];
-			String[] movedTaxonomicPaths = new String[selectableValues.length + 1];
+			String[] movedTaxonomicPaths = new String[taxonomicPaths.length + 1];
 			movedKeys[0] = "-1";
 			movedValues[0] = "-";
-			taxonomicPaths[0] = "/";
+			movedTaxonomicPaths[0] = "/";
 			for (int i=selectableKeys.length; i-->0;) {
 				movedKeys[i+1] = selectableKeys[i];
 				movedValues[i+1] = selectableValues[i];
