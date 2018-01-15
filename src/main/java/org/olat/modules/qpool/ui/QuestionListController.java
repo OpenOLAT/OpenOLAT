@@ -102,6 +102,7 @@ import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.ui.author.CreateEntryController;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -720,6 +721,8 @@ public class QuestionListController extends AbstractItemListController implement
 		if (taxonomyLevel != null && item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl) item;
 			itemImpl.setTaxonomyLevel(taxonomyLevel);
+			String creator = UserManager.getInstance().getUserDisplayName(getIdentity());
+			itemImpl.setCreator(creator);
 			qpoolService.updateItem(itemImpl);
 		}
 		getItemsTable().reset();

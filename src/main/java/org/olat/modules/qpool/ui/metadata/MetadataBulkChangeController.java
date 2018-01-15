@@ -80,6 +80,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	private TextElement difficultyEl, stdevDifficultyEl, differentiationEl, numAnswerAltEl;
 	private TextElement versionEl;
 	private SingleSelection statusEl;
+	private TextElement creatorEl;
 	private KeyValues licenseKeys;
 	private SingleSelection copyrightEl;
 	private TextElement descriptionEl;
@@ -234,6 +235,9 @@ public class MetadataBulkChangeController extends FormBasicController {
 		FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
 		rightsCont.setRootForm(mainForm);
 		formLayout.add(rightsCont);
+		
+		creatorEl = uifactory.addTextElement("rights.creator", "rights.creator", 1000, null, rightsCont);
+		decorate(creatorEl, rightsCont);
 
 		rightsWrapperCont = FormLayoutContainer.createDefaultFormLayout("rights.copyright", getTranslator());
 		rightsWrapperCont.setRootForm(mainForm);
@@ -308,6 +312,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		allOk &= validateSelection(statusEl, isEnabled(statusEl));
 		
 		//rights
+		allOk &= validateElementLogic(creatorEl, 1000, false, isEnabled(creatorEl));
 		allOk &= validateRights(copyrightEl, descriptionEl, licenseKeys, isEnabled(rightsWrapperCont));
 		
 		return allOk & super.validateFormLogic(ureq);
@@ -327,6 +332,8 @@ public class MetadataBulkChangeController extends FormBasicController {
 				formOKGeneral(itemImpl);
 				formOKQuestion(itemImpl);
 				formOKTechnical(itemImpl);
+				if(isEnabled(creatorEl))
+					itemImpl.setCreator(creatorEl.getValue());
 				if(isEnabled(rightsWrapperCont)) {
 					RightsMetadataEditController.formOKRights(itemImpl, copyrightEl, descriptionEl, licenseKeys, qpoolService);
 				}

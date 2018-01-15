@@ -69,6 +69,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	
 	private KeyValues licenseKeys;
 	private Link managerOwners;
+	private TextElement creatorEl;
 	private SingleSelection copyrightEl;
 	private TextElement descriptionEl;
 	private FormLayoutContainer authorCont;
@@ -111,6 +112,8 @@ public class RightsMetadataEditController extends FormBasicController {
 		managerOwners = LinkFactory.createButton("manage.owners", vc, this);
 		authorCont.put("manage.owners", managerOwners);
 
+		String creator = item.getCreator();
+		creatorEl = uifactory.addTextElement("rights.creator", "rights.creator", 1000, creator, formLayout);
 
 		licenseKeys = MetaUIFactory.getQLicenseKeyValues(qpoolService);
 		copyrightEl = uifactory.addDropdownSingleselect("rights.copyright", "rights.copyright", formLayout,
@@ -146,6 +149,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	private void setReadOnly() {
 		boolean canEditMetadata = securityCallback.canEditMetadata();
 		managerOwners.setVisible(canEditMetadata);
+		creatorEl.setEnabled(canEditMetadata);
 		copyrightEl.setEnabled(canEditMetadata);
 		descriptionEl.setEnabled(canEditMetadata);
 		buttonsCont.setVisible(canEditMetadata);
@@ -192,12 +196,12 @@ public class RightsMetadataEditController extends FormBasicController {
 			if(event instanceof IdentitiesAddEvent ) { 
 				IdentitiesAddEvent identitiesAddedEvent = (IdentitiesAddEvent) event;
 				List<Identity> list = identitiesAddedEvent.getAddIdentities();
-        qpoolService.addAuthors(list, Collections.<QuestionItemShort>singletonList(item));
-        identitiesAddedEvent.getAddedIdentities().addAll(list);
+				qpoolService.addAuthors(list, Collections.<QuestionItemShort>singletonList(item));
+				identitiesAddedEvent.getAddedIdentities().addAll(list);
 			} else if (event instanceof IdentitiesRemoveEvent) {
 				IdentitiesRemoveEvent identitiesRemoveEvent = (IdentitiesRemoveEvent) event;
 				List<Identity> list = identitiesRemoveEvent.getRemovedIdentities();
-        qpoolService.removeAuthors(list, Collections.<QuestionItemShort>singletonList(item));
+				qpoolService.removeAuthors(list, Collections.<QuestionItemShort>singletonList(item));
 			}
 			reloadAuthors();
 			//cmc.deactivate();
@@ -249,6 +253,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
+		allOk &= MetaUIFactory.validateElementLogic(creatorEl, 1000, false, true);
 		allOk &= MetaUIFactory.validateRights(copyrightEl, descriptionEl, licenseKeys, true);
 		return allOk &= super.validateFormLogic(ureq);
 	}
@@ -257,6 +262,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+			itemImpl.setCreator(creatorEl.getValue());
 			formOKRights(itemImpl, copyrightEl, descriptionEl, licenseKeys, qpoolService);
 		}
 		item = qpoolService.updateItem(item);

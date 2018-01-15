@@ -57,6 +57,8 @@ public interface QuestionItem extends QuestionItemShort {
 	
 	//rights
 	public QLicense getLicense();
+	
+	public String getCreator();
 
 	//technics
 	public String getEditor();

@@ -138,6 +138,8 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 	@ManyToOne(targetEntity=QLicense.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_license", nullable=true, insertable=true, updatable=true)
 	private QLicense license;
+	@Column(name="q_creator", nullable=true, insertable=true, updatable=true)
+	private String creator;
 
 	//technics
 	@Column(name="q_editor", nullable=true, insertable=true, updatable=true)
@@ -460,6 +462,15 @@ public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedI
 
 	public void setOwnerGroup(SecurityGroup ownerGroup) {
 		this.ownerGroup = ownerGroup;
+	}
+
+	@Override
+	public String getCreator() {
+		return creator;
+	}
+
+	public void setCreator(String creator) {
+		this.creator = creator;
 	}
 
 	@Override

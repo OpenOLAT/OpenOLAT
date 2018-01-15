@@ -1795,6 +1795,7 @@ create table o_qp_item (
    q_editor varchar2(256 char),
    q_editor_version varchar2(256 char),
    q_format varchar2(32 char) not null,
+   q_creator varchar2(1024 char),
    creationdate date not null,
    lastmodified date not null,
    q_status_last_modified date not null,
