@@ -303,13 +303,13 @@ public class DBTest extends OlatTestCase {
 		// forget session cache etc.
 		dbInstance.closeSession();
 		// 2. try to find object
-		Object testObject = dbInstance.findObject(Property.class, propertyKey);
+		Object testObject = dbInstance.getCurrentEntityManager().find(Property.class, propertyKey);
 		assertNotNull(testObject);
 		// 3. Delete object
 		PropertyManager.getInstance().deleteProperty( (Property)testObject );
 		dbInstance.closeSession();
 		// 4. try again to find object, now no-one should be found, must return null
-		testObject = DBFactory.getInstance().findObject(Property.class, propertyKey);
+		testObject = DBFactory.getInstance().getCurrentEntityManager().find(Property.class, propertyKey);
 		assertNull(testObject);
 	}
 	

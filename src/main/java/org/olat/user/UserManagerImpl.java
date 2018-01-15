@@ -40,7 +40,6 @@ import org.olat.basesecurity.IdentityNames;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -262,7 +261,7 @@ public class UserManagerImpl extends UserManager {
 	
 	@Override
 	public User loadUserByKey(Long key) {
-		return DBFactory.getInstance().loadObject(UserImpl.class, key);
+		return dbInstance.getCurrentEntityManager().find(UserImpl.class, key);
 		// User not loaded yet (lazy initialization). Need to access
 		// a field first to really load user from database.
 	}

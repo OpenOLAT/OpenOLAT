@@ -19,15 +19,14 @@
  */
 package org.olat.core.commons.services.tagging.manager;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
+import javax.persistence.Query;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBQuery;
 import org.olat.core.commons.services.tagging.model.Tag;
@@ -246,27 +245,27 @@ public class TaggingManagerImpl extends BasicManager implements TaggingManager {
 
 	@Override
 	public void deleteTags(OLATResourceable ores, String subPath, String businessPath) {
-		List<Object> values = new ArrayList<Object>();
-		List<Type> types = new ArrayList<Type>();
 		StringBuilder sb = new StringBuilder();
-		sb.append("from ").append(TagImpl.class.getName()).append(" where resId=? and resName=?");
-		values.add(ores.getResourceableId());
-		types.add(StandardBasicTypes.LONG);
-		values.add(ores.getResourceableTypeName());
-		types.add(StandardBasicTypes.STRING);
+		sb.append("delete from ").append(TagImpl.class.getName()).append(" where resId=:resId and resName=:resName");
 		if(subPath != null) {
-			sb.append(" and resSubPath=?");
-			values.add(subPath);
-			types.add(StandardBasicTypes.STRING);
+			sb.append(" and resSubPath=:subPath");
 		}
 		if(businessPath != null) {
-			sb.append(" and businessPath=?");
-			values.add(businessPath);
-			types.add(StandardBasicTypes.STRING);
+			sb.append(" and businessPath=:businessPath");
 		}
 		
-		int tagsDeleted = dbInstance.delete(sb.toString(), values.toArray(new Object[values.size()]),
-				types.toArray(new Type[types.size()]));
+		Query query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString())
+			.setParameter("resId", ores.getResourceableId())
+			.setParameter("resName", ores.getResourceableTypeName());
+		if(subPath != null) {
+			query.setParameter("subPath", subPath);
+		}
+		if(businessPath != null) {
+			query.setParameter("businessPath", businessPath);
+		}
+		
+		int tagsDeleted = query.executeUpdate();
 		logAudit("Deleted " + tagsDeleted + " tags of resource: " + ores.getResourceableTypeName() + " :: " + ores.getResourceableId());
 	}
 

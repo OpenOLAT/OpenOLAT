@@ -30,7 +30,6 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Properties;
 
 import javax.persistence.Cache;
@@ -43,10 +42,8 @@ import javax.persistence.RollbackException;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.jpa.HibernateEntityManager;
-import org.hibernate.jpa.HibernateEntityManagerFactory;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.stat.Statistics;
-import org.hibernate.type.Type;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.id.Persistable;
@@ -72,7 +69,7 @@ public class DBImpl implements DB, Destroyable {
 	private String dbVendor;
 	private static EntityManagerFactory emf;
 
-	private final ThreadLocal<ThreadLocalData> data = new ThreadLocal<ThreadLocalData>();
+	private final ThreadLocal<ThreadLocalData> data = new ThreadLocal<>();
 	// Max value for commit-counter, values over this limit will be logged.
 	private static int maxCommitCounter = 10;
 
@@ -276,7 +273,7 @@ public class DBImpl implements DB, Destroyable {
 	}
 	
 	private Session getSession(EntityManager em) {
-		return em.unwrap(HibernateEntityManager.class).getSession();
+		return em.unwrap(Session.class);
 	}
 	
 	private boolean unusableTrx(EntityTransaction trx) {
@@ -289,7 +286,7 @@ public class DBImpl implements DB, Destroyable {
 			getData().resetAccessCounter();
 		} else {
   			getData().incrementAccessCounter();
-    	}
+		}
     }
 
 	/**
@@ -304,10 +301,6 @@ public class DBImpl implements DB, Destroyable {
 		//  that was closed underneath by hibernate (not noticed by DBImpl).
 		//  in order to be robust for any similar situation, we check if the 
 		//  connection is open, otherwise we shouldn't worry about doing any commit/rollback anyway
-		
-
-		//commit
-		//getCurrentEntityManager();
 		EntityManager s = getData().getEntityManager(false);
 		if(s != null) {
 			EntityTransaction trx = s.getTransaction();
@@ -372,164 +365,6 @@ public class DBImpl implements DB, Destroyable {
 			trx.setRollbackOnly();
 			getData().setError(e);
 			throw new DBRuntimeException("Delete of object failed: " + object, e);
-		}
-	}
-
-	/**
-	 * Deletion query.
-	 * 
-	 * @param query
-	 * @param value
-	 * @param type
-	 * @return nr of deleted rows
-	 */
-	@Override
-	public int delete(String query, Object value, Type type) {
-		int deleted = 0;
-		EntityManager em = getCurrentEntityManager();
-		EntityTransaction trx = em.getTransaction();
-		if (unusableTrx(trx)) { // some program bug
-			throw new DBRuntimeException("cannot delete in a transaction that is rolledback or committed " + value);
-		}
-		try {
-			//old: deleted = getSession().delete(query, value, type);
-			Session si = getSession(em);
-			Query qu = si.createQuery(query);
-			qu.setParameter(0, value, type);
-			List foundToDel = qu.list();
-			int deletionCount = foundToDel.size();
-			for (int i = 0; i < deletionCount; i++ ) {
-				si.delete( foundToDel.get(i) );
-			}
-		} catch (HibernateException e) { // we have some error
-			trx.setRollbackOnly();
-			throw new DBRuntimeException ("Could not delete object: " + value, e);
-		}
-		return deleted;
-	}
-
-	/**
-	 * Deletion query.
-	 * 
-	 * @param query
-	 * @param values
-	 * @param types
-	 * @return nr of deleted rows
-	 */
-	@Override
-	public int delete(String query, Object[] values, Type[] types) {
-		EntityManager em = getCurrentEntityManager();
-		EntityTransaction trx = em.getTransaction();
-		if (unusableTrx(trx)) { // some program bug
-			throw new DBRuntimeException("cannot delete in a transaction that is rolledback or committed " + values);
-		}
-		try {
-			//old: deleted = getSession().delete(query, values, types);
-			Session si = getSession(em);
-			Query qu = si.createQuery(query);
-			qu.setParameters(values, types);
-			List foundToDel = qu.list();
-			int deleted = foundToDel.size();
-			for (int i = 0; i < deleted; i++ ) {
-				si.delete( foundToDel.get(i) );
-			}	
-			return deleted;
-		} catch (HibernateException e) { // we have some error
-			trx.setRollbackOnly();
-			throw new DBRuntimeException ("Could not delete object: " + values, e);
-		}
-	}
-
-	/**
-	 * Find objects based on query
-	 * 
-	 * @param query
-	 * @param value
-	 * @param type
-	 * @return List of results.
-	 */
-	@Override
-	public List find(String query, Object value, Type type) {
-		EntityManager em = getCurrentEntityManager();
-		EntityTransaction trx = em.getTransaction();
-		try {
-			Query qu = getSession(em).createQuery(query);
-			qu.setParameter(0, value, type);
-			return qu.list();
-		} catch (HibernateException e) {
-			trx.setRollbackOnly();
-			String msg = "Find failed in transaction. Query: " +  query + " " + e;
-			getData().setError(e);
-			throw new DBRuntimeException(msg, e);
-		}
-	}
-
-	/**
-	 * Find objects based on query
-	 * 
-	 * @param query
-	 * @param values
-	 * @param types
-	 * @return List of results.
-	 */
-	@Override
-	public List find(String query, Object[] values, Type[] types) {
-		EntityManager em = getCurrentEntityManager();
-		try {
-			// old: li = getSession().find(query, values, types);
-			Query qu = getSession(em).createQuery(query);
-			qu.setParameters(values, types);
-			return qu.list();
-		} catch (HibernateException e) {
-			em.getTransaction().setRollbackOnly();
-			getData().setError(e);
-			throw new DBRuntimeException("Find failed in transaction. Query: " +  query + " " + e, e);
-		}
-	}
-
-	/**
-	 * Find objects based on query
-	 * 
-	 * @param query
-	 * @return List of results.
-	 */
-	@Override
-	public List find(String query) {
-		EntityManager em = getCurrentEntityManager();
-		try {
-			return em.createQuery(query).getResultList();
-		} catch (HibernateException e) {
-			em.getTransaction().setRollbackOnly();
-			getData().setError(e);
-			throw new DBRuntimeException("Find in transaction failed: " + query + " " + e, e);
-		}
-	}
-
-	/**
-	 * Find an object.
-	 * 
-	 * @param theClass
-	 * @param key
-	 * @return Object, if any found. Null, if non exist. 
-	 */
-	@Override
-	public <U> U findObject(Class<U> theClass, Long key) {
-		return getCurrentEntityManager().find(theClass, key);
-	}
-	
-	/**
-	 * Load an object.
-	 * 
-	 * @param theClass
-	 * @param key
-	 * @return Object.
-	 */
-	@Override
-	public <U> U loadObject(Class<U> theClass, Long key) {
-		try {
-			return getCurrentEntityManager().find(theClass, key);
-		} catch (Exception e) {
-			throw new DBRuntimeException("loadObject error: " + theClass + " " + key + " ", e);
 		}
 	}
 
@@ -635,21 +470,21 @@ public class DBImpl implements DB, Destroyable {
 			if (contains(persistable)) {
 				// case b - then we can use evict and load
 				evict(em, persistable, getData());
-				return loadObject(theClass, persistable.getKey());
+				return em.find(theClass, persistable.getKey());
 			} else {
 				// case a or c - unfortunatelly we can't distinguish these two cases
 				// and session.refresh(Object) doesn't work.
 				// the only scenario that works is load/evict/load
-				Persistable attachedObj = loadObject(theClass, persistable.getKey());
+				Persistable attachedObj = em.find(theClass, persistable.getKey());
 				evict(em, attachedObj, getData());
-				return loadObject(theClass, persistable.getKey());
+				return em.find(theClass, persistable.getKey());
 			}
 		} else if (!contains(persistable)) { 
 			// forceReloadFromDB is false - hence it is OK to take it from the cache if it would be there
 			// now this object directly is not in the cache, but it's possible that the object is detached
 			// and there is an object with the same id in the hibernate cache.
 			// therefore the following loadObject can either return it from the cache or load it from the DB
-			return loadObject(theClass, persistable.getKey());
+			return em.find(theClass, persistable.getKey());
 		} else { 
 			// nothing to do, return the same object
 			return persistable;
@@ -791,8 +626,8 @@ public class DBImpl implements DB, Destroyable {
 	 */
 	@Override
 	public Statistics getStatistics() {
-		if(emf instanceof HibernateEntityManagerFactory) {
-			return ((HibernateEntityManagerFactory)emf).getSessionFactory().getStatistics();
+		if(emf instanceof SessionFactoryImplementor) {
+			return ((SessionFactoryImplementor)emf).getStatistics();
 		}
  		return null;
    }

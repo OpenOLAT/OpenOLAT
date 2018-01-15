@@ -26,12 +26,9 @@
 
 package org.olat.core.commons.persistence;
 
-import java.util.List;
-
 import javax.persistence.EntityManager;
 
 import org.hibernate.stat.Statistics;
-import org.hibernate.type.Type;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.id.Persistable;
 
@@ -64,52 +61,6 @@ public interface DB {
 	public void deleteObject(Object object);
 
 	/**
-	 * Find objects based on query
-	 * 
-	 * @param query
-	 * @param value
-	 * @param type
-	 * @return List of results.
-	 */
-	public List find(String query, Object value, Type type);
-
-	/**
-	 * Find objects based on query
-	 * 
-	 * @param query
-	 * @param values
-	 * @param types
-	 * @return List of results.
-	 */
-	public List find(String query, Object[] values, Type[] types);
-
-	/**
-	 * Find an object.
-	 * 
-	 * @param theClass
-	 * @param key
-	 * @return Object, if any found. or null otherwise
-	 */
-	public <U> U findObject(Class<U> theClass, Long key);
-
-	/**
-	 * Find objects based on query
-	 * 
-	 * @param query
-	 * @return List of results.
-	 */
-	public List find(String query);
-
-	/**
-	 * Load an object.
-	 * 
-	 * @param theClass
-	 * @param key
-	 * @return Object.
-	 */
-	public <U> U loadObject(Class<U> theClass, Long key);
-
-	/**
 	 * Save an object.
 	 * 
 	 * @param object
@@ -122,26 +73,6 @@ public interface DB {
 	 * @param object
 	 */
 	public void updateObject(Object object);
-
-	/**
-	 * Deletion query.
-	 * 
-	 * @param query
-	 * @param value
-	 * @param type
-	 * @return nr of values deleted
-	 */
-	public abstract int delete(String query, Object value, Type type);
-
-	/**
-	 * Deletion query.
-	 * 
-	 * @param query
-	 * @param values
-	 * @param types
-	 * @return nr of deleted rows
-	 */
-	public int delete(String query, Object[] values, Type[] types);
 
 	/**
 	 * see DB.loadObject(Persistable persistable, boolean forceReloadFromDB)

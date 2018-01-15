@@ -1605,7 +1605,8 @@ public class EPStructureManager {
 	public PortfolioStructure reloadPortfolioStructure(PortfolioStructure structure) {
 		if (structure == null) throw new NullPointerException();
 		try {
-			return dbInstance.loadObject(EPStructureElement.class, structure.getKey());
+			return dbInstance.getCurrentEntityManager()
+					.find(EPStructureElement.class, structure.getKey());
 		} catch (ObjectNotFoundException e) {
 			return null;
 		}

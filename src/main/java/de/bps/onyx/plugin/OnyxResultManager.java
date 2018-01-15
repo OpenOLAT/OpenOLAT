@@ -26,8 +26,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.persistence.DB;
@@ -242,11 +240,11 @@ public class OnyxResultManager {
 	}
 
 	public static QTIResultSet getResultSet(final long uniqueId) {
-		final List<Long> liste = getResultSetByAssassmentId(uniqueId);
+		final List<Long> liste = getResultSetByAssessmentId(uniqueId);
 		QTIResultSet qtiResultSet = null;
 		if (liste != null && liste.size() > 0) {
 			Long key = liste.get(0);
-			qtiResultSet = DBFactory.getInstance().loadObject(QTIResultSet.class, key);
+			qtiResultSet = DBFactory.getInstance().getCurrentEntityManager().find(QTIResultSet.class, key);
 			DBFactory.getInstance().intermediateCommit();
 		}
 		return qtiResultSet;
@@ -255,11 +253,13 @@ public class OnyxResultManager {
 	public static Boolean isLastTestTry(QTIResultSet testTry) {
 		Boolean isLast = true;
 
-		String query = "select rset.key from org.olat.ims.qti.QTIResultSet rset where rset.identity=? and rset.olatResourceDetail=? and rset.creationDate >= ?";
-		@SuppressWarnings("unchecked")
-		List<Long> results = DBFactory.getInstance().find(query,
-				new Object[] { testTry.getIdentity().getKey(), testTry.getOlatResourceDetail(), testTry.getCreationDate() },
-				new Type[] { StandardBasicTypes.LONG, StandardBasicTypes.STRING, StandardBasicTypes.DATE });
+		String query = "select rset.key from org.olat.ims.qti.QTIResultSet rset where rset.identity.key=:identityKey and rset.olatResourceDetail=:subIdent and rset.creationDate>=:date";
+		List<Long> results = DBFactory.getInstance().getCurrentEntityManager()
+				.createQuery(query, Long.class)
+				.setParameter("identityKey", testTry.getIdentity().getKey())
+				.setParameter("subIdent", testTry.getOlatResourceDetail())
+				.setParameter("date", testTry.getCreationDate())
+				.getResultList();
 		for (Long result : results) {
 			if (!(testTry.getKey().equals(result)) && testTry.getKey() < result) {
 				isLast = false;
@@ -275,7 +275,7 @@ public class OnyxResultManager {
 		QTIResultSet lastResultSet = null;
 
 		for (Long resultSet : suspendedResults) {
-			QTIResultSet res = (DBFactory.getInstance().loadObject(QTIResultSet.class, resultSet));
+			QTIResultSet res = DBFactory.getInstance().getCurrentEntityManager().find(QTIResultSet.class, resultSet);
 			if (lastResultSet != null) {
 				if (lastResultSet.getCreationDate().before(res.getCreationDate())) {
 					lastResultSet = res;
@@ -288,23 +288,27 @@ public class OnyxResultManager {
 		return lastResultSet;
 	}
 
-	private static List<Long> getSuspendedQTIResultSet(Identity identity, CourseNode node) {
-		String query = "select rset.key from org.olat.ims.qti.QTIResultSet rset where rset.suspended = ? and rset.identity=? and rset.olatResourceDetail=?";
-		List<Long> results = DBFactory.getInstance().find(query, new Object[] { Boolean.TRUE, identity.getKey(), node.getIdent() },
-				new Type[] { StandardBasicTypes.BOOLEAN, StandardBasicTypes.LONG, StandardBasicTypes.STRING });
+	protected static List<Long> getSuspendedQTIResultSet(Identity identity, CourseNode node) {
+		DB db = DBFactory.getInstance();
+		String q = "select rset.key from org.olat.ims.qti.QTIResultSet rset where rset.suspended=:suspended and rset.identity.key=:identityKey and rset.olatResourceDetail=:subIdent";
+		List<Long> results = db.getCurrentEntityManager()
+				.createQuery(q, Long.class)
+				.setParameter("suspended", Boolean.TRUE)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("subIdent", node.getIdent())
+				.getResultList();
 		DBFactory.getInstance().intermediateCommit();
 		return results;
 	}
 
-	private static List<Long> getResultSetByAssassmentId(Long assessmentID) {
+	protected static List<Long> getResultSetByAssessmentId(Long assessmentID) {
 		DB db = DBFactory.getInstance();
 		db.commitAndCloseSession();
-		StringBuilder slct = new StringBuilder();
-		slct.append("select rset.key from ");
-		slct.append("org.olat.ims.qti.QTIResultSet rset ");
-		slct.append("where ");
-		slct.append("rset.assessmentID=? ");
-		List<Long> results = db.find(slct.toString(), new Object[] { assessmentID }, new Type[] { StandardBasicTypes.LONG });
+		String q = "select rset.key from org.olat.ims.qti.QTIResultSet rset where rset.assessmentID=:assessmentId";
+		List<Long> results = db.getCurrentEntityManager()
+				.createQuery(q, Long.class)
+				.setParameter("assessmentId", assessmentID)
+				.getResultList();
 		db.intermediateCommit();
 		return results;
 	}
@@ -432,12 +436,10 @@ public class OnyxResultManager {
 
 	public static List<QTIResultSet> findResultSets() {
 		final DB db = DBFactory.getInstance();
-
-		final StringBuilder slct = new StringBuilder();
-		slct.append("select rset from ");
-		slct.append("org.olat.ims.qti.QTIResultSet rset ");
-
-		return db.find(slct.toString());
+		String slct = "select rset from org.olat.ims.qti.QTIResultSet rset";
+		return db.getCurrentEntityManager()
+				.createQuery(slct, QTIResultSet.class)
+				.getResultList();
 	}
 	
 	public static final String getResultsFilenamePrefix(final String path, final CourseNode courseNode, final long assessmentId) {

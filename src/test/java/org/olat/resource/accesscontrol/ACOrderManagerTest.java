@@ -500,7 +500,7 @@ public class ACOrderManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//delete the resource
-		randomOres1 = dbInstance.loadObject(OLATResourceImpl.class, randomOres1.getKey());
+		randomOres1 = dbInstance.getCurrentEntityManager().find(OLATResourceImpl.class, randomOres1.getKey());
 		dbInstance.deleteObject(randomOres1);
 		
 		dbInstance.commitAndCloseSession();

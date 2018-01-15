@@ -42,8 +42,6 @@ import javax.persistence.LockModeType;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
 import org.olat.admin.quota.GenericQuotaEditController;
 import org.olat.admin.sysinfo.SysinfoController;
 import org.olat.admin.user.UserAdminController;
@@ -540,32 +538,29 @@ public class BaseSecurityManager implements BaseSecurity {
 	/**
 	 * @see org.olat.basesecurity.Manager#deleteSecurityGroup(org.olat.basesecurity.SecurityGroup)
 	 */
+	@Override
 	public void deleteSecurityGroup(SecurityGroup secGroup) {
 		// we do not use hibernate cascade="delete", but implement our own (to be
 		// sure to understand our code)
-		DB db = DBFactory.getInstance();
-		//FIXME: fj: Please review: Create rep entry, restart olat, delete the rep
-		// entry. previous implementation resulted in orange screen
-		// secGroup = (SecurityGroup)db.loadObject(secGroup); // so we can later
-		// delete it (hibernate needs an associated session)
-		secGroup = (SecurityGroup) db.loadObject(secGroup);
-		//o_clusterREVIEW
-		//db.reputInHibernateSessionCache(secGroup);
+		secGroup = dbInstance.getCurrentEntityManager()
+				.getReference(SecurityGroupImpl.class, secGroup.getKey());
 
-		/*
-		 * if (!db.contains(secGroup)) { secGroup = (SecurityGroupImpl)
-		 * db.loadObject(SecurityGroupImpl.class, secGroup.getKey()); }
-		 */
 		// 1) delete associated users (need to do it manually, hibernate knows
 		// nothing about
 		// the membership, modeled manually via many-to-one and not via set)
-		db.delete("from org.olat.basesecurity.SecurityGroupMembershipImpl as msi where msi.securityGroup.key = ?", new Object[] { secGroup
-				.getKey() }, new Type[] { StandardBasicTypes.LONG });
+		dbInstance.getCurrentEntityManager()
+			.createQuery("delete from org.olat.basesecurity.SecurityGroupMembershipImpl where securityGroup=:securityGroup")
+			.setParameter("securityGroup", secGroup)
+			.executeUpdate();
 		// 2) delete all policies
-		db.delete("from org.olat.basesecurity.PolicyImpl as poi where poi.securityGroup = ?", new Object[] { secGroup.getKey() },
-				new Type[] { StandardBasicTypes.LONG });
+
+		dbInstance.getCurrentEntityManager()
+			.createQuery("delete from org.olat.basesecurity.PolicyImpl where securityGroup=:securityGroup")
+			.setParameter("securityGroup", secGroup)
+			.executeUpdate();
 		// 3) delete security group
-		db.deleteObject(secGroup);
+		dbInstance.getCurrentEntityManager()
+			.remove(secGroup);
 	}
 
 	/**

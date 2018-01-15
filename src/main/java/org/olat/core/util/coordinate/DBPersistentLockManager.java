@@ -26,8 +26,6 @@ package org.olat.core.util.coordinate;
 
 import java.io.File;
 
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
@@ -125,9 +123,13 @@ public class DBPersistentLockManager implements PersistentLockManager, UserDataD
 	 */
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName, File archivePath) {		
-		String query = "from v in class org.olat.properties.Property where v.category = ? and v.longValue = ?";
-		DBFactory.getInstance().delete(query, new Object[] { CATEGORY_PERSISTENTLOCK, identity.getKey() },
-				new Type[] { StandardBasicTypes.STRING, StandardBasicTypes.LONG });
+		String query = "delete from org.olat.properties.Property where category=:category and longValue=:val";
+		
+		DBFactory.getInstance().getCurrentEntityManager()
+			.createQuery(query)
+			.setParameter("category", CATEGORY_PERSISTENTLOCK)
+			.setParameter("val", identity.getKey())
+			.executeUpdate();
 		log.debug("All db-persisting-locks deleted for identity=" + identity);
 	}
 

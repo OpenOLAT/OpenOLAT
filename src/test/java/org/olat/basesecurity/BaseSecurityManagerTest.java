@@ -1016,4 +1016,27 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertNotNull(securityManager.findAuthenticationByAuthusername(email, "del-mail"));
 	}
 	
+	@Test
+	public void deleteSecurityGroup() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("test-del-2");
+		SecurityGroup secGroup = securityManager.createAndPersistSecurityGroup();
+		securityManager.addIdentityToSecurityGroup(id, secGroup);
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		Policy policy = securityManager.createAndPersistPolicy(secGroup, "test.right11", resource);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(policy);
+		
+		//delete the security group (and membership, and policies)
+		securityManager.deleteSecurityGroup(secGroup);
+		dbInstance.commit();
+		
+		//checks
+		List<Policy> deletedPolicies = securityManager.getPoliciesOfResource(resource, secGroup);
+		Assert.assertNotNull(deletedPolicies);
+		Assert.assertTrue(deletedPolicies.isEmpty());
+		
+		boolean membership = securityManager.isIdentityInSecurityGroup(id, secGroup);
+		Assert.assertFalse(membership);
+	}
+	
 }
