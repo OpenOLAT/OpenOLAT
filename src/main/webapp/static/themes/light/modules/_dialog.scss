@@ -17,7 +17,16 @@
 .o_error, %o_error { 
 	@include o-make-message-box($o-box-error-bg, $o-box-error-color);
 }
-
+.o_instruction {
+	@extend %o_warning;
+	margin-top: 0px;
+	border-left: none;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+.o_instruction > .o_button_group {
+	margin-bottom: 0px;
+}
 
 /* Callout window (implemented with bootstrap popover, see CloseableCalloutWindowController for JS part */
 div.o_callout_overlay { 
