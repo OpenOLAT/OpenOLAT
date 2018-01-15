@@ -204,7 +204,14 @@ public class QuestionListController extends AbstractItemListController implement
 			if (QuestionStatus.endOfLife.equals(statusFilter)) setSelectionCssClass(statusEndOfLifeLink);
 			reloadStatusFilterTitles();
 		}
-			
+		
+		if(getSource().isCreateEnabled()) {
+			newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
+			newItem.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_new");
+		}
+		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
+		importItem.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_import");
+		
 		if (getSecurityCallback().canUseCollections()) {
 			list = uifactory.addFormLink("list", formLayout, Link.BUTTON);
 		}
@@ -215,17 +222,12 @@ public class QuestionListController extends AbstractItemListController implement
 		if(getSource().isRemoveEnabled()) {
 			removeItem = uifactory.addFormLink("unshare.item", formLayout, Link.BUTTON);
 		}
-
-		if(getSource().isCreateEnabled()) {
-			newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
-		}
 		if(getSource().isCopyEnabled()) {
 			copyItem = uifactory.addFormLink("copy", formLayout, Link.BUTTON);
 		}
 		if(getSource().isImportEnabled()) {
 			convertItem = uifactory.addFormLink("convert.item", formLayout, Link.BUTTON);
 		}
-		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
 		if(getSource().isAuthorRightsEnable()) {
 			authorItem = uifactory.addFormLink("author.item", formLayout, Link.BUTTON);
 		}

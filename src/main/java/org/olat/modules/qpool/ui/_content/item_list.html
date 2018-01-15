@@ -21,7 +21,18 @@
         $r.render("source.selector_LABEL") $r.render("source.selector")
     </div>
 #end
-
+#if($r.available("new.item") || $r.available("import.item"))
+<div class="o_button_group o_button_group_right">
+	#if($r.available("new.item") && $r.available("new.item"))<div class="btn-group">#end
+	#if($r.available("new.item"))
+		$r.render("new.item")
+	#end
+	#if($r.available("import.item"))
+		$r.render("import.item")
+	#end
+	#if($r.available("import.item") && $r.available("import.item"))</div>#end
+</div>
+#end
 $r.render("items")
 <div class="o_button_group">
 	#if($r.available("list"))
@@ -36,17 +47,11 @@ $r.render("items")
 	#if($r.available("unshare.item"))
 		$r.render("unshare.item")
 	#end
-	#if($r.available("new.item"))
-		$r.render("new.item")
-	#end
 	#if($r.available("copy"))
 		$r.render("copy")
 	#end
 	#if($r.available("convert.item"))
 		$r.render("convert.item")
-	#end
-	#if($r.available("import.item"))
-		$r.render("import.item")
 	#end
 	#if($r.available("author.item"))
 		$r.render("author.item")

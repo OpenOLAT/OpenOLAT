@@ -248,7 +248,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		Dropdown statusDropdown = new Dropdown("process.states", "lifecycle.status." + actualStatus.name(), false, getTranslator());
 		statusDropdown.setElementCssClass("o_qpool_tools_status o_qpool_status_" + actualStatus.name());
 		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_qitem_" + actualStatus.name());
-		statusDropdown.setOrientation(DropdownOrientation.normal);;
+		statusDropdown.setOrientation(DropdownOrientation.normal);
 	
 		statusDraftLink = LinkFactory.createToolLink("lifecycle.status.draft", translate("lifecycle.status.draft"), this);
 		statusDraftLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_draft");

@@ -415,6 +415,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_qitem_finalVersion:before { content: $fa-var-check;}
 .o_icon_qitem_export:before { content: $fa-var-download;}
 .o_icon_qitem_hide_metadata:before { content: $fa-var-toggle-on;}
+.o_icon_qitem_import:before { content: $fa-var-upload;}
+.o_icon_qitem_new:before { content: $fa-var-plus-circle;}
 .o_icon_qitem_review:before { content: $fa-var-star-o;}
 .o_icon_qitem_revised:before { content: $fa-var-rotate-left;}
 .o_icon_qitem_share:before { content: $fa-var-share;}
