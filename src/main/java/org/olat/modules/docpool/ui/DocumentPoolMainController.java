@@ -92,8 +92,9 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 			taxonomy = taxonomyService.getTaxonomy(taxonomyRef);
 		}
 
-		TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, getIdentity(), getLocale(),
-				isTaxonomyAdmin, docPoolModule.isTemplatesDirectoryEnabled(), translate("document.pool.templates"));
+		String rootTitle = translate("admin.menu.title");//same as site title
+		TaxonomyTreeBuilder builder = new TaxonomyTreeBuilder(taxonomy, getIdentity(), rootTitle,
+				isTaxonomyAdmin, docPoolModule.isTemplatesDirectoryEnabled(), translate("document.pool.templates"), getLocale());
 		
 		taxonomyTree = new MenuTree(null, "taxonomy-menu", this);
 		taxonomyTree.setExpandSelectedNode(false);
@@ -114,7 +115,7 @@ public class DocumentPoolMainController extends MainLayoutBasicController implem
 			listenTo(columnLayoutCtr); // auto dispose later
 			putInitialPanel(columnLayoutCtr.getInitialComponent());
 			
-			DocumentPoolTaxonomyController rootCtrl = new DocumentPoolTaxonomyController(ureq, getWindowControl(), taxonomy);
+			DocumentPoolTaxonomyController rootCtrl = new DocumentPoolTaxonomyController(ureq, getWindowControl());
 			listenTo(rootCtrl);
 			String displayName = taxonomy == null ? "ROOT" : taxonomy.getDisplayName();
 			content.rootController(displayName, rootCtrl);

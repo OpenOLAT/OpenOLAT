@@ -56,6 +56,7 @@ public class TaxonomyTreeBuilder {
 	
 	private Locale locale;
 	private Taxonomy taxonomy;
+	private final String rootTitle;
 	private final Identity identity;
 	private final String templateDirectory;
 	private final boolean isTaxonomyAdmin;
@@ -63,12 +64,13 @@ public class TaxonomyTreeBuilder {
 	
 	private final TaxonomyService taxonomyService;
 	
-	public TaxonomyTreeBuilder(Taxonomy taxonomy, Identity identity, Locale locale,
-			boolean isTaxonomyAdmin, boolean enableTemplates, String templateDirectory) {
+	public TaxonomyTreeBuilder(Taxonomy taxonomy, Identity identity, String rootTitle,
+			boolean isTaxonomyAdmin, boolean enableTemplates, String templateDirectory, Locale locale) {
 		taxonomyService = CoreSpringFactory.getImpl(TaxonomyService.class);
 		this.locale = locale;
 		this.taxonomy = taxonomy;
 		this.identity = identity;
+		this.rootTitle = rootTitle;
 		this.enableTemplates = enableTemplates;
 		this.templateDirectory = templateDirectory;
 		this.isTaxonomyAdmin = isTaxonomyAdmin;
@@ -82,7 +84,11 @@ public class TaxonomyTreeBuilder {
 
 		if(taxonomy != null) {
 			taxonomy = taxonomyService.getTaxonomy(taxonomy);
-			root.setTitle(taxonomy.getDisplayName());
+			if(StringHelper.containsNonWhitespace(rootTitle)) {
+				root.setTitle(rootTitle);
+			} else {
+				root.setTitle(taxonomy.getDisplayName());
+			}
 			root.setUserObject(taxonomy);
 
 			//taxonomy directory

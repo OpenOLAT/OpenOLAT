@@ -1,5 +1,6 @@
-<h1><i class="o_icon $o_icon_taxonomy"> </i> $displayName#if($r.isNotEmpty($identifier)) <small>${identifier}</small>#end</h1>
-$r.render("subscription")
+<div class="clearfix">$r.render("subscription")</div>
 #if($r.available("index"))
 	$r.render("index")
+#else
+	<div class="o_warning">$r.translate("warning.taxonomy.index.emtpy")</div>
 #end

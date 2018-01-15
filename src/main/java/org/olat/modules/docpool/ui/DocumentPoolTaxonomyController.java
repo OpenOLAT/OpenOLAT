@@ -29,11 +29,9 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.docpool.DocumentPoolModule;
 import org.olat.modules.docpool.manager.DocumentPoolNotificationsHandler;
-import org.olat.modules.taxonomy.Taxonomy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -53,12 +51,10 @@ public class DocumentPoolTaxonomyController extends BasicController {
 	@Autowired
 	private DocumentPoolNotificationsHandler notificationsHandler;
 	
-	public DocumentPoolTaxonomyController(UserRequest ureq, WindowControl wControl, Taxonomy taxonomy) {
+	public DocumentPoolTaxonomyController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("document_pool");
-		mainVC.contextPut("displayName", StringHelper.escapeHtml(taxonomy.getDisplayName()));
-		mainVC.contextPut("identifier", StringHelper.escapeHtml(taxonomy.getIdentifier()));
 		
 		//add subscription
 		SubscriptionContext subsContext = notificationsHandler.getTaxonomyDocumentsLibrarySubscriptionContext();
