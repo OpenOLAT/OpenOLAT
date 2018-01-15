@@ -659,6 +659,27 @@ $o-slider-background				: #f9f9f9 !default;
 $o-slider-handler-border-color		: $brand-primary !default;
 $o-slider-handler-background-color	: $brand-primary !default;
 
+/* Lables */
+$o-label_color					: #fff;
+$o-label_bg-color				: #777;
+$o-label-light-bg-color			: $o-toolbar-bg-color;
+
+/* QPool */
+$o-qpool-arrow-bg-color				: $o-toolbar-bg-color !default;
+$o-qpool-arrow-border-bottom-width	: 3px;
+$o-qpool-arrow-selected-color		: $link-color !default;
+$o-qpool-arrow-selected-font-weight	: bold !default;
+
+$o-qpool-status-color-dark			: #333;
+$o-qpool-status-color-bright			: #fff;
+$o-qpool-draft-color					: #4a6785;
+$o-qpool-review-color				: #ffd351;
+$o-qpool-review-color-dark			: #333;
+$o-qpool-revised-color				: #993333;
+$o-qpool-finalVersion-color			: #14892c;
+$o-qpool-endOfLife-color				: #aaa;
+
+
 /* other configurations */
 $o-portrait-radius				: 50% !default;
 $o-portrait-border				: none !default;
@@ -666,11 +687,6 @@ $o-bookmark-color				: #bc2d0c !default;
 $o-imagebg-text-background		: rgba(255, 255, 255, 0.8) !default;
 $o-progress-marker-color		: rgb(255, 0, 0) !default; /* danger color */
 $o-cal-desc-background-color	: $o-toolbar-bg-color !default;
-$o-qpool-draft-bg-color			: $o-toolbar-bg-color !default;
-$o-qpool-review-bg-color			: $o-toolbar-bg-color !default;
-$o-qpool-revised-bg-color		: $o-toolbar-bg-color !default;
-$o-qpool-final-bg-color			: $o-toolbar-bg-color !default;
-$o-qpool-end-of-life-bg-color	: $o-toolbar-bg-color !default;
-$o-qpool-status-selected-color	: $link-color !default;
-$o-qpool-status-selected-font-weight	: bold !default;
+
+
 

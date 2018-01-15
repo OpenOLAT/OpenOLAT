@@ -3,34 +3,109 @@
 	text-align: center;
 }
 
-.o_qpool_tools_status > li.disabled {
-    background-color: darken($o-toolbar-bg-color, 13%);
+/* dropdown element in toolbar */
+a.o_qpool_tools_status,
+.dropdown-toggle.o_qpool_tools_status  {
+	@extend %o_label;
+}
+.dropdown-toggle.o_qpool_tools_status > i {
+	margin: 0 0 3px 0;
 }
 
-.o_toolbar .o_tools_container .o_qpool_tools_status a.o_disabled {
-    color: $o-toolbar-link-color !important;
+.dropdown-menu.o_qpool_tools_status {
+	cursor:pointer;
 }
 
-.btn-arrow-right.o_qpool_draft {
-	background: $o-qpool-draft-bg-color;
+/* status element in dropdown menu */
+a.o_qpool_status {
+	margin: 0 2px 2px 2px;
+	text-align: left;
 }
-.btn-arrow-right.o_qpool_review {
-	background: $o-qpool-review-bg-color;
+
+/* Status */
+a.o_qpool_status_draft,
+.dropdown-toggle.o_qpool_status_draft {
+    background-color: 	$o-qpool-draft-color !important;
+    border-color: 		$o-qpool-draft-color;
+    color: 				$o-qpool-status-color-bright	!important;
 }
-.btn-arrow-right.o_qpool_revised {
-	background: $o-qpool-revised-bg-color;
+a.o_qpool_status_review,
+.dropdown-toggle.o_qpool_status_review {
+    background-color: 	$o-qpool-review-color !important;
+    border-color: 		$o-qpool-review-color;
+    color: 				$o-qpool-status-color-bright !important;
 }
-.btn-arrow-right.o_qpool_final {
-	background: $o-qpool-final-bg-color;
+a.o_qpool_status_revised,
+.dropdown-toggle.o_qpool_status_revised {
+    background-color: 	$o-qpool-revised-color !important;
+    border-color: 		$o-qpool-revised-color;
+    color: 				$o-qpool-status-color-bright !important;
 }
-.btn-arrow-right.o_qpool_end_of_life {
-	background: $o-qpool-end-of-life-bg-color;
+a.o_qpool_status_finalVersion,
+.dropdown-toggle.o_qpool_status_finalVersion {
+    background-color: 	$o-qpool-finalVersion-color !important;
+    border-color: 		$o-qpool-finalVersion-color;
+    color: 				$o-qpool-status-color-bright !important;
+}
+a.o_qpool_status_endOfLife,
+.dropdown-toggle.o_qpool_status_endOfLife {
+    background-color: 	$o-qpool-endOfLife-color !important;
+    border-color: 		$o-qpool-endOfLife-color;
+    color: 				$o-qpool-status-color-bright !important;
+}
+
+/* Status light */
+.o_qpool_status_draft_light {
+    border-color: 		$o-qpool-draft-color;
+    color: 				$o-qpool-draft-color;
+}
+.o_qpool_status_review_light {
+    border-color: 		$o-qpool-review-color;
+    color: 				$o-qpool-review-color-dark;
+}
+.o_qpool_status_revised_light {
+    border-color: 		$o-qpool-revised-color;
+    color: 				$o-qpool-revised-color;
+}
+.o_qpool_status_finalVersion_light {
+    border-color: 		$o-qpool-finalVersion-color;
+    color: 				$o-qpool-finalVersion-color;
+}
+.o_qpool_status_endOfLife_light {
+    border-color: 		$o-qpool-endOfLife-color;
+    color: 				$o-qpool-endOfLife-color;
+}
+
+/* Status arrows */
+.btn-arrow-right.o_qpool_qitem_draft {
+	background: $o-qpool-arrow-bg-color;
+	border-bottom-color: $o-qpool-draft-color;
+	border-bottom-width: $o-qpool-arrow-border-bottom-width
+}
+.btn-arrow-right.o_qpool_qitem_review {
+	background: $o-qpool-arrow-bg-color;
+	border-bottom-color: $o-qpool-review-color;
+	border-bottom-width: $o-qpool-arrow-border-bottom-width
+}
+.btn-arrow-right.o_qpool_qitem_revised {
+	background: $o-qpool-arrow-bg-color;
+	border-bottom-color: $o-qpool-revised-color;
+	border-bottom-width: $o-qpool-arrow-border-bottom-width
+}
+.btn-arrow-right.o_qpool_qitem_final {
+	background: $o-qpool-arrow-bg-color;
+	border-bottom-color: $o-qpool-finalVersion-color;
+	border-bottom-width: $o-qpool-arrow-border-bottom-width
+}
+.btn-arrow-right.o_qpool_qitem_end_of_life {
+	background: $o-qpool-arrow-bg-color;
+	border-bottom-color: $o-qpool-endOfLife-color;;
+	border-bottom-width: $o-qpool-arrow-border-bottom-width
 }
 .btn-arrow-right.o_qpool_status_slected {
-	color: $o-qpool-status-selected-color;
-	font-weight: $o-qpool-status-selected-font-weight;
+	color: $o-qpool-arrow-selected-color;
+	font-weight: $o-qpool-arrow-selected-font-weight;
 }
-
 
 // Thanks to https://github.com/shpoont/bootstrap-arrow-buttons
 .btn-arrow-right,

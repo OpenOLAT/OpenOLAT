@@ -94,9 +94,6 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link sharePoolItemLink;
 	private Link exportItemLink;
 	private Link copyItemLink;
-	private Dropdown statusDropdown;
-	private Dropdown commandDropdown;
-	private Dropdown sharesDropdown;
 
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -204,14 +201,14 @@ public class QuestionItemDetailsController extends BasicController implements To
 	public void initTools() {
 		stackPanel.removeAllTools();
 		initCommandTools();
-		initStatusTools(); 
 		initShareTools();
+		initStatusTools(); 
 		initPrevNextTools();
 		initMetadataTools();
 	}
 
 	private void initCommandTools() {
-		commandDropdown = new Dropdown("commands", "commands", false, getTranslator());
+		Dropdown commandDropdown = new Dropdown("commands", "commands", false, getTranslator());
 		commandDropdown.setIconCSS("o_icon o_icon-fw o_icon_qitem_commands");
 		commandDropdown.setOrientation(DropdownOrientation.normal);
 		stackPanel.addTool(commandDropdown, Align.left);
@@ -228,65 +225,74 @@ public class QuestionItemDetailsController extends BasicController implements To
 	}
 
 	private void initStatusTools() {
-		statusDropdown = new Dropdown("process.states", "process.states", false, getTranslator());
-		statusDropdown.setElementCssClass("o_qpool_tools_status");
-		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_qitem_status");
-		statusDropdown.setOrientation(DropdownOrientation.normal);
-		
-		boolean hasDropdownComponents = false;
+		Component statusCmp;
+		if (canChangeStatus()) {
+			statusCmp = buildStatusDrowdown();
+		} else {
+			statusCmp = buildStatusLink();
+		}
+		stackPanel.addTool(statusCmp, Align.left);
+	}
+	
+	private boolean canChangeStatus() {
 		QuestionStatus actualStatus = metadatasCtrl.getItem().getQuestionStatus();
-		if (qItemSecurityCallback.canSetDraft() || QuestionStatus.draft.equals(actualStatus)) {
-			statusDraftLink = LinkFactory.createToolLink("lifecycle.status.draft", translate("lifecycle.status.draft"), this);
-			statusDraftLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_draft o_qpool_draft");
-			if (QuestionStatus.draft.equals(actualStatus)) {
-				statusDraftLink.setEnabled(false);
-			}
-			statusDropdown.addComponent(statusDraftLink);
-			hasDropdownComponents = true;
-		}
-		if (qItemSecurityCallback.canSetRevised() || QuestionStatus.revised.equals(actualStatus)) {
-			statusRevisedLink = LinkFactory.createToolLink("lifecycle.status.revised", translate("lifecycle.status.revised"), this);
-			statusRevisedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_revised o_qpool_revised");
-			if (QuestionStatus.revised.equals(actualStatus)) {
-				statusRevisedLink.setEnabled(false);
-			}
-			statusDropdown.addComponent(statusRevisedLink);
-			hasDropdownComponents = true;
-		}
-		if (qItemSecurityCallback.canSetReview() || QuestionStatus.review.equals(actualStatus)) {
-			statusReviewLink = LinkFactory.createToolLink("lifecycle.status.review", translate("lifecycle.status.review"), this);
-			statusReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_review o_qpool_review");
-			if (QuestionStatus.review.equals(actualStatus)) {
-				statusReviewLink.setEnabled(false);
-			}
-			statusDropdown.addComponent(statusReviewLink);
-			hasDropdownComponents = true;
-		}
-		if (qItemSecurityCallback.canSetFinal() || QuestionStatus.finalVersion.equals(actualStatus)) {
-			statusFinalLink = LinkFactory.createToolLink("lifecycle.status.finalVersion", translate("lifecycle.status.finalVersion"), this);
-			statusFinalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_finalVersion o_qpool_final");
-			if (QuestionStatus.finalVersion.equals(actualStatus)) {
-				statusFinalLink.setEnabled(false);
-			}
-			statusDropdown.addComponent(statusFinalLink);
-			hasDropdownComponents = true;
-		}
-		if (qItemSecurityCallback.canSetEndOfLife() || QuestionStatus.endOfLife.equals(actualStatus)) {
-			statusEndOfLifeLink = LinkFactory.createToolLink("lifecycle.status.endOfLife", translate("lifecycle.status.endOfLife"), this);
-			statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_endOfLife o_qpool_end_of_life");
-			if (QuestionStatus.endOfLife.equals(actualStatus)) {
-				statusEndOfLifeLink.setEnabled(false);
-			}
-			statusDropdown.addComponent(statusEndOfLifeLink);
-			hasDropdownComponents = true;
-		}
-		if (hasDropdownComponents) {
-			stackPanel.addTool(statusDropdown, Align.left);
-		}
+		return (qItemSecurityCallback.canSetDraft() && !QuestionStatus.draft.equals(actualStatus))
+				|| (qItemSecurityCallback.canSetRevised() && !QuestionStatus.revised.equals(actualStatus))
+				|| (qItemSecurityCallback.canSetReview() && !QuestionStatus.review.equals(actualStatus))
+				|| (qItemSecurityCallback.canSetFinal() && !QuestionStatus.finalVersion.equals(actualStatus))
+				|| (qItemSecurityCallback.canSetEndOfLife() && !QuestionStatus.endOfLife.equals(actualStatus));
+	}
+	private Dropdown buildStatusDrowdown() {
+		QuestionStatus actualStatus = metadatasCtrl.getItem().getQuestionStatus();
+
+		Dropdown statusDropdown = new Dropdown("process.states", "lifecycle.status." + actualStatus.name(), false, getTranslator());
+		statusDropdown.setElementCssClass("o_qpool_tools_status o_qpool_status_" + actualStatus.name());
+		statusDropdown.setIconCSS("o_icon o_icon-fw o_icon_qitem_" + actualStatus.name());
+		statusDropdown.setOrientation(DropdownOrientation.normal);;
+	
+		statusDraftLink = LinkFactory.createToolLink("lifecycle.status.draft", translate("lifecycle.status.draft"), this);
+		statusDraftLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_draft");
+		statusDraftLink.setElementCssClass("o_label o_qpool_status o_qpool_status_draft");
+		statusDraftLink.setVisible(qItemSecurityCallback.canSetDraft() && !QuestionStatus.draft.equals(actualStatus));
+		statusDropdown.addComponent(statusDraftLink);
+
+		statusRevisedLink = LinkFactory.createToolLink("lifecycle.status.revised", translate("lifecycle.status.revised"), this);
+		statusRevisedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_revised");
+		statusRevisedLink.setElementCssClass("o_label o_qpool_status o_qpool_status_revised");
+		statusRevisedLink.setVisible(qItemSecurityCallback.canSetRevised() && !QuestionStatus.revised.equals(actualStatus));
+		statusDropdown.addComponent(statusRevisedLink);
+		
+		statusReviewLink = LinkFactory.createToolLink("lifecycle.status.review", translate("lifecycle.status.review"), this);
+		statusReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_review");
+		statusReviewLink.setElementCssClass("o_label o_qpool_status o_qpool_status_review");
+		statusReviewLink.setVisible(qItemSecurityCallback.canSetReview() && !QuestionStatus.review.equals(actualStatus));
+		statusDropdown.addComponent(statusReviewLink);
+		
+		statusFinalLink = LinkFactory.createToolLink("lifecycle.status.finalVersion", translate("lifecycle.status.finalVersion"), this);
+		statusFinalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_finalVersion");
+		statusFinalLink.setElementCssClass("o_label o_qpool_status o_qpool_status_finalVersion");
+		statusFinalLink.setVisible(qItemSecurityCallback.canSetFinal() && !QuestionStatus.finalVersion.equals(actualStatus));
+		statusDropdown.addComponent(statusFinalLink);
+		
+		statusEndOfLifeLink = LinkFactory.createToolLink("lifecycle.status.endOfLife", translate("lifecycle.status.endOfLife"), this);
+		statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_endOfLife");
+		statusEndOfLifeLink.setElementCssClass("o_label o_qpool_status o_qpool_status_endOfLife");
+		statusEndOfLifeLink.setVisible(qItemSecurityCallback.canSetEndOfLife() && !QuestionStatus.endOfLife.equals(actualStatus));
+		statusDropdown.addComponent(statusEndOfLifeLink);
+
+		return statusDropdown;
 	}
 
+	private Component buildStatusLink() {
+		QuestionStatus actualStatus = metadatasCtrl.getItem().getQuestionStatus();
+		Link statusLink = LinkFactory.createToolLink("status.link", translate("lifecycle.status." + actualStatus.name()), this);
+		statusLink.setElementCssClass("o_qpool_tools_status o_qpool_status_" + actualStatus.name());
+		statusLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_" + actualStatus.name());
+		return statusLink;
+	}
+	
 	private void initShareTools() {
-		sharesDropdown = new Dropdown("share.item", "share.item", false, getTranslator());
+		Dropdown sharesDropdown = new Dropdown("share.item", "share.item", false, getTranslator());
 		sharesDropdown.setIconCSS("o_icon o_icon-lg o_icon_qitem_share");
 		sharesDropdown.setOrientation(DropdownOrientation.normal);
 		stackPanel.addTool(sharesDropdown, Align.left);

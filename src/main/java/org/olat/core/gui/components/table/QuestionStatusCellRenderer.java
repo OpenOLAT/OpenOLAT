@@ -28,41 +28,32 @@ import org.olat.modules.qpool.QuestionStatus;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionStatusRenderer extends IconCssCellRenderer {
+public class QuestionStatusCellRenderer extends LabelCellRenderer {
 
-	private final Translator translator;
-	
-	public QuestionStatusRenderer(Translator translator) {
-		this.translator = translator;
+	@Override
+	protected String getElementCssClass(Object val) {
+		if (val instanceof QuestionStatus) {
+			QuestionStatus status = (QuestionStatus) val;
+			return "o_qpool_status_" + status.name() + "_light";
+		}
+		return null;
 	}
 	
 	@Override
-	protected String getCssClass(Object val) {
+	protected String getIconCssClass(Object val) {
 		if (val instanceof QuestionStatus) {
 			QuestionStatus status = (QuestionStatus) val;
-			switch (status) {
-				case draft: return "o_icon o_icon_qitem_draft";
-				case revised: return "o_icon o_icon_qitem_revised";
-				case review: return "o_icon o_icon_qitem_review";
-				case finalVersion: return "o_icon o_icon_qitem_finalVersion";
-				case endOfLife: return "o_icon o_icon_qitem_endOfLife";
-				default: break;
-			}
+			return "o_icon_qitem_" + status.name();
 		}
 		return null;
 	}
 
 	@Override
-	protected String getCellValue(Object val) {
+	protected String getCellValue(Object val, Translator translator) {
 		if (val instanceof QuestionStatus) {
 			QuestionStatus status = (QuestionStatus) val;
 			return translator.translate("lifecycle.status." + status.name());
 		}
-		return null;
-	}
-
-	@Override
-	protected String getHoverText(Object val) {
 		return null;
 	}
 

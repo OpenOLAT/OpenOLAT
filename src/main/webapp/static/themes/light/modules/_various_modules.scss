@@ -667,3 +667,27 @@ ul.o_assessment_docs>li:last-child {
 	padding-bottom: floor($grid-gutter-width / 2);
 }
 
+/* label */
+%o_label,
+.o_label {
+    text-transform: uppercase;
+	text-align: center;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	font-size: 75% !important;
+	font-weight: bold !important;
+	line-height: 1;
+	white-space: nowrap;
+    	border: 1px solid;
+	border-radius: 3px;
+	padding: 2px 5px;
+    background-color: $o-label_bg-color;
+    color: $o-label_color;
+}
+.o_label_light {
+	@extend %o_label;
+    background-color: 	$o-label-light-bg-color;
+ }
+ .dropdown-menu.o_label {
+ 	background-color: inherit;
+ }
