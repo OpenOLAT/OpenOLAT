@@ -44,4 +44,9 @@ public class ReadOnlyMetadataSecurityCallback implements MetadataSecurityCallbac
 		return false;
 	}
 
+	@Override
+	public boolean canEditAuthors() {
+		return false;
+	}
+
 }

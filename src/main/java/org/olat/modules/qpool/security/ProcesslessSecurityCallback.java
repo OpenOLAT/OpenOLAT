@@ -165,4 +165,9 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 		return admin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
 	}
 
+	@Override
+	public boolean canEditAuthors() {
+		return admin || itemView.isAuthor();
+	}
+
 }

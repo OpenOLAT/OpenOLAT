@@ -32,5 +32,7 @@ public interface MetadataSecurityCallback {
 	public boolean canRemoveTaxonomy();
 	
 	public boolean canChangeVersion();
+	
+	public boolean canEditAuthors();
 
 }

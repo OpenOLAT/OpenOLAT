@@ -318,7 +318,7 @@ public class QuestionListController extends AbstractItemListController implement
 					showWarning("error.select.one");
 				}
 			} else if(link == authorItem) {
-				List<QuestionItemShort> items = getSelectedShortItems();
+				List<QuestionItemShort> items = getAuthorsEditableItems();
 				if(!items.isEmpty()) {
 					doChooseAuthors(ureq, items);
 				} else {
@@ -353,6 +353,13 @@ public class QuestionListController extends AbstractItemListController implement
 		return getItemsTable().getMultiSelectedIndex().stream()
 				.map(index -> getModel().getObject(index.intValue()))
 				.filter(itemRow -> itemRow.getSecurityCallback().canDelete())
+				.collect(Collectors.toList());
+	}
+	
+	private List<QuestionItemShort> getAuthorsEditableItems() {
+		return getItemsTable().getMultiSelectedIndex().stream()
+				.map(index -> getModel().getObject(index.intValue()))
+				.filter(itemRow -> itemRow.getSecurityCallback().canEditAuthors())
 				.collect(Collectors.toList());
 	}
 	

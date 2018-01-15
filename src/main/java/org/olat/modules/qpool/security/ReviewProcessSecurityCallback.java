@@ -165,4 +165,9 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 		return false;
 	}
 
+	@Override
+	public boolean canEditAuthors() {
+		return admin || itemView.isAuthor();
+	}
+
 }

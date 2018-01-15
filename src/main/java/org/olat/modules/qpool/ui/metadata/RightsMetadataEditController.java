@@ -148,7 +148,7 @@ public class RightsMetadataEditController extends FormBasicController {
 	
 	private void setReadOnly() {
 		boolean canEditMetadata = securityCallback.canEditMetadata();
-		managerOwners.setVisible(canEditMetadata);
+		managerOwners.setVisible(securityCallback.canEditAuthors());
 		creatorEl.setEnabled(canEditMetadata);
 		copyrightEl.setEnabled(canEditMetadata);
 		descriptionEl.setEnabled(canEditMetadata);
