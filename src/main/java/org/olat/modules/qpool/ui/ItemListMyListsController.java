@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.datasource.CollectionOfItemsSource;
@@ -50,8 +51,8 @@ public class ItemListMyListsController extends AbstractItemListController {
     
 	private List<QuestionItemCollection> myCollections;
 
-	public ItemListMyListsController(UserRequest ureq, WindowControl wControl, String restrictToFormat) {
-		super(ureq, wControl, new EmptyItemsSource(), restrictToFormat, "select");
+	public ItemListMyListsController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback, String restrictToFormat) {
+		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, "select");
 	}
 	
 	@Override

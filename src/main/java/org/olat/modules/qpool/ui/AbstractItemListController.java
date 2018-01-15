@@ -113,14 +113,14 @@ public abstract class AbstractItemListController extends FormBasicController
 		this(ureq, wControl, securityCallback, source, null, key, searchAllTaxonomyLevels);
 	}
 	
-	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source,
-			String key) {
-		this(ureq, wControl, null, source, null, key, false);
+	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,
+			QuestionItemsSource source, String key) {
+		this(ureq, wControl, securityCallback, source, null, key, false);
 	}
 	
-	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source,
-			String restrictToFormat, String key) {
-		this(ureq, wControl, null, source, restrictToFormat, key, false);
+	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,
+			QuestionItemsSource source, String restrictToFormat, String key) {
+		this(ureq, wControl, securityCallback, source, restrictToFormat, key, false);
 	}
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,

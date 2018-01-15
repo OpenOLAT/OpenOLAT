@@ -33,6 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.datasource.EmptyItemsSource;
 import org.olat.modules.qpool.ui.datasource.PoolItemsSource;
@@ -53,8 +54,8 @@ public class ItemListMySharesController extends AbstractItemListController {
 	private List<Pool> myPools;
 	private List<BusinessGroup> myGroups;
 
-	public ItemListMySharesController(UserRequest ureq, WindowControl wControl, String restrictToFormat) {
-		super(ureq, wControl, new EmptyItemsSource(), restrictToFormat, "select");
+	public ItemListMySharesController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback, String restrictToFormat) {
+		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, "select");
 	}
 	
 	@Override

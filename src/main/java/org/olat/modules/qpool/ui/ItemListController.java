@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 
@@ -42,8 +43,8 @@ public class ItemListController extends AbstractItemListController {
 	
 	private FormLink selectLink;
 	
-	public ItemListController(UserRequest ureq, WindowControl wControl, QuestionItemsSource source) {
-		super(ureq, wControl, source, "select");
+	public ItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback, QuestionItemsSource source) {
+		super(ureq, wControl, secCallback, source, "select");
 		
 		initForm(ureq);
 	}

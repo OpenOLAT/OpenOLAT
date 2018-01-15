@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.ui.datasource.EmptyItemsSource;
 import org.olat.modules.qpool.ui.datasource.FinalItemsSource;
@@ -54,8 +55,8 @@ public class ItemListMyCompetencesController extends AbstractItemListController 
     private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 
 
-	public ItemListMyCompetencesController(UserRequest ureq, WindowControl wControl, String restrictToFormat) {
-		super(ureq, wControl, new EmptyItemsSource(), restrictToFormat, "select");
+	public ItemListMyCompetencesController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback, String restrictToFormat) {
+		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, "select");
 	}
 	
 	@Override
