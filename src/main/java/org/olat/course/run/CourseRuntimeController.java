@@ -283,17 +283,18 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			}
 		}
 		
-		courseRightsCache = new HashMap<String, Boolean>();
+		courseRightsCache = new HashMap<>();
 		if(!security.isEntryAdmin() && !isGuestOnly) {
 			List<String> rights = cgm.getRights(getIdentity());
-			courseRightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, new Boolean(rights.contains(CourseRights.RIGHT_GROUPMANAGEMENT)));
-			courseRightsCache.put(CourseRights.RIGHT_MEMBERMANAGEMENT, new Boolean(rights.contains(CourseRights.RIGHT_MEMBERMANAGEMENT)));
-			courseRightsCache.put(CourseRights.RIGHT_COURSEEDITOR, new Boolean(rights.contains(CourseRights.RIGHT_COURSEEDITOR)));
-			courseRightsCache.put(CourseRights.RIGHT_ARCHIVING, new Boolean(rights.contains(CourseRights.RIGHT_ARCHIVING)));
-			courseRightsCache.put(CourseRights.RIGHT_ASSESSMENT, new Boolean(rights.contains(CourseRights.RIGHT_ASSESSMENT)));
-			courseRightsCache.put(CourseRights.RIGHT_GLOSSARY, new Boolean(rights.contains(CourseRights.RIGHT_GLOSSARY)));
-			courseRightsCache.put(CourseRights.RIGHT_STATISTICS, new Boolean(rights.contains(CourseRights.RIGHT_STATISTICS)));
-			courseRightsCache.put(CourseRights.RIGHT_DB, new Boolean(rights.contains(CourseRights.RIGHT_DB)));
+			courseRightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_GROUPMANAGEMENT)));
+			courseRightsCache.put(CourseRights.RIGHT_MEMBERMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_MEMBERMANAGEMENT)));
+			courseRightsCache.put(CourseRights.RIGHT_COURSEEDITOR, Boolean.valueOf(rights.contains(CourseRights.RIGHT_COURSEEDITOR)));
+			courseRightsCache.put(CourseRights.RIGHT_ARCHIVING, Boolean.valueOf(rights.contains(CourseRights.RIGHT_ARCHIVING)));
+			courseRightsCache.put(CourseRights.RIGHT_ASSESSMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_ASSESSMENT)));
+			courseRightsCache.put(CourseRights.RIGHT_ASSESSMENT_MODE, Boolean.valueOf(rights.contains(CourseRights.RIGHT_ASSESSMENT_MODE)));
+			courseRightsCache.put(CourseRights.RIGHT_GLOSSARY, Boolean.valueOf(rights.contains(CourseRights.RIGHT_GLOSSARY)));
+			courseRightsCache.put(CourseRights.RIGHT_STATISTICS, Boolean.valueOf(rights.contains(CourseRights.RIGHT_STATISTICS)));
+			courseRightsCache.put(CourseRights.RIGHT_DB, Boolean.valueOf(rights.contains(CourseRights.RIGHT_DB)));
 		}
 	}
 
@@ -418,7 +419,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				&& !hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) && !hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)
 				&& !hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) && !hasCourseRight(CourseRights.RIGHT_ARCHIVING)
 					&& !hasCourseRight(CourseRights.RIGHT_STATISTICS) && !hasCourseRight(CourseRights.RIGHT_DB)
-					&& !hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+					&& !hasCourseRight(CourseRights.RIGHT_ASSESSMENT) && !hasCourseRight(CourseRights.RIGHT_ASSESSMENT_MODE)) {
 			toolbarPanel.setToolbarEnabled(false);
 		} else {
 			toolbarPanel.setToolbarEnabled(true);
@@ -455,7 +456,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				|| hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)
 				|| hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) || hasCourseRight(CourseRights.RIGHT_ARCHIVING)
 				|| hasCourseRight(CourseRights.RIGHT_STATISTICS) || hasCourseRight(CourseRights.RIGHT_DB)
-				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+				|| hasCourseRight(CourseRights.RIGHT_ASSESSMENT) || hasCourseRight(CourseRights.RIGHT_ASSESSMENT_MODE)) {
 
 			tools.setI18nKey("header.tools");
 			tools.setElementCssClass("o_sel_course_tools");
@@ -542,7 +543,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	@Override
 	protected void initSettingsTools(Dropdown settings) {
-		if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+		boolean courseAuthorRight = reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR);
+		if (courseAuthorRight || hasCourseRight(CourseRights.RIGHT_ASSESSMENT_MODE)) {
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
 			UserCourseEnvironment uce = getUserCourseEnvironment();
 			if(uce == null) {
@@ -552,54 +554,59 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			
 			settings.setElementCssClass("o_sel_course_settings");
 			
-			editDescriptionLink = LinkFactory.createToolLink("settings.cmd", translate("command.settings"), this, "o_icon_details");
-			editDescriptionLink.setElementCssClass("o_sel_course_settings");
-			editDescriptionLink.setEnabled(!managed);
-			settings.addComponent(editDescriptionLink);
+			if(courseAuthorRight) {
+				editDescriptionLink = LinkFactory.createToolLink("settings.cmd", translate("command.settings"), this, "o_icon_details");
+				editDescriptionLink.setElementCssClass("o_sel_course_settings");
+				editDescriptionLink.setEnabled(!managed);
+				settings.addComponent(editDescriptionLink);
+				
+				accessLink = LinkFactory.createToolLink("access.cmd", translate("command.access"), this, "o_icon_password");
+				accessLink.setElementCssClass("o_sel_course_access");
+				accessLink.setEnabled(!managed);
+				settings.addComponent(accessLink);
+			}
 			
-			accessLink = LinkFactory.createToolLink("access.cmd", translate("command.access"), this, "o_icon_password");
-			accessLink.setElementCssClass("o_sel_course_access");
-			accessLink.setEnabled(!managed);
-			settings.addComponent(accessLink);
-			
+			//course author right or the assessment mode access right 
 			assessmentModeLink = LinkFactory.createToolLink("assessment.mode.cmd", translate("command.assessment.mode"), this, "o_icon_assessment_mode");
 			assessmentModeLink.setElementCssClass("o_sel_course_assessment_mode");
 			assessmentModeLink.setEnabled(!managed);
 			assessmentModeLink.setVisible(assessmentModule.isAssessmentModeEnabled() && !uce.isCourseReadOnly());
 			settings.addComponent(assessmentModeLink);
 			
-			catalogLink = LinkFactory.createToolLink("access.cmd", translate("command.catalog"), this, "o_icon_catalog");
-			catalogLink.setElementCssClass("o_sel_course_catalog");
-			catalogLink.setVisible(repositoryModule.isCatalogEnabled() && !uce.isCourseReadOnly());
-			settings.addComponent(catalogLink);
+			if(courseAuthorRight) {
+				catalogLink = LinkFactory.createToolLink("access.cmd", translate("command.catalog"), this, "o_icon_catalog");
+				catalogLink.setElementCssClass("o_sel_course_catalog");
+				catalogLink.setVisible(repositoryModule.isCatalogEnabled() && !uce.isCourseReadOnly());
+				settings.addComponent(catalogLink);
+				
+				settings.addComponent(new Spacer(""));
+				
+				boolean layoutManaged = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.layout);
+				layoutLink = LinkFactory.createToolLink("access.cmd", translate("command.layout"), this, "o_icon_layout");
+				layoutLink.setElementCssClass("o_sel_course_layout");
+				layoutLink.setEnabled(!layoutManaged);
+				layoutLink.setVisible(!uce.isCourseReadOnly());
+				settings.addComponent(layoutLink);
+				
+				optionsLink = LinkFactory.createToolLink("access.cmd", translate("command.options"), this, "o_icon_options");
+				optionsLink.setElementCssClass("o_sel_course_options");
+				optionsLink.setVisible(!uce.isCourseReadOnly());
+				settings.addComponent(optionsLink);
+				
+				certificatesOptionsLink = LinkFactory.createToolLink("certificates.cmd", translate("command.options.certificates"), this, "o_icon_certificate");
+				certificatesOptionsLink.setElementCssClass("o_sel_course_options_certificates");
+				certificatesOptionsLink.setVisible(!uce.isCourseReadOnly());
+				settings.addComponent(certificatesOptionsLink);
+			}
 			
-			settings.addComponent(new Spacer(""));
-			
-			boolean layoutManaged = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.layout);
-			layoutLink = LinkFactory.createToolLink("access.cmd", translate("command.layout"), this, "o_icon_layout");
-			layoutLink.setElementCssClass("o_sel_course_layout");
-			layoutLink.setEnabled(!layoutManaged);
-			layoutLink.setVisible(!uce.isCourseReadOnly());
-			settings.addComponent(layoutLink);
-			
-			optionsLink = LinkFactory.createToolLink("access.cmd", translate("command.options"), this, "o_icon_options");
-			optionsLink.setElementCssClass("o_sel_course_options");
-			optionsLink.setVisible(!uce.isCourseReadOnly());
-			settings.addComponent(optionsLink);
-			
-			certificatesOptionsLink = LinkFactory.createToolLink("certificates.cmd", translate("command.options.certificates"), this, "o_icon_certificate");
-			certificatesOptionsLink.setElementCssClass("o_sel_course_options_certificates");
-			certificatesOptionsLink.setVisible(!uce.isCourseReadOnly());
-			settings.addComponent(certificatesOptionsLink);
-			
-			if(reminderModule.isEnabled()) {
+			if(courseAuthorRight && reminderModule.isEnabled()) {
 				reminderLink = LinkFactory.createToolLink("reminders.cmd", translate("command.options.reminders"), this, "o_icon_reminder");
 				reminderLink.setElementCssClass("o_sel_course_reminders");
 				reminderLink.setVisible(!uce.isCourseReadOnly());
 				settings.addComponent(reminderLink);
 			}
 			
-			if(lectureModule.isEnabled()) {
+			if(courseAuthorRight && lectureModule.isEnabled()) {
 				lecturesAdminLink = LinkFactory.createToolLink("lectures.admin.cmd", translate("command.options.lectures.admin"), this, "o_icon_lecture");
 				lecturesAdminLink.setElementCssClass("o_sel_course_lectures_admin");
 				lecturesAdminLink.setVisible(!uce.isCourseReadOnly());
@@ -1368,7 +1375,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	
 	private void doAssessmentMode(UserRequest ureq) {
 		if(delayedClose == Delayed.assessmentMode || requestForClose(ureq)) {
-			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
+			if (reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) || hasCourseRight(CourseRights.RIGHT_ASSESSMENT_MODE)) {
 				removeCustomCSS();
 				AssessmentModeListController ctrl = new AssessmentModeListController(ureq, getWindowControl(),
 						toolbarPanel, getRepositoryEntry());

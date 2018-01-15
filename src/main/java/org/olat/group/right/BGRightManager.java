@@ -28,6 +28,7 @@ package org.olat.group.right;
 import java.util.Collection;
 import java.util.List;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.group.BusinessGroup;
 import org.olat.resource.OLATResource;
@@ -65,7 +66,7 @@ public interface BGRightManager {
 	 * @param resource
 	 * @param role
 	 */
-	public void addBGRight(String bgRight, BusinessGroup group, OLATResource resource, BGRightsRole role);
+	public void addBGRight(String bgRight, Group group, OLATResource resource, BGRightsRole role);
 
 	/**
 	 * Remove a business group right from a business group
@@ -73,7 +74,7 @@ public interface BGRightManager {
 	 * @param bgRight
 	 * @param rightGroup
 	 */
-	public void removeBGRight(String bgRight, BusinessGroup group, OLATResource resource, BGRightsRole role);
+	public void removeBGRight(String bgRight, Group group, OLATResource resource, BGRightsRole role);
 	
 	/**
 	 * 
@@ -84,10 +85,12 @@ public interface BGRightManager {
 	public void removeBGRights(BusinessGroup group, OLATResource resource, BGRightsRole role);
 	
 	/**
+	 * Remove the rights hold by the specified list of base groups.
 	 * 
-	 * @param groups
+	 * @param groups The groups
+	 * @param resource The resource with rights
 	 */
-	public void removeBGRights(Collection<BusinessGroup> groups, OLATResource resource);
+	public void removeBGRights(Collection<Group> groups, OLATResource resource);
 
 	/**
 	 * @param bgRight
@@ -119,7 +122,7 @@ public interface BGRightManager {
 	 * @param resource
 	 * @return
 	 */
-	public List<BGRights> findBGRights(List<BusinessGroup> groups, OLATResource resource);
+	public List<BGRights> findBGRights(List<Group> groups, OLATResource resource);
 	
 	/**
 	 * 

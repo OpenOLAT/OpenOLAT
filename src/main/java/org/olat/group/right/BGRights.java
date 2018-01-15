@@ -27,6 +27,8 @@ package org.olat.group.right;
 
 import java.util.List;
 
+import org.olat.basesecurity.Group;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -37,7 +39,7 @@ public interface BGRights {
 	 * 
 	 * @return
 	 */
-	public Long getBusinessGroupKey();
+	public Group getBaseGroup();
 	
 	/**
 	 * 

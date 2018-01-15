@@ -59,7 +59,8 @@ public class CourseRights {
     public static final String RIGHT_GLOSSARY = BGRightManager.BG_RIGHT_PREFIX + "glossary";
     /** course right for statistics tool */
     public static final String RIGHT_STATISTICS = BGRightManager.BG_RIGHT_PREFIX + "statistics";
-    //fxdiff: right for course db
+    /** course right for assessment mode tool */
+    public static final String RIGHT_ASSESSMENT_MODE = BGRightManager.BG_RIGHT_PREFIX + "assessmode";
     /** course right for custom dbs */
     public static final String RIGHT_DB = BGRightManager.BG_RIGHT_PREFIX + "dbs";
     
@@ -68,7 +69,7 @@ public class CourseRights {
 
     static {
         // initialize list of valid course rights
-        rights = new ArrayList<String>();
+        rights = new ArrayList<>();
         rights.add(RIGHT_GROUPMANAGEMENT);
         rights.add(RIGHT_MEMBERMANAGEMENT);
         rights.add(RIGHT_COURSEEDITOR);
@@ -76,7 +77,7 @@ public class CourseRights {
         rights.add(RIGHT_ASSESSMENT);
         rights.add(RIGHT_GLOSSARY);
         rights.add(RIGHT_STATISTICS);
-        //fxdiff: right for course db
+        rights.add(RIGHT_ASSESSMENT_MODE);
         rights.add(RIGHT_DB);
     }
     
@@ -102,7 +103,8 @@ public class CourseRights {
                 RIGHT_COURSEEDITOR,
                 RIGHT_ARCHIVING,
                 RIGHT_GLOSSARY,
-                RIGHT_STATISTICS
+                RIGHT_STATISTICS,
+                RIGHT_ASSESSMENT_MODE
         };
     }
 
@@ -120,13 +122,13 @@ public class CourseRights {
                 trans.translate(RIGHT_COURSEEDITOR),
                 trans.translate(RIGHT_ARCHIVING),
                 trans.translate(RIGHT_GLOSSARY),
-                trans.translate(RIGHT_STATISTICS)
+                trans.translate(RIGHT_STATISTICS),
+                trans.translate(RIGHT_ASSESSMENT_MODE)
         };
     }
     
     public static List<String> getAvailableRights() {
-    	List<String> available = new ArrayList<String>(rights);
-    	return available;
+    		return new ArrayList<String>(rights);
     }
 
     /**
@@ -142,5 +144,4 @@ public class CourseRights {
     public String transateRight(String right) {
         return trans.translate(right);
     }
-
 }

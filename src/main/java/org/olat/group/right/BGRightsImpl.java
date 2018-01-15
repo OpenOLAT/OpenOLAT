@@ -22,25 +22,26 @@ package org.olat.group.right;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.Group;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class BGRightsImpl implements BGRights {
 	
-	private final Long groupKey;
-	private final List<String> rights = new ArrayList<String>();
+	private final Group group;
+	private final List<String> rights = new ArrayList<>();
 	private final BGRightsRole role;
 	
-	public BGRightsImpl(Long groupKey, BGRightsRole role) {
-		this.groupKey = groupKey;
+	public BGRightsImpl(Group group, BGRightsRole role) {
+		this.group = group;
 		this.role = role;
 	}
 	
-
 	@Override
-	public Long getBusinessGroupKey() {
-		return groupKey;
+	public Group getBaseGroup() {
+		return group;
 	}
 
 	@Override
@@ -55,7 +56,7 @@ public class BGRightsImpl implements BGRights {
 
 	@Override
 	public int hashCode() {
-		return groupKey == null ? 49872 : groupKey.hashCode();
+		return group == null ? 49872 : group.hashCode();
 	}
 
 	@Override
@@ -65,7 +66,7 @@ public class BGRightsImpl implements BGRights {
 		}
 		if(obj instanceof BGRightsImpl) {
 			BGRightsImpl rImpl = (BGRightsImpl)obj;
-			return groupKey != null && groupKey.equals(rImpl.groupKey)
+			return group != null && group.equals(rImpl.group)
 					&& role != null && role.equals(rImpl.role);
 		}
 		return super.equals(obj);

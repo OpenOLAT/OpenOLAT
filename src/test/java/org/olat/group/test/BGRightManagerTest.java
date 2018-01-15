@@ -38,6 +38,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.Grant;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -113,7 +114,7 @@ public class BGRightManagerTest extends OlatTestCase {
 	public void addRightWithResource() {
 		RepositoryEntry c1 =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup g1 = businessGroupService.createBusinessGroup(null, "addRight", null, -1, -1, false, false, c1);
-		rightManager.addBGRight("test-right", g1, c1.getOlatResource(), BGRightsRole.participant);
+		rightManager.addBGRight("test-right", g1.getBaseGroup(), c1.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 	}
 	
@@ -142,7 +143,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "hasBGRight", null, -1, -1, false, false, resource);
 		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
-		rightManager.addBGRight("bgr.has-right", group, resource.getOlatResource(), BGRightsRole.participant);
+		rightManager.addBGRight("bgr.has-right", group.getBaseGroup(), resource.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 		
 		//check if the right is set
@@ -160,7 +161,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, -1, -1, false, false, resource);
 	    businessGroupRelationDao.addRole(identity, group, GroupRoles.coach.name());
-		rightManager.addBGRight("bgr.right1", group, resource.getOlatResource(), BGRightsRole.tutor);
+		rightManager.addBGRight("bgr.right1", group.getBaseGroup(), resource.getOlatResource(), BGRightsRole.tutor);
 		dbInstance.commitAndCloseSession();
 		
 		//check if the rights are set
@@ -176,7 +177,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		RepositoryEntry resource =  JunitTestHelper.createAndPersistRepositoryEntry();
 		BusinessGroup group = businessGroupService.createBusinessGroup(null, "tpBGRight", null, -1, -1, false, false, resource);
 		businessGroupRelationDao.addRole(identity, group, GroupRoles.participant.name());
-		rightManager.addBGRight("bgr.right1", group, resource.getOlatResource(), BGRightsRole.tutor);
+		rightManager.addBGRight("bgr.right1", group.getBaseGroup(), resource.getOlatResource(), BGRightsRole.tutor);
 		dbInstance.commitAndCloseSession();
 		
 		//check if the rights are set
@@ -199,8 +200,8 @@ public class BGRightManagerTest extends OlatTestCase {
 	    businessGroupRelationDao.addRole(identity2, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(identity2, group, GroupRoles.participant.name());
 	    businessGroupRelationDao.addRole(identity3, group, GroupRoles.coach.name());
-		rightManager.addBGRight("bgr.right1", group, resource.getOlatResource(), BGRightsRole.tutor);
-		rightManager.addBGRight("bgr.right2", group, resource.getOlatResource(), BGRightsRole.participant);
+		rightManager.addBGRight("bgr.right1", group.getBaseGroup(), resource.getOlatResource(), BGRightsRole.tutor);
+		rightManager.addBGRight("bgr.right2", group.getBaseGroup(), resource.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 		
 		//check if the rights are set
@@ -279,7 +280,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", identity, resource.getOlatResource()));
 		
 		//remove right 1
-		rightManager.removeBGRight("bgr.removeright1", group, resource.getOlatResource(), BGRightsRole.participant);
+		rightManager.removeBGRight("bgr.removeright1", group.getBaseGroup(), resource.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 		
 		//check if there is only 1 right
@@ -302,10 +303,10 @@ public class BGRightManagerTest extends OlatTestCase {
 		businessGroupService.addResourceTo(group, resource2);
 	    businessGroupRelationDao.addRole(tutor, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
-		rightManager.addBGRight("bgr.removeright1", group, resource1.getOlatResource(), BGRightsRole.tutor);
-		rightManager.addBGRight("bgr.removeright2", group, resource1.getOlatResource(), BGRightsRole.participant);
-		rightManager.addBGRight("bgr.dontrmght3", group, resource2.getOlatResource(), BGRightsRole.tutor);
-		rightManager.addBGRight("bgr.dontrmght4", group, resource2.getOlatResource(), BGRightsRole.participant);
+		rightManager.addBGRight("bgr.removeright1", group.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.tutor);
+		rightManager.addBGRight("bgr.removeright2", group.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.participant);
+		rightManager.addBGRight("bgr.dontrmght3", group.getBaseGroup(), resource2.getOlatResource(), BGRightsRole.tutor);
+		rightManager.addBGRight("bgr.dontrmght4", group.getBaseGroup(), resource2.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 		
 		//check if the rights are set
@@ -315,7 +316,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Assert.assertTrue(rightManager.hasBGRight("bgr.removeright2", participant, resource1.getOlatResource()));
 		
 		//remove tutor right 1
-		rightManager.removeBGRight("bgr.removeright1", group, resource1.getOlatResource(), BGRightsRole.tutor);
+		rightManager.removeBGRight("bgr.removeright1", group.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.tutor);
 		dbInstance.commitAndCloseSession();
 		
 		//check if there is only 1 right
@@ -323,7 +324,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, participantRights.size());
 		
 		//remove participant right 2
-		rightManager.removeBGRight("bgr.removeright2", group, resource1.getOlatResource(), BGRightsRole.participant);
+		rightManager.removeBGRight("bgr.removeright2", group.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 		
 		//check tutor rights
@@ -349,10 +350,10 @@ public class BGRightManagerTest extends OlatTestCase {
 		businessGroupService.addResourceTo(group, resource2);
 	    businessGroupRelationDao.addRole(tutor, group, GroupRoles.coach.name());
 		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
-		rightManager.addBGRight("bgr.removeright1", group, resource1.getOlatResource(), BGRightsRole.tutor);
-		rightManager.addBGRight("bgr.removeright2", group, resource1.getOlatResource(), BGRightsRole.participant);
-		rightManager.addBGRight("bgr.dontrmght3", group, resource2.getOlatResource(), BGRightsRole.tutor);
-		rightManager.addBGRight("bgr.dontrmght4", group, resource2.getOlatResource(), BGRightsRole.participant);
+		rightManager.addBGRight("bgr.removeright1", group.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.tutor);
+		rightManager.addBGRight("bgr.removeright2", group.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.participant);
+		rightManager.addBGRight("bgr.dontrmght3", group.getBaseGroup(), resource2.getOlatResource(), BGRightsRole.tutor);
+		rightManager.addBGRight("bgr.dontrmght4", group.getBaseGroup(), resource2.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 		
 		//check if the rights are set
@@ -394,29 +395,29 @@ public class BGRightManagerTest extends OlatTestCase {
 		businessGroupService.addResourceTo(group1, resource2);
 		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "findRights", null, -1, -1, false, false, resource3);
 
-		rightManager.addBGRight("bgr.fr1", group1, resource1.getOlatResource(), BGRightsRole.tutor);
-		rightManager.addBGRight("bgr.fr2", group1, resource1.getOlatResource(), BGRightsRole.participant);
-		rightManager.addBGRight("bgr.fr3", group2, resource1.getOlatResource(), BGRightsRole.tutor);
-		rightManager.addBGRight("bgr.fr4", group2, resource2.getOlatResource(), BGRightsRole.tutor);
-		rightManager.addBGRight("bgr.fr5", group2, resource3.getOlatResource(), BGRightsRole.participant);
+		rightManager.addBGRight("bgr.fr1", group1.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.tutor);
+		rightManager.addBGRight("bgr.fr2", group1.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.participant);
+		rightManager.addBGRight("bgr.fr3", group2.getBaseGroup(), resource1.getOlatResource(), BGRightsRole.tutor);
+		rightManager.addBGRight("bgr.fr4", group2.getBaseGroup(), resource2.getOlatResource(), BGRightsRole.tutor);
+		rightManager.addBGRight("bgr.fr5", group2.getBaseGroup(), resource3.getOlatResource(), BGRightsRole.participant);
 		dbInstance.commitAndCloseSession();
 		
 		//check 
-		List<BGRights> rights1_1 = rightManager.findBGRights(Collections.singletonList(group1), resource1.getOlatResource());
+		List<BGRights> rights1_1 = rightManager.findBGRights(Collections.singletonList(group1.getBaseGroup()), resource1.getOlatResource());
 		Assert.assertNotNull(rights1_1);
 		Assert.assertEquals(2, rights1_1.size());
 
-		List<BGRights> rights2_2 = rightManager.findBGRights(Collections.singletonList(group2), resource2.getOlatResource());
+		List<BGRights> rights2_2 = rightManager.findBGRights(Collections.singletonList(group2.getBaseGroup()), resource2.getOlatResource());
 		Assert.assertNotNull(rights2_2);
 		Assert.assertEquals(1, rights2_2.size());
 		
-		List<BGRights> rights2_3 = rightManager.findBGRights(Collections.singletonList(group2), resource3.getOlatResource());
+		List<BGRights> rights2_3 = rightManager.findBGRights(Collections.singletonList(group2.getBaseGroup()), resource3.getOlatResource());
 		Assert.assertNotNull(rights2_3);
 		Assert.assertEquals(1, rights2_3.size());
 
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
-		groups.add(group1);
-		groups.add(group2);
+		List<Group> groups = new ArrayList<>();
+		groups.add(group1.getBaseGroup());
+		groups.add(group2.getBaseGroup());
 		List<BGRights> rightsAll_1 = rightManager.findBGRights(groups, resource1.getOlatResource());
 		Assert.assertNotNull(rightsAll_1);
 		Assert.assertEquals(3, rightsAll_1.size());
@@ -433,7 +434,7 @@ public class BGRightManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//remove a dummy right which doesn't exists
-		rightManager.removeBGRight("bgr.removeblabla", group, resource.getOlatResource(), BGRightsRole.participant);
+		rightManager.removeBGRight("bgr.removeblabla", group.getBaseGroup(), resource.getOlatResource(), BGRightsRole.participant);
 	}
 
 	/** BGContextManagerImpl:deleteBGContext() * */
@@ -469,20 +470,14 @@ public class BGRightManagerTest extends OlatTestCase {
 		assertTrue(rightManager.hasBGRight(CourseRights.RIGHT_COURSEEDITOR, id3, c2.getOlatResource()));
 		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_COURSEEDITOR, id3, c1.getOlatResource()));
 
-		/*
-		 * assertTrue(rm.hasBGRight(CourseRights.RIGHT_ARCHIVING, g1));
-		 * assertTrue(rm.hasBGRight(CourseRights.RIGHT_COURSEEDITOR, g1));
-		 * assertTrue(rm.hasBGRight(CourseRights.RIGHT_ARCHIVING, g2));
-		 * assertFalse(rm.hasBGRight(CourseRights.RIGHT_GROUPMANAGEMENT, g1));
-		 */
 		Assert.assertEquals(2, rightManager.findBGRights(g1, BGRightsRole.participant).size());
 		Assert.assertEquals(1, rightManager.findBGRights(g2, BGRightsRole.participant).size());
 
 		DBFactory.getInstance().closeSession(); // simulate user clicks
-		rightManager.removeBGRight(CourseRights.RIGHT_ARCHIVING, g1, c1.getOlatResource(), BGRightsRole.participant);
-		rightManager.removeBGRight(CourseRights.RIGHT_COURSEEDITOR, g1, c1.getOlatResource(), BGRightsRole.participant);
-		rightManager.removeBGRight(CourseRights.RIGHT_ARCHIVING, g2, c1.getOlatResource(), BGRightsRole.participant);
-		rightManager.removeBGRight(CourseRights.RIGHT_COURSEEDITOR, g3, c2.getOlatResource(), BGRightsRole.participant);
+		rightManager.removeBGRight(CourseRights.RIGHT_ARCHIVING, g1.getBaseGroup(), c1.getOlatResource(), BGRightsRole.participant);
+		rightManager.removeBGRight(CourseRights.RIGHT_COURSEEDITOR, g1.getBaseGroup(), c1.getOlatResource(), BGRightsRole.participant);
+		rightManager.removeBGRight(CourseRights.RIGHT_ARCHIVING, g2.getBaseGroup(), c1.getOlatResource(), BGRightsRole.participant);
+		rightManager.removeBGRight(CourseRights.RIGHT_COURSEEDITOR, g3.getBaseGroup(), c2.getOlatResource(), BGRightsRole.participant);
 
 		DBFactory.getInstance().closeSession(); // simulate user clicks
 		assertFalse(rightManager.hasBGRight(CourseRights.RIGHT_ARCHIVING, id1, c1.getOlatResource()));
