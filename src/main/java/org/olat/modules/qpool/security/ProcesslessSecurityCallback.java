@@ -162,7 +162,11 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	@Override
 	public boolean canChangeVersion() {
-		return admin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare();
+		return admin 
+				|| itemView.isAuthor()
+				|| itemView.isEditableInPool()
+				|| itemView.isEditableInShare()
+				|| (poolAdmin && qpoolModule.isPoolAdminAllowedToEditMetadata());
 	}
 
 	@Override

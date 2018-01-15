@@ -162,7 +162,11 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	@Override
 	public boolean canChangeVersion() {
-		return false;
+		return !itemView.isReviewableFormat()
+				&& (admin
+						|| itemView.isAuthor()
+						|| itemView.isManager()
+						|| (poolAdmin && qpoolModule.isPoolAdminAllowedToEditMetadata()));
 	}
 
 	@Override
