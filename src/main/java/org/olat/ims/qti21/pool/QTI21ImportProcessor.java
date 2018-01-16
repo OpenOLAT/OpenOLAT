@@ -130,9 +130,9 @@ public class QTI21ImportProcessor {
 			    
 			    List<Path> imsmanifests = visitor.getImsmanifestFiles();
 			    for(Path imsmanifest:imsmanifests) {
-			    	InputStream in = Files.newInputStream(imsmanifest);
-			    	ManifestBuilder manifestBuilder = ManifestBuilder.read(new ShieldInputStream(in));
-			    	List<ResourceType> resources = manifestBuilder.getResourceList();
+			    		InputStream in = Files.newInputStream(imsmanifest);
+			    		ManifestBuilder manifestBuilder = ManifestBuilder.read(new ShieldInputStream(in));
+			    		List<ResourceType> resources = manifestBuilder.getResourceList();
 					for(ResourceType resource:resources) {
 						ManifestMetadataBuilder metadataBuilder = manifestBuilder.getMetadataBuilder(resource, true);
 						QuestionItem qitem = processResource(resource, imsmanifest, metadataBuilder);
@@ -288,12 +288,6 @@ public class QTI21ImportProcessor {
 			QItemType defType = convertType(assessmentItem);
 			poolItem.setType(defType);
 		}
-		/*if(docInfos != null) {
-			processSidecarMetadata(poolItem, docInfos);
-		}*/
-		if(metadata != null) {
-			//processItemMetadata(poolItem, metadata);
-		}
 		questionItemDao.persist(owner, poolItem);
 		return poolItem;
 	}
@@ -314,7 +308,7 @@ public class QTI21ImportProcessor {
 			default: return qItemTypeDao.loadByType(QuestionType.UNKOWN.name());
 		}
 	}
-	
+	//additionalInformations, assessmentType
 	protected void processItemMetadata(QuestionItemImpl poolItem, AssessmentItemMetadata metadata) {
 		//non heuristic set of question type
 		String typeStr = null;	
@@ -351,6 +345,7 @@ public class QTI21ImportProcessor {
 			poolItem.setTaxonomyLevel(taxonomyLevel);
 		}
 		
+		//educational
 		String level = metadata.getLevel();
 		if(StringHelper.containsNonWhitespace(level)) {
 			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
@@ -372,22 +367,26 @@ public class QTI21ImportProcessor {
 		if(StringHelper.containsNonWhitespace(editorVersion)) {
 			poolItem.setEditorVersion(editorVersion);
 		}
-		
-		int numOfAnswerAlternatives = metadata.getNumOfAnswerAlternatives();
-		if(numOfAnswerAlternatives > 0) {
-			poolItem.setNumOfAnswerAlternatives(numOfAnswerAlternatives);
-		}
-		
-		poolItem.setDifficulty(metadata.getDifficulty());
-		poolItem.setDifferentiation(metadata.getDifferentiation());
-		poolItem.setStdevDifficulty(metadata.getStdevDifficulty());
-		
+
 		String license = metadata.getLicense();
 		if(StringHelper.containsNonWhitespace(license)) {
 			QTIMetadataConverter converter = new QTIMetadataConverter(qItemTypeDao, qLicenseDao, qEduContextDao, qpoolService);
 			QLicense qLicense = converter.toLicense(license);
 			poolItem.setLicense(qLicense);
 		}
+		
+		//OpenOLAT
+		poolItem.setDifficulty(metadata.getDifficulty());
+		poolItem.setDifferentiation(metadata.getDifferentiation());
+		poolItem.setStdevDifficulty(metadata.getStdevDifficulty());
+		int numOfAnswerAlternatives = metadata.getNumOfAnswerAlternatives();
+		if(numOfAnswerAlternatives > 0) {
+			poolItem.setNumOfAnswerAlternatives(numOfAnswerAlternatives);
+		}
+		poolItem.setCreator(metadata.getCreator());
+		poolItem.setTopic(metadata.getTopic());
+		poolItem.setAssessmentType(metadata.getAssessmentType());
+		poolItem.setAdditionalInformations(metadata.getAdditionalInformations());
 	}
 	
 	public static class ImsManifestVisitor extends SimpleFileVisitor<Path> {

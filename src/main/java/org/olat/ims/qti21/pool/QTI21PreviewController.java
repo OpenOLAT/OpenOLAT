@@ -28,9 +28,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.manager.audit.DefaultAssessmentSessionAuditLogger;
 import org.olat.ims.qti21.ui.editor.AssessmentItemPreviewSolutionController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -48,7 +46,6 @@ public class QTI21PreviewController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	private AssessmentItemPreviewSolutionController previewCtrl;
-	private AssessmentSessionAuditLogger candidateAuditLogger = new DefaultAssessmentSessionAuditLogger();
 	
 	@Autowired
 	private QTI21Service qtiService;

@@ -303,21 +303,30 @@ public class ManifestMetadataBuilder {
 		}
 	}
 	
-	public void setLicense(String license) {
+	public String getLicense() {
 		RightsType rights = getRights(true);
 		if(rights != null) {
 			CopyrightandotherrestrictionsType type = getFromAny(CopyrightandotherrestrictionsType.class, rights.getContent());
-			if(type == null) {
-				type = mdObjectFactory.createCopyrightandotherrestrictionsType();
-				rights.getContent().add(mdObjectFactory.createCopyrightandotherrestrictions(type));
-			}
-			SourceType sourceType = mdObjectFactory.createSourceType();
-			sourceType.setLangstring(createString("https://www.openolat.org", "en"));
-			ValueType valueType = mdObjectFactory.createValueType();
-			valueType.setLangstring(createString(license, "en"));
-			type.setSource(sourceType);
-			type.setValue(valueType);
+			if(type != null && type.getValue() != null && type.getValue().getLangstring() != null) {
+				return type.getValue().getLangstring().getValue();
+			}	
 		}
+		return null;
+	}
+	
+	public void setLicense(String license) {
+		RightsType rights = getRights(true);
+		CopyrightandotherrestrictionsType type = getFromAny(CopyrightandotherrestrictionsType.class, rights.getContent());
+		if(type == null) {
+			type = mdObjectFactory.createCopyrightandotherrestrictionsType();
+			rights.getContent().add(mdObjectFactory.createCopyrightandotherrestrictions(type));
+		}
+		SourceType sourceType = mdObjectFactory.createSourceType();
+		sourceType.setLangstring(createString("https://www.openolat.org", "en"));
+		ValueType valueType = mdObjectFactory.createValueType();
+		valueType.setLangstring(createString(license, "en"));
+		type.setSource(sourceType);
+		type.setValue(valueType);
 	}
 	
 	public String getClassificationTaxonomy() {
@@ -684,6 +693,33 @@ public class ManifestMetadataBuilder {
 		}
 	}
 	
+	public String getOpenOLATMetadataCreator() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getCreator();
+	}
+	
+	public void setOpenOLATMetadataCreator(String creator) {
+		getOpenOLATMetadata(true).setCreator(creator);
+	}
+	
+	public String getOpenOLATMetadataTopic() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getTopic();
+	}
+	
+	public void setOpenOLATMetadataTopic(String topic) {
+		getOpenOLATMetadata(true).setTopic(topic);
+	}
+	
+	public String getOpenOLATMetadataAdditionalInformations() {
+		OpenOLATMetadataType ooMetadata = getOpenOLATMetadata(false);
+		return ooMetadata == null ? null : ooMetadata.getAdditionalInformations();
+	}
+	
+	public void setOpenOLATMetadataAdditionalInformations(String informations) {
+		getOpenOLATMetadata(true).setAdditionalInformations(informations);
+	}
+	
 	/**
 	 * Return the qti metadata if it exists or if specified, create
 	 * one and append it to the metadata of the resource.
@@ -864,5 +900,8 @@ public class ManifestMetadataBuilder {
 		setOpenOLATMetadataStandardDeviation(item.getStdevDifficulty());
 		setOpenOLATMetadataUsage(item.getUsage());
 		setOpenOLATMetadataAssessmentType(item.getAssessmentType());
+		setOpenOLATMetadataCreator(item.getCreator());
+		setOpenOLATMetadataTopic(item.getTopic());
+		setOpenOLATMetadataAdditionalInformations(item.getAdditionalInformations());
 	}
 }
