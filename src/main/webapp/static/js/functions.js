@@ -1457,15 +1457,21 @@ function o_XHREvent(targetUrl, dirtyCheck, push) {
 		dataType: 'json',
 		success: function(data, textStatus, jqXHR) {
 			try {
-				o_ainvoke(data);
+				
 				if(push) {
-					var businessPath = data['businessPath'];
-					var documentTitle = data['documentTitle'];
-					var historyPointId = data['historyPointId'];
-					if(businessPath) {
-						o_pushState(historyPointId, documentTitle, businessPath);
+					try {
+						var businessPath = data['businessPath'];
+						var documentTitle = data['documentTitle'];
+						var historyPointId = data['historyPointId'];
+						if(businessPath) {
+							// catch separately - nothing must fail here!
+							o_pushState(historyPointId, documentTitle, businessPath);
+						}
+					} catch(e) {
+						if(window.console) console.log(e);
 					}
 				}
+				o_ainvoke(data);
 			} catch(e) {
 				if(window.console) console.log(e);
 			} finally {
