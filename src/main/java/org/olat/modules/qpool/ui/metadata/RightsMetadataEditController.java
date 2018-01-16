@@ -31,7 +31,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -166,12 +165,9 @@ public class RightsMetadataEditController extends FormBasicController {
 	private void reloadAuthors() {
 		List<Identity> authors = qpoolService.getAuthors(item);
 		List<String> authorLinks = new ArrayList<>(authors.size());
-		int pos = 0;
 		for(Identity author:authors) {
 			String name = userManager.getUserDisplayName(author);
-			FormLink link = uifactory.addFormLink("author_" + pos++, name, null, authorCont, Link.NONTRANSLATED);
-			link.setUserObject(author);
-			authorLinks.add(link.getComponent().getComponentName());
+			authorLinks.add(name);
 		}
 		authorCont.contextPut("authors", authorLinks);
 	}

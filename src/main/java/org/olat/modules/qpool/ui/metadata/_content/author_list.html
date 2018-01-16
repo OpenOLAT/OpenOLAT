@@ -1,5 +1,5 @@
 #foreach($author in $authors)
-	<span class='o_qitem_author'><i class="o_icon o_icon_user"></i> $r.render(${author})</span>
+	<span class='o_qitem_author'><i class="o_icon o_icon_user"></i> $author</span>
 #end
 #if($r.available("manage.owners"))
 	<br/>$r.render("manage.owners")
