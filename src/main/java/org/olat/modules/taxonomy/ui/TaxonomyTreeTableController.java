@@ -111,6 +111,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 
 	@Override
 	public void setBreadcrumbPanel(BreadcrumbPanel stackPanel) {
+		stackPanel.removeListener(this);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 	}
