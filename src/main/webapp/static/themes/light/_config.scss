@@ -667,8 +667,8 @@ $o-labeled-light-bg-color			: $o-toolbar-bg-color;
 /* QPool */
 $o-qpool-arrow-bg-color				: $o-toolbar-bg-color !default;
 $o-qpool-arrow-border-bottom-width	: 3px;
-$o-qpool-arrow-selected-color		: $link-color !default;
-$o-qpool-arrow-selected-font-weight	: bold !default;
+$o-qpool-arrow-selected-bg-color		: $o-navbar-link-active-bg;
+$o-qpool-arrow-selected-color		: $o-navbar-link-active-color;
 
 $o-qpool-status-color-dark			: #333;
 $o-qpool-status-color-bright			: #fff;

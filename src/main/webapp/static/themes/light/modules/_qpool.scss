@@ -107,8 +107,8 @@ a.o_qpool_status_endOfLife,
 	border-bottom-width: $o-qpool-arrow-border-bottom-width
 }
 .btn-arrow-right.o_qpool_status_slected {
-	color: $o-qpool-arrow-selected-color;
-	font-weight: $o-qpool-arrow-selected-font-weight;
+	background-color: 	$o-qpool-arrow-selected-bg-color;
+	color: 				$o-qpool-arrow-selected-color;
 }
 
 // Thanks to https://github.com/shpoont/bootstrap-arrow-buttons

@@ -208,10 +208,10 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		if(getSource().isCreateEnabled()) {
 			newItem = uifactory.addFormLink("new.item", formLayout, Link.BUTTON);
-			newItem.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_new");
+			newItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_new");
 		}
 		importItem = uifactory.addFormLink("import.item", formLayout, Link.BUTTON);
-		importItem.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_import");
+		importItem.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_import");
 		
 		if (getSecurityCallback().canUseCollections()) {
 			list = uifactory.addFormLink("list", formLayout, Link.BUTTON);
