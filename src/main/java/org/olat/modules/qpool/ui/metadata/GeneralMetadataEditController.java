@@ -144,8 +144,8 @@ public class GeneralMetadataEditController extends FormBasicController {
 						taxonomyLevelEl.select(taxonomyKey, true);
 					}
 				}
-				if (!taxonomyLevelEl.isOneSelected()) {
-					selectableValues[0] = ((QuestionItemImpl) item).getTaxonomyLevel().getDisplayName();
+				if (!taxonomyLevelEl.isOneSelected() && itemImpl.getTaxonomyLevel() != null) {
+					selectableValues[0] = itemImpl.getTaxonomyLevel().getDisplayName();
 					taxonomyLevelEl.setEnabled(false);
 				}
 			}
