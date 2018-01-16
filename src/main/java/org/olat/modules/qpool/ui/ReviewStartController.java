@@ -64,7 +64,7 @@ public class ReviewStartController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("process.start.review.description");
+		setFormDescription("process.start.review.description", new String[] {item.getTitle()});
 		
 		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false);
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
