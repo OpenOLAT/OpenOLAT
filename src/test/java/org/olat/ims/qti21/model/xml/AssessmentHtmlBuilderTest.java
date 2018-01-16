@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.model.xml;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.xml.transform.stream.StreamResult;
@@ -80,7 +81,7 @@ public class AssessmentHtmlBuilderTest {
 	}
 
 	@Test
-	public void filter() {
+	public void filter() throws IOException {
 		String content = "<html><p>Test \u00EA<strong><span><img src='img.jpg'></span></strong></p><p>Test 2</p></html>";
 
 		AssessmentItem item = new AssessmentItem();
@@ -98,10 +99,11 @@ public class AssessmentHtmlBuilderTest {
 		qtiSerializer.serializeJqtiObject(helper, new StreamResult(sb));
 		String serializedQti = sb.toString();
 		Assert.assertTrue(serializedQti.contains("img.jpg"));
+		sb.close();
 	}
 
 	@Test
-	public void serializeVideo() {
+	public void serializeVideo() throws IOException {
 		String content = "<p><span id=\"olatFlashMovieViewer213060\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:320px; height:240px;\">\n"
 			+ "<script src=\"/raw/fx-111111x11/movie/player.js\" type=\"text/javascript\"></script>\n"
 			+ "<script type=\"text/javascript\" defer=\"defer\">// <![CDATA[\n"
@@ -125,5 +127,6 @@ public class AssessmentHtmlBuilderTest {
 		Assert.assertTrue(serializedQti.contains("object"));
 		Assert.assertFalse(serializedQti.contains("span"));
 		Assert.assertFalse(serializedQti.contains("script"));
+		sb.close();
 	}
 }

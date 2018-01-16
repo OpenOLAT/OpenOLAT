@@ -54,7 +54,8 @@ implements SortableFlexiTableDataModel<ParticipantRow>, ExportableFlexiTableData
 
 	@Override
 	public void sort(SortKey sortKey) {
-		//
+		List<ParticipantRow> rows = new ParticipantListSortDelegate(sortKey, this, locale).sort();
+		super.setObjects(rows);
 	}
 
 	@Override
