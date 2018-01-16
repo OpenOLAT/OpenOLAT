@@ -203,7 +203,7 @@ public class QuestionListController extends AbstractItemListController implement
 			statusEndOfLifeLink.setElementCssClass("btn-arrow-right o_qpool_qitem_end_of_life");
 			statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_endOfLife");
 			if (QuestionStatus.endOfLife.equals(statusFilter)) setSelectionCssClass(statusEndOfLifeLink);
-			reloadStatusFilterTitles();
+			updateStatusFilter();
 		}
 		
 		if(getSource().isCreateEnabled()) {
@@ -378,7 +378,7 @@ public class QuestionListController extends AbstractItemListController implement
 				Controller mainCtrl = pe.getController();
 				if(mainCtrl != null && mainCtrl.isControllerListeningTo(this)) {
 					reloadData();
-					reloadStatusFilterTitles();
+					updateStatusFilter();
 					fireEvent(ureq, new QPoolEvent(QPoolEvent.ITEMS_RELOADED));
 					itemCollectionDirty = false;
 				}
@@ -667,7 +667,7 @@ public class QuestionListController extends AbstractItemListController implement
 		}
 	}
 
-	private void reloadStatusFilterTitles() {
+	public void updateStatusFilter() {
 		if (getSource().isStatusFilterEnabled()) {
 			QuestionStatus actualStatus = getSource().getStatusFilter();
 			reloadStatusFilterTitle(statusDraftLink, "source.status.draft");
@@ -683,7 +683,7 @@ public class QuestionListController extends AbstractItemListController implement
 		QuestionStatus linkStatus = (QuestionStatus) link.getUserObject();
 		getSource().setStatusFilter(linkStatus);
 		int numItems = getSource().getNumOfItems();
-		link.setI18nKey(i18n, new String[] {Integer.toString(numItems)});;
+		link.setI18nKey(i18n, new String[] {Integer.toString(numItems)});
 		link.getComponent().setDirty(true);
 	}
 

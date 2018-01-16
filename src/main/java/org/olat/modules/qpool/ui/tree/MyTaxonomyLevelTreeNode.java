@@ -82,6 +82,7 @@ public class MyTaxonomyLevelTreeNode extends GenericTreeNode implements Controll
 					MY_TAX_LEVEL + taxonomyLevel.getKey(), false);
 		} else {
 			questionsCtrl.updateSource();
+			questionsCtrl.updateStatusFilter();
 		}
 		return questionsCtrl;
 	}

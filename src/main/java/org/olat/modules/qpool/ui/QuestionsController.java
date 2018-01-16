@@ -91,6 +91,10 @@ public class QuestionsController extends BasicController implements Activateable
 		listCtrl.updateSource(dataSource);
 	}
 	
+	public void updateStatusFilter() {
+		listCtrl.updateStatusFilter();
+	}
+	
 	public QuestionItemShort getQuestionAt(int index) {
 		return listCtrl.getQuestionItemAt(index);
 	}
