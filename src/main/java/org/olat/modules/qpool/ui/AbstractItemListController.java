@@ -184,7 +184,7 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.itemVersion.i18nKey(), Cols.itemVersion.ordinal(), true, OrderBy.itemVersion.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(), true, OrderBy.status.name(), new QuestionStatusCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.statusLastModified.i18nKey(), Cols.statusLastModified.ordinal(), true, OrderBy.statusLastModified.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "select-item"));
+		initActionColumns(columnsModel);
 		
 		model = new QuestionItemDataModel(columnsModel, this, getTranslator());
 		itemsTable = uifactory.addTableElement(getWindowControl(), "items", model, 50, false, getTranslator(), formLayout);
@@ -207,6 +207,10 @@ public abstract class AbstractItemListController extends FormBasicController
 		initButtons(ureq, formLayout);
 		
 		itemsTable.reloadData();
+	}
+	
+	protected void initActionColumns(FlexiTableColumnModel columnsModel) {
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("details", translate("details"), "select-item"));
 	}
 	
 	protected abstract void initButtons(UserRequest ureq, FormItemContainer formLayout);

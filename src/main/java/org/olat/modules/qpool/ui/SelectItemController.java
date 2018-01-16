@@ -50,8 +50,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SelectItemController extends BasicController {
 	
-	private Link myCompetencesLink;
-	private final Link markedItemsLink, ownedItemsLink, myListsLink, mySharesLink;
+	private Link myCompetencesLink, mySharesLink, myListsLink;
+	private final Link markedItemsLink, ownedItemsLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	private ItemListController ownedItemsCtrl;
@@ -86,13 +86,22 @@ public class SelectItemController extends BasicController {
 		segmentView.addSegment(markedItemsLink, marked > 0);
 		ownedItemsLink = LinkFactory.createLink("menu.database.my", mainVC, this);
 		segmentView.addSegment(ownedItemsLink, marked <= 0);
-        myListsLink = LinkFactory.createLink("my.list", mainVC, this);
-        segmentView.addSegment(myListsLink, false);
-        mySharesLink = LinkFactory.createLink("my.share", mainVC, this);
-		segmentView.addSegment(mySharesLink, false);
+        
+		if(qpoolModule.isCollectionsEnabled()) {
+			myListsLink = LinkFactory.createLink("my.list", mainVC, this);
+        		segmentView.addSegment(myListsLink, false);
+		}
+        if(qpoolModule.isSharesEnabled() || qpoolModule.isPoolsEnabled()) {
+        		mySharesLink = LinkFactory.createLink("my.share", mainVC, this);
+			segmentView.addSegment(mySharesLink, false);
+        }
 		if(StringHelper.isLong(qpoolModule.getTaxonomyQPoolKey()) && qpoolModule.isReviewProcessEnabled()) {
-			myCompetencesLink = LinkFactory.createLink("my.competences", mainVC, this);
-			segmentView.addSegment(myCompetencesLink, false);
+			myCompetencesCtrl = new ItemListMyCompetencesController(ureq, getWindowControl(), secCallback, restrictToFormat);
+			listenTo(myCompetencesCtrl);
+			if(myCompetencesCtrl.hasCompetences()) {
+				myCompetencesLink = LinkFactory.createLink("my.competences", mainVC, this);
+				segmentView.addSegment(myCompetencesLink, false);
+			}
 		}
 		putInitialPanel(mainVC);
 	}

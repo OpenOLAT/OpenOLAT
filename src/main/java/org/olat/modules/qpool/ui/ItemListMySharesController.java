@@ -19,6 +19,7 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -28,17 +29,22 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.ui.datasource.EmptyItemsSource;
 import org.olat.modules.qpool.ui.datasource.PoolItemsSource;
 import org.olat.modules.qpool.ui.datasource.SharedItemsSource;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -53,62 +59,80 @@ public class ItemListMySharesController extends AbstractItemListController {
 
 	private List<Pool> myPools;
 	private List<BusinessGroup> myGroups;
+	
+	@Autowired
+	private QuestionPoolModule qpoolModule;
 
 	public ItemListMySharesController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback, String restrictToFormat) {
-		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, "select");
+		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, "qti-select");
 	}
 	
 	@Override
 	protected void initButtons(UserRequest ureq, FormItemContainer formLayout) {
 		getItemsTable().setMultiSelect(true);
 		selectLink = uifactory.addFormLink("select-to-import", "select", null, formLayout, Link.BUTTON);
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		if(qpoolModule.isPoolsEnabled()) {
+			myPools = qpoolService.getPools(getIdentity(), roles);
+		} else {
+			myPools = Collections.emptyList();
+		}
 
-		myPools = qpoolService.getPools(getIdentity(), ureq.getUserSession().getRoles());
-		myGroups = qpoolService.getResourcesWithSharedItems(getIdentity());
+		if(qpoolModule.isSharesEnabled()) {
+			myGroups = qpoolService.getResourcesWithSharedItems(getIdentity());
+		} else {
+			myGroups = Collections.emptyList();
+		}
 
 		String[] myShareKeys;
 		String[] myShareValues;
-        if(myPools.isEmpty() && myGroups.isEmpty()) {
+		if(myPools.isEmpty() && myGroups.isEmpty()) {
 			myShareKeys = new String[1];
 			myShareValues = new String[1];
 			myShareKeys[0] = "";
 			myShareValues[0] = "";
-        } else {
-    		int numOfShares = myPools.size() + myGroups.size();
-        	
-            myShareKeys = new String[numOfShares];
-			myShareValues = new String[numOfShares];
-            int pos = 0;
-			for(Pool myPool:myPools) {
-                myShareKeys[pos] = "pool" + myPool.getKey().toString();
-				myShareValues[pos++] = myPool.getName();
-            }
-			for(BusinessGroup group:myGroups) {
-                myShareKeys[pos] = "grou" + group.getKey().toString();
-				myShareValues[pos++] = group.getName();
-            }
-        }
+		} else {
+			int numOfShares = myPools.size() + myGroups.size();
 
-        myShareEl = uifactory.addDropdownSingleselect("source.selector", "my.list", formLayout,  myShareKeys, myShareValues, null);
-        myShareEl.setDomReplacementWrapperRequired(false);
-        myShareEl.getLabelC().setDomReplaceable(false);
-        myShareEl.addActionListener(FormEvent.ONCHANGE);
+			myShareKeys = new String[numOfShares];
+			myShareValues = new String[numOfShares];
+			int pos = 0;
+			for (Pool myPool : myPools) {
+				myShareKeys[pos] = "pool" + myPool.getKey().toString();
+				myShareValues[pos++] = myPool.getName();
+			}
+			for (BusinessGroup group : myGroups) {
+				myShareKeys[pos] = "grou" + group.getKey().toString();
+				myShareValues[pos++] = group.getName();
+			}
+		}
+
+		myShareEl = uifactory.addDropdownSingleselect("source.selector", "my.list", formLayout, myShareKeys, myShareValues, null);
+		myShareEl.setDomReplacementWrapperRequired(false);
+		myShareEl.getLabelC().setDomReplaceable(false);
+		myShareEl.addActionListener(FormEvent.ONCHANGE);
 		if(myPools.isEmpty() && myGroups.isEmpty()) {
 			myShareEl.setEnabled(false);
 		} else {
-            myShareEl.select( myShareKeys[0], true);
-            if(myPools.size() > 0) {
-            	Pool firstPool = myPools.get(0);
-            	PoolItemsSource source = new PoolItemsSource(getIdentity(), ureq.getUserSession().getRoles(), firstPool);
-            	source.getDefaultParams().setFormat(restrictToFormat);
-            	updateSource(source);
-            } else if(myGroups.size() > 0) {
-            	BusinessGroup firstGroup = myGroups.get(0);
-            	SharedItemsSource source = new SharedItemsSource(firstGroup, getIdentity(), ureq.getUserSession().getRoles(), false);
-            	source.setRestrictToFormat(restrictToFormat);
-    			updateSource(source);
-            }
-        }
+			myShareEl.select(myShareKeys[0], true);
+			if(myPools.size() > 0) {
+				Pool firstPool = myPools.get(0);
+				PoolItemsSource source = new PoolItemsSource(getIdentity(), roles, firstPool);
+				source.getDefaultParams().setFormat(restrictToFormat);
+				updateSource(source);
+			} else if(myGroups.size() > 0) {
+				BusinessGroup firstGroup = myGroups.get(0);
+				SharedItemsSource source = new SharedItemsSource(firstGroup, getIdentity(), roles, false);
+				source.setRestrictToFormat(restrictToFormat);
+				updateSource(source);
+			}
+		}
+	}
+	
+	@Override
+	protected void initActionColumns(FlexiTableColumnModel columnsModel) {
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select-item"));
 	}
 
 	@Override
