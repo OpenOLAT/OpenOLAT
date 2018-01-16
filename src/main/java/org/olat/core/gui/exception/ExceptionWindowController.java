@@ -238,11 +238,6 @@ public class ExceptionWindowController extends DefaultChiefController {
 	}
 
 	@Override
-	public String getWindowTitle() {
-		return null;
-	}
-
-	@Override
 	public boolean isLoginInterceptionInProgress() {
 		return false;
 	}

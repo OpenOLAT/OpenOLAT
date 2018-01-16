@@ -494,6 +494,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if (wControl != null && wControl.getWindowBackOffice() != null) {
 			wControl.getWindowBackOffice().sendCommandTo(jsc);			
 		}
+		// update window title, but only if a tree node is activated. Initial
+		// course title already set by BaseFullWebappController on tab activate
+		if (calledCourseNode != null) {
+			String newTitle = courseTitle + " - " + calledCourseNode.getShortTitle();
+			getWindowControl().getWindowBackOffice().getWindow().setTitle(getTranslator(), newTitle);						
+		}
 	}
 
 	/**

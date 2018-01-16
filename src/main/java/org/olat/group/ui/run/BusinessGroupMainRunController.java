@@ -678,6 +678,10 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		}  else if (ACTIVITY_MENUSELECT_AC.equals(cmd)) {
 			doAccessControlHistory(ureq);
 		} 
+		
+		// Update window title
+		String newTitle = businessGroup.getName() + " - " + bgTree.getSelectedNode().getTitle();
+		getWindowControl().getWindowBackOffice().getWindow().setTitle(getTranslator(), newTitle);						
 	}
 	
 	private void doMain(UserRequest ureq) {

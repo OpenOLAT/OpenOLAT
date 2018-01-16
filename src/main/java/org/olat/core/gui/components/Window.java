@@ -39,6 +39,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.analytics.AnalyticsModule;
+import org.olat.core.commons.services.analytics.AnalyticsSPI;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -77,6 +79,7 @@ import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.render.intercept.InterceptHandler;
 import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.gui.themes.Theme;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControl;
@@ -87,6 +90,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.component.ComponentTraverser;
 import org.olat.core.util.component.ComponentVisitor;
@@ -168,6 +172,8 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	private DTabs dTabs;
 	//custom css
 	private CustomCSS customCSS;
+	// the window title
+	private String title;
 	
 	// wbackoffice reference
 	private final WindowBackOfficeImpl wbackofficeImpl;
@@ -175,6 +181,8 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	private final Object render_mutex = new Object();
 	// delegate for css and js includes
 	private final JSAndCSSAdderImpl jsAndCssAdder;
+	// the analytics service
+	private final AnalyticsSPI analyticsSPI;
 	
 	/**
 	 * @param name
@@ -187,6 +195,14 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		// set default theme
 		Theme myTheme = new Theme(CoreSpringFactory.getImpl(GUISettings.class).getGuiThemeIdentifyer());
 		setGuiTheme(myTheme);
+		// add analytics service provider if configured
+		AnalyticsModule analyticsModule = CoreSpringFactory.getImpl(AnalyticsModule.class);
+		if (analyticsModule.isAnalyticsEnabled()) {
+			analyticsSPI = analyticsModule.getAnalyticsProvider();
+		} else {
+			analyticsSPI = null;
+		}
+
 	}
 	
 	public Component getJsCssRawHtmlHeader() {
@@ -207,6 +223,30 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	public Theme getGuiTheme() {
 		return guiTheme;
 	}
+
+	/**
+	 * @return The current window title
+	 */
+	public String getTitle() {
+		return title;
+	}
+
+	/** 
+	 * @param title The new title of this window (for browser history)
+	 */
+	public void setTitle(Translator translator, String newTitle) {
+		this.title = translator.translate("page.appname") + " - " + newTitle;
+		StringBuilder sb = new StringBuilder();
+		sb.append("document.title = \"");
+		sb.append(Formatter.escapeDoubleQuotes(this.title));
+		sb.append("\";");
+		JSCommand jsc = new JSCommand(sb.toString());
+		if (getWindowBackOffice() != null) {
+			getWindowBackOffice().sendCommandTo(jsc);			
+		}
+	}
+
+
 	
 	public WindowBackOffice getWindowBackOffice() {
 		return wbackofficeImpl;
@@ -859,7 +899,14 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 			StringBuilder sb = new StringBuilder();
 			List<ContextEntry> ces = p.getEntries();
 			String url = BusinessControlFactory.getInstance().getAsURIString(ces, true);
-			sb.append("try { o_info.businessPath='").append(url).append("'; } catch(e) { }");
+			sb.append("try { o_info.businessPath='").append(url).append("';");
+			// Add analytics code
+			if (analyticsSPI != null) {
+				analyticsSPI.analyticsCountPageJavaScript(sb, this.getTitle(), url.substring(Settings.getServerContextPathURI().length()));				
+			}			
+			sb.append(" } catch(e) { }");
+
+
 			return new JSCommand(sb.toString());
 		}
 		return null;

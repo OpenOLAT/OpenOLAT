@@ -41,12 +41,6 @@ public interface ChiefController extends Controller {
 	 * @return the window
 	 */
 	public Window getWindow();
-	
-	/**
-	 * 
-	 * @return The title of the browser window
-	 */
-	public String getWindowTitle();
 
 	/**
 	 * @return the windowcontrol

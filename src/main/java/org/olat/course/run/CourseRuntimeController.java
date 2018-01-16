@@ -955,6 +955,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if(enableGlossaryLink == source) {
 			toggleGlossary(ureq);
 		}
+		
+		// Update window title
+		if (source instanceof Link) {
+			Link link = (Link) source;
+			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+			String newTitle = course.getCourseTitle() + " - " + link.getI18n();
+			getWindowControl().getWindowBackOffice().getWindow().setTitle(getTranslator(), newTitle);						
+		}
+		
 		super.event(ureq, source, event);
 	}
 	
