@@ -132,14 +132,9 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 				writeObjectElementAttributes(attributes);
 			} else if("img".equals(qName)) {
 				writeImgElementAttributes(attributes);
+			} else if("customOperator".equals(qName)) {
+				writeCustomOperatorAttributes(attributes);
 			} else {
-				if("customOperator".equals(qName)) {
-					String customOperatorDefinition = attributes.getValue("definition");
-					if("MAXIMA".equals(customOperatorDefinition)) {
-						xtw.writeAttribute("class", "org.olat.ims.qti21.manager.extensions.MaximaOperator");
-					}
-				}
-
 				int numOfAttributes = attributes.getLength();
 				for(int i=0;i<numOfAttributes; i++) {
 					String attrQName = attributes.getQName(i);
@@ -215,6 +210,34 @@ public class OnyxToQtiWorksHandler extends DefaultHandler2 {
 		}
 		if(!hasEditor && infos != null && StringHelper.containsNonWhitespace(infos.getVersion())) {
 			xtw.writeAttribute("toolVersion", infos.getVersion());
+		}
+	}
+	
+	/**
+	 * The customOperator accept the class attribute or the definition attribute but not
+	 * both at the same time.
+	 * 
+	 * @param attributes The attributes
+	 * @param withDefinition true if you want to write the definition attribute, false if you want to skip it
+	 * @throws XMLStreamException
+	 */
+	private void writeCustomOperatorAttributes(Attributes attributes)
+	throws XMLStreamException {
+		String customOperatorDefinition = attributes.getValue("definition");
+		boolean maxima = "MAXIMA".equals(customOperatorDefinition);
+		if(maxima) {
+			xtw.writeAttribute("class", "org.olat.ims.qti21.manager.extensions.MaximaOperator");
+		}
+		
+		int numOfAttributes = attributes.getLength();
+		for(int i=0;i<numOfAttributes; i++) {
+			String attrQName = attributes.getQName(i);
+			if(maxima && "class".equals(attrQName)) {
+				continue;
+			}
+			
+			String attrValue = attributes.getValue(i);
+			xtw.writeAttribute(attrQName, attrValue);
 		}
 	}
 	

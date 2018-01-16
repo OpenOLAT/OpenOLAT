@@ -76,7 +76,8 @@ public class OnyxToQtiWorksAssessementItemsTest {
 	@Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { "match-with-latex-5-11.xml", new QTI21Infos() }
+                { "match-with-latex-5-11.xml", new QTI21Infos() },
+                { "maxima-7-6-1.xml", new QTI21Infos() }
         });
     }
     
