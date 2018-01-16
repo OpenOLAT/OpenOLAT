@@ -21,11 +21,8 @@ package org.olat.core.gui.components.rating;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
-import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -35,6 +32,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -85,7 +83,6 @@ public class RatingRenderer extends DefaultComponentRenderer {
 		sb.append("'>");
 
 
-		boolean ajaxModeEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		for (int i = 0; i < labels.size(); i++) {
 			// Add css class
 			sb.append("<a class='o_icon o_icon-lg ");
@@ -97,17 +94,15 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			sb.append("'");
 			// Add action
 			if (rating.isAllowUserInput() && rating.isEnabled()) {
-				if(rating.getForm() == null) {
-					// Add link
-					sb.append(" ");
-					ubu.buildHrefAndOnclick(sb, ajaxModeEnabled,
-							new NameValuePair(VelocityContainer.COMMAND_ID, Integer.toString(i+1)));
+				sb.append(" ");
+				
+				RatingFormItem rfi = rating.getFormItem();
+				NameValuePair cmd = new NameValuePair(VelocityContainer.COMMAND_ID, Integer.toString(i+1));
+				if(rfi == null) {
+					ubu.buildHrefAndOnclick(sb, true, cmd);
 				} else {
-					Form theForm = rating.getForm();
-					String elementId = FormBaseComponentIdProvider.DISPPREFIX + rating.getDispatchID();
-					sb.append(" href=\"javascript:")
-					  .append(FormJSHelper.getXHRFnCallFor(theForm, elementId, 1, true, false,
-							  new NameValuePair(VelocityContainer.COMMAND_ID, Integer.toString(i+1))))
+					sb.append("href=\"javascript:;\" onclick=\"javascript:")
+					  .append(FormJSHelper.getXHRFnCallFor(rfi.getRootForm(), rfi.getFormDispatchId(), 1, false, false, true, cmd))
 					  .append("\" ");
 				}
 			} else {
@@ -124,9 +119,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 						label = "";
 					}
 				}
-				StringBuilder escapedLabel = new StringBuilder();
-				escapedLabel.append(StringEscapeUtils.escapeHtml(label));
-				sb.append(" title=\"").append(escapedLabel).append("\"");					
+				sb.append(" title=\"").append(StringHelper.escapeHtml(label)).append("\"");					
 			}
 			sb.append("></a>");
 		}
@@ -154,5 +147,9 @@ public class RatingRenderer extends DefaultComponentRenderer {
 			sb.append("</div>"); //o_rating_explanation
 		}
 		sb.append("</div>");//o_rating
+		if(rating.getFormItem() != null) {
+			RatingFormItem rfi = rating.getFormItem();
+			FormJSHelper.appendFlexiFormDirtyForClick(sb, rfi.getRootForm(), rfi.getFormDispatchId());
+		}
 	}
 }

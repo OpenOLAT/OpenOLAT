@@ -57,10 +57,7 @@ public class ReviewController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("process.rating.description");
 		
-		ratingEl = new RatingFormItem("process.rating", 0f, 5, true);
-		ratingEl.setLabel("process.rating", null);
-		ratingEl.showLabel(true);
-		formLayout.add(ratingEl);
+		ratingEl = uifactory.addRatingItem("process.rating", "process.rating", 0f, 5, true, formLayout);
 		
 		commentEl = uifactory.addRichTextElementForStringDataMinimalistic(
 				"process.comment", "process.comment", "", -1, -1, formLayout, getWindowControl());

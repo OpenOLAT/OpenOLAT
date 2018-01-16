@@ -87,6 +87,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
+import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.tree.MenuTreeItem;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.control.WindowBackOffice;
@@ -1255,5 +1256,17 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, dropdown);
 		formLayout.add(dropdown);
 		return dropdown;
+	}
+	
+	public RatingFormItem addRatingItem(String name, String i18nLabel, float initialRating, int maxRating, boolean allowUserInput, FormItemContainer formLayout) {
+		RatingFormItem ratingCmp = new RatingFormItem(name, initialRating, maxRating, allowUserInput);
+		setLabelIfNotNull(i18nLabel, ratingCmp);
+		if(i18nLabel != null) {
+			ratingCmp.showLabel(true);
+		}
+		if(formLayout != null) {
+			formLayout.add(ratingCmp);
+		}
+		return ratingCmp;
 	}
 }

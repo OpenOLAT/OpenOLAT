@@ -25,7 +25,6 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
@@ -57,7 +56,8 @@ public class RatingComponent extends AbstractComponent {
 	private boolean allowUserInput;
 	private String cssClass;
 	private float currentRating;
-	private Form form;
+	private final RatingFormItem ratingItem;
+
 
 	/**
 	 * Create a rating component with no title and a default explanation and hover
@@ -73,31 +73,28 @@ public class RatingComponent extends AbstractComponent {
 		this(null, name, currentRating, maxRating, allowUserInput, null);
 	}
 		
-	public RatingComponent(String id, String name, float currentRating, int maxRating, boolean allowUserInput, Form form) {
+	public RatingComponent(String id, String name, float currentRating, int maxRating, boolean allowUserInput, RatingFormItem ratingItem) {
 		super(id, name);
+		this.ratingItem = ratingItem;
 		if (currentRating > maxRating) 
 			throw new AssertException("Current rating set to higher value::" + currentRating + " than the maxRating::" + maxRating);
 		this.allowUserInput = allowUserInput;
 		this.currentRating = currentRating;
 		// use default values for the other stuff
-		this.ratingLabels = new ArrayList<String>(maxRating);
+		ratingLabels = new ArrayList<>(maxRating);
 		for (int i = 0; i < maxRating; i++) {
 			// style: rating.5.3 => 3 out of 5 
-			this.ratingLabels.add("rating." + maxRating + "."+ (i+1));			
+			ratingLabels.add("rating." + maxRating + "."+ (i+1));			
 		}
-		this.translateRatingLabels = true;
-		this.title = null;
-		this.translateTitle = true;
-		if (allowUserInput) this.explanation = "rating.explanation";
-		else this.explanation = null;
-		this.translateExplanation = true;
-		this.showRatingAsText = false;
-		this.form = form;
+		translateRatingLabels = true;
+		title = null;
+		translateTitle = true;
+		explanation = allowUserInput ? "rating.explanation" : null;
+		translateExplanation = true;
+		showRatingAsText = false;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#doDispatchRequest(org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		setDirty(true);
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
@@ -113,9 +110,7 @@ public class RatingComponent extends AbstractComponent {
 		}		
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
+	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
@@ -123,8 +118,8 @@ public class RatingComponent extends AbstractComponent {
 	//
 	// Various getter and setter methods
 	//
-	Form getForm() {
-		return form;
+	protected RatingFormItem getFormItem() {
+		return ratingItem;
 	}
 
 	// only package scope, used by renderer

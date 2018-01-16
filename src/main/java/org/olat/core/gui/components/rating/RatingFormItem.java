@@ -30,31 +30,19 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
  */
 public class RatingFormItem extends FormItemImpl {
 
-	private float intialRating;
-	private int maxRating;
-	private boolean allowUserInput;
-	
-	private RatingComponent component;
+	private final RatingComponent component;
 	
 	public RatingFormItem(String name, float intialRating, int maxRating, boolean allowUserInput) {
 		super(name);
-		
-		this.intialRating = intialRating;
-		this.maxRating = maxRating;
-		this.allowUserInput = allowUserInput;
+		component = new RatingComponent(name, name, intialRating, maxRating, allowUserInput, this);
 	}
 
 	public float getCurrentRating() {
-		if(component != null) {
-			return component.getCurrentRating();
-		}
-		return intialRating;
+		return component.getCurrentRating();
 	}
 	
 	public void setCurrentRating(float currentRating) {
-		if(component != null) {
-			component.setCurrentRating(currentRating);
-		}
+		component.setCurrentRating(currentRating);
 	}
 
 	@Override
@@ -64,10 +52,7 @@ public class RatingFormItem extends FormItemImpl {
 
 	@Override
 	protected void rootFormAvailable() {
-		if(component == null) {
-			component = new RatingComponent(null, getName(), intialRating, maxRating, allowUserInput, getRootForm());
-			component.setEnabled(isEnabled());
-		}
+		//
 	}
 
 	@Override

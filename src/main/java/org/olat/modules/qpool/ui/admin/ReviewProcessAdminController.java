@@ -99,11 +99,8 @@ public class ReviewProcessAdminController extends FormBasicController {
 		numberOfRatingsEl.setMandatory(true);
 		numberOfRatingsEl.setDisplaySize(5);
 
-		lowerLimitEl = new RatingFormItem("lower.limit", qpoolModule.getReviewDecisionLowerLimit(), 5, true);
-		lowerLimitEl.setLabel("lower.limit", null);
-		lowerLimitEl.showLabel(true);
+		lowerLimitEl = uifactory.addRatingItem("lower.limit", "lower.limit", qpoolModule.getReviewDecisionLowerLimit(), 5, true, formLayout);
 		lowerLimitEl.setMandatory(true);
-		formLayout.add(lowerLimitEl);
 		
 		uifactory.addSpacerElement("spacer", formLayout, false);
 		
