@@ -29,11 +29,13 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -50,6 +52,7 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.id.UserConstants;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
@@ -145,9 +148,11 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			layoutCont.getFormItemComponent().contextPut("withPrint", Boolean.TRUE);
 		}
 
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.username));
+			options.setDefaultOrderBy(new SortKey(ParticipantsCols.username.sortKey(), true));
 		}
 		
 		int colPos = USER_PROPS_OFFSET;
@@ -160,6 +165,12 @@ public class ParticipantListRepositoryController extends FormBasicController {
 			FlexiColumnModel col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, true, propName);
 			columnsModel.addFlexiColumnModel(col);
 			colPos++;
+			
+			if(!options.hasDefaultOrderBy()) {
+				options.setDefaultOrderBy(new SortKey(propName, true));
+			} else if(UserConstants.LASTNAME.equals(propName)) {
+				options.setDefaultOrderBy(new SortKey(propName, true));
+			}
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.plannedLectures));
@@ -199,6 +210,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(!printView);
 		tableEl.setEmtpyTableMessageKey("empty.table.participant.list");
+		tableEl.setSortSettings(options);
 		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry");
 	}
 	
