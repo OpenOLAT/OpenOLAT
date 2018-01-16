@@ -89,6 +89,11 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 	public void setRemoveEnabled(boolean removeEnabled) {
 		this.removeEnabled = removeEnabled;
 	}
+	
+	@Override
+	public boolean isAdminItemSource() {
+		return false;
+	}
 
 	@Override
 	public QuestionStatus getStatusFilter() {

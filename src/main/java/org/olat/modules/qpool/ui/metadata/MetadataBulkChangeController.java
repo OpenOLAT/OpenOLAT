@@ -91,6 +91,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 	
 	private List<QuestionItem> updatedItems;
 	private final List<ItemRow> items;
+	private final boolean ignoreCompetences;
 	
 	@Autowired
 	private QuestionPoolModule qpoolModule;
@@ -99,10 +100,11 @@ public class MetadataBulkChangeController extends FormBasicController {
 	@Autowired
 	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 
-	public MetadataBulkChangeController(UserRequest ureq, WindowControl wControl, List<ItemRow> items) {
+	public MetadataBulkChangeController(UserRequest ureq, WindowControl wControl, List<ItemRow> items, boolean ignoreCompetences) {
 		super(ureq, wControl, "bulk_change");
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		this.items = items;
+		this.ignoreCompetences = ignoreCompetences;
 		initForm(ureq);
 	}
 	
@@ -134,7 +136,7 @@ public class MetadataBulkChangeController extends FormBasicController {
 		topicEl = uifactory.addTextElement("general.topic", "general.topic", 1000, null, generalCont);
 		decorate(topicEl, generalCont);
 		
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), canRemoveTaxonomies());
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), canRemoveTaxonomies(), ignoreCompetences);
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("classification.taxonomic.path", generalCont,
 				qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
 		decorate(taxonomyLevelEl, generalCont);

@@ -65,6 +65,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 
 	private QuestionItem item;
 	private MetadataSecurityCallback securityCallback;
+	private final boolean ignoreCompetences;
 
 	@Autowired
 	private QPoolService qpoolService;
@@ -72,12 +73,13 @@ public class GeneralMetadataEditController extends FormBasicController {
 	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 	
 	public GeneralMetadataEditController(UserRequest ureq, WindowControl wControl, QuestionItem item,
-			MetadataSecurityCallback securityCallback) {
+			MetadataSecurityCallback securityCallback, boolean ignoreCompetences) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
 		this.securityCallback = securityCallback;
+		this.ignoreCompetences = ignoreCompetences;
 		
 		initForm(ureq);
 		setReadOnly();
@@ -130,7 +132,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 	}
 
 	private void buildTaxonomyLevelEl() {
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), securityCallback.canRemoveTaxonomy());
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), securityCallback.canRemoveTaxonomy(), ignoreCompetences);
 		String[] selectableKeys = qpoolTaxonomyTreeBuilder.getSelectableKeys();
 		String[] selectableValues = qpoolTaxonomyTreeBuilder.getSelectableValues();
 		taxonomyLevelEl.setKeysAndValues(selectableKeys, selectableValues, null);

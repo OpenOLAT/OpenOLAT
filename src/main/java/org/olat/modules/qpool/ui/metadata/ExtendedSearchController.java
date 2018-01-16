@@ -404,11 +404,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		
 		@Override
 		public FormItem createItem(String startValue) {
-			if (allTaxonomyLevels) {
-				qpoolTaxonomyTreeBuilder.loadAllTaxonomyLevels();
-			} else {
-				qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false);
-			}
+			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false, allTaxonomyLevels);
 			return createItem(qpoolTaxonomyTreeBuilder.getSelectableKeys(),
 					qpoolTaxonomyTreeBuilder.getSelectableValues(), startValue);
 		}
@@ -422,11 +418,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		
 		@Override
 		public FormItem createItem(String startValue) {
-			if (allTaxonomyLevels) {
-				qpoolTaxonomyTreeBuilder.loadAllTaxonomyLevels();
-			} else {
-				qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false);
-			}
+			qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), false, allTaxonomyLevels);
 			return createItem(qpoolTaxonomyTreeBuilder.getTaxonomicPaths(),
 					qpoolTaxonomyTreeBuilder.getSelectableValues(), startValue);
 		}

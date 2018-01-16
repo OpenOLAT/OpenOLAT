@@ -117,6 +117,11 @@ public class SharedItemsSource implements QuestionItemsSource {
 	public boolean isBulkChangeEnabled() {
 		return true;
 	}
+	
+	@Override
+	public boolean isAdminItemSource() {
+		return false;
+	}
 
 	@Override
 	public boolean askEditable() {

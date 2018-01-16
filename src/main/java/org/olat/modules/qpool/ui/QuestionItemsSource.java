@@ -60,6 +60,8 @@ public interface QuestionItemsSource {
 
 	public boolean askEditable();
 	
+	public boolean isAdminItemSource();
+	
 	public boolean isStatusFilterEnabled();
 	
 	public QuestionStatus getStatusFilter();

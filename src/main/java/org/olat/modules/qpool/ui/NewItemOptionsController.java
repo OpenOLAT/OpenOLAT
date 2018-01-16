@@ -64,14 +64,15 @@ public class NewItemOptionsController extends FormBasicController {
 	@Autowired
 	private QPoolTaxonomyTreeBuilder qpoolTaxonomyTreeBuilder;
 
-	public NewItemOptionsController(UserRequest ureq, WindowControl wControl) {	
-		this(ureq, wControl, null);
+	public NewItemOptionsController(UserRequest ureq, WindowControl wControl, boolean ignoreCompetences) {	
+		this(ureq, wControl, null, ignoreCompetences);
 	}
 	
-	public NewItemOptionsController(UserRequest ureq, WindowControl wControl, TaxonomyLevel selectedTaxonomyLevel) {	
+	public NewItemOptionsController(UserRequest ureq, WindowControl wControl, TaxonomyLevel selectedTaxonomyLevel,
+			boolean ignoreCompetences) {
 		super(ureq, wControl);
 		this.selectedTaxonomyLevel = selectedTaxonomyLevel;
-		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), true);
+		qpoolTaxonomyTreeBuilder.loadTaxonomyLevelsSelection(getIdentity(), true, ignoreCompetences);
 		
 		initForm(ureq);
 	}

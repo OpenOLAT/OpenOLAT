@@ -69,7 +69,7 @@ public class QuickViewMetadataController extends BasicController {
 		if (item == null) return;
 		
 		if (metadataCtrl == null) {
-			metadataCtrl = new MetadatasController(ureq, getWindowControl(), qPoolSecurityCallback, item, metadataSecurityCallback);
+			metadataCtrl = new MetadatasController(ureq, getWindowControl(), qPoolSecurityCallback, item, metadataSecurityCallback, false);
 		}
 	}
 

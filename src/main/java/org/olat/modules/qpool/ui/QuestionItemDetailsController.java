@@ -145,8 +145,10 @@ public class QuestionItemDetailsController extends BasicController implements To
 		setCommentsController(ureq);
 		putInitialPanel(mainVC);
 	}
+
 	private void setMetadatasController(UserRequest ureq, QuestionItem item, QuestionItemSecurityCallback securityCallback) {
-		metadatasCtrl = new MetadatasController(ureq, getWindowControl(), qPoolSecurityCallback, item, securityCallback);
+		metadatasCtrl = new MetadatasController(ureq, getWindowControl(), qPoolSecurityCallback, item, securityCallback,
+				itemSource.isAdminItemSource());
 		mainVC.put("metadatas", metadatasCtrl.getInitialComponent());
 		listenTo(metadatasCtrl);
 	}
@@ -482,7 +484,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	}
 	
 	private void doConfirmStartReview(UserRequest ureq) {
-		reviewStartCtrl = new ReviewStartController(ureq, getWindowControl(), metadatasCtrl.getItem());
+		reviewStartCtrl = new ReviewStartController(ureq, getWindowControl(), metadatasCtrl.getItem(), itemSource.isAdminItemSource());
 		listenTo(reviewStartCtrl);
 		cmc = new CloseableModalController(getWindowControl(), null,
 				reviewStartCtrl.getInitialComponent(), true,

@@ -89,6 +89,11 @@ public class EmptyItemsSource implements QuestionItemsSource {
     public boolean isDeleteEnabled() {
         return false;
     }
+	
+	@Override
+	public boolean isAdminItemSource() {
+		return false;
+	}
     
     @Override
 	public boolean askEditable() {
@@ -137,6 +142,6 @@ public class EmptyItemsSource implements QuestionItemsSource {
 
     @Override
     public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-        return new DefaultResultInfos<QuestionItemView>();
+        return new DefaultResultInfos<>();
     }
 }

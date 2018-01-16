@@ -56,14 +56,14 @@ public class MetadatasController extends BasicController {
 	private QuestionItem item;
 	
 	public MetadatasController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback qPoolSecurityCallback,
-			QuestionItem item, MetadataSecurityCallback metadataScurityCallback) {
+			QuestionItem item, MetadataSecurityCallback metadataScurityCallback, boolean ignoreCompetences) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		
 		this.item = item;
 
 		mainVC = createVelocityContainer("item_metadatas");
-		generalEditCtrl = new GeneralMetadataEditController(ureq, wControl, item, metadataScurityCallback);
+		generalEditCtrl = new GeneralMetadataEditController(ureq, wControl, item, metadataScurityCallback, ignoreCompetences);
 		listenTo(generalEditCtrl);
 		mainVC.put("details_general", generalEditCtrl.getInitialComponent());
 

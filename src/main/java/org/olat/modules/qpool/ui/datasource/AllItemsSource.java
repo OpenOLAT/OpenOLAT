@@ -67,6 +67,11 @@ public class AllItemsSource extends DefaultItemsSource {
 	public boolean isBulkChangeEnabled() {
 		return true;
 	}
+	
+	@Override
+	public boolean isAdminItemSource() {
+		return true;
+	}
 
 	@Override
 	public boolean askEditable() {
