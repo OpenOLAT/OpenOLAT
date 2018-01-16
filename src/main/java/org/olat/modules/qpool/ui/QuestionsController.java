@@ -84,14 +84,11 @@ public class QuestionsController extends BasicController implements Activateable
 
 	public void updateSource(QuestionItemsSource source) {
 		this.dataSource = source;
-		listCtrl.updateSource(source);
+		updateSource();
 	}
 	
 	public void updateSource() {
 		listCtrl.updateSource(dataSource);
-	}
-	
-	public void updateStatusFilter() {
 		listCtrl.updateStatusFilter();
 	}
 	
