@@ -110,6 +110,8 @@ public class ReviewProcessAdminController extends FormBasicController {
 				translate(FINAL_VISIBILITY_MANAGER),
 				translate(FINAL_VISIBILITY_MANAGER_TEACHER)};
 		finalVisibilityEl = uifactory.addDropdownSingleselect("final.visibility", formLayout, finalVisibilityKeys, finalVisibilityValues);
+		String selectedKey = qpoolModule.isFinalVisibleTeach()? FINAL_VISIBILITY_MANAGER_TEACHER: FINAL_VISIBILITY_MANAGER;
+		finalVisibilityEl.select(selectedKey, true);
 
 		//buttons
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

@@ -51,6 +51,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QuestionPoolAdminConfigurationController extends FormBasicController {
 	
 	private static final String[] onKeys = { "on" };
+	private static final String TAXONOMY_COMPETENCES = "taxonomy.competences";
+	private static final String TAXONOMY_ALL = "taxonomy.all";
 	private static final String POOL_MANAGER_EDIT_METADATA = "pool.manager.edit.matadata";
 	private static final String POOL_MANAGER_EDIT_STATUS = "pool.manager.edit.status";
 	private static final String POOL_MANAGER_REVIEW_PROCESS = "pool.manager.review.process";
@@ -77,6 +79,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 	private MultipleSelectionElement deleteQuestionsWithoutAuthorEl;
 	private MultipleSelectionElement poolManagerRightsEl;
 	private SingleSelection taxonomyTreeEl;
+	private SingleSelection ignoreCompetencesEl;
 	
 	private CloseableModalController closeableModalCtrl;
 	private ReviewProcessActivationController reviewProcessActivationCtrl;
@@ -152,6 +155,12 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 				}
 			}
 		}
+		
+		String[] ignoreCompetencesKeys = new String[] {TAXONOMY_COMPETENCES, TAXONOMY_ALL};
+		ignoreCompetencesEl = uifactory.addDropdownSingleselect("taxonomy.selectable", moduleCont,
+				ignoreCompetencesKeys, translateKeys(ignoreCompetencesKeys));
+		String selectedKey = qpoolModule.isIgnoreCompetences()? TAXONOMY_ALL: TAXONOMY_COMPETENCES;
+		ignoreCompetencesEl.select(selectedKey, true);
 		
 		FormLayoutContainer poolManagerRightsCont = FormLayoutContainer.createDefaultFormLayout("poolManagerRights", getTranslator());
 		poolManagerRightsCont.setFormTitle(translate("admin.pool.manager.title"));
@@ -248,6 +257,13 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		
 		String selectedTaxonomyQPoolKey = taxonomyTreeEl.getSelectedKey();
 		qpoolModule.setTaxonomyQPoolKey(selectedTaxonomyQPoolKey);
+		
+		String selectedIgnoreCompetences = ignoreCompetencesEl.getSelectedKey();
+		if (TAXONOMY_ALL.equals(selectedIgnoreCompetences)) {
+			qpoolModule.setIgnoreCompetences(true);
+		} else {
+			qpoolModule.setIgnoreCompetences(false);
+		}
 		
 		Collection<String> selectedPoolManagerRights = poolManagerRightsEl.getSelectedKeys();
 		boolean poolAdminAllowedToEditMetadata = selectedPoolManagerRights.contains(POOL_MANAGER_EDIT_METADATA);

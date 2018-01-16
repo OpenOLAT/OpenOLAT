@@ -57,6 +57,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private static final String TAXONOMY_QPOOL_KEY = "taxonomy.qpool.key";
 	public static final String DEFAULT_TAXONOMY_QPOOL_IDENTIFIER = "QPOOL";
 	private static final String DELETE_QUESTIONS_WITHOUT_AUTHOR = "delete.questions.without.author";
+	private static final String IGNORE_COMPETENCES = "ignore.taxonomies";
 	
 	private static final String REVIEW_PROCESS_ENABLED = "review.process.enabled";
 	private static final String REVIEW_DECISION_TYPE = "review.decision.type";
@@ -78,6 +79,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private boolean sharesEnabled = true;
 	private String taxonomyQPoolKey;
 	private boolean deleteQuestionsWithoutAuthor = false;
+	private boolean ignoreCompetences = true;
 
 	private boolean reviewProcessEnabled = false;
 	private String reviewDecisionType = ProcesslessDecisionProvider.TYPE;
@@ -155,6 +157,11 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		String deleteQuestionsWithoutAuthorObj = getStringPropertyValue(DELETE_QUESTIONS_WITHOUT_AUTHOR, true);
 		if(StringHelper.containsNonWhitespace(deleteQuestionsWithoutAuthorObj)) {
 			deleteQuestionsWithoutAuthor = "true".equals(deleteQuestionsWithoutAuthorObj);
+		}
+		
+		String ignoreCompetencesObj = getStringPropertyValue(IGNORE_COMPETENCES, true);
+		if(StringHelper.containsNonWhitespace(ignoreCompetencesObj)) {
+			ignoreCompetences = "true".equals(ignoreCompetencesObj);
 		}
 		
 		String reviewDecisionTypeObj = getStringPropertyValue(REVIEW_DECISION_TYPE, true);
@@ -292,6 +299,15 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		setStringProperty(DELETE_QUESTIONS_WITHOUT_AUTHOR, Boolean.toString(deleteQuestionsWithoutAuthor), true);
 	}
 
+	public boolean isIgnoreCompetences() {
+		return ignoreCompetences;
+	}
+
+	public void setIgnoreCompetences(boolean ignoreCompetences) {
+		this.ignoreCompetences = ignoreCompetences;
+		setStringProperty(IGNORE_COMPETENCES, Boolean.toString(ignoreCompetences), true);
+	}
+
 	public boolean isReviewProcessEnabled() {
 		return reviewProcessEnabled;
 	}
@@ -309,7 +325,6 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		this.reviewDecisionType = reviewDecisionType;
 		setStringProperty(REVIEW_DECISION_TYPE, reviewDecisionType, true);
 	}
-	
 
 	public int getReviewDecisionNumberOfRatings() {
 		return reviewDecisionNumberOfRatings;

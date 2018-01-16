@@ -69,17 +69,11 @@ public class QPoolTaxonomyTreeBuilder {
 	public QPoolTaxonomyTreeBuilder() {
 		reset();
 	}
-	
-	private void loadAllTaxonomyLevels() {
-		reset();
-		List<TaxonomyLevel> levels = qpoolService.getTaxonomyLevels();
-		prefill(levels);
-	}
 
 	public void loadTaxonomyLevelsSelection(Identity identity, boolean withEmptyEntry, boolean ignoreCompetences) {
 		reset();
 		addEmptyEntry = withEmptyEntry;
-		if (ignoreCompetences) {
+		if (ignoreCompetences || qpoolModule.isIgnoreCompetences()) {
 			loadAllTaxonomyLevels();
 		} else {
 			loadTaxonomyLevels(identity, TaxonomyCompetenceTypes.manage, TaxonomyCompetenceTypes.teach);
@@ -109,6 +103,11 @@ public class QPoolTaxonomyTreeBuilder {
 
 	private void loadTaxonomyLevels(Identity identity, TaxonomyCompetenceTypes... type) {
 		List<TaxonomyLevel> levels = qpoolService.getTaxonomyLevel(identity, type);
+		prefill(levels);
+	}
+	
+	private void loadAllTaxonomyLevels() {
+		List<TaxonomyLevel> levels = qpoolService.getTaxonomyLevels();
 		prefill(levels);
 	}
 
