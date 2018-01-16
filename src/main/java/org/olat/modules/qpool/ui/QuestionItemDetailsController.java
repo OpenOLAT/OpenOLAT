@@ -216,12 +216,12 @@ public class QuestionItemDetailsController extends BasicController implements To
 		stackPanel.addTool(commandDropdown, Align.left);
 		
 		copyItemLink = LinkFactory.createToolLink("copy", translate("copy"), this);
-		copyItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_copy");
+		copyItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_copy");
 		commandDropdown.addComponent(copyItemLink);
 		
 		if (qItemSecurityCallback.canDelete()) {
 			deleteLink = LinkFactory.createToolLink("delete.item", translate("delete.item"), this);
-			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_delete");
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_delete");
 			commandDropdown.addComponent(deleteLink);
 		}
 	}
@@ -253,32 +253,32 @@ public class QuestionItemDetailsController extends BasicController implements To
 		statusDropdown.setOrientation(DropdownOrientation.normal);
 	
 		statusDraftLink = LinkFactory.createToolLink("lifecycle.status.draft", translate("lifecycle.status.draft"), this);
-		statusDraftLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_draft");
-		statusDraftLink.setElementCssClass("o_label o_qpool_status o_qpool_status_draft");
+		statusDraftLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_draft");
+		statusDraftLink.setElementCssClass("o_labeled o_qpool_status o_qpool_status_draft");
 		statusDraftLink.setVisible(qItemSecurityCallback.canSetDraft() && !QuestionStatus.draft.equals(actualStatus));
 		statusDropdown.addComponent(statusDraftLink);
 
 		statusRevisedLink = LinkFactory.createToolLink("lifecycle.status.revised", translate("lifecycle.status.revised"), this);
-		statusRevisedLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_revised");
-		statusRevisedLink.setElementCssClass("o_label o_qpool_status o_qpool_status_revised");
+		statusRevisedLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_revised");
+		statusRevisedLink.setElementCssClass("o_labeled o_qpool_status o_qpool_status_revised");
 		statusRevisedLink.setVisible(qItemSecurityCallback.canSetRevised() && !QuestionStatus.revised.equals(actualStatus));
 		statusDropdown.addComponent(statusRevisedLink);
 		
 		statusReviewLink = LinkFactory.createToolLink("lifecycle.status.review", translate("lifecycle.status.review"), this);
-		statusReviewLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_review");
-		statusReviewLink.setElementCssClass("o_label o_qpool_status o_qpool_status_review");
+		statusReviewLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_review");
+		statusReviewLink.setElementCssClass("o_labeled o_qpool_status o_qpool_status_review");
 		statusReviewLink.setVisible(qItemSecurityCallback.canSetReview() && !QuestionStatus.review.equals(actualStatus));
 		statusDropdown.addComponent(statusReviewLink);
 		
 		statusFinalLink = LinkFactory.createToolLink("lifecycle.status.finalVersion", translate("lifecycle.status.finalVersion"), this);
-		statusFinalLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_finalVersion");
-		statusFinalLink.setElementCssClass("o_label o_qpool_status o_qpool_status_finalVersion");
+		statusFinalLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_finalVersion");
+		statusFinalLink.setElementCssClass("o_labeled o_qpool_status o_qpool_status_finalVersion");
 		statusFinalLink.setVisible(qItemSecurityCallback.canSetFinal() && !QuestionStatus.finalVersion.equals(actualStatus));
 		statusDropdown.addComponent(statusFinalLink);
 		
 		statusEndOfLifeLink = LinkFactory.createToolLink("lifecycle.status.endOfLife", translate("lifecycle.status.endOfLife"), this);
-		statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_endOfLife");
-		statusEndOfLifeLink.setElementCssClass("o_label o_qpool_status o_qpool_status_endOfLife");
+		statusEndOfLifeLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_endOfLife");
+		statusEndOfLifeLink.setElementCssClass("o_labeled o_qpool_status o_qpool_status_endOfLife");
 		statusEndOfLifeLink.setVisible(qItemSecurityCallback.canSetEndOfLife() && !QuestionStatus.endOfLife.equals(actualStatus));
 		statusDropdown.addComponent(statusEndOfLifeLink);
 
@@ -295,30 +295,30 @@ public class QuestionItemDetailsController extends BasicController implements To
 	
 	private void initShareTools() {
 		Dropdown sharesDropdown = new Dropdown("share.item", "share.item", false, getTranslator());
-		sharesDropdown.setIconCSS("o_icon o_icon-lg o_icon_qitem_share");
+		sharesDropdown.setIconCSS("o_icon o_icon-fw o_icon_qitem_share");
 		sharesDropdown.setOrientation(DropdownOrientation.normal);
 		stackPanel.addTool(sharesDropdown, Align.left);
 		
 		exportItemLink = LinkFactory.createToolLink("export.item", translate("export.item"), this);
-		exportItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_export");
+		exportItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_export");
 		sharesDropdown.addComponent(exportItemLink);
 
 		if (qPoolSecurityCallback.canUsePools()) {
 			sharePoolItemLink = LinkFactory.createToolLink("share.pool", translate("share.pool"), this);
-			sharePoolItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_pool_pool");
+			sharePoolItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_pool_pool");
 			sharesDropdown.addComponent(sharePoolItemLink);
 		}
 		
 		if (qPoolSecurityCallback.canUseGroups()) {
 			shareGroupItemLink = LinkFactory.createToolLink("share.group", translate("share.group"), this);
-			shareGroupItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_pool_share");
+			shareGroupItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_pool_share");
 			sharesDropdown.addComponent(shareGroupItemLink);
 		}
 	}
 
 	private void initPrevNextTools() {
 		previousItemLink = LinkFactory.createToolLink("previous", translate("previous"), this);
-		previousItemLink.setIconLeftCSS("o_icon o_icon-lg o_icon_previous");
+		previousItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_previous");
 		if (numberOfItems <= 1) {
 			previousItemLink.setEnabled(false);
 		}
@@ -331,7 +331,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		stackPanel.addTool(numberItemsLink);
 		
 		nextItemLink = LinkFactory.createToolLink("next", translate("next"), this);
-		nextItemLink.setIconLeftCSS("o_icon io_icon-lg o_icon_next");
+		nextItemLink.setIconLeftCSS("o_icon io_icon-fw o_icon_next");
 		if (numberOfItems <= 1) {
 			nextItemLink.setEnabled(false);
 		}
@@ -340,9 +340,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 
 	private void initMetadataTools() {
 		showMetadataLink = LinkFactory.createToolLink("metadata.show", translate("metadata.show"), this);
-		showMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_show_metadata");
+		showMetadataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_show_metadata");
 		hideMetadataLink = LinkFactory.createToolLink("metadata.hide", translate("metadata.hide"), this);
-		hideMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_qitem_hide_metadata");
+		hideMetadataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_hide_metadata");
 		if (showMetadatas != null && showMetadatas) {
 			doShowMetadata();
 		} else {

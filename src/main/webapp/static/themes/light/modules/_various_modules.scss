@@ -668,8 +668,8 @@ ul.o_assessment_docs>li:last-child {
 }
 
 /* label */
-%o_label,
-.o_label {
+%o_labeled,
+.o_labeled {
     text-transform: uppercase;
 	text-align: center;
 	text-decoration: none;
@@ -681,13 +681,13 @@ ul.o_assessment_docs>li:last-child {
     	border: 1px solid;
 	border-radius: 3px;
 	padding: 2px 5px;
-    background-color: $o-label_bg-color;
-    color: $o-label_color;
+    background-color: $o-labeled_bg-color;
+    color: $o-labeled_color;
 }
-.o_label_light {
-	@extend %o_label;
-    background-color: 	$o-label-light-bg-color;
+.o_labeled_light {
+	@extend %o_labeled;
+    background-color: 	$o-labeled-light-bg-color;
  }
- .dropdown-menu.o_label {
+ .dropdown-menu.o_labeled {
  	background-color: inherit;
  }

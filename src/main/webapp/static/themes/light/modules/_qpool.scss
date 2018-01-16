@@ -10,7 +10,7 @@
 /* dropdown element in toolbar */
 a.o_qpool_tools_status,
 .dropdown-toggle.o_qpool_tools_status  {
-	@extend %o_label;
+	@extend %o_labeled;
 }
 .dropdown-toggle.o_qpool_tools_status > i {
 	margin: 0 0 3px 0;

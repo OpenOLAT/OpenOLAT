@@ -49,7 +49,7 @@ public abstract class LabelCellRenderer implements FlexiCellRenderer {
 			target.append(value);
 		} else {
 			target.append("<div>");
-			target.append("<span class='o_label_light");
+			target.append("<span class='o_labeled_light");
 			String elementCssClass = getElementCssClass(cellValue);
 			if (StringHelper.containsNonWhitespace(elementCssClass)) {
 				target.append(" ").append(elementCssClass);
