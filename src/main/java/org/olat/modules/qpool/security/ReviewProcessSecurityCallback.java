@@ -171,7 +171,7 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	@Override
 	public boolean canEditAuthors() {
-		return admin || itemView.isAuthor();
+		return admin || itemView.isAuthor() || itemView.isManager() || (poolAdmin && qpoolModule.isPoolAdminAllowedToEditMetadata());
 	}
 
 }

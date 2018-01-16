@@ -171,7 +171,11 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 
 	@Override
 	public boolean canEditAuthors() {
-		return admin || itemView.isAuthor();
+		return admin 
+				|| itemView.isAuthor()
+				|| itemView.isEditableInPool()
+				|| itemView.isEditableInShare()
+				|| (poolAdmin && qpoolModule.isPoolAdminAllowedToEditMetadata());
 	}
 
 }
