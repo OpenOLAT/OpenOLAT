@@ -152,10 +152,12 @@ public class HottextEditorController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//title
 		itemBuilder.setTitle(titleEl.getValue());
-		//set the question with the text entries
-		String questionText = textEl.getRawValue();
-		itemBuilder.setQuestion(questionText);
-
+		
+		if(!restrictedEdit) {
+			//set the question with the text entries
+			String questionText = textEl.getRawValue();
+			itemBuilder.setQuestion(questionText);
+		}
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.hottext));
 	}
 	

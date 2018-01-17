@@ -243,42 +243,6 @@ public class MatchEditorController extends FormBasicController {
 		}
 		
 		commitTemporaryAssociations(ureq);
-		/*
-		if(singleMultiEl.isOneSelected() && singleMultiEl.isSelected(0)) {
-			Map<String,String> sourseTargetMap = new HashMap<>();
-			String[] directedPairsIds = ureq.getHttpReq().getParameterValues("qtiworks_response_" + itemBuilder.getResponseIdentifier());
-			if(directedPairsIds == null || directedPairsIds.length == 0) {
-				for(MatchWrapper sourceWrapper:sourceWrappers) {
-					sourceWrapper.setErrorSingleChoice(true);
-					allOk &= false;
-				}
-			} else {
-				for(String directedPairIds: directedPairsIds) {
-					String[] pairs = directedPairIds.split(" ");
-					String sourceId = pairs[0];
-					String targetId = pairs[1];
-					if(sourseTargetMap.containsKey(sourceId)) {
-						for(MatchWrapper sourceWrapper:sourceWrappers) {
-							if(sourceId.equals(sourceWrapper.getIdentifierString())) {
-								sourceWrapper.setErrorSingleChoice(true);
-							}
-						}
-						allOk &= false;
-					} else {
-						sourseTargetMap.put(sourceId, targetId);
-					}
-				}
-	
-				for(MatchWrapper sourceWrapper:sourceWrappers) {
-					String sourceId = sourceWrapper.getIdentifierString();
-					if(!sourseTargetMap.containsKey(sourceId)) {
-						sourceWrapper.setErrorSingleChoice(true);
-						allOk &= false;
-					}
-				}
-			}
-		}
-		*/
 		
 		if(layoutEl != null) {
 			layoutEl.clearError();
@@ -376,6 +340,8 @@ public class MatchEditorController extends FormBasicController {
 	}
 	
 	private void commitAssociations(UserRequest ureq) {
+		if(restrictedEdit) return;
+		
 		temporaryAssociations.clear();
 		itemBuilder.clearAssociations();
 
