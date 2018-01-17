@@ -21,12 +21,12 @@ package org.olat.modules.qpool.security;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
-import org.olat.modules.qpool.ReviewService;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -43,6 +43,9 @@ import org.springframework.stereotype.Component;
 @Scope("prototype")
 public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallback {
 	
+	private static final List<QuestionStatus> EDITABLE_STATES = Arrays.asList(
+			QuestionStatus.draft,
+			QuestionStatus.revised);
 	private static final Collection<QuestionStatus> DELETABLE_STATES = Arrays.asList(
 			QuestionStatus.draft,
 			QuestionStatus.revised,
@@ -55,8 +58,6 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	
 	@Autowired
 	private QuestionPoolModule qpoolModule;
-	@Autowired
-	private ReviewService reviewService;
 
 	@Override
 	public void setQuestionItemView(QuestionItemView itemView) {
@@ -80,7 +81,7 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	@Override
 	public boolean canEditQuestion() {
-		return reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())
+		return isEditableQuestionStatus(itemView.getQuestionStatus())
 				&& (admin || itemView.isAuthor() || itemView.isEditableInPool() || itemView.isEditableInShare()) ;
 	}
 
@@ -101,14 +102,14 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	@Override
 	public boolean canStartReview() {
 		return itemView.isReviewableFormat()
-				&& reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())
+				&& isEditableQuestionStatus(itemView.getQuestionStatus())
 				&& (admin || itemView.isAuthor());
 	}
 
 	@Override
 	public boolean canReviewNotStartable() {
 		return !itemView.isReviewableFormat()
-				&& reviewService.isEditableQuestionStatus(itemView.getQuestionStatus())
+				&& isEditableQuestionStatus(itemView.getQuestionStatus())
 				&& (admin || itemView.isAuthor());
 	}
 	
@@ -148,7 +149,7 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 
 	@Override
 	public boolean canDelete() {
-		return DELETABLE_STATES.contains(itemView.getQuestionStatus())
+		return isDeletableQuestionStatus(itemView.getQuestionStatus())
 				&& (admin || itemView.isManager());
 	}
 
@@ -175,6 +176,14 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	@Override
 	public boolean canEditAuthors() {
 		return admin || itemView.isAuthor() || itemView.isManager() || (poolAdmin && qpoolModule.isPoolAdminAllowedToEditMetadata());
+	}
+	
+	private boolean isEditableQuestionStatus(QuestionStatus status) {
+		return EDITABLE_STATES.contains(status);
+	}
+	
+	private boolean isDeletableQuestionStatus(QuestionStatus status) {
+		return DELETABLE_STATES.contains(status);
 	}
 
 }
