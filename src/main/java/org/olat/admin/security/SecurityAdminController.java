@@ -40,7 +40,7 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class SecurityAdminController extends FormBasicController {
 	
-	private MultipleSelectionElement wikiEl, topFrameEl, forceDownloadEl;
+	private MultipleSelectionElement wikiEl, topFrameEl, forceDownloadEl, xFrameOptionsSameoriginEl;
 
 	private final FolderModule folderModule;
 	private final BaseSecurityModule securityModule;
@@ -67,7 +67,12 @@ public class SecurityAdminController extends FormBasicController {
 		topFrameEl.addActionListener(FormEvent.ONCHANGE);
 		topFrameEl.setEnabled(false);
 		topFrameEl.setExampleKey("sec.top.frame.explanation", null);
-		
+
+		// on: send HTTP header X-FRAME-OPTIONS -> SAMEDOMAIN to prevent click-jack attacks. JS-top frame hack not save enough
+		xFrameOptionsSameoriginEl = uifactory.addCheckboxesHorizontal("sec.xframe.sameorigin", "sec.xframe.sameorigin", formLayout, keys, values);
+		xFrameOptionsSameoriginEl.select("off", securityModule.isXFrameOptionsSameoriginEnabled());
+		xFrameOptionsSameoriginEl.addActionListener(FormEvent.ONCHANGE);
+
 		// on: block wiki (more security); off: do not block wiki (less security)
 		wikiEl = uifactory.addCheckboxesHorizontal("sec.wiki", "sec.wiki", formLayout, keys, values);
 		wikiEl.select("off", securityModule.isWikiEnabled());
@@ -94,6 +99,9 @@ public class SecurityAdminController extends FormBasicController {
 			securityModule.setWikiEnabled(!enabled);
 			// update collaboration tools list
 			CollaborationToolsFactory.getInstance().initAvailableTools();
+		} else if(xFrameOptionsSameoriginEl == source) {
+			boolean enabled = xFrameOptionsSameoriginEl.isAtLeastSelected(1);
+			securityModule.setXFrameOptionsSameoriginEnabled(enabled);
 		} else if(forceDownloadEl == source) {
 			boolean enabled = forceDownloadEl.isAtLeastSelected(1);
 			folderModule.setForceDownload(enabled);

@@ -72,6 +72,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private static final String USERINFOS_TUNNEL_CBB = "userInfosTunnelCourseBuildingBlock";
 	/** The feature is enabled, always */
 	private static final String FORCE_TOP_FRAME = "forceTopFrame";
+	private static final String X_FRAME_OPTIONS_SAMEORIGIN = "xFrameOptionsSameOrigin";
 	private static final String WIKI_ENABLED = "wiki";
 
 	/**
@@ -136,6 +137,7 @@ public class BaseSecurityModule extends AbstractSpringModule {
 	private String userInfosTunnelCourseBuildingBlock;
 	
 	private String forceTopFrame = "disabled";
+	private String xFrameOptionsSameorigin = "disabled";
 	private String wikiEnabled = "enabled";
 
 	@Autowired
@@ -241,6 +243,10 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		enabled = getStringPropertyValue(FORCE_TOP_FRAME, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
 			forceTopFrame = enabled;
+		}
+		enabled = getStringPropertyValue(X_FRAME_OPTIONS_SAMEORIGIN, true);
+		if(StringHelper.containsNonWhitespace(enabled)) {
+			xFrameOptionsSameorigin = enabled;
 		}
 		enabled = getStringPropertyValue(WIKI_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabled)) {
@@ -468,8 +474,17 @@ public class BaseSecurityModule extends AbstractSpringModule {
 		return "enabled".equals(wikiEnabled);
 	}
 
+	public boolean isXFrameOptionsSameoriginEnabled() {
+		return "enabled".equals(xFrameOptionsSameorigin);
+	}
+
 	public void setWikiEnabled(boolean enable) {
 		String enabled = enable ? "enabled" : "disabled";
 		setStringProperty(WIKI_ENABLED, enabled, true);
+	}
+
+	public void setXFrameOptionsSameoriginEnabled(boolean enable) {
+		String enabled = enable ? "enabled" : "disabled";
+		setStringProperty(X_FRAME_OPTIONS_SAMEORIGIN, enabled, true);
 	}
 }

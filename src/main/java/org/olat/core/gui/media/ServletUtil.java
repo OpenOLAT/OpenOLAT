@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.render.StringOutput;
@@ -62,7 +63,10 @@ import org.olat.core.util.session.UserSessionManager;
  */
 public class ServletUtil {
 	private static final OLog log = Tracing.createLoggerFor(ServletUtil.class);
-
+	private static final BaseSecurityModule securityModule = CoreSpringFactory.getImpl(BaseSecurityModule.class);
+	
+	private static final String KEY_X_FRAME_OPTION = "X-FRAME-OPTIONS";
+	private static final String VALUE_SAMEORIGIN = "SAMEORIGIN";
 	
 	
 	public static void printOutRequestParameters(HttpServletRequest request) {
@@ -98,6 +102,7 @@ public class ServletUtil {
 	public static void serveResource(HttpServletRequest httpReq, HttpServletResponse httpResp, MediaResource mr) {
 		boolean debug = log.isDebug();
 
+		setXFrameHeader(httpResp);
 		try {
 			Long lastModified = mr.getLastModified();
 			if (lastModified != null) {
@@ -455,6 +460,7 @@ public class ServletUtil {
 	 */
 	public static void serveStringResource(HttpServletRequest httpReq, HttpServletResponse response, String result) {
 		setStringResourceHeaders(response);
+		setXFrameHeader(response);
 
 		// log the response headers prior to sending the output
 		boolean isDebug = log.isDebug();
@@ -511,6 +517,8 @@ public class ServletUtil {
 
 	public static void serveStringResource(HttpServletResponse response, StringOutput result) {
 		setStringResourceHeaders(response);
+		setXFrameHeader(response);
+
 		// log the response headers prior to sending the output
 		boolean isDebug = log.isDebug();
 		if (isDebug) {
@@ -541,6 +549,18 @@ public class ServletUtil {
 			if (isDebug) {
 				log.warn("client browser abort when serving inline", e);
 			}
+		}
+	}
+	
+	/**
+	 * Set the X-FRAME-OPTIONS header to SAMEORIGIN if the security module is
+	 * configured to add this header
+	 * 
+	 * @param response
+	 */
+	public static void setXFrameHeader(HttpServletResponse response) {
+		if (securityModule.isXFrameOptionsSameoriginEnabled()) {			
+			response.setHeader(KEY_X_FRAME_OPTION, VALUE_SAMEORIGIN);
 		}
 	}
 	
