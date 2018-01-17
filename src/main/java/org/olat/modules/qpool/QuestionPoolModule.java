@@ -89,7 +89,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	
 	private boolean poolAdminAllowedToEditMetadata = false;
 	private boolean poolAdminAllowedToEditStatus = false;
-	private boolean poolAdminAllowedToConfigReviewProcess = true;
+	private boolean poolAdminAllowedToConfigReviewProcess = false;
 	private boolean poolAdminAllowedToConfigTaxonomy = true;
 	private boolean poolAdminAllowedToConfigPools = true;
 	private boolean poolAdminAllowedToConfigItemTypes = true;

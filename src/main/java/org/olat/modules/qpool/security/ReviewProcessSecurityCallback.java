@@ -92,7 +92,10 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	@Override
 	public boolean canRemoveTaxonomy() {
 		return QuestionStatus.draft.equals(itemView.getQuestionStatus())
-				&& (admin || itemView.isAuthor() || itemView.isManager());
+				&& (admin
+						|| itemView.isAuthor()
+						|| itemView.isManager()
+						|| (poolAdmin && qpoolModule.isPoolAdminAllowedToEditMetadata()));
 	}
 
 	@Override
@@ -152,7 +155,7 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	@Override
 	public boolean canRemove() {
 		return questionItemSource.isRemoveEnabled()
-				&& (admin || itemView.isAuthor());
+				&& (admin || itemView.isAuthor() || (poolAdmin && qpoolModule.isPoolAdminAllowedToEditStatus()));
 	}
 
 	@Override
