@@ -408,7 +408,7 @@ public class QuestionListController extends AbstractItemListController implement
 				if(pools.size() > 0) {
 					@SuppressWarnings("unchecked")
 					List<QuestionItemShort> items = (List<QuestionItemShort>)selectPoolCtrl.getUserObject();
-					doShareItemsToGroups(ureq, items, null, pools);
+					doShareItemsToPools(ureq, items, pools);
 				}
 			}	
 		} else if(source == importSourcesCtrl) {
@@ -436,7 +436,7 @@ public class QuestionListController extends AbstractItemListController implement
 				if(groups.size() > 0) {
 					@SuppressWarnings("unchecked")
 					List<QuestionItemShort> items = (List<QuestionItemShort>)selectGroupCtrl.getUserObject();
-					doShareItemsToGroups(ureq, items, groups, null);
+					doShareItemsToGroups(ureq, items, groups);
 				}
 			}
 		} else if(source == shareItemsCtrl) {
@@ -1203,13 +1203,38 @@ public class QuestionListController extends AbstractItemListController implement
 		fireEvent(ureq, new QPoolEvent(QPoolEvent.EDIT));
 	}
 	
-	private void doShareItemsToGroups(UserRequest ureq, List<QuestionItemShort> items, List<BusinessGroup> groups, List<Pool> pools) {
+	private void doShareItemsToGroups(UserRequest ureq, List<QuestionItemShort> items, List<BusinessGroup> groups) {
 		removeAsListenerAndDispose(shareItemsCtrl);
-		shareItemsCtrl = new ShareItemOptionController(ureq, getWindowControl(), items, groups, pools);
+		shareItemsCtrl = new ShareItemOptionController(ureq, getWindowControl(), items, groups, null);
 		listenTo(shareItemsCtrl);
 		
+		String title;
+		if (groups != null && groups.size() == 1) {
+			title = translate("share.item.group", new String[] {groups.get(0).getName()});
+		} else {
+			title = translate("share.item.groups");
+		}
+		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				shareItemsCtrl.getInitialComponent(), true, translate("share.item"));
+				shareItemsCtrl.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);	
+	}
+	
+	private void doShareItemsToPools(UserRequest ureq, List<QuestionItemShort> items, List<Pool> pools) {
+		removeAsListenerAndDispose(shareItemsCtrl);
+		shareItemsCtrl = new ShareItemOptionController(ureq, getWindowControl(), items, null, pools);
+		listenTo(shareItemsCtrl);
+		
+		String title;
+		if (pools != null && pools.size() == 1) {
+			title = translate("share.item.pool", new String[] {pools.get(0).getName()});
+		} else {
+			title = translate("share.item.pools");
+		}
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				shareItemsCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);	
 	}

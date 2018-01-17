@@ -21,8 +21,10 @@ package org.olat.modules.qpool.ui.tree;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -276,7 +278,9 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private void buildCollectionTreeNodes(TreeNode parentNode) {
 		if (!securityCallback.canUseCollections()) return;
 		
-		List<QuestionItemCollection> collections = qpoolService.getCollections(identity);
+		List<QuestionItemCollection> collections = qpoolService.getCollections(identity).stream()
+				.sorted(Comparator.comparing(QuestionItemCollection::getName))
+				.collect(Collectors.toList());
 		for(QuestionItemCollection coll: collections) {
 			TreeNode node = new CollectionTreeNode(stackPanel, securityCallback, coll);
 			parentNode.addChild(node);
@@ -328,7 +332,9 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private void buildPoolTreeNodes(TreeNode parentNode) {
 		if (!securityCallback.canUsePools()) return;
 
-		List<Pool> pools = qpoolService.getPools(identity, roles);
+		List<Pool> pools = qpoolService.getPools(identity, roles).stream()
+				.sorted(Comparator.comparing(Pool::getName))
+				.collect(Collectors.toList());
 		for(Pool pool:pools) {
 			TreeNode node = new PoolTreeNode(stackPanel, securityCallback, pool);
 			parentNode.addChild(node);
@@ -338,7 +344,9 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	private void buildBusinessGroupTreeNodes(TreeNode parentNode) {
 		if (!securityCallback.canUseGroups()) return;
 
-		List<BusinessGroup> groups = qpoolService.getResourcesWithSharedItems(identity);
+		List<BusinessGroup> groups = qpoolService.getResourcesWithSharedItems(identity).stream()
+				.sorted(Comparator.comparing(BusinessGroup::getName))
+				.collect(Collectors.toList());
 		for(BusinessGroup group:groups) {
 			TreeNode node = new BusinessGroupTreeNode(stackPanel, securityCallback, group);
 			parentNode.addChild(node);
