@@ -545,7 +545,7 @@ public class ProfileFormController extends FormBasicController {
 		mailMap.put("currentEMail", currentEmail);
 		mailMap.put("changedEMail", changedEmail);
 		
-		XStream xml = new XStream();
+		XStream xml = XStreamHelper.createXStreamInstance();
 		String serMailMap = xml.toXML(mailMap);
 		
 		TemporaryKey tk = rm.createAndDeleteOldTemporaryKey(identityToModify.getKey(), serMailMap, ip, RegistrationManager.EMAIL_CHANGE);

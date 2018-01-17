@@ -98,7 +98,7 @@ public class FeedFileStorge {
 
 	public FeedFileStorge() {
 		fileResourceManager = FileResourceManager.getInstance();
-		xstream = new XStream();
+		xstream = XStreamHelper.createXStreamInstance();
 		xstream.alias("feed", FeedImpl.class);
 		xstream.aliasField("type", FeedImpl.class, "resourceableType");
 		xstream.omitField(FeedImpl.class, "id");

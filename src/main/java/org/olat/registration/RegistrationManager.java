@@ -55,6 +55,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.user.UserManager;
@@ -361,7 +362,7 @@ public class RegistrationManager {
 		List<TemporaryKey> tk = rm.loadTemporaryKeyByAction(RegistrationManager.EMAIL_CHANGE);
 		if (tk != null) {
 			for (TemporaryKey temporaryKey : tk) {
-				XStream xml = new XStream();
+				XStream xml = XStreamHelper.createXStreamInstance();
 				@SuppressWarnings("unchecked")
 				Map<String, String> mails = (Map<String, String>) xml.fromXML(temporaryKey.getEmailAddress());
 				if (emailAddress.equalsIgnoreCase(mails.get("changedEMail"))) {

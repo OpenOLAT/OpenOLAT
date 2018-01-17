@@ -29,6 +29,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.xml.XStreamHelper;
 import org.olat.home.HomeMainController;
 import org.olat.login.SupportsAfterLoginInterceptor;
 import org.olat.user.ProfileAndHomePageEditController;
@@ -101,7 +102,7 @@ public class ChangeEMailExecuteController extends ChangeEMailController implemen
 	 * @return
 	 */
 	public boolean changeEMail(WindowControl wControl) {
-		XStream xml = new XStream();
+		XStream xml = XStreamHelper.createXStreamInstance();
 		@SuppressWarnings("unchecked")
 		HashMap<String, String> mails = (HashMap<String, String>) xml.fromXML(tempKey.getEmailAddress());
 		

@@ -25,6 +25,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.util.xml.XStreamHelper;
+
 import com.thoughtworks.xstream.XStream;
 
 /**
@@ -42,7 +44,7 @@ public class GroupXStream {
 	private final XStream xstream;
 	
 	public GroupXStream() {
-		xstream = new XStream();
+		xstream = XStreamHelper.createXStreamInstance();
 		xstream.alias("OLATGroupExport", OLATGroupExport.class);
 		xstream.alias("AreaCollection", AreaCollection.class);
 		xstream.alias("GroupCollection", GroupCollection.class);

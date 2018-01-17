@@ -37,18 +37,18 @@ import com.thoughtworks.xstream.converters.collections.MapConverter;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 
 /**
- * This implmentation of XStream automatically convert hibernat list, set and map
- * to standard java collections and convert by import / deserialization
- * the old hibernate 3 collection packages to the new one.
+ * This implmentation of XStream automatically convert hibernat list, set and
+ * map to standard java collections and convert by import / deserialization the
+ * old hibernate 3 collection packages to the new one.
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class EnhancedXStream extends XStream  {
-	
+public class EnhancedXStream extends XStream {
+
 	public EnhancedXStream(boolean export) {
 		super();
-		
-		if(export) {
+
+		if (export) {
 			addDefaultImplementation(PersistentList.class, List.class);
 			addDefaultImplementation(PersistentBag.class, List.class);
 			addDefaultImplementation(PersistentMap.class, Map.class);
@@ -56,24 +56,26 @@ public class EnhancedXStream extends XStream  {
 			addDefaultImplementation(PersistentSet.class, Set.class);
 			addDefaultImplementation(PersistentSortedSet.class, Set.class);
 			addDefaultImplementation(ArrayList.class, List.class);
-			
+
 			registerConverter(new CollectionConverter(getMapper()) {
-			    public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
-			        return PersistentList.class == type || PersistentBag.class == type;
-			    }
+				@Override
+				public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
+					return PersistentList.class == type || PersistentBag.class == type;
+				}
 			});
-			
+
 			registerConverter(new MapConverter(getMapper()) {
-			  public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
-			    return PersistentMap.class == type;
-			  }
+				@Override
+				public boolean canConvert(@SuppressWarnings("rawtypes") Class type) {
+					return PersistentMap.class == type;
+				}
 			});
 		}
 	}
-	
+
 	@Override
 	protected MapperWrapper wrapMapper(MapperWrapper next) {
 		return new EnhancedMapper(next);
 	}
-	
+
 }

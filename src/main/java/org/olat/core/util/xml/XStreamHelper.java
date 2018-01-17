@@ -84,6 +84,7 @@ public class XStreamHelper {
 	private static final String ENCODING = "UTF-8";
 
 	private static XStream unconfiguredXStream = new XStream();
+	
 
 	/**
 	 * Write a an object to an XML file. UTF-8 is used as encoding
@@ -227,8 +228,7 @@ public class XStreamHelper {
 	 * writing to a configured XML mapping
 	 */
 	public static XStream createXStreamInstance() {
-		EnhancedXStream xstream = new EnhancedXStream(false);
-		return xstream;
+		return new EnhancedXStream(false);
 	}
 	
 	/**
@@ -238,8 +238,7 @@ public class XStreamHelper {
 	 * @return
 	 */
 	public static XStream createXStreamInstanceForDBObjects() {
-		EnhancedXStream xstream = new EnhancedXStream(true);
-		return xstream;
+		return new EnhancedXStream(true);
 	}
 
 	/**
