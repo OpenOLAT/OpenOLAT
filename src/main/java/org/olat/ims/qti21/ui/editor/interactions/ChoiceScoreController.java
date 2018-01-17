@@ -119,7 +119,9 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		String[] choiceKeys = new String[0];
 		String[] choiceValues = new String[0];
 		maxChoicesEl = uifactory.addDropdownSingleselect("max.choices", formLayout, choiceKeys, choiceValues, null);
+		maxChoicesEl.setEnabled(!restrictedEdit && !readOnly);
 		minChoicesEl = uifactory.addDropdownSingleselect("min.choices", formLayout, choiceKeys, choiceValues, null);
+		minChoicesEl.setEnabled(!restrictedEdit && !readOnly);
 		updateMinMaxChoices();
 		
 		String[] modeValues = new String[]{

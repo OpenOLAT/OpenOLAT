@@ -176,6 +176,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		String choiceId = "answer" + count++;
 		RichTextElement choiceEl = uifactory.addRichTextElementForQTI21(choiceId, "form.imd.answer", choiceContent, 8, -1, itemContainer,
 				answersCont, ureq.getUserSession(), getWindowControl());
+		choiceEl.setEnabled(!readOnly);
 		choiceEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 		choiceEl.setUserObject(choice);
 		answersCont.add("choiceId", choiceEl);
