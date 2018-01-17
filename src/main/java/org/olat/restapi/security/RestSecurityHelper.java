@@ -96,7 +96,7 @@ public class RestSecurityHelper {
 	public static boolean isAuthor(HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);
-			return (roles.isAuthor() || roles.isOLATAdmin());
+			return (roles.isAuthor() || roles.isOLATAdmin() || roles.isInstitutionalResourceManager());
 		} catch (Exception e) {
 			return false;
 		}
@@ -146,6 +146,15 @@ public class RestSecurityHelper {
 				return editor;
 			}
 			return false;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	public static boolean isInstitutionalResourceManager(HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			return (roles.isInstitutionalResourceManager() || roles.isOLATAdmin());
 		} catch (Exception e) {
 			return false;
 		}
