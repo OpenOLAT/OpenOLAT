@@ -1130,11 +1130,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public PageUserInformations getPageUserInfos(Page page, Identity identity) {
+	public PageUserInformations getPageUserInfos(Page page, Identity identity, PageUserStatus defaultStatus) {
 		PageUserInformations infos = pageUserInfosDao.getPageUserInfos(page, identity);
 		if(infos == null) {
 			PageStatus status = page.getPageStatus();
-			PageUserStatus userStatus = PageUserStatus.inProcess;
+			PageUserStatus userStatus = defaultStatus;
 			if(status == null || status == PageStatus.draft) {
 				userStatus = PageUserStatus.incoming;
 			} else if(status == PageStatus.closed || status == PageStatus.deleted) {

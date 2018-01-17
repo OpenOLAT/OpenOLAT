@@ -265,7 +265,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	protected String renderFilterDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableFilter> filters) {
 		Form theForm = ftE.getRootForm();
 		String dispatchId = ftE.getFormDispatchId();
-		String selected = null;
+		StringBuilder selected = new StringBuilder(256);
 		
 		sb.append("<div class='btn-group'>")
 		  .append("<button id='table-button-filters-").append(dispatchId).append("' type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>")
@@ -288,7 +288,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				}
 				sb.append(filter.getLabel()).append("</a></li>");
 				if(filter.isSelected() && !filter.isShowAll()) {
-					selected = filter.getLabel();
+					if(selected.length() > 0) selected.append(", ");
+					selected.append(filter.getLabel());
 				}
 			}
 		}
@@ -298,7 +299,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		  .append("jQuery(function() { o_popover('table-button-filters-").append(dispatchId).append("','table-filters-").append(dispatchId).append("'); });\n")
 		  .append("/* ]]> */\n")
 		  .append("</script>");
-		return selected;
+		return selected.toString();
 	}
 	
 	protected void renderSortDropdown(StringOutput sb, FlexiTableElementImpl ftE, List<FlexiTableSort> sorts) {

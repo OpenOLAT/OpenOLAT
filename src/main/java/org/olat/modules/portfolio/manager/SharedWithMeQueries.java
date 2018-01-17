@@ -267,7 +267,7 @@ public class SharedWithMeQueries {
 				String sectionTitle = (String)object[pos++];
 				Number sectionPosNumber = (Number)object[pos++];
 				Date sectionEndDate = (Date)object[pos++];;
-				pos++;//Object pageKey = object[pos++];
+				Long pageKey = (Long)object[pos++];
 				String pageStatus = (String)object[pos++];
 				Date pageLastModified = (Date)object[pos++];
 				Date pageLastPublication = (Date)object[pos++];
@@ -292,7 +292,9 @@ public class SharedWithMeQueries {
 					binder.setRecentLaunch(recentLaunch);
 				}
 				
-				if(StringHelper.containsNonWhitespace(pageStatus)) {
+				if(pageKey != null && pageStatus == null) {
+					binder.incrementNumOfDraftPages();
+				} else if(StringHelper.containsNonWhitespace(pageStatus)) {
 					PageStatus status = PageStatus.valueOf(pageStatus);
 					if(PageStatus.isClosed(status, sectionEndDate, now)) {
 						binder.incrementNumOfClosedPages();

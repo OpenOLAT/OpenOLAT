@@ -110,7 +110,7 @@ public class PageMetadataController extends BasicController {
 		this.secCallback = secCallback;
 		assignments = portfolioService.getAssignments(page, null);
 		if(secCallback.canBookmark() || secCallback.canPageUserInfosStatus()) {
-			pageUserInfos = portfolioService.getPageUserInfos(page, getIdentity());
+			pageUserInfos = portfolioService.getPageUserInfos(page, getIdentity(), PageUserStatus.inProcess);
 		}
 
 		mainVC = createVelocityContainer("page_meta");

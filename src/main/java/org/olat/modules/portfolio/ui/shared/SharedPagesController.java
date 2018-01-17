@@ -63,6 +63,7 @@ import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PageUserInformations;
+import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedPage;
@@ -318,7 +319,7 @@ public class SharedPagesController extends FormBasicController implements Activa
 	
 	private void toggleBookmark(SharedPageRow row) {
 		Page page = portfolioService.getPageByKey(row.getPageKey());
-		PageUserInformations infos = portfolioService.getPageUserInfos(page, getIdentity());
+		PageUserInformations infos = portfolioService.getPageUserInfos(page, getIdentity(), PageUserStatus.incoming);
 		infos.setMark(!infos.isMark());
 		infos = portfolioService.updatePageUserInfos(infos);
 		if(searchParams.isBookmarkOnly() && !infos.isMark()) {

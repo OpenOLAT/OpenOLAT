@@ -513,7 +513,7 @@ public interface PortfolioService {
 	 * @param identity The identity
 	 * @return The informations
 	 */
-	public PageUserInformations getPageUserInfos(Page page, Identity identity);
+	public PageUserInformations getPageUserInfos(Page page, Identity identity, PageUserStatus defStatus);
 	
 	public List<PageUserInformations> getPageUserInfos(BinderRef binder, IdentityRef identity);
 	
