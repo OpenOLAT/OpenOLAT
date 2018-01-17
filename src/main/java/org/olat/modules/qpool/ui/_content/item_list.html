@@ -23,14 +23,14 @@
 #end
 #if($r.available("new.item") || $r.available("import.item"))
 <div class="o_button_group o_button_group_right">
-	#if($r.available("new.item") && $r.available("new.item"))<div class="btn-group">#end
+	#if($r.available("new.item") && $r.available("import.item"))<div class="btn-group">#end
 	#if($r.available("new.item"))
 		$r.render("new.item")
 	#end
 	#if($r.available("import.item"))
 		$r.render("import.item")
 	#end
-	#if($r.available("import.item") && $r.available("import.item"))</div>#end
+	#if($r.available("new.item") && $r.available("import.item"))</div>#end
 </div>
 #end
 $r.render("items")
