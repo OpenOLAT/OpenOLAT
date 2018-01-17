@@ -174,9 +174,11 @@ public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOf
 		List<String> keyStrings = Arrays.asList(raw.split(AUTHOR_CONTAINS_SPLIT_VALUE));
 		for (String keyString : keyStrings) {
 			try {
-				keys.add(IdentifierKey.valueOf(keyString));
+				if (StringHelper.containsNonWhitespace(keyString)) {
+					keys.add(IdentifierKey.valueOf(keyString));
+				}
 			} catch (Exception e) {
-				log.warn("The value '" + keyString + "' for the property 'shib.ac.auto.identifiers' is not valid.");
+				log.warn("The value '" + keyString + "' for the property 'method.auto.shib.identifiers' is not valid.");
 			}
 		}
 		return keys;
