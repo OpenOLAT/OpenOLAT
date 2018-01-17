@@ -346,6 +346,8 @@ public class MatchEditorController extends FormBasicController {
 	}
 	
 	private void commitAssociations(UserRequest ureq) {
+		if(restrictedEdit) return;
+		
 		temporaryAssociations.clear();
 		itemBuilder.clearAssociations();
 
