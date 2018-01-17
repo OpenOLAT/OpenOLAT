@@ -520,7 +520,7 @@ public class BinderSecurityCallbackFactory {
 				return !task && PageStatus.isClosed(page);
 			}
 			
-			if(rights != null && PageStatus.isClosed(page)) {
+			if(rights != null && PageStatus.isClosed(page) && page.getPageStatus() != PageStatus.published) {
 				for(AccessRights right:rights) {
 					if(PortfolioRoles.coach.equals(right.getRole())
 							&& right.matchElementAndAncestors(page)) {

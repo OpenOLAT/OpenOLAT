@@ -358,6 +358,8 @@ public class PageRunController extends BasicController implements TooledControll
 		} else if(confirmDonePageCtrl == source) {
 			if(event instanceof ClosePageEvent) {
 				doClose(ureq);
+			} else {
+				doDone(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -473,17 +475,28 @@ public class PageRunController extends BasicController implements TooledControll
 		stackPanel.popUpToController(this);
 		loadMeta(ureq);
 		loadModel(ureq, true);
-		fireEvent(ureq, Event.CHANGED_EVENT);
+		fireEvent(ureq, new ClosePageEvent());
+	}
+	
+	private void doDone(UserRequest ureq) {
+		stackPanel.popUpToController(this);
+		loadMeta(ureq);
+		loadModel(ureq, true);
+		fireEvent(ureq, new DonePageEvent());
 	}
 	
 	private void doConfirmDone(UserRequest ureq) {
-		confirmDonePageCtrl = new ConfirmClosePageController(ureq, getWindowControl(), page);
-		listenTo(confirmDonePageCtrl);
-		
-		String title = translate("close.page");
-		cmc = new CloseableModalController(getWindowControl(), null, confirmDonePageCtrl.getInitialComponent(), true, title, false);
-		listenTo(cmc);
-		cmc.activate();
+		if(secCallback.canClose(page)) {
+			confirmDonePageCtrl = new ConfirmClosePageController(ureq, getWindowControl(), page);
+			listenTo(confirmDonePageCtrl);
+			
+			String title = translate("close.page");
+			cmc = new CloseableModalController(getWindowControl(), null, confirmDonePageCtrl.getInitialComponent(), true, title, false);
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			doDone(ureq);
+		}
 	}
 	
 	private void doConfirmReopen(UserRequest ureq) {

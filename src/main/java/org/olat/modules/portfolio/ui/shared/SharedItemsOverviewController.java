@@ -40,6 +40,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.model.SearchSharePagesParameters;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 
@@ -171,6 +172,7 @@ public class SharedItemsOverviewController extends BasicController implements Ac
 			SearchSharePagesParameters searchParams = new SearchSharePagesParameters();
 			searchParams.setBookmarkOnly(false);
 			searchParams.addExcludedPageStatus(PageStatus.closed, PageStatus.deleted);
+			searchParams.addExcludedPageUserStatus(PageUserStatus.done);
 			List<PageStatus> filters = new ArrayList<>(5);
 			filters.add(PageStatus.draft);
 			filters.add(PageStatus.inRevision);

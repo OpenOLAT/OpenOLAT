@@ -94,6 +94,9 @@ public class SharedWithMeQueries {
 		if(params.getExcludedPageStatus() != null && !params.getExcludedPageStatus().isEmpty()) {
 			sb.append(" (page.status is null or page.status not in (:excludedPageStatus)) and");
 		}
+		if(params.getExcludedPageUserStatus() != null && !params.getExcludedPageUserStatus().isEmpty()) {
+			sb.append(" (uinfos.userStatus is null or uinfos.userStatus not in (:excludedPageUserStatus)) and");
+		}
 		
 		sb.append(" (exists (select membership.key from bgroupmember as membership")
 		  .append("   where membership.group.key=binder.baseGroup.key and membership.identity.key=:identityKey and membership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("')")
@@ -115,6 +118,11 @@ public class SharedWithMeQueries {
 			List<String> excludedPageStatus = params.getExcludedPageStatus()
 					.stream().map(s -> s.name()).collect(Collectors.toList());
 			query.setParameter("excludedPageStatus", excludedPageStatus);
+		}
+		if(params.getExcludedPageUserStatus() != null && !params.getExcludedPageUserStatus().isEmpty()) {
+			List<String> excludedPageUserStatus = params.getExcludedPageUserStatus()
+					.stream().map(s -> s.name()).collect(Collectors.toList());
+			query.setParameter("excludedPageUserStatus", excludedPageUserStatus);
 		}
 		
 		List<Object[]> objects = query.getResultList();

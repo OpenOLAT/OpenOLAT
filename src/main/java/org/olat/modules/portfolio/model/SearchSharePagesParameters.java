@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.portfolio.PageUserStatus;
 
 /**
  * 
@@ -35,6 +36,7 @@ public class SearchSharePagesParameters {
 	private String searchString;
 	private boolean bookmarkOnly;
 	private List<PageStatus> excludedStatus = new ArrayList<>(6);
+	private List<PageUserStatus> excludedUserStatus = new ArrayList<>(6);
 
 	public boolean isBookmarkOnly() {
 		return bookmarkOnly;
@@ -61,6 +63,20 @@ public class SearchSharePagesParameters {
 			for(PageStatus state:status) {
 				if(state != null && !excludedStatus.contains(state)) {
 					excludedStatus.add(state);
+				}
+			}
+		}
+	}
+	
+	public  List<PageUserStatus> getExcludedPageUserStatus() {
+		return excludedUserStatus;
+	}
+	
+	public void addExcludedPageUserStatus(PageUserStatus... status) {
+		if(status != null && status.length > 0) {
+			for(PageUserStatus state:status) {
+				if(state != null && !excludedUserStatus.contains(state)) {
+					excludedUserStatus.add(state);
 				}
 			}
 		}

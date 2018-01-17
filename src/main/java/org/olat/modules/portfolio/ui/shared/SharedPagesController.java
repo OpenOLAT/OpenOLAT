@@ -71,6 +71,7 @@ import org.olat.modules.portfolio.model.SearchSharePagesParameters;
 import org.olat.modules.portfolio.ui.PageRunController;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
+import org.olat.modules.portfolio.ui.event.DonePageEvent;
 import org.olat.modules.portfolio.ui.renderer.PageTitleCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.modules.portfolio.ui.renderer.StatusCellRenderer;
@@ -310,8 +311,9 @@ public class SharedPagesController extends FormBasicController implements Activa
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(pageCtrl == source) {
-			if(event instanceof ClosePageEvent) {
+			if(event instanceof ClosePageEvent || event instanceof DonePageEvent) {
 				loadModel(false, false);
+				stackPanel.popController(pageCtrl);
 			}
 		}
 		super.event(ureq, source, event);

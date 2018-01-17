@@ -91,9 +91,7 @@ public class SharedPagesDataModelSortDelegate extends SortableFlexiTableModelDel
 			int score2 = getScore(o2);
 			int c = Integer.compare(score1, score2);
 			if(c == 0) {
-				String s1 = o1.getPageTitle();
-				String s2 = o2.getPageTitle();
-				c = compareString(s1, s2);
+				c = compareString(o1.getPageTitle(), o2.getPageTitle());
 			}
 			return c;
 		}
@@ -102,8 +100,8 @@ public class SharedPagesDataModelSortDelegate extends SortableFlexiTableModelDel
 			PageStatus pageStatus = o.getStatus();
 			PageUserStatus userStatus = o.getUserStatus();
 			
-			int score = 10;
-			if(pageStatus == null && pageStatus == PageStatus.draft) {
+			int score;
+			if(pageStatus == null || pageStatus == PageStatus.draft) {
 				score = 1;
 			} else if(pageStatus == PageStatus.inRevision) {
 				score = 2;
@@ -117,6 +115,8 @@ public class SharedPagesDataModelSortDelegate extends SortableFlexiTableModelDel
 				score = 6;	
 			} else if(pageStatus == PageStatus.deleted) {
 				score = 7;
+			} else {
+				score = 8;
 			}
 			return score;
 		}

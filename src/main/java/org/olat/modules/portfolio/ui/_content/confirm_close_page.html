@@ -1,5 +1,5 @@
 <div>$r.translate("confirm.close.page")
-#if($r.isNotEmpty($names)) $r.translate("confirm.close.page.other.coaches")
+#if($r.isNotEmpty($names))<br>$r.translate("confirm.close.page.other.coaches")
 <ul>
 	#foreach($name in $names)
 	<li>$name</li>
