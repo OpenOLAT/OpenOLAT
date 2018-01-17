@@ -934,6 +934,8 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public TaxonomyLevel createTaxonomyLevel(TaxonomyLevel parent, String identifier, String displayName) {
+		if (!qpoolModule.isImportCreateTaxonomyLevel()) return null;
+		
 		Taxonomy qpoolTaxonomy = getQPoolTaxonomy();
 		if(qpoolTaxonomy == null) {
 			return null;

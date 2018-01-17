@@ -58,6 +58,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	public static final String DEFAULT_TAXONOMY_QPOOL_IDENTIFIER = "QPOOL";
 	private static final String DELETE_QUESTIONS_WITHOUT_AUTHOR = "delete.questions.without.author";
 	private static final String IGNORE_COMPETENCES = "ignore.taxonomies";
+	private static final String IMPORT_CREATE_TAXONOMY_LEVEL = "import.create.taxomomy.level";
 	
 	private static final String REVIEW_PROCESS_ENABLED = "review.process.enabled";
 	private static final String REVIEW_DECISION_TYPE = "review.decision.type";
@@ -80,6 +81,7 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	private String taxonomyQPoolKey;
 	private boolean deleteQuestionsWithoutAuthor = false;
 	private boolean ignoreCompetences = true;
+	private boolean importCreateTaxonomyLevel = true;
 
 	private boolean reviewProcessEnabled = false;
 	private String reviewDecisionType = ProcesslessDecisionProvider.TYPE;
@@ -162,6 +164,11 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 		String ignoreCompetencesObj = getStringPropertyValue(IGNORE_COMPETENCES, true);
 		if(StringHelper.containsNonWhitespace(ignoreCompetencesObj)) {
 			ignoreCompetences = "true".equals(ignoreCompetencesObj);
+		}
+		
+		String importCreateTaxonomyLevelObj = getStringPropertyValue(IMPORT_CREATE_TAXONOMY_LEVEL, true);
+		if(StringHelper.containsNonWhitespace(importCreateTaxonomyLevelObj)) {
+			importCreateTaxonomyLevel = "true".equals(importCreateTaxonomyLevelObj);
 		}
 		
 		String reviewDecisionTypeObj = getStringPropertyValue(REVIEW_DECISION_TYPE, true);
@@ -306,6 +313,15 @@ public class QuestionPoolModule extends AbstractSpringModule implements ConfigOn
 	public void setIgnoreCompetences(boolean ignoreCompetences) {
 		this.ignoreCompetences = ignoreCompetences;
 		setStringProperty(IGNORE_COMPETENCES, Boolean.toString(ignoreCompetences), true);
+	}
+
+	public boolean isImportCreateTaxonomyLevel() {
+		return importCreateTaxonomyLevel;
+	}
+
+	public void setImportCreateTaxonomyLevel(boolean importCreateTaxonomyLevel) {
+		this.importCreateTaxonomyLevel = importCreateTaxonomyLevel;
+		setStringProperty(IMPORT_CREATE_TAXONOMY_LEVEL, Boolean.toString(importCreateTaxonomyLevel), true);
 	}
 
 	public boolean isReviewProcessEnabled() {

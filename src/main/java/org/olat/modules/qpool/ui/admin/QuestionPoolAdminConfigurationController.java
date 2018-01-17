@@ -80,6 +80,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 	private MultipleSelectionElement poolManagerRightsEl;
 	private SingleSelection taxonomyTreeEl;
 	private SingleSelection ignoreCompetencesEl;
+	private MultipleSelectionElement importCreateTaxonomyLevelEl;
 	
 	private CloseableModalController closeableModalCtrl;
 	private ReviewProcessActivationController reviewProcessActivationCtrl;
@@ -161,6 +162,11 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 				ignoreCompetencesKeys, translateKeys(ignoreCompetencesKeys));
 		String selectedKey = qpoolModule.isIgnoreCompetences()? TAXONOMY_ALL: TAXONOMY_COMPETENCES;
 		ignoreCompetencesEl.select(selectedKey, true);
+		
+		importCreateTaxonomyLevelEl = uifactory.addCheckboxesHorizontal("import.create.subject", moduleCont, onKeys, onValues);
+		if (qpoolModule.isImportCreateTaxonomyLevel()) {
+			importCreateTaxonomyLevelEl.select(onKeys[0], true);
+		}
 		
 		FormLayoutContainer poolManagerRightsCont = FormLayoutContainer.createDefaultFormLayout("poolManagerRights", getTranslator());
 		poolManagerRightsCont.setFormTitle(translate("admin.pool.manager.title"));
@@ -264,6 +270,9 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		} else {
 			qpoolModule.setIgnoreCompetences(false);
 		}
+		
+		boolean importCreateTaxonomyLevel = importCreateTaxonomyLevelEl.isAtLeastSelected(1);
+		qpoolModule.setImportCreateTaxonomyLevel(importCreateTaxonomyLevel);
 		
 		Collection<String> selectedPoolManagerRights = poolManagerRightsEl.getSelectedKeys();
 		boolean poolAdminAllowedToEditMetadata = selectedPoolManagerRights.contains(POOL_MANAGER_EDIT_METADATA);
