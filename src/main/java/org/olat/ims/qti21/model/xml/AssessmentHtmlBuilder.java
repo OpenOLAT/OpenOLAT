@@ -20,7 +20,6 @@
 package org.olat.ims.qti21.model.xml;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
@@ -86,12 +84,6 @@ public class AssessmentHtmlBuilder {
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(html)));
 			return contentHandler.isContentAvailable();
-		} catch (SAXException e) {
-			log.error("", e);
-			return false;
-		} catch (IOException e) {
-			log.error("", e);
-			return false;
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
@@ -153,9 +145,11 @@ public class AssessmentHtmlBuilder {
 			}
 			//wrap around <html> to have a root element for neko
 			Document document = filter("<html>" + htmlFragment + "</html>");
-			Element docElement = document.getDocumentElement();
-			cleanUpNamespaces(docElement);
-			parent.getNodeGroups().load(docElement, new HTMLLoadingContext());
+			if(document != null) {
+				Element docElement = document.getDocumentElement();
+				cleanUpNamespaces(docElement);
+				parent.getNodeGroups().load(docElement, new HTMLLoadingContext());
+			}
 		}
 	}
 	
@@ -190,19 +184,11 @@ public class AssessmentHtmlBuilder {
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new ByteArrayInputStream(content.getBytes())));
 			return document;
-		} catch (SAXException e) {
-			log.error("", e);
-			return null;
-		} catch (IOException e) {
-			log.error("", e);
-			return null;
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
 	}
-	
-
 	
 	/**
 	 * Convert:<br>
