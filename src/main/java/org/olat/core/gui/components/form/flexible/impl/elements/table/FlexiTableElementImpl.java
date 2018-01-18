@@ -1677,6 +1677,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 					((SortableFlexiTableDataModel<?>)dataModel).sort(orderBy[0]);
 				}
 			}
+			
+			if(dataModel instanceof FlexiTreeTableDataModel) {
+				crumbs = ((FlexiTreeTableDataModel<?>)dataModel).reloadBreadcrumbs(crumbs);
+			}
 		}
 
 		component.setDirty(true);

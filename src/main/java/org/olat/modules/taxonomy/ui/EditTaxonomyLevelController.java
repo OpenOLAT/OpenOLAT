@@ -87,6 +87,10 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		return level;
 	}
 	
+	public TaxonomyLevel getParentLevel() {
+		return parentLevel;
+	}
+	
 	private List<TaxonomyLevelType> getTypes() {
 		List<TaxonomyLevelType> types = new ArrayList<>();
 		if(level != null) {

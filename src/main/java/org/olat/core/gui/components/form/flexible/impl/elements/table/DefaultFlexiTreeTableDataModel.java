@@ -20,9 +20,11 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * The row must implement hashCode() and equals() methods to use the
@@ -84,7 +86,26 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	@Override
 	public final void setObjects(List<U> objects) {
 		backupRows = objects;
+		if(openedRows != null) {
+			List<U> rowList = objects.stream()
+					.filter(o -> openedRows.contains(o))
+					.collect(Collectors.toList());
+			openedRows.clear();
+			openedRows.addAll(rowList);
+		}
 		super.setObjects(objects);
+		if(focusedNode != null) {
+			if(objects.contains(focusedNode)) {
+				focusedNode = objects.get(objects.indexOf(focusedNode));//refresh the focus node
+			} else if(focusedNode.getParent() != null) {
+				int row = getObjects().indexOf(focusedNode.getParent());
+				if(row >= 0) {
+					focus(row);
+				}
+			} else {
+				focusedNode = null;
+			}
+		}
 	}
 	
 	@Override
@@ -138,11 +159,12 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 			super.setObjects(backupRows);
 			focusedNode = null;
 		} else {
-			FlexiTreeTableNode parentObject = node.getParent();
+			U backupNode = backupRows.get(row);// make sure we use the exact same object as in the model
+			FlexiTreeTableNode parentObject = backupNode.getParent();
 			List<U> focusedRows = new ArrayList<>();
 			for(int i=row; i<backupRows.size(); i++) {
 				U currentRow = backupRows.get(i);
-				if(!node.equals(currentRow)
+				if(!backupNode.equals(currentRow)
 					&& ((parentObject == null && currentRow.getParent() == null)
 							|| (parentObject != null && parentObject.equals(currentRow.getParent())))) {
 					break;
@@ -150,8 +172,21 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 				focusedRows.add(currentRow);
 			}
 			super.setObjects(focusedRows);
-			focusedNode = (U)node;
+			focusedNode = backupNode;
 		}
+	}
+
+	@Override
+	public List<FlexiTreeTableNode> reloadBreadcrumbs(List<FlexiTreeTableNode> crumbs) {
+		if(crumbs == null || crumbs.isEmpty()) return Collections.emptyList();
+		List<FlexiTreeTableNode> refreshedCrumbs = new ArrayList<>();
+		for(FlexiTreeTableNode crumb:crumbs) {
+			int index = backupRows.indexOf(crumb);
+			if(index >= 0) {
+				refreshedCrumbs.add(backupRows.get(index));
+			}
+		}
+		return refreshedCrumbs;
 	}
 
 	@Override

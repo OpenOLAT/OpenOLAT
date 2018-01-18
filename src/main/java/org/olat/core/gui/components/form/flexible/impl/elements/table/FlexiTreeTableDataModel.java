@@ -19,6 +19,8 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.List;
+
 /**
  * 
  * Initial date: 15 nov. 2017<br>
@@ -49,5 +51,7 @@ public interface FlexiTreeTableDataModel<T extends FlexiTreeTableNode> extends F
 	public void close(int row);
 	
 	public void popBreadcrumb(FlexiTreeTableNode node);
+	
+	public List<FlexiTreeTableNode> reloadBreadcrumbs(List<FlexiTreeTableNode> crumbs);
 
 }

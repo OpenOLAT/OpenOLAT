@@ -106,7 +106,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		super(ureq, wControl, "admin_taxonomy_levels");
 		this.taxonomy = taxonomy;
 		initForm(ureq);
-		loadModel();
+		loadModel(true, true);
 	}
 
 	@Override
@@ -165,7 +165,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		return resources;
 	}
 	
-	private void loadModel() {
+	private void loadModel(boolean resetPage, boolean resetInternal) {
 		TaxonomyLevelSearchParameters searchParams = new TaxonomyLevelSearchParameters();
 		searchParams.setQuickSearch(tableEl.getQuickSearchString());
 		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy, searchParams);
@@ -192,7 +192,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		Collections.sort(rows, new FlexiTreeNodeComparator());
 
 		model.setObjects(rows);
-		tableEl.reset(true, true, true);
+		tableEl.reset(resetPage, resetInternal, true);
 	}
 	
 	private TaxonomyLevelRow forgeRow(TaxonomyLevel taxonomyLevel) {
@@ -253,7 +253,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 					doSelectTaxonomyLevel(ureq, row);
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
-				loadModel();
+				loadModel(true, true);
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -270,8 +270,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == stackPanel) {
 			if(dirty && event instanceof PopEvent) {
-				loadModel();
-				tableEl.reset(false, false, true);
+				loadModel(false, false);
 				dirty = false;
 			}
 		}
@@ -283,33 +282,39 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 		if(source instanceof TaxonomyLevelOverviewController) {
 			if(event instanceof DeleteTaxonomyLevelEvent || event == Event.CANCELLED_EVENT) {
 				stackPanel.popController(source);
-				loadModel();
-				tableEl.reset(false, false, true);
+				loadModel(false, false);
 			} else if(event instanceof NewTaxonomyLevelEvent) {
 				stackPanel.popController(source);
-				loadModel();
-				tableEl.reset(false, false, true);
+				loadModel(false, false);
 				doSelectTaxonomyLevel(ureq, ((NewTaxonomyLevelEvent)event).getTaxonomyLevel());
 			}  else if(event instanceof MoveTaxonomyLevelEvent) {
 				stackPanel.popController(source);
-				loadModel();
-				tableEl.reset(true, true, true);
+				loadModel(true, true);
 				doSelectTaxonomyLevel(ureq, ((MoveTaxonomyLevelEvent)event).getTaxonomyLevel());
 			} else if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				dirty = true;
 			}
 		} else if(createTaxonomyLevelCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				loadModel();
-				tableEl.reset(false, false, true);
+				loadModel(false, false);
+				if(createTaxonomyLevelCtrl.getParentLevel() != null) {
+					int openIndex = model.indexOf(createTaxonomyLevelCtrl.getParentLevel());
+					model.open(openIndex);
+					tableEl.reset(false, false, true);
+				}
 				doSelectTaxonomyLevel(ureq, createTaxonomyLevelCtrl.getTaxonomyLevel());
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(mergeCtrl == source || typeLevelCtrl == source || moveLevelCtrl == source || confirmDeleteCtrl == source) {
+		} else if(mergeCtrl == source || typeLevelCtrl == source || moveLevelCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT || event instanceof DeleteTaxonomyLevelEvent) {
-				loadModel();
-				tableEl.reset(true, true, true);
+				loadModel(true, true);
+			}
+			cmc.deactivate();
+			cleanUp();
+		}  else if(confirmDeleteCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT || event instanceof DeleteTaxonomyLevelEvent) {
+				loadModel(true, true);
 			}
 			cmc.deactivate();
 			cleanUp();
