@@ -76,6 +76,40 @@ import org.olat.user.restapi.UserVO;
  */
 @Path("notifications")
 public class NotificationsWebService {
+
+	
+	/**
+	 * Get the publisher by resource name and id + sub identifier.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}publisherVo
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The publisher
+	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_PUBLISHERVO}
+	 * @response.representation.204.doc The publisher doesn't exist
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @return It returns the <code>CourseVO</code> object representing the course.
+	 */
+	@GET
+	@Path("publisher/{ressourceName}/{ressourceId}/{subIdentifier}")
+	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	public Response getPublisher(@PathParam("ressourceName") String ressourceName, @PathParam("ressourceId") Long ressourceId,
+			@PathParam("subIdentifier") String subIdentifier, @Context HttpServletRequest request) {
+		if(!isAdmin(request)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+
+		NotificationsManager notificationsMgr = NotificationsManager.getInstance();
+		
+		SubscriptionContext subsContext
+			= new SubscriptionContext(ressourceName, ressourceId, subIdentifier);
+
+		Publisher publisher = notificationsMgr.getPublisher(subsContext);
+		if(publisher == null) {
+			return Response.ok().status(Status.NO_CONTENT).build();
+		}
+		PublisherVO publisherVo = new PublisherVO(publisher);
+		return Response.ok(publisherVo).build();
+	}
 	
 	@GET
 	@Path("subscribers/{ressourceName}/{ressourceId}/{subIdentifier}")

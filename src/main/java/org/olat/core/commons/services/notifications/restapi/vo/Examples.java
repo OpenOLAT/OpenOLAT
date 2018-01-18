@@ -20,14 +20,22 @@
 
 package org.olat.core.commons.services.notifications.restapi.vo;
 
-
 public class Examples {
+
+	public static final PublisherVO SAMPLE_PUBLISHERVO =  new PublisherVO();
 	
 	public static final SubscriptionInfoVO SAMPLE_INFOVO = new SubscriptionInfoVO();
 	public static final SubscriptionInfoVOes SAMPLE_INFOVOes = new SubscriptionInfoVOes();
-  
-  static {
-  	SAMPLE_INFOVO.setTitle("Infos");
-  	SAMPLE_INFOVOes.getSubscriptionInfos().add(SAMPLE_INFOVO);
-  }
+
+	static {
+		SAMPLE_PUBLISHERVO.setResName("BusinessGroup");
+		SAMPLE_PUBLISHERVO.setResId(357886347l);
+		SAMPLE_PUBLISHERVO.setSubidentifier("toolforum");
+		SAMPLE_PUBLISHERVO.setData("3456");
+		SAMPLE_PUBLISHERVO.setType("Forum");
+		SAMPLE_PUBLISHERVO.setBusinessPath("[BusinessGroup:357886347][toolforum:0]");
+		
+		SAMPLE_INFOVO.setTitle("Infos");
+		SAMPLE_INFOVOes.getSubscriptionInfos().add(SAMPLE_INFOVO);
+	}
 }
