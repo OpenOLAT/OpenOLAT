@@ -324,6 +324,8 @@ public class QuestionPoolMenuTreeModel extends GenericTreeModel implements DnDTr
 	}
 	
 	public void buildShareSubTreeModel() {
+		if(sharesNode == null) return;
+		
 		sharesNode.removeAllChildren();
 		buildPoolTreeNodes(sharesNode);
 		buildBusinessGroupTreeNodes(sharesNode);
