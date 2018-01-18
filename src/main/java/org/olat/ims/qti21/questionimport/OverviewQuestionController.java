@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCel
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -37,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.ScoreBuilder;
 
@@ -62,15 +64,15 @@ public class OverviewQuestionController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.hasError.i18n(), Cols.hasError.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.hasError.i18nHeaderKey(), Cols.hasError.ordinal(),
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 				new BooleanCellRenderer(
 						new CSSIconFlexiCellRenderer("o_icon_failed"),
 						new CSSIconFlexiCellRenderer("o_icon_accept"))
 		));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type.i18n(), Cols.type.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title.i18n(), Cols.title.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.points.i18n(), Cols.points.ordinal()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.points));
 		
 		ItemsTableDataModel model = new ItemsTableDataModel(importedItems.getItems(), columnsModel);
 		uifactory.addTableElement(getWindowControl(), "overviewTable", model, getTranslator(), formLayout);
@@ -103,17 +105,7 @@ public class OverviewQuestionController extends StepFormBasicController {
 			AssessmentItemBuilder itemBuilder = importedItem.getItemBuilder();
 			switch(Cols.values()[col]) {
 				case hasError: return importedItem.isHasError();
-				case type: {
-					String typeLabel;
-					switch(itemBuilder.getQuestionType()) {
-						case sc: typeLabel = translate("item.type.sc"); break;
-						case mc: typeLabel = translate("item.type.mc"); break;
-						case fib: typeLabel = translate("item.type.fib"); break;
-						case kprim: typeLabel = translate("item.type.kprim"); break;
-						default: { typeLabel = "??"; }
-					}
-					return typeLabel;
-				}
+				case type: return getTypeLabel(itemBuilder.getQuestionType());
 				case title: return itemBuilder.getTitle();
 				case points: {
 					ScoreBuilder score = itemBuilder.getMaxScoreBuilder();
@@ -125,14 +117,27 @@ public class OverviewQuestionController extends StepFormBasicController {
 				default: return itemBuilder.getAssessmentItem();
 			}
 		}
+		
+		private String getTypeLabel(QTI21QuestionType type) {
+			switch(type) {
+				case sc: return translate("item.type.sc");
+				case mc: return translate("item.type.mc");
+				case fib: return translate("item.type.fib");
+				case kprim: return translate("item.type.kprim");
+				case essay: return translate("item.type.essay");
+				case match: return translate("item.type.match");
+				case matchdraganddrop: return translate("item.type.matchdraganddrop");
+				default: return "??";
+			}
+		}
 
 		@Override
 		public ItemsTableDataModel createCopyWithEmptyList() {
-			return new ItemsTableDataModel(new ArrayList<AssessmentItemAndMetadata>(), columnModel);
+			return new ItemsTableDataModel(new ArrayList<>(), columnModel);
 		}
 	}
 	
-	public static enum Cols {
+	public static enum Cols implements FlexiColumnDef {
 		hasError("table.header.status"),
 		type("table.header.type"),
 		title("table.header.title"),
@@ -142,9 +147,10 @@ public class OverviewQuestionController extends StepFormBasicController {
 		
 		private Cols(String i18n) {
 			this.i18n = i18n;
-		}
+		}	
 		
-		public String i18n() {
+		@Override
+		public String i18nHeaderKey() {
 			return i18n;
 		}
 	}
