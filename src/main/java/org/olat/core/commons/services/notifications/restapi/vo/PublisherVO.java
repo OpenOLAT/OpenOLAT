@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.user.restapi.UserVO;
 
 /**
@@ -54,6 +55,18 @@ public class PublisherVO {
 	@XmlElement(name="user")
 	private List<UserVO> users = new ArrayList<>();
 	
+	public PublisherVO() {
+		//
+	}
+	
+	public PublisherVO(Publisher publisher) {
+		type = publisher.getType();
+		data = publisher.getData();
+		businessPath = publisher.getBusinessPath();
+		resId = publisher.getResId();
+		resName = publisher.getResName();
+		subidentifier = publisher.getSubidentifier();
+	}
 
 	public String getType() {
 		return type;

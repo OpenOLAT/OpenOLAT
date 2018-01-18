@@ -61,6 +61,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.notifications.restapi.vo.PublisherVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionInfoVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionListItemVO;
 import org.olat.core.id.Identity;
@@ -446,6 +447,41 @@ public class NotificationsTest extends OlatJerseyTestCase {
 		Assert.assertEquals(course.getResourceableId(), itemVO.getCourseKey());
 		Assert.assertEquals(folderNode.getIdent(), itemVO.getCourseNodeId());
 		Assert.assertEquals("/" + filename, itemVO.getPath());
+	}
+	
+	@Test
+	public void testGetPublisher() throws IOException, URISyntaxException {
+		//create a business group with forum notifications
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-not-9");
+		BusinessGroup group = businessGroupService.createBusinessGroup(id, "Notifications 1", "REST forum notifications for group", null, null, false, false, null);
+		CollaborationTools tools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(group);
+		tools.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
+		Forum groupForum = tools.getForum();
+		dbInstance.commitAndCloseSession();
+		
+		//publish
+		String businessPath = "[BusinessGroup:" + group.getKey() + "][toolforum:0]";
+		SubscriptionContext forumSubContext = new SubscriptionContext("BusinessGroup", group.getKey(), "toolforum");
+		PublisherData forumPdata =
+				new PublisherData(OresHelper.calculateTypeName(Forum.class), groupForum.getKey().toString(), businessPath);
+		notificationManager.subscribe(id, forumSubContext, forumPdata);
+		dbInstance.commitAndCloseSession();
+		
+		// GET publisher
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		UriBuilder request = UriBuilder.fromUri(getContextURI()).path("notifications/publisher/BusinessGroup/" + group.getKey() + "/toolforum");
+		HttpGet method = conn.createGet(request.build(), MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		PublisherVO publisher = conn.parse(response, PublisherVO.class);
+		Assert.assertNotNull(publisher);
+		Assert.assertEquals("BusinessGroup", publisher.getResName());
+		Assert.assertEquals(group.getKey(), publisher.getResId());
+		Assert.assertEquals("toolforum", publisher.getSubidentifier());
+		Assert.assertEquals("Forum", publisher.getType());
+		Assert.assertEquals(groupForum.getKey().toString(), publisher.getData());
 	}
 	
 	private String addFile(VFSContainer folder) throws IOException {
