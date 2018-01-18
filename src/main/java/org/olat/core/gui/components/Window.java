@@ -902,7 +902,10 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 			sb.append("try { o_info.businessPath='").append(url).append("';");
 			// Add analytics code
 			if (analyticsSPI != null) {
-				analyticsSPI.analyticsCountPageJavaScript(sb, this.getTitle(), url.substring(Settings.getServerContextPathURI().length()));				
+				String serverUri = Settings.getServerContextPathURI();
+				if(url != null && url.startsWith(serverUri)) {
+					analyticsSPI.analyticsCountPageJavaScript(sb, getTitle(), url.substring(serverUri.length()));
+				}
 			}			
 			sb.append(" } catch(e) { }");
 
