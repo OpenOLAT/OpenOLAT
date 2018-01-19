@@ -1266,7 +1266,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 	public void activateStatic(UserRequest ureq, String className, List<ContextEntry> entries) {
 		if(className != null && className.endsWith("HomeSite")) {
 			activateSite(userTools, ureq, entries, false);
-		} else {
+		} else if(sites != null) {
 			for (Iterator<SiteInstance> it_sites = sites.iterator(); it_sites.hasNext();) {
 				SiteInstance site = it_sites.next();
 				String cName = site.getClass().getName();
