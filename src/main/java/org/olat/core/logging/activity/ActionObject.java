@@ -98,6 +98,7 @@ public enum ActionObject {
 	waitingperson,
 	bulkassessment,
 	lectures,
-	lecturesRollcall;
+	lecturesRollcall,
+	assessmentdocument;
 
 }

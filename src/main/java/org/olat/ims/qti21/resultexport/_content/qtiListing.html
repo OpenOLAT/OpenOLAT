@@ -6,13 +6,11 @@
 	<title>$title</title>
 	<script type="text/javascript" src="../../css/offline/qti/jquery-2.1.3.min.js" ></script>
 	<script >
-    $.noConflict();
-    jQuery(document).ready(function(){
-
-            jQuery("#results tbody tr").click(function (){
-   			jQuery(this).addClass("success");
-    		jQuery(this).siblings().removeClass("success");
-
+	$.noConflict();
+	jQuery(document).ready(function(){
+		jQuery("#results tbody tr").click(function (){
+		jQuery(this).addClass("success");
+		jQuery(this).siblings().removeClass("success");
     });});
 	</script>
 </head>
@@ -74,6 +72,25 @@
 					<td>$assessment.finalScore</td>
 					<td>$assessment.passed</td>	
 					<td><span class="btn btn-default btn-sm">$t.translate("button.show")</span></td>								
+				</tr>
+				#end
+			</tbody>
+		</table>
+	</div>
+	#end
+
+	#if($hasDocuments)
+	<div>
+		<table id='assessmentDocuments' class='table table-striped table-hover'>
+			<thead>
+				<tr>
+					<th>$t.translate("assessment.docs")</th>
+				</tr>
+			</thead>
+			<tbody>
+				#foreach($assessmentDoc in $assessmentDocs)
+				<tr>
+					<td><a href='Assessment_documents/${assessmentDoc.getName()}' target='_blank'>${assessmentDoc.getName()}</td>							
 				</tr>
 				#end
 			</tbody>

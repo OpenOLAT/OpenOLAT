@@ -49,7 +49,7 @@ import org.olat.modules.ModuleConfiguration;
 public class MSEditFormController extends FormBasicController {
 
 	/** Configuration this controller will modify. */
-	private ModuleConfiguration modConfig;
+	private final ModuleConfiguration modConfig;
 
 	/** whether score will be awarded or not. */
 	private MultipleSelectionElement scoreGranted;
@@ -100,9 +100,8 @@ public class MSEditFormController extends FormBasicController {
 	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig) {
 		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.modConfig = modConfig;
-		this.trueFalseKeys = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
-
-		this.passedTypeValues = new String[] { translate("form.passedtype.cutval"), translate("form.passedtype.manual") };
+		trueFalseKeys = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
+		passedTypeValues = new String[] { translate("form.passedtype.cutval"), translate("form.passedtype.manual") };
 		initForm(ureq);
 	}
 

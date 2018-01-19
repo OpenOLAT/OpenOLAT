@@ -108,6 +108,9 @@ public enum StringResourceableType implements ILoggingResourceableType {
 
 	/** the param part of the URI during a QTI test - equivalent to what was passed to IQDisplayController.logAudit before **/
 	qtiParams,
+	
+	/** assessment document **/
+	assessmentDocument,
 
 	/** Context sensitive help **/
 	csHelp,
@@ -129,4 +132,5 @@ public enum StringResourceableType implements ILoggingResourceableType {
 
 	/** Edubase book section */
 	bookSection;
+	
 }

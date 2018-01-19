@@ -27,6 +27,7 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -904,10 +905,9 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
 			List<AssessableCourseNode> nodes = Collections.<AssessableCourseNode>singletonList(this);
 			// write course results overview table to filesystem
-			try {
+			try(OutputStream out = new ShieldOutputStream(exportStream)) {
 				exportStream.putNextEntry(new ZipEntry(dirName + "/" + fileName));
-				ScoreAccountingHelper.createCourseResultsOverviewXMLTable(users, nodes, course, locale,
-						new ShieldOutputStream(exportStream));
+				ScoreAccountingHelper.createCourseResultsOverviewXMLTable(users, nodes, course, locale, out);
 				exportStream.closeEntry();
 			} catch (IOException e) {
 				log.error("", e);
@@ -957,6 +957,20 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 					if((dropboxNames == null || dropboxNames.contains(file.getName())) && VFSManager.isDirectoryAndNotEmpty(file)){
 						dataFound = true;
 						ZipUtil.addToZip(file, dirName + "/returnboxes", exportStream);
+					}
+				}
+			}
+			
+			//assessment documents
+			if(getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false)) {
+				for(Identity assessedIdentity:users) {
+					List<File> assessmentDocuments = course.getCourseEnvironment()
+							.getAssessmentManager().getIndividualAssessmentDocuments(this, assessedIdentity);
+					if(assessmentDocuments != null && !assessmentDocuments.isEmpty()) {
+						for(File document:assessmentDocuments) {
+							String path = dirName + "/assessment_documents/"  + assessedIdentity.getName() + "/" + document.getName(); 
+							ZipUtil.addFileToZip(path, document, exportStream);
+						}
 					}
 				}
 			}

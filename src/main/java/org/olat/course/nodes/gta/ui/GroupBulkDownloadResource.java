@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -29,7 +30,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
@@ -113,10 +113,8 @@ public class GroupBulkDownloadResource implements MediaResource {
 		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
 		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
 		hres.setHeader("Content-Description", urlEncodedLabel);
-		
-		ZipOutputStream zout = null;
-		try {
-			zout = new ZipOutputStream(hres.getOutputStream());
+
+		try(ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
 			zout.setLevel(9);
 			ICourse course = CourseFactory.loadCourse(courseOres);
 			GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
@@ -127,9 +125,9 @@ public class GroupBulkDownloadResource implements MediaResource {
 				String courseTitle = course.getCourseTitle();
 				String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
 				List<AssessableCourseNode> nodes = Collections.<AssessableCourseNode>singletonList(courseNode);
-				try {
+				try(OutputStream out = new ShieldOutputStream(zout)) {
 					zout.putNextEntry(new ZipEntry(fileName));
-					ScoreAccountingHelper.createCourseResultsOverviewXMLTable(assessableIdentities, nodes, course, locale, new ShieldOutputStream(zout));
+					ScoreAccountingHelper.createCourseResultsOverviewXMLTable(assessableIdentities, nodes, course, locale, out);
 					zout.closeEntry();
 				} catch (Exception e) {
 					log.error("", e);
@@ -142,8 +140,6 @@ public class GroupBulkDownloadResource implements MediaResource {
 			}
 		} catch (Exception e) {
 			log.error("", e);
-		} finally {
-			IOUtils.closeQuietly(zout);
 		}
 	}
 

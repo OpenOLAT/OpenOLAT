@@ -21,7 +21,7 @@ package org.olat.course.nodes.cl.ui;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.olat.core.CoreSpringFactory;
@@ -231,12 +231,11 @@ public class CheckboxEditController extends FormBasicController {
 			String filename = fileEl.getUploadFileName();
 			checkbox.setFilename(filename);
 			
-			try {
-				VFSContainer container = getFileContainer();
-				VFSLeaf leaf = container.createChildLeaf(filename);
-				InputStream inStream = new FileInputStream(uploadedFile);
+			VFSContainer container = getFileContainer();
+			VFSLeaf leaf = container.createChildLeaf(filename);
+			try(InputStream inStream = new FileInputStream(uploadedFile)) {
 				VFSManager.copyContent(inStream, leaf);
-			} catch (FileNotFoundException e) {
+			} catch (IOException e) {
 				logError("", e);
 			}
 		}

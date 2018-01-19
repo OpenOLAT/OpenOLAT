@@ -237,6 +237,17 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			int numOfDocs = docs == null ? 0 : docs.length;
 			nodeAssessment.setNumberOfAssessmentDocuments(numOfDocs);
 			assessmentService.updateAssessmentEntry(nodeAssessment);
+			
+			// node log
+			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+			UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "assessment document added: " + filename);
+			
+			// user activity logging
+			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_DOCUMENT_ADDED, 
+					getClass(), 
+					LoggingResourceable.wrap(assessedIdentity), 
+					LoggingResourceable.wrapNonOlatResource(StringResourceableType.assessmentDocument, "", StringHelper.stripLineBreaks(filename)));
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -254,6 +265,17 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			int numOfDocs = docs == null ? 0 : docs.length;
 			nodeAssessment.setNumberOfAssessmentDocuments(numOfDocs);
 			assessmentService.updateAssessmentEntry(nodeAssessment);
+
+			// node log
+			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+			UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
+			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "assessment document removed: " + document.getName());
+			
+			// user activity logging
+			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_DOCUMENT_REMOVED, 
+					getClass(), 
+					LoggingResourceable.wrap(assessedIdentity), 
+					LoggingResourceable.wrapNonOlatResource(StringResourceableType.assessmentDocument, "", StringHelper.stripLineBreaks(document.getName())));
 		}
 	}
 	

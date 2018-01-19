@@ -80,6 +80,16 @@ public class AssessmentLoggingAction extends BaseLoggingAction {
 	public static final ILoggingAction ASSESSMENT_COACHCOMMENT_UPDATED = 
 		new AssessmentLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.testcomment).setTypeList(
 				new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.qtiCoachComment).addOptional(StringResourceableType.targetIdentity));
+	
+	public static final ILoggingAction ASSESSMENT_DOCUMENT_ADDED = 
+			new AssessmentLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.add, ActionObject.assessmentdocument).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.assessmentDocument)
+						.addOptional(StringResourceableType.targetIdentity));
+	public static final ILoggingAction ASSESSMENT_DOCUMENT_REMOVED = 
+			new AssessmentLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.remove, ActionObject.assessmentdocument).setTypeList(
+					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node, StringResourceableType.assessmentDocument)
+						.addOptional(StringResourceableType.targetIdentity));
+
 	public static final ILoggingAction ASSESSMENT_BULK = 
 			new AssessmentLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.edit, ActionObject.bulkassessment).setTypeList(
 					new ResourceableTypeList().addMandatory(OlatResourceableType.course, OlatResourceableType.node));

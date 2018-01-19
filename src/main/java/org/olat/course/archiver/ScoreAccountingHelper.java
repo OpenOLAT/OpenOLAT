@@ -25,6 +25,8 @@
 
 package org.olat.course.archiver;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -36,6 +38,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.olat.basesecurity.GroupRoles;
@@ -45,8 +49,12 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.OLog;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.ZipUtil;
+import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -58,6 +66,8 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -77,6 +87,39 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * Comment: Provides functionality to get a course results overview.
  */
 public class ScoreAccountingHelper {
+	
+	private static final OLog log = Tracing.createLoggerFor(ScoreAccountingHelper.class);
+	
+	public static void createCourseResultsOverview(List<Identity> identities, List<AssessableCourseNode> nodes, ICourse course, Locale locale, ZipOutputStream zout) {
+		try(OutputStream out = new ShieldOutputStream(zout)) {
+			zout.putNextEntry(new ZipEntry("Course_results.xlsx"));
+			createCourseResultsOverviewXMLTable(identities, nodes, course, locale, out);
+			zout.closeEntry();
+		} catch(IOException e) {
+			log.error("", e);
+		}
+
+		for(AssessableCourseNode node:nodes) {
+			String dir = "Assessment_documents/" + StringHelper.transformDisplayNameToFileSystemName(node.getShortName());
+			if(node instanceof IQTESTCourseNode
+					|| node.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false)) {
+				for(Identity assessedIdentity:identities) {
+					List<File> assessmentDocuments = course.getCourseEnvironment()
+							.getAssessmentManager().getIndividualAssessmentDocuments(node, assessedIdentity);
+					if(assessmentDocuments != null && !assessmentDocuments.isEmpty()) {
+						String name = assessedIdentity.getUser().getLastName()
+								+ "_" + assessedIdentity.getUser().getFirstName()
+								+ "_" + assessedIdentity.getName();
+						String userDirName = dir + "/" + StringHelper.transformDisplayNameToFileSystemName(name);
+						for(File document:assessmentDocuments) {
+							String path = userDirName + "/" + document.getName(); 
+							ZipUtil.addFileToZip(path, document, zout);
+						}
+					}
+				}
+			}
+		}
+	}
 	
 	/**
 	 * The results from assessable nodes are written to one row per user into an excel-sheet. An

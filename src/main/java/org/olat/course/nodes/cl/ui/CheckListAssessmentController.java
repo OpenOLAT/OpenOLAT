@@ -364,7 +364,7 @@ public class CheckListAssessmentController extends FormBasicController implement
 		List<CheckListAssessmentRow> dataViews = new ArrayList<>();
 		
 		int numOfcheckbox = checkbox.size();
-		Map<String,Integer> indexed = new HashMap<String,Integer>();
+		Map<String,Integer> indexed = new HashMap<>();
 		for(int i=numOfcheckbox; i-->0; ) {
 			indexed.put(checkbox.get(i).getCheckboxId(), new Integer(i));
 		}

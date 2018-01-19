@@ -230,9 +230,9 @@ public class QTI21ArchiveFormat {
 	}
 	
 	public void export(String filename,  ZipOutputStream exportStream) {
-		try {
+		try(OutputStream out = new ShieldOutputStream(exportStream)) {
 			exportStream.putNextEntry(new ZipEntry(filename));
-			exportWorkbook(new ShieldOutputStream(exportStream));
+			exportWorkbook(out);
 			exportStream.closeEntry();
 		} catch (IOException e) {
 			log.error("", e);

@@ -33,7 +33,6 @@ import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 
 /**
  * Handles asynchronous aspects of log export - including limiting the
@@ -42,7 +41,7 @@ import org.olat.core.manager.BasicManager;
  * Initial Date:  13.01.2010 <br>
  * @author Stefan
  */
-public class AsyncExportManager extends BasicManager {
+public class AsyncExportManager {
 
 	/** the logging object used in this class **/
 	private static final OLog log_ = Tracing.createLoggerFor(AsyncExportManager.class);

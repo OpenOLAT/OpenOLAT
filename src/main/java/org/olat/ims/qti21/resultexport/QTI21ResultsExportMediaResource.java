@@ -73,6 +73,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -266,7 +267,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	}
 	
 	private List<AssessedMember> createAssessedMembersDetail(ZipOutputStream zout) throws IOException {
-		List<AssessmentEntry> assessmentEntries = courseEnv.getAssessmentManager().getAssessmentEntries(courseNode);
+		AssessmentManager assessmentManager = courseEnv.getAssessmentManager();
+		List<AssessmentEntry> assessmentEntries = assessmentManager.getAssessmentEntries(courseNode);
 		Map<Identity,AssessmentEntry> assessmentEntryMap = new HashMap<>();
 		for(AssessmentEntry assessmentEntry:assessmentEntries) {
 			assessmentEntryMap.put(assessmentEntry.getIdentity(), assessmentEntry);
@@ -280,6 +282,8 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 			
 			//content of single assessed member		
 			List<ResultDetail> assessments = createResultDetail(identity, zout, idDir);
+			List<File> assessmentDocuments = assessmentManager.getIndividualAssessmentDocuments(courseNode, identity);
+			
 			Boolean passed = null;
 			BigDecimal score = null;
 			if(assessmentEntryMap.containsKey(identity)) {
@@ -294,9 +298,16 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 					identity.getUser().getLastName(), identity.getUser().getFirstName(), memberEmail,
 					assessments.size(), passed, score, linkToUser);
 			
-			String singleUserInfoHTML = createResultListingHTML(assessments, member);
-			convertToZipEntry(zout, exportFolderName + "/" + DATA + identity.getName() + "/index.html", singleUserInfoHTML);
+			String userDataDir = exportFolderName + "/" + DATA + identity.getName();
+			String singleUserInfoHTML = createResultListingHTML(assessments, assessmentDocuments, member);
+			convertToZipEntry(zout, userDataDir + "/index.html", singleUserInfoHTML);
 			assessedMembers.add(member);	
+			
+			//assessment documents
+			for(File document:assessmentDocuments) {
+				String assessmentDocDir = userDataDir + "/Assessment_documents/" + document.getName();
+				ZipUtil.addFileToZip(assessmentDocDir, document, zout);
+			}
 		}
 		return assessedMembers;
 	}
@@ -316,7 +327,6 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 	}
 	
 	private String createResultHTML(Component results) {
-		StringOutput sb = new StringOutput(32000);
 		String pagePath = Util.getPackageVelocityRoot(this.getClass()) + "/qti21results.html";
 		URLBuilder ubu = new URLBuilder("auth", "1", "0");
 		//generate VelocityContainer and put Component
@@ -326,13 +336,19 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		
 		//render VelocityContainer to StringOutPut
 		Renderer renderer = Renderer.getInstance(mainVC, translator, ubu, new RenderResult(), new EmptyGlobalSettings());
-		VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb);
-		mainVC.contextPut("r", vrdec);
-		renderer.render(sb, mainVC, null);
-		return sb.toString();
+		try(StringOutput sb = new StringOutput(32000);
+				VelocityRenderDecorator vrdec = new VelocityRenderDecorator(renderer, mainVC, sb)) {
+			mainVC.contextPut("r", vrdec);
+			renderer.render(sb, mainVC, null);
+			vrdec.close();
+			return sb.toString();
+		} catch(Exception e) {
+			log.error("", e);
+			return "";
+		}
 	}
 	
-	private String createResultListingHTML(List<ResultDetail> assessments, AssessedMember assessedMember) {
+	private String createResultListingHTML(List<ResultDetail> assessments, List<File> assessmentDocs, AssessedMember assessedMember) {
 		// now put values to velocityContext
 		VelocityContext ctx = new VelocityContext();
 		ctx.put("t", translator);
@@ -340,8 +356,10 @@ public class QTI21ResultsExportMediaResource implements MediaResource {
 		ctx.put("return", translator.translate("button.return"));
 		ctx.put("assessments", assessments);
 		ctx.put("assessedMember", assessedMember);
-		if (assessments.size() > 0) ctx.put("hasResults", Boolean.TRUE);
-		
+		ctx.put("assessmentDocs", assessmentDocs);
+		ctx.put("hasResults", Boolean.valueOf(!assessments.isEmpty()));
+		ctx.put("hasDocuments", Boolean.valueOf(!assessmentDocs.isEmpty()));
+
 		String template = FileUtils.load(QTI21ResultsExportMediaResource.class
 				.getResourceAsStream("_content/qtiListing.html"), "utf-8");
 

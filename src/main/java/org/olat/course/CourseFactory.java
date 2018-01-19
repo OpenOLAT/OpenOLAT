@@ -716,9 +716,10 @@ public class CourseFactory {
 		List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
 		List<AssessableCourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
 		
-		String fileName = ExportUtil.createFileNameWithTimeStamp(course.getCourseTitle(), "xlsx");
-		try(OutputStream out = new FileOutputStream(new File(exportDirectory, fileName))) {
-			ScoreAccountingHelper.createCourseResultsOverviewXMLTable(users, nodes, course, locale, out);
+		String fileName = ExportUtil.createFileNameWithTimeStamp(course.getCourseTitle(), "zip");
+		try(OutputStream out = new FileOutputStream(new File(exportDirectory, fileName));
+				ZipOutputStream zout = new ZipOutputStream(out)) {
+			ScoreAccountingHelper.createCourseResultsOverview(users, nodes, course, locale, zout);
 		} catch(IOException e) {
 			log.error("", e);
 		}
@@ -742,6 +743,7 @@ public class CourseFactory {
 		// rework when backgroundjob infrastructure exists
 		DBFactory.getInstance().intermediateCommit();
 		AsyncExportManager.getInstance().asyncArchiveCourseLogFiles(archiveOnBehalfOf, new Runnable() {
+			@Override
 			public void run() {
 				// that's fine, I dont need to do anything here
 			};

@@ -20,6 +20,7 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -86,6 +88,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
@@ -540,9 +543,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 			String courseTitle = course.getCourseTitle();
 			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
 			List<AssessableCourseNode> nodes = Collections.<AssessableCourseNode>singletonList(this);
-			try {
+			try(OutputStream out = new ShieldOutputStream(exportStream)) {
 				exportStream.putNextEntry(new ZipEntry(dirName + "/" + fileName));
-				ScoreAccountingHelper.createCourseResultsOverviewXMLTable(users, nodes, course, locale, new ShieldOutputStream(exportStream));
+				ScoreAccountingHelper.createCourseResultsOverviewXMLTable(users, nodes, course, locale, out);
 				exportStream.closeEntry();
 			} catch (Exception e) {
 				log.error("", e);
@@ -633,6 +636,18 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 				ZipUtil.addDirectoryToZip(correctionDirectory.toPath(), correctionDirName, exportStream);
 			}
 		}
+		
+		//assessment documents
+		if(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false)) {
+			List<File> assessmentDocuments = course.getCourseEnvironment()
+					.getAssessmentManager().getIndividualAssessmentDocuments(this, assessedIdentity);
+			if(assessmentDocuments != null && !assessmentDocuments.isEmpty()) {
+				for(File document:assessmentDocuments) {
+					String path = userDirName + "/"  + (++flow) + "_assessment/" + document.getName(); 
+					ZipUtil.addFileToZip(path, document, exportStream);
+				}
+			}
+		}
 	}
 	
 	public void archiveNodeData(ICourse course, BusinessGroup businessGroup, TaskList taskList, String dirName, ZipOutputStream exportStream) {
@@ -676,6 +691,27 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 				File correctionDirectory = gtaManager.getRevisedDocumentsCorrectionsDirectory(course.getCourseEnvironment(), this, i, businessGroup);
 				String correctionDirName = groupDirName + "/" + (++flow) + "_corrections_" + i;
 				ZipUtil.addDirectoryToZip(correctionDirectory.toPath(), correctionDirName, exportStream);
+			}
+		}
+		
+		//assessment documents for all participants of the group
+		if(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false)) {
+			List<Identity> assessedIdentities = CoreSpringFactory.getImpl(BusinessGroupService.class)
+					.getMembers(businessGroup, GroupRoles.participant.name());
+			String assessmentDirName = groupDirName + "/"  + (++flow) + "_assessment";
+			for(Identity assessedIdentity:assessedIdentities) {
+				List<File> assessmentDocuments = course.getCourseEnvironment()
+						.getAssessmentManager().getIndividualAssessmentDocuments(this, assessedIdentity);
+				if(assessmentDocuments != null && !assessmentDocuments.isEmpty()) {
+					String name = assessedIdentity.getUser().getLastName()
+							+ "_" + assessedIdentity.getUser().getFirstName()
+							+ "_" + assessedIdentity.getName();
+					String userDirName = assessmentDirName + "/" + StringHelper.transformDisplayNameToFileSystemName(name);
+					for(File document:assessmentDocuments) {
+						String path = userDirName + "/" + document.getName(); 
+						ZipUtil.addFileToZip(path, document, exportStream);
+					}
+				}
 			}
 		}
 	}

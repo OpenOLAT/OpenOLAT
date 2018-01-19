@@ -69,6 +69,7 @@ import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
 import org.olat.course.nodes.cl.ui.AssessedIdentityCheckListController;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
+import org.olat.course.nodes.cl.ui.CheckListExcelExport;
 import org.olat.course.nodes.cl.ui.CheckListRunController;
 import org.olat.course.nodes.cl.ui.CheckListRunForCoachController;
 import org.olat.course.properties.CoursePropertyManager;
@@ -203,6 +204,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	/**
 	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
 	 */
+	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) {
 			return oneClickStatusCache[0];
@@ -545,6 +547,9 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		return true;
 	}
 
+	/**
+	 * Make an archive of all datas.
+	 */
 	@Override
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
 			ZipOutputStream exportStream, String charset) {
@@ -557,7 +562,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		CheckboxList list = (CheckboxList)config.get(CONFIG_KEY_CHECKBOX);
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		if(list != null && list.getList() != null) {
-			Set<String> usedNames = new HashSet<String>();
+			Set<String> usedNames = new HashSet<>();
 			
 			for(Checkbox checkbox:list.getList()) {
 				VFSContainer dir = checkboxManager.getFileContainer(course.getCourseEnvironment(), this);
@@ -571,6 +576,34 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 							usedNames.add(checkbox.getTitle());
 						}
 						ZipUtil.addToZip(item, path, exportStream);
+					}
+				}
+			}
+
+			String filename = dirName + "/" + StringHelper.transformDisplayNameToFileSystemName(getShortName());
+			new CheckListExcelExport(this, course, locale).exportAll(filename, exportStream);
+		}
+		
+		//assessment documents
+		if(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false)) {
+			List<AssessmentEntry> assessmentEntries = course.getCourseEnvironment()
+					.getAssessmentManager().getAssessmentEntries(this);
+			if(assessmentEntries != null && !assessmentEntries.isEmpty()) {
+				String assessmentDirName = dirName + "/Assessment_documents";
+				for(AssessmentEntry assessmentEntry:assessmentEntries) {
+					Identity assessedIdentity = assessmentEntry.getIdentity();
+					List<File> assessmentDocuments = course.getCourseEnvironment()
+							.getAssessmentManager().getIndividualAssessmentDocuments(this, assessedIdentity);
+					
+					String name = assessedIdentity.getUser().getLastName()
+							+ "_" + assessedIdentity.getUser().getFirstName()
+							+ "_" + assessedIdentity.getName();
+					String userDirName = assessmentDirName + "/" + StringHelper.transformDisplayNameToFileSystemName(name);
+					if(assessmentDocuments != null && !assessmentDocuments.isEmpty()) {
+						for(File document:assessmentDocuments) {
+							String path = userDirName + "/" + document.getName(); 
+							ZipUtil.addFileToZip(path, document, exportStream);
+						}
 					}
 				}
 			}
