@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -73,6 +74,7 @@ import org.olat.ims.qti21.questionimport.AssessmentItemsPackage;
 import org.olat.ims.qti21.questionimport.ImportOptions;
 import org.olat.ims.qti21.questionimport.QImport_1_InputStep;
 import org.olat.modules.qpool.ExportFormatOptions;
+import org.olat.modules.qpool.ExportFormatOptions.Outcome;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QItemFactory;
 import org.olat.modules.qpool.QPoolSPI;
@@ -85,6 +87,7 @@ import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.QItemList;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.ui.datasource.TaxonomyLevelItemsSource;
+import org.olat.modules.qpool.ui.events.ExportFormatSelectionEvent;
 import org.olat.modules.qpool.ui.events.QItemCreationCmdEvent;
 import org.olat.modules.qpool.ui.events.QItemEdited;
 import org.olat.modules.qpool.ui.events.QItemEvent;
@@ -120,6 +123,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private FormLink statusRevisedLink;
 	private FormLink statusFinalLink;
 	private FormLink statusEndOfLifeLink;
+	private FormLink createTest;
 	private FormLink list, exportItem, shareItem, removeItem, newItem, copyItem, convertItem, deleteItem, authorItem, importItem, bulkChange;
 
 	private final TooledStackedPanel stackPanel;
@@ -130,6 +134,8 @@ public class QuestionListController extends AbstractItemListController implement
 	private DialogBoxController confirmDeleteBox;
 	private DialogBoxController confirmRemoveBox;
 	private DialogBoxController confirmDeleteSourceBox;
+	private CreateTestTargetController createTestTargetCtrl;
+	private CreateTestOverviewController createTestOverviewCtrl;
 	private ShareItemOptionController shareItemsCtrl;
 	private ShareItemSourceOptionController shareItemsToSourceCtrl;
 	private PoolsController selectPoolCtrl;
@@ -216,6 +222,7 @@ public class QuestionListController extends AbstractItemListController implement
 		if (getSecurityCallback().canUseCollections()) {
 			list = uifactory.addFormLink("list", formLayout, Link.BUTTON);
 		}
+		createTest = uifactory.addFormLink("create.test", formLayout, Link.BUTTON);
 		exportItem = uifactory.addFormLink("export.item", formLayout, Link.BUTTON);
 		if (getSecurityCallback().canUsePools() || getSecurityCallback().canUseGroups()) {
 			shareItem = uifactory.addFormLink("share.item", formLayout, Link.BUTTON);
@@ -280,6 +287,13 @@ public class QuestionListController extends AbstractItemListController implement
 			FormLink link = (FormLink)source;
 			if(link == list) {
 				doList(ureq);
+			} else if (link == createTest) {
+				List<QuestionItemShort> items = getSelectedShortItems();
+				if(!items.isEmpty()) {
+					doCreateTest(ureq, items);
+				} else {
+					showWarning("error.select.one");
+				}
 			} else if(link == exportItem) {
 				List<QuestionItemShort> items = getSelectedShortItems();
 				if(!items.isEmpty()) {
@@ -341,7 +355,7 @@ public class QuestionListController extends AbstractItemListController implement
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-
+	
 	private List<QuestionItemShort> getRemovableItems() {
 		return getItemsTable().getMultiSelectedIndex().stream()
 				.map(index -> getModel().getObject(index.intValue()))
@@ -483,6 +497,20 @@ public class QuestionListController extends AbstractItemListController implement
 		} else if(source == chooseCollectionCtrl) {
 			cmc.deactivate();
 			cleanUp();
+		} else if(source == createTestTargetCtrl && event instanceof ExportFormatSelectionEvent) {
+			calloutCtrl.deactivate();
+			ExportFormatSelectionEvent efsEvent = (ExportFormatSelectionEvent) event;
+			ExportFormatOptions format = efsEvent.getFormat();
+			List<QuestionItemShort> items = getSelectedShortItems();
+			doShowCreateTestOverview(ureq, items, format);
+		} else if (source == createTestOverviewCtrl) {
+			List<QuestionItemShort> items = createTestOverviewCtrl.getExportableQuestionItems();
+			String typeFormat = createTestOverviewCtrl.getResourceTypeFormat();
+			cmc.deactivate();
+			cleanUp();
+			if (event == Event.DONE_EVENT) {
+				doOpenCreateRepositoryTest(ureq, items, typeFormat);
+			}
 		} else if(source == exportWizard) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
@@ -587,7 +615,7 @@ public class QuestionListController extends AbstractItemListController implement
 				
 				EntryChangedEvent addEvent = (EntryChangedEvent)event;
 				Long repoEntryKey = addEvent.getRepositoryEntryKey();
-				doExportToRepositoryEntry(ureq, repoEntryKey);
+				doCreateRepositoryTest(ureq, repoEntryKey);
 			} else if(event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 				cleanUp();
@@ -601,6 +629,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(addController);
+		removeAsListenerAndDispose(createTestOverviewCtrl);
 		removeAsListenerAndDispose(bulkChangeCtrl);
 		removeAsListenerAndDispose(importItemCtrl);
 		removeAsListenerAndDispose(importTestCtrl);
@@ -609,6 +638,7 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(conversionConfirmationCtrl);
 		cmc = null;
 		addController = null;
+		createTestOverviewCtrl = null;
 		bulkChangeCtrl = null;
 		importItemCtrl = null;
 		importTestCtrl = null;
@@ -942,12 +972,63 @@ public class QuestionListController extends AbstractItemListController implement
 		cmc.activate();
 		listenTo(cmc);
 	}
+
+	private void doCreateTest(UserRequest ureq, List<QuestionItemShort> items) {
+		Set<ExportFormatOptions> exportFormatOptions = qpoolService.getExportFormatOptions(items, Outcome.repository);
+		if (exportFormatOptions.size() > 1) {
+			doChooseTestFormat(ureq, exportFormatOptions);
+		} else if (exportFormatOptions.size() == 1) {
+			doShowCreateTestOverview(ureq, items, exportFormatOptions.iterator().next());
+		} else {
+			showWarning("create.test.no.formats");
+		}
+	}
 	
-	/**
-	 * Test only QTI 1.2
-	 * @param ureq
-	 * @param items
-	 */
+	private void doChooseTestFormat(UserRequest ureq, Set<ExportFormatOptions> exportFormatOptions) {
+		removeAsListenerAndDispose(createTestTargetCtrl);
+		createTestTargetCtrl = new CreateTestTargetController(ureq, getWindowControl(), exportFormatOptions);
+		listenTo(createTestTargetCtrl);
+		
+		removeAsListenerAndDispose(calloutCtrl);
+		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), createTestTargetCtrl.getInitialComponent(), createTest, null, true, null);
+		listenTo(calloutCtrl);
+		calloutCtrl.activate();
+	}
+
+	private void doShowCreateTestOverview(UserRequest ureq, List<QuestionItemShort> items, ExportFormatOptions format) {
+		removeAsListenerAndDispose(createTestOverviewCtrl);
+		createTestOverviewCtrl = new CreateTestOverviewController(ureq, getWindowControl(), items, format);
+		listenTo(createTestOverviewCtrl);
+		
+		removeAsListenerAndDispose(cmc);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				createTestOverviewCtrl.getInitialComponent(), true, translate("create.test"));
+		cmc.activate();	
+		listenTo(cmc);
+	}
+	
+	private void doOpenCreateRepositoryTest(UserRequest ureq, List<QuestionItemShort> items, String type) {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(addController);
+
+		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
+		addController = handler.createCreateRepositoryEntryController(ureq, getWindowControl());
+		addController.setCreateObject(new QItemList(items));
+		listenTo(addController);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateRepositoryTest(UserRequest ureq, Long repoEntryKey) {
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(repoEntryKey, false);
+		if(re != null) {
+			WindowControl wControl = BusinessControlFactory.getInstance()
+					.createBusinessWindowControl(getWindowControl(), re, OresHelper.createOLATResourceableType("Editor"));
+			NewControllerFactory.getInstance().launch(ureq, wControl);
+		}
+	}
+
 	private void doExport(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(exportWizard);
 		Step start = new Export_1_TypeStep(ureq, items);
@@ -968,40 +1049,9 @@ public class QuestionListController extends AbstractItemListController implement
 		ExportFormatOptions format = (ExportFormatOptions)runContext.get("format");
 		@SuppressWarnings("unchecked")
 		List<QuestionItemShort> items = (List<QuestionItemShort>)runContext.get("itemsToExport");
-		switch(format.getOutcome()) {
-			case download: {
-				MediaResource mr = qpoolService.export(items, format, getLocale());
-				if(mr != null) {
-					ureq.getDispatchResult().setResultingMediaResource(mr);
-				}
-				break;
-			}
-			case repository: {
-				doExportToRepository(ureq, items, format.getResourceTypeFormat());
-				break;
-			}
-		}
-	}
-	
-	private void doExportToRepository(UserRequest ureq, List<QuestionItemShort> items, String type) {
-		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(addController);
-
-		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
-		addController = handler.createCreateRepositoryEntryController(ureq, getWindowControl());
-		addController.setCreateObject(new QItemList(items));
-		listenTo(addController);
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
-	}
-	
-	private void doExportToRepositoryEntry(UserRequest ureq, Long repoEntryKey) {
-		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(repoEntryKey, false);
-		if(re != null) {
-			WindowControl wControl = BusinessControlFactory.getInstance()
-					.createBusinessWindowControl(getWindowControl(), re, OresHelper.createOLATResourceableType("Editor"));
-			NewControllerFactory.getInstance().launch(ureq, wControl);
+		MediaResource mr = qpoolService.export(items, format, getLocale());
+		if(mr != null) {
+			ureq.getDispatchResult().setResultingMediaResource(mr);
 		}
 	}
 	

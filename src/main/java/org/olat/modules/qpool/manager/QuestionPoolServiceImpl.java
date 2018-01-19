@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.ExportFormatOptions;
+import org.olat.modules.qpool.ExportFormatOptions.Outcome;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
@@ -337,6 +338,17 @@ public class QuestionPoolServiceImpl implements QPoolService {
 			}
 			provider.exportItem(fullItem, zout, locale, names);
 		}
+	}
+
+	@Override
+	public Set<ExportFormatOptions> getExportFormatOptions(List<QuestionItemShort> items, Outcome outcome) {
+		return items.stream()
+				.map(QuestionItemShort::getFormat)
+				.map(qpoolModule::getQuestionPoolProvider)
+				.map(QPoolSPI::getTestExportFormats)
+				.flatMap(List::stream)
+				.filter(exportFormat -> exportFormat.getOutcome().equals(outcome))
+				.collect(Collectors.toSet()); 
 	}
 
 	@Override

@@ -38,6 +38,9 @@ $r.render("items")
 	#if($r.available("list"))
 		$r.render("list")
 	#end
+	#if($r.available("create.test"))
+		$r.render("create.test")
+	#end
 	#if($r.available("export.item"))
 		$r.render("export.item")
 	#end

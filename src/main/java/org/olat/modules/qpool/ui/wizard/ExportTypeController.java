@@ -20,13 +20,11 @@
 package org.olat.modules.qpool.ui.wizard;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -38,9 +36,9 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.modules.qpool.ExportFormatOptions;
-import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.ExportFormatOptions.Outcome;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemShort;
-import org.olat.modules.qpool.QuestionPoolModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,22 +56,15 @@ public class ExportTypeController extends StepFormBasicController {
 	private SingleSelection formatEl;
 	
 	@Autowired
-	private QuestionPoolModule qpoolModule;
+	private QPoolService qpoolService;
 	
 	public ExportTypeController(UserRequest ureq, WindowControl wControl, Form rootForm,
 			StepsRunContext runContext, List<QuestionItemShort> items) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_DEFAULT, null);
 
-		Set<ExportFormatOptions> formatSet = new HashSet<>();
-		for(QuestionItemShort item:items) {
-			QPoolSPI sp = qpoolModule.getQuestionPoolProvider(item.getFormat());
-			if(sp != null) {
-				formatSet.addAll(sp.getTestExportFormats());	
-			}	
-		}
-		
-		List<ExportFormatOptions> formatList = new ArrayList<>(formatSet);
-		Collections.sort(formatList, new ExportFormatOptionsComparator());
+		List<ExportFormatOptions> formatList =  qpoolService.getExportFormatOptions(items, Outcome.download).stream()
+				.sorted(new ExportFormatOptionsComparator())
+				.collect(Collectors.toList());
 		
 		List<String> formatKeyList = new ArrayList<>();
 		List<String> formatValueList = new ArrayList<>();

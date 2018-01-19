@@ -21,9 +21,14 @@ package org.olat.modules.qpool.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,12 +38,18 @@ import org.mockito.MockitoAnnotations;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.id.Identity;
+import org.olat.modules.qpool.ExportFormatOptions;
+import org.olat.modules.qpool.ExportFormatOptions.Outcome;
+import org.olat.modules.qpool.QPoolSPI;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ReviewService;
+import org.olat.modules.qpool.model.DefaultExportFormat;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.qpool.model.ReviewDecision;
 import org.olat.search.service.indexer.LifeFullIndexer;
+
 
 /**
  * 
@@ -145,5 +156,31 @@ public class QuestionPoolServiceImplTest {
 		
 		assertThat(item.getQuestionStatus()).isEqualTo(status);
 	}
+	
+	@Test
+	public void shouldGetExportFormatOptions() {
+		String formatA = "A";
+		String formatB = "B";
+		QuestionItemImpl formatAItem = new QuestionItemImpl();
+		formatAItem.setFormat(formatA);
+		List<QuestionItemShort> items = Arrays.asList(formatAItem);
+		ExportFormatOptions exportFormatAR = new DefaultExportFormat(formatA, Outcome.repository, null);
+		ExportFormatOptions exportFormatAD = new DefaultExportFormat(formatA, Outcome.download, null);
+		List<ExportFormatOptions> exportFormatsA = Arrays.asList(exportFormatAD, exportFormatAR);
+		ExportFormatOptions exportFormatBR = new DefaultExportFormat(formatA, Outcome.repository, null);
+		List<ExportFormatOptions> exportFormatsB = Arrays.asList(exportFormatBR);
+
+		QPoolSPI spiA = mock(QPoolSPI.class);
+		when(spiA.getTestExportFormats()).thenReturn(exportFormatsA);
+		when(qPoolModuleMock.getQuestionPoolProvider(formatA)).thenReturn(spiA);
+		QPoolSPI spiB = mock(QPoolSPI.class);
+		when(spiB.getTestExportFormats()).thenReturn(exportFormatsB);
+		when(qPoolModuleMock.getQuestionPoolProvider(formatB)).thenReturn(spiB);
+
+		Set<ExportFormatOptions> exportFormatOptions = sut.getExportFormatOptions(items, Outcome.repository);
+		
+		assertThat(exportFormatOptions).hasSize(1).containsExactly(exportFormatAR);
+	}
+
 	
 }
