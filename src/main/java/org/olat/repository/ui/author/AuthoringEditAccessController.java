@@ -135,7 +135,8 @@ public class AuthoringEditAccessController extends BasicController {
 					
 					// inform anybody interested about this change
 					MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authoring");
-					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);			
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
@@ -149,6 +150,7 @@ public class AuthoringEditAccessController extends BasicController {
 				} else {
 					MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "authorings");
 					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, entry);	
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}

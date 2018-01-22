@@ -55,6 +55,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -64,6 +66,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.EntryChangedEvent;
+import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
@@ -580,6 +584,9 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 		} else {
 			fireEvent(ureq, Event.CHANGED_EVENT);
+			MultiUserEvent modifiedEvent = new EntryChangedEvent(repositoryEntry, getIdentity(), Change.modifiedDescription, "authoring");
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 		}
 	}
 

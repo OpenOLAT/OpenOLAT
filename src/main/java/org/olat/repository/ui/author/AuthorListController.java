@@ -656,7 +656,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	protected void reloadDirtyRows() {
-		if(dirtyRows.size() > 0) {
+		if(!dirtyRows.isEmpty() && model.isAuthoringEntryRowLoaded(dirtyRows)) {
 			reloadRows();
 		}
 	}
