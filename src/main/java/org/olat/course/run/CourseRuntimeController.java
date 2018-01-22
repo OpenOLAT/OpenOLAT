@@ -576,7 +576,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if(courseAuthorRight) {
 				catalogLink = LinkFactory.createToolLink("access.cmd", translate("command.catalog"), this, "o_icon_catalog");
 				catalogLink.setElementCssClass("o_sel_course_catalog");
-				catalogLink.setVisible(repositoryModule.isCatalogEnabled() && !uce.isCourseReadOnly());
+				catalogLink.setVisible(repositoryModule.isCatalogEnabled());
 				settings.addComponent(catalogLink);
 				
 				settings.addComponent(new Spacer(""));

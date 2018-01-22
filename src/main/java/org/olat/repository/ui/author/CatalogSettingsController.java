@@ -87,7 +87,6 @@ public class CatalogSettingsController extends FormBasicController {
 	public void initToolbar() {
 		addToCatalogLink = LinkFactory.createToolLink("cat", translate("details.catadd"), this, "o_icon_add");
 		addToCatalogLink.setElementCssClass("o_sel_repo_add_to_catalog");
-		addToCatalogLink.setEnabled((entry.getAccess() >= RepositoryEntry.ACC_USERS || entry.isMembersOnly()));
 		stackPanel.addTool(addToCatalogLink, Align.left);
 	}
 

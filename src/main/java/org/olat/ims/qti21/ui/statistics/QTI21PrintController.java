@@ -31,9 +31,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 
 /**
  * 
@@ -43,6 +44,7 @@ import org.olat.course.ICourse;
  */
 public class QTI21PrintController extends BasicController {
 
+	private int count = 0;
 	private final VelocityContainer mainVC;
 	
 	public QTI21PrintController(UserRequest ureq, WindowControl wControl, QTI21StatisticResourceResult resourceResult) {
@@ -69,28 +71,31 @@ public class QTI21PrintController extends BasicController {
 		String testTitle = resourceResult.getTestEntry().getDisplayname();
 		mainVC.contextPut("testTitle", testTitle);
 		
-		int count = 0;
 		List<String> pageNames = new ArrayList<>();
-
+		// append the root for informations
 		Controller assessmentCtrl = resourceResult.getController(ureq, getWindowControl(), null, rootNode, true);
-		
 		String pageName = "page" + count++;
 		mainVC.put(pageName, assessmentCtrl.getInitialComponent());
 		pageNames.add(pageName);
+		// append all assessment items
+		appendNodes(ureq, rootNode, resourceResult, pageNames);
 
-		for(int i=0; i<rootNode.getChildCount(); i++) {
-			INode sectionNode = rootNode.getChildAt(i);
-			for(int j=0; j<sectionNode.getChildCount(); j++) {
-				TreeNode itemNode = (TreeNode)sectionNode.getChildAt(j);
-				Controller itemCtrl = resourceResult.getController(ureq, getWindowControl(), null, itemNode, true);
-				
+		mainVC.contextPut("pageNames", pageNames);
+	}
+	
+	private void appendNodes(UserRequest ureq, TreeNode node, QTI21StatisticResourceResult resourceResult, List<String> pageNames) {
+		if(node.getUserObject() instanceof AssessmentItemRef) {
+			Controller itemCtrl = resourceResult.getController(ureq, getWindowControl(), null, node, true);
+			if(itemCtrl != null) {
 				String itemPageName = "page" + count++;
 				mainVC.put(itemPageName, itemCtrl.getInitialComponent());
 				pageNames.add(itemPageName);
 			}
 		}
-
-		mainVC.contextPut("pageNames", pageNames);
+		
+		for(int i=0; i<node.getChildCount(); i++) {
+			appendNodes(ureq, (TreeNode)node.getChildAt(i), resourceResult, pageNames);
+		}
 	}
 	
 	@Override
