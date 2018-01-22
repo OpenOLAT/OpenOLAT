@@ -226,7 +226,7 @@ public class QTI21ExportProcessor {
 				for(ItemMaterial material:materials.getMaterials()) {
 					String exportPath = material.getExportUri();
 					File originalFile = material.getFile();
-					File exportFile = new File(container, exportPath);
+					File exportFile = new File(containerDir, exportPath);
 					if(!exportFile.getParentFile().exists()) {
 						exportFile.getParentFile().mkdirs();
 					}
