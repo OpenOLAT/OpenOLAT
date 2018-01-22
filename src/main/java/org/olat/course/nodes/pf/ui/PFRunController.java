@@ -67,8 +67,7 @@ public class PFRunController extends BasicController {
 		super(ureq, wControl);
 		this.pfNode = pfNode;
 		this.userCourseEnv = userCourseEnv;
-		
-		this.pfView = pfManager.providePFView(pfNode);
+		pfView = pfManager.providePFView(pfNode);
 		
 		mainVC = createVelocityContainer("run");
 	
@@ -85,9 +84,7 @@ public class PFRunController extends BasicController {
 			doOpenParticipantsView(ureq);
 		}
 		
-		
 		putInitialPanel(mainVC);
-
 	}
 
 	@Override
@@ -140,9 +137,9 @@ public class PFRunController extends BasicController {
 		doOpenParticipantsView(ureq, ureq.getIdentity(), pfView); 
 	}
 	
-	private void doOpenParticipantsView(UserRequest ureq, Identity identity, PFView pfView) {
+	private void doOpenParticipantsView(UserRequest ureq, Identity identity, PFView view) {
 		participantController = new PFParticipantController(ureq, getWindowControl(), pfNode, 
-				userCourseEnv, identity, pfView, false, false);
+				userCourseEnv, identity, view, false, false);
 		listenTo(participantController);
 		mainVC.put("segmentCmp", participantController.getInitialComponent());
 	}

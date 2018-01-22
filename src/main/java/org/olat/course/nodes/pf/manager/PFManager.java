@@ -40,8 +40,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.vfs.OlatRootFolderImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLog;
@@ -244,21 +242,6 @@ public class PFManager {
 		for(Identity identity : identities){
 			uploadFileToReturnBox(uploadFile, fileName, courseEnv, pfNode, identity);			
 		}
-	}
-
-	
-	/**
-	 * Export media resource as folder download.
-	 *
-	 * @param ureq
-	 * @param identities
-	 * @param pfNode 
-	 * @param courseEnv 
-	 */
-	public MediaResource exportMediaResource (UserRequest ureq, List<Identity> identities, PFCourseNode pfNode, CourseEnvironment courseEnv) {
-		MediaResource resource = new FileSystemExport (identities, pfNode, courseEnv, ureq.getLocale());
-		ureq.getDispatchResult().setResultingMediaResource(resource);
-		return resource;
 	}
 	
 	/**

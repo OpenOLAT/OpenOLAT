@@ -124,20 +124,17 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	public boolean hasParticipantBoxConfigured() {
-		boolean hasStundentBox = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_PARTICIPANTBOX);
-		return hasStundentBox;
+		return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_PARTICIPANTBOX);
 	}
 	
 	public boolean hasCoachBoxConfigured() {
-		boolean hasTeacherBox = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_COACHBOX);
-		return hasTeacherBox;
+		return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_COACHBOX);
 	}
 	
 	public boolean hasAlterFileConfigured() {
 		boolean hasStundentBox = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_PARTICIPANTBOX);
 		if (hasStundentBox) {
-			boolean hasAlterFile = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_ALTERFILE);
-			return hasAlterFile;
+			return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_ALTERFILE);
 		}
 		return false;
 	}
@@ -145,8 +142,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	public boolean hasLimitCountConfigured() {
 		boolean hasStundentBox = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_PARTICIPANTBOX);
 		if (hasStundentBox) {
-			boolean hasLimitCount = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_LIMITCOUNT);
-			return hasLimitCount;
+			return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_LIMITCOUNT);
 		}
 		return false;
 	}
@@ -161,8 +157,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	public boolean hasDropboxTimeFrameConfigured() {
 		boolean hasStundentBox = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_PARTICIPANTBOX);
 		if (hasStundentBox) {
-			boolean hasTimeFrame = getModuleConfiguration().getBooleanSafe(CONFIG_KEY_TIMEFRAME);
-			return hasTimeFrame;
+			return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_TIMEFRAME);
 		}
 		return false;
 	}
