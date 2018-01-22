@@ -126,11 +126,11 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private final QTI21OverrideOptions overrideOptions;
 	// The test is really assessment not a self test or a survey
 	private final boolean assessmentType = true;
+	private AtomicBoolean incrementAttempts = new AtomicBoolean(true);
 	
 	private AssessmentResultController resultCtrl;
 	private AssessmentTestDisplayController displayCtrl;
-	private LayoutMain3ColsController displayContainerController;
-	private AtomicBoolean incrementAttempts = new AtomicBoolean(true);
+	private QTI21AssessmentMainLayoutController displayContainerController;
 	
 	@Autowired
 	private QTI21Service qtiService;
@@ -588,8 +588,10 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		} else {
 			// in case displayController was unable to initialize, a message was set by displayController
 			// this is the case if no more attempts or security check was unsuccessfull
-			displayContainerController = new LayoutMain3ColsController(ureq, getWindowControl(), displayCtrl);
+
+			displayContainerController = new QTI21AssessmentMainLayoutController(ureq, getWindowControl(), displayCtrl);
 			listenTo(displayContainerController); // autodispose
+
 
 			Panel empty = new Panel("empty");//empty panel set as "menu" and "tool"
 			Controller courseCloser = new DisposedCourseRestartController(ureq, getWindowControl(), courseRe);
