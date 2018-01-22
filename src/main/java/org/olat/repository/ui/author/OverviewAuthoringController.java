@@ -211,7 +211,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Favorits", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			markedCtrl = new AuthorListController(ureq, bwControl, "search.mark", searchParams, false);
+			markedCtrl = new AuthorListController(ureq, bwControl, "search.mark", searchParams, false, true);
 			listenTo(markedCtrl);
 		} else if(favoritDirty) {
 			markedCtrl.reloadRows();
@@ -233,7 +233,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("My", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			myEntriesCtrl = new AuthorListController(ureq, bwControl, "search.my", searchParams, false);
+			myEntriesCtrl = new AuthorListController(ureq, bwControl, "search.my", searchParams, false, true);
 			listenTo(myEntriesCtrl);	
 		} else if(myDirty) {
 			myEntriesCtrl.reloadRows();
@@ -255,7 +255,7 @@ public class OverviewAuthoringController extends BasicController implements Acti
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
 			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-			searchEntriesCtrl = new AuthorListController(ureq, bwControl, "search.generic", searchParams, true);
+			searchEntriesCtrl = new AuthorListController(ureq, bwControl, "search.generic", searchParams, true, false);
 			listenTo(searchEntriesCtrl);
 		}
 		

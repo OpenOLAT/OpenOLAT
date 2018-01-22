@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -48,10 +49,13 @@ import org.olat.repository.RepositoryManager;
  */
 public class RepositoryEntrySearchController extends FormBasicController implements ExtendedFlexiTableSearchController {
 
+	private static final String[] statusKeys = new String[]{ "all", "active", "closed" };
+	
 	private TextElement id; // only for admins
 	private TextElement text;
 	private TextElement author;
 	private FormLink searchButton;
+	private SingleSelection closedEl;
 	private MultipleSelectionElement membershipMandatoryEl;
 	
 	private boolean cancelAllowed;
@@ -94,6 +98,14 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 		membershipMandatoryEl = uifactory.addCheckboxesHorizontal("cif_my", "cif.membership.mandatory", rightContainer, new String[]{ "my" }, new String[]{ "" });
 		membershipMandatoryEl.select("my", true);
 		
+		String[] statusValues = new String[] {
+				translate("cif.resources.status.all"),
+				translate("cif.resources.status.active"),
+				translate("cif.resources.status.closed")
+			};
+		closedEl = uifactory.addRadiosHorizontal("cif_status", "cif.resources.status", rightContainer, statusKeys, statusValues);
+		closedEl.select(statusKeys[1], true);
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
@@ -109,6 +121,16 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 		text.setValue(se.getDisplayname());
 		author.setValue(se.getAuthor());
 		membershipMandatoryEl.select("my", se.isMembershipMandatory());
+		
+		if(se.getClosed() != null) {
+			if(se.getClosed().booleanValue()) {
+				closedEl.select(statusKeys[2], true);
+			} else {
+				closedEl.select(statusKeys[1], true);
+			}
+		} else {
+			closedEl.select(statusKeys[0], true);
+		}
 	}
 
 	@Override
@@ -145,7 +167,19 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 	public boolean isMembershipMandatory() {
 		return membershipMandatoryEl.isAtLeastSelected(1);
 	}
-
+	
+	public Boolean getClosed() {
+		Boolean status = null;
+		if(closedEl.isOneSelected()) {
+			int selected = closedEl.getSelected();
+			if(selected == 1) {
+				status = Boolean.FALSE;
+			} else if(selected == 2) {
+				status = Boolean.TRUE;
+			}
+		}
+		return status;
+	}
 	
 	@Override
 	public void setEnabled(boolean enable) {
@@ -190,6 +224,7 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 		e.setAuthor(getAuthor());
 		e.setDisplayname(getDisplayName());
 		e.setMembershipMandatory(isMembershipMandatory());
+		e.setClosed(getClosed());
 		fireEvent(ureq, e);
 	}
 }

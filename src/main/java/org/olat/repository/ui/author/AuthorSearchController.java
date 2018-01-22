@@ -56,6 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AuthorSearchController extends FormBasicController implements ExtendedFlexiTableSearchController {
 
 	private static final String[] keys = new String[]{ "my" };
+	private static final String[] statusKeys = new String[]{ "all", "active", "closed" };
 	private static final String[] usageKeys = new String[]{ ResourceUsage.all.name(), ResourceUsage.used.name(), ResourceUsage.notUsed.name() };
 	
 	private TextElement id; // only for admins
@@ -63,6 +64,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private TextElement author;
 	private TextElement description;
 	private SingleSelection types;
+	private SingleSelection closedEl;
 	private SingleSelection resourceUsageEl;
 	private MultipleSelectionElement ownedResourcesOnlyEl;
 	private FormLink searchButton;
@@ -106,6 +108,14 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		typeKeys = typeList.toArray(new String[typeList.size()]);
 		String[] typeValues = getTranslatedResources(typeList);
 		types = uifactory.addDropdownSingleselect("cif.type", "cif.type", leftContainer, typeKeys, typeValues, null);
+		
+		String[] statusValues = new String[] {
+				translate("cif.resources.status.all"),
+				translate("cif.resources.status.active"),
+				translate("cif.resources.status.closed")
+			};
+		closedEl = uifactory.addRadiosHorizontal("cif_status", "cif.resources.status", leftContainer, statusKeys, statusValues);
+		closedEl.select(statusKeys[1], true);
 
 		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("right_1", getTranslator());
 		rightContainer.setRootForm(mainForm);
@@ -128,6 +138,8 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		resourceUsageEl = uifactory.addRadiosHorizontal("cif_used", "cif.owned.resources.usage", rightContainer, usageKeys, usageValues);
 		resourceUsageEl.select(usageKeys[0], true);
 		
+
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		searchButton = uifactory.addFormLink("search", buttonLayout, Link.BUTTON);
@@ -146,7 +158,15 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		if(se.getResourceUsage() != null) {
 			resourceUsageEl.select(se.getResourceUsage().name(), true);
 		}
-		
+		if(se.getClosed() != null) {
+			if(se.getClosed().booleanValue()) {
+				closedEl.select(statusKeys[2], true);
+			} else {
+				closedEl.select(statusKeys[1], true);
+			}
+		} else {
+			closedEl.select(statusKeys[0], true);
+		}
 		String type = se.getType();
 		if(StringHelper.containsNonWhitespace(type)) {
 			for(String typeKey:typeKeys) {
@@ -218,6 +238,19 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		return ResourceUsage.all;
 	}
 	
+	public Boolean getClosed() {
+		Boolean status = null;
+		if(closedEl.isOneSelected()) {
+			int selected = closedEl.getSelected();
+			if(selected == 1) {
+				status = Boolean.FALSE;
+			} else if(selected == 2) {
+				status = Boolean.TRUE;
+			}
+		}
+		return status;
+	}
+	
 	@Override
 	public void setEnabled(boolean enable) {
 		this.enabled = enable;
@@ -264,6 +297,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		e.setType(getRestrictedType());
 		e.setOwnedResourcesOnly(isOwnedResourcesOnly());
 		e.setResourceUsage(getResourceUsage());
+		e.setClosed(getClosed());
 		fireEvent(ureq, e);
 	}
 

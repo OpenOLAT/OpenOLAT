@@ -186,6 +186,14 @@ public class RepositoryEntryAuthorQueries {
 			  .append(" ))");
 		}
 		
+		if(params.getClosed() != null) {
+			if(params.getClosed().booleanValue()) {
+				sb.append(" and v.statusCode>0");
+			} else {
+				sb.append(" and v.statusCode=0");
+			}
+		}
+		
 		if(params.getResourceUsage() != null && params.getResourceUsage() != ResourceUsage.all) {
 			sb.append(" and res.resName!='CourseModule' and");	
 			if(params.getResourceUsage() == ResourceUsage.notUsed) {

@@ -472,6 +472,7 @@ public class RepositoryEntryListController extends FormBasicController
 		searchParams.setAuthor(se.getAuthor());
 		searchParams.setText(se.getDisplayname());
 		searchParams.setMembershipMandatory(se.isMembershipMandatory());
+		searchParams.setClosed(se.getClosed());
 		tableEl.reset(true, true, true);
 		
 		RepositoryEntryListState state = new RepositoryEntryListState();

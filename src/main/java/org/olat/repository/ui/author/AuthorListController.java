@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
@@ -117,11 +118,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AuthorListController extends FormBasicController implements Activateable2, AuthoringEntryDataSourceUIFactory, FlexiTableCssDelegate {
 
-	private final String i18nName;
+	private static final String[] statusKeys = new String[]{ "all", "active", "closed" };
+	
+	private SingleSelection closedEl;
 	protected FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
 	
-	private boolean withSearch;
+	private final String i18nName;
+	private final boolean withSearch;
+	private final boolean withClosedfilter;
 	
 	private AuthoringEntryDataModel model;
 	private AuthoringEntryDataSource dataSource;
@@ -170,13 +175,14 @@ public class AuthorListController extends FormBasicController implements Activat
 	protected RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public AuthorListController(UserRequest ureq, WindowControl wControl, String i18nName,
-			SearchAuthorRepositoryEntryViewParams searchParams, boolean withSearch) {
+			SearchAuthorRepositoryEntryViewParams searchParams, boolean withSearch, boolean withClosedfilter) {
 		super(ureq, wControl, "entries");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
 		this.i18nName = i18nName;
 		this.withSearch = withSearch;
 		this.searchParams = searchParams;
+		this.withClosedfilter = withClosedfilter;
 
 		OLATResourceable ores = OresHelper.createOLATResourceableType("RepositorySite");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
@@ -252,6 +258,19 @@ public class AuthorListController extends FormBasicController implements Activat
 			searchCtrl = new AuthorSearchController(ureq, getWindowControl(), true, mainForm);
 			searchCtrl.setEnabled(false);
 			listenTo(searchCtrl);
+		}
+		
+		if(withClosedfilter) {
+			String[] statusValues = new String[] {
+					translate("cif.resources.status.all"),
+					translate("cif.resources.status.active"),
+					translate("cif.resources.status.closed")
+				};
+			closedEl = uifactory.addRadiosHorizontal("cif_status", "cif.resources.status", formLayout, statusKeys, statusValues);
+			closedEl.addActionListener(FormEvent.ONCHANGE);
+			closedEl.setDomReplacementWrapperRequired(false);
+			closedEl.select(statusKeys[1], true);
+			searchParams.setClosed(Boolean.FALSE);
 		}
 		
 		//add the table
@@ -587,6 +606,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else {
 				showWarning("bulk.update.nothing.selected");
 			}
+		} else if(closedEl == source) {
+			doSetClosedFilter();
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
@@ -755,6 +776,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setAuthor(se.getAuthor());
 		searchParams.setOwnedResourcesOnly(se.isOwnedResourcesOnly());
 		searchParams.setResourceUsage(se.getResourceUsage());
+		searchParams.setClosed(se.getClosed());
 		searchParams.setDisplayname(se.getDisplayname());
 		searchParams.setDescription(se.getDescription());
 		tableEl.reset(true, true, true);
@@ -779,6 +801,19 @@ public class AuthorListController extends FormBasicController implements Activat
 			}
 		}
 		return rows;
+	}
+	
+	private void doSetClosedFilter() {
+		searchParams.setClosed(null);
+		if(closedEl.isOneSelected()) {
+			int selected = closedEl.getSelected();
+			if(selected == 1) {
+				searchParams.setClosed(Boolean.FALSE);
+			} else if(selected == 2) {
+				searchParams.setClosed(Boolean.TRUE);
+			}
+		}
+		tableEl.reset(true, true, true);
 	}
 	
 	private void doSendMail(UserRequest ureq, List<AuthoringEntryRow> rows) {

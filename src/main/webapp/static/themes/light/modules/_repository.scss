@@ -118,3 +118,12 @@ tr.o_entry_unpublished, tr.o_entry_unpublished td, tr.o_entry_unpublished td spa
 tr.o_entry_deleted {
 
 }
+
+.o_repo_status_filter > div {
+	display:inline-block;
+	
+	label {
+		font-weight: normal;
+	}
+}
+

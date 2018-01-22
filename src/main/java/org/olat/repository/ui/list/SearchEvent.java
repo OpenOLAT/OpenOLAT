@@ -35,6 +35,7 @@ class SearchEvent extends Event implements StateEntry {
 	private String id;
 	private String displayname;
 	private String author;
+	private Boolean closed;
 	private boolean membershipMandatory;
 	
 	public SearchEvent() {
@@ -73,12 +74,21 @@ class SearchEvent extends Event implements StateEntry {
 		this.membershipMandatory = membershipMandatory;
 	}
 
+	public Boolean getClosed() {
+		return closed;
+	}
+
+	public void setClosed(Boolean closed) {
+		this.closed = closed;
+	}
+
 	@Override
 	public SearchEvent clone() {
 		SearchEvent clone = new SearchEvent();
 		clone.id = id;
 		clone.displayname = displayname;
 		clone.author = author;
+		clone.closed = closed;
 		clone.membershipMandatory = membershipMandatory;
 		return clone;
 	}

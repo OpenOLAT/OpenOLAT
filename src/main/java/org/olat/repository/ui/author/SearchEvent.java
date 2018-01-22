@@ -38,6 +38,7 @@ public class SearchEvent extends Event implements StateEntry {
 	private String author;
 	private String description;
 	private String type;
+	private Boolean closed;
 	private boolean ownedResourcesOnly;
 	private ResourceUsage resourceUsage;
 	
@@ -102,6 +103,14 @@ public class SearchEvent extends Event implements StateEntry {
 		this.resourceUsage = resourceUsage;
 	}
 
+	public Boolean getClosed() {
+		return closed;
+	}
+
+	public void setClosed(Boolean closed) {
+		this.closed = closed;
+	}
+
 	@Override
 	public SearchEvent clone() {
 		SearchEvent clone = new SearchEvent();
@@ -112,6 +121,7 @@ public class SearchEvent extends Event implements StateEntry {
 		clone.type = type;
 		clone.ownedResourcesOnly = ownedResourcesOnly;
 		clone.resourceUsage = resourceUsage;
+		clone.closed = closed;
 		return clone;
 	}
 }

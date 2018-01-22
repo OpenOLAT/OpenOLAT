@@ -70,7 +70,7 @@ public class AuthorDeletedListController extends AuthorListController {
 	
 	public AuthorDeletedListController(UserRequest ureq, WindowControl wControl, String i18nName,
 			SearchAuthorRepositoryEntryViewParams searchParams, boolean withSearch) {
-		super(ureq, wControl, i18nName, searchParams, withSearch);
+		super(ureq, wControl, i18nName, searchParams, withSearch, false);
 	}
 
 	@Override
