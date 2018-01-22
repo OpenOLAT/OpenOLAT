@@ -14,10 +14,10 @@
 	<table id="qti_container_${responseIdentifier}" class="table">
 		<thead>
 			<tr>
-				<th/>
+				<th> </th>
             	#foreach($choice2 in $orderedSet2)
 				<th>$r.renderFlowStatics($choice2.getFlowStatics())</th>
-				#end
+			#end
 			</tr>
         </thead>
 		<tbody>
