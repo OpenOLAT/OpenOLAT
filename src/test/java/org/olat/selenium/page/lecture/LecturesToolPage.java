@@ -58,8 +58,32 @@ public class LecturesToolPage {
 		return this;
 	}
 	
+	/**
+	 * Check in the lecture user tool if the row with the specified arguments
+	 * is marked with the danger icon.
+	 * 
+	 * @param teacher The teacher
+	 * @param block The lecture block name
+	 * @param course The course name
+	 * @return Itself
+	 */
 	public LecturesToolPage assertOnParticipantLectureBlockAbsent(UserVO teacher, String block, String course) {
 		By blocks = By.xpath("//div[contains(@class,'o_sel_lecture_participant_blocks')]//table//tr[td[contains(text(),'" + course + "')]][td[contains(text(),'" + block + "')]][td[contains(text(),'" + teacher.getLastName() + "')]]/td/span/i[contains(@class,'o_lectures_rollcall_danger')]");
+		OOGraphene.waitElement(blocks, browser);
+		return this;
+	}
+	
+	/**
+	 * Check in the lecture user tool if the row with the specified arguments
+	 * is marked with the warning icon.
+	 * 
+	 * @param teacher The teacher
+	 * @param block The lecture block name
+	 * @param course The course name
+	 * @return Itself
+	 */
+	public LecturesToolPage assertOnParticipantLectureBlockAuthorised(UserVO teacher, String block, String course) {
+		By blocks = By.xpath("//div[contains(@class,'o_sel_lecture_participant_blocks')]//table//tr[td[contains(text(),'" + course + "')]][td[contains(text(),'" + block + "')]][td[contains(text(),'" + teacher.getLastName() + "')]]/td/span/i[contains(@class,'o_lectures_rollcall_warning')]");
 		OOGraphene.waitElement(blocks, browser);
 		return this;
 	}

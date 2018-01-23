@@ -94,7 +94,7 @@ public class LecturesTest extends Deployments {
 		new NavigationPage(browser)
 			.openAdministration()
 			.openLecturesSettings()
-			.configure(true, false)
+			.configure(true, true, true, false, false)
 			.save();
 		
 		// start the test with authorized absence on
@@ -224,7 +224,7 @@ public class LecturesTest extends Deployments {
 		new NavigationPage(browser)
 			.openAdministration()
 			.openLecturesSettings()
-			.configure(true, false)
+			.configure(true, true, true, false, false)
 			.save();
 		
 		// start the test with authorized absence on
@@ -353,7 +353,7 @@ public class LecturesTest extends Deployments {
 		new NavigationPage(browser)
 			.openAdministration()
 			.openLecturesSettings()
-			.configure(false, false)
+			.configure(true, true, false, false, false)
 			.save();
 		
 		//start
@@ -439,5 +439,135 @@ public class LecturesTest extends Deployments {
 		participantsAdmin
 			.assertOnParticipantLectureBlockAbsent(participant1, 3)
 			.assertOnParticipantLectureBlockAbsent(participant2, 0);
+	}
+	
+	/**
+	 * An author create a course, enable the absence management,
+	 * create a lecture block, add a coach and two participants.<br>
+	 * The coach login in, see the interceptor to start the roll call.
+	 * It starts the roll call, set an absence and close.<br>
+	 * The participant with an absence log in, use the lectures user's
+	 * tool to see that it has an absence.<br>
+	 * The absence management has the following settings: holding partial
+	 * lecture is disable, cancel status of lectures is disabled, authorized
+	 * absence are enabled with them as default authorized, teachers can
+	 * authorized absences.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void lecturesRollCall_defaultAuthorizedAbsence(@InitialPage LoginPage loginPage)
+	throws IOException, URISyntaxException {
+		
+		// configure the lectures module
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		new NavigationPage(browser)
+			.openAdministration()
+			.openLecturesSettings()
+			.configure(false, false, true, true, true)
+			.save();
+		
+		// start the test with authorized absence on
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant1 = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Rymou");
+
+		LoginPage
+			.getLoginPage(browser, deploymentUrl)
+			.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "Lecture " + UUID.randomUUID();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateForm(title)
+			.assertOnGeneralTab()
+			.clickToolbarBack();
+		
+		//set access
+		CoursePageFragment course = new CoursePageFragment(browser);
+		course
+			.accessConfiguration()
+			.setUserAccess(UserAccess.registred)
+			.clickToolbarBack();
+		
+		//add a coach
+		course
+			.members()
+			.addMember()	
+			.searchMember(author, true)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, true, false)
+			.nextPermissions()
+			.finish();
+		//add the participants
+		course
+			.members()
+			.importMembers()
+			.setMembers(participant1, participant2)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		//enable the lectures
+		LectureRepositoryAdminPage lecturesAdmin = course
+			.lecturesAdministration();
+		lecturesAdmin
+			.settings()
+			.enableLectures()
+			.overrideDefaultSettings()
+			.saveSettings();
+		
+		LectureRepositoryAdminListPage lectureList = lecturesAdmin
+			.lectureList();
+		
+		Calendar cal = Calendar.getInstance();
+		int today = cal.get(Calendar.DATE);
+		int hour = cal.get(Calendar.HOUR_OF_DAY);
+		String lectureTitle = "1. Lecture";
+		lectureList
+			.newLectureBlock()
+			.setTitle(lectureTitle)
+			.setTeacher(author)
+			.setDate(today, hour, 0, hour, 59)
+			.save();
+		
+		//coach at work
+		LoginPage coachLoginPage = LoginPage.getLoginPage(browser, deploymentUrl);
+		coachLoginPage
+			.loginAs(author);
+		new RollCallInterceptorPage(browser)
+			.start()
+			.setAbsence(participant1, "1")
+			.closeRollCall()
+			.confirmCloseRollCall()
+			.assertOnClosedTable();
+		
+		//participant check it roll call
+		LoginPage participantLoginPage = LoginPage.getLoginPage(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant1)
+			.resume();
+		UserToolsPage participantUserTools = new UserToolsPage(browser);
+		participantUserTools
+			.openUserToolsMenu()
+			.openLectures()
+			.assertOnParticipantLecturesList()
+			.selectCourseAsParticipant(title)
+			.assertOnParticipantLectureBlocks()
+			.assertOnParticipantLectureBlockAuthorised(author, lectureTitle, title);
 	}
 }

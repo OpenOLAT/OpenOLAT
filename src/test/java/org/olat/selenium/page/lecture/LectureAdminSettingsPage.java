@@ -41,16 +41,56 @@ public class LectureAdminSettingsPage {
 	/**
 	 * Set of options.
 	 * 
+	 * @param holdPartialLectures Enable or not the option "Allow holding partial lectures"
+	 * @param cancelStatus Enable or not the option "Lectures status" "Cancelled"
 	 * @param authorizedAbsence Enable or not the option "Authorized absences"
+	 * @param defaultAuthorized Enable or not the option "Absence per default authorized"
 	 * @param teacherCanAutorizeAbsence Enable or not the option "Coaches can authorize absences"
 	 * @return
 	 */
-	public LectureAdminSettingsPage configure(boolean authorizedAbsence, boolean teacherCanAutorizeAbsence) {
+	public LectureAdminSettingsPage configure(boolean holdPartialLectures, boolean cancelStatus,
+			boolean authorizedAbsence, boolean defaultAuthorized, boolean teacherCanAutorizeAbsence) {
+		setHoldPartialLectures(holdPartialLectures);
+		setCancelStatus(cancelStatus);
 		setAuthorizedAbsence(authorizedAbsence);
 		if(authorizedAbsence) {
+			setDefaultAuthorisedAbsence(defaultAuthorized);
 			setTeacherCanAuthorizeAbsence(teacherCanAutorizeAbsence);
 		}
 		return this;
+	}
+	
+	/**
+	 * Set the option "Allow holding partial lectures".
+	 * 
+	 * @param enableHoldingPartialLectures Enable (or not if false) partial lectures.
+	 * @return Itself
+	 */
+	public LectureAdminSettingsPage setHoldPartialLectures(boolean enableHoldingPartialLectures) {
+		String checkName = "lecture.status.partially.done.enabled";
+		return set(checkName, "on", enableHoldingPartialLectures);	
+	}
+	
+	/**
+	 * Set the option "Cancelled" for "Lectures status".
+	 * 
+	 * @param enabledCancelStatus Enable (or not if false) the status cancelled for lectures.
+	 * @return Itself
+	 */
+	public LectureAdminSettingsPage setCancelStatus(boolean enabledCancelStatus) {
+		String checkName = "lecture.status.enabled";
+		return set(checkName, "cancelled", enabledCancelStatus);	
+	}
+	
+	/**
+	 * Set the option "Authorized absences"
+	 * 
+	 * @param authorizedAbsence Enable/disable authorized absences
+	 * @return Itself
+	 */
+	private LectureAdminSettingsPage setAuthorizedAbsence(boolean authorizedAbsence) {		
+		String checkName = "lecture.authorized.absence.enabled";
+		return set(checkName, "on", authorizedAbsence);
 	}
 	
 	/**
@@ -60,25 +100,26 @@ public class LectureAdminSettingsPage {
 	 * @param teacherCanAuthorizeAbsence Enable/disable the hability for coaches to excuse absences
 	 * @return Itself
 	 */
-	public LectureAdminSettingsPage setTeacherCanAuthorizeAbsence(boolean teacherCanAuthorizeAbsence) {	
+	private LectureAdminSettingsPage setTeacherCanAuthorizeAbsence(boolean teacherCanAuthorizeAbsence) {	
 		String checkName = "lecture.teacher.can.authorize.absence";
-		return set(checkName, teacherCanAuthorizeAbsence);
+		return set(checkName, "on", teacherCanAuthorizeAbsence);
 	}
 	
 	/**
-	 * Set the option "Authorized absences"
+	 * Set the option "Absence per default authorized". Only available
+	 * with the authorized absences enabled.
 	 * 
-	 * @param authorizedAbsence Enable/disable authorized absences
+	 * @param defaultAuthorized The absence are per default authorized (or not if false). 
 	 * @return Itself
 	 */
-	public LectureAdminSettingsPage setAuthorizedAbsence(boolean authorizedAbsence) {		
-		String checkName = "lecture.authorized.absence.enabled";
-		return set(checkName, authorizedAbsence);
+	public LectureAdminSettingsPage setDefaultAuthorisedAbsence(boolean defaultAuthorized) {
+		String checkName = "lecture.absence.default.authorized";
+		return set(checkName, "on", defaultAuthorized);	
 	}
 	
-	private LectureAdminSettingsPage set(String name, boolean enable) {
-		By enableLabelBy = By.xpath("//label[input[@name='" + name + "' and @value='on']]");
-		By enableCheckBy = By.xpath("//label/input[@name='" + name + "' and @value='on']");
+	private LectureAdminSettingsPage set(String name, String value, boolean enable) {
+		By enableLabelBy = By.xpath("//label[input[@name='" + name + "' and @value='" + value + "']]");
+		By enableCheckBy = By.xpath("//label/input[@name='" + name + "' and @value='" + value + "']");
 		
 		OOGraphene.waitElement(enableLabelBy, browser);
 		OOGraphene.scrollTo(enableLabelBy, browser);
