@@ -63,5 +63,7 @@ public interface QuestionItemSecurityCallback extends MetadataSecurityCallback {
 	 * Can a user rate the question item outside the review process?
 	 */
 	public boolean canRate();
+	
+	public boolean canExportAuditLog();
 
 }

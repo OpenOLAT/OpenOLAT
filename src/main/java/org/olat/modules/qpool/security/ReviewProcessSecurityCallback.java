@@ -177,6 +177,11 @@ public class ReviewProcessSecurityCallback implements QuestionItemSecurityCallba
 	public boolean canEditAuthors() {
 		return admin || itemView.isAuthor() || itemView.isManager() || (poolAdmin && qpoolModule.isPoolAdminAllowedToEditMetadata());
 	}
+
+	@Override
+	public boolean canExportAuditLog() {
+		return admin || poolAdmin;
+	}
 	
 	private boolean isEditableQuestionStatus(QuestionStatus status) {
 		return EDITABLE_STATES.contains(status);

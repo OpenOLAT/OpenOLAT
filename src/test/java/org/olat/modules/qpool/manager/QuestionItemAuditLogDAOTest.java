@@ -21,9 +21,11 @@ package org.olat.modules.qpool.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.junit.Test;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.modules.qpool.QPoolService;
@@ -45,6 +47,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QuestionItemAuditLogDAOTest extends OlatTestCase {
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private QuestionItemAuditLogDAO sut;
 	@Autowired
 	private QItemTypeDAO qItemTypeDao;
@@ -63,9 +67,33 @@ public class QuestionItemAuditLogDAOTest extends OlatTestCase {
 				.withAfter(item)
 				.withMessage("item was created")
 				.create();
+		dbInstance.commitAndCloseSession();
 		
 		sut.persist(auditLog);
+		dbInstance.commitAndCloseSession();
 	}
+	
+	@Test
+	public void shouldFindAuditLogByQuestionItem() {
+		QItemType qItemType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("qitem-audit-log");
+		QuestionItem item = questionDao.createAndPersist(id, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		QuestionItemAuditLog auditLog = qpoolService.createAuditLogBuilder(id, QuestionItemAuditLog.Action.CREATE_QUESTION_ITEM_NEW).withBefore(item).create();
+		sut.persist(auditLog);
+		auditLog = qpoolService.createAuditLogBuilder(id, QuestionItemAuditLog.Action.UPDATE_QUESTION).withBefore(item).create();
+		sut.persist(auditLog);
+		auditLog = qpoolService.createAuditLogBuilder(id, QuestionItemAuditLog.Action.UPDATE_QUESTION_ITEM_METADATA).withBefore(item).create();
+		sut.persist(auditLog);
+		QuestionItem otherItem = questionDao.createAndPersist(id, "NGC 55", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		auditLog = qpoolService.createAuditLogBuilder(id, QuestionItemAuditLog.Action.UPDATE_QUESTION_ITEM_METADATA).withBefore(otherItem).create();
+		sut.persist(auditLog);
+		dbInstance.commitAndCloseSession();
+		
+		List<QuestionItemAuditLog> auditLogs = sut.getAuditLogByQuestionItem(item);
+		
+		assertThat(auditLogs).hasSize(3);
+	}
+
 	
 	@Test
 	public void shouldConvertToXMLAndBack() {

@@ -1022,4 +1022,9 @@ public class QuestionPoolServiceImpl implements QPoolService {
 		return auditLogDao.questionItemFromXml(xml);
 	}
 
+	@Override
+	public List<QuestionItemAuditLog> getAuditLogByQuestionItem(QuestionItemShort item) {
+		return auditLogDao.getAuditLogByQuestionItem(item);
+	}
+
 }

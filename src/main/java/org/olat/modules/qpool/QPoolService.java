@@ -260,4 +260,6 @@ public interface QPoolService {
 	
 	public QuestionItem toAuditQuestionItem(String xml);
 
+	public List<QuestionItemAuditLog> getAuditLogByQuestionItem(QuestionItemShort item);
+
 }

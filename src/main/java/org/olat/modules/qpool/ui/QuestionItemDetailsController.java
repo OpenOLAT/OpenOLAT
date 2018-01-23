@@ -53,6 +53,7 @@ import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QuestionItemAuditLog;
 import org.olat.modules.qpool.QuestionItemAuditLog.Action;
 import org.olat.modules.qpool.QuestionItemAuditLogBuilder;
 import org.olat.modules.qpool.QuestionItemSecurityCallback;
@@ -90,6 +91,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link nextItemLink;
 	private Link numberItemsLink;
 	private Link previousItemLink;
+	private Link exportLogLink;
 	private Link showMetadataLink;
 	private Link hideMetadataLink;
 	private Link shareGroupItemLink;
@@ -341,6 +343,11 @@ public class QuestionItemDetailsController extends BasicController implements To
 	}
 
 	private void initMetadataTools() {
+		if (qItemSecurityCallback.canExportAuditLog()) {
+			exportLogLink = LinkFactory.createToolLink("export.log", translate("export.log"), this);
+			exportLogLink.setIconLeftCSS("o_icon o_icon-fw o_icon_log"); 
+			stackPanel.addTool(exportLogLink, Align.right);
+		}
 		showMetadataLink = LinkFactory.createToolLink("metadata.show", translate("metadata.show"), this);
 		showMetadataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_show_metadata");
 		hideMetadataLink = LinkFactory.createToolLink("metadata.hide", translate("metadata.hide"), this);
@@ -381,6 +388,8 @@ public class QuestionItemDetailsController extends BasicController implements To
 			doExport(ureq, metadatasCtrl.getItem());
 		} else if(source == copyItemLink) {
 			doCopy(ureq, metadatasCtrl.getItem());
+		} else if(source == exportLogLink) {
+			doExportLog(ureq, metadatasCtrl.getItem());
 		} else if(source == nextItemLink) {
 			fireEvent(ureq, new QItemEvent("next", metadatasCtrl.getItem()));
 		} else if(source == previousItemLink) {
@@ -649,6 +658,12 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private void doExport(UserRequest ureq, QuestionItemShort item) {
 		ExportQItemResource mr = new ExportQItemResource("UTF-8", getLocale(), item);
 		ureq.getDispatchResult().setResultingMediaResource(mr);
+	}
+	
+	private void doExportLog(UserRequest ureq, QuestionItemShort item) {
+		List<QuestionItemAuditLog> auditLog = qpoolService.getAuditLogByQuestionItem(item);
+		QuestionItemAuditLogExport export = new QuestionItemAuditLogExport(item, auditLog, getTranslator());
+		ureq.getDispatchResult().setResultingMediaResource(export);
 	}
 	
 	private void doShowMetadata(UserRequest ureq) {

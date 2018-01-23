@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.manager;
 
+import java.util.List;
+
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
@@ -26,6 +28,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemAuditLog;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QLicense;
@@ -76,6 +79,15 @@ public class QuestionItemAuditLogDAO {
 	
 	public void persist(QuestionItemAuditLog auditLog) {
 		dbInstance.getCurrentEntityManager().persist(auditLog);
+	}
+
+	public List<QuestionItemAuditLog> getAuditLogByQuestionItem(QuestionItemShort item) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select log from qitemauditlog log where log.questionItemKey=:questionItemKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QuestionItemAuditLog.class)
+				.setParameter("questionItemKey", item.getKey())
+				.getResultList();
 	}
 	
 	public String toXml(QuestionItem item) {

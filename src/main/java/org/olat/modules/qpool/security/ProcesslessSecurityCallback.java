@@ -182,4 +182,9 @@ public class ProcesslessSecurityCallback implements QuestionItemSecurityCallback
 				|| (poolAdmin && qpoolModule.isPoolAdminAllowedToEditMetadata());
 	}
 
+	@Override
+	public boolean canExportAuditLog() {
+		return admin || poolAdmin;
+	}
+
 }
